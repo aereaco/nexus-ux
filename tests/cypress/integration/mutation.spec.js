@@ -2,14 +2,14 @@ import { beVisible, haveText, html, test } from '../utils'
 
 test('element side effects are cleaned up after the elements are removed',
     html`
-        <div x-data="{ foo: 1, bar: 1 }">
+        <div data-data="{ foo: 1, bar: 1 }">
             <button @click="bar++">bar</button>
             <a href="#" @click.prevent="$refs.span.remove()">remove</a>
 
-            <span x-text="(() => { foo = foo + 1; return bar })" x-ref="span"></span>
+            <span data-text="(() => { foo = foo + 1; return bar })" data-ref="span"></span>
 
-            <h1 x-text="foo"></h1>
-            <h2 x-text="bar"></h2>
+            <h1 data-text="foo"></h1>
+            <h2 data-text="bar"></h2>
         </div>
     `,
     ({ get }) => {
@@ -27,16 +27,16 @@ test('element side effects are cleaned up after the elements are removed',
 
 test('nested element side effects are cleaned up after the parent is removed',
     html`
-        <div x-data="{ foo: 1, bar: 1 }">
+        <div data-data="{ foo: 1, bar: 1 }">
             <button @click="bar++">bar</button>
             <a href="#" @click.prevent="$refs.article.remove()">remove</a>
 
-            <article x-ref="article">
-                <span x-text="(() => { foo = foo + 1; return bar })"></span>
+            <article data-ref="article">
+                <span data-text="(() => { foo = foo + 1; return bar })"></span>
             </article>
 
-            <h1 x-text="foo"></h1>
-            <h2 x-text="bar"></h2>
+            <h1 data-text="foo"></h1>
+            <h2 data-text="bar"></h2>
         </div>
     `,
     ({ get }) => {
@@ -54,14 +54,14 @@ test('nested element side effects are cleaned up after the parent is removed',
 
 test('element magic-based side effects are cleaned up after the element is removed',
     html`
-        <div x-data="{ foo: 1, bar: 1 }">
+        <div data-data="{ foo: 1, bar: 1 }">
             <button @click="foo++">foo</button>
             <a href="#" @click.prevent="$refs.span.remove()">remove</a>
 
-            <span x-init="$watch('foo', () => bar++)" x-ref="span"></span>
+            <span data-init="$watch('foo', () => bar++)" data-ref="span"></span>
 
-            <h1 x-text="foo"></h1>
-            <h2 x-text="bar"></h2>
+            <h1 data-text="foo"></h1>
+            <h2 data-text="bar"></h2>
         </div>
     `,
     ({ get }) => {
@@ -79,10 +79,10 @@ test('element magic-based side effects are cleaned up after the element is remov
 
 test('can mutate directive value',
     html`
-        <div x-data="{ foo: 'bar', bar: 'baz' }">
-            <button @click="$refs.target.setAttribute('x-text', 'bar')">change text</button>
+        <div data-data="{ foo: 'bar', bar: 'baz' }">
+            <button @click="$refs.target.setAttribute('data-text', 'bar')">change text</button>
 
-            <span x-text="foo" x-ref="target"></span>
+            <span data-text="foo" data-ref="target"></span>
         </div>
     `,
     ({ get }) => {
@@ -94,10 +94,10 @@ test('can mutate directive value',
 
 test('can add new directive',
     html`
-        <div x-data="{ foo: 'bar' }">
-            <button @click="$refs.target.setAttribute('x-text', 'foo')">change text</button>
+        <div data-data="{ foo: 'bar' }">
+            <button @click="$refs.target.setAttribute('data-text', 'foo')">change text</button>
 
-            <span x-ref="target"></span>
+            <span data-ref="target"></span>
         </div>
     `,
     ({ get }) => {
@@ -109,12 +109,12 @@ test('can add new directive',
 
 test('can pause and queue mutations for later resuming/flushing',
     html`
-        <div x-data="{ foo: 1 }">
-            <button x-on:click="setTimeout(() => foo++)" x-ref="btn">foo</button>
-            <h1 x-text="foo"></h1>
+        <div data-data="{ foo: 1 }">
+            <button data-on:click="setTimeout(() => foo++)" data-ref="btn">foo</button>
+            <h1 data-text="foo"></h1>
 
-            <a href="#" @click="$refs.btn.removeAttribute('x-on:click')" id="remove">remove</a>
-            <a href="#" @click="$refs.btn.setAttribute('x-on:click', 'foo++')" id="add">add</a>
+            <a href="#" @click="$refs.btn.removeAttribute('data-on:click')" id="remove">remove</a>
+            <a href="#" @click="$refs.btn.setAttribute('data-on:click', 'foo++')" id="add">add</a>
             <a href="#" @click="Alpine.deferMutations()" id="defer">add</a>
             <a href="#" @click="Alpine.flushAndStopDeferringMutations()" id="flush">add</a>
         </div>
@@ -138,20 +138,20 @@ test('can pause and queue mutations for later resuming/flushing',
 
 test('does not initialise components twice when contained in multiple mutations',
     html`
-        <div x-data="{
+        <div data-data="{
             foo: 0,
             bar: 0,
             test() {
                 container = document.createElement('div')
                 this.$root.appendChild(container)
                 alpineElement = document.createElement('span')
-                alpineElement.setAttribute('x-data', '{init() {this.bar++}}')
-                alpineElement.setAttribute('x-init', 'foo++')
+                alpineElement.setAttribute('data-data', '{init() {this.bar++}}')
+                alpineElement.setAttribute('data-init', 'foo++')
                 container.appendChild(alpineElement)
             }
         }">
-            <span id="one" x-text="foo"></span>
-            <span id="two" x-text="bar"></span>
+            <span id="one" data-text="foo"></span>
+            <span id="two" data-text="bar"></span>
             <button @click="test">Test</button>
         </div>
     `,
@@ -166,7 +166,7 @@ test('does not initialise components twice when contained in multiple mutations'
 
 test('directives keep working when node is moved into a different one',
     html`
-        <div x-data="{
+        <div data-data="{
             foo: 0,
             mutate() {
                 let button = document.getElementById('one')
@@ -179,7 +179,7 @@ test('directives keep working when node is moved into a different one',
             <button id="one" @click="foo++">increment</button>
             <button id="two" @click="mutate()">Mutate</button>
 
-            <span x-text="foo"></span>
+            <span data-text="foo"></span>
         </div>
     `,
     ({ get }) => {
@@ -195,11 +195,11 @@ test('directives keep working when node is moved into a different one',
 
 test('no side effects when directives are added to an element that is removed afterwards',
     html`
-        <div x-data="{
+        <div data-data="{
             foo: 0,
             mutate() {
                 let span = document.createElement('span')
-                span.setAttribute('x-on:keydown.a.window', 'foo = foo+1')
+                span.setAttribute('data-on:keydown.a.window', 'foo = foo+1')
                 let container = document.getElementById('container')
                 container.appendChild(span)
                 container.remove()
@@ -209,7 +209,7 @@ test('no side effects when directives are added to an element that is removed af
             <p id="container"></p>
             <input type="text">
 
-            <span x-text="foo"></span>
+            <span data-text="foo"></span>
         </div>
     `,
     ({ get }) => {
@@ -236,12 +236,12 @@ test(
                 });
             });
         </script>
-        <div x-data>
-            <div class="bg-red-300 w-32 h-32" x-test></div>
+        <div data-data>
+            <div class="bg-red-300 w-32 h-32" data-test></div>
         </div>
     `,
     ({ get }) => {
-        get("[x-test]").should(haveText("1"));
+        get("[data-test]").should(haveText("1"));
     }
 );
 
@@ -262,11 +262,11 @@ test(
                 });
             });
         </script>
-        <div x-data>
-            <div class="bg-red-300 w-32 h-32" x-test></div>
+        <div data-data>
+            <div class="bg-red-300 w-32 h-32" data-test></div>
         </div>
     `,
     ({ get }) => {
-        get("[x-test]").should(haveText("Initialized"));
+        get("[data-test]").should(haveText("Initialized"));
     }
 );

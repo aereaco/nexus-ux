@@ -2,10 +2,10 @@ import { haveText, html, test } from '../../utils'
 
 test('$nextTick runs code on the next available managed tick',
     html`
-        <div x-data="{foo: 'bar'}">
-            <span x-text="foo" x-ref="span"></span>
+        <div data-data="{foo: 'bar'}">
+            <span data-text="foo" data-ref="span"></span>
 
-            <button x-on:click="foo = 'baz'; $nextTick(() => {$refs.span.textContent = 'bob'})">click</button>
+            <button data-on:click="foo = 'baz'; $nextTick(() => {$refs.span.textContent = 'bob'})">click</button>
         </div>
     `,
     ({ get }) => {
@@ -15,16 +15,16 @@ test('$nextTick runs code on the next available managed tick',
     }
 )
 
-test('$nextTick waits for x-for to finish rendering',
+test('$nextTick waits for data-for to finish rendering',
     html`
-        <div x-data="{list: ['one', 'two'], check: 2}">
-            <template x-for="item in list">
-                <span x-text="item"></span>
+        <div data-data="{list: ['one', 'two'], check: 2}">
+            <template data-for="item in list">
+                <span data-text="item"></span>
             </template>
 
-            <p x-text="check"></p>
+            <p data-text="check"></p>
 
-            <button x-on:click="list = ['one', 'two', 'three']; $nextTick(() => {check = document.querySelectorAll('span').length})">click</button>
+            <button data-on:click="list = ['one', 'two', 'three']; $nextTick(() => {check = document.querySelectorAll('span').length})">click</button>
         </div>
     `,
     ({ get }) => {
@@ -36,10 +36,10 @@ test('$nextTick waits for x-for to finish rendering',
 
 test('$nextTick works with transition',
     html`
-        <div x-data="{ show: false, loggedDisplayStyle: null }" x-init="$nextTick(() => { loggedDisplayStyle = document.querySelector('h1').style.display })">
-            <h1 x-show="show" x-transition:enter="animation-enter"></h1>
+        <div data-data="{ show: false, loggedDisplayStyle: null }" data-init="$nextTick(() => { loggedDisplayStyle = document.querySelector('h1').style.display })">
+            <h1 data-show="show" data-transition:enter="animation-enter"></h1>
 
-            <h2 x-text="loggedDisplayStyle"></h2>
+            <h2 data-text="loggedDisplayStyle"></h2>
 
             <button @click="show = true; $nextTick(() => { loggedDisplayStyle = document.querySelector('h1').style.display })">click</button>
         </div>

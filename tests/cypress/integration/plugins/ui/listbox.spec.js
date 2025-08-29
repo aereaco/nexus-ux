@@ -1,9 +1,9 @@
 import { beVisible, beHidden, haveAttribute, haveClasses, notHaveClasses, haveText, html, notBeVisible, notHaveAttribute, notExist, haveFocus, test, ensureNoConsoleWarns} from '../../../utils'
 
-test('it works with x-model',
+test('it works with data-model',
     [html`
         <div
-            x-data="{ active: null, people: [
+            data-data="{ active: null, people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb' },
@@ -15,22 +15,22 @@ test('it works with x-model',
                 { id: 9, name: 'Claudie Smitham' },
                 { id: 10, name: 'Emil Schaefer' },
             ]}"
-            x-listbox
-            x-model="active"
+            data-listbox
+            data-model="active"
         >
-            <label x-listbox:label>Assigned to</label>
+            <label data-listbox:label>Assigned to</label>
 
-            <button x-listbox:button x-text="active ? active.name : 'Select Person'"></button>
+            <button data-listbox:button data-text="active ? active.name : 'Select Person'"></button>
 
-            <ul x-listbox:options>
-                <template x-for="person in people" :key="person.id">
+            <ul data-listbox:options>
+                <template data-for="person in people" :key="person.id">
                     <li
                         :option="person.id"
-                        x-listbox:option
+                        data-listbox:option
                         :value="person"
                         :disabled="person.disabled"
                     >
-                        <span x-text="person.name"></span>
+                        <span data-text="person.name"></span>
                     </li>
                 </template>
             </ul>
@@ -54,7 +54,7 @@ test('it works with x-model',
 test('it works with internal state',
     [html`
         <div
-            x-data="{ people: [
+            data-data="{ people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb' },
@@ -66,21 +66,21 @@ test('it works with internal state',
                 { id: 9, name: 'Claudie Smitham' },
                 { id: 10, name: 'Emil Schaefer' },
             ]}"
-            x-listbox
+            data-listbox
         >
-            <label x-listbox:label>Assigned to</label>
+            <label data-listbox:label>Assigned to</label>
 
-            <button x-listbox:button x-text="$listbox.selected ? $listbox.selected.name : 'Select Person'"></button>
+            <button data-listbox:button data-text="$listbox.selected ? $listbox.selected.name : 'Select Person'"></button>
 
-            <ul x-listbox:options>
-                <template x-for="person in people" :key="person.id">
+            <ul data-listbox:options>
+                <template data-for="person in people" :key="person.id">
                     <li
                         :option="person.id"
-                        x-listbox:option
+                        data-listbox:option
                         :value="person"
                         :disabled="person.disabled"
                     >
-                        <span x-text="person.name"></span>
+                        <span data-text="person.name"></span>
                     </li>
                 </template>
             </ul>
@@ -104,7 +104,7 @@ test('it works with internal state',
 test('$listbox/$listboxOption',
     [html`
         <div
-            x-data="{ people: [
+            data-data="{ people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb' },
@@ -116,19 +116,19 @@ test('$listbox/$listboxOption',
                 { id: 9, name: 'Claudie Smitham' },
                 { id: 10, name: 'Emil Schaefer' },
             ]}"
-            x-listbox
+            data-listbox
         >
-            <label x-listbox:label>Assigned to</label>
+            <label data-listbox:label>Assigned to</label>
 
-            <button x-listbox:button x-text="$listbox.selected ? $listbox.selected.name : 'Select Person'"></button>
+            <button data-listbox:button data-text="$listbox.selected ? $listbox.selected.name : 'Select Person'"></button>
 
-            <article x-text="$listbox.active?.name"></article>
+            <article data-text="$listbox.active?.name"></article>
 
-            <ul x-listbox:options>
-                <template x-for="person in people" :key="person.id">
+            <ul data-listbox:options>
+                <template data-for="person in people" :key="person.id">
                     <li
                         :option="person.id"
-                        x-listbox:option
+                        data-listbox:option
                         :value="person"
                         :disabled="person.disabled"
                         :class="{
@@ -137,7 +137,7 @@ test('$listbox/$listboxOption',
                             'disabled': $listboxOption.isDisabled,
                         }"
                     >
-                        <span x-text="person.name"></span>
+                        <span data-text="person.name"></span>
                     </li>
                 </template>
             </ul>
@@ -164,7 +164,7 @@ test('$listbox/$listboxOption',
 test('"name" prop',
     [html`
         <div
-            x-data="{ people: [
+            data-data="{ people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb' },
@@ -176,18 +176,18 @@ test('"name" prop',
                 { id: 9, name: 'Claudie Smitham' },
                 { id: 10, name: 'Emil Schaefer' },
             ]}"
-            x-listbox
+            data-listbox
             name="person"
         >
-            <label x-listbox:label>Assigned to</label>
+            <label data-listbox:label>Assigned to</label>
 
-            <button x-listbox:button x-text="$listbox.selected ? $listbox.selected : 'Select Person'"></button>
+            <button data-listbox:button data-text="$listbox.selected ? $listbox.selected : 'Select Person'"></button>
 
-            <ul x-listbox:options>
-                <template x-for="person in people" :key="person.id">
+            <ul data-listbox:options>
+                <template data-for="person in people" :key="person.id">
                     <li
                         :option="person.id"
-                        x-listbox:option
+                        data-listbox:option
                         :value="person.id"
                         :disabled="person.disabled"
                         :class="{
@@ -195,7 +195,7 @@ test('"name" prop',
                             'active': $listboxOption.isActive,
                         }"
                     >
-                        <span x-text="person.name"></span>
+                        <span data-text="person.name"></span>
                     </li>
                 </template>
             </ul>
@@ -222,7 +222,7 @@ test('"name" prop',
 test('"name" prop with object value',
     [html`
         <div
-            x-data="{ people: [
+            data-data="{ people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb' },
@@ -234,18 +234,18 @@ test('"name" prop with object value',
                 { id: 9, name: 'Claudie Smitham' },
                 { id: 10, name: 'Emil Schaefer' },
             ]}"
-            x-listbox
+            data-listbox
             name="person"
         >
-            <label x-listbox:label>Assigned to</label>
+            <label data-listbox:label>Assigned to</label>
 
-            <button x-listbox:button x-text="$listbox.selected ? $listbox.selected.name : 'Select Person'"></button>
+            <button data-listbox:button data-text="$listbox.selected ? $listbox.selected.name : 'Select Person'"></button>
 
-            <ul x-listbox:options>
-                <template x-for="person in people" :key="person.id">
+            <ul data-listbox:options>
+                <template data-for="person in people" :key="person.id">
                     <li
                         :option="person.id"
-                        x-listbox:option
+                        data-listbox:option
                         :value="person"
                         :disabled="person.disabled"
                         :class="{
@@ -253,7 +253,7 @@ test('"name" prop with object value',
                             'active': $listboxOption.isActive,
                         }"
                     >
-                        <span x-text="person.name"></span>
+                        <span data-text="person.name"></span>
                     </li>
                 </template>
             </ul>
@@ -285,7 +285,7 @@ test('"name" prop with object value',
 test('"default-value" prop',
     [html`
         <div
-            x-data="{ people: [
+            data-data="{ people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb' },
@@ -297,19 +297,19 @@ test('"default-value" prop',
                 { id: 9, name: 'Claudie Smitham' },
                 { id: 10, name: 'Emil Schaefer' },
             ]}"
-            x-listbox
+            data-listbox
             name="person"
             default-value="2"
         >
-            <label x-listbox:label>Assigned to</label>
+            <label data-listbox:label>Assigned to</label>
 
-            <button x-listbox:button x-text="$listbox.selected ? $listbox.selected : 'Select Person'"></button>
+            <button data-listbox:button data-text="$listbox.selected ? $listbox.selected : 'Select Person'"></button>
 
-            <ul x-listbox:options>
-                <template x-for="person in people" :key="person.id">
+            <ul data-listbox:options>
+                <template data-for="person in people" :key="person.id">
                     <li
                         :option="person.id"
-                        x-listbox:option
+                        data-listbox:option
                         :value="person.id"
                         :disabled="person.disabled"
                         :class="{
@@ -317,7 +317,7 @@ test('"default-value" prop',
                             'active': $listboxOption.isActive,
                         }"
                     >
-                        <span x-text="person.name"></span>
+                        <span data-text="person.name"></span>
                     </li>
                 </template>
             </ul>
@@ -334,7 +334,7 @@ test('"default-value" prop',
 test('"multiple" prop',
     [html`
         <div
-            x-data="{
+            data-data="{
                 people: [
                     { id: 1, name: 'Wade Cooper' },
                     { id: 2, name: 'Arlene Mccoy' },
@@ -348,18 +348,18 @@ test('"multiple" prop',
                     { id: 10, name: 'Emil Schaefer' },
                 ]
             }"
-            x-listbox
+            data-listbox
             multiple
         >
-            <label x-listbox:label>Assigned to</label>
+            <label data-listbox:label>Assigned to</label>
 
-            <button x-listbox:button x-text="$listbox.selected ? $listbox.selected.join(',') : 'Select People'"></button>
+            <button data-listbox:button data-text="$listbox.selected ? $listbox.selected.join(',') : 'Select People'"></button>
 
-            <ul x-listbox:options>
-                <template x-for="person in people" :key="person.id">
+            <ul data-listbox:options>
+                <template data-for="person in people" :key="person.id">
                     <li
                         :option="person.id"
-                        x-listbox:option
+                        data-listbox:option
                         :value="person.id"
                         :disabled="person.disabled"
                         :class="{
@@ -367,7 +367,7 @@ test('"multiple" prop',
                             'active': $listboxOption.isActive,
                         }"
                     >
-                        <span x-text="person.name"></span>
+                        <span data-text="person.name"></span>
                     </li>
                 </template>
             </ul>
@@ -390,7 +390,7 @@ test('"multiple" prop',
 test('"multiple" and "name" props together',
     [html`
         <div
-            x-data="{
+            data-data="{
                 people: [
                     { id: 1, name: 'Wade Cooper' },
                     { id: 2, name: 'Arlene Mccoy' },
@@ -404,19 +404,19 @@ test('"multiple" and "name" props together',
                     { id: 10, name: 'Emil Schaefer' },
                 ]
             }"
-            x-listbox
+            data-listbox
             multiple
             name="people"
         >
-            <label x-listbox:label>Assigned to</label>
+            <label data-listbox:label>Assigned to</label>
 
-            <button x-listbox:button x-text="$listbox.selected ? $listbox.selected.map(p => p.id).join(',') : 'Select People'"></button>
+            <button data-listbox:button data-text="$listbox.selected ? $listbox.selected.map(p => p.id).join(',') : 'Select People'"></button>
 
-            <ul x-listbox:options>
-                <template x-for="person in people" :key="person.id">
+            <ul data-listbox:options>
+                <template data-for="person in people" :key="person.id">
                     <li
                         :option="person.id"
-                        x-listbox:option
+                        data-listbox:option
                         :value="person"
                         :disabled="person.disabled"
                         :class="{
@@ -424,7 +424,7 @@ test('"multiple" and "name" props together',
                             'active': $listboxOption.isActive,
                         }"
                     >
-                        <span x-text="person.name"></span>
+                        <span data-text="person.name"></span>
                     </li>
                 </template>
             </ul>
@@ -476,7 +476,7 @@ test('"multiple" and "name" props together',
 test('keyboard controls',
     [html`
         <div
-            x-data="{ active: null, people: [
+            data-data="{ active: null, people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb', disabled: true },
@@ -488,18 +488,18 @@ test('keyboard controls',
                 { id: 9, name: 'Claudie Smitham' },
                 { id: 10, name: 'Emil Schaefer' },
             ]}"
-            x-listbox
-            x-model="active"
+            data-listbox
+            data-model="active"
         >
-            <label x-listbox:label>Assigned to</label>
+            <label data-listbox:label>Assigned to</label>
 
-            <button x-listbox:button x-text="active ? active.name : 'Select Person'"></button>
+            <button data-listbox:button data-text="active ? active.name : 'Select Person'"></button>
 
-            <ul x-listbox:options options>
-                <template x-for="person in people" :key="person.id">
+            <ul data-listbox:options options>
+                <template data-for="person in people" :key="person.id">
                     <li
                         :option="person.id"
-                        x-listbox:option
+                        data-listbox:option
                         :value="person"
                         :disabled="person.disabled"
                         :class="{
@@ -507,7 +507,7 @@ test('keyboard controls',
                             'active': $listboxOption.isActive,
                         }"
                     >
-                        <span x-text="person.name"></span>
+                        <span data-text="person.name"></span>
                     </li>
                 </template>
             </ul>
@@ -564,7 +564,7 @@ test('keyboard controls',
 test('"horizontal" keyboard controls',
     [html`
         <div
-            x-data="{ active: null, people: [
+            data-data="{ active: null, people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb', disabled: true },
@@ -576,19 +576,19 @@ test('"horizontal" keyboard controls',
                 { id: 9, name: 'Claudie Smitham' },
                 { id: 10, name: 'Emil Schaefer' },
             ]}"
-            x-listbox
-            x-model="active"
+            data-listbox
+            data-model="active"
             horizontal
         >
-            <label x-listbox:label>Assigned to</label>
+            <label data-listbox:label>Assigned to</label>
 
-            <button x-listbox:button x-text="active ? active.name : 'Select Person'"></button>
+            <button data-listbox:button data-text="active ? active.name : 'Select Person'"></button>
 
-            <ul x-listbox:options options>
-                <template x-for="person in people" :key="person.id">
+            <ul data-listbox:options options>
+                <template data-for="person in people" :key="person.id">
                     <li
                         :option="person.id"
-                        x-listbox:option
+                        data-listbox:option
                         :value="person"
                         :disabled="person.disabled"
                         :class="{
@@ -596,7 +596,7 @@ test('"horizontal" keyboard controls',
                             'active': $listboxOption.isActive,
                         }"
                     >
-                        <span x-text="person.name"></span>
+                        <span data-text="person.name"></span>
                     </li>
                 </template>
             </ul>
@@ -629,7 +629,7 @@ test('"horizontal" keyboard controls',
 test('"by" prop with string value',
     [html`
         <div
-            x-data="{ active: null, people: [
+            data-data="{ active: null, people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb', disabled: true },
@@ -641,19 +641,19 @@ test('"by" prop with string value',
                 { id: 9, name: 'Claudie Smitham' },
                 { id: 10, name: 'Emil Schaefer' },
             ]}"
-            x-listbox
-            x-model="active"
+            data-listbox
+            data-model="active"
             by="id"
         >
-            <label x-listbox:label>Assigned to</label>
+            <label data-listbox:label>Assigned to</label>
 
-            <button x-listbox:button x-text="active ? active.name : 'Select Person'"></button>
+            <button data-listbox:button data-text="active ? active.name : 'Select Person'"></button>
 
-            <ul x-listbox:options options>
-                <template x-for="person in people" :key="person.id">
+            <ul data-listbox:options options>
+                <template data-for="person in people" :key="person.id">
                     <li
                         :option="person.id"
-                        x-listbox:option
+                        data-listbox:option
                         :value="person"
                         :disabled="person.disabled"
                         :class="{
@@ -661,7 +661,7 @@ test('"by" prop with string value',
                             'active': $listboxOption.isActive,
                         }"
                     >
-                        <span x-text="person.name"></span>
+                        <span data-text="person.name"></span>
                     </li>
                 </template>
             </ul>
@@ -685,7 +685,7 @@ test('"by" prop with string value',
 test('search',
     [html`
         <div
-            x-data="{ active: null, people: [
+            data-data="{ active: null, people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb', disabled: true },
@@ -697,18 +697,18 @@ test('search',
                 { id: 9, name: 'Claudie Smitham' },
                 { id: 10, name: 'Emil Schaefer' },
             ]}"
-            x-listbox
-            x-model="active"
+            data-listbox
+            data-model="active"
         >
-            <label x-listbox:label>Assigned to</label>
+            <label data-listbox:label>Assigned to</label>
 
-            <button x-listbox:button x-text="active ? active.name : 'Select Person'"></button>
+            <button data-listbox:button data-text="active ? active.name : 'Select Person'"></button>
 
-            <ul x-listbox:options options>
-                <template x-for="person in people" :key="person.id">
+            <ul data-listbox:options options>
+                <template data-for="person in people" :key="person.id">
                     <li
                         :option="person.id"
-                        x-listbox:option
+                        data-listbox:option
                         :value="person"
                         :disabled="person.disabled"
                         :class="{
@@ -716,7 +716,7 @@ test('search',
                             'active': $listboxOption.isActive,
                         }"
                     >
-                        <span x-text="person.name"></span>
+                        <span data-text="person.name"></span>
                     </li>
                 </template>
             </ul>
@@ -740,7 +740,7 @@ test('search',
 test('changing value manually changes internal state',
     [html`
         <div
-            x-data="{ active: null, people: [
+            data-data="{ active: null, people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb', disabled: true },
@@ -752,20 +752,20 @@ test('changing value manually changes internal state',
                 { id: 9, name: 'Claudie Smitham' },
                 { id: 10, name: 'Emil Schaefer' },
             ]}"
-            x-listbox
-            x-model="active"
+            data-listbox
+            data-model="active"
         >
-            <label x-listbox:label>Assigned to</label>
+            <label data-listbox:label>Assigned to</label>
 
-            <button toggle x-listbox:button x-text="$listbox.selected ? $listbox.selected : 'Select Person'"></button>
+            <button toggle data-listbox:button data-text="$listbox.selected ? $listbox.selected : 'Select Person'"></button>
 
             <button select-tim @click="active = 4">Select Tim</button>
 
-            <ul x-listbox:options options>
-                <template x-for="person in people" :key="person.id">
+            <ul data-listbox:options options>
+                <template data-for="person in people" :key="person.id">
                     <li
                         :option="person.id"
-                        x-listbox:option
+                        data-listbox:option
                         :value="person.id"
                         :disabled="person.disabled"
                         :class="{
@@ -773,7 +773,7 @@ test('changing value manually changes internal state',
                             'active': $listboxOption.isActive,
                         }"
                     >
-                        <span x-text="person.name"></span>
+                        <span data-text="person.name"></span>
                     </li>
                 </template>
             </ul>
@@ -790,7 +790,7 @@ test('changing value manually changes internal state',
 test('has accessibility attributes',
     [html`
         <div
-            x-data="{ active: null, people: [
+            data-data="{ active: null, people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb', disabled: true },
@@ -802,18 +802,18 @@ test('has accessibility attributes',
                 { id: 9, name: 'Claudie Smitham' },
                 { id: 10, name: 'Emil Schaefer' },
             ]}"
-            x-listbox
-            x-model="active"
+            data-listbox
+            data-model="active"
         >
-            <label x-listbox:label>Assigned to</label>
+            <label data-listbox:label>Assigned to</label>
 
-            <button x-listbox:button x-text="active ? active.name : 'Select Person'"></button>
+            <button data-listbox:button data-text="active ? active.name : 'Select Person'"></button>
 
-            <ul x-listbox:options options>
-                <template x-for="person in people" :key="person.id">
+            <ul data-listbox:options options>
+                <template data-for="person in people" :key="person.id">
                     <li
                         :option="person.id"
-                        x-listbox:option
+                        data-listbox:option
                         :value="person"
                         :disabled="person.disabled"
                         :class="{
@@ -821,7 +821,7 @@ test('has accessibility attributes',
                             'active': $listboxOption.isActive,
                         }"
                     >
-                        <span x-text="person.name"></span>
+                        <span data-text="person.name"></span>
                     </li>
                 </template>
             </ul>
@@ -872,7 +872,7 @@ test('has accessibility attributes',
 test('"static" prop',
     [html`
         <div
-            x-data="{ active: null, show: false, people: [
+            data-data="{ active: null, show: false, people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb' },
@@ -884,24 +884,24 @@ test('"static" prop',
                 { id: 9, name: 'Claudie Smitham' },
                 { id: 10, name: 'Emil Schaefer' },
             ]}"
-            x-listbox
-            x-model="active"
+            data-listbox
+            data-model="active"
         >
-            <label x-listbox:label>Assigned to</label>
+            <label data-listbox:label>Assigned to</label>
 
-            <button normal-toggle x-listbox:button x-text="active ? active.name : 'Select Person'"></button>
+            <button normal-toggle data-listbox:button data-text="active ? active.name : 'Select Person'"></button>
 
             <button real-toggle @click="show = ! show">Toggle</button>
 
-            <ul x-listbox:options x-show="show" static>
-                <template x-for="person in people" :key="person.id">
+            <ul data-listbox:options data-show="show" static>
+                <template data-for="person in people" :key="person.id">
                     <li
                         :option="person.id"
-                        x-listbox:option
+                        data-listbox:option
                         :value="person"
                         :disabled="person.disabled"
                     >
-                        <span x-text="person.name"></span>
+                        <span data-text="person.name"></span>
                     </li>
                 </template>
             </ul>
@@ -923,30 +923,30 @@ test('"static" prop',
 
 test('works with morph',
     [html`
-    <div x-data="{ value: null }">
-        <div x-listbox x-model="value">
-            <button x-listbox:button>Select Framework</button>
+    <div data-data="{ value: null }">
+        <div data-listbox data-model="value">
+            <button data-listbox:button>Select Framework</button>
 
-            <ul x-listbox:options>
-                <li x-listbox:option value="laravel">Laravel</li>
+            <ul data-listbox:options>
+                <li data-listbox:option value="laravel">Laravel</li>
             </ul>
         </div>
 
-        Selected: <span x-text="value"></span>
+        Selected: <span data-text="value"></span>
     </div>
     `],
     ({ get }, reload, window, document) => {
         let toHtml = html`
-        <div x-data="{ value: null }">
-            <div x-listbox x-model="value">
-                <button x-listbox:button>Select Framework (updated)</button>
+        <div data-data="{ value: null }">
+            <div data-listbox data-model="value">
+                <button data-listbox:button>Select Framework (updated)</button>
 
-                <ul x-listbox:options>
-                    <li x-listbox:option value="laravel">Laravel</li>
+                <ul data-listbox:options>
+                    <li data-listbox:option value="laravel">Laravel</li>
                 </ul>
             </div>
 
-            Selected: <span x-text="value"></span>
+            Selected: <span data-text="value"></span>
         </div>
         `
         ensureNoConsoleWarns()
@@ -960,15 +960,15 @@ test('works with morph',
 
 test('boolean option values',
     [html`
-    <div x-data="{ value: null }" x-listbox x-model="value">
-        <label x-listbox:label>Value</label>
+    <div data-data="{ value: null }" data-listbox data-model="value">
+        <label data-listbox:label>Value</label>
 
-        <button x-listbox:button x-text="value !== null ? value.toString() : 'Select boolean'"></button>
+        <button data-listbox:button data-text="value !== null ? value.toString() : 'Select boolean'"></button>
 
-        <ul x-listbox:options options>
+        <ul data-listbox:options options>
             <li
                 option="boolean-true"
-                x-listbox:option
+                data-listbox:option
                 :value="true"
                 :class="{
                     'selected': $listboxOption.isSelected,
@@ -978,7 +978,7 @@ test('boolean option values',
             </li>
             <li
                 option="boolean-false"
-                x-listbox:option
+                data-listbox:option
                 :value="false"
                 :class="{
                     'selected': $listboxOption.isSelected,
@@ -1016,15 +1016,15 @@ test('boolean option values',
 
 test('integer option values',
     [html`
-    <div x-data="{ value: null }" x-listbox x-model="value">
-        <label x-listbox:label>Value</label>
+    <div data-data="{ value: null }" data-listbox data-model="value">
+        <label data-listbox:label>Value</label>
 
-        <button x-listbox:button x-text="value !== null ? value.toString() : 'Select number'"></button>
+        <button data-listbox:button data-text="value !== null ? value.toString() : 'Select number'"></button>
 
-        <ul x-listbox:options options>
+        <ul data-listbox:options options>
             <li
                 option="0"
-                x-listbox:option
+                data-listbox:option
                 :value="0"
                 :class="{
                     'selected': $listboxOption.isSelected,
@@ -1034,7 +1034,7 @@ test('integer option values',
             </li>
             <li
                 option="1"
-                x-listbox:option
+                data-listbox:option
                 :value="1"
                 :class="{
                     'selected': $listboxOption.isSelected,
@@ -1044,7 +1044,7 @@ test('integer option values',
             </li>
             <li
                 option="2"
-                x-listbox:option
+                data-listbox:option
                 :value="2"
                 :class="{
                     'selected': $listboxOption.isSelected,

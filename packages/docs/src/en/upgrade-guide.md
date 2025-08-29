@@ -27,30 +27,30 @@ Upgrading from Alpine V2 to V3 should be fairly painless. In many cases, NOTHING
 * [`$el` is now always the current element](#el-no-longer-root)
 * [Automatically evaluate `init()` functions defined on data object](#auto-init)
 * [Need to call `Alpine.start()` after import](#need-to-call-alpine-start)
-* [`x-show.transition` is now `x-transition`](#removed-show-dot-transition)
-* [`x-if` no longer supports `x-transition`](#x-if-no-transitions)
-* [`x-data` cascading scope](#x-data-scope)
-* [`x-init` no longer accepts a callback return](#x-init-no-callback)
+* [`data-show.transition` is now `data-transition`](#removed-show-dot-transition)
+* [`data-if` no longer supports `data-transition`](#data-if-no-transitions)
+* [`data-data` cascading scope](#data-data-scope)
+* [`data-init` no longer accepts a callback return](#data-init-no-callback)
 * [Returning `false` from event handlers no longer implicitly "preventDefault"s](#no-false-return-from-event-handlers)
-* [`x-spread` is now `x-bind`](#x-spread-now-x-bind)
-* [`x-ref` no longer supports binding](#x-ref-no-more-dynamic)
+* [`data-spread` is now `data-bind`](#data-spread-now-data-bind)
+* [`data-ref` no longer supports binding](#data-ref-no-more-dynamic)
 * [Use global lifecycle events instead of `Alpine.deferLoadingAlpine()`](#use-global-events-now)
 * [IE11 no longer supported](#no-ie-11)
 
 <a name="el-no-longer-root"></a>
 ### `$el` is now always the current element
 
-`$el` now always represents the element that an expression was executed on, not the root element of the component. This will replace most usages of `x-ref` and in the cases where you still want to access the root of a component, you can do so using `$root`. For example:
+`$el` now always represents the element that an expression was executed on, not the root element of the component. This will replace most usages of `data-ref` and in the cases where you still want to access the root of a component, you can do so using `$root`. For example:
 
 ```alpine
 <!-- 🚫 Before -->
-<div x-data>
+<div data-data>
     <button @click="console.log($el)"></button>
     <!-- In V2, $el would have been the <div>, now it's the <button> -->
 </div>
 
 <!-- ✅ After -->
-<div x-data>
+<div data-data>
     <button @click="console.log($root)"></button>
 </div>
 ```
@@ -63,16 +63,16 @@ For a smoother upgrade experience, you can replace all instances of `$el` with a
 <a name="auto-init"></a>
 ### Automatically evaluate `init()` functions defined on data object
 
-A common pattern in V2 was to manually call an `init()` (or similarly named method) on an `x-data` object.
+A common pattern in V2 was to manually call an `init()` (or similarly named method) on an `data-data` object.
 
 In V3, Alpine will automatically call `init()` methods on data objects.
 
 ```alpine
 <!-- 🚫 Before -->
-<div x-data="foo()" x-init="init()"></div>
+<div data-data="foo()" data-init="init()"></div>
 
 <!-- ✅ After -->
-<div x-data="foo()"></div>
+<div data-data="foo()"></div>
 
 <script>
     function foo() {
@@ -107,88 +107,88 @@ Alpine.start()
 [→ Read more about initializing Alpine V3](/essentials/installation#as-a-module)
 
 <a name="removed-show-dot-transition"></a>
-### `x-show.transition` is now `x-transition`
+### `data-show.transition` is now `data-transition`
 
-All of the conveniences provided by `x-show.transition...` helpers are still available, but now from a more unified API: `x-transition`:
+All of the conveniences provided by `data-show.transition...` helpers are still available, but now from a more unified API: `data-transition`:
 
 ```alpine
 <!-- 🚫 Before -->
-<div x-show.transition="open"></div>
+<div data-show.transition="open"></div>
 <!-- ✅ After -->
-<div x-show="open" x-transition></div>
+<div data-show="open" data-transition></div>
 
 <!-- 🚫 Before -->
-<div x-show.transition.duration.500ms="open"></div>
+<div data-show.transition.duration.500ms="open"></div>
 <!-- ✅ After -->
-<div x-show="open" x-transition.duration.500ms></div>
+<div data-show="open" data-transition.duration.500ms></div>
 
 <!-- 🚫 Before -->
-<div x-show.transition.in.duration.500ms.out.duration.750ms="open"></div>
+<div data-show.transition.in.duration.500ms.out.duration.750ms="open"></div>
 <!-- ✅ After -->
 <div
-    x-show="open"
-    x-transition:enter.duration.500ms
-    x-transition:leave.duration.750ms
+    data-show="open"
+    data-transition:enter.duration.500ms
+    data-transition:leave.duration.750ms
 ></div>
 ```
 
-[→ Read more about x-transition](/directives/transition)
+[→ Read more about data-transition](/directives/transition)
 
-<a name="x-if-no-transitions"></a>
-### `x-if` no longer supports `x-transition`
+<a name="data-if-no-transitions"></a>
+### `data-if` no longer supports `data-transition`
 
 The ability to transition elements in and add before/after being removed from the DOM is no longer available in Alpine.
 
 This was a feature very few people even knew existed let alone used.
 
-Because the transition system is complex, it makes more sense from a maintenance perspective to only support transitioning elements with `x-show`.
+Because the transition system is complex, it makes more sense from a maintenance perspective to only support transitioning elements with `data-show`.
 
 ```alpine
 <!-- 🚫 Before -->
-<template x-if.transition="open">
+<template data-if.transition="open">
     <div>...</div>
 </template>
 
 <!-- ✅ After -->
-<div x-show="open" x-transition>...</div>
+<div data-show="open" data-transition>...</div>
 ```
 
-[→ Read more about x-if](/directives/if)
+[→ Read more about data-if](/directives/if)
 
-<a name="x-data-scope"></a>
-### `x-data` cascading scope
+<a name="data-data-scope"></a>
+### `data-data` cascading scope
 
-Scope defined in `x-data` is now available to all children unless overwritten by a nested `x-data` expression.
+Scope defined in `data-data` is now available to all children unless overwritten by a nested `data-data` expression.
 
 ```alpine
 <!-- 🚫 Before -->
-<div x-data="{ foo: 'bar' }">
-    <div x-data="{}">
+<div data-data="{ foo: 'bar' }">
+    <div data-data="{}">
         <!-- foo is undefined -->
     </div>
 </div>
 
 <!-- ✅ After -->
-<div x-data="{ foo: 'bar' }">
-    <div x-data="{}">
+<div data-data="{ foo: 'bar' }">
+    <div data-data="{}">
         <!-- foo is 'bar' -->
     </div>
 </div>
 ```
 
-[→ Read more about x-data scoping](/directives/data#scope)
+[→ Read more about data-data scoping](/directives/data#scope)
 
-<a name="x-init-no-callback"></a>
-### `x-init` no longer accepts a callback return
+<a name="data-init-no-callback"></a>
+### `data-init` no longer accepts a callback return
 
-Before V3, if `x-init` received a return value that is `typeof` "function", it would execute the callback after Alpine finished initializing all other directives in the tree. Now, you must manually call `$nextTick()` to achieve that behavior. `x-init` is no longer "return value aware".
+Before V3, if `data-init` received a return value that is `typeof` "function", it would execute the callback after Alpine finished initializing all other directives in the tree. Now, you must manually call `$nextTick()` to achieve that behavior. `data-init` is no longer "return value aware".
 
 ```alpine
 <!-- 🚫 Before -->
-<div x-data x-init="() => { ... }">...</div>
+<div data-data data-init="() => { ... }">...</div>
 
 <!-- ✅ After -->
-<div x-data x-init="$nextTick(() => { ... })">...</div>
+<div data-data data-init="$nextTick(() => { ... })">...</div>
 ```
 
 [→ Read more about $nextTick](/magics/next-tick)
@@ -200,36 +200,36 @@ Alpine V2 observes a return value of `false` as a desire to run `preventDefault`
 
 ```alpine
 <!-- 🚫 Before -->
-<div x-data="{ blockInput() { return false } }">
+<div data-data="{ blockInput() { return false } }">
     <input type="text" @input="blockInput()">
 </div>
 
 <!-- ✅ After -->
-<div x-data="{ blockInput(e) { e.preventDefault() }">
+<div data-data="{ blockInput(e) { e.preventDefault() }">
     <input type="text" @input="blockInput($event)">
 </div>
 ```
 
-[→ Read more about x-on](/directives/on)
+[→ Read more about data-on](/directives/on)
 
-<a name="x-spread-now-x-bind"></a>
-### `x-spread` is now `x-bind`
+<a name="data-spread-now-data-bind"></a>
+### `data-spread` is now `data-bind`
 
-One of Alpine's stories for re-using functionality is abstracting Alpine directives into objects and applying them to elements with `x-spread`. This behavior is still the same, except now `x-bind` (with no specified attribute) is the API instead of `x-spread`.
+One of Alpine's stories for re-using functionality is abstracting Alpine directives into objects and applying them to elements with `data-spread`. This behavior is still the same, except now `data-bind` (with no specified attribute) is the API instead of `data-spread`.
 
 ```alpine
 <!-- 🚫 Before -->
-<div x-data="dropdown()">
-    <button x-spread="trigger">Toggle</button>
+<div data-data="dropdown()">
+    <button data-spread="trigger">Toggle</button>
 
-    <div x-spread="dialogue">...</div>
+    <div data-spread="dialogue">...</div>
 </div>
 
 <!-- ✅ After -->
-<div x-data="dropdown()">
-    <button x-bind="trigger">Toggle</button>
+<div data-data="dropdown()">
+    <button data-bind="trigger">Toggle</button>
 
-    <div x-bind="dialogue">...</div>
+    <div data-bind="dialogue">...</div>
 </div>
 
 
@@ -239,19 +239,19 @@ One of Alpine's stories for re-using functionality is abstracting Alpine directi
             open: false,
 
             trigger: {
-                'x-on:click'() { this.open = ! this.open },
+                'data-on:click'() { this.open = ! this.open },
             },
 
             dialogue: {
-                'x-show'() { return this.open },
-                'x-bind:class'() { return 'foo bar' },
+                'data-show'() { return this.open },
+                'data-bind:class'() { return 'foo bar' },
             },
         }
     }
 </script>
 ```
 
-[→ Read more about binding directives using x-bind](/directives/bind#bind-directives)
+[→ Read more about binding directives using data-bind](/directives/bind#bind-directives)
 
 <a name="use-global-events-now"></a>
 ### Use global lifecycle events instead of `Alpine.deferLoadingAlpine()`
@@ -283,16 +283,16 @@ One of Alpine's stories for re-using functionality is abstracting Alpine directi
 [→ Read more about Alpine lifecycle events](/essentials/lifecycle#alpine-initialization)
 
 
-<a name="x-ref-no-more-dynamic"></a>
-### `x-ref` no longer supports binding
+<a name="data-ref-no-more-dynamic"></a>
+### `data-ref` no longer supports binding
 
 In Alpine V2 for below code
 
 ```alpine
-<div x-data="{options: [{value: 1}, {value: 2}, {value: 3}] }">
-    <div x-ref="0">0</div>
-    <template x-for="option in options">
-        <div :x-ref="option.value" x-text="option.value"></div>
+<div data-data="{options: [{value: 1}, {value: 2}, {value: 3}] }">
+    <div data-ref="0">0</div>
+    <template data-for="option in options">
+        <div :data-ref="option.value" data-text="option.value"></div>
     </template>
 
     <button @click="console.log($refs[0], $refs[1], $refs[2], $refs[3]);">Display $refs</button>
@@ -316,12 +316,12 @@ The following 2 APIs will still work in V3, but are considered deprecated and ar
 
 ```alpine
 <!-- 🚫 Before -->
-<div x-show="open" @click.away="open = false">
+<div data-show="open" @click.away="open = false">
     ...
 </div>
 
 <!-- ✅ After -->
-<div x-show="open" @click.outside="open = false">
+<div data-show="open" @click.outside="open = false">
     ...
 </div>
 ```
@@ -331,7 +331,7 @@ The following 2 APIs will still work in V3, but are considered deprecated and ar
 
 ```alpine
 <!-- 🚫 Before -->
-<div x-data="dropdown()">
+<div data-data="dropdown()">
     ...
 </div>
 
@@ -344,7 +344,7 @@ The following 2 APIs will still work in V3, but are considered deprecated and ar
 </script>
 
 <!-- ✅ After -->
-<div x-data="dropdown">
+<div data-data="dropdown">
     ...
 </div>
 

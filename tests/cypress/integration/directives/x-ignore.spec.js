@@ -1,10 +1,10 @@
 import { haveClasses, haveText, html, notHaveClasses, notHaveText, test } from '../../utils'
 
-test('x-ignore',
+test('data-ignore',
     html`
-        <div x-data="{ foo: 'bar' }">
-            <div x-ignore>
-                <span x-text="foo"></span>
+        <div data-data="{ foo: 'bar' }">
+            <div data-ignore>
+                <span data-text="foo"></span>
             </div>
         </div>
     `,
@@ -13,11 +13,11 @@ test('x-ignore',
     }
 )
 
-test('x-ignore.self',
+test('data-ignore.self',
     html`
-        <div x-data="{ foo: 'bar' }">
-            <h1 x-ignore.self :class="foo">
-                <span x-text="foo"></span>
+        <div data-data="{ foo: 'bar' }">
+            <h1 data-ignore.self :class="foo">
+                <span data-text="foo"></span>
             </h1>
         </div>
     `,
@@ -29,10 +29,10 @@ test('x-ignore.self',
 
 test('can lazyload a component',
     html`
-        <div x-data="{ lazyLoad() {$el.querySelector('#lazy').removeAttribute('x-ignore'); Alpine.nextTick(() => Alpine.initTree($el.querySelector('#lazy')))} }">
+        <div data-data="{ lazyLoad() {$el.querySelector('#lazy').removeAttribute('data-ignore'); Alpine.nextTick(() => Alpine.initTree($el.querySelector('#lazy')))} }">
             <button @click="lazyLoad">Load</button>
-            <div x-data="{ foo: 'bar' }" id="lazy" x-ignore :class="foo">
-                <span x-text="foo"></span>
+            <div data-data="{ foo: 'bar' }" id="lazy" data-ignore :class="foo">
+                <span data-text="foo"></span>
             </div>
         </div>
     `,

@@ -1,25 +1,25 @@
 import { haveText, html, test } from '../../utils'
 
-test('x-data attribute value is optional',
+test('data-data attribute value is optional',
     html`
-        <div x-data>
-            <span x-text="'foo'"></span>
+        <div data-data>
+            <span data-text="'foo'"></span>
         </div>
     `,
     ({ get }) => get('span').should(haveText('foo'))
 )
 
-test('x-data can be nested',
+test('data-data can be nested',
     html`
-        <div x-data="{ foo: 'bar', bar: 'baz' }">
-            <div x-data="{ bar: 'bob' }">
-                <h1 x-text="foo"></h1>
-                <h2 x-text="bar"></h2>
+        <div data-data="{ foo: 'bar', bar: 'baz' }">
+            <div data-data="{ bar: 'bob' }">
+                <h1 data-text="foo"></h1>
+                <h2 data-text="bar"></h2>
                 <button id="inner" @click="foo = 'bob'; bar = 'lob'">click</button>
             </div>
 
-            <h3 x-text="foo"></h3>
-            <h4 x-text="bar"></h4>
+            <h3 data-text="foo"></h3>
+            <h4 data-text="bar"></h4>
             <button id="outer" @click="foo = 'law'; bar = 'blog'">click</button>
         </div>
     `,
@@ -43,7 +43,7 @@ test('x-data can be nested',
     }
 )
 
-test('x-data can use attributes from a reusable function',
+test('data-data can use attributes from a reusable function',
     html`
         <script>
             window.test = () => {
@@ -52,27 +52,27 @@ test('x-data can use attributes from a reusable function',
                 }
             }
         </script>
-        <div x-data="test()">
-            <span x-text="foo"></span>
+        <div data-data="test()">
+            <span data-text="foo"></span>
         </div>
     `,
     ({ get }) => get('span').should(haveText('bar'))
 )
 
-test('x-data can use $el',
+test('data-data can use $el',
     html`
-        <div x-data="{ text: $el.dataset.text }" data-text="test">
-            <span x-text="text"></span>
+        <div data-data="{ text: $el.dataset.text }" data-text="test">
+            <span data-text="text"></span>
         </div>
     `,
     ({ get }) => get('span').should(haveText('test'))
 )
 
-test('functions in x-data are reactive',
+test('functions in data-data are reactive',
     html`
-        <div x-data="{ foo: 'bar', getFoo() {return this.foo}}">
-            <span x-text="getFoo()"></span>
-            <button x-on:click="foo = 'baz'">click me</button>
+        <div data-data="{ foo: 'bar', getFoo() {return this.foo}}">
+            <span data-text="getFoo()"></span>
+            <button data-on:click="foo = 'baz'">click me</button>
         </div>
     `,
     ({ get }) => {
@@ -82,11 +82,11 @@ test('functions in x-data are reactive',
     }
 )
 
-test('functions in x-data have access to proper this context',
+test('functions in data-data have access to proper this context',
     html`
-        <div x-data="{ foo: undefined, change() { this.foo = 'baz' }}" x-init="foo = 'bar'">
+        <div data-data="{ foo: undefined, change() { this.foo = 'baz' }}" data-init="foo = 'bar'">
             <button @click="change()">change</button>
-            <span x-text="foo"></span>
+            <span data-text="foo"></span>
         </div>
     `,
     ({ get }) => {
@@ -96,29 +96,29 @@ test('functions in x-data have access to proper this context',
     }
 )
 
-test('x-data works on the html tag',
+test('data-data works on the html tag',
     [html`
         <div>
-            <span x-text="'foo'"></span>
+            <span data-text="'foo'"></span>
         </div>
     `,
     `
-        document.querySelector('html').setAttribute('x-data', '')
+        document.querySelector('html').setAttribute('data-data', '')
     `],
     ({ get }) => {
         get('span').should(haveText('foo'))
     }
 )
 
-test('x-data getters have access to parent scope',
+test('data-data getters have access to parent scope',
     html`
-    <div x-data="{ foo: 'bar' }">
-        <div x-data="{
+    <div data-data="{ foo: 'bar' }">
+        <div data-data="{
             get bob() {
                 return this.foo
             }
         }">
-            <h1 x-text="bob"></h1>
+            <h1 data-text="bob"></h1>
         </div>
     </div>
     `,

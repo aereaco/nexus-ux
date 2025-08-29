@@ -17,7 +17,7 @@ title: dispatch
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div x-data @notify="alert('Hello World!')">
+    <div data-data @notify="alert('Hello World!')">
         <button @click="$dispatch('notify')">
             Notify
         </button>
@@ -37,7 +37,7 @@ You can also pass data along with the dispatched event if you wish. This data wi
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div x-data @notify="alert($event.detail.message)">
+    <div data-data @notify="alert($event.detail.message)">
         <button @click="$dispatch('notify', { message: 'Hello World!' })">Notify</button>
     </div>
 </div>
@@ -48,19 +48,19 @@ Under the hood, `$dispatch` is a wrapper for the more verbose API: `element.disp
 
 **Note on event propagation**
 
-Notice that, because of [event bubbling](https://en.wikipedia.org/wiki/Event_bubbling), when you need to capture events dispatched from nodes that are under the same nesting hierarchy, you'll need to use the [`.window`](https://github.com/alpinejs/alpine#x-on) modifier:
+Notice that, because of [event bubbling](https://en.wikipedia.org/wiki/Event_bubbling), when you need to capture events dispatched from nodes that are under the same nesting hierarchy, you'll need to use the [`.window`](https://github.com/alpinejs/alpine#data-on) modifier:
 
 **Example:**
 
 ```alpine
 <!-- 🚫 Won't work -->
-<div x-data>
+<div data-data>
     <span @notify="..."></span>
     <button @click="$dispatch('notify')">Notify</button>
 </div>
 
 <!-- ✅ Will work (because of .window) -->
-<div x-data>
+<div data-data>
     <span @notify.window="..."></span>
     <button @click="$dispatch('notify')">Notify</button>
 </div>
@@ -77,30 +77,30 @@ You can also take advantage of the previous technique to make your components ta
 
 ```alpine
 <div
-    x-data="{ title: 'Hello' }"
+    data-data="{ title: 'Hello' }"
     @set-title.window="title = $event.detail"
 >
-    <h1 x-text="title"></h1>
+    <h1 data-text="title"></h1>
 </div>
 
-<div x-data>
+<div data-data>
     <button @click="$dispatch('set-title', 'Hello World!')">Click me</button>
 </div>
 <!-- When clicked, the content of the h1 will set to "Hello World!". -->
 ```
 
-<a name="dispatching-to-x-model"></a>
-## Dispatching to x-model
+<a name="dispatching-to-data-model"></a>
+## Dispatching to data-model
 
-You can also use `$dispatch()` to trigger data updates for `x-model` data bindings. For example:
+You can also use `$dispatch()` to trigger data updates for `data-model` data bindings. For example:
 
 ```alpine
-<div x-data="{ title: 'Hello' }">
-    <span x-model="title">
+<div data-data="{ title: 'Hello' }">
+    <span data-model="title">
         <button @click="$dispatch('input', 'Hello World!')">Click me</button>
-        <!-- After the button is pressed, `x-model` will catch the bubbling "input" event, and update title. -->
+        <!-- After the button is pressed, `data-model` will catch the bubbling "input" event, and update title. -->
     </span>
 </div>
 ```
 
-This opens up the door for making custom input components whose value can be set via `x-model`.
+This opens up the door for making custom input components whose value can be set via `data-model`.

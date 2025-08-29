@@ -3,13 +3,13 @@ import { haveText, html, test } from '../../utils'
 test('$watch',
     html`
         <div
-            x-data="{ foo: 'bar', bob: 'lob' }"
-            x-init="$watch('foo', value => { bob = value })"
+            data-data="{ foo: 'bar', bob: 'lob' }"
+            data-init="$watch('foo', value => { bob = value })"
         >
-            <h1 x-text="foo"></h1>
-            <h2 x-text="bob"></h2>
+            <h1 data-text="foo"></h1>
+            <h2 data-text="bob"></h2>
 
-            <button x-on:click="foo = 'baz'"></button>
+            <button data-on:click="foo = 'baz'"></button>
         </div>
     `,
     ({ get }) => {
@@ -24,13 +24,13 @@ test('$watch',
 test('$watch receives old value',
     html`
         <div
-            x-data="{ foo: 'bar', fresh: '', old: '' }"
-            x-init="$watch('foo', (value, oldValue) => { fresh = value; old = oldValue; })"
+            data-data="{ foo: 'bar', fresh: '', old: '' }"
+            data-init="$watch('foo', (value, oldValue) => { fresh = value; old = oldValue; })"
         >
-            <h1 x-text="fresh"></h1>
-            <h2 x-text="old"></h2>
+            <h1 data-text="fresh"></h1>
+            <h2 data-text="old"></h2>
 
-            <button x-on:click="foo = 'baz'"></button>
+            <button data-on:click="foo = 'baz'"></button>
         </div>
     `,
     ({ get }) => {
@@ -42,13 +42,13 @@ test('$watch receives old value',
 
 test('$watch nested properties',
     html`
-        <div x-data="{ foo: { bar: 'baz', bob: 'lob' } }" x-init="
+        <div data-data="{ foo: { bar: 'baz', bob: 'lob' } }" data-init="
             $watch('foo.bar', value => { foo.bob = value });
         ">
-            <h1 x-text="foo.bar"></h1>
-            <h2 x-text="foo.bob"></h2>
+            <h1 data-text="foo.bar"></h1>
+            <h2 data-text="foo.bob"></h2>
 
-            <button x-on:click="foo.bar = 'law'"></button>
+            <button data-on:click="foo.bar = 'law'"></button>
         </div>
     `,
     ({ get }) => {
@@ -62,18 +62,18 @@ test('$watch nested properties',
 
 test('$watch arrays',
     html`
-        <div x-data="{ foo: ['one'], bob: 'lob' }"
-            x-init="$watch('foo', value => { bob = value })">
-            <h1 x-text="foo"></h1>
-            <h2 x-text="bob"></h2>
+        <div data-data="{ foo: ['one'], bob: 'lob' }"
+            data-init="$watch('foo', value => { bob = value })">
+            <h1 data-text="foo"></h1>
+            <h2 data-text="bob"></h2>
 
-            <button id="push" x-on:click="foo.push('two')"></button>
-            <button id="pop" x-on:click="foo.pop()"></button>
-            <button id="unshift" x-on:click="foo.unshift('zero')"></button>
-            <button id="shift" x-on:click="foo.shift()"></button>
-            <button id="assign" x-on:click="foo = [2,1,3]"></button>
-            <button id="sort" x-on:click="foo.sort()"></button>
-            <button id="reverse" x-on:click="foo.reverse()"></button>
+            <button id="push" data-on:click="foo.push('two')"></button>
+            <button id="pop" data-on:click="foo.pop()"></button>
+            <button id="unshift" data-on:click="foo.unshift('zero')"></button>
+            <button id="shift" data-on:click="foo.shift()"></button>
+            <button id="assign" data-on:click="foo = [2,1,3]"></button>
+            <button id="sort" data-on:click="foo.sort()"></button>
+            <button id="reverse" data-on:click="foo.reverse()"></button>
         </div>
     `,
     ({ get }) => {
@@ -112,11 +112,11 @@ test('$watch arrays',
 
 test('$watch nested arrays',
     html`
-        <div x-data="{ foo: {baz: ['one']}, bob: 'lob' }" x-init="$watch('foo.baz', value => { bob = value })">
-            <h1 x-text="foo.baz"></h1>
-            <h2 x-text="bob"></h2>
+        <div data-data="{ foo: {baz: ['one']}, bob: 'lob' }" data-init="$watch('foo.baz', value => { bob = value })">
+            <h1 data-text="foo.baz"></h1>
+            <h2 data-text="bob"></h2>
 
-            <button id="push" x-on:click="foo.baz.push('two')"></button>
+            <button id="push" data-on:click="foo.baz.push('two')"></button>
         </div>
     `,
     ({ get }) => {
@@ -132,12 +132,12 @@ test('$watch nested arrays',
 test('$watch ignores other dependencies',
     html`
         <div
-            x-data="{ a: 0, b: 0, c: 0 }"
-            x-init="$watch('a', () => { c = a + b })"
+            data-data="{ a: 0, b: 0, c: 0 }"
+            data-init="$watch('a', () => { c = a + b })"
         >
             <button @click="a++" id="a">a</button>
             <button @click="b++" id="b">b</button>
-            <span x-text="c"></span>
+            <span data-text="c"></span>
         </div>
     `,
     ({ get }) => {
@@ -152,13 +152,13 @@ test('$watch ignores other dependencies',
 
 test('deep $watch',
     html`
-        <div x-data="{ foo: { bar: 'baz'}, bob: 'lob' }" x-init="
+        <div data-data="{ foo: { bar: 'baz'}, bob: 'lob' }" data-init="
             $watch('foo', value => { bob = value.bar }, {deep: true});
         ">
-            <h1 x-text="foo.bar"></h1>
-            <h2 x-text="bob"></h2>
+            <h1 data-text="foo.bar"></h1>
+            <h2 data-text="bob"></h2>
 
-            <button x-on:click="foo.bar = 'law'"></button>
+            <button data-on:click="foo.bar = 'law'"></button>
         </div>
     `,
     ({ get }) => {

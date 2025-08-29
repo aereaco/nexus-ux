@@ -7,7 +7,7 @@ title: Async
 
 Alpine is built to support asynchronous functions in most places it supports standard ones.
 
-For example, let's say you have a simple function called `getLabel()` that you use as the input to an `x-text` directive:
+For example, let's say you have a simple function called `getLabel()` that you use as the input to an `data-text` directive:
 
 ```js
 function getLabel() {
@@ -15,7 +15,7 @@ function getLabel() {
 }
 ```
 ```alpine
-<span x-text="getLabel()"></span>
+<span data-text="getLabel()"></span>
 ```
 
 Because `getLabel` is synchronous, everything works as expected.
@@ -30,11 +30,11 @@ async function getLabel() {
 }
 ```
 ```alpine
-<span x-text="await getLabel()"></span>
+<span data-text="await getLabel()"></span>
 ```
 
 Additionally, if you prefer calling methods in Alpine without the trailing parenthesis, you can leave them out and Alpine will detect that the provided function is async and handle it accordingly. For example:
 
 ```alpine
-<span x-text="getLabel"></span>
+<span data-text="getLabel"></span>
 ```

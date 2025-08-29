@@ -47,30 +47,30 @@ Alpine.plugin(resize)
 ...
 ```
 
-<a name="x-resize"></a>
-## x-resize
+<a name="data-resize"></a>
+## data-resize
 
-The primary API for using this plugin is `x-resize`. You can add `x-resize` to any element within an Alpine component, and when that element is resized for any reason, the provided expression will execute with two magic properties: `$width` and `$height`.
+The primary API for using this plugin is `data-resize`. You can add `data-resize` to any element within an Alpine component, and when that element is resized for any reason, the provided expression will execute with two magic properties: `$width` and `$height`.
 
-For example, here's a simple example of using `x-resize` to display the width and height of an element as it changes size.
+For example, here's a simple example of using `data-resize` to display the width and height of an element as it changes size.
 
 ```alpine
 <div
-    x-data="{ width: 0, height: 0 }"
-    x-resize="width = $width; height = $height"
+    data-data="{ width: 0, height: 0 }"
+    data-resize="width = $width; height = $height"
 >
-    <p x-text="'Width: ' + width + 'px'"></p>
-    <p x-text="'Height: ' + height + 'px'"></p>
+    <p data-text="'Width: ' + width + 'px'"></p>
+    <p data-text="'Height: ' + height + 'px'"></p>
 </div>
 ```
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div x-data="{ width: 0, height: 0 }" x-resize="width = $width; height = $height">
+    <div data-data="{ width: 0, height: 0 }" data-resize="width = $width; height = $height">
         <i>Resize your browser window to see the width and height values change.</i>
         <br><br>
-        <p x-text="'Width: ' + width + 'px'"></p>
-        <p x-text="'Height: ' + height + 'px'"></p>
+        <p data-text="'Width: ' + width + 'px'"></p>
+        <p data-text="'Height: ' + height + 'px'"></p>
     </div>
 </div>
 <!-- END_VERBATIM -->
@@ -81,19 +81,19 @@ For example, here's a simple example of using `x-resize` to display the width an
 <a name="document"></a>
 ### .document
 
-It's often useful to observe the entire document's size, rather than a specific element. To do this, you can add the `.document` modifier to `x-resize`:
+It's often useful to observe the entire document's size, rather than a specific element. To do this, you can add the `.document` modifier to `data-resize`:
 
 ```alpine
-<div x-resize.document="...">
+<div data-resize.document="...">
 ```
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div x-data="{ width: 0, height: 0 }" x-resize.document="width = $width; height = $height">
+    <div data-data="{ width: 0, height: 0 }" data-resize.document="width = $width; height = $height">
         <i>Resize your browser window to see the document width and height values change.</i>
         <br><br>
-        <p x-text="'Width: ' + width + 'px'"></p>
-        <p x-text="'Height: ' + height + 'px'"></p>
+        <p data-text="'Width: ' + width + 'px'"></p>
+        <p data-text="'Height: ' + height + 'px'"></p>
     </div>
 </div>
 <!-- END_VERBATIM -->

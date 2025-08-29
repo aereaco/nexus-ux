@@ -4,10 +4,10 @@ import { haveText, html, test } from '../../utils'
 describe.skip('History tests', function () {
     test('value is reflected in query string upon changing',
         [html`
-            <div x-data="{ count: $queryString(1) }">
+            <div data-data="{ count: $queryString(1) }">
                 <button @click="count++">Inc</button>
                 <h1 @click="count--">Dec</h1>
-                <span x-text="count"></span>
+                <span data-text="count"></span>
             </div>
         `],
         ({ get, url, go }) => {
@@ -28,10 +28,10 @@ describe.skip('History tests', function () {
 
     test('can configure always making the query string value present',
         [html`
-            <div x-data="{ count: $queryString(1).alwaysShow() }">
+            <div data-data="{ count: $queryString(1).alwaysShow() }">
                 <button @click="count++">Inc</button>
                 <h1 @click="count--">Dec</h1>
-                <span x-text="count"></span>
+                <span data-text="count"></span>
             </div>
         `],
         ({ get, url, go }) => {
@@ -48,9 +48,9 @@ describe.skip('History tests', function () {
 
     test('value is persisted across requests',
         [html`
-            <div x-data="{ count: $queryString(1) }">
+            <div data-data="{ count: $queryString(1) }">
                 <button @click="count++">Inc</button>
-                <span x-text="count"></span>
+                <span data-text="count"></span>
             </div>
         `],
         ({ get, url, go }, reload) => {
@@ -69,9 +69,9 @@ describe.skip('History tests', function () {
 
     test('can provide an alias',
         [html`
-            <div x-data="{ count: $queryString(1).as('tnuoc') }">
+            <div data-data="{ count: $queryString(1).as('tnuoc') }">
                 <button @click="count++">Inc</button>
-                <span x-text="count"></span>
+                <span data-text="count"></span>
             </div>
         `],
         ({ get, url, go }) => {
@@ -85,9 +85,9 @@ describe.skip('History tests', function () {
 
     test('can use pushState',
         [html`
-            <div x-data="{ count: $queryString(1).usePush() }">
+            <div data-data="{ count: $queryString(1).usePush() }">
                 <button @click="count++">Inc</button>
-                <span x-text="count"></span>
+                <span data-text="count"></span>
             </div>
         `],
         ({ get, url, go }) => {
@@ -107,14 +107,14 @@ describe.skip('History tests', function () {
 
     test('can go back and forth with multiple components',
         [html`
-            <div x-data="{ foo: $queryString(1).usePush() }" id="foo">
+            <div data-data="{ foo: $queryString(1).usePush() }" id="foo">
                 <button @click="foo++">Inc</button>
-                <span x-text="foo"></span>
+                <span data-text="foo"></span>
             </div>
 
-            <div x-data="{ bar: $queryString(1).usePush() }" id="bar">
+            <div data-data="{ bar: $queryString(1).usePush() }" id="bar">
                 <button @click="bar++">Inc</button>
-                <span x-text="bar"></span>
+                <span data-text="bar"></span>
             </div>
         `],
         ({ get, url, go }) => {
@@ -148,9 +148,9 @@ describe.skip('History tests', function () {
 
     test('supports arrays',
         [html`
-            <div x-data="{ items: $queryString(['foo']) }">
+            <div data-data="{ items: $queryString(['foo']) }">
                 <button @click="items.push('bar')">Inc</button>
-                <span x-text="JSON.stringify(items)"></span>
+                <span data-text="JSON.stringify(items)"></span>
             </div>
         `],
         ({ get, url, go }, reload) => {
@@ -167,9 +167,9 @@ describe.skip('History tests', function () {
 
     test('supports deep arrays',
         [html`
-            <div x-data="{ items: $queryString(['foo', ['bar', 'baz']]) }">
+            <div data-data="{ items: $queryString(['foo', ['bar', 'baz']]) }">
                 <button @click="items[1].push('bob')">Inc</button>
-                <span x-text="JSON.stringify(items)"></span>
+                <span data-text="JSON.stringify(items)"></span>
             </div>
         `],
         ({ get, url, go }, reload) => {
@@ -186,9 +186,9 @@ describe.skip('History tests', function () {
 
     test('supports objects',
         [html`
-            <div x-data="{ items: $queryString({ foo: 'bar' }) }">
+            <div data-data="{ items: $queryString({ foo: 'bar' }) }">
                 <button @click="items.bob = 'lob'">Inc</button>
-                <span x-text="JSON.stringify(items)"></span>
+                <span data-text="JSON.stringify(items)"></span>
             </div>
         `],
         ({ get, url, go }, reload) => {
@@ -205,8 +205,8 @@ describe.skip('History tests', function () {
 
     test('encodes values according to RFC 1738 (plus signs for spaces)',
         [html`
-            <div x-data="{ foo: $queryString('hey&there').alwaysShow(), bar: $queryString('hey there').alwaysShow() }">
-                <span x-text="JSON.stringify(foo)+JSON.stringify(bar)"></span>
+            <div data-data="{ foo: $queryString('hey&there').alwaysShow(), bar: $queryString('hey there').alwaysShow() }">
+                <span data-text="JSON.stringify(foo)+JSON.stringify(bar)"></span>
             </div>
         `],
         ({ get, url, go }, reload) => {

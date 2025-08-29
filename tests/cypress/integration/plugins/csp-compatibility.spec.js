@@ -2,8 +2,8 @@ import { haveText, html, test } from '../../utils'
 
 test.csp('Can use components and basic expressions with CSP-compatible build',
     [html`
-        <div x-data="test">
-            <span x-text="foo"></span>
+        <div data-data="test">
+            <span data-text="foo"></span>
 
             <button @click="change">Change Foo</button>
         </div>
@@ -23,8 +23,8 @@ test.csp('Can use components and basic expressions with CSP-compatible build',
 
 test.csp('Supports nested properties',
     [html`
-        <div x-data="test">
-            <span x-text="foo.bar"></span>
+        <div data-data="test">
+            <span data-text="foo.bar"></span>
 
             <button @click="foo.change">Change Foo</button>
         </div>

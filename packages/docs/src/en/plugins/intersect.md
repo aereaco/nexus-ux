@@ -47,54 +47,54 @@ Alpine.plugin(intersect)
 ...
 ```
 
-<a name="x-intersect"></a>
-## x-intersect
+<a name="data-intersect"></a>
+## data-intersect
 
-The primary API for using this plugin is `x-intersect`. You can add `x-intersect` to any element within an Alpine component, and when that component enters the viewport (is scrolled into view), the provided expression will execute.
+The primary API for using this plugin is `data-intersect`. You can add `data-intersect` to any element within an Alpine component, and when that component enters the viewport (is scrolled into view), the provided expression will execute.
 
 For example, in the following snippet, `shown` will remain `false` until the element is scrolled into view. At that point, the expression will execute and `shown` will become `true`:
 
 ```alpine
-<div x-data="{ shown: false }" x-intersect="shown = true">
-    <div x-show="shown" x-transition>
+<div data-data="{ shown: false }" data-intersect="shown = true">
+    <div data-show="shown" data-transition>
         I'm in the viewport!
     </div>
 </div>
 ```
 
 <!-- START_VERBATIM -->
-<div class="demo" style="height: 60px; overflow-y: scroll;" x-data x-ref="root">
+<div class="demo" style="height: 60px; overflow-y: scroll;" data-data data-ref="root">
     <a href="#" @click.prevent="$refs.root.scrollTo({ top: $refs.root.scrollHeight, behavior: 'smooth' })">Scroll Down 👇</a>
     <div style="height: 50vh"></div>
-    <div x-data="{ shown: false }" x-intersect="shown = true" id="yoyo">
-        <div x-show="shown" x-transition.duration.1000ms>
+    <div data-data="{ shown: false }" data-intersect="shown = true" id="yoyo">
+        <div data-show="shown" data-transition.duration.1000ms>
             I'm in the viewport!
         </div>
-        <div x-show="! shown">&nbsp;</div>
+        <div data-show="! shown">&nbsp;</div>
     </div>
 </div>
 <!-- END_VERBATIM -->
 
-<a name="x-intersect-enter"></a>
-### x-intersect:enter
+<a name="data-intersect-enter"></a>
+### data-intersect:enter
 
-The `:enter` suffix is an alias of `x-intersect`, and works the same way:
+The `:enter` suffix is an alias of `data-intersect`, and works the same way:
 
 ```alpine
-<div x-intersect:enter="shown = true">...</div>
+<div data-intersect:enter="shown = true">...</div>
 ```
 
 You may choose to use this for clarity when also using the `:leave` suffix.
 
-<a name="x-intersect-leave"></a>
-### x-intersect:leave
+<a name="data-intersect-leave"></a>
+### data-intersect:leave
 
 Appending `:leave` runs your expression when the element leaves the viewport.
 
 ```alpine
-<div x-intersect:leave="shown = true">...</div>
+<div data-intersect:leave="shown = true">...</div>
 ```
-> By default, this means the *whole element* is not in the viewport. Use `x-intersect:leave.full` to run your expression when only *parts of the element* are not in the viewport.
+> By default, this means the *whole element* is not in the viewport. Use `data-intersect:leave.full` to run your expression when only *parts of the element* are not in the viewport.
 
 [→ Read more about the underlying `IntersectionObserver` API](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API)
 
@@ -104,10 +104,10 @@ Appending `:leave` runs your expression when the element leaves the viewport.
 <a name="once"></a>
 ### .once
 
-Sometimes it's useful to evaluate an expression only the first time an element enters the viewport and not subsequent times. For example when triggering "enter" animations. In these cases, you can add the `.once` modifier to `x-intersect` to achieve this.
+Sometimes it's useful to evaluate an expression only the first time an element enters the viewport and not subsequent times. For example when triggering "enter" animations. In these cases, you can add the `.once` modifier to `data-intersect` to achieve this.
 
 ```alpine
-<div x-intersect.once="shown = true">...</div>
+<div data-intersect.once="shown = true">...</div>
 ```
 
 <a name="half"></a>
@@ -118,7 +118,7 @@ Evaluates the expression once the intersection threshold exceeds `0.5`.
 Useful for elements where it's important to show at least part of the element.
 
 ```alpine
-<div x-intersect.half="shown = true">...</div> // when `0.5` of the element is in the viewport
+<div data-intersect.half="shown = true">...</div> // when `0.5` of the element is in the viewport
 ```
 
 <a name="full"></a>
@@ -129,7 +129,7 @@ Evaluates the expression once the intersection threshold exceeds `0.99`.
 Useful for elements where it's important to show the whole element.
 
 ```alpine
-<div x-intersect.full="shown = true">...</div> // when `0.99` of the element is in the viewport
+<div data-intersect.full="shown = true">...</div> // when `0.99` of the element is in the viewport
 ```
 
 <a name="threshold"></a>
@@ -144,7 +144,7 @@ Any value in between is a percentage of those two extremes.
 For example if you want to trigger an intersection after half of the element has entered the page, you can use `.threshold.50`:
 
 ```alpine
-<div x-intersect.threshold.50="shown = true">...</div> // when 50% of the element is in the viewport
+<div data-intersect.threshold.50="shown = true">...</div> // when 50% of the element is in the viewport
 ```
 
 If you wanted to trigger only when 5% of the element has entered the viewport, you could use: `.threshold.05`, and so on and so forth.
@@ -160,13 +160,13 @@ four values for top, right, bottom, left. You can use `px` and `%` values, or us
 get a pixel value.
 
 ```alpine
-<div x-intersect.margin.200px="loaded = true">...</div> // Load when the element is within 200px of the viewport
+<div data-intersect.margin.200px="loaded = true">...</div> // Load when the element is within 200px of the viewport
 ```
 
 ```alpine
-<div x-intersect:leave.margin.10%.25px.25.25px="loaded = false">...</div> // Unload when the element gets within 10% of the top of the viewport, or within 25px of the other three edges
+<div data-intersect:leave.margin.10%.25px.25.25px="loaded = false">...</div> // Unload when the element gets within 10% of the top of the viewport, or within 25px of the other three edges
 ```
 
 ```alpine
-<div x-intersect.margin.-100px="visible = true">...</div> // Mark as visible when element is more than 100 pixels into the viewport.
+<div data-intersect.margin.-100px="visible = true">...</div> // Mark as visible when element is more than 100 pixels into the viewport.
 ```

@@ -3,16 +3,16 @@ order: 11
 title: ignore
 ---
 
-# x-ignore
+# data-ignore
 
-By default, Alpine will crawl and initialize the entire DOM tree of an element containing `x-init` or `x-data`.
+By default, Alpine will crawl and initialize the entire DOM tree of an element containing `data-init` or `data-data`.
 
-If for some reason, you don't want Alpine to touch a specific section of your HTML, you can prevent it from doing so using `x-ignore`.
+If for some reason, you don't want Alpine to touch a specific section of your HTML, you can prevent it from doing so using `data-ignore`.
 
 ```alpine
-<div x-data="{ label: 'From Alpine' }">
-    <div x-ignore>
-        <span x-text="label"></span>
+<div data-data="{ label: 'From Alpine' }">
+    <div data-ignore>
+        <span data-text="label"></span>
     </div>
 </div>
 ```

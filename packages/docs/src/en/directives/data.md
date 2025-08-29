@@ -3,42 +3,42 @@ order: 1
 title: data
 ---
 
-# x-data
+# data-data
 
-Everything in Alpine starts with the `x-data` directive.
+Everything in Alpine starts with the `data-data` directive.
 
-`x-data` defines a chunk of HTML as an Alpine component and provides the reactive data for that component to reference.
+`data-data` defines a chunk of HTML as an Alpine component and provides the reactive data for that component to reference.
 
 Here's an example of a contrived dropdown component:
 
 ```alpine
-<div x-data="{ open: false }">
+<div data-data="{ open: false }">
     <button @click="open = ! open">Toggle Content</button>
 
-    <div x-show="open">
+    <div data-show="open">
         Content...
     </div>
 </div>
 ```
 
-Don't worry about the other directives in this example (`@click` and `x-show`), we'll get to those in a bit. For now, let's focus on `x-data`.
+Don't worry about the other directives in this example (`@click` and `data-show`), we'll get to those in a bit. For now, let's focus on `data-data`.
 
 <a name="scope"></a>
 ## Scope
 
-Properties defined in an `x-data` directive are available to all element children. Even ones inside other, nested `x-data` components.
+Properties defined in an `data-data` directive are available to all element children. Even ones inside other, nested `data-data` components.
 
 For example:
 
 ```alpine
-<div x-data="{ foo: 'bar' }">
-    <span x-text="foo"><!-- Will output: "bar" --></span>
+<div data-data="{ foo: 'bar' }">
+    <span data-text="foo"><!-- Will output: "bar" --></span>
 
-    <div x-data="{ bar: 'baz' }">
-        <span x-text="foo"><!-- Will output: "bar" --></span>
+    <div data-data="{ bar: 'baz' }">
+        <span data-text="foo"><!-- Will output: "bar" --></span>
 
-        <div x-data="{ foo: 'bob' }">
-            <span x-text="foo"><!-- Will output: "bob" --></span>
+        <div data-data="{ foo: 'bob' }">
+            <span data-text="foo"><!-- Will output: "bob" --></span>
         </div>
     </div>
 </div>
@@ -47,21 +47,21 @@ For example:
 <a name="methods"></a>
 ## Methods
 
-Because `x-data` is evaluated as a normal JavaScript object, in addition to state, you can store methods and even getters.
+Because `data-data` is evaluated as a normal JavaScript object, in addition to state, you can store methods and even getters.
 
-For example, let's extract the "Toggle Content" behavior into a method on  `x-data`.
+For example, let's extract the "Toggle Content" behavior into a method on  `data-data`.
 
 ```alpine
-<div x-data="{ open: false, toggle() { this.open = ! this.open } }">
+<div data-data="{ open: false, toggle() { this.open = ! this.open } }">
     <button @click="toggle()">Toggle Content</button>
 
-    <div x-show="open">
+    <div data-show="open">
         Content...
     </div>
 </div>
 ```
 
-Notice the added `toggle() { this.open = ! this.open }` method on `x-data`. This method can now be called from anywhere inside the component.
+Notice the added `toggle() { this.open = ! this.open }` method on `data-data`. This method can now be called from anywhere inside the component.
 
 You'll also notice the usage of `this.` to access state on the object itself. This is because Alpine evaluates this data object like any standard JavaScript object with a `this` context.
 
@@ -85,14 +85,14 @@ Think of them like "computed properties" (although, they are not cached like Vue
 Let's refactor our component to use a getter called `isOpen` instead of accessing `open` directly.
 
 ```alpine
-<div x-data="{
+<div data-data="{
     open: false,
     get isOpen() { return this.open },
     toggle() { this.open = ! this.open },
 }">
     <button @click="toggle()">Toggle Content</button>
 
-    <div x-show="isOpen">
+    <div data-show="isOpen">
         Content...
     </div>
 </div>
@@ -110,13 +110,13 @@ Occasionally, you want to create an Alpine component, but you don't need any dat
 In these cases, you can always pass in an empty object.
 
 ```alpine
-<div x-data="{}">
+<div data-data="{}">
 ```
 
 However, if you wish, you can also eliminate the attribute value entirely if it looks better to you.
 
 ```alpine
-<div x-data>
+<div data-data>
 ```
 
 <a name="single-element-components"></a>
@@ -125,15 +125,15 @@ However, if you wish, you can also eliminate the attribute value entirely if it 
 Sometimes you may only have a single element inside your Alpine component, like the following:
 
 ```alpine
-<div x-data="{ open: true }">
-    <button @click="open = false" x-show="open">Hide Me</button>
+<div data-data="{ open: true }">
+    <button @click="open = false" data-show="open">Hide Me</button>
 </div>
 ```
 
-In these cases, you can declare `x-data` directly on that single element:
+In these cases, you can declare `data-data` directly on that single element:
 
 ```alpine
-<button x-data="{ open: true }" @click="open = false" x-show="open">
+<button data-data="{ open: true }" @click="open = false" data-show="open">
     Hide Me
 </button>
 ```
@@ -141,15 +141,15 @@ In these cases, you can declare `x-data` directly on that single element:
 <a name="re-usable-data"></a>
 ## Re-usable Data
 
-If you find yourself duplicating the contents of `x-data`, or you find the inline syntax verbose, you can extract the `x-data` object out to a dedicated component using `Alpine.data`.
+If you find yourself duplicating the contents of `data-data`, or you find the inline syntax verbose, you can extract the `data-data` object out to a dedicated component using `Alpine.data`.
 
 Here's a quick example:
 
 ```alpine
-<div x-data="dropdown">
+<div data-data="dropdown">
     <button @click="toggle">Toggle Content</button>
 
-    <div x-show="open">
+    <div data-show="open">
         Content...
     </div>
 </div>

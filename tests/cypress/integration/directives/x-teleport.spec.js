@@ -1,12 +1,12 @@
 import { exist, haveText, html, notExist, test } from '../../utils'
 
-test('can use a x-teleport',
+test('can use a data-teleport',
     [html`
-        <div x-data="{ count: 1 }" id="a">
+        <div data-data="{ count: 1 }" id="a">
             <button @click="count++">Inc</button>
 
-            <template x-teleport="#b">
-                <span x-text="count"></span>
+            <template data-teleport="#b">
+                <span data-text="count"></span>
             </template>
         </div>
 
@@ -19,13 +19,13 @@ test('can use a x-teleport',
     },
 )
 
-test('can use a x-teleport.append',
+test('can use a data-teleport.append',
     [html`
-        <div x-data="{ count: 1 }" id="a">
+        <div data-data="{ count: 1 }" id="a">
             <button @click="count++">Inc</button>
 
-            <template x-teleport.append="#b">
-                <span x-text="count"></span>
+            <template data-teleport.append="#b">
+                <span data-text="count"></span>
             </template>
         </div>
 
@@ -38,13 +38,13 @@ test('can use a x-teleport.append',
     },
 )
 
-test('can use a x-teleport.prepend',
+test('can use a data-teleport.prepend',
     [html`
-        <div x-data="{ count: 1 }" id="a">
+        <div data-data="{ count: 1 }" id="a">
             <button @click="count++">Inc</button>
 
-            <template x-teleport.prepend="#b">
-                <span x-text="count"></span>
+            <template data-teleport.prepend="#b">
+                <span data-text="count"></span>
             </template>
         </div>
 
@@ -59,15 +59,15 @@ test('can use a x-teleport.prepend',
 
 test('can teleport multiple',
     [html`
-        <div x-data="{ count: 1 }" id="a">
+        <div data-data="{ count: 1 }" id="a">
             <button @click="count++">Inc</button>
 
-            <template x-teleport="#b">
-                <h1 x-text="count"></h1>
+            <template data-teleport="#b">
+                <h1 data-text="count"></h1>
             </template>
 
-            <template x-teleport="#b">
-                <h2 x-text="count + 1"></h2>
+            <template data-teleport="#b">
+                <h2 data-text="count + 1"></h2>
             </template>
         </div>
 
@@ -84,11 +84,11 @@ test('can teleport multiple',
 
 test('teleported targets forward events to teleport source if listeners are attached',
     [html`
-        <div x-data="{ count: 1 }" id="a">
+        <div data-data="{ count: 1 }" id="a">
             <button @click="count++">Inc</button>
 
-            <template x-teleport="#b" @click="count++">
-                <h1 x-text="count"></h1>
+            <template data-teleport="#b" @click="count++">
+                <h1 data-text="count"></h1>
             </template>
         </div>
 
@@ -105,11 +105,11 @@ test('teleported targets forward events to teleport source if listeners are atta
 
 test('removing teleport source removes teleported target',
     [html`
-        <div x-data="{ count: 1 }" id="a">
+        <div data-data="{ count: 1 }" id="a">
             <button @click="$refs.template.remove()">Remove</button>
 
-            <template x-teleport="#b" @click="count++" x-ref="template">
-                <h1 x-text="count"></h1>
+            <template data-teleport="#b" @click="count++" data-ref="template">
+                <h1 data-text="count"></h1>
             </template>
         </div>
 
@@ -126,12 +126,12 @@ test(
     'immediately cleans up the clone when the original template is removed',
     [
         html`
-            <div x-data="{ show: true, shown: 'original' }">
-                <span x-text="shown"></span>
-                <template x-if="show">
+            <div data-data="{ show: true, shown: 'original' }">
+                <span data-text="shown"></span>
+                <template data-if="show">
                     <div>
-                    <template x-teleport="#target">
-                        <button x-data="{ 
+                    <template data-teleport="#target">
+                        <button data-data="{ 
                             init() { this.shown = 'cloned' }, 
                             destroy() { this.shown = 'destroyed' }
                         }" @click="show = false">remove</button>
@@ -155,11 +155,11 @@ test(
 
 test('$refs inside teleport can be accessed outside',
     [html`
-        <div x-data="{ count: 1 }" id="a">
+        <div data-data="{ count: 1 }" id="a">
             <button @click="$refs.count.remove()">Remove</button>
 
-            <template x-teleport="#b">
-                <h1 x-text="count" x-ref="count"></h1>
+            <template data-teleport="#b">
+                <h1 data-text="count" data-ref="count"></h1>
             </template>
         </div>
 
@@ -174,9 +174,9 @@ test('$refs inside teleport can be accessed outside',
 
 test('$root is accessed outside teleport',
     [html`
-        <div x-data="{ count: 1 }" id="a">
-            <template x-teleport="#b">
-                <h1 x-text="$root.id"></h1>
+        <div data-data="{ count: 1 }" id="a">
+            <template data-teleport="#b">
+                <h1 data-text="$root.id"></h1>
             </template>
         </div>
 
@@ -188,13 +188,13 @@ test('$root is accessed outside teleport',
     },
 )
 
-test('$id honors x-id outside teleport',
+test('$id honors data-id outside teleport',
     [html`
-        <div x-data="{ count: 1 }" id="a" x-id="['foo']">
-            <h1 x-text="$id('foo')"></h1>
+        <div data-data="{ count: 1 }" id="a" data-id="['foo']">
+            <h1 data-text="$id('foo')"></h1>
 
-            <template x-teleport="#b">
-                <h1 x-text="$id('foo')"></h1>
+            <template data-teleport="#b">
+                <h1 data-text="$id('foo')"></h1>
             </template>
         </div>
 
@@ -207,13 +207,13 @@ test('$id honors x-id outside teleport',
 
 test('conditionally added elements get initialised inside teleport',
     [html`
-        <div x-data="{ show: false }" id="a">
+        <div data-data="{ show: false }" id="a">
             <button @click="show = true">Show Teleport Content</button>
 
-            <template x-teleport="#b">
+            <template data-teleport="#b">
                 <div>
-                    <template x-if="show" >
-                        <p x-text="'Teleport content initialised'">Teleport content waiting</p>
+                    <template data-if="show" >
+                        <p data-text="'Teleport content initialised'">Teleport content waiting</p>
                     </template>
                 </div>
             </template>

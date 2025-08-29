@@ -4,9 +4,9 @@ test(
     "properly merges the datastack",
     [
         html`
-            <div x-data="{ foo: 'fizz' }">
-                <div x-data="{ bar: 'buzz' }">
-                    <span x-text="foo + bar"></span>
+            <div data-data="{ foo: 'fizz' }">
+                <div data-data="{ bar: 'buzz' }">
+                    <span data-text="foo + bar"></span>
                 </div>
             </div>
         `,
@@ -20,11 +20,11 @@ test(
     "merges stack from bottom up",
     [
         html`
-            <div x-data="{ foo: 'fizz' }">
-                <div x-data="{ foo: 'buzz', get bar() { return this.foo } }">
-                    <span id="one" x-text="bar + foo"></span>
+            <div data-data="{ foo: 'fizz' }">
+                <div data-data="{ foo: 'buzz', get bar() { return this.foo } }">
+                    <span id="one" data-text="bar + foo"></span>
                 </div>
-                <span id="two" x-text="foo"></span>
+                <span id="two" data-text="foo"></span>
             </div>
         `,
     ],
@@ -38,13 +38,13 @@ test(
     "handles getter setter pairs",
     [
         html`
-            <div x-data="{ foo: 'fizzbuzz' }">
+            <div data-data="{ foo: 'fizzbuzz' }">
                 <div
-                    x-data="{ get bar() { return this.foo }, set bar(value) { this.foo = value } }"
+                    data-data="{ get bar() { return this.foo }, set bar(value) { this.foo = value } }"
                 >
-                    <span id="one" x-text="bar" @click="bar = 'foobar'"></span>
+                    <span id="one" data-text="bar" @click="bar = 'foobar'"></span>
                 </div>
-                <span id="two" x-text="foo"></span>
+                <span id="two" data-text="foo"></span>
             </div>
         `,
     ],
@@ -73,11 +73,11 @@ test(
                     Alpine.data("counter", () => new Counter())
                 );
             </script>
-            <div x-data="counter">
+            <div data-data="counter">
                 <button
                     type="button"
                     @click="increment"
-                    x-text="value"
+                    data-text="value"
                 ></button>
             </div>
         `,
@@ -93,11 +93,11 @@ test(
     "setting value doesn't register a dependency",
     [
         html`
-            <div x-data="{ message: 'original' }">
+            <div data-data="{ message: 'original' }">
                 <button
-                    x-effect="message = 'effected'"
+                    data-effect="message = 'effected'"
                     @click="message = 'clicked'"
-                    x-text="message"
+                    data-text="message"
                 ></button>
             </div>
             ;
@@ -114,15 +114,15 @@ test(
     "properly merges the datastack with nested data",
     [
         html`
-            <div x-data="{ foo: { bar: 'fizz' } }">
-                <div x-data="{ bar: 'buzz' }">
+            <div data-data="{ foo: { bar: 'fizz' } }">
+                <div data-data="{ bar: 'buzz' }">
                     <span
                         id="1"
-                        x-text="foo.bar + bar"
+                        data-text="foo.bar + bar"
                         @click="foo.bar = foo.bar + bar"
                     ></span>
                 </div>
-                <span id="2" x-text="foo.bar"></span>
+                <span id="2" data-text="foo.bar"></span>
             </div>
         `,
     ],
@@ -139,13 +139,13 @@ test(
     "handles getter setter pairs of object",
     [
         html`
-            <div x-data="{ foo:  { bar: 'fizzbuzz' } }">
+            <div data-data="{ foo:  { bar: 'fizzbuzz' } }">
                 <div
-                    x-data="{ get bar() { return this.foo.bar }, set bar(value) { this.foo.bar = value } }"
+                    data-data="{ get bar() { return this.foo.bar }, set bar(value) { this.foo.bar = value } }"
                 >
-                    <span id="one" x-text="bar" @click="bar = 'foobar'"></span>
+                    <span id="one" data-text="bar" @click="bar = 'foobar'"></span>
                 </div>
-                <span id="two" x-text="foo.bar"></span>
+                <span id="two" data-text="foo.bar"></span>
             </div>
         `,
     ],

@@ -14,7 +14,7 @@ This is useful for updating HTML from a server request without losing Alpine's o
 The best way to understand its purpose is with the following interactive visualization. Give it a try!
 
 <!-- START_VERBATIM -->
-<div x-data="{ slide: 1 }" class="border rounded">
+<div data-data="{ slide: 1 }" class="border rounded">
     <div>
         <img :src="'/img/morphs/morph'+slide+'.png'">
     </div>
@@ -81,9 +81,9 @@ The `Alpine.morph(el, newHtml)` allows you to imperatively morph a dom node base
 Here's an example of using `Alpine.morph()` to update an Alpine component with new HTML: (In real apps, this new HTML would likely be coming from the server)
 
 ```alpine
-<div x-data="{ message: 'Change me, then press the button!' }">
-    <input type="text" x-model="message">
-    <span x-text="message"></span>
+<div data-data="{ message: 'Change me, then press the button!' }">
+    <input type="text" data-model="message">
+    <span data-text="message"></span>
 </div>
 
 <button>Run Morph</button>
@@ -93,11 +93,11 @@ Here's an example of using `Alpine.morph()` to update an Alpine component with n
         let el = document.querySelector('div')
 
         Alpine.morph(el, `
-            <div x-data="{ message: 'Change me, then press the button!' }">
+            <div data-data="{ message: 'Change me, then press the button!' }">
                 <h2>See how new elements have been added</h2>
 
-                <input type="text" x-model="message">
-                <span x-text="message"></span>
+                <input type="text" data-model="message">
+                <span data-text="message"></span>
 
                 <h2>but the state of this component hasn't changed? Magical.</h2>
             </div>
@@ -108,9 +108,9 @@ Here's an example of using `Alpine.morph()` to update an Alpine component with n
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div x-data="{ message: 'Change me, then press the button!' }" id="morph-demo-1" class="space-y-2">
-        <input type="text" x-model="message" class="w-full">
-        <span x-text="message"></span>
+    <div data-data="{ message: 'Change me, then press the button!' }" id="morph-demo-1" class="space-y-2">
+        <input type="text" data-model="message" class="w-full">
+        <span data-text="message"></span>
     </div>
 
     <button id="morph-button-1" class="mt-4">Run Morph</button>
@@ -121,10 +121,10 @@ Here's an example of using `Alpine.morph()` to update an Alpine component with n
         let el = document.querySelector('#morph-demo-1')
 
         Alpine.morph(el, `
-            <div x-data="{ message: 'Change me, then press the button!' }" id="morph-demo-1" class="space-y-2">
+            <div data-data="{ message: 'Change me, then press the button!' }" id="morph-demo-1" class="space-y-2">
                 <h4>See how new elements have been added</h4>
-                <input type="text" x-model="message" class="w-full">
-                <span x-text="message"></span>
+                <input type="text" data-model="message" class="w-full">
+                <span data-text="message"></span>
                 <h4>but the state of this component hasn't changed? Magical.</h4>
             </div>
         `)

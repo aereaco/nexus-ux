@@ -2,10 +2,10 @@ import { haveText, test, html } from '../../utils'
 
 test('can intersect',
     [html`
-    <div x-data="{ count: 0 }">
-        <span x-text="count"></span>
+    <div data-data="{ count: 0 }">
+        <span data-text="count"></span>
 
-        <div x-intersect="count++" style="margin-top: 100vh;" id="1">hi</div>
+        <div data-intersect="count++" style="margin-top: 100vh;" id="1">hi</div>
     </div>
     `],
     ({ get }) => {
@@ -21,10 +21,10 @@ test('can intersect',
 
 test('It should evaluate with ":enter" only when the component is intersected',
     [html`
-    <div x-data="{ count: 0 }">
-        <span x-text="count"></span>
+    <div data-data="{ count: 0 }">
+        <span data-text="count"></span>
 
-        <div x-intersect:enter="count++" style="margin-top: 100vh;" id="1">hi</div>
+        <div data-intersect:enter="count++" style="margin-top: 100vh;" id="1">hi</div>
     </div>
     `],
     ({ get }) => {
@@ -40,10 +40,10 @@ test('It should evaluate with ":enter" only when the component is intersected',
 
 test('It should evaluate with ":leave" only when the component is not intersected',
     [html`
-    <div x-data="{ count: 0 }">
-        <span x-text="count"></span>
+    <div data-data="{ count: 0 }">
+        <span data-text="count"></span>
 
-        <div x-intersect:leave="count++" style="margin-top: 100vh;" id="1">hi</div>
+        <div data-intersect:leave="count++" style="margin-top: 100vh;" id="1">hi</div>
     </div>
     `],
     ({ get }) => {
@@ -61,13 +61,13 @@ test('It should evaluate with ":leave" only when the component is not intersecte
 
 test('.half',
     [html`
-    <div x-data="{ count: 0 }">
-        <span x-text="count"></span>
+    <div data-data="{ count: 0 }">
+        <span data-text="count"></span>
 
         <div id="container" style="height: 400px; overflow-y: scroll;">
             <div style="height: 410px;">spacer</div>
 
-            <div style="height: 400px" x-intersect.half="count++">
+            <div style="height: 400px" data-intersect.half="count++">
                 <div style="text-align: center;">content</div>
             </div>
         </div>
@@ -84,13 +84,13 @@ test('.half',
 
 test('.full',
     [html`
-    <div x-data="{ count: 0 }">
-        <span x-text="count"></span>
+    <div data-data="{ count: 0 }">
+        <span data-text="count"></span>
 
         <div id="container" style="height: 400px; overflow-y: scroll;">
             <div style="height: 401px;">spacer</div>
 
-            <div style="height: 400px" x-intersect.full="count++">
+            <div style="height: 400px" data-intersect.full="count++">
                 <div style="text-align: center;">content</div>
             </div>
         </div>
@@ -107,10 +107,10 @@ test('.full',
 
 test('.once',
     [html`
-    <div x-data="{ count: 0 }" x-init="setTimeout(() => count++, 300)">
-        <span x-text="count"></span>
+    <div data-data="{ count: 0 }" data-init="setTimeout(() => count++, 300)">
+        <span data-text="count"></span>
 
-        <div x-intersect.once="count++" style="margin-top: 100vh;" id="1">hi</div>
+        <div data-intersect.once="count++" style="margin-top: 100vh;" id="1">hi</div>
     </div>
     `],
     ({ get }) => {
@@ -126,11 +126,11 @@ test('.once',
 
 test('.margin',
     [html`
-    <div x-data="{ count: 0 }">
-        <span x-text="count"></span>
+    <div data-data="{ count: 0 }">
+        <span data-text="count"></span>
         <div id="buffer-top" style="height: calc(100vh - 50px); margin-top: 100vh; background: pink"></div>
         <div id="buffer-bottom" style="height: 50px; background: green"></div>
-        <div x-intersect.margin.100px="count++;$nextTick(() => console.log(count))" id="1">hi</div>
+        <div data-intersect.margin.100px="count++;$nextTick(() => console.log(count))" id="1">hi</div>
     </div>
     `],
     ({ get }) => {
@@ -150,14 +150,14 @@ test('.margin',
 
 test('.threshold',
     [html`
-    <div x-data="{ count: 0 }">
-        <div x-ref="foo" style="width: 250px; overflow: scroll; display: flex; justify-content: start">
+    <div data-data="{ count: 0 }">
+        <div data-ref="foo" style="width: 250px; overflow: scroll; display: flex; justify-content: start">
             <div style="min-width: 250px;">first</div>
-            <div style="min-width: 250px" x-intersect.threshold.50="count++;">second</div>
+            <div style="min-width: 250px" data-intersect.threshold.50="count++;">second</div>
         </div>
         <button @click="$refs.foo.scrollTo({ left: 15 })" id="1">first</button>
         <button @click="$refs.foo.scrollTo({ left: 250 })" id="2">second</button>
-        <span x-text="count"></span>
+        <span data-text="count"></span>
     </div>
     `],
     ({ get }) => {

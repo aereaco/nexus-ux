@@ -3,22 +3,22 @@ order: 2
 title: init
 ---
 
-# x-init
+# data-init
 
-The `x-init` directive allows you to hook into the initialization phase of any element in Alpine.
+The `data-init` directive allows you to hook into the initialization phase of any element in Alpine.
 
 ```alpine
-<div x-init="console.log('I\'m being initialized!')"></div>
+<div data-init="console.log('I\'m being initialized!')"></div>
 ```
 
 In the above example, "I\'m being initialized!" will be output in the console before it makes further DOM updates.
 
-Consider another example where `x-init` is used to fetch some JSON and store it in `x-data` before the component is processed.
+Consider another example where `data-init` is used to fetch some JSON and store it in `data-data` before the component is processed.
 
 ```alpine
 <div
-    x-data="{ posts: [] }"
-    x-init="posts = await (await fetch('/posts')).json()"
+    data-data="{ posts: [] }"
+    data-init="posts = await (await fetch('/posts')).json()"
 >...</div>
 ```
 
@@ -32,29 +32,29 @@ This would be something like `useEffect(..., [])` in react, or `mount` in Vue.
 By using Alpine's internal `$nextTick` magic, you can make this happen.
 
 ```alpine
-<div x-init="$nextTick(() => { ... })"></div>
+<div data-init="$nextTick(() => { ... })"></div>
 ```
 
-<a name="standalone-x-init"></a>
-## Standalone `x-init`
+<a name="standalone-data-init"></a>
+## Standalone `data-init`
 
-You can add `x-init` to any elements inside or outside an `x-data` HTML block. For example:
+You can add `data-init` to any elements inside or outside an `data-data` HTML block. For example:
 
 ```alpine
-<div x-data>
-    <span x-init="console.log('I can initialize')"></span>
+<div data-data>
+    <span data-init="console.log('I can initialize')"></span>
 </div>
 
-<span x-init="console.log('I can initialize too')"></span>
+<span data-init="console.log('I can initialize too')"></span>
 ```
 
 <a name="auto-evaluate-init-method"></a>
 ## Auto-evaluate init() method
 
-If the `x-data` object of a component contains an `init()` method, it will be called automatically. For example:
+If the `data-data` object of a component contains an `init()` method, it will be called automatically. For example:
 
 ```alpine
-<div x-data="{
+<div data-data="{
     init() {
         console.log('I am called automatically')
     }
@@ -73,16 +73,16 @@ Alpine.data('dropdown', () => ({
 }))
 ```
 
-If you have both an `x-data` object containing an `init()` method and an `x-init` directive, the `x-data` method will be called before the directive.
+If you have both an `data-data` object containing an `init()` method and an `data-init` directive, the `data-data` method will be called before the directive.
 
 ```alpine
 <div
-    x-data="{
+    data-data="{
         init() {
             console.log('I am called first')
         }
     }"
-    x-init="console.log('I am called second')"
+    data-init="console.log('I am called second')"
     >
     ...
 </div>

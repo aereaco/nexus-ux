@@ -2,11 +2,11 @@ import { haveText, test, html, haveFocus, notHaveAttribute, haveAttribute, notHa
 
 test('can trap focus',
     [html`
-        <div x-data="{ open: false }">
+        <div data-data="{ open: false }">
             <input type="text" id="1">
             <button id="2" @click="open = true">open</button>
             <div>
-                <div x-trap="open">
+                <div data-trap="open">
                     <input type="text" id="3">
                     <button @click="open = false" id="4">close</button>
                 </div>
@@ -31,7 +31,7 @@ test('can trap focus',
 
 test('works with clone',
     [html`
-        <div id="foo" x-data="{
+        <div id="foo" data-data="{
             open: false,
             triggerClone() {
                 var original = document.getElementById('foo');
@@ -45,7 +45,7 @@ test('works with clone',
         }">
             <button id="one" @click="open = true">Trap</button>
 
-            <div x-trap="open">
+            <div data-trap="open">
                 <input type="text">
                 <button id="two" @click="triggerClone()">Test</button>
             </div>
@@ -58,12 +58,12 @@ test('works with clone',
     }
 )
 
-test('releases focus when x-if is destroyed',
+test('releases focus when data-if is destroyed',
     [html`
-        <div x-data="{ open: false }">
+        <div data-data="{ open: false }">
             <button id="1" @click="open = true">open</button>
-            <template x-if="open">
-                <div x-trap="open">
+            <template data-if="open">
+                <div data-trap="open">
                     <button @click="open = false" id="2">close</button>
                 </div>
             </template>
@@ -79,12 +79,12 @@ test('releases focus when x-if is destroyed',
 
 test('can trap focus with inert',
     [html`
-        <div x-data="{ open: false }">
+        <div data-data="{ open: false }">
             <h1>I should have aria-hidden when outside trap</h1>
 
             <button id="open" @click="open = true">open</button>
 
-            <div x-trap.inert="open">
+            <div data-trap.inert="open">
                 <button @click="open = false" id="close">close</button>
             </div>
         </div>
@@ -102,7 +102,7 @@ test('inert only applies aria-hidden once',
     [html`
         <div>
             <div id="sibling">I should have aria-hidden applied once</div>
-            <div x-data="{
+            <div data-data="{
                 open: false,
                 timesApplied: 0,
                 init() {
@@ -119,9 +119,9 @@ test('inert only applies aria-hidden once',
                     })
                 },
             }">
-                <input type="text" id="timesApplied" x-model="timesApplied" />
+                <input type="text" id="timesApplied" data-model="timesApplied" />
                 <button id="trigger" @click="open = true">open</button>
-                <div x-trap.inert="open">
+                <div data-trap.inert="open">
                     Hello, I'm a friendly modal!
                 </div>
             </div>
@@ -135,10 +135,10 @@ test('inert only applies aria-hidden once',
 
 test('can trap focus with noscroll',
     [html`
-        <div x-data="{ open: false }">
+        <div data-data="{ open: false }">
             <button id="open" @click="open = true">open</button>
 
-            <div x-trap.noscroll="open">
+            <div data-trap.noscroll="open">
                 <button @click="open = false" id="close">close</button>
             </div>
 
@@ -158,9 +158,9 @@ test('can trap focus with noscroll',
 
 test('can trap focus with noreturn',
     [html`
-        <div x-data="{ open: false }" x-trap.noreturn="open">
+        <div data-data="{ open: false }" data-trap.noreturn="open">
             <input id="input" @focus="open = true">
-            <div x-show="open">
+            <div data-show="open">
                 <button @click="open = false" id="close">close</button>
             </div>
         </div>
@@ -175,7 +175,7 @@ test('can trap focus with noreturn',
 
 test('$focus.focus',
     [html`
-        <div x-data>
+        <div data-data>
             <button id="press-me" @click="$focus.focus(document.querySelector('#focus-me'))">Focus Other</button>
 
             <button id="focus-me">Other</button>
@@ -190,9 +190,9 @@ test('$focus.focus',
 
 test('$focus.focusable',
     [html`
-        <div x-data>
-            <div id="1" x-text="$focus.focusable($el)"></div>
-            <button id="2" x-text="$focus.focusable($el)"></button>
+        <div data-data>
+            <div id="1" data-text="$focus.focusable($el)"></div>
+            <button id="2" data-text="$focus.focusable($el)"></button>
         </div>
     `],
     ({ get }) => {
@@ -203,9 +203,9 @@ test('$focus.focusable',
 
 test('$focus.focusables',
     [html`
-        <div x-data>
-            <h1 x-text="$focus.within($refs.container).focusables().length"></h1>
-            <div x-ref="container">
+        <div data-data>
+            <h1 data-text="$focus.within($refs.container).focusables().length"></h1>
+            <div data-ref="container">
                 <button>1</button>
                 <div>2</div>
                 <button>3</button>
@@ -219,7 +219,7 @@ test('$focus.focusables',
 
 test('$focus.focused',
     [html`
-        <div x-data>
+        <div data-data>
             <button @click="$el.textContent = $el.isSameNode($focus.focused())">im-focused</button>
         </div>
     `],
@@ -231,8 +231,8 @@ test('$focus.focused',
 
 test('$focus.lastFocused',
     [html`
-        <div x-data>
-            <button id="1" x-ref="first">first-focused</button>
+        <div data-data>
+            <button id="1" data-ref="first">first-focused</button>
             <button id="2" @click="$el.textContent = $refs.first.isSameNode($focus.lastFocused())">second-focused</button>
         </div>
     `],
@@ -245,10 +245,10 @@ test('$focus.lastFocused',
 
 test('$focus.within',
     [html`
-        <div x-data>
-            <button id="1" x-text="$focus.within($refs.first).focusables().length"></button>
+        <div data-data>
+            <button id="1" data-text="$focus.within($refs.first).focusables().length"></button>
 
-            <div x-ref="first">
+            <div data-ref="first">
                 <button>1</button>
                 <button>2</button>
             </div>
@@ -267,8 +267,8 @@ test('$focus.within',
 
 test('$focus.next',
     [html`
-        <div x-data>
-            <div x-ref="first">
+        <div data-data>
+            <div data-ref="first">
                 <button id="1" @click="$focus.within($refs.first).next(); $nextTick(() => $el.textContent = $focus.focused().textContent)">1</button>
                 <button>2</button>
             </div>
@@ -282,8 +282,8 @@ test('$focus.next',
 
 test('$focus.prev',
     [html`
-        <div x-data>
-            <div x-ref="first">
+        <div data-data>
+            <div data-ref="first">
                 <button>2</button>
                 <button id="1" @click="$focus.within($refs.first).prev(); $nextTick(() => $el.textContent = $focus.focused().textContent)">1</button>
             </div>
@@ -297,8 +297,8 @@ test('$focus.prev',
 
 test('$focus.wrap',
     [html`
-        <div x-data>
-            <div x-ref="first">
+        <div data-data>
+            <div data-ref="first">
                 <button>2</button>
                 <button id="1" @click="$focus.within($refs.first).wrap().next(); $nextTick(() => $el.textContent = $focus.focused().textContent)">1</button>
             </div>
@@ -312,10 +312,10 @@ test('$focus.wrap',
 
 test('$focus.first',
     [html`
-        <div x-data>
+        <div data-data>
             <button id="1" @click="$focus.within($refs.first).first(); $nextTick(() => $el.textContent = $focus.focused().textContent)">1</button>
 
-            <div x-ref="first">
+            <div data-ref="first">
                 <button>2</button>
                 <button>3</button>
             </div>
@@ -329,10 +329,10 @@ test('$focus.first',
 
 test('$focus.last',
     [html`
-        <div x-data>
+        <div data-data>
             <button id="1" @click="$focus.within($refs.first).last(); $nextTick(() => $el.textContent = $focus.focused().textContent)">1</button>
 
-            <div x-ref="first">
+            <div data-ref="first">
                 <button>2</button>
                 <button>3</button>
             </div>
@@ -346,11 +346,11 @@ test('$focus.last',
 
 test('focuses element with autofocus',
     [html`
-        <div x-data="{ open: false }">
+        <div data-data="{ open: false }">
             <input type="text" id="1">
             <button id="2" @click="open = true">open</button>
             <div>
-                <div x-trap="open">
+                <div data-trap="open">
                     <input type="text" id="3">
                     <input autofocus type="text" id="4">
                     <button @click="open = false" id="5">close</button>
@@ -370,13 +370,13 @@ test('focuses element with autofocus',
     }
 )
 
-test('can disable x-trap autofocus with .noautofocus modifier',
+test('can disable data-trap autofocus with .noautofocus modifier',
     [html`
-        <div x-data="{ open: false }">
+        <div data-data="{ open: false }">
             <input type="text" id="1">
             <button id="2" @click="open = true">open</button>
             <div>
-                <div x-trap.noautofocus="open">
+                <div data-trap.noautofocus="open">
                     <input type="text" id="3">
                     <input autofocus type="text" id="4">
                     <button @click="open = false" id="5">close</button>

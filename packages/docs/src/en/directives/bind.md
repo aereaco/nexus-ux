@@ -3,39 +3,39 @@ order: 4
 title: bind
 ---
 
-# x-bind
+# data-bind
 
-`x-bind` allows you to set HTML attributes on elements based on the result of JavaScript expressions.
+`data-bind` allows you to set HTML attributes on elements based on the result of JavaScript expressions.
 
-For example, here's a component where we will use `x-bind` to set the placeholder value of an input.
+For example, here's a component where we will use `data-bind` to set the placeholder value of an input.
 
 ```alpine
-<div x-data="{ placeholder: 'Type here...' }">
-    <input type="text" x-bind:placeholder="placeholder">
+<div data-data="{ placeholder: 'Type here...' }">
+    <input type="text" data-bind:placeholder="placeholder">
 </div>
 ```
 
 <a name="shorthand-syntax"></a>
 ## Shorthand syntax
 
-If `x-bind:` is too verbose for your liking, you can use the shorthand: `:`. For example, here is the same input element as above, but refactored to use the shorthand syntax.
+If `data-bind:` is too verbose for your liking, you can use the shorthand: `:`. For example, here is the same input element as above, but refactored to use the shorthand syntax.
 
 ```alpine
 <input type="text" :placeholder="placeholder">
 ```
 
-> Despite not being included in the above snippet, `x-bind` cannot be used if no parent element has `x-data` defined. [→ Read more about `x-data`](/directives/data)
+> Despite not being included in the above snippet, `data-bind` cannot be used if no parent element has `data-data` defined. [→ Read more about `data-data`](/directives/data)
 
 <a name="binding-classes"></a>
 ## Binding classes
 
-`x-bind` is most often useful for setting specific classes on an element based on your Alpine state.
+`data-bind` is most often useful for setting specific classes on an element based on your Alpine state.
 
-Here's a simple example of a simple dropdown toggle, but instead of using `x-show`, we'll use a "hidden" class to toggle an element.
+Here's a simple example of a simple dropdown toggle, but instead of using `data-show`, we'll use a "hidden" class to toggle an element.
 
 ```alpine
-<div x-data="{ open: false }">
-    <button x-on:click="open = ! open">Toggle Dropdown</button>
+<div data-data="{ open: false }">
+    <button data-on:click="open = ! open">Toggle Dropdown</button>
 
     <div :class="open ? '' : 'hidden'">
         Dropdown Contents...
@@ -81,12 +81,12 @@ For example, if you wanted to apply the "hidden" class to an element before Alpi
 <div class="hidden" :class="{ 'hidden': ! show }">
 ```
 
-In case that confused you, let's dig deeper into how Alpine handles `x-bind:class` differently than other attributes.
+In case that confused you, let's dig deeper into how Alpine handles `data-bind:class` differently than other attributes.
 
 <a name="special-behavior"></a>
 ### Special behavior
 
-`x-bind:class` behaves differently than other attributes under the hood.
+`data-bind:class` behaves differently than other attributes under the hood.
 
 Consider the following case.
 
@@ -126,9 +126,9 @@ Just like the class objects, this syntax is entirely optional. Only use it if it
 <div style="color: red; display: flex;" ...>
 ```
 
-Conditional inline styling is possible using expressions just like with x-bind:class. Short circuit operators can be used here as well by using a styles object as the second operand.
+Conditional inline styling is possible using expressions just like with data-bind:class. Short circuit operators can be used here as well by using a styles object as the second operand.
 ```alpine
-<div x-bind:style="true && { color: 'red' }">
+<div data-bind:style="true && { color: 'red' }">
 
 <!-- Will render: -->
 <div style="color: red;">
@@ -146,7 +146,7 @@ One advantage of this approach is being able to mix it in with existing styles o
 And like most expressions in Alpine, you can always use the result of a JavaScript expression as the reference:
 
 ```alpine
-<div x-data="{ styles: { color: 'red', display: 'flex' }}">
+<div data-data="{ styles: { color: 'red', display: 'flex' }}">
     <div :style="styles">
 </div>
 
@@ -159,15 +159,15 @@ And like most expressions in Alpine, you can always use the result of a JavaScri
 <a name="bind-directives"></a>
 ## Binding Alpine Directives Directly
 
-`x-bind` allows you to bind an object of different directives and attributes to an element.
+`data-bind` allows you to bind an object of different directives and attributes to an element.
 
 The object keys can be anything you would normally write as an attribute name in Alpine. This includes Alpine directives and modifiers, but also plain HTML attributes. The object values are either plain strings, or in the case of dynamic Alpine directives, callbacks to be evaluated by Alpine.
 
 ```alpine
-<div x-data="dropdown">
-    <button x-bind="trigger">Open Dropdown</button>
+<div data-data="dropdown">
+    <button data-bind="trigger">Open Dropdown</button>
 
-    <span x-bind="dialogue">Dropdown Contents</span>
+    <span data-bind="dialogue">Dropdown Contents</span>
 </div>
 
 <script>
@@ -176,14 +176,14 @@ The object keys can be anything you would normally write as an attribute name in
             open: false,
 
             trigger: {
-                ['x-ref']: 'trigger',
+                ['data-ref']: 'trigger',
                 ['@click']() {
                     this.open = true
                 },
             },
 
             dialogue: {
-                ['x-show']() {
+                ['data-show']() {
                     return this.open
                 },
                 ['@click.outside']() {
@@ -195,6 +195,6 @@ The object keys can be anything you would normally write as an attribute name in
 </script>
 ```
 
-There are a couple of caveats to this usage of `x-bind`:
+There are a couple of caveats to this usage of `data-bind`:
 
-> When the directive being "bound" or "applied" is `x-for`, you should return a normal expression string from the callback. For example: `['x-for']() { return 'item in items' }`
+> When the directive being "bound" or "applied" is `data-for`, you should return a normal expression string from the callback. For example: `['data-for']() { return 'item in items' }`

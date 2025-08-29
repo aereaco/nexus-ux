@@ -2,10 +2,10 @@ import { haveText, html, test } from '../../utils'
 
 test('can reference elements from event listeners',
     html`
-        <div x-data="{}">
-            <button x-on:click="$refs['bob'].textContent = 'lob'"></button>
+        <div data-data="{}">
+            <button data-on:click="$refs['bob'].textContent = 'lob'"></button>
 
-            <span x-ref="bob"></span>
+            <span data-ref="bob"></span>
         </div>
     `,
     ({ get }) => {
@@ -16,10 +16,10 @@ test('can reference elements from event listeners',
 
 test('can reference elements from data object methods',
     html`
-        <div x-data="{ foo() { this.$refs.bob.textContent = 'lob' } }">
-            <button x-on:click="foo()"></button>
+        <div data-data="{ foo() { this.$refs.bob.textContent = 'lob' } }">
+            <button data-on:click="foo()"></button>
 
-            <span x-ref="bob"></span>
+            <span data-ref="bob"></span>
         </div>
     `,
     ({ get }) => {
@@ -28,10 +28,10 @@ test('can reference elements from data object methods',
     }
 )
 
-test('can reference elements from x-init',
+test('can reference elements from data-init',
     html`
-        <div x-data x-init="$refs.foo.textContent = 'lob'">
-            <span x-ref="foo">bob</span>
+        <div data-data data-init="$refs.foo.textContent = 'lob'">
+            <span data-ref="foo">bob</span>
         </div>
     `,
     ({ get }) => {
@@ -39,11 +39,11 @@ test('can reference elements from x-init',
     }
 )
 
-test('can reference elements outside of x-init',
+test('can reference elements outside of data-init',
     html`
-        <div x-data x-ref="foo" data-foo="bar">
-            <div x-init="() => {}">
-                <span x-text="$refs.foo.dataset.foo"></span>
+        <div data-data data-ref="foo" data-foo="bar">
+            <div data-init="() => {}">
+                <span data-text="$refs.foo.dataset.foo"></span>
             </div>
         </div>
     `,
@@ -54,9 +54,9 @@ test('can reference elements outside of x-init',
 
 test('can reference refs of parent scope',
     html`
-        <div x-data x-ref="foo" data-foo="bar">
-            <div x-data>
-                <span x-text="$refs.foo.dataset.foo"></span>
+        <div data-data data-ref="foo" data-foo="bar">
+            <div data-data>
+                <span data-text="$refs.foo.dataset.foo"></span>
             </div>
         </div>
     `,
@@ -67,9 +67,9 @@ test('can reference refs of parent scope',
 
 test('when referencing refs from parent scope, the closest ref is used',
     html`
-        <div x-data x-ref="foo" data-foo="bar">
-            <div x-data x-ref="foo" data-foo="baz">
-                <span x-text="$refs.foo.dataset.foo"></span>
+        <div data-data data-ref="foo" data-foo="bar">
+            <div data-data data-ref="foo" data-foo="baz">
+                <span data-text="$refs.foo.dataset.foo"></span>
             </div>
         </div>
     `,

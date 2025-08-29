@@ -2,12 +2,12 @@ import { beHidden, beVisible, haveAttribute, haveClasses, haveText, html, notBeV
 
 test('has accessibility attributes',
     [html`
-        <div x-data="{ checked: false }">
-            <article x-switch:group>
-                <label x-switch:label>Enable notifications</label>
-                <span description x-switch:description>A description of the switch.</span>
+        <div data-data="{ checked: false }">
+            <article data-switch:group>
+                <label data-switch:label>Enable notifications</label>
+                <span description data-switch:description>A description of the switch.</span>
 
-                <button x-switch x-model="checked">Enable Notifications</button>
+                <button data-switch data-model="checked">Enable Notifications</button>
             </article>
         </div>
     `],
@@ -25,12 +25,12 @@ test('has accessibility attributes',
     },
 )
 
-test('works with x-model',
+test('works with data-model',
     [html`
-        <div x-data="{ checked: false }">
-            <button x-switch x-model="checked">Enable notifications</button>
+        <div data-data="{ checked: false }">
+            <button data-switch data-model="checked">Enable notifications</button>
 
-            <article x-show="checked">
+            <article data-show="checked">
                 Notifications are enabled.
             </article>
         </div>
@@ -46,8 +46,8 @@ test('works with x-model',
 
 test('works with internal state/$switch.isChecked',
     [html`
-        <div x-data>
-            <button x-switch x-bind:class="$switch.isChecked ? 'foo' : 'bar'">
+        <div data-data>
+            <button data-switch data-bind:class="$switch.isChecked ? 'foo' : 'bar'">
                 Enable notifications
             </button>
         </div>
@@ -63,11 +63,11 @@ test('works with internal state/$switch.isChecked',
 
 test('pressing space toggles the switch',
     [html`
-        <div x-data="{ checked: false }">
+        <div data-data="{ checked: false }">
             <div>
-                <button x-switch x-model="checked">Enable notifications</button>
+                <button data-switch data-model="checked">Enable notifications</button>
 
-                <article x-show="checked">
+                <article data-show="checked">
                     Notifications are enabled.
                 </article>
             </div>
@@ -85,10 +85,10 @@ test('pressing space toggles the switch',
 
 test('default-checked',
     [html`
-        <div x-data>
+        <div data-data>
             <div>
                 <button
-                    x-switch
+                    data-switch
                     default-checked
                     :class="$switch.isChecked ? 'checked' : 'not-checked'"
                 >Enable notifications</button>
@@ -104,10 +104,10 @@ test('default-checked',
 
 test('name and value props',
     [html`
-        <div x-data>
+        <div data-data>
             <div>
                 <button
-                    x-switch
+                    data-switch
                     name="notifications"
                     value="yes"
                 >Enable notifications</button>
@@ -129,10 +129,10 @@ test('name and value props',
 
 test('value defaults to "on"',
     [html`
-        <div x-data>
+        <div data-data>
             <div>
                 <button
-                    x-switch
+                    data-switch
                     name="notifications"
                 >Enable notifications</button>
             </div>

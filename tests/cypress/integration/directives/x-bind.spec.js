@@ -2,8 +2,8 @@ import { beHidden, beVisible, haveText, beChecked, haveAttribute, haveClasses, h
 
 test('sets attribute bindings on initialize',
     html`
-        <div x-data="{ foo: 'bar' }">
-            <span x-ref="me" x-bind:foo="foo">[Subject]</span>
+        <div data-data="{ foo: 'bar' }">
+            <span data-ref="me" data-bind:foo="foo">[Subject]</span>
         </div>
     `,
     ({ get }) => get('span').should(haveAttribute('foo', 'bar'))
@@ -11,8 +11,8 @@ test('sets attribute bindings on initialize',
 
 test('sets undefined nested keys to empty string',
     html`
-        <div x-data="{ nested: {} }">
-            <span x-bind:foo="nested.field">
+        <div data-data="{ nested: {} }">
+            <span data-bind:foo="nested.field">
         </div>
     `,
     ({ get }) => get('span').should(haveAttribute('foo', ''))
@@ -20,8 +20,8 @@ test('sets undefined nested keys to empty string',
 
 test('style attribute bindings are added by string syntax',
     html`
-        <div x-data="{ initialClass: 'foo' }">
-            <span x-bind:class="initialClass"></span>
+        <div data-data="{ initialClass: 'foo' }">
+            <span data-bind:class="initialClass"></span>
         </div>
     `,
     ({ get }) => get('span').should(haveClasses(['foo']))
@@ -29,16 +29,16 @@ test('style attribute bindings are added by string syntax',
 
 test('aria-pressed/checked/expanded/selected attribute boolean values are cast to a true/false string',
     html`
-        <div x-data="{ open: true }">
-            <span x-bind:aria-pressed="open"></span>
-            <span x-bind:aria-checked="open"></span>
-            <span x-bind:aria-expanded="open"></span>
-            <span x-bind:aria-selected="open"></span>
+        <div data-data="{ open: true }">
+            <span data-bind:aria-pressed="open"></span>
+            <span data-bind:aria-checked="open"></span>
+            <span data-bind:aria-expanded="open"></span>
+            <span data-bind:aria-selected="open"></span>
 
-            <span x-bind:aria-pressed="false"></span>
-            <span x-bind:aria-checked="false"></span>
-            <span x-bind:aria-expanded="false"></span>
-            <span x-bind:aria-selected="false"></span>
+            <span data-bind:aria-pressed="false"></span>
+            <span data-bind:aria-checked="false"></span>
+            <span data-bind:aria-expanded="false"></span>
+            <span data-bind:aria-selected="false"></span>
         </div>
     `,
     ({ get }) => {
@@ -55,18 +55,18 @@ test('aria-pressed/checked/expanded/selected attribute boolean values are cast t
 
 test('non-boolean attributes set to null/undefined/false are removed from the element',
     html`
-        <div x-data="{}">
-            <a href="#hello" x-bind:href="null">null</a>
-            <a href="#hello" x-bind:href="false">false</a>
-            <a href="#hello" x-bind:href="undefined">undefined</a>
+        <div data-data="{}">
+            <a href="#hello" data-bind:href="null">null</a>
+            <a href="#hello" data-bind:href="false">false</a>
+            <a href="#hello" data-bind:href="undefined">undefined</a>
             <!-- custom attribute see https://github.com/alpinejs/alpine/issues/280 -->
-            <span visible="true" x-bind:visible="null">null</span>
-            <span visible="true" x-bind:visible="false">false</span>
-            <span visible="true" x-bind:visible="undefined">undefined</span>
+            <span visible="true" data-bind:visible="null">null</span>
+            <span visible="true" data-bind:visible="false">false</span>
+            <span visible="true" data-bind:visible="undefined">undefined</span>
 
-            <span hidden="true" x-bind:hidden="null">null</span>
-            <span hidden="true" x-bind:hidden="false">false</span>
-            <span hidden="true" x-bind:hidden="undefined">undefined</span>
+            <span hidden="true" data-bind:hidden="null">null</span>
+            <span hidden="true" data-bind:hidden="false">false</span>
+            <span hidden="true" data-bind:hidden="undefined">undefined</span>
         </div>
     `,
     ({ get }) => {
@@ -84,8 +84,8 @@ test('non-boolean attributes set to null/undefined/false are removed from the el
 
 test('non-boolean empty string attributes are not removed',
     html`
-        <div x-data>
-            <a href="#hello" x-bind:href="''"></a>
+        <div data-data>
+            <a href="#hello" data-bind:href="''"></a>
         </div>
     `,
     ({ get }) => get('a').should(haveAttribute('href', ''))
@@ -93,40 +93,40 @@ test('non-boolean empty string attributes are not removed',
 
 test('boolean attribute values are set to their attribute name if true and removed if false',
     html`
-        <div x-data="{ isSet: true }">
+        <div data-data="{ isSet: true }">
             <span @click="isSet = false" id="setToFalse">Set To False</span>
 
-            <input x-bind:disabled="isSet"></input>
-            <input x-bind:checked="isSet"></input>
-            <input x-bind:required="isSet"></input>
-            <input x-bind:readonly="isSet"></input>
-            <details x-bind:open="isSet"></details>
-            <select x-bind:multiple="isSet"></select>
-            <option x-bind:selected="isSet"></option>
-            <textarea x-bind:autofocus="isSet"></textarea>
-            <dl x-bind:itemscope="isSet"></dl>
+            <input data-bind:disabled="isSet"></input>
+            <input data-bind:checked="isSet"></input>
+            <input data-bind:required="isSet"></input>
+            <input data-bind:readonly="isSet"></input>
+            <details data-bind:open="isSet"></details>
+            <select data-bind:multiple="isSet"></select>
+            <option data-bind:selected="isSet"></option>
+            <textarea data-bind:autofocus="isSet"></textarea>
+            <dl data-bind:itemscope="isSet"></dl>
             <form 
-                x-bind:novalidate="isSet"
-                x-bind:inert="isSet"
+                data-bind:novalidate="isSet"
+                data-bind:inert="isSet"
             ></form>
             <iframe
-                x-bind:allowfullscreen="isSet"
+                data-bind:allowfullscreen="isSet"
             ></iframe>
-            <button x-bind:formnovalidate="isSet"></button>
+            <button data-bind:formnovalidate="isSet"></button>
             <audio
-                x-bind:autoplay="isSet"
-                x-bind:controls="isSet"
-                x-bind:loop="isSet"
-                x-bind:muted="isSet"
+                data-bind:autoplay="isSet"
+                data-bind:controls="isSet"
+                data-bind:loop="isSet"
+                data-bind:muted="isSet"
             ></audio>
-            <video x-bind:playsinline="isSet"></video>
-            <track x-bind:default="isSet" />
-            <img x-bind:ismap="isSet" />
-            <ol x-bind:reversed="isSet"></ol>
+            <video data-bind:playsinline="isSet"></video>
+            <track data-bind:default="isSet" />
+            <img data-bind:ismap="isSet" />
+            <ol data-bind:reversed="isSet"></ol>
             <template 
-                x-bind:shadowrootclonable="isSet"
-                x-bind:shadowrootdelegatesfocus="isSet"
-                x-bind:shadowrootserializable="isSet"
+                data-bind:shadowrootclonable="isSet"
+                data-bind:shadowrootdelegatesfocus="isSet"
+                data-bind:shadowrootserializable="isSet"
             ></template>
         </div>
     `,
@@ -186,8 +186,8 @@ test('boolean attribute values are set to their attribute name if true and remov
 
 test('boolean empty string attributes are not removed',
     html`
-        <div x-data="{}">
-            <input x-bind:disabled="''">
+        <div data-data="{}">
+            <input data-bind:disabled="''">
         </div>
     `,
     ({ get }) => get('input').should(haveAttribute('disabled', 'disabled'))
@@ -195,7 +195,7 @@ test('boolean empty string attributes are not removed',
 
 test('binding supports short syntax',
     html`
-        <div x-data="{ foo: 'bar' }">
+        <div data-data="{ foo: 'bar' }">
             <span :class="foo"></span>
         </div>
     `,
@@ -204,12 +204,12 @@ test('binding supports short syntax',
 
 test('checkbox is unchecked by default',
     html`
-        <div x-data="{foo: {bar: 'baz'}}">
-            <input type="checkbox" x-bind:value="''"></input>
-            <input type="checkbox" x-bind:value="'test'"></input>
-            <input type="checkbox" x-bind:value="foo.bar"></input>
-            <input type="checkbox" x-bind:value="0"></input>
-            <input type="checkbox" x-bind:value="10"></input>
+        <div data-data="{foo: {bar: 'baz'}}">
+            <input type="checkbox" data-bind:value="''"></input>
+            <input type="checkbox" data-bind:value="'test'"></input>
+            <input type="checkbox" data-bind:value="foo.bar"></input>
+            <input type="checkbox" data-bind:value="0"></input>
+            <input type="checkbox" data-bind:value="10"></input>
         </div>
     `,
     ({ get }) => {
@@ -223,12 +223,12 @@ test('checkbox is unchecked by default',
 
 test('radio is unchecked by default',
     html`
-        <div x-data="{foo: {bar: 'baz'}}">
-            <input type="radio" x-bind:value="''"></input>
-            <input type="radio" x-bind:value="'test'"></input>
-            <input type="radio" x-bind:value="foo.bar"></input>
-            <input type="radio" x-bind:value="0"></input>
-            <input type="radio" x-bind:value="10"></input>
+        <div data-data="{foo: {bar: 'baz'}}">
+            <input type="radio" data-bind:value="''"></input>
+            <input type="radio" data-bind:value="'test'"></input>
+            <input type="radio" data-bind:value="foo.bar"></input>
+            <input type="radio" data-bind:value="0"></input>
+            <input type="radio" data-bind:value="10"></input>
         </div>
     `,
     ({ get }) => {
@@ -242,7 +242,7 @@ test('radio is unchecked by default',
 
 test('checkbox values are set correctly',
     html`
-        <div x-data="{ stringValue: 'foo', trueValue: true, falseValue: false }">
+        <div data-data="{ stringValue: 'foo', trueValue: true, falseValue: false }">
             <input type="checkbox" name="stringCheckbox" :value="stringValue" />
             <input type="checkbox" name="trueCheckbox" :value="trueValue" />
             <input type="checkbox" name="falseCheckbox" :value="falseValue" />
@@ -257,11 +257,11 @@ test('checkbox values are set correctly',
 
 test('radio values are set correctly',
     html`
-        <div x-data="{lists: [{id: 1}, {id: 8}], selectedListID: '8'}">
-            <template x-for="list in lists" :key="list.id">
-                <input x-model="selectedListID" type="radio" :value="list.id.toString()" :id="'list-' + list.id">
+        <div data-data="{lists: [{id: 1}, {id: 8}], selectedListID: '8'}">
+            <template data-for="list in lists" :key="list.id">
+                <input data-model="selectedListID" type="radio" :value="list.id.toString()" :id="'list-' + list.id">
             </template>
-            <input type="radio" id="list-test" value="test" x-model="selectedListID">
+            <input type="radio" id="list-test" value="test" data-model="selectedListID">
         </div>
     `,
     ({ get }) => {
@@ -276,8 +276,8 @@ test('radio values are set correctly',
 
 test('.camel modifier correctly sets name of attribute',
     html`
-        <div x-data>
-            <svg x-bind:view-box.camel="'0 0 42 42'"></svg>
+        <div data-data>
+            <svg data-bind:view-box.camel="'0 0 42 42'"></svg>
         </div>
     `,
     ({ get }) => get('svg').should(haveAttribute('viewBox', '0 0 42 42'))
@@ -285,8 +285,8 @@ test('.camel modifier correctly sets name of attribute',
 
 test('attribute binding names can contain numbers',
     html`
-        <svg x-data>
-            <line x1="1" y1="2" :x2="3" x-bind:y2="4" />
+        <svg data-data>
+            <line x1="1" y1="2" :x2="3" data-bind:y2="4" />
         </svg>
     `,
     ({ get }) => {
@@ -297,7 +297,7 @@ test('attribute binding names can contain numbers',
 
 test('non-string and non-boolean attributes are cast to string when bound to checkbox',
     html`
-        <div x-data="{ number: 100, zero: 0, bool: true, nullProp: null }">
+        <div data-data="{ number: 100, zero: 0, bool: true, nullProp: null }">
             <input type="checkbox" id="number" :value="number">
             <input type="checkbox" id="zero" :value="zero">
             <input type="checkbox" id="boolean" :value="bool">
@@ -319,19 +319,19 @@ test('can bind an object of directives',
                 return {
                     foo: 'bar',
                     trigger: {
-                        ['x-on:click']() { this.foo = 'baz' },
+                        ['data-on:click']() { this.foo = 'baz' },
                     },
                     dialogue: {
-                        ['x-text']() { return this.foo },
+                        ['data-text']() { return this.foo },
                     },
                 }
             }
         </script>
 
-        <div x-data="window.modal()">
-            <button x-bind="trigger">Toggle</button>
+        <div data-data="window.modal()">
+            <button data-bind="trigger">Toggle</button>
 
-            <span x-bind="dialogue">Modal Body</span>
+            <span data-bind="dialogue">Modal Body</span>
         </div>
     `,
     ({ get }) => {
@@ -341,18 +341,18 @@ test('can bind an object of directives',
     }
 )
 
-test('x-bind object syntax supports normal HTML attributes',
+test('data-bind object syntax supports normal HTML attributes',
     html`
-        <span x-data x-bind="{ foo: 'bar' }"></span>
+        <span data-data data-bind="{ foo: 'bar' }"></span>
     `,
     ({ get }) => {
         get('span').should(haveAttribute('foo', 'bar'))
     }
 )
 
-test('x-bind object syntax supports normal HTML attributes mixed in with dynamic ones',
+test('data-bind object syntax supports normal HTML attributes mixed in with dynamic ones',
     html`
-        <span x-data x-bind="{ 'x-bind:bob'() { return 'lob'; }, foo: 'bar', 'x-bind:bab'() { return 'lab' } }"></span>
+        <span data-data data-bind="{ 'data-bind:bob'() { return 'lob'; }, foo: 'bar', 'data-bind:bab'() { return 'lab' } }"></span>
     `,
     ({ get }) => {
         get('span').should(haveAttribute('foo', 'bar'))
@@ -361,20 +361,20 @@ test('x-bind object syntax supports normal HTML attributes mixed in with dynamic
     }
 )
 
-test('x-bind object syntax supports x-for',
+test('data-bind object syntax supports data-for',
     html`
         <script>
             window.todos = () => { return {
                 todos: ['foo', 'bar'],
                 outputForExpression: {
-                    ['x-for']: 'todo in todos',
+                    ['data-for']: 'todo in todos',
                 }
             }}
         </script>
-        <div x-data="window.todos()">
+        <div data-data="window.todos()">
             <ul>
-                <template x-bind="outputForExpression">
-                    <li x-text="todo"></li>
+                <template data-bind="outputForExpression">
+                    <li data-text="todo"></li>
                 </template>
             </ul>
         </div>
@@ -385,7 +385,7 @@ test('x-bind object syntax supports x-for',
     }
 )
 
-test('x-bind object syntax syntax supports x-transition',
+test('data-bind object syntax syntax supports data-transition',
     html`
         <style>
             .transition { transition-property: background-color, border-color, color, fill, stroke; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
@@ -396,19 +396,19 @@ test('x-bind object syntax syntax supports x-transition',
                 show: true,
                 outputClickExpression: {
                     ['@click']() { this.show = false },
-                    ['x-text']() { return 'Click Me' },
+                    ['data-text']() { return 'Click Me' },
                 },
                 outputTransitionExpression: {
-                    ['x-show']() { return this.show },
-                    ['x-transition:enter']: 'transition duration-100',
-                    ['x-transition:leave']: 'transition duration-100',
+                    ['data-show']() { return this.show },
+                    ['data-transition:enter']: 'transition duration-100',
+                    ['data-transition:leave']: 'transition duration-100',
                 },
             }}
         </script>
-        <div x-data="transitions()">
-            <button x-bind="outputClickExpression"></button>
+        <div data-data="transitions()">
+            <button data-bind="outputClickExpression"></button>
 
-            <span x-bind="outputTransitionExpression">thing</span>
+            <span data-bind="outputTransitionExpression">thing</span>
         </div>
     `,
     ({ get }) => {
@@ -419,7 +419,7 @@ test('x-bind object syntax syntax supports x-transition',
     }
 )
 
-test('x-bind object syntax event handlers defined as functions receive the event object as their first argument',
+test('data-bind object syntax event handlers defined as functions receive the event object as their first argument',
     html`
         <script>
             window.data = () => { return {
@@ -430,10 +430,10 @@ test('x-bind object syntax event handlers defined as functions receive the event
                 }
             }}
         </script>
-        <div x-data="window.data()">
-            <button x-bind="button" id="bar">click me</button>
+        <div data-data="window.data()">
+            <button data-bind="button" id="bar">click me</button>
 
-            <span x-ref="span">foo</span>
+            <span data-ref="span">foo</span>
         </div>
     `,
     ({ get }) => {
@@ -443,7 +443,7 @@ test('x-bind object syntax event handlers defined as functions receive the event
     }
 )
 
-test('x-bind object syntax event handlers defined as functions receive element bound magics',
+test('data-bind object syntax event handlers defined as functions receive element bound magics',
     html`
         <script>
             window.data = () => { return {
@@ -454,10 +454,10 @@ test('x-bind object syntax event handlers defined as functions receive element b
                 }
             }}
         </script>
-        <div x-data="window.data()">
-            <button x-bind="button" id="bar">click me</button>
+        <div data-data="window.data()">
+            <button data-bind="button" id="bar">click me</button>
 
-            <span x-ref="span">foo</span>
+            <span data-ref="span">foo</span>
         </div>
     `,
     ({ get }) => {
@@ -469,12 +469,12 @@ test('x-bind object syntax event handlers defined as functions receive element b
 
 test('Can retrieve Alpine bound data with global bound method',
     html`
-        <div id="1" x-data foo="bar" x-text="Alpine.bound($el, 'foo')"></div>
-        <div id="2" x-data :foo="'bar'" x-text="Alpine.bound($el, 'foo')"></div>
-        <div id="3" x-data foo x-text="Alpine.bound($el, 'foo')"></div>
-        <div id="4" x-data disabled x-text="Alpine.bound($el, 'disabled')"></div>
-        <div id="5" x-data x-text="Alpine.bound($el, 'foo')"></div>
-        <div id="6" x-data x-text="Alpine.bound($el, 'foo', 'bar')"></div>
+        <div id="1" data-data foo="bar" data-text="Alpine.bound($el, 'foo')"></div>
+        <div id="2" data-data :foo="'bar'" data-text="Alpine.bound($el, 'foo')"></div>
+        <div id="3" data-data foo data-text="Alpine.bound($el, 'foo')"></div>
+        <div id="4" data-data disabled data-text="Alpine.bound($el, 'disabled')"></div>
+        <div id="5" data-data data-text="Alpine.bound($el, 'foo')"></div>
+        <div id="6" data-data data-text="Alpine.bound($el, 'foo', 'bar')"></div>
     `,
     ({ get }) => {
         get('#1').should(haveText('bar'))
@@ -488,9 +488,9 @@ test('Can retrieve Alpine bound data with global bound method',
 
 test('Can extract Alpine bound data as a data prop',
     html`
-        <div x-data="{ foo: 'bar' }">
-            <div id="1" x-data="{ init() { this.$el.textContent = Alpine.extractProp(this.$el, 'foo') }}" :foo="foo"></div>
-            <div id="2" x-data="{ init() { this.$el.textContent = Alpine.extractProp(this.$el, 'foo', null, false) }}" :foo="foo"></div>
+        <div data-data="{ foo: 'bar' }">
+            <div id="1" data-data="{ init() { this.$el.textContent = Alpine.extractProp(this.$el, 'foo') }}" :foo="foo"></div>
+            <div id="2" data-data="{ init() { this.$el.textContent = Alpine.extractProp(this.$el, 'foo', null, false) }}" :foo="foo"></div>
         </div>
     `,
     ({ get }) => {
@@ -501,11 +501,11 @@ test('Can extract Alpine bound data as a data prop',
     }
 )
 
-test('x-bind updates checked attribute and property after user interaction',
+test('data-bind updates checked attribute and property after user interaction',
     html`
-        <div x-data="{ checked: true }">
+        <div data-data="{ checked: true }">
             <button @click="checked = !checked">toggle</button>
-            <input type="checkbox" x-bind:checked="checked" @change="checked = $event.target.checked" />
+            <input type="checkbox" data-bind:checked="checked" @change="checked = $event.target.checked" />
         </div>
     `,
     ({ get }) => {

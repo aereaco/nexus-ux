@@ -2,10 +2,10 @@ import { haveValue, html, test } from '../utils'
 
 test.skip('can entangle to getter/setter pairs',
     [html`
-    <div x-data="{ outer: 'foo' }">
-        <input x-model="outer" outer>
+    <div data-data="{ outer: 'foo' }">
+        <input data-model="outer" outer>
 
-        <div x-data="{ inner: 'bar' }" x-init="() => {}; Alpine.entangle(
+        <div data-data="{ inner: 'bar' }" data-init="() => {}; Alpine.entangle(
             {
                 get() { return outer },
                 set(value) { outer = value },
@@ -15,7 +15,7 @@ test.skip('can entangle to getter/setter pairs',
                 set(value) { inner = value },
             }
         )">
-            <input x-model="inner" inner>
+            <input data-model="inner" inner>
         </div>
     </div>
     `],
@@ -35,10 +35,10 @@ test.skip('can entangle to getter/setter pairs',
 
 test.skip('can release entanglement',
     [html`
-        <div x-data="{ outer: 'foo' }">
-            <input x-model="outer" outer>
+        <div data-data="{ outer: 'foo' }">
+            <input data-model="outer" outer>
 
-            <div x-data="{ inner: 'bar', release: () => {} }" x-init="() => {}; release = Alpine.entangle(
+            <div data-data="{ inner: 'bar', release: () => {} }" data-init="() => {}; release = Alpine.entangle(
                 {
                     get() { return outer },
                     set(value) { outer = value },
@@ -48,7 +48,7 @@ test.skip('can release entanglement',
                     set(value) { inner = value },
                 }
             )">
-                <input x-model="inner" inner>
+                <input data-model="inner" inner>
 
                 <button @click="release()">release</button>
             </div>
@@ -74,12 +74,12 @@ test(
     "can handle undefined",
     [
         html`
-            <div x-data="{ outer: undefined }">
-                <input x-model="outer" outer />
+            <div data-data="{ outer: undefined }">
+                <input data-model="outer" outer />
 
                 <div
-                    x-data="{ inner: 'bar' }"
-                    x-init="() => {}; Alpine.entangle(
+                    data-data="{ inner: 'bar' }"
+                    data-init="() => {}; Alpine.entangle(
             {
                 get() { return outer },
                 set(value) { outer = value },
@@ -90,7 +90,7 @@ test(
             }
         )"
                 >
-                    <input x-model="inner" inner />
+                    <input data-model="inner" inner />
                 </div>
             </div>
         `,

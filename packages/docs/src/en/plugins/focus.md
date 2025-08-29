@@ -49,20 +49,20 @@ Alpine.plugin(focus)
 ...
 ```
 
-<a name="x-trap"></a>
-## x-trap
+<a name="data-trap"></a>
+## data-trap
 
-Focus offers a dedicated API for trapping focus within an element: the `x-trap` directive.
+Focus offers a dedicated API for trapping focus within an element: the `data-trap` directive.
 
-`x-trap` accepts a JS expression. If the result of that expression is true, then the focus will be trapped inside that element until the expression becomes false, then at that point, focus will be returned to where it was previously.
+`data-trap` accepts a JS expression. If the result of that expression is true, then the focus will be trapped inside that element until the expression becomes false, then at that point, focus will be returned to where it was previously.
 
 For example:
 
 ```alpine
-<div x-data="{ open: false }">
+<div data-data="{ open: false }">
     <button @click="open = true">Open Dialog</button>
 
-    <span x-show="open" x-trap="open">
+    <span data-show="open" data-trap="open">
         <p>...</p>
 
         <input type="text" placeholder="Some input...">
@@ -75,12 +75,12 @@ For example:
 ```
 
 <!-- START_VERBATIM -->
-<div x-data="{ open: false }" class="demo">
+<div data-data="{ open: false }" class="demo">
     <div :class="open && 'opacity-50'">
-        <button x-on:click="open = true">Open Dialog</button>
+        <button data-on:click="open = true">Open Dialog</button>
     </div>
 
-    <div x-show="open" x-trap="open" class="mt-4 space-y-4 p-4 border bg-yellow-100" @keyup.escape.window="open = false">
+    <div data-show="open" data-trap="open" class="mt-4 space-y-4 p-4 border bg-yellow-100" @keyup.escape.window="open = false">
         <strong>
             <div>Focus is now "trapped" inside this dialog, meaning you can only click/focus elements within this yellow dialog. If you press tab repeatedly, the focus will stay within this dialog.</div>
         </strong>
@@ -103,26 +103,26 @@ For example:
 <a name="nesting"></a>
 ### Nesting dialogs
 
-Sometimes you may want to nest one dialog inside another. `x-trap` makes this trivial and handles it automatically.
+Sometimes you may want to nest one dialog inside another. `data-trap` makes this trivial and handles it automatically.
 
-`x-trap` keeps track of newly "trapped" elements and stores the last actively focused element. Once the element is "untrapped" then the focus will be returned to where it was originally.
+`data-trap` keeps track of newly "trapped" elements and stores the last actively focused element. Once the element is "untrapped" then the focus will be returned to where it was originally.
 
 This mechanism is recursive, so you can trap focus within an already trapped element infinite times, then "untrap" each element successively.
 
 Here is nesting in action:
 
 ```alpine
-<div x-data="{ open: false }">
+<div data-data="{ open: false }">
     <button @click="open = true">Open Dialog</button>
 
-    <span x-show="open" x-trap="open">
+    <span data-show="open" data-trap="open">
 
         ...
 
-        <div x-data="{ open: false }">
+        <div data-data="{ open: false }">
             <button @click="open = true">Open Nested Dialog</button>
 
-            <span x-show="open" x-trap="open">
+            <span data-show="open" data-trap="open">
 
                 ...
 
@@ -136,12 +136,12 @@ Here is nesting in action:
 ```
 
 <!-- START_VERBATIM -->
-<div x-data="{ open: false }" class="demo">
+<div data-data="{ open: false }" class="demo">
     <div :class="open && 'opacity-50'">
-        <button x-on:click="open = true">Open Dialog</button>
+        <button data-on:click="open = true">Open Dialog</button>
     </div>
 
-    <div x-show="open" x-trap="open" class="mt-4 space-y-4 p-4 border bg-yellow-100" @keyup.escape.window="open = false">
+    <div data-show="open" data-trap="open" class="mt-4 space-y-4 p-4 border bg-yellow-100" @keyup.escape.window="open = false">
         <div>
             <input type="text" placeholder="Some input...">
         </div>
@@ -150,12 +150,12 @@ Here is nesting in action:
             <input type="text" placeholder="Some other input...">
         </div>
 
-        <div x-data="{ open: false }">
+        <div data-data="{ open: false }">
             <div :class="open && 'opacity-50'">
-                <button x-on:click="open = true">Open Nested Dialog</button>
+                <button data-on:click="open = true">Open Nested Dialog</button>
             </div>
 
-            <div x-show="open" x-trap="open" class="mt-4 space-y-4 p-4 border border-gray-500 bg-yellow-200" @keyup.escape.window="open = false">
+            <div data-show="open" data-trap="open" class="mt-4 space-y-4 p-4 border border-gray-500 bg-yellow-200" @keyup.escape.window="open = false">
                 <strong>
                     <div>Focus is now "trapped" inside this nested dialog. You cannot focus anything inside the outer dialog while this is open. If you close this dialog, focus will be returned to the last known active element.</div>
                 </strong>
@@ -189,12 +189,12 @@ Here is nesting in action:
 
 When building things like dialogs/modals, it's recommended to hide all the other elements on the page from screen readers when trapping focus.
 
-By adding `.inert` to `x-trap`, when focus is trapped, all other elements on the page will receive `aria-hidden="true"` attributes, and when focus trapping is disabled, those attributes will also be removed.
+By adding `.inert` to `data-trap`, when focus is trapped, all other elements on the page will receive `aria-hidden="true"` attributes, and when focus trapping is disabled, those attributes will also be removed.
 
 ```alpine
 <!-- When `open` is `false`: -->
-<body x-data="{ open: false }">
-    <div x-trap.inert="open" ...>
+<body data-data="{ open: false }">
+    <div data-trap.inert="open" ...>
         ...
     </div>
 
@@ -204,8 +204,8 @@ By adding `.inert` to `x-trap`, when focus is trapped, all other elements on the
 </body>
 
 <!-- When `open` is `true`: -->
-<body x-data="{ open: true }">
-    <div x-trap.inert="open" ...>
+<body data-data="{ open: true }">
+    <div data-trap.inert="open" ...>
         ...
     </div>
 
@@ -220,17 +220,17 @@ By adding `.inert` to `x-trap`, when focus is trapped, all other elements on the
 
 When building dialogs/modals with Alpine, it's recommended that you disable scrolling for the surrounding content when the dialog is open.
 
-`x-trap` allows you to do this automatically with the `.noscroll` modifiers.
+`data-trap` allows you to do this automatically with the `.noscroll` modifiers.
 
 By adding `.noscroll`, Alpine will remove the scrollbar from the page and block users from scrolling down the page while a dialog is open.
 
 For example:
 
 ```alpine
-<div x-data="{ open: false }">
+<div data-data="{ open: false }">
     <button @click="open = true">Open Dialog</button>
 
-    <div x-show="open" x-trap.noscroll="open">
+    <div data-show="open" data-trap.noscroll="open">
         Dialog Contents
 
         <button @click="open = false">Close Dialog</button>
@@ -240,10 +240,10 @@ For example:
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div x-data="{ open: false }">
+    <div data-data="{ open: false }">
         <button @click="open = true">Open Dialog</button>
 
-        <div x-show="open" x-trap.noscroll="open" class="border mt-4 p-4">
+        <div data-show="open" data-trap.noscroll="open" class="border mt-4 p-4">
             <div class="mb-4 text-bold">Dialog Contents</div>
 
             <p class="mb-4 text-gray-600 text-sm">Notice how you can no longer scroll on this page while this dialog is open.</p>
@@ -259,17 +259,17 @@ For example:
 
 Sometimes you may not want focus to be returned to where it was previously. Consider a dropdown that's triggered upon focusing an input, returning focus to the input on close will just trigger the dropdown to open again.
 
-`x-trap` allows you to disable this behavior with the `.noreturn` modifier.
+`data-trap` allows you to disable this behavior with the `.noreturn` modifier.
 
-By adding `.noreturn`, Alpine will not return focus upon x-trap evaluating to false.
+By adding `.noreturn`, Alpine will not return focus upon data-trap evaluating to false.
 
 For example:
 
 ```alpine
-<div x-data="{ open: false }" x-trap.noreturn="open">
+<div data-data="{ open: false }" data-trap.noreturn="open">
     <input type="search" placeholder="search for something" />
 
-    <div x-show="open">
+    <div data-show="open">
         Search results
 
         <button @click="open = false">Close</button>
@@ -280,8 +280,8 @@ For example:
 <!-- START_VERBATIM -->
 <div class="demo">
     <div
-        x-data="{ open: false }"
-        x-trap.noreturn="open"
+        data-data="{ open: false }"
+        data-trap.noreturn="open"
         @click.outside="open = false"
         @keyup.escape.prevent.stop="open = false"
     >
@@ -290,7 +290,7 @@ For example:
             @keyup.escape.prevent="$el.blur()"
         />
 
-        <div x-show="open">
+        <div data-show="open">
             <div class="mb-4 text-bold">Search results</div>
 
             <p class="mb-4 text-gray-600 text-sm">Notice when closing this dropdown, focus is not returned to the input.</p>
@@ -304,7 +304,7 @@ For example:
 <a name="noautofocus"></a>
 #### .noautofocus
 
-By default, when `x-trap` traps focus within an element, it focuses the first focussable element within that element. This is a sensible default, however there are times where you may want to disable this behavior and not automatically focus any elements when `x-trap` engages.
+By default, when `data-trap` traps focus within an element, it focuses the first focussable element within that element. This is a sensible default, however there are times where you may want to disable this behavior and not automatically focus any elements when `data-trap` engages.
 
 By adding `.noautofocus`, Alpine will not automatically focus any elements when trapping focus.
 
@@ -348,7 +348,7 @@ Let's walk through a few examples of these utilities in use. The example below a
 <!-- START_VERBATIM -->
 <div class="demo">
 <div
-    x-data
+    data-data
     @keydown.right="$focus.next()"
     @keydown.left="$focus.previous()"
 >
@@ -376,7 +376,7 @@ Notice how if the last button is focused, pressing "right arrow" won't do anythi
 <!-- START_VERBATIM -->
 <div class="demo">
 <div
-    x-data
+    data-data
     @keydown.right="$focus.wrap().next()"
     @keydown.left="$focus.wrap().previous()"
 >
@@ -395,7 +395,7 @@ Now, let's add two buttons, one to focus the first element in the button group, 
 <button @click="$focus.within($refs.buttons).last()">Focus "Last"</button>
 
 <div
-    x-ref="buttons"
+    data-ref="buttons"
     @keydown.right="$focus.wrap().next()"
     @keydown.left="$focus.wrap().previous()"
 >
@@ -406,14 +406,14 @@ Now, let's add two buttons, one to focus the first element in the button group, 
 ```
 
 <!-- START_VERBATIM -->
-<div class="demo" x-data>
+<div class="demo" data-data>
 <button @click="$focus.within($refs.buttons).first()">Focus "First"</button>
 <button @click="$focus.within($refs.buttons).last()">Focus "Last"</button>
 
 <hr class="mt-2 mb-2"/>
 
 <div
-    x-ref="buttons"
+    data-ref="buttons"
     @keydown.right="$focus.wrap().next()"
     @keydown.left="$focus.wrap().previous()"
 >

@@ -1,14 +1,14 @@
 {
-    "name": "alpinejs",
-    "version": "3.14.9",
-    "description": "The rugged, minimal JavaScript framework",
-    "homepage": "https://alpinejs.dev",
+    "name": "nexus-ux",
+    "version": "0.0.1",
+    "description": "The unified declarative Hypermedia & JavaScript framework",
+    "homepage": "https://nexus.aerea.co",
     "repository": {
         "type": "git",
-        "url": "https://github.com/alpinejs/alpine.git",
+        "url": "https://github.com/aereaco/nexus-ux.git",
         "directory": "packages/alpinejs"
     },
-    "author": "Caleb Porzio",
+    "author": "Aerea Co.",
     "license": "MIT",
     "main": "dist/module.cjs.js",
     "module": "dist/module.esm.js",

@@ -2,8 +2,8 @@ import { beHidden, beVisible, haveText, beChecked, haveAttribute, haveClasses, h
 
 test('class attribute bindings are merged by string syntax',
     html`
-        <div x-data="{ isOn: false }">
-            <span class="foo" x-bind:class="isOn ? 'bar': ''"></span>
+        <div data-data="{ isOn: false }">
+            <span class="foo" data-bind:class="isOn ? 'bar': ''"></span>
 
             <button @click="isOn = ! isOn">button</button>
         </div>
@@ -19,8 +19,8 @@ test('class attribute bindings are merged by string syntax',
 
 test('class attribute bindings are added by string syntax',
     html`
-        <div x-data="{ initialClass: 'foo' }">
-            <span x-bind:class="initialClass"></span>
+        <div data-data="{ initialClass: 'foo' }">
+            <span data-bind:class="initialClass"></span>
         </div>
     `,
     ({ get }) => get('span').should(haveClasses(['foo']))
@@ -28,8 +28,8 @@ test('class attribute bindings are added by string syntax',
 
 test('class attribute bindings are added by array syntax',
     html`
-        <div x-data="{ initialClass: 'foo' }">
-            <span x-bind:class="[initialClass, 'bar']"></span>
+        <div data-data="{ initialClass: 'foo' }">
+            <span data-bind:class="[initialClass, 'bar']"></span>
         </div>
     `,
     ({ get }) => get('span').should(haveClasses(['foo', 'bar']))
@@ -37,9 +37,9 @@ test('class attribute bindings are added by array syntax',
 
 test('class attribute bindings are added by object syntax',
     html`
-        <div x-data="{ mode: 0 }">
+        <div data-data="{ mode: 0 }">
             <span class="foo baz"
-                  x-bind:class="{
+                  data-bind:class="{
                       'foo bar border-blue-900' : mode === 0,
                       'foo bar border-red-900' : mode === 1,
                       'bar border-red-900' : mode === 2,
@@ -67,7 +67,7 @@ test('class attribute bindings are added by object syntax',
 
 test('classes are removed before being added',
     html`
-        <div x-data="{ isOpen: true }">
+        <div data-data="{ isOpen: true }">
             <span class="text-red" :class="isOpen ? 'block' : 'hidden'">
                 Span
             </span>
@@ -84,8 +84,8 @@ test('classes are removed before being added',
 
 test('extra whitespace in class binding string syntax is ignored',
     html`
-        <div x-data>
-            <span x-bind:class="'  foo  bar  '"></span>
+        <div data-data>
+            <span data-bind:class="'  foo  bar  '"></span>
         </div>
     `,
     ({ get }) => get('span').should(haveClasses(['foo', 'bar']))
@@ -93,9 +93,9 @@ test('extra whitespace in class binding string syntax is ignored',
 
 test('undefined class binding resolves to empty string',
     html`
-        <div x-data="{ errorClass: (hasError) => { if (hasError) { return 'red' } } }">
-            <span id="error" x-bind:class="errorClass(true)">should be red</span>
-            <span id="empty" x-bind:class="errorClass(false)">should be empty</span>
+        <div data-data="{ errorClass: (hasError) => { if (hasError) { return 'red' } } }">
+            <span id="error" data-bind:class="errorClass(true)">should be red</span>
+            <span id="empty" data-bind:class="errorClass(false)">should be empty</span>
         </div>
     `,
     ({ get }) => {

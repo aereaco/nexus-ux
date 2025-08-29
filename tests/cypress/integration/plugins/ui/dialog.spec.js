@@ -2,10 +2,10 @@ import { beVisible, haveAttribute, haveText, html, notBeVisible, notExist, test 
 
 test('has accessibility attributes',
     [html`
-        <div x-data="{ open: false }">
+        <div data-data="{ open: false }">
             <button @click="open = ! open">Toggle</button>
 
-            <article x-dialog x-model="open">
+            <article data-dialog data-model="open">
                 Dialog Contents!
             </article>
         </div>
@@ -16,12 +16,12 @@ test('has accessibility attributes',
     },
 )
 
-test('works with x-model',
+test('works with data-model',
     [html`
-        <div x-data="{ open: false }">
+        <div data-data="{ open: false }">
             <button @click="open = ! open">Toggle</button>
 
-            <article x-dialog x-model="open">
+            <article data-dialog data-model="open">
                 Dialog Contents!
             </article>
         </div>
@@ -37,10 +37,10 @@ test('works with x-model',
 
 test('works with open prop and close event',
     [html`
-        <div x-data="{ open: false }">
+        <div data-data="{ open: false }">
             <button @click="open = ! open">Toggle</button>
 
-            <article x-dialog :open="open" @close="open = false">
+            <article data-dialog :open="open" @close="open = false">
                 Dialog Contents!
             </article>
         </div>
@@ -54,11 +54,11 @@ test('works with open prop and close event',
 
 test('works with static prop',
     [html`
-        <div x-data="{ open: false }">
+        <div data-data="{ open: false }">
             <button @click="open = ! open">Toggle</button>
 
-            <template x-if="open">
-                <article x-dialog static>
+            <template data-if="open">
+                <article data-dialog static>
                     Dialog Contents!
                 </article>
             </template>
@@ -73,10 +73,10 @@ test('works with static prop',
 
 test('pressing escape closes modal',
     [html`
-        <div x-data="{ open: false }">
+        <div data-data="{ open: false }">
             <button @click="open = ! open">Toggle</button>
 
-            <article x-dialog x-model="open">
+            <article data-dialog data-model="open">
                 Dialog Contents!
                 <input type="text">
             </article>
@@ -91,13 +91,13 @@ test('pressing escape closes modal',
     },
 )
 
-test('x-dialog:panel allows for click away',
+test('data-dialog:panel allows for click away',
     [html`
-        <div x-data="{ open: true }">
+        <div data-data="{ open: true }">
             <h1>Click away on me</h1>
 
-            <article x-dialog x-model="open">
-                <div x-dialog:panel>
+            <article data-dialog data-model="open">
+                <div data-dialog:panel>
                     Dialog Contents!
                 </div>
             </article>
@@ -110,13 +110,13 @@ test('x-dialog:panel allows for click away',
     },
 )
 
-test('x-dialog:overlay closes dialog when clicked on',
+test('data-dialog:overlay closes dialog when clicked on',
     [html`
-        <div x-data="{ open: true }">
+        <div data-data="{ open: true }">
             <h1>Click away on me</h1>
 
-            <article x-dialog x-model="open">
-                <main x-dialog:overlay>
+            <article data-dialog data-model="open">
+                <main data-dialog:overlay>
                     Some Overlay
                 </main>
 
@@ -135,10 +135,10 @@ test('x-dialog:overlay closes dialog when clicked on',
     },
 )
 
-test('x-dialog:title',
+test('data-dialog:title',
     [html`
-        <article x-data x-dialog>
-            <h1 x-dialog:title>Dialog Title</h1>
+        <article data-data data-dialog>
+            <h1 data-dialog:title>Dialog Title</h1>
         </article>
     `],
     ({ get }) => {
@@ -147,10 +147,10 @@ test('x-dialog:title',
     },
 )
 
-test('x-dialog:description',
+test('data-dialog:description',
     [html`
-        <article x-data x-dialog>
-            <p x-dialog:description>Dialog Title</p>
+        <article data-data data-dialog>
+            <p data-dialog:description>Dialog Title</p>
         </article>
     `],
     ({ get }) => {
@@ -161,12 +161,12 @@ test('x-dialog:description',
 
 test('$modal.open exposes internal "open" state',
     [html`
-        <div x-data="{ open: false }">
+        <div data-data="{ open: false }">
             <button @click="open = ! open">Toggle</button>
 
-            <article x-dialog x-model="open">
+            <article data-dialog data-model="open">
                 Dialog Contents!
-                <h2 x-text="$dialog.open"></h2>
+                <h2 data-text="$dialog.open"></h2>
             </article>
         </div>
     `],
@@ -177,13 +177,13 @@ test('$modal.open exposes internal "open" state',
     },
 )
 
-test('works with x-teleport',
+test('works with data-teleport',
     [html`
-        <div x-data="{ open: false }">
+        <div data-data="{ open: false }">
             <button @click="open = ! open">Toggle</button>
 
-            <template x-teleport="body">
-                <article x-dialog x-model="open">
+            <template data-teleport="body">
+                <article data-dialog data-model="open">
                     Dialog Contents!
                 </article>
             </template>
@@ -200,5 +200,5 @@ test('works with x-teleport',
 
 // Skipping these two tests as anything focus related seems to be flaky
 // with cypress, but fine in a real browser.
-// test('x-dialog traps focus'...
+// test('data-dialog traps focus'...
 // test('initial-focus prop'...

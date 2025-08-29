@@ -10,8 +10,8 @@ test('can register custom data providers',
             })
         </script>
 
-        <div x-data="test">
-            <span x-text="foo"></span>
+        <div data-data="test">
+            <span data-text="foo"></span>
         </div>
     `,
     ({ get }) => get('span').should(haveText('bar'))
@@ -28,9 +28,9 @@ test('can accept initial params',
             })
         </script>
 
-        <div x-data="test('baz', 'bob')">
-            <h1 x-text="foo"></h1>
-            <h2 x-text="bar"></h2>
+        <div data-data="test('baz', 'bob')">
+            <h1 data-text="foo"></h1>
+            <h2 data-text="bar"></h2>
         </div>
     `,
     ({ get }) => {
@@ -53,9 +53,9 @@ test('can spread together',
             })
         </script>
 
-        <div x-data="{ ...test('baz'), ...test2('bob') }">
-            <h1 x-text="foo"></h1>
-            <h2 x-text="bar"></h2>
+        <div data-data="{ ...test('baz'), ...test2('bob') }">
+            <h1 data-text="foo"></h1>
+            <h2 data-text="bar"></h2>
         </div>
     `,
     ({ get }) => {
@@ -78,8 +78,8 @@ test('init functions inside custom datas are called automatically',
             })
         </script>
 
-        <div x-data="test">
-            <span x-text="foo"></span>
+        <div data-data="test">
+            <span data-text="foo"></span>
         </div>
     `,
     ({ get }) => {
@@ -103,8 +103,8 @@ test('init functions "this" context is reactive',
             })
         </script>
 
-        <div x-data="test">
-            <span x-text="foo"></span>
+        <div data-data="test">
+            <span data-text="foo"></span>
 
             <button>click me</button>
         </div>
@@ -132,8 +132,8 @@ test('init functions have access to the parent scope',
             })
         </script>
 
-        <div x-data="parent">
-            <p x-data="child"></p>
+        <div data-data="parent">
+            <p data-data="child"></p>
         </div>
     `,
     ({ get }) => {
@@ -156,8 +156,8 @@ test('destroy functions inside custom datas are called automatically',
             })
         </script>
 
-        <div x-data="test">
-            <button x-on:click="test()"></button>
+        <div data-data="test">
+            <button data-on:click="test()"></button>
         </div>
         <span></span>
     `,
@@ -183,8 +183,8 @@ test('destroy have access to the current scope',
             })
         </script>
 
-        <div x-data="test">
-            <button x-on:click="test()"></button>
+        <div data-data="test">
+            <button data-on:click="test()"></button>
         </div>
         <span>baz</span>
     `,

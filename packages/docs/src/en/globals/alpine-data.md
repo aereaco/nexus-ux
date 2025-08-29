@@ -5,15 +5,15 @@ title: data()
 
 # Alpine.data
 
-`Alpine.data(...)` provides a way to re-use `x-data` contexts within your application.
+`Alpine.data(...)` provides a way to re-use `data-data` contexts within your application.
 
 Here's a contrived `dropdown` component for example:
 
 ```alpine
-<div x-data="dropdown">
+<div data-data="dropdown">
     <button @click="toggle">...</button>
 
-    <div x-show="open">...</div>
+    <div data-show="open">...</div>
 </div>
 
 <script>
@@ -29,7 +29,7 @@ Here's a contrived `dropdown` component for example:
 </script>
 ```
 
-As you can see we've extracted the properties and methods we would usually define directly inside `x-data` into a separate Alpine component object.
+As you can see we've extracted the properties and methods we would usually define directly inside `data-data` into a separate Alpine component object.
 
 <a name="registering-from-a-bundle"></a>
 ## Registering from a bundle
@@ -60,10 +60,10 @@ export default () => ({
 <a name="initial-parameters"></a>
 ## Initial parameters
 
-In addition to referencing `Alpine.data` providers by their name plainly (like `x-data="dropdown"`), you can also reference them as functions (`x-data="dropdown()"`). By calling them as functions directly, you can pass in additional parameters to be used when creating the initial data object like so:
+In addition to referencing `Alpine.data` providers by their name plainly (like `data-data="dropdown"`), you can also reference them as functions (`data-data="dropdown()"`). By calling them as functions directly, you can pass in additional parameters to be used when creating the initial data object like so:
 
 ```alpine
-<div x-data="dropdown(true)">
+<div data-data="dropdown(true)">
 ```
 ```js
 Alpine.data('dropdown', (initialOpenState = false) => ({
@@ -112,14 +112,14 @@ Alpine.data('timer', () => ({
 }))
 ```
 
-An example where a component is destroyed is when using one inside an `x-if`:
+An example where a component is destroyed is when using one inside an `data-if`:
 
 ```html
-<span x-data="{ enabled: false }">
+<span data-data="{ enabled: false }">
     <button @click.prevent="enabled = !enabled">Toggle</button>
 
-    <template x-if="enabled">
-        <span x-data="timer" x-text="counter"></span>
+    <template data-if="enabled">
+        <span data-data="timer" data-text="counter"></span>
     </template>
 </span>
 ```
@@ -139,18 +139,18 @@ Alpine.data('dropdown', () => ({
 }))
 ```
 
-<a name="encapsulating-directives-with-x-bind"></a>
-## Encapsulating directives with `x-bind`
+<a name="encapsulating-directives-with-data-bind"></a>
+## Encapsulating directives with `data-bind`
 
-If you wish to re-use more than just the data object of a component, you can encapsulate entire Alpine template directives using `x-bind`.
+If you wish to re-use more than just the data object of a component, you can encapsulate entire Alpine template directives using `data-bind`.
 
-The following is an example of extracting the templating details of our previous dropdown component using `x-bind`:
+The following is an example of extracting the templating details of our previous dropdown component using `data-bind`:
 
 ```alpine
-<div x-data="dropdown">
-    <button x-bind="trigger"></button>
+<div data-data="dropdown">
+    <button data-bind="trigger"></button>
 
-    <div x-bind="dialogue"></div>
+    <div data-bind="dialogue"></div>
 </div>
 ```
 
@@ -165,7 +165,7 @@ Alpine.data('dropdown', () => ({
     },
 
     dialogue: {
-        ['x-show']() {
+        ['data-show']() {
             return this.open
         },
     },

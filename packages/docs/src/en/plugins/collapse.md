@@ -47,30 +47,30 @@ Alpine.plugin(collapse)
 ...
 ```
 
-<a name="x-collapse"></a>
-## x-collapse
+<a name="data-collapse"></a>
+## data-collapse
 
-The primary API for using this plugin is the `x-collapse` directive.
+The primary API for using this plugin is the `data-collapse` directive.
 
-`x-collapse` can only exist on an element that already has an `x-show` directive. When added to an `x-show` element, `x-collapse` will smoothly "collapse" and "expand" the element when it's visibility is toggled by animating its height property.
+`data-collapse` can only exist on an element that already has an `data-show` directive. When added to an `data-show` element, `data-collapse` will smoothly "collapse" and "expand" the element when it's visibility is toggled by animating its height property.
 
 For example:
 
 ```alpine
-<div x-data="{ expanded: false }">
+<div data-data="{ expanded: false }">
     <button @click="expanded = ! expanded">Toggle Content</button>
 
-    <p x-show="expanded" x-collapse>
+    <p data-show="expanded" data-collapse>
         ...
     </p>
 </div>
 ```
 
 <!-- START_VERBATIM -->
-<div x-data="{ expanded: false }" class="demo">
+<div data-data="{ expanded: false }" class="demo">
     <button @click="expanded = ! expanded">Toggle Content</button>
 
-    <div x-show="expanded" x-collapse>
+    <div data-show="expanded" data-collapse>
         <div class="pt-4">
             Reprehenderit eu excepteur ullamco esse cillum reprehenderit exercitation labore non. Dolore dolore ea dolore veniam sint in sint ex Lorem ipsum. Sint laborum deserunt deserunt amet voluptate cillum deserunt. Amet nisi pariatur sit ut id. Ipsum est minim est commodo id dolor sint id quis sint Lorem.
         </div>
@@ -87,20 +87,20 @@ For example:
 You can customize the duration of the collapse/expand transition by appending the `.duration` modifier like so:
 
 ```alpine
-<div x-data="{ expanded: false }">
+<div data-data="{ expanded: false }">
     <button @click="expanded = ! expanded">Toggle Content</button>
 
-    <p x-show="expanded" x-collapse.duration.1000ms>
+    <p data-show="expanded" data-collapse.duration.1000ms>
         ...
     </p>
 </div>
 ```
 
 <!-- START_VERBATIM -->
-<div x-data="{ expanded: false }" class="demo">
+<div data-data="{ expanded: false }" class="demo">
     <button @click="expanded = ! expanded">Toggle Content</button>
 
-    <div x-show="expanded" x-collapse.duration.1000ms>
+    <div data-show="expanded" data-collapse.duration.1000ms>
         <div class="pt-4">
             Reprehenderit eu excepteur ullamco esse cillum reprehenderit exercitation labore non. Dolore dolore ea dolore veniam sint in sint ex Lorem ipsum. Sint laborum deserunt deserunt amet voluptate cillum deserunt. Amet nisi pariatur sit ut id. Ipsum est minim est commodo id dolor sint id quis sint Lorem.
         </div>
@@ -111,25 +111,25 @@ You can customize the duration of the collapse/expand transition by appending th
 <a name="dot-min"></a>
 ### .min
 
-By default, `x-collapse`'s "collapsed" state sets the height of the element to `0px` and also sets `display: none;`.
+By default, `data-collapse`'s "collapsed" state sets the height of the element to `0px` and also sets `display: none;`.
 
-Sometimes, it's helpful to "cut-off" an element rather than fully hide it. By using the `.min` modifier, you can set a minimum height for `x-collapse`'s "collapsed" state. For example:
+Sometimes, it's helpful to "cut-off" an element rather than fully hide it. By using the `.min` modifier, you can set a minimum height for `data-collapse`'s "collapsed" state. For example:
 
 ```alpine
-<div x-data="{ expanded: false }">
+<div data-data="{ expanded: false }">
     <button @click="expanded = ! expanded">Toggle Content</button>
 
-    <p x-show="expanded" x-collapse.min.50px>
+    <p data-show="expanded" data-collapse.min.50px>
         ...
     </p>
 </div>
 ```
 
 <!-- START_VERBATIM -->
-<div x-data="{ expanded: false }" class="demo">
+<div data-data="{ expanded: false }" class="demo">
     <button @click="expanded = ! expanded">Toggle Content</button>
 
-    <div x-show="expanded" x-collapse.min.50px>
+    <div data-show="expanded" data-collapse.min.50px>
         <div class="pt-4">
             Reprehenderit eu excepteur ullamco esse cillum reprehenderit exercitation labore non. Dolore dolore ea dolore veniam sint in sint ex Lorem ipsum. Sint laborum deserunt deserunt amet voluptate cillum deserunt. Amet nisi pariatur sit ut id. Ipsum est minim est commodo id dolor sint id quis sint Lorem.
         </div>

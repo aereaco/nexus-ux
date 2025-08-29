@@ -14,7 +14,7 @@ title: el
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div x-data>
+    <div data-data>
         <button @click="$el.textContent = 'Hello World!'">Replace me with "Hello World!"</button>
     </div>
 </div>

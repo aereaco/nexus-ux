@@ -8,7 +8,7 @@
     <!-- <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script> -->
   </head>
   <body>
-    <div class="container" id="main" x-data="{ data: []}">
+    <div class="container" id="main" data-data="{ data: []}">
       <div class="jumbotron">
         <div class="row">
           <div class="col-md-6">
@@ -82,11 +82,11 @@
       </div>
       <table class="table table-hover table-striped test-data">
         <tbody>
-          <template x-for="item in data" :key="item.id">
+          <template data-for="item in data" :key="item.id">
             <tr :class="item.id === selected ? 'danger' : ''">
-              <td class="col-md-1" x-text="item.id"></td>
+              <td class="col-md-1" data-text="item.id"></td>
               <td class="col-md-4">
-                <a @click="select(item.id)" x-text="item.label"></a>
+                <a @click="select(item.id)" data-text="item.label"></a>
               </td>
               <td class="col-md-1">
                 <a @click="remove(item.id)" >x</a>

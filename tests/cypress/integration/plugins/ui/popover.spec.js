@@ -2,10 +2,10 @@ import { beVisible, haveAttribute, html, notBeVisible, notHaveAttribute, test } 
 
 test('button toggles panel',
     [html`
-        <div x-data x-popover>
-            <button x-popover:button>Toggle</button>
+        <div data-data data-popover>
+            <button data-popover:button>Toggle</button>
 
-            <ul x-popover:panel>
+            <ul data-popover:panel>
                 Dialog Contents!
             </ul>
         </div>
@@ -21,10 +21,10 @@ test('button toggles panel',
 
 test('popover can be rendered statically',
     [html`
-        <div x-data x-popover>
-            <button x-popover:button>Toggle</button>
+        <div data-data data-popover>
+            <button data-popover:button>Toggle</button>
 
-            <ul x-popover:panel static>
+            <ul data-popover:panel static>
                 Dialog Contents!
             </ul>
         </div>
@@ -38,10 +38,10 @@ test('popover can be rendered statically',
 
 test('has accessibility attributes',
     [html`
-        <div x-data x-popover>
-            <button x-popover:button>Toggle</button>
+        <div data-data data-popover>
+            <button data-popover:button>Toggle</button>
 
-            <ul x-popover:panel>
+            <ul data-popover:panel>
                 Dialog Contents!
             </ul>
         </div>
@@ -57,10 +57,10 @@ test('has accessibility attributes',
 
 test('escape closes panel',
     [html`
-        <div x-data x-popover>
-            <button x-popover:button>Toggle</button>
+        <div data-data data-popover>
+            <button data-popover:button>Toggle</button>
 
-            <ul x-popover:panel>
+            <ul data-popover:panel>
                 Dialog Contents!
             </ul>
         </div>
@@ -77,10 +77,10 @@ test('escape closes panel',
 test('clicking outside closes panel',
     [html`
         <div>
-            <div x-data x-popover>
-                <button x-popover:button>Toggle</button>
+            <div data-data data-popover>
+                <button data-popover:button>Toggle</button>
 
-                <ul x-popover:panel>
+                <ul data-popover:panel>
                     Dialog Contents!
                 </ul>
             </div>
@@ -100,10 +100,10 @@ test('clicking outside closes panel',
 test('focusing away closes panel',
     [html`
         <div>
-            <div x-data x-popover>
-                <button x-popover:button>Toggle</button>
+            <div data-data data-popover>
+                <button data-popover:button>Toggle</button>
 
-                <ul x-popover:panel>
+                <ul data-popover:panel>
                     Dialog Contents!
                 </ul>
             </div>
@@ -122,17 +122,17 @@ test('focusing away closes panel',
 
 test('focusing away doesnt close panel if focusing inside a group',
     [html`
-        <div x-data>
-            <div x-popover:group>
-                <div x-data x-popover id="1">
-                    <button x-popover:button>Toggle 1</button>
-                    <ul x-popover:panel>
+        <div data-data>
+            <div data-popover:group>
+                <div data-data data-popover id="1">
+                    <button data-popover:button>Toggle 1</button>
+                    <ul data-popover:panel>
                         Dialog 1 Contents!
                     </ul>
                 </div>
-                <div x-data x-popover id="2">
-                    <button x-popover:button>Toggle 2</button>
-                    <ul x-popover:panel>
+                <div data-data data-popover id="2">
+                    <button data-popover:button>Toggle 2</button>
+                    <ul data-popover:panel>
                         Dialog 2 Contents!
                     </ul>
                 </div>
@@ -158,17 +158,17 @@ test('focusing away doesnt close panel if focusing inside a group',
 
 test.retry(5)('focusing away still closes panel inside a group if the focus attribute is present',
     [html`
-        <div x-data>
-            <div x-popover:group>
-                <div x-data x-popover id="1">
-                    <button x-popover:button>Toggle 1</button>
-                    <ul x-popover:panel focus>
+        <div data-data>
+            <div data-popover:group>
+                <div data-data data-popover id="1">
+                    <button data-popover:button>Toggle 1</button>
+                    <ul data-popover:panel focus>
                         <a href="#">Dialog 1 Contents!</a>
                     </ul>
                 </div>
-                <div x-data x-popover id="2">
-                    <button x-popover:button>Toggle 2</button>
-                    <ul x-popover:panel>
+                <div data-data data-popover id="2">
+                    <button data-popover:button>Toggle 2</button>
+                    <ul data-popover:panel>
                         <a href="#">Dialog 2 Contents!</a>
                     </ul>
                 </div>

@@ -2,9 +2,9 @@ import { haveText, html, test } from '../../utils'
 
 test('$data returns the current scope (with cascading)',
     html`
-        <div x-data="{ foo: 'bar'}">
-            <div x-data="{ bob: 'lob' }">
-                <span x-text="$data.foo + ' ' + $data.bob"></span>
+        <div data-data="{ foo: 'bar'}">
+            <div data-data="{ bob: 'lob' }">
+                <span data-text="$data.foo + ' ' + $data.bob"></span>
             </div>
         </div>
     `,

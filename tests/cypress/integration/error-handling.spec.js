@@ -21,11 +21,11 @@ export function assertConsoleInterceptorHadErrorWithCorrectElement() {
     };
 }
 
-test('x-for identifier issue',
+test('data-for identifier issue',
     [html`
-        <div x-data="{ items: ['foo'] }">
-            <template id="xfor" x-for="item in itemzzzz">
-                <span x-text="item"></span>
+        <div data-data="{ items: ['foo'] }">
+            <template id="xfor" data-for="item in itemzzzz">
+                <span data-text="item"></span>
             </template>
         </div>
     `,
@@ -35,11 +35,11 @@ test('x-for identifier issue',
     true
 )
 
-test('x-text identifier issue',
+test('data-text identifier issue',
     [html`
-        <div x-data="{ items: ['foo'] }">
-            <template x-for="item in items">
-                <span id="xtext" x-text="itemzzz"></span>
+        <div data-data="{ items: ['foo'] }">
+            <template data-for="item in items">
+                <span id="xtext" data-text="itemzzz"></span>
             </template>
         </div>
     `,
@@ -49,9 +49,9 @@ test('x-text identifier issue',
     true
 )
 
-test('x-init identifier issue',
+test('data-init identifier issue',
     [html`
-        <div id="xinit" x-data x-init="doesNotExist()">
+        <div id="xinit" data-data data-init="doesNotExist()">
         </div>
     `,
         setupConsoleInterceptor( "xinit" )
@@ -60,9 +60,9 @@ test('x-init identifier issue',
     true
 )
 
-test('x-show identifier issue',
+test('data-show identifier issue',
     [html`
-        <div id="xshow" x-data="{isOpen: true}" x-show="isVisible">
+        <div id="xshow" data-data="{isOpen: true}" data-show="isVisible">
         </div>
     `,
         setupConsoleInterceptor( "xshow" )
@@ -71,9 +71,9 @@ test('x-show identifier issue',
     true
 )
 
-test('x-bind class object syntax identifier issue',
+test('data-bind class object syntax identifier issue',
     [html`
-        <div x-data="{isOpen: true}">
+        <div data-data="{isOpen: true}">
             <div id="xbind" :class="{ 'block' : isVisible, 'hidden' : !isVisible }"></div>
         </div>
     `,
@@ -83,10 +83,10 @@ test('x-bind class object syntax identifier issue',
     true
 )
 
-test('x-model identifier issue',
+test('data-model identifier issue',
     [html`
-        <div x-data="{value: ''}">
-            <input id="xmodel" x-model="thething"/>
+        <div data-data="{value: ''}">
+            <input id="xmodel" data-model="thething"/>
         </div>
     `,
         setupConsoleInterceptor( "xmodel" )
@@ -95,10 +95,10 @@ test('x-model identifier issue',
     true
 )
 
-test('x-if identifier issue',
+test('data-if identifier issue',
     [html`
-        <div x-data="{value: ''}">
-            <template id="xif" x-if="valuez === ''">
+        <div data-data="{value: ''}">
+            <template id="xif" data-if="valuez === ''">
                 <span>Words</span>
             </template>
         </div>
@@ -109,10 +109,10 @@ test('x-if identifier issue',
     true
 )
 
-test('x-if identifier issue ( function )',
+test('data-if identifier issue ( function )',
     [html`
-        <div x-data="{shouldOpen: function(){}}">
-            <template id="xif" x-if="isOpen()">
+        <div data-data="{shouldOpen: function(){}}">
+            <template id="xif" data-if="isOpen()">
                 <span>Words</span>
             </template>
         </div>
@@ -123,9 +123,9 @@ test('x-if identifier issue ( function )',
     true
 )
 
-test('x-effect identifier issue',
+test('data-effect identifier issue',
     [html`
-        <div id="xeffect" x-data="{ label: 'Hello' }" x-effect="System.out.println(label)">
+        <div id="xeffect" data-data="{ label: 'Hello' }" data-effect="System.out.println(label)">
         </div>
     `,
         setupConsoleInterceptor( "xeffect" )
@@ -134,11 +134,11 @@ test('x-effect identifier issue',
     true
 )
 
-test('x-on identifier issue',
+test('data-on identifier issue',
     [html`
-        <div x-data="{ label: 'Hello' }">
-            <div x-text="label"></div>
-            <button id="xon" x-on:click="labelz += ' World!'">Change Message</button>
+        <div data-data="{ label: 'Hello' }">
+            <div data-text="label"></div>
+            <button id="xon" data-on:click="labelz += ' World!'">Change Message</button>
         </div>
     `,
         setupConsoleInterceptor( "xon" )
@@ -150,9 +150,9 @@ test('x-on identifier issue',
     true
 )
 
-test('x-data syntax error',
+test('data-data syntax error',
     [html`
-        <div id="xdata" x-data="{ label: 'Hello' }aaa">
+        <div id="xdata" data-data="{ label: 'Hello' }aaa">
         </div>
     `,
         setupConsoleInterceptor( "xdata" )
@@ -163,8 +163,8 @@ test('x-data syntax error',
 
 test('if statement syntax error',
     [html`
-        <div x-data="{ label: 'Hello' }">
-            <div id="xtext" x-text="if( false { label } else { 'bye' }"></div>
+        <div data-data="{ label: 'Hello' }">
+            <div id="xtext" data-text="if( false { label } else { 'bye' }"></div>
         </div>
     `,
         setupConsoleInterceptor( "xtext" )
@@ -173,11 +173,11 @@ test('if statement syntax error',
     true
 )
 
-test('x-data with reference error and multiple errors',
+test('data-data with reference error and multiple errors',
     [html`
-        <div id="xdata" x-data="{ items : [ {v:'one'},{v:'two'}], replaceItems }">
-            <template id="xtext" x-for="item in items">
-                <span x-text="item.v"></span>
+        <div id="xdata" data-data="{ items : [ {v:'one'},{v:'two'}], replaceItems }">
+            <template id="xtext" data-for="item in items">
+                <span data-text="item.v"></span>
             </template>
         </div>
     `,
@@ -189,8 +189,8 @@ test('x-data with reference error and multiple errors',
 
 test('evaluation with syntax error',
     [html`
-        <div x-data="{value: ''}">
-            <template id="xif" x-if="value ==== ''">
+        <div data-data="{value: ''}">
+            <template id="xif" data-if="value ==== ''">
                 <span>Words</span>
             </template>
         </div>

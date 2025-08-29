@@ -2,15 +2,15 @@ import { haveText, test, html, notHaveText } from '../../utils'
 
 test('can react to the resizing of an element',
     [html`
-    <div x-data="{ width: 0, height: 0 }">
-        <h1 x-text="width"></h1>
-        <h2 x-text="height"></h2>
+    <div data-data="{ width: 0, height: 0 }">
+        <h1 data-text="width"></h1>
+        <h2 data-text="height"></h2>
 
-        <div x-ref="target" x-resize="width = $width; height = $height" style="width: 100px; height: 100px; background: red">
+        <div data-ref="target" data-resize="width = $width; height = $height" style="width: 100px; height: 100px; background: red">
         </div>
 
-        <button id="1" x-on:click="$refs.target.style.width = 50 + 'px'">resize width</button>
-        <button id="2" x-on:click="$refs.target.style.height = 50 + 'px'">resize height</button>
+        <button id="1" data-on:click="$refs.target.style.width = 50 + 'px'">resize width</button>
+        <button id="2" data-on:click="$refs.target.style.height = 50 + 'px'">resize height</button>
     </div>
     `],
     ({ get }) => {
@@ -27,11 +27,11 @@ test('can react to the resizing of an element',
 
 test('can react to the resizing of the document',
     [html`
-    <div x-data="{ width: 0, height: 0 }">
-        <h1 x-text="width"></h1>
-        <h2 x-text="height"></h2>
+    <div data-data="{ width: 0, height: 0 }">
+        <h1 data-text="width"></h1>
+        <h2 data-text="height"></h2>
 
-        <div x-ref="target" x-resize.document="width = $width; height = $height" style="width: 100px; height: 100px; background: red">
+        <div data-ref="target" data-resize.document="width = $width; height = $height" style="width: 100px; height: 100px; background: red">
     </div>
     `],
     ({ get }) => {

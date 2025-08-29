@@ -7,8 +7,8 @@ import { haveText, html, test } from '../../utils'
 
 test.skip('basic drag sorting works',
     [html`
-        <div x-data>
-            <ul x-sort>
+        <div data-data>
+            <ul data-sort>
                 <li id="1">foo</li>
                 <li id="2">bar</li>
                 <li id="3">baz</li>
@@ -38,10 +38,10 @@ test.skip('basic drag sorting works',
 
 test.skip('can use a custom handle',
     [html`
-        <div x-data>
-            <ul x-sort>
-                <li id="1"><span x-sort:handle>handle</span> - foo</li>
-                <li id="2"><span x-sort:handle>handle</span> - bar</li>
+        <div data-data>
+            <ul data-sort>
+                <li id="1"><span data-sort:handle>handle</span> - foo</li>
+                <li id="2"><span data-sort:handle>handle</span> - bar</li>
             </ul>
         </div>
     `],
@@ -58,13 +58,13 @@ test.skip('can use a custom handle',
 
 test.skip('can move items between groups',
     [html`
-        <div x-data>
-            <ul x-sort x-sort:group="one">
+        <div data-data>
+            <ul data-sort data-sort:group="one">
                 <li id="1">foo</li>
                 <li id="2">bar</li>
             </ul>
 
-            <ol x-sort x-sort:group="one">
+            <ol data-sort data-sort:group="one">
                 <li id="3">oof</li>
                 <li id="4">rab</li>
             </ol>
@@ -87,14 +87,14 @@ test.skip('can move items between groups',
 
 test.skip('sort handle method',
     [html`
-        <div x-data="{ handle(key, position) { $refs.outlet.textContent = key+'-'+position } }">
-            <ul x-sort="handle">
-                <li x-sort:key="1" id="1">foo</li>
-                <li x-sort:key="2" id="2">bar</li>
-                <li x-sort:key="3" id="3">baz</li>
+        <div data-data="{ handle(key, position) { $refs.outlet.textContent = key+'-'+position } }">
+            <ul data-sort="handle">
+                <li data-sort:key="1" id="1">foo</li>
+                <li data-sort:key="2" id="2">bar</li>
+                <li data-sort:key="3" id="3">baz</li>
             </ul>
 
-            <h1 x-ref="outlet"></h1>
+            <h1 data-ref="outlet"></h1>
         </div>
     `],
     ({ get }) => {
@@ -110,14 +110,14 @@ test.skip('sort handle method',
 
 test.skip('item is also supported for the key in the sort handle method',
     [html`
-        <div x-data="{ handle(item, position) { $refs.outlet.textContent = item+'-'+position } }">
-            <ul x-sort="handle">
-                <li x-sort:item="1" id="1">foo</li>
-                <li x-sort:item="2" id="2">bar</li>
-                <li x-sort:item="3" id="3">baz</li>
+        <div data-data="{ handle(item, position) { $refs.outlet.textContent = item+'-'+position } }">
+            <ul data-sort="handle">
+                <li data-sort:item="1" id="1">foo</li>
+                <li data-sort:item="2" id="2">bar</li>
+                <li data-sort:item="3" id="3">baz</li>
             </ul>
 
-            <h1 x-ref="outlet"></h1>
+            <h1 data-ref="outlet"></h1>
         </div>
     `],
     ({ get }) => {
@@ -133,14 +133,14 @@ test.skip('item is also supported for the key in the sort handle method',
 
 test.skip('can access key and position in handler',
     [html`
-        <div x-data="{ handle(key, position) { $refs.outlet.textContent = key+'-'+position } }">
-            <ul x-sort="handle($position, $key)">
-                <li x-sort:key="1" id="1">foo</li>
-                <li x-sort:key="2" id="2">bar</li>
-                <li x-sort:key="3" id="3">baz</li>
+        <div data-data="{ handle(key, position) { $refs.outlet.textContent = key+'-'+position } }">
+            <ul data-sort="handle($position, $key)">
+                <li data-sort:key="1" id="1">foo</li>
+                <li data-sort:key="2" id="2">bar</li>
+                <li data-sort:key="3" id="3">baz</li>
             </ul>
 
-            <h1 x-ref="outlet"></h1>
+            <h1 data-ref="outlet"></h1>
         </div>
     `],
     ({ get }) => {
@@ -156,14 +156,14 @@ test.skip('can access key and position in handler',
 
 test.skip('can access $item instead of $key',
     [html`
-        <div x-data="{ handle(key, position) { $refs.outlet.textContent = key+'-'+position } }">
-            <ul x-sort="handle($position, $item)">
-                <li x-sort:key="1" id="1">foo</li>
-                <li x-sort:key="2" id="2">bar</li>
-                <li x-sort:key="3" id="3">baz</li>
+        <div data-data="{ handle(key, position) { $refs.outlet.textContent = key+'-'+position } }">
+            <ul data-sort="handle($position, $item)">
+                <li data-sort:key="1" id="1">foo</li>
+                <li data-sort:key="2" id="2">bar</li>
+                <li data-sort:key="3" id="3">baz</li>
             </ul>
 
-            <h1 x-ref="outlet"></h1>
+            <h1 data-ref="outlet"></h1>
         </div>
     `],
     ({ get }) => {
@@ -179,8 +179,8 @@ test.skip('can access $item instead of $key',
 
 test.skip('can use custom sortablejs configuration',
     [html`
-        <div x-data>
-            <ul x-sort x-sort:config="{ filter: '[data-ignore]' }">
+        <div data-data>
+            <ul data-sort data-sort:config="{ filter: '[data-ignore]' }">
                 <li id="1" data-ignore>foo</li>
                 <li id="2">bar</li>
                 <li id="3">baz</li>
@@ -208,8 +208,8 @@ test.skip('can use custom sortablejs configuration',
 
 test.skip('works with Livewire morphing',
     [html`
-        <div x-data>
-            <ul x-sort>
+        <div data-data>
+            <ul data-sort>
                 <!-- [if BLOCK]><![endif] -->
                 <li id="1">foo</li>
                 <li id="2">bar</li>
@@ -226,13 +226,13 @@ test.skip('works with Livewire morphing',
     },
 )
 
-test.skip('x-sort:item can be used as a filter',
+test.skip('data-sort:item can be used as a filter',
     [html`
-        <div x-data>
-            <ul x-sort>
-                <li x-sort:item id="1">foo</li>
+        <div data-data>
+            <ul data-sort>
+                <li data-sort:item id="1">foo</li>
                 <li id="2">bar</li>
-                <li x-sort:item id="3">baz</li>
+                <li data-sort:item id="3">baz</li>
             </ul>
         </div>
     `],

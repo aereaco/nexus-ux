@@ -2,8 +2,8 @@ import { haveText, haveAttribute, html, test } from '../utils'
 
 test('can register custom directive',
     [html`
-        <div x-data>
-            <span x-foo:bar.baz="bob"></span>
+        <div data-data>
+            <span data-foo:bar.baz="bob"></span>
         </div>
     `,
     `
@@ -16,9 +16,9 @@ test('can register custom directive',
 
 test('directives are auto cleaned up',
     [html`
-        <div x-data="{ count: 0 }">
-            <span x-foo x-ref="foo"></span>
-            <h1 x-text="count"></h1>
+        <div data-data="{ count: 0 }">
+            <span data-foo data-ref="foo"></span>
+            <h1 data-text="count"></h1>
 
             <button @click="count++" id="change">change</button>
             <button @click="$refs.foo.remove()" id="remove">remove</button>
@@ -52,8 +52,8 @@ test('directives are auto cleaned up',
 
 test('can register a custom directive before an existing one',
     [html`
-        <div x-data>
-            <span x-foo x-bind:foo="foo"></span>
+        <div data-data>
+            <span data-foo data-bind:foo="foo"></span>
         </div>
     `,
     `

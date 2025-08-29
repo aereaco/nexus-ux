@@ -3,22 +3,22 @@ order: 5
 title: on
 ---
 
-# x-on
+# data-on
 
-`x-on` allows you to easily run code on dispatched DOM events.
+`data-on` allows you to easily run code on dispatched DOM events.
 
 Here's an example of simple button that shows an alert when clicked.
 
 ```alpine
-<button x-on:click="alert('Hello World!')">Say Hi</button>
+<button data-on:click="alert('Hello World!')">Say Hi</button>
 ```
 
-> `x-on` can only listen for events with lower case names, as HTML attributes are case-insensitive. Writing `x-on:CLICK` will listen for an event named `click`. If you need to listen for a custom event with a camelCase name, you can use the [`.camel` helper](#camel) to work around this limitation. Alternatively, you can use [`x-bind`](/directives/bind#bind-directives) to attach an `x-on` directive to an element in javascript code (where case will be preserved).
+> `data-on` can only listen for events with lower case names, as HTML attributes are case-insensitive. Writing `data-on:CLICK` will listen for an event named `click`. If you need to listen for a custom event with a camelCase name, you can use the [`.camel` helper](#camel) to work around this limitation. Alternatively, you can use [`data-bind`](/directives/bind#bind-directives) to attach an `data-on` directive to an element in javascript code (where case will be preserved).
 
 <a name="shorthand-syntax"></a>
 ## Shorthand syntax
 
-If `x-on:` is too verbose for your tastes, you can use the shorthand syntax: `@`.
+If `data-on:` is too verbose for your tastes, you can use the shorthand syntax: `@`.
 
 Here's the same component as above, but using the shorthand syntax instead:
 
@@ -26,7 +26,7 @@ Here's the same component as above, but using the shorthand syntax instead:
 <button @click="alert('Hello World!')">Say Hi</button>
 ```
 
-> Despite not being included in the above snippet, `x-on` cannot be used if no parent element has `x-data` defined. [→ Read more about `x-data`](/directives/data)
+> Despite not being included in the above snippet, `data-on` cannot be used if no parent element has `data-data` defined. [→ Read more about `data-data`](/directives/data)
 
 <a name="the-event-object"></a>
 ## The event object
@@ -117,18 +117,18 @@ Here's an example of a button that changes behaviour when the `Shift` key is hel
     @click.shift="message = 'added to selection'">
     @mousemove.shift="message = 'add to selection'"
     @mouseout="message = 'select'"
-    x-text="message"></button>
+    data-text="message"></button>
 ```
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div x-data="{ message: '' }">
+    <div data-data="{ message: '' }">
         <button type="button"
             @click="message = 'selected'"
             @click.shift="message = 'added to selection'"
             @mousemove.shift="message = 'add to selection'"
             @mouseout="message = 'select'"
-            x-text="message"></button>
+            data-text="message"></button>
     </div>
 </div>
 <!-- END_VERBATIM -->
@@ -143,7 +143,7 @@ Alpine event listeners are a wrapper for native DOM event listeners. Therefore, 
 Here's an example of a component that dispatches a custom DOM event and listens for it as well.
 
 ```alpine
-<div x-data @foo="alert('Button Was Clicked!')">
+<div data-data @foo="alert('Button Was Clicked!')">
     <button @click="$event.target.dispatchEvent(new CustomEvent('foo', { bubbles: true }))">...</button>
 </div>
 ```
@@ -155,7 +155,7 @@ Because the `.dispatchEvent` API is verbose, Alpine offers a `$dispatch` helper 
 Here's the same component re-written with the `$dispatch` magic property.
 
 ```alpine
-<div x-data @foo="alert('Button Was Clicked!')">
+<div data-data @foo="alert('Button Was Clicked!')">
     <button @click="$dispatch('foo')">...</button>
 </div>
 ```
@@ -199,10 +199,10 @@ In the above example, clicking the button WON'T log the message. This is because
 `.outside` is a convenience helper for listening for a click outside of the element it is attached to. Here's a simple dropdown component example to demonstrate:
 
 ```alpine
-<div x-data="{ open: false }">
+<div data-data="{ open: false }">
     <button @click="open = ! open">Toggle</button>
 
-    <div x-show="open" @click.outside="open = false">
+    <div data-show="open" @click.outside="open = false">
         Contents...
     </div>
 </div>

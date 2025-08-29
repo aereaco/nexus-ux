@@ -10,8 +10,8 @@ test('can register custom magic properties',
             })
         </script>
 
-        <div x-data>
-            <span x-text="$foo.bar"></span>
+        <div data-data>
+            <span data-text="$foo.bar"></span>
         </div>
     `,
     ({ get }) => get('span').should(haveText('baz'))
@@ -29,7 +29,7 @@ test('magics are lazily accessed',
             })
         </script>
 
-        <div x-data>
+        <div data-data>
             <button @click="$el.textContent = window.hasBeenAccessed">clickme</button>
         </div>
     `,

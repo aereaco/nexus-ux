@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "target": "ES2021",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "lib": ["ES2021", "DOM"],
+    "allowJs": true,
+    "checkJs": false,
+    "jsx": "preserve",
+    "strict": false,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "alpinejs/*": ["packages/alpinejs/src/*"]
+    }
+  },
+  "include": [
+    "packages/**/*.ts",
+    "src/**/*.ts",
+    "*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "builds"
+  ]
+}

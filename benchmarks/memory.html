@@ -1,12 +1,12 @@
 <html>
     <script src="http://alpine-next.test/packages/alpinejs/dist/cdn.js" defer></script>
 
-    <div x-data="{ items: [] }">
-        <template x-for="item in items">
+    <div data-data="{ items: [] }">
+        <template data-for="item in items">
             <h1>hi</h1>
         </template>
 
-        <button @click="items.length === 0 ? items.push('ggoo') : items = []" x-text="'ghjghj'">delete</button>
+        <button @click="items.length === 0 ? items.push('ggoo') : items = []" data-text="'ghjghj'">delete</button>
     </div>
 
     <script>

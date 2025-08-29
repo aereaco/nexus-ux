@@ -89,10 +89,10 @@ button.addEventListener('click', () => {
 ```
 
 <!-- START_VERBATIM -->
-<div x-data="{ count: 1 }" class="demo">
+<div data-data="{ count: 1 }" class="demo">
     <button @click="count++">Increment</button>
 
-    <div>Count: <span x-text="count"></span></div>
+    <div>Count: <span data-text="count"></span></div>
 </div>
 <!-- END_VERBATIM -->
 

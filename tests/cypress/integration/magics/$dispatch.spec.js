@@ -2,10 +2,10 @@ import { haveText, html, test } from '../../utils'
 
 test('$dispatch dispatches events properly',
     html`
-        <div x-data="{ foo: 'bar' }" x-on:custom-event="foo = $event.detail.newValue">
-            <span x-text="foo"></span>
+        <div data-data="{ foo: 'bar' }" data-on:custom-event="foo = $event.detail.newValue">
+            <span data-text="foo"></span>
 
-            <button x-on:click="$dispatch('custom-event', {newValue: 'baz'})">click me</button>
+            <button data-on:click="$dispatch('custom-event', {newValue: 'baz'})">click me</button>
         </div>
     `,
     ({ get }) => {

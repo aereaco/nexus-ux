@@ -5,12 +5,12 @@
 
     <table>
         <tr>
-            <td><code>x-on:click.away</code></td>
+            <td><code>data-on:click.away</code></td>
             <td>
-                <div x-data="{ show: false }">
+                <div data-data="{ show: false }">
                     <button @click="show = true">Show</button>
 
-                    <h1 x-show="show" @click.away="show = false">h1</h1>
+                    <h1 data-show="show" @click.away="show = false">h1</h1>
 
                     <h2>h2</h2>
                   </div>
@@ -19,12 +19,12 @@
         </tr>
 
         <tr>
-            <td><code>x-transition</code></td>
+            <td><code>data-transition</code></td>
             <td>
-                <div x-data="{ open: false }">
+                <div data-data="{ open: false }">
                     <button @click="open = ! open">Toggle</button>
 
-                    <div x-show="open" x-transition>
+                    <div data-show="open" data-transition>
                         Hello 👋
                     </div>
                 </div>
@@ -32,16 +32,16 @@
         </tr>
 
         <tr>
-            <td><code>x-transition:enter only (should see no blip)</code></td>
+            <td><code>data-transition:enter only (should see no blip)</code></td>
             <td>
-                <main x-data="{ open: true }">
+                <main data-data="{ open: true }">
                     <button @click="open = ! open">Toggle</button>
 
-                    <div x-show="open" x-transition:enter.duration.500ms>
+                    <div data-show="open" data-transition:enter.duration.500ms>
                         Hello 👋
                     </div>
 
-                    <div x-show="!open">
+                    <div data-show="!open">
                         There 👋
                     </div>
                 </main>
@@ -49,30 +49,30 @@
         </tr>
 
         <tr>
-            <td><code>x-transition with dynamic classes</code></td>
+            <td><code>data-transition with dynamic classes</code></td>
             <td>
-                <div x-data="{ open: false, props: {
-                    ['x-transition:enter']() { return `transition ease-out duration-300`; },
-                    ['x-transition:enter-start']() { return `opacity-0 transform scale-90`; },
-                    ['x-transition:enter-end']() { return `opacity-100 transform scale-100`; },
-                    ['x-transition:leave']() { return `transition ease-in duration-300`; },
-                    ['x-transition:leave-start']() { return `opacity-100 transform scale-100`; },
-                    ['x-transition:leave-end']() { return `opacity-0 transform scale-90`; },
+                <div data-data="{ open: false, props: {
+                    ['data-transition:enter']() { return `transition ease-out duration-300`; },
+                    ['data-transition:enter-start']() { return `opacity-0 transform scale-90`; },
+                    ['data-transition:enter-end']() { return `opacity-100 transform scale-100`; },
+                    ['data-transition:leave']() { return `transition ease-in duration-300`; },
+                    ['data-transition:leave-start']() { return `opacity-100 transform scale-100`; },
+                    ['data-transition:leave-end']() { return `opacity-0 transform scale-90`; },
                  }}">
                     <button @click="open = !open">Toggle</button>
-                    <div x-bind="props" x-show="open">Hello 👋</div>
+                    <div data-bind="props" data-show="open">Hello 👋</div>
                 </div>
             </td>
         </tr>
 
         <tr>
-            <td><code>x-transition</code></td>
+            <td><code>data-transition</code></td>
             <td>
-                <div x-data="{ open: false }">
+                <div data-data="{ open: false }">
                     <button @click="open = ! open">Toggle</button>
 
-                    <div x-show="open">
-                        <div x-show="open" x-transition.duration.250ms>
+                    <div data-show="open">
+                        <div data-show="open" data-transition.duration.250ms>
                             <h1>Hello 👋</h1>
                         </div>
                     </div>
@@ -81,12 +81,12 @@
         </tr>
 
         <tr>
-            <td><code>x-transition.opacity</code></td>
+            <td><code>data-transition.opacity</code></td>
             <td>
-                <div x-data="{ open: false }">
+                <div data-data="{ open: false }">
                     <button @click="open = ! open">Toggle</button>
 
-                    <div x-show="open" x-transition.opacity>
+                    <div data-show="open" data-transition.opacity>
                         Hello 👋
                     </div>
                 </div>
@@ -94,12 +94,12 @@
         </tr>
 
         <tr>
-            <td><code>x-transition.scale</code></td>
+            <td><code>data-transition.scale</code></td>
             <td>
-                <div x-data="{ open: false }">
+                <div data-data="{ open: false }">
                     <button @click="open = ! open">Toggle</button>
 
-                    <div x-show="open" x-transition.scale>
+                    <div data-show="open" data-transition.scale>
                         Hello 👋
                     </div>
                 </div>
@@ -108,12 +108,12 @@
 
 
         <tr>
-            <td><code>x-transition.duration.1000ms</code></td>
+            <td><code>data-transition.duration.1000ms</code></td>
             <td>
-                <div x-data="{ open: false }">
+                <div data-data="{ open: false }">
                     <button @click="open = ! open">Toggle</button>
 
-                    <div x-show="open" x-transition.duration.1000ms>
+                    <div data-show="open" data-transition.duration.1000ms>
                         Hello 👋
                     </div>
                 </div>
@@ -121,12 +121,12 @@
         </tr>
 
         <tr style="border-bottom: 1px solid black;">
-            <td><code>x-transition.leave only with @click.outside</code></td>
+            <td><code>data-transition.leave only with @click.outside</code></td>
             <td>
-                <div x-data="{ open: false }">
+                <div data-data="{ open: false }">
                     <button @click="open = ! open">Toggle</button>
 
-                    <div x-show="open" @click.outside="open = false" x-transition.out.duration.1000ms>
+                    <div data-show="open" @click.outside="open = false" data-transition.out.duration.1000ms>
                         Hello 👋
                     </div>
                 </div>
@@ -135,14 +135,14 @@
 
         <tr>
             <td>
-                <div><code>x-transition:enter.opacity.duration.500ms</code></div>
-                <div><code>x-transition:leave.scale.duration.250ms</code></div>
+                <div><code>data-transition:enter.opacity.duration.500ms</code></div>
+                <div><code>data-transition:leave.scale.duration.250ms</code></div>
             </td>
             <td>
-                <div x-data="{ open: false }">
+                <div data-data="{ open: false }">
                     <button @click="open = ! open">Toggle</button>
 
-                    <div x-show="open" x-transition:enter.opacity.duration.500ms x-transition:leave.scale.duration.250ms>
+                    <div data-show="open" data-transition:enter.opacity.duration.500ms data-transition:leave.scale.duration.250ms>
                         Hello 👋
                     </div>
                 </div>
@@ -151,30 +151,30 @@
 
         <tr>
             <td>
-                <div><code>x-transition:enter.delay.0ms x-transition:leave.delay.250ms</code></div>
-                <div><code>x-transition:enter.delay.100ms x-transition:leave.delay.100ms</code></div>
-                <div><code>x-transition:enter.delay.250ms x-transition:leave.delay.0ms</code></div>
+                <div><code>data-transition:enter.delay.0ms data-transition:leave.delay.250ms</code></div>
+                <div><code>data-transition:enter.delay.100ms data-transition:leave.delay.100ms</code></div>
+                <div><code>data-transition:enter.delay.250ms data-transition:leave.delay.0ms</code></div>
             </td>
             <td>
-                <div x-data="{ open: false }">
+                <div data-data="{ open: false }">
                     <button @mouseenter="open = true" @mouseleave="open = false">Toggle (mouseover)</button>
 
-                    <div style="display: flex;" x-show="open">
-                        <div x-show="open" x-transition:enter.delay.0ms x-transition:leave.delay.250ms>Hello 👋</div>
-                        <div x-show="open" x-transition:enter.delay.100ms x-transition:leave.delay.100ms>Hello 👋</div>
-                        <div x-show="open" x-transition:enter.delay.250ms x-transition:leave.delay.0ms>Hello 👋</div>
+                    <div style="display: flex;" data-show="open">
+                        <div data-show="open" data-transition:enter.delay.0ms data-transition:leave.delay.250ms>Hello 👋</div>
+                        <div data-show="open" data-transition:enter.delay.100ms data-transition:leave.delay.100ms>Hello 👋</div>
+                        <div data-show="open" data-transition:enter.delay.250ms data-transition:leave.delay.0ms>Hello 👋</div>
                     </div>
                 </div>
             </td>
         </tr>
 
         <tr>
-            <td><code>x-collapse with no overflow hidden when expanded</code></td>
+            <td><code>data-collapse with no overflow hidden when expanded</code></td>
             <td>
-                <div x-data="{ show: false }">
+                <div data-data="{ show: false }">
                     <button @click="show = !show">Show</button>
 
-                    <div x-show="show" x-collapse.duration.2000ms>
+                    <div data-show="show" data-collapse.duration.2000ms>
                         <div class="ring-2 ring-offset-2 ring-red-400 py-10 bg-gray-200">my red ring should be fully visible</div>
                     </div>
                   </div>

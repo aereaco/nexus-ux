@@ -5,7 +5,7 @@ title: CSP
 
 # CSP (Content-Security Policy) Build
 
-In order for Alpine to be able to execute plain strings from HTML attributes as JavaScript expressions, for example `x-on:click="console.log()"`, it needs to rely on utilities that violate the "unsafe-eval" [Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) that some applications may enforce for security purposes.
+In order for Alpine to be able to execute plain strings from HTML attributes as JavaScript expressions, for example `data-on:click="console.log()"`, it needs to rely on utilities that violate the "unsafe-eval" [Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) that some applications may enforce for security purposes.
 
 > Under the hood, Alpine doesn't actually use eval() itself because it's slow and problematic. Instead it uses Function declarations, which are much better, but still violate "unsafe-eval".
 
@@ -57,10 +57,10 @@ To provide a glimpse of how using the CSP build might feel, here is a copy-pasta
     </head>
 
     <body>
-        <div x-data="counter">
-            <button x-on:click="increment"></button>
+        <div data-data="counter">
+            <button data-on:click="increment"></button>
 
-            <span x-text="count"></span>
+            <span data-text="count"></span>
         </div>
 
         <script nonce="a23gbfz9e">
@@ -85,16 +85,16 @@ To provide a glimpse of how using the CSP build might feel, here is a copy-pasta
 
 Since Alpine can no longer interpret strings as plain JavaScript, it has to parse and construct JavaScript functions from them manually.
 
-Due to this limitation, you must use `Alpine.data` to register your `x-data` objects, and must reference properties and methods from it by key only.
+Due to this limitation, you must use `Alpine.data` to register your `data-data` objects, and must reference properties and methods from it by key only.
 
 For example, an inline component like this will not work.
 
 ```alpine
 <!-- Bad -->
-<div x-data="{ count: 1 }">
+<div data-data="{ count: 1 }">
     <button @click="count++">Increment</button>
 
-    <span x-text="count"></span>
+    <span data-text="count"></span>
 </div>
 ```
 
@@ -102,10 +102,10 @@ However, breaking out the expressions into external APIs, the following is valid
 
 ```alpine
 <!-- Good -->
-<div x-data="counter">
+<div data-data="counter">
     <button @click="increment">Increment</button>
 
-    <span x-text="count"></span>
+    <span data-text="count"></span>
 </div>
 ```
 
@@ -123,10 +123,10 @@ The CSP build supports accessing nested properties (property accessors) using th
 
 ```alpine
 <!-- This works too -->
-<div x-data="counter">
+<div data-data="counter">
     <button @click="foo.increment">Increment</button>
 
-    <span x-text="foo.count"></span>
+    <span data-text="foo.count"></span>
 </div>
 ```
 

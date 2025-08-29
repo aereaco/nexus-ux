@@ -6,14 +6,14 @@ test('transition in',
             .transition { transition-property: background-color, border-color, color, fill, stroke; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
             .duration-100 { transition-duration: 100ms; }
         </style>
-        <div x-data="{ show: false }">
-            <button x-on:click="show = ! show"></button>
+        <div data-data="{ show: false }">
+            <button data-on:click="show = ! show"></button>
 
             <span
-                x-show="show"
-                x-transition:enter="transition duration-100 enter"
-                x-transition:enter-start="enter-start"
-                x-transition:enter-end="enter-end"
+                data-show="show"
+                data-transition:enter="transition duration-100 enter"
+                data-transition:enter-start="enter-start"
+                data-transition:enter-end="enter-end"
             >thing</span>
         </div>
     `,
@@ -33,14 +33,14 @@ test('transition out',
             .transition { transition-property: background-color, border-color, color, fill, stroke; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
             .duration-100 { transition-duration: 100ms; }
         </style>
-        <div x-data="{ show: true }">
-            <button x-on:click="show = ! show"></button>
+        <div data-data="{ show: true }">
+            <button data-on:click="show = ! show"></button>
 
             <span
-                x-show="show"
-                x-transition:leave="transition duration-100 leave"
-                x-transition:leave-start="leave-start"
-                x-transition:leave-end="leave-end"
+                data-show="show"
+                data-transition:leave="transition duration-100 leave"
+                data-transition:leave-start="leave-start"
+                data-transition:leave-end="leave-end"
             >thing</span>
         </div>
     `,
@@ -55,22 +55,22 @@ test('transition out',
     }
 )
 
-test('transition:enter in nested x-show visually runs',
+test('transition:enter in nested data-show visually runs',
     html`
         <style>
             .transition { transition: opacity 1s ease; }
             .opacity-0 {opacity: 0}
             .opacity-1 {opacity: 1}
         </style>
-        <div x-data="{ show: false }">
-            <span x-show="show">
-                <h1 x-show="show"
-                    x-transition:enter="transition"
-                    x-transition:enter-start="opacity-0"
-                    x-transition:enter-end="opacity-1">thing</h1>
+        <div data-data="{ show: false }">
+            <span data-show="show">
+                <h1 data-show="show"
+                    data-transition:enter="transition"
+                    data-transition:enter-start="opacity-0"
+                    data-transition:enter-end="opacity-1">thing</h1>
             </span>
 
-            <button x-on:click="show = true"></button>
+            <button data-on:click="show = true"></button>
         </div>
     `,
     ({ get }) => {
@@ -83,17 +83,17 @@ test('transition:enter in nested x-show visually runs',
 
 test('transition duration and delay with and without ms syntax',
     html`
-        <div x-data="{ showMs: false, showBlank: false }">
+        <div data-data="{ showMs: false, showBlank: false }">
 
             <span class="ms"
-                  x-show="showMs"
-                  x-transition.delay.80ms.duration.120ms>ms syntax</span>
+                  data-show="showMs"
+                  data-transition.delay.80ms.duration.120ms>ms syntax</span>
             <span class="blank"
-                  x-show="showBlank"
-                  x-transition.delay.80.duration.120>blank syntax</span>
+                  data-show="showBlank"
+                  data-transition.delay.80.duration.120>blank syntax</span>
 
-            <button class="ms"    x-on:click="showMs = true"></button>
-            <button class="blank" x-on:click="showBlank = true"></button>
+            <button class="ms"    data-on:click="showMs = true"></button>
+            <button class="blank" data-on:click="showBlank = true"></button>
         </div>
     `,
     ({ get }) => {
@@ -114,23 +114,23 @@ test('transition duration and delay with and without ms syntax',
 )
 
 test(
-    'bound x-transition can handle empty string and true values',
+    'bound data-transition can handle empty string and true values',
     html`
         <script>
             window.transitions = () => {
                 return {
                     withEmptyString: {
-                        ["x-transition.opacity"]: "",
+                        ["data-transition.opacity"]: "",
                     },
                     withBoolean: {
-                        ["x-transition.opacity"]: true,
+                        ["data-transition.opacity"]: true,
                     },
                 };
             };
         </script>
-        <div x-data="transitions()">
-            <button x-bind="withEmptyString"></button>
-            <span x-bind="withBoolean">thing</span>
+        <div data-data="transitions()">
+            <button data-bind="withEmptyString"></button>
+            <span data-bind="withBoolean">thing</span>
         </div>
     `,
     ({ get }) => 

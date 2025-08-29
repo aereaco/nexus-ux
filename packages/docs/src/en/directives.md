@@ -1,7 +1,7 @@
 ---
 order: 4
 title: Directives
-prefix: x-
+prefix: data-
 font-type: mono
 type: sub-directory
 ---

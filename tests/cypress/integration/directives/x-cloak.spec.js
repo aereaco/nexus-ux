@@ -1,10 +1,10 @@
 import { html, notHaveAttribute, test } from '../../utils'
 
-test('x-cloak is removed',
+test('data-cloak is removed',
     html`
-        <div x-data="{ hidden: true }">
-            <span x-cloak></span>
+        <div data-data="{ hidden: true }">
+            <span data-cloak></span>
         </div>
     `,
-    ({ get }) => get('span').should(notHaveAttribute('x-cloak'))
+    ({ get }) => get('span').should(notHaveAttribute('data-cloak'))
 )

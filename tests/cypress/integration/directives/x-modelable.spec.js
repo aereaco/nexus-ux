@@ -1,11 +1,11 @@
 import { haveText, html, test } from '../../utils'
 
-test('can expose data for x-model binding',
+test('can expose data for data-model binding',
     html`
-        <div x-data="{ outer: 'foo' }">
-            <div x-data="{ inner: 'bar' }" x-modelable="inner" x-model="outer">
-                <h1 x-text="outer"></h1>
-                <h2 x-text="inner"></h2>
+        <div data-data="{ outer: 'foo' }">
+            <div data-data="{ inner: 'bar' }" data-modelable="inner" data-model="outer">
+                <h1 data-text="outer"></h1>
+                <h2 data-text="inner"></h2>
 
                 <button @click="inner = 'bob'" id="1">change inner</button>
                 <button @click="outer = 'lob'" id="2">change outer</button>
@@ -24,14 +24,14 @@ test('can expose data for x-model binding',
     }
 )
 
-test('x-modelable works when inside x-bind and x-model is outside',
+test('data-modelable works when inside data-bind and data-model is outside',
     html`
-        <div x-data="{ outer: 'foo', thing: {
-            ['x-modelable']: 'inner',
+        <div data-data="{ outer: 'foo', thing: {
+            ['data-modelable']: 'inner',
         } }">
-            <div x-data="{ inner: 'bar' }" x-bind="thing" x-model="outer">
-                <h1 x-text="outer"></h1>
-                <h2 x-text="inner"></h2>
+            <div data-data="{ inner: 'bar' }" data-bind="thing" data-model="outer">
+                <h1 data-text="outer"></h1>
+                <h2 data-text="inner"></h2>
 
                 <button @click="inner = 'bob'" id="1">change inner</button>
                 <button @click="outer = 'lob'" id="2">change outer</button>
@@ -50,12 +50,12 @@ test('x-modelable works when inside x-bind and x-model is outside',
     }
 )
 
-test('x-modelable removes the event listener used by corresponding x-model',
+test('data-modelable removes the event listener used by corresponding data-model',
     html`
-        <div x-data="{ outer: 'foo' }">
-            <div x-data="{ inner: 'bar' }" x-modelable="inner" x-model="outer">
-                <h1 x-text="outer"></h1>
-                <h2 x-text="inner"></h2>
+        <div data-data="{ outer: 'foo' }">
+            <div data-data="{ inner: 'bar' }" data-modelable="inner" data-model="outer">
+                <h1 data-text="outer"></h1>
+                <h2 data-text="inner"></h2>
                 <button id="1" @click="$dispatch('input', 'baz')"></button>
             </div>
         </div>

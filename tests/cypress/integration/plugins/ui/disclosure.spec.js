@@ -2,10 +2,10 @@ import { beVisible, haveClasses, haveAttribute, html, notBeVisible, notHaveClass
 
 test('has accessibility attributes',
     [html`
-        <div x-data x-disclosure>
-            <button trigger x-disclosure:button>Trigger</button>
+        <div data-data data-disclosure>
+            <button trigger data-disclosure:button>Trigger</button>
 
-            <div x-disclosure:panel panel>
+            <div data-disclosure:panel panel>
                 Content
             </div>
         </div>
@@ -19,10 +19,10 @@ test('has accessibility attributes',
 
 test('it toggles',
     [html`
-        <div x-data x-disclosure>
-            <button trigger x-disclosure:button>Trigger</button>
+        <div data-data data-disclosure>
+            <button trigger data-disclosure:button>Trigger</button>
 
-            <div x-disclosure:panel panel>
+            <div data-disclosure:panel panel>
                 Content
 
                 <button close-button type="button" @click="$disclosure.close()">Close</button>
@@ -40,10 +40,10 @@ test('it toggles',
 
 test('$disclosure.isOpen and $disclosure.close() work',
     [html`
-        <div x-data x-disclosure>
-            <button trigger x-disclosure:button>Trigger</button>
+        <div data-data data-disclosure>
+            <button trigger data-disclosure:button>Trigger</button>
 
-            <div x-disclosure:panel panel :class="$disclosure.isOpen && 'open'">
+            <div data-disclosure:panel panel :class="$disclosure.isOpen && 'open'">
                 Content
 
                 <button close-button type="button" @click="$disclosure.close()">Close</button>
@@ -61,10 +61,10 @@ test('$disclosure.isOpen and $disclosure.close() work',
 
 test('can set a default open state',
     [html`
-        <div x-data x-disclosure :default-open="true">
-            <button trigger x-disclosure:button>Trigger</button>
+        <div data-data data-disclosure :default-open="true">
+            <button trigger data-disclosure:button>Trigger</button>
 
-            <div x-disclosure:panel panel>
+            <div data-disclosure:panel panel>
                 Content
 
                 <button close-button type="button" @click="$disclosure.close()">Close</button>
@@ -80,10 +80,10 @@ test('can set a default open state',
 
 test('it toggles using the space key',
     [html`
-        <div x-data x-disclosure>
-            <button trigger x-disclosure:button>Trigger</button>
+        <div data-data data-disclosure>
+            <button trigger data-disclosure:button>Trigger</button>
 
-            <div x-disclosure:panel panel>
+            <div data-disclosure:panel panel>
                 Content
 
                 <button close-button type="button" @click="$disclosure.close()">Close</button>

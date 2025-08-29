@@ -99,7 +99,7 @@ function injectHtmlAndBootAlpine(cy, templateAndPotentiallyScripts, callback, pa
     })
 }
 
-export let haveData = (key, value) => ([el]) => expect(root(el)._x_dataStack[0][key]).to.deep.equal(value);
+export let haveData = (key, value) => ([el]) => expect(root(el)._data_dataStack[0][key]).to.deep.equal(value);
 
 export let haveFocus = () => el => expect(el).to.have.focus
 
@@ -156,7 +156,7 @@ export let haveComputedStyle = (name, value) => el => {
 }
 
 export function root(el) {
-    if (el._x_dataStack) return el
+    if (el._data_dataStack) return el
 
     if (! el.parentElement) return
 

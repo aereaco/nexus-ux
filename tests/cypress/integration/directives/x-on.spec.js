@@ -2,10 +2,10 @@ import { beChecked, contain, notBeChecked, haveAttribute, haveData, haveText, te
 
 test('data modified in event listener updates affected attribute bindings',
     html`
-        <div x-data="{ foo: 'bar' }">
-            <button x-on:click="foo = 'baz'"></button>
+        <div data-data="{ foo: 'bar' }">
+            <button data-on:click="foo = 'baz'"></button>
 
-            <span x-bind:foo="foo"></span>
+            <span data-bind:foo="foo"></span>
         </div>
     `,
     ({ get }) => {
@@ -17,10 +17,10 @@ test('data modified in event listener updates affected attribute bindings',
 
 test('can call a method without parenthesis',
     html`
-        <div x-data="{ foo: 'bar', baz($event) { this.foo = $event.target.dataset.bob } }">
-            <button x-on:click="baz" data-bob="lob"></button>
+        <div data-data="{ foo: 'bar', baz($event) { this.foo = $event.target.dataset.bob } }">
+            <button data-on:click="baz" data-bob="lob"></button>
 
-            <span x-text="foo"></span>
+            <span data-text="foo"></span>
         </div>
     `,
     ({ get }) => {
@@ -32,10 +32,10 @@ test('can call a method without parenthesis',
 
 test('event object is not passed if other params are present',
     html`
-        <div x-data="{ foo: 'bar', baz(word) { this.foo = word } }">
-            <button x-on:click="baz('foo')" data-bob="lob"></button>
+        <div data-data="{ foo: 'bar', baz(word) { this.foo = word } }">
+            <button data-on:click="baz('foo')" data-bob="lob"></button>
 
-            <span x-text="foo"></span>
+            <span data-text="foo"></span>
         </div>
     `,
     ({ get }) => {
@@ -47,10 +47,10 @@ test('event object is not passed if other params are present',
 
 test('nested data modified in event listener updates affected attribute bindings',
     html`
-        <div x-data="{ nested: { foo: 'bar' } }">
-            <button x-on:click="nested.foo = 'baz'"></button>
+        <div data-data="{ nested: { foo: 'bar' } }">
+            <button data-on:click="nested.foo = 'baz'"></button>
 
-            <span x-bind:foo="nested.foo"></span>
+            <span data-bind:foo="nested.foo"></span>
         </div>
     `,
     ({ get }) => {
@@ -62,9 +62,9 @@ test('nested data modified in event listener updates affected attribute bindings
 
 test('.passive modifier should disable e.preventDefault()',
     html`
-        <div x-data="{ defaultPrevented: null }">
+        <div data-data="{ defaultPrevented: null }">
             <button
-                x-on:mousedown.passive="
+                data-on:mousedown.passive="
                     $event.preventDefault();
                     defaultPrevented = $event.defaultPrevented;
                 "
@@ -81,8 +81,8 @@ test('.passive modifier should disable e.preventDefault()',
 
 test('.stop modifier',
     html`
-        <div x-data="{ foo: 'bar' }">
-            <button x-on:click="foo = 'baz'">
+        <div data-data="{ foo: 'bar' }">
+            <button data-on:click="foo = 'baz'">
                 <h1>h1</h1>
                 <h2 @click.stop>h2</h2>
             </button>
@@ -100,8 +100,8 @@ test('.stop modifier',
 
 test('.stop modifier with a .throttle',
     html`
-        <div x-data="{ foo: 'bar' }">
-            <button x-on:click="foo = 'baz'">
+        <div data-data="{ foo: 'bar' }">
+            <button data-on:click="foo = 'baz'">
                 <h1>h1</h1>
                 <h2 @click.stop.throttle>h2</h2>
             </button>
@@ -119,7 +119,7 @@ test('.stop modifier with a .throttle',
 
 test('.capture modifier',
     html`
-        <div x-data="{ foo: 'bar', count: 0 }">
+        <div data-data="{ foo: 'bar', count: 0 }">
             <button @click.capture="count = count + 1; foo = 'baz'">
                 <h1>h1</h1>
                 <h2 @click="foo = 'bob'">h2</h2>
@@ -136,7 +136,7 @@ test('.capture modifier',
 
 test('.capture modifier with @keyup',
     html`
-        <div x-data="{ foo: 'bar', count: 0 }">
+        <div data-data="{ foo: 'bar', count: 0 }">
             <span @keyup.capture="count = count + 1; foo = 'span'">
                 <input type="text" @keyup="foo = 'input'">
             </span>
@@ -152,7 +152,7 @@ test('.capture modifier with @keyup',
 
 test('.capture modifier with @keyup and specified key',
     html`
-        <div x-data="{ foo: 'bar', count: 0 }">
+        <div data-data="{ foo: 'bar', count: 0 }">
             <span @keyup.enter.capture="count = count + 1; foo = 'span'">
                 <input type="text" @keyup.enter="foo = 'input'">
             </span>
@@ -168,13 +168,13 @@ test('.capture modifier with @keyup and specified key',
 
 test('.self modifier',
     html`
-        <div x-data="{ foo: 'bar' }">
-            <h1 x-on:click.self="foo = 'baz'" id="selfTarget">
+        <div data-data="{ foo: 'bar' }">
+            <h1 data-on:click.self="foo = 'baz'" id="selfTarget">
                 content
                 <button>click</button>
                 content
             </h1>
-            <span x-text="foo"></span>
+            <span data-text="foo"></span>
         </div>
     `,
     ({ get }) => {
@@ -189,13 +189,13 @@ test('.self modifier',
 test(
     ".self.once modifiers",
     html`
-        <div x-data="{ foo: 'bar' }">
-            <h1 x-on:click.self.once="foo = 'baz'" id="selfTarget">
+        <div data-data="{ foo: 'bar' }">
+            <h1 data-on:click.self.once="foo = 'baz'" id="selfTarget">
                 content
                 <button>click</button>
                 content
             </h1>
-            <span x-text="foo"></span>
+            <span data-text="foo"></span>
         </div>
     `,
     ({ get }) => {
@@ -209,8 +209,8 @@ test(
 
 test('.prevent modifier',
     html`
-        <div x-data="{}">
-            <input type="checkbox" x-on:click.prevent>
+        <div data-data="{}">
+            <input type="checkbox" data-on:click.prevent>
         </div>
     `,
     ({ get }) => {
@@ -221,8 +221,8 @@ test('.prevent modifier',
 
 test('.prevent modifier with a .debounce',
     html`
-        <div x-data="{}">
-            <input type="checkbox" x-on:click.prevent.debounce>
+        <div data-data="{}">
+            <input type="checkbox" data-on:click.prevent.debounce>
         </div>
     `,
     ({ get }) => {
@@ -234,10 +234,10 @@ test('.prevent modifier with a .debounce',
 
 test('.window modifier',
     html`
-        <div x-data="{ foo: 'bar' }">
-            <div x-on:click.window="foo = 'baz'"></div>
+        <div data-data="{ foo: 'bar' }">
+            <div data-on:click.window="foo = 'baz'"></div>
 
-            <span x-text="foo"></span>
+            <span data-text="foo"></span>
         </div>
     `,
     ({ get }) => {
@@ -249,9 +249,9 @@ test('.window modifier',
 
 test('expressions can start with if',
     html`
-        <div x-data="{ foo: 'bar' }">
+        <div data-data="{ foo: 'bar' }">
             <button @click="if (foo === 'bar') foo = 'baz'">click</button>
-            <span x-text="foo"></span>
+            <span data-text="foo"></span>
         </div>
     `,
     ({ get }) => {
@@ -263,11 +263,11 @@ test('expressions can start with if',
 
 test('unbind global event handler when element is removed',
     html`
-        <div x-data="{ count: 0 }">
-            <div x-on:click.window="count++" x-ref="rmMe"></div>
+        <div data-data="{ count: 0 }">
+            <div data-on:click.window="count++" data-ref="rmMe"></div>
 
             <button @click="$refs.rmMe.remove()">click</button>
-            <span x-text="count"></span>
+            <span data-text="count"></span>
         </div>
     `,
     ({ get }) => {
@@ -279,10 +279,10 @@ test('unbind global event handler when element is removed',
 
 test('.document modifier',
     html`
-       <div x-data="{ foo: 'bar' }">
-            <div x-on:click.document="foo = 'baz'"></div>
+       <div data-data="{ foo: 'bar' }">
+            <div data-on:click.document="foo = 'baz'"></div>
 
-            <span x-text="foo"></span>
+            <span data-text="foo"></span>
         </div>
     `,
     ({ get }) => {
@@ -294,10 +294,10 @@ test('.document modifier',
 
 test('.once modifier',
     html`
-        <div x-data="{ count: 0 }">
-            <button x-on:click.once="count = count+1"></button>
+        <div data-data="{ count: 0 }">
+            <button data-on:click.once="count = count+1"></button>
 
-            <span x-text="count"></span>
+            <span data-text="count"></span>
         </div>
     `,
     ({ get }) => {
@@ -311,10 +311,10 @@ test('.once modifier',
 
 test('.once modifier with @keyup',
     html`
-        <div x-data="{ count: 0 }">
-            <input type="text" x-on:keyup.once="count = count+1">
+        <div data-data="{ count: 0 }">
+            <input type="text" data-on:keyup.once="count = count+1">
 
-            <span x-text="count"></span>
+            <span data-text="count"></span>
         </div>
     `,
     ({ get }) => {
@@ -328,10 +328,10 @@ test('.once modifier with @keyup',
 
 test('.once modifier with @keyup and specified key',
     html`
-        <div x-data="{ count: 0 }">
-            <input type="text" x-on:keyup.enter.once="count = count+1">
+        <div data-data="{ count: 0 }">
+            <input type="text" data-on:keyup.enter.once="count = count+1">
 
-            <span x-text="count"></span>
+            <span data-text="count"></span>
         </div>
     `,
     ({ get }) => {
@@ -347,10 +347,10 @@ test('.once modifier with @keyup and specified key',
 
 test('.debounce modifier',
     html`
-        <div x-data="{ count: 0 }">
-            <input x-on:input.debounce="count = count+1">
+        <div data-data="{ count: 0 }">
+            <input data-on:input.debounce="count = count+1">
 
-            <span x-text="count"></span>
+            <span data-text="count"></span>
         </div>
     `,
     ({ get }) => {
@@ -364,9 +364,9 @@ test('.debounce modifier',
 
 test('.throttle modifier',
     html`
-        <div x-data="{ count: 0 }">
-            <input x-on:keyup.throttle.504ms="count = count+1">
-            <span x-text="count"></span>
+        <div data-data="{ count: 0 }">
+            <input data-on:keyup.throttle.504ms="count = count+1">
+            <span data-text="count"></span>
         </div>
     `,
     ({ get }) => {
@@ -380,27 +380,27 @@ test('.throttle modifier',
 
 test('keydown modifiers',
     html`
-        <div x-data="{ count: 0 }">
+        <div data-data="{ count: 0 }">
             <input type="text"
-                x-on:keydown="count++"
-                x-on:keydown.enter="count++"
-                x-on:keydown.space="count++"
-                x-on:keydown.up="count++"
-                x-on:keydown.down="count++"
-                x-on:keydown.right="count++"
-                x-on:keydown.left="count++"
-                x-on:keydown.cmd="count++"
-                x-on:keydown.meta="count++"
-                x-on:keydown.escape="count++"
-                x-on:keydown.esc="count++"
-                x-on:keydown.ctrl="count++"
-                x-on:keydown.slash="count++"
-                x-on:keydown.period="count++"
-                x-on:keydown.equal="count++"
-                x-on:keydown.comma="count++"
+                data-on:keydown="count++"
+                data-on:keydown.enter="count++"
+                data-on:keydown.space="count++"
+                data-on:keydown.up="count++"
+                data-on:keydown.down="count++"
+                data-on:keydown.right="count++"
+                data-on:keydown.left="count++"
+                data-on:keydown.cmd="count++"
+                data-on:keydown.meta="count++"
+                data-on:keydown.escape="count++"
+                data-on:keydown.esc="count++"
+                data-on:keydown.ctrl="count++"
+                data-on:keydown.slash="count++"
+                data-on:keydown.period="count++"
+                data-on:keydown.equal="count++"
+                data-on:keydown.comma="count++"
             >
 
-            <span x-text="count"></span>
+            <span data-text="count"></span>
         </div>
     `,
     ({ get }) => {
@@ -438,11 +438,11 @@ test('keydown modifiers',
 
 test('discerns between space minus underscore',
     html`
-        <div x-data="{ count: 0 }">
-            <input id="space" type="text" x-on:keydown.space="count++" />
-            <input id="minus" type="text" x-on:keydown.-="count++" />
-            <input id="underscore" type="text" x-on:keydown._="count++" />
-            <span x-text="count"></span>
+        <div data-data="{ count: 0 }">
+            <input id="space" type="text" data-on:keydown.space="count++" />
+            <input id="minus" type="text" data-on:keydown.-="count++" />
+            <input id="underscore" type="text" data-on:keydown._="count++" />
+            <span data-text="count"></span>
         </div>
     `,
     ({get}) => {
@@ -463,10 +463,10 @@ test('discerns between space minus underscore',
 
 test('keydown combo modifiers',
     html`
-        <div x-data="{ count: 0 }">
-            <input type="text" x-on:keydown.cmd.enter="count++">
+        <div data-data="{ count: 0 }">
+            <input type="text" data-on:keydown.cmd.enter="count++">
 
-            <span x-text="count"></span>
+            <span data-text="count"></span>
         </div>
     `,
     ({ get }) => {
@@ -480,12 +480,12 @@ test('keydown combo modifiers',
 
 test('keydown with specified key and stop modifier only stops for specified key',
     html`
-        <div x-data="{ count: 0 }">
-            <article x-on:keydown="count++">
-                <input type="text" x-on:keydown.enter.stop>
+        <div data-data="{ count: 0 }">
+            <article data-on:keydown="count++">
+                <input type="text" data-on:keydown.enter.stop>
             </article>
 
-            <span x-text="count"></span>
+            <span data-text="count"></span>
         </div>
     `,
     ({ get }) => {
@@ -499,12 +499,12 @@ test('keydown with specified key and stop modifier only stops for specified key'
 
 test('@click.away',
     html`
-        <div x-data="{ foo: 'bar' }">
+        <div data-data="{ foo: 'bar' }">
             <h1 @click.away="foo = 'baz'">h1</h1>
 
             <h2>h2</h2>
 
-            <span x-text="foo"></span>
+            <span data-text="foo"></span>
         </div>
     `,
     ({ get }) => {
@@ -518,12 +518,12 @@ test('@click.away',
 
 test('@click.away.once works after clicking inside',
     html`
-        <div x-data="{ foo: 'bar' }">
+        <div data-data="{ foo: 'bar' }">
             <h1 @click.away.once="foo = 'baz'">h1</h1>
 
             <h2>h2</h2>
 
-            <span x-text="foo"></span>
+            <span data-text="foo"></span>
         </div>
     `,
     ({ get }) => {
@@ -535,12 +535,12 @@ test('@click.away.once works after clicking inside',
     }
 )
 
-test('@click.away with x-show (prevent race condition)',
+test('@click.away with data-show (prevent race condition)',
     html`
-        <div x-data="{ show: false }">
+        <div data-data="{ show: false }">
             <button @click="show = true">Show</button>
 
-            <h1 x-show="show" @click.away="show = false">h1</h1>
+            <h1 data-show="show" @click.away="show = false">h1</h1>
 
             <h2>h2</h2>
         </div>
@@ -554,12 +554,12 @@ test('@click.away with x-show (prevent race condition)',
 
 test('event with colon',
     html`
-        <div x-data="{ foo: 'bar' }">
-            <div x-on:my:event.document="foo = 'baz'"></div>
+        <div data-data="{ foo: 'bar' }">
+            <div data-on:my:event.document="foo = 'baz'"></div>
 
             <button @click="document.dispatchEvent(new CustomEvent('my:event', { bubbles: true }))">click</button>
 
-            <span x-text="foo"></span>
+            <span data-text="foo"></span>
         </div>
     `,
     ({ get }) => {
@@ -571,10 +571,10 @@ test('event with colon',
 
 test('event instance can be passed to method reference',
     html`
-        <div x-data="{ foo: 'bar', changeFoo(e) { this.foo = e.target.id } }">
-            <button x-on:click="changeFoo" id="baz"></button>
+        <div data-data="{ foo: 'bar', changeFoo(e) { this.foo = e.target.id } }">
+            <button data-on:click="changeFoo" id="baz"></button>
 
-            <span x-text="foo"></span>
+            <span data-text="foo"></span>
         </div>
     `,
     ({ get }) => {
@@ -586,10 +586,10 @@ test('event instance can be passed to method reference',
 
 test('.camel modifier correctly binds event listener',
     html`
-        <div x-data="{ foo: 'bar' }" x-on:event-name.camel="foo = 'baz'">
-            <button x-on:click="$dispatch('eventName')"></button>
+        <div data-data="{ foo: 'bar' }" data-on:event-name.camel="foo = 'baz'">
+            <button data-on:click="$dispatch('eventName')"></button>
 
-            <span x-text="foo"></span>
+            <span data-text="foo"></span>
         </div>
     `,
     ({ get }) => {
@@ -601,10 +601,10 @@ test('.camel modifier correctly binds event listener',
 
 test('.camel modifier correctly binds event listener with namespace',
     html`
-        <div x-data="{ foo: 'bar' }" x-on:ns:event-name.camel="foo = 'baz'">
-            <button x-on:click="$dispatch('ns:eventName')"></button>
+        <div data-data="{ foo: 'bar' }" data-on:ns:event-name.camel="foo = 'baz'">
+            <button data-on:click="$dispatch('ns:eventName')"></button>
 
-            <span x-text="foo"></span>
+            <span data-text="foo"></span>
         </div>
     `,
     ({ get }) => {
@@ -616,10 +616,10 @@ test('.camel modifier correctly binds event listener with namespace',
 
 test('.dot modifier correctly binds event listener',
     html`
-        <div x-data="{ foo: 'bar' }" x-on:event-name.dot="foo = 'baz'">
-            <button x-on:click="$dispatch('event.name')"></button>
+        <div data-data="{ foo: 'bar' }" data-on:event-name.dot="foo = 'baz'">
+            <button data-on:click="$dispatch('event.name')"></button>
 
-            <span x-text="foo"></span>
+            <span data-text="foo"></span>
         </div>
     `,
     ({ get }) => {
@@ -630,10 +630,10 @@ test('.dot modifier correctly binds event listener',
 )
 test('underscores are allowed in event names',
     html`
-        <div x-data="{ foo: 'bar' }" x-on:event_name="foo = 'baz'">
-            <button x-on:click="$dispatch('event_name')"></button>
+        <div data-data="{ foo: 'bar' }" data-on:event_name="foo = 'baz'">
+            <button data-on:click="$dispatch('event_name')"></button>
 
-            <span x-text="foo"></span>
+            <span data-text="foo"></span>
         </div>
     `,
     ({ get }) => {
@@ -645,10 +645,10 @@ test('underscores are allowed in event names',
 
 test('.dot modifier correctly binds event listener with namespace',
     html`
-        <div x-data="{ foo: 'bar' }" x-on:ns:event-name.dot="foo = 'baz'">
-            <button x-on:click="$dispatch('ns:event.name')"></button>
+        <div data-data="{ foo: 'bar' }" data-on:ns:event-name.dot="foo = 'baz'">
+            <button data-on:click="$dispatch('ns:event.name')"></button>
 
-            <span x-text="foo"></span>
+            <span data-text="foo"></span>
         </div>
     `,
     ({ get }) => {
@@ -660,9 +660,9 @@ test('.dot modifier correctly binds event listener with namespace',
 
 test('handles await in handlers with invalid right hand expressions',
     html`
-        <div x-data="{ text: 'original' }">
+        <div data-data="{ text: 'original' }">
             <button @click="let value = 'new string'; text = await Promise.resolve(value)"></button>
-            <span x-text="text"></span>
+            <span data-text="text"></span>
         </div>
     `,
     ({ get }) => {
@@ -675,7 +675,7 @@ test('handles await in handlers with invalid right hand expressions',
 test(
     "handles system modifier keys on key events",
     html`
-        <div x-data="{ keys: {
+        <div data-data="{ keys: {
             shift: false,
             ctrl: false,
             meta: false,
@@ -690,8 +690,8 @@ test(
                 @keydown.alt.space="keys.alt = true"
                 @keydown.cmd.space="keys.cmd = true"
             />
-            <template x-for="key in Object.keys(keys)" :key="key">
-                <input type="checkbox" :name="key" x-model="keys[key]">
+            <template data-for="key in Object.keys(keys)" :key="key">
+                <input type="checkbox" :name="key" data-model="keys[key]">
             </template>
         </div>
     `,({ get }) => {
@@ -728,7 +728,7 @@ test(
 test(
     "handles system modifier keys on mouse events",
     html`
-        <div x-data="{ keys: {
+        <div data-data="{ keys: {
             shift: false,
             ctrl: false,
             meta: false,
@@ -744,8 +744,8 @@ test(
                 @click.cmd="keys.cmd = true">
                     change
             </button>
-            <template x-for="key in Object.keys(keys)" :key="key">
-                <input type="checkbox" :name="key" x-model="keys[key]">
+            <template data-for="key in Object.keys(keys)" :key="key">
+                <input type="checkbox" :name="key" data-model="keys[key]">
             </template>
         </div>
     `,({ get }) => {
@@ -781,7 +781,7 @@ test(
 test(
     "handles all mouse events with modifiers",
     html`
-        <div x-data="{ keys: {
+        <div data-data="{ keys: {
             shift: false,
             ctrl: false,
             meta: false,
@@ -797,8 +797,8 @@ test(
                 @mousemove.cmd="keys.cmd = true">
                     change
             </button>
-            <template x-for="key in Object.keys(keys)" :key="key">
-                <input type="checkbox" :name="key" x-model="keys[key]">
+            <template data-for="key in Object.keys(keys)" :key="key">
+                <input type="checkbox" :name="key" data-model="keys[key]">
             </template>
         </div>
     `,({ get }) => {

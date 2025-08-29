@@ -49,34 +49,34 @@ Alpine.plugin(anchor)
 ...
 ```
 
-<a name="x-anchor"></a>
-## x-anchor
+<a name="data-anchor"></a>
+## data-anchor
 
-The primary API for using this plugin is the `x-anchor` directive.
+The primary API for using this plugin is the `data-anchor` directive.
 
-To use this plugin, add the `x-anchor` directive to any element and pass it a reference to the element you want to anchor it's position to (often a button on the page).
+To use this plugin, add the `data-anchor` directive to any element and pass it a reference to the element you want to anchor it's position to (often a button on the page).
 
-By default, `x-anchor` will set the element's CSS to `position: absolute` and the appropriate `top` and `left` values. If the anchored element is normally displayed below the reference element but doesn't have room on the page, it's styling will be adjusted to render above the element.
+By default, `data-anchor` will set the element's CSS to `position: absolute` and the appropriate `top` and `left` values. If the anchored element is normally displayed below the reference element but doesn't have room on the page, it's styling will be adjusted to render above the element.
 
 For example, here's a simple dropdown anchored to the button that toggles it:
 
 ```alpine
-<div x-data="{ open: false }">
-    <button x-ref="button" @click="open = ! open">Toggle</button>
+<div data-data="{ open: false }">
+    <button data-ref="button" @click="open = ! open">Toggle</button>
 
-    <div x-show="open" x-anchor="$refs.button">
+    <div data-show="open" data-anchor="$refs.button">
         Dropdown content
     </div>
 </div>
 ```
 
 <!-- START_VERBATIM -->
-<div x-data="{ open: false }" class="demo overflow-hidden">
+<div data-data="{ open: false }" class="demo overflow-hidden">
     <div class="flex justify-center">
-        <button x-ref="button" @click="open = ! open">Toggle</button>
+        <button data-ref="button" @click="open = ! open">Toggle</button>
     </div>
 
-    <div x-show="open" x-anchor="$refs.button" class="bg-white rounded p-4 border shadow z-10">
+    <div data-show="open" data-anchor="$refs.button" class="bg-white rounded p-4 border shadow z-10">
         Dropdown content
     </div>
 </div>
@@ -85,7 +85,7 @@ For example, here's a simple dropdown anchored to the button that toggles it:
 <a name="positioning"></a>
 ## Positioning
 
-`x-anchor` allows you to customize the positioning of the anchored element using the following modifiers:
+`data-anchor` allows you to customize the positioning of the anchored element using the following modifiers:
 
 * Bottom: `.bottom`, `.bottom-start`, `.bottom-end`
 * Top: `.top`, `.top-start`, `.top-end`
@@ -95,22 +95,22 @@ For example, here's a simple dropdown anchored to the button that toggles it:
 Here is an example of using `.bottom-start` to position a dropdown below and to the right of the reference element:
 
 ```alpine
-<div x-data="{ open: false }">
-    <button x-ref="button" @click="open = ! open">Toggle</button>
+<div data-data="{ open: false }">
+    <button data-ref="button" @click="open = ! open">Toggle</button>
 
-    <div x-show="open" x-anchor.bottom-start="$refs.button">
+    <div data-show="open" data-anchor.bottom-start="$refs.button">
         Dropdown content
     </div>
 </div>
 ```
 
 <!-- START_VERBATIM -->
-<div x-data="{ open: false }" class="demo overflow-hidden">
+<div data-data="{ open: false }" class="demo overflow-hidden">
     <div class="flex justify-center">
-        <button x-ref="button" @click="open = ! open">Toggle</button>
+        <button data-ref="button" @click="open = ! open">Toggle</button>
     </div>
 
-    <div x-show="open" x-anchor.bottom-start="$refs.button" class="bg-white rounded p-4 border shadow z-10">
+    <div data-show="open" data-anchor.bottom-start="$refs.button" class="bg-white rounded p-4 border shadow z-10">
         Dropdown content
     </div>
 </div>
@@ -122,22 +122,22 @@ Here is an example of using `.bottom-start` to position a dropdown below and to 
 You can add an offset to your anchored element using the `.offset.[px value]` modifier like so:
 
 ```alpine
-<div x-data="{ open: false }">
-    <button x-ref="button" @click="open = ! open">Toggle</button>
+<div data-data="{ open: false }">
+    <button data-ref="button" @click="open = ! open">Toggle</button>
 
-    <div x-show="open" x-anchor.offset.10="$refs.button">
+    <div data-show="open" data-anchor.offset.10="$refs.button">
         Dropdown content
     </div>
 </div>
 ```
 
 <!-- START_VERBATIM -->
-<div x-data="{ open: false }" class="demo overflow-hidden">
+<div data-data="{ open: false }" class="demo overflow-hidden">
     <div class="flex justify-center">
-        <button x-ref="button" @click="open = ! open">Toggle</button>
+        <button data-ref="button" @click="open = ! open">Toggle</button>
     </div>
 
-    <div x-show="open" x-anchor.offset.10="$refs.button" class="bg-white rounded p-4 border shadow z-10">
+    <div data-show="open" data-anchor.offset.10="$refs.button" class="bg-white rounded p-4 border shadow z-10">
         Dropdown content
     </div>
 </div>
@@ -146,18 +146,18 @@ You can add an offset to your anchored element using the `.offset.[px value]` mo
 <a name="manual-styling"></a>
 ## Manual styling
 
-By default, `x-anchor` applies the positioning styles to your element under the hood. If you'd prefer full control over styling, you can pass the `.no-style` modifer and use the `$anchor` magic to access the values inside another Alpine expression.
+By default, `data-anchor` applies the positioning styles to your element under the hood. If you'd prefer full control over styling, you can pass the `.no-style` modifer and use the `$anchor` magic to access the values inside another Alpine expression.
 
-Below is an example of bypassing `x-anchor`'s internal styling and instead applying the styles yourself using `x-bind:style`:
+Below is an example of bypassing `data-anchor`'s internal styling and instead applying the styles yourself using `data-bind:style`:
 
 ```alpine
-<div x-data="{ open: false }">
-    <button x-ref="button" @click="open = ! open">Toggle</button>
+<div data-data="{ open: false }">
+    <button data-ref="button" @click="open = ! open">Toggle</button>
 
     <div
-        x-show="open"
-        x-anchor.no-style="$refs.button"
-        x-bind:style="{ position: 'absolute', top: $anchor.y+'px', left: $anchor.x+'px' }"
+        data-show="open"
+        data-anchor.no-style="$refs.button"
+        data-bind:style="{ position: 'absolute', top: $anchor.y+'px', left: $anchor.x+'px' }"
     >
         Dropdown content
     </div>
@@ -165,15 +165,15 @@ Below is an example of bypassing `x-anchor`'s internal styling and instead apply
 ```
 
 <!-- START_VERBATIM -->
-<div x-data="{ open: false }" class="demo overflow-hidden">
+<div data-data="{ open: false }" class="demo overflow-hidden">
     <div class="flex justify-center">
-        <button x-ref="button" @click="open = ! open">Toggle</button>
+        <button data-ref="button" @click="open = ! open">Toggle</button>
     </div>
 
     <div
-        x-show="open"
-        x-anchor.no-style="$refs.button"
-        x-bind:style="{ position: 'absolute', top: $anchor.y+'px', left: $anchor.x+'px' }"
+        data-show="open"
+        data-anchor.no-style="$refs.button"
+        data-bind:style="{ position: 'absolute', top: $anchor.y+'px', left: $anchor.x+'px' }"
         class="bg-white rounded p-4 border shadow z-10"
     >
         Dropdown content
@@ -186,26 +186,26 @@ Below is an example of bypassing `x-anchor`'s internal styling and instead apply
 
 The examples thus far have all been anchoring to other elements using Alpine refs.
 
-Because `x-anchor` accepts a reference to any DOM element, you can use utilities like `document.getElementById()` to anchor to an element by its `id` attribute:
+Because `data-anchor` accepts a reference to any DOM element, you can use utilities like `document.getElementById()` to anchor to an element by its `id` attribute:
 
 ```alpine
-<div x-data="{ open: false }">
+<div data-data="{ open: false }">
     <button id="trigger" @click="open = ! open">Toggle</button>
 
-    <div x-show="open" x-anchor="document.getElementById('trigger')">
+    <div data-show="open" data-anchor="document.getElementById('trigger')">
         Dropdown content
     </div>
 </div>
 ```
 
 <!-- START_VERBATIM -->
-<div x-data="{ open: false }" class="demo overflow-hidden">
+<div data-data="{ open: false }" class="demo overflow-hidden">
     <div class="flex justify-center">
         <button class="trigger" @click="open = ! open">Toggle</button>
     </div>
 
 
-    <div x-show="open" x-anchor="document.querySelector('.trigger')">
+    <div data-show="open" data-anchor="document.querySelector('.trigger')">
         Dropdown content
     </div>
 </div>

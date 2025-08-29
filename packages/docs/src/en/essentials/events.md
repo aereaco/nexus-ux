@@ -10,12 +10,12 @@ Alpine makes it simple to listen for browser events and react to them.
 <a name="listening-for-simple-events"></a>
 ## Listening for simple events
 
-By using `x-on`, you can listen for browser events that are dispatched on or within an element.
+By using `data-on`, you can listen for browser events that are dispatched on or within an element.
 
 Here's a basic example of listening for a click on a button:
 
 ```alpine
-<button x-on:click="console.log('clicked')">...</button>
+<button data-on:click="console.log('clicked')">...</button>
 ```
 
 As an alternative, you can use the event shorthand syntax if you prefer: `@`. Here's the same example as before, but using the shorthand syntax (which we'll be using from now on):
@@ -87,15 +87,15 @@ This allows you to communicate across components completely like the following e
 
 
 ```alpine
-<div x-data>
+<div data-data>
     <button @click="$dispatch('foo')"></button>
 </div>
 
-<div x-data @foo.window="console.log('foo was dispatched')">...</div>
+<div data-data @foo.window="console.log('foo was dispatched')">...</div>
 ```
 
 In the above example, if we click the button in the first component, Alpine will dispatch the "foo" event. Because of the way events work in the browser, they "bubble" up through parent elements all the way to the top-level "window".
 
 Now, because in our second component we are listening for "foo" on the window (with `.window`), when the button is clicked, this listener will pick it up and log the "foo was dispatched" message.
 
-[→ Read more about x-on](/directives/on)
+[→ Read more about data-on](/directives/on)

@@ -2,9 +2,9 @@ import { beEqualTo, exist, haveText, html, notExist, test } from '../../utils'
 
 test('can persist number',
     [html`
-        <div x-data="{ count: $persist(1) }">
+        <div data-data="{ count: $persist(1) }">
             <button @click="count++">Inc</button>
-            <span x-text="count"></span>
+            <span data-text="count"></span>
         </div>
     `],
     ({ get }, reload) => {
@@ -18,10 +18,10 @@ test('can persist number',
 
 test('can persist string',
     [html`
-        <div x-data="{ message: $persist('foo') }">
-            <input x-model="message">
+        <div data-data="{ message: $persist('foo') }">
+            <input data-model="message">
 
-            <span x-text="message"></span>
+            <span data-text="message"></span>
         </div>
     `],
     ({ get }, reload) => {
@@ -35,10 +35,10 @@ test('can persist string',
 
 test('can persist array',
     [html`
-        <div x-data="{ things: $persist(['foo', 'bar']) }">
+        <div data-data="{ things: $persist(['foo', 'bar']) }">
             <button @click="things.push('baz')"></button>
 
-            <span x-text="things.join('-')"></span>
+            <span data-text="things.join('-')"></span>
         </div>
     `],
     ({ get }, reload) => {
@@ -52,11 +52,11 @@ test('can persist array',
 
 test('can persist object',
     [html`
-        <div x-data="{ something: $persist({foo: 'bar'}) }">
+        <div data-data="{ something: $persist({foo: 'bar'}) }">
             <button id="one" @click="something.foo = 'baz'"></button>
             <button id="two" @click="something = {foo: 'bob'}"></button>
 
-            <span x-text="something.foo"></span>
+            <span data-text="something.foo"></span>
         </div>
     `],
     ({ get }, reload) => {
@@ -74,10 +74,10 @@ test('can persist object',
 
 test('can persist boolean',
     [html`
-        <div x-data="{ show: $persist(false) }">
+        <div data-data="{ show: $persist(false) }">
             <button @click="show = true"></button>
 
-            <template x-if="show">
+            <template data-if="show">
                 <span>Foo</span>
             </template>
         </div>
@@ -93,12 +93,12 @@ test('can persist boolean',
 
 test('can persist multiple components using the same property',
     [html`
-        <div x-data="{ duplicate: $persist('foo') }">
+        <div data-data="{ duplicate: $persist('foo') }">
             <button @click="duplicate = 'bar'"></button>
-            <span id="one" x-text="duplicate"></span>
+            <span id="one" data-text="duplicate"></span>
         </div>
-        <div x-data="{ duplicate: $persist('foo') }">
-            <span id="two" x-text="duplicate"></span>
+        <div data-data="{ duplicate: $persist('foo') }">
+            <span id="two" data-text="duplicate"></span>
         </div>
     `],
     ({ get }, reload) => {
@@ -114,15 +114,15 @@ test('can persist multiple components using the same property',
 
 test('can persist using an alias',
     [html`
-        <div x-data="{ show: $persist(false) }">
-            <template x-if="show">
+        <div data-data="{ show: $persist(false) }">
+            <template data-if="show">
                 <span id="one">Foo</span>
             </template>
         </div>
-        <div x-data="{ show: $persist(false).as('foo') }">
+        <div data-data="{ show: $persist(false).as('foo') }">
             <button id="test" @click="show = true"></button>
 
-            <template x-if="show">
+            <template data-if="show">
                 <span id="two">Foo</span>
             </template>
         </div>
@@ -141,15 +141,15 @@ test('can persist using an alias',
 
 test('aliases do not affect other $persist calls',
     [html`
-        <div x-data="{ show: $persist(false).as('foo') }">
+        <div data-data="{ show: $persist(false).as('foo') }">
             <button id="test" @click="show = true"></button>
 
-            <template x-if="show">
+            <template data-if="show">
                 <span id="two">Foo</span>
             </template>
         </div>
-        <div x-data="{ open: $persist(false) }">
-            <template x-if="open">
+        <div data-data="{ open: $persist(false) }">
+            <template data-if="open">
                 <span id="one">Foo</span>
             </template>
         </div>
@@ -168,10 +168,10 @@ test('aliases do not affect other $persist calls',
 
 test('can persist to custom storage',
     [html`
-        <div x-data="{ message: $persist('foo').using(sessionStorage) }">
-            <input x-model="message">
+        <div data-data="{ message: $persist('foo').using(sessionStorage) }">
+            <input data-model="message">
 
-            <span x-text="message"></span>
+            <span data-text="message"></span>
         </div>
     `],
     ({ get, window }, reload) => {
@@ -180,7 +180,7 @@ test('can persist to custom storage',
         get('span').should(haveText('bar'))
         reload()
         get('span').should(haveText('bar'))
-        window().its('sessionStorage._x_message').should(beEqualTo(JSON.stringify('bar')))
+        window().its('sessionStorage._data_message').should(beEqualTo(JSON.stringify('bar')))
         window().then((win) => {
             win.sessionStorage.clear()
         });
@@ -189,10 +189,10 @@ test('can persist to custom storage',
 
 test('can persist to custom storage using an alias',
     [html`
-        <div x-data="{ message: $persist('foo').as('mymessage').using(sessionStorage) }">
-            <input x-model="message">
+        <div data-data="{ message: $persist('foo').as('mymessage').using(sessionStorage) }">
+            <input data-model="message">
 
-            <span x-text="message"></span>
+            <span data-text="message"></span>
         </div>
     `],
     ({ get, window }, reload) => {
@@ -208,10 +208,10 @@ test('can persist to custom storage using an alias',
 
 test('can persist using global Alpine.$persist within Alpine.store',
     [html`
-        <div x-data>
-            <input x-model="$store.name.firstName">
+        <div data-data>
+            <input data-model="$store.name.firstName">
 
-            <span x-text="$store.name.firstName"></span>
+            <span data-text="$store.name.firstName"></span>
         </div>
     `, `
         Alpine.store('name', {
@@ -229,8 +229,8 @@ test('can persist using global Alpine.$persist within Alpine.store',
 
 test('persist in Stores is available in init call',
     [html`
-        <div x-data>
-            <span x-text="$store.name.name"></span>
+        <div data-data>
+            <span data-text="$store.name.name"></span>
         </div>
     `, `
         Alpine.store('name', {
@@ -248,11 +248,11 @@ test('persist in Stores is available in init call',
 
 test('multiple aliases work when using global Alpine.$persist',
     [html`
-        <div x-data>
-            <input x-model="$store.name.firstName">
+        <div data-data>
+            <input data-model="$store.name.firstName">
 
-            <span x-text="$store.name.firstName"></span>
-            <p x-text="$store.name.lastName"></p>
+            <span data-text="$store.name.firstName"></span>
+            <p data-text="$store.name.lastName"></p>
         </div>
     `, `
         Alpine.store('name', {

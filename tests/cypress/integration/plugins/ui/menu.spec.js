@@ -2,35 +2,35 @@ import { haveClasses, beVisible, haveAttribute, haveText, html, notBeVisible, no
 
 test('it works',
     [html`
-        <div x-data x-menu>
+        <div data-data data-menu>
             <span>
-                <button x-menu:button trigger>
+                <button data-menu:button trigger>
                     <span>Options</span>
                 </button>
             </span>
 
-            <div x-menu:items items>
+            <div data-menu:items items>
                 <div>
                     <p>Signed in as</p>
                     <p>tom@example.com</p>
                 </div>
 
                 <div>
-                    <a x-menu:item href="#account-settings">
+                    <a data-menu:item href="#account-settings">
                         Account settings
                     </a>
-                    <a x-menu:item href="#support">
+                    <a data-menu:item href="#support">
                         Support
                     </a>
-                    <a x-menu:item disabled href="#new-feature">
+                    <a data-menu:item disabled href="#new-feature">
                         New feature (soon)
                     </a>
-                    <a x-menu:item href="#license">
+                    <a data-menu:item href="#license">
                         License
                     </a>
                 </div>
                 <div>
-                    <a x-menu:item href="#sign-out">
+                    <a data-menu:item href="#sign-out">
                         Sign out
                     </a>
                 </div>
@@ -46,30 +46,30 @@ test('it works',
 test('focusing away closes menu',
     [html`
     <div>
-        <div x-data x-menu>
+        <div data-data data-menu>
             <span>
-                <button x-menu:button trigger>
+                <button data-menu:button trigger>
                     <span>Options</span>
                 </button>
             </span>
-            <div x-menu:items items>
+            <div data-menu:items items>
                 <div>
                     <p>Signed in as</p>
                     <p>tom@example.com</p>
                 </div>
                 <div>
-                    <a x-menu:item href="#account-settings">
+                    <a data-menu:item href="#account-settings">
                         Account settings
                     </a>
-                    <a x-menu:item href="#support">
+                    <a data-menu:item href="#support">
                         Support
                     </a>
-                    <a x-menu:item href="#license">
+                    <a data-menu:item href="#license">
                         License
                     </a>
                 </div>
                 <div>
-                    <a x-menu:item href="#sign-out">
+                    <a data-menu:item href="#sign-out">
                         Sign out
                     </a>
                 </div>
@@ -88,39 +88,39 @@ test('focusing away closes menu',
     },
 )
 
-test('it works with x-model',
+test('it works with data-model',
     [html`
-        <div x-data="{ open: false }" x-menu x-model="open">
+        <div data-data="{ open: false }" data-menu data-model="open">
             <button trigger @click="open = !open">
                 <span>Options</span>
             </button>
 
-            <button x-menu:button>
+            <button data-menu:button>
                 <span>Options</span>
             </button>
 
-            <div x-menu:items items>
+            <div data-menu:items items>
                 <div>
                     <p>Signed in as</p>
                     <p>tom@example.com</p>
                 </div>
 
                 <div>
-                    <a x-menu:item href="#account-settings">
+                    <a data-menu:item href="#account-settings">
                         Account settings
                     </a>
-                    <a x-menu:item href="#support">
+                    <a data-menu:item href="#support">
                         Support
                     </a>
-                    <a x-menu:item disabled href="#new-feature">
+                    <a data-menu:item disabled href="#new-feature">
                         New feature (soon)
                     </a>
-                    <a x-menu:item href="#license">
+                    <a data-menu:item href="#license">
                         License
                     </a>
                 </div>
                 <div>
-                    <a x-menu:item href="#sign-out">
+                    <a data-menu:item href="#sign-out">
                         Sign out
                     </a>
                 </div>
@@ -137,35 +137,35 @@ test('it works with x-model',
 
 test('keyboard controls',
     [html`
-        <div x-data x-menu>
+        <div data-data data-menu>
             <span>
-                <button x-menu:button trigger>
+                <button data-menu:button trigger>
                     <span>Options</span>
                 </button>
             </span>
 
-            <div x-menu:items items>
+            <div data-menu:items items>
                 <div>
                     <p>Signed in as</p>
                     <p>tom@example.com</p>
                 </div>
 
                 <div>
-                    <a x-menu:item href="#account-settings" :class="$menuItem.isActive && 'active'">
+                    <a data-menu:item href="#account-settings" :class="$menuItem.isActive && 'active'">
                         Account settings
                     </a>
-                    <a x-menu:item href="#support" :class="$menuItem.isActive && 'active'">
+                    <a data-menu:item href="#support" :class="$menuItem.isActive && 'active'">
                         Support
                     </a>
-                    <a x-menu:item disabled href="#new-feature" :class="$menuItem.isActive && 'active'">
+                    <a data-menu:item disabled href="#new-feature" :class="$menuItem.isActive && 'active'">
                         New feature (soon)
                     </a>
-                    <a x-menu:item href="#license" :class="$menuItem.isActive && 'active'">
+                    <a data-menu:item href="#license" :class="$menuItem.isActive && 'active'">
                         License
                     </a>
                 </div>
                 <div>
-                    <a x-menu:item href="#sign-out" :class="$menuItem.isActive && 'active'">
+                    <a data-menu:item href="#sign-out" :class="$menuItem.isActive && 'active'">
                         Sign out
                     </a>
                 </div>
@@ -219,21 +219,21 @@ test('keyboard controls',
     },
 )
 
-test('keyboard controls with x-teleport',
+test('keyboard controls with data-teleport',
     [html`
-        <div x-data x-menu>
+        <div data-data data-menu>
             <span>
-                <button x-menu:button trigger>
+                <button data-menu:button trigger>
                     <span>Options</span>
                 </button>
             </span>
 
-            <template x-teleport="body">
-                <div x-menu:items items>
-                    <a x-menu:item href="#account-settings" :class="$menuItem.isActive && 'active'">
+            <template data-teleport="body">
+                <div data-menu:items items>
+                    <a data-menu:item href="#account-settings" :class="$menuItem.isActive && 'active'">
                         Account settings
                     </a>
-                    <a x-menu:item href="#support" :class="$menuItem.isActive && 'active'">
+                    <a data-menu:item href="#support" :class="$menuItem.isActive && 'active'">
                         Support
                     </a>
                 </div>
@@ -269,35 +269,35 @@ test('keyboard controls with x-teleport',
 
 test('search',
     [html`
-        <div x-data x-menu>
+        <div data-data data-menu>
             <span>
-                <button x-menu:button trigger>
+                <button data-menu:button trigger>
                     <span>Options</span>
                 </button>
             </span>
 
-            <div x-menu:items items>
+            <div data-menu:items items>
                 <div>
                     <p>Signed in as</p>
                     <p>tom@example.com</p>
                 </div>
 
                 <div>
-                    <a x-menu:item href="#account-settings" :class="$menuItem.isActive && 'active'">
+                    <a data-menu:item href="#account-settings" :class="$menuItem.isActive && 'active'">
                         Account settings
                     </a>
-                    <a x-menu:item href="#support" :class="$menuItem.isActive && 'active'">
+                    <a data-menu:item href="#support" :class="$menuItem.isActive && 'active'">
                         Support
                     </a>
-                    <a x-menu:item disabled href="#new-feature" :class="$menuItem.isActive && 'active'">
+                    <a data-menu:item disabled href="#new-feature" :class="$menuItem.isActive && 'active'">
                         New feature (soon)
                     </a>
-                    <a x-menu:item href="#license" :class="$menuItem.isActive && 'active'">
+                    <a data-menu:item href="#license" :class="$menuItem.isActive && 'active'">
                         License
                     </a>
                 </div>
                 <div>
-                    <a x-menu:item href="#sign-out" :class="$menuItem.isActive && 'active'">
+                    <a data-menu:item href="#sign-out" :class="$menuItem.isActive && 'active'">
                         Sign out
                     </a>
                 </div>
@@ -320,37 +320,37 @@ test('search',
 
 test('has accessibility attributes',
     [html`
-        <div x-data x-menu>
-            <label x-menu:label>Options label</label>
+        <div data-data data-menu>
+            <label data-menu:label>Options label</label>
 
             <span>
-                <button x-menu:button trigger>
+                <button data-menu:button trigger>
                     <span>Options</span>
                 </button>
             </span>
 
-            <div x-menu:items items>
+            <div data-menu:items items>
                 <div>
                     <p>Signed in as</p>
                     <p>tom@example.com</p>
                 </div>
 
                 <div>
-                    <a x-menu:item href="#account-settings" :class="$menuItem.isActive && 'active'">
+                    <a data-menu:item href="#account-settings" :class="$menuItem.isActive && 'active'">
                         Account settings
                     </a>
-                    <a x-menu:item href="#support" :class="$menuItem.isActive && 'active'">
+                    <a data-menu:item href="#support" :class="$menuItem.isActive && 'active'">
                         Support
                     </a>
-                    <a x-menu:item disabled href="#new-feature" :class="$menuItem.isActive && 'active'">
+                    <a data-menu:item disabled href="#new-feature" :class="$menuItem.isActive && 'active'">
                         New feature (soon)
                     </a>
-                    <a x-menu:item href="#license" :class="$menuItem.isActive && 'active'">
+                    <a data-menu:item href="#license" :class="$menuItem.isActive && 'active'">
                         License
                     </a>
                 </div>
                 <div>
-                    <a x-menu:item href="#sign-out" :class="$menuItem.isActive && 'active'">
+                    <a data-menu:item href="#sign-out" :class="$menuItem.isActive && 'active'">
                         Sign out
                     </a>
                 </div>
@@ -395,37 +395,37 @@ test('has accessibility attributes',
 
 test('$menuItem.isDisabled',
     [html`
-        <div x-data x-menu>
-            <label x-menu:label>Options label</label>
+        <div data-data data-menu>
+            <label data-menu:label>Options label</label>
 
             <span>
-                <button x-menu:button trigger>
+                <button data-menu:button trigger>
                     <span>Options</span>
                 </button>
             </span>
 
-            <div x-menu:items items>
+            <div data-menu:items items>
                 <div>
                     <p>Signed in as</p>
                     <p>tom@example.com</p>
                 </div>
 
                 <div>
-                    <a x-menu:item href="#account-settings" :class="{ 'active': $menuItem.isActive, 'disabled': $menuItem.isDisabled }">
+                    <a data-menu:item href="#account-settings" :class="{ 'active': $menuItem.isActive, 'disabled': $menuItem.isDisabled }">
                         Account settings
                     </a>
-                    <a x-menu:item href="#support" :class="{ 'active': $menuItem.isActive, 'disabled': $menuItem.isDisabled }">
+                    <a data-menu:item href="#support" :class="{ 'active': $menuItem.isActive, 'disabled': $menuItem.isDisabled }">
                         Support
                     </a>
-                    <a x-menu:item disabled href="#new-feature" :class="{ 'active': $menuItem.isActive, 'disabled': $menuItem.isDisabled }">
+                    <a data-menu:item disabled href="#new-feature" :class="{ 'active': $menuItem.isActive, 'disabled': $menuItem.isDisabled }">
                         New feature (soon)
                     </a>
-                    <a x-menu:item href="#license" :class="{ 'active': $menuItem.isActive, 'disabled': $menuItem.isDisabled }">
+                    <a data-menu:item href="#license" :class="{ 'active': $menuItem.isActive, 'disabled': $menuItem.isDisabled }">
                         License
                     </a>
                 </div>
                 <div>
-                    <a x-menu:item href="#sign-out" :class="{ 'active': $menuItem.isActive, 'disabled': $menuItem.isDisabled }">
+                    <a data-menu:item href="#sign-out" :class="{ 'active': $menuItem.isActive, 'disabled': $menuItem.isDisabled }">
                         Sign out
                     </a>
                 </div>

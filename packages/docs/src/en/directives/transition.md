@@ -3,9 +3,9 @@ order: 10
 title: transition
 ---
 
-# x-transition
+# data-transition
 
-Alpine provides a robust transitions utility out of the box. With a few `x-transition` directives, you can create smooth transitions between when an element is shown or hidden.
+Alpine provides a robust transitions utility out of the box. With a few `data-transition` directives, you can create smooth transitions between when an element is shown or hidden.
 
 There are two primary ways to handle transitions in Alpine:
 
@@ -15,13 +15,13 @@ There are two primary ways to handle transitions in Alpine:
 <a name="the-transition-helper"></a>
 ## The transition helper
 
-The simplest way to achieve a transition using Alpine is by adding `x-transition` to an element with `x-show` on it. For example:
+The simplest way to achieve a transition using Alpine is by adding `data-transition` to an element with `data-show` on it. For example:
 
 ```alpine
-<div x-data="{ open: false }">
+<div data-data="{ open: false }">
     <button @click="open = ! open">Toggle</button>
 
-    <div x-show="open" x-transition>
+    <div data-show="open" data-transition>
         Hello 👋
     </div>
 </div>
@@ -29,19 +29,19 @@ The simplest way to achieve a transition using Alpine is by adding `x-transition
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div x-data="{ open: false }">
+    <div data-data="{ open: false }">
         <button @click="open = ! open">Toggle</button>
 
-        <div x-show="open" x-transition>
+        <div data-show="open" data-transition>
             Hello 👋
         </div>
     </div>
 </div>
 <!-- END_VERBATIM -->
 
-As you can see, by default, `x-transition` applies pleasant transition defaults to fade and scale the revealing element.
+As you can see, by default, `data-transition` applies pleasant transition defaults to fade and scale the revealing element.
 
-You can override these defaults with modifiers attached to `x-transition`. Let's take a look at those.
+You can override these defaults with modifiers attached to `data-transition`. Let's take a look at those.
 
 <a name="customizing-duration"></a>
 ### Customizing duration
@@ -51,7 +51,7 @@ Initially, the duration is set to be 150 milliseconds when entering, and 75 mill
 You can configure the duration you want for a transition with the `.duration` modifier:
 
 ```alpine
-<div ... x-transition.duration.500ms>
+<div ... data-transition.duration.500ms>
 ```
 
 The above `<div>` will transition for 500 milliseconds when entering, and 500 milliseconds when leaving.
@@ -60,12 +60,12 @@ If you wish to customize the durations specifically for entering and leaving, yo
 
 ```alpine
 <div ...
-    x-transition:enter.duration.500ms
-    x-transition:leave.duration.400ms
+    data-transition:enter.duration.500ms
+    data-transition:leave.duration.400ms
 >
 ```
 
-> Despite not being included in the above snippet, `x-transition` cannot be used if no parent element has `x-data` defined. [→ Read more about `x-data`](/directives/data)
+> Despite not being included in the above snippet, `data-transition` cannot be used if no parent element has `data-data` defined. [→ Read more about `data-data`](/directives/data)
 
 <a name="customizing-delay"></a>
 ### Customizing delay
@@ -73,7 +73,7 @@ If you wish to customize the durations specifically for entering and leaving, yo
 You can delay a transition using the `.delay` modifier like so:
 
 ```alpine
-<div ... x-transition.delay.50ms>
+<div ... data-transition.delay.50ms>
 ```
 
 The above example will delay the transition and in and out of the element by 50 milliseconds.
@@ -81,27 +81,27 @@ The above example will delay the transition and in and out of the element by 50 
 <a name="customizing-opacity"></a>
 ### Customizing opacity
 
-By default, Alpine's `x-transition` applies both a scale and opacity transition to achieve a "fade" effect.
+By default, Alpine's `data-transition` applies both a scale and opacity transition to achieve a "fade" effect.
 
 If you wish to only apply the opacity transition (no scale), you can accomplish that like so:
 
 ```alpine
-<div ... x-transition.opacity>
+<div ... data-transition.opacity>
 ```
 
 <a name="customizing-scale"></a>
 ### Customizing scale
 
-Similar to the `.opacity` modifier, you can configure `x-transition` to ONLY scale (and not transition opacity as well) like so:
+Similar to the `.opacity` modifier, you can configure `data-transition` to ONLY scale (and not transition opacity as well) like so:
 
 ```alpine
-<div ... x-transition.scale>
+<div ... data-transition.scale>
 ```
 
 The `.scale` modifier also offers the ability to configure its scale values AND its origin values:
 
 ```alpine
-<div ... x-transition.scale.80>
+<div ... data-transition.scale.80>
 ```
 
 The above snippet will scale the element up and down by 80%.
@@ -110,15 +110,15 @@ Again, you may customize these values separately for enter and leaving transitio
 
 ```alpine
 <div ...
-    x-transition:enter.scale.80
-    x-transition:leave.scale.90
+    data-transition:enter.scale.80
+    data-transition:leave.scale.90
 >
 ```
 
 To customize the origin of the scale transition, you can use the `.origin` modifier:
 
 ```alpine
-<div ... x-transition.scale.origin.top>
+<div ... data-transition.scale.origin.top>
 ```
 
 Now the scale will be applied using the top of the element as the origin, instead of the center by default.
@@ -136,34 +136,34 @@ For direct control over exactly what goes into your transitions, you can apply C
 > The following examples use [TailwindCSS](https://tailwindcss.com/docs/transition-property) utility classes.
 
 ```alpine
-<div x-data="{ open: false }">
+<div data-data="{ open: false }">
     <button @click="open = ! open">Toggle</button>
 
     <div
-        x-show="open"
-        x-transition:enter="transition ease-out duration-300"
-        x-transition:enter-start="opacity-0 scale-90"
-        x-transition:enter-end="opacity-100 scale-100"
-        x-transition:leave="transition ease-in duration-300"
-        x-transition:leave-start="opacity-100 scale-100"
-        x-transition:leave-end="opacity-0 scale-90"
+        data-show="open"
+        data-transition:enter="transition ease-out duration-300"
+        data-transition:enter-start="opacity-0 scale-90"
+        data-transition:enter-end="opacity-100 scale-100"
+        data-transition:leave="transition ease-in duration-300"
+        data-transition:leave-start="opacity-100 scale-100"
+        data-transition:leave-end="opacity-0 scale-90"
     >Hello 👋</div>
 </div>
 ```
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div x-data="{ open: false }">
+    <div data-data="{ open: false }">
     <button @click="open = ! open">Toggle</button>
 
     <div
-        x-show="open"
-        x-transition:enter="transition ease-out duration-300"
-        x-transition:enter-start="opacity-0 transform scale-90"
-        x-transition:enter-end="opacity-100 transform scale-100"
-        x-transition:leave="transition ease-in duration-300"
-        x-transition:leave-start="opacity-100 transform scale-100"
-        x-transition:leave-end="opacity-0 transform scale-90"
+        data-show="open"
+        data-transition:enter="transition ease-out duration-300"
+        data-transition:enter-start="opacity-0 transform scale-90"
+        data-transition:enter-end="opacity-100 transform scale-100"
+        data-transition:leave="transition ease-in duration-300"
+        data-transition:leave-start="opacity-100 transform scale-100"
+        data-transition:leave-end="opacity-0 transform scale-90"
     >Hello 👋</div>
 </div>
 </div>

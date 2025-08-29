@@ -1,11 +1,11 @@
 import { exist, haveText, html, notExist, test } from '../../utils'
 
-test('x-if',
+test('data-if',
     html`
-        <div x-data="{ show: false }">
+        <div data-data="{ show: false }">
             <button @click="show = ! show">Toggle</button>
 
-            <template x-if="show">
+            <template data-if="show">
                 <h1>Toggle Me</h1>
             </template>
         </div>
@@ -19,14 +19,14 @@ test('x-if',
     }
 )
 
-test('x-if inside x-for allows nested directives',
+test('data-if inside data-for allows nested directives',
     html`
-        <div x-data="{items: [{id: 1, label: '1'}]}">
+        <div data-data="{items: [{id: 1, label: '1'}]}">
 
-            <template x-for="item in items" :key="item.id">
+            <template data-for="item in items" :key="item.id">
                 <div>
-                    <template x-if="item.label">
-                        <span x-text="item.label"></span>
+                    <template data-if="item.label">
+                        <span data-text="item.label"></span>
                     </template>
                 </div>
             </template>
@@ -37,12 +37,12 @@ test('x-if inside x-for allows nested directives',
     }
 )
 
-test('x-if initializes after being added to the DOM to allow x-ref to work',
+test('data-if initializes after being added to the DOM to allow data-ref to work',
     html`
-        <div x-data="{}">
-            <template x-if="true">
-                <ul x-ref="listbox" data-foo="bar">
-                    <li x-text="$refs.listbox.dataset.foo"></li>
+        <div data-data="{}">
+            <template data-if="true">
+                <ul data-ref="listbox" data-foo="bar">
+                    <li data-text="$refs.listbox.dataset.foo"></li>
                 </ul>
             </template>
         </div>
@@ -52,13 +52,13 @@ test('x-if initializes after being added to the DOM to allow x-ref to work',
     }
 )
 
-// If x-if evaluates to false, the expectation is that no sub-expressions will be evaluated.
-test('x-if removed dom does not evaluate reactive expressions in dom tree',
+// If data-if evaluates to false, the expectation is that no sub-expressions will be evaluated.
+test('data-if removed dom does not evaluate reactive expressions in dom tree',
     html`
-    <div x-data="{user: {name: 'lebowski'}}">
+    <div data-data="{user: {name: 'lebowski'}}">
         <button @click="user = null">Log out</button>
-        <template x-if="user">
-            <span x-text="user.name"></span>
+        <template data-if="user">
+            <span data-text="user.name"></span>
         </template>
 
     </div>
@@ -66,8 +66,8 @@ test('x-if removed dom does not evaluate reactive expressions in dom tree',
     ({ get }) => {
         get('span').should(haveText('lebowski'))
 
-        // Clicking button sets user=null and thus x-if="user" will evaluate to false.
-        // If the sub-expression x-text="user.name" is evaluated, the button click
+        // Clicking button sets user=null and thus data-if="user" will evaluate to false.
+        // If the sub-expression data-text="user.name" is evaluated, the button click
         // will produce an error because user is no longer defined and the test will fail
         get('button').click()
         get('span').should(notExist())
@@ -76,9 +76,9 @@ test('x-if removed dom does not evaluate reactive expressions in dom tree',
 
 // Attempting to skip an already-flushed reactive effect would cause inconsistencies when updating other effects.
 // See https://github.com/alpinejs/alpine/issues/2803 for more details.
-test('x-if removed dom does not attempt skipping already-processed reactive effects in dom tree',
+test('data-if removed dom does not attempt skipping already-processed reactive effects in dom tree',
     html`
-    <div x-data="{
+    <div data-data="{
         isEditing: true,
         foo: 'random text',
         stopEditing() {
@@ -87,18 +87,18 @@ test('x-if removed dom does not attempt skipping already-processed reactive effe
         },
     }">
         <button @click="stopEditing">Stop editing</button>
-        <template x-if="isEditing">
+        <template data-if="isEditing">
             <div id="div-editing">
               <h2>Editing</h2>
-              <input id="foo" name="foo" type="text" x-model="foo" />
+              <input id="foo" name="foo" type="text" data-model="foo" />
             </div>
         </template>
 
-        <template x-if="!isEditing">
+        <template data-if="!isEditing">
             <div id="div-not-editing"><h2>Not editing</h2></div>
         </template>
 
-        <template x-if="!isEditing">
+        <template data-if="!isEditing">
             <div id="div-also-not-editing"><h2>Also not editing</h2></div>
         </template>
     </div>
@@ -111,15 +111,15 @@ test('x-if removed dom does not attempt skipping already-processed reactive effe
     }
 )
 
-// If x-if evaluates to false, all cleanups in the tree should be handled.
-test('x-if eagerly cleans tree',
+// If data-if evaluates to false, all cleanups in the tree should be handled.
+test('data-if eagerly cleans tree',
     html`
-        <div x-data="{ show: false, count: 0 }">
-            <button @click="show^=true" x-text="count">Toggle</button>
-            <template x-if="show">
+        <div data-data="{ show: false, count: 0 }">
+            <button @click="show^=true" data-text="count">Toggle</button>
+            <template data-if="show">
                 <div>
-                <template x-if="true">
-                    <p x-effect="if (show) count++">
+                <template data-if="true">
+                    <p data-effect="if (show) count++">
                     hello
                     </p>
                 </template>
