@@ -2,7 +2,7 @@ import { beVisible, haveClasses, haveAttribute, html, notBeVisible, notHaveClass
 
 test('has accessibility attributes',
     [html`
-        <div data-data data-disclosure>
+        <div data-signal data-disclosure>
             <button trigger data-disclosure:button>Trigger</button>
 
             <div data-disclosure:panel panel>
@@ -19,7 +19,7 @@ test('has accessibility attributes',
 
 test('it toggles',
     [html`
-        <div data-data data-disclosure>
+        <div data-signal data-disclosure>
             <button trigger data-disclosure:button>Trigger</button>
 
             <div data-disclosure:panel panel>
@@ -40,7 +40,7 @@ test('it toggles',
 
 test('$disclosure.isOpen and $disclosure.close() work',
     [html`
-        <div data-data data-disclosure>
+        <div data-signal data-disclosure>
             <button trigger data-disclosure:button>Trigger</button>
 
             <div data-disclosure:panel panel :class="$disclosure.isOpen && 'open'">
@@ -61,7 +61,7 @@ test('$disclosure.isOpen and $disclosure.close() work',
 
 test('can set a default open state',
     [html`
-        <div data-data data-disclosure :default-open="true">
+        <div data-signal data-disclosure :default-open="true">
             <button trigger data-disclosure:button>Trigger</button>
 
             <div data-disclosure:panel panel>
@@ -80,7 +80,7 @@ test('can set a default open state',
 
 test('it toggles using the space key',
     [html`
-        <div data-data data-disclosure>
+        <div data-signal data-disclosure>
             <button trigger data-disclosure:button>Trigger</button>
 
             <div data-disclosure:panel panel>

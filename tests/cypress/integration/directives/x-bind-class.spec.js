@@ -2,7 +2,7 @@ import { beHidden, beVisible, haveText, beChecked, haveAttribute, haveClasses, h
 
 test('class attribute bindings are merged by string syntax',
     html`
-        <div data-data="{ isOn: false }">
+        <div data-signal="{ isOn: false }">
             <span class="foo" data-bind:class="isOn ? 'bar': ''"></span>
 
             <button @click="isOn = ! isOn">button</button>
@@ -19,7 +19,7 @@ test('class attribute bindings are merged by string syntax',
 
 test('class attribute bindings are added by string syntax',
     html`
-        <div data-data="{ initialClass: 'foo' }">
+        <div data-signal="{ initialClass: 'foo' }">
             <span data-bind:class="initialClass"></span>
         </div>
     `,
@@ -28,7 +28,7 @@ test('class attribute bindings are added by string syntax',
 
 test('class attribute bindings are added by array syntax',
     html`
-        <div data-data="{ initialClass: 'foo' }">
+        <div data-signal="{ initialClass: 'foo' }">
             <span data-bind:class="[initialClass, 'bar']"></span>
         </div>
     `,
@@ -37,7 +37,7 @@ test('class attribute bindings are added by array syntax',
 
 test('class attribute bindings are added by object syntax',
     html`
-        <div data-data="{ mode: 0 }">
+        <div data-signal="{ mode: 0 }">
             <span class="foo baz"
                   data-bind:class="{
                       'foo bar border-blue-900' : mode === 0,
@@ -67,7 +67,7 @@ test('class attribute bindings are added by object syntax',
 
 test('classes are removed before being added',
     html`
-        <div data-data="{ isOpen: true }">
+        <div data-signal="{ isOpen: true }">
             <span class="text-red" :class="isOpen ? 'block' : 'hidden'">
                 Span
             </span>
@@ -84,7 +84,7 @@ test('classes are removed before being added',
 
 test('extra whitespace in class binding string syntax is ignored',
     html`
-        <div data-data>
+        <div data-signal>
             <span data-bind:class="'  foo  bar  '"></span>
         </div>
     `,
@@ -93,7 +93,7 @@ test('extra whitespace in class binding string syntax is ignored',
 
 test('undefined class binding resolves to empty string',
     html`
-        <div data-data="{ errorClass: (hasError) => { if (hasError) { return 'red' } } }">
+        <div data-signal="{ errorClass: (hasError) => { if (hasError) { return 'red' } } }">
             <span id="error" data-bind:class="errorClass(true)">should be red</span>
             <span id="empty" data-bind:class="errorClass(false)">should be empty</span>
         </div>

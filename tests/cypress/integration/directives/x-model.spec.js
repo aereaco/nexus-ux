@@ -1,13 +1,13 @@
 import { beChecked, haveData, haveText, haveValue, html, notBeChecked, test } from '../../utils'
 
 test('The name of the test',
-    html`<h1 data-data data-text="'HEY'"></h1>`,
+    html`<h1 data-signal data-text="'HEY'"></h1>`,
     ({ get }) => get('h1').should(haveText('HEY'))
 )
 
 test('data-model has value binding when initialized',
     html`
-    <div data-data="{ foo: 'bar' }">
+    <div data-signal="{ foo: 'bar' }">
         <input data-model="foo"></input>
     </div>
     `,
@@ -16,7 +16,7 @@ test('data-model has value binding when initialized',
 
 test('data-model updates value when updated via input event',
     html`
-    <div data-data="{ foo: 'bar' }">
+    <div data-signal="{ foo: 'bar' }">
         <input data-model="foo"></input>
         <span data-text="foo"></span>
     </div>
@@ -30,7 +30,7 @@ test('data-model updates value when updated via input event',
 
 test('data-model has value binding when updated',
     html`
-    <div data-data="{ foo: 'bar' }">
+    <div data-signal="{ foo: 'bar' }">
         <input data-model="foo"></input>
 
         <button data-on:click="foo = 'baz'">click me</button>
@@ -45,7 +45,7 @@ test('data-model has value binding when updated',
 
 test('data-model casts value to number if number modifier is present',
     html`
-    <div data-data="{ foo: null }">
+    <div data-signal="{ foo: null }">
         <input type="number" data-model.number="foo"></input>
     </div>
     `,
@@ -58,7 +58,7 @@ test('data-model casts value to number if number modifier is present',
 
 test('data-model with number modifier returns: null if empty, original value if casting fails, numeric value if casting passes',
     html`
-    <div data-data="{ foo: 0, bar: '' }">
+    <div data-signal="{ foo: 0, bar: '' }">
         <input type="number" data-model.number="foo"></input>
         <input data-model.number="bar"></input>
     </div>
@@ -81,7 +81,7 @@ test('data-model with number modifier returns: null if empty, original value if 
 
 test('data-model casts value to boolean initially for radios',
     html`
-    <div data-data="{ foo: true }">
+    <div data-signal="{ foo: true }">
         <input id="1" type="radio" value="true" name="foo" data-model.boolean="foo">
         <input id="2" type="radio" value="false" name="foo" data-model.boolean="foo">
     </div>
@@ -99,7 +99,7 @@ test('data-model casts value to boolean initially for radios',
 
 test('data-model casts value to boolean if boolean modifier is present',
     html`
-    <div data-data="{ foo: null, bar: null, baz: [] }">
+    <div data-signal="{ foo: null, bar: null, baz: [] }">
         <input type="text" data-model.boolean="foo"></input>
         <input type="checkbox" data-model.boolean="foo"></input>
         <input type="radio" name="foo" data-model.boolean="foo" value="true"></input>
@@ -137,7 +137,7 @@ test('data-model casts value to boolean if boolean modifier is present',
 
 test('data-model with boolean modifier returns: null if empty, original value if casting fails, numeric value if casting passes',
     html`
-    <div data-data="{ foo: 0, bar: '' }">
+    <div data-signal="{ foo: 0, bar: '' }">
         <input data-model.boolean="foo"></input>
     </div>
     `,
@@ -161,7 +161,7 @@ test('data-model with boolean modifier returns: null if empty, original value if
 
 test('data-model trims value if trim modifier is present',
     html`
-    <div data-data="{ foo: '' }">
+    <div data-signal="{ foo: '' }">
         <input data-model.trim="foo"></input>
 
         <span data-text="foo"></span>
@@ -175,7 +175,7 @@ test('data-model trims value if trim modifier is present',
 
 test('data-model can be accessed programmatically',
     html`
-    <div data-data="{ foo: 'bar' }" data-model="foo">
+    <div data-signal="{ foo: 'bar' }" data-model="foo">
         <input data-model="foo">
 
         <span data-text="$root._data_model.get()"></span>
@@ -193,7 +193,7 @@ test('data-model can be accessed programmatically',
 
 test('data-model updates value when the form is reset',
     html`
-    <div data-data="{ foo: '' }">
+    <div data-signal="{ foo: '' }">
         <form>
             <input data-model="foo"></input>
             <button type="reset">Reset</button>
@@ -213,7 +213,7 @@ test('data-model updates value when the form is reset',
 test(
     "data-model radio updates value when the form is reset",
     html`
-    <div data-data="{ foo: undefined }">
+    <div data-signal="{ foo: undefined }">
         <form>
             <input type="radio" value="radio1" data-model.fill="foo"></input>
             <input type="radio" value="radio2" data-model.fill="foo" checked></input>
@@ -235,7 +235,7 @@ test(
 test(
     "data-model.number radio updates value when the form is reset",
     html`
-    <div data-data="{ foo: undefined }">
+    <div data-signal="{ foo: undefined }">
         <form>
             <input type="radio" value="1" data-model.number.fill="foo"></input>
             <input type="radio" value="2" data-model.number.fill="foo" checked></input>
@@ -245,18 +245,18 @@ test(
     </div>
     `,
     ({ get }) => {
-        get("[data-data]").should(haveData("foo", 2));
+        get("[data-signal]").should(haveData("foo", 2));
         get("input[value='1']").click();
-        get("[data-data]").should(haveData("foo", 1));
+        get("[data-signal]").should(haveData("foo", 1));
         get("button").click();
-        get("[data-data]").should(haveData("foo", 2));
+        get("[data-signal]").should(haveData("foo", 2));
     }
 );
 
 test(
     "data-model.boolean radio updates value when the form is reset",
     html`
-    <div data-data="{ foo: undefined }">
+    <div data-signal="{ foo: undefined }">
         <form>
             <input type="radio" value="true" data-model.boolean.fill="foo" checked></input>
             <input type="radio" value="false" data-model.boolean.fill="foo"></input>
@@ -265,18 +265,18 @@ test(
     </div>
     `,
     ({ get }) => {
-        get("[data-data]").should(haveData("foo", true));
+        get("[data-signal]").should(haveData("foo", true));
         get("input[value='false']").click();
-        get("[data-data]").should(haveData("foo", false));
+        get("[data-signal]").should(haveData("foo", false));
         get("button").click();
-        get("[data-data]").should(haveData("foo", true));
+        get("[data-signal]").should(haveData("foo", true));
     }
 );
 
 test(
     "data-model checkbox array updates value when the form is reset",
     html`
-    <div data-data="{ foo: [] }">
+    <div data-signal="{ foo: [] }">
         <form>
             <input type="checkbox" value="checkbox1" data-model.fill="foo"></input>
             <input type="checkbox" value="checkbox2" data-model.fill="foo" checked></input>
@@ -301,7 +301,7 @@ test(
 test(
     "data-model.number checkbox array updates value when the form is reset",
     html`
-    <div data-data="{ foo: [] }">
+    <div data-signal="{ foo: [] }">
         <form>
             <input type="checkbox" value="1" data-model.number.fill="foo"></input>
             <input type="checkbox" value="2" data-model.number.fill="foo" checked></input>
@@ -312,20 +312,20 @@ test(
     </div>
     `,
     ({ get }) => {
-        get("[data-data]").should(haveData("foo", [2, 3]));
+        get("[data-signal]").should(haveData("foo", [2, 3]));
         get("input[value='1']").click();
-        get("[data-data]").should(haveData("foo", [2, 3, 1]));
+        get("[data-signal]").should(haveData("foo", [2, 3, 1]));
         get("input[value='3']").click();
-        get("[data-data]").should(haveData("foo", [2, 1]));
+        get("[data-signal]").should(haveData("foo", [2, 1]));
         get("button").click();
-        get("[data-data]").should(haveData("foo", [2, 3]));
+        get("[data-signal]").should(haveData("foo", [2, 3]));
     }
 );
 
 test(
     "data-model select updates value when the form is reset",
     html`
-        <div data-data="{ a: null, b: null, c: null, d: null }">
+        <div data-signal="{ a: null, b: null, c: null, d: null }">
             <form>
                 <select id="a" data-model.fill="a">
                     <option value="123">123</option>
@@ -352,30 +352,30 @@ test(
         </div>
     `,
     ({ get }) => {
-        get("[data-data]").should(haveData("a", "456"));
-        get("[data-data]").should(haveData("b", ["123", "789"]));
-        get("[data-data]").should(haveData("c", 456));
-        get("[data-data]").should(haveData("d", [123, 789]));
+        get("[data-signal]").should(haveData("a", "456"));
+        get("[data-signal]").should(haveData("b", ["123", "789"]));
+        get("[data-signal]").should(haveData("c", 456));
+        get("[data-signal]").should(haveData("d", [123, 789]));
         get("select#a").select("789");
         get("select#b").select("456");
         get("select#c").select("789");
         get("select#d").select("456");
-        get("[data-data]").should(haveData("a", "789"));
-        get("[data-data]").should(haveData("b", ["456"]));
-        get("[data-data]").should(haveData("c", 789));
-        get("[data-data]").should(haveData("d", [456]));
+        get("[data-signal]").should(haveData("a", "789"));
+        get("[data-signal]").should(haveData("b", ["456"]));
+        get("[data-signal]").should(haveData("c", 789));
+        get("[data-signal]").should(haveData("d", [456]));
         get("button").click();
-        get("[data-data]").should(haveData("a", "456"));
-        get("[data-data]").should(haveData("b", ["123", "789"]));
-        get("[data-data]").should(haveData("c", 456));
-        get("[data-data]").should(haveData("d", [123, 789]));
+        get("[data-signal]").should(haveData("a", "456"));
+        get("[data-signal]").should(haveData("b", ["123", "789"]));
+        get("[data-signal]").should(haveData("c", 456));
+        get("[data-signal]").should(haveData("d", [123, 789]));
     }
 );
 
 
 test('data-model with fill modifier takes input value on null, empty string or undefined',
     html`
-    <div data-data="{ a: 123, b: 0, c: '', d: null, e: {} }">
+    <div data-signal="{ a: 123, b: 0, c: '', d: null, e: {} }">
       <input data-model.fill="a" value="123456" />
       <span id="a" data-text="a"></span>
       <input data-model.fill="b" value="123456" />
@@ -399,7 +399,7 @@ test('data-model with fill modifier takes input value on null, empty string or u
 
 test('data-model with fill modifier works with select elements',
     html`
-        <div data-data="{ a: null, b: null, c: null, d: null, e: null, f: null }">
+        <div data-signal="{ a: null, b: null, c: null, d: null, e: null, f: null }">
             <select data-model.fill="a">
                 <option value="123">123</option>
                 <option value="456" selected>456</option>
@@ -427,18 +427,18 @@ test('data-model with fill modifier works with select elements',
         </div>
     `,
     ({ get }) => {
-        get('[data-data]').should(haveData('a', '456'));
-        get('[data-data]').should(haveData('b', ['123', '456']));
-        get('[data-data]').should(haveData('c', 456));
-        get('[data-data]').should(haveData('d', [123, 456]));
-        get('[data-data]').should(haveData('e', true));
-        get('[data-data]').should(haveData('f', [true, false]));
+        get('[data-signal]').should(haveData('a', '456'));
+        get('[data-signal]').should(haveData('b', ['123', '456']));
+        get('[data-signal]').should(haveData('c', 456));
+        get('[data-signal]').should(haveData('d', [123, 456]));
+        get('[data-signal]').should(haveData('e', true));
+        get('[data-signal]').should(haveData('f', [true, false]));
     }
 );
 
 test('data-model with fill modifier works with radio elements',
     html`
-        <div data-data="{ a: null, b: null, c: '101112', d: null }">
+        <div data-signal="{ a: null, b: null, c: '101112', d: null }">
             <input data-model.fill="a" type="radio" value="123" />
             <input data-model.fill="a" type="radio" value="456" checked />
             <input data-model.fill="a" type="radio" value="789" />
@@ -459,15 +459,15 @@ test('data-model with fill modifier works with radio elements',
         </div>
     `,
     ({ get }) => {
-        get('[data-data]').should(haveData('a', '456'));
-        get('[data-data]').should(haveData('b', '789'));
-        get('[data-data]').should(haveData('c', '101112'));
+        get('[data-signal]').should(haveData('a', '456'));
+        get('[data-signal]').should(haveData('b', '789'));
+        get('[data-signal]').should(haveData('c', '101112'));
     }
 );
 
 test('data-model with fill modifier respects number modifier',
     html`
-        <div data-data="{ a: null, b: null, c: null, d: null }">
+        <div data-signal="{ a: null, b: null, c: null, d: null }">
             <input type="text" data-model.fill.number="a" value="456" / >
             <select data-model.fill.number="b" multiple>
                 <option value="123" selected>123</option>
@@ -476,33 +476,33 @@ test('data-model with fill modifier respects number modifier',
         </div>
     `,
     ({ get }) => {
-        get('[data-data]').should(haveData('a', 456));
-        get('[data-data]').should(haveData('b', [123,456]));
+        get('[data-signal]').should(haveData('a', 456));
+        get('[data-signal]').should(haveData('b', [123,456]));
     }
 );
 
 test(
     'data-model with fill applies on checkboxes bound to array',
     html`
-        <div data-data="{ a: ['456'] }">
+        <div data-signal="{ a: ['456'] }">
             <input type="checkbox" data-model.fill="a" value="123" checked />
             <input type="checkbox" data-model.fill="a" value="456" />
         </div>
     `,
     ({ get }) => {
-        get('[data-data]').should(haveData('a', ['123']));
+        get('[data-signal]').should(haveData('a', ['123']));
     }
 );
 
 test(
     'data-model with fill and debounce still fills value',
     html`
-        <div data-data="{ a: '' }">
+        <div data-signal="{ a: '' }">
             <input type="text" data-model.fill.debounce="a" value="hello" />
         </div>
     `,
     ({ get }) => {
-        get('[data-data]').should(haveData('a', 'hello'));
+        get('[data-signal]').should(haveData('a', 'hello'));
     }
 );
 

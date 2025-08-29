@@ -1,18 +1,18 @@
 import { haveText, html, test } from '../../utils'
 
-test('data-data attribute value is optional',
+test('data-signal attribute value is optional',
     html`
-        <div data-data>
+        <div data-signal>
             <span data-text="'foo'"></span>
         </div>
     `,
     ({ get }) => get('span').should(haveText('foo'))
 )
 
-test('data-data can be nested',
+test('data-signal can be nested',
     html`
-        <div data-data="{ foo: 'bar', bar: 'baz' }">
-            <div data-data="{ bar: 'bob' }">
+        <div data-signal="{ foo: 'bar', bar: 'baz' }">
+            <div data-signal="{ bar: 'bob' }">
                 <h1 data-text="foo"></h1>
                 <h2 data-text="bar"></h2>
                 <button id="inner" @click="foo = 'bob'; bar = 'lob'">click</button>
@@ -43,7 +43,7 @@ test('data-data can be nested',
     }
 )
 
-test('data-data can use attributes from a reusable function',
+test('data-signal can use attributes from a reusable function',
     html`
         <script>
             window.test = () => {
@@ -52,25 +52,25 @@ test('data-data can use attributes from a reusable function',
                 }
             }
         </script>
-        <div data-data="test()">
+        <div data-signal="test()">
             <span data-text="foo"></span>
         </div>
     `,
     ({ get }) => get('span').should(haveText('bar'))
 )
 
-test('data-data can use $el',
+test('data-signal can use $el',
     html`
-        <div data-data="{ text: $el.dataset.text }" data-text="test">
+        <div data-signal="{ text: $el.dataset.text }" data-text="test">
             <span data-text="text"></span>
         </div>
     `,
     ({ get }) => get('span').should(haveText('test'))
 )
 
-test('functions in data-data are reactive',
+test('functions in data-signal are reactive',
     html`
-        <div data-data="{ foo: 'bar', getFoo() {return this.foo}}">
+        <div data-signal="{ foo: 'bar', getFoo() {return this.foo}}">
             <span data-text="getFoo()"></span>
             <button data-on:click="foo = 'baz'">click me</button>
         </div>
@@ -82,9 +82,9 @@ test('functions in data-data are reactive',
     }
 )
 
-test('functions in data-data have access to proper this context',
+test('functions in data-signal have access to proper this context',
     html`
-        <div data-data="{ foo: undefined, change() { this.foo = 'baz' }}" data-init="foo = 'bar'">
+        <div data-signal="{ foo: undefined, change() { this.foo = 'baz' }}" data-init="foo = 'bar'">
             <button @click="change()">change</button>
             <span data-text="foo"></span>
         </div>
@@ -96,24 +96,24 @@ test('functions in data-data have access to proper this context',
     }
 )
 
-test('data-data works on the html tag',
+test('data-signal works on the html tag',
     [html`
         <div>
             <span data-text="'foo'"></span>
         </div>
     `,
     `
-        document.querySelector('html').setAttribute('data-data', '')
+        document.querySelector('html').setAttribute('data-signal', '')
     `],
     ({ get }) => {
         get('span').should(haveText('foo'))
     }
 )
 
-test('data-data getters have access to parent scope',
+test('data-signal getters have access to parent scope',
     html`
-    <div data-data="{ foo: 'bar' }">
-        <div data-data="{
+    <div data-signal="{ foo: 'bar' }">
+        <div data-signal="{
             get bob() {
                 return this.foo
             }

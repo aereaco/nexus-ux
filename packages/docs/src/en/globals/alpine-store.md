@@ -48,13 +48,13 @@ Alpine.start()
 You can access data from any store within Alpine expressions using the `$store` magic property:
 
 ```alpine
-<div data-data :class="$store.darkMode.on && 'bg-black'">...</div>
+<div data-signal :class="$store.darkMode.on && 'bg-black'">...</div>
 ```
 
 You can also modify properties within the store and everything that depends on those properties will automatically react. For example:
 
 ```alpine
-<button data-data @click="$store.darkMode.toggle()">Toggle Dark Mode</button>
+<button data-signal @click="$store.darkMode.toggle()">Toggle Dark Mode</button>
 ```
 
 Additionally, you can access a store externally using `Alpine.store()` by omitting the second parameter like so:
@@ -98,11 +98,11 @@ If you don't need an entire object for a store, you can set and use any kind of 
 Here's the example from above but using it more simply as a boolean value:
 
 ```alpine
-<button data-data @click="$store.darkMode = ! $store.darkMode">Toggle Dark Mode</button>
+<button data-signal @click="$store.darkMode = ! $store.darkMode">Toggle Dark Mode</button>
 
 ...
 
-<div data-data :class="$store.darkMode && 'bg-black'">
+<div data-signal :class="$store.darkMode && 'bg-black'">
     ...
 </div>
 

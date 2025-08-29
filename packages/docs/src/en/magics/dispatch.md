@@ -17,7 +17,7 @@ title: dispatch
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data @notify="alert('Hello World!')">
+    <div data-signal @notify="alert('Hello World!')">
         <button @click="$dispatch('notify')">
             Notify
         </button>
@@ -37,7 +37,7 @@ You can also pass data along with the dispatched event if you wish. This data wi
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data @notify="alert($event.detail.message)">
+    <div data-signal @notify="alert($event.detail.message)">
         <button @click="$dispatch('notify', { message: 'Hello World!' })">Notify</button>
     </div>
 </div>
@@ -54,13 +54,13 @@ Notice that, because of [event bubbling](https://en.wikipedia.org/wiki/Event_bub
 
 ```alpine
 <!-- 🚫 Won't work -->
-<div data-data>
+<div data-signal>
     <span @notify="..."></span>
     <button @click="$dispatch('notify')">Notify</button>
 </div>
 
 <!-- ✅ Will work (because of .window) -->
-<div data-data>
+<div data-signal>
     <span @notify.window="..."></span>
     <button @click="$dispatch('notify')">Notify</button>
 </div>
@@ -77,13 +77,13 @@ You can also take advantage of the previous technique to make your components ta
 
 ```alpine
 <div
-    data-data="{ title: 'Hello' }"
+    data-signal="{ title: 'Hello' }"
     @set-title.window="title = $event.detail"
 >
     <h1 data-text="title"></h1>
 </div>
 
-<div data-data>
+<div data-signal>
     <button @click="$dispatch('set-title', 'Hello World!')">Click me</button>
 </div>
 <!-- When clicked, the content of the h1 will set to "Hello World!". -->
@@ -95,7 +95,7 @@ You can also take advantage of the previous technique to make your components ta
 You can also use `$dispatch()` to trigger data updates for `data-model` data bindings. For example:
 
 ```alpine
-<div data-data="{ title: 'Hello' }">
+<div data-signal="{ title: 'Hello' }">
     <span data-model="title">
         <button @click="$dispatch('input', 'Hello World!')">Click me</button>
         <!-- After the button is pressed, `data-model` will catch the bubbling "input" event, and update title. -->

@@ -2,7 +2,7 @@ import { exist, haveText, html, notExist, test } from '../../utils'
 
 test('can use a data-teleport',
     [html`
-        <div data-data="{ count: 1 }" id="a">
+        <div data-signal="{ count: 1 }" id="a">
             <button @click="count++">Inc</button>
 
             <template data-teleport="#b">
@@ -21,7 +21,7 @@ test('can use a data-teleport',
 
 test('can use a data-teleport.append',
     [html`
-        <div data-data="{ count: 1 }" id="a">
+        <div data-signal="{ count: 1 }" id="a">
             <button @click="count++">Inc</button>
 
             <template data-teleport.append="#b">
@@ -40,7 +40,7 @@ test('can use a data-teleport.append',
 
 test('can use a data-teleport.prepend',
     [html`
-        <div data-data="{ count: 1 }" id="a">
+        <div data-signal="{ count: 1 }" id="a">
             <button @click="count++">Inc</button>
 
             <template data-teleport.prepend="#b">
@@ -59,7 +59,7 @@ test('can use a data-teleport.prepend',
 
 test('can teleport multiple',
     [html`
-        <div data-data="{ count: 1 }" id="a">
+        <div data-signal="{ count: 1 }" id="a">
             <button @click="count++">Inc</button>
 
             <template data-teleport="#b">
@@ -84,7 +84,7 @@ test('can teleport multiple',
 
 test('teleported targets forward events to teleport source if listeners are attached',
     [html`
-        <div data-data="{ count: 1 }" id="a">
+        <div data-signal="{ count: 1 }" id="a">
             <button @click="count++">Inc</button>
 
             <template data-teleport="#b" @click="count++">
@@ -105,7 +105,7 @@ test('teleported targets forward events to teleport source if listeners are atta
 
 test('removing teleport source removes teleported target',
     [html`
-        <div data-data="{ count: 1 }" id="a">
+        <div data-signal="{ count: 1 }" id="a">
             <button @click="$refs.template.remove()">Remove</button>
 
             <template data-teleport="#b" @click="count++" data-ref="template">
@@ -126,12 +126,12 @@ test(
     'immediately cleans up the clone when the original template is removed',
     [
         html`
-            <div data-data="{ show: true, shown: 'original' }">
+            <div data-signal="{ show: true, shown: 'original' }">
                 <span data-text="shown"></span>
                 <template data-if="show">
                     <div>
                     <template data-teleport="#target">
-                        <button data-data="{ 
+                        <button data-signal="{ 
                             init() { this.shown = 'cloned' }, 
                             destroy() { this.shown = 'destroyed' }
                         }" @click="show = false">remove</button>
@@ -155,7 +155,7 @@ test(
 
 test('$refs inside teleport can be accessed outside',
     [html`
-        <div data-data="{ count: 1 }" id="a">
+        <div data-signal="{ count: 1 }" id="a">
             <button @click="$refs.count.remove()">Remove</button>
 
             <template data-teleport="#b">
@@ -174,7 +174,7 @@ test('$refs inside teleport can be accessed outside',
 
 test('$root is accessed outside teleport',
     [html`
-        <div data-data="{ count: 1 }" id="a">
+        <div data-signal="{ count: 1 }" id="a">
             <template data-teleport="#b">
                 <h1 data-text="$root.id"></h1>
             </template>
@@ -190,7 +190,7 @@ test('$root is accessed outside teleport',
 
 test('$id honors data-id outside teleport',
     [html`
-        <div data-data="{ count: 1 }" id="a" data-id="['foo']">
+        <div data-signal="{ count: 1 }" id="a" data-id="['foo']">
             <h1 data-text="$id('foo')"></h1>
 
             <template data-teleport="#b">
@@ -207,7 +207,7 @@ test('$id honors data-id outside teleport',
 
 test('conditionally added elements get initialised inside teleport',
     [html`
-        <div data-data="{ show: false }" id="a">
+        <div data-signal="{ show: false }" id="a">
             <button @click="show = true">Show Teleport Content</button>
 
             <template data-teleport="#b">

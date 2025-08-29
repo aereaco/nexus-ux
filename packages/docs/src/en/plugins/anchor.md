@@ -61,7 +61,7 @@ By default, `data-anchor` will set the element's CSS to `position: absolute` and
 For example, here's a simple dropdown anchored to the button that toggles it:
 
 ```alpine
-<div data-data="{ open: false }">
+<div data-signal="{ open: false }">
     <button data-ref="button" @click="open = ! open">Toggle</button>
 
     <div data-show="open" data-anchor="$refs.button">
@@ -71,7 +71,7 @@ For example, here's a simple dropdown anchored to the button that toggles it:
 ```
 
 <!-- START_VERBATIM -->
-<div data-data="{ open: false }" class="demo overflow-hidden">
+<div data-signal="{ open: false }" class="demo overflow-hidden">
     <div class="flex justify-center">
         <button data-ref="button" @click="open = ! open">Toggle</button>
     </div>
@@ -95,7 +95,7 @@ For example, here's a simple dropdown anchored to the button that toggles it:
 Here is an example of using `.bottom-start` to position a dropdown below and to the right of the reference element:
 
 ```alpine
-<div data-data="{ open: false }">
+<div data-signal="{ open: false }">
     <button data-ref="button" @click="open = ! open">Toggle</button>
 
     <div data-show="open" data-anchor.bottom-start="$refs.button">
@@ -105,7 +105,7 @@ Here is an example of using `.bottom-start` to position a dropdown below and to 
 ```
 
 <!-- START_VERBATIM -->
-<div data-data="{ open: false }" class="demo overflow-hidden">
+<div data-signal="{ open: false }" class="demo overflow-hidden">
     <div class="flex justify-center">
         <button data-ref="button" @click="open = ! open">Toggle</button>
     </div>
@@ -122,7 +122,7 @@ Here is an example of using `.bottom-start` to position a dropdown below and to 
 You can add an offset to your anchored element using the `.offset.[px value]` modifier like so:
 
 ```alpine
-<div data-data="{ open: false }">
+<div data-signal="{ open: false }">
     <button data-ref="button" @click="open = ! open">Toggle</button>
 
     <div data-show="open" data-anchor.offset.10="$refs.button">
@@ -132,7 +132,7 @@ You can add an offset to your anchored element using the `.offset.[px value]` mo
 ```
 
 <!-- START_VERBATIM -->
-<div data-data="{ open: false }" class="demo overflow-hidden">
+<div data-signal="{ open: false }" class="demo overflow-hidden">
     <div class="flex justify-center">
         <button data-ref="button" @click="open = ! open">Toggle</button>
     </div>
@@ -151,7 +151,7 @@ By default, `data-anchor` applies the positioning styles to your element under t
 Below is an example of bypassing `data-anchor`'s internal styling and instead applying the styles yourself using `data-bind:style`:
 
 ```alpine
-<div data-data="{ open: false }">
+<div data-signal="{ open: false }">
     <button data-ref="button" @click="open = ! open">Toggle</button>
 
     <div
@@ -165,7 +165,7 @@ Below is an example of bypassing `data-anchor`'s internal styling and instead ap
 ```
 
 <!-- START_VERBATIM -->
-<div data-data="{ open: false }" class="demo overflow-hidden">
+<div data-signal="{ open: false }" class="demo overflow-hidden">
     <div class="flex justify-center">
         <button data-ref="button" @click="open = ! open">Toggle</button>
     </div>
@@ -189,7 +189,7 @@ The examples thus far have all been anchoring to other elements using Alpine ref
 Because `data-anchor` accepts a reference to any DOM element, you can use utilities like `document.getElementById()` to anchor to an element by its `id` attribute:
 
 ```alpine
-<div data-data="{ open: false }">
+<div data-signal="{ open: false }">
     <button id="trigger" @click="open = ! open">Toggle</button>
 
     <div data-show="open" data-anchor="document.getElementById('trigger')">
@@ -199,7 +199,7 @@ Because `data-anchor` accepts a reference to any DOM element, you can use utilit
 ```
 
 <!-- START_VERBATIM -->
-<div data-data="{ open: false }" class="demo overflow-hidden">
+<div data-signal="{ open: false }" class="demo overflow-hidden">
     <div class="flex justify-center">
         <button class="trigger" @click="open = ! open">Toggle</button>
     </div>

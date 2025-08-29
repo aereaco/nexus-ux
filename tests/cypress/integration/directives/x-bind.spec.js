@@ -2,7 +2,7 @@ import { beHidden, beVisible, haveText, beChecked, haveAttribute, haveClasses, h
 
 test('sets attribute bindings on initialize',
     html`
-        <div data-data="{ foo: 'bar' }">
+        <div data-signal="{ foo: 'bar' }">
             <span data-ref="me" data-bind:foo="foo">[Subject]</span>
         </div>
     `,
@@ -11,7 +11,7 @@ test('sets attribute bindings on initialize',
 
 test('sets undefined nested keys to empty string',
     html`
-        <div data-data="{ nested: {} }">
+        <div data-signal="{ nested: {} }">
             <span data-bind:foo="nested.field">
         </div>
     `,
@@ -20,7 +20,7 @@ test('sets undefined nested keys to empty string',
 
 test('style attribute bindings are added by string syntax',
     html`
-        <div data-data="{ initialClass: 'foo' }">
+        <div data-signal="{ initialClass: 'foo' }">
             <span data-bind:class="initialClass"></span>
         </div>
     `,
@@ -29,7 +29,7 @@ test('style attribute bindings are added by string syntax',
 
 test('aria-pressed/checked/expanded/selected attribute boolean values are cast to a true/false string',
     html`
-        <div data-data="{ open: true }">
+        <div data-signal="{ open: true }">
             <span data-bind:aria-pressed="open"></span>
             <span data-bind:aria-checked="open"></span>
             <span data-bind:aria-expanded="open"></span>
@@ -55,7 +55,7 @@ test('aria-pressed/checked/expanded/selected attribute boolean values are cast t
 
 test('non-boolean attributes set to null/undefined/false are removed from the element',
     html`
-        <div data-data="{}">
+        <div data-signal="{}">
             <a href="#hello" data-bind:href="null">null</a>
             <a href="#hello" data-bind:href="false">false</a>
             <a href="#hello" data-bind:href="undefined">undefined</a>
@@ -84,7 +84,7 @@ test('non-boolean attributes set to null/undefined/false are removed from the el
 
 test('non-boolean empty string attributes are not removed',
     html`
-        <div data-data>
+        <div data-signal>
             <a href="#hello" data-bind:href="''"></a>
         </div>
     `,
@@ -93,7 +93,7 @@ test('non-boolean empty string attributes are not removed',
 
 test('boolean attribute values are set to their attribute name if true and removed if false',
     html`
-        <div data-data="{ isSet: true }">
+        <div data-signal="{ isSet: true }">
             <span @click="isSet = false" id="setToFalse">Set To False</span>
 
             <input data-bind:disabled="isSet"></input>
@@ -186,7 +186,7 @@ test('boolean attribute values are set to their attribute name if true and remov
 
 test('boolean empty string attributes are not removed',
     html`
-        <div data-data="{}">
+        <div data-signal="{}">
             <input data-bind:disabled="''">
         </div>
     `,
@@ -195,7 +195,7 @@ test('boolean empty string attributes are not removed',
 
 test('binding supports short syntax',
     html`
-        <div data-data="{ foo: 'bar' }">
+        <div data-signal="{ foo: 'bar' }">
             <span :class="foo"></span>
         </div>
     `,
@@ -204,7 +204,7 @@ test('binding supports short syntax',
 
 test('checkbox is unchecked by default',
     html`
-        <div data-data="{foo: {bar: 'baz'}}">
+        <div data-signal="{foo: {bar: 'baz'}}">
             <input type="checkbox" data-bind:value="''"></input>
             <input type="checkbox" data-bind:value="'test'"></input>
             <input type="checkbox" data-bind:value="foo.bar"></input>
@@ -223,7 +223,7 @@ test('checkbox is unchecked by default',
 
 test('radio is unchecked by default',
     html`
-        <div data-data="{foo: {bar: 'baz'}}">
+        <div data-signal="{foo: {bar: 'baz'}}">
             <input type="radio" data-bind:value="''"></input>
             <input type="radio" data-bind:value="'test'"></input>
             <input type="radio" data-bind:value="foo.bar"></input>
@@ -242,7 +242,7 @@ test('radio is unchecked by default',
 
 test('checkbox values are set correctly',
     html`
-        <div data-data="{ stringValue: 'foo', trueValue: true, falseValue: false }">
+        <div data-signal="{ stringValue: 'foo', trueValue: true, falseValue: false }">
             <input type="checkbox" name="stringCheckbox" :value="stringValue" />
             <input type="checkbox" name="trueCheckbox" :value="trueValue" />
             <input type="checkbox" name="falseCheckbox" :value="falseValue" />
@@ -257,7 +257,7 @@ test('checkbox values are set correctly',
 
 test('radio values are set correctly',
     html`
-        <div data-data="{lists: [{id: 1}, {id: 8}], selectedListID: '8'}">
+        <div data-signal="{lists: [{id: 1}, {id: 8}], selectedListID: '8'}">
             <template data-for="list in lists" :key="list.id">
                 <input data-model="selectedListID" type="radio" :value="list.id.toString()" :id="'list-' + list.id">
             </template>
@@ -276,7 +276,7 @@ test('radio values are set correctly',
 
 test('.camel modifier correctly sets name of attribute',
     html`
-        <div data-data>
+        <div data-signal>
             <svg data-bind:view-box.camel="'0 0 42 42'"></svg>
         </div>
     `,
@@ -285,7 +285,7 @@ test('.camel modifier correctly sets name of attribute',
 
 test('attribute binding names can contain numbers',
     html`
-        <svg data-data>
+        <svg data-signal>
             <line x1="1" y1="2" :x2="3" data-bind:y2="4" />
         </svg>
     `,
@@ -297,7 +297,7 @@ test('attribute binding names can contain numbers',
 
 test('non-string and non-boolean attributes are cast to string when bound to checkbox',
     html`
-        <div data-data="{ number: 100, zero: 0, bool: true, nullProp: null }">
+        <div data-signal="{ number: 100, zero: 0, bool: true, nullProp: null }">
             <input type="checkbox" id="number" :value="number">
             <input type="checkbox" id="zero" :value="zero">
             <input type="checkbox" id="boolean" :value="bool">
@@ -328,7 +328,7 @@ test('can bind an object of directives',
             }
         </script>
 
-        <div data-data="window.modal()">
+        <div data-signal="window.modal()">
             <button data-bind="trigger">Toggle</button>
 
             <span data-bind="dialogue">Modal Body</span>
@@ -343,7 +343,7 @@ test('can bind an object of directives',
 
 test('data-bind object syntax supports normal HTML attributes',
     html`
-        <span data-data data-bind="{ foo: 'bar' }"></span>
+        <span data-signal data-bind="{ foo: 'bar' }"></span>
     `,
     ({ get }) => {
         get('span').should(haveAttribute('foo', 'bar'))
@@ -352,7 +352,7 @@ test('data-bind object syntax supports normal HTML attributes',
 
 test('data-bind object syntax supports normal HTML attributes mixed in with dynamic ones',
     html`
-        <span data-data data-bind="{ 'data-bind:bob'() { return 'lob'; }, foo: 'bar', 'data-bind:bab'() { return 'lab' } }"></span>
+        <span data-signal data-bind="{ 'data-bind:bob'() { return 'lob'; }, foo: 'bar', 'data-bind:bab'() { return 'lab' } }"></span>
     `,
     ({ get }) => {
         get('span').should(haveAttribute('foo', 'bar'))
@@ -371,7 +371,7 @@ test('data-bind object syntax supports data-for',
                 }
             }}
         </script>
-        <div data-data="window.todos()">
+        <div data-signal="window.todos()">
             <ul>
                 <template data-bind="outputForExpression">
                     <li data-text="todo"></li>
@@ -405,7 +405,7 @@ test('data-bind object syntax syntax supports data-transition',
                 },
             }}
         </script>
-        <div data-data="transitions()">
+        <div data-signal="transitions()">
             <button data-bind="outputClickExpression"></button>
 
             <span data-bind="outputTransitionExpression">thing</span>
@@ -430,7 +430,7 @@ test('data-bind object syntax event handlers defined as functions receive the ev
                 }
             }}
         </script>
-        <div data-data="window.data()">
+        <div data-signal="window.data()">
             <button data-bind="button" id="bar">click me</button>
 
             <span data-ref="span">foo</span>
@@ -454,7 +454,7 @@ test('data-bind object syntax event handlers defined as functions receive elemen
                 }
             }}
         </script>
-        <div data-data="window.data()">
+        <div data-signal="window.data()">
             <button data-bind="button" id="bar">click me</button>
 
             <span data-ref="span">foo</span>
@@ -469,12 +469,12 @@ test('data-bind object syntax event handlers defined as functions receive elemen
 
 test('Can retrieve Alpine bound data with global bound method',
     html`
-        <div id="1" data-data foo="bar" data-text="Alpine.bound($el, 'foo')"></div>
-        <div id="2" data-data :foo="'bar'" data-text="Alpine.bound($el, 'foo')"></div>
-        <div id="3" data-data foo data-text="Alpine.bound($el, 'foo')"></div>
-        <div id="4" data-data disabled data-text="Alpine.bound($el, 'disabled')"></div>
-        <div id="5" data-data data-text="Alpine.bound($el, 'foo')"></div>
-        <div id="6" data-data data-text="Alpine.bound($el, 'foo', 'bar')"></div>
+        <div id="1" data-signal foo="bar" data-text="Alpine.bound($el, 'foo')"></div>
+        <div id="2" data-signal :foo="'bar'" data-text="Alpine.bound($el, 'foo')"></div>
+        <div id="3" data-signal foo data-text="Alpine.bound($el, 'foo')"></div>
+        <div id="4" data-signal disabled data-text="Alpine.bound($el, 'disabled')"></div>
+        <div id="5" data-signal data-text="Alpine.bound($el, 'foo')"></div>
+        <div id="6" data-signal data-text="Alpine.bound($el, 'foo', 'bar')"></div>
     `,
     ({ get }) => {
         get('#1').should(haveText('bar'))
@@ -488,9 +488,9 @@ test('Can retrieve Alpine bound data with global bound method',
 
 test('Can extract Alpine bound data as a data prop',
     html`
-        <div data-data="{ foo: 'bar' }">
-            <div id="1" data-data="{ init() { this.$el.textContent = Alpine.extractProp(this.$el, 'foo') }}" :foo="foo"></div>
-            <div id="2" data-data="{ init() { this.$el.textContent = Alpine.extractProp(this.$el, 'foo', null, false) }}" :foo="foo"></div>
+        <div data-signal="{ foo: 'bar' }">
+            <div id="1" data-signal="{ init() { this.$el.textContent = Alpine.extractProp(this.$el, 'foo') }}" :foo="foo"></div>
+            <div id="2" data-signal="{ init() { this.$el.textContent = Alpine.extractProp(this.$el, 'foo', null, false) }}" :foo="foo"></div>
         </div>
     `,
     ({ get }) => {
@@ -503,7 +503,7 @@ test('Can extract Alpine bound data as a data prop',
 
 test('data-bind updates checked attribute and property after user interaction',
     html`
-        <div data-data="{ checked: true }">
+        <div data-signal="{ checked: true }">
             <button @click="checked = !checked">toggle</button>
             <input type="checkbox" data-bind:checked="checked" @change="checked = $event.target.checked" />
         </div>

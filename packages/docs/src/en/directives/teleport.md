@@ -24,7 +24,7 @@ Here's a contrived modal example:
 
 ```alpine
 <body>
-    <div data-data="{ open: false }">
+    <div data-signal="{ open: false }">
         <button @click="open = ! open">Toggle Modal</button>
 
         <template data-teleport="body">
@@ -43,7 +43,7 @@ Here's a contrived modal example:
 
 <!-- START_VERBATIM -->
 <div class="demo" data-ref="root" id="modal2">
-    <div data-data="{ open: false }">
+    <div data-signal="{ open: false }">
         <button @click="open = ! open">Toggle Modal</button>
 
         <template data-teleport="#modal2">
@@ -70,7 +70,7 @@ However, native DOM events have no concept of teleportation, so if, for example,
 To make this experience more seamless, you can "forward" events by simply registering event listeners on the `<template data-teleport...>` element itself like so:
 
 ```alpine
-<div data-data="{ open: false }">
+<div data-signal="{ open: false }">
     <button @click="open = ! open">Toggle Modal</button>
 
     <template data-teleport="body" @click="open = false">
@@ -84,7 +84,7 @@ To make this experience more seamless, you can "forward" events by simply regist
 
 <!-- START_VERBATIM -->
 <div class="demo" data-ref="root" id="modal3">
-    <div data-data="{ open: false }">
+    <div data-signal="{ open: false }">
         <button @click="open = ! open">Toggle Modal</button>
 
         <template data-teleport="#modal3" @click="open = false">
@@ -107,14 +107,14 @@ Alpine does this by looking for event listeners registered on `<template data-te
 Teleporting is especially helpful if you are trying to nest one modal within another. Alpine makes it simple to do so:
 
 ```alpine
-<div data-data="{ open: false }">
+<div data-signal="{ open: false }">
     <button @click="open = ! open">Toggle Modal</button>
 
     <template data-teleport="body">
         <div data-show="open">
             Modal contents...
 
-            <div data-data="{ open: false }">
+            <div data-signal="{ open: false }">
                 <button @click="open = ! open">Toggle Nested Modal</button>
 
                 <template data-teleport="body">
@@ -130,14 +130,14 @@ Teleporting is especially helpful if you are trying to nest one modal within ano
 
 <!-- START_VERBATIM -->
 <div class="demo" data-ref="root" id="modal4">
-    <div data-data="{ open: false }">
+    <div data-signal="{ open: false }">
         <button @click="open = ! open">Toggle Modal</button>
 
         <template data-teleport="#modal4">
             <div data-show="open">
                 <div class="py-4">Modal contents...</div>
 
-                <div data-data="{ open: false }">
+                <div data-signal="{ open: false }">
                     <button @click="open = ! open">Toggle Nested Modal</button>
 
                     <template data-teleport="#modal4">

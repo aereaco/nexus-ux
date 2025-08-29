@@ -52,10 +52,10 @@ Alpine.plugin(persist)
 
 The primary API for using this plugin is the magic `$persist` method.
 
-You can wrap any value inside `data-data` with `$persist` like below to persist its value across page loads:
+You can wrap any value inside `data-signal` with `$persist` like below to persist its value across page loads:
 
 ```alpine
-<div data-data="{ count: $persist(0) }">
+<div data-signal="{ count: $persist(0) }">
     <button data-on:click="count++">Increment</button>
 
     <span data-text="count"></span>
@@ -64,7 +64,7 @@ You can wrap any value inside `data-data` with `$persist` like below to persist 
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data="{ count: $persist(0) }">
+    <div data-signal="{ count: $persist(0) }">
         <button data-on:click="count++">Increment</button>
         <span data-text="count"></span>
     </div>
@@ -91,7 +91,7 @@ You'll observe that by simply visiting this page, Alpine already set the value o
 Now change the "count" in the following example and observe the changes made by Alpine to localStorage:
 
 ```alpine
-<div data-data="{ count: $persist(0) }">
+<div data-signal="{ count: $persist(0) }">
     <button data-on:click="count++">Increment</button>
 
     <span data-text="count"></span>
@@ -100,7 +100,7 @@ Now change the "count" in the following example and observe the changes made by 
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data="{ count: $persist(0) }">
+    <div data-signal="{ count: $persist(0) }">
         <button data-on:click="count++">Increment</button>
         <span data-text="count"></span>
     </div>
@@ -124,7 +124,7 @@ In these cases, you can set your own custom key for any persisted value using th
 
 
 ```alpine
-<div data-data="{ count: $persist(0).as('other-count') }">
+<div data-signal="{ count: $persist(0).as('other-count') }">
     <button data-on:click="count++">Increment</button>
 
     <span data-text="count"></span>
@@ -146,7 +146,7 @@ Consider the scenario where you want to clear the data once the user close the t
 
 
 ```alpine
-<div data-data="{ count: $persist(0).using(sessionStorage) }">
+<div data-signal="{ count: $persist(0).using(sessionStorage) }">
     <button data-on:click="count++">Increment</button>
 
     <span data-text="count"></span>
@@ -175,7 +175,7 @@ You can also define your custom storage object exposing a getItem function and a
     }
 </script>
 
-<div data-data="{ count: $persist(0).using(cookieStorage) }">
+<div data-signal="{ count: $persist(0).using(cookieStorage) }">
     <button data-on:click="count++">Increment</button>
 
     <span data-text="count"></span>
@@ -198,7 +198,7 @@ Alpine.data('dropdown', function () {
 <a name="using-alpine-persist-global"></a>
 ## Using the Alpine.$persist global
 
-`Alpine.$persist` is exposed globally so it can be used outside of `data-data` contexts. This is useful to persist data from other sources such as `Alpine.store`.
+`Alpine.$persist` is exposed globally so it can be used outside of `data-signal` contexts. This is useful to persist data from other sources such as `Alpine.store`.
 
 ```js
 Alpine.store('darkMode', {

@@ -10,7 +10,7 @@ title: bind
 For example, here's a component where we will use `data-bind` to set the placeholder value of an input.
 
 ```alpine
-<div data-data="{ placeholder: 'Type here...' }">
+<div data-signal="{ placeholder: 'Type here...' }">
     <input type="text" data-bind:placeholder="placeholder">
 </div>
 ```
@@ -24,7 +24,7 @@ If `data-bind:` is too verbose for your liking, you can use the shorthand: `:`. 
 <input type="text" :placeholder="placeholder">
 ```
 
-> Despite not being included in the above snippet, `data-bind` cannot be used if no parent element has `data-data` defined. [→ Read more about `data-data`](/directives/data)
+> Despite not being included in the above snippet, `data-bind` cannot be used if no parent element has `data-signal` defined. [→ Read more about `data-signal`](/directives/data)
 
 <a name="binding-classes"></a>
 ## Binding classes
@@ -34,7 +34,7 @@ If `data-bind:` is too verbose for your liking, you can use the shorthand: `:`. 
 Here's a simple example of a simple dropdown toggle, but instead of using `data-show`, we'll use a "hidden" class to toggle an element.
 
 ```alpine
-<div data-data="{ open: false }">
+<div data-signal="{ open: false }">
     <button data-on:click="open = ! open">Toggle Dropdown</button>
 
     <div :class="open ? '' : 'hidden'">
@@ -146,7 +146,7 @@ One advantage of this approach is being able to mix it in with existing styles o
 And like most expressions in Alpine, you can always use the result of a JavaScript expression as the reference:
 
 ```alpine
-<div data-data="{ styles: { color: 'red', display: 'flex' }}">
+<div data-signal="{ styles: { color: 'red', display: 'flex' }}">
     <div :style="styles">
 </div>
 
@@ -164,7 +164,7 @@ And like most expressions in Alpine, you can always use the result of a JavaScri
 The object keys can be anything you would normally write as an attribute name in Alpine. This includes Alpine directives and modifiers, but also plain HTML attributes. The object values are either plain strings, or in the case of dynamic Alpine directives, callbacks to be evaluated by Alpine.
 
 ```alpine
-<div data-data="dropdown">
+<div data-signal="dropdown">
     <button data-bind="trigger">Open Dropdown</button>
 
     <span data-bind="dialogue">Dropdown Contents</span>

@@ -10,7 +10,7 @@ title: model
 Here's a simple example of using `data-model` to bind the value of a text field to a piece of data in Alpine.
 
 ```alpine
-<div data-data="{ message: '' }">
+<div data-signal="{ message: '' }">
     <input type="text" data-model="message">
 
     <span data-text="message"></span>
@@ -19,7 +19,7 @@ Here's a simple example of using `data-model` to bind the value of a text field 
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data="{ message: '' }">
+    <div data-signal="{ message: '' }">
         <input type="text" data-model="message" placeholder="Type message...">
 
         <div class="pt-4" data-text="message"></div>
@@ -36,7 +36,7 @@ Now as the user types into the text field, the `message` will be reflected in th
 We can use the same example as above but this time, we'll add a button to change the value of the `message` property.
 
 ```alpine
-<div data-data="{ message: '' }">
+<div data-signal="{ message: '' }">
     <input type="text" data-model="message">
 
     <button data-on:click="message = 'changed'">Change Message</button>
@@ -45,7 +45,7 @@ We can use the same example as above but this time, we'll add a button to change
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data="{ message: '' }">
+    <div data-signal="{ message: '' }">
         <input type="text" data-model="message" placeholder="Type message...">
 
         <button data-on:click="message = 'changed'">Change Message</button>
@@ -75,7 +75,7 @@ Now when the `<button>` is clicked, the input element's value will instantly be 
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data="{ message: '' }">
+    <div data-signal="{ message: '' }">
         <input type="text" data-model="message" placeholder="Type message">
 
         <div class="pt-4" data-text="message"></div>
@@ -83,7 +83,7 @@ Now when the `<button>` is clicked, the input element's value will instantly be 
 </div>
 <!-- END_VERBATIM -->
 
-> Despite not being included in the above snippet, `data-model` cannot be used if no parent element has `data-data` defined. [→ Read more about `data-data`](/directives/data)
+> Despite not being included in the above snippet, `data-model` cannot be used if no parent element has `data-signal` defined. [→ Read more about `data-signal`](/directives/data)
 
 <a name="textarea-inputs"></a>
 ## Textarea inputs
@@ -96,7 +96,7 @@ Now when the `<button>` is clicked, the input element's value will instantly be 
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data="{ message: '' }">
+    <div data-signal="{ message: '' }">
         <textarea data-model="message" placeholder="Type message"></textarea>
 
         <div class="pt-4" data-text="message"></div>
@@ -118,7 +118,7 @@ Now when the `<button>` is clicked, the input element's value will instantly be 
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data="{ open: '' }">
+    <div data-signal="{ open: '' }">
         <input type="checkbox" id="checkbox" data-model="open">
 
         <label for="checkbox" data-text="open"></label>
@@ -139,7 +139,7 @@ Colors: <span data-text="colors"></span>
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data="{ colors: [] }">
+    <div data-signal="{ colors: [] }">
         <input type="checkbox" value="red" data-model="colors">
         <input type="checkbox" value="orange" data-model="colors">
         <input type="checkbox" value="yellow" data-model="colors">
@@ -161,7 +161,7 @@ Answer: <span data-text="answer"></span>
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data="{ answer: '' }">
+    <div data-signal="{ answer: '' }">
         <input type="radio" value="yes" data-model="answer">
         <input type="radio" value="no" data-model="answer">
 
@@ -189,7 +189,7 @@ Color: <span data-text="color"></span>
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data="{ color: '' }">
+    <div data-signal="{ color: '' }">
         <select data-model="color">
             <option>Red</option>
             <option>Orange</option>
@@ -218,7 +218,7 @@ Color: <span data-text="color"></span>
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data="{ color: '' }">
+    <div data-signal="{ color: '' }">
         <select data-model="color">
             <option value="" disabled>Select A Color</option>
             <option>Red</option>
@@ -246,7 +246,7 @@ Colors: <span data-text="color"></span>
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data="{ color: '' }">
+    <div data-signal="{ color: '' }">
         <select data-model="color" multiple>
             <option>Red</option>
             <option>Orange</option>
@@ -273,7 +273,7 @@ Color: <span data-text="color"></span>
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data="{ color: '' }">
+    <div data-signal="{ color: '' }">
         <select data-model="color">
             <template data-for="color in ['Red', 'Orange', 'Yellow']">
                 <option data-text="color"></option>
@@ -296,7 +296,7 @@ Color: <span data-text="color"></span>
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data="{ range: 0.5 }">
+    <div data-signal="{ range: 0.5 }">
         <input type="range" data-model="range" min="0" max="1" step="0.1">
 
         <div class="pt-4" data-text="range"></div>
@@ -380,7 +380,7 @@ By default, if an input has a value attribute, it is ignored by Alpine and inste
 
 But if a bound property is empty, then you can use an input's value attribute to populate the property by adding the `.fill` modifier.
 
-<div data-data="{ message: null }">
+<div data-signal="{ message: null }">
   <input type="text" data-model.fill="message" value="This is the default message.">
 </div>
 
@@ -395,7 +395,7 @@ You can access these utilities through a property called `_data_model` on the `d
 * `el._data_model.set()` (sets the value of the bound property)
 
 ```alpine
-<div data-data="{ username: 'calebporzio' }">
+<div data-signal="{ username: 'calebporzio' }">
     <div data-ref="div" data-model="username"></div>
 
     <button @click="$refs.div._data_model.set('phantomatrix')">
@@ -408,7 +408,7 @@ You can access these utilities through a property called `_data_model` on the `d
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data="{ username: 'calebporzio' }">
+    <div data-signal="{ username: 'calebporzio' }">
         <div data-ref="div" data-model="username"></div>
 
         <button @click="$refs.div._data_model.set('phantomatrix')">

@@ -37,7 +37,7 @@ Alpine allows you to execute code when a piece of data (state) changes. It offer
 ### `$watch`
 
 ```alpine
-<div data-data="{ open: false }" data-init="$watch('open', value => console.log(value))">
+<div data-signal="{ open: false }" data-init="$watch('open', value => console.log(value))">
 ```
 
 As you can see above, `$watch` allows you to hook into data changes using a dot-notation key. When that piece of data changes, Alpine will call the passed callback and pass it the new value. along with the old value before the change.
@@ -54,7 +54,7 @@ Instead of specifying which data key you wish to watch, `data-effect` will call 
 Here's the same bit of code from the `$watch` example rewritten using `data-effect`:
 
 ```alpine
-<div data-data="{ open: false }" data-effect="console.log(open)">
+<div data-signal="{ open: false }" data-effect="console.log(open)">
 ```
 
 Now, this expression will be called right away, and re-called every time `open` is updated.

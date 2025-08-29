@@ -1,4 +1,4 @@
-import { closestDataStack, mergeProxies } from './scope'
+import { closestSignalStack, mergeProxies } from './scope'
 import { injectMagics } from './magics'
 import { tryCatch, handleError } from './utils/error'
 
@@ -39,18 +39,18 @@ export function normalEvaluator(el: any, expression: any) {
 
     injectMagics(overriddenMagics, el)
 
-    let dataStack = [overriddenMagics, ...closestDataStack(el)]
+    let signalStack = [overriddenMagics, ...closestSignalStack(el)]
 
     let evaluator = (typeof expression === 'function')
-        ? generateEvaluatorFromFunction(dataStack, expression)
-        : generateEvaluatorFromString(dataStack, expression, el)
+        ? generateEvaluatorFromFunction(signalStack, expression)
+        : generateEvaluatorFromString(signalStack, expression, el)
 
     return tryCatch.bind(null, el, expression, evaluator)
 }
 
-export function generateEvaluatorFromFunction(dataStack: any[], func: any) {
+export function generateEvaluatorFromFunction(signalStack: any[], func: any) {
     return (receiver: any = () => {}, { scope = {}, params = [], context }: { scope?: any, params?: any[], context?: any } = {}) => {
-        let result = func.apply(mergeProxies([scope, ...dataStack]), params)
+        let result = func.apply(mergeProxies([scope, ...signalStack]), params)
 
         runIfTypeOfFunction(receiver, result)
     }
@@ -95,14 +95,14 @@ function generateFunctionFromString(expression: string, el: any) {
     return func
 }
 
-function generateEvaluatorFromString(dataStack: any[], expression: string, el: any) {
+function generateEvaluatorFromString(signalStack: any[], expression: string, el: any) {
     let func = generateFunctionFromString(expression, el)
 
     return (receiver: any = () => {}, { scope = {}, params = [], context }: { scope?: any, params?: any[], context?: any } = {}) => {
         func.result = undefined
         func.finished = false
 
-        let completeScope = mergeProxies([ scope, ...dataStack ])
+        let completeScope = mergeProxies([ scope, ...signalStack ])
 
         if (typeof func === 'function' ) {
             let promise = func.call(context, func, completeScope).catch((error: any) => handleError(error, el, expression))

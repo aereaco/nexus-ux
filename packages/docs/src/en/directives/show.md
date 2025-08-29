@@ -10,7 +10,7 @@ title: show
 Here's an example of a simple dropdown component using `data-show`.
 
 ```alpine
-<div data-data="{ open: false }">
+<div data-signal="{ open: false }">
     <button data-on:click="open = ! open">Toggle Dropdown</button>
 
     <div data-show="open">
@@ -29,7 +29,7 @@ When the "Toggle Dropdown" button is clicked, the dropdown will show and hide ac
 If you want to apply smooth transitions to the `data-show` behavior, you can use it in conjunction with `data-transition`. You can learn more about that directive [here](/directives/transition), but here's a quick example of the same component as above, just with transitions applied.
 
 ```alpine
-<div data-data="{ open: false }">
+<div data-signal="{ open: false }">
     <button data-on:click="open = ! open">Toggle Dropdown</button>
 
     <div data-show="open" data-transition>
@@ -46,7 +46,7 @@ Sometimes you need to apply a little more force to actually hide an element. In 
 In these cases you may use the `.important` modifier to set the inline style to `display: none !important`.
 
 ```alpine
-<div data-data="{ open: false }">
+<div data-signal="{ open: false }">
     <button data-on:click="open = ! open">Toggle Dropdown</button>
 
     <div data-show.important="open">

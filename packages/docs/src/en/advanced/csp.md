@@ -57,7 +57,7 @@ To provide a glimpse of how using the CSP build might feel, here is a copy-pasta
     </head>
 
     <body>
-        <div data-data="counter">
+        <div data-signal="counter">
             <button data-on:click="increment"></button>
 
             <span data-text="count"></span>
@@ -85,13 +85,13 @@ To provide a glimpse of how using the CSP build might feel, here is a copy-pasta
 
 Since Alpine can no longer interpret strings as plain JavaScript, it has to parse and construct JavaScript functions from them manually.
 
-Due to this limitation, you must use `Alpine.data` to register your `data-data` objects, and must reference properties and methods from it by key only.
+Due to this limitation, you must use `Alpine.data` to register your `data-signal` objects, and must reference properties and methods from it by key only.
 
 For example, an inline component like this will not work.
 
 ```alpine
 <!-- Bad -->
-<div data-data="{ count: 1 }">
+<div data-signal="{ count: 1 }">
     <button @click="count++">Increment</button>
 
     <span data-text="count"></span>
@@ -102,7 +102,7 @@ However, breaking out the expressions into external APIs, the following is valid
 
 ```alpine
 <!-- Good -->
-<div data-data="counter">
+<div data-signal="counter">
     <button @click="increment">Increment</button>
 
     <span data-text="count"></span>
@@ -123,7 +123,7 @@ The CSP build supports accessing nested properties (property accessors) using th
 
 ```alpine
 <!-- This works too -->
-<div data-data="counter">
+<div data-signal="counter">
     <button @click="foo.increment">Increment</button>
 
     <span data-text="foo.count"></span>

@@ -34,7 +34,7 @@ export default function (Alpine: any) {
 function handleRoot(el: any, Alpine: any) {
     Alpine.bind(el, {
         'data-modelable': '__selectedIndex',
-        'data-data'() {
+        'data-signal'() {
             return {
                 init() {
                     queueMicrotask(() => {
@@ -76,7 +76,7 @@ function handleList(el: any, Alpine: any) {
 function handleTab(el: any, Alpine: any) {
     Alpine.bind(el, {
         'data-init'() { if (this.$el.tagName.toLowerCase() === 'button' && !this.$el.hasAttribute('type')) this.$el.type = 'button' },
-        'data-data'() { return {
+        'data-signal'() { return {
             init() {
                 this.__tabEl = this.$el
                 this.$data.__addTab(this.$el)
@@ -128,7 +128,7 @@ function handlePanels(el: any, Alpine: any) {
 function handlePanel(el: any, Alpine: any) {
     Alpine.bind(el, {
         ':tabindex'() { return this.$panel.isSelected ? 0 : -1 },
-        'data-data'() { return {
+        'data-signal'() { return {
             init() {
                 this.__panelEl = this.$el
                 this.$data.__addPanel(this.$el)

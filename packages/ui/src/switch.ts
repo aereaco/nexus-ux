@@ -20,7 +20,7 @@ export default function (Alpine: any) {
 function handleGroup(el: any, Alpine: any) {
     Alpine.bind(el, {
         'data-id'() { return ['alpine-switch-label', 'alpine-switch-description'] },
-        'data-data'() {
+        'data-signal'() {
             return {
                 __hasLabel: false,
                 __hasDescription: false,
@@ -33,7 +33,7 @@ function handleGroup(el: any, Alpine: any) {
 function handleRoot(el: any, Alpine: any) {
     Alpine.bind(el, {
         'data-modelable': '__value',
-        'data-data'() {
+        'data-signal'() {
             return {
                 init() {
                     queueMicrotask(() => {

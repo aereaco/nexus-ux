@@ -12,15 +12,15 @@ test('can clone a component',
             })
         </script>
 
-        <button data-data @click="Alpine.clone(original, copy)">click</button>
+        <button data-signal @click="Alpine.clone(original, copy)">click</button>
 
-        <div data-data="{ foo: 'bar' }" id="original">
+        <div data-signal="{ foo: 'bar' }" id="original">
             <h1 @click="foo = 'baz'">click me</h1>
 
             <span data-text="foo"></span>
         </div>
 
-        <div data-data="{ foo: 'bar' }" id="copy" data-ignore>
+        <div data-signal="{ foo: 'bar' }" id="copy" data-ignore>
             <h1 @click="foo = 'baz'">click me</h1>
 
             <span data-text="foo"></span>
@@ -47,13 +47,13 @@ test('wont run init on clone',
             })
         </script>
 
-        <button data-data @click="Alpine.clone(original, copy)">click</button>
+        <button data-signal @click="Alpine.clone(original, copy)">click</button>
 
-        <div data-data="{ count: 0 }" data-init="count++" id="original">
+        <div data-signal="{ count: 0 }" data-init="count++" id="original">
             <span data-text="count"></span>
         </div>
 
-        <div data-data="{ count: 0 }" data-init="count++" id="copy" data-ignore>
+        <div data-signal="{ count: 0 }" data-init="count++" id="copy" data-ignore>
             <span data-text="count"></span>
         </div>
     `,
@@ -77,13 +77,13 @@ test('wont register listeners on clone',
             })
         </script>
 
-        <button data-data @click="Alpine.clone(original, copy)">click</button>
+        <button data-signal @click="Alpine.clone(original, copy)">click</button>
 
-        <div data-data="{ count: 0 }" data-init="count++" id="original">
+        <div data-signal="{ count: 0 }" data-init="count++" id="original">
             <span data-text="count"></span>
         </div>
 
-        <div data-data="{ count: 0 }" data-init="count++" id="copy" data-ignore>
+        <div data-signal="{ count: 0 }" data-init="count++" id="copy" data-ignore>
             <h1 @click="count++">inc</h1>
             <span data-text="count"></span>
         </div>
@@ -107,14 +107,14 @@ test('wont register extra listeners on data-model on clone',
             })
         </script>
 
-        <button data-data @click="Alpine.clone(original, copy)">click</button>
+        <button data-signal @click="Alpine.clone(original, copy)">click</button>
 
-        <div data-data="{ checks: [] }" id="original">
+        <div data-signal="{ checks: [] }" id="original">
             <input type="checkbox" data-model="checks" value="1">
             <span data-text="checks"></span>
         </div>
 
-        <div data-data="{ checks: [] }" id="copy">
+        <div data-signal="{ checks: [] }" id="copy">
             <input type="checkbox" data-model="checks" value="1">
             <span data-text="checks"></span>
         </div>

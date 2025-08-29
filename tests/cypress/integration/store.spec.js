@@ -2,7 +2,7 @@ import { haveText, html, test } from '../utils'
 
 test('can register and use a global store',
     [html`
-        <div data-data>
+        <div data-signal>
             <span data-text="$store.test.foo"></span>
             <button @click="$store.test.foo = 'baz'">clickme</button>
         </div>
@@ -19,7 +19,7 @@ test('can register and use a global store',
 
 test('store init function is called',
     [html`
-        <div data-data>
+        <div data-signal>
             <span data-text="$store.test.foo"></span>
             <button @click="$store.test.foo = 'baz'">clickme</button>
         </div>
@@ -34,7 +34,7 @@ test('store init function is called',
 
 test('can use primitives as store',
     [html`
-        <div data-data>
+        <div data-signal>
             <span data-text="$store.test"></span>
             <button @click="$store.test = 'baz'">clickme</button>
         </div>
@@ -51,7 +51,7 @@ test('can use primitives as store',
 
 test('can use number as store',
     [html`
-        <div data-data>
+        <div data-signal>
             <span data-text="$store.test"></span>
             <button @click="$store.test++">clickme</button>
         </div>
@@ -68,7 +68,7 @@ test('can use number as store',
 
 test('store\'s "this" context is reactive for init function',
     [html`
-        <div data-data>
+        <div data-signal>
         <span data-text="$store.test.count"></span>
         <button id="button">increment</button>
         </div>
@@ -92,7 +92,7 @@ test('store\'s "this" context is reactive for init function',
 
 test('stores can have interceptors', 
     [html`
-        <div data-data>
+        <div data-signal>
         <span data-text="$store.test.count"></span>
         </div>
     `,

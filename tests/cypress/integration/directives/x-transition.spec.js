@@ -6,7 +6,7 @@ test('transition in',
             .transition { transition-property: background-color, border-color, color, fill, stroke; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
             .duration-100 { transition-duration: 100ms; }
         </style>
-        <div data-data="{ show: false }">
+        <div data-signal="{ show: false }">
             <button data-on:click="show = ! show"></button>
 
             <span
@@ -33,7 +33,7 @@ test('transition out',
             .transition { transition-property: background-color, border-color, color, fill, stroke; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
             .duration-100 { transition-duration: 100ms; }
         </style>
-        <div data-data="{ show: true }">
+        <div data-signal="{ show: true }">
             <button data-on:click="show = ! show"></button>
 
             <span
@@ -62,7 +62,7 @@ test('transition:enter in nested data-show visually runs',
             .opacity-0 {opacity: 0}
             .opacity-1 {opacity: 1}
         </style>
-        <div data-data="{ show: false }">
+        <div data-signal="{ show: false }">
             <span data-show="show">
                 <h1 data-show="show"
                     data-transition:enter="transition"
@@ -83,7 +83,7 @@ test('transition:enter in nested data-show visually runs',
 
 test('transition duration and delay with and without ms syntax',
     html`
-        <div data-data="{ showMs: false, showBlank: false }">
+        <div data-signal="{ showMs: false, showBlank: false }">
 
             <span class="ms"
                   data-show="showMs"
@@ -128,7 +128,7 @@ test(
                 };
             };
         </script>
-        <div data-data="transitions()">
+        <div data-signal="transitions()">
             <button data-bind="withEmptyString"></button>
             <span data-bind="withBoolean">thing</span>
         </div>

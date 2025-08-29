@@ -2,7 +2,7 @@ import { exist, haveLength, haveText, html, notExist, test } from '../../utils'
 
 test('renders loops with data-for',
     html`
-        <div data-data="{ items: ['foo'] }">
+        <div data-signal="{ items: ['foo'] }">
             <button data-on:click="items = ['foo', 'bar']">click me</button>
 
             <template data-for="item in items">
@@ -21,7 +21,7 @@ test('renders loops with data-for',
 
 test('renders loops with data-for that have space or newline',
     html`
-        <div data-data="{ items: ['foo'] }">
+        <div data-signal="{ items: ['foo'] }">
             <button data-on:click="items = ['foo', 'bar']">click me</button>
 
             <div data-bind:id="1">
@@ -60,7 +60,7 @@ test('renders loops with data-for that have space or newline',
 
 test('can destructure arrays',
     html`
-        <div data-data="{ items: [[1, 'foo'], [2, 'bar']] }">
+        <div data-signal="{ items: [[1, 'foo'], [2, 'bar']] }">
             <template data-for="[id, label] in items">
                 <div data-bind:id="id">
                     <span data-text="id"></span>
@@ -79,7 +79,7 @@ test('can destructure arrays',
 
 test('can destructure object',
     html`
-        <div data-data="{ items: [{ foo: 'oof', bar: 'rab' }, { foo: 'ofo', bar: 'arb' }] }">
+        <div data-signal="{ items: [{ foo: 'oof', bar: 'rab' }, { foo: 'ofo', bar: 'arb' }] }">
             <template data-for="({ foo, bar }, i) in items">
                 <div data-bind:id="i + 1">
                     <span data-text="foo"></span>
@@ -98,7 +98,7 @@ test('can destructure object',
 
 test('removes all elements when array is empty and previously had one item',
     html`
-        <div data-data="{ items: ['foo'] }">
+        <div data-signal="{ items: ['foo'] }">
             <button data-on:click="items = []">click me</button>
 
             <template data-for="item in items">
@@ -115,7 +115,7 @@ test('removes all elements when array is empty and previously had one item',
 
 test('removes all elements when array is empty and previously had multiple items',
     html`
-        <div data-data="{ items: ['foo', 'bar', 'world'] }">
+        <div data-signal="{ items: ['foo', 'bar', 'world'] }">
             <button data-on:click="items = []">click me</button>
 
             <template data-for="item in items">
@@ -136,7 +136,7 @@ test('removes all elements when array is empty and previously had multiple items
 
 test('elements inside of loop are reactive',
     html`
-        <div data-data="{ items: ['first'], foo: 'bar' }">
+        <div data-signal="{ items: ['first'], foo: 'bar' }">
             <button data-on:click="foo = 'baz'">click me</button>
 
             <template data-for="item in items">
@@ -160,9 +160,9 @@ test('elements inside of loop are reactive',
 
 test('components inside of loop are reactive',
     html`
-        <div data-data="{ items: ['first'] }">
+        <div data-signal="{ items: ['first'] }">
             <template data-for="item in items">
-                <div data-data="{foo: 'bar'}" class="child">
+                <div data-signal="{foo: 'bar'}" class="child">
                     <span data-text="foo"></span>
                     <button data-on:click="foo = 'bob'">click me</button>
                 </div>
@@ -178,10 +178,10 @@ test('components inside of loop are reactive',
 
 test('components inside a plain element of loop are reactive',
     html`
-        <div data-data="{ items: ['first'] }">
+        <div data-signal="{ items: ['first'] }">
             <template data-for="item in items">
                 <ul>
-                    <div data-data="{foo: 'bar'}" class="child">
+                    <div data-signal="{foo: 'bar'}" class="child">
                         <span data-text="foo"></span>
                         <button data-on:click="foo = 'bob'">click me</button>
                     </div>
@@ -198,7 +198,7 @@ test('components inside a plain element of loop are reactive',
 
 test('adding key attribute moves dom nodes properly',
     html`
-        <div data-data="{ items: ['foo', 'bar'] }">
+        <div data-signal="{ items: ['foo', 'bar'] }">
             <button data-on:click="items = ['bob', 'bar', 'foo', 'baz']" id="reorder">click me</button>
             <button data-on:click="$el.parentElement.querySelectorAll('span').forEach((el, index) => el.og_loop_index = index)" id="assign">click me</button>
 
@@ -223,7 +223,7 @@ test('adding key attribute moves dom nodes properly',
 
 test('can key by index',
     html`
-        <div data-data="{ items: ['foo', 'bar'] }">
+        <div data-signal="{ items: ['foo', 'bar'] }">
             <button data-on:click="items = ['bar', 'foo', 'baz']" id="reorder">click me</button>
             <button data-on:click="$el.parentElement.querySelectorAll('span').forEach((el, index) => el.og_loop_index = index)" id="assign">click me</button>
 
@@ -247,7 +247,7 @@ test('can key by index',
 
 test('can use index inside of loop',
     html`
-        <div data-data="{ items: ['foo'] }">
+        <div data-signal="{ items: ['foo'] }">
             <template data-for="(item, index) in items">
                 <div>
                     <h1 data-text="items.indexOf(item)"></h1>
@@ -264,7 +264,7 @@ test('can use index inside of loop',
 
 test('can use third iterator param (collection) inside of loop',
     html`
-        <div data-data="{ items: ['foo'] }">
+        <div data-signal="{ items: ['foo'] }">
             <template data-for="(item, index, things) in items">
                 <div>
                     <h1 data-text="items"></h1>
@@ -281,7 +281,7 @@ test('can use third iterator param (collection) inside of loop',
 
 test('listeners in loop get fresh iteration data even though they are only registered initially',
     html`
-        <div data-data="{ items: ['foo'], output: '' }">
+        <div data-signal="{ items: ['foo'], output: '' }">
             <button data-on:click="items = ['bar']">click me</button>
 
             <template data-for="(item, index) in items">
@@ -303,7 +303,7 @@ test('listeners in loop get fresh iteration data even though they are only regis
 
 test('nested data-for',
     html`
-        <div data-data="{ foos: [ {bars: ['bob', 'lob']} ] }">
+        <div data-signal="{ foos: [ {bars: ['bob', 'lob']} ] }">
             <button data-on:click="foos = [ {bars: ['bob', 'lob']}, {bars: ['law']} ]">click me</button>
             <template data-for="foo in foos">
                 <h1>
@@ -327,7 +327,7 @@ test('nested data-for',
 
 test('data-for updates the right elements when new item are inserted at the beginning of the list',
     html`
-        <div data-data="{ items: [{name: 'one', key: '1'}, {name: 'two', key: '2'}] }">
+        <div data-signal="{ items: [{name: 'one', key: '1'}, {name: 'two', key: '2'}] }">
             <button data-on:click="items = [{name: 'zero', key: '0'}, {name: 'one', key: '1'}, {name: 'two', key: '2'}]">click me</button>
 
             <template data-for="item in items" :key="item.key">
@@ -347,7 +347,7 @@ test('data-for updates the right elements when new item are inserted at the begi
 
 test('nested data-for access outer loop variable',
     html`
-        <div data-data="{ foos: [ {name: 'foo', bars: ['bob', 'lob']}, {name: 'baz', bars: ['bab', 'lab']} ] }">
+        <div data-signal="{ foos: [ {name: 'foo', bars: ['bob', 'lob']}, {name: 'baz', bars: ['bab', 'lab']} ] }">
             <template data-for="foo in foos">
                 <h1>
                     <template data-for="bar in foo.bars">
@@ -367,7 +367,7 @@ test('nested data-for access outer loop variable',
 
 test('sibling data-for do not interact with each other',
     html`
-        <div data-data="{ foos: [1], bars: [1, 2] }">
+        <div data-signal="{ foos: [1], bars: [1, 2] }">
             <template data-for="foo in foos">
                 <h1 data-text="foo"></h1>
             </template>
@@ -392,7 +392,7 @@ test('sibling data-for do not interact with each other',
 
 test('data-for over range using i in x syntax',
     html`
-        <div data-data>
+        <div data-signal>
             <template data-for="i in 10">
                 <span data-text="i"></span>
             </template>
@@ -403,7 +403,7 @@ test('data-for over range using i in x syntax',
 
 test('data-for over range using i in property syntax',
     html`
-        <div data-data="{ count: 10 }">
+        <div data-signal="{ count: 10 }">
             <template data-for="i in count">
                 <span data-text="i"></span>
             </template>
@@ -414,7 +414,7 @@ test('data-for over range using i in property syntax',
 
 test.retry(2)('data-for with an array of numbers',
     `
-        <div data-data="{ items: [] }">
+        <div data-signal="{ items: [] }">
             <template data-for="i in items">
                 <span data-text="i"></span>
             </template>
@@ -433,7 +433,7 @@ test.retry(2)('data-for with an array of numbers',
 
 test('data-for works with undefined',
     `
-        <div data-data="{ items: undefined }">
+        <div data-signal="{ items: undefined }">
             <template data-for="i in items">
                 <span data-text="i"></span>
             </template>
@@ -449,7 +449,7 @@ test('data-for works with undefined',
 
 test('data-for works with variables that start with let',
     `
-        <ul data-data="{ letters: ['a','b','c'] }">
+        <ul data-signal="{ letters: ['a','b','c'] }">
           <template data-for="letter in letters">
             <li data-text="letter"></li>
           </template>
@@ -464,7 +464,7 @@ test('data-for works with variables that start with let',
 
 test('data-for works with variables that start with const',
     `
-        <ul data-data="{ constants: ['a','b','c'] }">
+        <ul data-signal="{ constants: ['a','b','c'] }">
           <template data-for="constant in constants">
             <li data-text="constant"></li>
           </template>
@@ -479,7 +479,7 @@ test('data-for works with variables that start with const',
 
 test('renders children in the right order when combined with data-if',
     html`
-        <div data-data="{ items: ['foo', 'bar'] }">
+        <div data-signal="{ items: ['foo', 'bar'] }">
             <template data-for="item in items">
                 <template data-if="true">
                     <span data-text="item"></span>
@@ -495,7 +495,7 @@ test('renders children in the right order when combined with data-if',
 
 test('correctly renders data-if children when reordered',
     html`
-        <div data-data="{ items: ['foo', 'bar'] }">
+        <div data-signal="{ items: ['foo', 'bar'] }">
             <button @click="items = ['bar', 'foo']">click me</button>
             <button @click="items = ['bar', 'baz', 'foo']">click me</button>
             <button @click="items = ['baz', 'foo']">click me</button>
@@ -527,7 +527,7 @@ test('correctly renders data-if children when reordered',
 //If an data-for element is removed from DOM, expectation is that the removed DOM element will not have any of its reactive expressions evaluated after removal.
 test('data-for removed dom node does not evaluate child expressions after being removed',
     html`
-        <div data-data="{ users: [{ name: 'lebowski' }] }">
+        <div data-signal="{ users: [{ name: 'lebowski' }] }">
             <template data-for="(user, idx) in users">
                 <span data-text="users[idx].name"></span>
             </template>
@@ -548,7 +548,7 @@ test('data-for removed dom node does not evaluate child expressions after being 
 
 test('renders children using directives injected by data-html correctly',
     html`
-        <div data-data="{foo: 'bar'}">
+        <div data-signal="{foo: 'bar'}">
             <template data-for="i in 2">
                 <p data-html="'<span data-text=&quot;foo&quot;></span>'"></p>
             </template>
@@ -561,12 +561,12 @@ test('renders children using directives injected by data-html correctly',
 )
 
 test(
-    'handles data-data directly inside data-for',
+    'handles data-signal directly inside data-for',
     html`
-        <div data-data="{ items: [{x:0, k:1},{x:1, k:2}] }">
+        <div data-signal="{ items: [{x:0, k:1},{x:1, k:2}] }">
             <button data-on:click="items = [{x:3, k:1},{x:4, k:2}]">update</button>
             <template data-for="item in items" :key="item.k">
-                <div :id="'item-' + item.k" data-data="{ inner: true }">
+                <div :id="'item-' + item.k" data-signal="{ inner: true }">
                     <span data-text="item.x.toString()"></span>:
                     <span data-text="item.k"></span>
                 </div>
@@ -583,7 +583,7 @@ test(
 
 test('data-for throws descriptive error when key is undefined',
     html`
-        <div data-data="{ items: [
+        <div data-signal="{ items: [
             {
                 id: 1,
                 name: 'foo',
@@ -609,7 +609,7 @@ test('data-for throws descriptive error when key is undefined',
 // If data-for removes a child, all cleanups in the tree should be handled.
 test('data-for eagerly cleans tree',
     html`
-        <div data-data="{ show: 0, counts: [0,0,0], items: [0,1,2] }">
+        <div data-signal="{ show: 0, counts: [0,0,0], items: [0,1,2] }">
             <button
                 id="toggle"
                 @click="show^=true"

@@ -2,7 +2,7 @@ import { haveAttribute, haveComputedStyle, html, notHaveAttribute, test } from '
 
 test('can anchor an element',
     [html`
-        <div data-data>
+        <div data-signal>
             <button data-ref="foo">toggle</button>
             <h1 data-anchor="$refs.foo">contents</h1>
         </div>

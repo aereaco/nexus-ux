@@ -3,7 +3,7 @@ import { haveText, html, test } from '../../utils'
 test('$watch',
     html`
         <div
-            data-data="{ foo: 'bar', bob: 'lob' }"
+            data-signal="{ foo: 'bar', bob: 'lob' }"
             data-init="$watch('foo', value => { bob = value })"
         >
             <h1 data-text="foo"></h1>
@@ -24,7 +24,7 @@ test('$watch',
 test('$watch receives old value',
     html`
         <div
-            data-data="{ foo: 'bar', fresh: '', old: '' }"
+            data-signal="{ foo: 'bar', fresh: '', old: '' }"
             data-init="$watch('foo', (value, oldValue) => { fresh = value; old = oldValue; })"
         >
             <h1 data-text="fresh"></h1>
@@ -42,7 +42,7 @@ test('$watch receives old value',
 
 test('$watch nested properties',
     html`
-        <div data-data="{ foo: { bar: 'baz', bob: 'lob' } }" data-init="
+        <div data-signal="{ foo: { bar: 'baz', bob: 'lob' } }" data-init="
             $watch('foo.bar', value => { foo.bob = value });
         ">
             <h1 data-text="foo.bar"></h1>
@@ -62,7 +62,7 @@ test('$watch nested properties',
 
 test('$watch arrays',
     html`
-        <div data-data="{ foo: ['one'], bob: 'lob' }"
+        <div data-signal="{ foo: ['one'], bob: 'lob' }"
             data-init="$watch('foo', value => { bob = value })">
             <h1 data-text="foo"></h1>
             <h2 data-text="bob"></h2>
@@ -112,7 +112,7 @@ test('$watch arrays',
 
 test('$watch nested arrays',
     html`
-        <div data-data="{ foo: {baz: ['one']}, bob: 'lob' }" data-init="$watch('foo.baz', value => { bob = value })">
+        <div data-signal="{ foo: {baz: ['one']}, bob: 'lob' }" data-init="$watch('foo.baz', value => { bob = value })">
             <h1 data-text="foo.baz"></h1>
             <h2 data-text="bob"></h2>
 
@@ -132,7 +132,7 @@ test('$watch nested arrays',
 test('$watch ignores other dependencies',
     html`
         <div
-            data-data="{ a: 0, b: 0, c: 0 }"
+            data-signal="{ a: 0, b: 0, c: 0 }"
             data-init="$watch('a', () => { c = a + b })"
         >
             <button @click="a++" id="a">a</button>
@@ -152,7 +152,7 @@ test('$watch ignores other dependencies',
 
 test('deep $watch',
     html`
-        <div data-data="{ foo: { bar: 'baz'}, bob: 'lob' }" data-init="
+        <div data-signal="{ foo: { bar: 'baz'}, bob: 'lob' }" data-init="
             $watch('foo', value => { bob = value.bar }, {deep: true});
         ">
             <h1 data-text="foo.bar"></h1>

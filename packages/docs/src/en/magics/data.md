@@ -6,15 +6,15 @@ title: data
 
 # $data
 
-`$data` is a magic property that gives you access to the current Alpine data scope (generally provided by `data-data`).
+`$data` is a magic property that gives you access to the current Alpine data scope (generally provided by `data-signal`).
 
-Most of the time, you can just access Alpine data within expressions directly. for example `data-data="{ message: 'Hello Caleb!' }"` will allow you to do things like `data-text="message"`.
+Most of the time, you can just access Alpine data within expressions directly. for example `data-signal="{ message: 'Hello Caleb!' }"` will allow you to do things like `data-text="message"`.
 
 However, sometimes it is helpful to have an actual object that encapsulates all scope that you can pass around to other functions:
 
 ```alpine
-<div data-data="{ greeting: 'Hello' }">
-    <div data-data="{ name: 'Caleb' }">
+<div data-signal="{ greeting: 'Hello' }">
+    <div data-signal="{ name: 'Caleb' }">
         <button @click="sayHello($data)">Say Hello</button>
     </div>
 </div>
@@ -27,8 +27,8 @@ However, sometimes it is helpful to have an actual object that encapsulates all 
 ```
 
 <!-- START_VERBATIM -->
-<div data-data="{ greeting: 'Hello' }" class="demo">
-    <div data-data="{ name: 'Caleb' }">
+<div data-signal="{ greeting: 'Hello' }" class="demo">
+    <div data-signal="{ name: 'Caleb' }">
         <button @click="sayHello($data)">Say Hello</button>
     </div>
 </div>

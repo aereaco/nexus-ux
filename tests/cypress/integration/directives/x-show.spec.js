@@ -2,7 +2,7 @@ import { beHidden, beVisible, haveAttribute, html, test } from '../../utils'
 
 test('data-show toggles display: none; with no other style attributes',
     html`
-        <div data-data="{ show: true }">
+        <div data-signal="{ show: true }">
             <span data-show="show">thing</span>
 
             <button data-on:click="show = false"></button>
@@ -17,7 +17,7 @@ test('data-show toggles display: none; with no other style attributes',
 
 test('data-show (with true default) toggles display: none; even if it exists with the page load',
     html`
-        <div data-data="{ show: true }">
+        <div data-signal="{ show: true }">
             <span data-show="show" style="display: none;">thing</span>
 
             <button data-on:click="show = false"></button>
@@ -32,7 +32,7 @@ test('data-show (with true default) toggles display: none; even if it exists wit
 
 test('data-show (with false default) toggles display: none; even if it exists with the page load',
     html`
-        <div data-data="{ show: false }">
+        <div data-signal="{ show: false }">
             <span data-show="show" style="display: none;">thing</span>
 
             <button data-on:click="show = true"></button>
@@ -47,7 +47,7 @@ test('data-show (with false default) toggles display: none; even if it exists wi
 
 test('data-show toggles display: none; with other style attributes',
     html`
-        <div data-data="{ show: true }">
+        <div data-signal="{ show: true }">
             <span data-show="show" style="color: blue;">thing</span>
 
             <button data-on:click="show = false"></button>
@@ -68,7 +68,7 @@ test('data-show waits for transitions within it to finish before hiding an eleme
             .transition { transition-property: background-color, border-color, color, fill, stroke; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
             .duration-100 { transition-duration: 100ms; }
         </style>
-        <div data-data="{ show: true }">
+        <div data-signal="{ show: true }">
             <span data-show="show">
                 <h1 data-show="show" data-transition:leave="transition duration-100">thing</h1>
             </span>
@@ -91,7 +91,7 @@ test('data-show does NOT wait for transitions to finish if .immediate is present
             .transition { transition-property: background-color, border-color, color, fill, stroke; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
             .duration-100 { transition-duration: 100ms; }
         </style>
-        <div data-data="{ show: true }">
+        <div data-signal="{ show: true }">
             <span data-show.immediate="show">
                 <h1 data-show="show" data-transition:leave="transition duration-100">thing</h1>
             </span>
@@ -108,7 +108,7 @@ test('data-show does NOT wait for transitions to finish if .immediate is present
 
 test('data-show with data-bind:style inside data-for works correctly',
     html`
-        <div data-data="{items: [{ cleared: false }, { cleared: false }]}">
+        <div data-signal="{items: [{ cleared: false }, { cleared: false }]}">
             <template data-for="(item, index) in items" :key="index">
                 <button data-show="! item.cleared"
                     data-bind:style="'background: #999'"
@@ -133,7 +133,7 @@ test('data-show with data-bind:style inside data-for works correctly',
 
 test('data-show takes precedence over style bindings for display property',
     html`
-        <div data-data="{ show: false }">
+        <div data-signal="{ show: false }">
             <span data-show="show" :style="'color: red;'">thing</span>
             <span :style="'color: red;'" data-show="show">thing</span>
         </div>
@@ -147,7 +147,7 @@ test('data-show takes precedence over style bindings for display property',
 test('data-show executes consecutive state changes in correct order',
     html`
         <div
-            data-data="{ isEnabled: false }"
+            data-signal="{ isEnabled: false }"
             data-init="$watch('isEnabled', () => { if (isEnabled) isEnabled = false })"
         >
             <button id="enable" data-show="!isEnabled" @click="isEnabled = true"></button>
@@ -162,7 +162,7 @@ test('data-show executes consecutive state changes in correct order',
 
 test('data-show toggles display: none; with the !important property when using the .important modifier while respecting other style attributes',
     html`
-        <div data-data="{ show: true }">
+        <div data-signal="{ show: true }">
             <span data-show.important="show" style="color: blue;">thing</span>
 
             <button data-on:click="show = false"></button>

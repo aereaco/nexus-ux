@@ -2,7 +2,7 @@ import { haveText, html, test } from '../../utils'
 
 test('$nextTick runs code on the next available managed tick',
     html`
-        <div data-data="{foo: 'bar'}">
+        <div data-signal="{foo: 'bar'}">
             <span data-text="foo" data-ref="span"></span>
 
             <button data-on:click="foo = 'baz'; $nextTick(() => {$refs.span.textContent = 'bob'})">click</button>
@@ -17,7 +17,7 @@ test('$nextTick runs code on the next available managed tick',
 
 test('$nextTick waits for data-for to finish rendering',
     html`
-        <div data-data="{list: ['one', 'two'], check: 2}">
+        <div data-signal="{list: ['one', 'two'], check: 2}">
             <template data-for="item in list">
                 <span data-text="item"></span>
             </template>
@@ -36,7 +36,7 @@ test('$nextTick waits for data-for to finish rendering',
 
 test('$nextTick works with transition',
     html`
-        <div data-data="{ show: false, loggedDisplayStyle: null }" data-init="$nextTick(() => { loggedDisplayStyle = document.querySelector('h1').style.display })">
+        <div data-signal="{ show: false, loggedDisplayStyle: null }" data-init="$nextTick(() => { loggedDisplayStyle = document.querySelector('h1').style.display })">
             <h1 data-show="show" data-transition:enter="animation-enter"></h1>
 
             <h2 data-text="loggedDisplayStyle"></h2>

@@ -2,7 +2,7 @@ import { beEqualTo, exist, haveText, html, notExist, test } from '../../utils'
 
 test('can persist number',
     [html`
-        <div data-data="{ count: $persist(1) }">
+        <div data-signal="{ count: $persist(1) }">
             <button @click="count++">Inc</button>
             <span data-text="count"></span>
         </div>
@@ -18,7 +18,7 @@ test('can persist number',
 
 test('can persist string',
     [html`
-        <div data-data="{ message: $persist('foo') }">
+        <div data-signal="{ message: $persist('foo') }">
             <input data-model="message">
 
             <span data-text="message"></span>
@@ -35,7 +35,7 @@ test('can persist string',
 
 test('can persist array',
     [html`
-        <div data-data="{ things: $persist(['foo', 'bar']) }">
+        <div data-signal="{ things: $persist(['foo', 'bar']) }">
             <button @click="things.push('baz')"></button>
 
             <span data-text="things.join('-')"></span>
@@ -52,7 +52,7 @@ test('can persist array',
 
 test('can persist object',
     [html`
-        <div data-data="{ something: $persist({foo: 'bar'}) }">
+        <div data-signal="{ something: $persist({foo: 'bar'}) }">
             <button id="one" @click="something.foo = 'baz'"></button>
             <button id="two" @click="something = {foo: 'bob'}"></button>
 
@@ -74,7 +74,7 @@ test('can persist object',
 
 test('can persist boolean',
     [html`
-        <div data-data="{ show: $persist(false) }">
+        <div data-signal="{ show: $persist(false) }">
             <button @click="show = true"></button>
 
             <template data-if="show">
@@ -93,11 +93,11 @@ test('can persist boolean',
 
 test('can persist multiple components using the same property',
     [html`
-        <div data-data="{ duplicate: $persist('foo') }">
+        <div data-signal="{ duplicate: $persist('foo') }">
             <button @click="duplicate = 'bar'"></button>
             <span id="one" data-text="duplicate"></span>
         </div>
-        <div data-data="{ duplicate: $persist('foo') }">
+        <div data-signal="{ duplicate: $persist('foo') }">
             <span id="two" data-text="duplicate"></span>
         </div>
     `],
@@ -114,12 +114,12 @@ test('can persist multiple components using the same property',
 
 test('can persist using an alias',
     [html`
-        <div data-data="{ show: $persist(false) }">
+        <div data-signal="{ show: $persist(false) }">
             <template data-if="show">
                 <span id="one">Foo</span>
             </template>
         </div>
-        <div data-data="{ show: $persist(false).as('foo') }">
+        <div data-signal="{ show: $persist(false).as('foo') }">
             <button id="test" @click="show = true"></button>
 
             <template data-if="show">
@@ -141,14 +141,14 @@ test('can persist using an alias',
 
 test('aliases do not affect other $persist calls',
     [html`
-        <div data-data="{ show: $persist(false).as('foo') }">
+        <div data-signal="{ show: $persist(false).as('foo') }">
             <button id="test" @click="show = true"></button>
 
             <template data-if="show">
                 <span id="two">Foo</span>
             </template>
         </div>
-        <div data-data="{ open: $persist(false) }">
+        <div data-signal="{ open: $persist(false) }">
             <template data-if="open">
                 <span id="one">Foo</span>
             </template>
@@ -168,7 +168,7 @@ test('aliases do not affect other $persist calls',
 
 test('can persist to custom storage',
     [html`
-        <div data-data="{ message: $persist('foo').using(sessionStorage) }">
+        <div data-signal="{ message: $persist('foo').using(sessionStorage) }">
             <input data-model="message">
 
             <span data-text="message"></span>
@@ -189,7 +189,7 @@ test('can persist to custom storage',
 
 test('can persist to custom storage using an alias',
     [html`
-        <div data-data="{ message: $persist('foo').as('mymessage').using(sessionStorage) }">
+        <div data-signal="{ message: $persist('foo').as('mymessage').using(sessionStorage) }">
             <input data-model="message">
 
             <span data-text="message"></span>
@@ -208,7 +208,7 @@ test('can persist to custom storage using an alias',
 
 test('can persist using global Alpine.$persist within Alpine.store',
     [html`
-        <div data-data>
+        <div data-signal>
             <input data-model="$store.name.firstName">
 
             <span data-text="$store.name.firstName"></span>
@@ -229,7 +229,7 @@ test('can persist using global Alpine.$persist within Alpine.store',
 
 test('persist in Stores is available in init call',
     [html`
-        <div data-data>
+        <div data-signal>
             <span data-text="$store.name.name"></span>
         </div>
     `, `
@@ -248,7 +248,7 @@ test('persist in Stores is available in init call',
 
 test('multiple aliases work when using global Alpine.$persist',
     [html`
-        <div data-data>
+        <div data-signal>
             <input data-model="$store.name.firstName">
 
             <span data-text="$store.name.firstName"></span>

@@ -1,7 +1,7 @@
 import { haveValue, html, test } from '../../utils'
 
 test('data-mask',
-    [html`<input data-data data-mask="(999) 999-9999">`],
+    [html`<input data-signal data-mask="(999) 999-9999">`],
     ({ get }) => {
         // Type a phone number:
         get('input').type('12').should(haveValue('(12'))
@@ -34,7 +34,7 @@ test('data-mask',
 
 test('data-mask with data-model',
     [html`
-        <div data-data="{ value: '' }">
+        <div data-signal="{ value: '' }">
             <input data-mask="(999) 999-9999" data-model="value" id="1">
             <input id="2" data-model="value">
         </div>
@@ -63,7 +63,7 @@ test('data-mask with data-model',
 // This passes locally but fails in CI...
 test.skip('data-mask with latently bound data-model',
     [html`
-        <div data-data="{ value: '' }">
+        <div data-signal="{ value: '' }">
             <input data-mask="(999) 999-9999" data-bind="{ 'data-model': 'value' }" id="1">
             <input id="2" data-model="value">
         </div>
@@ -78,7 +78,7 @@ test.skip('data-mask with latently bound data-model',
 
 test('data-mask with data-model with initial value',
     [html`
-        <div data-data="{ value: '1234567890' }">
+        <div data-signal="{ value: '1234567890' }">
             <input data-mask="(999) 999-9999" data-model="value" id="1">
             <input id="2" data-model="value">
         </div>
@@ -91,7 +91,7 @@ test('data-mask with data-model with initial value',
 
 test('data-mask with data-model if initial value is null it should remain null',
     [html`
-        <div data-data="{ value: null }">
+        <div data-signal="{ value: null }">
             <input data-mask="(999) 999-9999" data-model="value" id="1">
             <input id="2" data-model="value">
             <span id="3" data-text="value === null ? 'NULL' : value"></span>
@@ -105,7 +105,7 @@ test('data-mask with data-model if initial value is null it should remain null',
 )
 
 test('data-mask with a falsy input',
-    [html`<input data-data data-mask="">`],
+    [html`<input data-signal data-mask="">`],
     ({ get }) => {
 	    get('input').type('1').should(haveValue('1'))
 	    get('input').type('2').should(haveValue('12'))
@@ -117,7 +117,7 @@ test('data-mask with a falsy input',
 )
 
 test('data-mask with a falsy string input',
-    [html`<input data-data data-mask="false">`],
+    [html`<input data-signal data-mask="false">`],
     ({ get }) => {
 	    get('input').type('1').should(haveValue('1'))
 	    get('input').type('2').should(haveValue('12'))
@@ -129,7 +129,7 @@ test('data-mask with a falsy string input',
 )
 
 test('data-mask with non wildcard alpha-numeric characters (b)',
-    [html`<input data-data data-mask="ba9*b">`],
+    [html`<input data-signal data-mask="ba9*b">`],
     ({ get }) => {
         get('input').type('a').should(haveValue('ba'))
         get('input').type('a').should(haveValue('ba'))
@@ -140,14 +140,14 @@ test('data-mask with non wildcard alpha-numeric characters (b)',
 )
 
 test('data-mask:dynamic',
-    [html`<input data-data data-mask:dynamic="'(999)'">`],
+    [html`<input data-signal data-mask:dynamic="'(999)'">`],
     ({ get }) => {
         get('input').type('123').should(haveValue('(123)'))
     }
 )
 
 test('$money',
-    [html`<input data-data data-mask:function="$money">`],
+    [html`<input data-signal data-mask:function="$money">`],
     ({ get }) => {
         get('input').type('30.00').should(haveValue('30.00'))
         get('input').type('5').should(haveValue('30.00'))
@@ -174,7 +174,7 @@ test('$money',
 )
 
 test('$money swapping commas and periods',
-    [html`<input data-data data-mask:function="$money($input, ',')">`],
+    [html`<input data-signal data-mask:function="$money($input, ',')">`],
     ({ get }) => {
         get('input').type('30,00').should(haveValue('30,00'))
         get('input').type('5').should(haveValue('30,00'))
@@ -189,7 +189,7 @@ test('$money swapping commas and periods',
 )
 
 test('$money with different thousands separator',
-    [html`<input data-data data-mask:function="$money($input, '.', ' ')" />`],
+    [html`<input data-signal data-mask:function="$money($input, '.', ' ')" />`],
     ({ get }) => {
         get('input').type('3000').should(haveValue('3 000'));
         get('input').type('{backspace}').blur().should(haveValue('300'));
@@ -203,7 +203,7 @@ test('$money with different thousands separator',
 );
 
 test('$money works with permanent inserted at beginning',
-    [html`<input data-data data-mask:dynamic="$money">`],
+    [html`<input data-signal data-mask:dynamic="$money">`],
     ({ get }) => {
         get('input').type('40.00').should(haveValue('40.00'))
         get('input').type('{leftArrow}{leftArrow}{leftArrow}{leftArrow}{leftArrow}')
@@ -213,7 +213,7 @@ test('$money works with permanent inserted at beginning',
 )
 
 test('$money mask should remove letters or non numeric characters',
-    [html`<input data-data data-mask:dynamic="$money">`],
+    [html`<input data-signal data-mask:dynamic="$money">`],
     ({ get }) => {
         get('input').type('A').should(haveValue(''))
         get('input').type('ABC').should(haveValue(''))
@@ -225,8 +225,8 @@ test('$money mask should remove letters or non numeric characters',
 
 test('$money mask negative values',
     [html`
-        <input id="1" data-data data-mask:dynamic="$money($input)" value="-1234.50" />
-        <input id="2" data-data data-mask:dynamic="$money($input)" />
+        <input id="1" data-signal data-mask:dynamic="$money($input)" value="-1234.50" />
+        <input id="2" data-signal data-mask:dynamic="$money($input)" />
     `],
     ({ get }) => {
         get('#1').should(haveValue('-1,234.50'))
@@ -242,10 +242,10 @@ test('$money mask negative values',
 
 test('$money with custom decimal precision',
     [html`
-        <input id="0" data-data data-mask:dynamic="$money($input, '.', ',', 0)" />
-        <input id="1" data-data data-mask:dynamic="$money($input, '.', ',', 1)" />
-        <input id="2" data-data data-mask:dynamic="$money($input, '.', ',', 2)" />
-        <input id="3" data-data data-mask:dynamic="$money($input, '.', ',', 3)" />
+        <input id="0" data-signal data-mask:dynamic="$money($input, '.', ',', 0)" />
+        <input id="1" data-signal data-mask:dynamic="$money($input, '.', ',', 1)" />
+        <input id="2" data-signal data-mask:dynamic="$money($input, '.', ',', 2)" />
+        <input id="3" data-signal data-mask:dynamic="$money($input, '.', ',', 3)" />
     `],
     ({ get }) => {
         get('#0').type('1234.5678').should(haveValue('12,345,678'))

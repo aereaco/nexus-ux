@@ -2,7 +2,7 @@ import { haveText, test, html, notHaveText } from '../../utils'
 
 test('can react to the resizing of an element',
     [html`
-    <div data-data="{ width: 0, height: 0 }">
+    <div data-signal="{ width: 0, height: 0 }">
         <h1 data-text="width"></h1>
         <h2 data-text="height"></h2>
 
@@ -27,7 +27,7 @@ test('can react to the resizing of an element',
 
 test('can react to the resizing of the document',
     [html`
-    <div data-data="{ width: 0, height: 0 }">
+    <div data-signal="{ width: 0, height: 0 }">
         <h1 data-text="width"></h1>
         <h2 data-text="height"></h2>
 

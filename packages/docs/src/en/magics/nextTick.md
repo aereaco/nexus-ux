@@ -9,7 +9,7 @@ title: nextTick
 `$nextTick` is a magic property that allows you to only execute a given expression AFTER Alpine has made its reactive DOM updates. This is useful for times you want to interact with the DOM state AFTER it's reflected any data updates you've made.
 
 ```alpine
-<div data-data="{ title: 'Hello' }">
+<div data-signal="{ title: 'Hello' }">
     <button
         @click="
             title = 'Hello World!';
@@ -29,7 +29,7 @@ In the above example, rather than logging "Hello" to the console, "Hello World!"
 `$nextTick` returns a promise, allowing the use of `$nextTick` to pause an async function until after pending dom updates. When used like this, `$nextTick` also does not require an argument to be passed.
 
 ```alpine
-<div data-data="{ title: 'Hello' }">
+<div data-signal="{ title: 'Hello' }">
     <button
         @click="
             title = 'Hello World!';

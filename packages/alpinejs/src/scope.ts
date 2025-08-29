@@ -1,35 +1,35 @@
 export function scope(node: any) {
-    return mergeProxies(closestDataStack(node))
+    return mergeProxies(closestSignalStack(node))
 }
 
-export function addScopeToNode(node: any, data: any, referenceNode: any) {
-    node._data_dataStack = [data, ...closestDataStack(referenceNode || node)]
+export function addScopeToNode(node: any, signal: any, referenceNode: any) {
+    node._data_signalStack = [signal, ...closestSignalStack(referenceNode || node)]
 
     return () => {
-        node._data_dataStack = node._data_dataStack.filter((i: any) => i !== data)
+        node._data_signalStack = node._data_signalStack.filter((i: any) => i !== signal)
     }
 }
 
 export function hasScope(node: any) {
-    return !! node._data_dataStack
+    return !! node._data_signalStack
 }
 
-export function closestDataStack(node: any) {
-    if (node._data_dataStack) return node._data_dataStack
+export function closestSignalStack(node: any) {
+    if (node._data_signalStack) return node._data_signalStack
 
     if (typeof ShadowRoot === 'function' && node instanceof ShadowRoot) {
-        return closestDataStack(node.host)
+        return closestSignalStack(node.host)
     }
 
     if (! node.parentNode) {
         return []
     }
 
-    return closestDataStack(node.parentNode)
+    return closestSignalStack(node.parentNode)
 }
 
-export function closestDataProxy(el: any) {
-    return mergeProxies(closestDataStack(el))
+export function closestSignalProxy(el: any) {
+    return mergeProxies(closestSignalStack(el))
 }
 
 export function mergeProxies (objects: any[]) {

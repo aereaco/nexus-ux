@@ -15,7 +15,7 @@ Using a text editor, fill the file with these contents:
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body>
-    <h1 data-data="{ message: 'I ❤️ Alpine' }" data-text="message"></h1>
+    <h1 data-signal="{ message: 'I ❤️ Alpine' }" data-text="message"></h1>
 </body>
 </html>
 ```
@@ -40,7 +40,7 @@ Let's start with a simple "counter" component to demonstrate the basics of state
 Insert the following into the `<body>` tag:
 
 ```alpine
-<div data-data="{ count: 0 }">
+<div data-signal="{ count: 0 }">
     <button data-on:click="count++">Increment</button>
 
     <span data-text="count"></span>
@@ -49,7 +49,7 @@ Insert the following into the `<body>` tag:
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data="{ count: 0 }">
+    <div data-signal="{ count: 0 }">
         <button data-on:click="count++">Increment</button>
         <span data-text="count"></span>
     </div>
@@ -64,16 +64,16 @@ Let's walk through what's happening briefly:
 ### Declaring data
 
 ```alpine
-<div data-data="{ count: 0 }">
+<div data-signal="{ count: 0 }">
 ```
 
-Everything in Alpine starts with an `data-data` directive. Inside of `data-data`, in plain JavaScript, you declare an object of data that Alpine will track.
+Everything in Alpine starts with an `data-signal` directive. Inside of `data-signal`, in plain JavaScript, you declare an object of data that Alpine will track.
 
 Every property inside this object will be made available to other directives inside this HTML element. In addition, when one of these properties changes, everything that relies on it will change as well.
 
-> `data-data` is required on a parent element for most Alpine directives to work.
+> `data-signal` is required on a parent element for most Alpine directives to work.
 
-[→ Read more about `data-data`](/directives/data)
+[→ Read more about `data-signal`](/directives/data)
 
 Let's look at `data-on` and see how it can access and modify the `count` property from above:
 
@@ -88,7 +88,7 @@ Let's look at `data-on` and see how it can access and modify the `count` propert
 
 You can listen for other events as you'd imagine. For example, listening for a `mouseenter` event would look like this: `data-on:mouseenter`.
 
-When a `click` event happens, Alpine will call the associated JavaScript expression, `count++` in our case. As you can see, we have direct access to data declared in the `data-data` expression.
+When a `click` event happens, Alpine will call the associated JavaScript expression, `count++` in our case. As you can see, we have direct access to data declared in the `data-signal` expression.
 
 > You will often see `@` instead of `data-on:`. This is a shorter, friendlier syntax that many prefer. From now on, this documentation will likely use `@` instead of `data-on:`.
 
@@ -117,7 +117,7 @@ Now that we've seen some basic functionality, let's keep going and look at an im
 Insert the following code into the `<body>` tag:
 
 ```alpine
-<div data-data="{ open: false }">
+<div data-signal="{ open: false }">
     <button @click="open = ! open">Toggle</button>
 
     <div data-show="open" @click.outside="open = false">Contents...</div>
@@ -126,7 +126,7 @@ Insert the following code into the `<body>` tag:
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data="{ open: false }">
+    <div data-signal="{ open: false }">
         <button @click="open = ! open">Toggle</button>
         <div data-show="open" @click.outside="open = false">Contents...</div>
     </div>
@@ -135,7 +135,7 @@ Insert the following code into the `<body>` tag:
 
 If you load this component, you should see that the "Contents..." are hidden by default. You can toggle showing them on the page by clicking the "Toggle" button.
 
-The `data-data` and `data-on` directives should be familiar to you from the previous example, so we'll skip those explanations.
+The `data-signal` and `data-on` directives should be familiar to you from the previous example, so we'll skip those explanations.
 
 <a name="toggling-elements"></a>
 ### Toggling elements
@@ -172,7 +172,7 @@ Insert the following code into the `<body>` tag:
 
 ```alpine
 <div
-    data-data="{
+    data-signal="{
         search: '',
 
         items: ['foo', 'bar', 'baz'],
@@ -197,7 +197,7 @@ Insert the following code into the `<body>` tag:
 <!-- START_VERBATIM -->
 <div class="demo">
     <div
-        data-data="{
+        data-signal="{
             search: '',
 
             items: ['foo', 'bar', 'baz'],
@@ -227,7 +227,7 @@ Now there's quite a bit happening here, so let's go through this snippet piece b
 <a name="multi-line-formatting"></a>
 ### Multi line formatting
 
-The first thing I'd like to point out is that `data-data` now has a lot more going on in it than before. To make it easier to write and read, we've split it up into multiple lines in our HTML. This is completely optional and we'll talk more in a bit about how to avoid this problem altogether, but for now, we'll keep all of this JavaScript directly in the HTML.
+The first thing I'd like to point out is that `data-signal` now has a lot more going on in it than before. To make it easier to write and read, we've split it up into multiple lines in our HTML. This is completely optional and we'll talk more in a bit about how to avoid this problem altogether, but for now, we'll keep all of this JavaScript directly in the HTML.
 
 <a name="binding-to-inputs"></a>
 ### Binding to inputs
@@ -238,7 +238,7 @@ The first thing I'd like to point out is that `data-data` now has a lot more goi
 
 You'll notice a new directive we haven't seen yet: `data-model`.
 
-`data-model` is used to "bind" the value of an input element with a data property: "search" from `data-data="{ search: '', ... }"` in our case.
+`data-model` is used to "bind" the value of an input element with a data property: "search" from `data-signal="{ search: '', ... }"` in our case.
 
 This means that anytime the value of the input changes, the value of "search" will change to reflect that.
 
@@ -249,7 +249,7 @@ This means that anytime the value of the input changes, the value of "search" wi
 <a name="computed-properties-using-getters"></a>
 ### Computed properties using getters
 
-The next bit I'd like to draw your attention to is the `items` and `filteredItems` properties from the `data-data` directive.
+The next bit I'd like to draw your attention to is the `items` and `filteredItems` properties from the `data-signal` directive.
 
 ```js
 {
@@ -286,7 +286,7 @@ This is all plain JavaScript. We are first getting the array of items (foo, bar,
 
 By passing in this callback to `filter`, we are telling JavaScript to only return the items that start with the string: `this.search`, which like we saw with `data-model` will always reflect the value of the input.
 
-You may notice that up until now, we haven't had to use `this.` to reference properties. However, because we are working directly inside the `data-data` object, we must reference any properties using `this.[property]` instead of simply `[property]`.
+You may notice that up until now, we haven't had to use `this.` to reference properties. However, because we are working directly inside the `data-signal` object, we must reference any properties using `this.[property]` instead of simply `[property]`.
 
 Because Alpine is a "reactive" framework. Any time the value of `this.search` changes, parts of the template that use `filteredItems` will automatically be updated.
 
@@ -316,7 +316,7 @@ Now any element inside the `<template>` tag will be repeated for every item insi
 
 If you've made it this far, you've been exposed to the following directives in Alpine:
 
-* data-data
+* data-signal
 * data-on
 * data-text
 * data-show

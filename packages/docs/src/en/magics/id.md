@@ -37,12 +37,12 @@ This presents a problem, you now need to be able to reference the same ID twice.
 Here is a way that you might think to accomplish this and is totally valid:
 
 ```alpine
-<div data-data="{ id: $id('text-input') }">
+<div data-signal="{ id: $id('text-input') }">
     <label :for="id"> <!-- "text-input-1" -->
     <input type="text" :id="id"> <!-- "text-input-1" -->
 </div>
 
-<div data-data="{ id: $id('text-input') }">
+<div data-signal="{ id: $id('text-input') }">
     <label :for="id"> <!-- "text-input-2" -->
     <input type="text" :id="id"> <!-- "text-input-2" -->
 </div>

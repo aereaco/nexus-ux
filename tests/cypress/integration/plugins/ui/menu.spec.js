@@ -2,7 +2,7 @@ import { haveClasses, beVisible, haveAttribute, haveText, html, notBeVisible, no
 
 test('it works',
     [html`
-        <div data-data data-menu>
+        <div data-signal data-menu>
             <span>
                 <button data-menu:button trigger>
                     <span>Options</span>
@@ -46,7 +46,7 @@ test('it works',
 test('focusing away closes menu',
     [html`
     <div>
-        <div data-data data-menu>
+        <div data-signal data-menu>
             <span>
                 <button data-menu:button trigger>
                     <span>Options</span>
@@ -90,7 +90,7 @@ test('focusing away closes menu',
 
 test('it works with data-model',
     [html`
-        <div data-data="{ open: false }" data-menu data-model="open">
+        <div data-signal="{ open: false }" data-menu data-model="open">
             <button trigger @click="open = !open">
                 <span>Options</span>
             </button>
@@ -137,7 +137,7 @@ test('it works with data-model',
 
 test('keyboard controls',
     [html`
-        <div data-data data-menu>
+        <div data-signal data-menu>
             <span>
                 <button data-menu:button trigger>
                     <span>Options</span>
@@ -221,7 +221,7 @@ test('keyboard controls',
 
 test('keyboard controls with data-teleport',
     [html`
-        <div data-data data-menu>
+        <div data-signal data-menu>
             <span>
                 <button data-menu:button trigger>
                     <span>Options</span>
@@ -269,7 +269,7 @@ test('keyboard controls with data-teleport',
 
 test('search',
     [html`
-        <div data-data data-menu>
+        <div data-signal data-menu>
             <span>
                 <button data-menu:button trigger>
                     <span>Options</span>
@@ -320,7 +320,7 @@ test('search',
 
 test('has accessibility attributes',
     [html`
-        <div data-data data-menu>
+        <div data-signal data-menu>
             <label data-menu:label>Options label</label>
 
             <span>
@@ -395,7 +395,7 @@ test('has accessibility attributes',
 
 test('$menuItem.isDisabled',
     [html`
-        <div data-data data-menu>
+        <div data-signal data-menu>
             <label data-menu:label>Options label</label>
 
             <span>

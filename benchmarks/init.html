@@ -15,7 +15,7 @@
     </script>
   </head>
   <body>
-    <div class="container" id="main" data-data="app">
+    <div class="container" id="main" data-signal="app">
       <div class="jumbotron">
         <div class="row">
           <div class="col-md-6">
@@ -104,7 +104,7 @@
         </tbody>
       </table>
       <table class="table table-hover table-striped test-data">
-        <tbody data-data="{ item: { id: 999999, label: 'yoyoyo' }}">
+        <tbody data-signal="{ item: { id: 999999, label: 'yoyoyo' }}">
           <tr :class="item.id === selected ? 'danger' : ''" class="">
               <td class="col-md-1" data-text="item.id">5</td>
               <td class="col-md-4">

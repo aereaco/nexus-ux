@@ -10,7 +10,7 @@ test('can register custom data providers',
             })
         </script>
 
-        <div data-data="test">
+        <div data-signal="test">
             <span data-text="foo"></span>
         </div>
     `,
@@ -28,7 +28,7 @@ test('can accept initial params',
             })
         </script>
 
-        <div data-data="test('baz', 'bob')">
+        <div data-signal="test('baz', 'bob')">
             <h1 data-text="foo"></h1>
             <h2 data-text="bar"></h2>
         </div>
@@ -53,7 +53,7 @@ test('can spread together',
             })
         </script>
 
-        <div data-data="{ ...test('baz'), ...test2('bob') }">
+        <div data-signal="{ ...test('baz'), ...test2('bob') }">
             <h1 data-text="foo"></h1>
             <h2 data-text="bar"></h2>
         </div>
@@ -78,7 +78,7 @@ test('init functions inside custom datas are called automatically',
             })
         </script>
 
-        <div data-data="test">
+        <div data-signal="test">
             <span data-text="foo"></span>
         </div>
     `,
@@ -103,7 +103,7 @@ test('init functions "this" context is reactive',
             })
         </script>
 
-        <div data-data="test">
+        <div data-signal="test">
             <span data-text="foo"></span>
 
             <button>click me</button>
@@ -132,8 +132,8 @@ test('init functions have access to the parent scope',
             })
         </script>
 
-        <div data-data="parent">
-            <p data-data="child"></p>
+        <div data-signal="parent">
+            <p data-signal="child"></p>
         </div>
     `,
     ({ get }) => {
@@ -156,7 +156,7 @@ test('destroy functions inside custom datas are called automatically',
             })
         </script>
 
-        <div data-data="test">
+        <div data-signal="test">
             <button data-on:click="test()"></button>
         </div>
         <span></span>
@@ -183,7 +183,7 @@ test('destroy have access to the current scope',
             })
         </script>
 
-        <div data-data="test">
+        <div data-signal="test">
             <button data-on:click="test()"></button>
         </div>
         <span>baz</span>

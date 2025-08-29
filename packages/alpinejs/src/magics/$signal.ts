@@ -1,4 +1,4 @@
 import { scope } from '../scope'
 import { magic } from '../magics'
 
-magic('data', (el: any) => scope(el))
+magic('signal', (el: any) => scope(el))

@@ -26,7 +26,7 @@ function handleRoot(el: any, Alpine: any) {
     Alpine.bind(el, {
         'data-id'() { return ['alpine-menu-button', 'alpine-menu-items'] },
         'data-modelable': '__isOpen',
-        'data-data'() {
+        'data-signal'() {
             return {
                 __itemEls: [],
                 __activeEl: null,
@@ -114,7 +114,7 @@ function handleItems(el: any, Alpine: any) {
 function handleItem(el: any, Alpine: any) {
     Alpine.bind(el, () => {
         return {
-            'data-data'() {
+            'data-signal'() {
                 return {
                     __itemEl: this.$el,
                     init() {

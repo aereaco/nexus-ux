@@ -10,14 +10,14 @@ title: text
 Here's a basic example of using `data-text` to display a user's username.
 
 ```alpine
-<div data-data="{ username: 'calebporzio' }">
+<div data-signal="{ username: 'calebporzio' }">
     Username: <strong data-text="username"></strong>
 </div>
 ```
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data="{ username: 'calebporzio' }">
+    <div data-signal="{ username: 'calebporzio' }">
         Username: <strong data-text="username"></strong>
     </div>
 </div>

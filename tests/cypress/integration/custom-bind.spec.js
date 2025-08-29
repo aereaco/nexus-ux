@@ -10,7 +10,7 @@ test('can register custom bind object',
             })
         </script>
 
-        <div data-data data-bind="Foo"></div>
+        <div data-signal data-bind="Foo"></div>
     `,
     ({ get }) => get('div').should(haveText('bar'))
 )
@@ -25,7 +25,7 @@ test('can register custom bind as function',
             })
         </script>
 
-        <div data-data data-bind="Foo"></div>
+        <div data-signal data-bind="Foo"></div>
     `,
     ({ get }) => get('div').should(haveText('bar'))
 )
@@ -40,7 +40,7 @@ test('can consume custom bind as function',
             })
         </script>
 
-        <div data-data data-bind="Foo('bar')"></div>
+        <div data-signal data-bind="Foo('bar')"></div>
     `,
     ({ get }) => get('div').should(haveText('bar'))
 )
@@ -55,7 +55,7 @@ test('can bind directives individually to an element',
             })
         </script>
 
-        <div data-data id="one"></div>
+        <div data-signal id="one"></div>
     `,
     ({ get }) => get('div').should(haveText('foo'))
 )

@@ -2,7 +2,7 @@ import { beChecked, contain, notBeChecked, haveAttribute, haveData, haveText, te
 
 test('data modified in event listener updates affected attribute bindings',
     html`
-        <div data-data="{ foo: 'bar' }">
+        <div data-signal="{ foo: 'bar' }">
             <button data-on:click="foo = 'baz'"></button>
 
             <span data-bind:foo="foo"></span>
@@ -17,7 +17,7 @@ test('data modified in event listener updates affected attribute bindings',
 
 test('can call a method without parenthesis',
     html`
-        <div data-data="{ foo: 'bar', baz($event) { this.foo = $event.target.dataset.bob } }">
+        <div data-signal="{ foo: 'bar', baz($event) { this.foo = $event.target.dataset.bob } }">
             <button data-on:click="baz" data-bob="lob"></button>
 
             <span data-text="foo"></span>
@@ -32,7 +32,7 @@ test('can call a method without parenthesis',
 
 test('event object is not passed if other params are present',
     html`
-        <div data-data="{ foo: 'bar', baz(word) { this.foo = word } }">
+        <div data-signal="{ foo: 'bar', baz(word) { this.foo = word } }">
             <button data-on:click="baz('foo')" data-bob="lob"></button>
 
             <span data-text="foo"></span>
@@ -47,7 +47,7 @@ test('event object is not passed if other params are present',
 
 test('nested data modified in event listener updates affected attribute bindings',
     html`
-        <div data-data="{ nested: { foo: 'bar' } }">
+        <div data-signal="{ nested: { foo: 'bar' } }">
             <button data-on:click="nested.foo = 'baz'"></button>
 
             <span data-bind:foo="nested.foo"></span>
@@ -62,7 +62,7 @@ test('nested data modified in event listener updates affected attribute bindings
 
 test('.passive modifier should disable e.preventDefault()',
     html`
-        <div data-data="{ defaultPrevented: null }">
+        <div data-signal="{ defaultPrevented: null }">
             <button
                 data-on:mousedown.passive="
                     $event.preventDefault();
@@ -81,7 +81,7 @@ test('.passive modifier should disable e.preventDefault()',
 
 test('.stop modifier',
     html`
-        <div data-data="{ foo: 'bar' }">
+        <div data-signal="{ foo: 'bar' }">
             <button data-on:click="foo = 'baz'">
                 <h1>h1</h1>
                 <h2 @click.stop>h2</h2>
@@ -100,7 +100,7 @@ test('.stop modifier',
 
 test('.stop modifier with a .throttle',
     html`
-        <div data-data="{ foo: 'bar' }">
+        <div data-signal="{ foo: 'bar' }">
             <button data-on:click="foo = 'baz'">
                 <h1>h1</h1>
                 <h2 @click.stop.throttle>h2</h2>
@@ -119,7 +119,7 @@ test('.stop modifier with a .throttle',
 
 test('.capture modifier',
     html`
-        <div data-data="{ foo: 'bar', count: 0 }">
+        <div data-signal="{ foo: 'bar', count: 0 }">
             <button @click.capture="count = count + 1; foo = 'baz'">
                 <h1>h1</h1>
                 <h2 @click="foo = 'bob'">h2</h2>
@@ -136,7 +136,7 @@ test('.capture modifier',
 
 test('.capture modifier with @keyup',
     html`
-        <div data-data="{ foo: 'bar', count: 0 }">
+        <div data-signal="{ foo: 'bar', count: 0 }">
             <span @keyup.capture="count = count + 1; foo = 'span'">
                 <input type="text" @keyup="foo = 'input'">
             </span>
@@ -152,7 +152,7 @@ test('.capture modifier with @keyup',
 
 test('.capture modifier with @keyup and specified key',
     html`
-        <div data-data="{ foo: 'bar', count: 0 }">
+        <div data-signal="{ foo: 'bar', count: 0 }">
             <span @keyup.enter.capture="count = count + 1; foo = 'span'">
                 <input type="text" @keyup.enter="foo = 'input'">
             </span>
@@ -168,7 +168,7 @@ test('.capture modifier with @keyup and specified key',
 
 test('.self modifier',
     html`
-        <div data-data="{ foo: 'bar' }">
+        <div data-signal="{ foo: 'bar' }">
             <h1 data-on:click.self="foo = 'baz'" id="selfTarget">
                 content
                 <button>click</button>
@@ -189,7 +189,7 @@ test('.self modifier',
 test(
     ".self.once modifiers",
     html`
-        <div data-data="{ foo: 'bar' }">
+        <div data-signal="{ foo: 'bar' }">
             <h1 data-on:click.self.once="foo = 'baz'" id="selfTarget">
                 content
                 <button>click</button>
@@ -209,7 +209,7 @@ test(
 
 test('.prevent modifier',
     html`
-        <div data-data="{}">
+        <div data-signal="{}">
             <input type="checkbox" data-on:click.prevent>
         </div>
     `,
@@ -221,7 +221,7 @@ test('.prevent modifier',
 
 test('.prevent modifier with a .debounce',
     html`
-        <div data-data="{}">
+        <div data-signal="{}">
             <input type="checkbox" data-on:click.prevent.debounce>
         </div>
     `,
@@ -234,7 +234,7 @@ test('.prevent modifier with a .debounce',
 
 test('.window modifier',
     html`
-        <div data-data="{ foo: 'bar' }">
+        <div data-signal="{ foo: 'bar' }">
             <div data-on:click.window="foo = 'baz'"></div>
 
             <span data-text="foo"></span>
@@ -249,7 +249,7 @@ test('.window modifier',
 
 test('expressions can start with if',
     html`
-        <div data-data="{ foo: 'bar' }">
+        <div data-signal="{ foo: 'bar' }">
             <button @click="if (foo === 'bar') foo = 'baz'">click</button>
             <span data-text="foo"></span>
         </div>
@@ -263,7 +263,7 @@ test('expressions can start with if',
 
 test('unbind global event handler when element is removed',
     html`
-        <div data-data="{ count: 0 }">
+        <div data-signal="{ count: 0 }">
             <div data-on:click.window="count++" data-ref="rmMe"></div>
 
             <button @click="$refs.rmMe.remove()">click</button>
@@ -279,7 +279,7 @@ test('unbind global event handler when element is removed',
 
 test('.document modifier',
     html`
-       <div data-data="{ foo: 'bar' }">
+       <div data-signal="{ foo: 'bar' }">
             <div data-on:click.document="foo = 'baz'"></div>
 
             <span data-text="foo"></span>
@@ -294,7 +294,7 @@ test('.document modifier',
 
 test('.once modifier',
     html`
-        <div data-data="{ count: 0 }">
+        <div data-signal="{ count: 0 }">
             <button data-on:click.once="count = count+1"></button>
 
             <span data-text="count"></span>
@@ -311,7 +311,7 @@ test('.once modifier',
 
 test('.once modifier with @keyup',
     html`
-        <div data-data="{ count: 0 }">
+        <div data-signal="{ count: 0 }">
             <input type="text" data-on:keyup.once="count = count+1">
 
             <span data-text="count"></span>
@@ -328,7 +328,7 @@ test('.once modifier with @keyup',
 
 test('.once modifier with @keyup and specified key',
     html`
-        <div data-data="{ count: 0 }">
+        <div data-signal="{ count: 0 }">
             <input type="text" data-on:keyup.enter.once="count = count+1">
 
             <span data-text="count"></span>
@@ -347,7 +347,7 @@ test('.once modifier with @keyup and specified key',
 
 test('.debounce modifier',
     html`
-        <div data-data="{ count: 0 }">
+        <div data-signal="{ count: 0 }">
             <input data-on:input.debounce="count = count+1">
 
             <span data-text="count"></span>
@@ -364,7 +364,7 @@ test('.debounce modifier',
 
 test('.throttle modifier',
     html`
-        <div data-data="{ count: 0 }">
+        <div data-signal="{ count: 0 }">
             <input data-on:keyup.throttle.504ms="count = count+1">
             <span data-text="count"></span>
         </div>
@@ -380,7 +380,7 @@ test('.throttle modifier',
 
 test('keydown modifiers',
     html`
-        <div data-data="{ count: 0 }">
+        <div data-signal="{ count: 0 }">
             <input type="text"
                 data-on:keydown="count++"
                 data-on:keydown.enter="count++"
@@ -438,7 +438,7 @@ test('keydown modifiers',
 
 test('discerns between space minus underscore',
     html`
-        <div data-data="{ count: 0 }">
+        <div data-signal="{ count: 0 }">
             <input id="space" type="text" data-on:keydown.space="count++" />
             <input id="minus" type="text" data-on:keydown.-="count++" />
             <input id="underscore" type="text" data-on:keydown._="count++" />
@@ -463,7 +463,7 @@ test('discerns between space minus underscore',
 
 test('keydown combo modifiers',
     html`
-        <div data-data="{ count: 0 }">
+        <div data-signal="{ count: 0 }">
             <input type="text" data-on:keydown.cmd.enter="count++">
 
             <span data-text="count"></span>
@@ -480,7 +480,7 @@ test('keydown combo modifiers',
 
 test('keydown with specified key and stop modifier only stops for specified key',
     html`
-        <div data-data="{ count: 0 }">
+        <div data-signal="{ count: 0 }">
             <article data-on:keydown="count++">
                 <input type="text" data-on:keydown.enter.stop>
             </article>
@@ -499,7 +499,7 @@ test('keydown with specified key and stop modifier only stops for specified key'
 
 test('@click.away',
     html`
-        <div data-data="{ foo: 'bar' }">
+        <div data-signal="{ foo: 'bar' }">
             <h1 @click.away="foo = 'baz'">h1</h1>
 
             <h2>h2</h2>
@@ -518,7 +518,7 @@ test('@click.away',
 
 test('@click.away.once works after clicking inside',
     html`
-        <div data-data="{ foo: 'bar' }">
+        <div data-signal="{ foo: 'bar' }">
             <h1 @click.away.once="foo = 'baz'">h1</h1>
 
             <h2>h2</h2>
@@ -537,7 +537,7 @@ test('@click.away.once works after clicking inside',
 
 test('@click.away with data-show (prevent race condition)',
     html`
-        <div data-data="{ show: false }">
+        <div data-signal="{ show: false }">
             <button @click="show = true">Show</button>
 
             <h1 data-show="show" @click.away="show = false">h1</h1>
@@ -554,7 +554,7 @@ test('@click.away with data-show (prevent race condition)',
 
 test('event with colon',
     html`
-        <div data-data="{ foo: 'bar' }">
+        <div data-signal="{ foo: 'bar' }">
             <div data-on:my:event.document="foo = 'baz'"></div>
 
             <button @click="document.dispatchEvent(new CustomEvent('my:event', { bubbles: true }))">click</button>
@@ -571,7 +571,7 @@ test('event with colon',
 
 test('event instance can be passed to method reference',
     html`
-        <div data-data="{ foo: 'bar', changeFoo(e) { this.foo = e.target.id } }">
+        <div data-signal="{ foo: 'bar', changeFoo(e) { this.foo = e.target.id } }">
             <button data-on:click="changeFoo" id="baz"></button>
 
             <span data-text="foo"></span>
@@ -586,7 +586,7 @@ test('event instance can be passed to method reference',
 
 test('.camel modifier correctly binds event listener',
     html`
-        <div data-data="{ foo: 'bar' }" data-on:event-name.camel="foo = 'baz'">
+        <div data-signal="{ foo: 'bar' }" data-on:event-name.camel="foo = 'baz'">
             <button data-on:click="$dispatch('eventName')"></button>
 
             <span data-text="foo"></span>
@@ -601,7 +601,7 @@ test('.camel modifier correctly binds event listener',
 
 test('.camel modifier correctly binds event listener with namespace',
     html`
-        <div data-data="{ foo: 'bar' }" data-on:ns:event-name.camel="foo = 'baz'">
+        <div data-signal="{ foo: 'bar' }" data-on:ns:event-name.camel="foo = 'baz'">
             <button data-on:click="$dispatch('ns:eventName')"></button>
 
             <span data-text="foo"></span>
@@ -616,7 +616,7 @@ test('.camel modifier correctly binds event listener with namespace',
 
 test('.dot modifier correctly binds event listener',
     html`
-        <div data-data="{ foo: 'bar' }" data-on:event-name.dot="foo = 'baz'">
+        <div data-signal="{ foo: 'bar' }" data-on:event-name.dot="foo = 'baz'">
             <button data-on:click="$dispatch('event.name')"></button>
 
             <span data-text="foo"></span>
@@ -630,7 +630,7 @@ test('.dot modifier correctly binds event listener',
 )
 test('underscores are allowed in event names',
     html`
-        <div data-data="{ foo: 'bar' }" data-on:event_name="foo = 'baz'">
+        <div data-signal="{ foo: 'bar' }" data-on:event_name="foo = 'baz'">
             <button data-on:click="$dispatch('event_name')"></button>
 
             <span data-text="foo"></span>
@@ -645,7 +645,7 @@ test('underscores are allowed in event names',
 
 test('.dot modifier correctly binds event listener with namespace',
     html`
-        <div data-data="{ foo: 'bar' }" data-on:ns:event-name.dot="foo = 'baz'">
+        <div data-signal="{ foo: 'bar' }" data-on:ns:event-name.dot="foo = 'baz'">
             <button data-on:click="$dispatch('ns:event.name')"></button>
 
             <span data-text="foo"></span>
@@ -660,7 +660,7 @@ test('.dot modifier correctly binds event listener with namespace',
 
 test('handles await in handlers with invalid right hand expressions',
     html`
-        <div data-data="{ text: 'original' }">
+        <div data-signal="{ text: 'original' }">
             <button @click="let value = 'new string'; text = await Promise.resolve(value)"></button>
             <span data-text="text"></span>
         </div>
@@ -675,7 +675,7 @@ test('handles await in handlers with invalid right hand expressions',
 test(
     "handles system modifier keys on key events",
     html`
-        <div data-data="{ keys: {
+        <div data-signal="{ keys: {
             shift: false,
             ctrl: false,
             meta: false,
@@ -728,7 +728,7 @@ test(
 test(
     "handles system modifier keys on mouse events",
     html`
-        <div data-data="{ keys: {
+        <div data-signal="{ keys: {
             shift: false,
             ctrl: false,
             meta: false,
@@ -781,7 +781,7 @@ test(
 test(
     "handles all mouse events with modifiers",
     html`
-        <div data-data="{ keys: {
+        <div data-signal="{ keys: {
             shift: false,
             ctrl: false,
             meta: false,

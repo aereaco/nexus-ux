@@ -6,16 +6,16 @@ title: root
 
 # $root
 
-`$root` is a magic property that can be used to retrieve the root element of any Alpine component. In other words the closest element up the DOM tree that contains `data-data`.
+`$root` is a magic property that can be used to retrieve the root element of any Alpine component. In other words the closest element up the DOM tree that contains `data-signal`.
 
 ```alpine
-<div data-data data-message="Hello World!">
+<div data-signal data-message="Hello World!">
     <button @click="alert($root.dataset.message)">Say Hi</button>
 </div>
 ```
 
 <!-- START_VERBATIM -->
-<div data-data data-message="Hello World!" class="demo">
+<div data-signal data-message="Hello World!" class="demo">
     <button @click="alert($root.dataset.message)">Say Hi</button>
 </div>
 <!-- END_VERBATIM -->

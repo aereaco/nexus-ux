@@ -15,7 +15,7 @@ This is useful for many different types of inputs: phone numbers, credit cards, 
 
 ## Installation
 
-<div data-data="{ expanded: false }">
+<div data-signal="{ expanded: false }">
 <div class=" relative">
 <div data-show="! expanded" class="absolute inset-0 flex justify-start items-end bg-gradient-to-t from-white to-[#ffffff66]"></div>
 <div data-show="expanded" data-collapse.min.80px class="markdown">
@@ -74,7 +74,7 @@ Let's start by looking at the following simple example of a date field:
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <input data-data data-mask="99/99/9999" placeholder="MM/DD/YYYY">
+    <input data-signal data-mask="99/99/9999" placeholder="MM/DD/YYYY">
 </div>
 <!-- END_VERBATIM -->
 
@@ -109,7 +109,7 @@ Try it for yourself by typing a number that starts with "34" and one that doesn'
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <input data-data data-mask:dynamic="
+    <input data-signal data-mask:dynamic="
         $input.startsWith('34') || $input.startsWith('37')
             ? '9999 999999 99999' : '9999 9999 9999 9999'
     ">
@@ -143,7 +143,7 @@ Here is a fully functioning money input mask:
 ```
 
 <!-- START_VERBATIM -->
-<div class="demo" data-data>
+<div class="demo" data-signal>
     <input type="text" data-mask:dynamic="$money($input)" placeholder="0.00">
 </div>
 <!-- END_VERBATIM -->
@@ -155,7 +155,7 @@ If you wish to swap the periods for commas and vice versa (as is required in cer
 ```
 
 <!-- START_VERBATIM -->
-<div class="demo" data-data>
+<div class="demo" data-signal>
     <input type="text" data-mask:dynamic="$money($input, ',')"  placeholder="0,00">
 </div>
 <!-- END_VERBATIM -->
@@ -167,7 +167,7 @@ You may also choose to override the thousands separator by supplying a third opt
 ```
 
 <!-- START_VERBATIM -->
-<div class="demo" data-data>
+<div class="demo" data-signal>
     <input type="text" data-mask:dynamic="$money($input, '.', ' ')"  placeholder="3 000.00">
 </div>
 <!-- END_VERBATIM -->
@@ -180,7 +180,7 @@ You can also override the default precision of 2 digits by using any desired num
 ```
 
 <!-- START_VERBATIM -->
-<div class="demo" data-data>
+<div class="demo" data-signal>
     <input type="text" data-mask:dynamic="$money($input, '.', ',', 4)"  placeholder="0.0001">
 </div>
 <!-- END_VERBATIM -->

@@ -15,7 +15,7 @@ Because of this difference in behavior, `data-if` should not be applied directly
 </template>
 ```
 
-> Despite not being included in the above snippet, `data-if` cannot be used if no parent element has `data-data` defined. [→ Read more about `data-data`](/directives/data)
+> Despite not being included in the above snippet, `data-if` cannot be used if no parent element has `data-signal` defined. [→ Read more about `data-signal`](/directives/data)
 
 ## Caveats
 

@@ -2,7 +2,7 @@ import { haveText, html, test } from '../utils'
 
 test('can register custom interceptors',
     [html`
-        <div data-data="{ foo: $magic() }">
+        <div data-signal="{ foo: $magic() }">
             <span data-text="foo"></span>
         </div>
     `,
@@ -18,7 +18,7 @@ test('can register custom interceptors',
 
 test('interceptors are nesting aware',
     [html`
-        <div data-data="{ foo: { bar: { baz: $magic() }}}">
+        <div data-signal="{ foo: { bar: { baz: $magic() }}}">
             <span data-text="foo.bar.baz"></span>
         </div>
     `,
@@ -34,7 +34,7 @@ test('interceptors are nesting aware',
 
 test('interceptor system prevents against circular references',
     [html`
-        <div data-data="{ foo: $foo }">
+        <div data-signal="{ foo: $foo }">
             <span data-text="'...'">
         </div>
     `,

@@ -68,7 +68,7 @@ function handleRoot(el: any, Alpine: any) {
         'data-id'() { return ['alpine-combobox-button', 'alpine-combobox-options', 'alpine-combobox-label'] },
         'data-modelable': '__value',
 
-        'data-data'() {
+        'data-signal'() {
             return {
                 __ready: false,
                 __value: null,
@@ -408,7 +408,7 @@ function handleOption(el: any, Alpine: any, directive?: any, evaluate?: any) {
 
         ':aria-disabled'() { return this.$comboboxOption.isDisabled },
 
-        'data-data'() {
+        'data-signal'() {
             return {
                 '__optionKey': null,
 

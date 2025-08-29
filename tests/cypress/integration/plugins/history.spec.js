@@ -4,7 +4,7 @@ import { haveText, html, test } from '../../utils'
 describe.skip('History tests', function () {
     test('value is reflected in query string upon changing',
         [html`
-            <div data-data="{ count: $queryString(1) }">
+            <div data-signal="{ count: $queryString(1) }">
                 <button @click="count++">Inc</button>
                 <h1 @click="count--">Dec</h1>
                 <span data-text="count"></span>
@@ -28,7 +28,7 @@ describe.skip('History tests', function () {
 
     test('can configure always making the query string value present',
         [html`
-            <div data-data="{ count: $queryString(1).alwaysShow() }">
+            <div data-signal="{ count: $queryString(1).alwaysShow() }">
                 <button @click="count++">Inc</button>
                 <h1 @click="count--">Dec</h1>
                 <span data-text="count"></span>
@@ -48,7 +48,7 @@ describe.skip('History tests', function () {
 
     test('value is persisted across requests',
         [html`
-            <div data-data="{ count: $queryString(1) }">
+            <div data-signal="{ count: $queryString(1) }">
                 <button @click="count++">Inc</button>
                 <span data-text="count"></span>
             </div>
@@ -69,7 +69,7 @@ describe.skip('History tests', function () {
 
     test('can provide an alias',
         [html`
-            <div data-data="{ count: $queryString(1).as('tnuoc') }">
+            <div data-signal="{ count: $queryString(1).as('tnuoc') }">
                 <button @click="count++">Inc</button>
                 <span data-text="count"></span>
             </div>
@@ -85,7 +85,7 @@ describe.skip('History tests', function () {
 
     test('can use pushState',
         [html`
-            <div data-data="{ count: $queryString(1).usePush() }">
+            <div data-signal="{ count: $queryString(1).usePush() }">
                 <button @click="count++">Inc</button>
                 <span data-text="count"></span>
             </div>
@@ -107,12 +107,12 @@ describe.skip('History tests', function () {
 
     test('can go back and forth with multiple components',
         [html`
-            <div data-data="{ foo: $queryString(1).usePush() }" id="foo">
+            <div data-signal="{ foo: $queryString(1).usePush() }" id="foo">
                 <button @click="foo++">Inc</button>
                 <span data-text="foo"></span>
             </div>
 
-            <div data-data="{ bar: $queryString(1).usePush() }" id="bar">
+            <div data-signal="{ bar: $queryString(1).usePush() }" id="bar">
                 <button @click="bar++">Inc</button>
                 <span data-text="bar"></span>
             </div>
@@ -148,7 +148,7 @@ describe.skip('History tests', function () {
 
     test('supports arrays',
         [html`
-            <div data-data="{ items: $queryString(['foo']) }">
+            <div data-signal="{ items: $queryString(['foo']) }">
                 <button @click="items.push('bar')">Inc</button>
                 <span data-text="JSON.stringify(items)"></span>
             </div>
@@ -167,7 +167,7 @@ describe.skip('History tests', function () {
 
     test('supports deep arrays',
         [html`
-            <div data-data="{ items: $queryString(['foo', ['bar', 'baz']]) }">
+            <div data-signal="{ items: $queryString(['foo', ['bar', 'baz']]) }">
                 <button @click="items[1].push('bob')">Inc</button>
                 <span data-text="JSON.stringify(items)"></span>
             </div>
@@ -186,7 +186,7 @@ describe.skip('History tests', function () {
 
     test('supports objects',
         [html`
-            <div data-data="{ items: $queryString({ foo: 'bar' }) }">
+            <div data-signal="{ items: $queryString({ foo: 'bar' }) }">
                 <button @click="items.bob = 'lob'">Inc</button>
                 <span data-text="JSON.stringify(items)"></span>
             </div>
@@ -205,7 +205,7 @@ describe.skip('History tests', function () {
 
     test('encodes values according to RFC 1738 (plus signs for spaces)',
         [html`
-            <div data-data="{ foo: $queryString('hey&there').alwaysShow(), bar: $queryString('hey there').alwaysShow() }">
+            <div data-signal="{ foo: $queryString('hey&there').alwaysShow(), bar: $queryString('hey there').alwaysShow() }">
                 <span data-text="JSON.stringify(foo)+JSON.stringify(bar)"></span>
             </div>
         `],

@@ -2,7 +2,7 @@ import { beHidden, beVisible, haveAttribute, haveClasses, haveText, html, notBeV
 
 test('has accessibility attributes',
     [html`
-        <div data-data="{ checked: false }">
+        <div data-signal="{ checked: false }">
             <article data-switch:group>
                 <label data-switch:label>Enable notifications</label>
                 <span description data-switch:description>A description of the switch.</span>
@@ -27,7 +27,7 @@ test('has accessibility attributes',
 
 test('works with data-model',
     [html`
-        <div data-data="{ checked: false }">
+        <div data-signal="{ checked: false }">
             <button data-switch data-model="checked">Enable notifications</button>
 
             <article data-show="checked">
@@ -46,7 +46,7 @@ test('works with data-model',
 
 test('works with internal state/$switch.isChecked',
     [html`
-        <div data-data>
+        <div data-signal>
             <button data-switch data-bind:class="$switch.isChecked ? 'foo' : 'bar'">
                 Enable notifications
             </button>
@@ -63,7 +63,7 @@ test('works with internal state/$switch.isChecked',
 
 test('pressing space toggles the switch',
     [html`
-        <div data-data="{ checked: false }">
+        <div data-signal="{ checked: false }">
             <div>
                 <button data-switch data-model="checked">Enable notifications</button>
 
@@ -85,7 +85,7 @@ test('pressing space toggles the switch',
 
 test('default-checked',
     [html`
-        <div data-data>
+        <div data-signal>
             <div>
                 <button
                     data-switch
@@ -104,7 +104,7 @@ test('default-checked',
 
 test('name and value props',
     [html`
-        <div data-data>
+        <div data-signal>
             <div>
                 <button
                     data-switch
@@ -129,7 +129,7 @@ test('name and value props',
 
 test('value defaults to "on"',
     [html`
-        <div data-data>
+        <div data-signal>
             <div>
                 <button
                     data-switch

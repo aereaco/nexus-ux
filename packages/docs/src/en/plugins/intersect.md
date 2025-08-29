@@ -55,7 +55,7 @@ The primary API for using this plugin is `data-intersect`. You can add `data-int
 For example, in the following snippet, `shown` will remain `false` until the element is scrolled into view. At that point, the expression will execute and `shown` will become `true`:
 
 ```alpine
-<div data-data="{ shown: false }" data-intersect="shown = true">
+<div data-signal="{ shown: false }" data-intersect="shown = true">
     <div data-show="shown" data-transition>
         I'm in the viewport!
     </div>
@@ -63,10 +63,10 @@ For example, in the following snippet, `shown` will remain `false` until the ele
 ```
 
 <!-- START_VERBATIM -->
-<div class="demo" style="height: 60px; overflow-y: scroll;" data-data data-ref="root">
+<div class="demo" style="height: 60px; overflow-y: scroll;" data-signal data-ref="root">
     <a href="#" @click.prevent="$refs.root.scrollTo({ top: $refs.root.scrollHeight, behavior: 'smooth' })">Scroll Down 👇</a>
     <div style="height: 50vh"></div>
-    <div data-data="{ shown: false }" data-intersect="shown = true" id="yoyo">
+    <div data-signal="{ shown: false }" data-intersect="shown = true" id="yoyo">
         <div data-show="shown" data-transition.duration.1000ms>
             I'm in the viewport!
         </div>

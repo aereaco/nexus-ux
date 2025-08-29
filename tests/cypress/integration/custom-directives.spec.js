@@ -2,7 +2,7 @@ import { haveText, haveAttribute, html, test } from '../utils'
 
 test('can register custom directive',
     [html`
-        <div data-data>
+        <div data-signal>
             <span data-foo:bar.baz="bob"></span>
         </div>
     `,
@@ -16,7 +16,7 @@ test('can register custom directive',
 
 test('directives are auto cleaned up',
     [html`
-        <div data-data="{ count: 0 }">
+        <div data-signal="{ count: 0 }">
             <span data-foo data-ref="foo"></span>
             <h1 data-text="count"></h1>
 
@@ -52,7 +52,7 @@ test('directives are auto cleaned up',
 
 test('can register a custom directive before an existing one',
     [html`
-        <div data-data>
+        <div data-signal>
             <span data-foo data-bind:foo="foo"></span>
         </div>
     `,

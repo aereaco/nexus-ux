@@ -2,7 +2,7 @@ import { haveClasses, haveText, html, notHaveClasses, notHaveText, test } from '
 
 test('data-ignore',
     html`
-        <div data-data="{ foo: 'bar' }">
+        <div data-signal="{ foo: 'bar' }">
             <div data-ignore>
                 <span data-text="foo"></span>
             </div>
@@ -15,7 +15,7 @@ test('data-ignore',
 
 test('data-ignore.self',
     html`
-        <div data-data="{ foo: 'bar' }">
+        <div data-signal="{ foo: 'bar' }">
             <h1 data-ignore.self :class="foo">
                 <span data-text="foo"></span>
             </h1>
@@ -29,9 +29,9 @@ test('data-ignore.self',
 
 test('can lazyload a component',
     html`
-        <div data-data="{ lazyLoad() {$el.querySelector('#lazy').removeAttribute('data-ignore'); Alpine.nextTick(() => Alpine.initTree($el.querySelector('#lazy')))} }">
+        <div data-signal="{ lazyLoad() {$el.querySelector('#lazy').removeAttribute('data-ignore'); Alpine.nextTick(() => Alpine.initTree($el.querySelector('#lazy')))} }">
             <button @click="lazyLoad">Load</button>
-            <div data-data="{ foo: 'bar' }" id="lazy" data-ignore :class="foo">
+            <div data-signal="{ foo: 'bar' }" id="lazy" data-ignore :class="foo">
                 <span data-text="foo"></span>
             </div>
         </div>

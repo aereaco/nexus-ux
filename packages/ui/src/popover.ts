@@ -28,7 +28,7 @@ function handleRoot(el: any, Alpine: any) {
     Alpine.bind(el, {
         'data-id'() { return ['alpine-popover-button', 'alpine-popover-panel'] },
         'data-modelable': '__isOpenState',
-        'data-data'() {
+        'data-signal'() {
             return {
                 init() {
                     if (this.$data.__groupEl) {
@@ -193,7 +193,7 @@ function handlePanel(el: any, Alpine: any) {
 function handleGroup(el: any, Alpine: any) {
     Alpine.bind(el, {
         'data-ref': 'container',
-        'data-data'() {
+        'data-signal'() {
             return {
                 __groupEl: this.$el,
             }

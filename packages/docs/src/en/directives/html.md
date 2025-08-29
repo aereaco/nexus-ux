@@ -13,14 +13,14 @@ title: html
 Here's a basic example of using `data-html` to display a user's username.
 
 ```alpine
-<div data-data="{ username: '<strong>calebporzio</strong>' }">
+<div data-signal="{ username: '<strong>calebporzio</strong>' }">
     Username: <span data-html="username"></span>
 </div>
 ```
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data="{ username: '<strong>calebporzio</strong>' }">
+    <div data-signal="{ username: '<strong>calebporzio</strong>' }">
         Username: <span data-html="username"></span>
     </div>
 </div>

@@ -10,7 +10,7 @@ test('can register custom magic properties',
             })
         </script>
 
-        <div data-data>
+        <div data-signal>
             <span data-text="$foo.bar"></span>
         </div>
     `,
@@ -29,7 +29,7 @@ test('magics are lazily accessed',
             })
         </script>
 
-        <div data-data>
+        <div data-signal>
             <button @click="$el.textContent = window.hasBeenAccessed">clickme</button>
         </div>
     `,

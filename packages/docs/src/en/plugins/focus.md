@@ -59,7 +59,7 @@ Focus offers a dedicated API for trapping focus within an element: the `data-tra
 For example:
 
 ```alpine
-<div data-data="{ open: false }">
+<div data-signal="{ open: false }">
     <button @click="open = true">Open Dialog</button>
 
     <span data-show="open" data-trap="open">
@@ -75,7 +75,7 @@ For example:
 ```
 
 <!-- START_VERBATIM -->
-<div data-data="{ open: false }" class="demo">
+<div data-signal="{ open: false }" class="demo">
     <div :class="open && 'opacity-50'">
         <button data-on:click="open = true">Open Dialog</button>
     </div>
@@ -112,14 +112,14 @@ This mechanism is recursive, so you can trap focus within an already trapped ele
 Here is nesting in action:
 
 ```alpine
-<div data-data="{ open: false }">
+<div data-signal="{ open: false }">
     <button @click="open = true">Open Dialog</button>
 
     <span data-show="open" data-trap="open">
 
         ...
 
-        <div data-data="{ open: false }">
+        <div data-signal="{ open: false }">
             <button @click="open = true">Open Nested Dialog</button>
 
             <span data-show="open" data-trap="open">
@@ -136,7 +136,7 @@ Here is nesting in action:
 ```
 
 <!-- START_VERBATIM -->
-<div data-data="{ open: false }" class="demo">
+<div data-signal="{ open: false }" class="demo">
     <div :class="open && 'opacity-50'">
         <button data-on:click="open = true">Open Dialog</button>
     </div>
@@ -150,7 +150,7 @@ Here is nesting in action:
             <input type="text" placeholder="Some other input...">
         </div>
 
-        <div data-data="{ open: false }">
+        <div data-signal="{ open: false }">
             <div :class="open && 'opacity-50'">
                 <button data-on:click="open = true">Open Nested Dialog</button>
             </div>
@@ -193,7 +193,7 @@ By adding `.inert` to `data-trap`, when focus is trapped, all other elements on 
 
 ```alpine
 <!-- When `open` is `false`: -->
-<body data-data="{ open: false }">
+<body data-signal="{ open: false }">
     <div data-trap.inert="open" ...>
         ...
     </div>
@@ -204,7 +204,7 @@ By adding `.inert` to `data-trap`, when focus is trapped, all other elements on 
 </body>
 
 <!-- When `open` is `true`: -->
-<body data-data="{ open: true }">
+<body data-signal="{ open: true }">
     <div data-trap.inert="open" ...>
         ...
     </div>
@@ -227,7 +227,7 @@ By adding `.noscroll`, Alpine will remove the scrollbar from the page and block 
 For example:
 
 ```alpine
-<div data-data="{ open: false }">
+<div data-signal="{ open: false }">
     <button @click="open = true">Open Dialog</button>
 
     <div data-show="open" data-trap.noscroll="open">
@@ -240,7 +240,7 @@ For example:
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data="{ open: false }">
+    <div data-signal="{ open: false }">
         <button @click="open = true">Open Dialog</button>
 
         <div data-show="open" data-trap.noscroll="open" class="border mt-4 p-4">
@@ -266,7 +266,7 @@ By adding `.noreturn`, Alpine will not return focus upon data-trap evaluating to
 For example:
 
 ```alpine
-<div data-data="{ open: false }" data-trap.noreturn="open">
+<div data-signal="{ open: false }" data-trap.noreturn="open">
     <input type="search" placeholder="search for something" />
 
     <div data-show="open">
@@ -280,7 +280,7 @@ For example:
 <!-- START_VERBATIM -->
 <div class="demo">
     <div
-        data-data="{ open: false }"
+        data-signal="{ open: false }"
         data-trap.noreturn="open"
         @click.outside="open = false"
         @keyup.escape.prevent.stop="open = false"
@@ -348,7 +348,7 @@ Let's walk through a few examples of these utilities in use. The example below a
 <!-- START_VERBATIM -->
 <div class="demo">
 <div
-    data-data
+    data-signal
     @keydown.right="$focus.next()"
     @keydown.left="$focus.previous()"
 >
@@ -376,7 +376,7 @@ Notice how if the last button is focused, pressing "right arrow" won't do anythi
 <!-- START_VERBATIM -->
 <div class="demo">
 <div
-    data-data
+    data-signal
     @keydown.right="$focus.wrap().next()"
     @keydown.left="$focus.wrap().previous()"
 >
@@ -406,7 +406,7 @@ Now, let's add two buttons, one to focus the first element in the button group, 
 ```
 
 <!-- START_VERBATIM -->
-<div class="demo" data-data>
+<div class="demo" data-signal>
 <button @click="$focus.within($refs.buttons).first()">Focus "First"</button>
 <button @click="$focus.within($refs.buttons).last()">Focus "Last"</button>
 

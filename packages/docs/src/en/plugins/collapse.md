@@ -57,7 +57,7 @@ The primary API for using this plugin is the `data-collapse` directive.
 For example:
 
 ```alpine
-<div data-data="{ expanded: false }">
+<div data-signal="{ expanded: false }">
     <button @click="expanded = ! expanded">Toggle Content</button>
 
     <p data-show="expanded" data-collapse>
@@ -67,7 +67,7 @@ For example:
 ```
 
 <!-- START_VERBATIM -->
-<div data-data="{ expanded: false }" class="demo">
+<div data-signal="{ expanded: false }" class="demo">
     <button @click="expanded = ! expanded">Toggle Content</button>
 
     <div data-show="expanded" data-collapse>
@@ -87,7 +87,7 @@ For example:
 You can customize the duration of the collapse/expand transition by appending the `.duration` modifier like so:
 
 ```alpine
-<div data-data="{ expanded: false }">
+<div data-signal="{ expanded: false }">
     <button @click="expanded = ! expanded">Toggle Content</button>
 
     <p data-show="expanded" data-collapse.duration.1000ms>
@@ -97,7 +97,7 @@ You can customize the duration of the collapse/expand transition by appending th
 ```
 
 <!-- START_VERBATIM -->
-<div data-data="{ expanded: false }" class="demo">
+<div data-signal="{ expanded: false }" class="demo">
     <button @click="expanded = ! expanded">Toggle Content</button>
 
     <div data-show="expanded" data-collapse.duration.1000ms>
@@ -116,7 +116,7 @@ By default, `data-collapse`'s "collapsed" state sets the height of the element t
 Sometimes, it's helpful to "cut-off" an element rather than fully hide it. By using the `.min` modifier, you can set a minimum height for `data-collapse`'s "collapsed" state. For example:
 
 ```alpine
-<div data-data="{ expanded: false }">
+<div data-signal="{ expanded: false }">
     <button @click="expanded = ! expanded">Toggle Content</button>
 
     <p data-show="expanded" data-collapse.min.50px>
@@ -126,7 +126,7 @@ Sometimes, it's helpful to "cut-off" an element rather than fully hide it. By us
 ```
 
 <!-- START_VERBATIM -->
-<div data-data="{ expanded: false }" class="demo">
+<div data-signal="{ expanded: false }" class="demo">
     <button @click="expanded = ! expanded">Toggle Content</button>
 
     <div data-show="expanded" data-collapse.min.50px>

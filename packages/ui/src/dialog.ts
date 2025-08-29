@@ -29,7 +29,7 @@ export default function (Alpine: any) {
 
 function handleRoot(el: any, Alpine: any) {
     Alpine.bind(el, {
-        'data-data'() {
+        'data-signal'() {
             return {
                 init() {
                     // If the user chose to use :open and @close instead of data-model.

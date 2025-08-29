@@ -1,11 +1,11 @@
-let datas: Record<string, any> = {}
+let signals: Record<string, any> = {}
 
-export function data(name: string, callback: any) {
-    datas[name] = callback
+export function signal(name: string, callback: any) {
+    signals[name] = callback
 }
 
-export function injectDataProviders(obj: any, context?: any) {
-    Object.entries(datas).forEach(([name, callback]) => {
+export function injectSignalProviders(obj: any, context?: any) {
+    Object.entries(signals).forEach(([name, callback]) => {
         Object.defineProperty(obj, name, {
             get() {
                 return (...args: any[]) => {

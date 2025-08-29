@@ -2,7 +2,7 @@ import { haveText, html, test } from '../../utils'
 
 test('$el returns the current element',
     html`
-        <div data-data>
+        <div data-signal>
             <button @click="$el.innerText = 'foo'">click me</button>
         </div>
     `,

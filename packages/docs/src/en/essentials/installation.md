@@ -38,7 +38,7 @@ Notice the `@3.x.x` in the provided CDN link. This will pull the latest version 
 
 That's it! Alpine is now available for use inside your page.
 
-Note that you will still need to define a component with `data-data` in order for any Alpine.js attributes to work. See <https://github.com/alpinejs/alpine/discussions/3805> for more information.
+Note that you will still need to define a component with `data-signal` in order for any Alpine.js attributes to work. See <https://github.com/alpinejs/alpine/discussions/3805> for more information.
 
 <a name="as-a-module"></a>
 ## As a module

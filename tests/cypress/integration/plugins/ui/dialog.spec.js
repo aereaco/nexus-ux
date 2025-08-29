@@ -2,7 +2,7 @@ import { beVisible, haveAttribute, haveText, html, notBeVisible, notExist, test 
 
 test('has accessibility attributes',
     [html`
-        <div data-data="{ open: false }">
+        <div data-signal="{ open: false }">
             <button @click="open = ! open">Toggle</button>
 
             <article data-dialog data-model="open">
@@ -18,7 +18,7 @@ test('has accessibility attributes',
 
 test('works with data-model',
     [html`
-        <div data-data="{ open: false }">
+        <div data-signal="{ open: false }">
             <button @click="open = ! open">Toggle</button>
 
             <article data-dialog data-model="open">
@@ -37,7 +37,7 @@ test('works with data-model',
 
 test('works with open prop and close event',
     [html`
-        <div data-data="{ open: false }">
+        <div data-signal="{ open: false }">
             <button @click="open = ! open">Toggle</button>
 
             <article data-dialog :open="open" @close="open = false">
@@ -54,7 +54,7 @@ test('works with open prop and close event',
 
 test('works with static prop',
     [html`
-        <div data-data="{ open: false }">
+        <div data-signal="{ open: false }">
             <button @click="open = ! open">Toggle</button>
 
             <template data-if="open">
@@ -73,7 +73,7 @@ test('works with static prop',
 
 test('pressing escape closes modal',
     [html`
-        <div data-data="{ open: false }">
+        <div data-signal="{ open: false }">
             <button @click="open = ! open">Toggle</button>
 
             <article data-dialog data-model="open">
@@ -93,7 +93,7 @@ test('pressing escape closes modal',
 
 test('data-dialog:panel allows for click away',
     [html`
-        <div data-data="{ open: true }">
+        <div data-signal="{ open: true }">
             <h1>Click away on me</h1>
 
             <article data-dialog data-model="open">
@@ -112,7 +112,7 @@ test('data-dialog:panel allows for click away',
 
 test('data-dialog:overlay closes dialog when clicked on',
     [html`
-        <div data-data="{ open: true }">
+        <div data-signal="{ open: true }">
             <h1>Click away on me</h1>
 
             <article data-dialog data-model="open">
@@ -137,7 +137,7 @@ test('data-dialog:overlay closes dialog when clicked on',
 
 test('data-dialog:title',
     [html`
-        <article data-data data-dialog>
+        <article data-signal data-dialog>
             <h1 data-dialog:title>Dialog Title</h1>
         </article>
     `],
@@ -149,7 +149,7 @@ test('data-dialog:title',
 
 test('data-dialog:description',
     [html`
-        <article data-data data-dialog>
+        <article data-signal data-dialog>
             <p data-dialog:description>Dialog Title</p>
         </article>
     `],
@@ -161,7 +161,7 @@ test('data-dialog:description',
 
 test('$modal.open exposes internal "open" state',
     [html`
-        <div data-data="{ open: false }">
+        <div data-signal="{ open: false }">
             <button @click="open = ! open">Toggle</button>
 
             <article data-dialog data-model="open">
@@ -179,7 +179,7 @@ test('$modal.open exposes internal "open" state',
 
 test('works with data-teleport',
     [html`
-        <div data-data="{ open: false }">
+        <div data-signal="{ open: false }">
             <button @click="open = ! open">Toggle</button>
 
             <template data-teleport="body">

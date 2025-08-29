@@ -2,8 +2,8 @@ import { haveText, html, test } from '../../utils'
 
 test('can expose data for data-model binding',
     html`
-        <div data-data="{ outer: 'foo' }">
-            <div data-data="{ inner: 'bar' }" data-modelable="inner" data-model="outer">
+        <div data-signal="{ outer: 'foo' }">
+            <div data-signal="{ inner: 'bar' }" data-modelable="inner" data-model="outer">
                 <h1 data-text="outer"></h1>
                 <h2 data-text="inner"></h2>
 
@@ -26,10 +26,10 @@ test('can expose data for data-model binding',
 
 test('data-modelable works when inside data-bind and data-model is outside',
     html`
-        <div data-data="{ outer: 'foo', thing: {
+        <div data-signal="{ outer: 'foo', thing: {
             ['data-modelable']: 'inner',
         } }">
-            <div data-data="{ inner: 'bar' }" data-bind="thing" data-model="outer">
+            <div data-signal="{ inner: 'bar' }" data-bind="thing" data-model="outer">
                 <h1 data-text="outer"></h1>
                 <h2 data-text="inner"></h2>
 
@@ -52,8 +52,8 @@ test('data-modelable works when inside data-bind and data-model is outside',
 
 test('data-modelable removes the event listener used by corresponding data-model',
     html`
-        <div data-data="{ outer: 'foo' }">
-            <div data-data="{ inner: 'bar' }" data-modelable="inner" data-model="outer">
+        <div data-signal="{ outer: 'foo' }">
+            <div data-signal="{ inner: 'bar' }" data-modelable="inner" data-model="outer">
                 <h1 data-text="outer"></h1>
                 <h2 data-text="inner"></h2>
                 <button id="1" @click="$dispatch('input', 'baz')"></button>

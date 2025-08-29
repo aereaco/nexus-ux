@@ -3,7 +3,7 @@ import { beVisible, beHidden, haveAttribute, haveClasses, notHaveClasses, haveTe
 test('it works with data-model',
     [html`
         <div
-            data-data="{ active: null, people: [
+            data-signal="{ active: null, people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb' },
@@ -54,7 +54,7 @@ test('it works with data-model',
 test('it works with internal state',
     [html`
         <div
-            data-data="{ people: [
+            data-signal="{ people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb' },
@@ -104,7 +104,7 @@ test('it works with internal state',
 test('$listbox/$listboxOption',
     [html`
         <div
-            data-data="{ people: [
+            data-signal="{ people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb' },
@@ -164,7 +164,7 @@ test('$listbox/$listboxOption',
 test('"name" prop',
     [html`
         <div
-            data-data="{ people: [
+            data-signal="{ people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb' },
@@ -222,7 +222,7 @@ test('"name" prop',
 test('"name" prop with object value',
     [html`
         <div
-            data-data="{ people: [
+            data-signal="{ people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb' },
@@ -285,7 +285,7 @@ test('"name" prop with object value',
 test('"default-value" prop',
     [html`
         <div
-            data-data="{ people: [
+            data-signal="{ people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb' },
@@ -334,7 +334,7 @@ test('"default-value" prop',
 test('"multiple" prop',
     [html`
         <div
-            data-data="{
+            data-signal="{
                 people: [
                     { id: 1, name: 'Wade Cooper' },
                     { id: 2, name: 'Arlene Mccoy' },
@@ -390,7 +390,7 @@ test('"multiple" prop',
 test('"multiple" and "name" props together',
     [html`
         <div
-            data-data="{
+            data-signal="{
                 people: [
                     { id: 1, name: 'Wade Cooper' },
                     { id: 2, name: 'Arlene Mccoy' },
@@ -476,7 +476,7 @@ test('"multiple" and "name" props together',
 test('keyboard controls',
     [html`
         <div
-            data-data="{ active: null, people: [
+            data-signal="{ active: null, people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb', disabled: true },
@@ -564,7 +564,7 @@ test('keyboard controls',
 test('"horizontal" keyboard controls',
     [html`
         <div
-            data-data="{ active: null, people: [
+            data-signal="{ active: null, people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb', disabled: true },
@@ -629,7 +629,7 @@ test('"horizontal" keyboard controls',
 test('"by" prop with string value',
     [html`
         <div
-            data-data="{ active: null, people: [
+            data-signal="{ active: null, people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb', disabled: true },
@@ -685,7 +685,7 @@ test('"by" prop with string value',
 test('search',
     [html`
         <div
-            data-data="{ active: null, people: [
+            data-signal="{ active: null, people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb', disabled: true },
@@ -740,7 +740,7 @@ test('search',
 test('changing value manually changes internal state',
     [html`
         <div
-            data-data="{ active: null, people: [
+            data-signal="{ active: null, people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb', disabled: true },
@@ -790,7 +790,7 @@ test('changing value manually changes internal state',
 test('has accessibility attributes',
     [html`
         <div
-            data-data="{ active: null, people: [
+            data-signal="{ active: null, people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb', disabled: true },
@@ -872,7 +872,7 @@ test('has accessibility attributes',
 test('"static" prop',
     [html`
         <div
-            data-data="{ active: null, show: false, people: [
+            data-signal="{ active: null, show: false, people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb' },
@@ -923,7 +923,7 @@ test('"static" prop',
 
 test('works with morph',
     [html`
-    <div data-data="{ value: null }">
+    <div data-signal="{ value: null }">
         <div data-listbox data-model="value">
             <button data-listbox:button>Select Framework</button>
 
@@ -937,7 +937,7 @@ test('works with morph',
     `],
     ({ get }, reload, window, document) => {
         let toHtml = html`
-        <div data-data="{ value: null }">
+        <div data-signal="{ value: null }">
             <div data-listbox data-model="value">
                 <button data-listbox:button>Select Framework (updated)</button>
 
@@ -960,7 +960,7 @@ test('works with morph',
 
 test('boolean option values',
     [html`
-    <div data-data="{ value: null }" data-listbox data-model="value">
+    <div data-signal="{ value: null }" data-listbox data-model="value">
         <label data-listbox:label>Value</label>
 
         <button data-listbox:button data-text="value !== null ? value.toString() : 'Select boolean'"></button>
@@ -1016,7 +1016,7 @@ test('boolean option values',
 
 test('integer option values',
     [html`
-    <div data-data="{ value: null }" data-listbox data-model="value">
+    <div data-signal="{ value: null }" data-listbox data-model="value">
         <label data-listbox:label>Value</label>
 
         <button data-listbox:button data-text="value !== null ? value.toString() : 'Select number'"></button>

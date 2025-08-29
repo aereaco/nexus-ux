@@ -26,7 +26,7 @@ Here's an example:
 <html>
     <script src="/js/alpine.js" defer></script>
 
-    <div data-data data-foo></div>
+    <div data-signal data-foo></div>
 
     <script>
         document.addEventListener('alpine:init', () => {
@@ -43,7 +43,7 @@ If you want to extract your extension code into an external file, you will need 
     <script src="/js/foo.js" defer></script>
     <script src="/js/alpine.js" defer></script>
 
-    <div data-data data-foo></div>
+    <div data-signal data-foo></div>
 </html>
 ```
 
@@ -97,7 +97,7 @@ Alpine.directive('uppercase', el => {
 })
 ```
 ```alpine
-<div data-data>
+<div data-signal>
     <span data-uppercase>Hello World!</span>
 </div>
 ```
@@ -110,12 +110,12 @@ When registering a custom directive, you may want to evaluate a user-supplied Ja
 For example, let's say you wanted to create a custom directive as a shortcut to `console.log()`. Something like:
 
 ```alpine
-<div data-data="{ message: 'Hello World!' }">
+<div data-signal="{ message: 'Hello World!' }">
     <div data-log="message"></div>
 </div>
 ```
 
-You need to retrieve the actual value of `message` by evaluating it as a JavaScript expression with the `data-data` scope.
+You need to retrieve the actual value of `message` by evaluating it as a JavaScript expression with the `data-signal` scope.
 
 Fortunately, Alpine exposes its system for evaluating JavaScript expressions with an `evaluate()` API. Here's an example:
 
@@ -139,7 +139,7 @@ Building on the `data-log` example from before, let's say we wanted `data-log` t
 Given the following template:
 
 ```alpine
-<div data-data="{ message: 'Hello World!' }">
+<div data-signal="{ message: 'Hello World!' }">
     <div data-log="message"></div>
 
     <button @click="message = 'yolo'">Change</button>
@@ -176,7 +176,7 @@ effect(() => {
 })
 ```
 
-By passing in a callback to `effect()`, we are telling Alpine to run the callback immediately, then track any dependencies it uses (`data-data` properties like `message` in our case). Now as soon as one of the dependencies changes, this callback will be re-run. This gives us our "reactivity".
+By passing in a callback to `effect()`, we are telling Alpine to run the callback immediately, then track any dependencies it uses (`data-signal` properties like `message` in our case). Now as soon as one of the dependencies changes, this callback will be re-run. This gives us our "reactivity".
 
 You may recognize this functionality from `data-effect`. It is the same mechanism under the hood.
 
@@ -236,7 +236,7 @@ Alpine.directive('foo', (el, { value, modifiers, expression }) => {
 }).before('bind')
 ```
 ```alpine
-<div data-data>
+<div data-signal>
     <span data-foo data-bind:foo="foo"></span>
 </div>
 ```
@@ -325,7 +325,7 @@ Let's start in reverse by looking at how our plugin will be included into a proj
     <script src="/js/foo.js" defer></script>
     <script src="/js/alpine.js" defer></script>
 
-    <div data-data data-init="$foo()">
+    <div data-signal data-init="$foo()">
         <span data-foo="'hello world'">
     </div>
 </html>

@@ -42,7 +42,7 @@ export let isCloningLegacy: boolean = false
 
 /** deprecated */
 export function clone(oldEl: any, newEl: any) {
-    if (! newEl._data_dataStack) newEl._data_dataStack = oldEl._data_dataStack
+    if (! newEl._data_signalStack) newEl._data_signalStack = oldEl._data_signalStack
 
     isCloning = true
     isCloningLegacy = true

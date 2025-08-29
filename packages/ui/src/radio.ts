@@ -30,7 +30,7 @@ export default function (Alpine: any) {
 function handleRoot(el: any, Alpine: any) {
     Alpine.bind(el, {
         'data-modelable': '__value',
-        'data-data'() {
+        'data-signal'() {
             return {
                 init() {
                     queueMicrotask(() => {
@@ -159,7 +159,7 @@ function handleRoot(el: any, Alpine: any) {
 
 function handleOption(el: any, Alpine: any) {
     Alpine.bind(el, {
-        'data-data'() {
+        'data-signal'() {
             return {
                 init() {
                     queueMicrotask(() => {

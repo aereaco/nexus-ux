@@ -15,13 +15,13 @@ Let's cover a few of the basic templating directives here, but be sure to look t
 Alpine makes it easy to control the text content of an element with the `data-text` directive.
 
 ```alpine
-<div data-data="{ title: 'Start Here' }">
+<div data-signal="{ title: 'Start Here' }">
     <h1 data-text="title"></h1>
 </div>
 ```
 
 <!-- START_VERBATIM -->
-<div data-data="{ title: 'Start Here' }" class="demo">
+<div data-signal="{ title: 'Start Here' }" class="demo">
     <strong data-text="title"></strong>
 </div>
 <!-- END_VERBATIM -->
@@ -35,7 +35,7 @@ Like all directives in Alpine, you can use any JavaScript expression you like. F
 ```
 
 <!-- START_VERBATIM -->
-<div class="demo" data-data>
+<div class="demo" data-signal>
     <span data-text="1 + 2"></span>
 </div>
 <!-- END_VERBATIM -->
@@ -57,7 +57,7 @@ Alpine offers the `data-show` and `data-if` directives for toggling elements on 
 Here's a simple toggle component using `data-show`.
 
 ```alpine
-<div data-data="{ open: false }">
+<div data-signal="{ open: false }">
     <button @click="open = ! open">Expand</button>
 
     <div data-show="open">
@@ -67,7 +67,7 @@ Here's a simple toggle component using `data-show`.
 ```
 
 <!-- START_VERBATIM -->
-<div data-data="{ open: false }" class="demo">
+<div data-signal="{ open: false }" class="demo">
     <button @click="open = ! open" :aria-pressed="open">Expand</button>
 
     <div data-show="open">
@@ -90,7 +90,7 @@ This works well for most cases, but sometimes you may want to completely add and
 Here is the same toggle from before, but this time using `data-if` instead of `data-show`.
 
 ```alpine
-<div data-data="{ open: false }">
+<div data-signal="{ open: false }">
     <button @click="open = ! open">Expand</button>
 
     <template data-if="open">
@@ -102,7 +102,7 @@ Here is the same toggle from before, but this time using `data-if` instead of `d
 ```
 
 <!-- START_VERBATIM -->
-<div data-data="{ open: false }" class="demo">
+<div data-signal="{ open: false }" class="demo">
     <button @click="open = ! open" :aria-pressed="open">Expand</button>
 
     <template data-if="open">
@@ -129,7 +129,7 @@ Alpine makes it simple to smoothly transition between "shown" and "hidden" state
 Here is, again, the simple toggle example, but this time with transitions applied:
 
 ```alpine
-<div data-data="{ open: false }">
+<div data-signal="{ open: false }">
     <button @click="open = ! open">Expands</button>
 
     <div data-show="open" data-transition>
@@ -139,7 +139,7 @@ Here is, again, the simple toggle example, but this time with transitions applie
 ```
 
 <!-- START_VERBATIM -->
-<div data-data="{ open: false }" class="demo">
+<div data-signal="{ open: false }" class="demo">
     <button @click="open = ! open">Expands</button>
 
     <div class="flex">
@@ -175,7 +175,7 @@ Let's say you wanted to make the duration of the transition longer, you can manu
 ```
 
 <!-- START_VERBATIM -->
-<div data-data="{ open: false }" class="demo">
+<div data-signal="{ open: false }" class="demo">
     <button @click="open = ! open">Expands</button>
 
     <div class="flex">
@@ -199,7 +199,7 @@ If you want to specify different values for in and out transitions, you can use 
 ```
 
 <!-- START_VERBATIM -->
-<div data-data="{ open: false }" class="demo">
+<div data-signal="{ open: false }" class="demo">
     <button @click="open = ! open">Expands</button>
 
     <div class="flex">
@@ -217,7 +217,7 @@ Additionally, you can add either `.opacity` or `.scale` to only transition that 
 ```
 
 <!-- START_VERBATIM -->
-<div data-data="{ open: false }" class="demo">
+<div data-signal="{ open: false }" class="demo">
     <button @click="open = ! open">Expands</button>
 
     <div class="flex">
@@ -248,7 +248,7 @@ If you need more fine-grained control over the transitions in your application, 
 ```
 
 <!-- START_VERBATIM -->
-<div data-data="{ open: false }" class="demo">
+<div data-signal="{ open: false }" class="demo">
     <button @click="open = ! open">Expands</button>
 
     <div class="flex">
@@ -279,7 +279,7 @@ Here is an example of a dynamically bound `class` attribute:
 
 ```alpine
 <button
-    data-data="{ red: false }"
+    data-signal="{ red: false }"
     data-bind:class="red ? 'bg-red' : ''"
     @click="red = ! red"
 >
@@ -290,7 +290,7 @@ Here is an example of a dynamically bound `class` attribute:
 <!-- START_VERBATIM -->
 <div class="demo">
     <button
-        data-data="{ red: false }"
+        data-signal="{ red: false }"
         data-bind:style="red && 'background: red'"
         @click="red = ! red"
     >
@@ -309,7 +309,7 @@ As a shortcut, you can leave out the `data-bind` and use the shorthand `:` synta
 Toggling classes on and off based on data inside Alpine is a common need. Here's an example of toggling a class using Alpine's `class` binding object syntax: (Note: this syntax is only available for `class` attributes)
 
 ```alpine
-<div data-data="{ open: true }">
+<div data-signal="{ open: true }">
     <span :class="{ 'hidden': ! open }">...</span>
 </div>
 ```
@@ -322,7 +322,7 @@ Now the `hidden` class will be added to the element if `open` is false, and remo
 Alpine allows for iterating parts of your template based on JavaScript data using the `data-for` directive. Here is a simple example:
 
 ```alpine
-<div data-data="{ statuses: ['open', 'closed', 'archived'] }">
+<div data-signal="{ statuses: ['open', 'closed', 'archived'] }">
     <template data-for="status in statuses">
         <div data-text="status"></div>
     </template>
@@ -330,7 +330,7 @@ Alpine allows for iterating parts of your template based on JavaScript data usin
 ```
 
 <!-- START_VERBATIM -->
-<div data-data="{ statuses: ['open', 'closed', 'archived'] }" class="demo">
+<div data-signal="{ statuses: ['open', 'closed', 'archived'] }" class="demo">
     <template data-for="status in statuses">
         <div data-text="status"></div>
     </template>
@@ -349,13 +349,13 @@ As you can see the new `status` variable is available in the scope of the iterat
 Alpine makes it easy to control the HTML content of an element with the `data-html` directive.
 
 ```alpine
-<div data-data="{ title: '<h1>Start Here</h1>' }">
+<div data-signal="{ title: '<h1>Start Here</h1>' }">
     <div data-html="title"></div>
 </div>
 ```
 
 <!-- START_VERBATIM -->
-<div data-data="{ title: '<h1>Start Here</h1>' }" class="demo">
+<div data-signal="{ title: '<h1>Start Here</h1>' }" class="demo">
     <div data-html="title"></div>
 </div>
 <!-- END_VERBATIM -->

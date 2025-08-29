@@ -56,7 +56,7 @@ For example, here's a simple example of using `data-resize` to display the width
 
 ```alpine
 <div
-    data-data="{ width: 0, height: 0 }"
+    data-signal="{ width: 0, height: 0 }"
     data-resize="width = $width; height = $height"
 >
     <p data-text="'Width: ' + width + 'px'"></p>
@@ -66,7 +66,7 @@ For example, here's a simple example of using `data-resize` to display the width
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data="{ width: 0, height: 0 }" data-resize="width = $width; height = $height">
+    <div data-signal="{ width: 0, height: 0 }" data-resize="width = $width; height = $height">
         <i>Resize your browser window to see the width and height values change.</i>
         <br><br>
         <p data-text="'Width: ' + width + 'px'"></p>
@@ -89,7 +89,7 @@ It's often useful to observe the entire document's size, rather than a specific 
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data="{ width: 0, height: 0 }" data-resize.document="width = $width; height = $height">
+    <div data-signal="{ width: 0, height: 0 }" data-resize.document="width = $width; height = $height">
         <i>Resize your browser window to see the document width and height values change.</i>
         <br><br>
         <p data-text="'Width: ' + width + 'px'"></p>

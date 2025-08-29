@@ -15,14 +15,14 @@ export function morph(from: any, toHtml: any, options: any) {
 
     let toEl = typeof toHtml === 'string' ? createElement(toHtml) : toHtml
 
-    if ((window as any).Alpine && (window as any).Alpine.closestDataStack && ! from._data_dataStack) {
+    if ((window as any).Alpine && (window as any).Alpine.closestDataStack && ! from._data_signalStack) {
         // Just in case a part of this template uses Alpine scope from somewhere
         // higher in the DOM tree, we'll find that state and replace it on the root
         // element so everything is synced up accurately.
-        toEl._data_dataStack = (window as any).Alpine.closestDataStack(from)
+        toEl._data_signalStack = (window as any).Alpine.closestDataStack(from)
 
         // We will kick off a clone on the root element.
-        toEl._data_dataStack && (window as any).Alpine.cloneNode(from, toEl)
+        toEl._data_signalStack && (window as any).Alpine.cloneNode(from, toEl)
     }
 
     context.patch(from, toEl)
@@ -57,8 +57,8 @@ export function morphBetween(startMarker: any, endMarker: any, toHtml: any, opti
     let toBlock = new Block(toStartMarker, toEndMarker)
 
     if ((window as any).Alpine && (window as any).Alpine.closestDataStack) {
-        toContainer._data_dataStack = (window as any).Alpine.closestDataStack(fromContainer)
-        toContainer._data_dataStack && (window as any).Alpine.cloneNode(fromContainer, toContainer)
+        toContainer._data_signalStack = (window as any).Alpine.closestDataStack(fromContainer)
+        toContainer._data_signalStack && (window as any).Alpine.cloneNode(fromContainer, toContainer)
     }
 
     // Run the patch

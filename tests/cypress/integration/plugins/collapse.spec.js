@@ -2,7 +2,7 @@ import { haveAttribute, haveComputedStyle, html, notHaveAttribute, test } from '
 
 test('can collapse and expand element',
     [html`
-        <div data-data="{ expanded: false }">
+        <div data-signal="{ expanded: false }">
             <button @click="expanded = ! expanded">toggle</button>
             <h1 data-show="expanded" data-collapse>contents <a href="#">focusable content</a></h1>
         </div>
@@ -23,7 +23,7 @@ test('can collapse and expand element',
 
 test('can collapse and expand with a minimum height instead of "display: none"',
     [html`
-        <div data-data="{ expanded: false }">
+        <div data-signal="{ expanded: false }">
             <button @click="expanded = ! expanded">toggle</button>
             <h1 data-show="expanded" data-collapse.min.25px>contents <a href="#">focusable content</a></h1>
         </div>
@@ -42,7 +42,7 @@ test('can collapse and expand with a minimum height instead of "display: none"',
 
 test('@click.away with data-collapse (prevent race condition)',
     html`
-        <div data-data="{ show: false }">
+        <div data-signal="{ show: false }">
             <button @click="show = true">Show</button>
 
             <h1 data-show="show" @click.away="show = false" data-collapse>h1</h1>
@@ -57,7 +57,7 @@ test('@click.away with data-collapse (prevent race condition)',
 
 test('@click.away with data-collapse and borders (prevent race condition)',
     html`
-        <div data-data="{ show: false }">
+        <div data-signal="{ show: false }">
             <button @click="show = true">Show</button>
 
             <h1 style="border: 1x solid" data-show="show" @click.away="show = false" data-collapse>h1</h1>
@@ -73,7 +73,7 @@ test('@click.away with data-collapse and borders (prevent race condition)',
 // https://github.com/alpinejs/alpine/issues/2335
 test('double-click on data-collapse does not mix styles up',
     [html`
-        <div data-data="{ expanded: false }">
+        <div data-signal="{ expanded: false }">
             <button @click="expanded = ! expanded">toggle</button>
             <h1 data-show="expanded" data-collapse>contents</h1>
         </div>

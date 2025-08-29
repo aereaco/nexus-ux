@@ -29,7 +29,7 @@ Upgrading from Alpine V2 to V3 should be fairly painless. In many cases, NOTHING
 * [Need to call `Alpine.start()` after import](#need-to-call-alpine-start)
 * [`data-show.transition` is now `data-transition`](#removed-show-dot-transition)
 * [`data-if` no longer supports `data-transition`](#data-if-no-transitions)
-* [`data-data` cascading scope](#data-data-scope)
+* [`data-signal` cascading scope](#data-signal-scope)
 * [`data-init` no longer accepts a callback return](#data-init-no-callback)
 * [Returning `false` from event handlers no longer implicitly "preventDefault"s](#no-false-return-from-event-handlers)
 * [`data-spread` is now `data-bind`](#data-spread-now-data-bind)
@@ -44,13 +44,13 @@ Upgrading from Alpine V2 to V3 should be fairly painless. In many cases, NOTHING
 
 ```alpine
 <!-- 🚫 Before -->
-<div data-data>
+<div data-signal>
     <button @click="console.log($el)"></button>
     <!-- In V2, $el would have been the <div>, now it's the <button> -->
 </div>
 
 <!-- ✅ After -->
-<div data-data>
+<div data-signal>
     <button @click="console.log($root)"></button>
 </div>
 ```
@@ -63,16 +63,16 @@ For a smoother upgrade experience, you can replace all instances of `$el` with a
 <a name="auto-init"></a>
 ### Automatically evaluate `init()` functions defined on data object
 
-A common pattern in V2 was to manually call an `init()` (or similarly named method) on an `data-data` object.
+A common pattern in V2 was to manually call an `init()` (or similarly named method) on an `data-signal` object.
 
 In V3, Alpine will automatically call `init()` methods on data objects.
 
 ```alpine
 <!-- 🚫 Before -->
-<div data-data="foo()" data-init="init()"></div>
+<div data-signal="foo()" data-init="init()"></div>
 
 <!-- ✅ After -->
-<div data-data="foo()"></div>
+<div data-signal="foo()"></div>
 
 <script>
     function foo() {
@@ -155,28 +155,28 @@ Because the transition system is complex, it makes more sense from a maintenance
 
 [→ Read more about data-if](/directives/if)
 
-<a name="data-data-scope"></a>
-### `data-data` cascading scope
+<a name="data-signal-scope"></a>
+### `data-signal` cascading scope
 
-Scope defined in `data-data` is now available to all children unless overwritten by a nested `data-data` expression.
+Scope defined in `data-signal` is now available to all children unless overwritten by a nested `data-signal` expression.
 
 ```alpine
 <!-- 🚫 Before -->
-<div data-data="{ foo: 'bar' }">
-    <div data-data="{}">
+<div data-signal="{ foo: 'bar' }">
+    <div data-signal="{}">
         <!-- foo is undefined -->
     </div>
 </div>
 
 <!-- ✅ After -->
-<div data-data="{ foo: 'bar' }">
-    <div data-data="{}">
+<div data-signal="{ foo: 'bar' }">
+    <div data-signal="{}">
         <!-- foo is 'bar' -->
     </div>
 </div>
 ```
 
-[→ Read more about data-data scoping](/directives/data#scope)
+[→ Read more about data-signal scoping](/directives/data#scope)
 
 <a name="data-init-no-callback"></a>
 ### `data-init` no longer accepts a callback return
@@ -185,10 +185,10 @@ Before V3, if `data-init` received a return value that is `typeof` "function", i
 
 ```alpine
 <!-- 🚫 Before -->
-<div data-data data-init="() => { ... }">...</div>
+<div data-signal data-init="() => { ... }">...</div>
 
 <!-- ✅ After -->
-<div data-data data-init="$nextTick(() => { ... })">...</div>
+<div data-signal data-init="$nextTick(() => { ... })">...</div>
 ```
 
 [→ Read more about $nextTick](/magics/next-tick)
@@ -200,12 +200,12 @@ Alpine V2 observes a return value of `false` as a desire to run `preventDefault`
 
 ```alpine
 <!-- 🚫 Before -->
-<div data-data="{ blockInput() { return false } }">
+<div data-signal="{ blockInput() { return false } }">
     <input type="text" @input="blockInput()">
 </div>
 
 <!-- ✅ After -->
-<div data-data="{ blockInput(e) { e.preventDefault() }">
+<div data-signal="{ blockInput(e) { e.preventDefault() }">
     <input type="text" @input="blockInput($event)">
 </div>
 ```
@@ -219,14 +219,14 @@ One of Alpine's stories for re-using functionality is abstracting Alpine directi
 
 ```alpine
 <!-- 🚫 Before -->
-<div data-data="dropdown()">
+<div data-signal="dropdown()">
     <button data-spread="trigger">Toggle</button>
 
     <div data-spread="dialogue">...</div>
 </div>
 
 <!-- ✅ After -->
-<div data-data="dropdown()">
+<div data-signal="dropdown()">
     <button data-bind="trigger">Toggle</button>
 
     <div data-bind="dialogue">...</div>
@@ -289,7 +289,7 @@ One of Alpine's stories for re-using functionality is abstracting Alpine directi
 In Alpine V2 for below code
 
 ```alpine
-<div data-data="{options: [{value: 1}, {value: 2}, {value: 3}] }">
+<div data-signal="{options: [{value: 1}, {value: 2}, {value: 3}] }">
     <div data-ref="0">0</div>
     <template data-for="option in options">
         <div :data-ref="option.value" data-text="option.value"></div>
@@ -331,7 +331,7 @@ The following 2 APIs will still work in V3, but are considered deprecated and ar
 
 ```alpine
 <!-- 🚫 Before -->
-<div data-data="dropdown()">
+<div data-signal="dropdown()">
     ...
 </div>
 
@@ -344,7 +344,7 @@ The following 2 APIs will still work in V3, but are considered deprecated and ar
 </script>
 
 <!-- ✅ After -->
-<div data-data="dropdown">
+<div data-signal="dropdown">
     ...
 </div>
 

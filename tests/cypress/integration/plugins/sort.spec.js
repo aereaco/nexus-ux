@@ -7,7 +7,7 @@ import { haveText, html, test } from '../../utils'
 
 test.skip('basic drag sorting works',
     [html`
-        <div data-data>
+        <div data-signal>
             <ul data-sort>
                 <li id="1">foo</li>
                 <li id="2">bar</li>
@@ -38,7 +38,7 @@ test.skip('basic drag sorting works',
 
 test.skip('can use a custom handle',
     [html`
-        <div data-data>
+        <div data-signal>
             <ul data-sort>
                 <li id="1"><span data-sort:handle>handle</span> - foo</li>
                 <li id="2"><span data-sort:handle>handle</span> - bar</li>
@@ -58,7 +58,7 @@ test.skip('can use a custom handle',
 
 test.skip('can move items between groups',
     [html`
-        <div data-data>
+        <div data-signal>
             <ul data-sort data-sort:group="one">
                 <li id="1">foo</li>
                 <li id="2">bar</li>
@@ -87,7 +87,7 @@ test.skip('can move items between groups',
 
 test.skip('sort handle method',
     [html`
-        <div data-data="{ handle(key, position) { $refs.outlet.textContent = key+'-'+position } }">
+        <div data-signal="{ handle(key, position) { $refs.outlet.textContent = key+'-'+position } }">
             <ul data-sort="handle">
                 <li data-sort:key="1" id="1">foo</li>
                 <li data-sort:key="2" id="2">bar</li>
@@ -110,7 +110,7 @@ test.skip('sort handle method',
 
 test.skip('item is also supported for the key in the sort handle method',
     [html`
-        <div data-data="{ handle(item, position) { $refs.outlet.textContent = item+'-'+position } }">
+        <div data-signal="{ handle(item, position) { $refs.outlet.textContent = item+'-'+position } }">
             <ul data-sort="handle">
                 <li data-sort:item="1" id="1">foo</li>
                 <li data-sort:item="2" id="2">bar</li>
@@ -133,7 +133,7 @@ test.skip('item is also supported for the key in the sort handle method',
 
 test.skip('can access key and position in handler',
     [html`
-        <div data-data="{ handle(key, position) { $refs.outlet.textContent = key+'-'+position } }">
+        <div data-signal="{ handle(key, position) { $refs.outlet.textContent = key+'-'+position } }">
             <ul data-sort="handle($position, $key)">
                 <li data-sort:key="1" id="1">foo</li>
                 <li data-sort:key="2" id="2">bar</li>
@@ -156,7 +156,7 @@ test.skip('can access key and position in handler',
 
 test.skip('can access $item instead of $key',
     [html`
-        <div data-data="{ handle(key, position) { $refs.outlet.textContent = key+'-'+position } }">
+        <div data-signal="{ handle(key, position) { $refs.outlet.textContent = key+'-'+position } }">
             <ul data-sort="handle($position, $item)">
                 <li data-sort:key="1" id="1">foo</li>
                 <li data-sort:key="2" id="2">bar</li>
@@ -179,7 +179,7 @@ test.skip('can access $item instead of $key',
 
 test.skip('can use custom sortablejs configuration',
     [html`
-        <div data-data>
+        <div data-signal>
             <ul data-sort data-sort:config="{ filter: '[data-ignore]' }">
                 <li id="1" data-ignore>foo</li>
                 <li id="2">bar</li>
@@ -208,7 +208,7 @@ test.skip('can use custom sortablejs configuration',
 
 test.skip('works with Livewire morphing',
     [html`
-        <div data-data>
+        <div data-signal>
             <ul data-sort>
                 <!-- [if BLOCK]><![endif] -->
                 <li id="1">foo</li>
@@ -228,7 +228,7 @@ test.skip('works with Livewire morphing',
 
 test.skip('data-sort:item can be used as a filter',
     [html`
-        <div data-data>
+        <div data-signal>
             <ul data-sort>
                 <li data-sort:item id="1">foo</li>
                 <li id="2">bar</li>

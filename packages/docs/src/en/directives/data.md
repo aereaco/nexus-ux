@@ -3,16 +3,16 @@ order: 1
 title: data
 ---
 
-# data-data
+# data-signal
 
-Everything in Alpine starts with the `data-data` directive.
+Everything in Alpine starts with the `data-signal` directive.
 
-`data-data` defines a chunk of HTML as an Alpine component and provides the reactive data for that component to reference.
+`data-signal` defines a chunk of HTML as an Alpine component and provides the reactive data for that component to reference.
 
 Here's an example of a contrived dropdown component:
 
 ```alpine
-<div data-data="{ open: false }">
+<div data-signal="{ open: false }">
     <button @click="open = ! open">Toggle Content</button>
 
     <div data-show="open">
@@ -21,23 +21,23 @@ Here's an example of a contrived dropdown component:
 </div>
 ```
 
-Don't worry about the other directives in this example (`@click` and `data-show`), we'll get to those in a bit. For now, let's focus on `data-data`.
+Don't worry about the other directives in this example (`@click` and `data-show`), we'll get to those in a bit. For now, let's focus on `data-signal`.
 
 <a name="scope"></a>
 ## Scope
 
-Properties defined in an `data-data` directive are available to all element children. Even ones inside other, nested `data-data` components.
+Properties defined in an `data-signal` directive are available to all element children. Even ones inside other, nested `data-signal` components.
 
 For example:
 
 ```alpine
-<div data-data="{ foo: 'bar' }">
+<div data-signal="{ foo: 'bar' }">
     <span data-text="foo"><!-- Will output: "bar" --></span>
 
-    <div data-data="{ bar: 'baz' }">
+    <div data-signal="{ bar: 'baz' }">
         <span data-text="foo"><!-- Will output: "bar" --></span>
 
-        <div data-data="{ foo: 'bob' }">
+        <div data-signal="{ foo: 'bob' }">
             <span data-text="foo"><!-- Will output: "bob" --></span>
         </div>
     </div>
@@ -47,12 +47,12 @@ For example:
 <a name="methods"></a>
 ## Methods
 
-Because `data-data` is evaluated as a normal JavaScript object, in addition to state, you can store methods and even getters.
+Because `data-signal` is evaluated as a normal JavaScript object, in addition to state, you can store methods and even getters.
 
-For example, let's extract the "Toggle Content" behavior into a method on  `data-data`.
+For example, let's extract the "Toggle Content" behavior into a method on  `data-signal`.
 
 ```alpine
-<div data-data="{ open: false, toggle() { this.open = ! this.open } }">
+<div data-signal="{ open: false, toggle() { this.open = ! this.open } }">
     <button @click="toggle()">Toggle Content</button>
 
     <div data-show="open">
@@ -61,7 +61,7 @@ For example, let's extract the "Toggle Content" behavior into a method on  `data
 </div>
 ```
 
-Notice the added `toggle() { this.open = ! this.open }` method on `data-data`. This method can now be called from anywhere inside the component.
+Notice the added `toggle() { this.open = ! this.open }` method on `data-signal`. This method can now be called from anywhere inside the component.
 
 You'll also notice the usage of `this.` to access state on the object itself. This is because Alpine evaluates this data object like any standard JavaScript object with a `this` context.
 
@@ -85,7 +85,7 @@ Think of them like "computed properties" (although, they are not cached like Vue
 Let's refactor our component to use a getter called `isOpen` instead of accessing `open` directly.
 
 ```alpine
-<div data-data="{
+<div data-signal="{
     open: false,
     get isOpen() { return this.open },
     toggle() { this.open = ! this.open },
@@ -110,13 +110,13 @@ Occasionally, you want to create an Alpine component, but you don't need any dat
 In these cases, you can always pass in an empty object.
 
 ```alpine
-<div data-data="{}">
+<div data-signal="{}">
 ```
 
 However, if you wish, you can also eliminate the attribute value entirely if it looks better to you.
 
 ```alpine
-<div data-data>
+<div data-signal>
 ```
 
 <a name="single-element-components"></a>
@@ -125,15 +125,15 @@ However, if you wish, you can also eliminate the attribute value entirely if it 
 Sometimes you may only have a single element inside your Alpine component, like the following:
 
 ```alpine
-<div data-data="{ open: true }">
+<div data-signal="{ open: true }">
     <button @click="open = false" data-show="open">Hide Me</button>
 </div>
 ```
 
-In these cases, you can declare `data-data` directly on that single element:
+In these cases, you can declare `data-signal` directly on that single element:
 
 ```alpine
-<button data-data="{ open: true }" @click="open = false" data-show="open">
+<button data-signal="{ open: true }" @click="open = false" data-show="open">
     Hide Me
 </button>
 ```
@@ -141,12 +141,12 @@ In these cases, you can declare `data-data` directly on that single element:
 <a name="re-usable-data"></a>
 ## Re-usable Data
 
-If you find yourself duplicating the contents of `data-data`, or you find the inline syntax verbose, you can extract the `data-data` object out to a dedicated component using `Alpine.data`.
+If you find yourself duplicating the contents of `data-signal`, or you find the inline syntax verbose, you can extract the `data-signal` object out to a dedicated component using `Alpine.data`.
 
 Here's a quick example:
 
 ```alpine
-<div data-data="dropdown">
+<div data-signal="dropdown">
     <button @click="toggle">Toggle Content</button>
 
     <div data-show="open">

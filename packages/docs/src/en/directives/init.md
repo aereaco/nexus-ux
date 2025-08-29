@@ -13,11 +13,11 @@ The `data-init` directive allows you to hook into the initialization phase of an
 
 In the above example, "I\'m being initialized!" will be output in the console before it makes further DOM updates.
 
-Consider another example where `data-init` is used to fetch some JSON and store it in `data-data` before the component is processed.
+Consider another example where `data-init` is used to fetch some JSON and store it in `data-signal` before the component is processed.
 
 ```alpine
 <div
-    data-data="{ posts: [] }"
+    data-signal="{ posts: [] }"
     data-init="posts = await (await fetch('/posts')).json()"
 >...</div>
 ```
@@ -38,10 +38,10 @@ By using Alpine's internal `$nextTick` magic, you can make this happen.
 <a name="standalone-data-init"></a>
 ## Standalone `data-init`
 
-You can add `data-init` to any elements inside or outside an `data-data` HTML block. For example:
+You can add `data-init` to any elements inside or outside an `data-signal` HTML block. For example:
 
 ```alpine
-<div data-data>
+<div data-signal>
     <span data-init="console.log('I can initialize')"></span>
 </div>
 
@@ -51,10 +51,10 @@ You can add `data-init` to any elements inside or outside an `data-data` HTML bl
 <a name="auto-evaluate-init-method"></a>
 ## Auto-evaluate init() method
 
-If the `data-data` object of a component contains an `init()` method, it will be called automatically. For example:
+If the `data-signal` object of a component contains an `init()` method, it will be called automatically. For example:
 
 ```alpine
-<div data-data="{
+<div data-signal="{
     init() {
         console.log('I am called automatically')
     }
@@ -73,11 +73,11 @@ Alpine.data('dropdown', () => ({
 }))
 ```
 
-If you have both an `data-data` object containing an `init()` method and an `data-init` directive, the `data-data` method will be called before the directive.
+If you have both an `data-signal` object containing an `init()` method and an `data-init` directive, the `data-signal` method will be called before the directive.
 
 ```alpine
 <div
-    data-data="{
+    data-signal="{
         init() {
             console.log('I am called first')
         }

@@ -5,12 +5,12 @@ title: ignore
 
 # data-ignore
 
-By default, Alpine will crawl and initialize the entire DOM tree of an element containing `data-init` or `data-data`.
+By default, Alpine will crawl and initialize the entire DOM tree of an element containing `data-init` or `data-signal`.
 
 If for some reason, you don't want Alpine to touch a specific section of your HTML, you can prevent it from doing so using `data-ignore`.
 
 ```alpine
-<div data-data="{ label: 'From Alpine' }">
+<div data-signal="{ label: 'From Alpine' }">
     <div data-ignore>
         <span data-text="label"></span>
     </div>

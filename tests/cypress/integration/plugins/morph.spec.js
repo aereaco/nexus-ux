@@ -2,7 +2,7 @@ import { haveAttribute, haveLength, haveText, haveValue, haveHtml, html, test } 
 
 test('can morph components and preserve Alpine state',
     [html`
-        <div data-data="{ foo: 'bar' }">
+        <div data-signal="{ foo: 'bar' }">
             <button @click="foo = 'baz'">Change Foo</button>
             <span data-text="foo"></span>
         </div>
@@ -22,7 +22,7 @@ test('can morph components and preserve Alpine state',
 
 test('morphing target uses outer Alpine scope',
     [html`
-        <article data-data="{ foo: 'bar' }">
+        <article data-signal="{ foo: 'bar' }">
             <div>
                 <button @click="foo = 'baz'">Change Foo</button>
                 <span data-text="foo"></span>
@@ -44,7 +44,7 @@ test('morphing target uses outer Alpine scope',
 
 test('can morph with HTML change and preserve Alpine state',
     [html`
-        <div data-data="{ foo: 'bar' }">
+        <div data-signal="{ foo: 'bar' }">
             <button @click="foo = 'baz'">Change Foo</button>
             <span data-text="foo"></span>
         </div>
@@ -66,11 +66,11 @@ test('can morph with HTML change and preserve Alpine state',
 
 test('morphing an element with multiple nested Alpine components preserves scope',
     [html`
-        <div data-data="{ foo: 'bar' }">
+        <div data-signal="{ foo: 'bar' }">
             <button @click="foo = 'baz'">Change Foo</button>
             <span data-text="foo"></span>
 
-            <div data-data="{ bob: 'lob' }">
+            <div data-signal="{ bob: 'lob' }">
                 <a href="#" @click.prevent="bob = 'law'">Change Bob</a>
                 <h1 data-text="bob"></h1>
             </div>
@@ -95,7 +95,7 @@ test('morphing an element with multiple nested Alpine components preserves scope
 
 test('can morph teleports',
     [html`
-        <div data-data="{ count: 1 }" id="a">
+        <div data-signal="{ count: 1 }" id="a">
             <button @click="count++">Inc</button>
 
             <template data-teleport="#b">
@@ -110,7 +110,7 @@ test('can morph teleports',
     `],
     ({ get }, reload, window, document) => {
         let toHtml = html`
-        <div data-data="{ count: 1 }" id="a">
+        <div data-signal="{ count: 1 }" id="a">
             <button @click="count++">Inc</button>
 
             <template data-teleport="#b">
@@ -136,7 +136,7 @@ test('can morph teleports',
 
 test('can morph teleports in different places with IDs',
     [html`
-        <div data-data="{ count: 1 }" id="a">
+        <div data-signal="{ count: 1 }" id="a">
             <button @click="count++">Inc</button>
 
             <template data-teleport="#b" id="template">
@@ -153,7 +153,7 @@ test('can morph teleports in different places with IDs',
     `],
     ({ get }, reload, window, document) => {
         let toHtml = html`
-        <div data-data="{ count: 1 }" id="a">
+        <div data-signal="{ count: 1 }" id="a">
             <button @click="count++">Inc</button>
 
             <div>moving placeholder</div>
@@ -385,13 +385,13 @@ test('can morph using different keys',
 test('can morph elements with dynamic ids',
     [html`
         <ul>
-            <li data-data data-bind:id="'1'" >foo<input></li>
+            <li data-signal data-bind:id="'1'" >foo<input></li>
         </ul>
     `],
     ({ get }, reload, window, document) => {
         let toHtml = html`
             <ul>
-                <li data-data data-bind:id="'1'" >foo<input></li>
+                <li data-signal data-bind:id="'1'" >foo<input></li>
             </ul>
         `
 
@@ -426,7 +426,7 @@ test('can morph different inline nodes',
 
 test('can morph multiple nodes',
     [html`
-        <div data-data>
+        <div data-signal>
             <p></p>
             <p></p>
         </div>
@@ -522,7 +522,7 @@ test('can morph with flat-nested conditional markers',
 // '@event' handlers cannot be assigned directly on the element without Alpine's internl monkey patching...
 test('can morph @event handlers', [
     html`
-        <div data-data="{ foo: 'bar' }">
+        <div data-signal="{ foo: 'bar' }">
             <button data-text="foo"></button>
         </div>
     `],
@@ -541,7 +541,7 @@ test('can morph @event handlers', [
 
 test('can morph menu',
     [html`
-        <main data-data>
+        <main data-signal>
             <article data-menu>
                 <button data-trigger data-menu:button data-text="'ready'"></button>
 
@@ -556,7 +556,7 @@ test('can morph menu',
     `],
     ({ get }, reload, window, document) => {
         let toHtml = html`
-            <main data-data>
+            <main data-signal>
                 <article data-menu>
                     <button data-trigger data-menu:button data-text="'ready'"></button>
 
@@ -585,7 +585,7 @@ test('can morph menu',
 
 test('can morph teleports with data-for',
     [html`
-    <main data-data>
+    <main data-signal>
         <template data-teleport="body">
             <article>
                 <template data-for="item in 3" :key="item">
@@ -594,12 +594,12 @@ test('can morph teleports with data-for',
             </article>
         </template>
 
-        <button data-data="{ count: 1 }" data-text="count" data-on:click="count++" type="button"></button>
+        <button data-signal="{ count: 1 }" data-text="count" data-on:click="count++" type="button"></button>
     </main>
     `],
     ({ get }, reload, window, document) => {
         let toHtml = html`
-        <main data-data>
+        <main data-signal>
             <template data-teleport="body">
                 <article>
                     <template data-for="item in 3" :key="item">
@@ -608,7 +608,7 @@ test('can morph teleports with data-for',
                 </article>
             </template>
 
-            <button data-data="{ count: 1 }" data-text="count" data-on:click="count++" type="button"></button>
+            <button data-signal="{ count: 1 }" data-text="count" data-on:click="count++" type="button"></button>
         </main>
         `
 
@@ -626,9 +626,9 @@ test('can morph teleports with data-for',
 
 test('can morph teleports with root-level state',
     [html`
-    <main data-data>
+    <main data-signal>
         <template data-teleport="body">
-            <div data-data="{ foo: 'bar' }">
+            <div data-signal="{ foo: 'bar' }">
                 <h1 data-text="foo"></h1>
             </div>
         </template>
@@ -636,9 +636,9 @@ test('can morph teleports with root-level state',
     `],
     ({ get }, reload, window, document) => {
         let toHtml = html`
-        <main data-data>
+        <main data-signal>
             <template data-teleport="body">
-                <div data-data="{ foo: 'bar' }">
+                <div data-signal="{ foo: 'bar' }">
                     <h1 data-text="foo"></h1>
                 </div>
             </template>
@@ -691,7 +691,7 @@ test('can use morphBetween with comment markers',
 
 test('morphBetween preserves Alpine state',
     [html`
-        <div data-data="{ count: 1 }">
+        <div data-signal="{ count: 1 }">
             <button @click="count++">Inc</button>
             <!--morph-start-->
             <p data-text="count"></p>
@@ -924,9 +924,9 @@ test('morphBetween with empty content',
 
 test('morphBetween with nested Alpine components',
     [html`
-        <div data-data="{ outer: 'foo' }">
+        <div data-signal="{ outer: 'foo' }">
             <!--nested-start-->
-            <div data-data="{ inner: 'bar' }">
+            <div data-signal="{ inner: 'bar' }">
                 <span data-text="outer"></span>
                 <span data-text="inner"></span>
                 <input data-model="inner">
@@ -956,7 +956,7 @@ test('morphBetween with nested Alpine components',
         get('span:nth-of-type(2)').should(haveText('baz'))
 
         window.Alpine.morphBetween(startMarker, endMarker, `
-            <div data-data="{ inner: 'bar' }">
+            <div data-signal="{ inner: 'bar' }">
                 <h4>New heading</h4>
                 <span data-text="outer"></span>
                 <span data-text="inner"></span>

@@ -2,7 +2,7 @@ import { haveText, test, html } from '../../utils'
 
 test('can intersect',
     [html`
-    <div data-data="{ count: 0 }">
+    <div data-signal="{ count: 0 }">
         <span data-text="count"></span>
 
         <div data-intersect="count++" style="margin-top: 100vh;" id="1">hi</div>
@@ -21,7 +21,7 @@ test('can intersect',
 
 test('It should evaluate with ":enter" only when the component is intersected',
     [html`
-    <div data-data="{ count: 0 }">
+    <div data-signal="{ count: 0 }">
         <span data-text="count"></span>
 
         <div data-intersect:enter="count++" style="margin-top: 100vh;" id="1">hi</div>
@@ -40,7 +40,7 @@ test('It should evaluate with ":enter" only when the component is intersected',
 
 test('It should evaluate with ":leave" only when the component is not intersected',
     [html`
-    <div data-data="{ count: 0 }">
+    <div data-signal="{ count: 0 }">
         <span data-text="count"></span>
 
         <div data-intersect:leave="count++" style="margin-top: 100vh;" id="1">hi</div>
@@ -61,7 +61,7 @@ test('It should evaluate with ":leave" only when the component is not intersecte
 
 test('.half',
     [html`
-    <div data-data="{ count: 0 }">
+    <div data-signal="{ count: 0 }">
         <span data-text="count"></span>
 
         <div id="container" style="height: 400px; overflow-y: scroll;">
@@ -84,7 +84,7 @@ test('.half',
 
 test('.full',
     [html`
-    <div data-data="{ count: 0 }">
+    <div data-signal="{ count: 0 }">
         <span data-text="count"></span>
 
         <div id="container" style="height: 400px; overflow-y: scroll;">
@@ -107,7 +107,7 @@ test('.full',
 
 test('.once',
     [html`
-    <div data-data="{ count: 0 }" data-init="setTimeout(() => count++, 300)">
+    <div data-signal="{ count: 0 }" data-init="setTimeout(() => count++, 300)">
         <span data-text="count"></span>
 
         <div data-intersect.once="count++" style="margin-top: 100vh;" id="1">hi</div>
@@ -126,7 +126,7 @@ test('.once',
 
 test('.margin',
     [html`
-    <div data-data="{ count: 0 }">
+    <div data-signal="{ count: 0 }">
         <span data-text="count"></span>
         <div id="buffer-top" style="height: calc(100vh - 50px); margin-top: 100vh; background: pink"></div>
         <div id="buffer-bottom" style="height: 50px; background: green"></div>
@@ -150,7 +150,7 @@ test('.margin',
 
 test('.threshold',
     [html`
-    <div data-data="{ count: 0 }">
+    <div data-signal="{ count: 0 }">
         <div data-ref="foo" style="width: 250px; overflow: scroll; display: flex; justify-content: start">
             <div style="min-width: 250px;">first</div>
             <div style="min-width: 250px" data-intersect.threshold.50="count++;">second</div>

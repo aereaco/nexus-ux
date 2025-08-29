@@ -2,7 +2,7 @@ import { haveText, html, notHaveText, test } from '../../utils'
 
 test('sets text on init',
     html`
-        <div data-data="{ foo: 'bar' }">
+        <div data-signal="{ foo: 'bar' }">
             <span data-text="foo"></span>
         </div>
     `,
@@ -11,7 +11,7 @@ test('sets text on init',
 
 test('sets text on update',
     html`
-        <div data-data="{ foo: '' }">
+        <div data-signal="{ foo: '' }">
             <button data-on:click="foo = 'bar'">Show "bar"</button>
 
             <span data-text="foo"></span>
@@ -26,7 +26,7 @@ test('sets text on update',
 
 test('sets text on SVG elements',
     html`
-        <div data-data="{ foo: 'bar' }">
+        <div data-signal="{ foo: 'bar' }">
             <svg viewBox="0 0 240 80">
                 <text x="30" y="50" data-text="foo"></text>
             </svg>

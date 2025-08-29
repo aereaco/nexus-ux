@@ -2,10 +2,10 @@ import { haveValue, html, test } from '../utils'
 
 test.skip('can entangle to getter/setter pairs',
     [html`
-    <div data-data="{ outer: 'foo' }">
+    <div data-signal="{ outer: 'foo' }">
         <input data-model="outer" outer>
 
-        <div data-data="{ inner: 'bar' }" data-init="() => {}; Alpine.entangle(
+        <div data-signal="{ inner: 'bar' }" data-init="() => {}; Alpine.entangle(
             {
                 get() { return outer },
                 set(value) { outer = value },
@@ -35,10 +35,10 @@ test.skip('can entangle to getter/setter pairs',
 
 test.skip('can release entanglement',
     [html`
-        <div data-data="{ outer: 'foo' }">
+        <div data-signal="{ outer: 'foo' }">
             <input data-model="outer" outer>
 
-            <div data-data="{ inner: 'bar', release: () => {} }" data-init="() => {}; release = Alpine.entangle(
+            <div data-signal="{ inner: 'bar', release: () => {} }" data-init="() => {}; release = Alpine.entangle(
                 {
                     get() { return outer },
                     set(value) { outer = value },
@@ -74,11 +74,11 @@ test(
     "can handle undefined",
     [
         html`
-            <div data-data="{ outer: undefined }">
+            <div data-signal="{ outer: undefined }">
                 <input data-model="outer" outer />
 
                 <div
-                    data-data="{ inner: 'bar' }"
+                    data-signal="{ inner: 'bar' }"
                     data-init="() => {}; Alpine.entangle(
             {
                 get() { return outer },

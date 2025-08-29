@@ -2,7 +2,7 @@ import { beVisible, haveText, html, test } from '../utils'
 
 test('element side effects are cleaned up after the elements are removed',
     html`
-        <div data-data="{ foo: 1, bar: 1 }">
+        <div data-signal="{ foo: 1, bar: 1 }">
             <button @click="bar++">bar</button>
             <a href="#" @click.prevent="$refs.span.remove()">remove</a>
 
@@ -27,7 +27,7 @@ test('element side effects are cleaned up after the elements are removed',
 
 test('nested element side effects are cleaned up after the parent is removed',
     html`
-        <div data-data="{ foo: 1, bar: 1 }">
+        <div data-signal="{ foo: 1, bar: 1 }">
             <button @click="bar++">bar</button>
             <a href="#" @click.prevent="$refs.article.remove()">remove</a>
 
@@ -54,7 +54,7 @@ test('nested element side effects are cleaned up after the parent is removed',
 
 test('element magic-based side effects are cleaned up after the element is removed',
     html`
-        <div data-data="{ foo: 1, bar: 1 }">
+        <div data-signal="{ foo: 1, bar: 1 }">
             <button @click="foo++">foo</button>
             <a href="#" @click.prevent="$refs.span.remove()">remove</a>
 
@@ -79,7 +79,7 @@ test('element magic-based side effects are cleaned up after the element is remov
 
 test('can mutate directive value',
     html`
-        <div data-data="{ foo: 'bar', bar: 'baz' }">
+        <div data-signal="{ foo: 'bar', bar: 'baz' }">
             <button @click="$refs.target.setAttribute('data-text', 'bar')">change text</button>
 
             <span data-text="foo" data-ref="target"></span>
@@ -94,7 +94,7 @@ test('can mutate directive value',
 
 test('can add new directive',
     html`
-        <div data-data="{ foo: 'bar' }">
+        <div data-signal="{ foo: 'bar' }">
             <button @click="$refs.target.setAttribute('data-text', 'foo')">change text</button>
 
             <span data-ref="target"></span>
@@ -109,7 +109,7 @@ test('can add new directive',
 
 test('can pause and queue mutations for later resuming/flushing',
     html`
-        <div data-data="{ foo: 1 }">
+        <div data-signal="{ foo: 1 }">
             <button data-on:click="setTimeout(() => foo++)" data-ref="btn">foo</button>
             <h1 data-text="foo"></h1>
 
@@ -138,14 +138,14 @@ test('can pause and queue mutations for later resuming/flushing',
 
 test('does not initialise components twice when contained in multiple mutations',
     html`
-        <div data-data="{
+        <div data-signal="{
             foo: 0,
             bar: 0,
             test() {
                 container = document.createElement('div')
                 this.$root.appendChild(container)
                 alpineElement = document.createElement('span')
-                alpineElement.setAttribute('data-data', '{init() {this.bar++}}')
+                alpineElement.setAttribute('data-signal', '{init() {this.bar++}}')
                 alpineElement.setAttribute('data-init', 'foo++')
                 container.appendChild(alpineElement)
             }
@@ -166,7 +166,7 @@ test('does not initialise components twice when contained in multiple mutations'
 
 test('directives keep working when node is moved into a different one',
     html`
-        <div data-data="{
+        <div data-signal="{
             foo: 0,
             mutate() {
                 let button = document.getElementById('one')
@@ -195,7 +195,7 @@ test('directives keep working when node is moved into a different one',
 
 test('no side effects when directives are added to an element that is removed afterwards',
     html`
-        <div data-data="{
+        <div data-signal="{
             foo: 0,
             mutate() {
                 let span = document.createElement('span')
@@ -236,7 +236,7 @@ test(
                 });
             });
         </script>
-        <div data-data>
+        <div data-signal>
             <div class="bg-red-300 w-32 h-32" data-test></div>
         </div>
     `,
@@ -262,7 +262,7 @@ test(
                 });
             });
         </script>
-        <div data-data>
+        <div data-signal>
             <div class="bg-red-300 w-32 h-32" data-test></div>
         </div>
     `,

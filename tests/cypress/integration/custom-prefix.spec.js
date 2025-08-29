@@ -4,12 +4,12 @@ test('can set a custom data- prefix',
     html`
         <script>
             document.addEventListener('alpine:init', () => {
-                Alpine.prefix('data-data-')
+                Alpine.prefix('data-signal-')
             })
         </script>
 
-        <div data-data-data="{ foo: 'bar' }">
-            <span data-data-text="foo"></span>
+        <div data-signal-data="{ foo: 'bar' }">
+            <span data-signal-text="foo"></span>
         </div>
     `,
     ({ get }) => get('span').should(haveText('bar'))

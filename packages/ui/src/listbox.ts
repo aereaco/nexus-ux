@@ -77,7 +77,7 @@ function handleRoot(el: any, Alpine: any) {
         'data-modelable': '__value',
 
         // Initialize...
-        'data-data'() {
+        'data-signal'() {
             return {
                 /**
                  * Listbox state...
@@ -348,7 +348,7 @@ function handleOption(el: any, Alpine: any) {
             ':aria-selected'() { return this.$listboxOption.isSelected },
 
             // Initialize...
-            'data-data'() {
+            'data-signal'() {
                 return {
                     '__optionKey': null,
 

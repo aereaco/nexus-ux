@@ -18,7 +18,7 @@ There are two primary ways to handle transitions in Alpine:
 The simplest way to achieve a transition using Alpine is by adding `data-transition` to an element with `data-show` on it. For example:
 
 ```alpine
-<div data-data="{ open: false }">
+<div data-signal="{ open: false }">
     <button @click="open = ! open">Toggle</button>
 
     <div data-show="open" data-transition>
@@ -29,7 +29,7 @@ The simplest way to achieve a transition using Alpine is by adding `data-transit
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data="{ open: false }">
+    <div data-signal="{ open: false }">
         <button @click="open = ! open">Toggle</button>
 
         <div data-show="open" data-transition>
@@ -65,7 +65,7 @@ If you wish to customize the durations specifically for entering and leaving, yo
 >
 ```
 
-> Despite not being included in the above snippet, `data-transition` cannot be used if no parent element has `data-data` defined. [→ Read more about `data-data`](/directives/data)
+> Despite not being included in the above snippet, `data-transition` cannot be used if no parent element has `data-signal` defined. [→ Read more about `data-signal`](/directives/data)
 
 <a name="customizing-delay"></a>
 ### Customizing delay
@@ -136,7 +136,7 @@ For direct control over exactly what goes into your transitions, you can apply C
 > The following examples use [TailwindCSS](https://tailwindcss.com/docs/transition-property) utility classes.
 
 ```alpine
-<div data-data="{ open: false }">
+<div data-signal="{ open: false }">
     <button @click="open = ! open">Toggle</button>
 
     <div
@@ -153,7 +153,7 @@ For direct control over exactly what goes into your transitions, you can apply C
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data="{ open: false }">
+    <div data-signal="{ open: false }">
     <button @click="open = ! open">Toggle</button>
 
     <div

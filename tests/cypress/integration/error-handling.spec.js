@@ -23,7 +23,7 @@ export function assertConsoleInterceptorHadErrorWithCorrectElement() {
 
 test('data-for identifier issue',
     [html`
-        <div data-data="{ items: ['foo'] }">
+        <div data-signal="{ items: ['foo'] }">
             <template id="xfor" data-for="item in itemzzzz">
                 <span data-text="item"></span>
             </template>
@@ -37,7 +37,7 @@ test('data-for identifier issue',
 
 test('data-text identifier issue',
     [html`
-        <div data-data="{ items: ['foo'] }">
+        <div data-signal="{ items: ['foo'] }">
             <template data-for="item in items">
                 <span id="xtext" data-text="itemzzz"></span>
             </template>
@@ -51,7 +51,7 @@ test('data-text identifier issue',
 
 test('data-init identifier issue',
     [html`
-        <div id="xinit" data-data data-init="doesNotExist()">
+        <div id="xinit" data-signal data-init="doesNotExist()">
         </div>
     `,
         setupConsoleInterceptor( "xinit" )
@@ -62,7 +62,7 @@ test('data-init identifier issue',
 
 test('data-show identifier issue',
     [html`
-        <div id="xshow" data-data="{isOpen: true}" data-show="isVisible">
+        <div id="xshow" data-signal="{isOpen: true}" data-show="isVisible">
         </div>
     `,
         setupConsoleInterceptor( "xshow" )
@@ -73,7 +73,7 @@ test('data-show identifier issue',
 
 test('data-bind class object syntax identifier issue',
     [html`
-        <div data-data="{isOpen: true}">
+        <div data-signal="{isOpen: true}">
             <div id="xbind" :class="{ 'block' : isVisible, 'hidden' : !isVisible }"></div>
         </div>
     `,
@@ -85,7 +85,7 @@ test('data-bind class object syntax identifier issue',
 
 test('data-model identifier issue',
     [html`
-        <div data-data="{value: ''}">
+        <div data-signal="{value: ''}">
             <input id="xmodel" data-model="thething"/>
         </div>
     `,
@@ -97,7 +97,7 @@ test('data-model identifier issue',
 
 test('data-if identifier issue',
     [html`
-        <div data-data="{value: ''}">
+        <div data-signal="{value: ''}">
             <template id="xif" data-if="valuez === ''">
                 <span>Words</span>
             </template>
@@ -111,7 +111,7 @@ test('data-if identifier issue',
 
 test('data-if identifier issue ( function )',
     [html`
-        <div data-data="{shouldOpen: function(){}}">
+        <div data-signal="{shouldOpen: function(){}}">
             <template id="xif" data-if="isOpen()">
                 <span>Words</span>
             </template>
@@ -125,7 +125,7 @@ test('data-if identifier issue ( function )',
 
 test('data-effect identifier issue',
     [html`
-        <div id="xeffect" data-data="{ label: 'Hello' }" data-effect="System.out.println(label)">
+        <div id="xeffect" data-signal="{ label: 'Hello' }" data-effect="System.out.println(label)">
         </div>
     `,
         setupConsoleInterceptor( "xeffect" )
@@ -136,7 +136,7 @@ test('data-effect identifier issue',
 
 test('data-on identifier issue',
     [html`
-        <div data-data="{ label: 'Hello' }">
+        <div data-signal="{ label: 'Hello' }">
             <div data-text="label"></div>
             <button id="xon" data-on:click="labelz += ' World!'">Change Message</button>
         </div>
@@ -150,9 +150,9 @@ test('data-on identifier issue',
     true
 )
 
-test('data-data syntax error',
+test('data-signal syntax error',
     [html`
-        <div id="xdata" data-data="{ label: 'Hello' }aaa">
+        <div id="xdata" data-signal="{ label: 'Hello' }aaa">
         </div>
     `,
         setupConsoleInterceptor( "xdata" )
@@ -163,7 +163,7 @@ test('data-data syntax error',
 
 test('if statement syntax error',
     [html`
-        <div data-data="{ label: 'Hello' }">
+        <div data-signal="{ label: 'Hello' }">
             <div id="xtext" data-text="if( false { label } else { 'bye' }"></div>
         </div>
     `,
@@ -173,9 +173,9 @@ test('if statement syntax error',
     true
 )
 
-test('data-data with reference error and multiple errors',
+test('data-signal with reference error and multiple errors',
     [html`
-        <div id="xdata" data-data="{ items : [ {v:'one'},{v:'two'}], replaceItems }">
+        <div id="xdata" data-signal="{ items : [ {v:'one'},{v:'two'}], replaceItems }">
             <template id="xtext" data-for="item in items">
                 <span data-text="item.v"></span>
             </template>
@@ -189,7 +189,7 @@ test('data-data with reference error and multiple errors',
 
 test('evaluation with syntax error',
     [html`
-        <div data-data="{value: ''}">
+        <div data-signal="{value: ''}">
             <template id="xif" data-if="value ==== ''">
                 <span>Words</span>
             </template>

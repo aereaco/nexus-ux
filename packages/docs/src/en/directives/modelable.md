@@ -10,8 +10,8 @@ title: modelable
 Here's a simple example of using `data-modelable` to expose a variable for binding with `data-model`.
 
 ```alpine
-<div data-data="{ number: 5 }">
-    <div data-data="{ count: 0 }" data-modelable="count" data-model="number">
+<div data-signal="{ number: 5 }">
+    <div data-signal="{ count: 0 }" data-modelable="count" data-model="number">
         <button @click="count++">Increment</button>
     </div>
 
@@ -21,8 +21,8 @@ Here's a simple example of using `data-modelable` to expose a variable for bindi
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data="{ number: 5 }">
-        <div data-data="{ count: 0 }" data-modelable="count" data-model="number">
+    <div data-signal="{ number: 5 }">
+        <div data-signal="{ count: 0 }" data-modelable="count" data-model="number">
             <button @click="count++">Increment</button>
         </div>
 

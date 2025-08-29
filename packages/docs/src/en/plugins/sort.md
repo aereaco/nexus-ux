@@ -63,7 +63,7 @@ The primary API for using this plugin is the `data-sort` directive. By adding `d
 ```
 
 <!-- START_VERBATIM -->
-<div data-data>
+<div data-signal>
     <ul data-sort>
         <li data-sort:item class="cursor-pointer">foo</li>
         <li data-sort:item class="cursor-pointer">bar</li>
@@ -86,7 +86,7 @@ You can react to sorting changes by passing a handler function to `data-sort` an
 ```
 
 <!-- START_VERBATIM -->
-<div data-data>
+<div data-signal>
     <ul data-sort="alert($item + ' - ' + $position)">
         <li data-sort:item="1" class="cursor-pointer">foo</li>
         <li data-sort:item="2" class="cursor-pointer">bar</li>
@@ -100,7 +100,7 @@ The `data-sort` handler will be called every time the sort order of the items ch
 You can also pass a handler function to `data-sort` and that function will receive the `item` and `position` as the first and second parameter:
 
 ```alpine
-<div data-data="{ handle: (item, position) => { ... } }">
+<div data-signal="{ handle: (item, position) => { ... } }">
     <ul data-sort="handle">
         <li data-sort:item="1">foo</li>
         <li data-sort:item="2">bar</li>
@@ -158,7 +158,7 @@ By default, each `data-sort:item` element is draggable by clicking and dragging 
 ```
 
 <!-- START_VERBATIM -->
-<div data-data>
+<div data-signal>
     <ul data-sort>
         <li data-sort:item>
             <span data-sort:handle class="cursor-pointer"> - </span>foo
@@ -193,7 +193,7 @@ If you would like to show a "ghost" of the original element in its place instead
 ```
 
 <!-- START_VERBATIM -->
-<div data-data>
+<div data-signal>
     <ul data-sort.ghost>
         <li data-sort:item class="cursor-pointer">foo</li>
         <li data-sort:item class="cursor-pointer">bar</li>
@@ -224,7 +224,7 @@ This makes it easy to add any custom styling you would like:
 ```
 
 <!-- START_VERBATIM -->
-<div data-data>
+<div data-signal>
     <ul data-sort.ghost data-sort:config="{ ghostClass: 'opacity-50' }">
         <li data-sort:item class="cursor-pointer">foo</li>
         <li data-sort:item class="cursor-pointer">bar</li>
@@ -278,7 +278,7 @@ Consider HTML like the following, where each item in the list is styled differen
 If you drag one of the elements in the list below you will see that the hover effect will be errantly applied to any element in the original element's place:
 
 <!-- START_VERBATIM -->
-<div data-data>
+<div data-signal>
     <ul data-sort class="flex flex-col items-start">
         <li data-sort:item class="hover:border border-black cursor-pointer">foo</li>
         <li data-sort:item class="hover:border border-black cursor-pointer">bar</li>
@@ -302,7 +302,7 @@ Here is how you can do this directly inline using Tailwind arbitrary variants:
 Now you can see below that the hover effect is only applied to the dragging element and not the others in the list.
 
 <!-- START_VERBATIM -->
-<div data-data>
+<div data-signal>
     <ul data-sort class="flex flex-col items-start">
         <li data-sort:item class="[body:not(.sorting)_&]:hover:border border-black cursor-pointer">foo</li>
         <li data-sort:item class="[body:not(.sorting)_&]:hover:border border-black cursor-pointer">bar</li>
@@ -325,7 +325,7 @@ Alpine chooses sensible defaults for configuring [SortableJS](https://github.com
 ```
 
 <!-- START_VERBATIM -->
-<div data-data>
+<div data-signal>
     <ul data-sort data-sort:config="{ animation: 0 }">
         <li data-sort:item class="cursor-pointer">foo</li>
         <li data-sort:item class="cursor-pointer">bar</li>

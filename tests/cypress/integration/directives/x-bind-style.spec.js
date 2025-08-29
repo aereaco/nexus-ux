@@ -2,7 +2,7 @@ import { beHidden, beVisible, haveText, beChecked, haveAttribute, haveClasses, h
 
 test('style attribute object binding',
     html`
-        <div data-data>
+        <div data-signal>
             <span data-bind:style="{ color: 'red' }">I should be red</span>
         </div>
     `,
@@ -13,7 +13,7 @@ test('style attribute object binding',
 
 test('style attribute object binding using camelCase syntax',
     html`
-        <div data-data>
+        <div data-signal>
             <span data-bind:style="{ backgroundColor: 'red' }">I should be red</span>
         </div>
     `,
@@ -24,7 +24,7 @@ test('style attribute object binding using camelCase syntax',
 
 test('style attribute object binding using kebab-case syntax',
     html`
-        <div data-data>
+        <div data-signal>
             <span data-bind:style="{ 'background-color': 'red' }">I should be red</span>
         </div>
     `,
@@ -35,7 +35,7 @@ test('style attribute object binding using kebab-case syntax',
 
 test('style attribute object binding with CSS variable',
     html`
-        <div data-data data-bind:style="{ '--MyCSS-Variable': 0.25 }">
+        <div data-signal data-bind:style="{ '--MyCSS-Variable': 0.25 }">
             <span style="opacity: var(--MyCSS-Variable);">I should be hardly visible</span>
         </div>
     `,
@@ -46,7 +46,7 @@ test('style attribute object binding with CSS variable',
 
 test('style attribute object bindings are merged with existing styles',
     html`
-        <div data-data>
+        <div data-signal>
             <span style="display: block" data-bind:style="{ color: 'red' }">I should be red</span>
         </div>
     `,
@@ -57,7 +57,7 @@ test('style attribute object bindings are merged with existing styles',
 
 test('CSS custom properties are set',
     html`
-        <div data-data="{custom_color: '#f00'}">
+        <div data-signal="{custom_color: '#f00'}">
             <span style="color: var(--custom-prop)" data-bind:style="{ '--custom-prop': custom_color }">I should be red</span>
         </div>
     `,
@@ -68,7 +68,7 @@ test('CSS custom properties are set',
 
 test('existing CSS custom properties are preserved',
     html`
-        <div data-data="{link: 'var(--custom-prop-a)'}">
+        <div data-signal="{link: 'var(--custom-prop-a)'}">
             <span style="color: var(--custom-prop-b); --custom-prop-a: red" data-bind:style="{ '--custom-prop-b': link }">I should be red</span>
         </div>
     `,

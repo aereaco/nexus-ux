@@ -2,7 +2,7 @@ import { exist, haveText, html, notExist, test } from '../../utils'
 
 test('data-if',
     html`
-        <div data-data="{ show: false }">
+        <div data-signal="{ show: false }">
             <button @click="show = ! show">Toggle</button>
 
             <template data-if="show">
@@ -21,7 +21,7 @@ test('data-if',
 
 test('data-if inside data-for allows nested directives',
     html`
-        <div data-data="{items: [{id: 1, label: '1'}]}">
+        <div data-signal="{items: [{id: 1, label: '1'}]}">
 
             <template data-for="item in items" :key="item.id">
                 <div>
@@ -39,7 +39,7 @@ test('data-if inside data-for allows nested directives',
 
 test('data-if initializes after being added to the DOM to allow data-ref to work',
     html`
-        <div data-data="{}">
+        <div data-signal="{}">
             <template data-if="true">
                 <ul data-ref="listbox" data-foo="bar">
                     <li data-text="$refs.listbox.dataset.foo"></li>
@@ -55,7 +55,7 @@ test('data-if initializes after being added to the DOM to allow data-ref to work
 // If data-if evaluates to false, the expectation is that no sub-expressions will be evaluated.
 test('data-if removed dom does not evaluate reactive expressions in dom tree',
     html`
-    <div data-data="{user: {name: 'lebowski'}}">
+    <div data-signal="{user: {name: 'lebowski'}}">
         <button @click="user = null">Log out</button>
         <template data-if="user">
             <span data-text="user.name"></span>
@@ -78,7 +78,7 @@ test('data-if removed dom does not evaluate reactive expressions in dom tree',
 // See https://github.com/alpinejs/alpine/issues/2803 for more details.
 test('data-if removed dom does not attempt skipping already-processed reactive effects in dom tree',
     html`
-    <div data-data="{
+    <div data-signal="{
         isEditing: true,
         foo: 'random text',
         stopEditing() {
@@ -114,7 +114,7 @@ test('data-if removed dom does not attempt skipping already-processed reactive e
 // If data-if evaluates to false, all cleanups in the tree should be handled.
 test('data-if eagerly cleans tree',
     html`
-        <div data-data="{ show: false, count: 0 }">
+        <div data-signal="{ show: false, count: 0 }">
             <button @click="show^=true" data-text="count">Toggle</button>
             <template data-if="show">
                 <div>

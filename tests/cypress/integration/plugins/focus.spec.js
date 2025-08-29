@@ -2,7 +2,7 @@ import { haveText, test, html, haveFocus, notHaveAttribute, haveAttribute, notHa
 
 test('can trap focus',
     [html`
-        <div data-data="{ open: false }">
+        <div data-signal="{ open: false }">
             <input type="text" id="1">
             <button id="2" @click="open = true">open</button>
             <div>
@@ -31,7 +31,7 @@ test('can trap focus',
 
 test('works with clone',
     [html`
-        <div id="foo" data-data="{
+        <div id="foo" data-signal="{
             open: false,
             triggerClone() {
                 var original = document.getElementById('foo');
@@ -60,7 +60,7 @@ test('works with clone',
 
 test('releases focus when data-if is destroyed',
     [html`
-        <div data-data="{ open: false }">
+        <div data-signal="{ open: false }">
             <button id="1" @click="open = true">open</button>
             <template data-if="open">
                 <div data-trap="open">
@@ -79,7 +79,7 @@ test('releases focus when data-if is destroyed',
 
 test('can trap focus with inert',
     [html`
-        <div data-data="{ open: false }">
+        <div data-signal="{ open: false }">
             <h1>I should have aria-hidden when outside trap</h1>
 
             <button id="open" @click="open = true">open</button>
@@ -102,7 +102,7 @@ test('inert only applies aria-hidden once',
     [html`
         <div>
             <div id="sibling">I should have aria-hidden applied once</div>
-            <div data-data="{
+            <div data-signal="{
                 open: false,
                 timesApplied: 0,
                 init() {
@@ -135,7 +135,7 @@ test('inert only applies aria-hidden once',
 
 test('can trap focus with noscroll',
     [html`
-        <div data-data="{ open: false }">
+        <div data-signal="{ open: false }">
             <button id="open" @click="open = true">open</button>
 
             <div data-trap.noscroll="open">
@@ -158,7 +158,7 @@ test('can trap focus with noscroll',
 
 test('can trap focus with noreturn',
     [html`
-        <div data-data="{ open: false }" data-trap.noreturn="open">
+        <div data-signal="{ open: false }" data-trap.noreturn="open">
             <input id="input" @focus="open = true">
             <div data-show="open">
                 <button @click="open = false" id="close">close</button>
@@ -175,7 +175,7 @@ test('can trap focus with noreturn',
 
 test('$focus.focus',
     [html`
-        <div data-data>
+        <div data-signal>
             <button id="press-me" @click="$focus.focus(document.querySelector('#focus-me'))">Focus Other</button>
 
             <button id="focus-me">Other</button>
@@ -190,7 +190,7 @@ test('$focus.focus',
 
 test('$focus.focusable',
     [html`
-        <div data-data>
+        <div data-signal>
             <div id="1" data-text="$focus.focusable($el)"></div>
             <button id="2" data-text="$focus.focusable($el)"></button>
         </div>
@@ -203,7 +203,7 @@ test('$focus.focusable',
 
 test('$focus.focusables',
     [html`
-        <div data-data>
+        <div data-signal>
             <h1 data-text="$focus.within($refs.container).focusables().length"></h1>
             <div data-ref="container">
                 <button>1</button>
@@ -219,7 +219,7 @@ test('$focus.focusables',
 
 test('$focus.focused',
     [html`
-        <div data-data>
+        <div data-signal>
             <button @click="$el.textContent = $el.isSameNode($focus.focused())">im-focused</button>
         </div>
     `],
@@ -231,7 +231,7 @@ test('$focus.focused',
 
 test('$focus.lastFocused',
     [html`
-        <div data-data>
+        <div data-signal>
             <button id="1" data-ref="first">first-focused</button>
             <button id="2" @click="$el.textContent = $refs.first.isSameNode($focus.lastFocused())">second-focused</button>
         </div>
@@ -245,7 +245,7 @@ test('$focus.lastFocused',
 
 test('$focus.within',
     [html`
-        <div data-data>
+        <div data-signal>
             <button id="1" data-text="$focus.within($refs.first).focusables().length"></button>
 
             <div data-ref="first">
@@ -267,7 +267,7 @@ test('$focus.within',
 
 test('$focus.next',
     [html`
-        <div data-data>
+        <div data-signal>
             <div data-ref="first">
                 <button id="1" @click="$focus.within($refs.first).next(); $nextTick(() => $el.textContent = $focus.focused().textContent)">1</button>
                 <button>2</button>
@@ -282,7 +282,7 @@ test('$focus.next',
 
 test('$focus.prev',
     [html`
-        <div data-data>
+        <div data-signal>
             <div data-ref="first">
                 <button>2</button>
                 <button id="1" @click="$focus.within($refs.first).prev(); $nextTick(() => $el.textContent = $focus.focused().textContent)">1</button>
@@ -297,7 +297,7 @@ test('$focus.prev',
 
 test('$focus.wrap',
     [html`
-        <div data-data>
+        <div data-signal>
             <div data-ref="first">
                 <button>2</button>
                 <button id="1" @click="$focus.within($refs.first).wrap().next(); $nextTick(() => $el.textContent = $focus.focused().textContent)">1</button>
@@ -312,7 +312,7 @@ test('$focus.wrap',
 
 test('$focus.first',
     [html`
-        <div data-data>
+        <div data-signal>
             <button id="1" @click="$focus.within($refs.first).first(); $nextTick(() => $el.textContent = $focus.focused().textContent)">1</button>
 
             <div data-ref="first">
@@ -329,7 +329,7 @@ test('$focus.first',
 
 test('$focus.last',
     [html`
-        <div data-data>
+        <div data-signal>
             <button id="1" @click="$focus.within($refs.first).last(); $nextTick(() => $el.textContent = $focus.focused().textContent)">1</button>
 
             <div data-ref="first">
@@ -346,7 +346,7 @@ test('$focus.last',
 
 test('focuses element with autofocus',
     [html`
-        <div data-data="{ open: false }">
+        <div data-signal="{ open: false }">
             <input type="text" id="1">
             <button id="2" @click="open = true">open</button>
             <div>
@@ -372,7 +372,7 @@ test('focuses element with autofocus',
 
 test('can disable data-trap autofocus with .noautofocus modifier',
     [html`
-        <div data-data="{ open: false }">
+        <div data-signal="{ open: false }">
             <input type="text" id="1">
             <button id="2" @click="open = true">open</button>
             <div>

@@ -2,7 +2,7 @@ import { haveAttribute, haveFocus, html, haveClasses, notHaveClasses, test, have
 
 test('it works using data-model',
     [html`
-        <main data-data="{ active: null, access: [
+        <main data-signal="{ active: null, access: [
             {
                 id: 'access-1',
                 name: 'Public access',
@@ -59,7 +59,7 @@ test('it works using data-model',
 
 test('it works without data-model/with default-value',
     [html`
-        <main data-data="{ access: [
+        <main data-signal="{ access: [
             {
                 id: 'access-1',
                 name: 'Public access',
@@ -112,7 +112,7 @@ test('it works without data-model/with default-value',
 
 test('cannot select any option when the group is disabled',
     [html`
-        <main data-data="{ active: null, access: [
+        <main data-signal="{ active: null, access: [
             {
                 id: 'access-1',
                 name: 'Public access',
@@ -159,7 +159,7 @@ test('cannot select any option when the group is disabled',
 
 test('cannot select a disabled option',
     [html`
-        <main data-data="{ active: null, access: [
+        <main data-signal="{ active: null, access: [
             {
                 id: 'access-1',
                 name: 'Public access',
@@ -206,7 +206,7 @@ test('cannot select a disabled option',
 
 test('keyboard navigation works',
     [html`
-        <main data-data="{ active: null, access: [
+        <main data-signal="{ active: null, access: [
             {
                 id: 'access-1',
                 name: 'Public access',
@@ -255,7 +255,7 @@ test('keyboard navigation works',
 
 test('has accessibility attributes',
     [html`
-        <main data-data="{ active: null, access: [
+        <main data-signal="{ active: null, access: [
             {
                 id: 'access-1',
                 name: 'Public access',
@@ -330,7 +330,7 @@ test('has accessibility attributes',
 
 test('$radioOption.isActive, $radioOption.isChecked, $radioOption.isDisabled work',
     [html`
-        <main data-data="{ access: [
+        <main data-signal="{ access: [
             {
                 id: 'access-1',
                 name: 'Public access',
@@ -394,7 +394,7 @@ test('$radioOption.isActive, $radioOption.isChecked, $radioOption.isDisabled wor
 
 test('can bind objects to the value',
     [html`
-        <main data-data="{ active: null, access: [
+        <main data-signal="{ active: null, access: [
             {
                 id: 'access-1',
                 name: 'Public access',
@@ -452,7 +452,7 @@ test('can bind objects to the value',
 test('name prop',
     [html`
         <main
-            data-data="{
+            data-signal="{
                 active: null,
                 access: [
                     {

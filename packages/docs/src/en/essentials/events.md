@@ -87,11 +87,11 @@ This allows you to communicate across components completely like the following e
 
 
 ```alpine
-<div data-data>
+<div data-signal>
     <button @click="$dispatch('foo')"></button>
 </div>
 
-<div data-data @foo.window="console.log('foo was dispatched')">...</div>
+<div data-signal @foo.window="console.log('foo was dispatched')">...</div>
 ```
 
 In the above example, if we click the button in the first component, Alpine will dispatch the "foo" event. Because of the way events work in the browser, they "bubble" up through parent elements all the way to the top-level "window".

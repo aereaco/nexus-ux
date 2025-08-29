@@ -31,4 +31,4 @@ Here's a brief example of this directive in use:
 </div>
 ```
 
-> Despite not being included in the above snippet, `data-id` cannot be used if no parent element has `data-data` defined. [→ Read more about `data-data`](/directives/data)
+> Despite not being included in the above snippet, `data-id` cannot be used if no parent element has `data-signal` defined. [→ Read more about `data-signal`](/directives/data)

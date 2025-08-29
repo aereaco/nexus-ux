@@ -2,7 +2,7 @@ import { setReactivityEngine, disableEffectScheduling, reactive, effect, release
 import { mapAttributes, directive, setPrefix as prefix, prefix as prefixed } from './directives'
 import { start, addRootSelector, addInitSelector, closestRoot, findClosest, initTree, destroyTree, interceptInit } from './lifecycle'
 import { onElRemoved, onAttributeRemoved, onAttributesAdded, mutateDom, deferMutations, flushAndStopDeferringMutations, startObservingMutations, stopObservingMutations } from './mutation'
-import { mergeProxies, closestDataStack, addScopeToNode, scope as $data } from './scope'
+import { mergeProxies, closestSignalStack, addScopeToNode, scope as $signal } from './scope'
 import { setEvaluator, evaluate, evaluateLater, dontAutoEvaluateFunctions } from './evaluator'
 import { transition } from './directives/transition'
 import { clone, cloneNode, skipDuringClone, onlyDuringClone, interceptClone } from './clone'
@@ -18,7 +18,7 @@ import { plugin } from './plugin'
 import { magic } from './magics'
 import { store } from './store'
 import { bind } from './binds'
-import { data } from './datas'
+import { signal } from './signals'
 
 let Alpine: any = {
     get reactive() { return reactive },
@@ -34,7 +34,7 @@ let Alpine: any = {
     setReactivityEngine,
     onAttributeRemoved,
     onAttributesAdded,
-    closestDataStack,
+    closestSignalStack,
     skipDuringClone,
     onlyDuringClone,
     addRootSelector,
@@ -72,10 +72,10 @@ let Alpine: any = {
     clone, // INTERNAL
     cloneNode, // INTERNAL
     bound,
-    $data,
+    $signal,
     watch,
     walk,
-    data,
+    signal,
     bind,
 }
 

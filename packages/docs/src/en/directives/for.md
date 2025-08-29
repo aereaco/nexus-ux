@@ -8,7 +8,7 @@ title: for
 Alpine's `data-for` directive allows you to create DOM elements by iterating through a list. Here's a simple example of using it to create a list of colors based on an array.
 
 ```alpine
-<ul data-data="{ colors: ['Red', 'Orange', 'Yellow'] }">
+<ul data-signal="{ colors: ['Red', 'Orange', 'Yellow'] }">
     <template data-for="color in colors">
         <li data-text="color"></li>
     </template>
@@ -17,7 +17,7 @@ Alpine's `data-for` directive allows you to create DOM elements by iterating thr
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <ul data-data="{ colors: ['Red', 'Orange', 'Yellow'] }">
+    <ul data-signal="{ colors: ['Red', 'Orange', 'Yellow'] }">
         <template data-for="color in colors">
             <li data-text="color"></li>
         </template>
@@ -28,7 +28,7 @@ Alpine's `data-for` directive allows you to create DOM elements by iterating thr
 You may also pass objects to `data-for`.
 
 ```alpine
-<ul data-data="{ car: { make: 'Jeep', model: 'Grand Cherokee', color: 'Black' } }">
+<ul data-signal="{ car: { make: 'Jeep', model: 'Grand Cherokee', color: 'Black' } }">
     <template data-for="(value, index) in car">
         <li>
             <span data-text="index"></span>: <span data-text="value"></span>
@@ -39,7 +39,7 @@ You may also pass objects to `data-for`.
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <ul data-data="{ car: { make: 'Jeep', model: 'Grand Cherokee', color: 'Black' } }">
+    <ul data-signal="{ car: { make: 'Jeep', model: 'Grand Cherokee', color: 'Black' } }">
         <template data-for="(value, index) in car">
             <li>
                 <span data-text="index"></span>: <span data-text="value"></span>
@@ -60,7 +60,7 @@ There are two rules worth noting about `data-for`:
 It is important to specify unique keys for each `data-for` iteration if you are going to be re-ordering items. Without dynamic keys, Alpine may have a hard time keeping track of what re-orders and will cause odd side-effects.
 
 ```alpine
-<ul data-data="{ colors: [
+<ul data-signal="{ colors: [
     { id: 1, label: 'Red' },
     { id: 2, label: 'Orange' },
     { id: 3, label: 'Yellow' },
@@ -79,7 +79,7 @@ Now if the colors are added, removed, re-ordered, or their "id"s change, Alpine 
 If you need to access the index of each item in the iteration, you can do so using the `([item], [index]) in [items]` syntax like so:
 
 ```alpine
-<ul data-data="{ colors: ['Red', 'Orange', 'Yellow'] }">
+<ul data-signal="{ colors: ['Red', 'Orange', 'Yellow'] }">
     <template data-for="(color, index) in colors">
         <li>
             <span data-text="index + ': '"></span>
@@ -110,7 +110,7 @@ If you need to simply loop `n` number of times, rather than iterate through an a
 
 `i` in this case can be named anything you like.
 
-> Despite not being included in the above snippet, `data-for` cannot be used if no parent element has `data-data` defined. [→ Read more about `data-data`](/directives/data)
+> Despite not being included in the above snippet, `data-for` cannot be used if no parent element has `data-signal` defined. [→ Read more about `data-signal`](/directives/data)
 
 <a name="contents-of-a-template"></a>
 ## Contents of a `<template>`

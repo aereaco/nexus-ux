@@ -10,7 +10,7 @@ title: effect
 If this definition is confusing for you, that's ok. It's better explained through an example:
 
 ```alpine
-<div data-data="{ label: 'Hello' }" data-effect="console.log(label)">
+<div data-signal="{ label: 'Hello' }" data-effect="console.log(label)">
     <button @click="label += ' World!'">Change Message</button>
 </div>
 ```

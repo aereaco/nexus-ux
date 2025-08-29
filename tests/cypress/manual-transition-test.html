@@ -7,7 +7,7 @@
         <tr>
             <td><code>data-on:click.away</code></td>
             <td>
-                <div data-data="{ show: false }">
+                <div data-signal="{ show: false }">
                     <button @click="show = true">Show</button>
 
                     <h1 data-show="show" @click.away="show = false">h1</h1>
@@ -21,7 +21,7 @@
         <tr>
             <td><code>data-transition</code></td>
             <td>
-                <div data-data="{ open: false }">
+                <div data-signal="{ open: false }">
                     <button @click="open = ! open">Toggle</button>
 
                     <div data-show="open" data-transition>
@@ -34,7 +34,7 @@
         <tr>
             <td><code>data-transition:enter only (should see no blip)</code></td>
             <td>
-                <main data-data="{ open: true }">
+                <main data-signal="{ open: true }">
                     <button @click="open = ! open">Toggle</button>
 
                     <div data-show="open" data-transition:enter.duration.500ms>
@@ -51,7 +51,7 @@
         <tr>
             <td><code>data-transition with dynamic classes</code></td>
             <td>
-                <div data-data="{ open: false, props: {
+                <div data-signal="{ open: false, props: {
                     ['data-transition:enter']() { return `transition ease-out duration-300`; },
                     ['data-transition:enter-start']() { return `opacity-0 transform scale-90`; },
                     ['data-transition:enter-end']() { return `opacity-100 transform scale-100`; },
@@ -68,7 +68,7 @@
         <tr>
             <td><code>data-transition</code></td>
             <td>
-                <div data-data="{ open: false }">
+                <div data-signal="{ open: false }">
                     <button @click="open = ! open">Toggle</button>
 
                     <div data-show="open">
@@ -83,7 +83,7 @@
         <tr>
             <td><code>data-transition.opacity</code></td>
             <td>
-                <div data-data="{ open: false }">
+                <div data-signal="{ open: false }">
                     <button @click="open = ! open">Toggle</button>
 
                     <div data-show="open" data-transition.opacity>
@@ -96,7 +96,7 @@
         <tr>
             <td><code>data-transition.scale</code></td>
             <td>
-                <div data-data="{ open: false }">
+                <div data-signal="{ open: false }">
                     <button @click="open = ! open">Toggle</button>
 
                     <div data-show="open" data-transition.scale>
@@ -110,7 +110,7 @@
         <tr>
             <td><code>data-transition.duration.1000ms</code></td>
             <td>
-                <div data-data="{ open: false }">
+                <div data-signal="{ open: false }">
                     <button @click="open = ! open">Toggle</button>
 
                     <div data-show="open" data-transition.duration.1000ms>
@@ -123,7 +123,7 @@
         <tr style="border-bottom: 1px solid black;">
             <td><code>data-transition.leave only with @click.outside</code></td>
             <td>
-                <div data-data="{ open: false }">
+                <div data-signal="{ open: false }">
                     <button @click="open = ! open">Toggle</button>
 
                     <div data-show="open" @click.outside="open = false" data-transition.out.duration.1000ms>
@@ -139,7 +139,7 @@
                 <div><code>data-transition:leave.scale.duration.250ms</code></div>
             </td>
             <td>
-                <div data-data="{ open: false }">
+                <div data-signal="{ open: false }">
                     <button @click="open = ! open">Toggle</button>
 
                     <div data-show="open" data-transition:enter.opacity.duration.500ms data-transition:leave.scale.duration.250ms>
@@ -156,7 +156,7 @@
                 <div><code>data-transition:enter.delay.250ms data-transition:leave.delay.0ms</code></div>
             </td>
             <td>
-                <div data-data="{ open: false }">
+                <div data-signal="{ open: false }">
                     <button @mouseenter="open = true" @mouseleave="open = false">Toggle (mouseover)</button>
 
                     <div style="display: flex;" data-show="open">
@@ -171,7 +171,7 @@
         <tr>
             <td><code>data-collapse with no overflow hidden when expanded</code></td>
             <td>
-                <div data-data="{ show: false }">
+                <div data-signal="{ show: false }">
                     <button @click="show = !show">Show</button>
 
                     <div data-show="show" data-collapse.duration.2000ms>

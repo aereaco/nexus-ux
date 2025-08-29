@@ -2,7 +2,7 @@ import { haveText, notHaveText, html, test } from '../../utils'
 
 test('sets html on init',
     html`
-        <div data-data="{ foo: '<h1>hey</h1>' }">
+        <div data-signal="{ foo: '<h1>hey</h1>' }">
             <span data-html="foo"></span>
         </div>
     `,
@@ -13,7 +13,7 @@ test('sets html on init',
 
 test('sets html on update',
     html`
-        <div data-data="{ foo: '' }">
+        <div data-signal="{ foo: '' }">
             <button data-on:click="foo = '<h1>hey</h1>'">Show "bar"</button>
 
             <span data-html="foo"></span>
@@ -28,7 +28,7 @@ test('sets html on update',
 
 test('data-html allows alpine code within',
     html`
-        <div data-data="{ foo: '<h1  data-text=&quot;bar&quot;></h1>', bar: 'baz' }" data-html="foo"></div>
+        <div data-signal="{ foo: '<h1  data-text=&quot;bar&quot;></h1>', bar: 'baz' }" data-html="foo"></div>
     `,
     ({ get }) => {
         get('h1').should(haveText('baz'))
@@ -37,7 +37,7 @@ test('data-html allows alpine code within',
 
 test('data-html runs even after data-if or data-for',
     html`
-        <div data-data="{ html: '<span data-text=&quot;foo&quot;></span>', foo: 'bar' }">
+        <div data-signal="{ html: '<span data-text=&quot;foo&quot;></span>', foo: 'bar' }">
             <template data-if="true">
                 <h1>yoyoyo</h1>
             </template>

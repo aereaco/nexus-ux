@@ -2,7 +2,7 @@
 
 Summary
 
-This document recommends a comprehensive, incremental strategy to migrate the framework from `x-*` custom attributes (e.g. `x-data`, `x-on:click`) to standard `data-*` attributes (e.g. `data-data`, `data-on-click`) and—where appropriate—leverage the browser's native `HTMLElement.prototype.dataset` for reading/writing static values.
+This document recommends a comprehensive, incremental strategy to migrate the framework from `x-*` custom attributes (e.g. `x-data`, `x-on:click`) to standard `data-*` attributes (e.g. `data-signal`, `data-on-click`) and—where appropriate—leverage the browser's native `HTMLElement.prototype.dataset` for reading/writing static values.
 
 Goals
 
@@ -25,7 +25,7 @@ Compatibility matrix (short)
 
 | Feature / Syntax | x-* equivalent | data-* mapping | Can map to dataset? | Notes |
 |---|---:|---|---:|---|
-| Directive base name | `x-data` | `data-data` | Yes | dataset key `data` (element.dataset.data). Mind camelCase conversion. |
+| Directive base name | `x-data` | `data-signal` | Yes | dataset key `data` (element.dataset.data). Mind camelCase conversion. |
 | Value expression | `x-bind:value="foo"` | `data-bind-value="foo"` | No (value strings only) | dataset stores string; still OK but modifiers and `:` parts need parsing. |
 | Modifiers | `x-on:click.prevent` | `data-on-click.prevent` | Partially | dataset keys cannot include `.` or `:`; store full attribute string on dataset key or split into `data-on-click` and keep modifiers in string. |
 | Short-hand `@` | `@click` | `data-on-click` / `data-on` mapping | Yes via pre-processing | Support syntax mapping during parsing phase or with developer tooling. |

@@ -2,7 +2,7 @@ import { beVisible, haveAttribute, html, notBeVisible, notHaveAttribute, test } 
 
 test('button toggles panel',
     [html`
-        <div data-data data-popover>
+        <div data-signal data-popover>
             <button data-popover:button>Toggle</button>
 
             <ul data-popover:panel>
@@ -21,7 +21,7 @@ test('button toggles panel',
 
 test('popover can be rendered statically',
     [html`
-        <div data-data data-popover>
+        <div data-signal data-popover>
             <button data-popover:button>Toggle</button>
 
             <ul data-popover:panel static>
@@ -38,7 +38,7 @@ test('popover can be rendered statically',
 
 test('has accessibility attributes',
     [html`
-        <div data-data data-popover>
+        <div data-signal data-popover>
             <button data-popover:button>Toggle</button>
 
             <ul data-popover:panel>
@@ -57,7 +57,7 @@ test('has accessibility attributes',
 
 test('escape closes panel',
     [html`
-        <div data-data data-popover>
+        <div data-signal data-popover>
             <button data-popover:button>Toggle</button>
 
             <ul data-popover:panel>
@@ -77,7 +77,7 @@ test('escape closes panel',
 test('clicking outside closes panel',
     [html`
         <div>
-            <div data-data data-popover>
+            <div data-signal data-popover>
                 <button data-popover:button>Toggle</button>
 
                 <ul data-popover:panel>
@@ -100,7 +100,7 @@ test('clicking outside closes panel',
 test('focusing away closes panel',
     [html`
         <div>
-            <div data-data data-popover>
+            <div data-signal data-popover>
                 <button data-popover:button>Toggle</button>
 
                 <ul data-popover:panel>
@@ -122,15 +122,15 @@ test('focusing away closes panel',
 
 test('focusing away doesnt close panel if focusing inside a group',
     [html`
-        <div data-data>
+        <div data-signal>
             <div data-popover:group>
-                <div data-data data-popover id="1">
+                <div data-signal data-popover id="1">
                     <button data-popover:button>Toggle 1</button>
                     <ul data-popover:panel>
                         Dialog 1 Contents!
                     </ul>
                 </div>
-                <div data-data data-popover id="2">
+                <div data-signal data-popover id="2">
                     <button data-popover:button>Toggle 2</button>
                     <ul data-popover:panel>
                         Dialog 2 Contents!
@@ -158,15 +158,15 @@ test('focusing away doesnt close panel if focusing inside a group',
 
 test.retry(5)('focusing away still closes panel inside a group if the focus attribute is present',
     [html`
-        <div data-data>
+        <div data-signal>
             <div data-popover:group>
-                <div data-data data-popover id="1">
+                <div data-signal data-popover id="1">
                     <button data-popover:button>Toggle 1</button>
                     <ul data-popover:panel focus>
                         <a href="#">Dialog 1 Contents!</a>
                     </ul>
                 </div>
-                <div data-data data-popover id="2">
+                <div data-signal data-popover id="2">
                     <button data-popover:button>Toggle 2</button>
                     <ul data-popover:panel>
                         <a href="#">Dialog 2 Contents!</a>

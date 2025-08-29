@@ -16,7 +16,7 @@ title: refs
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data>
+    <div data-signal>
         <button @click="$refs.text.remove()">Remove Text</button>
 
         <div class="pt-4" data-ref="text">Hello 👋</div>

@@ -4,8 +4,8 @@ test(
     "properly merges the datastack",
     [
         html`
-            <div data-data="{ foo: 'fizz' }">
-                <div data-data="{ bar: 'buzz' }">
+            <div data-signal="{ foo: 'fizz' }">
+                <div data-signal="{ bar: 'buzz' }">
                     <span data-text="foo + bar"></span>
                 </div>
             </div>
@@ -20,8 +20,8 @@ test(
     "merges stack from bottom up",
     [
         html`
-            <div data-data="{ foo: 'fizz' }">
-                <div data-data="{ foo: 'buzz', get bar() { return this.foo } }">
+            <div data-signal="{ foo: 'fizz' }">
+                <div data-signal="{ foo: 'buzz', get bar() { return this.foo } }">
                     <span id="one" data-text="bar + foo"></span>
                 </div>
                 <span id="two" data-text="foo"></span>
@@ -38,9 +38,9 @@ test(
     "handles getter setter pairs",
     [
         html`
-            <div data-data="{ foo: 'fizzbuzz' }">
+            <div data-signal="{ foo: 'fizzbuzz' }">
                 <div
-                    data-data="{ get bar() { return this.foo }, set bar(value) { this.foo = value } }"
+                    data-signal="{ get bar() { return this.foo }, set bar(value) { this.foo = value } }"
                 >
                     <span id="one" data-text="bar" @click="bar = 'foobar'"></span>
                 </div>
@@ -73,7 +73,7 @@ test(
                     Alpine.data("counter", () => new Counter())
                 );
             </script>
-            <div data-data="counter">
+            <div data-signal="counter">
                 <button
                     type="button"
                     @click="increment"
@@ -93,7 +93,7 @@ test(
     "setting value doesn't register a dependency",
     [
         html`
-            <div data-data="{ message: 'original' }">
+            <div data-signal="{ message: 'original' }">
                 <button
                     data-effect="message = 'effected'"
                     @click="message = 'clicked'"
@@ -114,8 +114,8 @@ test(
     "properly merges the datastack with nested data",
     [
         html`
-            <div data-data="{ foo: { bar: 'fizz' } }">
-                <div data-data="{ bar: 'buzz' }">
+            <div data-signal="{ foo: { bar: 'fizz' } }">
+                <div data-signal="{ bar: 'buzz' }">
                     <span
                         id="1"
                         data-text="foo.bar + bar"
@@ -139,9 +139,9 @@ test(
     "handles getter setter pairs of object",
     [
         html`
-            <div data-data="{ foo:  { bar: 'fizzbuzz' } }">
+            <div data-signal="{ foo:  { bar: 'fizzbuzz' } }">
                 <div
-                    data-data="{ get bar() { return this.foo.bar }, set bar(value) { this.foo.bar = value } }"
+                    data-signal="{ get bar() { return this.foo.bar }, set bar(value) { this.foo.bar = value } }"
                 >
                     <span id="one" data-text="bar" @click="bar = 'foobar'"></span>
                 </div>

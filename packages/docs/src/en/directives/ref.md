@@ -15,7 +15,7 @@ title: ref
 
 <!-- START_VERBATIM -->
 <div class="demo">
-    <div data-data>
+    <div data-signal>
         <button @click="$refs.text.remove()">Remove Text</button>
 
         <div class="pt-4" data-ref="text">Hello 👋</div>
@@ -23,4 +23,4 @@ title: ref
 </div>
 <!-- END_VERBATIM -->
 
-> Despite not being included in the above snippet, `data-ref` cannot be used if no parent element has `data-data` defined. [→ Read more about `data-data`](/directives/data)
+> Despite not being included in the above snippet, `data-ref` cannot be used if no parent element has `data-signal` defined. [→ Read more about `data-signal`](/directives/data)

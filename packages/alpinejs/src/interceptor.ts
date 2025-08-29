@@ -1,7 +1,7 @@
 // Warning: The concept of "interceptors" in Alpine is not public API and is subject to change
 // without tagging a major release.
 
-export function initInterceptors(data: any) {
+export function initInterceptors(signal: any) {
     let isObject = (val: any) => typeof val === 'object' && !Array.isArray(val) && val !== null
 
     let recurse = (obj: any, basePath = '') => {
@@ -13,7 +13,7 @@ export function initInterceptors(data: any) {
             let path = basePath === '' ? key : `${basePath}.${key}`
 
             if (typeof value === 'object' && value !== null && value._data_interceptor) {
-                obj[key] = value.initialize(data, path, key)
+                obj[key] = value.initialize(signal, path, key)
             } else {
                 if (isObject(value) && value !== obj && ! (value instanceof Element)) {
                     recurse(value, path)
@@ -22,7 +22,7 @@ export function initInterceptors(data: any) {
         })
     }
 
-    return recurse(data)
+    return recurse(signal)
 }
 
 export function interceptor(callback: any, mutateObj: any = () => {}) {
@@ -31,8 +31,8 @@ export function interceptor(callback: any, mutateObj: any = () => {}) {
 
         _data_interceptor: true,
 
-        initialize(data: any, path: any, key: any) {
-            return callback(this.initialValue, () => get(data, path), (value: any) => set(data, path, value), path, key)
+        initialize(signal: any, path: any, key: any) {
+            return callback(this.initialValue, () => get(signal, path), (value: any) => set(signal, path, value), path, key)
         }
     }
 
@@ -43,12 +43,12 @@ export function interceptor(callback: any, mutateObj: any = () => {}) {
             // Support nesting interceptors.
             let initialize = obj.initialize.bind(obj)
 
-            obj.initialize = (data: any, path: any, key: any) => {
-                let innerValue = initialValue.initialize(data, path, key)
+            obj.initialize = (signal: any, path: any, key: any) => {
+                let innerValue = initialValue.initialize(signal, path, key)
 
                 obj.initialValue = innerValue
 
-                return initialize(data, path, key)
+                return initialize(signal, path, key)
             }
         } else {
             obj.initialValue = initialValue

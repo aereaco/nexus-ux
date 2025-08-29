@@ -3,7 +3,7 @@ import { beVisible, beHidden, haveAttribute, haveClasses, notHaveClasses, haveTe
 test('it works with data-model',
     [html`
         <div
-            data-data="{
+            data-signal="{
                 query: '',
                 selected: null,
                 people: [
@@ -106,7 +106,7 @@ test('it works with data-model',
 test('initial value is set from data-model',
     [html`
         <div
-            data-data="{
+            data-signal="{
                 query: '',
                 selected: { id: 1, name: 'Wade Cooper' },
                 people: [
@@ -168,7 +168,7 @@ test('initial value is set from data-model',
 test('it works with internal state',
     [html`
         <div
-            data-data="{ people: [
+            data-signal="{ people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb' },
@@ -220,7 +220,7 @@ test('it works with internal state',
 test('$combobox/$comboboxOption',
     [html`
         <div
-            data-data="{ people: [
+            data-signal="{ people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb' },
@@ -282,7 +282,7 @@ test('$combobox/$comboboxOption',
 test('"name" prop',
     [html`
         <div
-            data-data="{ people: [
+            data-signal="{ people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb' },
@@ -341,7 +341,7 @@ test('"name" prop',
 test('Preserves currently active keyboard selection while options change from searching even if there\'s a selected option in the filtered results',
     [html`
         <div
-            data-data="{
+            data-signal="{
                 query: '',
                 selected: null,
                 people: [
@@ -432,7 +432,7 @@ test('Preserves currently active keyboard selection while options change from se
 test('Ignore active selection while options change if not selected by a keyboard event',
     [html`
         <div
-            data-data="{
+            data-signal="{
                 query: '',
                 selected: null,
                 people: [
@@ -515,7 +515,7 @@ test('Ignore active selection while options change if not selected by a keyboard
 test('"name" prop with object value',
     [html`
         <div
-            data-data="{ people: [
+            data-signal="{ people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb' },
@@ -580,7 +580,7 @@ test('"name" prop with object value',
 test('"default-value" prop',
     [html`
         <div
-            data-data="{ people: [
+            data-signal="{ people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb' },
@@ -629,7 +629,7 @@ test('"default-value" prop',
 test('"multiple" prop',
     [html`
         <div
-            data-data="{
+            data-signal="{
                 people: [
                     { id: 1, name: 'Wade Cooper' },
                     { id: 2, name: 'Arlene Mccoy' },
@@ -691,7 +691,7 @@ test('"multiple" prop',
 test('"multiple" and "name" props together',
     [html`
         <div
-            data-data="{
+            data-signal="{
                 people: [
                     { id: 1, name: 'Wade Cooper' },
                     { id: 2, name: 'Arlene Mccoy' },
@@ -778,7 +778,7 @@ test('"multiple" and "name" props together',
 test('"by" prop with string value',
     [html`
         <div
-            data-data="{
+            data-signal="{
                 people: [
                     { id: 1, name: 'Wade Cooper' },
                     { id: 2, name: 'Arlene Mccoy' },
@@ -851,7 +851,7 @@ test('"by" prop with string value',
 test('"by" prop with string value and "nullable"',
     [html`
         <div
-            data-data="{
+            data-signal="{
                 people: [
                     { id: 1, name: 'Wade Cooper' },
                     { id: 2, name: 'Arlene Mccoy' },
@@ -927,7 +927,7 @@ test('"by" prop with string value and "nullable"',
 test('keyboard controls',
     [html`
         <div
-            data-data="{ active: null, people: [
+            data-signal="{ active: null, people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb', disabled: true },
@@ -1016,7 +1016,7 @@ test('keyboard controls',
 test('changing value manually changes internal state',
     [html`
         <div
-            data-data="{ active: null, people: [
+            data-signal="{ active: null, people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb', disabled: true },
@@ -1067,7 +1067,7 @@ test('changing value manually changes internal state',
 test('has accessibility attributes',
     [html`
         <div
-            data-data="{ active: null, people: [
+            data-signal="{ active: null, people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb', disabled: true },
@@ -1160,7 +1160,7 @@ test('has accessibility attributes',
 test('"static" prop',
     [html`
         <div
-            data-data="{ active: null, show: false, people: [
+            data-signal="{ active: null, show: false, people: [
                 { id: 1, name: 'Wade Cooper' },
                 { id: 2, name: 'Arlene Mccoy' },
                 { id: 3, name: 'Devon Webb' },
@@ -1213,7 +1213,7 @@ test('"static" prop',
 test('input reset',
     [html`
         <div
-            data-data="{
+            data-signal="{
                 query: '',
                 selected: null,
                 people: [
@@ -1343,7 +1343,7 @@ test('input reset',
 test('combobox shows all options when opening',
     [html`
         <div
-            data-data="{
+            data-signal="{
                 query: '',
                 selected: null,
                 people: [
@@ -1445,7 +1445,7 @@ test('combobox shows all options when opening',
 test('active element logic when opening a combobox',
     [html`
         <div
-            data-data="{
+            data-signal="{
                 query: '',
                 selected: null,
                 people: [
@@ -1535,7 +1535,7 @@ test('active element logic when opening a combobox',
 
 test('can remove an option without other options getting removed',
     [html`<div
-        data-data="{
+        data-signal="{
             query: '',
             selected: [],
             frameworks: [
@@ -1633,7 +1633,7 @@ test('can remove an option without other options getting removed',
 
 test('works with morph',
     [html`
-    <div data-data="{ value: null }">
+    <div data-signal="{ value: null }">
         <div data-combobox data-model="value">
             <button data-combobox:button>Select Framework</button>
 
@@ -1647,7 +1647,7 @@ test('works with morph',
     `],
     ({ get }, reload, window, document) => {
         let toHtml = html`
-        <div data-data="{ value: null }">
+        <div data-signal="{ value: null }">
             <div data-combobox data-model="value">
                 <button data-combobox:button>Select Framework (updated)</button>
 
@@ -1669,7 +1669,7 @@ test('works with morph',
 
 test('boolean option values',
     [html`
-    <div data-data="{ value: null }">
+    <div data-signal="{ value: null }">
         <div data-combobox data-model="value">
             <input data-combobox:input />
             <button data-combobox:button>Select boolean</button>
@@ -1729,7 +1729,7 @@ test('boolean option values',
 
 test('integer option values',
     [html`
-    <div data-data="{ value: null }">
+    <div data-signal="{ value: null }">
         <div data-combobox data-model="value">
             <input data-combobox:input />
             <button data-combobox:button>Select number</button>

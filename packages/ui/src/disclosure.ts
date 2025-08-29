@@ -24,7 +24,7 @@ export default function (Alpine: any) {
 function handleRoot(el: any, Alpine: any) {
     Alpine.bind(el, {
         'data-modelable': '__isOpen',
-        'data-data'() {
+        'data-signal'() {
             return {
                 // The panel will call this...
                 // We can't do this inside a microtask in data-init because, when default-open is set to "true",
