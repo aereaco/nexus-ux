@@ -1,9 +1,9 @@
-const { runFromPackage, writeToPackageDotJson, ask, run, getFromPackageDotJson } = require('./utils')
-const chalk = require('chalk');
+import { runFromPackage, writeToPackageDotJson, ask, run, getFromPackageDotJson } from './utils';
+import chalk from 'chalk';
 const log = (message: any) => console.log(chalk.green(message))
 const version = process.argv[2]
 const prevVersion = getFromPackageDotJson('alpinejs', 'version')
-const fs = require('fs')
+import fs from 'fs';
 const axios = require('axios').create({
     headers: { Authorization: `Bearer ${require('./.env.json').GITHUB_TOKEN}` }
 })

@@ -1,5 +1,5 @@
-const DotJson = require('dot-json');
-const { exec } = require('child_process')
+import DotJson from 'dot-json';
+import { exec } from 'child_process';
 
 export function runFromPackage(packageName: any, command: any) {
     exec(command, { cwd: __dirname+'/../packages/'+packageName })

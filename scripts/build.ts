@@ -1,23 +1,23 @@
-const { writeToPackageDotJson, getFromPackageDotJson } = require('./utils');
-const fs = require('fs');
-const zlib = require('zlib');
+import { writeToPackageDotJson, getFromPackageDotJson } from './utils';
+import fs from 'fs';
+import zlib from 'zlib';
 
 ([
     // Packages:
     'alpinejs',
-    'csp',
+    // 'csp',
     // 'history', - removed because this plugin has been moved to livewire/livewire until it's stable...
     // 'navigate', - remove because this plugin has been moved to livewire/livewire until it's stable...
-    'intersect',
-    'collapse',
-    'persist',
-    'resize',
-    'anchor',
-    'morph',
-    'focus',
-    'sort',
-    'mask',
-    'ui',
+    // 'intersect',
+    // 'collapse',
+    // 'persist',
+    // 'resize',
+    // 'anchor',
+    // 'morph',
+    // 'focus',
+    // 'sort',
+    // 'mask',
+    // 'ui',
 ]).forEach(packageName => {
     if (! fs.existsSync(`./packages/${packageName}/dist`)) {
         fs.mkdirSync(`./packages/${packageName}/dist`, 0o744);
