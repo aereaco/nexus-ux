@@ -16,12 +16,12 @@
         "sortablejs": "^1.15.2"
     },
     "scripts": {
-        "build": "node ./scripts/build.js",
-        "watch": "node ./scripts/build.js --watch",
+        "build": "node ./scripts/build.ts",
+        "watch": "node ./scripts/build.ts --watch",
         "test": "cypress run --quiet",
         "cypress": "cypress open",
         "jest": "jest test",
-        "update-docs": "node ./scripts/update-docs.js",
-        "release": "node ./scripts/release.js"
+        "update-docs": "node ./scripts/update-docs.ts",
+        "release": "node ./scripts/release.ts"
     }
 }
