@@ -1,0 +1,21 @@
+{
+    "name": "nexus-ux",
+    "version": "0.0.1",
+    "description": "The unified declarative Hypermedia & JavaScript framework",
+    "homepage": "https://nexus.aerea.co",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/aereaco/nexus-ux.git",
+        "directory": "packages/alpinejs"
+    },
+    "author": "Aerea Co.",
+    "license": "MIT",
+    "main": "dist/module.cjs.js",
+    "module": "dist/module.esm.js",
+    "unpkg": "dist/cdn.min.js",
+    "dependencies": {
+        "@vue/reactivity": "~3.1.1",
+        "focus-trap": "^7.6.5",
+        "tabbable": "^6.2.0"
+    }
+}

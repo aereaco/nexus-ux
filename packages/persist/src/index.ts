@@ -1,4 +1,4 @@
-export default function (Alpine: any) {
+export default function (State: any) {
     let persist = () => {
         let alias: any
         let storage: any
@@ -7,7 +7,7 @@ export default function (Alpine: any) {
             storage = localStorage
         } catch (e) {
             console.error(e)
-            console.warn('Alpine: $persist is using temporary storage since localStorage is unavailable.')
+            console.warn('State: $persist is using temporary storage since localStorage is unavailable.')
 
             let dummy = new Map();
 
@@ -17,7 +17,7 @@ export default function (Alpine: any) {
             }
         }
 
-        return Alpine.interceptor((initialValue: any, getter: any, setter: any, path: any, key: any) => {
+        return State.interceptor((initialValue: any, getter: any, setter: any, path: any, key: any) => {
             let lookup = alias || `_data_${path}`
 
             let initial = storageHas(lookup, storage)
@@ -26,7 +26,7 @@ export default function (Alpine: any) {
 
             setter(initial)
 
-            Alpine.effect(() => {
+            State.effect(() => {
                 let value = getter()
 
                 storageSet(lookup, value, storage)
@@ -41,16 +41,16 @@ export default function (Alpine: any) {
         })
     }
 
-    Object.defineProperty(Alpine, '$persist', { get: () => persist() })
-    Alpine.magic('persist', persist)
-    Alpine.persist = (key: any, { get, set }: any, storage: any = localStorage) => {
+    Object.defineProperty(State, '$persist', { get: () => persist() })
+    State.magic('persist', persist)
+    State.persist = (key: any, { get, set }: any, storage: any = localStorage) => {
         let initial = storageHas(key, storage)
             ? storageGet(key, storage)
             : get()
 
         set(initial)
 
-        Alpine.effect(() => {
+        State.effect(() => {
             let value = get()
 
             storageSet(key, value, storage)

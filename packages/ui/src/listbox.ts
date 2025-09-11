@@ -1,16 +1,16 @@
 import { generateContext, renderHiddenInputs } from './list-context'
 
-export default function (Alpine: any) {
-    Alpine.directive('listbox', (el: any, directive: any) => {
-        if (! directive.value) handleRoot(el, Alpine)
-        else if (directive.value === 'label') handleLabel(el, Alpine)
-        else if (directive.value === 'button') handleButton(el, Alpine)
-        else if (directive.value === 'options') handleOptions(el, Alpine)
-        else if (directive.value === 'option') handleOption(el, Alpine)
+export default function (State: any) {
+    State.directive('listbox', (el: any, directive: any) => {
+        if (! directive.value) handleRoot(el, State)
+        else if (directive.value === 'label') handleLabel(el, State)
+        else if (directive.value === 'button') handleButton(el, State)
+        else if (directive.value === 'options') handleOptions(el, State)
+        else if (directive.value === 'option') handleOption(el, State)
     }).before('bind')
 
-    Alpine.magic('listbox', (el: any) => {
-        let data = Alpine.$data(el)
+    State.magic('listbox', (el: any) => {
+        let data = State.$data(el)
 
         return {
             // @deprecated:
@@ -45,12 +45,12 @@ export default function (Alpine: any) {
         }
     })
 
-    Alpine.magic('listboxOption', (el: any) => {
-        let data = Alpine.$data(el)
+    State.magic('listboxOption', (el: any) => {
+        let data = State.$data(el)
 
         // It's not great depending on the existence of the attribute in the DOM
         // but it's probably the fastest and most reliable at this point...
-        let optionEl = Alpine.findClosest(el, (i: any) => {
+        let optionEl = State.findClosest(el, (i: any) => {
             return i.hasAttribute('data-listbox:option')
         })
 
@@ -58,22 +58,22 @@ export default function (Alpine: any) {
 
         return {
             get isActive() {
-                return data.__context.isActiveKey(Alpine.$data(optionEl).__optionKey)
+                return data.__context.isActiveKey(State.$data(optionEl).__optionKey)
             },
             get isSelected() {
                 return data.__isSelected(optionEl)
             },
             get isDisabled() {
-                return data.__context.isDisabled(Alpine.$data(optionEl).__optionKey)
+                return data.__context.isDisabled(State.$data(optionEl).__optionKey)
             },
         }
     })
 }
 
-function handleRoot(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handleRoot(el: any, State: any) {
+    State.bind(el, {
         // Setup...
-        'data-id'() { return ['alpine-listbox-button', 'alpine-listbox-options', 'alpine-listbox-label'] },
+        'data-id'() { return ['listbox-button', 'listbox-options', 'listbox-label'] },
         'data-modelable': '__value',
 
         // Initialize...
@@ -98,15 +98,15 @@ function handleRoot(el: any, Alpine: any) {
                  * Listbox initialization...
                  */
                 init() {
-                    this.__isMultiple = Alpine.extractProp(el, 'multiple', false)
-                    this.__isDisabled = Alpine.extractProp(el, 'disabled', false)
-                    this.__inputName = Alpine.extractProp(el, 'name', null)
-                    this.__compareBy = Alpine.extractProp(el, 'by')
-                    this.__orientation = Alpine.extractProp(el, 'horizontal', false) ? 'horizontal' : 'vertical'
+                    this.__isMultiple = State.extractProp(el, 'multiple', false)
+                    this.__isDisabled = State.extractProp(el, 'disabled', false)
+                    this.__inputName = State.extractProp(el, 'name', null)
+                    this.__compareBy = State.extractProp(el, 'by')
+                    this.__orientation = State.extractProp(el, 'horizontal', false) ? 'horizontal' : 'vertical'
 
-                    this.__context = generateContext(Alpine, this.__isMultiple, this.__orientation, () => this.__activateSelectedOrFirst())
+                    this.__context = generateContext(State, this.__isMultiple, this.__orientation, () => this.__activateSelectedOrFirst())
 
-                    let defaultValue = Alpine.extractProp(el, 'default-value', this.__isMultiple ? [] : null)
+                    let defaultValue = State.extractProp(el, 'default-value', this.__isMultiple ? [] : null)
 
                     this.__value = defaultValue
 
@@ -114,14 +114,14 @@ function handleRoot(el: any, Alpine: any) {
                     // to settle up currently selected Values (this prevents this next bit
                     // of code from running multiple times on startup...)
                     queueMicrotask(() => {
-                        Alpine.effect(() => {
+                        State.effect(() => {
                             // Everytime the value changes, we need to re-render the hidden inputs,
                             // if a user passed the "name" prop...
-                            this.__inputName && renderHiddenInputs(Alpine, this.$el, this.__inputName, this.__value)
+                            this.__inputName && renderHiddenInputs(State, this.$el, this.__inputName, this.__value)
                         })
 
                         // Keep the currently selected value in sync with the input value...
-                        Alpine.effect(() => {
+                        State.effect(() => {
                             this.__resetInput()
                         })
                     })
@@ -148,7 +148,7 @@ function handleRoot(el: any, Alpine: any) {
                     this.__activateSelectedOrFirst()
 
                     // Safari needs more of a "tick" for focusing after data-show for some reason.
-                    // Probably because Alpine adds an extra tick when data-showing for @click.outside
+                    // Probably because Nexus-UX adds an extra tick when data-showing for @click.outside
                     let nextTick = (callback: any) => requestAnimationFrame(() => requestAnimationFrame(callback))
 
                     nextTick(() => this.$refs.__options.focus({ preventScroll: true }))
@@ -226,14 +226,14 @@ function handleRoot(el: any, Alpine: any) {
                 __compare(a: any, b: any) {
                     let by = this.__compareBy
 
-                    if (! by) by = (a: any, b: any) => Alpine.raw(a) === Alpine.raw(b)
+                    if (! by) by = (a: any, b: any) => State.raw(a) === State.raw(b)
 
                     if (typeof by === 'string') {
                         let property = by
                         by = (a: any, b: any) => {
                             // Handle null values
                             if ((! a || typeof a !== 'object') || (! b || typeof b !== 'object')) {
-                                return Alpine.raw(a) === Alpine.raw(b)
+                                return State.raw(a) === State.raw(b)
                             }
 
                             return a[property] === b[property];
@@ -247,25 +247,25 @@ function handleRoot(el: any, Alpine: any) {
     })
 }
 
-function handleLabel(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handleLabel(el: any, State: any) {
+    State.bind(el, {
         'data-ref': '__label',
-        ':id'() { return this.$id('alpine-listbox-label') },
+        ':id'() { return this.$id('listbox-label') },
         '@click'() { this.$refs.__button.focus({ preventScroll: true }) },
     })
 }
 
-function handleButton(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handleButton(el: any, State: any) {
+    State.bind(el, {
         // Setup...
         'data-ref': '__button',
-        ':id'() { return this.$id('alpine-listbox-button') },
+        ':id'() { return this.$id('listbox-button') },
 
         // Accessibility attributes...
         'aria-haspopup': 'true',
-        ':aria-labelledby'() { return this.$id('alpine-listbox-label') },
+        ':aria-labelledby'() { return this.$id('listbox-label') },
         ':aria-expanded'() { return this.$data.__isOpen },
-        ':aria-controls'() { return this.$data.__isOpen && this.$id('alpine-listbox-options') },
+        ':aria-controls'() { return this.$data.__isOpen && this.$id('listbox-options') },
 
         // Initialize....
         'data-init'() { if (this.$el.tagName.toLowerCase() === 'button' && !this.$el.hasAttribute('type')) this.$el.type = 'button' },
@@ -285,11 +285,11 @@ function handleButton(el: any, Alpine: any) {
     })
 }
 
-function handleOptions(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handleOptions(el: any, State: any) {
+    State.bind(el, {
         // Setup...
         'data-ref': '__options',
-        ':id'() { return this.$id('alpine-listbox-options') },
+        ':id'() { return this.$id('listbox-options') },
 
         // Accessibility attributes...
         'role': 'listbox',
@@ -297,7 +297,7 @@ function handleOptions(el: any, Alpine: any) {
         ':aria-orientation'() {
             return this.$data.__orientation
         },
-        ':aria-labelledby'() { return this.$id('alpine-listbox-button') },
+        ':aria-labelledby'() { return this.$id('listbox-button') },
         ':aria-activedescendant'() {
             if (! this.$data.__context.hasActive()) return
 
@@ -308,9 +308,9 @@ function handleOptions(el: any, Alpine: any) {
 
         // Initialize...
         'data-init'() {
-            this.$data.__isStatic = Alpine.extractProp(this.$el, 'static', false)
+            this.$data.__isStatic = State.extractProp(this.$el, 'static', false)
 
-            if (Alpine.bound(this.$el, 'hold')) {
+            if (State.bound(this.$el, 'hold')) {
                 this.$data.__hold = true;
             }
         },
@@ -336,11 +336,11 @@ function handleOptions(el: any, Alpine: any) {
     })
 }
 
-function handleOption(el: any, Alpine: any) {
-    Alpine.bind(el, () => {
+function handleOption(el: any, State: any) {
+    State.bind(el, () => {
         return {
-            'data-id'() { return ['alpine-listbox-option'] },
-            ':id'() { return this.$id('alpine-listbox-option') },
+            'data-id'() { return ['listbox-option'] },
+            ':id'() { return this.$id('listbox-option') },
 
             // Accessibility attributes...
             'role': 'option',
@@ -355,8 +355,8 @@ function handleOption(el: any, Alpine: any) {
                     init() {
                         this.__optionKey = (Math.random() + 1).toString(36).substring(7)
 
-                        let value = Alpine.extractProp(el, 'value')
-                        let disabled = Alpine.extractProp(el, 'disabled', false, false)
+                        let value = State.extractProp(el, 'value')
+                        let disabled = State.extractProp(el, 'disabled', false, false)
 
                         this.$data.__context.registerItem(this.__optionKey, el, value, disabled)
                     },

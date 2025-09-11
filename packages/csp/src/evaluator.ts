@@ -1,7 +1,7 @@
-import { generateEvaluatorFromFunction, runIfTypeOfFunction } from 'alpinejs/src/evaluator'
-import { closestSignalStack, mergeProxies } from 'alpinejs/src/scope'
-import { tryCatch } from 'alpinejs/src/utils/error'
-import { injectMagics } from 'alpinejs/src/magics'
+import { generateEvaluatorFromFunction, runIfTypeOfFunction } from '../../library/src/engine/evaluator'
+import { closestSignalStack, mergeProxies } from '../../library/src/engine/scope'
+import { tryCatch } from '../../library/src/utils/error'
+import { injectMagics } from '../../library/src/engine/magics'
 
 export function cspEvaluator(el: any, expression: any) {
     let signalStack = generateSignalStack(el)
@@ -44,11 +44,11 @@ function generateEvaluator(el: any, expression: string, signalStack: any[]) {
 
 function throwExpressionError(el: any, expression: string) {
     console.warn(
-`Alpine Error: Alpine is unable to interpret the following expression using the CSP-friendly build:
+`Nexus-UX Error: Nexus-UX is unable to interpret the following expression using the CSP-friendly build:
 
 "${expression}"
 
-Read more about the Alpine's CSP-friendly build restrictions here: https://alpinejs.dev/advanced/csp
+Read more about the Nexus-UX's CSP-friendly build restrictions here: https://alpinejs.dev/advanced/csp
 
 `,
 el

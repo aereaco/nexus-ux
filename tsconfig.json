@@ -15,7 +15,7 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "alpinejs/*": ["packages/alpinejs/src/*"]
+      "alpinejs/*": ["packages/library/src/*"]
     }
   },
   "include": [

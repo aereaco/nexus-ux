@@ -1,17 +1,17 @@
-export function generateContext(Alpine: any, multiple: any, orientation: any, activateSelectedOrFirst: any) {
+export function generateContext(State: any, multiple: any, orientation: any, activateSelectedOrFirst: any) {
     return {
         /**
          * Main state...
          */
         items: [] as any,
-    activeKey: switchboard(Alpine),
+    activeKey: switchboard(State),
         orderedKeys: [] as any,
         activatedByKeyPress: false,
 
         /**
          *  Initialization...
          */
-        activateSelectedOrFirst: Alpine.debounce(function () {
+        activateSelectedOrFirst: State.debounce(function () {
             activateSelectedOrFirst(false)
         }),
 
@@ -65,7 +65,7 @@ export function generateContext(Alpine: any, multiple: any, orientation: any, ac
         },
 
         getItemByValue(value: any) {
-            return this.items.find((i: any) => Alpine.raw(i.value) === Alpine.raw(value))
+            return this.items.find((i: any) => State.raw(i.value) === State.raw(value))
         },
 
         getItemByEl(el: any) {
@@ -73,8 +73,8 @@ export function generateContext(Alpine: any, multiple: any, orientation: any, ac
         },
 
         getItemsByValues(values: any) {
-            let rawValues = values.map((i: any) => Alpine.raw(i));
-            let filteredValue = this.items.filter((i: any) => rawValues.includes(Alpine.raw(i.value)))
+            let rawValues = values.map((i: any) => State.raw(i));
+            let filteredValue = this.items.filter((i: any) => rawValues.includes(State.raw(i.value)))
             filteredValue = filteredValue.slice().sort((a: any, b: any) => {
                 let position = a.el.compareDocumentPosition(b.el)
                 if (position & Node.DOCUMENT_POSITION_FOLLOWING) return -1
@@ -103,7 +103,7 @@ export function generateContext(Alpine: any, multiple: any, orientation: any, ac
         /**
          * Handle elements...
          */
-         reorderKeys: Alpine.debounce(function () {
+         reorderKeys: State.debounce(function () {
             this.orderedKeys = this.items.map((i: any) => i.key)
 
             this.orderedKeys = this.orderedKeys.slice().sort((a: any, z: any) => {
@@ -234,7 +234,7 @@ export function generateContext(Alpine: any, multiple: any, orientation: any, ac
 
         searchQuery: '',
 
-        clearSearch: Alpine.debounce(function () { this.searchQuery = '' }, 350),
+        clearSearch: State.debounce(function () { this.searchQuery = '' }, 350),
 
         searchKey(query: any) {
             this.clearSearch()
@@ -333,7 +333,7 @@ function keyByValue(object: any, value: any) {
     return Object.keys(object).find((key: any) => object[key] === value)
 }
 
-export function renderHiddenInputs(Alpine: any, el: any, name: any, value: any) {
+export function renderHiddenInputs(State: any, el: any, name: any, value: any) {
     let newInputs = generateInputs(name, value)
 
     newInputs.forEach((i: any) => (i as any)._data_hiddenInput = true)
@@ -351,7 +351,7 @@ export function renderHiddenInputs(Alpine: any, el: any, name: any, value: any) 
         else break
     }
 
-    Alpine.mutateDom(() => {
+    State.mutateDom(() => {
         oldInputs.forEach((i: any) => i.remove())
 
         newInputs.reverse().forEach((i: any) => el.prepend(i))
@@ -386,12 +386,12 @@ function createHiddenInput(name: any, value: any) {
     return el
 }
 
-function switchboard(Alpine: any, value?: any) {
+function switchboard(State: any, value?: any) {
     let lookup: any = {}
 
     let current: any
 
-    let changeTracker = Alpine.reactive({ state: false })
+    let changeTracker = State.reactive({ state: false })
 
     let get = () => {
         // Depend on the change tracker so reading "get" becomes reactive...
@@ -410,7 +410,7 @@ function switchboard(Alpine: any, value?: any) {
         current = newValue
 
         if (lookup[newValue] === undefined) {
-            lookup[newValue] = Alpine.reactive({ state: true })
+            lookup[newValue] = State.reactive({ state: true })
         } else {
             lookup[newValue].state = true
         }
@@ -420,7 +420,7 @@ function switchboard(Alpine: any, value?: any) {
 
     let is = (comparisonValue: any) => {
         if (lookup[comparisonValue] === undefined) {
-            lookup[comparisonValue] = Alpine.reactive({ state: false })
+            lookup[comparisonValue] = State.reactive({ state: false })
             return lookup[comparisonValue].state
         }
 

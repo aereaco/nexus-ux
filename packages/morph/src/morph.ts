@@ -15,14 +15,14 @@ export function morph(from: any, toHtml: any, options: any) {
 
     let toEl = typeof toHtml === 'string' ? createElement(toHtml) : toHtml
 
-    if ((window as any).Alpine && (window as any).Alpine.closestDataStack && ! from._data_signalStack) {
-        // Just in case a part of this template uses Alpine scope from somewhere
+    if ((window as any).State && (window as any).State.closestDataStack && ! from._data_signalStack) {
+        // Just in case a part of this template uses State scope from somewhere
         // higher in the DOM tree, we'll find that state and replace it on the root
         // element so everything is synced up accurately.
-        toEl._data_signalStack = (window as any).Alpine.closestDataStack(from)
+        toEl._data_signalStack = (window as any).State.closestDataStack(from)
 
         // We will kick off a clone on the root element.
-        toEl._data_signalStack && (window as any).Alpine.cloneNode(from, toEl)
+        toEl._data_signalStack && (window as any).State.cloneNode(from, toEl)
     }
 
     context.patch(from, toEl)
@@ -56,9 +56,9 @@ export function morphBetween(startMarker: any, endMarker: any, toHtml: any, opti
 
     let toBlock = new Block(toStartMarker, toEndMarker)
 
-    if ((window as any).Alpine && (window as any).Alpine.closestDataStack) {
-        toContainer._data_signalStack = (window as any).Alpine.closestDataStack(fromContainer)
-        toContainer._data_signalStack && (window as any).Alpine.cloneNode(fromContainer, toContainer)
+    if ((window as any).State && (window as any).State.closestDataStack) {
+        toContainer._data_signalStack = (window as any).State.closestDataStack(fromContainer)
+        toContainer._data_signalStack && (window as any).State.cloneNode(fromContainer, toContainer)
     }
 
     // Run the patch
@@ -92,9 +92,9 @@ function createMorphContext(options: any = {}) {
 
         if (shouldSkipChildren(context.updating, () => skipChildren = true, skipUntil, from, to, () => updateChildrenOnly = true)) return
 
-        // Initialize the server-side HTML element with Alpine...
-        if (from.nodeType === 1 && (window as any).Alpine) {
-            (window as any).Alpine.cloneNode(from, to)
+        // Initialize the server-side HTML element with State...
+        if (from.nodeType === 1 && (window as any).State) {
+            (window as any).State.cloneNode(from, to)
 
             if (from._data_teleport && to._data_teleport) {
                 context.patch(from._data_teleport, to._data_teleport)
@@ -529,7 +529,7 @@ function monkeyPatchDomSetAttributeToAllowAtSymbols() {
     patched = true
 
     // Because morphdom may add attributes to elements containing "@" symbols
-    // like in the case of an Alpine `@click` directive, we have to patch
+    // like in the case of an Nexus-UX `@click` directive, we have to patch
     // the standard Element.setAttribute method to allow this to work.
     let original = Element.prototype.setAttribute
 

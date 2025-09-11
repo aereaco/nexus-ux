@@ -2,7 +2,7 @@ import { runFromPackage, writeToPackageDotJson, ask, run, getFromPackageDotJson 
 import chalk from 'chalk';
 const log = (message: any) => console.log(chalk.green(message))
 const version = process.argv[2]
-const prevVersion = getFromPackageDotJson('alpinejs', 'version')
+const prevVersion = getFromPackageDotJson('library', 'version')
 import fs from 'fs';
 const axios = require('axios').create({
     headers: { Authorization: `Bearer ${require('./.env.json').GITHUB_TOKEN}` }
@@ -18,10 +18,10 @@ if (! /[0-9]+\.[0-9]+\.[0-9]+/.test(version)) {
     process.exit(1)
 }
 
-writeNewAlpineVersion()
+writeNewVersion()
 writeNewDocsVersion()
 buildAssets()
-run(`open https://github.com/alpinejs/alpine/compare/v${prevVersion}...main`)
+run(`open https://github.com/aereaco/nexus-ux/compare/v${prevVersion}...main`)
 
 setTimeout(() => {
     ask('Have you reviewed, committed, and pushed all the files for this release?', () => {
@@ -31,15 +31,15 @@ setTimeout(() => {
     })
 }, 1000)
 
-function writeNewAlpineVersion() {
+function writeNewVersion() {
     let file = __dirname+'/../packages/docs/src/en/essentials/installation.md'
     let docs = fs.readFileSync(file, 'utf8')
     docs = docs.replace(prevVersion, version)
     fs.writeFileSync(file, docs)
-    console.log('Writing new Alpine version to installation docs: '+version)
+    console.log('Writing new version to installation docs: '+version)
 
-    writeToPackageDotJson('alpinejs', 'version', version)
-    console.log('Bumping alpinejs package.json: '+version)
+    writeToPackageDotJson('library', 'version', version)
+    console.log('Bumping package.json: '+version)
 
     writeToPackageDotJson('ui', 'version', version)
     console.log('Bumping @alpinejs/ui package.json: '+version)
@@ -47,32 +47,11 @@ function writeNewAlpineVersion() {
     writeToPackageDotJson('csp', 'version', version)
     console.log('Bumping @alpinejs/csp package.json: '+version)
 
-    writeToPackageDotJson('intersect', 'version', version)
-    console.log('Bumping @alpinejs/intersect package.json: '+version)
-
-    writeToPackageDotJson('resize', 'version', version)
-    console.log('Bumping @alpinejs/resize package.json: '+version)
-
     writeToPackageDotJson('persist', 'version', version)
     console.log('Bumping @alpinejs/persist package.json: '+version)
 
-    writeToPackageDotJson('focus', 'version', version)
-    console.log('Bumping @alpinejs/focus package.json: '+version)
-
-    writeToPackageDotJson('collapse', 'version', version)
-    console.log('Bumping @alpinejs/collapse package.json: '+version)
-
-    writeToPackageDotJson('anchor', 'version', version)
-    console.log('Bumping @alpinejs/anchor package.json: '+version)
-
     writeToPackageDotJson('morph', 'version', version)
     console.log('Bumping @alpinejs/morph package.json: '+version)
-
-    writeToPackageDotJson('mask', 'version', version)
-    console.log('Bumping @alpinejs/mask package.json: '+version)
-
-    writeToPackageDotJson('sort', 'version', version)
-    console.log('Bumping @alpinejs/sort package.json: '+version)
 }
 
 function writeNewDocsVersion() {
@@ -89,7 +68,7 @@ function buildAssets() {
 
 function publish() {
     console.log('Publishing alpinejs on NPM...');
-    runFromPackage('alpinejs', 'npm publish')
+    runFromPackage('library', 'npm publish')
 
     console.log('Publishing @alpinejs/ui on NPM...');
     runFromPackage('ui', 'npm publish --access public')
@@ -100,33 +79,8 @@ function publish() {
     console.log('Publishing @alpinejs/docs on NPM...');
     runFromPackage('docs', 'npm publish --access public')
 
-    console.log('Publishing @alpinejs/intersect on NPM...');
-    runFromPackage('intersect', 'npm publish --access public')
-
-    console.log('Publishing @alpinejs/resize on NPM...');
-    runFromPackage('resize', 'npm publish --access public')
-
-    console.log('Publishing @alpinejs/persist on NPM...');
-    runFromPackage('persist', 'npm publish --access public')
-
-    console.log('Publishing @alpinejs/focus on NPM...');
-    runFromPackage('focus', 'npm publish --access public')
-
-    console.log('Publishing @alpinejs/collapse on NPM...');
-    runFromPackage('collapse', 'npm publish --access public')
-
-    console.log('Publishing @alpinejs/anchor on NPM...');
-    runFromPackage('anchor', 'npm publish --access public')
-
     console.log('Publishing @alpinejs/morph on NPM...');
     runFromPackage('morph', 'npm publish --access public')
-
-    console.log('Publishing @alpinejs/mask on NPM...');
-    runFromPackage('mask', 'npm publish --access public')
-
-    console.log('Publishing @alpinejs/sort on NPM...');
-    runFromPackage('sort', 'npm publish --access public')
-
     log('\n\nFinished!')
 }
 
@@ -157,7 +111,7 @@ async function draftRelease(name: any, after: any = () => {}) {
 }
 
 async function getLastRelease() {
-    let { data: releases } = await axios.get('https://api.github.com/repos/alpinejs/alpine/releases')
+    let { data: releases } = await axios.get('https://api.github.com/repos/aereaco/nexus-ux/releases')
 
     let lastRelease = releases.find((release: any) => {
         return release.target_commitish === 'main'
@@ -168,7 +122,7 @@ async function getLastRelease() {
 }
 
 async function getPullRequestsSince(since: any) {
-    let { data: pulls } = await axios.get('https://api.github.com/repos/alpinejs/alpine/pulls?state=closed&sort=updated&direction=desc&base=main')
+    let { data: pulls } = await axios.get('https://api.github.com/repos/aereaco/nexus-ux/pulls?state=closed&sort=updated&direction=desc&base=main')
 
     let pullsSince = pulls.filter((pull: any) => {
         if (! pull.merged_at) return false
@@ -180,7 +134,7 @@ async function getPullRequestsSince(since: any) {
 }
 
 function tagNewRelease(name: any, content: any, after: any = () => {}) {
-    return axios.post('https://api.github.com/repos/alpinejs/alpine/releases', {
+    return axios.post('https://api.github.com/repos/aereaco/nexus-ux/releases', {
         name: 'v'+name,
         tag_name: 'v'+name,
         target_commitish: 'main',

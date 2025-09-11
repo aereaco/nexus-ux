@@ -1,14 +1,14 @@
-export default function (Alpine: any) {
-    Alpine.directive('tabs', (el: any, directive: any) => {
-        if      (! directive.value)                handleRoot(el, Alpine)
-        else if (directive.value === 'list')       handleList(el, Alpine)
-        else if (directive.value === 'tab')        handleTab(el, Alpine)
-        else if (directive.value === 'panels')     handlePanels(el, Alpine)
-        else if (directive.value === 'panel')      handlePanel(el, Alpine)
+export default function (State: any) {
+    State.directive('tabs', (el: any, directive: any) => {
+        if      (! directive.value)                handleRoot(el, State)
+        else if (directive.value === 'list')       handleList(el, State)
+        else if (directive.value === 'tab')        handleTab(el, State)
+        else if (directive.value === 'panels')     handlePanels(el, State)
+        else if (directive.value === 'panel')      handlePanel(el, State)
     }).before('bind')
 
-    Alpine.magic('tab', (el: any) => {
-        let $data = Alpine.$data(el)
+    State.magic('tab', (el: any) => {
+        let $data = State.$data(el)
 
         return {
             get isSelected() {
@@ -20,8 +20,8 @@ export default function (Alpine: any) {
         }
     })
 
-    Alpine.magic('panel', (el: any) => {
-        let $data = Alpine.$data(el)
+    State.magic('panel', (el: any) => {
+        let $data = State.$data(el)
 
         return {
             get isSelected() {
@@ -31,21 +31,21 @@ export default function (Alpine: any) {
     })
 }
 
-function handleRoot(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handleRoot(el: any, State: any) {
+    State.bind(el, {
         'data-modelable': '__selectedIndex',
         'data-signal'() {
             return {
                 init() {
                     queueMicrotask(() => {
-                        let defaultIndex = this.__selectedIndex || Number(Alpine.bound(this.$el, 'default-index', 0))
+                        let defaultIndex = this.__selectedIndex || Number(State.bound(this.$el, 'default-index', 0))
                         let tabs = this.__activeTabs()
                         let clamp = (number: any, min: any, max: any) => Math.min(Math.max(number, min), max)
 
                         this.__selectedIndex = clamp(defaultIndex, 0, tabs.length -1)
 
-                        Alpine.effect(() => {
-                            this.__manualActivation = Alpine.bound(this.$el, 'manual', false)
+                        State.effect(() => {
+                            this.__manualActivation = State.bound(this.$el, 'manual', false)
                         })
                     })
                 },
@@ -67,20 +67,20 @@ function handleRoot(el: any, Alpine: any) {
     })
 }
 
-function handleList(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handleList(el: any, State: any) {
+    State.bind(el, {
         'data-init'() { this.$data.__tabGroupEl = this.$el }
     })
 }
 
-function handleTab(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handleTab(el: any, State: any) {
+    State.bind(el, {
         'data-init'() { if (this.$el.tagName.toLowerCase() === 'button' && !this.$el.hasAttribute('type')) this.$el.type = 'button' },
         'data-signal'() { return {
             init() {
                 this.__tabEl = this.$el
                 this.$data.__addTab(this.$el)
-                this.__tabEl.__disabled = Alpine.bound(this.$el, 'disabled', false)
+                this.__tabEl.__disabled = State.bound(this.$el, 'disabled', false)
                 this.__isDisabled = this.__tabEl.__disabled
             },
             __tabEl: undefined as any,
@@ -119,14 +119,14 @@ function handleTab(el: any, Alpine: any) {
     })
 }
 
-function handlePanels(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handlePanels(el: any, State: any) {
+    State.bind(el, {
         //
     })
 }
 
-function handlePanel(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handlePanel(el: any, State: any) {
+    State.bind(el, {
         ':tabindex'() { return this.$panel.isSelected ? 0 : -1 },
         'data-signal'() { return {
             init() {

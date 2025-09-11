@@ -1,13 +1,13 @@
-export default function (Alpine: any) {
-    Alpine.directive('radio', (el: any, directive: any) => {
-        if      (! directive.value)                 handleRoot(el, Alpine)
-        else if (directive.value === 'option')      handleOption(el, Alpine)
-        else if (directive.value === 'label')       handleLabel(el, Alpine)
-        else if (directive.value === 'description') handleDescription(el, Alpine)
+export default function (State: any) {
+    State.directive('radio', (el: any, directive: any) => {
+        if      (! directive.value)                 handleRoot(el, State)
+        else if (directive.value === 'option')      handleOption(el, State)
+        else if (directive.value === 'label')       handleLabel(el, State)
+        else if (directive.value === 'description') handleDescription(el, State)
     }).before('bind')
 
-    Alpine.magic('radioOption', (el: any) => {
-        let $data = Alpine.$data(el)
+    State.magic('radioOption', (el: any) => {
+        let $data = State.$data(el)
 
         return {
             get isActive() {
@@ -27,17 +27,17 @@ export default function (Alpine: any) {
     })
 }
 
-function handleRoot(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handleRoot(el: any, State: any) {
+    State.bind(el, {
         'data-modelable': '__value',
         'data-signal'() {
             return {
                 init() {
                     queueMicrotask(() => {
-                        this.__rootDisabled = Alpine.bound(el, 'disabled', false);
-                        this.__value = Alpine.bound(this.$el, 'default-value', false)
-                        this.__inputName = Alpine.bound(this.$el, 'name', false)
-                        this.__inputId = 'alpine-radio-'+Date.now()
+                        this.__rootDisabled = State.bound(el, 'disabled', false);
+                        this.__value = State.bound(this.$el, 'default-value', false)
+                        this.__inputName = State.bound(this.$el, 'name', false)
+                        this.__inputId = 'radio-'+Date.now()
                     })
 
                     // Add `role="none"` to all non role elements.
@@ -75,7 +75,7 @@ function handleRoot(el: any, Alpine: any) {
                 },
                 __addOption(option: any, el: any, disabled: any) {
                     // Add current element to element list for navigating.
-                    let options = Alpine.raw(this.__optionValues)
+                    let options = State.raw(this.__optionValues)
                     let els = options.map((i: any) => this.__optionElsByValue.get(i))
                     let inserted = false
 
@@ -147,9 +147,9 @@ function handleRoot(el: any, Alpine: any) {
             }
         },
         'role': 'radiogroup',
-        'data-id'() { return ['alpine-radio-label', 'alpine-radio-description'] },
-        ':aria-labelledby'() { return this.__hasLabel && this.$id('alpine-radio-label') },
-        ':aria-describedby'() { return this.__hasDescription && this.$id('alpine-radio-description') },
+        'data-id'() { return ['radio-label', 'radio-description'] },
+        ':aria-labelledby'() { return this.__hasLabel && this.$id('radio-label') },
+        ':aria-describedby'() { return this.__hasDescription && this.$id('radio-description') },
         '@keydown.up.prevent.stop'() { this.__focusOptionPrev() },
         '@keydown.left.prevent.stop'() { this.__focusOptionPrev() },
         '@keydown.down.prevent.stop'() { this.__focusOptionNext() },
@@ -157,14 +157,14 @@ function handleRoot(el: any, Alpine: any) {
     })
 }
 
-function handleOption(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handleOption(el: any, State: any) {
+    State.bind(el, {
         'data-signal'() {
             return {
                 init() {
                     queueMicrotask(() => {
-                        this.__disabled = Alpine.bound(el, 'disabled', false)
-                        this.__option = Alpine.bound(el, 'value')
+                        this.__disabled = State.bound(el, 'disabled', false)
+                        this.__option = State.bound(el, 'value')
                         this.$data.__addOption(this.__option, this.$el, this.__disabled)
                     })
                 },
@@ -174,12 +174,12 @@ function handleOption(el: any, Alpine: any) {
                 __hasDescription: false,
             }
         },
-        'data-id'() { return ['alpine-radio-label', 'alpine-radio-description'] },
+        'data-id'() { return ['radio-label', 'radio-description'] },
         'role': 'radio',
         ':aria-checked'() { return this.$radioOption.isChecked },
         ':aria-disabled'() { return this.$radioOption.isDisabled },
-        ':aria-labelledby'() { return this.__hasLabel && this.$id('alpine-radio-label') },
-        ':aria-describedby'() { return this.__hasDescription && this.$id('alpine-radio-description') },
+        ':aria-labelledby'() { return this.__hasLabel && this.$id('radio-label') },
+        ':aria-describedby'() { return this.__hasDescription && this.$id('radio-description') },
         ':tabindex'()   {
             if (this.$radioOption.isDisabled) return -1
             if (this.$radioOption.isChecked) return 0
@@ -203,16 +203,16 @@ function handleOption(el: any, Alpine: any) {
     })
 }
 
-function handleLabel(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handleLabel(el: any, State: any) {
+    State.bind(el, {
         'data-init'() { this.$data.__hasLabel = true },
-        ':id'() { return this.$id('alpine-radio-label') },
+        ':id'() { return this.$id('radio-label') },
     })
 }
 
-function handleDescription(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handleDescription(el: any, State: any) {
+    State.bind(el, {
         'data-init'() { this.$data.__hasDescription = true },
-        ':id'() { return this.$id('alpine-radio-description') },
+        ':id'() { return this.$id('radio-description') },
     })
 }

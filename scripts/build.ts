@@ -1,10 +1,11 @@
-import { writeToPackageDotJson, getFromPackageDotJson } from './utils';
+import { writeToPackageDotJson, getFromPackageDotJson } from './utils.ts';
 import fs from 'fs';
 import zlib from 'zlib';
+import { build as esbuildBuild } from 'esbuild';
 
 ([
     // Packages:
-    'alpinejs',
+    'library',
     // 'csp',
     // 'history', - removed because this plugin has been moved to livewire/livewire until it's stable...
     // 'navigate', - remove because this plugin has been moved to livewire/livewire until it's stable...
@@ -34,10 +35,10 @@ function bundleFile(packageName: any, file: any) {
     // Based on the filename, give esbuild a specific configuration to build.
     ({
         // This output file is meant to be loaded in a browser's <script> tag.
-        'cdn.js': () => {
+        'cdn.ts': () => {
             build({
                 entryPoints: [`packages/${packageName}/builds/${file}`],
-                outfile: `packages/${packageName}/dist/${file}`,
+                outfile: `packages/${packageName}/dist/${file.replace('.ts', '.js')}`,
                 bundle: true,
                 platform: 'browser',
                 define: { CDN: 'true' },
@@ -46,23 +47,23 @@ function bundleFile(packageName: any, file: any) {
             // Build a minified version.
             build({
                 entryPoints: [`packages/${packageName}/builds/${file}`],
-                outfile: `packages/${packageName}/dist/${file.replace('.js', '.min.js')}`,
+                outfile: `packages/${packageName}/dist/${file.replace('.ts', '.min.js')}`,
                 bundle: true,
                 minify: true,
                 platform: 'browser',
                 define: { CDN: 'true' },
             }).then(() => {
-                outputSize(packageName, `packages/${packageName}/dist/${file.replace('.js', '.min.js')}`)
+                outputSize(packageName, `packages/${packageName}/dist/${file.replace('.ts', '.min.js')}`)
             })
 
         },
         // This file outputs two files: an esm module and a cjs module.
         // The ESM one is meant for "import" statements (bundlers and new browsers)
         // and the cjs one is meant for "require" statements (node).
-        'module.js': () => {
+        'module.ts': () => {
             build({
                 entryPoints: [`packages/${packageName}/builds/${file}`],
-                outfile: `packages/${packageName}/dist/${file.replace('.js', '.esm.js')}`,
+                outfile: `packages/${packageName}/dist/${file.replace('.ts', '.esm.js')}`,
                 bundle: true,
                 platform: 'neutral',
                 mainFields: ['module', 'main'],
@@ -70,13 +71,13 @@ function bundleFile(packageName: any, file: any) {
 
             build({
                 entryPoints: [`packages/${packageName}/builds/${file}`],
-                outfile: `packages/${packageName}/dist/${file.replace('.js', '.cjs.js')}`,
+                outfile: `packages/${packageName}/dist/${file.replace('.ts', '.cjs.js')}`,
                 bundle: true,
                 target: ['node10.4'],
                 platform: 'node',
             }).then(() => {
-                writeToPackageDotJson(packageName, 'main', `dist/${file.replace('.js', '.cjs.js')}`)
-                writeToPackageDotJson(packageName, 'module', `dist/${file.replace('.js', '.esm.js')}`)
+                writeToPackageDotJson(packageName, 'main', `dist/${file.replace('.ts', '.cjs.js')}`)
+                writeToPackageDotJson(packageName, 'module', `dist/${file.replace('.ts', '.esm.js')}`)
             })
         },
     })[file]()
@@ -85,13 +86,13 @@ function bundleFile(packageName: any, file: any) {
 function build(options: any) {
     options.define || (options.define = {})
 
-    options.define['ALPINE_VERSION'] = `'${getFromPackageDotJson('alpinejs', 'version')}'`
+    options.define['ALPINE_VERSION'] = `'${getFromPackageDotJson('library', 'version')}'`
     options.define['process.env.NODE_ENV'] = process.argv.includes('--watch') ? `'production'` : `'development'`
 
-    return require('esbuild').build({
+    return esbuildBuild({
         logLevel: process.argv.includes('--watch') ? 'info' : 'warning',
         watch: process.argv.includes('--watch'),
-        // external: ['alpinejs'],
+        // external: ['library'],
         ...options,
     }).catch(() => process.exit(1))
 }

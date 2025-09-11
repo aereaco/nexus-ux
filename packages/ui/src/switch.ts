@@ -1,13 +1,13 @@
-export default function (Alpine: any) {
-    Alpine.directive('switch', (el: any, directive: any) => {
-        if      (directive.value === 'group')       handleGroup(el, Alpine)
-        else if (directive.value === 'label')       handleLabel(el, Alpine)
-        else if (directive.value === 'description') handleDescription(el, Alpine)
-        else                                        handleRoot(el, Alpine)
+export default function (State: any) {
+    State.directive('switch', (el: any, directive: any) => {
+        if      (directive.value === 'group')       handleGroup(el, State)
+        else if (directive.value === 'label')       handleLabel(el, State)
+        else if (directive.value === 'description') handleDescription(el, State)
+        else                                        handleRoot(el, State)
     }).before('bind')
 
-    Alpine.magic('switch', (el: any) => {
-        let $data = Alpine.$data(el)
+    State.magic('switch', (el: any) => {
+        let $data = State.$data(el)
 
         return {
             get isChecked() {
@@ -17,9 +17,9 @@ export default function (Alpine: any) {
     })
 }
 
-function handleGroup(el: any, Alpine: any) {
-    Alpine.bind(el, {
-        'data-id'() { return ['alpine-switch-label', 'alpine-switch-description'] },
+function handleGroup(el: any, State: any) {
+    State.bind(el, {
+        'data-id'() { return ['switch-label', 'switch-description'] },
         'data-signal'() {
             return {
                 __hasLabel: false,
@@ -30,17 +30,17 @@ function handleGroup(el: any, Alpine: any) {
     })
 }
 
-function handleRoot(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handleRoot(el: any, State: any) {
+    State.bind(el, {
         'data-modelable': '__value',
         'data-signal'() {
             return {
                 init() {
                     queueMicrotask(() => {
-                        this.__value = Alpine.bound(this.$el, 'default-checked', false)
-                        this.__inputName = Alpine.bound(this.$el, 'name', false)
-                        this.__inputValue = Alpine.bound(this.$el, 'value', 'on')
-                        this.__inputId = 'alpine-switch-'+Date.now()
+                        this.__value = State.bound(this.$el, 'default-checked', false)
+                        this.__inputName = State.bound(this.$el, 'name', false)
+                        this.__inputValue = State.bound(this.$el, 'value', 'on')
+                        this.__inputId = 'switch-'+Date.now()
                     })
                 },
                 __value: undefined,
@@ -84,8 +84,8 @@ function handleRoot(el: any, Alpine: any) {
         'role': 'switch',
         'tabindex': "0",
         ':aria-checked'() { return !!this.__value },
-        ':aria-labelledby'() { return this.$data.__hasLabel && this.$id('alpine-switch-label') },
-        ':aria-describedby'() { return this.$data.__hasDescription && this.$id('alpine-switch-description') },
+        ':aria-labelledby'() { return this.$data.__hasLabel && this.$id('switch-label') },
+        ':aria-describedby'() { return this.$data.__hasDescription && this.$id('switch-description') },
         '@click.prevent'() { this.__toggle() },
         '@keyup'(e: any) {
             if (e.key !== 'Tab') e.preventDefault()
@@ -96,10 +96,10 @@ function handleRoot(el: any, Alpine: any) {
     })
 }
 
-function handleLabel(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handleLabel(el: any, State: any) {
+    State.bind(el, {
         'data-init'() { this.$data.__hasLabel = true },
-        ':id'() { return this.$id('alpine-switch-label') },
+        ':id'() { return this.$id('switch-label') },
         '@click'() {
             this.$data.__switchEl.click()
             this.$data.__switchEl.focus({ preventScroll: true })
@@ -107,9 +107,9 @@ function handleLabel(el: any, Alpine: any) {
     })
 }
 
-function handleDescription(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handleDescription(el: any, State: any) {
+    State.bind(el, {
         'data-init'() { this.$data.__hasDescription = true },
-        ':id'() { return this.$id('alpine-switch-description') },
+        ':id'() { return this.$id('switch-description') },
     })
 }

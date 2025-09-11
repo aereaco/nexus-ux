@@ -1,14 +1,14 @@
 import disclosure from './disclosure'
 
-export default function (Alpine: any) {
-    Alpine.directive('disclosure', (el: any, directive: any) => {
-        if      (! directive.value)            handleRoot(el, Alpine)
-        else if (directive.value === 'panel')  handlePanel(el, Alpine)
-        else if (directive.value === 'button') handleButton(el, Alpine)
+export default function (State: any) {
+    State.directive('disclosure', (el: any, directive: any) => {
+        if      (! directive.value)            handleRoot(el, State)
+        else if (directive.value === 'panel')  handlePanel(el, State)
+        else if (directive.value === 'button') handleButton(el, State)
     }).before('bind')
 
-    Alpine.magic('disclosure', (el: any) => {
-        let $data = Alpine.$data(el)
+    State.magic('disclosure', (el: any) => {
+        let $data = State.$data(el)
 
         return {
             get isOpen() {
@@ -21,8 +21,8 @@ export default function (Alpine: any) {
     })
 }
 
-function handleRoot(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handleRoot(el: any, State: any) {
+    State.bind(el, {
         'data-modelable': '__isOpen',
         'data-signal'() {
             return {
@@ -30,7 +30,7 @@ function handleRoot(el: any, Alpine: any) {
                 // We can't do this inside a microtask in data-init because, when default-open is set to "true",
                 // It will cause the panel to transition in for the first time, instead of showing instantly...
                 __determineDefaultOpenState() {
-                    let defaultIsOpen = Boolean(Alpine.bound(this.$el, 'default-open', false))
+                    let defaultIsOpen = Boolean(State.bound(this.$el, 'default-open', false))
 
                     if (defaultIsOpen) this.__isOpen = defaultIsOpen
                 },
@@ -43,12 +43,12 @@ function handleRoot(el: any, Alpine: any) {
                 },
             }
         },
-        'data-id'() { return ['alpine-disclosure-panel'] },
+        'data-id'() { return ['disclosure-panel'] },
     })
 }
 
-function handleButton(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handleButton(el: any, State: any) {
+    State.bind(el, {
         'data-init'() {
             if (this.$el.tagName.toLowerCase() === 'button' && !this.$el.hasAttribute('type')) this.$el.type = 'button'
         },
@@ -59,7 +59,7 @@ function handleButton(el: any, Alpine: any) {
             return this.$data.__isOpen
         },
         ':aria-controls'() {
-            return this.$data.$id('alpine-disclosure-panel')
+            return this.$data.$id('disclosure-panel')
         },
         '@keydown.space.prevent.stop'() { this.$data.__toggle() },
         '@keydown.enter.prevent.stop'() { this.$data.__toggle() },
@@ -70,8 +70,8 @@ function handleButton(el: any, Alpine: any) {
     })
 }
 
-function handlePanel(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handlePanel(el: any, State: any) {
+    State.bind(el, {
         'data-init'() {
             this.$data.__determineDefaultOpenState()
         },
@@ -79,7 +79,7 @@ function handlePanel(el: any, Alpine: any) {
             return this.$data.__isOpen
         },
         ':id'() {
-            return this.$data.$id('alpine-disclosure-panel')
+            return this.$data.$id('disclosure-panel')
         },
     })
 }

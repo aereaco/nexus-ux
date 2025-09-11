@@ -1,5 +1,5 @@
-import Alpine from './../src/index'
+import State from './../src/index'
 
-export default Alpine
+export default State
 
-export { Alpine }
+export { State }

@@ -1,14 +1,14 @@
-export default function (Alpine: any) {
-    Alpine.directive('popover', (el: any, directive: any) => {
-        if      (! directive.value)                 handleRoot(el, Alpine)
-        else if (directive.value === 'overlay')     handleOverlay(el, Alpine)
-        else if (directive.value === 'button')      handleButton(el, Alpine)
-        else if (directive.value === 'panel')       handlePanel(el, Alpine)
-        else if (directive.value === 'group')       handleGroup(el, Alpine)
+export default function (State: any) {
+    State.directive('popover', (el: any, directive: any) => {
+        if      (! directive.value)                 handleRoot(el, State)
+        else if (directive.value === 'overlay')     handleOverlay(el, State)
+        else if (directive.value === 'button')      handleButton(el, State)
+        else if (directive.value === 'panel')       handlePanel(el, State)
+        else if (directive.value === 'group')       handleGroup(el, State)
     })
 
-    Alpine.magic('popover', (el: any) => {
-        let $data = Alpine.$data(el)
+    State.magic('popover', (el: any) => {
+        let $data = State.$data(el)
 
         return {
             get isOpen() {
@@ -24,9 +24,9 @@ export default function (Alpine: any) {
     })
 }
 
-function handleRoot(el: any, Alpine: any) {
-    Alpine.bind(el, {
-        'data-id'() { return ['alpine-popover-button', 'alpine-popover-panel'] },
+function handleRoot(el: any, State: any) {
+    State.bind(el, {
+        'data-id'() { return ['popover-button', 'popover-panel'] },
         'data-modelable': '__isOpenState',
         'data-signal'() {
             return {
@@ -70,7 +70,7 @@ function handleRoot(el: any, Alpine: any) {
                     setTimeout(() => el.focus())
                 },
                 __contains(outer: any, inner: any) {
-                    return !! Alpine.findClosest(inner, (el: any) => el.isSameNode(outer))
+                    return !! State.findClosest(inner, (el: any) => el.isSameNode(outer))
                 }
             }
         },
@@ -93,12 +93,12 @@ function handleRoot(el: any, Alpine: any) {
     })
 }
 
-function handleButton(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handleButton(el: any, State: any) {
+    State.bind(el, {
         'data-ref': 'button',
-        ':id'() { return this.$id('alpine-popover-button') },
+        ':id'() { return this.$id('popover-button') },
         ':aria-expanded'() { return this.$data.__isOpen },
-        ':aria-controls'() { return this.$data.__isOpen && this.$id('alpine-popover-panel') },
+        ':aria-controls'() { return this.$data.__isOpen && this.$id('popover-panel') },
         'data-init'() {
             if (this.$el.tagName.toLowerCase() === 'button' && !this.$el.hasAttribute('type')) this.$el.type = 'button'
 
@@ -144,17 +144,17 @@ function handleButton(el: any, Alpine: any) {
     })
 }
 
-function handlePanel(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handlePanel(el: any, State: any) {
+    State.bind(el, {
         'data-init'() {
-            this.$data.__isStatic = Alpine.bound(this.$el, 'static', false)
+            this.$data.__isStatic = State.bound(this.$el, 'static', false)
             this.$data.__panelEl = this.$el
         },
         'data-effect'() {
-            this.$data.__isOpen && Alpine.bound(el, 'focus') && this.$focus.first()
+            this.$data.__isOpen && State.bound(el, 'focus') && this.$focus.first()
         },
         'data-ref': 'panel',
-        ':id'() { return this.$id('alpine-popover-panel') },
+        ':id'() { return this.$id('popover-panel') },
         'data-show'() { return this.$data.__isOpen },
         '@mousedown.window'($event: any) {
             if (! this.$data.__isOpen) return
@@ -169,7 +169,7 @@ function handlePanel(el: any, Alpine: any) {
             if (e.shiftKey && this.$focus.isFirst(e.target)) {
                 e.preventDefault()
                 e.stopPropagation()
-                Alpine.bound(el, 'focus') ? this.$data.__close() : this.$data.__buttonEl.focus()
+                State.bound(el, 'focus') ? this.$data.__close() : this.$data.__buttonEl.focus()
             } else if (! e.shiftKey && this.$focus.isLast(e.target)) {
                 e.preventDefault()
                 e.stopPropagation()
@@ -184,14 +184,14 @@ function handlePanel(el: any, Alpine: any) {
 
                 nextEls[0].focus()
 
-                Alpine.bound(el, 'focus') && this.$data.__close(false)
+                State.bound(el, 'focus') && this.$data.__close(false)
             }
         },
     })
 }
 
-function handleGroup(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handleGroup(el: any, State: any) {
+    State.bind(el, {
         'data-ref': 'container',
         'data-signal'() {
             return {
@@ -201,8 +201,8 @@ function handleGroup(el: any, Alpine: any) {
     })
 }
 
-function handleOverlay(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handleOverlay(el: any, State: any) {
+    State.bind(el, {
         'data-show'() { return this.$data.__isOpen }
     })
 }

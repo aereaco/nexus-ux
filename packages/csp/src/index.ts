@@ -1,37 +1,37 @@
 /**
- * Alpine CSP Build.
+ * Nexus-UX CSP Build.
  *
- * Alpine allows you to use JavaScript directly inside your HTML. This is an
+ * Nexus-UX allows you to use JavaScript directly inside your HTML. This is an
  * incredibly powerful features. However, it violates the "unsafe-eval"
- * Content Security Policy. This alternate Alpine build provides a
- * more constrained API for Alpine that is also CSP-friendly...
+ * Content Security Policy. This alternate Nexus-UX build provides a
+ * more constrained API for Nexus-UX that is also CSP-friendly...
  */
-import Alpine from 'alpinejs/src/alpine'
+import State from '../../library/src/engine/state'
 
 /**
  * _______________________________________________________
  * The Evaluator
  * -------------------------------------------------------
  *
- * By default, Alpine's evaluator "eval"-like utilties to
+ * By default, Nexus-UX's evaluator "eval"-like utilties to
  * interpret strings as runtime JS. We're going to use
  * a more CSP-friendly evaluator for this instead.
  */
 import { cspEvaluator } from './evaluator'
 
-Alpine.setEvaluator(cspEvaluator)
+State.setEvaluator(cspEvaluator)
 
 /**
- * The rest of this file bootstraps Alpine the way it is
+ * The rest of this file bootstraps Nexus-UX the way it is
  * normally bootstrapped in the default build. We will
  * set and define it's directives, magics, etc...
  */
 import { reactive, effect, stop, toRaw } from '@vue/reactivity'
 
-Alpine.setReactivityEngine({ reactive, effect, release: stop, raw: toRaw })
+State.setReactivityEngine({ reactive, effect, release: stop, raw: toRaw })
 
-import 'alpinejs/src/magics/index'
+import 'statejs/src/magics/index'
 
-import 'alpinejs/src/directives/index'
+import 'statejs/src/directives/index'
 
-export default Alpine
+export default State

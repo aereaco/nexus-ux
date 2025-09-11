@@ -1,5 +1,5 @@
 import morph from '../src/index.js'
 
-document.addEventListener('alpine:init', () => {
-    (window as any).Alpine.plugin(morph)
+document.addEventListener('state:init', () => {
+    (window as any).State.plugin(morph)
 })

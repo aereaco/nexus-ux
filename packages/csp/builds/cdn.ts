@@ -1,7 +1,7 @@
-import Alpine from './../src/index'
+import State from './../src/index'
 
-(window as any).Alpine = Alpine
+(window as any).State = State
 
 queueMicrotask(() => {
-    Alpine.start()
+    State.start()
 })

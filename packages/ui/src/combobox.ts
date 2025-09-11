@@ -1,17 +1,17 @@
 import { generateContext, renderHiddenInputs } from './list-context'
 
-export default function (Alpine: any) {
-    Alpine.directive('combobox', (el: any, directive: any, { evaluate }: any) => {
-        if      (directive.value === 'input')        handleInput(el, Alpine)
-        else if (directive.value === 'button')       handleButton(el, Alpine)
-        else if (directive.value === 'label')        handleLabel(el, Alpine)
-        else if (directive.value === 'options')      handleOptions(el, Alpine)
-        else if (directive.value === 'option')       handleOption(el, Alpine, directive, evaluate)
-        else                                         handleRoot(el, Alpine)
+export default function (State: any) {
+    State.directive('combobox', (el: any, directive: any, { evaluate }: any) => {
+        if      (directive.value === 'input')        handleInput(el, State)
+        else if (directive.value === 'button')       handleButton(el, State)
+        else if (directive.value === 'label')        handleLabel(el, State)
+        else if (directive.value === 'options')      handleOptions(el, State)
+        else if (directive.value === 'option')       handleOption(el, State, directive, evaluate)
+        else                                         handleRoot(el, State)
     }).before('bind')
 
-    Alpine.magic('combobox', (el: any) => {
-        let data = Alpine.$data(el)
+    State.magic('combobox', (el: any) => {
+        let data = State.$data(el)
 
         return {
             get value() {
@@ -32,7 +32,7 @@ export default function (Alpine: any) {
                 let active = data.__context?.getActiveItem()
 
                 if (active) {
-                    return Object.values(Alpine.raw(data.__context.items)).findIndex((i: any) => Alpine.raw(active) == Alpine.raw(i))
+                    return Object.values(State.raw(data.__context.items)).findIndex((i: any) => State.raw(active) == State.raw(i))
                 }
 
                 return null
@@ -40,10 +40,10 @@ export default function (Alpine: any) {
         }
     })
 
-    Alpine.magic('comboboxOption', (el: any) => {
-        let data = Alpine.$data(el)
+    State.magic('comboboxOption', (el: any) => {
+        let data = State.$data(el)
 
-        let optionEl = Alpine.findClosest(el, (i: any) => {
+        let optionEl = State.findClosest(el, (i: any) => {
             return i.hasAttribute('data-combobox:option')
         })
 
@@ -51,21 +51,21 @@ export default function (Alpine: any) {
 
         return {
             get isActive() {
-                return data.__context.isActiveKey(Alpine.$data(optionEl).__optionKey)
+                return data.__context.isActiveKey(State.$data(optionEl).__optionKey)
             },
             get isSelected() {
                 return data.__isSelected(optionEl)
             },
             get isDisabled() {
-                return data.__context.isDisabled(Alpine.$data(optionEl).__optionKey)
+                return data.__context.isDisabled(State.$data(optionEl).__optionKey)
             },
         }
     })
 }
 
-function handleRoot(el: any, Alpine: any) {
-    Alpine.bind(el, {
-        'data-id'() { return ['alpine-combobox-button', 'alpine-combobox-options', 'alpine-combobox-label'] },
+function handleRoot(el: any, State: any) {
+    State.bind(el, {
+        'data-id'() { return ['state-combobox-button', 'state-combobox-options', 'state-combobox-label'] },
         'data-modelable': '__value',
 
         'data-signal'() {
@@ -84,24 +84,24 @@ function handleRoot(el: any, Alpine: any) {
                 __hold: false,
 
                 init() {
-                    this.__isMultiple = Alpine.extractProp(el, 'multiple', false)
-                    this.__isDisabled = Alpine.extractProp(el, 'disabled', false)
-                    this.__inputName = Alpine.extractProp(el, 'name', null)
-                    this.__nullable = Alpine.extractProp(el, 'nullable', false)
-                    this.__compareBy = Alpine.extractProp(el, 'by')
+                    this.__isMultiple = State.extractProp(el, 'multiple', false)
+                    this.__isDisabled = State.extractProp(el, 'disabled', false)
+                    this.__inputName = State.extractProp(el, 'name', null)
+                    this.__nullable = State.extractProp(el, 'nullable', false)
+                    this.__compareBy = State.extractProp(el, 'by')
 
-                    this.__context = generateContext(Alpine, this.__isMultiple, 'vertical', () => this.__activateSelectedOrFirst())
+                    this.__context = generateContext(State, this.__isMultiple, 'vertical', () => this.__activateSelectedOrFirst())
 
-                    let defaultValue = Alpine.extractProp(el, 'default-value', this.__isMultiple ? [] : null)
+                    let defaultValue = State.extractProp(el, 'default-value', this.__isMultiple ? [] : null)
 
                     this.__value = defaultValue
 
                     queueMicrotask(() => {
-                        Alpine.effect(() => {
-                            this.__inputName && renderHiddenInputs(Alpine, this.$el, this.__inputName, this.__value)
+                        State.effect(() => {
+                            this.__inputName && renderHiddenInputs(State, this.$el, this.__inputName, this.__value)
                         })
 
-                        Alpine.effect(() => ! this.__isMultiple && this.__resetInput())
+                        State.effect(() => ! this.__isMultiple && this.__resetInput())
                     })
                 },
                 __startTyping() {
@@ -224,13 +224,13 @@ function handleRoot(el: any, Alpine: any) {
                 __compare(a: any, b: any) {
                     let by = this.__compareBy
 
-                    if (! by) by = (a: any, b: any) => Alpine.raw(a) === Alpine.raw(b)
+                    if (! by) by = (a: any, b: any) => State.raw(a) === State.raw(b)
 
                     if (typeof by === 'string') {
                         let property = by
                         by = (a: any, b: any) => {
                             if ((! a || typeof a !== 'object') || (! b || typeof b !== 'object')) {
-                                return Alpine.raw(a) === Alpine.raw(b)
+                                return State.raw(a) === State.raw(b)
                             }
 
                             return a[property] === b[property];
@@ -254,10 +254,10 @@ function handleRoot(el: any, Alpine: any) {
     })
 }
 
-function handleInput(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handleInput(el: any, State: any) {
+    State.bind(el, {
         'data-ref': '__input',
-        ':id'() { return this.$id('alpine-combobox-input') },
+        ':id'() { return this.$id('state-combobox-input') },
 
         'role': 'combobox',
         'tabindex': '0',
@@ -276,7 +276,7 @@ function handleInput(el: any, Alpine: any) {
         ':aria-labelledby'() { return this.$refs.__label ? this.$refs.__label.id : (this.$refs.__button ? this.$refs.__button.id : null) },
 
         'data-init'() {
-            let displayValueFn = Alpine.extractProp(this.$el, 'display-value')
+            let displayValueFn = State.extractProp(this.$el, 'display-value')
             if (displayValueFn) this.$data.__displayValue = displayValueFn
         },
 
@@ -335,10 +335,10 @@ function handleInput(el: any, Alpine: any) {
     })
 }
 
-function handleButton(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handleButton(el: any, State: any) {
+    State.bind(el, {
         'data-ref': '__button',
-        ':id'() { return this.$id('alpine-combobox-button') },
+        ':id'() { return this.$id('state-combobox-button') },
 
         'aria-haspopup': 'true',
         async ':aria-controls'() { return await microtask(() => this.$refs.__options && this.$refs.__options.id) },
@@ -364,26 +364,26 @@ function handleButton(el: any, Alpine: any) {
     })
 }
 
-function handleLabel(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handleLabel(el: any, State: any) {
+    State.bind(el, {
         'data-ref': '__label',
-        ':id'() { return this.$id('alpine-combobox-label') },
+        ':id'() { return this.$id('state-combobox-label') },
         '@click'() { this.$refs.__input.focus({ preventScroll: true }) },
     })
 }
 
-function handleOptions(el: any, Alpine: any) {
-    Alpine.bind(el, {
+function handleOptions(el: any, State: any) {
+    State.bind(el, {
         'data-ref': '__options',
-        ':id'() { return this.$id('alpine-combobox-options') },
+        ':id'() { return this.$id('state-combobox-options') },
 
         'role': 'listbox',
         ':aria-labelledby'() { return this.$refs.__label ? this.$refs.__label.id : (this.$refs.__button ? this.$refs.__button.id : null) },
 
         'data-init'() {
-            this.$data.__isStatic = Alpine.bound(this.$el, 'static', false)
+            this.$data.__isStatic = State.bound(this.$el, 'static', false)
 
-            if (Alpine.bound(this.$el, 'hold')) {
+            if (State.bound(this.$el, 'hold')) {
                 this.$data.__hold = true;
             }
         },
@@ -392,10 +392,10 @@ function handleOptions(el: any, Alpine: any) {
     })
 }
 
-function handleOption(el: any, Alpine: any, directive?: any, evaluate?: any) {
-    Alpine.bind(el, {
-        'data-id'() { return ['alpine-combobox-option'] },
-        ':id'() { return this.$id('alpine-combobox-option') },
+function handleOption(el: any, State: any, directive?: any, evaluate?: any) {
+    State.bind(el, {
+        'data-id'() { return ['state-combobox-option'] },
+        ':id'() { return this.$id('state-combobox-option') },
 
         'role': 'option',
         ':tabindex'() { return this.$comboboxOption.isDisabled ? undefined : '-1' },
@@ -415,8 +415,8 @@ function handleOption(el: any, Alpine: any, directive?: any, evaluate?: any) {
                 init() {
                     this.__optionKey = (Math.random() + 1).toString(36).substring(7)
 
-                    let value = Alpine.extractProp(this.$el, 'value')
-                    let disabled = Alpine.extractProp(this.$el, 'disabled', false, false)
+                    let value = State.extractProp(this.$el, 'value')
+                    let disabled = State.extractProp(this.$el, 'disabled', false, false)
 
                     this.__context.registerItem(this.__optionKey, this.$el, value, disabled)
                 },

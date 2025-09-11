@@ -1,8 +1,8 @@
 import { morph, morphBetween } from './morph'
 
-export default function (Alpine: any) {
-    Alpine.morph = morph
-    Alpine.morphBetween = morphBetween
+export default function (State: any) {
+    State.morph = morph
+    State.morphBetween = morphBetween
 }
 
 export { morph, morphBetween }

@@ -8,14 +8,14 @@ import notSwitch from './switch'
 import radio from './radio'
 import tabs from './tabs'
 
-export default function (Alpine: any) {
-    combobox(Alpine)
-    dialog(Alpine)
-    disclosure(Alpine)
-    listbox(Alpine)
-    menu(Alpine)
-    notSwitch(Alpine)
-    popover(Alpine)
-    radio(Alpine)
-    tabs(Alpine)
+export default function (State: any) {
+    combobox(State)
+    dialog(State)
+    disclosure(State)
+    listbox(State)
+    menu(State)
+    notSwitch(State)
+    popover(State)
+    radio(State)
+    tabs(State)
 }
