@@ -95,7 +95,7 @@ You can react to sorting changes by passing a handler function to `data-sort` an
 </div>
 <!-- END_VERBATIM -->
 
-The `data-sort` handler will be called every time the sort order of the items change. The `$item` magic will contain the key of the sorted element (derived from `data-sort:item`), and `$position` will contain the new position of the item (starting at index `0`).
+The `data-sort` handler will be called every time the sort order of the items change. The `$item` sprite will contain the key of the sorted element (derived from `data-sort:item`), and `$position` will contain the new position of the item (starting at index `0`).
 
 You can also pass a handler function to `data-sort` and that function will receive the `item` and `position` as the first and second parameter:
 

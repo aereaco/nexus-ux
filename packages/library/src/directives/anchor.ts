@@ -1,7 +1,7 @@
 import { computePosition, autoUpdate, flip, offset, shift } from '@floating-ui/dom'
 
 export default function (State: any) {
-    State.magic('anchor', (el: any) => {
+    State.sprite('anchor', (el: any) => {
         if (! el._data_anchor) throw 'State: No data-anchor directive found on element using $anchor...'
 
         return el._data_anchor

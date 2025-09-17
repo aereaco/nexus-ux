@@ -4,34 +4,74 @@ import { injectSignalProviders } from '../engine/signals'
 import { addRootSelector } from '../engine/lifecycle'
 import { interceptClone, isCloning, isCloningLegacy } from '../engine/clone'
 import { addScopeToNode } from '../engine/scope'
-import { injectMagics, /*magic*/ } from '../engine/magics'
+import { injectSprites, /*sprite*/ } from '../engine/sprites'
 import { reactive } from '../engine/reactivity'
 import { evaluate } from '../engine/evaluator'
 
 addRootSelector(() => `[${prefix('signal')}]`)
 
-directive('signal', ((el: any, { expression }: any, { cleanup }: any) => {
+directive('signal', ((el: any, { expression, modifiers }: any, { cleanup }: any) => {
     if (shouldSkipRegisteringSignalDuringClone(el)) return
 
     expression = expression === '' ? '{}' : expression
 
-    let magicContext: any = {}
-    injectMagics(magicContext, el)
+    let spriteContext: any = {}
+    injectSprites(spriteContext, el)
 
     let signalProviderContext: any = {}
-    injectSignalProviders(signalProviderContext, magicContext)
+    injectSignalProviders(signalProviderContext, spriteContext)
 
-    let signal: any = evaluate(el, expression, { scope: signalProviderContext })
+    let initialSignal: any = evaluate(el, expression, { scope: signalProviderContext })
 
-    if (signal === undefined || signal === true) signal = {}
+    if (initialSignal === undefined || initialSignal === true) initialSignal = {}
 
-    injectMagics(signal, el)
+    injectSprites(initialSignal, el)
 
-    let reactiveSignal = reactive(signal)
+    let reactiveSignal = reactive(initialSignal)
 
     initInterceptors(reactiveSignal)
 
     let undo = addScopeToNode(el, reactiveSignal, el)
+
+    // Helper to merge data with ifmissing logic
+    const mergeData = (source: any) => {
+        if (modifiers.includes('ifmissing')) {
+            for (const key in source) {
+                if (Object.prototype.hasOwnProperty.call(source, key) && !Object.prototype.hasOwnProperty.call(reactiveSignal, key)) {
+                    reactiveSignal[key] = source[key];
+                }
+            }
+        } else {
+            Object.assign(reactiveSignal, source);
+        }
+    };
+
+    if (modifiers.includes('fetch')) {
+        const url = expression; // Expression is treated as URL for fetch
+        if (typeof url !== 'string' || !url) {
+            console.error('[Nexus-UX Signal] Invalid URL provided to fetch signals:', url);
+            return;
+        }
+
+        reactiveSignal.loading = true; // Set loading state
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch signals from ${url}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                mergeData(data); // Merge fetched data
+            })
+            .catch(error => {
+                console.error('[Nexus-UX Signal] Error fetching signals:', error);
+                reactiveSignal.error = error.message; // Set error state
+            })
+            .finally(() => {
+                reactiveSignal.loading = false; // Clear loading state
+            });
+    }
 
     reactiveSignal['init'] && evaluate(el, reactiveSignal['init'])
 

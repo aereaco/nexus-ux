@@ -31,7 +31,7 @@ Here's the same component as above, but using the shorthand syntax instead:
 <a name="the-event-object"></a>
 ## The event object
 
-If you wish to access the native JavaScript event object from your expression, you can use Alpine's magic `$event` property.
+If you wish to access the native JavaScript event object from your expression, you can use Alpine's sprite `$event` property.
 
 ```alpine
 <button @click="alert($event.target.getAttribute('message'))" message="Hello World">Say Hi</button>
@@ -152,7 +152,7 @@ When the button is clicked, the `@foo` listener will be called.
 
 Because the `.dispatchEvent` API is verbose, Alpine offers a `$dispatch` helper to simplify things.
 
-Here's the same component re-written with the `$dispatch` magic property.
+Here's the same component re-written with the `$dispatch` sprite property.
 
 ```alpine
 <div data-signal @foo="alert('Button Was Clicked!')">
@@ -160,7 +160,7 @@ Here's the same component re-written with the `$dispatch` magic property.
 </div>
 ```
 
-[→ Read more about `$dispatch`](/magics/dispatch)
+[→ Read more about `$dispatch`](/sprites/dispatch)
 
 <a name="modifiers"></a>
 ## Modifiers

@@ -42,7 +42,7 @@ export default function (State: any) {
     }
 
     Object.defineProperty(State, '$persist', { get: () => persist() })
-    State.magic('persist', persist)
+    State.sprite('persist', persist)
     State.persist = (key: any, { get, set }: any, storage: any = localStorage) => {
         let initial = storageHas(key, storage)
             ? storageGet(key, storage)

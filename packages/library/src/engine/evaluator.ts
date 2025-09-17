@@ -1,5 +1,5 @@
 import { closestSignalStack, mergeProxies } from './scope'
-import { injectMagics } from './magics'
+import { injectSprites } from './sprites'
 import { tryCatch, handleError } from '../utils/error'
 
 let shouldAutoEvaluateFunctions: boolean = true
@@ -35,11 +35,11 @@ export function setEvaluator(newEvaluator: any) {
 }
 
 export function normalEvaluator(el: any, expression: any) {
-    let overriddenMagics: Record<string, any> = {}
+    let overriddenSprites: Record<string, any> = {}
 
-    injectMagics(overriddenMagics, el)
+    injectSprites(overriddenSprites, el)
 
-    let signalStack = [overriddenMagics, ...closestSignalStack(el)]
+    let signalStack = [overriddenSprites, ...closestSignalStack(el)]
 
     let evaluator = (typeof expression === 'function')
         ? generateEvaluatorFromFunction(signalStack, expression)

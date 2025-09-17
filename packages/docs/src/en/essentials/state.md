@@ -102,7 +102,7 @@ Now that you've registered the "dropdown" data, you can use it inside your marku
 
 If you wish to make some data available to every component on the page, you can do so using Alpine's "global store" feature.
 
-You can register a store using `Alpine.store(...)`, and reference one with the magic `$store()` method.
+You can register a store using `Alpine.store(...)`, and reference one with the sprite `$store()` method.
 
 Let's look at a simple example. First we'll register the store globally:
 

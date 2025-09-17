@@ -24,13 +24,13 @@ State.setEvaluator(cspEvaluator)
 /**
  * The rest of this file bootstraps Nexus-UX the way it is
  * normally bootstrapped in the default build. We will
- * set and define it's directives, magics, etc...
+ * set and define it's directives, sprites, etc...
  */
 import { reactive, effect, stop, toRaw } from '@vue/reactivity'
 
 State.setReactivityEngine({ reactive, effect, release: stop, raw: toRaw })
 
-import 'statejs/src/magics/index'
+import 'statejs/src/sprites/index'
 
 import 'statejs/src/directives/index'
 

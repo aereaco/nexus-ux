@@ -6,7 +6,7 @@ title: data
 
 # $data
 
-`$data` is a magic property that gives you access to the current Alpine data scope (generally provided by `data-signal`).
+`$data` is a sprite property that gives you access to the current Alpine data scope (generally provided by `data-signal`).
 
 Most of the time, you can just access Alpine data within expressions directly. for example `data-signal="{ message: 'Hello Caleb!' }"` will allow you to do things like `data-text="message"`.
 
@@ -42,4 +42,4 @@ However, sometimes it is helpful to have an actual object that encapsulates all 
 
 Now when the button is pressed, the browser will alert `Hello Caleb!` because it was passed a data object that contained all the Alpine scope of the expression that called it (`@click="..."`).
 
-Most applications won't need this magic property, but it can be very helpful for deeper, more complicated Alpine utilities.
+Most applications won't need this sprite property, but it can be very helpful for deeper, more complicated Alpine utilities.

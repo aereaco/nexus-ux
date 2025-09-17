@@ -50,7 +50,7 @@ Alpine.plugin(persist)
 <a name="magic-persist"></a>
 ## $persist
 
-The primary API for using this plugin is the magic `$persist` method.
+The primary API for using this plugin is the sprite `$persist` method.
 
 You can wrap any value inside `data-signal` with `$persist` like below to persist its value across page loads:
 

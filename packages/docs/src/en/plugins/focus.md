@@ -308,10 +308,10 @@ By default, when `data-trap` traps focus within an element, it focuses the first
 
 By adding `.noautofocus`, Alpine will not automatically focus any elements when trapping focus.
 
-<a name="focus-magic"></a>
+<a name="focus-sprite"></a>
 ## $focus
 
-This plugin offers many smaller utilities for managing focus within a page. These utilities are exposed via the `$focus` magic.
+This plugin offers many smaller utilities for managing focus within a page. These utilities are exposed via the `$focus` sprite.
 
 | Property | Description |
 | ---       | --- |
@@ -320,7 +320,7 @@ This plugin offers many smaller utilities for managing focus within a page. Thes
 | `focusables()`   | Get all "focusable" elements within the current element |
 | `focused()`   | Get the currently focused element on the page |
 | `lastFocused()`   | Get the last focused element on the page |
-| `within(el)`   | Specify an element to scope the `$focus` magic to (the current element by default) |
+| `within(el)`   | Specify an element to scope the `$focus` sprite to (the current element by default) |
 | `first()`   | Focus the first focusable element |
 | `last()`   | Focus the last focusable element |
 | `next()`   | Focus the next focusable element |

@@ -57,7 +57,7 @@ You can also apply `.stop` to achieve the equivalent of `event.stopPropagation()
 <a name="accessing-the-event-object"></a>
 ## Accessing the event object
 
-Sometimes you may want to access the native browser event object inside your own code. To make this easy, Alpine automatically injects an `$event` magic variable:
+Sometimes you may want to access the native browser event object inside your own code. To make this easy, Alpine automatically injects an `$event` sprite variable:
 
 ```alpine
 <button @click="$event.target.remove()">Remove Me</button>
@@ -68,7 +68,7 @@ Sometimes you may want to access the native browser event object inside your own
 
 In addition to listening for browser events, you can dispatch them as well. This is extremely useful for communicating with other Alpine components or triggering events in tools outside of Alpine itself.
 
-Alpine exposes a magic helper called `$dispatch` for this:
+Alpine exposes a sprite helper called `$dispatch` for this:
 
 ```alpine
 <div @foo="console.log('foo was dispatched')">

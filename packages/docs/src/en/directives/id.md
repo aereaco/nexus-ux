@@ -7,9 +7,9 @@ title: id
 
 `data-id` allows you to declare a new "scope" for any new IDs generated using `$id()`. It accepts an array of strings (ID names) and adds a suffix to each `$id('...')` generated within it that is unique to other IDs on the page.
 
-`data-id` is meant to be used in conjunction with the `$id(...)` magic.
+`data-id` is meant to be used in conjunction with the `$id(...)` sprite.
 
-[Visit the $id documentation](/magics/id) for a better understanding of this feature.
+[Visit the $id documentation](/sprites/id) for a better understanding of this feature.
 
 Here's a brief example of this directive in use:
 

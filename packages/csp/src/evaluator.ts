@@ -1,7 +1,7 @@
 import { generateEvaluatorFromFunction, runIfTypeOfFunction } from '../../library/src/engine/evaluator'
 import { closestSignalStack, mergeProxies } from '../../library/src/engine/scope'
 import { tryCatch } from '../../library/src/utils/error'
-import { injectMagics } from '../../library/src/engine/magics'
+import { injectSprites } from '../../library/src/engine/sprites'
 
 export function cspEvaluator(el: any, expression: any) {
     let signalStack = generateSignalStack(el)
@@ -16,11 +16,11 @@ export function cspEvaluator(el: any, expression: any) {
 }
 
 function generateSignalStack(el: any) {
-    let overriddenMagics: Record<string, any> = {}
+    let overriddenSprites: Record<string, any> = {}
 
-    injectMagics(overriddenMagics, el)
+    injectSprites(overriddenSprites, el)
 
-    return [overriddenMagics, ...closestSignalStack(el)]
+    return [overriddenSprites, ...closestSignalStack(el)]
 }
 
 function generateEvaluator(el: any, expression: string, signalStack: any[]) {

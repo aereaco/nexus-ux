@@ -7,7 +7,7 @@ export default function (State: any) {
         else if (directive.value === 'group')       handleGroup(el, State)
     })
 
-    State.magic('popover', (el: any) => {
+    State.sprite('popover', (el: any) => {
         let $data = State.$data(el)
 
         return {

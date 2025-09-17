@@ -1,7 +1,7 @@
-import { magic } from '../engine/magics'
+import { sprite } from '../engine/sprites'
 import { watch } from '../engine/reactivity'
 
-magic('watch', (el: any, { evaluateLater, cleanup }: any) => (key: any, callback: any) => {
+sprite('watch', (el: any, { evaluateLater, cleanup }: any) => (key: any, callback: any) => {
     let evaluate = evaluateLater(key)
 
     let getter = () => {

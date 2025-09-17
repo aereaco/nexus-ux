@@ -10,7 +10,7 @@ export default function (State: any) {
         currentFocused = document.activeElement
     })
 
-    State.magic('focus', (el: any) => {
+    State.sprite('focus', (el: any) => {
         let within: any = el
 
         return {

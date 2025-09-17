@@ -16,7 +16,7 @@ import { entangle } from './entangle'
 import { nextTick } from './nextTick'
 import { walk } from '../utils/walk'
 import { plugin } from './plugin'
-import { magic } from './magics'
+import { sprite } from './sprites'
 import { store } from './store'
 import { bind } from './binds'
 import { signal } from './signals'
@@ -67,7 +67,7 @@ let State: any = {
     prefixed,
     prefix,
     plugin,
-    magic,
+    sprite,
     store,
     start,
     clone, // INTERNAL

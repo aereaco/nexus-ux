@@ -52,7 +52,7 @@ test('nested element side effects are cleaned up after the parent is removed',
     }
 )
 
-test('element magic-based side effects are cleaned up after the element is removed',
+test('element sprite-based side effects are cleaned up after the element is removed',
     html`
         <div data-signal="{ foo: 1, bar: 1 }">
             <button @click="foo++">foo</button>

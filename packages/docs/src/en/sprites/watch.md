@@ -5,7 +5,7 @@ title: watch
 
 # $watch
 
-You can "watch" a component property using the `$watch` magic method. For example:
+You can "watch" a component property using the `$watch` sprite method. For example:
 
 ```alpine
 <div data-signal="{ open: false }" data-init="$watch('open', value => console.log(value))">

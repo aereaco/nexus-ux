@@ -6,7 +6,7 @@ export default function (State: any) {
         else if (directive.value === 'description') handleDescription(el, State)
     }).before('bind')
 
-    State.magic('radioOption', (el: any) => {
+    State.sprite('radioOption', (el: any) => {
         let $data = State.$data(el)
 
         return {

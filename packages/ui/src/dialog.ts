@@ -9,7 +9,7 @@ export default function (State: any) {
         else                                        handleRoot(el, State)
     })
 
-    State.magic('dialog', (el: any) => {
+    State.sprite('dialog', (el: any) => {
         let $data = State.$data(el)
 
         return {

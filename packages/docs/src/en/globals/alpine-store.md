@@ -45,7 +45,7 @@ Alpine.start()
 <a name="accessing stores"></a>
 ## Accessing stores
 
-You can access data from any store within Alpine expressions using the `$store` magic property:
+You can access data from any store within Alpine expressions using the `$store` sprite property:
 
 ```alpine
 <div data-signal :class="$store.darkMode.on && 'bg-black'">...</div>

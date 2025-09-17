@@ -6,7 +6,7 @@ export default function (State: any) {
         else                                        handleRoot(el, State)
     }).before('bind')
 
-    State.magic('switch', (el: any) => {
+    State.sprite('switch', (el: any) => {
         let $data = State.$data(el)
 
         return {

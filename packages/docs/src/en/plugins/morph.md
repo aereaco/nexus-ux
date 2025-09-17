@@ -99,7 +99,7 @@ Here's an example of using `Alpine.morph()` to update an Alpine component with n
                 <input type="text" data-model="message">
                 <span data-text="message"></span>
 
-                <h2>but the state of this component hasn't changed? Magical.</h2>
+                <h2>but the state of this component hasn't changed? like a sprite.</h2>
             </div>
         `)
     })
@@ -125,7 +125,7 @@ Here's an example of using `Alpine.morph()` to update an Alpine component with n
                 <h4>See how new elements have been added</h4>
                 <input type="text" data-model="message" class="w-full">
                 <span data-text="message"></span>
-                <h4>but the state of this component hasn't changed? Magical.</h4>
+                <h4>but the state of this component hasn't changed? like a sprite.</h4>
             </div>
         `)
     })

@@ -19,7 +19,7 @@ export default function (State: any) {
                             evaluator((value: any) => {
                                 result = typeof value === 'function' ? value(input) : value
                             }, { scope: {
-                                // These are "magics" we'll make available to the data-mask:function:
+                                // These are "sprites" we'll make available to the data-mask:function:
                                 '$input': input,
                                 '$money': formatMoney.bind({ el }),
                             }})

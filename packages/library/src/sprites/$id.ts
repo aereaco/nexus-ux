@@ -1,8 +1,8 @@
-import { magic } from '../engine/magics'
+import { sprite } from '../engine/sprites'
 import { closestIdRoot, findAndIncrementId } from '../engine/ids'
 import { interceptClone } from '../engine/clone'
 
-magic('id', (el: any, { cleanup }: any) => (name: string, key: string | null = null) => {
+sprite('id', (el: any, { cleanup }: any) => (name: string, key: string | null = null) => {
     let cacheKey = `${name}${key ? `-${key}` : ''}`
 
     return cacheIdByNameOnElement(el, cacheKey, cleanup, () => {

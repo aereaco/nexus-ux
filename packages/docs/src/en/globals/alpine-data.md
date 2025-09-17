@@ -124,10 +124,10 @@ An example where a component is destroyed is when using one inside an `data-if`:
 </span>
 ```
 
-<a name="using-magic-properties"></a>
-## Using magic properties
+<a name="using-sprite-properties"></a>
+## Using sprite properties
 
-If you want to access magic methods or properties from a component object, you can do so using the `this` context:
+If you want to access sprite methods or properties from a component object, you can do so using the `this` context:
 
 ```js
 Alpine.data('dropdown', () => ({

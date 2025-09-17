@@ -10,7 +10,7 @@ export default function (State: any) {
         else                                         handleRoot(el, State)
     }).before('bind')
 
-    State.magic('combobox', (el: any) => {
+    State.sprite('combobox', (el: any) => {
         let data = State.$data(el)
 
         return {
@@ -40,7 +40,7 @@ export default function (State: any) {
         }
     })
 
-    State.magic('comboboxOption', (el: any) => {
+    State.sprite('comboboxOption', (el: any) => {
         let data = State.$data(el)
 
         let optionEl = State.findClosest(el, (i: any) => {

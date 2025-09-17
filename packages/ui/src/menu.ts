@@ -8,7 +8,7 @@ export default function (State: any) {
         else if (directive.value === 'button') handleButton(el, State)
     }).before('bind')
 
-    State.magic('menuItem', (el: any) => {
+    State.sprite('menuItem', (el: any) => {
         let $data = State.$data(el)
 
         return {

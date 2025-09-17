@@ -40,22 +40,22 @@ State.setReactivityEngine({ reactive, effect, release: stop, raw: toRaw })
 
 /**
  * _______________________________________________________
- * The Magics
+ * The Sprites
  * -------------------------------------------------------
  *
- * Yeah, we're calling them magics here like they're nouns.
+ * Yeah, we're calling them sprites here like they're nouns.
  * These are the properties that are magically available
  * to all the State expressions, within your web app.
  */
-import './magics/$dispatch'
-import './magics/$el'
-import './magics/$id'
-import './magics/$nextTick'
-import './magics/$refs'
-import './magics/$root'
-import './magics/$signal'
-import './magics/$store'
-import './magics/$watch'
+import './sprites/$dispatch'
+import './sprites/$el'
+import './sprites/$id'
+import './sprites/$nextTick'
+import './sprites/$refs'
+import './sprites/$root'
+import './sprites/$signal'
+import './sprites/$store'
+import './sprites/$watch'
 
 /**
  * _______________________________________________________

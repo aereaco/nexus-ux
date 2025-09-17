@@ -1,8 +1,8 @@
 import { /*closestRoot,*/ findClosest } from '../engine/lifecycle'
 import { mergeProxies } from '../engine/scope'
-import { magic } from '../engine/magics'
+import { sprite } from '../engine/sprites'
 
-magic('refs', (el: any) => {
+sprite('refs', (el: any) => {
     if (el._data_refs_proxy) return el._data_refs_proxy
 
     el._data_refs_proxy = mergeProxies(getArrayOfRefObject(el))

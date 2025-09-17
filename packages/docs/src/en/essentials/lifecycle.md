@@ -42,7 +42,7 @@ Alpine allows you to execute code when a piece of data (state) changes. It offer
 
 As you can see above, `$watch` allows you to hook into data changes using a dot-notation key. When that piece of data changes, Alpine will call the passed callback and pass it the new value. along with the old value before the change.
 
-[→ Read more about $watch](/magics/watch)
+[→ Read more about $watch](/sprites/watch)
 
 <a name="data-effect"></a>
 ### `data-effect`
@@ -74,7 +74,7 @@ The two main behavioral differences with this approach are:
 
 Ensuring a bit of code executes after Alpine is loaded, but BEFORE it initializes itself on the page is a necessary task.
 
-This hook allows you to register custom data, directives, magics, etc. before Alpine does its thing on a page.
+This hook allows you to register custom data, directives, sprites, etc. before Alpine does its thing on a page.
 
 You can hook into this point in the lifecycle by listening for an event that Alpine dispatches called: `alpine:init`
 

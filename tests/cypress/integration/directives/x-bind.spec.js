@@ -443,7 +443,7 @@ test('data-bind object syntax event handlers defined as functions receive the ev
     }
 )
 
-test('data-bind object syntax event handlers defined as functions receive element bound magics',
+test('data-bind object syntax event handlers defined as functions receive element bound sprites',
     html`
         <script>
             window.data = () => { return {

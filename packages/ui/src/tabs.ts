@@ -7,7 +7,7 @@ export default function (State: any) {
         else if (directive.value === 'panel')      handlePanel(el, State)
     }).before('bind')
 
-    State.magic('tab', (el: any) => {
+    State.sprite('tab', (el: any) => {
         let $data = State.$data(el)
 
         return {
@@ -20,7 +20,7 @@ export default function (State: any) {
         }
     })
 
-    State.magic('panel', (el: any) => {
+    State.sprite('panel', (el: any) => {
         let $data = State.$data(el)
 
         return {

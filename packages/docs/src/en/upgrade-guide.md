@@ -55,10 +55,10 @@ Upgrading from Alpine V2 to V3 should be fairly painless. In many cases, NOTHING
 </div>
 ```
 
-For a smoother upgrade experience, you can replace all instances of `$el` with a custom magic called `$root`.
+For a smoother upgrade experience, you can replace all instances of `$el` with a custom sprite called `$root`.
 
-[→ Read more about $el in V3](/magics/el)  
-[→ Read more about $root in V3](/magics/root)
+[→ Read more about $el in V3](/sprites/el)  
+[→ Read more about $root in V3](/sprites/root)
 
 <a name="auto-init"></a>
 ### Automatically evaluate `init()` functions defined on data object
@@ -191,7 +191,7 @@ Before V3, if `data-init` received a return value that is `typeof` "function", i
 <div data-signal data-init="$nextTick(() => { ... })">...</div>
 ```
 
-[→ Read more about $nextTick](/magics/next-tick)
+[→ Read more about $nextTick](/sprites/next-tick)
 
 <a name="no-false-return-from-event-handlers"></a>
 ### Returning `false` from event handlers no longer implicitly "preventDefault"s

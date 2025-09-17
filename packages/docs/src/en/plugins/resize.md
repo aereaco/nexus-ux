@@ -50,7 +50,7 @@ Alpine.plugin(resize)
 <a name="data-resize"></a>
 ## data-resize
 
-The primary API for using this plugin is `data-resize`. You can add `data-resize` to any element within an Alpine component, and when that element is resized for any reason, the provided expression will execute with two magic properties: `$width` and `$height`.
+The primary API for using this plugin is `data-resize`. You can add `data-resize` to any element within an Alpine component, and when that element is resized for any reason, the provided expression will execute with two sprite properties: `$width` and `$height`.
 
 For example, here's a simple example of using `data-resize` to display the width and height of an element as it changes size.
 

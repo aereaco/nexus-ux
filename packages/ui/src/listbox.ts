@@ -9,7 +9,7 @@ export default function (State: any) {
         else if (directive.value === 'option') handleOption(el, State)
     }).before('bind')
 
-    State.magic('listbox', (el: any) => {
+    State.sprite('listbox', (el: any) => {
         let data = State.$data(el)
 
         return {
@@ -45,7 +45,7 @@ export default function (State: any) {
         }
     })
 
-    State.magic('listboxOption', (el: any) => {
+    State.sprite('listboxOption', (el: any) => {
         let data = State.$data(el)
 
         // It's not great depending on the existence of the attribute in the DOM

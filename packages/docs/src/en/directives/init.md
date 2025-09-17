@@ -29,7 +29,7 @@ Sometimes, you want to wait until after Alpine has completely finished rendering
 
 This would be something like `useEffect(..., [])` in react, or `mount` in Vue.
 
-By using Alpine's internal `$nextTick` magic, you can make this happen.
+By using Alpine's internal `$nextTick` sprite, you can make this happen.
 
 ```alpine
 <div data-init="$nextTick(() => { ... })"></div>
