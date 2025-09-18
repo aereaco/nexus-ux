@@ -73,6 +73,31 @@ directive('signal', ((el: any, { expression, modifiers }: any, { cleanup }: any)
             });
     }
 
+    // New: Handle .global modifier for global state management
+    if (modifiers.includes('global')) {
+        const globalStoreName = expression; // Use the expression as the global store name
+        if (typeof globalStoreName !== 'string' || !globalStoreName) {
+            console.error('[Nexus-UX Signal] Global store name must be a non-empty string when using .global modifier.');
+            return;
+        }
+
+        // Ensure window.State.store exists
+        if (!(window as any).State) {
+            (window as any).State = {};
+        }
+        if (!(window as any).State.store) {
+            (window as any).State.store = {};
+        }
+
+        // Register the reactiveSignal in the global store
+        (window as any).State.store[globalStoreName] = reactiveSignal;
+
+        // Cleanup: Remove from global store when element is removed
+        cleanup(() => {
+            delete (window as any).State.store[globalStoreName];
+        });
+    }
+
     reactiveSignal['init'] && evaluate(el, reactiveSignal['init'])
 
     cleanup(() => {
