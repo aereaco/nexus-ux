@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en" style="opacity: 0;" data-ux-init 
+    data-debug
+    data-pwa="{ themeColor: '#570df8' }"
+    data-progress="{ type: 'bar', location: 'top', color: 'linear-gradient(90deg, #570df8, #f000b8)', value: '$progress', pattern: true }"
+    data-injest='{
+        "daisy": { "link": "href=\"https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css\" rel=\"stylesheet\" type=\"text/css\"" },
+        "tailwind": { "script": "src=\"https://cdn.tailwindcss.com\"" },
+        "icons": { "script": "src=\"https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js\"" }
+    }' data-theme="ux_theme" data-theme-options="ux_modes" data-effect="
+        _localStorage.ux_theme = ux_theme;
+    " data-signal="{ 
+        todos: JSON.parse(localStorage.getItem('todos') || '[]'),
+        newTodo: '',
+        filter: 'all',
+        layout: 'list',
+        ux_theme: _localStorage.ux_theme || 'auto',
+        ux_modes: [
+            { id: 'light', icon: 'material-symbols-light:light-mode-outline' },
+            { id: 'dark', icon: 'material-symbols-light:dark-mode-outline' },
+            { id: 'auto', icon: 'material-symbols-light:routine-outline' }
+        ],
+        activeTodo: null,
+        isEditing: false,
+        showConfirmDelete: false,
+        editTempText: '',
+        $progress: 0,
+        $saveTodos: (t) => {
+            $progress = 20;
+            localStorage.setItem('todos', JSON.stringify(toRaw(t)));
+            setTimeout(() => $progress = 100, 300);
+            setTimeout(() => $progress = 0, 800);
+        }
+    }" data-computed="{
+        filteredTodos: () => {
+            const f = filter;
+            const list = todos;
+            if (f === 'active') return list.filter(t => !t.completed);
+            if (f === 'completed') return list.filter(t => t.completed);
+            return list;
+        },
+        remaining: () => todos.filter(t => !t.completed).length
+    }">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus-UX • Advanced Todo</title>
+
+    <script type="module" src="../dist/nexus-ux.js?v=70"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap');
+
+        /* FOUC Prevention: Native Nexus-UX Loading State */
+        html.nexus-loading {
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        html.nexus-ready {
+            visibility: visible !important;
+            opacity: 1 !important;
+            transition: opacity 0.3s ease-in;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            transition: background-color 0.5s ease;
+        }
+
+        .todo-enter {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Morphing Switcher Animation - Nexus-UX Native Style */
+        .theme-icon {
+            position: absolute;
+            transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+            opacity: 0;
+            transform: translateY(20px) rotate(-180deg) scale(0.2);
+            pointer-events: none;
+        }
+
+        .theme-icon.is-active {
+            opacity: 1;
+            transform: translateY(0) rotate(0) scale(1);
+            pointer-events: auto;
+        }
+
+        /* Grid Mode Styles */
+        .grid-layout {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .grid-layout .todo-item {
+            flex-direction: column;
+            text-align: center;
+            height: 140px;
+            justify-content: center;
+            position: relative;
+            min-width: 0;
+            width: 100%;
+        }
+
+        .grid-layout .todo-item .flex-1 {
+            width: 100%;
+            min-width: 0;
+        }
+
+        .grid-layout .todo-item .actions {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            flex-direction: row;
+        }
+
+        .grid-layout .todo-item .checkbox-wrapper {
+            position: absolute;
+            top: 0.75rem;
+            left: 0.75rem;
+            z-index: 10;
+        }
+
+        /* Scoped Todo Text Truncation */
+        .todo-text {
+            padding: 0 0.5rem;
+            word-break: break-word;
+            flex: 1;
+            min-width: 0;
+            line-height: 1.4;
+        }
+
+        .grid-layout .todo-text {
+            display: -webkit-box !important;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical !important;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: center;
+        }
+
+        .compact-layout .todo-text {
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            display: block !important;
+        }
+
+        /* Compact Mode Fixes */
+        .compact-layout .todo-item {
+            padding: 0.25rem 0.5rem;
+            gap: 0.25rem;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            min-width: 0;
+        }
+
+        .compact-layout .todo-item .flex-1 {
+            min-width: 0;
+        }
+
+        .compact-layout .btn-circle {
+            width: 1.5rem;
+            height: 1.5rem;
+            min-height: 1.5rem;
+        }
+
+        /* Modal Enhancements */
+        .modal {
+            display: grid;
+            align-items: center;
+            justify-items: center;
+            z-index: 50;
+        }
+
+        .modal-box {
+            max-width: 500px;
+            width: 92%;
+            margin: 0;
+            transform: none;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-backdrop {
+            cursor: pointer;
+            background-color: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+        }
+
+        .confirm-modal {
+            z-index: 60;
+        }
+
+        .confirm-modal .modal-box {
+            max-width: 320px;
+        }
+
+        /* Shared Modal Content */
+        .modal-view-content {
+            max-height: 16rem;
+            overflow-y: auto;
+            font-size: 1.125rem;
+            line-height: 1.75rem;
+            color: currentColor;
+        }
+
+        .modal-view-content::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .modal-view-content::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-4 transition-colors duration-500">
+    <!-- Theme Switcher Top Right -->
+    <div class="fixed top-6 right-6 z-50">
+        <button
+            class="btn btn-circle btn-lg shadow-lg relative overflow-hidden bg-base-100/80 backdrop-blur border-none hover:scale-110 active:scale-95 transition-all outline-none"
+            data-switcher="ux_theme" data-switcher-options="ux_modes" data-on-click="$switch()">
+            <div class="relative w-full h-full flex items-center justify-center">
+                <template data-for="m in ux_modes">
+                    <iconify-icon data-attr:icon="m.icon" class="text-4xl theme-icon"
+                        data-class:is-active="$isActive(m.id)">
+                    </iconify-icon>
+                </template>
+            </div>
+        </button>
+    </div>
+
+    <div
+        class="card w-full max-w-2xl bg-base-100 shadow-2xl border border-base-300 transition-all duration-500 overflow-hidden">
+        <div class="card-body gap-8">
+            <header class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <h1 class="text-4xl font-bold tracking-tight text-primary">Nexus-UX</h1>
+
+                <!-- Layout Toggles -->
+                <div class="join bg-base-200 p-1 rounded-box shadow-inner">
+                    <button class="join-item btn btn-xs btn-ghost gap-1" data-on-click="layout = 'list'"
+                        data-class-btn-active="layout === 'list'">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path d="M4 6h16M4 12h16M4 18h16" stroke-width="2" stroke-linecap="round" />
+                        </svg> List
+                    </button>
+                    <button class="join-item btn btn-xs btn-ghost gap-1" data-on-click="layout = 'grid'"
+                        data-class-btn-active="layout === 'grid'">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path d="M4 4h7v7H4V4zm9 0h7v7h-7V4zM4 13h7v7H4v-7zm9 0h7v7h-7v-7z" stroke-width="2"
+                                stroke-linecap="round" />
+                        </svg> Grid
+                    </button>
+                    <button class="join-item btn btn-xs btn-ghost gap-1" data-on-click="layout = 'compact'"
+                        data-class-btn-active="layout === 'compact'">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path d="M4 8h16M4 16h16" stroke-width="2" stroke-linecap="round" />
+                        </svg> Compact
+                    </button>
+                </div>
+
+                <div class="badge badge-secondary badge-lg font-bold py-3" data-text="remaining + ' left'"></div>
+            </header>
+
+            <!-- Input Group -->
+            <div class="relative group">
+                <input type="text"
+                    class="input input-lg input-bordered w-full pr-[120px] focus:ring-4 focus:ring-primary/20 transition-all font-medium"
+                    data-bind-value="newTodo" placeholder="What needs to be done?" data-on-keyup:enter="
+                        if (newTodo.trim()) {
+                            todos.push({ id: Date.now(), text: newTodo.trim(), completed: false });
+                            newTodo = '';
+                            $saveTodos(todos);
+                        }
+                    ">
+                <button class="btn btn-primary absolute top-2 right-2 px-6 shadow-md" data-on-click="
+                        if (newTodo.trim()) {
+                            todos.push({ id: Date.now(), text: newTodo.trim(), completed: false });
+                            newTodo = '';
+                            $saveTodos(todos);
+                        }
+                    ">Add Task</button>
+            </div>
+
+            <!-- Main Navigation -->
+            <div class="flex flex-wrap justify-between items-center gap-4 border-b border-base-300 pb-4">
+                <div class="tabs tabs-boxed bg-base-200">
+                    <a class="tab tab-sm" data-on-click="filter = 'all'"
+                        data-class-tab-active="filter === 'all'">All</a>
+                    <a class="tab tab-sm" data-on-click="filter = 'active'"
+                        data-class-tab-active="filter === 'active'">Active</a>
+                    <a class="tab tab-sm" data-on-click="filter = 'completed'"
+                        data-class-tab-active="filter === 'completed'">Completed</a>
+                </div>
+
+                <button class="btn btn-ghost btn-xs text-error font-bold"
+                    data-on-click="todos = todos.filter(t => !t.completed); $saveTodos(todos)">
+                    Clear Completed
+                </button>
+            </div>
+
+            <!-- Responsive List Container -->
+            <div class="min-h-[300px] transition-all duration-500" data-class-grid-layout="layout === 'grid'"
+                data-class-compact-layout="layout === 'compact'" data-class-space-y-3="layout === 'list'">
+
+                <div data-if="todos.length === 0"
+                    class="flex flex-col items-center justify-center h-40 text-base-content/30 italic">
+                    <svg class="w-12 h-12 mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    Ready for your focus...
+                </div>
+
+                <template data-for="todo in filteredTodos">
+                    <div class="todo-item flex items-center gap-4 p-4 bg-base-200 rounded-2xl hover:shadow-md transition-all todo-enter group border border-transparent min-w-0"
+                        data-key="todo.id" data-class-todo-completed="todo.completed"
+                        data-on-click="activeTodo = todo; isEditing = false">
+
+                        <div class="flex-1 flex items-center gap-4 h-full min-w-0">
+                            <div class="checkbox-wrapper" data-on-click="$event.stopPropagation()">
+                                <input type="checkbox"
+                                    class="checkbox checkbox-lg checkbox-primary transition-all hover:scale-110"
+                                    data-bind-checked="todo.completed" data-on-change="$saveTodos(todos)">
+                            </div>
+
+                            <span class="todo-text flex-1 font-medium text-lg leading-tight px-0" data-text="todo.text"
+                                data-class-line-through="todo.completed" data-class-opacity-50="todo.completed"></span>
+                        </div>
+
+                        <!-- Unified Actions -->
+                        <div class="actions flex items-center gap-1 transition-opacity opacity-0 group-hover:opacity-100"
+                            data-on-click="$event.stopPropagation()">
+                            <!-- <button class="btn btn-circle btn-ghost btn-sm text-primary/40 hover:text-primary hover:bg-primary/10 transition-all"
+                                title="Edit Task"
+                                data-on-click="activeTodo = todo; isEditing = true; editTempText = todo.text">
+                                <iconify-icon icon="material-symbols-light:edit-outline" class="text-xl"></iconify-icon>
+                            </button> -->
+                            <button
+                                class="btn btn-circle btn-ghost btn-sm text-error/40 hover:text-error hover:bg-error/10 transition-all"
+                                title="Delete Task" data-on-click="activeTodo = todo; showConfirmDelete = true">
+                                <iconify-icon icon="material-symbols-light:delete-outline"
+                                    class="text-xl"></iconify-icon>
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Footer Meta -->
+            <footer class="mt-auto px-2 opacity-40 hover:opacity-100 transition-opacity">
+                <div class="divider text-[10px] uppercase tracking-tighter">Diagnostic Overlay</div>
+                <div class="grid grid-cols-2 gap-2 text-[9px] font-mono lowercase">
+                    <div class="bg-base-300 p-2 rounded flex justify-between">
+                        <span>viewport</span>
+                        <span class="text-primary"><span data-text="_window.innerWidth"></span>x<span
+                                data-text="_window.innerHeight"></span></span>
+                    </div>
+                    <div class="bg-base-300 p-2 rounded flex justify-between">
+                        <span>theme</span>
+                        <span class="text-secondary" data-text="ux_theme"></span>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Shared Task Modal (View/Edit) -->
+    <div class="modal" data-class:modal-open="activeTodo && !showConfirmDelete">
+        <div class="modal-box bg-base-100 shadow-2xl border border-primary/20 p-0 overflow-hidden flex flex-col">
+            <!-- Header/Tabs -->
+            <div class="flex items-center justify-between p-4 border-b border-base-200">
+                <span class="font-bold uppercase tracking-widest text-xs text-primary/60"
+                    data-text="isEditing ? 'Edit Task' : 'View Task'"></span>
+                <button class="btn btn-ghost btn-xs btn-circle" data-on-click="activeTodo = null">
+                    <iconify-icon icon="material-symbols-light:close" class="text-lg"></iconify-icon>
+                </button>
+            </div>
+
+            <!-- Content Area -->
+            <div class="p-6 flex-1 min-h-[200px] flex flex-col">
+                <!-- View Mode content -->
+                <div data-show="!isEditing" class="modal-view-content whitespace-pre-wrap select-text px-2"
+                    data-text="activeTodo?.text"></div>
+
+                <!-- Edit Mode content -->
+                <textarea data-show="isEditing"
+                    class="textarea textarea-bordered w-full text-lg font-medium flex-1 min-h-[150px] focus:ring-4 focus:ring-primary/20 focus:border-primary transition-all leading-relaxed"
+                    data-bind-value="editTempText" placeholder="Describe your task..."
+                    data-effect="if (isEditing && $el) { $el.focus(); $el.select(); }" data-on-keydown:enter:ctrl="
+                        if (editTempText.trim()) {
+                            activeTodo.text = editTempText.trim();
+                            isEditing = false;
+                            $saveTodos(todos);
+                        }
+                    " data-on-keydown:escape="isEditing = false"></textarea>
+            </div>
+
+            <!-- Action Bar -->
+            <div class="p-4 bg-base-200/50 flex items-center justify-between border-t border-base-200">
+                <!-- Left: Trash -->
+                <button class="btn btn-circle btn-ghost text-error/60 hover:text-error hover:bg-error/10 transition-all"
+                    title="Delete Task" data-on-click="showConfirmDelete = true">
+                    <iconify-icon icon="material-symbols-light:delete-outline" class="text-2xl"></iconify-icon>
+                </button>
+
+                <!-- Right actions -->
+                <div class="flex items-center gap-2">
+                    <!-- View Mode Buttons -->
+                    <div data-show="!isEditing" class="flex gap-2">
+                        <button class="btn btn-ghost gap-2 px-6"
+                            data-on-click="isEditing = true; editTempText = activeTodo.text">
+                            <iconify-icon icon="material-symbols-light:edit-outline" class="text-xl"></iconify-icon>
+                            Edit
+                        </button>
+                        <button class="btn btn-primary px-6 shadow-md" data-on-click="activeTodo = null">Done</button>
+                    </div>
+
+                    <!-- Edit Mode Buttons -->
+                    <div data-show="isEditing" class="flex gap-2">
+                        <button class="btn btn-ghost" data-on-click="isEditing = false">Cancel</button>
+                        <button class="btn btn-primary px-6 shadow-md" data-on-click="
+                                if (editTempText.trim()) {
+                                    activeTodo.text = editTempText.trim();
+                                    isEditing = false;
+                                    $saveTodos(todos);
+                                }
+                            ">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop" data-on-click="activeTodo = null"></div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal confirm-modal" data-class:modal-open="showConfirmDelete">
+        <div class="modal-box bg-base-100 shadow-2xl border border-error/20 p-6 flex flex-col gap-4">
+            <h3 class="font-bold text-lg text-error flex items-center gap-2">
+                <iconify-icon icon="material-symbols-light:warning-rounded" class="text-2xl"></iconify-icon>
+                Confirm Delete
+            </h3>
+            <p class="text-base-content/70">Are you sure you want to permanently remove this task? This action cannot be
+                undone.</p>
+
+            <div class="flex justify-end gap-3 mt-4">
+                <button class="btn btn-ghost" data-on-click="showConfirmDelete = false">No, Keep it</button>
+                <button class="btn btn-error text-white px-6 shadow-md" data-on-click="
+                        todos = todos.filter(t => t.id !== activeTodo.id);
+                        $saveTodos(todos);
+                        showConfirmDelete = false;
+                        activeTodo = null;
+                    ">Yes, Delete</button>
+            </div>
+        </div>
+        <div class="modal-backdrop bg-black/60 backdrop-blur-md" data-on-click="showConfirmDelete = false"></div>
+    </div>
+</body>
+
+</html>

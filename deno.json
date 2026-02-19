@@ -1,0 +1,31 @@
+{
+  "tasks": {
+    "build": "deno run -A scripts/build.ts",
+    "test": "deno test -A src/"
+  },
+  "imports": {
+    "@vue/reactivity": "npm:@vue/reactivity@^3.4.15",
+    "idiomorph": "npm:idiomorph@^0.3.0",
+    "@msgpack/msgpack": "npm:@msgpack/msgpack@^3.0.0-beta2",
+    "esbuild": "https://deno.land/x/esbuild@v0.20.0/mod.js",
+    "esbuild-deno-loader": "https://deno.land/x/esbuild_deno_loader@0.9.0/mod.ts",
+    "std/path": "https://deno.land/std@0.212.0/path/mod.ts",
+    "std/assert": "https://deno.land/std@0.212.0/assert/mod.ts",
+    "jsdom": "npm:jsdom@24.0.0"
+  },
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "dom.asynciterable",
+      "deno.ns"
+    ],
+    "strict": true
+  },
+  "lint": {
+    "exclude": ["dist/"]
+  },
+  "fmt": {
+    "exclude": ["dist/"]
+  }
+}
