@@ -14,6 +14,9 @@ export const logger = {
   info: (context: RuntimeContext, ...args: any[]) => {
     if (context.isDevMode) console.info(`[Nexus]`, ...args);
   },
+  debug: (context: RuntimeContext, ...args: any[]) => {
+    if (context.isDevMode) console.debug(`[Nexus Debug]`, ...args);
+  },
   error: (context: RuntimeContext, ...args: any[]) => {
     // Errors are always logged, but prefixed
     console.error(`[Nexus Error]`, ...args);

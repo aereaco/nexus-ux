@@ -1,32 +1,93 @@
-import { shallowRef, customRef, Ref } from '../../engine/reactivity.ts';
+import { customRef, Ref, shallowRef as _shallowRef } from '../../engine/reactivity.ts';
 
 // Cache of reactive refs for keys
 const keyRefs: Map<string, Ref<unknown>> = new Map();
 
+// Helper to check if debug mode is active
+const isDebug = () => {
+  if (typeof document === 'undefined') return false;
+  return document.documentElement.hasAttribute('data-debug');
+};
+
 // Helper to get raw value
 const getValue = (key: string) => {
-  if (typeof localStorage === 'undefined') return null;
+  const storage = (globalThis as any).localStorage;
+  if (typeof storage === 'undefined' || storage === null) {
+    return null;
+  }
   try {
-    const item = localStorage.getItem(key);
-    try {
-      return JSON.parse(item!);
-    } catch {
-      return item; // return string if not valid JSON
+    const val = storage.getItem(key);
+    
+    // Safety: Handle string "null" which can happen if someone does localStorage.setItem(k, JSON.stringify(null))
+    if (val === 'null') {
+      if (isDebug()) console.debug(`[localStorageMirror] STORAGE GET: '${key}' received string "null", treating as null`);
+      return null;
     }
-  } catch {
+
+    if (isDebug()) {
+      console.debug(`[localStorageMirror] STORAGE GET: '${key}' -> ${val === null ? 'null' : (typeof val === 'string' ? '"' + val.substring(0, 50) + '"' : val)}`);
+    }
+    return val;
+  } catch (e) {
+    if (isDebug()) console.error(`[localStorageMirror] STORAGE GET Error for '${key}':`, e);
     return null;
   }
 };
 
+const localStorageMirrorTarget = {
+  getItem: (key: string) => getValue(key),
+  setItem: (key: string, value: string) => {
+    const storage = (globalThis as any).localStorage;
+    if (isDebug()) console.debug(`[localStorageMirror] STORAGE SET: '${key}' = ${value}`);
+    if (storage) {
+      try {
+        storage.setItem(key, value);
+      } catch (e) {
+        if (isDebug()) console.error(`[localStorageMirror] STORAGE SET Error for '${key}':`, e);
+      }
+    }
+    const r = keyRefs.get(key);
+    if (r) r.value = value;
+  },
+  removeItem: (key: string) => {
+    const storage = (globalThis as any).localStorage;
+    if (isDebug()) console.debug(`[localStorageMirror] STORAGE REMOVE: '${key}'`);
+    if (storage) {
+      try {
+        storage.removeItem(key);
+      } catch (e) {
+        if (isDebug()) console.error(`[localStorageMirror] STORAGE REMOVE Error for '${key}':`, e);
+      }
+    }
+    const r = keyRefs.get(key);
+    if (r) r.value = null;
+  },
+  clear: () => {
+    const storage = (globalThis as any).localStorage;
+    if (isDebug()) console.debug(`[localStorageMirror] STORAGE CLEAR`);
+    if (storage) {
+      try {
+        storage.clear();
+      } catch (e) {
+        if (isDebug()) console.error(`[localStorageMirror] STORAGE CLEAR Error:`, e);
+      }
+    }
+    keyRefs.forEach(r => r.value = null);
+  }
+};
+
 // Create a reactive proxy
-export const localStorageMirror = new Proxy({}, {
+export const localStorageMirror = new Proxy(localStorageMirrorTarget as any, {
   get(target, key: string) {
+    if (isDebug()) {
+      console.debug(`[localStorageMirror Proxy Get] Key: ${String(key)}`);
+    }
     if (typeof key === 'symbol') return Reflect.get(target, key);
+    if (key in target) return (target as any)[key];
 
     if (!keyRefs.has(key)) {
-      // Create a custom ref that reads from localStorage
-      const r = customRef((track: () => void, trigger: () => void) => {
-
+      // Create a custom ref that always reads from localStorage for "Truth-from-Source"
+      const r = customRef((track, trigger) => {
         return {
           get() {
             track();
@@ -34,64 +95,30 @@ export const localStorageMirror = new Proxy({}, {
           },
           set(newValue: unknown) {
             const strVal = typeof newValue === 'string' ? newValue : JSON.stringify(newValue);
-            if (typeof localStorage !== 'undefined') localStorage.setItem(key, strVal);
+            const storage = (globalThis as any).localStorage;
+            if (storage) storage.setItem(key, strVal);
             trigger();
-
-            // Also trigger 'storage' event simulation for local syncing if needed?
-            // Standard storage event only fires on other tabs. 
-            // But since we set it, we know it changed.
           }
         };
       });
       keyRefs.set(key, r);
-      // Wait, customRef returns the ref object. 
-      // I need to store the *ref* so I can reuse it?
-      // Actually implementation of customRef returns a Ref object.
-      // But I want to return the *value* here if accessed directly?
-      // "Declarative (HTML) ... el.dataset.signal ... access Mode: Imperative: el.dataset.signal"
-      // "Expression: _localStorage.key" -> evaluates to value.
-      // If I return a Ref, the Evaluator might utilize it?
-      // Evaluator accesses globalSignals.
-      // If _localStorage is a Proxy, accessing .key calls this get.
-      // If I return a Ref, usage `_localStorage.count + 1` fails if Ref is an object.
-      // I MUST return the value OR use a mechanism where the Proxy *is* the reactive object?
-      // If I allow `reactive` to wrap this Proxy?
-      // standard `reactive` wraps target.
-
-      // Alternative: Use a dedicated 'ref' and return .value
-      // BUT tracking dependency needs to happen here.
-
-      // Let's rely on caching a Vue Ref and returning .value?
-      // But getting .value tracks it.
-      // So:
-      // const r = ref(getValue(key));
-      // keyRefs.set(key, r);
-      // return r.value;
     }
 
-    // Wait, if I return r.value, next time I must return r.value again.
-    // If I stored 'r' in map.
     const r = keyRefs.get(key);
-    if (r && 'value' in r) return r.value; // It is a ref
-
-    // If not created yet:
-    // We need a ref that we can manually trigger from storage event.
-    // simple `ref` works.
-    const newRef = shallowRef(getValue(key));
-    keyRefs.set(key, newRef);
-    return newRef.value;
+    return r ? r.value : undefined;
   },
   set(_target, key: string, value: unknown) {
     const strVal = typeof value === 'string' ? value : JSON.stringify(value);
-    localStorage.setItem(key, strVal);
+    const storage = (globalThis as any).localStorage;
+    if (storage) storage.setItem(key, strVal);
 
-    // Update local ref
+    // Update local ref if it exists, or create one to ensure future reactivity
     const r = keyRefs.get(key);
     if (r) {
       r.value = value;
     } else {
-      const newRef = shallowRef(value);
-      keyRefs.set(key, newRef);
+      // Access it once to create the customRef
+      (localStorageMirror as any)[key] = value;
     }
     return true;
   }

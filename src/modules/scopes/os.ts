@@ -34,3 +34,8 @@ if (typeof window !== 'undefined') {
 export function getOSScope() {
   return osScope;
 }
+
+export const scopeRule = (q: string, body: () => any) => {
+  if (q in osScope) return (osScope as any)[q] ? body() : undefined;
+  return osScope.platform === q ? body() : undefined;
+};

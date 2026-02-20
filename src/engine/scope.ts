@@ -7,7 +7,7 @@ import { NexusEnhancedElement } from './reactivity.ts';
  * a scope (e.g., from a `data-signal` attribute) in the element's ancestry.
  * The most local scope is at the beginning of the array.
  */
-export function getDataStack(element: HTMLElement): Record<string, unknown>[] {
+export function getDataStack(element: HTMLElement | Text | Comment | Element): Record<string, unknown>[] {
   const node = element as NexusEnhancedElement;
   if (node[DATA_STACK_KEY]) {
     return node[DATA_STACK_KEY]!;
@@ -26,7 +26,18 @@ export function getDataStack(element: HTMLElement): Record<string, unknown>[] {
      return getDataStack(parent);
   }
   
-  // document or other node
+  // Handle DocumentFragment (e.g. within templates)
+  if (parent instanceof DocumentFragment || (typeof ShadowRoot !== 'undefined' && parent instanceof ShadowRoot)) {
+    // If it's a template fragment, we might need a way to reach the template element itself?
+    // In our `for.ts`, we add the scope to the fragment's children directly.
+    // If we're inside a child of one of those children, we need to climb up.
+    return getDataStack(parent as any);
+  }
+  
+  if (parent instanceof Element) {
+     return getDataStack(parent as Element);
+  }
+
   return [];
 }
 

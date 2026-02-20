@@ -37,3 +37,8 @@ if (typeof window !== 'undefined' && globalThis.screen.orientation) {
     viewScope.orientation = globalThis.screen.orientation.type;
   });
 }
+
+export const scopeRule = (q: string, body: () => any) => {
+  if (q in viewScope) return (viewScope as any)[q] ? body() : undefined;
+  return undefined;
+};

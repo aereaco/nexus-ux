@@ -26,7 +26,7 @@ import {
   Ref
 } from '@vue/reactivity';
 
-import { CLEANUP_FUNCTIONS_KEY, EFFECT_RUNNERS_KEY, RUN_EFFECT_RUNNERS_KEY, DATA_STACK_KEY } from './consts.ts';
+import { CLEANUP_FUNCTIONS_KEY, EFFECT_RUNNERS_KEY, RUN_EFFECT_RUNNERS_KEY, DATA_STACK_KEY, MARKER_KEY } from './consts.ts';
 
 export {
   reactive,
@@ -57,8 +57,9 @@ export {
 export interface NexusEnhancedElement extends HTMLElement {
   [EFFECT_RUNNERS_KEY]?: Set<ReactiveEffectRunner<void>>;
   [RUN_EFFECT_RUNNERS_KEY]?: () => void;
-  [CLEANUP_FUNCTIONS_KEY]?: Set<() => void>;
+  [CLEANUP_FUNCTIONS_KEY]?: Map<string, () => void>;
   [DATA_STACK_KEY]?: Record<string, unknown>[];
+  [MARKER_KEY]?: number;
 }
 
 /**
@@ -76,7 +77,13 @@ export function elementBoundEffect(
   options?: ReactiveEffectOptions
 ): [ReactiveEffectRunner<void>, () => void] {
   // For this phase, we rely on standard creation for stability.
-  const runner = effect(effectCallback, options);
+  let runner;
+  try {
+    runner = effect(effectCallback, options);
+  } catch (e) {
+    console.error(`[Reactivity Error] effect() failed for <${el.tagName}>:`, e);
+    throw e;
+  }
 
   const enhancedEl = el as NexusEnhancedElement;
 
@@ -107,9 +114,16 @@ export function elementBoundEffect(
   };
 
   if (!enhancedEl[CLEANUP_FUNCTIONS_KEY]) {
-    enhancedEl[CLEANUP_FUNCTIONS_KEY] = new Set();
+    enhancedEl[CLEANUP_FUNCTIONS_KEY] = new Map();
   }
-  enhancedEl[CLEANUP_FUNCTIONS_KEY].add(cleanup);
+  // For effect cleanups, we use a random or indexed key to avoid collision if not specified? 
+  // Actually, for elementBoundEffect, it's usually 1:1. Let's use 'effect' as key or similar.
+  // But wait, CLEANUP_FUNCTIONS_KEY is now a Map for directive gating.
+  // For elementBoundEffect, we might have multiple?
+  // Let's use unique keys based on a counter or just push to a list?
+  // If it's a Map, we need keys.
+  const cleanupKey = `effect-${enhancedEl[CLEANUP_FUNCTIONS_KEY].size}`;
+  enhancedEl[CLEANUP_FUNCTIONS_KEY].set(cleanupKey, cleanup);
 
   return [runner, cleanup];
 }

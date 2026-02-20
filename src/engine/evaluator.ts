@@ -1,5 +1,4 @@
 import { RuntimeContext } from './composition.ts';
-import { DATA_STACK_KEY } from './consts.ts';
 import { evaluationError } from './errors.ts';
 import { resolveSelector } from './selector.ts';
 import { getDataStack } from './scope.ts';
@@ -7,7 +6,7 @@ import { getDataStack } from './scope.ts';
 declare module "./composition.ts" {
   interface RuntimeContext {
     evaluate: (
-      el: HTMLElement,
+      el: Element | Text | Comment,
       expression: string,
       extras?: Record<string, unknown>
     ) => unknown;
@@ -27,32 +26,34 @@ export function dontAutoEvaluateFunctions<R>(callback: () => R): R {
 }
 
 export function evaluate(
-  el: HTMLElement,
+  el: Element | Text | Comment,
   expression: string,
   runtime: RuntimeContext,
   extras: Record<string, unknown> = {}
 ): unknown {
   if (!expression || expression.trim() === '') return {};
 
-  let result: unknown;
   const runner = evaluateLater(el, expression, runtime);
-  runner(value => result = value, extras);
-  return result;
+  let res: unknown;
+  runner(v => res = v, extras);
+  if (runtime.isDevMode && !expression.startsWith('_')) {
+    runtime.debug(`[Evaluator] Result of "${expression}":`, res);
+  }
+  return res;
 }
 
 /**
  * Pre-processes Nexus-UX specific syntax extensions (NEG Grammar).
  * 
- * Transformations:
- * 1. @rule(arg) { body } -> _scopes.rule("arg", () => { return body })
- * 2. #signal -> $global.signal
- * 3. _mirror -> $global._mirror
- * 4. $sprite -> $global.$sprite (if not followed by '(' which is for Selector $)
+ * DESIGN PRINCIPLE: "Zero-Overhead Evaluation" (Spec 1.10)
+ * We minimize pre-processing. Only non-native JS characters (like # and @)
+ * are transformed once at initialization. Valid JS identifiers like _ and $
+ * are handled directly by the Proxy scope.
  */
 function preProcessExpression(expression: string): string {
   let processed = expression;
 
-  // 1. @ Scope Rules
+  // 1. @ Scope Rules (@rule(...) { ... })
   if (processed.includes('@')) {
     processed = processed.replace(/@(\w+)\(([^)]*)\)\s*\{([^}]*)\}/g, (_match, name, arg, body) => {
       const safeArg = arg.trim().replace(/'/g, "\\'").replace(/"/g, '\\"');
@@ -60,39 +61,29 @@ function preProcessExpression(expression: string): string {
     });
   }
 
-  // 2. # Global Signals
+  // 2. # Global Signals (#name -> $global.name)
+  // Required because '#' is illegal as an identifier start in native JS.
+  // We map it to $global to ensure it bypasses local scope shadowing.
   if (processed.includes('#')) {
-    processed = processed.replace(/#([a-zA-Z_$][\w$]*)/g, '$global.$1');
+    processed = processed.replace(/(^|[^a-zA-Z0-9_$])#([a-zA-Z_$][\w$]*)/g, '$1$global.$2');
   }
-
-  // 3. _ Env Mirrors
-  // We use a lookbehind/lookahead check or just rely on the uncommon _ prefix at start of tokens
-  processed = processed.replace(/(^|[^a-zA-Z0-9_$])_([a-zA-Z_$][\w$]*)/g, '$1$global._$2');
-
-  // 4. $ Sprites (if they don't look like Selector calls)
-  // $(...) is the selector. $sql is a sprite.
-  // Transform $word only if not followed by '(' or if it's a known sprite?
-  // Spec says $ is "Logic / Selector". 
-  // We'll transform $word -> $global.$word, but leave $() alone.
-  processed = processed.replace(/(^|[^a-zA-Z0-9_$])\$([a-zA-Z_$][\w$]+)(?!\()/g, '$1$global.$\$2');
 
   return processed;
 }
 
+const MAGIC_KEYS = new Set(['$global', '$actions', '$el', '$']);
+
 export function evaluateLater(
-  el: HTMLElement,
+  el: Element | Text | Comment,
   expression: string,
   runtime: RuntimeContext,
   initialExtras: Record<string, unknown> = {}
 ): (receiver: (value: unknown) => void, callExtras?: Record<string, unknown>) => void {
-  const dataStack = getDataStack(el);
+  const dataStack = getDataStack(el as HTMLElement);
   const processedExpression = preProcessExpression(expression);
 
   const baseScope: Record<string | symbol, unknown> = {
     ...runtime,
-    $el: el,
-    $global: runtime.globalSignals(),
-    $: (selector: string) => resolveSelector(el, selector),
     ...initialExtras
   };
 
@@ -100,31 +91,52 @@ export function evaluateLater(
     has(target, key): boolean {
       if (key === Symbol.unscopables) return false;
       if (typeof key === 'string') {
+        if (MAGIC_KEYS.has(key)) return true;
         const globalSignals = runtime.globalSignals();
-        return (key in target) || (key in globalSignals) || dataStack.some(data => key in data);
+        const globalActions = runtime.globalActions();
+        return (key in target) || (key in globalSignals) || (key in globalActions) || dataStack.some(data => key in data);
       }
       return false;
     },
     get(target, key): unknown {
       if (key === Symbol.unscopables) return undefined;
       if (typeof key === 'string') {
-        if (key in target) return (target as any)[key];
-
         const globalSignals = runtime.globalSignals();
-        if (key in globalSignals) return (globalSignals as any)[key];
-
-        for (const data of dataStack) {
-          if (key in data) return (data as any)[key];
-        }
         
-        // Final fallback: check for common globals if not already in target
-        if (key === 'JSON') return JSON;
-        if (key === 'Math') return Math;
-        if (key === 'Date') return Date;
-        if (key === 'console') return console;
-        if (key === 'window') return window;
-        if (key === 'document') return document;
-        if (key === 'localStorage') return localStorage;
+        // 1. Explicit Magic Keys
+        if (key === '$global') return globalSignals;
+        if (key === '$actions') return runtime.globalActions();
+        if (key === '$el') return el;
+        if (key === '$') return (selector: string) => resolveSelector(el as any, selector);
+
+        // 2. Data Stack (Local Scopes) - Should take precedence over globals
+        for (const data of dataStack) {
+          if (key in data) {
+            const val = (data as any)[key];
+            if (runtime.isDevMode) runtime.debug(`[Evaluator] Resolved "${key}" from local stack ->`, val);
+            return runtime.unref(val);
+          }
+        }
+
+        // 3. Global Signals
+        if (key in globalSignals) {
+          const val = (globalSignals as any)[key];
+          if (runtime.isDevMode) runtime.debug(`[Evaluator] Resolved "${key}" from global signals ->`, val);
+          return runtime.unref(val);
+        }
+
+        // 4. Runtime / Host Context
+        if (key in target) {
+          const val = (target as any)[key];
+          // runtime.debug(`[Evaluator] Resolved "${key}" from runtime ->`, val);
+          return runtime.unref(val);
+        }
+
+        // 5. Global Actions
+        const globalActions = runtime.globalActions();
+        if (key in globalActions) {
+           return (globalActions as any)[key];
+        }
       }
       return undefined;
     },
@@ -201,7 +213,8 @@ export function evaluateLater(
         receiver(result);
       }
     } catch (e) {
-      evaluationError(expression, e instanceof Error ? e : new Error(String(e)), el);
+      console.error(`[Evaluator Error] Expression "${expression}" failed:`, e);
+      evaluationError(expression, e instanceof Error ? e : new Error(String(e)), el as HTMLElement);
     }
   };
 }

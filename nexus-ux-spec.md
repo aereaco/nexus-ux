@@ -1267,7 +1267,64 @@ const helloObserver: ObserverModule = {
 
 ---
 
-## Chapter 8: AI Strategy & Agentic Support
+## Chapter 8: Decentralized Auto-Discovery & Extensibility
+
+Nexus-UX achieved architectural maturity by abandoning monolithic registration
+files (like traditional `index.ts` setups) in favor of a **Build-Time Manifest
+Generator** and an open **Runtime Plugin API**.
+
+### 8.1. The `src/modules/*` Convention
+
+Every discrete piece of logic in the framework—whether a directive (`data-*`), a
+global sprite (`$fetch`), a scope rule (`@os`), or an environment mirror
+(`_window`)—lives isolated within the `src/modules/` directory hierarchy.
+
+- `src/modules/attributes/`: Directives (`data-signal`, `data-ux-theme`)
+- `src/modules/sprites/`: Action handlers and tools (`$sql`, `$save`)
+- `src/modules/scopes/`: Evaluation closures for the `@` Grammar (`@auth`)
+- `src/modules/mirrors/`: Reactive snapshots of browser APIs (`_localStorage`)
+
+### 8.2. Build-Time Manifest Generation
+
+Running `deno task build` triggers `scripts/build.ts`, an architectural
+orchestrator that recursively crawls `src/modules/*`.
+
+1. **Discovery**: It detects all valid module exports.
+2. **manifest.ts Generation**: It writes a strictly typed `src/manifest.ts` file
+   containing categorical arrays (`autoAttributes`, `autoSprites`, etc.).
+3. **Zero-Maintenance Registration**: The core runtime (`src/index.ts`) simply
+   iterates over these manifest arrays, injecting them into the
+   `ModuleCoordinator` dynamically. Adding a new framework feature requires zero
+   registration boilerplate.
+
+### 8.3. The Runtime Plugin API (`Nexus.register`)
+
+Extensibility is not limited to the build step. For third-party libraries and
+runtime augmentation, the engine exposes `Nexus.register()`.
+
+```javascript
+// Third-party plugin (e.g., loaded via data-injest)
+Nexus.register({
+  type: "attribute",
+  name: "todo-plugin",
+  attribute: "on-todo-check",
+  handle: (el, value, ctx) => {
+    el.addEventListener("click", () => {
+      console.log("Plugin Intercept:", value);
+    });
+  },
+});
+
+// Force the engine to evaluate the new DOM capability
+Nexus.triggerScan(true);
+```
+
+This API enables an infinite ecosystem of Nexus-UX extensions that can be
+securely loaded and applied without recompiling the core framework.
+
+---
+
+## Chapter 9: AI Strategy & Agentic Support
 
 Nexus-UX is not just "AI-friendly"; it is an infrastructure designed for
 **Machine Reasoning Efficiency**. In the Post-AI world, the framework's primary
@@ -1304,7 +1361,7 @@ Directives in Nexus-UX act as **Operational Beacons**. They clearly flag
 interactive surfaces for automated discovery and manipulation. This makes
 automated testing and AI-driven UI automation natively simple.
 
-### 8.4. Standardized MCP Tool Usage
+### 9.4. Standardized MCP Tool Usage
 
 For advanced orchestration, Nexus-UX supports standardized Model Context
 Protocol (MCP) tool usage, allowing AI agents to directly manipulate the
@@ -1312,7 +1369,7 @@ reactive graph without needing to "script" intermediate JS logic.
 
 ---
 
-## Chapter 9: Validation, Migration & Real-World Proof
+## Chapter 10: Validation, Migration & Real-World Proof
 
 ### 9.1. Startup Time Benchmarks
 

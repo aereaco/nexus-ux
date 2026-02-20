@@ -23,3 +23,9 @@ export const authScope = reactive({
     authScope.token = null;
   }
 });
+
+export const scopeRule = (q: string, body: () => any) => {
+  if (q === 'isAuthenticated') return authScope.isAuthenticated ? body() : undefined;
+  if (authScope.roles.includes(q)) return body() ? body() : undefined;
+  return undefined;
+};

@@ -4,7 +4,8 @@ import {
 } from './composition.ts';
 
 import {
-  CLEANUP_FUNCTIONS_KEY
+  CLEANUP_FUNCTIONS_KEY,
+  ROOT_SELECTOR
 } from './consts.ts';
 
 import * as reactivity from './reactivity.ts'; 
@@ -17,6 +18,10 @@ import { parseAttribute } from './attributeParser.ts';
 import { scheduler } from './scheduler.ts'; 
 import { logger } from './logger.ts';
 import { resolveSelector } from './selector.ts';
+import { elUniqId, attrHash } from './utils/hash.ts';
+import { MARKER_KEY } from './consts.ts';
+import { NexusEnhancedElement } from './reactivity.ts';
+import { mutationObserver, resizeObserver, intersectionObserver, disposeObservers } from './observers.ts';
 
 /**
  * Defines the shape of an action function.
@@ -116,9 +121,10 @@ export class ModuleCoordinator {
   public observerModules: Map<string, ObserverModule> = new Map();
   public utilityModules: Map<string, UtilityModule> = new Map();
   private directiveOrder: string[] = [];
-
+  
   public runtimeContext: RuntimeContext;
   private initContext: InitContext;
+  private markerDispenser = 1;
 
   constructor() {
     this.runtimeContext = {
@@ -147,32 +153,44 @@ export class ModuleCoordinator {
       morphDOM: morphDOM,
       fetch: fetchUtilities,
       evaluate: (el, expression, extras) => evaluate(el, expression, this.runtimeContext, extras),
-      globalSignals: getGlobalSignals,
-      setGlobalSignal: setGlobalSignal,
-      localSignals: getLocalSignals,
-      localActions: getLocalActions,
-      globalActions: getGlobalActions,
+      globalSignals: getGlobalSignals.bind(this),
+      setGlobalSignal: setGlobalSignal.bind(this),
+      localSignals: getLocalSignals.bind(this),
+      localActions: getLocalActions.bind(this),
+      globalActions: getGlobalActions.bind(this),
       processElement: this.processElement.bind(this),
       parseAttribute: parseAttribute,
       scheduler: scheduler,
       reportError: reportError,
       refs: {}, // Placeholder for refs
-      $: (selector: string) => resolveSelector(document.body as any, selector), // Global selector fallback
-      isDevMode: document.documentElement.hasAttribute('data-debug'),
+      $: (selector: string) => {
+        if (typeof document === 'undefined') return null;
+        return resolveSelector(document.body as any, selector);
+      },
+      isDevMode: typeof document !== 'undefined' ? document.documentElement.hasAttribute('data-debug') : false,
+      
+      elUniqId: elUniqId,
+      attrHash: attrHash,
+      mutationObserver: mutationObserver,
+      resizeObserver: resizeObserver,
+      intersectionObserver: intersectionObserver,
+
       log: (...args: any[]) => logger.log(this.runtimeContext, ...args),
       warn: (...args: any[]) => logger.warn(this.runtimeContext, ...args),
       info: (...args: any[]) => logger.info(this.runtimeContext, ...args),
+      debug: (...args: any[]) => logger.debug(this.runtimeContext, ...args),
     };
-
     // Dynamic Debug Support
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'data-debug') {
-          this.runtimeContext.isDevMode = document.documentElement.hasAttribute('data-debug');
-        }
+    if (typeof MutationObserver !== 'undefined' && typeof document !== 'undefined') {
+      this.debugObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-debug') {
+            this.runtimeContext.isDevMode = document.documentElement.hasAttribute('data-debug');
+          }
+        });
       });
-    });
-    observer.observe(document.documentElement, { attributes: true });
+      this.debugObserver.observe(document.documentElement, { attributes: true });
+    }
 
     this.initContext = {
       registerAttributeModule: this.registerAttributeModule.bind(this),
@@ -182,6 +200,23 @@ export class ModuleCoordinator {
       registerUtilityModule: this.registerUtilityModule.bind(this),
       runtime: this.runtimeContext,
     };
+  }
+
+  private debugObserver: MutationObserver | null = null;
+
+  public dispose(): void {
+    if (this.debugObserver) {
+      this.debugObserver.disconnect();
+      this.debugObserver = null;
+    }
+    this.attributeModules.clear();
+    this.actionModules.clear();
+    this.listenerModules.clear();
+    this.observerModules.clear();
+    this.utilityModules.clear();
+    
+    // Cleanup all registered observers
+    disposeObservers();
   }
 
   public initializeModules(rootElement: HTMLElement): void {
@@ -209,6 +244,7 @@ export class ModuleCoordinator {
         this.directiveOrder.push(key);
       }
     }
+    this.triggerScan();
   }
 
   public registerActionModule(name: string, module: ActionModule): void {
@@ -227,11 +263,35 @@ export class ModuleCoordinator {
     this.utilityModules.set(name, module);
   }
 
+  private scanTimeout: number | null = null;
+
+  public triggerScan(): void {
+    if (typeof window === 'undefined' || typeof requestAnimationFrame === 'undefined') return;
+    if (this.scanTimeout !== null) cancelAnimationFrame(this.scanTimeout);
+    this.scanTimeout = requestAnimationFrame(() => {
+      const roots = document.querySelectorAll(ROOT_SELECTOR);
+      roots.forEach(root => {
+        if (root instanceof HTMLElement) {
+          this.processElement(root, true); // true = forceReWalk for late bindings
+        }
+      });
+      this.scanTimeout = null;
+    });
+  }
+
   public getInitContext(): InitContext {
     return this.initContext;
   }
 
-  public processElement(element: HTMLElement): void {
+  public processElement(element: HTMLElement, forceReWalk: boolean = false): void {
+    // 1. Element-level gating: If already initialized, skip structure walk
+    if (!forceReWalk && (element as NexusEnhancedElement)[MARKER_KEY]) return;
+
+    if (this.runtimeContext.isDevMode && !forceReWalk) this.runtimeContext.debug(`[Coordinator] Processing <${element.tagName}>`, element);
+    
+    // Mark as initialized IMMEDIATELY to prevent circularity or double-walk
+    (element as NexusEnhancedElement)[MARKER_KEY] = this.markerDispenser++;
+
     const handlersToExecute: {
       directiveName: string;
       handle: () => (() => void) | void;
@@ -261,18 +321,27 @@ export class ModuleCoordinator {
     });
 
     handlersToExecute.forEach(handler => {
+      const enhancedEl = element as NexusEnhancedElement;
+      const fullAttrName = Array.from(element.attributes)[handler.originalIndex]?.name || handler.directiveName;
+      const hashKey = `${fullAttrName}:${this.runtimeContext.attrHash(handler.directiveName, element.getAttribute(fullAttrName) || '')}`;
+
+      // Check if already applied and hash matches (directive-level gating)
+      let elRemovals = enhancedEl[CLEANUP_FUNCTIONS_KEY];
+      if (elRemovals?.has(hashKey)) return;
+
       const cleanup = handler.handle();
       if (cleanup) {
-        if (!element[CLEANUP_FUNCTIONS_KEY]) {
-          element[CLEANUP_FUNCTIONS_KEY] = new Set();
+        if (!elRemovals) {
+          elRemovals = new Map();
+          enhancedEl[CLEANUP_FUNCTIONS_KEY] = elRemovals;
         }
-        element[CLEANUP_FUNCTIONS_KEY].add(cleanup);
+        elRemovals.set(hashKey, cleanup);
       }
     });
 
     Array.from(element.children).forEach(child => {
       if (child instanceof HTMLElement) {
-        this.processElement(child);
+        this.processElement(child, forceReWalk);
       }
     });
   }
@@ -304,5 +373,10 @@ function getGlobalActions(this: ModuleCoordinator): Record<string, ActionFunctio
 }
 
 export function reportError(error: Error, el?: HTMLElement, expression?: string): void {
-  console.error(error, el, expression);
+  // Use logger.error to ensure consistent prefixing [Nexus Error]
+  // We don't have direct access to RuntimeContext here without global Nexus instance or passing it.
+  // But logger.error doesn't actually use the context (though the signature had it).
+  // Actually, logger.error signature was (context, ...args).
+  // I'll update reportError to try and use the logger if possible, or just default to console.error with prefix.
+  console.error(`[Nexus Error]`, error, el, expression);
 }

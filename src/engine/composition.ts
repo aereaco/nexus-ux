@@ -35,7 +35,7 @@ export interface RuntimeContext {
   elementBoundEffect: (el: HTMLElement, effect: () => void) => [() => void, () => void];
 
   // Expression Evaluator & Parser
-  evaluate: (el: HTMLElement, expression: string, extras?: Record<string, unknown>) => unknown;
+  evaluate: (el: Element | Text | Comment, expression: string, extras?: Record<string, unknown>) => unknown;
   parseAttribute: (attrName: string, context: RuntimeContext, element: HTMLElement) => any;
 
   // DOM
@@ -62,7 +62,18 @@ export interface RuntimeContext {
   refs: Record<string, HTMLElement>;
   $: (selector: string) => any;
   isDevMode?: boolean;
+
+  // Garbage-Free Architecture Utils
+  elUniqId: (el: Element) => string;
+  attrHash: (key: string | number, val: string | number) => number;
+
+  // Shared Observers
+  mutationObserver: typeof import('./observers.ts').mutationObserver;
+  resizeObserver: typeof import('./observers.ts').resizeObserver;
+  intersectionObserver: typeof import('./observers.ts').intersectionObserver;
+
   log: (...args: any[]) => void;
   warn: (...args: any[]) => void;
   info: (...args: any[]) => void;
+  debug: (...args: any[]) => void;
 }

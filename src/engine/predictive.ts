@@ -18,25 +18,30 @@ class PredictiveEngine {
   private predictiveNodes: Set<HTMLElement> = new Set();
 
   constructor() {
+    this.init();
+  }
+
+  init() {
     if (typeof window !== 'undefined') {
       window.addEventListener('mousemove', (e) => this.track(e.clientX, e.clientY));
       window.addEventListener('touchstart', (e) => {
-        if (e.touches[0]) this.track(e.touches[0].clientX, e.touches[0].clientY);
+        const touch = e.touches[0];
+        if (touch) this.track(touch.clientX, touch.clientY);
       }, { passive: true });
     }
   }
 
-  private track(x: number, y: number, z: number = 0) {
+  public track(x: number, y: number, z: number = 0) {
     const t = performance.now();
     
     if (this.lastPoint) {
       const dt = t - this.lastPoint.t;
-      if (dt > 0) {
+      if (dt > 1) { 
         this.velocity = {
           x: (x - this.lastPoint.x) / dt,
           y: (y - this.lastPoint.y) / dt,
           z: (z - this.lastPoint.z) / dt,
-          t: 1 // Directional intent
+          t: 1
         };
         
         // Schedule prediction update in Capture phase

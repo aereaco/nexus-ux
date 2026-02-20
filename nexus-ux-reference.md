@@ -411,6 +411,17 @@ Directly sync state to CSS Custom Properties. Essential for DaisyUI integration.
   `<html data-progress="{ type: 'bar', location: 'top', color: 'primary', value: '$progress' }">`
 - **Pattern**: `<div data-progress="{ type: 'spinner', size: '20px' }"></div>`
 
+#### 2.2.6. "Data Injest" for Zero-Flicker Assets
+
+**Syntax**: `data-injest="['url1.css', 'url2.js']"`
+
+**Purpose**: Defers HTML rendering until critical external assets (like tailwind
+CDN or custom fonts) are fully loaded, parsed, and adopted via Constructable
+Stylesheets. Eliminates FOUC entirely.
+
+- **Pattern**:
+  `<html data-injest="['https://cdn.tailwindcss.com']"> ... </html>`
+
 ---
 
 ## Chapter 3: Control Flow & Rendering
@@ -850,6 +861,48 @@ logic.
   </body>
   ```
 
+### 5.4. `data-ux-theme` — Intelligent Theme Orchrestration
+
+**Syntax**: `data-ux-theme="{ default: 'mode', themes: { mode: { config } } }"`
+
+**Purpose**: Automates complex layout, color-mode, and system-preference
+(`prefers-color-scheme`) logic, automatically lifting the resolved theme mapping
+(e.g., `'cupcake'`) to the root HTML `data-theme` attribute for library
+compatibility (DaisyUI).
+
+**Examples**:
+
+```html
+<html data-ux-theme="{
+    default: 'auto',
+    modes: {
+        auto: { icon: 'auto-mode-icon' },
+        light: { icon: 'sun-icon', theme: 'cupcake' },
+        dark: { icon: 'moon-icon', theme: 'synthwave' }
+    }
+}">
+```
+
+**Access**: Use the globally injected `#theme` signal to read the resolved
+configuration anywhere in the app (e.g., `<span data-class="#theme.icon">`).
+
+### 5.5. `data-switcher` — State Iteration
+
+**Syntax**: `data-switcher-signalName="['val1', 'val2', 'val3']"`
+
+Automates iterating through an array of states upon user interaction without
+logic overhead. Used heavily alongside `data-ux-theme` for building native
+"Theme Toggle" buttons.
+
+**Example**:
+
+```html
+<button data-switcher-mode="['light', 'dark', 'auto']">
+  Toggle Mode
+</button>
+```
+
+````
 > [!TIP]
 > **Data Painting**: Use `data-var-icon="'\2713'"` combined with CSS
 > `content: var(--icon)` for high-performance icon toggling without DOM
@@ -870,32 +923,32 @@ logic.
 ```html
 <!-- Focus an input -->
 <div>
-  <input type="text" data-ref="emailInput">
-  <button data-on-click="$refs.emailInput.focus()">
-    Focus Email Input
-  </button>
+<input type="text" data-ref="emailInput">
+<button data-on-click="$refs.emailInput.focus()">
+  Focus Email Input
+</button>
 </div>
 
 <!-- Scroll to element -->
 <div>
-  <div style="height: 2000px"></div>
-  <div data-ref="section2">
-    <h2>Section 2</h2>
-  </div>
-  <button data-on-click="$refs.section2.scrollIntoView({ behavior: 'smooth' })">
-    Scroll to Section 2
-  </button>
+<div style="height: 2000px"></div>
+<div data-ref="section2">
+  <h2>Section 2</h2>
+</div>
+<button data-on-click="$refs.section2.scrollIntoView({ behavior: 'smooth' })">
+  Scroll to Section 2
+</button>
 </div>
 
 <!-- Get element dimensions -->
 <div>
-  <div data-ref="box" style="width: 200px; height: 100px; background: blue">
-  </div>
-  <button data-on-click="alert('Width: ' + $refs.box.offsetWidth)">
-    Get Width
-  </button>
+<div data-ref="box" style="width: 200px; height: 100px; background: blue">
 </div>
-```
+<button data-on-click="alert('Width: ' + $refs.box.offsetWidth)">
+  Get Width
+</button>
+</div>
+````
 
 **Access**: All refs are available via `$refs.refName` within the scope.
 

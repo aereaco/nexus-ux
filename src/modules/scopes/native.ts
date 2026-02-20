@@ -23,3 +23,8 @@ if (typeof window !== 'undefined' && (window as unknown as Window & { nexusNativ
   nativeScope.platform = native.platform || 'unknown';
   nativeScope.bridge = native;
 }
+
+export const scopeRule = (q: string, body: () => any) => {
+  if (q === 'isPresent') return nativeScope.isPresent ? body() : undefined;
+  return nativeScope.platform === q ? body() : undefined;
+};

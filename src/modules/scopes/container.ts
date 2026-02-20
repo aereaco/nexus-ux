@@ -34,3 +34,5 @@ export function getContainerSignal(query: string, _element?: HTMLElement): Ref<b
   containerSignals.set(query, s);
   return s;
 }
+
+export const scopeRule = (q: string, body: () => any) => getContainerSignal(q).value ? body() : undefined;

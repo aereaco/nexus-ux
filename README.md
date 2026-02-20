@@ -9,7 +9,7 @@ reactive state graph.
 
 ---
 
-## 🏛️ The Four Pillars
+## 🏛️ The Five Pillars
 
 1. **Omni-State (DOM-as-State)**: We assert that the DOM _is_ the primary state
    graph. No phantom Virtual DOM. No reconciliation tax. This unified model
@@ -21,6 +21,9 @@ reactive state graph.
    propagate instantly (<10ms) across the entire system.
 4. **Zero-Allocation Engineering**: A value-pooling reactive core designed for
    120fps animations and garbage-free execution.
+5. **Decentralized Auto-Discovery**: An automated build-step (`manifest.ts`)
+   enables infinite plugin extensibility. Drop modules into `src/modules/*` and
+   they instantly wire into the 4-Phase pipeline; no central imports required.
 
 ---
 
@@ -41,16 +44,34 @@ Nexus-UX utilizes a deterministic, token-based grammar for high-baud efficiency.
 
 ## 🧩 Active Directives
 
-| Directive       | Role                | Description                                                        |
-| :-------------- | :------------------ | :----------------------------------------------------------------- |
-| `data-signal`   | **State**           | Initializes reactive signals for an element and its children.      |
-| `data-bind`     | **Binding**         | High-performance bidirectional binding to inputs and state.        |
-| `data-text`     | **Painting**        | Injects reactive expressions directly into `textContent`.          |
-| `data-on`       | **Behavior**        | Standard and high-order event listeners (`click`, `submit`, etc.). |
-| `data-for`      | **Iteration**       | Declarative list rendering with optimized DOM reuse.               |
-| `data-injest`   | **Managed Loading** | Ensures zero-flicker loading of styles, scripts, and assets.       |
-| `data-progress` | **Orchestration**   | Global and localized progress bars / spinners.                     |
-| `data-pwa`      | **Integration**     | Automated PWA lifecycle, theme sync, and offline signals.          |
+| Directive       | Role                | Description                                                           |
+| :-------------- | :------------------ | :-------------------------------------------------------------------- |
+| `data-signal`   | **State**           | Initializes reactive signals for an element and its children.         |
+| `data-bind`     | **Binding**         | High-performance bidirectional binding to inputs and state.           |
+| `data-text`     | **Painting**        | Injects reactive expressions directly into `textContent`.             |
+| `data-on`       | **Behavior**        | Standard and high-order event listeners (`click`, `submit`, etc.).    |
+| `data-for`      | **Iteration**       | Declarative list rendering with optimized DOM reuse.                  |
+| `data-injest`   | **Managed Loading** | Ensures zero-flicker loading of styles, scripts, and assets.          |
+| `data-progress` | **Orchestration**   | Global and localized progress bars / spinners.                        |
+| `data-pwa`      | **Integration**     | Automated PWA lifecycle, theme sync, and offline signals.             |
+| `data-ux-theme` | **Theming**         | Orchestrates complex layout, color-mode, and system-preference logic. |
+| `data-switcher` | **Iteration**       | Automates cycling through states (e.g., Theme Toggles).               |
+
+---
+
+## 🧩 Zero-Config Extensibility (Plugins)
+
+Nexus-UX supports an open runtime API. Build third-party directives or
+components and attach them securely without touching the core engine:
+
+```javascript
+Nexus.register({
+  type: "attribute",
+  name: "my-plugin",
+  attribute: "on-custom-event",
+  handle: (el, value, ctx) => {/* Custom logic */},
+});
+```
 
 ---
 

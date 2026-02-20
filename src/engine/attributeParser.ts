@@ -16,11 +16,24 @@ export interface ParsedAttribute {
  * Example: data-on:click.prevent.stop
  */
 export function parseAttribute(name: string, _runtime: RuntimeContext, element: HTMLElement): ParsedAttribute | null {
-  if (!name.startsWith(ATTRIBUTE_PREFIX)) {
+  let rawName = '';
+  let isNexus = false;
+
+  if (name.startsWith(ATTRIBUTE_PREFIX)) {
+    rawName = name.slice(ATTRIBUTE_PREFIX.length); // Remove 'data-'
+    isNexus = true;
+  } else if (name.startsWith(':')) {
+    rawName = `attr:${name.slice(1)}`; // shorthand for data-attr:
+    isNexus = true;
+  } else if (name.startsWith('@')) {
+    rawName = `on:${name.slice(1)}`; // shorthand for data-on:
+    isNexus = true;
+  }
+
+  if (!isNexus) {
     return null; // Not a Nexus-UX attribute
   }
 
-  const rawName = name.slice(ATTRIBUTE_PREFIX.length); // Remove 'data-'
   let directive = rawName;
   let argument = undefined;
   let modifiers: string[] = [];
@@ -29,7 +42,12 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
   // Priority: Colon first (explicit), then hyphen (if no colon)
   let argIndex = directive.indexOf(MODIFIER_ARGUMENT_DELIMITER);
   if (argIndex === -1) {
-    argIndex = directive.indexOf('-');
+    // Exception for known hyphenated directives like 'ux-theme'
+    if (directive === 'ux-theme' || directive.startsWith('ux-theme.')) {
+      argIndex = -1;
+    } else {
+      argIndex = directive.indexOf('-');
+    }
   }
 
   if (argIndex !== -1) {

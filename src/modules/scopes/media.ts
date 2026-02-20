@@ -27,3 +27,5 @@ export function getMediaSignal(query: string): Ref<boolean> {
   mediaSignals.set(query, s);
   return s;
 }
+
+export const scopeRule = (q: string, body: () => any) => getMediaSignal(q).value ? body() : undefined;
