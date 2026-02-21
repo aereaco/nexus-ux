@@ -12,16 +12,31 @@ const forModule: AttributeModule = {
     const isTemplate = el instanceof HTMLTemplateElement;
     const blueprint = isTemplate ? (el as HTMLTemplateElement).content : el;
     
-    // 2. Parse Syntactic Sugar: "item in items" or "(item, iterator) in items"
-    const match = value.match(/^\s*(?:\(([^,]+)(?:\s*,\s*([^)]+))?\)|(\S+))\s+in\s+(.+)$/);
-    if (!match) {
+    let itemKey = '';
+    let indexKey: string | undefined = undefined;
+    let itemsExpr = '';
+
+    const inIdx = value.indexOf(' in ');
+    if (inIdx === -1) {
       initError('for', `Invalid syntax: ${value}. Expected "item in items"`, el, value);
       return;
     }
- 
-    const itemKey = match[1] || match[3];
-    const indexKey = match[2];
-    const itemsExpr = match[4];
+
+    const lhs = value.substring(0, inIdx).trim();
+    itemsExpr = value.substring(inIdx + 4).trim();
+
+    if (lhs.startsWith('(') && lhs.endsWith(')')) {
+        const inner = lhs.substring(1, lhs.length - 1);
+        const commaIdx = inner.indexOf(',');
+        if (commaIdx !== -1) {
+            itemKey = inner.substring(0, commaIdx).trim();
+            indexKey = inner.substring(commaIdx + 1).trim();
+        } else {
+            itemKey = inner.trim();
+        }
+    } else {
+        itemKey = lhs;
+    }
  
     const anchor = document.createComment(` for: ${value} `);
     el.parentNode?.insertBefore(anchor, el);

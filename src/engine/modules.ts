@@ -329,13 +329,22 @@ export class ModuleCoordinator {
       let elRemovals = enhancedEl[CLEANUP_FUNCTIONS_KEY];
       if (elRemovals?.has(hashKey)) return;
 
-      const cleanup = handler.handle();
-      if (cleanup) {
-        if (!elRemovals) {
-          elRemovals = new Map();
-          enhancedEl[CLEANUP_FUNCTIONS_KEY] = elRemovals;
+      try {
+        const cleanup = handler.handle();
+        if (cleanup) {
+          if (!elRemovals) {
+            elRemovals = new Map();
+            enhancedEl[CLEANUP_FUNCTIONS_KEY] = elRemovals;
+          }
+          elRemovals.set(hashKey, cleanup);
         }
-        elRemovals.set(hashKey, cleanup);
+      } catch (e) {
+        // Prevent a single bad attribute from halting compilation of the whole element
+        this.runtimeContext.reportError(
+           e instanceof Error ? e : new Error(String(e)), 
+           element, 
+           `Attribute compilation failed for: ${fullAttrName}`
+        );
       }
     });
 

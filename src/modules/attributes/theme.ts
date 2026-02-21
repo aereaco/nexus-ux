@@ -30,7 +30,10 @@ const themeModule: AttributeModule = {
     // If we're on the document element, give localStorage priority if exists
     if (el === document.documentElement && typeof localStorage !== 'undefined') {
         const stored = localStorage.getItem('ux_themeMode');
-        if (stored) initialMode = stored;
+        // Only accept the stored mode if it actually exists in the provided config
+        if (stored && rawConfig.modes && rawConfig.modes[stored]) {
+            initialMode = stored;
+        }
     }
 
     if (!rawConfig.modes || typeof rawConfig.modes !== 'object') {

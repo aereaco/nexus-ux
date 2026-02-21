@@ -3,10 +3,26 @@ import { RuntimeContext } from '../../engine/composition.ts';
 import { initError } from '../../engine/errors.ts';
 import { DEFAULT_DEBOUNCE_TIME } from '../../engine/consts.ts';
 
+const isKeyboardEvent = (e: Event): e is KeyboardEvent => 'key' in e;
+
 const eventModifiers: Record<string, (listener: EventListener, el: HTMLElement, arg: string, runtime: RuntimeContext) => EventListener> = {
   prevent: (fn) => (e) => { e.preventDefault(); fn(e); },
   stop: (fn) => (e) => { e.stopPropagation(); fn(e); },
   self: (fn, el) => (e) => { if (e.target === el) fn(e); },
+  enter: (fn) => (e) => { if (isKeyboardEvent(e) && e.key === 'Enter') fn(e); },
+  escape: (fn) => (e) => { if (isKeyboardEvent(e) && e.key === 'Escape') fn(e); },
+  esc: (fn) => (e) => { if (isKeyboardEvent(e) && e.key === 'Escape') fn(e); },
+  space: (fn) => (e) => { if (isKeyboardEvent(e) && (e.key === ' ' || e.key === 'Spacebar')) fn(e); },
+  up: (fn) => (e) => { if (isKeyboardEvent(e) && (e.key === 'ArrowUp' || e.key === 'Up')) fn(e); },
+  down: (fn) => (e) => { if (isKeyboardEvent(e) && (e.key === 'ArrowDown' || e.key === 'Down')) fn(e); },
+  left: (fn) => (e) => { if (isKeyboardEvent(e) && (e.key === 'ArrowLeft' || e.key === 'Left')) fn(e); },
+  right: (fn) => (e) => { if (isKeyboardEvent(e) && (e.key === 'ArrowRight' || e.key === 'Right')) fn(e); },
+  tab: (fn) => (e) => { if (isKeyboardEvent(e) && e.key === 'Tab') fn(e); },
+  delete: (fn) => (e) => { if (isKeyboardEvent(e) && (e.key === 'Delete' || e.key === 'Backspace')) fn(e); },
+  ctrl: (fn) => (e) => { if (isKeyboardEvent(e) && e.ctrlKey) fn(e); },
+  alt: (fn) => (e) => { if (isKeyboardEvent(e) && e.altKey) fn(e); },
+  shift: (fn) => (e) => { if (isKeyboardEvent(e) && e.shiftKey) fn(e); },
+  meta: (fn) => (e) => { if (isKeyboardEvent(e) && e.metaKey) fn(e); },
   once: (fn) => {
     let fired = false;
     return (e) => { if (!fired) { fired = true; fn(e); } };
@@ -76,10 +92,15 @@ const onModule: AttributeModule = {
         let options: AddEventListenerOptions | boolean = false;
 
         modifiers.forEach((mod: string) => {
-          // Handle value-modifiers like debounce-250
-          const parts = mod.split('-');
-          const modName = parts[0];
-          const modArg = parts[1];
+          // Handle value-modifiers like debounce-250 without .split() array allocations
+          let modName = mod;
+          let modArg = '';
+          const dashIdx = mod.indexOf('-');
+          
+          if (dashIdx !== -1) {
+            modName = mod.substring(0, dashIdx);
+            modArg = mod.substring(dashIdx + 1);
+          }
 
           if (modName === 'window') target = window;
           else if (modName === 'document') target = document;

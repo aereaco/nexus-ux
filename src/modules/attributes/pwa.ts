@@ -13,6 +13,7 @@ interface PWAConfig {
   shortName?: string;
   display?: string;
   startUrl?: string;
+  icon?: string;
 }
 
 const pwaModule: AttributeModule = {
@@ -34,7 +35,29 @@ const pwaModule: AttributeModule = {
       isOnline: navigator.onLine,
       isInstalled: false,
       updateAvailable: false,
-      deferredPrompt: null as unknown
+      deferredPrompt: null as any,
+      _waitingWorker: null as ServiceWorker | null,
+      
+      install: async () => {
+        if (!pwaState.deferredPrompt) {
+            runtime.log('PWA: No install prompt available yet.');
+            return false;
+        }
+        pwaState.deferredPrompt.prompt();
+        const { outcome } = await pwaState.deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            pwaState.deferredPrompt = null;
+            return true;
+        }
+        return false;
+      },
+      
+      update: () => {
+        if (pwaState._waitingWorker) {
+            pwaState._waitingWorker.postMessage({ type: 'SKIP_WAITING' });
+            window.location.reload();
+        }
+      }
     });
 
     runtime.setGlobalSignal('$pwa', pwaState);
@@ -49,18 +72,34 @@ const pwaModule: AttributeModule = {
       navigator.serviceWorker.register(config.sw)
         .then(reg => {
           runtime.log(`PWA: ServiceWorker registered for scope: ${reg.scope}`);
+          
+          if (reg.waiting) {
+              pwaState.updateAvailable = true;
+              pwaState._waitingWorker = reg.waiting;
+          }
+          
           reg.onupdatefound = () => {
             const installingWorker = reg.installing;
             if (installingWorker) {
               installingWorker.onstatechange = () => {
                 if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
                   pwaState.updateAvailable = true;
+                  pwaState._waitingWorker = installingWorker;
                 }
               };
             }
           };
         })
         .catch(err => reportError(new Error(`PWA: ServiceWorker registration failed: ${err}`), el));
+        
+      // Auto-reload once new service worker takes control
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!refreshing) {
+              refreshing = true;
+              window.location.reload();
+          }
+      });
     }
 
     // 4. Manifest / Meta Tags
@@ -72,6 +111,27 @@ const pwaModule: AttributeModule = {
         document.head.appendChild(meta);
       }
       meta.setAttribute('content', config.themeColor);
+    }
+    
+    if (config.manifest) {
+        let manifestLink = document.querySelector('link[rel="manifest"]');
+        if (!manifestLink) {
+            manifestLink = document.createElement('link');
+            manifestLink.setAttribute('rel', 'manifest');
+            document.head.appendChild(manifestLink);
+        }
+        manifestLink.setAttribute('href', config.manifest);
+    }
+    
+    if (config.icon) {
+        // Apple Touch Icon
+        let appleIcon = document.querySelector('link[rel="apple-touch-icon"]');
+        if (!appleIcon) {
+            appleIcon = document.createElement('link');
+            appleIcon.setAttribute('rel', 'apple-touch-icon');
+            document.head.appendChild(appleIcon);
+        }
+        appleIcon.setAttribute('href', config.icon);
     }
 
     // "Add to Home Screen" prompt interception

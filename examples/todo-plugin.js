@@ -4,7 +4,10 @@ const CustomPlugin = {
     attribute: 'test-plugin',
     handle: (el, expression, runtime) => {
         el.style.border = '4px solid #f0f'; // Fuchsia
-        el.innerHTML += `<div class="badge badge-secondary absolute -top-4 -right-4 rotate-12 z-50 shadow-xl font-bold">Dynamic Plugin Loaded: ${expression}</div>`;
+        const badge = document.createElement('div');
+        badge.className = 'badge badge-secondary absolute -top-4 -right-4 rotate-12 z-50 shadow-xl font-bold';
+        badge.textContent = `Dynamic Plugin Loaded: ${expression}`;
+        el.appendChild(badge);
         console.log(`[Plugin] Successfully applied data-test-plugin="${expression}" to ${el.tagName}`);
     }
 };

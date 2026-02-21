@@ -34,42 +34,53 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
     return null; // Not a Nexus-UX attribute
   }
 
-  let directive = rawName;
-  let argument = undefined;
+  let directive: string | undefined = undefined;
+  let argument: string | undefined = undefined;
   let modifiers: string[] = [];
 
-  // 1. Extract Argument (separated by first colon OR hyphen)
-  // Priority: Colon first (explicit), then hyphen (if no colon)
-  let argIndex = directive.indexOf(MODIFIER_ARGUMENT_DELIMITER);
-  if (argIndex === -1) {
-    // Exception for known hyphenated directives like 'ux-theme'
-    if (directive === 'ux-theme' || directive.startsWith('ux-theme.')) {
-      argIndex = -1;
-    } else {
-      argIndex = directive.indexOf('-');
+  const COMMON_PREFIXES = ['on-', 'class-', 'style-', 'attr-', 'bind-'];
+  let startIndex = 0;
+  let state = 0; // 0=DIRECTIVE, 1=ARGUMENT, 2=MODIFIER
+
+  for (let i = 0; i < COMMON_PREFIXES.length; i++) {
+    const p = COMMON_PREFIXES[i];
+    if (rawName.startsWith(p)) {
+      directive = p.slice(0, -1);
+      startIndex = p.length;
+      state = 1;
+      break;
     }
   }
 
-  if (argIndex !== -1) {
-    argument = directive.slice(argIndex + 1);
-    directive = directive.slice(0, argIndex);
+  let currentTokenStart = startIndex;
+  const len = rawName.length;
 
-    // If argument has dot modifiers, split them out
-    // e.g. click.prevent.stop -> argument="click", modifiers=["prevent", "stop"]
-    const dotIndex = argument.indexOf('.');
-    if (dotIndex !== -1) {
-      const rawArg = argument; // "click.prevent.stop"
-      argument = rawArg.slice(0, dotIndex); // "click"
-      modifiers = rawArg.slice(dotIndex + 1).split('.'); // ["prevent", "stop"]
-    }
+  for (let i = startIndex; i <= len; i++) {
+    const isEnd = i === len;
+    const char = isEnd ? '' : rawName[i];
+    const isDelim = char === MODIFIER_ARGUMENT_DELIMITER || char === '.';
 
-  } else {
-    // No argument, but check for modifiers on the directive itself? 
-    // e.g. data-text.trim ? usually modifiers are on events
-    const dotIndex = directive.indexOf('.');
-    if (dotIndex !== -1) {
-      modifiers = directive.slice(dotIndex + 1).split('.');
-      directive = directive.slice(0, dotIndex);
+    if (isDelim || isEnd) {
+      if (i > currentTokenStart) {
+        const token = rawName.slice(currentTokenStart, i);
+        if (state === 0) {
+          directive = token;
+        } else if (state === 1) {
+          argument = token;
+        } else {
+          modifiers.push(token);
+        }
+      }
+
+      if (isDelim) {
+        if (state === 0) {
+          state = char === MODIFIER_ARGUMENT_DELIMITER ? 1 : 2;
+        } else {
+          state = 2;
+        }
+      }
+      
+      currentTokenStart = i + 1;
     }
   }
 

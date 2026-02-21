@@ -17,8 +17,9 @@ export class Hash {
    */
   with(x: number | string | boolean): Hash {
     if (typeof x === 'string') {
-      for (const c of x.split('')) {
-        this.with(c.charCodeAt(0));
+      const len = x.length;
+      for (let i = 0; i < len; i++) {
+        this.with(x.charCodeAt(i));
       }
     } else if (typeof x === 'boolean') {
       this.with(1 << (x ? 7 : 3));

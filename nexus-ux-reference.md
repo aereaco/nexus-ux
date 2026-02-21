@@ -407,9 +407,13 @@ Directly sync state to CSS Custom Properties. Essential for DaisyUI integration.
 
 #### 2.2.5. "Data Progress" for Site-wide Loading
 
-- **Pattern**:
+- **Linear Determinate**:
   `<html data-progress="{ type: 'bar', location: 'top', color: 'primary', value: '$progress' }">`
-- **Pattern**: `<div data-progress="{ type: 'spinner', size: '20px' }"></div>`
+- **Linear Indeterminate (Sweeping Mode)**: Evaluate to a boolean `true` for
+  continuous animation.
+  `<html data-progress="{ type: 'bar', location: 'top', color: 'primary', value: '$isLoading === true' }">`
+- **Spinner**:
+  `<div data-progress="{ type: 'spinner', size: '20px', value: '$isBusy' }"></div>`
 
 #### 2.2.6. "Data Injest" for Zero-Flicker Assets
 
@@ -2724,9 +2728,10 @@ preference, system settings, and UI library tokens.
 ### 8.3. Progressive Web Apps (data-pwa)
 
 **Syntax**:
-`data-pwa="{ sw: '/sw.js', manifest: '/manifest.json', themeColor: '#570df8' }"`
+`data-pwa="{ sw: '/sw.js', manifest: '/manifest.json', themeColor: '#570df8', icon: '/icon.png' }"`
 
-**Purpose**: Automates the heavy lifting of PWA integration.
+**Purpose**: Automates the heavy lifting of PWA integration, including dynamic
+manifest and icon injection, alongside ServiceWorker orchestration.
 
 **Global Signal: `$pwa`** The directive initializes a reactive `$pwa` signal
 accessible anywhere in your application:
@@ -2734,16 +2739,22 @@ accessible anywhere in your application:
 - `$pwa.isOnline`: Live connectivity status.
 - `$pwa.isInstalled`: True if the app is installed as a PWA.
 - `$pwa.updateAvailable`: True when a new Service Worker is waiting.
-- `$pwa.deferredPrompt`: The intercepted `beforeinstallprompt` event (use with
-  `$pwa.deferredPrompt.prompt()`).
+- `$pwa.install()`: Async method. Triggers the browser's "Add to Homescreen"
+  prompt and returns `true` if accepted.
+- `$pwa.update()`: Method. Instructs the waiting ServiceWorker to take control
+  and automatically reloads the page.
 
-**Example: Connection Indicator**
+**Example: Install & Update UI**
 
 ```html
-<div
-  data-class-bg-error="!$pwa.isOnline"
-  data-text="$pwa.isOnline ? 'Online' : 'Offline'"
->
+<div data-if="!$pwa.isInstalled && $pwa.deferredPrompt">
+  <button data-on-click="$pwa.install()">Install App</button>
+</div>
+
+<div data-if="$pwa.updateAvailable">
+  <button data-on-click="$pwa.update()">
+    Update Available - Click to Reload
+  </button>
 </div>
 ```
 

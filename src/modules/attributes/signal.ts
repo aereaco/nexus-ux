@@ -34,11 +34,11 @@ const signalModule: AttributeModule = {
         const reactiveState = runtime.isReactive(initialState) ? initialState : runtime.reactive(initialState as object);
 
         if (isGlobal) {
-          // Merge into Global Signals while preserving property descriptors (getters)
+          // Merge into Global Signals via the Proxy surface to guarantee deep reactivity wrapping by Vue
           const globals = runtime.globalSignals();
-          const target = runtime.toRaw(globals);
-          const descriptors = Object.getOwnPropertyDescriptors(initialState as object);
-          Object.defineProperties(target, descriptors);
+          Object.keys(initialState as object).forEach(key => {
+            (globals as any)[key] = (initialState as any)[key];
+          });
           runtime.debug(`Merged into globals. Current keys:`, Object.keys(globals));
         } else {
           // Local Scope

@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" style="opacity: 0;" data-ux-init 
     data-debug
-    data-pwa="{ themeColor: '#570df8' }"
-    data-progress="{ type: 'bar', location: 'top', color: 'linear-gradient(90deg, #570df8, #f000b8)', value: '#$progress', pattern: true }"
+    data-pwa="{ themeColor: '#570df8', icon: '/favicon.ico', manifest: '/manifest.json' }"
+    data-progress="{ type: 'bar', location: 'top', color: 'linear-gradient(90deg, #570df8, #f000b8)', value: 'isEditing === true ? true : #$progress', pattern: true }"
     data-injest='{
         "daisy": { "link": "href=\"https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css\" rel=\"stylesheet\" type=\"text/css\"" },
         "tailwind": { "script": "src=\"https://cdn.tailwindcss.com\"" },
@@ -239,6 +239,18 @@
 </head>
 
 <body class="min-h-screen flex items-center justify-center p-4 transition-colors duration-500">
+    <!-- PWA Installation Widget -->
+    <div data-if="!$pwa.isInstalled && $pwa.deferredPrompt" class="fixed bottom-4 right-4 bg-primary text-primary-content p-4 rounded-lg shadow-xl z-50 flex items-center gap-4">
+        <span>Install Nexus-UX Todo as an App!</span>
+        <button class="btn btn-sm btn-active border-none" data-on-click="$pwa.install()">Install</button>
+    </div>
+
+    <!-- PWA Update Widget -->
+    <div data-if="$pwa.updateAvailable" class="fixed bottom-4 left-4 bg-accent text-accent-content p-4 rounded-lg shadow-xl z-50 flex items-center gap-4">
+        <span>A new version is available!</span>
+        <button class="btn btn-sm border-none" data-on-click="$pwa.update()">Reload & Update</button>
+    </div>
+
     <!-- Theme Switcher Top Right -->
     <div class="fixed top-6 right-6 z-50">
         <button
