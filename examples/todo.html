@@ -342,7 +342,7 @@
                 data-sort="#todos">
 
                 <div data-if="todos.length === 0"
-                    class="flex flex-col items-center justify-center h-40 text-base-content/30 italic">
+                    class="flex flex-col items-center justify-center h-40 text-base-content/30 italic col-span-full w-full">
                     <svg class="w-12 h-12 mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
                             d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
@@ -485,7 +485,7 @@
             <p class="text-base-content/70" data-text="showConfirmDelete ? 'Are you sure you want to permanently remove this task? This action cannot be undone.' : 'Are you sure you want to clear all completed tasks?'"></p>
 
             <div class="flex justify-end gap-3 mt-4">
-                <button class="btn btn-ghost" data-on-click="showConfirmDelete = false; showConfirmClear = false">No, Keep it</button>
+                <button class="btn btn-ghost" data-on-click="showConfirmDelete = false; showConfirmClear = false; activeTodo = null">No, Keep it</button>
                 <button class="btn btn-error text-white px-6 shadow-md" data-on-click="
                         if (showConfirmDelete) {
                             todos = todos.filter(t => t.id !== activeTodo.id);
