@@ -54,6 +54,18 @@ export interface AttributeModule extends Module {
 }
 
 /**
+ * Represents a module that intercepts and refines DOM events or pipeline evaluation.
+ */
+export interface ModifierModule extends Module {
+  handle(payload: any, element: HTMLElement, argument: string, runtime: RuntimeContext): any;
+  /**
+   * Universal Pipeline Extensibility: Allow modifiers to safely wrap the evaluation engine
+   * directly, deferring or mutating values without assuming the executing payload is a DOM Event.
+   */
+  interceptPipeline?: (evaluate: RuntimeContext['evaluate'], element: HTMLElement, argument: string, runtime: RuntimeContext) => RuntimeContext['evaluate'];
+}
+
+/**
  * Represents a module that provides imperative actions.
  */
 export interface ActionModule extends Module {
@@ -68,6 +80,7 @@ export interface ListenerModule extends Module {
   event?: string;
   listen(element: HTMLElement, runtime: RuntimeContext): (() => void) | void;
 }
+
 
 /**
  * Represents a module that integrates with browser Observer APIs.
@@ -88,6 +101,7 @@ declare module "./composition.ts" {
   interface InitContext {
     registerAttributeModule: (name: string, module: AttributeModule) => void;
     registerActionModule: (name: string, module: ActionModule) => void;
+    registerModifierModule: (name: string, module: ModifierModule) => void;
     registerListenerModule: (name: string, module: ListenerModule) => void;
     registerObserverModule: (name: string, module: ObserverModule) => void;
     registerUtilityModule: (name: string, module: UtilityModule) => void;
@@ -107,6 +121,7 @@ declare module "./composition.ts" {
     localSignals: (el: HTMLElement) => Record<string, unknown>;
     localActions: (el: HTMLElement) => Record<string, ActionFunction>;
     globalActions: () => Record<string, ActionFunction>;
+    getModifier: (name: string) => ModifierModule | undefined;
     reportError: (error: Error, el?: HTMLElement, expression?: string) => void;
   }
 }
@@ -117,6 +132,7 @@ declare module "./composition.ts" {
 export class ModuleCoordinator {
   public attributeModules: Map<string, AttributeModule> = new Map();
   public actionModules: Map<string, ActionModule> = new Map();
+  public modifierModules: Map<string, ModifierModule> = new Map();
   public listenerModules: Map<string, ListenerModule> = new Map();
   public observerModules: Map<string, ObserverModule> = new Map();
   public utilityModules: Map<string, UtilityModule> = new Map();
@@ -158,6 +174,7 @@ export class ModuleCoordinator {
       localSignals: getLocalSignals.bind(this),
       localActions: getLocalActions.bind(this),
       globalActions: getGlobalActions.bind(this),
+      getModifier: (name: string) => this.modifierModules.get(name),
       processElement: this.processElement.bind(this),
       parseAttribute: parseAttribute,
       scheduler: scheduler,
@@ -195,6 +212,7 @@ export class ModuleCoordinator {
     this.initContext = {
       registerAttributeModule: this.registerAttributeModule.bind(this),
       registerActionModule: this.registerActionModule.bind(this),
+      registerModifierModule: this.registerModifierModule.bind(this),
       registerListenerModule: this.registerListenerModule.bind(this),
       registerObserverModule: this.registerObserverModule.bind(this),
       registerUtilityModule: this.registerUtilityModule.bind(this),
@@ -211,6 +229,7 @@ export class ModuleCoordinator {
     }
     this.attributeModules.clear();
     this.actionModules.clear();
+    this.modifierModules.clear();
     this.listenerModules.clear();
     this.observerModules.clear();
     this.utilityModules.clear();
@@ -224,6 +243,10 @@ export class ModuleCoordinator {
       if (module.install) module.install(this.runtimeContext);
     });
     this.processElement(rootElement);
+  }
+
+  public registerModifierModule(name: string, module: ModifierModule): void {
+    this.modifierModules.set(name, module);
   }
 
   public registerAttributeModule(name: string, module: AttributeModule): void {
@@ -305,7 +328,36 @@ export class ModuleCoordinator {
         if (module) {
           handlersToExecute.push({
             directiveName: parsedAttr.directive,
-            handle: () => module.handle(element, attr.value, this.runtimeContext),
+            handle: () => {
+              // Construct a Scoped Runtime Context to execute Universal Pipeline Modifiers
+              let scopedRuntime = this.runtimeContext;
+              
+              if (parsedAttr.modifiers && parsedAttr.modifiers.length > 0) {
+                scopedRuntime = { ...this.runtimeContext };
+                
+                // Execute Universal Pipeline Interceptors (e.g. :morph, :intersect) dynamically
+                let currentEvaluate = scopedRuntime.evaluate;
+
+                parsedAttr.modifiers.forEach(modFull => {
+                   let modName = modFull;
+                   let modArg = '';
+                   const dashIdx = modFull.indexOf('-');
+                   if (dashIdx !== -1) {
+                     modName = modFull.substring(0, dashIdx);
+                     modArg = modFull.substring(dashIdx + 1);
+                   }
+
+                   const modModule = this.modifierModules.get(modName);
+                   if (modModule && typeof modModule.interceptPipeline === 'function') {
+                      currentEvaluate = modModule.interceptPipeline(currentEvaluate, element, modArg, scopedRuntime);
+                   }
+                });
+
+                scopedRuntime.evaluate = currentEvaluate;
+              }
+
+              return module.handle(element, attr.value, scopedRuntime);
+            },
             originalIndex: index,
           });
         }

@@ -23,3 +23,9 @@ export function fetchSprite(runtime: RuntimeContext) {
     return runtime.fetch.request(url, options, document.body);
   };
 }
+
+export default function(runtime: RuntimeContext) {
+  return {
+    $fetch: fetchSprite(runtime)
+  };
+}

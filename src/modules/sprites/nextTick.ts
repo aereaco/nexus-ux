@@ -17,3 +17,9 @@ export function nextTickSprite(_runtime: RuntimeContext) {
     });
   };
 }
+
+export default function(runtime: RuntimeContext) {
+  return {
+    $nextTick: nextTickSprite(runtime)
+  };
+}

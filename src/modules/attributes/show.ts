@@ -10,7 +10,7 @@ const showModule: AttributeModule = {
 
     try {
       const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
-        const show = runtime.evaluate(el, value);
+        const show = Boolean(runtime.evaluate(el, value));
         el.style.display = show ? originalDisplay : 'none';
       });
       return cleanup;

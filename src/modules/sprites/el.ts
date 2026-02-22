@@ -16,6 +16,11 @@ export function elSprite(_runtime: RuntimeContext) {
   // However, for consistency, we might export a helper?
   // No, evaluator.ts provides $el in the scope proxy.
 
-  // We'll keep this file for documentation or if we need a global helper function version.
   return null;
+}
+
+export default function(runtime: RuntimeContext) {
+  return {
+    $el: elSprite(runtime)
+  };
 }

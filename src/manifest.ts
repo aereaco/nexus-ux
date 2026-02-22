@@ -3,14 +3,14 @@ import type { AttributeModule } from './engine/modules.ts';
 import * as mod_0 from './modules/attributes/mask.ts';
 import * as mod_1 from './modules/attributes/sort.ts';
 import * as mod_2 from './modules/attributes/animate.ts';
-import * as mod_3 from './modules/attributes/intersect.ts';
-import * as mod_4 from './modules/attributes/preserve.ts';
-import * as mod_5 from './modules/attributes/text.ts';
-import * as mod_6 from './modules/attributes/bind.ts';
-import * as mod_7 from './modules/attributes/computed.ts';
-import * as mod_8 from './modules/attributes/on.ts';
-import * as mod_9 from './modules/attributes/assert.ts';
-import * as mod_10 from './modules/attributes/switcher.ts';
+import * as mod_3 from './modules/attributes/preserve.ts';
+import * as mod_4 from './modules/attributes/text.ts';
+import * as mod_5 from './modules/attributes/bind.ts';
+import * as mod_6 from './modules/attributes/computed.ts';
+import * as mod_7 from './modules/attributes/on.ts';
+import * as mod_8 from './modules/attributes/assert.ts';
+import * as mod_9 from './modules/attributes/switcher.ts';
+import * as mod_10 from './modules/attributes/model.ts';
 import * as mod_11 from './modules/attributes/if.ts';
 import * as mod_12 from './modules/attributes/effect.ts';
 import * as mod_13 from './modules/attributes/component.ts';
@@ -37,14 +37,14 @@ export const autoAttributes: any[] = [
   { name: 'mask', module: mod_0 },
   { name: 'sort', module: mod_1 },
   { name: 'animate', module: mod_2 },
-  { name: 'intersect', module: mod_3 },
-  { name: 'preserve', module: mod_4 },
-  { name: 'text', module: mod_5 },
-  { name: 'bind', module: mod_6 },
-  { name: 'computed', module: mod_7 },
-  { name: 'on', module: mod_8 },
-  { name: 'assert', module: mod_9 },
-  { name: 'switcher', module: mod_10 },
+  { name: 'preserve', module: mod_3 },
+  { name: 'text', module: mod_4 },
+  { name: 'bind', module: mod_5 },
+  { name: 'computed', module: mod_6 },
+  { name: 'on', module: mod_7 },
+  { name: 'assert', module: mod_8 },
+  { name: 'switcher', module: mod_9 },
+  { name: 'model', module: mod_10 },
   { name: 'if', module: mod_11 },
   { name: 'effect', module: mod_12 },
   { name: 'component', module: mod_13 },
@@ -78,6 +78,7 @@ import * as mod_39 from './modules/sprites/nextTick.ts';
 import * as mod_40 from './modules/sprites/el.ts';
 import * as mod_41 from './modules/sprites/sql.ts';
 import * as mod_42 from './modules/sprites/refs.ts';
+import * as mod_43 from './modules/sprites/ws.ts';
 
 export const autoSprites: any[] = [
   { name: 'mask', module: mod_32 },
@@ -90,37 +91,59 @@ export const autoSprites: any[] = [
   { name: 'nextTick', module: mod_39 },
   { name: 'el', module: mod_40 },
   { name: 'sql', module: mod_41 },
-  { name: 'refs', module: mod_42 }
+  { name: 'refs', module: mod_42 },
+  { name: 'ws', module: mod_43 }
 ];
-import * as mod_43 from './modules/mirrors/navigator.ts';
-import * as mod_44 from './modules/mirrors/battery.ts';
-import * as mod_45 from './modules/mirrors/network.ts';
-import * as mod_46 from './modules/mirrors/geolocation.ts';
-import * as mod_47 from './modules/mirrors/window.ts';
-import * as mod_48 from './modules/mirrors/screen.ts';
-import * as mod_49 from './modules/mirrors/localStorage.ts';
+import * as mod_44 from './modules/mirrors/navigator.ts';
+import * as mod_45 from './modules/mirrors/battery.ts';
+import * as mod_46 from './modules/mirrors/network.ts';
+import * as mod_47 from './modules/mirrors/geolocation.ts';
+import * as mod_48 from './modules/mirrors/window.ts';
+import * as mod_49 from './modules/mirrors/screen.ts';
+import * as mod_50 from './modules/mirrors/localStorage.ts';
 
 export const autoMirrors: any[] = [
-  { name: 'navigator', module: mod_43 },
-  { name: 'battery', module: mod_44 },
-  { name: 'network', module: mod_45 },
-  { name: 'geolocation', module: mod_46 },
-  { name: 'window', module: mod_47 },
-  { name: 'screen', module: mod_48 },
-  { name: 'localStorage', module: mod_49 }
+  { name: 'navigator', module: mod_44 },
+  { name: 'battery', module: mod_45 },
+  { name: 'network', module: mod_46 },
+  { name: 'geolocation', module: mod_47 },
+  { name: 'window', module: mod_48 },
+  { name: 'screen', module: mod_49 },
+  { name: 'localStorage', module: mod_50 }
 ];
-import * as mod_50 from './modules/scopes/container.ts';
-import * as mod_51 from './modules/scopes/view.ts';
-import * as mod_52 from './modules/scopes/media.ts';
-import * as mod_53 from './modules/scopes/auth.ts';
-import * as mod_54 from './modules/scopes/os.ts';
-import * as mod_55 from './modules/scopes/native.ts';
+import * as mod_51 from './modules/scopes/container.ts';
+import * as mod_52 from './modules/scopes/view.ts';
+import * as mod_53 from './modules/scopes/media.ts';
+import * as mod_54 from './modules/scopes/auth.ts';
+import * as mod_55 from './modules/scopes/os.ts';
+import * as mod_56 from './modules/scopes/native.ts';
 
 export const autoScopes: any[] = [
-  { name: 'container', module: mod_50 },
-  { name: 'view', module: mod_51 },
-  { name: 'media', module: mod_52 },
-  { name: 'auth', module: mod_53 },
-  { name: 'os', module: mod_54 },
-  { name: 'native', module: mod_55 }
+  { name: 'container', module: mod_51 },
+  { name: 'view', module: mod_52 },
+  { name: 'media', module: mod_53 },
+  { name: 'auth', module: mod_54 },
+  { name: 'os', module: mod_55 },
+  { name: 'native', module: mod_56 }
+];
+import * as mod_57 from './modules/modifiers/intersect.ts';
+import * as mod_58 from './modules/modifiers/stop.ts';
+import * as mod_59 from './modules/modifiers/keys.ts';
+import * as mod_60 from './modules/modifiers/self.ts';
+import * as mod_61 from './modules/modifiers/prevent.ts';
+import * as mod_62 from './modules/modifiers/throttle.ts';
+import * as mod_63 from './modules/modifiers/once.ts';
+import * as mod_64 from './modules/modifiers/debounce.ts';
+import * as mod_65 from './modules/modifiers/morph.ts';
+
+export const autoModifiers: any[] = [
+  { name: 'intersect', module: mod_57 },
+  { name: 'stop', module: mod_58 },
+  { name: 'keys', module: mod_59 },
+  { name: 'self', module: mod_60 },
+  { name: 'prevent', module: mod_61 },
+  { name: 'throttle', module: mod_62 },
+  { name: 'once', module: mod_63 },
+  { name: 'debounce', module: mod_64 },
+  { name: 'morph', module: mod_65 }
 ];

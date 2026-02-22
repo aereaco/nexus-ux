@@ -67,3 +67,13 @@ export function deleteSprite(runtime: RuntimeContext) {
   const fetcher = fetchSprite(runtime);
   return (url: string, options: RequestInit = {}) => fetcher(url, { ...options, method: 'DELETE' });
 }
+
+export default function(runtime: RuntimeContext) {
+  return {
+    $get: getSprite(runtime),
+    $post: postSprite(runtime),
+    $put: putSprite(runtime),
+    $patch: patchSprite(runtime),
+    $delete: deleteSprite(runtime)
+  };
+}

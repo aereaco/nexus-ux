@@ -1,17 +1,14 @@
 // @ts-ignore: idiomorph types
-import * as IdiomorphLib from 'idiomorph';
-// deno-lint-ignore no-explicit-any
-const anyLib: any = IdiomorphLib;
-const Idiomorph = anyLib.Idiomorph || anyLib.default || anyLib;
+import { Idiomorph } from 'idiomorph/dist/idiomorph.esm.js';
 import { DATA_PRESERVE_ATTR } from './consts.ts';
 
 // Configure Idiomorph defaults
 const defaults = {
   morphStyle: 'outerHTML',
   callbacks: {
-    beforeNodeMorphed: (from: Element, _to: Element) => {
+    beforeNodeMorphed: (from: Node, _to: Node) => {
       // Respect data-preserve attribute
-      if (from.hasAttribute(DATA_PRESERVE_ATTR)) {
+      if (from instanceof Element && from.hasAttribute(DATA_PRESERVE_ATTR)) {
         return false; // Skip morphing this node
       }
       return true;

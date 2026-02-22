@@ -54,3 +54,9 @@ export function sqlSprite(runtime: RuntimeContext) {
     return result;
   };
 }
+
+export default function(runtime: RuntimeContext) {
+  return {
+    $sql: sqlSprite(runtime)
+  };
+}

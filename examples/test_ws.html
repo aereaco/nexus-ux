@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus-UX: Native WebSockets Test</title>
+    <script type="module" src="../dist/nexus-ux.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 2rem; max-width: 600px; margin: 0 auto; line-height: 1.6; }
+        .card { border: 1px solid #ccc; padding: 1.5rem; margin-bottom: 1rem; border-radius: 8px; background: #fafafa; }
+        .status-open { color: green; font-weight: bold; }
+        .status-closed { color: red; font-weight: bold; }
+        .status-connecting { color: orange; font-weight: bold; }
+        code { background: #eee; padding: 2px 6px; border-radius: 4px; }
+        button { padding: 0.5rem 1rem; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+    </style>
+</head>
+<body data-ux-init>
+
+    <h1>Real-Time WebSockets (`$ws`)</h1>
+    <p>Testing the fully reactive, multiplexed Native WebSocket Sprite engine.</p>
+
+    <div class="card">
+        <h3>Connection Status Tracker</h3>
+        <p>This text block reads the global reactive proxy instance managed automatically by the framework URL connection pool.</p>
+        
+        <div>Status: 
+            <span data-text="$ws('ws://localhost:8080/live').status" 
+                  data-class="$ws('ws://localhost:8080/live').status === 'OPEN' ? 'status-open' : ($ws('ws://localhost:8080/live').status === 'CLOSED' ? 'status-closed' : 'status-connecting')">
+            </span>
+        </div>
+        
+        <div data-show="$ws('ws://localhost:8080/live').error" style="color: red; margin-top: 0.5rem;">
+            Error: <span data-text="$ws('ws://localhost:8080/live').error"></span>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Live Server Ticks (Broadcast Mock)</h3>
+        <p>The Server sends a background `live_tick` broadcast to all connected clients every 3 seconds to simulate Datastar SSE streaming.</p>
+        
+        <div>Server Uptime: <code data-text="$ws('ws://localhost:8080/live').lastMessage?.serverUptime ?? 'Waiting...'"></code> ms</div>
+        <div>Last Tick: <code data-text="$ws('ws://localhost:8080/live').lastMessage?.timestamp ?? 'Waiting...'"></code></div>
+    </div>
+
+    <div class="card">
+        <h3>Bi-Directional Action Center</h3>
+        <p>Using the imperative <code>.send()</code> method bound dynamically to the URL proxy.</p>
+        
+        <div style="margin-bottom: 1rem;">
+            <button data-on-click="$ws('ws://localhost:8080/live').send({ action: 'ping', clientTime: Date.now() })"
+                    data-attr:disabled="$ws('ws://localhost:8080/live').status !== 'OPEN'">
+                Send Client Ping Payload
+            </button>
+        </div>
+
+        <div>Last Server Echo ID: <code data-text="$ws('ws://localhost:8080/live').lastMessage?.echo ? 'True' : 'False'"></code></div>
+        <div>Last Server Received Timestamp: <code data-text="$ws('ws://localhost:8080/live').lastMessage?.serverReceivedAt ?? 'N/A'"></code></div>
+    </div>
+
+</body>
+</html>

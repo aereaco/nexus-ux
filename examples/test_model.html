@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus-UX: Data Model Test</title>
+    <script type="module" src="../dist/nexus-ux.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 2rem; max-width: 600px; margin: 0 auto; }
+        .box { border: 1px solid #ccc; padding: 1rem; margin-bottom: 1rem; border-radius: 4px; }
+        input, select { margin-bottom: 1rem; padding: 0.5rem; width: 100%; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
+        .radio-group label { display: inline-block; width: auto; font-weight: normal; margin-right: 1rem; }
+        .radio-group input { width: auto; }
+    </style>
+</head>
+<body data-ux-init>
+
+    <h1>Testing data-model</h1>
+
+    <div data-signal="{ text: 'Hello Nexus', isChecked: true, color: 'blue', size: 'm' }">
+        
+        <div class="box">
+            <label>Text Input</label>
+            <input type="text" data-model="text">
+            <p><strong>Value:</strong> <span data-text="text"></span></p>
+        </div>
+
+        <div class="box">
+            <label>Checkbox</label>
+            <label><input type="checkbox" data-model="isChecked" style="width: auto;"> Agree to terms</label>
+            <p><strong>Value:</strong> <span data-text="isChecked ? 'Yes' : 'No'"></span></p>
+        </div>
+
+        <div class="box">
+            <label>Select Dropdown</label>
+            <select data-model="color">
+                <option value="red">Red</option>
+                <option value="blue">Blue</option>
+                <option value="green">Green</option>
+            </select>
+            <p><strong>Value:</strong> <span data-text="color" data-style-color="color"></span></p>
+        </div>
+
+        <div class="box">
+            <label>Radio Group</label>
+            <div class="radio-group">
+                <label><input type="radio" data-model="size" name="size" value="s"> Small</label>
+                <label><input type="radio" data-model="size" name="size" value="m"> Medium</label>
+                <label><input type="radio" data-model="size" name="size" value="l"> Large</label>
+            </div>
+            <p><strong>Value:</strong> <span data-text="size"></span></p>
+        </div>
+
+        <div class="box">
+            <label>Global Reset</label>
+            <button data-on-click="text = 'Reset'; isChecked = false; color = 'red'; size = 's'">Reset All</button>
+        </div>
+
+    </div>
+
+</body>
+</html>

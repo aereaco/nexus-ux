@@ -13,7 +13,8 @@ import {
   autoAttributes,
   autoSprites,
   autoMirrors,
-  autoScopes 
+  autoScopes,
+  autoModifiers 
 } from './manifest.ts';
 
 import { fetchModule } from './engine/fetch.ts';
@@ -50,12 +51,37 @@ export class UX {
 
     // Auto-Register Sprites (Action Modules)
     autoSprites.forEach(({ module }) => {
-      Object.entries(module).forEach(([name, handler]) => {
+      let exportsObj = module;
+      if (typeof module.default === 'function') {
+         exportsObj = module.default(this.coordinator.runtimeContext);
+      }
+      
+      Object.entries(exportsObj).forEach(([name, handler]) => {
+         if (name === 'default') return;
+
          this.coordinator.registerActionModule(name, {
            name,
            handle: (_el, ...args) => (handler as any)(...args)
          });
       });
+    });
+
+    // Auto-Register Modifiers
+    autoModifiers.forEach(({ module }) => {
+      let exportsObj = module.default || module;
+      
+      // Single default export (e.g. morph.ts, stop.ts)
+      if (exportsObj && exportsObj.name && typeof exportsObj.handle === 'function') {
+        this.coordinator.registerModifierModule(exportsObj.name, exportsObj);
+      } 
+      // Object containing multiple modifiers (e.g. keys.ts)
+      else if (typeof exportsObj === 'object') {
+        Object.values(exportsObj).forEach((mod: any) => {
+          if (mod && mod.name && typeof mod.handle === 'function') {
+            this.coordinator.registerModifierModule(mod.name, mod);
+          }
+        });
+      }
     });
 
     // 4D Predictive Engine Initialization
@@ -130,13 +156,14 @@ export class UX {
    * Public API for Decentralized Module Registration.
    * Allows third-party scripts (e.g., loaded via data-injest) to register themselves dynamically.
    */
-  public register(type: 'attribute' | 'action' | 'listener' | 'observer' | 'utility', name: string, module: any) {
+  public register(type: 'attribute' | 'action' | 'modifier' | 'listener' | 'observer' | 'utility', name: string, module: any) {
     if (typeof window !== 'undefined' && this.coordinator.runtimeContext.isDevMode) {
       console.log(`[Nexus Registration] Dynamically registering ${type} module: ${name}`);
     }
     switch (type) {
       case 'attribute': this.coordinator.registerAttributeModule(name, module); break;
       case 'action': this.coordinator.registerActionModule(name, module); break;
+      case 'modifier': this.coordinator.registerModifierModule(name, module); break;
       case 'listener': this.coordinator.registerListenerModule(name, module); break;
       case 'observer': this.coordinator.registerObserverModule(name, module); break;
       case 'utility': this.coordinator.registerUtilityModule(name, module); break;

@@ -7,6 +7,7 @@ export interface ParsedAttribute {
   directive?: string;
   argument?: string;
   modifiers: string[];
+  target?: string;
 }
 
 /**
@@ -36,7 +37,8 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
 
   let directive: string | undefined = undefined;
   let argument: string | undefined = undefined;
-  let modifiers: string[] = [];
+  const modifiers: string[] = [];
+  let target: string | undefined = undefined;
 
   const COMMON_PREFIXES = ['on-', 'class-', 'style-', 'attr-', 'bind-'];
   let startIndex = 0;
@@ -58,7 +60,7 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
   for (let i = startIndex; i <= len; i++) {
     const isEnd = i === len;
     const char = isEnd ? '' : rawName[i];
-    const isDelim = char === MODIFIER_ARGUMENT_DELIMITER || char === '.';
+    const isDelim = char === MODIFIER_ARGUMENT_DELIMITER || char === '.'; // ':' or '.'
 
     if (isDelim || isEnd) {
       if (i > currentTokenStart) {
@@ -68,7 +70,11 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
         } else if (state === 1) {
           argument = token;
         } else {
-          modifiers.push(token);
+          if (token.startsWith('$(') && token.endsWith(')')) {
+            target = token.slice(2, -1);
+          } else {
+            modifiers.push(token);
+          }
         }
       }
 
@@ -89,6 +95,7 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
     value: element.getAttribute(name) || '',
     directive: directive,
     argument: argument,
-    modifiers: modifiers
+    modifiers: modifiers,
+    target: target
   };
 }

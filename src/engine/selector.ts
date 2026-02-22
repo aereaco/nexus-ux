@@ -4,8 +4,10 @@ import { getDataStack } from './scope.ts';
  * Unified Selector Sprite $(...)
  * Enables context-aware DOM traversal and returns reactive element proxies.
  */
-export function resolveSelector(contextEl: HTMLElement, selector: string): any {
+export function resolveSelector(contextEl: HTMLElement, selector: string | HTMLElement): any {
   if (!selector) return null;
+  // If a raw DOM node was passed instead of a string, wrap it and return immediately.
+  if (typeof selector !== 'string') return createReactiveElementProxy(selector);
 
   let current: HTMLElement | null = contextEl;
   let targetSelector = selector;
@@ -48,8 +50,11 @@ export function resolveSelector(contextEl: HTMLElement, selector: string): any {
     current = document.querySelector(selector.substring(1).trim()) as HTMLElement;
     targetSelector = '';
   } else {
-    // Standard relative search
+    // Standard local child search, falling back to global document search (HTMX parity)
     current = contextEl.querySelector(selector) as HTMLElement;
+    if (!current && typeof document !== 'undefined') {
+      current = document.querySelector(selector) as HTMLElement;
+    }
     targetSelector = '';
   }
 

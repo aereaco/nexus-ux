@@ -18,3 +18,9 @@ export function watchSprite(runtime: RuntimeContext) {
     }
   };
 }
+
+export default function(runtime: RuntimeContext) {
+  return {
+    $watch: watchSprite(runtime)
+  };
+}

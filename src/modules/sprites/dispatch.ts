@@ -29,3 +29,9 @@ export const createDispatch = (el: HTMLElement) => (name: string, detail?: unkno
     detail
   }));
 };
+
+export default function(runtime: RuntimeContext) {
+  return {
+    $dispatch: dispatchSprite(runtime)
+  };
+}

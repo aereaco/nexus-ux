@@ -17,3 +17,9 @@ export function storeSprite(runtime: RuntimeContext) {
   }
   return ctx.__store;
 }
+
+export default function(runtime: RuntimeContext) {
+  return {
+    $store: storeSprite(runtime)
+  };
+}

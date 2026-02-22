@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus-UX: Pipeline Modifiers Test</title>
+    <script type="module" src="../dist/nexus-ux.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 2rem; max-width: 600px; margin: 0 auto; }
+        .box { border: 1px solid #ccc; padding: 1rem; margin-bottom: 1rem; border-radius: 4px; }
+        button { padding: 0.5rem 1rem; cursor: pointer; }
+    </style>
+</head>
+<body data-ux-init>
+
+    <h1>Testing :morph Pipeline</h1>
+
+    <div class="box">
+        <h3>1. Direct Morphing (Self)</h3>
+        <p>This button should fetch a fragment from the server and replace ITSELF.</p>
+        <!-- A mock endpoint that just echoes back HTML text -->
+        <button data-on-click:morph="$get('/examples/fragments/button.html', { responseType: 'text' })">
+            Click to Fetch & Morph Self
+        </button>
+    </div>
+
+    <div class="box">
+        <h3>2. Targeted Morphing (Unified Selector)</h3>
+        <p>This button should fetch a fragment and inject it into the target DIV below.</p>
+        <button data-on-click:morph:$(#results)="$get('/examples/fragments/content.html', { responseType: 'text' })">
+            Fetch Content into Target
+        </button>
+        
+        <div id="results" style="margin-top: 1rem; padding: 1rem; background: #eee; border-style: dashed;">
+            <em>Target Container (Empty)</em>
+        </div>
+    </div>
+
+</body>
+</html>
