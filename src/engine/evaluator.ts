@@ -161,6 +161,10 @@ export function evaluateLater(
   });
 
   // Balanced logic for expressions vs statements
+  // Expression compilation: uses `new Function` + `with` for runtime expressiveness.
+  // IMPORTANT — CSP: this requires `unsafe-eval` in Content-Security-Policy.
+  // This is the same trade-off as Alpine.js. A CSP-compatible build would
+  // pre-compile expressions at build time (not implemented yet).
   let func;
   if (runtime.isDevMode) {
     console.log("Raw Expr:", expression);

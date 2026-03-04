@@ -79,10 +79,19 @@ const switcherModule: AttributeModule = {
         runtime.log(`Nexus Switcher [${expression}]: Active state changed to:`, currentVal, 'options:', items);
         
         // Simple animation hook: toggle a class on children
+        // Animation hook: toggle a transition class on children
         Array.from(el.children).forEach(child => {
           if (child instanceof HTMLElement) {
             child.classList.add('switcher-transitioning');
-            setTimeout(() => child.classList.remove('switcher-transitioning'), 300);
+            // Use transitionend event instead of hardcoded timeout — adapts to any CSS duration.
+            // Safety fallback after 1s if no transition is defined on the element.
+            const onEnd = () => {
+              child.classList.remove('switcher-transitioning');
+              child.removeEventListener('transitionend', onEnd);
+              clearTimeout(fallback);
+            };
+            child.addEventListener('transitionend', onEnd, { once: true });
+            const fallback = setTimeout(onEnd, 1000);
           }
         });
       });

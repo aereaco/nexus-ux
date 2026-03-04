@@ -16,20 +16,30 @@ class PredictiveEngine {
   private lastPoint: Point | null = null;
   private velocity = { x: 0, y: 0, z: 0, t: 0 };
   private predictiveNodes: Set<HTMLElement> = new Set();
+  private cleanupFns: (() => void)[] = [];
 
   constructor() {
     this.init();
   }
 
   init() {
-    if (typeof window !== 'undefined') {
-      window.addEventListener('mousemove', (e) => this.track(e.clientX, e.clientY));
-      window.addEventListener('touchstart', (e) => {
+    if (typeof globalThis.addEventListener !== 'undefined') {
+      const onMouseMove = (e: MouseEvent) => this.track(e.clientX, e.clientY);
+      const onTouchStart = (e: TouchEvent) => {
         const touch = e.touches[0];
         if (touch) this.track(touch.clientX, touch.clientY);
-      }, { passive: true });
+      };
+      globalThis.addEventListener('mousemove', onMouseMove);
+      globalThis.addEventListener('touchstart', onTouchStart, { passive: true });
+      this.cleanupFns.push(
+        () => globalThis.removeEventListener('mousemove', onMouseMove),
+        () => globalThis.removeEventListener('touchstart', onTouchStart)
+      );
     }
   }
+
+  /** Tear down all listeners. */
+  public dispose() { this.cleanupFns.forEach(fn => fn()); }
 
   public track(x: number, y: number, z: number = 0) {
     const t = performance.now();
@@ -59,7 +69,7 @@ class PredictiveEngine {
     // 1. Calculate projected point (T+100ms)
     const px = x + this.velocity.x * 100;
     const py = y + this.velocity.y * 100;
-    const pz = z + this.velocity.z * 100;
+    const _pz = z + this.velocity.z * 100;
 
     // 2. Simple bounding box frustum search
     // In a real Zenith-class implementation, this would use a spatial index or 

@@ -15,6 +15,8 @@ export const viewScope = reactive({
   isLandscape: typeof window !== 'undefined' ? globalThis.innerWidth >= globalThis.innerHeight : true
 });
 
+const cleanupFns: (() => void)[] = [];
+
 // Update on resize and scroll
 if (typeof window !== 'undefined') {
   const updateView = () => {
@@ -29,16 +31,27 @@ if (typeof window !== 'undefined') {
 
   globalThis.addEventListener('resize', updateView);
   globalThis.addEventListener('scroll', updateView);
+  cleanupFns.push(
+    () => globalThis.removeEventListener('resize', updateView),
+    () => globalThis.removeEventListener('scroll', updateView)
+  );
 }
 
 // Update on orientation change
 if (typeof window !== 'undefined' && globalThis.screen.orientation) {
-  globalThis.screen.orientation.addEventListener('change', () => {
+  const onOrientationChange = () => {
     viewScope.orientation = globalThis.screen.orientation.type;
-  });
+  };
+  globalThis.screen.orientation.addEventListener('change', onOrientationChange);
+  cleanupFns.push(() => globalThis.screen.orientation.removeEventListener('change', onOrientationChange));
 }
 
+// deno-lint-ignore no-explicit-any
 export const scopeRule = (q: string, body: () => any) => {
+  // deno-lint-ignore no-explicit-any
   if (q in viewScope) return (viewScope as any)[q] ? body() : undefined;
   return undefined;
 };
+
+/** Tear down all listeners — for testing or micro-frontend teardown. */
+export function dispose() { cleanupFns.forEach(fn => fn()); }

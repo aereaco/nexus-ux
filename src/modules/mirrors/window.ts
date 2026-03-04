@@ -13,6 +13,8 @@ const state = reactive({
   location: typeof globalThis.location !== 'undefined' ? globalThis.location.href : ''
 });
 
+const cleanupFns: (() => void)[] = [];
+
 // Update state on events
 if (typeof globalThis.window !== 'undefined') {
   const updateSize = () => {
@@ -30,11 +32,13 @@ if (typeof globalThis.window !== 'undefined') {
 
   globalThis.addEventListener('resize', updateSize);
   globalThis.addEventListener('scroll', updateScroll);
+  cleanupFns.push(
+    () => globalThis.removeEventListener('resize', updateSize),
+    () => globalThis.removeEventListener('scroll', updateScroll)
+  );
 }
 
-// Sync title? 'title' event doesn't really exist on window, mostly mutation observer on head title?
-// For now, we assume title is updated via _window.title = ... or other means.
-// To detect external title changes (e.g. standard JS), we'd need MO.
+// Sync title via MutationObserver on <title>
 if (typeof MutationObserver !== 'undefined') {
   const titleObserver = new MutationObserver(() => {
     if (state.title !== document.title) {
@@ -44,6 +48,7 @@ if (typeof MutationObserver !== 'undefined') {
   const titleEl = document.querySelector('title');
   if (titleEl) {
     titleObserver.observe(titleEl, { childList: true, characterData: true, subtree: true });
+    cleanupFns.push(() => titleObserver.disconnect());
   }
 }
 
@@ -64,3 +69,6 @@ if (typeof globalThis.window !== 'undefined') {
 }
 
 export const windowMirror = state;
+
+/** Tear down all listeners — for testing or micro-frontend teardown. */
+export function dispose() { cleanupFns.forEach(fn => fn()); }

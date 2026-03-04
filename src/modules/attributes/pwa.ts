@@ -62,10 +62,16 @@ const pwaModule: AttributeModule = {
 
     runtime.setGlobalSignal('$pwa', pwaState);
 
+    const cleanupFns: (() => void)[] = [];
+
     // 2. Offline Detection
     const updateOnlineStatus = () => { pwaState.isOnline = navigator.onLine; };
     globalThis.addEventListener('online', updateOnlineStatus);
     globalThis.addEventListener('offline', updateOnlineStatus);
+    cleanupFns.push(
+      () => globalThis.removeEventListener('online', updateOnlineStatus),
+      () => globalThis.removeEventListener('offline', updateOnlineStatus)
+    );
 
     // 3. Service Worker Registration
     if (config.sw && 'serviceWorker' in navigator) {
@@ -94,12 +100,14 @@ const pwaModule: AttributeModule = {
         
       // Auto-reload once new service worker takes control
       let refreshing = false;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
+      const onControllerChange = () => {
           if (!refreshing) {
               refreshing = true;
               window.location.reload();
           }
-      });
+      };
+      navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
+      cleanupFns.push(() => navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange));
     }
 
     // 4. Manifest / Meta Tags
@@ -135,20 +143,21 @@ const pwaModule: AttributeModule = {
     }
 
     // "Add to Home Screen" prompt interception
-    globalThis.addEventListener('beforeinstallprompt', (e) => {
+    const onBeforeInstall = (e: Event) => {
       e.preventDefault();
       pwaState.deferredPrompt = e;
-    });
+    };
+    globalThis.addEventListener('beforeinstallprompt', onBeforeInstall);
+    cleanupFns.push(() => globalThis.removeEventListener('beforeinstallprompt', onBeforeInstall));
 
-    globalThis.addEventListener('appinstalled', () => {
+    const onAppInstalled = () => {
       pwaState.isInstalled = true;
       pwaState.deferredPrompt = null;
-    });
-
-    return () => {
-      globalThis.removeEventListener('online', updateOnlineStatus);
-      globalThis.removeEventListener('offline', updateOnlineStatus);
     };
+    globalThis.addEventListener('appinstalled', onAppInstalled);
+    cleanupFns.push(() => globalThis.removeEventListener('appinstalled', onAppInstalled));
+
+    return () => cleanupFns.forEach(fn => fn());
   }
 };
 

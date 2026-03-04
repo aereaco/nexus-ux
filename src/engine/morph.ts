@@ -4,7 +4,7 @@ import { DATA_PRESERVE_ATTR } from './consts.ts';
 
 // Configure Idiomorph defaults
 const defaults = {
-  morphStyle: 'outerHTML',
+  morphStyle: 'innerHTML',
   callbacks: {
     beforeNodeMorphed: (from: Node, _to: Node) => {
       // Respect data-preserve attribute

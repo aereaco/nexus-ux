@@ -62,7 +62,7 @@ export const routerAttributeModule: AttributeModule = {
   attribute: 'router',
   handle: (el: HTMLElement, _initConfig: string, runtime: RuntimeContext) => {
     try {
-      console.log('Initializing data-router on', el);
+      runtime.debug('Initializing data-router on', el);
       // 1. Create Reactive State
       // Use shallowReactive to prevent deep proxying of HTMLElements in routes
       const state = runtime.shallowReactive<RouterState>({
@@ -94,15 +94,15 @@ export const routerAttributeModule: AttributeModule = {
         },
 
         addRoute(route: RouteRecord) {
-          console.log('addRoute called with path:', route.path);
+          runtime.debug('addRoute called with path:', route.path);
           const { regex, keys } = pathToRegex(route.path);
           route.matcher = regex;
           route.keys = keys;
           state.routes.push(route);
-          // Re-evaluate current route (deferred to avoid TDZ during hydration)
-          setTimeout(() => {
+          // Re-evaluate current route via microtask to avoid TDZ during hydration
+          queueMicrotask(() => {
             updateRoute(globalThis.location.pathname + globalThis.location.search + globalThis.location.hash);
-          }, 0);
+          });
         },
 
         removeRoute(route: RouteRecord) {
@@ -141,7 +141,7 @@ export const routerAttributeModule: AttributeModule = {
         for (const route of state.routes) {
           const match = path.match(route.matcher!);
           if (match) {
-            console.log(`Matched route: ${route.path} via path ${path}`);
+            runtime.debug(`Matched route: ${route.path} via path ${path}`);
             matched = route;
             // Extract params
             route.keys?.forEach((key: string, i: number) => {
@@ -156,7 +156,7 @@ export const routerAttributeModule: AttributeModule = {
         state.currentRoute = matched as any; 
 
         // Show/Hide Elements based on match
-        console.log(`Hiding/showing active route. Matched:`, matched?.path);
+        runtime.debug(`Hiding/showing active route. Matched:`, matched?.path);
         (state.routes as RouteRecord[]).forEach((r: RouteRecord) => {
           if (r === matched) {
             if (r.element.style.display === 'none') r.element.style.display = '';
@@ -166,18 +166,16 @@ export const routerAttributeModule: AttributeModule = {
         });
       };
 
-      // 4. Intercept Listeners
+      // 4. Intercept Listeners — store references for cleanup
 
       // Popstate (via bridge or direct)
-      globalThis.addEventListener('popstate', () => {
-        updateRoute(globalThis.location.href);
-      });
-      globalThis.addEventListener('router:popstate', () => {
-        updateRoute(globalThis.location.href);
-      });
+      const onPopstate = () => updateRoute(globalThis.location.href);
+      const onRouterPopstate = () => updateRoute(globalThis.location.href);
+      globalThis.addEventListener('popstate', onPopstate);
+      globalThis.addEventListener('router:popstate', onRouterPopstate);
 
       // Link Interception (Delegated)
-      el.addEventListener('click', (e) => {
+      const onLinkClick = (e: Event) => {
         const link = (e.target as Element).closest('a');
         if (link) {
           const href = link.getAttribute('href');
@@ -186,12 +184,20 @@ export const routerAttributeModule: AttributeModule = {
             state.navigate(href);
           }
         }
+      };
+      el.addEventListener('click', onLinkClick);
+
+      // Initial Update via microtask (deterministic, pre-paint)
+      queueMicrotask(() => {
+        updateRoute(globalThis.location.href);
       });
 
-      // Initial Update
-      setTimeout(() => {
-        updateRoute(globalThis.location.href);
-      }, 0);
+      // Return cleanup to prevent listener stacking on re-mount
+      return () => {
+        globalThis.removeEventListener('popstate', onPopstate);
+        globalThis.removeEventListener('router:popstate', onRouterPopstate);
+        el.removeEventListener('click', onLinkClick);
+      };
 
     } catch (e) {
       reportError(e instanceof Error ? e : new Error(String(e)), el);

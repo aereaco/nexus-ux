@@ -67,6 +67,8 @@ export interface NexusEnhancedElement extends HTMLElement {
  * Eliminates GC pressure by reusing effect records and tracker objects.
  */
 
+let effectIdCounter = 0;
+
 
 /**
  * Creates a reactive effect that is automatically stopped when the associated HTMLElement is removed from the DOM.
@@ -110,19 +112,13 @@ export function elementBoundEffect(
         delete enhancedEl[RUN_EFFECT_RUNNERS_KEY];
       }
     }
-    // effectPool.release(runner); // Placeholder for future optimization
   };
 
   if (!enhancedEl[CLEANUP_FUNCTIONS_KEY]) {
     enhancedEl[CLEANUP_FUNCTIONS_KEY] = new Map();
   }
-  // For effect cleanups, we use a random or indexed key to avoid collision if not specified? 
-  // Actually, for elementBoundEffect, it's usually 1:1. Let's use 'effect' as key or similar.
-  // But wait, CLEANUP_FUNCTIONS_KEY is now a Map for directive gating.
-  // For elementBoundEffect, we might have multiple?
-  // Let's use unique keys based on a counter or just push to a list?
-  // If it's a Map, we need keys.
-  const cleanupKey = `effect-${enhancedEl[CLEANUP_FUNCTIONS_KEY].size}`;
+  // Use monotonic counter to avoid key collision after cleanup+re-add cycles.
+  const cleanupKey = `effect-${effectIdCounter++}`;
   enhancedEl[CLEANUP_FUNCTIONS_KEY].set(cleanupKey, cleanup);
 
   return [runner, cleanup];

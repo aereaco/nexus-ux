@@ -2,6 +2,7 @@ import { ref, Ref, computed } from '../../engine/reactivity.ts';
 
 // Cache for media query signals
 const mediaSignals: Map<string, Ref<boolean>> = new Map();
+const cleanupFns: (() => void)[] = [];
 
 /**
  * Creates or retrieves a cached signal that tracks a media query.
@@ -24,8 +25,13 @@ export function getMediaSignal(query: string): Ref<boolean> {
   };
 
   mql.addEventListener('change', listener);
+  cleanupFns.push(() => mql.removeEventListener('change', listener));
   mediaSignals.set(query, s);
   return s;
 }
 
+// deno-lint-ignore no-explicit-any
 export const scopeRule = (q: string, body: () => any) => getMediaSignal(q).value ? body() : undefined;
+
+/** Tear down all listeners — for testing or micro-frontend teardown. */
+export function dispose() { cleanupFns.forEach(fn => fn()); }

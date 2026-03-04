@@ -126,7 +126,7 @@ export const localStorageMirror = new Proxy(localStorageMirrorTarget as any, {
 
 // Sync with storage events (other tabs)
 if (typeof globalThis.window !== 'undefined') {
-  globalThis.addEventListener('storage', (e) => {
+  const onStorageEvent = (e: StorageEvent) => {
     if (e.key) {
       const r = keyRefs.get(e.key);
       if (r) {
@@ -138,5 +138,11 @@ if (typeof globalThis.window !== 'undefined') {
         r.value = getValue(k);
       });
     }
-  });
+  };
+  globalThis.addEventListener('storage', onStorageEvent);
+
+  /** Tear down storage listener — for testing or micro-frontend teardown. */
+  // deno-lint-ignore no-explicit-any
+  (localStorageMirror as any).__dispose = () => globalThis.removeEventListener('storage', onStorageEvent);
 }
+

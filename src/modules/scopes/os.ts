@@ -24,18 +24,28 @@ export const osScope = reactive({
   isDesktop: !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
 });
 
+const cleanupFns: (() => void)[] = [];
+
 // Update theme on change
 if (typeof window !== 'undefined') {
-  globalThis.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+  const mq = globalThis.matchMedia('(prefers-color-scheme: dark)');
+  const onThemeChange = (e: MediaQueryListEvent) => {
     osScope.theme = e.matches ? 'dark' : 'light';
-  });
+  };
+  mq.addEventListener('change', onThemeChange);
+  cleanupFns.push(() => mq.removeEventListener('change', onThemeChange));
 }
 
 export function getOSScope() {
   return osScope;
 }
 
+// deno-lint-ignore no-explicit-any
 export const scopeRule = (q: string, body: () => any) => {
+  // deno-lint-ignore no-explicit-any
   if (q in osScope) return (osScope as any)[q] ? body() : undefined;
   return osScope.platform === q ? body() : undefined;
 };
+
+/** Tear down all listeners — for testing or micro-frontend teardown. */
+export function dispose() { cleanupFns.forEach(fn => fn()); }

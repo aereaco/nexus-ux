@@ -160,12 +160,18 @@ if (typeof globalThis.window !== 'undefined') {
   checkPersisted();
   
   // Re-poll on storage events (when other storage APIs write data)
-  globalThis.addEventListener('storage', () => {
-    pollEstimate();
-  });
+  const onStorage = () => { pollEstimate(); };
+  globalThis.addEventListener('storage', onStorage);
   
   // Periodic re-poll every 30 seconds
-  setInterval(() => {
+  const intervalId = setInterval(() => {
     pollEstimate();
   }, 30_000);
+
+  // deno-lint-ignore no-explicit-any
+  (storageMirror as any).__dispose = () => {
+    globalThis.removeEventListener('storage', onStorage);
+    clearInterval(intervalId);
+  };
 }
+

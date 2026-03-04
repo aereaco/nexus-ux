@@ -37,11 +37,12 @@ export default function downloadFactory(_runtime: RuntimeContext) {
       document.body.appendChild(anchor);
       anchor.click();
 
-      // Cleanup
-      setTimeout(() => {
+      // Cleanup: rAF guarantees the click has been dispatched and the download
+      // dialog initiated before we revoke the URL.
+      requestAnimationFrame(() => {
         document.body.removeChild(anchor);
         URL.revokeObjectURL(url);
-      }, 100);
+      });
     }
   };
 }

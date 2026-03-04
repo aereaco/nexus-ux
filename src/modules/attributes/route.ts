@@ -51,10 +51,6 @@ export const routeAttributeModule: AttributeModule = {
       let meta: unknown = {};
       if (metaStr) {
         try {
-          meta = (0, eval)(`(${metaStr})`); // Evaluate simple object literal. Dangerous? 
-          // Evaluator usage preferred: runtime.evaluate(el, metaStr)
-          // But we can't easily get the return value sync if it's async? 
-          // evaluate returns value.
           meta = runtime.evaluate(el, metaStr);
         } catch (e) {
           reportError(new Error(`Invalid data-route-meta: ${e}`), el);
