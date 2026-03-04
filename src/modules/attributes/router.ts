@@ -59,9 +59,10 @@ function pathToRegex(path: string): { regex: RegExp, keys: string[] } {
 
 export const routerAttributeModule: AttributeModule = {
   name: 'router-attribute',
-  attribute: 'data-router',
+  attribute: 'router',
   handle: (el: HTMLElement, _initConfig: string, runtime: RuntimeContext) => {
     try {
+      console.log('Initializing data-router on', el);
       // 1. Create Reactive State
       // Use shallowReactive to prevent deep proxying of HTMLElements in routes
       const state = runtime.shallowReactive<RouterState>({
@@ -93,12 +94,15 @@ export const routerAttributeModule: AttributeModule = {
         },
 
         addRoute(route: RouteRecord) {
+          console.log('addRoute called with path:', route.path);
           const { regex, keys } = pathToRegex(route.path);
           route.matcher = regex;
           route.keys = keys;
           state.routes.push(route);
-          // Re-evaluate current route
-          updateRoute(globalThis.location.pathname + globalThis.location.search + globalThis.location.hash);
+          // Re-evaluate current route (deferred to avoid TDZ during hydration)
+          setTimeout(() => {
+            updateRoute(globalThis.location.pathname + globalThis.location.search + globalThis.location.hash);
+          }, 0);
         },
 
         removeRoute(route: RouteRecord) {
@@ -113,7 +117,14 @@ export const routerAttributeModule: AttributeModule = {
       // 3. Update Logic
       const updateRoute = (fullPath: string) => {
         const url = new URL(fullPath, globalThis.location.origin);
-        const path = url.pathname;
+        let path = url.pathname;
+
+        // Hash-based routing prioritization
+        if (url.hash && url.hash.startsWith('#/')) {
+          path = url.hash.substring(1);
+        } else if (path.endsWith('.html') && !url.hash) {
+          path = '/';
+        }
 
         state.path = path;
         state.hash = url.hash;
@@ -130,6 +141,7 @@ export const routerAttributeModule: AttributeModule = {
         for (const route of state.routes) {
           const match = path.match(route.matcher!);
           if (match) {
+            console.log(`Matched route: ${route.path} via path ${path}`);
             matched = route;
             // Extract params
             route.keys?.forEach((key: string, i: number) => {
@@ -144,6 +156,7 @@ export const routerAttributeModule: AttributeModule = {
         state.currentRoute = matched as any; 
 
         // Show/Hide Elements based on match
+        console.log(`Hiding/showing active route. Matched:`, matched?.path);
         (state.routes as RouteRecord[]).forEach((r: RouteRecord) => {
           if (r === matched) {
             if (r.element.style.display === 'none') r.element.style.display = '';

@@ -6,14 +6,14 @@ const styleModule: AttributeModule = {
   name: 'style',
   attribute: 'style',
   handle: (el: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void => {
-    const attrs = Array.from(el.attributes).filter(a => a.name.startsWith('data-style:') && a.value === value);
+    const attrs = Array.from(el.attributes).filter(a => a.name.startsWith('data-style-') && a.value === value);
     const cleanupFns: (() => void)[] = [];
 
     attrs.forEach(attr => {
-      const parsed = runtime.parseAttribute(attr.name, runtime, el);
-      if (!parsed || !parsed.argument) return;
+      const propName = attr.name.substring('data-style-'.length);
+      if (!propName) return;
 
-      const prop = parsed.argument; // CSS property name
+      const prop = propName; // CSS property name
 
       try {
         const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {

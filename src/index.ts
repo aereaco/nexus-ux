@@ -14,14 +14,17 @@ import {
   autoSprites,
   autoMirrors,
   autoScopes,
-  autoModifiers 
+  autoModifiers,
+  autoObservers 
 } from './manifest.ts';
 
 import { fetchModule } from './engine/fetch.ts';
 
+
+
 // Re-export core types for consumers
 export type { RuntimeContext, InitContext } from './engine/composition.ts';
-export type { Module, AttributeModule, ActionModule, ListenerModule, ObserverModule, UtilityModule } from './engine/modules.ts';
+export type { Module, AttributeModule, ActionModule, ListenerModule, ObserverModule, UtilityModule, MirrorModule, SpriteModule, ScopeModule } from './engine/modules.ts';
 
 /**
  * Nexus-UX Framework Entry Point.
@@ -86,15 +89,12 @@ export class UX {
 
     // 4D Predictive Engine Initialization
     this.coordinator.runtimeContext.setGlobalSignal('$predictive', (async () => {
-      const { predictive } = await import('./engine/predictive.ts');
+      const { predictive } = await import('./modules/sprites/predictive.ts');
       return predictive;
     })());
 
-    // Standard Sprites (Framework Primitives)
-    this.coordinator.runtimeContext.setGlobalSignal('$', async (selector: string, el?: HTMLElement) => {
-       const { resolveSelector } = await import('./engine/selector.ts');
-       return resolveSelector(el || document.body, selector);
-    });
+    // Note: $ selector sprite now self-registers via scope provider registry
+    // in sprites/selector.ts — no manual registration needed here.
 
     // Auto-Register Mirrors
     autoMirrors.forEach(({ name, module }) => {
@@ -115,6 +115,14 @@ export class UX {
 
     // Utilities
     this.coordinator.registerUtilityModule('fetch', fetchModule);
+
+    // Auto-Register Observer Modules — auto-attached to roots during initializeModules()
+    autoObservers.forEach(({ name, module }: { name: string; module: any }) => {
+      const obsMod = module.default || Object.values(module)[0];
+      if (obsMod) {
+        this.coordinator.registerObserverModule(obsMod.name || name, obsMod);
+      }
+    });
 
     this.init();
   }

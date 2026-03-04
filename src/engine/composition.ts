@@ -67,11 +67,6 @@ export interface RuntimeContext {
   elUniqId: (el: Element) => string;
   attrHash: (key: string | number, val: string | number) => number;
 
-  // Shared Observers
-  mutationObserver: typeof import('./observers.ts').mutationObserver;
-  resizeObserver: typeof import('./observers.ts').resizeObserver;
-  intersectionObserver: typeof import('./observers.ts').intersectionObserver;
-
   log: (...args: any[]) => void;
   warn: (...args: any[]) => void;
   info: (...args: any[]) => void;

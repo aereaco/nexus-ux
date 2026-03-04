@@ -42,8 +42,8 @@ internals becomes a hindrance to machine reasoning. Nexus-UX is designed to be
 or virtual trees; it exposes it as a clear, structural map that both humans and
 AI can navigate with high-baud efficiency.
 
-Nexus-UX is **not** another frontend framework. It's a **direct database
-mirror** that lives in the browser.
+Nexus-UX is **not** another frontend framework. It is an **Omni-State
+(DOM-as-State)** engine — the DOM _is_ the primary state graph.
 
 **The core insight**:
 
@@ -68,8 +68,8 @@ that the **DOM is the primary state graph** of a web application.
   Nexus-UX, the DOM _is_ the state.
 - **Visual Discoverability**: The application's state is not hidden in a memory
   heap; it is physically present in the HTML. Selecting an element via the
-  **Unified Selector ($)** is equivalent to opening a direct database connection
-  to a specific part of the application state.
+  **Unified Selector ($)** is equivalent to querying a specific node in the
+  application's live state graph.
 - **Atomic Orchestration**: By using the DOM as the source of truth, we enable
   "Data Painting"—the ability to update vast sections of the UI through
   optimized, atomic DOM selections rather than iterating over deep JS object
@@ -458,10 +458,47 @@ context. Each sprite is a single-purpose function, invoked via the `$` prefix.
 
 #### 2.5.6. Runtime Sprites (Nexus-IO Provided)
 
-| Sprite        | Description                                                                                               | Practical Example                                                                   |
-| :------------ | :-------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------- |
-| **`$fs`**     | Filesystem — sandboxed filesystem access. Methods: `.read(path)`, `.write(path, content)`, `.list(path)`. | `data-on-click="$fs.write('log.txt', 'Clicked at ' + new Date())"`                  |
-| **`$device`** | Device — hardware capability access. Properties: `.battery`, `.location`, `.camera`.                      | `data-effect="$device.location.getCurrentPosition().then(pos => console.log(pos))"` |
+| Sprite        | Description                                                                                               | Practical Example                                                                     |
+| :------------ | :-------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| **`$fs`**     | Filesystem — sandboxed filesystem access. Methods: `.read(path)`, `.write(path, content)`, `.list(path)`. | `data-on-click="$fs.write('log.txt', 'Clicked at ' + new Date())"`                    |
+| **`$device`** | Device — hardware capability access. Properties: `.battery`, `.location`, `.camera`.                      | `data-on-click="$device.location.getCurrentPosition().then(pos => console.log(pos))"` |
+
+#### 2.5.7. Utility Sprites
+
+| Sprite                                         | Description                                                                                          | Practical Example                                                    |
+| :--------------------------------------------- | :--------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------- |
+| **`$clipboard.write(text)`**                   | Clipboard WRITE — copies text to clipboard. Returns reactive `{ status, error }`.                    | `data-on-click="$clipboard.write(sourceCode)"`                       |
+| **`$clipboard.read()`**                        | Clipboard READ — reads text from clipboard (requires permission). Returns `{ data, status, error }`. | `data-on-click="pasted = $clipboard.read()"`                         |
+| **`$download(filename, content, [mimeType])`** | Download — triggers a browser file download via Blob URL. Synchronous.                               | `data-on-click="$download('app.ts', sourceCode, 'text/typescript')"` |
+| **`$cache.put(name, url, [response])`**        | Cache PUT — stores a response in a named cache. Returns reactive `{ status, error }`.                | `data-on-click="$cache.put('assets', '/api/data', $response)"`       |
+| **`$cache.match(name, url)`**                  | Cache MATCH — looks up cached response text. Returns `{ data, status, error }`.                      | `data-on-load="cached = $cache.match('assets', '/api/data')"`        |
+| **`$cache.delete(name, url)`**                 | Cache DELETE — removes a URL from a named cache. Returns `{ status, error }`.                        | `data-on-click="$cache.delete('assets', '/old-url')"`                |
+| **`$cache.keys(name)`**                        | Cache KEYS — lists all cached URLs. Returns `{ data: string[], status, error }`.                     | `data-on-load="urls = $cache.keys('assets')"`                        |
+| **`$cache.clear(name)`**                       | Cache CLEAR — deletes entire named cache. Returns `{ status, error }`.                               | `data-on-click="$cache.clear('assets')"`                             |
+
+#### 2.5.8. Application Sprites
+
+| Sprite                                  | Description                                                                                        | Practical Example                                                 |
+| :-------------------------------------- | :------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------- |
+| **`$sw.register(url, [opts])`**         | Service Worker REGISTER — registers a SW. Returns reactive `{ status, error }`.                    | `data-on-load="$sw.register('/sw.js')"`                           |
+| **`$sw.status`**                        | Reactive SW lifecycle state: `'idle'`, `'registering'`, `'active'`, `'waiting'`, `'error'`.        | `data-text="'SW: ' + $sw.status"`                                 |
+| **`$sw.update()`**                      | Check for SW updates. Returns reactive container.                                                  | `data-on-click="$sw.update()"`                                    |
+| **`$sw.skipWaiting()`**                 | Activate waiting worker immediately.                                                               | `data-on-click="$sw.skipWaiting()"`                               |
+| **`$notification.send(title, [opts])`** | Send a notification. Auto-requests permission. Returns reactive `{ status, error, notification }`. | `data-on-click="$notification.send('Hello!', { body: 'World' })"` |
+| **`$notification.permission`**          | Reactive notification permission state: `'default'`, `'granted'`, `'denied'`.                      | `data-show="$notification.permission === 'granted'"`              |
+| **`$notification.requestPermission()`** | Request notification permission. Returns reactive `{ data, status, error }`.                       | `data-on-click="$notification.requestPermission()"`               |
+
+#### 2.5.9. Background Service Sprites
+
+| Sprite                                             | Description                                                                                                         | Practical Example                                                              |
+| :------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------- |
+| **`$push.subscribe(vapidKey)`**                    | Push subscribe — subscribes to push notifications. Returns reactive `{ data, status, error }`.                      | `data-on-click="$push.subscribe(vapidPublicKey)"`                              |
+| **`$push.unsubscribe()`**                          | Push unsubscribe. Returns reactive `{ status, error }`.                                                             | `data-on-click="$push.unsubscribe()"`                                          |
+| **`$bgFetch.fetch(id, urls, [opts])`**             | Background Fetch — downloads large assets in the background. Returns reactive container with progress.              | `data-on-click="$bgFetch.fetch('update', ['/large.zip'])"`                     |
+| **`$bgSync.register(tag)`**                        | Background Sync — registers a one-time sync for when the device comes online. Returns reactive `{ status, error }`. | `data-on-click="$bgSync.register('sync-messages')"`                            |
+| **`$periodicSync.register(tag, { minInterval })`** | Periodic Sync — registers a periodic background sync. Returns reactive `{ status, error }`.                         | `data-on-click="$periodicSync.register('content', { minInterval: 86400000 })"` |
+| **`$payment.request(methods, details, [opts])`**   | Payment Request — shows browser-native payment UI. Returns reactive `{ data, status, error }`.                      | `data-on-click="$payment.request(methods, details)"`                           |
+| **`$payment.canMakePayment(methods)`**             | Payment check — checks if payment method is available. Returns `{ data: boolean, status, error }`.                  | `data-on-load="canPay = $payment.canMakePayment(methods)"`                     |
 
 ---
 
@@ -472,15 +509,20 @@ use the `_` prefix and automatically update when the underlying API value
 changes, enabling declarative data-binding to platform state without manual
 event listeners. Access mode is determined by the underlying API.
 
-| Mirror              | Access         | Reactive Properties                                                                                                                                                                                       | Practical Example                                                           |
-| :------------------ | :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------- |
-| **`_window`**       | **read-write** | **Readable**: `innerWidth`, `innerHeight`, `outerWidth`, `outerHeight`, `devicePixelRatio`. **Writable**: `scrollX`, `scrollY` (→ `scrollTo()`), `title` (→ `document.title`), `location` (→ navigation). | `data-text="'Viewport: ' + _window.innerWidth + 'x' + _window.innerHeight"` |
-| **`_localStorage`** | **read-write** | Any key — reads return stored value reactively; writes (`_localStorage.key = value`) persist immediately and sync across tabs via `storage` event.                                                        | `data-on-click="_localStorage.theme = 'dark'"`                              |
-| **`_navigator`**    | read-only      | `onLine`, `language`, `userAgent`, `hardwareConcurrency`. Updates on browser events (e.g., `online`/`offline`).                                                                                           | `data-if="_navigator.onLine"`                                               |
-| **`_screen`**       | read-only      | `width`, `height`, `orientation`, `colorDepth`. Updates on orientation/resize changes.                                                                                                                    | `data-text="_screen.width + 'x' + _screen.height"`                          |
-| **`_geolocation`**  | read-only      | `latitude`, `longitude`, `accuracy`, `altitude`, `heading`, `speed`. Updates via `watchPosition`. Triggers permission prompt on first access.                                                             | `data-text="'Lat: ' + _geolocation.latitude?.toFixed(4)"`                   |
-| **`_network`**      | read-only      | `effectiveType`, `downlink`, `rtt`, `saveData`. Updates on connection change events.                                                                                                                      | `data-if="_network.saveData"`                                               |
-| **`_battery`**      | read-only      | `level` (0-1), `charging` (boolean), `chargingTime` (seconds), `dischargingTime` (seconds). Updates on battery status change events.                                                                      | `data-text="Math.round(_battery.level * 100) + '%'"`                        |
+| Mirror                | Access         | Reactive Properties                                                                                                                                                                                       | Practical Example                                                           |
+| :-------------------- | :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------- |
+| **`_window`**         | **read-write** | **Readable**: `innerWidth`, `innerHeight`, `outerWidth`, `outerHeight`, `devicePixelRatio`. **Writable**: `scrollX`, `scrollY` (→ `scrollTo()`), `title` (→ `document.title`), `location` (→ navigation). | `data-text="'Viewport: ' + _window.innerWidth + 'x' + _window.innerHeight"` |
+| **`_localStorage`**   | **read-write** | Any key — reads return stored value reactively; writes (`_localStorage.key = value`) persist immediately and sync across tabs via `storage` event.                                                        | `data-on-click="_localStorage.theme = 'dark'"`                              |
+| **`_sessionStorage`** | **read-write** | Same API as `_localStorage` but **per-tab** — values do not sync across tabs and are cleared when the tab closes. Ideal for draft state and active selection tracking.                                    | `data-on-load="draft = _sessionStorage['editor:draft'] \|\| ''"`            |
+| **`_indexedDB`**      | **read-write** | Nested Proxy: first level selects store (`_indexedDB.storeName`), second level is reactive key-value. Methods: `.list(prefix?)`, `.delete(key)`, `.clear()`. Persistent cross-session.                    | `data-on-click="_indexedDB.forks['main/app.ts'] = sourceCode"`              |
+| **`_cookies`**        | **read-write** | Any key — reads parse `document.cookie` reactively; writes set cookies via `document.cookie`. Methods: `.set(key, val, opts)`, `.delete(key)`, `.all()`. Polls every 2s for external changes.             | `data-on-click="_cookies.theme = 'dark'"`                                   |
+| **`_storage`**        | read-only      | `usage` (bytes), `quota` (bytes), `persisted` (boolean). Auto-polls via `navigator.storage.estimate()`. Methods: `.estimate()` (force poll), `.persist()` (request persistent storage).                   | `data-text="Math.round(_storage.usage / 1024 / 1024) + 'MB'"`               |
+| **`_frames`**         | read-only      | `length` (frame count), `list` (array of `{ index, name, src }`). Methods: `.postMessage(index, data)`, `.postMessageByName(name, data)`. Auto-updates on iframe DOM changes.                             | `data-text="_frames.length + ' frames'"`                                    |
+| **`_navigator`**      | read-only      | `onLine`, `language`, `userAgent`, `hardwareConcurrency`. Updates on browser events (e.g., `online`/`offline`).                                                                                           | `data-if="_navigator.onLine"`                                               |
+| **`_screen`**         | read-only      | `width`, `height`, `orientation`, `colorDepth`. Updates on orientation/resize changes.                                                                                                                    | `data-text="_screen.width + 'x' + _screen.height"`                          |
+| **`_geolocation`**    | read-only      | `latitude`, `longitude`, `accuracy`, `altitude`, `heading`, `speed`. Updates via `watchPosition`. Triggers permission prompt on first access.                                                             | `data-text="'Lat: ' + _geolocation.latitude?.toFixed(4)"`                   |
+| **`_network`**        | read-only      | `effectiveType`, `downlink`, `rtt`, `saveData`. Updates on connection change events.                                                                                                                      | `data-if="_network.saveData"`                                               |
+| **`_battery`**        | read-only      | `level` (0-1), `charging` (boolean), `chargingTime` (seconds), `dischargingTime` (seconds). Updates on battery status change events.                                                                      | `data-text="Math.round(_battery.level * 100) + '%'"`                        |
 
 ---
 

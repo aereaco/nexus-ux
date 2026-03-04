@@ -1,4 +1,4 @@
-import { scheduler } from './scheduler.ts';
+import { scheduler } from '../../engine/scheduler.ts';
 
 /**
  * 4D Predictive Engine

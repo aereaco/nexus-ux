@@ -1,7 +1,7 @@
 import { RuntimeContext } from './composition.ts';
 import { evaluationError } from './errors.ts';
-import { resolveSelector } from './selector.ts';
 import { getDataStack } from './scope.ts';
+import { hasScopeProvider, resolveScopeProvider } from './scope.ts';
 
 declare module "./composition.ts" {
   interface RuntimeContext {
@@ -55,9 +55,11 @@ function preProcessExpression(expression: string): string {
 
   // 1. @ Scope Rules (@rule(...) { ... })
   if (processed.includes('@')) {
-    processed = processed.replace(/@(\w+)\(([^)]*)\)\s*\{([^}]*)\}/g, (_match, name, arg, body) => {
-      const safeArg = arg.trim().replace(/'/g, "\\'").replace(/"/g, '\\"');
-      return `_scopes.${name}("${safeArg}", () => { return ${body.trim()} })`;
+    // Matches @<name>(<args>) { <body> } 
+    // Supports nested parentheses inside args via (.*?) bounded to the opening {
+    processed = processed.replace(/@(\w+)\s*\((.*?)\)\s*\{([^}]*)\}/g, (_match, name, arg, body) => {
+      const safeArg = arg.trim().replace(/`/g, "\\`");
+      return `_scopes.${name}(\`${safeArg}\`, () => { return ${body.trim()} })`;
     });
   }
 
@@ -71,7 +73,6 @@ function preProcessExpression(expression: string): string {
   return processed;
 }
 
-const MAGIC_KEYS = new Set(['$global', '$actions', '$el', '$']);
 
 export function evaluateLater(
   el: Element | Text | Comment,
@@ -91,7 +92,7 @@ export function evaluateLater(
     has(target, key): boolean {
       if (key === Symbol.unscopables) return false;
       if (typeof key === 'string') {
-        if (MAGIC_KEYS.has(key)) return true;
+        if (hasScopeProvider(key)) return true;
         const globalSignals = runtime.globalSignals();
         const globalActions = runtime.globalActions();
         return (key in target) || (key in globalSignals) || (key in globalActions) || dataStack.some(data => key in data);
@@ -101,13 +102,8 @@ export function evaluateLater(
     get(target, key): unknown {
       if (key === Symbol.unscopables) return undefined;
       if (typeof key === 'string') {
-        const globalSignals = runtime.globalSignals();
-        
-        // 1. Explicit Magic Keys
-        if (key === '$global') return globalSignals;
-        if (key === '$actions') return runtime.globalActions();
-        if (key === '$el') return el;
-        if (key === '$') return (selector: string) => resolveSelector(el as any, selector);
+        // 1. Scope Providers (modular sprites)
+        if (hasScopeProvider(key)) return resolveScopeProvider(key, el, runtime);
 
         // 2. Data Stack (Local Scopes) - Should take precedence over globals
         for (const data of dataStack) {
@@ -119,6 +115,7 @@ export function evaluateLater(
         }
 
         // 3. Global Signals
+        const globalSignals = runtime.globalSignals();
         if (key in globalSignals) {
           const val = (globalSignals as any)[key];
           if (runtime.isDevMode) runtime.debug(`[Evaluator] Resolved "${key}" from global signals ->`, val);
@@ -165,6 +162,10 @@ export function evaluateLater(
 
   // Balanced logic for expressions vs statements
   let func;
+  if (runtime.isDevMode) {
+    console.log("Raw Expr:", expression);
+    console.log("Processed:", processedExpression);
+  }
   try {
     // Try as an expression first
     func = new Function('scope', `with (scope) { return (${processedExpression}) }`);

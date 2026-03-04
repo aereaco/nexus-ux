@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus-UX: Modifier - Throttle</title>
+    <script type="module" src="../../../../dist/nexus-ux.js"></script>
+</head>
+<body data-signal="{ rawScrolls: 0, throttledScrolls: 0 }" data-ux-init>
+
+    <div id="demo-modifier-throttle" class="dashboard-fragment p-8 bg-base-200 min-h-screen text-base-content" 
+         data-injest="{ css: { link: 'href=\'https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css\' rel=\'stylesheet\'' }, tw: { script: 'src=\'https://cdn.tailwindcss.com\'' } }">
+        
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-4xl font-bold mb-4 text-primary">.throttle</h1>
+            <p class="mb-8 text-lg opacity-80">Demonstrates the <code>.throttle</code> pipeline modifier actively capping execution frequencies to prevent AST memory flooding during aggressive native events.</p>
+
+            
+            <div class="card bg-base-100 shadow-xl border border-base-300 mb-8 mt-8" data-signal="{ activeTab: 'preview' }">
+                <div class="card-body">
+                    <div class="flex flex-col md:flex-row justify-between md:items-center border-b border-base-300 pb-4 mb-4 gap-4">
+                        <h2 class="card-title text-secondary">Interactive Demonstration</h2>
+                        <div class="tabs tabs-boxed bg-base-200">
+                            <a class="tab" data-class-tab-active="activeTab === 'preview'" data-on-click="activeTab = 'preview'">Preview</a> 
+                            <a class="tab" data-class-tab-active="activeTab === 'code'" data-on-click="activeTab = 'code'">Code</a> 
+                        </div>
+                    </div>
+
+                    <div data-show="activeTab === 'preview'">
+                        <div class="p-8 bg-base-200 rounded-box border shadow-inner">
+                            
+                        <p class="font-bold text-center w-full uppercase opacity-70 mb-4 tracking-widest text-warning border-b border-warning/20 pb-2">Scroll vigorously inside the box below to measure the diff.</p>
+                        
+                        <!-- Track raw scroll floods vs throttled scroll ticks -->
+                        <div class="h-64 w-full bg-base-100 border-2 border-dashed border-base-300 rounded shadow-inner overflow-y-scroll relative pointer-events-auto z-20"
+                             data-on-scroll="rawScrolls++"
+                             data-on-scroll.throttle.1000ms="throttledScrolls++">
+                             
+                             <div style="height: 2000px;" class="p-8 font-mono text-center text-primary-content opacity-30 tracking-widest bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+CjxwYXRoIGQ9Ik0wIDEwaDIwdjFIMHoiIGZpbGw9IiM2YjcyODAiIGZpbGwtb3BhY2l0eT0iLjIiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPgo8cGF0aCBkPSJNMTAgMHYyMGgxdi0yMGgtMXoiIGZpbGw9IiM2YjcyODAiIGZpbGwtb3BhY2l0eT0iLjIiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvc3ZnPg==')]">
+                                SCRATCHPAD SCROLL SURFACE
+                             </div>
+
+                        </div>
+
+                        <div class="stats bg-base-100 shadow border border-base-300 w-full mt-4">
+                            <div class="stat text-center">
+                                <div class="stat-title border-b border-base-200 pb-2 mb-2">Uncapped Native Events Triggered</div>
+                                <div class="stat-value text-error text-4xl" data-text="rawScrolls"></div>
+                                <div class="stat-desc text-xs mt-1">(Flooding Main Thread)</div>
+                            </div>
+                            <div class="stat text-center">
+                                <div class="stat-title border-b border-base-200 pb-2 mb-2">Throttled AST Computations <span class="text-accent ml-2">@ 1000ms</span></div>
+                                <div class="stat-value text-accent text-6xl shadow-sm rounded-full p-2 inline-block font-mono" data-text="throttledScrolls"></div>
+                                <div class="stat-desc font-bold text-xs mt-1">(Optimized Metric Pipeline)
+                    </div>
+                    <div data-show="activeTab === 'code'" style="display: none;">
+                        <pre class="mockup-code bg-neutral text-neutral-content p-4 font-mono text-sm mt-0 w-full overflow-x-auto"><code>&lt;div data-on-scroll.throttle.100s="handleScroll()"&gt;&lt;/div&gt;</code></pre>
+                                        </div>
+                </div>
+            </div>
+
+            <div class="card bg-base-100 shadow-xl border border-base-300 mt-8">
+                <div class="card-body">
+                    <h2 class="card-title text-secondary border-b border-base-300 pb-2 flex gap-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.827M15.75 15.75L21 21m-5.25-5.25l-1.5-1.5m3-3l1.5-1.5m-3 3L11.42 15.17M11.42 15.17A4.475 4.475 0 0012 11.25c0-2.485-2.015-4.5-4.5-4.5s-4.5 2.015-4.5 4.5c0 2.485 2.015 4.5 4.5 4.5 1.574 0 3.012-.81 3.82-2.08m0 0L3.75 3.75" /></svg> Extensibility Notes</h2>
+                    <p class="opacity-80 mt-4 leading-relaxed">Velocity limiters via <code>src/modules/modifiers/throttle.ts</code> map strict numeric timestamps. Inject logic validating dynamic 60fps frame delays against performance matrices explicitly.</p>
+                </div>
+                </div>
+            </div>
+
+</body>
+</html>

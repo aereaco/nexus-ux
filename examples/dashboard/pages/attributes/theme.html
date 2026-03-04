@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus-UX: Theme</title>
+    <script type="module" src="../../../../dist/nexus-ux.js"></script>
+</head>
+<body data-signal="{ localTheme: 'dim' }" data-ux-init="">
+
+    <!-- The root wrapper injects CSS and maps the actual theme application -->
+    <div id="demo-theme" class="dashboard-fragment p-8 transition-colors duration-500 min-h-screen bg-base-200 text-base-content" data-injest="{ css: { link: 'href=\'https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css\' rel=\'stylesheet\'' }, tw: { script: 'src=\'https://cdn.tailwindcss.com\'' } }" data-ux-theme="localTheme">
+        
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-4xl font-bold mb-4 text-primary drop-shadow-sm">data-ux-theme</h1>
+            <p class="mb-8 text-lg opacity-80">This page demonstrates the <code>data-ux-theme</code> structural root directive automatically propagating DaisyUI CSS Variable parameters seamlessly across the rendered DOM scope.</p>
+
+            
+            
+            <div class="card bg-base-100 shadow-xl border border-base-300 mb-8 mt-8">
+                <div class="card-body">
+                    <h2 class="card-title text-secondary border-b border-base-300 pb-2 flex gap-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg> Syntax & API Usage</h2>
+                    <pre class="mockup-code bg-neutral text-neutral-content p-4 font-mono text-sm mt-4 w-full overflow-x-auto"><code>&lt;div data-ux-theme="currentTheme"&gt;&lt;/div&gt;</code></pre>
+                </div>
+            </div>
+
+            <div class="card bg-base-100 shadow-xl border border-base-300 mb-8" data-signal="{ activeTab: 'preview' }">
+                <div class="card-body">
+                    <div class="flex flex-col md:flex-row justify-between md:items-center border-b border-base-300 pb-4 mb-4 gap-4">
+                        <h2 class="card-title text-secondary">Interactive Demonstration</h2>
+                        <div class="tabs tabs-boxed bg-base-200">
+                            <a class="tab" data-class-tab-active="activeTab === 'preview'" data-on-click="activeTab = 'preview'">Preview</a> 
+                            <a class="tab" data-class-tab-active="activeTab === 'code'" data-on-click="activeTab = 'code'">Code</a> 
+                        </div>
+                    </div>
+
+                    <div data-show="activeTab === 'preview'">
+                        <div class="mt-4 p-8 bg-base-200 rounded-box flex flex-col items-center justify-center border shadow-inner">
+                            <div class="flex gap-4 w-full justify-center mb-8">
+                                <button class="btn btn-primary" data-class-btn-active="localTheme === 'light'" data-on-click="localTheme = 'light'">Light Mode</button>
+                                <button class="btn btn-secondary" data-class-btn-active="localTheme === 'dim'" data-on-click="localTheme = 'dim'">Dim Mode</button>
+                                <button class="btn btn-accent" data-class-btn-active="localTheme === 'cyberpunk'" data-on-click="localTheme = 'cyberpunk'">Cyberpunk</button>
+                                <button class="btn btn-error" data-class-btn-active="localTheme === 'synthwave'" data-on-click="localTheme = 'synthwave'">Synthwave</button>
+                            </div>
+    
+                            <!-- Pallette Display Validating Real System Token Overrides -->
+                            <div class="grid grid-cols-4 gap-4 w-full h-32 rounded-box overflow-hidden shadow-2xl border border-base-300">
+                                <div class="bg-primary flex items-center justify-center font-bold text-primary-content">Primary</div>
+                                <div class="bg-secondary flex items-center justify-center font-bold text-secondary-content">Secondary</div>
+                                <div class="bg-accent flex items-center justify-center font-bold text-accent-content">Accent</div>
+                                <div class="bg-neutral flex items-center justify-center font-bold text-neutral-content">Neutral</div>
+                            </div>
+                            
+                            <div class="badge badge-lg mt-8 p-4 bg-base-100 border border-base-300">
+                                Evaluated Output Node: <span class="font-mono text-primary font-bold ml-2">data-theme="<span data-text="localTheme"></span>"</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div data-show="activeTab === 'code'" style="display: none;">
+                        <pre class="mockup-code bg-neutral text-neutral-content p-4 font-mono text-sm mt-0 w-full overflow-x-auto"><code>&lt;div class="mt-4 p-8 bg-base-200 rounded-box flex flex-col items-center justify-center border shadow-inner"&gt;
+    &lt;div class="flex gap-4 w-full justify-center mb-8"&gt;
+        &lt;button class="btn btn-primary" data-class-btn-active="localTheme === 'light'" data-on-click="localTheme = 'light'"&gt;Light Mode&lt;/button&gt;
+        &lt;button class="btn btn-secondary" data-class-btn-active="localTheme === 'dim'" data-on-click="localTheme = 'dim'"&gt;Dim Mode&lt;/button&gt;
+        &lt;button class="btn btn-accent" data-class-btn-active="localTheme === 'cyberpunk'" data-on-click="localTheme = 'cyberpunk'"&gt;Cyberpunk&lt;/button&gt;
+        &lt;button class="btn btn-error" data-class-btn-active="localTheme === 'synthwave'" data-on-click="localTheme = 'synthwave'"&gt;Synthwave&lt;/button&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Pallette Display Validating Real System Token Overrides --&gt;
+    &lt;div class="grid grid-cols-4 gap-4 w-full h-32 rounded-box overflow-hidden shadow-2xl border border-base-300"&gt;
+        &lt;div class="bg-primary flex items-center justify-center font-bold text-primary-content"&gt;Primary&lt;/div&gt;
+        &lt;div class="bg-secondary flex items-center justify-center font-bold text-secondary-content"&gt;Secondary&lt;/div&gt;
+        &lt;div class="bg-accent flex items-center justify-center font-bold text-accent-content"&gt;Accent&lt;/div&gt;
+        &lt;div class="bg-neutral flex items-center justify-center font-bold text-neutral-content"&gt;Neutral&lt;/div&gt;
+    &lt;/div&gt;
+    
+    &lt;div class="badge badge-lg mt-8 p-4 bg-base-100 border border-base-300"&gt;
+        Evaluated Output Node: &lt;span class="font-mono text-primary font-bold ml-2"&gt;data-theme="&lt;span data-text="localTheme"&gt;&lt;/span&gt;"&lt;/span&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-base-100 shadow-xl border border-base-300 mt-8">
+                <div class="card-body">
+                    <h2 class="card-title text-secondary border-b border-base-300 pb-2 flex gap-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewbox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.827M15.75 15.75L21 21m-5.25-5.25l-1.5-1.5m3-3l1.5-1.5m-3 3L11.42 15.17M11.42 15.17A4.475 4.475 0 0012 11.25c0-2.485-2.015-4.5-4.5-4.5s-4.5 2.015-4.5 4.5c0 2.485 2.015 4.5 4.5 4.5 1.574 0 3.012-.81 3.82-2.08m0 0L3.75 3.75"></path></svg> Extensibility Notes</h2>
+                    <p class="opacity-80 mt-4 leading-relaxed">Theme mappers in <code>src/modules/attributes/theme.ts</code> rewrite CSS variables or Data-attributes. You can bind physical Media Queries internally to automatically infer system light/dark context.</p>
+                </div>
+                </div>
+            </div>
+
+
+
+</body></html>

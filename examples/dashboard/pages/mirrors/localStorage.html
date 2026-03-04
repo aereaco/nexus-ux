@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus-UX: Mirror - LocalStorage</title>
+    <script type="module" src="../../../../dist/nexus-ux.js"></script>
+</head>
+<body data-ux-init="">
+
+    <div id="demo-mirror-localstorage" class="dashboard-fragment p-8 bg-base-200 min-h-screen text-base-content" data-injest="{ css: { link: 'href=\'https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css\' rel=\'stylesheet\'' }, tw: { script: 'src=\'https://cdn.tailwindcss.com\'' } }">
+        
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-4xl font-bold mb-4 text-primary">_localStorage</h1>
+            <p class="mb-8 text-lg opacity-80">This page demonstrates the <code>_localStorage</code> mirror maintaining an active two-way bridge between internal AST signals and the browser's persistent LocalStorage disk.</p>
+
+            
+            
+            <div class="card bg-base-100 shadow-xl border border-base-300 mb-8 mt-8" data-signal="{ activeTab: 'preview' }">
+                <div class="card-body">
+                    <div class="flex flex-col md:flex-row justify-between md:items-center border-b border-base-300 pb-4 mb-4 gap-4">
+                        <h2 class="card-title text-secondary">Interactive Demonstration</h2>
+                        <div class="tabs tabs-boxed bg-base-200">
+                            <a class="tab" data-class-tab-active="activeTab === 'preview'" data-on-click="activeTab = 'preview'">Preview</a> 
+                            <a class="tab" data-class-tab-active="activeTab === 'code'" data-on-click="activeTab = 'code'">Code</a> 
+                        </div>
+                    </div>
+
+                    <div data-show="activeTab === 'preview'">
+                        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-8 bg-base-200 p-8 rounded-box border shadow-inner">
+                            
+                        
+                        <!-- Access LocalStorage naturally without initialization decorators -->
+                        <div class="col-span-1 md:col-span-2 flex flex-col items-center">
+                            
+                            <!-- This effect guarantees the launch counter ticks immediately once per AST evaluation -->
+                            <span class="hidden" data-effect="_localStorage.launchCount = Number(_localStorage.launchCount || 0) + 1"></span>
+
+                            <div class="stats shadow bg-base-100 border border-base-300 w-full mb-8">
+                                <div class="stat place-items-center">
+                                    <div class="stat-title text-lg font-bold">Times this demo has been loaded</div>
+                                    <div class="stat-value text-accent" data-text="_localStorage.launchCount"></div>
+                                    <div class="stat-desc">Try refreshing this page! The value persists natively.</div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-control w-full">
+                                <label class="label"><span class="label-text font-bold">Persistent Text Field</span></label>
+                                <!-- The DOM input updates the Proxy Array, and the Mirror captures the mutation and dumps it directly to LocalStorage -->
+                                <textarea class="textarea textarea-bordered h-32 textarea-primary shadow-inner" data-on-input="_localStorage.persistentNotes = $el.value" data-bind-value="_localStorage.persistentNotes || ''" placeholder="Type something here and refresh the page... it will survive!"></textarea>
+                            </div>
+                </div>
+                    <div data-show="activeTab === 'code'" style="display: none;">
+                        <pre class="mockup-code bg-neutral text-neutral-content p-4 font-mono text-sm mt-0 mb-0 w-full overflow-x-auto"><code>&lt;div data-text="_localStorage.myKey"&gt;&lt;/div&gt;</code></pre>
+                    </div>
+                </div>
+            </div>
+            
+        
+            
+            <p class="mt-8 text-center text-sm font-mono opacity-50">Notice these objects survived the refresh because the Proxy Engine mapped their getters/setters straight to disk I/O.</p>
+
+            <div class="card bg-base-100 shadow-xl border border-base-300 mt-8">
+                <div class="card-body">
+                    <h2 class="card-title text-secondary border-b border-base-300 pb-2 flex gap-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewbox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.827M15.75 15.75L21 21m-5.25-5.25l-1.5-1.5m3-3l1.5-1.5m-3 3L11.42 15.17M11.42 15.17A4.475 4.475 0 0012 11.25c0-2.485-2.015-4.5-4.5-4.5s-4.5 2.015-4.5 4.5c0 2.485 2.015 4.5 4.5 4.5 1.574 0 3.012-.81 3.82-2.08m0 0L3.75 3.75"></path></svg> Extensibility Notes</h2>
+                    <p class="opacity-80 mt-4 leading-relaxed">Persistent local bridges via <code>src/modules/mirrors/localStorage.ts</code> map continuous proxy getters. Easily rewrite this logic mathematically replacing disk IO with IndexedDB logic.</p>
+                </div>
+                </div>
+            </div>
+
+
+
+</body></html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus-UX: Sprite - Animate</title>
+    <script type="module" src="../../../../dist/nexus-ux.js"></script>
+</head>
+<body data-ux-init>
+
+    <div id="demo-sprite-animate" class="dashboard-fragment p-8 bg-base-200 min-h-screen text-base-content" 
+         data-injest="{ css: { link: 'href=\'https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css\' rel=\'stylesheet\'' }, tw: { script: 'src=\'https://cdn.tailwindcss.com\'' } }">
+        
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-4xl font-bold mb-4 text-primary">$animate Sprite</h1>
+            <p class="mb-8 text-lg opacity-80">This page demonstrates the <code>$animate</code> Async Utility Sprite executing high-performance Native CSS physical keyframes natively within AST execution flows without heavy external JS animation loops.</p>
+
+            
+            <div class="card bg-base-100 shadow-xl border border-base-300 mb-8 mt-8" data-signal="{ activeTab: 'preview' }">
+                <div class="card-body">
+                    <div class="flex flex-col md:flex-row justify-between md:items-center border-b border-base-300 pb-4 mb-4 gap-4">
+                        <h2 class="card-title text-secondary">Interactive Demonstration</h2>
+                        <div class="tabs tabs-boxed bg-base-200">
+                            <a class="tab" data-class-tab-active="activeTab === 'preview'" data-on-click="activeTab = 'preview'">Preview</a> 
+                            <a class="tab" data-class-tab-active="activeTab === 'code'" data-on-click="activeTab = 'code'">Code</a> 
+                        </div>
+                    </div>
+
+                    <div data-show="activeTab === 'preview'">
+                        <div class="p-8 bg-base-200 rounded-box border shadow-inner">
+                            
+                        
+                        <div class="w-full flex justify-center gap-4 border-b border-base-300 pb-8">
+                            <!-- Native $animate(element, [enter/leave]) syntax mapped directly to explicit DaisyUI Keyframes or internal physical DOM transitions -->
+                            <button class="btn btn-primary shadow-sm" data-on-click="$animate($refs.blockTarget, 'enter')">Execute 'Enter' Sequence</button>
+                            <button class="btn btn-secondary shadow-sm" data-on-click="$animate($refs.blockTarget, 'leave')">Execute 'Leave' Sequence</button>
+                            <button class="btn btn-accent shadow-sm" data-on-click="$animate($refs.blockTarget, 'spin')">Trigger Custom 'Spin' Hook</button>
+                        </div>
+
+                        <!-- Target Node -->
+                        <!-- Internally, the Sprite appends `.nx-entering`, `.nx-enter-active` etc classes managing display states automatically -->
+                        <div data-ref="blockTarget" class="bg-base-100 border border-primary p-12 shadow-xl rounded-2xl w-64 h-64 flex items-center justify-center transition-all duration-700 mx-auto">
+                             <div class="text-center">
+                                 <svg xmlns="http://www.w3.org/2000/svg" class="stroke-primary shrink-0 h-16 w-16 mx-auto mb-4" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                 <h3 class="font-bold text-xl uppercase tracking-widest text-primary">Sprite Geometry Subject</h3>
+                             </div>
+                        </div>
+                        
+                        <!-- Internal CSS mapping the hooks -->
+                        <style>
+                            .nx-entering { opacity: 0; transform: scale(0.5) translateY(50px); }
+                            .nx-enter-active { opacity: 1; transform: scale(1) translateY(0); display: flex !important; }
+                            
+                            .nx-leave { opacity: 1; transform: scale(1); }
+                            .nx-leave-active { opacity: 0; transform: scale(0.1) rotate(45deg); pointer-events: none; }
+                            
+                            .nx-spin-active { transform: rotate(1080deg) scale(1.1); background-color: oklch(var(--a)); border-color: oklch(var(--a)); color: oklch(var(--ac)); }
+                        </style>
+                        
+                    </div>
+                    <div data-show="activeTab === 'code'" style="display: none;">
+                        <pre class="mockup-code bg-neutral text-neutral-content p-4 font-mono text-sm mt-0 w-full overflow-x-auto"><code>$animate($el, 'enter')</code></pre>
+                                        </div>
+                </div>
+            </div>
+
+            <div class="card bg-base-100 shadow-xl border border-base-300 mt-8">
+                <div class="card-body">
+                    <h2 class="card-title text-secondary border-b border-base-300 pb-2 flex gap-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.827M15.75 15.75L21 21m-5.25-5.25l-1.5-1.5m3-3l1.5-1.5m-3 3L11.42 15.17M11.42 15.17A4.475 4.475 0 0012 11.25c0-2.485-2.015-4.5-4.5-4.5s-4.5 2.015-4.5 4.5c0 2.485 2.015 4.5 4.5 4.5 1.574 0 3.012-.81 3.82-2.08m0 0L3.75 3.75" /></svg> Extensibility Notes</h2>
+                    <p class="opacity-80 mt-4 leading-relaxed">The programmatic animation utility inside <code>src/modules/sprites/animate.ts</code> natively manages structural CSS classes <code>.nx-enter-active</code>. Overwrite these hardcoded identifiers natively supporting Tailwind mapping.</p>
+                </div>
+            </div>
+        </div>
+
+</body>
+</html>

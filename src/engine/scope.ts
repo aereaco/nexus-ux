@@ -66,3 +66,46 @@ export function addScopeToNode(element: HTMLElement, data: Record<string, unknow
 export function hasScope(element: HTMLElement): boolean {
   return !!(element as NexusEnhancedElement)[DATA_STACK_KEY];
 }
+
+// ---------------------------------------------------------------------------
+// Scope Provider Registry
+// ---------------------------------------------------------------------------
+// Allows sprites to register themselves as scope providers that the evaluator
+// queries at evaluation time. Providers receive the current element and runtime
+// context, enabling both static providers (e.g. $global) and context-aware
+// providers (e.g. $el, $dispatch).
+// ---------------------------------------------------------------------------
+
+import type { RuntimeContext } from './composition.ts';
+
+/**
+ * A scope provider resolves a value given the current element and runtime context.
+ */
+export type ScopeProvider = (el: Element | Text | Comment, runtime: RuntimeContext) => unknown;
+
+const scopeProviderRegistry = new Map<string, ScopeProvider>();
+
+/**
+ * Registers a scope provider under the given key.
+ * Sprites call this during module initialization to make themselves
+ * available in expression evaluation scope.
+ */
+export function registerScopeProvider(key: string, provider: ScopeProvider): void {
+  scopeProviderRegistry.set(key, provider);
+}
+
+/**
+ * Returns true if a scope provider is registered for the given key.
+ */
+export function hasScopeProvider(key: string): boolean {
+  return scopeProviderRegistry.has(key);
+}
+
+/**
+ * Resolves a scope provider for the given key, passing the current element
+ * and runtime context to the provider function.
+ */
+export function resolveScopeProvider(key: string, el: Element | Text | Comment, runtime: RuntimeContext): unknown {
+  const provider = scopeProviderRegistry.get(key);
+  return provider ? provider(el, runtime) : undefined;
+}

@@ -12,50 +12,39 @@ const mutationObserverModule: ObserverModule = {
       const observer = new MutationObserver((mutationsList) => {
         for (const mutation of mutationsList) {
           if (mutation.type === 'childList') {
-            // Handle added nodes
+            // Added nodes: initialize directives via microtask.
+            // queueMicrotask runs before the browser paints, guaranteeing
+            // users never see unprocessed content (no flash). This is the
+            // same scheduling tier as MutationObserver itself — both live
+            // on the microtask queue, keeping initialization eager without
+            // risking layout thrashing from fully synchronous processing.
             mutation.addedNodes.forEach(node => {
               if (node instanceof HTMLElement) {
-                // Defer to scheduler to avoid layout thrashing?
-                // 2025 uses context.scheduler.enqueueEffect
-                context.scheduler.enqueueEffect(() => context.processElement(node as HTMLElement));
+                queueMicrotask(() => context.processElement(node as HTMLElement));
               }
             });
-            // Handle removed nodes
+
+            // Removed nodes: run cleanup via scheduler (paint phase).
+            // Cleanup is less timing-critical — there's no visual artifact
+            // from a brief delay, and batching prevents churn during rapid
+            // DOM removals (e.g. data-for reconciliation).
             mutation.removedNodes.forEach(node => {
               if (node instanceof HTMLElement) {
                 const target = node as HTMLElement;
                 context.scheduler.enqueueClean(() => {
-                  // Run cleanup
                   const enhancedTarget = target as NexusEnhancedElement;
                   if (enhancedTarget[CLEANUP_FUNCTIONS_KEY]) {
                     enhancedTarget[CLEANUP_FUNCTIONS_KEY]!.forEach((cleanup: () => void) => cleanup());
                     delete enhancedTarget[CLEANUP_FUNCTIONS_KEY];
                   }
-                  // TODO: Clean up effects/scopes attached to this element?
-                  // If scopes are attached via WeakMap, they might be GC'd.
-                  // But explicit cleanup (e.g. event listeners) is needed.
                 });
               }
             });
-          } else if (mutation.type === 'attributes') {
-            if (mutation.target instanceof HTMLElement) {
-              // We re-process element?
-              // Using processElement might re-bind everything.
-              // We typically need to update specific directives.
-              // But Nexus-UX is mostly "init once".
-              // If we want reactive attributes, we use signals.
-              // Re-processing might duplicate listeners.
-              // 2025 re-processes it.
-              // Use caution.
-              context.scheduler.enqueueEffect(() => context.processElement(mutation.target as HTMLElement));
-            }
           }
         }
       });
 
-      observer.observe(el, { childList: true, subtree: true, attributes: false }); // Attributes false by default unless specifically needed? 2025 says true.
-      // If we observe attributes, we must be careful not to infinite loop if processElement updates attributes.
-      // 2025 observes attributes. I'll stick to it but maybe limit it?
+      observer.observe(el, { childList: true, subtree: true, attributes: false });
 
       return () => observer.disconnect();
 

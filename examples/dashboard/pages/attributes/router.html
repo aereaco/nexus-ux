@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus-UX: Router</title>
+    <script type="module" src="../../../../dist/nexus-ux.js"></script>
+</head>
+<body data-signal="{ activeRoute: '/' }" data-ux-init="">
+
+    <div id="demo-router" class="dashboard-fragment p-8 bg-base-200 min-h-screen text-base-content" data-injest="{ css: { link: 'href=\'https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css\' rel=\'stylesheet\'' }, tw: { script: 'src=\'https://cdn.tailwindcss.com\'' } }">
+        
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-4xl font-bold mb-4 text-primary">data-router</h1>
+            <p class="mb-8 text-lg opacity-80">This page demonstrates the internal Hash-based routing table generated seamlessly via <code>data-route</code> and <code>data-router</code> evaluation.</p>
+
+            
+            
+            <div class="card bg-base-100 shadow-xl border border-base-300 mb-8 mt-8" data-signal="{ activeTab: 'preview' }">
+                <div class="card-body">
+                    <div class="flex flex-col md:flex-row justify-between md:items-center border-b border-base-300 pb-4 mb-4 gap-4">
+                        <h2 class="card-title text-secondary">Interactive Demonstration</h2>
+                        <div class="tabs tabs-boxed bg-base-200">
+                            <a class="tab" data-class-tab-active="activeTab === 'preview'" data-on-click="activeTab = 'preview'">Preview</a> 
+                            <a class="tab" data-class-tab-active="activeTab === 'code'" data-on-click="activeTab = 'code'">Code</a> 
+                        </div>
+                    </div>
+
+                    <div data-show="activeTab === 'preview'">
+                        <div class="menu menu-horizontal bg-base-200 w-full justify-center rounded-box p-4 gap-4 mb-8 shadow-inner border border-base-300">
+                            
+                            <li><a href="#/" class="font-bold" data-class-active="activeRoute === '/'">Dashboard</a></li>
+                            <li><a href="#/users" class="font-bold" data-class-active="activeRoute === '/users'">Users</a></li>
+                            <li><a href="#/settings" class="font-bold" data-class-active="activeRoute === '/settings'">Settings</a></li>
+                        
+                        
+                    </div>
+                    <div data-show="activeTab === 'code'" style="display: none;">
+                        <pre class="mockup-code bg-neutral text-neutral-content p-4 font-mono text-sm mt-0 mb-0 w-full overflow-x-auto"><code>&lt;div data-router="currentPath"&gt;&lt;div data-route="/"&gt;Home&lt;/div&gt;&lt;/div&gt;</code></pre>
+                                        </div>
+                </div>
+            </div>
+
+            <div class="card bg-base-100 shadow-xl border border-base-300 mt-8">
+                <div class="card-body">
+                    <h2 class="card-title text-secondary border-b border-base-300 pb-2 flex gap-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewbox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.827M15.75 15.75L21 21m-5.25-5.25l-1.5-1.5m3-3l1.5-1.5m-3 3L11.42 15.17M11.42 15.17A4.475 4.475 0 0012 11.25c0-2.485-2.015-4.5-4.5-4.5s-4.5 2.015-4.5 4.5c0 2.485 2.015 4.5 4.5 4.5 1.574 0 3.012-.81 3.82-2.08m0 0L3.75 3.75"></path></svg> Extensibility Notes</h2>
+                    <p class="opacity-80 mt-4 leading-relaxed">The SPA navigator in <code>src/modules/attributes/router.ts</code> listens to <code>#hash</code> fragments. Upgrade this to implement the HTML5 History API natively without hash URLs.</p>
+                </div>
+            </div>
+        </div>
+
+
+
+</body></html>

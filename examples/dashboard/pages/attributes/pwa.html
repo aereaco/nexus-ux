@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus-UX: PWA</title>
+    <script type="module" src="../../../../dist/nexus-ux.js"></script>
+</head>
+<body data-ux-init>
+
+    <div id="demo-pwa" class="dashboard-fragment p-8 bg-base-200 min-h-screen text-base-content" 
+         data-injest="{ css: { link: 'href=\'https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css\' rel=\'stylesheet\'' }, tw: { script: 'src=\'https://cdn.tailwindcss.com\'' } }">
+        
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-4xl font-bold mb-4 text-primary">data-pwa</h1>
+            <p class="mb-8 text-lg opacity-80">Demonstrates immediate architectural registration of an Offline Progressive Web App Service Worker via zero-js <code>data-pwa</code> instantiation.</p>
+
+            
+            <div class="card bg-base-100 shadow-xl border border-base-300 mb-8 mt-8" data-signal="{ activeTab: 'preview' }">
+                <div class="card-body">
+                    <div class="flex flex-col md:flex-row justify-between md:items-center border-b border-base-300 pb-4 mb-4 gap-4">
+                        <h2 class="card-title text-secondary">Interactive Demonstration</h2>
+                        <div class="tabs tabs-boxed bg-base-200">
+                            <a class="tab" data-class-tab-active="activeTab === 'preview'" data-on-click="activeTab = 'preview'">Preview</a> 
+                            <a class="tab" data-class-tab-active="activeTab === 'code'" data-on-click="activeTab = 'code'">Code</a> 
+                        </div>
+                    </div>
+
+                    <div data-show="activeTab === 'preview'">
+                        <div class="p-8 bg-base-200 rounded-box border shadow-inner">
+                            
+                        
+                        <!-- Simple declarative attachment spins up the native SW lifecycle hook globally -->
+                        <div class="alert alert-info shadow-lg w-full" data-pwa="{ sw: '/examples/sw.js' }" data-class-alert-success="$pwa.isInstalled" data-class-alert-warning="!$pwa.isInstalled">
+                            <svg data-show="$pwa.isInstalled" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <svg data-show="!$pwa.isInstalled" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6 animate-spin"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            <div>
+                                <h3 class="font-bold" data-text="$pwa.isInstalled ? 'Service Worker Bound!' : 'Registering Service Worker...'"></h3>
+                                <div class="text-sm">The <code>data-pwa</code> attribute evaluates configuration pathing to securely register the offline thread hook.</div>
+                            </div>
+                        </div>
+
+                        <div class="stats bg-neutral text-neutral-content w-full shadow border border-neutral-content/20">
+                            <div class="stat">
+                                <div class="stat-title border-b border-neutral-content/20 pb-2">Cache Stratagem</div>
+                                <div class="stat-value text-accent mt-2">Network-First</div>
+                                <div class="stat-desc">Zero configuration required by default
+                    </div>
+                    <div data-show="activeTab === 'code'" style="display: none;">
+                        <pre class="mockup-code bg-neutral text-neutral-content p-4 font-mono text-sm mt-0 w-full overflow-x-auto"><code>&lt;div data-pwa="{ sw: '/sw.js' }"&gt;&lt;/div&gt;</code></pre>
+                                        </div>
+                </div>
+            </div>
+
+            <div class="card bg-base-100 shadow-xl border border-base-300 mt-8">
+                <div class="card-body">
+                    <h2 class="card-title text-secondary border-b border-base-300 pb-2 flex gap-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.827M15.75 15.75L21 21m-5.25-5.25l-1.5-1.5m3-3l1.5-1.5m-3 3L11.42 15.17M11.42 15.17A4.475 4.475 0 0012 11.25c0-2.485-2.015-4.5-4.5-4.5s-4.5 2.015-4.5 4.5c0 2.485 2.015 4.5 4.5 4.5 1.574 0 3.012-.81 3.82-2.08m0 0L3.75 3.75" /></svg> Extensibility Notes</h2>
+                    <p class="opacity-80 mt-4 leading-relaxed">The internal ServiceWorker bootstrapper in <code>src/modules/attributes/pwa.ts</code> orchestrates the offline navigator natively. Adjust caching techniques to enforce Stale-While-Revalidate physically.</p>
+                </div>
+                </div>
+            </div>
+
+</body>
+</html>

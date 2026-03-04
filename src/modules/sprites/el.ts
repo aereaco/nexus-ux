@@ -1,26 +1,11 @@
-import { RuntimeContext } from '../../engine/composition.ts';
+import { registerScopeProvider } from '../../engine/scope.ts';
 
 /**
- * $el sprite: returns the current element.
- * Usage: $el.textContent = 'foo'
+ * $el Scope Provider Sprite
+ * 
+ * Provides the current element reference in expression scope.
+ * Usage: $el.classList.add('active')
+ * 
+ * Previously hardcoded in the evaluator — now registered as a modular sprite.
  */
-export function elSprite(_runtime: RuntimeContext) {
-  // This is tricky because $el depends on the context of execution (which element).
-  // The evaluator handles $el specially by passing it in the scope or extras.
-  // So this sprite factory might not be needed if evaluator handles it?
-  // BUT! If we want it in the global scope def (globalSignals),
-  // it needs to be a function or getter?
-  // Actually, $el is context-dependent, so it CANNOT be a global static value.
-  // It must be provided by the evaluator's local scope override.
-
-  // However, for consistency, we might export a helper?
-  // No, evaluator.ts provides $el in the scope proxy.
-
-  return null;
-}
-
-export default function(runtime: RuntimeContext) {
-  return {
-    $el: elSprite(runtime)
-  };
-}
+registerScopeProvider('$el', (el) => el);

@@ -1,133 +1,92 @@
+/**
+ * Observer Registry & Coordinator.
+ * 
+ * Serves as the centralized registry for all observer services.
+ * Each observer module (mutation, resize, intersection, performance)
+ * defines its own observer and registers itself here.
+ * 
+ * This file does NOT instantiate any observers directly — that is
+ * the responsibility of each module in `src/modules/observers/`.
+ */
+
+import { ObserverModule } from './modules.ts';
 import { RuntimeContext } from './composition.ts';
 
 /**
- * Base class for Singleton Observer Services.
- * Implements a registry pattern where multiple elements can be observed by a single observer instance.
+ * Registry entry: tracks the observer module and any active cleanup functions
+ * for elements it has been attached to.
  */
-abstract class ObserverService<TObserver, TEntry> {
-  protected observer: TObserver | null = null;
-  protected registry = new Map<Element, Set<(entry: TEntry) => void>>();
+interface ObserverRegistryEntry {
+  module: ObserverModule;
+  activeCleanups: Map<HTMLElement, () => void>;
+}
 
-  constructor() {
-    if (typeof window === 'undefined') return;
-    this.observer = this.createObserver();
-  }
+/**
+ * Central Observer Registry.
+ * Observer modules register themselves here during engine init.
+ * The engine can then attach/detach observers to DOM roots as needed.
+ */
+const registry = new Map<string, ObserverRegistryEntry>();
 
-  protected abstract createObserver(): TObserver;
+/**
+ * Register an observer module with the registry.
+ */
+export function registerObserver(name: string, module: ObserverModule): void {
+  registry.set(name, {
+    module,
+    activeCleanups: new Map(),
+  });
+}
 
-  /**
-   * Registers a callback for an element.
-   * If the element is not yet observed, starts observation.
-   */
-  public observe(el: Element, callback: (entry: TEntry) => void) {
-    if (!this.observer) return () => {};
+/**
+ * Retrieve a registered observer module by name.
+ */
+export function getObserver(name: string): ObserverModule | undefined {
+  return registry.get(name)?.module;
+}
 
-    let callbacks = this.registry.get(el);
-    if (!callbacks) {
-      callbacks = new Set();
-      this.registry.set(el, callbacks);
-      this.startObserving(el);
-    }
-    callbacks.add(callback);
+/**
+ * Attach a registered observer to an element (typically a root).
+ * Returns a cleanup function, or undefined if the observer isn't registered.
+ */
+export function attachObserver(name: string, el: HTMLElement, runtime: RuntimeContext): (() => void) | undefined {
+  const entry = registry.get(name);
+  if (!entry) return undefined;
 
+  // Prevent double-attach on the same element
+  if (entry.activeCleanups.has(el)) return undefined;
+
+  const cleanup = entry.module.observe(el, runtime);
+  if (cleanup) {
+    entry.activeCleanups.set(el, cleanup);
     return () => {
-      callbacks?.delete(callback);
-      if (callbacks?.size === 0) {
-        this.registry.delete(el);
-        this.stopObserving(el);
-      }
+      cleanup();
+      entry.activeCleanups.delete(el);
     };
   }
+  return undefined;
+}
 
-  protected abstract startObserving(el: Element): void;
-  protected abstract stopObserving(el: Element): void;
-
-  /**
-   * Disconnects the observer and clears the registry.
-   */
-  public dispose() {
-    (this.observer as any)?.disconnect?.();
-    this.registry.clear();
+/**
+ * Detach a registered observer from a specific element.
+ */
+export function detachObserver(name: string, el: HTMLElement): void {
+  const entry = registry.get(name);
+  if (!entry) return;
+  const cleanup = entry.activeCleanups.get(el);
+  if (cleanup) {
+    cleanup();
+    entry.activeCleanups.delete(el);
   }
 }
 
 /**
- * Singleton MutationObserver Service.
+ * Dispose of all registered observers, disconnecting everything.
  */
-class MutationObserverService extends ObserverService<MutationObserver, MutationRecord> {
-  protected createObserver() {
-    return new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        const callbacks = this.registry.get(mutation.target as Element);
-        callbacks?.forEach((cb) => cb(mutation));
-      });
-    });
-  }
-
-  protected startObserving(el: Element) {
-    this.observer?.observe(el, { attributes: true, childList: true, subtree: true });
-  }
-
-  protected stopObserving(el: Element) {
-    // MutationObserver doesn't support unobserve(el), so we have to stay disconnected 
-    // or just filter callbacks. However, keeping the observation on if other callbacks exist is fine.
-    // In many cases, we just rely on disconnect() for bulk cleanup.
-  }
-}
-
-/**
- * Singleton ResizeObserver Service.
- */
-class ResizeObserverService extends ObserverService<ResizeObserver, ResizeObserverEntry> {
-  protected createObserver() {
-    return new ResizeObserver((entries) => {
-      entries.forEach((entry) => {
-        const callbacks = this.registry.get(entry.target);
-        callbacks?.forEach((cb) => cb(entry));
-      });
-    });
-  }
-
-  protected startObserving(el: Element) {
-    this.observer?.observe(el);
-  }
-
-  protected stopObserving(el: Element) {
-    this.observer?.unobserve(el);
-  }
-}
-
-/**
- * Singleton IntersectionObserver Service.
- */
-class IntersectionObserverService extends ObserverService<IntersectionObserver, IntersectionObserverEntry> {
-  protected createObserver() {
-    return new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        const callbacks = this.registry.get(entry.target);
-        callbacks?.forEach((cb) => cb(entry));
-      });
-    });
-  }
-
-  protected startObserving(el: Element) {
-    this.observer?.observe(el);
-  }
-
-  protected stopObserving(el: Element) {
-    this.observer?.unobserve(el);
-  }
-}
-
-export const mutationObserver = new MutationObserverService();
-export const resizeObserver = new ResizeObserverService();
-export const intersectionObserver = new IntersectionObserverService();
-
-/**
- * Utility to dispose of all observer services.
- */
-export function disposeObservers() {
-  mutationObserver.dispose();
-  resizeObserver.dispose();
-  intersectionObserver.dispose();
+export function disposeObservers(): void {
+  registry.forEach(entry => {
+    entry.activeCleanups.forEach(cleanup => cleanup());
+    entry.activeCleanups.clear();
+  });
+  registry.clear();
 }

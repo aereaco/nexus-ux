@@ -1450,6 +1450,189 @@ Observe a reactive expression and invoke a callback when it changes.
 
 **Returns**: An `unwatch()` function to stop observing.
 
+### 7.12. Utility Sprites
+
+#### 7.12.1. `$clipboard`
+
+Clipboard API wrapper. Returns reactive containers.
+
+```html
+<!-- Copy text to clipboard -->
+<button data-on-click="$clipboard.write(sourceCode)">
+  📋 Copy
+</button>
+
+<!-- Read from clipboard (requires user gesture + permission) -->
+<div data-signal="{ pasted: null }">
+  <button data-on-click="pasted = $clipboard.read()">Paste</button>
+  <p data-show="pasted?.status === 'ready'" data-text="pasted.data"></p>
+</div>
+```
+
+**Methods**:
+
+- `$clipboard.write(text)` → `{ status, error }`
+- `$clipboard.read()` → `{ data: string, status, error }`
+
+#### 7.12.2. `$download(filename, content, [mimeType])`
+
+Triggers a browser file download. Synchronous — creates a Blob URL and clicks an
+anchor element.
+
+```html
+<button data-on-click="$download('app.ts', sourceCode, 'text/typescript')">
+  ⬇ Download
+</button>
+
+<!-- Download JSON data -->
+<button
+  data-on-click="$download('data.json', JSON.stringify(myData, null, 2), 'application/json')"
+>
+  Export JSON
+</button>
+```
+
+**Parameters**:
+
+- `filename` — Name of the downloaded file
+- `content` — `string | Blob | ArrayBuffer`
+- `mimeType` — Optional MIME type (default: `'text/plain'`)
+
+### 7.13. Cache Sprites
+
+#### 7.13.1. `$cache`
+
+Cache Storage API wrapper. Returns reactive containers.
+
+```html
+<!-- Cache a fetch response -->
+<button data-on-click="$cache.put('assets', '/api/config')">
+  Cache Config
+</button>
+
+<!-- Read from cache -->
+<div
+  data-signal="{ config: null }"
+  data-on-load="config = $cache.match('assets', '/api/config')"
+>
+  <span data-show="config.status === 'loading'">Loading...</span>
+  <pre data-show="config.status === 'ready'" data-text="config.data"></pre>
+</div>
+
+<!-- Check if URL is cached -->
+<div
+  data-signal="{ isCached: null }"
+  data-on-load="isCached = $cache.has('assets', '/api/config')"
+>
+  <span data-text="isCached.data ? 'Cached ✓' : 'Not cached'"></span>
+</div>
+
+<!-- List cached URLs -->
+<div data-signal="{ urls: null }" data-on-load="urls = $cache.keys('assets')">
+  <template data-for="u in urls.data">
+    <li data-text="u"></li>
+  </template>
+</div>
+
+<!-- Clear cache -->
+<button data-on-click="$cache.clear('assets')">Clear Cache</button>
+```
+
+**Methods**:
+
+- `$cache.put(name, url, [response])` → `{ status, error }` — caches a URL
+  (fetches if no response given)
+- `$cache.match(name, url)` → `{ data: string, status, error }` — lookup +
+  auto-extract text
+- `$cache.has(name, url)` → `{ data: boolean, status, error }`
+- `$cache.delete(name, url)` → `{ status, error }`
+- `$cache.keys(name)` → `{ data: string[], status, error }`
+- `$cache.clear(name)` → `{ status, error }`
+
+### 7.14. Application & Background Sprites
+
+#### 7.14.1. `$sw`
+
+Service Worker lifecycle management.
+
+```html
+<div data-on-load="$sw.register('/sw.js')">
+  <span data-text="'SW: ' + $sw.status"></span>
+  <button data-show="$sw.updateAvailable" data-on-click="$sw.skipWaiting()">
+    Update Available — Reload
+  </button>
+</div>
+```
+
+**Properties**: `$sw.status` (reactive), `$sw.controller`, `$sw.updateAvailable`
+**Methods**: `.register(url, opts)`, `.update()`, `.unregister()`,
+`.postMessage(data)`, `.skipWaiting()`
+
+#### 7.14.2. `$notification`
+
+Web Notifications with auto-permission handling.
+
+```html
+<button data-on-click="$notification.send('Hello!', { body: 'World' })">
+  Notify
+</button>
+<span data-text="'Permission: ' + $notification.permission"></span>
+```
+
+**Properties**: `$notification.permission` (reactive), `$notification.supported`
+**Methods**: `.send(title, opts)`, `.requestPermission()`, `.closeAll()`
+
+#### 7.14.3. `$push`
+
+Push Messaging subscription management.
+
+```html
+<button data-on-click="$push.subscribe(vapidPublicKey)">Enable Push</button>
+<button
+  data-show="$push.status === 'active'"
+  data-on-click="$push.unsubscribe()"
+>
+  Disable Push
+</button>
+```
+
+**Properties**: `$push.subscription` (reactive), `$push.status` **Methods**:
+`.subscribe(vapidKey)`, `.unsubscribe()`
+
+#### 7.14.4. `$bgFetch`
+
+Background Fetch for large downloads.
+
+**Methods**: `.fetch(id, urls, opts)`, `.get(id)`, `.abort(id)`
+
+#### 7.14.5. `$bgSync`
+
+One-time Background Sync.
+
+**Methods**: `.register(tag)` — returns `{ status, error }` **Properties**:
+`.tags` — returns `{ data: string[], status, error }`
+
+#### 7.14.6. `$periodicSync`
+
+Periodic Background Sync.
+
+**Methods**: `.register(tag, { minInterval })`, `.unregister(tag)`
+**Properties**: `.tags` — returns `{ data: string[], status, error }`
+
+#### 7.14.7. `$payment`
+
+Payment Request API.
+
+```html
+<button data-on-click="result = $payment.request(methods, details)">
+  Pay Now
+</button>
+<span data-show="result?.status === 'done'">✓ Payment Complete</span>
+<span data-show="result?.status === 'cancelled'">Payment Cancelled</span>
+```
+
+**Methods**: `.request(methods, details, opts)`, `.canMakePayment(methods)`
+
 ---
 
 ## Chapter 7.5: Environment Mirrors (`_`)
@@ -1520,7 +1703,154 @@ event.
 **All properties are read-write**. Any key can be read or written. Writes
 persist to `localStorage` and sync across tabs.
 
-### 7.5.3. `_navigator` (read-only)
+### 7.5.3. `_sessionStorage` (read-write)
+
+Reactive proxy of `sessionStorage`. Same API as `_localStorage` but **per-tab**
+— values do not sync across tabs and are cleared when the tab closes.
+
+```html
+<!-- Persist draft state across page reloads (within the same tab) -->
+<div
+  data-signal="{ draft: '' }"
+  data-on-load="draft = _sessionStorage['editor:draft'] || ''"
+>
+  <textarea
+    data-model="draft"
+    data-on-input="_sessionStorage['editor:draft'] = draft"
+  >
+  </textarea>
+</div>
+
+<!-- Track active selection state -->
+<select
+  data-model="activeFork"
+  data-on-change="_sessionStorage['active:signal.ts'] = activeFork"
+>
+  <option>Default</option>
+</select>
+
+<!-- Read persisted state on load -->
+<div
+  data-on-load="activeFork = _sessionStorage['active:signal.ts'] || 'Default'"
+>
+</div>
+```
+
+**All properties are read-write**. Per-tab only — no cross-tab sync by design.
+
+### 7.5.4. `_indexedDB` (read-write)
+
+Reactive nested Proxy wrapper around IndexedDB. Works like `_localStorage` but
+with persistent cross-session storage organized by object stores. First-level
+property access selects the store, second-level provides reactive key-value
+access.
+
+```html
+<!-- Read: auto-fetches from IDB on first access, reactive -->
+<div
+  data-signal="{ code: '' }"
+  data-on-load="code = _indexedDB.forks['main/app.ts']"
+>
+  <pre data-text="code"></pre>
+</div>
+
+<!-- Write: immediate reactive update + async IDB persist -->
+<button data-on-click="_indexedDB.forks['main/app.ts'] = sourceCode">
+  Save to IDB
+</button>
+
+<!-- Methods for complex operations -->
+<div data-signal="{ keys: [] }" data-on-load="keys = _indexedDB.forks.list()">
+  <template data-for="k in keys">
+    <li data-text="k"></li>
+  </template>
+</div>
+
+<!-- Delete and clear -->
+<button data-on-click="_indexedDB.forks.delete('old-key')">Delete</button>
+<button data-on-click="_indexedDB.forks.clear()">Clear Store</button>
+```
+
+**Property access**: Any `_indexedDB.storeName.key` is read-write. Reads
+auto-fetch from IndexedDB and return `undefined` until resolved. Writes update
+the reactive value immediately and persist asynchronously.
+
+**Methods** (on each store proxy):
+
+- `.list(prefix?)` — returns array of keys (populates asynchronously)
+- `.delete(key)` — removes a key from the store
+- `.clear()` — removes all entries in the store
+
+### 7.5.5. `_cookies` (read-write)
+
+Reactive proxy for `document.cookie`. Property access reads/writes cookies.
+Polls every 2 seconds for external cookie changes (e.g., server-set cookies).
+
+```html
+<!-- Read: reactive cookie access -->
+<div data-show="_cookies.theme === 'dark'" class="dark-mode">
+  Dark mode is active
+</div>
+
+<!-- Write: set a session cookie -->
+<button data-on-click="_cookies.theme = 'dark'">Dark Mode</button>
+
+<!-- Write with options (maxAge, path, secure, sameSite) -->
+<button
+  data-on-click="_cookies.set('theme', 'dark', { maxAge: 86400, sameSite: 'Lax' })"
+>
+  Persist Dark Mode (24h)
+</button>
+
+<!-- Delete -->
+<button data-on-click="_cookies.delete('theme')">Reset Theme</button>
+```
+
+**Property access**: Read-write. Reads parse `document.cookie`. Writes set
+session cookies (path `/`). For advanced options use `.set(key, value, opts)`.
+
+**Methods**:
+
+- `.set(key, value, options?)` — set with
+  `{ maxAge, expires, path, domain, secure, sameSite }`
+- `.delete(key, path?)` — remove a cookie
+- `.all()` — returns `Record<string, string>` of all cookies
+
+### 7.5.6. `_storage` (read-only)
+
+Reactive wrapper around the Storage Manager API (`navigator.storage`).
+Auto-polls usage and quota. Useful for showing storage pressure indicators.
+
+```html
+<!-- Storage usage bar -->
+<div
+  data-text="'Storage: ' + Math.round(_storage.usage / 1024 / 1024) + 'MB / ' +
+                Math.round(_storage.quota / 1024 / 1024) + 'MB'"
+>
+</div>
+
+<!-- Warning when storage is nearly full -->
+<div data-show="_storage.usage / _storage.quota > 0.9" class="alert">
+  ⚠️ Storage almost full!
+</div>
+
+<!-- Request persistent storage -->
+<button data-on-click="_storage.persist()">
+  <span
+    data-text="_storage.persisted ? 'Persistent ✓' : 'Request Persistence'"
+  ></span>
+</button>
+```
+
+**Reactive properties** (read-only): `usage` (bytes), `quota` (bytes),
+`persisted` (boolean).
+
+**Methods**:
+
+- `.estimate()` — force re-poll storage estimate
+- `.persist()` — request persistent storage (updates `persisted` reactively)
+
+### 7.5.7. `_navigator` (read-only)
 
 Reactive proxy of `navigator` properties.
 
@@ -1538,7 +1868,7 @@ Reactive proxy of `navigator` properties.
 **Reactive properties**: `onLine`, `language`, `userAgent`,
 `hardwareConcurrency`, `maxTouchPoints`.
 
-### 7.5.4. `_screen` (read-only)
+### 7.5.8. `_screen` (read-only)
 
 Reactive proxy of screen dimensions and orientation.
 
@@ -1552,7 +1882,7 @@ Reactive proxy of screen dimensions and orientation.
 **Reactive properties**: `width`, `height`, `orientation`, `colorDepth`,
 `pixelDepth`.
 
-### 7.5.5. `_geolocation` (read-only)
+### 7.5.9. `_geolocation` (read-only)
 
 Reactive wrapper around `navigator.geolocation`. Automatically watches position
 changes.
@@ -1574,7 +1904,7 @@ changes.
 > **Note**: Accessing `_geolocation` triggers browser permission prompt on first
 > use.
 
-### 7.5.6. `_network` (read-only)
+### 7.5.10. `_network` (read-only)
 
 Reactive proxy of the Network Information API (`navigator.connection`).
 
@@ -1599,7 +1929,7 @@ Reactive proxy of the Network Information API (`navigator.connection`).
 **Reactive properties**: `effectiveType` (`'slow-2g'`/`'2g'`/`'3g'`/`'4g'`),
 `downlink`, `rtt`, `saveData`.
 
-### 7.5.7. `_battery` (read-only)
+### 7.5.11. `_battery` (read-only)
 
 Reactive proxy of the Battery Status API.
 
@@ -1616,6 +1946,37 @@ Reactive proxy of the Battery Status API.
 
 **Reactive properties**: `level` (0-1), `charging` (boolean), `chargingTime`
 (seconds), `dischargingTime` (seconds).
+
+### 7.5.12. `_frames` (read-only)
+
+Reactive mirror for window frames and cross-frame communication. Auto-detects
+iframe additions/removals via MutationObserver.
+
+```html
+<div data-text="_frames.length + ' frames on this page'"></div>
+
+<!-- List all iframes -->
+<template data-for="f in _frames.list">
+  <div data-text="f.name + ': ' + f.src"></div>
+</template>
+
+<!-- Post message to a frame -->
+<button data-on-click="_frames.postMessage(0, { type: 'refresh' })">
+  Refresh Frame
+</button>
+<button data-on-click="_frames.postMessageByName('editor', { type: 'save' })">
+  Save in Editor
+</button>
+```
+
+**Reactive properties** (read-only): `length`, `list`
+(`{ index, name, src }[]`).
+
+**Methods**:
+
+- `.postMessage(index, data, targetOrigin?)` — send to frame by index
+- `.postMessageByName(name, data, targetOrigin?)` — send to named frame
+- `.refresh()` — force rescan of frames
 
 ---
 

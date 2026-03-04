@@ -23,7 +23,8 @@ try {
     sprites: [],
     mirrors: [],
     scopes: [],
-    modifiers: []
+    modifiers: [],
+    observers: []
   };
 
   async function generateRegistry(dir: string, exportName: string, jsonKey: string) {
@@ -52,6 +53,7 @@ try {
   await generateRegistry("modules/mirrors", "autoMirrors", "mirrors");
   await generateRegistry("modules/scopes", "autoScopes", "scopes");
   await generateRegistry("modules/modifiers", "autoModifiers", "modifiers");
+  await generateRegistry("modules/observers", "autoObservers", "observers");
 
   await Deno.writeTextFile(manifestPath, manifestLines.join("\n"));
   console.log("Generated manifest:", manifestPath);

@@ -36,9 +36,18 @@ const modelModule: AttributeModule = {
       const inputHandler = (e: Event) => {
         let newValue: unknown;
         const target = e.target as HTMLInputElement;
+        const currentValue = runtime.evaluate(el, expression);
 
         if (isCheckbox) {
-          newValue = target.checked;
+          if (Array.isArray(currentValue)) {
+            if (target.checked) {
+              newValue = [...currentValue, target.value];
+            } else {
+              newValue = currentValue.filter((v: unknown) => v !== target.value);
+            }
+          } else {
+            newValue = target.checked;
+          }
         } else if (isRadio) {
           if (target.checked) {
             newValue = target.value;
@@ -62,7 +71,11 @@ const modelModule: AttributeModule = {
         const attrValue = result !== undefined && result !== null ? String(result) : '';
 
         if (isCheckbox) {
-          (el as HTMLInputElement).checked = Boolean(result);
+          if (Array.isArray(result)) {
+            (el as HTMLInputElement).checked = result.includes((el as HTMLInputElement).value);
+          } else {
+            (el as HTMLInputElement).checked = Boolean(result);
+          }
         } else if (isRadio) {
           (el as HTMLInputElement).checked = ((el as HTMLInputElement).value === attrValue);
         } else {

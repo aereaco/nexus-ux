@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus-UX: data-model Array Test</title>
+    <script type="module" src="../dist/nexus-ux.js"></script>
+    <style>
+        body { font-family: system-ui, sans-serif; padding: 2rem; max-width: 600px; margin: 0 auto; background: #f9fafb; color: #111827; }
+        .group { display: flex; gap: 1rem; margin-top: 1rem; background: white; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 6px; }
+        label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+        pre { background: #1f2937; color: #10b981; padding: 1rem; border-radius: 6px; font-weight: bold; }
+    </style>
+</head>
+<body data-signal="{ colors: ['blue'] }" data-ux-init>
+    <h1>Array Data-Model Binding</h1>
+    <p>Checkbox groups sharing the exact same <code>data-model</code> Signal (if it initializes as an array) will mathematically array.push() their values when checked, and array.splice() them when unchecked.</p>
+    
+    <h2>Reactive State:</h2>
+    <pre data-text="JSON.stringify(colors)"></pre>
+
+    <div class="group">
+        <label><input type="checkbox" value="red" data-model="colors"> Red</label>
+        <label><input type="checkbox" value="green" data-model="colors"> Green</label>
+        <label><input type="checkbox" value="blue" data-model="colors"> Blue</label>
+        <label><input type="checkbox" value="yellow" data-model="colors"> Yellow</label>
+    </div>
+</body>
+</html>

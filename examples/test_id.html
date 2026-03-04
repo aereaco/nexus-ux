@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus-UX: $id Sprite Test</title>
+    <script type="module" src="../dist/nexus-ux.js"></script>
+    <style>
+        body { font-family: system-ui, sans-serif; padding: 2rem; max-width: 600px; margin: 0 auto; background: #f9fafb; color: #111827; }
+        .form-group { margin-bottom: 1.5rem; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; background: white; }
+        label { display: block; font-weight: bold; margin-bottom: 0.5rem; color: #374151; }
+        input { width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.25rem; font-size: 1rem; }
+        input:focus { outline: 2px solid #3b82f6; border-color: transparent; }
+    </style>
+</head>
+<body data-signal="{ forms: [1, 2] }" data-ux-init>
+    <h1>Testing $id() Sprite</h1>
+    <p>Both of these identical templates use <code>$id('text-input')</code>. The Sprite will generate unique IDs like <code>text-input-1</code> and <code>text-input-2</code>, allowing the exact same template structure to have correctly bound <code>&lt;label for="..."&gt;</code> without collisions.</p>
+
+    <template data-for="item in forms">
+        <div class="form-group" data-signal="{ activeId: $id('text-input') }">
+            <h3 data-text="`Widget ${item} (Scope: ${activeId})`"></h3>
+            <!-- We definitively link the label and input using the generated scope variable -->
+            <label data-attr-for="activeId">Enter Something:</label>
+            <input type="text" data-attr-id="activeId" data-attr-placeholder="`I am bound to ${activeId}`" />
+        </div>
+    </template>
+</body>
+</html>

@@ -17,7 +17,7 @@ import { reportError } from '../../engine/errors.ts';
 
 export const routeAttributeModule: AttributeModule = {
   name: 'route-attribute',
-  attribute: 'data-route', // maps to data-route
+  attribute: 'route', // maps to data-route
   handle: (el: HTMLElement, routePath: string, runtime: RuntimeContext) => {
     try {
       const globalSignals = runtime.globalSignals();

@@ -17,11 +17,11 @@ import { evaluate } from './evaluator.ts';
 import { parseAttribute } from './attributeParser.ts'; 
 import { scheduler } from './scheduler.ts'; 
 import { logger } from './logger.ts';
-import { resolveSelector } from './selector.ts';
+import { resolveSelector } from '../modules/sprites/selector.ts';
 import { elUniqId, attrHash } from './utils/hash.ts';
 import { MARKER_KEY } from './consts.ts';
 import { NexusEnhancedElement } from './reactivity.ts';
-import { mutationObserver, resizeObserver, intersectionObserver, disposeObservers } from './observers.ts';
+import { attachObserver, registerObserver, disposeObservers } from './observers.ts';
 
 /**
  * Defines the shape of an action function.
@@ -97,6 +97,32 @@ export interface UtilityModule extends Module {
   install(runtime: RuntimeContext): void;
 }
 
+/**
+ * Represents a module that provides reactive read/write wrappers for browser APIs.
+ * Mirrors are injected into the expression scope with the `_` prefix.
+ */
+export interface MirrorModule extends Module {
+  prefix: string;  // e.g. 'localStorage', 'sessionStorage', 'indexedDB'
+  create(runtime: RuntimeContext): object;  // Returns the reactive Proxy
+}
+
+/**
+ * Represents a module that provides imperative commands in expression scope.
+ * Sprites are injected with the `$` prefix.
+ */
+export interface SpriteModule extends Module {
+  sprites(runtime: RuntimeContext): Record<string, unknown>;  // e.g. { $cache: {...} }
+}
+
+/**
+ * Represents a module that provides environment-aware conditional boundaries.
+ * Scopes are used with the `@` prefix in directives.
+ */
+export interface ScopeModule extends Module {
+  rule: string;  // e.g. 'media', 'auth', 'os'
+  evaluate(expression: string, runtime: RuntimeContext): boolean | unknown;
+}
+
 declare module "./composition.ts" {
   interface InitContext {
     registerAttributeModule: (name: string, module: AttributeModule) => void;
@@ -105,6 +131,9 @@ declare module "./composition.ts" {
     registerListenerModule: (name: string, module: ListenerModule) => void;
     registerObserverModule: (name: string, module: ObserverModule) => void;
     registerUtilityModule: (name: string, module: UtilityModule) => void;
+    registerMirrorModule: (name: string, module: MirrorModule) => void;
+    registerSpriteModule: (name: string, module: SpriteModule) => void;
+    registerScopeModule: (name: string, module: ScopeModule) => void;
     runtime: RuntimeContext;
   }
 }
@@ -136,6 +165,9 @@ export class ModuleCoordinator {
   public listenerModules: Map<string, ListenerModule> = new Map();
   public observerModules: Map<string, ObserverModule> = new Map();
   public utilityModules: Map<string, UtilityModule> = new Map();
+  public mirrorModules: Map<string, MirrorModule> = new Map();
+  public spriteModules: Map<string, SpriteModule> = new Map();
+  public scopeModules: Map<string, ScopeModule> = new Map();
   private directiveOrder: string[] = [];
   
   public runtimeContext: RuntimeContext;
@@ -188,9 +220,6 @@ export class ModuleCoordinator {
       
       elUniqId: elUniqId,
       attrHash: attrHash,
-      mutationObserver: mutationObserver,
-      resizeObserver: resizeObserver,
-      intersectionObserver: intersectionObserver,
 
       log: (...args: any[]) => logger.log(this.runtimeContext, ...args),
       warn: (...args: any[]) => logger.warn(this.runtimeContext, ...args),
@@ -216,6 +245,9 @@ export class ModuleCoordinator {
       registerListenerModule: this.registerListenerModule.bind(this),
       registerObserverModule: this.registerObserverModule.bind(this),
       registerUtilityModule: this.registerUtilityModule.bind(this),
+      registerMirrorModule: this.registerMirrorModule.bind(this),
+      registerSpriteModule: this.registerSpriteModule.bind(this),
+      registerScopeModule: this.registerScopeModule.bind(this),
       runtime: this.runtimeContext,
     };
   }
@@ -243,6 +275,16 @@ export class ModuleCoordinator {
       if (module.install) module.install(this.runtimeContext);
     });
     this.processElement(rootElement);
+
+    // Auto-attach mutation observer to root for dynamic content processing.
+    // Any DOM nodes added to the root subtree will be automatically processed
+    // by the engine, and removed nodes will have their cleanups invoked.
+    const cleanup = attachObserver('mutationObserver', rootElement, this.runtimeContext);
+    if (cleanup) {
+      const enhanced = rootElement as NexusEnhancedElement;
+      if (!enhanced[CLEANUP_FUNCTIONS_KEY]) enhanced[CLEANUP_FUNCTIONS_KEY] = new Map();
+      enhanced[CLEANUP_FUNCTIONS_KEY]!.set('__rootMutationObserver__', cleanup);
+    }
   }
 
   public registerModifierModule(name: string, module: ModifierModule): void {
@@ -280,10 +322,35 @@ export class ModuleCoordinator {
 
   public registerObserverModule(name: string, module: ObserverModule): void {
     this.observerModules.set(name, module);
+    // Also register with the centralized observer registry
+    registerObserver(name, module);
   }
 
   public registerUtilityModule(name: string, module: UtilityModule): void {
     this.utilityModules.set(name, module);
+  }
+
+  public registerMirrorModule(name: string, module: MirrorModule): void {
+    this.mirrorModules.set(name, module);
+    // Auto-inject into expression scope with _ prefix
+    const proxy = module.create(this.runtimeContext);
+    this.runtimeContext.setGlobalSignal(`_${module.prefix}`, proxy);
+  }
+
+  public registerSpriteModule(name: string, module: SpriteModule): void {
+    this.spriteModules.set(name, module);
+    // Auto-inject sprite commands into expression scope
+    const sprites = module.sprites(this.runtimeContext);
+    Object.entries(sprites).forEach(([spriteName, handler]) => {
+      this.registerActionModule(spriteName, {
+        name: spriteName,
+        handle: (_el, ...args) => (handler as any)(...args)
+      });
+    });
+  }
+
+  public registerScopeModule(name: string, module: ScopeModule): void {
+    this.scopeModules.set(name, module);
   }
 
   private scanTimeout: number | null = null;
@@ -338,7 +405,7 @@ export class ModuleCoordinator {
                 // Execute Universal Pipeline Interceptors (e.g. :morph, :intersect) dynamically
                 let currentEvaluate = scopedRuntime.evaluate;
 
-                parsedAttr.modifiers.forEach(modFull => {
+                parsedAttr.modifiers.forEach((modFull: string) => {
                    let modName = modFull;
                    let modArg = '';
                    const dashIdx = modFull.indexOf('-');
@@ -349,7 +416,7 @@ export class ModuleCoordinator {
 
                    const modModule = this.modifierModules.get(modName);
                    if (modModule && typeof modModule.interceptPipeline === 'function') {
-                      currentEvaluate = modModule.interceptPipeline(currentEvaluate, element, modArg, scopedRuntime);
+                      currentEvaluate = modModule.interceptPipeline(currentEvaluate, element, modArg || parsedAttr.target || '', scopedRuntime);
                    }
                 });
 

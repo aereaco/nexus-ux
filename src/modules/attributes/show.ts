@@ -6,7 +6,8 @@ const showModule: AttributeModule = {
   name: 'show',
   attribute: 'show',
   handle: (el: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void => {
-    const originalDisplay = el.style.display;
+    // Evaluate the initial inline style constraint natively OR default to empty inheritance scope mapping
+    const originalDisplay = el.style.display === 'none' ? '' : el.style.display;
 
     try {
       const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {

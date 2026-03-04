@@ -1,8 +1,12 @@
-import { getDataStack } from './scope.ts';
+import { getDataStack } from '../../engine/scope.ts';
+import { registerScopeProvider } from '../../engine/scope.ts';
 
 /**
  * Unified Selector Sprite $(...)
  * Enables context-aware DOM traversal and returns reactive element proxies.
+ *
+ * Registered as a scope provider so expressions can use $(selector) to
+ * traverse the DOM relative to the current element.
  */
 export function resolveSelector(contextEl: HTMLElement, selector: string | HTMLElement): any {
   if (!selector) return null;
@@ -72,6 +76,13 @@ export function resolveSelector(contextEl: HTMLElement, selector: string | HTMLE
 /**
  * Creates a proxy for a DOM element that prioritizes its reactive signal state.
  */
+// Register `$` as a context-aware scope provider.
+// The provider receives the current element at evaluation time and returns
+// a selector function bound to that element's DOM context.
+registerScopeProvider('$', (el) => {
+  return (selector: string) => resolveSelector(el as HTMLElement, selector);
+});
+
 function createReactiveElementProxy(el: HTMLElement): any {
   return new Proxy(el, {
     get(target: any, key: string | symbol) {

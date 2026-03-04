@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus-UX: Modifier - Intersect</title>
+    <script type="module" src="../../../../dist/nexus-ux.js"></script>
+</head>
+<body data-signal="{ hasAppeared: false, viewCount: 0 }" data-ux-init="">
+
+    <div id="demo-modifier-intersect" class="dashboard-fragment p-8 bg-base-200 min-h-screen text-base-content" data-injest="{ css: { link: 'href=\'https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css\' rel=\'stylesheet\'' }, tw: { script: 'src=\'https://cdn.tailwindcss.com\'' } }">
+        
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-4xl font-bold mb-4 text-primary">.intersect</h1>
+            <p class="mb-8 text-lg opacity-80">Demonstrates the massive power of the <code>.intersect</code> pipeline modifier seamlessly generating native IntersectionObserver matrices mapping physically visible viewport intersections into active AST evaluations without explicit DOM setup.</p>
+
+            
+            
+            <div class="card bg-base-100 shadow-xl border border-base-300 mb-8 mt-8" data-signal="{ activeTab: 'preview' }">
+                <div class="card-body">
+                    <div class="flex flex-col md:flex-row justify-between md:items-center border-b border-base-300 pb-4 mb-4 gap-4">
+                        <h2 class="card-title text-secondary">Interactive Demonstration</h2>
+                        <div class="tabs tabs-boxed bg-base-200">
+                            <a class="tab" data-class-tab-active="activeTab === 'preview'" data-on-click="activeTab = 'preview'">Preview</a> 
+                            <a class="tab" data-class-tab-active="activeTab === 'code'" data-on-click="activeTab = 'code'">Code</a> 
+                        </div>
+                    </div>
+
+                    <div data-show="activeTab === 'preview'">
+                        <div class="h-96 w-full bg-base-200 border border-base-300 rounded-box shadow-inner overflow-y-scroll relative pointer-events-auto p-4 z-20">
+                            
+                         
+                         <div style="height: 1200px;" class="w-full flex flex-col justify-between items-center relative">
+                            
+                            <div class="badge badge-lg p-6 bg-base-100 shadow border border-base-300 opacity-50 sticky top-4">
+                                Scrolled <span data-text="viewCount"></span> Times Out of Physical View
+                            </div>
+                            
+                            <!-- Notice the .intersect modifier -->
+                            <!-- We can combine Modifiers arbitrarily! .intersect generates an intersection event, .once intercepts the pipeline so it only executes one solitary time ever. -->
+                            <!-- Wait, actually data-on-intersect is the syntax for intersect observers in Nexus-UX via data-on binding interception, or via generic modifier -->
+                            <div class="card bg-primary text-primary-content shadow-2xl w-full max-w-sm mb-16 transition-all duration-1000 scale-90 translate-y-16 opacity-0" data-on-intersect="hasAppeared = true; viewCount++; $el.classList.remove('scale-90', 'translate-y-16', 'opacity-0')" data-on-intersect-leave="$el.classList.add('scale-90', 'translate-y-16', 'opacity-0')">
+                                <div class="card-body items-center text-center">
+                                    <h2 class="card-title text-3xl mb-4">You found me!</h2>
+                                    <p>This DOM node instantiated a physical IntersectionObserver purely through the <code>data-on-intersect</code> declaration hook and mutated its own CSS Classes directly upon evaluating inside the current Viewport.</p>
+                                
+                    </div>
+                    <div data-show="activeTab === 'code'" style="display: none;">
+                        <pre class="mockup-code bg-neutral text-neutral-content p-4 font-mono text-sm mt-0 mb-0 w-full overflow-x-auto"><code>&lt;div data-on-intersect="isActive = true"&gt;&lt;/div&gt;</code></pre>
+                                        </div>
+                </div>
+            </div>
+
+            <div class="card bg-base-100 shadow-xl border border-base-300 mt-8">
+                <div class="card-body">
+                    <h2 class="card-title text-secondary border-b border-base-300 pb-2 flex gap-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewbox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.827M15.75 15.75L21 21m-5.25-5.25l-1.5-1.5m3-3l1.5-1.5m-3 3L11.42 15.17M11.42 15.17A4.475 4.475 0 0012 11.25c0-2.485-2.015-4.5-4.5-4.5s-4.5 2.015-4.5 4.5c0 2.485 2.015 4.5 4.5 4.5 1.574 0 3.012-.81 3.82-2.08m0 0L3.75 3.75"></path></svg> Extensibility Notes</h2>
+                    <p class="opacity-80 mt-4 leading-relaxed">Intersection Observers via <code>src/modules/modifiers/intersect.ts</code> map pure unassigned viewport logic. Introduce CSS margin matrices mapping bounding-boxes natively configuring threshold logic.</p>
+                </div>
+                </div>
+            </div>
+
+
+
+</body></html>

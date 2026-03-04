@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus-UX: Scope - OS</title>
+    <script type="module" src="../../../../dist/nexus-ux.js"></script>
+</head>
+<body data-ux-init>
+
+    <div id="demo-scope-os" class="dashboard-fragment p-8 bg-base-200 min-h-screen text-base-content" 
+         data-injest="{ css: { link: 'href=\'https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css\' rel=\'stylesheet\'' }, tw: { script: 'src=\'https://cdn.tailwindcss.com\'' } }">
+        
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-4xl font-bold mb-4 text-primary">data-scope-os</h1>
+            <p class="mb-8 text-lg opacity-80">This page demonstrates the <code>data-scope-os</code> structural directive conditionally destroying or building explicit DOM execution pipelines uniquely tailored to exact Operating System telemetry profiles natively.</p>
+
+            
+            <div class="card bg-base-100 shadow-xl border border-base-300 mb-8 mt-8" data-signal="{ activeTab: 'preview' }">
+                <div class="card-body">
+                    <div class="flex flex-col md:flex-row justify-between md:items-center border-b border-base-300 pb-4 mb-4 gap-4">
+                        <h2 class="card-title text-secondary">Interactive Demonstration</h2>
+                        <div class="tabs tabs-boxed bg-base-200">
+                            <a class="tab" data-class-tab-active="activeTab === 'preview'" data-on-click="activeTab = 'preview'">Preview</a> 
+                            <a class="tab" data-class-tab-active="activeTab === 'code'" data-on-click="activeTab = 'code'">Code</a> 
+                        </div>
+                    </div>
+
+                    <div data-show="activeTab === 'preview'">
+                        <div class="p-8 bg-base-200 rounded-box border shadow-inner">
+                            
+                        
+                        <p class="md:col-span-3 text-center text-xs font-mono opacity-50 mb-4">Note that ONLY the element mathematically matching your real current system host OS will be appended physically into the AST graph.</p>
+
+                        <!-- OS X Matrix -->
+                        <div data-if="@os(macos) { true }" class="col-span-1 md:col-span-3">
+                            <div class="bg-base-100 p-8 rounded-2xl shadow border border-primary text-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" class="w-24 h-24 mx-auto mb-6 fill-primary"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.3 48.6-.7 90.4-84.3 103-119.3-36.9-15.6-61.9-45.9-62.1-91.3zM250.8 110.3c18.6-22.3 35.5-54.4 32.1-85.9-25.5 1-54.8 14.8-74.8 35.6-17.1 18.2-34.6 51.6-30 81.6 28.5 2.2 55.4-11.4 72.7-31.3z"/></svg>
+                                <h3 class="font-bold text-3xl">Apple macOS</h3>
+                                <p class="opacity-70 mt-2 font-mono text-sm max-w-sm mx-auto">Physical Host Graph instantiated via Core Darwin Kernel bindings detecting Apple Silicon / Intel Darwin pipeline.</p>
+                                <button class="btn btn-primary mt-6">Download .DMG Artifact</button>
+                            </div>
+                        </div>
+
+                        <!-- Windows Matrix -->
+                        <div data-if="@os(windows) { true }" class="col-span-1 md:col-span-3">
+                            <div class="bg-base-100 p-8 rounded-2xl shadow border border-info text-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="w-24 h-24 mx-auto mb-6 fill-info"><path d="M0 93.7l183.6-25.3v177.4H0V93.7zm0 324.6l183.6 25.3V268.4H0v149.9zm203.8 28L448 480V268.4H203.8v177.9zm0-380.6v180.1H448V32L203.8 65.7z"/></svg>
+                                <h3 class="font-bold text-3xl">Microsoft Windows</h3>
+                                <p class="opacity-70 mt-2 font-mono text-sm max-w-sm mx-auto">Physical Host Graph instantiated via Windows NT Kernel bindings detecting Windows x86/x64 pipeline.</p>
+                                <button class="btn btn-info mt-6">Download .EXE Installer</button>
+                            </div>
+                        </div>
+
+                        <!-- Linux Matrix -->
+                        <div data-if="@os(linux) { true }" class="col-span-1 md:col-span-3">
+                            <div class="bg-base-100 p-8 rounded-2xl shadow border border-warning text-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="w-24 h-24 mx-auto mb-6 fill-warning"><path d="M220.8 123.3c1 .5 1.8 1.7 3 1.7 1.1 0 2.8-.4 2.9-1.5.2-1.4-1.9-2.3-3.2-2.9-1.7-.7-3.9-1-5.5-.1-.4.2-.8.7-.6 1.1.3 1.3 2.3 1.1 3.4 1.7zm-21.9 1.7c1.2 0 2-1.2 3.1-1.7 1.1-.6 3.1-.4 3.5-1.8.2-.4-.2-.9-.6-1.1-1.6-.9-3.8-.6-5.5.1-1.3.6-3.4 1.5-3.2 2.9.1 1 1.8 1.5 2.7 1.6zM204.6 73c-11.8 3.8-23.2 8.7-34.2 14.4-8.6 4.6-18 8.4-25.3 15C136 111 129 123 125.7 136.2c-5.1 19.3-3 41.2 5.5 59.2 12.6 26.5 35 46.2 60 59.7 20 10.9 44.8 15 67 12 17.6-2.4 36.3-8.8 48.9-21.9 16.6-17.5 22.8-42.3 19-66-2.9-18.4-12-35.3-24.9-48.4-9.9-10.1-23.9-15.6-36.6-21.6-15.8-7.3-32.9-11.5-50-16.2z"/></svg>
+                                <h3 class="font-bold text-3xl">Linux / UNIX</h3>
+                                <p class="opacity-70 mt-2 font-mono text-sm max-w-sm mx-auto">Physical Host Graph instantiated via Open Source Kernel bindings detecting native UNIX pipeline.</p>
+                                <button class="btn btn-warning mt-6">Download .deb Package</button>
+                        
+                    </div>
+                    <div data-show="activeTab === 'code'" style="display: none;">
+                        <pre class="mockup-code bg-neutral text-neutral-content p-4 font-mono text-sm mt-0 w-full overflow-x-auto"><code>&lt;div data-if="@os(mac) { true }"&gt;&lt;/div&gt;</code></pre>
+                                        </div>
+                </div>
+            </div>
+
+            <div class="card bg-base-100 shadow-xl border border-base-300 mt-8">
+                <div class="card-body">
+                    <h2 class="card-title text-secondary border-b border-base-300 pb-2 flex gap-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.827M15.75 15.75L21 21m-5.25-5.25l-1.5-1.5m3-3l1.5-1.5m-3 3L11.42 15.17M11.42 15.17A4.475 4.475 0 0012 11.25c0-2.485-2.015-4.5-4.5-4.5s-4.5 2.015-4.5 4.5c0 2.485 2.015 4.5 4.5 4.5 1.574 0 3.012-.81 3.82-2.08m0 0L3.75 3.75" /></svg> Extensibility Notes</h2>
+                    <p class="opacity-80 mt-4 leading-relaxed">Execution pipelines evaluated inside <code>src/modules/scopes/os.ts</code> traverse standard <code>navigator.platform</code> footprints actively validating hardware environments mathematically.</p>
+                </div>
+                </div>
+            </div>
+
+</body>
+</html>

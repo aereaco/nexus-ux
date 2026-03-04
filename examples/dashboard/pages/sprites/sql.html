@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus-UX: Sprite - SQL</title>
+    <script type="module" src="../../../../dist/nexus-ux.js"></script>
+    <!-- Note: In a real environment, the sqlite WASM implementation is required for $sql to function perfectly -->
+</head>
+<body data-signal="{ dbInitialized: false, users: [] }" data-ux-init>
+
+    <div id="demo-sprite-sql" class="dashboard-fragment p-8 bg-base-200 min-h-screen text-base-content" 
+         data-injest="{ css: { link: 'href=\'https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css\' rel=\'stylesheet\'' }, tw: { script: 'src=\'https://cdn.tailwindcss.com\'' } }">
+        
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-4xl font-bold mb-4 text-primary">$sql Sprite</h1>
+            <p class="mb-8 text-lg opacity-80">This page demonstrates the bleeding-edge browser <code>$sql</code> Sprite enabling native zero-latency WASM SQLite synchronous queries mapped directly inside the DOM.</p>
+
+            
+            <div class="card bg-base-100 shadow-xl border border-base-300 mb-8 mt-8" data-signal="{ activeTab: 'preview' }">
+                <div class="card-body">
+                    <div class="flex flex-col md:flex-row justify-between md:items-center border-b border-base-300 pb-4 mb-4 gap-4">
+                        <h2 class="card-title text-secondary">Interactive Demonstration</h2>
+                        <div class="tabs tabs-boxed bg-base-200">
+                            <a class="tab" data-class-tab-active="activeTab === 'preview'" data-on-click="activeTab = 'preview'">Preview</a> 
+                            <a class="tab" data-class-tab-active="activeTab === 'code'" data-on-click="activeTab = 'code'">Code</a> 
+                        </div>
+                    </div>
+
+                    <div data-show="activeTab === 'preview'">
+                        <div class="p-8 bg-base-200 rounded-box border shadow-inner">
+                            
+                        
+                        <div class="alert alert-warning shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                            <span class="text-sm">This demonstration maps the AST syntax structurally. In a live environment, the `sql.js` WASM payload is injected automatically by the router compiler upon evaluating `$sql`.</span>
+                        </div>
+
+                        <!-- Hypothetical synchronous direct SQLite query binding -->
+                        <div class="mockup-code bg-neutral text-neutral-content shadow-2xl h-full w-full max-w-2xl mx-auto border border-neutral/30">
+                            <!-- Initialization execution -->
+                            <pre data-prefix="$"><code class="text-warning">$sql(`CREATE TABLE users (id INT, name TEXT)`)</code></pre>
+                            <pre data-prefix="$"><code class="text-warning">$sql(`INSERT INTO users VALUES (1, 'Neo'), (2, 'Trinity'), (3, 'Morpheus')`)</code></pre>
+                            
+                            <!-- Mapping query directly into variable space array -->
+                            <pre data-prefix=">"><code class="text-success">users = $sql(`SELECT * FROM users ORDER BY id DESC`)</code></pre>
+                        </div>
+                        
+                        <div class="form-control items-center w-full">
+                            <button class="btn btn-primary shadow-xl px-12" 
+                                    data-class-btn-disabled="dbInitialized"
+                                    data-on-click="
+                                        dbInitialized = true;
+                                        // Mocking the WASM synchronous payload return purely for visual illustration
+                                        setTimeout(() => {
+                                            users = [
+                                                { id: 3, name: 'Morpheus' },
+                                                { id: 2, name: 'Trinity' },
+                                                { id: 1, name: 'Neo' }
+                                            ];
+                                        }, 300);
+                                    ">
+                                Execute In-Browser SQL Matrix
+                            </button>
+                        </div>
+
+                        <!-- Rendering the SQL returned matrices immediately -->
+                        <div data-show="dbInitialized" class="overflow-x-auto w-full max-w-sm mx-auto shadow-xl rounded-xl border border-base-300 animate-in fade-in slide-in-from-bottom duration-500">
+                            <table class="table w-full bg-base-100">
+                                <thead>
+                                    <tr class="bg-primary text-primary-content">
+                                        <th>Primary ID</th>
+                                        <th>Registered Identity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template data-for="user in users">
+                                        <tr class="hover">
+                                            <td class="font-mono font-bold" data-text="user.id"></td>
+                                            <td class="text-accent font-bold" data-text="user.name"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        
+                    </div>
+                    <div data-show="activeTab === 'code'" style="display: none;">
+                        <pre class="mockup-code bg-neutral text-neutral-content p-4 font-mono text-sm mt-0 w-full overflow-x-auto"><code>const rows = $sql('SELECT * FROM users');</code></pre>
+                                        </div>
+                </div>
+            </div>
+
+            <div class="card bg-base-100 shadow-xl border border-base-300 mt-8">
+                <div class="card-body">
+                    <h2 class="card-title text-secondary border-b border-base-300 pb-2 flex gap-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.827M15.75 15.75L21 21m-5.25-5.25l-1.5-1.5m3-3l1.5-1.5m-3 3L11.42 15.17M11.42 15.17A4.475 4.475 0 0012 11.25c0-2.485-2.015-4.5-4.5-4.5s-4.5 2.015-4.5 4.5c0 2.485 2.015 4.5 4.5 4.5 1.574 0 3.012-.81 3.82-2.08m0 0L3.75 3.75" /></svg> Extensibility Notes</h2>
+                    <p class="opacity-80 mt-4 leading-relaxed">The WASM integration payload via <code>src/modules/sprites/sql.ts</code> maps query language identically mimicking standard memory matrices synchronously interacting.</p>
+                </div>
+                </div>
+            </div>
+
+</body>
+</html>

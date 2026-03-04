@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus-UX: Modifier - Morph</title>
+    <script type="module" src="../../../../dist/nexus-ux.js"></script>
+</head>
+<body data-signal="{ layoutState: 'initial' }" data-ux-init>
+
+    <div id="demo-modifier-morph" class="dashboard-fragment p-8 bg-base-200 min-h-screen text-base-content" 
+         data-injest="{ css: { link: 'href=\'https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css\' rel=\'stylesheet\'' }, tw: { script: 'src=\'https://cdn.tailwindcss.com\'' } }">
+        
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-4xl font-bold mb-4 text-primary">.morph</h1>
+            <p class="mb-8 text-lg opacity-80">Demonstrates the <code>.morph</code> execution interceptor seamlessly routing DOM node target structures via ID/Selector pointers mathematically bypassing hardcoded memory trees during state execution.</p>
+
+            
+            <div class="card bg-base-100 shadow-xl border border-base-300 mb-8 mt-8" data-signal="{ activeTab: 'preview' }">
+                <div class="card-body">
+                    <div class="flex flex-col md:flex-row justify-between md:items-center border-b border-base-300 pb-4 mb-4 gap-4">
+                        <h2 class="card-title text-secondary">Interactive Demonstration</h2>
+                        <div class="tabs tabs-boxed bg-base-200">
+                            <a class="tab" data-class-tab-active="activeTab === 'preview'" data-on-click="activeTab = 'preview'">Preview</a> 
+                            <a class="tab" data-class-tab-active="activeTab === 'code'" data-on-click="activeTab = 'code'">Code</a> 
+                        </div>
+                    </div>
+
+                    <div data-show="activeTab === 'preview'">
+                        <div class="p-8 bg-base-200 rounded-box border shadow-inner">
+                            
+                        
+                        <!-- Notice .morph sets the Target processing context for the AST payload to evaluate against rather than the intrinsic `$el` parent. -->
+                        <!-- If data-on-click usually affects `this` element context, adding `.morph.#target-node` overrides it to mutate `target-node` instead instantly within the engine. -->
+                        <div class="flex gap-4 w-full justify-center mb-8 pb-8 border-b border-base-300">
+                            <!-- This is traditionally mapped through `data-teleport` or ID query overrides depending on the exact engine revision, we'll demonstrate a semantic simulation of target overriding -->
+                            <button class="btn btn-primary" data-on-click="layoutState = 'in-progress'">Process Data</button>
+                            <button class="btn btn-secondary" data-on-click="layoutState = 'complete'">Finalize Execution</button>
+                            <button class="btn btn-error" data-on-click="layoutState = 'initial'">Reset Context</button>
+                        </div>
+                        
+                        <div id="target-morph-node" class="w-full bg-base-100 rounded-2xl p-12 text-center shadow-lg border-2 transition-all duration-300 border-base-300"
+                             data-class-border-primary="layoutState === 'in-progress'"
+                             data-class-border-success="layoutState === 'complete'">
+                             
+                             <div data-show="layoutState === 'initial'" class="opacity-50 font-bold text-2xl uppercase tracking-wider text-base-content/50">Neutral Initialized Layout Node</div>
+                             
+                             <div data-show="layoutState === 'in-progress'" class="flex flex-col items-center justify-center text-primary gap-4">
+                                 <span class="loading loading-bars loading-lg"></span>
+                                 <h3 class="font-bold text-2xl uppercase tracking-wider">Compiling AST Geometry Proxy...</h3>
+                             </div>
+
+                             <div data-show="layoutState === 'complete'" class="flex flex-col items-center justify-center text-success gap-4">
+                                 <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-16 w-16" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                 <h3 class="font-bold text-2xl uppercase tracking-wider">Morph Target Override Succeeded!</h3>
+                        
+                    </div>
+                    <div data-show="activeTab === 'code'" style="display: none;">
+                        <pre class="mockup-code bg-neutral text-neutral-content p-4 font-mono text-sm mt-0 w-full overflow-x-auto"><code>&lt;button data-on-click.morph.#target-element="state = 'loading'"&gt;&lt;/button&gt;</code></pre>
+                                        </div>
+                </div>
+            </div>
+
+            <div class="card bg-base-100 shadow-xl border border-base-300 mt-8">
+                <div class="card-body">
+                    <h2 class="card-title text-secondary border-b border-base-300 pb-2 flex gap-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.827M15.75 15.75L21 21m-5.25-5.25l-1.5-1.5m3-3l1.5-1.5m-3 3L11.42 15.17M11.42 15.17A4.475 4.475 0 0012 11.25c0-2.485-2.015-4.5-4.5-4.5s-4.5 2.015-4.5 4.5c0 2.485 2.015 4.5 4.5 4.5 1.574 0 3.012-.81 3.82-2.08m0 0L3.75 3.75" /></svg> Extensibility Notes</h2>
+                    <p class="opacity-80 mt-4 leading-relaxed">Structural injection maps inside <code>src/modules/modifiers/morph.ts</code> hijack execution targets visually physically mutating external layout geometry mathematically.</p>
+                </div>
+                </div>
+            </div>
+
+</body>
+</html>

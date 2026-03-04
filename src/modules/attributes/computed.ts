@@ -58,14 +58,13 @@ const computedModule: AttributeModule = {
       }
     }
 
-    // Format 2: data-computed:propName="expression"
-    const attrs = Array.from(el.attributes).filter(a => a.name.startsWith('data-computed:'));
+    // Format 2: data-computed-propName="expression"
+    const attrs = Array.from(el.attributes).filter(a => a.name.startsWith('data-computed-'));
 
     attrs.forEach(attr => {
-      const parsed = runtime.parseAttribute(attr.name, runtime, el);
-      if (!parsed || !parsed.argument) return;
+      const propName = attr.name.substring('data-computed-'.length);
+      if (!propName) return;
 
-      const propName = parsed.argument;
       const expression = attr.value;
 
       try {
