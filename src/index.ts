@@ -101,6 +101,18 @@ export class UX {
       // Find the first exported value and register it
       const val = Object.values(module)[0];
       if (val) this.coordinator.runtimeContext.setGlobalSignal(`_${name}`, val);
+
+      if (module.onGlobalInit) {
+        try {
+          module.onGlobalInit(this.coordinator.runtimeContext);
+        } catch (e) {
+          this.coordinator.runtimeContext.reportError(
+            e instanceof Error ? e : new Error(String(e)),
+            undefined,
+            `Failed to initialize mirror module: ${name}`
+          );
+        }
+      }
     });
 
     // Auto-Register Scopes
@@ -109,6 +121,18 @@ export class UX {
       // We expect the scope module to export `scopeRule`
       if (module.scopeRule) {
          scopesDef[name] = module.scopeRule;
+      }
+
+      if (module.onGlobalInit) {
+        try {
+          module.onGlobalInit(this.coordinator.runtimeContext);
+        } catch (e) {
+          this.coordinator.runtimeContext.reportError(
+            e instanceof Error ? e : new Error(String(e)),
+            undefined,
+            `Failed to initialize scope module: ${name}`
+          );
+        }
       }
     });
     this.coordinator.runtimeContext.setGlobalSignal('_scopes', scopesDef);

@@ -152,26 +152,30 @@ export const storageMirror = new Proxy(storageMirrorTarget as any, {
 });
 
 // Auto-poll on init and periodically
-if (typeof globalThis.window !== 'undefined') {
-  ensureRefs();
-  
-  // Initial poll
-  pollEstimate();
-  checkPersisted();
-  
-  // Re-poll on storage events (when other storage APIs write data)
-  const onStorage = () => { pollEstimate(); };
-  globalThis.addEventListener('storage', onStorage);
-  
-  // Periodic re-poll every 30 seconds
-  const intervalId = setInterval(() => {
+let _storageCleanup: (() => void) | null = null;
+
+export function onGlobalInit() {
+  if (typeof globalThis.window !== 'undefined') {
+    ensureRefs();
+    
+    // Initial poll
     pollEstimate();
-  }, 30_000);
+    checkPersisted();
+    
+    // Re-poll on storage events (when other storage APIs write data)
+    const onStorage = () => { pollEstimate(); };
+    globalThis.addEventListener('storage', onStorage);
+    
+    // Periodic re-poll every 30 seconds
+    const intervalId = setInterval(() => {
+      pollEstimate();
+    }, 30_000);
 
-  // deno-lint-ignore no-explicit-any
-  (storageMirror as any).__dispose = () => {
-    globalThis.removeEventListener('storage', onStorage);
-    clearInterval(intervalId);
-  };
+    _storageCleanup = () => {
+      globalThis.removeEventListener('storage', onStorage);
+      clearInterval(intervalId);
+    };
+  }
 }
-
+/** Tear down all listeners — for testing or micro-frontend teardown. */
+export function dispose() { if (_storageCleanup) _storageCleanup(); }

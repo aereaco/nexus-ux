@@ -17,33 +17,35 @@ export const viewScope = reactive({
 
 const cleanupFns: (() => void)[] = [];
 
-// Update on resize and scroll
-if (typeof window !== 'undefined') {
-  const updateView = () => {
-    viewScope.width = globalThis.innerWidth;
-    viewScope.height = globalThis.innerHeight;
-    viewScope.scrollX = globalThis.scrollX;
-    viewScope.scrollY = globalThis.scrollY;
-    viewScope.isPortrait = globalThis.innerHeight > globalThis.innerWidth;
-    viewScope.isLandscape = globalThis.innerWidth >= globalThis.innerHeight;
-    viewScope.devicePixelRatio = globalThis.devicePixelRatio;
-  };
+export function onGlobalInit() {
+  // Update on resize and scroll
+  if (typeof window !== 'undefined') {
+    const updateView = () => {
+      viewScope.width = globalThis.innerWidth;
+      viewScope.height = globalThis.innerHeight;
+      viewScope.scrollX = globalThis.scrollX;
+      viewScope.scrollY = globalThis.scrollY;
+      viewScope.isPortrait = globalThis.innerHeight > globalThis.innerWidth;
+      viewScope.isLandscape = globalThis.innerWidth >= globalThis.innerHeight;
+      viewScope.devicePixelRatio = globalThis.devicePixelRatio;
+    };
 
-  globalThis.addEventListener('resize', updateView);
-  globalThis.addEventListener('scroll', updateView);
-  cleanupFns.push(
-    () => globalThis.removeEventListener('resize', updateView),
-    () => globalThis.removeEventListener('scroll', updateView)
-  );
-}
+    globalThis.addEventListener('resize', updateView);
+    globalThis.addEventListener('scroll', updateView);
+    cleanupFns.push(
+      () => globalThis.removeEventListener('resize', updateView),
+      () => globalThis.removeEventListener('scroll', updateView)
+    );
+  }
 
-// Update on orientation change
-if (typeof window !== 'undefined' && globalThis.screen.orientation) {
-  const onOrientationChange = () => {
-    viewScope.orientation = globalThis.screen.orientation.type;
-  };
-  globalThis.screen.orientation.addEventListener('change', onOrientationChange);
-  cleanupFns.push(() => globalThis.screen.orientation.removeEventListener('change', onOrientationChange));
+  // Update on orientation change
+  if (typeof window !== 'undefined' && globalThis.screen.orientation) {
+    const onOrientationChange = () => {
+      viewScope.orientation = globalThis.screen.orientation.type;
+    };
+    globalThis.screen.orientation.addEventListener('change', onOrientationChange);
+    cleanupFns.push(() => globalThis.screen.orientation.removeEventListener('change', onOrientationChange));
+  }
 }
 
 // deno-lint-ignore no-explicit-any

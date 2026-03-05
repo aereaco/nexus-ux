@@ -26,16 +26,17 @@ export const osScope = reactive({
 
 const cleanupFns: (() => void)[] = [];
 
-// Update theme on change
-if (typeof window !== 'undefined') {
-  const mq = globalThis.matchMedia('(prefers-color-scheme: dark)');
-  const onThemeChange = (e: MediaQueryListEvent) => {
-    osScope.theme = e.matches ? 'dark' : 'light';
-  };
-  mq.addEventListener('change', onThemeChange);
-  cleanupFns.push(() => mq.removeEventListener('change', onThemeChange));
+export function onGlobalInit() {
+  // Update theme on change
+  if (typeof window !== 'undefined') {
+    const mq = globalThis.matchMedia('(prefers-color-scheme: dark)');
+    const onThemeChange = (e: MediaQueryListEvent) => {
+      osScope.theme = e.matches ? 'dark' : 'light';
+    };
+    mq.addEventListener('change', onThemeChange);
+    cleanupFns.push(() => mq.removeEventListener('change', onThemeChange));
+  }
 }
-
 export function getOSScope() {
   return osScope;
 }

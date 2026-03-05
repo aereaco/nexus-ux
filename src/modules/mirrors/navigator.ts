@@ -10,20 +10,21 @@ const state = reactive({
 
 const cleanupFns: (() => void)[] = [];
 
-if (typeof window !== 'undefined') {
-  const onOnline = () => { state.onLine = true; };
-  const onOffline = () => { state.onLine = false; };
-  const onLangChange = () => { state.language = navigator.language; };
-  globalThis.addEventListener('online', onOnline);
-  globalThis.addEventListener('offline', onOffline);
-  globalThis.addEventListener('languagechange', onLangChange);
-  cleanupFns.push(
-    () => globalThis.removeEventListener('online', onOnline),
-    () => globalThis.removeEventListener('offline', onOffline),
-    () => globalThis.removeEventListener('languagechange', onLangChange)
-  );
+export function onGlobalInit() {
+  if (typeof window !== 'undefined') {
+    const onOnline = () => { state.onLine = true; };
+    const onOffline = () => { state.onLine = false; };
+    const onLangChange = () => { state.language = navigator.language; };
+    globalThis.addEventListener('online', onOnline);
+    globalThis.addEventListener('offline', onOffline);
+    globalThis.addEventListener('languagechange', onLangChange);
+    cleanupFns.push(
+      () => globalThis.removeEventListener('online', onOnline),
+      () => globalThis.removeEventListener('offline', onOffline),
+      () => globalThis.removeEventListener('languagechange', onLangChange)
+    );
+  }
 }
-
 export const navigatorMirror = state;
 
 /** Tear down all listeners — for testing or micro-frontend teardown. */

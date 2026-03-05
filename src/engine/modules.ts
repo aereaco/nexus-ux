@@ -33,7 +33,7 @@ export type ActionFunction = (...args: any[]) => any;
  */
 export interface Module {
   name: string;
-  install?: (context: RuntimeContext) => void;
+  onGlobalInit?: (context: RuntimeContext) => void;
 }
 
 /**
@@ -271,8 +271,18 @@ export class ModuleCoordinator {
   }
 
   public initializeModules(rootElement: HTMLElement): void {
-    this.utilityModules.forEach(module => {
-      if (module.install) module.install(this.runtimeContext);
+    this.utilityModules.forEach((module, name) => {
+      if (module.onGlobalInit) {
+        try {
+          module.onGlobalInit(this.runtimeContext);
+        } catch (e) {
+          this.runtimeContext.reportError(
+            e instanceof Error ? e : new Error(String(e)),
+            undefined,
+            `Failed to initialize module: ${name}`
+          );
+        }
+      }
     });
     this.processElement(rootElement);
 

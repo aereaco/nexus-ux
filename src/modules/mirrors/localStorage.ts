@@ -125,24 +125,27 @@ export const localStorageMirror = new Proxy(localStorageMirrorTarget as any, {
 });
 
 // Sync with storage events (other tabs)
-if (typeof globalThis.window !== 'undefined') {
-  const onStorageEvent = (e: StorageEvent) => {
-    if (e.key) {
-      const r = keyRefs.get(e.key);
-      if (r) {
-        r.value = getValue(e.key);
-      }
-    } else {
-      // Clear all?
-      keyRefs.forEach((r, k) => {
-        r.value = getValue(k);
-      });
-    }
-  };
-  globalThis.addEventListener('storage', onStorageEvent);
+let _localStorageCleanup: (() => void) | null = null;
 
-  /** Tear down storage listener — for testing or micro-frontend teardown. */
-  // deno-lint-ignore no-explicit-any
-  (localStorageMirror as any).__dispose = () => globalThis.removeEventListener('storage', onStorageEvent);
+export function onGlobalInit() {
+  if (typeof globalThis.window !== 'undefined') {
+    const onStorageEvent = (e: StorageEvent) => {
+      if (e.key) {
+        const r = keyRefs.get(e.key);
+        if (r) {
+          r.value = getValue(e.key);
+        }
+      } else {
+        // Clear all?
+        keyRefs.forEach((r, k) => {
+          r.value = getValue(k);
+        });
+      }
+    };
+    globalThis.addEventListener('storage', onStorageEvent);
+    _localStorageCleanup = () => globalThis.removeEventListener('storage', onStorageEvent);
+  }
 }
 
+/** Tear down storage listener — for testing or micro-frontend teardown. */
+export function dispose() { if (_localStorageCleanup) _localStorageCleanup(); }

@@ -18,20 +18,21 @@ const update = () => {
   state.pixelDepth = globalThis.screen.pixelDepth;
 };
 
-if (typeof window !== 'undefined') {
-  globalThis.addEventListener('resize', update);
-  cleanupFns.push(() => globalThis.removeEventListener('resize', update));
+export function onGlobalInit() {
+  if (typeof window !== 'undefined') {
+    globalThis.addEventListener('resize', update);
+    cleanupFns.push(() => globalThis.removeEventListener('resize', update));
 
-  if (globalThis.screen.orientation) {
-    const onOrientationChange = () => {
-      state.orientation = globalThis.screen.orientation.type;
-      update();
-    };
-    globalThis.screen.orientation.addEventListener('change', onOrientationChange);
-    cleanupFns.push(() => globalThis.screen.orientation.removeEventListener('change', onOrientationChange));
+    if (globalThis.screen.orientation) {
+      const onOrientationChange = () => {
+        state.orientation = globalThis.screen.orientation.type;
+        update();
+      };
+      globalThis.screen.orientation.addEventListener('change', onOrientationChange);
+      cleanupFns.push(() => globalThis.screen.orientation.removeEventListener('change', onOrientationChange));
+    }
   }
 }
-
 export const screenMirror = state;
 
 /** Tear down all listeners — for testing or micro-frontend teardown. */
