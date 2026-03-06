@@ -1,0 +1,9 @@
+{
+  "Title": "data-show",
+  "Description": "This page demonstrates layout toggling modifying the native <code>display</code> CSS property via <code>data-show</code>.",
+  "Syntax": "<div data-show=\"isVisible\">Toggled Display</div>",
+  "SourceModule": "/modules/attributes/show.ts",
+  "SnippetModule": "data-show",
+  "Extensibility": "<ul class=\"list-disc list-inside opacity-80 mt-3 space-y-1\">\n  <li>The visibility toggler in <code>src/modules/attributes/show.ts</code> strictly maps to <code>display: none</code>.</li>\n  <li>This can be adapted to toggle CSS classes like <code>.hidden</code> for Tailwind synergy natively.</li>\n</ul>",
+  "Snippet": "<div class=\"p-8 bg-base-200 rounded-box border shadow-inner\" data-signal=\"{ blockVisible: true }\">\n    <button class=\"btn btn-primary shadow-lg mb-8\" data-on-click=\"blockVisible = !blockVisible\">\n        Toggle Visibility\n    </button>\n    <div data-show=\"blockVisible\" class=\"p-8 bg-warning text-warning-content rounded-xl font-bold text-center text-3xl shadow-xl transition-opacity duration-300\">\n        I am structurally permanent but visually togglable!\n    </div>\n</div>"
+}

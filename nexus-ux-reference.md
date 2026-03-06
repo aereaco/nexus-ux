@@ -77,9 +77,9 @@ on outcomes and practical implementation patterns. Built on the **Omni-State
 
 ```html
 <div data-signal="{ users: $sql('LIVE SELECT * FROM user') }">
-  <h1>Users ({$users.length})</h1>
+  <h1>Users ({users.length})</h1>
   <ul>
-    <li data-for="user in $users">{user.name} ({user.email})</li>
+    <li data-for="user in users">{user.name} ({user.email})</li>
   </ul>
 </div>
 ```
@@ -102,8 +102,8 @@ legacy frameworks by utilizing direct token-to-function mapping.
 | `.`    | **Native Access**    | **Unwrapped Integrity**. Bypasses the Reactive Proxy for high-frequency/raw JS/DOM access. | `<div data-text="user.name"></div>`                               |
 | `#`    | **Global Signal**    | **Reactive Source**. Accesses user-defined Global Signals managed by the Binary Heap.      | `<div data-text="#auth.user"></div>`                              |
 | `_`    | **Env Mirror**       | **API Snapshot**. Read-only access to reactive wrappers of Browser/OS APIs.                | `<div data-text="_window.innerWidth"></div>`                      |
-| `:`    | **Modifier**         | **Pipeline Anchor**. Defines interceptors, wrappers, and pipeways for logical execution.   | `<button data-on-click:once="$save()"></button>`                  |
-| `$`    | **Logic / Selector** | **Sprite / Command**. Framework-level tools ($tools) and the Unified Selector engine.      | `<button data-on-click="$(^form).$save()"></button>`              |
+| `:`    | **Modifier**         | **Pipeline Anchor**. Defines interceptors, wrappers, and pipeways for logical execution.   | `<button data-on-click:once="save()"></button>`                  |
+| `$`    | **Logic / Selector** | **Sprite / Command**. Framework-level tools (tools) and the Unified Selector engine.      | `<button data-on-click="$(^form).save()"></button>`              |
 | `@`    | **Scope Rule**       | **Boundary Rule**. Site-aware logic based on environment, OS, or security state.           | `<div data-text="@media(min-width: 1024px) { 'Desktop' }"></div>` |
 
 ### 1.2. The Unified Reactive Selector $(path)
@@ -164,21 +164,21 @@ write them. This is the operational primitive of the entire framework.
 
 | Pattern                 | Syntax                                         | When to Use                                                |
 | :---------------------- | :--------------------------------------------- | :--------------------------------------------------------- |
-| **Declarative (HTML)**  | `<input data-bind-value="$name">`              | Defining the UI structure and binding map                  |
+| **Declarative (HTML)**  | `<input data-bind-value="name">`              | Defining the UI structure and binding map                  |
 | **Imperative Read**     | `el.dataset.bindValue`                         | Inspecting a directive's expression at runtime             |
-| **Imperative Write**    | `el.dataset.bindValue = "$email"`              | Dynamically reassigning a binding (triggers re-evaluation) |
+| **Imperative Write**    | `el.dataset.bindValue = "email"`              | Dynamically reassigning a binding (triggers re-evaluation) |
 | **Raw Attribute Read**  | `el.getAttribute('data-bind-value')`           | High-frequency reads where marginal perf matters           |
-| **Raw Attribute Write** | `el.setAttribute('data-bind-value', '$email')` | Equivalent to `dataset` write; updates both sides          |
+| **Raw Attribute Write** | `el.setAttribute('data-bind-value', 'email')` | Equivalent to `dataset` write; updates both sides          |
 
 #### 1.5.2. Naming Convention: Automatic Kebab ↔ CamelCase
 
 The browser converts `data-*` kebab-case to `dataset` camelCase automatically:
 
 ```javascript
-// HTML: <div data-signal="{ count: 0 }" data-on-click="$count++">
+// HTML: <div data-signal="{ count: 0 }" data-on-click="count++">
 const el = document.querySelector("div");
 el.dataset.signal; // "{ count: 0 }"
-el.dataset.onClick; // "$count++"
+el.dataset.onClick; // "count++"
 el.dataset.bindValue; // corresponds to data-bind-value
 el.dataset.onSignalChange; // corresponds to data-on-signal-change
 ```
@@ -195,9 +195,9 @@ internally:
 
 ```javascript
 // ...but Nexus-UX parses them once into reactive values:
-// $count → number (0) — stored in binary signal heap (Float64Array)
-// $items → array (['a','b']) — stored as @vue/reactivity proxy
-// $user  → object ({ name: 'Ada' }) — stored as @vue/reactivity proxy
+// count → number (0) — stored in binary signal heap (Float64Array)
+// items → array (['a','b']) — stored as @vue/reactivity proxy
+// user  → object ({ name: 'Ada' }) — stored as @vue/reactivity proxy
 ```
 
 > [!IMPORTANT]
@@ -223,32 +223,32 @@ internally:
 ```html
 <!-- Simple value -->
 <div data-signal="{ count: 0 }">
-  <p>{$count}</p>
+  <p>{count}</p>
 </div>
 
 <!-- Object -->
 <div data-signal="{ user: { name: 'John', age: 30 } }">
-  <p>{$user.name} is {$user.age} years old</p>
+  <p>{user.name} is {user.age} years old</p>
 </div>
 
 <!-- Array -->
 <div data-signal="{ items: ['Apple', 'Banana', 'Cherry'] }">
   <ul>
-    <li data-for="item in $items">{item}</li>
+    <li data-for="item in items">{item}</li>
   </ul>
 </div>
 
 <!-- Live query (SurrealDB) -->
 <div
-  data-signal="{ todos: $sql('LIVE SELECT * FROM todo WHERE owner = $auth.id') }"
+  data-signal="{ todos: $sql('LIVE SELECT * FROM todo WHERE owner = auth.id') }"
 >
-  <p>You have {$todos.length} todos</p>
+  <p>You have {todos.length} todos</p>
 </div>
 
 <!-- Computed signal (derived from other signals) -->
 <div data-signal="{ firstName: 'John', lastName: 'Doe' }">
-  <div data-signal="{ fullName: $firstName + ' ' + $lastName }">
-    <p>{$fullName}</p>
+  <div data-signal="{ fullName: firstName + ' ' + lastName }">
+    <p>{fullName}</p>
   </div>
 </div>
 ```
@@ -258,14 +258,14 @@ descendants.
 
 ```html
 <div data-signal="{ count: 10 }">
-  <p>{$count}</p>
+  <p>{count}</p>
   <!-- ✅ Accessible -->
   <div>
-    <p>{$count}</p>
+    <p>{count}</p>
     <!-- ✅ Accessible (child element) -->
   </div>
 </div>
-<p>{$count}</p>
+<p>{count}</p>
 <!-- ❌ Not accessible (outside scope) -->
 ```
 
@@ -323,33 +323,33 @@ changes.
 ```html
 <!-- Text input -->
 <div data-signal="{ name: '' }">
-  <input type="text" data-bind-value="$name">
-  <p>Hello, {$name}!</p>
+  <input type="text" data-bind-value="name">
+  <p>Hello, {name}!</p>
 </div>
 
 <!-- Checkbox -->
 <div data-signal="{ agreed: false }">
-  <input type="checkbox" data-bind-checked="$agreed">
-  <p data-if="$agreed">Thank you for agreeing!</p>
+  <input type="checkbox" data-bind-checked="agreed">
+  <p data-if="agreed">Thank you for agreeing!</p>
 </div>
 
 <!-- Select dropdown -->
 <div data-signal="{ color: 'red' }">
-  <select data-bind-value="$color">
+  <select data-bind-value="color">
     <option value="red">Red</option>
     <option value="green">Green</option>
     <option value="blue">Blue</option>
   </select>
-  <p>Selected: {$color}</p>
+  <p>Selected: {color}</p>
 </div>
 
 <!-- Disabled state -->
 <div data-signal="{ loading: false }">
   <button
-    data-bind-disabled="$loading"
-    data-on-click="$loading = true; setTimeout(() => $loading = false, 2000)"
+    data-bind-disabled="loading"
+    data-on-click="loading = true; setTimeout(() => loading = false, 2000)"
   >
-    {$loading ? 'Loading...' : 'Click Me'}
+    {loading ? 'Loading...' : 'Click Me'}
   </button>
 </div>
 ```
@@ -360,8 +360,8 @@ changes.
 <div
   data-signal="{ user: { profile: { name: 'John', email: 'john@example.com' } } }"
 >
-  <input type="text" data-bind-value="$user.profile.name">
-  <input type="email" data-bind-value="$user.profile.email">
+  <input type="text" data-bind-value="user.profile.name">
+  <input type="email" data-bind-value="user.profile.email">
 </div>
 ```
 
@@ -379,16 +379,16 @@ changes.
 Nexus-UX provides robust two-way binding for all standard form elements via
 `data-bind`.
 
-- **Input/Textarea**: `<input data-bind-value="$username">`
+- **Input/Textarea**: `<input data-bind-value="username">`
 - **Select**:
   ```html
-  <select data-bind-value="$selectedId">
+  <select data-bind-value="selectedId">
     <template data-for="opt in options">
       <option data-bind-value="opt.id" data-text="opt.label"></option>
     </template>
   </select>
   ```
-- **Checkbox**: `<input type="checkbox" data-bind-checked="$isActive">` (Binds
+- **Checkbox**: `<input type="checkbox" data-bind-checked="isActive">` (Binds
   to Boolean).
 
 #### 2.2.3. Automatic Unit Appending (data-style)
@@ -408,12 +408,12 @@ Directly sync state to CSS Custom Properties. Essential for DaisyUI integration.
 #### 2.2.5. "Data Progress" for Site-wide Loading
 
 - **Linear Determinate**:
-  `<html data-progress="{ type: 'bar', location: 'top', color: 'primary', value: '$progress' }">`
+  `<html data-progress="{ type: 'bar', location: 'top', color: 'primary', value: 'progress' }">`
 - **Linear Indeterminate (Sweeping Mode)**: Evaluate to a boolean `true` for
   continuous animation.
-  `<html data-progress="{ type: 'bar', location: 'top', color: 'primary', value: '$isLoading === true' }">`
+  `<html data-progress="{ type: 'bar', location: 'top', color: 'primary', value: 'isLoading === true' }">`
 - **Spinner**:
-  `<div data-progress="{ type: 'spinner', size: '20px', value: '$isBusy' }"></div>`
+  `<div data-progress="{ type: 'spinner', size: '20px', value: 'isBusy' }"></div>`
 
 #### 2.2.6. "Data Injest" for Zero-Flicker Assets
 
@@ -454,31 +454,31 @@ DOM** when false (not just hidden with CSS).
 ```html
 <!-- Simple boolean -->
 <div data-signal="{ loggedIn: false }">
-  <div data-if="$loggedIn">
+  <div data-if="loggedIn">
     <p>Welcome back!</p>
   </div>
-  <div data-if="!$loggedIn">
+  <div data-if="!loggedIn">
     <p>Please log in.</p>
   </div>
 </div>
 
 <!-- Comparison -->
 <div data-signal="{ age: 16 }">
-  <p data-if="$age >= 18">You can vote!</p>
-  <p data-if="$age < 18">You're too young to vote.</p>
+  <p data-if="age >= 18">You can vote!</p>
+  <p data-if="age < 18">You're too young to vote.</p>
 </div>
 
 <!-- Complex expression -->
 <div data-signal="{ user: { role: 'admin', active: true } }">
-  <div data-if="$user.role === 'admin' && $user.active">
+  <div data-if="user.role === 'admin' && user.active">
     <p>Admin dashboard</p>
   </div>
 </div>
 
 <!-- Null/undefined checks -->
 <div data-signal="{ data: null }">
-  <p data-if="$data">Data loaded: {$data}</p>
-  <p data-if="!$data">Loading...</p>
+  <p data-if="data">Data loaded: {data}</p>
+  <p data-if="!data">Loading...</p>
 </div>
 ```
 
@@ -506,7 +506,7 @@ because the browser doesn't have to calculate layout/paint for hidden elements.
 <!-- Simple array -->
 <div data-signal="{ fruits: ['Apple', 'Banana', 'Cherry'] }">
   <ul>
-    <li data-for="fruit in $fruits">{fruit}</li>
+    <li data-for="fruit in fruits">{fruit}</li>
   </ul>
 </div>
 
@@ -520,7 +520,7 @@ because the browser doesn't have to calculate layout/paint for hidden elements.
       </tr>
     </thead>
     <tbody>
-      <tr data-for="user in $users" data-key="user.id">
+      <tr data-for="user in users" data-key="user.id">
         <td>{user.name}</td>
         <td>{user.email}</td>
       </tr>
@@ -530,7 +530,7 @@ because the browser doesn't have to calculate layout/paint for hidden elements.
 
 <!-- Indexed access -->
 <div data-signal="{ items: ['First', 'Second', 'Third'] }">
-  <div data-for="(item, index) in $items">
+  <div data-for="(item, index) in items">
     <p>{index + 1}. {item}</p>
   </div>
 </div>
@@ -542,7 +542,7 @@ because the browser doesn't have to calculate layout/paint for hidden elements.
   { name: 'Vegetables', items: ['Carrot', 'Broccoli'] }
 ] }"
 >
-  <div data-for="category in $categories">
+  <div data-for="category in categories">
     <h3>{category.name}</h3>
     <ul>
       <li data-for="item in category.items">{item}</li>
@@ -556,12 +556,12 @@ changes.
 
 ```html
 <!-- Without key: Entire list re-renders on change -->
-<div data-for="user in $users">
+<div data-for="user in users">
   <p>{user.name}</p>
 </div>
 
 <!-- With key: Only changed items re-render -->
-<div data-for="user in $users" data-key="user.id">
+<div data-for="user in users" data-key="user.id">
   <p>{user.name}</p>
 </div>
 ```
@@ -593,8 +593,8 @@ changes.
 ```html
 <!-- Basic click handler -->
 <div data-signal="{ count: 0 }">
-  <button data-on-click="$count++">Increment</button>
-  <p>{$count}</p>
+  <button data-on-click="count++">Increment</button>
+  <p>{count}</p>
 </div>
 
 <!-- Multiple statements -->
@@ -603,7 +603,7 @@ changes.
 </button>
 
 <!-- Event object access -->
-<input type="text" data-on-input="console.log($event.target.value)">
+<input type="text" data-on-input="console.log(event.target.value)">
 
 <!-- Prevent default -->
 <form data-on-submit:prevent="handleSubmit()">
@@ -736,34 +736,34 @@ chain of execution.
 ```html
 <!-- Background color -->
 <div data-signal="{ color: 'red' }">
-  <div data-style-background-color="$color" style="width: 100px; height: 100px">
+  <div data-style-background-color="color" style="width: 100px; height: 100px">
   </div>
-  <button data-on-click="$color = 'blue'">Make Blue</button>
+  <button data-on-click="color = 'blue'">Make Blue</button>
 </div>
 
 <!-- Width/height -->
 <div data-signal="{ width: 50 }">
-  <div data-style-width="$width + '%'" style="background: blue; height: 50px">
+  <div data-style-width="width + '%'" style="background: blue; height: 50px">
   </div>
-  <input type="range" min="0" max="100" data-bind-value="$width">
+  <input type="range" min="0" max="100" data-bind-value="width">
 </div>
 
 <!-- Conditional styles -->
 <div data-signal="{ active: false }">
   <button
-    data-style-background-color="$active ? 'green' : 'gray'"
-    data-on-click="$active = !$active"
+    data-style-background-color="active ? 'green' : 'gray'"
+    data-on-click="active = !active"
   >
-    {$active ? 'Active' : 'Inactive'}
+    {active ? 'Active' : 'Inactive'}
   </button>
 </div>
 
 <!-- Multiple style properties -->
 <div data-signal="{ theme: { bg: '#222', fg: '#fff', size: '16px' } }">
   <div
-    data-style-background-color="$theme.bg"
-    data-style-color="$theme.fg"
-    data-style-font-size="$theme.size"
+    data-style-background-color="theme.bg"
+    data-style-color="theme.fg"
+    data-style-font-size="theme.size"
   >
     Themed content
   </div>
@@ -801,8 +801,8 @@ that need units (width, height, padding, margin, etc.).
 <!-- Single class toggle -->
 <div data-signal="{ active: false }">
   <button
-    data-class-active="$active"
-    data-on-click="$active = !$active"
+    data-class-active="active"
+    data-on-click="active = !active"
   >
     Toggle
   </button>
@@ -811,21 +811,21 @@ that need units (width, height, padding, margin, etc.).
 <!-- Multiple conditional classes -->
 <div data-signal="{ status: 'warning' }">
   <div
-    data-class-success="$status === 'success'"
-    data-class-warning="$status === 'warning'"
-    data-class-error="$status === 'error'"
+    data-class-success="status === 'success'"
+    data-class-warning="status === 'warning'"
+    data-class-error="status === 'error'"
   >
-    Status: {$status}
+    Status: {status}
   </div>
 </div>
 
 <!-- Combine with static classes -->
 <button
   class="btn"
-  data-class-btn-primary="!$loading"
-  data-class-btn-disabled="$loading"
+  data-class-btn-primary="!loading"
+  data-class-btn-disabled="loading"
 >
-  {$loading ? 'Loading...' : 'Submit'}
+  {loading ? 'Loading...' : 'Submit'}
 </button>
 ```
 
@@ -967,23 +967,23 @@ logic overhead. Used heavily alongside `data-ux-theme` for building native
 ```html
 <!-- Log to console when signal changes -->
 <div data-signal="{ count: 0 }">
-  <div data-effect="console.log('Count changed:', $count)"></div>
-  <button data-on-click="$count++">Increment</button>
+  <div data-effect="console.log('Count changed:', count)"></div>
+  <button data-on-click="count++">Increment</button>
 </div>
 
 <!-- Update document title -->
 <div data-signal="{ pageTitle: 'Home' }">
-  <div data-effect="document.title = 'My App - ' + $pageTitle"></div>
-  <input type="text" data-bind-value="$pageTitle">
+  <div data-effect="document.title = 'My App - ' + pageTitle"></div>
+  <input type="text" data-bind-value="pageTitle">
 </div>
 
 <!-- Save to localStorage -->
 <div data-signal="{ settings: { theme: 'dark', fontSize: 14 } }">
   <div
-    data-effect="localStorage.setItem('settings', JSON.stringify($settings))"
+    data-effect="localStorage.setItem('settings', JSON.stringify(settings))"
   >
   </div>
-  <select data-bind-value="$settings.theme">
+  <select data-bind-value="settings.theme">
     <option value="light">Light</option>
     <option value="dark">Dark</option>
   </select>
@@ -992,7 +992,7 @@ logic overhead. Used heavily alongside `data-ux-theme` for building native
 <!-- Auto-scroll chat to bottom -->
 <div data-signal="{ messages: $sql('LIVE SELECT * FROM message') }">
   <div class="message-container" data-ref="container">
-    <div data-for="msg in $messages">{msg.text}</div>
+    <div data-for="msg in messages">{msg.text}</div>
   </div>
   <div data-effect="$refs.container.scrollTop = $refs.container.scrollHeight">
   </div>
@@ -1028,38 +1028,38 @@ event listeners), return a cleanup function:
 ```html
 <!-- Simple SELECT -->
 <div data-signal="{ users: $sql('SELECT * FROM user') }">
-  <p>{$users.length} users</p>
+  <p>{users.length} users</p>
 </div>
 
 <!-- Parameterized query -->
 <div data-signal="{ userId: 'user:123' }">
   <div
-    data-signal="{ user: $sql('SELECT * FROM $userId', { userId: $userId }) }"
+    data-signal="{ user: $sql('SELECT * FROM userId', { userId: userId }) }"
   >
-    <p>{$user.name}</p>
+    <p>{user.name}</p>
   </div>
 </div>
 
 <!-- INSERT on button click -->
 <div data-signal="{ name: '' }">
-  <input type="text" data-bind-value="$name">
+  <input type="text" data-bind-value="name">
   <button
-    data-on-click="$sql('CREATE user CONTENT { name: $name, created_at: time::now() }')"
+    data-on-click="$sql('CREATE user CONTENT { name: name, created_at: time::now() }')"
   >
     Add User
   </button>
 </div>
 
 <!-- UPDATE -->
-<div data-signal="{ user: $sql('SELECT * FROM user:$auth.id') }">
-  <input type="text" data-bind-value="$user.email">
-  <button data-on-click="$sql('UPDATE user:$auth.id SET email = $user.email')">
+<div data-signal="{ user: $sql('SELECT * FROM user:auth.id') }">
+  <input type="text" data-bind-value="user.email">
+  <button data-on-click="$sql('UPDATE user:auth.id SET email = user.email')">
     Save
   </button>
 </div>
 
 <!-- DELETE -->
-<button data-on-click="$sql('DELETE user:$userId'); window.location.reload()">
+<button data-on-click="$sql('DELETE user:userId'); window.location.reload()">
   Delete User
 </button>
 ```
@@ -1071,13 +1071,13 @@ loading state:
 <div data-signal="{ loading: false }">
   <div data-signal="{ users: [] }">
     <button
-      data-on-click="$loading = true; $sql('SELECT * FROM user').then(r => { $users = r; $loading = false; })"
+      data-on-click="loading = true; $sql('SELECT * FROM user').then(r => { users = r; loading = false; })"
     >
       Load Users
     </button>
-    <p data-if="$loading">Loading...</p>
-    <ul data-if="!$loading">
-      <li data-for="user in $users">{user.name}</li>
+    <p data-if="loading">Loading...</p>
+    <ul data-if="!loading">
+      <li data-for="user in users">{user.name}</li>
     </ul>
   </div>
 </div>
@@ -1102,22 +1102,22 @@ loading state:
 <!-- Real-time user list -->
 <div data-signal="{ users: $sql('LIVE SELECT * FROM user') }">
   <ul>
-    <li data-for="user in $users">{user.name}</li>
+    <li data-for="user in users">{user.name}</li>
   </ul>
 </div>
 
 <!-- Filtered live query -->
 <div
-  data-signal="{ myTodos: $sql('LIVE SELECT * FROM todo WHERE owner = $auth.id AND completed = false') }"
+  data-signal="{ myTodos: $sql('LIVE SELECT * FROM todo WHERE owner = auth.id AND completed = false') }"
 >
-  <p>You have {$myTodos.length} active todos</p>
+  <p>You have {myTodos.length} active todos</p>
 </div>
 
 <!-- Multi-user chat -->
 <div
-  data-signal="{ messages: $sql('LIVE SELECT * FROM message WHERE room = $roomId ORDER BY timestamp DESC LIMIT 50') }"
+  data-signal="{ messages: $sql('LIVE SELECT * FROM message WHERE room = roomId ORDER BY timestamp DESC LIMIT 50') }"
 >
-  <div data-for="msg in $messages">
+  <div data-for="msg in messages">
     <strong>{msg.author.name}:</strong> {msg.text}
   </div>
 </div>
@@ -1137,9 +1137,9 @@ loading state:
 ```html
 <!-- ❌ BAD (vulnerable to injection) -->
 <div data-signal="{ search: '' }">
-  <input type="text" data-bind-value="$search">
+  <input type="text" data-bind-value="search">
   <div
-    data-signal="{ results: $sql('SELECT * FROM product WHERE name CONTAINS ' + $search) }"
+    data-signal="{ results: $sql('SELECT * FROM product WHERE name CONTAINS ' + search) }"
   >
     <!-- If user types: '; DELETE FROM product; -- -->
   </div>
@@ -1147,20 +1147,20 @@ loading state:
 
 <!-- ✅ GOOD (safe parameterized query) -->
 <div data-signal="{ search: '' }">
-  <input type="text" data-bind-value="$search">
+  <input type="text" data-bind-value="search">
   <div
-    data-signal="{ results: $sql('SELECT * FROM product WHERE name CONTAINS $search', { search: $search }) }"
+    data-signal="{ results: $sql('SELECT * FROM product WHERE name CONTAINS search', { search: search }) }"
   >
-    <div data-for="product in $results">{product.name}</div>
+    <div data-for="product in results">{product.name}</div>
   </div>
 </div>
 ```
 
 **Built-in parameters**:
 
-- `$auth.id` - Current user's locker ID
-- `$auth.email` - Current user's email
-- `$auth.role` - Current user's role
+- `auth.id` - Current user's locker ID
+- `auth.email` - Current user's email
+- `auth.role` - Current user's role
 
 ### 7.4. External APIs (`$fetch`)
 
@@ -1171,11 +1171,11 @@ loading state:
 ```html
 <div data-signal="{ weather: null }">
   <button
-    data-on-click="$fetch('https://api.weather.com/v1/london').then(res => res.json()).then(data => $weather = data)"
+    data-on-click="$fetch('https://api.weather.com/v1/london').then(res => res.json()).then(data => weather = data)"
   >
     Get Weather
   </button>
-  <p data-if="$weather">Temp: {$weather.temp}</p>
+  <p data-if="weather">Temp: {weather.temp}</p>
 </div>
 ```
 
@@ -1220,31 +1220,31 @@ and automatic cleanup.
 
 ```html
 <div data-signal="{ socket: null, messages: [] }">
-  <button data-on-click="$socket = $ws('wss://chat.example.com')">
+  <button data-on-click="socket = $ws('wss://chat.example.com')">
     Connect
   </button>
 
   <!-- Reactive connection state -->
-  <p data-text="$socket?.state"></p>
+  <p data-text="socket?.state"></p>
   <!-- 'connecting' | 'open' | 'closed' -->
 
   <!-- Listen for messages -->
   <div
-    data-effect="if ($socket?.lastMessage) { $messages = [...$messages, $socket.lastMessage] }"
+    data-effect="if (socket?.lastMessage) { messages = [...messages, socket.lastMessage] }"
   >
   </div>
 
   <!-- Send message -->
   <input
     data-signal="{ draft: '' }"
-    data-bind-value="$draft"
-    data-on-keydown-enter="$socket?.send($draft); $draft = ''"
+    data-bind-value="draft"
+    data-on-keydown-enter="socket?.send(draft); draft = ''"
   >
 
   <!-- Message list -->
-  <div data-for="msg in $messages">{msg}</div>
+  <div data-for="msg in messages">{msg}</div>
 
-  <button data-on-click="$socket?.close()">Disconnect</button>
+  <button data-on-click="socket?.close()">Disconnect</button>
 </div>
 ```
 
@@ -1268,19 +1268,19 @@ endpoint.
 <!-- Query -->
 <div
   data-signal="{ users: [] }"
-  data-on-load="$users = (await $gql('query { users { id name email } }')).data.users"
+  data-on-load="users = (await $gql('query { users { id name email } }')).data.users"
 >
-  <div data-for="user in $users">{user.name} ({user.email})</div>
+  <div data-for="user in users">{user.name} ({user.email})</div>
 </div>
 
 <!-- Mutation -->
 <div data-signal="{ name: '', email: '' }">
-  <input data-bind-value="$name" placeholder="Name">
-  <input data-bind-value="$email" placeholder="Email">
+  <input data-bind-value="name" placeholder="Name">
+  <input data-bind-value="email" placeholder="Email">
   <button
     data-on-click="
-    await $gql('mutation($name: String!, $email: String!) { createUser(name: $name, email: $email) { id } }', { name: $name, email: $email });
-    $name = ''; $email = '';
+    await $gql('mutation(name: String!, email: String!) { createUser(name: name, email: email) { id } }', { name: name, email: email });
+    name = ''; email = '';
   "
   >
     Create User
@@ -1290,10 +1290,10 @@ endpoint.
 <!-- With variables -->
 <div
   data-signal="{ userId: 'user:1', profile: null }"
-  data-on-load="$profile = (await $gql('query($id: ID!) { user(id: $id) { name avatar bio } }', { id: $userId })).data.user"
+  data-on-load="profile = (await $gql('query(id: ID!) { user(id: id) { name avatar bio } }', { id: userId })).data.user"
 >
-  <h2 data-text="$profile?.name"></h2>
-  <p data-text="$profile?.bio"></p>
+  <h2 data-text="profile?.name"></h2>
+  <p data-text="profile?.bio"></p>
 </div>
 ```
 
@@ -1313,9 +1313,9 @@ auto-parse JSON responses.
 ```html
 <div
   data-signal="{ users: [] }"
-  data-on-load="$users = await $get('/api/users')"
+  data-on-load="users = await $get('/api/users')"
 >
-  <div data-for="user in $users">{user.name}</div>
+  <div data-for="user in users">{user.name}</div>
 </div>
 ```
 
@@ -1323,7 +1323,7 @@ auto-parse JSON responses.
 
 ```html
 <button
-  data-on-click="await $post('/api/users', { name: $name, email: $email })"
+  data-on-click="await $post('/api/users', { name: name, email: email })"
 >
   Create User
 </button>
@@ -1333,7 +1333,7 @@ auto-parse JSON responses.
 
 ```html
 <button
-  data-on-click="await $put('/api/users/' + $userId, { name: $name, email: $email })"
+  data-on-click="await $put('/api/users/' + userId, { name: name, email: email })"
 >
   Replace User
 </button>
@@ -1343,7 +1343,7 @@ auto-parse JSON responses.
 
 ```html
 <button
-  data-on-click="await $patch('/api/users/' + $userId, { email: $newEmail })"
+  data-on-click="await $patch('/api/users/' + userId, { email: newEmail })"
 >
   Update Email
 </button>
@@ -1352,7 +1352,7 @@ auto-parse JSON responses.
 #### 7.9.5. `$delete(url, [options])`
 
 ```html
-<button data-on-click="await $delete('/api/users/' + $userId)">
+<button data-on-click="await $delete('/api/users/' + userId)">
   Delete User
 </button>
 ```
@@ -1382,14 +1382,14 @@ updated.
 ```html
 <!-- Wait for DOM to update, then scroll -->
 <button
-  data-on-click="$messages = [...$messages, msg]; $nextTick(() => $refs.container.scrollTop = $refs.container.scrollHeight)"
+  data-on-click="messages = [...messages, msg]; $nextTick(() => $refs.container.scrollTop = $refs.container.scrollHeight)"
 >
   Send
 </button>
 
 <!-- Promise form -->
 <button
-  data-on-click="$count++; await $nextTick(); console.log('DOM updated, count is now:', $refs.counter.textContent)"
+  data-on-click="count++; await $nextTick(); console.log('DOM updated, count is now:', $refs.counter.textContent)"
 >
   Increment
 </button>
@@ -1401,12 +1401,12 @@ Dispatches a `CustomEvent` on the current element. Bubbles by default.
 
 ```html
 <!-- Child dispatches event -->
-<button data-on-click="$dispatch('item-selected', { id: $itemId })">
+<button data-on-click="$dispatch('item-selected', { id: itemId })">
   Select
 </button>
 
 <!-- Parent listens -->
-<div data-on-item-selected="handleSelection($event.detail.id)">
+<div data-on-item-selected="handleSelection(event.detail.id)">
   <!-- child buttons here -->
 </div>
 ```
@@ -1421,14 +1421,14 @@ on first access.
 ```html
 <!-- Component A: writes to store -->
 <div data-signal="{ cart: $store('cart', []) }">
-  <button data-on-click="$cart = [...$cart, { id: $product.id, qty: 1 }]">
+  <button data-on-click="cart = [...cart, { id: product.id, qty: 1 }]">
     Add to Cart
   </button>
 </div>
 
 <!-- Component B: reads same store (anywhere in the DOM) -->
 <div data-signal="{ cart: $store('cart') }">
-  <p data-text="$cart.length + ' items in cart'"></p>
+  <p data-text="cart.length + ' items in cart'"></p>
 </div>
 ```
 
@@ -1441,10 +1441,10 @@ Observe a reactive expression and invoke a callback when it changes.
   data-signal="{ searchQuery: '' }"
   data-on-load="$watch('searchQuery', (newVal, oldVal) => {
        console.log('Search changed from', oldVal, 'to', newVal);
-       $results = await $get('/api/search?q=' + newVal);
+       results = await $get('/api/search?q=' + newVal);
      })"
 >
-  <input data-bind-value="$searchQuery" placeholder="Search...">
+  <input data-bind-value="searchQuery" placeholder="Search...">
 </div>
 ```
 
@@ -1500,20 +1500,20 @@ anchor element.
 
 ### 7.13. Cache Sprites
 
-#### 7.13.1. `$cache`
+#### 7.13.1. `cache`
 
 Cache Storage API wrapper. Returns reactive containers.
 
 ```html
 <!-- Cache a fetch response -->
-<button data-on-click="$cache.put('assets', '/api/config')">
+<button data-on-click="cache.put('assets', '/api/config')">
   Cache Config
 </button>
 
 <!-- Read from cache -->
 <div
   data-signal="{ config: null }"
-  data-on-load="config = $cache.match('assets', '/api/config')"
+  data-on-load="config = cache.match('assets', '/api/config')"
 >
   <span data-show="config.status === 'loading'">Loading...</span>
   <pre data-show="config.status === 'ready'" data-text="config.data"></pre>
@@ -1522,109 +1522,109 @@ Cache Storage API wrapper. Returns reactive containers.
 <!-- Check if URL is cached -->
 <div
   data-signal="{ isCached: null }"
-  data-on-load="isCached = $cache.has('assets', '/api/config')"
+  data-on-load="isCached = cache.has('assets', '/api/config')"
 >
   <span data-text="isCached.data ? 'Cached ✓' : 'Not cached'"></span>
 </div>
 
 <!-- List cached URLs -->
-<div data-signal="{ urls: null }" data-on-load="urls = $cache.keys('assets')">
+<div data-signal="{ urls: null }" data-on-load="urls = cache.keys('assets')">
   <template data-for="u in urls.data">
     <li data-text="u"></li>
   </template>
 </div>
 
 <!-- Clear cache -->
-<button data-on-click="$cache.clear('assets')">Clear Cache</button>
+<button data-on-click="cache.clear('assets')">Clear Cache</button>
 ```
 
 **Methods**:
 
-- `$cache.put(name, url, [response])` → `{ status, error }` — caches a URL
+- `cache.put(name, url, [response])` → `{ status, error }` — caches a URL
   (fetches if no response given)
-- `$cache.match(name, url)` → `{ data: string, status, error }` — lookup +
+- `cache.match(name, url)` → `{ data: string, status, error }` — lookup +
   auto-extract text
-- `$cache.has(name, url)` → `{ data: boolean, status, error }`
-- `$cache.delete(name, url)` → `{ status, error }`
-- `$cache.keys(name)` → `{ data: string[], status, error }`
-- `$cache.clear(name)` → `{ status, error }`
+- `cache.has(name, url)` → `{ data: boolean, status, error }`
+- `cache.delete(name, url)` → `{ status, error }`
+- `cache.keys(name)` → `{ data: string[], status, error }`
+- `cache.clear(name)` → `{ status, error }`
 
 ### 7.14. Application & Background Sprites
 
-#### 7.14.1. `$sw`
+#### 7.14.1. `sw`
 
 Service Worker lifecycle management.
 
 ```html
-<div data-on-load="$sw.register('/sw.js')">
-  <span data-text="'SW: ' + $sw.status"></span>
-  <button data-show="$sw.updateAvailable" data-on-click="$sw.skipWaiting()">
+<div data-on-load="sw.register('/sw.js')">
+  <span data-text="'SW: ' + sw.status"></span>
+  <button data-show="sw.updateAvailable" data-on-click="sw.skipWaiting()">
     Update Available — Reload
   </button>
 </div>
 ```
 
-**Properties**: `$sw.status` (reactive), `$sw.controller`, `$sw.updateAvailable`
+**Properties**: `sw.status` (reactive), `sw.controller`, `sw.updateAvailable`
 **Methods**: `.register(url, opts)`, `.update()`, `.unregister()`,
 `.postMessage(data)`, `.skipWaiting()`
 
-#### 7.14.2. `$notification`
+#### 7.14.2. `notification`
 
 Web Notifications with auto-permission handling.
 
 ```html
-<button data-on-click="$notification.send('Hello!', { body: 'World' })">
+<button data-on-click="notification.send('Hello!', { body: 'World' })">
   Notify
 </button>
-<span data-text="'Permission: ' + $notification.permission"></span>
+<span data-text="'Permission: ' + notification.permission"></span>
 ```
 
-**Properties**: `$notification.permission` (reactive), `$notification.supported`
+**Properties**: `notification.permission` (reactive), `notification.supported`
 **Methods**: `.send(title, opts)`, `.requestPermission()`, `.closeAll()`
 
-#### 7.14.3. `$push`
+#### 7.14.3. `push`
 
 Push Messaging subscription management.
 
 ```html
-<button data-on-click="$push.subscribe(vapidPublicKey)">Enable Push</button>
+<button data-on-click="push.subscribe(vapidPublicKey)">Enable Push</button>
 <button
-  data-show="$push.status === 'active'"
-  data-on-click="$push.unsubscribe()"
+  data-show="push.status === 'active'"
+  data-on-click="push.unsubscribe()"
 >
   Disable Push
 </button>
 ```
 
-**Properties**: `$push.subscription` (reactive), `$push.status` **Methods**:
+**Properties**: `push.subscription` (reactive), `push.status` **Methods**:
 `.subscribe(vapidKey)`, `.unsubscribe()`
 
-#### 7.14.4. `$bgFetch`
+#### 7.14.4. `bgFetch`
 
 Background Fetch for large downloads.
 
 **Methods**: `.fetch(id, urls, opts)`, `.get(id)`, `.abort(id)`
 
-#### 7.14.5. `$bgSync`
+#### 7.14.5. `bgSync`
 
 One-time Background Sync.
 
 **Methods**: `.register(tag)` — returns `{ status, error }` **Properties**:
 `.tags` — returns `{ data: string[], status, error }`
 
-#### 7.14.6. `$periodicSync`
+#### 7.14.6. `periodicSync`
 
 Periodic Background Sync.
 
 **Methods**: `.register(tag, { minInterval })`, `.unregister(tag)`
 **Properties**: `.tags` — returns `{ data: string[], status, error }`
 
-#### 7.14.7. `$payment`
+#### 7.14.7. `payment`
 
 Payment Request API.
 
 ```html
-<button data-on-click="result = $payment.request(methods, details)">
+<button data-on-click="result = payment.request(methods, details)">
   Pay Now
 </button>
 <span data-show="result?.status === 'done'">✓ Payment Complete</span>
@@ -1667,7 +1667,7 @@ Reactive proxy of `window` properties. Dimensions and DPR are read-only
 <button data-on-click="_window.scrollY = 0">Back to Top</button>
 
 <!-- Write: update document title -->
-<div data-effect="_window.title = 'Dashboard (' + $notifications.length + ')'">
+<div data-effect="_window.title = 'Dashboard (' + notifications.length + ')'">
 </div>
 ```
 
@@ -1685,8 +1685,8 @@ event.
 ```html
 <!-- Read: initialize from stored value -->
 <div data-signal="{ theme: _localStorage.theme || 'light' }">
-  <button data-on-click="$theme = $theme === 'light' ? 'dark' : 'light'">
-    Toggle Theme ({$theme})
+  <button data-on-click="theme = theme === 'light' ? 'dark' : 'light'">
+    Toggle Theme ({theme})
   </button>
 </div>
 
@@ -1890,7 +1890,7 @@ changes.
 ```html
 <div
   data-signal="{ mapCenter: null }"
-  data-effect="$mapCenter = { lat: _geolocation.latitude, lng: _geolocation.longitude }"
+  data-effect="mapCenter = { lat: _geolocation.latitude, lng: _geolocation.longitude }"
 >
   <p data-text="'Lat: ' + _geolocation.latitude?.toFixed(4)"></p>
   <p data-text="'Lng: ' + _geolocation.longitude?.toFixed(4)"></p>
@@ -1989,10 +1989,10 @@ iframe additions/removals via MutationObserver.
 ```html
 <div data-signal="{ formData: { email: '', password: '' } }">
   <form
-    data-on-submit:prevent="$sql('CREATE session CONTENT { user: $formData.email, password: $formData.password }').then(r => window.location = '/dashboard')"
+    data-on-submit:prevent="$sql('CREATE session CONTENT { user: formData.email, password: formData.password }').then(r => window.location = '/dashboard')"
   >
-    <input type="email" data-bind-value="$formData.email" required>
-    <input type="password" data-bind-value="$formData.password" required>
+    <input type="email" data-bind-value="formData.email" required>
+    <input type="password" data-bind-value="formData.password" required>
     <button type="submit">Log In</button>
   </form>
 </div>
@@ -2004,24 +2004,24 @@ iframe additions/removals via MutationObserver.
 <div data-signal="{ form: { email: '', password: '', errors: {} } }">
   <form
     data-on-submit:prevent="
-    $form.errors = {};
-    if (!$form.email.includes('@')) $form.errors.email = 'Invalid email';
-    if ($form.password.length < 8) $form.errors.password = 'Password too short';
-    if (Object.keys($form.errors).length === 0) {
-      $sql('CREATE user CONTENT $form').then(() => alert('Registered!'));
+    form.errors = {};
+    if (!form.email.includes('@')) form.errors.email = 'Invalid email';
+    if (form.password.length < 8) form.errors.password = 'Password too short';
+    if (Object.keys(form.errors).length === 0) {
+      $sql('CREATE user CONTENT form').then(() => alert('Registered!'));
     }
   "
   >
     <div>
-      <input type="email" data-bind-value="$form.email">
-      <p data-if="$form.errors.email" style="color: red">
-        {$form.errors.email}
+      <input type="email" data-bind-value="form.email">
+      <p data-if="form.errors.email" style="color: red">
+        {form.errors.email}
       </p>
     </div>
     <div>
-      <input type="password" data-bind-value="$form.password">
-      <p data-if="$form.errors.password" style="color: red">
-        {$form.errors.password}
+      <input type="password" data-bind-value="form.password">
+      <p data-if="form.errors.password" style="color: red">
+        {form.errors.password}
       </p>
     </div>
     <button type="submit">Register</button>
@@ -2038,18 +2038,18 @@ iframe additions/removals via MutationObserver.
   <div data-signal="{ pageSize: 10 }">
     <div data-signal="{ users: $sql('SELECT * FROM user') }">
       <div
-        data-signal="{ paginatedUsers: $users.slice(($page - 1) * $pageSize, $page * $pageSize) }"
+        data-signal="{ paginatedUsers: users.slice((page - 1) * pageSize, page * pageSize) }"
       >
         <ul>
-          <li data-for="user in $paginatedUsers">{user.name}</li>
+          <li data-for="user in paginatedUsers">{user.name}</li>
         </ul>
-        <button data-on-click="$page--" data-bind-disabled="$page === 1">
+        <button data-on-click="page--" data-bind-disabled="page === 1">
           Previous
         </button>
-        <span>Page {$page} of {Math.ceil($users.length / $pageSize)}</span>
+        <span>Page {page} of {Math.ceil(users.length / pageSize)}</span>
         <button
-          data-on-click="$page++"
-          data-bind-disabled="$page >= Math.ceil($users.length / $pageSize)"
+          data-on-click="page++"
+          data-bind-disabled="page >= Math.ceil(users.length / pageSize)"
         >
           Next
         </button>
@@ -2065,15 +2065,15 @@ iframe additions/removals via MutationObserver.
 <div data-signal="{ page: 1 }">
   <div data-signal="{ pageSize: 10 }">
     <div
-      data-signal="{ users: $sql('SELECT * FROM user LIMIT $pageSize START ($page - 1) * $pageSize', { page: $page, pageSize: $pageSize }) }"
+      data-signal="{ users: $sql('SELECT * FROM user LIMIT pageSize START (page - 1) * pageSize', { page: page, pageSize: pageSize }) }"
     >
       <ul>
-        <li data-for="user in $users">{user.name}</li>
+        <li data-for="user in users">{user.name}</li>
       </ul>
-      <button data-on-click="$page--; $users = $sql('SELECT...')">
+      <button data-on-click="page--; users = $sql('SELECT...')">
         Previous
       </button>
-      <button data-on-click="$page++; $users = $sql('SELECT...')">Next</button>
+      <button data-on-click="page++; users = $sql('SELECT...')">Next</button>
     </div>
   </div>
 </div>
@@ -2088,19 +2088,19 @@ iframe additions/removals via MutationObserver.
       <div
         data-ref="container"
         data-on-scroll="
-      if ($refs.container.scrollTop + $refs.container.clientHeight >= $refs.container.scrollHeight - 100 && !$loading) {
-        $loading = true;
-        $sql('SELECT * FROM user LIMIT 20 START $page * 20', { page: $page }).then(newUsers => {
-          $users = $users.concat(newUsers);
-          $page++;
-          $loading = false;
+      if ($refs.container.scrollTop + $refs.container.clientHeight >= $refs.container.scrollHeight - 100 && !loading) {
+        loading = true;
+        $sql('SELECT * FROM user LIMIT 20 START page * 20', { page: page }).then(newUsers => {
+          users = users.concat(newUsers);
+          page++;
+          loading = false;
         });
       }
     "
         style="height: 500px; overflow-y: auto"
       >
-        <div data-for="user in $users">{user.name}</div>
-        <p data-if="$loading">Loading more...</p>
+        <div data-for="user in users">{user.name}</div>
+        <p data-if="loading">Loading more...</p>
       </div>
     </div>
   </div>
@@ -2111,12 +2111,12 @@ iframe additions/removals via MutationObserver.
 
 ```html
 <div data-signal="{ showModal: false }">
-  <button data-on-click="$showModal = true">Open Modal</button>
+  <button data-on-click="showModal = true">Open Modal</button>
 
-  <dialog data-bind-open="$showModal">
+  <dialog data-bind-open="showModal">
     <h2>Modal Title</h2>
     <p>Modal content goes here</p>
-    <button data-on-click="$showModal = false">Close</button>
+    <button data-on-click="showModal = false">Close</button>
   </dialog>
 </div>
 ```
@@ -2125,24 +2125,24 @@ iframe additions/removals via MutationObserver.
 
 ```html
 <div data-signal="{ showModal: false }">
-  <button data-on-click="$showModal = true">Open</button>
+  <button data-on-click="showModal = true">Open</button>
 
   <!-- Backdrop -->
   <div
-    data-if="$showModal"
-    data-on-click="$showModal = false"
+    data-if="showModal"
+    data-on-click="showModal = false"
     style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 999"
   >
   </div>
 
   <!-- Modal -->
   <div
-    data-if="$showModal"
+    data-if="showModal"
     style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 8px; z-index: 1000"
   >
     <h2>Modal Title</h2>
     <p>Content</p>
-    <button data-on-click="$showModal = false">Close</button>
+    <button data-on-click="showModal = false">Close</button>
   </div>
 </div>
 ```
@@ -2154,20 +2154,20 @@ iframe additions/removals via MutationObserver.
   <!-- Tab headers -->
   <div class="tab-headers">
     <button
-      data-class-active="$activeTab === 'profile'"
-      data-on-click="$activeTab = 'profile'"
+      data-class-active="activeTab === 'profile'"
+      data-on-click="activeTab = 'profile'"
     >
       Profile
     </button>
     <button
-      data-class-active="$activeTab === 'settings'"
-      data-on-click="$activeTab = 'settings'"
+      data-class-active="activeTab === 'settings'"
+      data-on-click="activeTab = 'settings'"
     >
       Settings
     </button>
     <button
-      data-class-active="$activeTab === 'billing'"
-      data-on-click="$activeTab = 'billing'"
+      data-class-active="activeTab === 'billing'"
+      data-on-click="activeTab = 'billing'"
     >
       Billing
     </button>
@@ -2175,15 +2175,15 @@ iframe additions/removals via MutationObserver.
 
   <!-- Tab content -->
   <div class="tab-content">
-    <div data-if="$activeTab === 'profile'">
+    <div data-if="activeTab === 'profile'">
       <h2>Profile</h2>
       <p>Profile content...</p>
     </div>
-    <div data-if="$activeTab === 'settings'">
+    <div data-if="activeTab === 'settings'">
       <h2>Settings</h2>
       <p>Settings content...</p>
     </div>
-    <div data-if="$activeTab === 'billing'">
+    <div data-if="activeTab === 'billing'">
       <h2>Billing</h2>
       <p>Billing content...</p>
     </div>
@@ -2202,25 +2202,25 @@ For lists with 10,000+ items, render only visible items:
       <div data-signal="{ containerHeight: 500 }">
         <div
           data-signal="{ visibleItems: (() => {
-    const start = Math.floor($scrollTop / $itemHeight);
-    const end = start + Math.ceil($containerHeight / $itemHeight) + 1;
-    return $allItems.slice(start, end).map((item, i) => ({ ...item, index: start + i }));
+    const start = Math.floor(scrollTop / itemHeight);
+    const end = start + Math.ceil(containerHeight / itemHeight) + 1;
+    return allItems.slice(start, end).map((item, i) => ({ ...item, index: start + i }));
   })() }"
         >
           <div
             data-ref="container"
-            data-on-scroll="$scrollTop = $refs.container.scrollTop"
-            data-style-height="$containerHeight + 'px'"
+            data-on-scroll="scrollTop = $refs.container.scrollTop"
+            data-style-height="containerHeight + 'px'"
             style="overflow-y: auto; position: relative"
           >
             <!-- Spacer for scroll height -->
-            <div data-style-height="($allItems.length * $itemHeight) + 'px'">
+            <div data-style-height="(allItems.length * itemHeight) + 'px'">
             </div>
 
             <!-- Visible items -->
             <div
-              data-for="item in $visibleItems"
-              data-style-transform="'translateY(' + (item.index * $itemHeight) + 'px)'"
+              data-for="item in visibleItems"
+              data-style-transform="'translateY(' + (item.index * itemHeight) + 'px)'"
               style="position: absolute; width: 100%"
             >
               {item.name}
@@ -2241,17 +2241,17 @@ For lists with 10,000+ items, render only visible items:
     <div data-signal="{ debounceTimer: null }">
       <input
         type="text"
-        data-bind-value="$searchQuery"
+        data-bind-value="searchQuery"
         data-on-input="
-      clearTimeout($debounceTimer);
-      $debounceTimer = setTimeout(() => {
-        $sql('SELECT * FROM product WHERE name CONTAINS $q', { q: $searchQuery })
-          .then(r => $searchResults = r);
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        $sql('SELECT * FROM product WHERE name CONTAINS q', { q: searchQuery })
+          .then(r => searchResults = r);
       }, 300);
     "
       >
       <ul>
-        <li data-for="result in $searchResults">{result.name}</li>
+        <li data-for="result in searchResults">{result.name}</li>
       </ul>
     </div>
   </div>
@@ -2275,8 +2275,8 @@ For lists with 10,000+ items, render only visible items:
   };
 })() }"
   >
-    <p>Sum: {$memoizedSum($numbers)}</p>
-    <button data-on-click="$numbers.push(11)">Add Number</button>
+    <p>Sum: {memoizedSum(numbers)}</p>
+    <button data-on-click="numbers.push(11)">Add Number</button>
   </div>
 </div>
 ```
@@ -2375,7 +2375,7 @@ is removed.
     <div
       data-route="/admin/*"
       data-component="/pages/admin.html"
-      data-route-before-enter="async (ctx) => ctx.signals.value('$auth.role') === 'admin'"
+      data-route-before-enter="async (ctx) => ctx.signals.value('auth.role') === 'admin'"
     >
     </div>
 
@@ -2421,11 +2421,11 @@ is removed.
   data-route="/dashboard"
   data-component="/pages/dashboard.html"
   data-route-before-enter="async (ctx) => {
-       if (!ctx.signals.value('$auth.user')) return '/login';
+       if (!ctx.signals.value('auth.user')) return '/login';
        return true;
      }"
   data-route-before-leave="async (ctx) => {
-       if (ctx.signals.value('$hasUnsavedChanges')) {
+       if (ctx.signals.value('hasUnsavedChanges')) {
          return confirm('Discard changes?');
        }
        return true;
@@ -2452,8 +2452,8 @@ The router automatically saves and restores scroll positions during navigation:
     <nav>
       <a href="/home">Home</a>
       <a href="/products">Products</a>
-      <a href="/account" data-if="$auth.user">Account</a>
-      <a href="/login" data-if="!$auth.user">Login</a>
+      <a href="/account" data-if="auth.user">Account</a>
+      <a href="/login" data-if="!auth.user">Login</a>
     </nav>
 
     <!-- Route definitions -->
@@ -2464,13 +2464,13 @@ The router automatically saves and restores scroll positions during navigation:
     <div
       data-route="/login"
       data-component="/pages/login.html"
-      data-route-before-enter="async (ctx) => ctx.signals.value('$auth.user') ? '/account' : true"
+      data-route-before-enter="async (ctx) => ctx.signals.value('auth.user') ? '/account' : true"
     >
     </div>
     <div
       data-route="/account"
       data-component="/pages/account.html"
-      data-route-before-enter="async (ctx) => ctx.signals.value('$auth.user') ? true : '/login'"
+      data-route-before-enter="async (ctx) => ctx.signals.value('auth.user') ? true : '/login'"
     >
     </div>
 
@@ -2515,7 +2515,7 @@ template source:
 | **Same-page ID** | `#id` reference      | `data-component="#my-template"`                      |
 | **Inline**       | `<template>` string  | `data-component="<template><p>Hello</p></template>"` |
 | **Data URI**     | `data:` URL          | `data-component="data:text/html;base64,..."`         |
-| **Signal**       | `$signal` expression | `data-component="$currentView"`                      |
+| **Signal**       | `signal` expression | `data-component="currentView"`                      |
 
 ### 10.2. Component Template Structure
 
@@ -2535,9 +2535,9 @@ A component template file (`/components/counter.html`):
   </style>
 
   <div data-signal="{ count: 0 }">
-    <p class="count">{$count}</p>
-    <button data-on-click="$count++">Increment</button>
-    <button data-on-click="$count--">Decrement</button>
+    <p class="count">{count}</p>
+    <button data-on-click="count++">Increment</button>
+    <button data-on-click="count--">Decrement</button>
   </div>
 
   <script>
@@ -2580,8 +2580,8 @@ Pass data into components using `data-signals-[name]` attributes:
 <div data-signal="{ userName: 'Ada', userAge: 30 }">
   <user-card
     data-component="/components/user-card.html"
-    data-signals-name="$userName"
-    data-signals-age="$userAge"
+    data-signals-name="userName"
+    data-signals-age="userAge"
   >
   </user-card>
 </div>
@@ -2591,14 +2591,14 @@ Pass data into components using `data-signals-[name]` attributes:
 <!-- /components/user-card.html -->
 <template>
   <div>
-    <h2>{$props.name}</h2>
-    <p>Age: {$props.age}</p>
+    <h2>{props.name}</h2>
+    <p>Age: {props.age}</p>
   </div>
 </template>
 ```
 
 Props are **reactive** — when the parent's signal changes, the component's
-`$props` update automatically.
+`props` update automatically.
 
 ### 10.5. Script Isolation & Context
 
@@ -2609,16 +2609,16 @@ context:
 | :----------------------- | :--------------------------------------------------------- |
 | `componentInstance`      | The Custom Element instance (`this` equivalent)            |
 | `ds`                     | The Nexus-UX runtime context                               |
-| `$signals`               | Proxy for reading scoped signals (e.g., `$signals.$count`) |
-| `$props`                 | Reactive props passed via `data-signals-*`                 |
+| `signals`               | Proxy for reading scoped signals (e.g., `signals.count`) |
+| `props`                 | Reactive props passed via `data-signals-*`                 |
 | `emit(name, detail)`     | Dispatch a custom event (bubbles, composed)                |
 | `registerCleanup(fn)`    | Register a function to run on component disconnect         |
 | `generateScopedId(base)` | Generate a unique, instance-scoped ID                      |
-| `$actions`               | Object populated with exported functions from the script   |
+| `actions`               | Object populated with exported functions from the script   |
 
 ```html
 <template>
-  <button data-on-click="$actions.handleClick()">
+  <button data-on-click="actions.handleClick()">
     Click me
   </button>
 
@@ -2641,8 +2641,8 @@ context:
 | `connectedCallback`           | Element enters the DOM                   | Auto-handled; triggers template render             |
 | `disconnectedCallback`        | Element leaves the DOM                   | Auto-handled; runs cleanup functions               |
 | `contentReadyCallback()`      | Template + styles + scripts fully loaded | Override in component script for post-render logic |
-| `data-component-connected`    | Declarative connected hook               | `data-component-connected="$onConnect()"`          |
-| `data-component-disconnected` | Declarative disconnected hook            | `data-component-disconnected="$onDisconnect()"`    |
+| `data-component-connected`    | Declarative connected hook               | `data-component-connected="onConnect()"`          |
+| `data-component-disconnected` | Declarative disconnected hook            | `data-component-disconnected="onDisconnect()"`    |
 
 ### 10.7. Form-Associated Components
 
@@ -2668,16 +2668,16 @@ The component source can be a reactive signal, enabling dynamic view switching:
 ```html
 <div data-signal="{ currentView: '/components/dashboard.html' }">
   <nav>
-    <button data-on-click="$currentView = '/components/dashboard.html'">
+    <button data-on-click="currentView = '/components/dashboard.html'">
       Dashboard
     </button>
-    <button data-on-click="$currentView = '/components/settings.html'">
+    <button data-on-click="currentView = '/components/settings.html'">
       Settings
     </button>
   </nav>
 
-  <!-- Component re-renders when $currentView changes -->
-  <dynamic-page data-component="$currentView"></dynamic-page>
+  <!-- Component re-renders when currentView changes -->
+  <dynamic-page data-component="currentView"></dynamic-page>
 </div>
 ```
 
@@ -2699,7 +2699,7 @@ dynamic component outlet:
 ```
 
 Router params are automatically injected into the component's props, so within
-`/pages/user.html` rendered by route `/user/:id`, `$props.id` is available.
+`/pages/user.html` rendered by route `/user/:id`, `props.id` is available.
 
 ---
 
@@ -2765,12 +2765,12 @@ power of Nexus-UX's unified architecture.
 <div
   data-signal="{ activeSensors: $sql('LIVE SELECT * FROM sensor WHERE active = true') }"
 >
-  <div data-for="sensor in $activeSensors" data-key="sensor.id">
+  <div data-for="sensor in activeSensors" data-key="sensor.id">
     <div
       class="card bg-base-200 shadow-lg"
       data-style-border-left-width="4"
       data-style-border-left-color="sensor.status === 'ok' ? 'green' : 'red'"
-      data-on-intersect:once="$sql('UPDATE sensor SET last_viewed = time::now() WHERE id = $sensor.id')"
+      data-on-intersect:once="$sql('UPDATE sensor SET last_viewed = time::now() WHERE id = sensor.id')"
     >
       <h3 data-text="sensor.name"></h3>
       <p>Value: <span data-text="sensor.value"></span></p>
@@ -2800,8 +2800,8 @@ numeric `border-left-width`), `data-on-intersect` (lazy hydration), `data-var`
   <!-- User-Tier View -->
   <section data-if="#appAuth.role === 'user' || #appAuth.role === 'admin'">
     <h2>Dashboard</h2>
-    <div data-signal="{ myDocs: $sql('SELECT * FROM document WHERE owner = $auth.id') }">
-      <div data-for="doc in $myDocs" data-text="doc.title"></div>
+    <div data-signal="{ myDocs: $sql('SELECT * FROM document WHERE owner = auth.id') }">
+      <div data-for="doc in myDocs" data-text="doc.title"></div>
     </div>
   </section>
 
@@ -2810,11 +2810,11 @@ numeric `border-left-width`), `data-on-intersect` (lazy hydration), `data-var`
     <h2>⚡ Admin Control Panel</h2>
     <div data-signal="{ allUsers: $sql('LIVE SELECT * FROM user') }">
       <table>
-        <tr data-for="u in $allUsers" data-key="u.id">
+        <tr data-for="u in allUsers" data-key="u.id">
           <td data-text="u.name"></td>
           <td data-text="u.email"></td>
           <td>
-            <button data-on-click:confirm('Are you sure?')="$sql('DELETE user WHERE id = $u.id')">Delete</button>
+            <button data-on-click:confirm('Are you sure?')="$sql('DELETE user WHERE id = u.id')">Delete</button>
           </td>
         </tr>
       </table>
@@ -2905,7 +2905,7 @@ import { expect, test } from "@playwright/test";
 
 test("can add and delete todos", async ({ page }) => {
   await page.goto("http://localhost:3000");
-  await page.fill('input[data-bind\\:value="$newTodo"]', "Buy milk");
+  await page.fill('input[data-bind\\:value="newTodo"]', "Buy milk");
   await page.click('button:has-text("Add")');
   await expect(page.locator('li:has-text("Buy milk")')).toBeVisible();
   await page.click('li:has-text("Buy milk") button:has-text("Delete")');

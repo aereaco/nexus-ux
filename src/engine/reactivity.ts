@@ -78,10 +78,28 @@ export function elementBoundEffect(
   effectCallback: () => void,
   options?: ReactiveEffectOptions
 ): [ReactiveEffectRunner<void>, () => void] {
-  // For this phase, we rely on standard creation for stability.
-  let runner;
+
+  // Wrap the callback to catch Suspense Promises thrown by network proxies
+  const suspenseWrappedCallback = () => {
+    try {
+      effectCallback();
+    } catch (err) {
+      if (err instanceof Promise) {
+        // Deep Suspense Proxy tripped. Suspend this specific effect and resume when resolved.
+        if ((window as any)._nexusDebug) console.debug(`[Nexus Suspense] <${el.tagName}> suspended pending network resolution.`);
+        err.finally(() => {
+          if ((window as any)._nexusDebug) console.debug(`[Nexus Suspense] <${el.tagName}> resumed.`);
+          if (runner) runner();
+        });
+      } else {
+        throw err; // Standard error, bubble up
+      }
+    }
+  };
+
+  let runner: ReactiveEffectRunner<void>;
   try {
-    runner = effect(effectCallback, options);
+    runner = effect(suspenseWrappedCallback, options);
   } catch (e) {
     console.error(`[Reactivity Error] effect() failed for <${el.tagName}>:`, e);
     throw e;

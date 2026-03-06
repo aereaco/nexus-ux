@@ -1,0 +1,12 @@
+<div style="border: 2px solid red; padding: 20px;" data-signal="({ myLocalVar: 'Shadowing scope' })">
+    <h2>I am a component with an internal data-signal</h2>
+    <p>Title: <span id="test-output" data-text="testTitle"></span></p>
+    <p>Local: <span data-text="myLocalVar"></span></p>
+    <script>
+        console.log('Test component loaded. Evaluating docText...');
+        setTimeout(() => {
+            const el = document.getElementById('test-output');
+            console.log('Output text is:', el.textContent);
+        }, 1000);
+    </script>
+</div>

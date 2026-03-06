@@ -159,7 +159,7 @@ function UserList() {
 ```html
 <!-- Nexus-UX -->
 <div data-signal="{ users: $sql('LIVE SELECT * FROM user') }">
-  <div data-for="user in $users">
+  <div data-for="user in users">
     <p>{user.name}</p>
   </div>
 </div>
@@ -326,8 +326,8 @@ legacy frameworks by utilizing direct token-to-function mapping.
 | `.`    | **Native Access**    | **Unwrapped Integrity**. Bypasses the Reactive Proxy for high-frequency/raw JS/DOM access. | `<div data-text="user.name"></div>`                               |
 | `#`    | **Global Signal**    | **Reactive Source**. Accesses user-defined Global Signals managed by the Binary Heap.      | `<div data-text="#auth.user"></div>`                              |
 | `_`    | **Env Mirror**       | **API Snapshot**. Read-only access to reactive wrappers of Browser/OS APIs.                | `<div data-text="_window.innerWidth"></div>`                      |
-| `:`    | **Modifier**         | **Pipeline Anchor**. Defines interceptors, wrappers, and pipeways for logical execution.   | `<button data-on-click:once="$save()"></button>`                  |
-| `$`    | **Logic / Selector** | **Sprite / Command**. Framework-level tools ($tools) and the Unified Selector engine.      | `<button data-on-click="$(^form).$save()"></button>`              |
+| `:`    | **Modifier**         | **Pipeline Anchor**. Defines interceptors, wrappers, and pipeways for logical execution.   | `<button data-on-click:once="save()"></button>`                  |
+| `$`    | **Logic / Selector** | **Sprite / Command**. Framework-level tools (tools) and the Unified Selector engine.      | `<button data-on-click="$(^form).save()"></button>`              |
 | `@`    | **Scope Rule**       | **Boundary Rule**. Site-aware logic based on environment, OS, or security state.           | `<div data-text="@media(min-width: 1024px) { 'Desktop' }"></div>` |
 
 #### 2.1.1. Deep-Dive: Native Access (`.`) vs. Reactive Signals (`#`)
@@ -420,19 +420,19 @@ context. Each sprite is a single-purpose function, invoked via the `$` prefix.
 | Sprite                         | Description                                                                                                                                                                                          | Practical Example                                                                |
 | :----------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------- |
 | **`$sql(query, [bindings])`**  | SurrealQL — executes a SurrealDB query via the Nexus-IO WebSocket. Supports `LIVE SELECT` for real-time subscriptions. Returns a `Promise`.                                                          | `data-signal="{ users: $sql('LIVE SELECT * FROM user') }"`                       |
-| **`$gql(query, [variables])`** | GraphQL — executes a GraphQL query/mutation against a configured endpoint. Returns a `Promise<{ data, errors }>`.                                                                                    | `data-on-load="$users = (await $gql('query { users { id name } }')).data.users"` |
-| **`$ws(url, [protocols])`**    | WebSocket — opens a managed WebSocket connection. Returns a reactive handle with `.send(data)`, `.close()`, and reactive `.state` / `.lastMessage`. Auto-reconnects; cleaned up on element disposal. | `data-on-load="$socket = $ws('wss://chat.example.com')"`                         |
+| **`$gql(query, [variables])`** | GraphQL — executes a GraphQL query/mutation against a configured endpoint. Returns a `Promise<{ data, errors }>`.                                                                                    | `data-on-load="users = (await $gql('query { users { id name } }')).data.users"` |
+| **`$ws(url, [protocols])`**    | WebSocket — opens a managed WebSocket connection. Returns a reactive handle with `.send(data)`, `.close()`, and reactive `.state` / `.lastMessage`. Auto-reconnects; cleaned up on element disposal. | `data-on-load="socket = $ws('wss://chat.example.com')"`                         |
 
 #### 2.5.2. Network Sprites (HTTP)
 
-| Sprite                             | Description                                                                                    | Practical Example                                                      |
-| :--------------------------------- | :--------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------- |
-| **`$fetch(url, [options])`**       | Fetch — raw `fetch()` wrapper with AbortController integration. Returns a `Promise<Response>`. | `data-on-click="$res = await $fetch('/api/data')"`                     |
-| **`$get(url, [options])`**         | GET — convenience wrapper. Auto-parses JSON response.                                          | `data-on-load="$users = await $get('/api/users')"`                     |
-| **`$post(url, body, [options])`**  | POST — convenience wrapper with auto-serialized body. Auto-parses JSON response.               | `data-on-click="await $post('/api/users', { name: $name })"`           |
-| **`$put(url, body, [options])`**   | PUT — convenience wrapper for full-resource replacement.                                       | `data-on-click="await $put('/api/users/' + $id, $userData)"`           |
-| **`$patch(url, body, [options])`** | PATCH — convenience wrapper for partial updates.                                               | `data-on-click="await $patch('/api/users/' + $id, { email: $email })"` |
-| **`$delete(url, [options])`**      | DELETE — convenience wrapper for resource deletion.                                            | `data-on-click="await $delete('/api/users/' + $id)"`                   |
+| Sprite                             | Description                                                                                            | Practical Example                                                        |
+| :--------------------------------- | :----------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
+| **`$fetch(url, [options])`**       | Fetch — raw `fetch()` wrapper with AbortController integration. Returns an Auto-suspending Deep Proxy. | `data-signal="{ res: $fetch('/api/data') }"`                             |
+| **`$get(url, [options])`**         | GET — convenience wrapper. Auto-parses JSON response. Returns an Auto-suspending Deep Proxy.           | `data-signal="{ users: $get('/api/users') }"`                            |
+| **`$post(url, body, [options])`**  | POST — convenience wrapper with auto-serialized body. Auto-parses JSON response.                       | `data-on-click="users = $post('/api/users', { name: name })"`          |
+| **`$put(url, body, [options])`**   | PUT — convenience wrapper for full-resource replacement.                                               | `data-on-click="userData = $put('/api/users/' + id, userData)"`       |
+| **`$patch(url, body, [options])`** | PATCH — convenience wrapper for partial updates.                                                       | `data-on-click="user = $patch('/api/users/' + id, { email: email })"` |
+| **`$delete(url, [options])`**      | DELETE — convenience wrapper for resource deletion.                                                    | `data-on-click="success = $delete('/api/users/' + id)"`                |
 
 #### 2.5.3. DOM Sprites
 
@@ -440,15 +440,15 @@ context. Each sprite is a single-purpose function, invoked via the `$` prefix.
 | :------------------------------- | :------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------ |
 | **`$el`**                        | Element — reference to the current element the expression is evaluated on.                                                | `data-on-focus="$el.classList.add('ring')"`                                           |
 | **`$refs`**                      | Element Refs — object of all `data-ref`-named elements in scope.                                                          | `data-on-click="$refs.emailInput.focus()"`                                            |
-| **`$nextTick([callback])`**      | Next Tick — schedules `callback` after the current reactive flush completes. Returns a `Promise` if no callback provided. | `data-on-click="$count++; await $nextTick(); console.log($refs.counter.textContent)"` |
-| **`$dispatch(event, [detail])`** | Dispatch — dispatches a `CustomEvent` on the current element. Bubbles by default.                                         | `data-on-click="$dispatch('item-selected', { id: $itemId })"`                         |
+| **`$nextTick([callback])`**      | Next Tick — schedules `callback` after the current reactive flush completes. Returns a `Promise` if no callback provided. | `data-on-click="count++; await $nextTick(); console.log($refs.counter.textContent)"` |
+| **`$dispatch(event, [detail])`** | Dispatch — dispatches a `CustomEvent` on the current element. Bubbles by default.                                         | `data-on-click="$dispatch('item-selected', { id: itemId })"`                         |
 
 #### 2.5.4. State Sprites
 
 | Sprite                        | Description                                                                                                                     | Practical Example                                                                |
 | :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------- |
 | **`$store(name, [initial])`** | Store — accesses a named cross-component reactive store. Creates the store with `initial` if it doesn't exist.                  | `data-signal="{ cart: $store('cart', []) }"`                                     |
-| **`$watch(expr, callback)`**  | Watch — observes a reactive expression and invokes `callback(newVal, oldVal)` when it changes. Returns an `unwatch()` function. | `data-on-load="$watch('searchQuery', (n) => $results = $get('/search?q=' + n))"` |
+| **`$watch(expr, callback)`**  | Watch — observes a reactive expression and invokes `callback(newVal, oldVal)` when it changes. Returns an `unwatch()` function. | `data-on-load="$watch('searchQuery', (n) => results = $get('/search?q=' + n))"` |
 
 #### 2.5.5. Navigation Sprites
 
@@ -470,35 +470,35 @@ context. Each sprite is a single-purpose function, invoked via the `$` prefix.
 | **`$clipboard.write(text)`**                   | Clipboard WRITE — copies text to clipboard. Returns reactive `{ status, error }`.                    | `data-on-click="$clipboard.write(sourceCode)"`                       |
 | **`$clipboard.read()`**                        | Clipboard READ — reads text from clipboard (requires permission). Returns `{ data, status, error }`. | `data-on-click="pasted = $clipboard.read()"`                         |
 | **`$download(filename, content, [mimeType])`** | Download — triggers a browser file download via Blob URL. Synchronous.                               | `data-on-click="$download('app.ts', sourceCode, 'text/typescript')"` |
-| **`$cache.put(name, url, [response])`**        | Cache PUT — stores a response in a named cache. Returns reactive `{ status, error }`.                | `data-on-click="$cache.put('assets', '/api/data', $response)"`       |
-| **`$cache.match(name, url)`**                  | Cache MATCH — looks up cached response text. Returns `{ data, status, error }`.                      | `data-on-load="cached = $cache.match('assets', '/api/data')"`        |
-| **`$cache.delete(name, url)`**                 | Cache DELETE — removes a URL from a named cache. Returns `{ status, error }`.                        | `data-on-click="$cache.delete('assets', '/old-url')"`                |
-| **`$cache.keys(name)`**                        | Cache KEYS — lists all cached URLs. Returns `{ data: string[], status, error }`.                     | `data-on-load="urls = $cache.keys('assets')"`                        |
-| **`$cache.clear(name)`**                       | Cache CLEAR — deletes entire named cache. Returns `{ status, error }`.                               | `data-on-click="$cache.clear('assets')"`                             |
+| **`cache.put(name, url, [response])`**        | Cache PUT — stores a response in a named cache. Returns reactive `{ status, error }`.                | `data-on-click="cache.put('assets', '/api/data', response)"`       |
+| **`cache.match(name, url)`**                  | Cache MATCH — looks up cached response text. Returns `{ data, status, error }`.                      | `data-on-load="cached = cache.match('assets', '/api/data')"`        |
+| **`cache.delete(name, url)`**                 | Cache DELETE — removes a URL from a named cache. Returns `{ status, error }`.                        | `data-on-click="cache.delete('assets', '/old-url')"`                |
+| **`cache.keys(name)`**                        | Cache KEYS — lists all cached URLs. Returns `{ data: string[], status, error }`.                     | `data-on-load="urls = cache.keys('assets')"`                        |
+| **`cache.clear(name)`**                       | Cache CLEAR — deletes entire named cache. Returns `{ status, error }`.                               | `data-on-click="cache.clear('assets')"`                             |
 
 #### 2.5.8. Application Sprites
 
 | Sprite                                  | Description                                                                                        | Practical Example                                                 |
 | :-------------------------------------- | :------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------- |
-| **`$sw.register(url, [opts])`**         | Service Worker REGISTER — registers a SW. Returns reactive `{ status, error }`.                    | `data-on-load="$sw.register('/sw.js')"`                           |
-| **`$sw.status`**                        | Reactive SW lifecycle state: `'idle'`, `'registering'`, `'active'`, `'waiting'`, `'error'`.        | `data-text="'SW: ' + $sw.status"`                                 |
-| **`$sw.update()`**                      | Check for SW updates. Returns reactive container.                                                  | `data-on-click="$sw.update()"`                                    |
-| **`$sw.skipWaiting()`**                 | Activate waiting worker immediately.                                                               | `data-on-click="$sw.skipWaiting()"`                               |
-| **`$notification.send(title, [opts])`** | Send a notification. Auto-requests permission. Returns reactive `{ status, error, notification }`. | `data-on-click="$notification.send('Hello!', { body: 'World' })"` |
-| **`$notification.permission`**          | Reactive notification permission state: `'default'`, `'granted'`, `'denied'`.                      | `data-show="$notification.permission === 'granted'"`              |
-| **`$notification.requestPermission()`** | Request notification permission. Returns reactive `{ data, status, error }`.                       | `data-on-click="$notification.requestPermission()"`               |
+| **`sw.register(url, [opts])`**         | Service Worker REGISTER — registers a SW. Returns reactive `{ status, error }`.                    | `data-on-load="sw.register('/sw.js')"`                           |
+| **`sw.status`**                        | Reactive SW lifecycle state: `'idle'`, `'registering'`, `'active'`, `'waiting'`, `'error'`.        | `data-text="'SW: ' + sw.status"`                                 |
+| **`sw.update()`**                      | Check for SW updates. Returns reactive container.                                                  | `data-on-click="sw.update()"`                                    |
+| **`sw.skipWaiting()`**                 | Activate waiting worker immediately.                                                               | `data-on-click="sw.skipWaiting()"`                               |
+| **`notification.send(title, [opts])`** | Send a notification. Auto-requests permission. Returns reactive `{ status, error, notification }`. | `data-on-click="notification.send('Hello!', { body: 'World' })"` |
+| **`notification.permission`**          | Reactive notification permission state: `'default'`, `'granted'`, `'denied'`.                      | `data-show="notification.permission === 'granted'"`              |
+| **`notification.requestPermission()`** | Request notification permission. Returns reactive `{ data, status, error }`.                       | `data-on-click="notification.requestPermission()"`               |
 
 #### 2.5.9. Background Service Sprites
 
 | Sprite                                             | Description                                                                                                         | Practical Example                                                              |
 | :------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------- |
-| **`$push.subscribe(vapidKey)`**                    | Push subscribe — subscribes to push notifications. Returns reactive `{ data, status, error }`.                      | `data-on-click="$push.subscribe(vapidPublicKey)"`                              |
-| **`$push.unsubscribe()`**                          | Push unsubscribe. Returns reactive `{ status, error }`.                                                             | `data-on-click="$push.unsubscribe()"`                                          |
-| **`$bgFetch.fetch(id, urls, [opts])`**             | Background Fetch — downloads large assets in the background. Returns reactive container with progress.              | `data-on-click="$bgFetch.fetch('update', ['/large.zip'])"`                     |
-| **`$bgSync.register(tag)`**                        | Background Sync — registers a one-time sync for when the device comes online. Returns reactive `{ status, error }`. | `data-on-click="$bgSync.register('sync-messages')"`                            |
-| **`$periodicSync.register(tag, { minInterval })`** | Periodic Sync — registers a periodic background sync. Returns reactive `{ status, error }`.                         | `data-on-click="$periodicSync.register('content', { minInterval: 86400000 })"` |
-| **`$payment.request(methods, details, [opts])`**   | Payment Request — shows browser-native payment UI. Returns reactive `{ data, status, error }`.                      | `data-on-click="$payment.request(methods, details)"`                           |
-| **`$payment.canMakePayment(methods)`**             | Payment check — checks if payment method is available. Returns `{ data: boolean, status, error }`.                  | `data-on-load="canPay = $payment.canMakePayment(methods)"`                     |
+| **`push.subscribe(vapidKey)`**                    | Push subscribe — subscribes to push notifications. Returns reactive `{ data, status, error }`.                      | `data-on-click="push.subscribe(vapidPublicKey)"`                              |
+| **`push.unsubscribe()`**                          | Push unsubscribe. Returns reactive `{ status, error }`.                                                             | `data-on-click="push.unsubscribe()"`                                          |
+| **`bgFetch.fetch(id, urls, [opts])`**             | Background Fetch — downloads large assets in the background. Returns reactive container with progress.              | `data-on-click="bgFetch.fetch('update', ['/large.zip'])"`                     |
+| **`bgSync.register(tag)`**                        | Background Sync — registers a one-time sync for when the device comes online. Returns reactive `{ status, error }`. | `data-on-click="bgSync.register('sync-messages')"`                            |
+| **`periodicSync.register(tag, { minInterval })`** | Periodic Sync — registers a periodic background sync. Returns reactive `{ status, error }`.                         | `data-on-click="periodicSync.register('content', { minInterval: 86400000 })"` |
+| **`payment.request(methods, details, [opts])`**   | Payment Request — shows browser-native payment UI. Returns reactive `{ data, status, error }`.                      | `data-on-click="payment.request(methods, details)"`                           |
+| **`payment.canMakePayment(methods)`**             | Payment check — checks if payment method is available. Returns `{ data: boolean, status, error }`.                  | `data-on-load="canPay = payment.canMakePayment(methods)"`                     |
 
 ---
 
@@ -600,7 +600,7 @@ This creates a serialization boundary between the DOM and the reactive engine.
 **Nexus-UX's solution is a two-tier value system:**
 
 - **Tier A — The Declarative Surface (DOM Strings)**: `data-*` attributes hold
-  the **expression source** (e.g., `"{ count: 0 }"`, `"$count + 1"`). These are
+  the **expression source** (e.g., `"{ count: 0 }"`, `"count + 1"`). These are
   parsed once during initialization and never re-serialized during reactive
   updates.
 - **Tier B — The Binary Signal Heap (Zero-Copy)**: Actual signal **values** live
@@ -649,7 +649,7 @@ real-time.
 ```html
 <!-- Nexus-UX -->
 <div data-signal="{ users: $sql('LIVE SELECT * FROM user') }">
-  <div data-for="user in $users">
+  <div data-for="user in users">
     <p>{user.name}</p>
   </div>
 </div>
@@ -742,8 +742,8 @@ directive catalog:
   Element. Supports template sources via URL, inline HTML, data-URI, or
   same-page `#id` reference. Supports Shadow DOM (via `shadowrootmode` on the
   `<template>` tag), Constructable Stylesheets, reactive props (via
-  `data-signals-[name]`), script isolation, form association, and lifecycle
-  hooks (`contentReadyCallback`, `connectedCallback`, `disconnectedCallback`).
+  `data-signal-[name]`), script isolation, form association, and lifecycle hooks
+  (`contentReadyCallback`, `connectedCallback`, `disconnectedCallback`).
 - **`data-cache`**: Offline Cache — marks a data-binding subtree for local
   persistence. The underlying cache engine (SurrealKV over IndexedDB) is managed
   by the Nexus-IO runtime; this directive acts as a declarative hint to opt a
@@ -845,7 +845,7 @@ loop:
 ┌───────────────────▼────────────────────────────────────────────────┐
 │  Browser (Nexus-UX Runtime)                                        │
 │                                                                    │
-│  Receives diff → Applies to signal `$todos`                        │
+│  Receives diff → Applies to signal `todos`                        │
 │  ↓                                                                 │
 │  DOM update: <li>{New Task}</li> inserted                          │
 │  ↓                                                                 │
@@ -1023,7 +1023,7 @@ temporal dimensions.
 
 - **Automatic Hydration**: The engine automatically mirrors a node's physical
   state into the binary heap exactly when needed.
-- **4D Vector Velocity ($V_{xyzt}$)**: The Orchestrator tracks trajectory across
+- **4D Vector Velocity (V_{xyzt}$)**: The Orchestrator tracks trajectory across
   four axes:
   - **X/Y/Z**: Horizontal, Vertical, and Depth/Zoom velocity.
   - **T (Temporal Intent)**: The velocity-of-intent. It calculates the
@@ -1057,7 +1057,7 @@ Nexus-UX virtualization is a dual-trigger system that anticipates and prepares
 for user intent.
 
 - **Spatial Prediction (The Ghost Cube)**: Background logic triggers based on
-  physical proximity and velocity trajectory ($V_{xyz}$).
+  physical proximity and velocity trajectory (V_{xyz}$).
 - **Interaction-Driven Prediction**: The engine predictively hydrates and
   synchronizes logic upon the first sign of user intent:
   - **Hover/Focus**: Activating reactive tracking as the cursor enters a node's
@@ -1146,16 +1146,16 @@ database layer**.
 -- Define table with permissions
 DEFINE TABLE document SCHEMAFULL
   PERMISSIONS 
-    FOR select WHERE owner = $auth.id OR public = true
-    FOR update WHERE owner = $auth.id
-    FOR delete WHERE owner = $auth.id;
+    FOR select WHERE owner = auth.id OR public = true
+    FOR update WHERE owner = auth.id
+    FOR delete WHERE owner = auth.id;
 ```
 
 ```html
 <!-- User tries to query someone else's documents -->
 <div data-signal="{ docs: $sql('SELECT * FROM document') }">
-  <!-- SurrealDB automatically filters to only docs where owner = $auth.id -->
-  <div data-for="doc in $docs">
+  <!-- SurrealDB automatically filters to only docs where owner = auth.id -->
+  <div data-for="doc in docs">
     {doc.title}
   </div>
 </div>
@@ -1197,7 +1197,7 @@ Modules are the extensible units of functionality. They "plug into" the engine's
 lifecycle hooks:
 
 - **Attributes**: The logic behind every `data-*` directive.
-- **Actions (Sprites)**: The imperative `$tools` available to expressions.
+- **Actions (Sprites)**: The imperative `tools` available to expressions.
 - **Listeners**: Systems that react to external global events (e.g., URL
   changes, WebSocket messages).
 - **Observers**: Wrappers for high-performance Browser API observers (Mutation,
@@ -1277,7 +1277,7 @@ const helloAction: ActionPlugin = {
     hello: (name: string) => `Hello ${name}!`,
   },
 };
-// Usage: <div data-text="$greet.hello('Nexus')"></div>
+// Usage: <div data-text="greet.hello('Nexus')"></div>
 ```
 
 #### 7.3.3 Listener Module
@@ -1322,7 +1322,7 @@ global sprite (`$fetch`), a scope rule (`@os`), or an environment mirror
 (`_window`)—lives isolated within the `src/modules/` directory hierarchy.
 
 - `src/modules/attributes/`: Directives (`data-signal`, `data-ux-theme`)
-- `src/modules/sprites/`: Action handlers and tools (`$sql`, `$save`)
+- `src/modules/sprites/`: Action handlers and tools (`$sql`, `save`)
 - `src/modules/scopes/`: Evaluation closures for the `@` Grammar (`@auth`)
 - `src/modules/mirrors/`: Reactive snapshots of browser APIs (`_localStorage`)
 
@@ -1487,11 +1487,11 @@ function UserProfile({ userId }) {
 **Nexus-UX equivalent**:
 
 ```html
-<div data-signal="{ user: $sql('SELECT * FROM user:$userId') }">
-  <div data-if="!$user">Loading...</div>
-  <div data-if="$user">
-    <h1>{$user.name}</h1>
-    <p>{$user.email}</p>
+<div data-signal="{ user: $sql('SELECT * FROM user:userId') }">
+  <div data-if="!user">Loading...</div>
+  <div data-if="user">
+    <h1>{user.name}</h1>
+    <p>{user.email}</p>
   </div>
 </div>
 ```
@@ -1526,9 +1526,9 @@ onMounted(async () => {
 **Nexus-UX equivalent**:
 
 ```html
-<div data-signal="{ user: $sql('SELECT * FROM user:$auth.id') }">
-  <h1>{$user.name}</h1>
-  <p>{$user.email}</p>
+<div data-signal="{ user: $sql('SELECT * FROM user:auth.id') }">
+  <h1>{user.name}</h1>
+  <p>{user.email}</p>
 </div>
 ```
 
@@ -1582,19 +1582,19 @@ PostgreSQL database).
   <body>
     <!-- Main app container -->
     <div
-      data-signal="{ todos: $sql('LIVE SELECT * FROM todo WHERE owner = $auth.id ORDER BY created_at DESC') }"
+      data-signal="{ todos: $sql('LIVE SELECT * FROM todo WHERE owner = auth.id ORDER BY created_at DESC') }"
     >
-      <h1>My Todos ({$todos.length})</h1>
+      <h1>My Todos ({todos.length})</h1>
 
       <!-- Add new todo -->
       <div data-signal="{ newTodo: '' }">
         <input
           type="text"
-          data-bind-value="$newTodo"
+          data-bind-value="newTodo"
           placeholder="What needs to be done?"
         >
         <button
-          data-on-click="$sql('CREATE todo CONTENT { title: $newTodo, completed: false, owner: $auth.id }'); $newTodo = ''"
+          data-on-click="$sql('CREATE todo CONTENT { title: newTodo, completed: false, owner: auth.id }'); newTodo = ''"
         >
           Add
         </button>
@@ -1602,18 +1602,18 @@ PostgreSQL database).
 
       <!-- Todo list -->
       <ul>
-        <li data-for="todo in $todos">
+        <li data-for="todo in todos">
           <input
             type="checkbox"
             data-bind-checked="todo.completed"
-            data-on-change="$sql('UPDATE todo SET completed = $todo.completed WHERE id = $todo.id')"
+            data-on-change="$sql('UPDATE todo SET completed = todo.completed WHERE id = todo.id')"
           >
           <span
             data-style-text-decoration="todo.completed ? 'line-through' : 'none'"
           >
             {todo.title}
           </span>
-          <button data-on-click="$sql('DELETE todo WHERE id = $todo.id')">
+          <button data-on-click="$sql('DELETE todo WHERE id = todo.id')">
             Delete
           </button>
         </li>
@@ -1621,15 +1621,15 @@ PostgreSQL database).
 
       <!-- Filter buttons -->
       <div data-signal="{ filter: 'all' }">
-        <button data-on-click="$filter = 'all'">All</button>
-        <button data-on-click="$filter = 'active'">Active</button>
-        <button data-on-click="$filter = 'completed'">Completed</button>
+        <button data-on-click="filter = 'all'">All</button>
+        <button data-on-click="filter = 'active'">Active</button>
+        <button data-on-click="filter = 'completed'">Completed</button>
 
         <!-- Filtered list (derived signal) -->
         <div
-          data-signal="{ filteredTodos: $filter === 'all' ? $todos : $filter === 'active' ? $todos.filter(t => !t.completed) : $todos.filter(t => t.completed) }"
+          data-signal="{ filteredTodos: filter === 'all' ? todos : filter === 'active' ? todos.filter(t => !t.completed) : todos.filter(t => t.completed) }"
         >
-          <p>Showing {$filteredTodos.length} todos</p>
+          <p>Showing {filteredTodos.length} todos</p>
         </div>
       </div>
     </div>
@@ -1650,11 +1650,11 @@ PostgreSQL database).
 
 ```html
 <div
-  data-signal="{ messages: $sql('LIVE SELECT * FROM message WHERE room = $roomId ORDER BY timestamp DESC LIMIT 50') }"
+  data-signal="{ messages: $sql('LIVE SELECT * FROM message WHERE room = roomId ORDER BY timestamp DESC LIMIT 50') }"
 >
   <!-- Message list -->
   <div class="messages" data-ref="messageContainer">
-    <div class="message" data-for="msg in $messages">
+    <div class="message" data-for="msg in messages">
       <strong>{msg.author.name}:</strong>
       <p>{msg.text}</p>
       <small>{msg.timestamp | format('h:mm a')}</small>
@@ -1665,9 +1665,9 @@ PostgreSQL database).
   <div data-signal="{ draft: '' }">
     <input
       type="text"
-      data-bind-value="$draft"
+      data-bind-value="draft"
       placeholder="Type a message..."
-      data-on-keydown:enter="$sql('CREATE message CONTENT { room: $roomId, author: $auth.id, text: $draft, timestamp: time::now() }'); $draft = ''"
+      data-on-keydown:enter="$sql('CREATE message CONTENT { room: roomId, author: auth.id, text: draft, timestamp: time::now() }'); draft = ''"
     >
     <button data-on-click="$sql('CREATE message CONTENT { ... }')">Send</button>
   </div>

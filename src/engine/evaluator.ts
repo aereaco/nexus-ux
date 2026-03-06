@@ -1,7 +1,6 @@
 import { RuntimeContext } from './composition.ts';
 import { evaluationError } from './errors.ts';
-import { getDataStack } from './scope.ts';
-import { hasScopeProvider, resolveScopeProvider } from './scope.ts';
+import { getDataStack, hasScopeProvider, resolveScopeProvider, registerScopeProvider } from './scope.ts';
 
 declare module "./composition.ts" {
   interface RuntimeContext {
@@ -12,6 +11,9 @@ declare module "./composition.ts" {
     ) => unknown;
   }
 }
+
+// Register the internal global scope provider statically for # signal parsing
+registerScopeProvider('__global', (_, runtime) => runtime.globalSignals());
 
 let shouldAutoEvaluateFunctions = true;
 
@@ -63,11 +65,12 @@ function preProcessExpression(expression: string): string {
     });
   }
 
-  // 2. # Global Signals (#name -> $global.name)
+  // 2. # Global Signals (#name -> __global.name)
   // Required because '#' is illegal as an identifier start in native JS.
-  // We map it to $global to ensure it bypasses local scope shadowing.
+  // We map it to __global to ensure it bypasses local scope shadowing without
+  // colliding with the $ namespace reserved exclusively for predefined sprites.
   if (processed.includes('#')) {
-    processed = processed.replace(/(^|[^a-zA-Z0-9_$])#([a-zA-Z_$][\w$]*)/g, '$1$global.$2');
+    processed = processed.replace(/(^|[^a-zA-Z0-9_$])#([a-zA-Z_$][\w$]*)/g, '$1__global.$2');
   }
 
   return processed;
@@ -211,15 +214,22 @@ export function evaluateLater(
         }
       });
 
-      const result = func(currentScope);
+      const result = func.call(el, currentScope);
       if (shouldAutoEvaluateFunctions && typeof result === 'function') {
-        receiver(result.call(currentScope));
+        receiver(result.call(el, currentScope));
       } else {
         receiver(result);
       }
     } catch (e) {
-      console.error(`[Evaluator Error] Expression "${expression}" failed:`, e);
-      evaluationError(expression, e instanceof Error ? e : new Error(String(e)), el as HTMLElement);
+      if (e instanceof TypeError && e.message.includes('Cannot read properties of')) {
+        if (runtime.isDevMode) {
+          console.warn(`[Nexus Omni-Safe] Gracefully caught undefined property access in expression: "${expression}". Yielding undefined.`);
+        }
+        receiver(undefined);
+      } else {
+        console.error(`[Evaluator Error] Expression "${expression}" failed:`, e);
+        evaluationError(expression, e instanceof Error ? e : new Error(String(e)), el as HTMLElement);
+      }
     }
   };
 }

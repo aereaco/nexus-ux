@@ -2,93 +2,60 @@ import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { initError } from '../../engine/errors.ts';
 
-/**
- * `data-model` provides true 2-way data binding parity with Alpine's `x-model`.
- * It automatically wires up the `value` or `checked` DOM properties to the stated Signal
- * while attaching the appropriate `input` or `change` event listener to write back mutations.
- */
 const modelModule: AttributeModule = {
   name: 'model',
   attribute: 'model',
-  handle: (el: HTMLElement, expression: string, runtime: RuntimeContext): (() => void) | void => {
-    const isInput = el instanceof HTMLInputElement;
-    const isSelect = el instanceof HTMLSelectElement;
-    const isTextarea = el instanceof HTMLTextAreaElement;
-
-    if (!isInput && !isSelect && !isTextarea) {
-      initError('model', 'data-model can only be used on input, select, or textarea elements.', el, expression);
-      return;
-    }
-
-    const type = (el as HTMLInputElement).type;
-    const isCheckbox = isInput && type === 'checkbox';
-    const isRadio = isInput && type === 'radio';
-
-    let eventType = 'input';
-    if (isCheckbox || isRadio || isSelect) {
-      eventType = 'change';
-    }
+  handle: (el: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void => {
+    if (!value) return;
 
     const cleanupFns: (() => void)[] = [];
 
     try {
-      // 1. DOM -> Signal (Event Listener)
-      const inputHandler = (e: Event) => {
-        let newValue: unknown;
-        const target = e.target as HTMLInputElement;
-        const currentValue = runtime.evaluate(el, expression);
-
-        if (isCheckbox) {
-          if (Array.isArray(currentValue)) {
-            if (target.checked) {
-              newValue = [...currentValue, target.value];
-            } else {
-              newValue = currentValue.filter((v: unknown) => v !== target.value);
-            }
-          } else {
-            newValue = target.checked;
-          }
-        } else if (isRadio) {
-          if (target.checked) {
-            newValue = target.value;
-          } else {
-            return; // Radios only update signal when selected
-          }
-        } else {
-          newValue = target.value;
-        }
-
-        // Reverse assignment logic using evaluate
-        runtime.evaluate(el, `${expression} = $modelValue`, { $modelValue: newValue });
-      };
-
-      el.addEventListener(eventType, inputHandler);
-      cleanupFns.push(() => el.removeEventListener(eventType, inputHandler));
-
-      // 2. Signal -> DOM (Reactive Effect)
+      // 1. Reactive Effect for Downstream Binding (State -> DOM)
       const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
-        const result = runtime.evaluate(el, expression);
-        const attrValue = result !== undefined && result !== null ? String(result) : '';
-
-        if (isCheckbox) {
-          if (Array.isArray(result)) {
-            (el as HTMLInputElement).checked = result.includes((el as HTMLInputElement).value);
+        const result = runtime.evaluate(el, value);
+        
+        if (el instanceof HTMLInputElement) {
+          if (el.type === 'checkbox') {
+            el.checked = Boolean(result);
+          } else if (el.type === 'radio') {
+            el.checked = (el.value === String(result));
           } else {
-            (el as HTMLInputElement).checked = Boolean(result);
+            el.value = result !== undefined && result !== null ? String(result) : '';
           }
-        } else if (isRadio) {
-          (el as HTMLInputElement).checked = ((el as HTMLInputElement).value === attrValue);
-        } else {
-          if ('value' in el) {
-            (el as HTMLInputElement | HTMLTextAreaElement).value = attrValue;
-          }
+        } else if (el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement) {
+          el.value = result !== undefined && result !== null ? String(result) : '';
         }
       });
-
       cleanupFns.push(cleanup);
 
+      // 2. Event Listener for Upstream Binding (DOM -> State)
+      const isLazy = el.hasAttribute('data-model:lazy');
+      const eventName = isLazy ? 'change' : (
+        el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio') 
+        || el instanceof HTMLSelectElement ? 'change' : 'input'
+      );
+
+      const inputHandler = (e: Event) => {
+        let newValue: unknown;
+        if (el instanceof HTMLInputElement && el.type === 'checkbox') {
+          newValue = el.checked;
+        } else if (el instanceof HTMLInputElement && el.type === 'radio') {
+          newValue = el.checked ? el.value : undefined;
+          if (newValue === undefined) return; // Ignore uncheck events for radios
+        } else if ('value' in el) {
+          newValue = (e.target as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value;
+        }
+
+        // We use a temporary scope to inject $newValue and execute assignment.
+        runtime.evaluate(el, `${value} = $newValue`, { $newValue: newValue });
+      };
+
+      el.addEventListener(eventName, inputHandler);
+      cleanupFns.push(() => el.removeEventListener(eventName, inputHandler));
+
     } catch (e) {
-      initError('model', `Failed to bind model: ${e instanceof Error ? e.message : String(e)}`, el, expression);
+      initError('model', `Failed to bind model: ${e instanceof Error ? e.message : String(e)}`, el, value);
     }
 
     return () => cleanupFns.forEach(fn => fn());

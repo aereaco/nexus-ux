@@ -180,23 +180,40 @@ function getStoreCache(storeName: string): Map<string, Ref<unknown>> {
 function createStoreProxy(storeName: string) {
   const cache = getStoreCache(storeName);
 
+  let keysTrigger: (() => void) | null = null;
+  const keysRef = customRef((track, trigger) => {
+    keysTrigger = trigger;
+    let currentKeys: string[] = [];
+    let initialFetchDone = false;
+
+    return {
+      get() {
+        track();
+        if (!initialFetchDone) {
+          initialFetchDone = true;
+          idbList(storeName).then(keys => {
+            currentKeys = keys;
+            trigger();
+          }).catch(e => {
+            if (isDebug()) console.error(`[_indexedDB] keys fetch error:`, e);
+          });
+        }
+        return currentKeys;
+      },
+      set() {} // Read-only from the outside
+    };
+  });
+
   const storeTarget = {
     /**
      * List all keys in this store, optionally filtered by prefix.
-     * Returns an array (populated asynchronously).
+     * Returns a Promise resolving to an array of keys.
      */
-    list(prefix?: string): string[] {
-      const result: string[] = [];
-      // Make the array reactive by wrapping it
-      idbList(storeName, prefix)
-        .then(keys => {
-          result.length = 0;
-          result.push(...keys);
-        })
-        .catch(e => {
-          if (isDebug()) console.error(`[_indexedDB] list error for '${storeName}':`, e);
-        });
-      return result;
+    list(prefix?: string): Promise<string[]> {
+      return idbList(storeName, prefix).catch(e => {
+        if (isDebug()) console.error(`[_indexedDB] list error for '${storeName}':`, e);
+        return [];
+      });
     },
 
     /**
@@ -208,6 +225,7 @@ function createStoreProxy(storeName: string) {
           // Update the reactive ref if it exists
           const r = cache.get(key);
           if (r) r.value = undefined;
+          if (keysTrigger) keysTrigger(); // Invalidate keys cache
           if (isDebug()) console.debug(`[_indexedDB] DELETE: '${storeName}/${key}'`);
         })
         .catch(e => {
@@ -223,6 +241,7 @@ function createStoreProxy(storeName: string) {
         .then(() => {
           // Reset all cached refs
           cache.forEach(r => r.value = undefined);
+          if (keysTrigger) keysTrigger(); // Invalidate keys cache
           if (isDebug()) console.debug(`[_indexedDB] CLEAR: '${storeName}'`);
         })
         .catch(e => {
@@ -234,6 +253,9 @@ function createStoreProxy(storeName: string) {
   return new Proxy(storeTarget as any, {
     get(target, key: string) {
       if (typeof key === 'symbol') return Reflect.get(target, key);
+
+      // Reactive pseudo-property for listing store keys natively
+      if (key === 'keys') return keysRef.value;
 
       // Return methods if they exist on the target
       if (key in target) return (target as any)[key];
@@ -285,13 +307,17 @@ function createStoreProxy(storeName: string) {
       // Update existing ref or create one
       const r = cache.get(key);
       if (r) {
+        const isNew = r.value === undefined && value !== undefined;
         r.value = value;
+        if (isNew && keysTrigger) keysTrigger();
       } else {
-        // Access it once to create the customRef, then set
-        const proxy = createStoreProxy(storeName);
-        void (proxy as any)[key]; // Create the ref
+        // Access it once through the global mirror to safely provision the customRef
+        void indexedDBMirror[storeName][key];
         const newRef = cache.get(key);
-        if (newRef) newRef.value = value;
+        if (newRef) {
+          newRef.value = value;
+          if (keysTrigger) keysTrigger();
+        }
       }
       return true;
     }

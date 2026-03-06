@@ -1,55 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="opacity: 0;" data-ux-init data-injest="({
+        Styling: {
+                link: { href: 'https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css', rel: 'stylesheet' },
+                script: { src: 'https://cdn.tailwindcss.com' }
+        },
+        Ace: {
+                script: { src: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/ace.js', type: 'module' }
+        }
+})">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexus-UX: Show</title>
     <script type="module" src="../../../../dist/nexus-ux.js"></script>
+    <style>
+        .nx-editor-container { position: relative; min-height: 400px; width: 100%; }
+        .nx-editor { position: absolute; top: 0; left: 0; right: 0; bottom: 0; font-family: 'Fira Code', 'Cascadia Code', monospace; font-size: 14px; }
+        .nx-cmdbar { border-radius: 0 0 calc(var(--rounded-box, 1rem)) calc(var(--rounded-box, 1rem)); }
+    </style>
 </head>
-<body data-signal="{ blockVisible: true }" data-ux-init>
+<body data-signal="({ cluster: { id: 'us-east-1', nodes: 24, bandwidth: { rx: '40Gbps', tx: '12Gbps' } } })">
 
-    <div id="demo-show" class="dashboard-fragment p-8 bg-base-200 min-h-screen text-base-content" 
-         data-injest="{ css: { link: 'href=\'https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css\' rel=\'stylesheet\'' }, tw: { script: 'src=\'https://cdn.tailwindcss.com\'' } }">
-        
-        <div class="max-w-4xl mx-auto">
-            <h1 class="text-4xl font-bold mb-4 text-primary">data-show</h1>
-            <p class="mb-8 text-lg opacity-80">This page demonstrates layout toggling modifying the native <code>display</code> CSS property via <code>data-show</code>.</p>
-
-            
-            <div class="card bg-base-100 shadow-xl border border-base-300 mb-8 mt-8" data-signal="{ activeTab: 'preview' }">
-                <div class="card-body">
-                    <div class="flex flex-col md:flex-row justify-between md:items-center border-b border-base-300 pb-4 mb-4 gap-4">
-                        <h2 class="card-title text-secondary">Interactive Demonstration</h2>
-                        <div class="tabs tabs-boxed bg-base-200">
-                            <a class="tab" data-class-tab-active="activeTab === 'preview'" data-on-click="activeTab = 'preview'">Preview</a> 
-                            <a class="tab" data-class-tab-active="activeTab === 'code'" data-on-click="activeTab = 'code'">Code</a> 
-                        </div>
-                    </div>
-
-                    <div data-show="activeTab === 'preview'">
-                        <div class="p-8 bg-base-200 rounded-box border shadow-inner">
-                            
-                        <button class="btn btn-primary shadow-lg mb-8" data-on-click="blockVisible = !blockVisible">
-                            Toggle Visibility
-                        </button>
-
-                        <div data-show="blockVisible" class="p-8 bg-warning text-warning-content rounded-xl font-bold text-center text-3xl shadow-xl transition-opacity duration-300">
-                            I am structurally permanent but visually togglable!
-                        
-                    </div>
-                    <div data-show="activeTab === 'code'" style="display: none;">
-                        <pre class="mockup-code bg-neutral text-neutral-content p-4 font-mono text-sm mt-0 w-full overflow-x-auto"><code>&lt;div data-show="isVisible"&gt;Toggled Display&lt;/div&gt;</code></pre>
-                                        </div>
-                </div>
-            </div>
-
-            <div class="card bg-base-100 shadow-xl border border-base-300 mt-8">
-                <div class="card-body">
-                    <h2 class="card-title text-secondary border-b border-base-300 pb-2 flex gap-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.827M15.75 15.75L21 21m-5.25-5.25l-1.5-1.5m3-3l1.5-1.5m-3 3L11.42 15.17M11.42 15.17A4.475 4.475 0 0012 11.25c0-2.485-2.015-4.5-4.5-4.5s-4.5 2.015-4.5 4.5c0 2.485 2.015 4.5 4.5 4.5 1.574 0 3.012-.81 3.82-2.08m0 0L3.75 3.75" /></svg> Extensibility Notes</h2>
-                    <p class="opacity-80 mt-4 leading-relaxed">The visibility toggler in <code>src/modules/attributes/show.ts</code> strictly maps to <code>display: none</code>. This can be adapted to toggle CSS classes like <code>.hidden</code> for Tailwind synergy natively.</p>
-                </div>
-                </div>
-            </div>
-
+    <!-- Living Documentation Shell -->
+    <div data-signal="{ doc: $get('/examples/dashboard/pages/attributes/show.json') }" data-cloak>
+        <div data-component="'../../components/document.html'"></div>
+    </div>
 </body>
 </html>

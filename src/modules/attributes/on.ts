@@ -2,13 +2,37 @@ import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { initError } from '../../engine/errors.ts';
 
-// eventModifiers decoupled to Universal Pipeline Modifiers
+// Deterministic Registry for Zero-GC Event Delegation
+// Structure: Map<EventName, Map<nxId, EventListener[]>>
+const globalListeners = new Map<string, Map<number, EventListener[]>>();
+let listenerIdCounter = 0;
+const NEXUS_ID = Symbol('_nx_id');
+
+// Events that do not bubble and must be attached directly
+const NON_BUBBLING_EVENTS = new Set(['focus', 'blur', 'mouseenter', 'mouseleave', 'scroll', 'load', 'error']);
+
+function getGlobalHandler(eventName: string) {
+  return (e: Event) => {
+    const flatMap = globalListeners.get(eventName);
+    if (!flatMap) return;
+    
+    // Trace the composed path from the target up to the document
+    const path = e.composedPath();
+    for (const target of path) {
+      if (e.cancelBubble) break; // Respect :stop modifier (stopPropagation)
+      
+      const nxId = (target as any)[NEXUS_ID];
+      if (nxId && flatMap.has(nxId)) {
+        flatMap.get(nxId)!.forEach(fn => fn(e));
+      }
+    }
+  };
+}
 
 const onModule: AttributeModule = {
   name: 'on',
   attribute: 'on',
   handle: (el: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void => {
-    // Find attributes matching data-on:*
     const attrs = Array.from(el.attributes).filter(a => (a.name.startsWith('data-on:') || a.name.startsWith('data-on-')) && a.value === value);
     const cleanupFns: (() => void)[] = [];
 
@@ -20,7 +44,7 @@ const onModule: AttributeModule = {
       const modifiers = parsed.modifiers;
 
       try {
-        // The Event Handler
+        // The Base Handler
         let handler: EventListener = (e: Event) => {
           const detail = (e as CustomEvent).detail;
           const extras = {
@@ -36,7 +60,6 @@ const onModule: AttributeModule = {
         let options: AddEventListenerOptions | boolean = false;
 
         modifiers.forEach((mod: string) => {
-          // Handle value-modifiers like debounce-250
           let modName = mod;
           let modArg = '';
           const dashIdx = mod.indexOf('-');
@@ -58,8 +81,46 @@ const onModule: AttributeModule = {
           }
         });
 
-        target.addEventListener(eventName, handler as EventListener, options);
-        cleanupFns.push(() => target.removeEventListener(eventName, handler as EventListener, options));
+        const forceDirect = target === window || target === document || NON_BUBBLING_EVENTS.has(eventName) || options !== false;
+
+        if (forceDirect) {
+          // Direct Attachment
+          target.addEventListener(eventName, handler as EventListener, options);
+          cleanupFns.push(() => target.removeEventListener(eventName, handler as EventListener, options));
+        } else {
+          // GC-Free Global Delegation
+          if (!globalListeners.has(eventName)) {
+            globalListeners.set(eventName, new Map());
+            document.addEventListener(eventName, getGlobalHandler(eventName), { capture: false });
+          }
+
+          const flatMap = globalListeners.get(eventName)!;
+          
+          // Assign deterministic ID if missing
+          if (!(target as any)[NEXUS_ID]) {
+            (target as any)[NEXUS_ID] = ++listenerIdCounter;
+          }
+          const nxId = (target as any)[NEXUS_ID];
+
+          let elementHandlers = flatMap.get(nxId);
+          if (!elementHandlers) {
+            elementHandlers = [];
+            flatMap.set(nxId, elementHandlers);
+          }
+          elementHandlers.push(handler);
+
+          // Deterministic Cleanup (Bypasses GC Tracing)
+          cleanupFns.push(() => {
+            const currentHandlers = flatMap.get(nxId);
+            if (currentHandlers) {
+              const idx = currentHandlers.indexOf(handler);
+              if (idx > -1) currentHandlers.splice(idx, 1);
+              if (currentHandlers.length === 0) {
+                 flatMap.delete(nxId); // O(1) Instant memory release
+              }
+            }
+          });
+        }
 
       } catch (e) {
         initError('on', `Failed to attach listener ${eventName}: ${e instanceof Error ? e.message : String(e)}`, el, value);
