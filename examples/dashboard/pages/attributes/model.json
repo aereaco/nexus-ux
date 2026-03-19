@@ -1,0 +1,9 @@
+{
+  "Title": "data-model",
+  "Description": "This page demonstrates the <code>data-model</code> attribute for built-in two-way state binding.",
+  "Syntax": "<input data-model=\"signalName\">\n<select data-model=\"signalName\">\n<textarea data-model=\"signalName\">",
+  "SourceModule": "/modules/attributes/model.ts",
+  "SnippetModule": "data-model",
+  "Extensibility": "<p class=\"opacity-80 mt-4 leading-relaxed\">The <code>data-model</code> binder in <code>src/modules/attributes/model.ts</code> can be extended to support custom Web Components by verifying <code>HTMLElement.value</code> property descriptors natively.</p>",
+  "Snippet": "<div class=\"p-8 bg-base-200 rounded-box border shadow-inner\">\n    <label class=\"font-bold mb-2 block\">Username Context</label>\n    <input type=\"text\" data-model=\"username\" class=\"input input-bordered input-primary w-full max-w-md\">\n    \n    <div class=\"mt-6 text-xl\">\n        Live synchronization: <strong class=\"text-primary\" data-text=\"username\"></strong>\n    </div>\n</div>"
+}

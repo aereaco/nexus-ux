@@ -744,10 +744,6 @@ directive catalog:
   `<template>` tag), Constructable Stylesheets, reactive props (via
   `data-signal-[name]`), script isolation, form association, and lifecycle hooks
   (`contentReadyCallback`, `connectedCallback`, `disconnectedCallback`).
-- **`data-cache`**: Offline Cache — marks a data-binding subtree for local
-  persistence. The underlying cache engine (SurrealKV over IndexedDB) is managed
-  by the Nexus-IO runtime; this directive acts as a declarative hint to opt a
-  subtree into offline caching.
 - **`data-debug`**: Debug Inspector — prints signal state to the console on
   every change (development mode only).
 - **`data-assert`**: Development Assertion — fires console warnings when
@@ -1168,8 +1164,8 @@ DEFINE TABLE document SCHEMAFULL
 > mutation queueing, and automatic reconnection sync) are provided by the
 > **Nexus-IO runtime**, not Nexus-UX itself. See the
 > [Nexus-IO Specification §2.3.1](file:///home/aerea/development/nexus-io-spec.20260204.md)
-> for the full offline architecture. Nexus-UX surfaces this via the `data-cache`
-> directive and the `$nexus.offline` signal.
+> for the full offline architecture. Nexus-UX surfaces the `$nexus.offline` signal
+> through the Nexus-IO runtime.
 
 ---
 

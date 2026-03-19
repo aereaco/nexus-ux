@@ -75,22 +75,38 @@ export const routerAttributeModule: AttributeModule = {
         currentRoute: null,
         routes: [],
 
-        navigate(url: string, opts?: { replace?: boolean }) {
+        navigate(url: string, opts?: { replace?: boolean; viewTransition?: boolean }) {
           // Logic to navigate
           if (url.startsWith('http')) {
             globalThis.location.href = url;
             return;
           }
 
-          // Push state
-          if (opts?.replace) {
-            globalThis.history.replaceState({}, '', url);
-          } else {
-            globalThis.history.pushState({}, '', url);
-          }
+          // ZCZS: View Transitions API support for smooth navigation
+          const useViewTransition = opts?.viewTransition !== false && 
+            'startViewTransition' in document &&
+            typeof (document as any).startViewTransition === 'function';
 
-          // Update state
-          updateRoute(url);
+          const doNavigate = () => {
+            // Push state
+            if (opts?.replace) {
+              globalThis.history.replaceState({}, '', url);
+            } else {
+              globalThis.history.pushState({}, '', url);
+            }
+
+            // Update state
+            updateRoute(url);
+          };
+
+          if (useViewTransition) {
+            // Use View Transitions API for smooth page transitions
+            (document as any).startViewTransition(() => {
+              doNavigate();
+            });
+          } else {
+            doNavigate();
+          }
         },
 
         addRoute(route: RouteRecord) {

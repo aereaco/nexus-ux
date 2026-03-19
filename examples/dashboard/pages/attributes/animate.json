@@ -1,0 +1,9 @@
+{
+  "Title": "data-animate",
+  "Description": "Demonstrates Native WAAPI (Web Animations API) bindings mapped mathematically to HTML5 attributes using <code>data-animate-*</code> hooks.",
+  "Syntax": "<div data-animate=\"hover:scale-110\"></div>",
+  "SourceModule": "/modules/attributes/animate.ts",
+  "SnippetModule": "data-animate",
+  "Extensibility": "<p class=\"opacity-80 mt-4 leading-relaxed\">Native element animation defined via <code>src/modules/attributes/animate.ts</code> natively controls the Web Animations API. Hook into this to support FLIP layout physics natively.</p>",
+  "Snippet": "<div class=\"mt-4 flex flex-col items-center justify-center p-12 bg-base-200 rounded-box border shadow-inner\">\n    <div class=\"w-32 h-32 bg-primary text-primary-content shadow-2xl rounded-2xl flex items-center justify-center font-bold text-center text-xl cursor-pointer select-none animate-box\" data-animate-click=\"[\n            { transform: 'scale(1)', borderRadius: '1rem', backgroundColor: '#4f46e5' },\n            { transform: 'scale(0.8) rotate(-45deg)', borderRadius: '50%', backgroundColor: '#ec4899', offset: 0.3 },\n            { transform: 'scale(1.2) rotate(45deg)', borderRadius: '0', backgroundColor: '#eab308', offset: 0.7 },\n            { transform: 'scale(1)', borderRadius: '1rem', backgroundColor: '#4f46e5' }\n         ]\" data-animate-click-options=\"{ duration: 800, easing: 'ease-in-out' }\">\n        Click to<br>Animate\n    </div>\n</div>"
+}

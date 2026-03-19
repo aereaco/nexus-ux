@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+window.onload = () => {
+  console.log("Window loaded");
+  
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/ace.js';
+  script.type = 'module';
+  script.onload = () => {
+    console.log("ACE ONLOAD FIRED");
+  };
+  script.onerror = (e) => {
+    console.log("ACE ONERROR FIRED", e);
+  };
+  document.head.appendChild(script);
+};
+</script>
+</head>
+<body>
+</body>
+</html>

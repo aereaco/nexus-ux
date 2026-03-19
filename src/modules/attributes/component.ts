@@ -40,7 +40,7 @@ const componentModule: AttributeModule = {
         hasError: false,
         errorMessage: '',
         templateContent: '',
-        props: {}
+        props: {} as Record<string, unknown>
       });
 
       const ctx: ComponentContext = {
@@ -73,6 +73,20 @@ const componentModule: AttributeModule = {
           componentState.isLoading = true;
           componentState.hasError = false;
           try {
+            // 1. Resolve Props (data-signals-*)
+            // This satisfies the "Zenith-Class" specification for parent-to-child isolation.
+            Array.from(el.attributes).forEach(attr => {
+              const parsed = runtime.parseAttribute(attr.name, runtime, el);
+              if (parsed?.directive === 'prop' && parsed.argument) {
+                const propName = parsed.argument;
+                // Support both direct signal names and $(...) universal selectors
+                runtime.effect(() => {
+                  const val = runtime.evaluate(el, attr.value);
+                  componentState.props[propName] = val;
+                });
+              }
+            });
+
             let html = '';
             if (config.path.startsWith('#')) {
               const template = document.querySelector(config.path) as HTMLTemplateElement;
@@ -83,13 +97,28 @@ const componentModule: AttributeModule = {
               html = await runtime.fetch.request(config.path, { responseType: 'text' }, el) as string;
             }
 
-            componentState.templateContent = html;
+            if (runtime.isDevMode) console.log(`[Component] Template loaded for <${el.tagName}>, length: ${html.length}`);
+            
+            // Zenith Enhancement: Auto-unwrap <template> tags
+            let finalOutput = html;
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const template = doc.querySelector('template');
+            
+            if (template) {
+                finalOutput = template.innerHTML;
+                if (runtime.isDevMode) console.log(`[Component] Unwrapped <template> for <${el.tagName}>`);
+            }
+
+            componentState.templateContent = finalOutput;
 
             if (config.shadowrootmode) {
               if (!el.shadowRoot) el.attachShadow({ mode: config.shadowrootmode });
-              runtime.morphDOM(el.shadowRoot! as unknown as HTMLElement, html);
+              runtime.morphDOM(el.shadowRoot! as unknown as HTMLElement, finalOutput);
+              runtime.processElement(el.shadowRoot! as unknown as HTMLElement);
             } else {
-              runtime.morphDOM(el, html);
+              runtime.morphDOM(el, finalOutput);
+              runtime.processElement(el);
             }
 
           } catch (e) {

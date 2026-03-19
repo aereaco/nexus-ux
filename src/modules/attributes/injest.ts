@@ -129,28 +129,42 @@ async function ingestLink(
   cleanupFns: Array<() => void>,
   runtime: RuntimeContext
 ): Promise<void> {
-  const attrs = typeof rawOrObj === 'string' ? parseInlineAttrs(rawOrObj) : rawOrObj;
+  let attrs: Record<string, string>;
+  if (typeof rawOrObj === 'string') {
+    attrs = parseInlineAttrs(rawOrObj);
+    if (!attrs['href']) {
+      attrs = { href: rawOrObj, rel: 'stylesheet' };
+    }
+  } else {
+    attrs = rawOrObj;
+  }
   const href = attrs['href'];
   if (!href) throw new Error(`Missing href attribute`);
 
-  // Try VFS resolution first, then legacy fetch
-  let cssText = assetCache.get(href);
-  if (!cssText) {
-    const resolved = await resolveContent(href);
-    if (resolved) {
-      cssText = resolved;
-      assetCache.set(href, cssText);
+  // Optimize: Skip VFS resolution for standard HTTP/HTTPS links to avoid CORS noise
+  // Use standard <link> tag injection which is robust against CORS
+  const isExternal = href.startsWith('http');
+  
+  if (!isExternal && 'CSSStyleSheet' in globalThis && 'replace' in CSSStyleSheet.prototype) {
+    let cssText = assetCache.get(href);
+    if (!cssText) {
+      const resolved = await resolveContent(href);
+      if (resolved) {
+        cssText = resolved;
+        assetCache.set(href, cssText);
+      }
+    }
+    if (cssText) {
+      const sheet = new CSSStyleSheet();
+      await sheet.replace(cssText);
+      document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+      cleanupFns.push(() => {
+        document.adoptedStyleSheets = document.adoptedStyleSheets.filter(s => s !== sheet);
+      });
+      runtime.log(`Nexus Injest: CSS adopted: ${href}`);
+      return;
     }
   }
-
-  if (cssText && 'CSSStyleSheet' in globalThis && 'replace' in CSSStyleSheet.prototype) {
-    const sheet = new CSSStyleSheet();
-    await sheet.replace(cssText);
-    document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
-    cleanupFns.push(() => {
-      document.adoptedStyleSheets = document.adoptedStyleSheets.filter(s => s !== sheet);
-    });
-  } else {
     // Fallback: standard <link> element injection
     await new Promise<void>((resolve, reject) => {
       const link = document.createElement('link');
@@ -160,8 +174,7 @@ async function ingestLink(
       document.head.appendChild(link);
       cleanupFns.push(() => link.remove());
     });
-  }
-  runtime.log(`Nexus Injest: CSS loaded: ${href}`);
+    runtime.log(`Nexus Injest: CSS loaded: ${href}`);
 }
 
 async function ingestScript(
@@ -170,15 +183,26 @@ async function ingestScript(
   cleanupFns: Array<() => void>,
   runtime: RuntimeContext
 ): Promise<void> {
-  const attrs = typeof rawOrObj === 'string' ? parseInlineAttrs(rawOrObj) : rawOrObj;
+  let attrs: Record<string, string>;
+  if (typeof rawOrObj === 'string') {
+    attrs = parseInlineAttrs(rawOrObj);
+    if (!attrs['src']) {
+      attrs = { src: rawOrObj };
+    }
+  } else {
+    attrs = rawOrObj;
+  }
   const src = attrs['src'];
   if (!src) throw new Error(`Missing src attribute`);
 
-  // Warm browser cache via VFS if applicable
-  if (isVFSUri(src)) {
+  // Optimize: Standard HTTP/HTTPS scripts should always use tag injection to avoid CORS fetch issues
+  const isExternal = src.startsWith('http');
+
+  // VFS Resolution (idb://)
+  if (!isExternal && src.startsWith('idb://')) {
     const content = await resolveContent(src);
     if (content) {
-      // Inject as inline script blob when fetched from VFS storage
+      // Inject as inline script blob
       const blob = new Blob([content], { type: 'text/javascript' });
       const blobUrl = URL.createObjectURL(blob);
       await new Promise<void>((resolve, reject) => {
@@ -363,6 +387,15 @@ const injestModule: AttributeModule = {
     };
 
     Promise.all(ingestTasks).then(finalize);
+    
+    // 5. Absolute Watchdog: Reveal page no matter what after 10s
+    setTimeout(() => {
+      if (el.hasAttribute('data-nexus-loading')) {
+         console.warn(`[Nexus Injest] Absolute watchdog triggered after 10s. Forcefully revealing page.`);
+         finalize();
+      }
+    }, 10000);
+
     if (total === 0) finalize();
 
     return () => {

@@ -1,0 +1,9 @@
+{
+  "Title": "data-mask",
+  "Description": "This page demonstrates instantaneous regex validation and formatting applied directly to native input fields via <code>data-mask</code>.",
+  "Syntax": "<input data-mask=\"(000) 000-0000\">",
+  "SourceModule": "/modules/attributes/mask.ts",
+  "SnippetModule": "data-mask",
+  "Extensibility": "<p class=\"opacity-80 mt-4 leading-relaxed\">String interceptors in <code>src/modules/attributes/mask.ts</code> regulate native Regex inputs. Extend this library to support i18n currency or date localizations physically.</p>",
+  "Snippet": "<div class=\"p-8 bg-base-200 rounded-box border shadow-inner\">\n    <div class=\"form-control\">\n        <label class=\"label font-bold\"><span class=\"label-text\">Telephone Format Masking</span></label>\n        <!-- Automatically enforces (XXX) XXX-XXXX patterns -->\n        <input type=\"text\" data-model=\"userPhone\" data-mask=\"(000) 000-0000\" class=\"input input-bordered input-primary w-full max-w-md\" placeholder=\"(123) 456-7890\">\n        <div class=\"label mt-1 text-sm opacity-75\">Raw Signal Memory: <code data-text=\"userPhone\"></code></div>\n    </div>\n\n    <div class=\"divider\"></div>\n\n    <div class=\"form-control\">\n        <label class=\"label font-bold\"><span class=\"label-text\">Credit Card Formatting</span></label>\n        <!-- Automatically enforces XXXX-XXXX-XXXX-XXXX patterns -->\n        <input type=\"text\" data-model=\"bankCard\" data-mask=\"0000-0000-0000-0000\" class=\"input input-bordered input-secondary w-full max-w-md font-mono text-xl\" placeholder=\"XXXX-XXXX-XXXX-XXXX\">\n        <div class=\"label mt-1 text-sm opacity-75\">Raw Signal Memory: <code data-text=\"bankCard\"></code></div>\n    </div>\n</div>"
+}

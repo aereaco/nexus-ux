@@ -1,0 +1,9 @@
+{
+  "Title": "data-html",
+  "Description": "This page demonstrates raw physical DOM interpretation through the <code>data-html</code> attribute (Warning: Requires trusted context).",
+  "Syntax": "<div data-html=\"rawHTMLString\"></div>",
+  "SourceModule": "/modules/attributes/html.ts",
+  "SnippetModule": "data-html",
+  "Extensibility": "<p class=\"opacity-80 mt-4 leading-relaxed\">Located in <code>src/modules/attributes/html.ts</code>, evaluating to <code>innerHTML</code>. It is highly recommended to inject DOMPurify hooks organically here.</p>",
+  "Snippet": "<div class=\"p-8 bg-base-200 rounded-box border shadow-inner\">\n    <textarea data-model=\"rawMarkup\" class=\"textarea textarea-bordered w-full font-mono text-sm h-32 mb-6 shadow-inner\"></textarea>\n    \n    <div class=\"divider\">Live Rendered Execution Output</div>\n    \n    <div class=\"p-6 bg-base-100 rounded shadow-md border border-neutral\">\n        <h3>Output: <span data-html=\"rawMarkup\" class=\"ml-2 text-xl\"></span></h3>\n    </div>\n</div>"
+}

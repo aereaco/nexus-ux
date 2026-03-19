@@ -87,6 +87,13 @@ const onModule: AttributeModule = {
           // Direct Attachment
           target.addEventListener(eventName, handler as EventListener, options);
           cleanupFns.push(() => target.removeEventListener(eventName, handler as EventListener, options));
+
+          // Late Event Ignition: If event already happened, trigger it now for initialization safety.
+          if (target === window && eventName === 'load' && document.readyState === 'complete') {
+             queueMicrotask(() => (handler as any)(new Event('load')));
+          } else if (target === document && eventName === 'DOMContentLoaded' && (document.readyState === 'interactive' || document.readyState === 'complete')) {
+             queueMicrotask(() => (handler as any)(new Event('DOMContentLoaded')));
+          }
         } else {
           // GC-Free Global Delegation
           if (!globalListeners.has(eventName)) {

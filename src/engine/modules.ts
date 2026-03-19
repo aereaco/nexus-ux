@@ -22,6 +22,7 @@ import { elUniqId, attrHash } from './utils/hash.ts';
 import { MARKER_KEY } from './consts.ts';
 import { NexusEnhancedElement } from './reactivity.ts';
 import { attachObserver, registerObserver, disposeObservers } from './observers.ts';
+import { topology } from './topology.ts';
 
 /**
  * Defines the shape of an action function.
@@ -190,6 +191,7 @@ export class ModuleCoordinator {
       triggerRef: reactivity.triggerRef,
       unref: reactivity.unref,
       ref: reactivity.ref,
+      shallowRef: reactivity.shallowRef,
       isRef: reactivity.isRef,
       toRefs: reactivity.toRefs,
       toRef: reactivity.toRef,
@@ -220,6 +222,15 @@ export class ModuleCoordinator {
       
       elUniqId: elUniqId,
       attrHash: attrHash,
+
+      // Engine Topology (Tier 0-3)
+      topology: {
+        getTier: () => topology.getTier(),
+        getConfig: () => topology.getConfig(),
+        getActiveWorkers: () => topology.getActiveWorkers(),
+        isSABAvailable: () => topology.isSABAvailable(),
+        getLagVariance: () => topology.getLagVariance()
+      },
 
       log: (...args: any[]) => logger.log(this.runtimeContext, ...args),
       warn: (...args: any[]) => logger.warn(this.runtimeContext, ...args),

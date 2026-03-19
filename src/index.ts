@@ -1,5 +1,7 @@
 import { ModuleCoordinator } from './engine/modules.ts';
 import { ROOT_SELECTOR } from './engine/consts.ts';
+import { topology } from './engine/topology.ts';
+import { initSelfHeal, getBeaconHistory, type CrashBeacon } from './engine/agent.ts';
 
 // Core Directives (Explicitly imported for priority ordering)
 import injestModule from './modules/attributes/injest.ts';
@@ -25,6 +27,8 @@ import { fetchModule } from './engine/fetch.ts';
 // Re-export core types for consumers
 export type { RuntimeContext, InitContext } from './engine/composition.ts';
 export type { Module, AttributeModule, ActionModule, ListenerModule, ObserverModule, UtilityModule, MirrorModule, SpriteModule, ScopeModule } from './engine/modules.ts';
+export type { TierLevel, TierConfig } from './engine/topology.ts';
+export type { CrashBeacon, SelfHealConfig } from './engine/agent.ts';
 
 /**
  * Nexus-UX Framework Entry Point.
@@ -98,13 +102,17 @@ export class UX {
 
     // Auto-Register Mirrors
     autoMirrors.forEach(({ name, module }) => {
-      // Find the first exported value and register it
-      const val = Object.values(module)[0];
-      if (val) this.coordinator.runtimeContext.setGlobalSignal(`_${name}`, val);
+      // Look for an export matching the name or a default export
+      const val = module[`${name}Mirror`] || module.default || Object.values(module)[0];
+      if (val) {
+        if (this.coordinator.runtimeContext.isDevMode) console.log(`[Nexus Mirror] Registering _${name}`);
+        this.coordinator.runtimeContext.setGlobalSignal(`_${name}`, val);
+      }
 
-      if (module.onGlobalInit) {
+      const initFn = module.onGlobalInit || module.default?.onGlobalInit;
+      if (initFn) {
         try {
-          module.onGlobalInit(this.coordinator.runtimeContext);
+          initFn(this.coordinator.runtimeContext);
         } catch (e) {
           this.coordinator.runtimeContext.reportError(
             e instanceof Error ? e : new Error(String(e)),
@@ -148,16 +156,32 @@ export class UX {
       }
     });
 
+    // Initialize Self-Heal Agent (Crash Beacons)
+    initSelfHeal({
+      enabled: true,
+      emitToConsole: this.coordinator.runtimeContext.isDevMode ?? false,
+      emitToPlatform: false
+    });
+
+    // Diagnostic Heartbeat
+    if (this.coordinator.runtimeContext.isDevMode) {
+      (window as any)._NEXUS_HEARTBEAT = 0;
+      setInterval(() => { (window as any)._NEXUS_HEARTBEAT++; }, 1000);
+    }
+
     this.init();
+
+    // Zenith Ignition: Global broadcast when engine is fully scanned and ready
+    if (typeof document !== 'undefined') {
+      document.dispatchEvent(new CustomEvent('nexus-ready', { bubbles: true }));
+    }
   }
 
   private init() {
     // Auto-discover and initialize on DOMContentLoaded
     if (typeof window !== 'undefined') {
-      console.error(`[UX] Init. State: ${document.readyState}`);
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
-           console.error(`[UX] DOMContentLoaded triggered`);
            this.scan();
         });
       } else {
@@ -171,7 +195,6 @@ export class UX {
    */
   public scan() {
     const roots = document.querySelectorAll(ROOT_SELECTOR);
-    console.error(`[UX] Scanning. Found ${roots.length} roots. Selector: ${ROOT_SELECTOR}`);
     roots.forEach(root => {
       if (root instanceof HTMLElement) {
         this.coordinator.initializeModules(root);
@@ -210,4 +233,14 @@ export const Nexus = (typeof document !== 'undefined') ? new UX() : null as unkn
 if (typeof window !== 'undefined' && Nexus) {
   // @ts-ignore: Exposing Nexus to global scope
   globalThis.Nexus = Nexus;
+  
+  // Expose Self-Heal agent for developer access
+  // @ts-ignore
+  globalThis.Nexus.selfHeal = {
+    getHistory: getBeaconHistory,
+    capture: (message: string, context?: unknown) => {
+      const { captureCrashBeacon } = require('./engine/agent.ts');
+      return captureCrashBeacon(new Error(message), context);
+    }
+  };
 }

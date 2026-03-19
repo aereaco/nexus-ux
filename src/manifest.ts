@@ -73,26 +73,27 @@ import * as mod_34 from './modules/sprites/animate.ts';
 import * as mod_35 from './modules/sprites/watch.ts';
 import * as mod_36 from './modules/sprites/dispatch.ts';
 import * as mod_37 from './modules/sprites/fetch.ts';
-import * as mod_38 from './modules/sprites/download.ts';
-import * as mod_39 from './modules/sprites/periodicSync.ts';
-import * as mod_40 from './modules/sprites/http.ts';
-import * as mod_41 from './modules/sprites/cache.ts';
-import * as mod_42 from './modules/sprites/bgSync.ts';
-import * as mod_43 from './modules/sprites/bgFetch.ts';
-import * as mod_44 from './modules/sprites/store.ts';
-import * as mod_45 from './modules/sprites/nextTick.ts';
-import * as mod_46 from './modules/sprites/id.ts';
-import * as mod_47 from './modules/sprites/push.ts';
-import * as mod_48 from './modules/sprites/selector.ts';
-import * as mod_49 from './modules/sprites/el.ts';
-import * as mod_50 from './modules/sprites/predictive.ts';
-import * as mod_51 from './modules/sprites/sql.ts';
-import * as mod_52 from './modules/sprites/global.ts';
-import * as mod_53 from './modules/sprites/sw.ts';
-import * as mod_54 from './modules/sprites/refs.ts';
-import * as mod_55 from './modules/sprites/payment.ts';
-import * as mod_56 from './modules/sprites/clipboard.ts';
-import * as mod_57 from './modules/sprites/ws.ts';
+import * as mod_38 from './modules/sprites/gql.ts';
+import * as mod_39 from './modules/sprites/download.ts';
+import * as mod_40 from './modules/sprites/periodicSync.ts';
+import * as mod_41 from './modules/sprites/http.ts';
+import * as mod_42 from './modules/sprites/cache.ts';
+import * as mod_43 from './modules/sprites/bgSync.ts';
+import * as mod_44 from './modules/sprites/bgFetch.ts';
+import * as mod_45 from './modules/sprites/store.ts';
+import * as mod_46 from './modules/sprites/nextTick.ts';
+import * as mod_47 from './modules/sprites/id.ts';
+import * as mod_48 from './modules/sprites/push.ts';
+import * as mod_49 from './modules/sprites/selector.ts';
+import * as mod_50 from './modules/sprites/el.ts';
+import * as mod_51 from './modules/sprites/predictive.ts';
+import * as mod_52 from './modules/sprites/sql.ts';
+import * as mod_53 from './modules/sprites/global.ts';
+import * as mod_54 from './modules/sprites/sw.ts';
+import * as mod_55 from './modules/sprites/refs.ts';
+import * as mod_56 from './modules/sprites/payment.ts';
+import * as mod_57 from './modules/sprites/clipboard.ts';
+import * as mod_58 from './modules/sprites/ws.ts';
 
 export const autoSprites: any[] = [
   { name: 'notification', module: mod_32 },
@@ -101,98 +102,99 @@ export const autoSprites: any[] = [
   { name: 'watch', module: mod_35 },
   { name: 'dispatch', module: mod_36 },
   { name: 'fetch', module: mod_37 },
-  { name: 'download', module: mod_38 },
-  { name: 'periodicSync', module: mod_39 },
-  { name: 'http', module: mod_40 },
-  { name: 'cache', module: mod_41 },
-  { name: 'bgSync', module: mod_42 },
-  { name: 'bgFetch', module: mod_43 },
-  { name: 'store', module: mod_44 },
-  { name: 'nextTick', module: mod_45 },
-  { name: 'id', module: mod_46 },
-  { name: 'push', module: mod_47 },
-  { name: 'selector', module: mod_48 },
-  { name: 'el', module: mod_49 },
-  { name: 'predictive', module: mod_50 },
-  { name: 'sql', module: mod_51 },
-  { name: 'global', module: mod_52 },
-  { name: 'sw', module: mod_53 },
-  { name: 'refs', module: mod_54 },
-  { name: 'payment', module: mod_55 },
-  { name: 'clipboard', module: mod_56 },
-  { name: 'ws', module: mod_57 }
+  { name: 'gql', module: mod_38 },
+  { name: 'download', module: mod_39 },
+  { name: 'periodicSync', module: mod_40 },
+  { name: 'http', module: mod_41 },
+  { name: 'cache', module: mod_42 },
+  { name: 'bgSync', module: mod_43 },
+  { name: 'bgFetch', module: mod_44 },
+  { name: 'store', module: mod_45 },
+  { name: 'nextTick', module: mod_46 },
+  { name: 'id', module: mod_47 },
+  { name: 'push', module: mod_48 },
+  { name: 'selector', module: mod_49 },
+  { name: 'el', module: mod_50 },
+  { name: 'predictive', module: mod_51 },
+  { name: 'sql', module: mod_52 },
+  { name: 'global', module: mod_53 },
+  { name: 'sw', module: mod_54 },
+  { name: 'refs', module: mod_55 },
+  { name: 'payment', module: mod_56 },
+  { name: 'clipboard', module: mod_57 },
+  { name: 'ws', module: mod_58 }
 ];
-import * as mod_58 from './modules/mirrors/navigator.ts';
-import * as mod_59 from './modules/mirrors/battery.ts';
-import * as mod_60 from './modules/mirrors/frames.ts';
-import * as mod_61 from './modules/mirrors/sessionStorage.ts';
-import * as mod_62 from './modules/mirrors/network.ts';
-import * as mod_63 from './modules/mirrors/geolocation.ts';
-import * as mod_64 from './modules/mirrors/window.ts';
-import * as mod_65 from './modules/mirrors/cookies.ts';
-import * as mod_66 from './modules/mirrors/storage.ts';
-import * as mod_67 from './modules/mirrors/indexedDB.ts';
-import * as mod_68 from './modules/mirrors/screen.ts';
-import * as mod_69 from './modules/mirrors/localStorage.ts';
+import * as mod_59 from './modules/mirrors/navigator.ts';
+import * as mod_60 from './modules/mirrors/battery.ts';
+import * as mod_61 from './modules/mirrors/frames.ts';
+import * as mod_62 from './modules/mirrors/sessionStorage.ts';
+import * as mod_63 from './modules/mirrors/network.ts';
+import * as mod_64 from './modules/mirrors/geolocation.ts';
+import * as mod_65 from './modules/mirrors/window.ts';
+import * as mod_66 from './modules/mirrors/cookies.ts';
+import * as mod_67 from './modules/mirrors/storage.ts';
+import * as mod_68 from './modules/mirrors/indexedDB.ts';
+import * as mod_69 from './modules/mirrors/screen.ts';
+import * as mod_70 from './modules/mirrors/localStorage.ts';
 
 export const autoMirrors: any[] = [
-  { name: 'navigator', module: mod_58 },
-  { name: 'battery', module: mod_59 },
-  { name: 'frames', module: mod_60 },
-  { name: 'sessionStorage', module: mod_61 },
-  { name: 'network', module: mod_62 },
-  { name: 'geolocation', module: mod_63 },
-  { name: 'window', module: mod_64 },
-  { name: 'cookies', module: mod_65 },
-  { name: 'storage', module: mod_66 },
-  { name: 'indexedDB', module: mod_67 },
-  { name: 'screen', module: mod_68 },
-  { name: 'localStorage', module: mod_69 }
+  { name: 'navigator', module: mod_59 },
+  { name: 'battery', module: mod_60 },
+  { name: 'frames', module: mod_61 },
+  { name: 'sessionStorage', module: mod_62 },
+  { name: 'network', module: mod_63 },
+  { name: 'geolocation', module: mod_64 },
+  { name: 'window', module: mod_65 },
+  { name: 'cookies', module: mod_66 },
+  { name: 'storage', module: mod_67 },
+  { name: 'indexedDB', module: mod_68 },
+  { name: 'screen', module: mod_69 },
+  { name: 'localStorage', module: mod_70 }
 ];
-import * as mod_70 from './modules/scopes/container.ts';
-import * as mod_71 from './modules/scopes/view.ts';
-import * as mod_72 from './modules/scopes/media.ts';
-import * as mod_73 from './modules/scopes/auth.ts';
-import * as mod_74 from './modules/scopes/os.ts';
-import * as mod_75 from './modules/scopes/native.ts';
+import * as mod_71 from './modules/scopes/container.ts';
+import * as mod_72 from './modules/scopes/view.ts';
+import * as mod_73 from './modules/scopes/media.ts';
+import * as mod_74 from './modules/scopes/auth.ts';
+import * as mod_75 from './modules/scopes/os.ts';
+import * as mod_76 from './modules/scopes/native.ts';
 
 export const autoScopes: any[] = [
-  { name: 'container', module: mod_70 },
-  { name: 'view', module: mod_71 },
-  { name: 'media', module: mod_72 },
-  { name: 'auth', module: mod_73 },
-  { name: 'os', module: mod_74 },
-  { name: 'native', module: mod_75 }
+  { name: 'container', module: mod_71 },
+  { name: 'view', module: mod_72 },
+  { name: 'media', module: mod_73 },
+  { name: 'auth', module: mod_74 },
+  { name: 'os', module: mod_75 },
+  { name: 'native', module: mod_76 }
 ];
-import * as mod_76 from './modules/modifiers/intersect.ts';
-import * as mod_77 from './modules/modifiers/stop.ts';
-import * as mod_78 from './modules/modifiers/keys.ts';
-import * as mod_79 from './modules/modifiers/self.ts';
-import * as mod_80 from './modules/modifiers/prevent.ts';
-import * as mod_81 from './modules/modifiers/throttle.ts';
-import * as mod_82 from './modules/modifiers/once.ts';
-import * as mod_83 from './modules/modifiers/debounce.ts';
-import * as mod_84 from './modules/modifiers/morph.ts';
+import * as mod_77 from './modules/modifiers/intersect.ts';
+import * as mod_78 from './modules/modifiers/stop.ts';
+import * as mod_79 from './modules/modifiers/keys.ts';
+import * as mod_80 from './modules/modifiers/self.ts';
+import * as mod_81 from './modules/modifiers/prevent.ts';
+import * as mod_82 from './modules/modifiers/throttle.ts';
+import * as mod_83 from './modules/modifiers/once.ts';
+import * as mod_84 from './modules/modifiers/debounce.ts';
+import * as mod_85 from './modules/modifiers/morph.ts';
 
 export const autoModifiers: any[] = [
-  { name: 'intersect', module: mod_76 },
-  { name: 'stop', module: mod_77 },
-  { name: 'keys', module: mod_78 },
-  { name: 'self', module: mod_79 },
-  { name: 'prevent', module: mod_80 },
-  { name: 'throttle', module: mod_81 },
-  { name: 'once', module: mod_82 },
-  { name: 'debounce', module: mod_83 },
-  { name: 'morph', module: mod_84 }
+  { name: 'intersect', module: mod_77 },
+  { name: 'stop', module: mod_78 },
+  { name: 'keys', module: mod_79 },
+  { name: 'self', module: mod_80 },
+  { name: 'prevent', module: mod_81 },
+  { name: 'throttle', module: mod_82 },
+  { name: 'once', module: mod_83 },
+  { name: 'debounce', module: mod_84 },
+  { name: 'morph', module: mod_85 }
 ];
-import * as mod_85 from './modules/observers/performance.ts';
-import * as mod_86 from './modules/observers/intersection.ts';
-import * as mod_87 from './modules/observers/mutation.ts';
-import * as mod_88 from './modules/observers/resize.ts';
+import * as mod_86 from './modules/observers/performance.ts';
+import * as mod_87 from './modules/observers/intersection.ts';
+import * as mod_88 from './modules/observers/mutation.ts';
+import * as mod_89 from './modules/observers/resize.ts';
 
 export const autoObservers: any[] = [
-  { name: 'performance', module: mod_85 },
-  { name: 'intersection', module: mod_86 },
-  { name: 'mutation', module: mod_87 },
-  { name: 'resize', module: mod_88 }
+  { name: 'performance', module: mod_86 },
+  { name: 'intersection', module: mod_87 },
+  { name: 'mutation', module: mod_88 },
+  { name: 'resize', module: mod_89 }
 ];

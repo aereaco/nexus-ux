@@ -68,7 +68,8 @@ try {
     entryPoints: [entryPoint],
     outfile: outFile,
     bundle: true,
-    format: "esm",
+    format: "iife",
+    globalName: "NexusLib",
     target: "es2022",
   });
   console.log("Build complete: dist/nexus-ux.js");

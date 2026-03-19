@@ -1,0 +1,9 @@
+{
+  "Title": "data-computed",
+  "Description": "This page demonstrates the <code>data-computed</code> attribute dynamically injecting highly-optimized, purely derivative mathematical signals into the AST scope down-chain.",
+  "Syntax": "<div data-computed-totals=\"price * quantity\"></div>",
+  "SourceModule": "/modules/attributes/computed.ts",
+  "SnippetModule": "data-computed",
+  "Extensibility": "<p class=\"opacity-80 mt-4 leading-relaxed\">The derived reactive memory inside <code>src/modules/attributes/computed.ts</code> maps getter traps. You can add memoization caching to this layer natively.</p>",
+  "Snippet": "<div data-computed-totalPrice=\"basePrice * (1 + taxRate)\" class=\"p-8 bg-base-200 rounded-box border shadow-inner\">\n    <div class=\"grid grid-cols-1 md:grid-cols-2 gap-8 mb-8\">\n        <div class=\"form-control\">\n            <label class=\"label font-bold text-lg\"><span class=\"label-text\">Base Price ($)</span></label>\n            <input type=\"number\" data-model=\"basePrice\" class=\"input input-bordered input-primary\">\n        </div>\n        <div class=\"form-control\">\n            <label class=\"label font-bold text-lg\"><span class=\"label-text\">Tax Rate (Decimal)</span></label>\n            <input type=\"number\" step=\"0.01\" data-model=\"taxRate\" class=\"input input-bordered input-secondary\">\n        </div>\n    </div>\n\n    <div class=\"stats shadow w-full bg-base-100 border border-base-300\">\n        <div class=\"stat\">\n          <div class=\"stat-title border-b border-base-200 pb-2 mb-2\">Dynamically Computed Total</div>\n          <div class=\"stat-value text-accent text-5xl\">\n              $<span data-text=\"totalPrice.toFixed(2)\"></span>\n          </div>\n          <div class=\"stat-desc font-medium mt-2\">Driven by <code>{ basePrice * (1 + taxRate) }</code></div>\n        </div>\n    </div>\n</div>"
+}

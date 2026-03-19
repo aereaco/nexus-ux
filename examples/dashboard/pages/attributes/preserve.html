@@ -1,82 +1,29 @@
 <!DOCTYPE html>
-<html lang="en"><head>
+<html lang="en" style="opacity: 0;" data-ux-init data-injest="({
+        Styling: {
+                link: { href: 'https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css', rel: 'stylesheet' },
+                script: { src: 'https://cdn.tailwindcss.com' }
+        },
+        Ace: {
+                script: { src: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/ace.js', type: 'module' }
+        }
+})">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexus-UX: Preserve</title>
     <script type="module" src="../../../../dist/nexus-ux.js"></script>
+    <style>
+        .nx-editor-container { position: relative; min-height: 400px; width: 100%; }
+        .nx-editor { position: absolute; top: 0; left: 0; right: 0; bottom: 0; font-family: 'Fira Code', 'Cascadia Code', monospace; font-size: 14px; }
+        .nx-cmdbar { border-radius: 0 0 calc(var(--rounded-box, 1rem)) calc(var(--rounded-box, 1rem)); }
+    </style>
 </head>
-<body data-signal="{ activeTab: 'A' }" data-ux-init="">
+<body data-signal="{ activeTab: 'A' }">
 
-    <div id="demo-preserve" class="dashboard-fragment p-8 bg-base-200 min-h-screen text-base-content" data-injest="{ css: { link: 'href=\'https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css\' rel=\'stylesheet\'' }, tw: { script: 'src=\'https://cdn.tailwindcss.com\'' } }">
-        
-        <div class="max-w-4xl mx-auto">
-            <h1 class="text-4xl font-bold mb-4 text-primary">data-preserve</h1>
-            <p class="mb-8 text-lg opacity-80">This page demonstrates the <code>data-preserve</code> attribute physically locking DOM memory blocks so they perfectly survive virtual template replacements and routing morphs untouched.</p>
-
-            
-            <div class="card bg-base-100 shadow-xl border border-base-300 mb-8 mt-8" data-signal="{ activeTab: 'preview' }">
-                <div class="card-body">
-                    <div class="flex flex-col md:flex-row justify-between md:items-center border-b border-base-300 pb-4 mb-4 gap-4">
-                        <h2 class="card-title text-secondary">Interactive Demonstration</h2>
-                        <div class="tabs tabs-boxed bg-base-200">
-                            <a class="tab" data-class-tab-active="activeTab === 'preview'" data-on-click="activeTab = 'preview'">Preview</a> 
-                            <a class="tab" data-class-tab-active="activeTab === 'code'" data-on-click="activeTab = 'code'">Code</a> 
-                        </div>
-                    </div>
-
-                    <div data-show="activeTab === 'preview'">
-                        <div class="opacity-80 mt-4 leading-relaxed">
-                            The DOM isolator in <code>src/modules/attributes/preserve.ts</code> halts AST tree walking recursively. You can modify the compiler to ignore specific CSS namespaces identically.
-                        </div>
-                    </div>
-                    <div data-show="activeTab === 'code'" style="display: none;">
-                        <pre class="mockup-code bg-neutral text-neutral-content p-4 font-mono text-sm mt-0 mb-0 w-full overflow-x-auto"><code>&lt;div data-preserve&gt;Non-Reactive Area&lt;/div&gt;</code></pre>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card bg-base-100 shadow-xl border border-base-300 mb-8">
-                <div class="card-body">
-                    
-                    <div class="tabs tabs-boxed mb-6">
-                        <a class="tab tab-lg" data-class-tab-active="activeTab === 'A'" data-on-click="activeTab = 'A'">Morph Template A</a> 
-                        <a class="tab tab-lg" data-class-tab-active="activeTab === 'B'" data-on-click="activeTab = 'B'">Morph Template B</a> 
-                    </div>
-
-                    <div class="mt-4 p-8 bg-base-200 rounded-box border shadow-inner relative overflow-hidden">
-                        
-                        <!-- Reactive Morph Target Container -->
-                        <div id="morph-container" class="transition-all duration-300">
-                            
-                            <template data-if="activeTab === 'A'">
-                                <div class="bg-primary/20 p-6 rounded-lg mb-6 border-l-4 border-primary">
-                                    <h3 class="font-bold text-xl mb-2 text-primary">Context Template A Active</h3>
-                                    <p>The containing array structure completely shifts, yet the video player below remains completely unmutated by memory referencing.</p>
-                                </div>
-                            </template>
-
-                            <template data-if="activeTab === 'B'">
-                                <div class="bg-secondary/20 p-6 rounded-lg mb-6 border-l-4 border-secondary">
-                                    <h3 class="font-bold text-xl mb-2 text-secondary">Context Template B Active</h3>
-                                    <p>Notice how the DOM structurally mutated, but the preserved element gracefully avoided virtual DOM diff destruction algorithms!</p>
-                                </div>
-                            </template>
-                            
-                            <!-- The Protected Node -->
-                            <div data-preserve="demo-locked-video" class="mockup-window border border-base-300 bg-neutral shadow-2xl">
-                                <div class="flex justify-center px-4 py-8 bg-neutral-content flex-col items-center">
-                                    <h4 class="font-bold text-neutral text-xl">Locked Element</h4>
-                                    <!-- Play around with native inputs inside preserved zones -->
-                                    <input type="text" placeholder="Type here, switch tabs, state persists!" class="input input-bordered w-full max-w-xs mt-4">
-                                </div>
-                </div>
-            </div>
-            </div>
-            
-        </div>
-
+    <!-- Living Documentation Shell -->
+    <div data-signal="{ doc: $get('/examples/dashboard/pages/attributes/preserve.json') }" data-cloak>
+        <div data-component="'../../components/document.html'"></div>
     </div>
-
-
-
-</body></html>
+</body>
+</html>

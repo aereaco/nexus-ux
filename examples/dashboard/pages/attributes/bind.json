@@ -1,0 +1,9 @@
+{
+  "Title": "data-bind",
+  "Description": "This page demonstrates massive object-level property binding via <code>data-bind</code> mapping directly onto native DOM Node properties (like <code>type</code> and <code>value</code>).",
+  "Syntax": "<div data-bind=\"{ id: elementId, class: dynamicClass }\"></div>",
+  "SourceModule": "/modules/attributes/bind.ts",
+  "SnippetModule": "data-bind",
+  "Extensibility": "<p class=\"opacity-80 mt-4 leading-relaxed\">The object binder in <code>src/modules/attributes/bind.ts</code> parses JS objects into raw node properties. Easily hooked to transform object keys into <code>data-*</code> compliant datasets.</p>",
+  "Snippet": "<div class=\"p-8 bg-base-200 rounded-box border shadow-inner\">\n    <div class=\"form-control mb-6\">\n        <label class=\"label\">\n            <span class=\"label-text font-bold\">Object Binding Input Node</span>\n        </label>\n        \n        <!-- Binds the entire customProps object directly onto the element's properties -->\n        <input data-bind=\"customProps\" data-attr-type=\"nativeType\" class=\"input input-bordered input-primary w-full\">\n    </div>\n    \n    <div class=\"divider\">Memory Controls</div>\n    \n    <div class=\"flex flex-wrap gap-4 items-center\">\n        <button class=\"btn btn-warning btn-sm shadow\" data-on-click=\"customProps.disabled = !customProps.disabled\">\n            Toggle Node Disabled State\n        </button>\n        \n        <button class=\"btn btn-info btn-sm shadow\" data-on-click=\"nativeType = nativeType === 'password' ? 'text' : 'password'\">\n            Mutate Input Type\n        </button>\n        \n        <button class=\"btn btn-accent btn-sm shadow\" data-on-click=\"customProps.value = 'HACKED_' + Date.now()\">\n            Overwrite Node Value\n        </button>\n    </div>\n</div>"
+}

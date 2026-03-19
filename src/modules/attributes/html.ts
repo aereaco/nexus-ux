@@ -9,7 +9,11 @@ const htmlModule: AttributeModule = {
     try {
       const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
         const content = runtime.evaluate(el, value);
-        el.innerHTML = content === undefined || content === null ? '' : String(content);
+        const html = content === undefined || content === null ? '' : String(content);
+        if (el.innerHTML !== html) {
+          el.innerHTML = html;
+          runtime.processElement(el);
+        }
       });
       return cleanup;
     } catch (e) {

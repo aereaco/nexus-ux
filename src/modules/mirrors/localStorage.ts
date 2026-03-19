@@ -79,22 +79,22 @@ const localStorageMirrorTarget = {
 // Create a reactive proxy
 export const localStorageMirror = new Proxy(localStorageMirrorTarget as any, {
   get(target, key: string) {
-    if (isDebug()) {
-      console.debug(`[localStorageMirror Proxy Get] Key: ${String(key)}`);
-    }
     if (typeof key === 'symbol') return Reflect.get(target, key);
     if (key in target) return (target as any)[key];
 
     if (!keyRefs.has(key)) {
+      if (isDebug()) console.debug(`[localStorageMirror] Initializing reactive key: '${key}'`);
       // Create a custom ref that always reads from localStorage for "Truth-from-Source"
       const r = customRef((track, trigger) => {
         return {
           get() {
             track();
-            return getValue(key);
+            const val = getValue(key);
+            return val;
           },
           set(newValue: unknown) {
             const strVal = typeof newValue === 'string' ? newValue : JSON.stringify(newValue);
+            if (isDebug()) console.debug(`[localStorageMirror] Reactive SET for '${key}':`, strVal.substring(0, 50));
             const storage = (globalThis as any).localStorage;
             if (storage) storage.setItem(key, strVal);
             trigger();
@@ -108,18 +108,21 @@ export const localStorageMirror = new Proxy(localStorageMirrorTarget as any, {
     return r ? r.value : undefined;
   },
   set(_target, key: string, value: unknown) {
-    const strVal = typeof value === 'string' ? value : JSON.stringify(value);
-    const storage = (globalThis as any).localStorage;
-    if (storage) storage.setItem(key, strVal);
-
-    // Update local ref if it exists, or create one to ensure future reactivity
-    const r = keyRefs.get(key);
-    if (r) {
-      r.value = value;
-    } else {
-      // Access it once to create the customRef
-      (localStorageMirror as any)[key] = value;
+    if (isDebug()) console.debug(`[localStorageMirror Proxy Set] Key: ${key}`);
+    
+    // 1. Ensure ref exists
+    let r = keyRefs.get(key);
+    if (!r) {
+      // Triggering property access on the proxy itself will hit the GET trap and create the ref safely
+      void (localStorageMirror as any)[key]; 
+      r = keyRefs.get(key);
     }
+
+    // 2. Delegate to ref (the customRef setter handles serialization and storage.setItem)
+    if (r) {
+       r.value = value;
+    }
+    
     return true;
   }
 });
@@ -149,3 +152,7 @@ export function onGlobalInit() {
 
 /** Tear down storage listener — for testing or micro-frontend teardown. */
 export function dispose() { if (_localStorageCleanup) _localStorageCleanup(); }
+
+if (typeof window !== 'undefined') {
+  (window as any)._localStorage = localStorageMirror;
+}

@@ -1,129 +1,29 @@
 <!DOCTYPE html>
-<html lang="en"><head>
+<html lang="en" style="opacity: 0;" data-ux-init data-injest="({
+        Styling: {
+                link: { href: 'https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css', rel: 'stylesheet' },
+                script: { src: 'https://cdn.tailwindcss.com' }
+        },
+        Ace: {
+                script: { src: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/ace.js', type: 'module' }
+        }
+})">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexus-UX: Ref</title>
     <script type="module" src="../../../../dist/nexus-ux.js"></script>
+    <style>
+        .nx-editor-container { position: relative; min-height: 400px; width: 100%; }
+        .nx-editor { position: absolute; top: 0; left: 0; right: 0; bottom: 0; font-family: 'Fira Code', 'Cascadia Code', monospace; font-size: 14px; }
+        .nx-cmdbar { border-radius: 0 0 calc(var(--rounded-box, 1rem)) calc(var(--rounded-box, 1rem)); }
+    </style>
 </head>
-<body data-signal="{ logs: [] }" data-ux-init="">
+<body data-signal="{ logs: [] }">
 
-    <div id="demo-ref" class="dashboard-fragment p-8 bg-base-200 min-h-screen text-base-content" data-injest="{ css: { link: 'href=\'https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css\' rel=\'stylesheet\'' }, tw: { script: 'src=\'https://cdn.tailwindcss.com\'' } }">
-        
-        <div class="max-w-4xl mx-auto">
-            <h1 class="text-4xl font-bold mb-4 text-primary">data-ref</h1>
-            <p class="mb-8 text-lg opacity-80">This page demonstrates the <code>data-ref</code> attribute registering physical DOM nodes directly into the <code>$refs</code> memory proxy for O(1) instantaneous access.</p>
-
-            
-            
-            <div class="card bg-base-100 shadow-xl border border-base-300 mb-8 mt-8">
-                <div class="card-body">
-                    <h2 class="card-title text-secondary border-b border-base-300 pb-2 flex gap-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg> Syntax & API Usage</h2>
-                    <pre class="mockup-code bg-neutral text-neutral-content p-4 font-mono text-sm mt-4 w-full overflow-x-auto"><code>&lt;canvas data-ref="myCanvas"&gt;&lt;/canvas&gt;
-
-$refs.myCanvas.getContext('2d')</code></pre>
-                </div>
-            </div>
-
-            <div class="card bg-base-100 shadow-xl border border-base-300 mb-8" data-signal="{ activeTab: 'preview' }">
-                <div class="card-body">
-                    <div class="flex flex-col md:flex-row justify-between md:items-center border-b border-base-300 pb-4 mb-4 gap-4">
-                        <h2 class="card-title text-secondary">Interactive Demonstration</h2>
-                        <div class="tabs tabs-boxed bg-base-200">
-                            <a class="tab" data-class-tab-active="activeTab === 'preview'" data-on-click="activeTab = 'preview'">Preview</a> 
-                            <a class="tab" data-class-tab-active="activeTab === 'code'" data-on-click="activeTab = 'code'">Code</a> 
-                        </div>
-                    </div>
-
-                    <div data-show="activeTab === 'preview'">
-                        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-8 bg-base-200 p-8 rounded-box border shadow-inner">
-                            <div class="flex flex-col gap-6">
-                                <!-- The Targeted Node -->
-                                <div class="form-control w-full">
-                                    <label class="label font-bold">Physical Input Node</label>
-                                    <input type="text" data-ref="secretInput" class="input input-bordered w-full" placeholder="Memory Address: $refs.secretInput">
-                                </div>
-                                
-                                <div class="form-control w-full">
-                                    <label class="label font-bold">Physical Canvas Node</label>
-                                    <canvas data-ref="drawSurface" width="200" height="100" class="bg-base-100 border border-base-300 rounded shadow-inner w-full"></canvas>
-                                </div>
-                            </div>
-    
-                            <div class="flex flex-col gap-4">
-                                <!-- Direct DOM Mutations Bypassing QuerySelector -->
-                                <button class="btn btn-primary" data-on-click="$refs.secretInput.focus(); $refs.secretInput.value = 'Auto-Filled via $refs!'">
-                                    Focus &amp; Mutate Input Ref
-                                </button>
-                                
-                                <button class="btn btn-secondary" data-on-click="
-                                    const ctx = $refs.drawSurface.getContext('2d');
-                                    ctx.fillStyle = ['#ec4899', '#3b82f6', '#10b981', '#f59e0b'][Math.floor(Math.random() * 4)];
-                                    ctx.fillRect(Math.random()*150, Math.random()*50, 50, 50);
-                                ">
-                                    Paint Native Canvas Ref
-                                </button>
-                                
-                                <button class="btn btn-accent mt-4" data-on-click="
-                                    // Demonstrating that $refs hold literal HTMLElement interfaces mapped from data-ref
-                                    $refs.secretInput.style.border = '4px solid #ec4899';
-                                    setTimeout(() => $refs.secretInput.style.border = '', 500);
-                                ">
-                                    Flash Input Border Ref
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div data-show="activeTab === 'code'" style="display: none;">
-                        <pre class="mockup-code bg-neutral text-neutral-content p-4 font-mono text-sm mt-0 w-full overflow-x-auto"><code>&lt;div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-8 bg-base-200 p-8 rounded-box border shadow-inner"&gt;
-    &lt;div class="flex flex-col gap-6"&gt;
-        &lt;!-- The Targeted Node --&gt;
-        &lt;div class="form-control w-full"&gt;
-            &lt;label class="label font-bold"&gt;Physical Input Node&lt;/label&gt;
-            &lt;input type="text" data-ref="secretInput" class="input input-bordered w-full" placeholder="Memory Address: $refs.secretInput"&gt;
-        &lt;/div&gt;
-        
-        &lt;div class="form-control w-full"&gt;
-            &lt;label class="label font-bold"&gt;Physical Canvas Node&lt;/label&gt;
-            &lt;canvas data-ref="drawSurface" width="200" height="100" class="bg-base-100 border border-base-300 rounded shadow-inner w-full"&gt;&lt;/canvas&gt;
-        &lt;/div&gt;
-    &lt;/div&gt;
-
-    &lt;div class="flex flex-col gap-4"&gt;
-        &lt;!-- Direct DOM Mutations Bypassing QuerySelector --&gt;
-        &lt;button class="btn btn-primary" data-on-click="$refs.secretInput.focus(); $refs.secretInput.value = 'Auto-Filled via $refs!'"&gt;
-            Focus &amp;amp; Mutate Input Ref
-        &lt;/button&gt;
-        
-        &lt;button class="btn btn-secondary" data-on-click="
-            const ctx = $refs.drawSurface.getContext('2d');
-            ctx.fillStyle = ['#ec4899', '#3b82f6', '#10b981', '#f59e0b'][Math.floor(Math.random() * 4)];
-            ctx.fillRect(Math.random()*150, Math.random()*50, 50, 50);
-        "&gt;
-            Paint Native Canvas Ref
-        &lt;/button&gt;
-        
-        &lt;button class="btn btn-accent mt-4" data-on-click="
-            // Demonstrating that $refs hold literal HTMLElement interfaces mapped from data-ref
-            $refs.secretInput.style.border = '4px solid #ec4899';
-            setTimeout(() =&gt; $refs.secretInput.style.border = '', 500);
-        "&gt;
-            Flash Input Border Ref
-        &lt;/button&gt;
-    &lt;/div&gt;
-&lt;/div&gt;</code></pre>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card bg-base-100 shadow-xl border border-base-300 mt-8">
-                <div class="card-body">
-                    <h2 class="card-title text-secondary border-b border-base-300 pb-2 flex gap-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewbox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.827M15.75 15.75L21 21m-5.25-5.25l-1.5-1.5m3-3l1.5-1.5m-3 3L11.42 15.17M11.42 15.17A4.475 4.475 0 0012 11.25c0-2.485-2.015-4.5-4.5-4.5s-4.5 2.015-4.5 4.5c0 2.485 2.015 4.5 4.5 4.5 1.574 0 3.012-.81 3.82-2.08m0 0L3.75 3.75"></path></svg> Extensibility Notes</h2>
-                    <p class="opacity-80 mt-4 leading-relaxed">DOM Pointers inside <code>src/modules/attributes/ref.ts</code> bind to the root <code>Nexus</code> object. Adapting this yields jQuery-like collections if multiple elements declare identical refs.</p>
-                </div>
-                </div>
-            </div>
-
-
-
-</body></html>
+    <!-- Living Documentation Shell -->
+    <div data-signal="{ doc: $get('/examples/dashboard/pages/attributes/ref.json') }" data-cloak>
+        <div data-component="'../../components/document.html'"></div>
+    </div>
+</body>
+</html>

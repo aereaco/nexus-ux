@@ -1,116 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="opacity: 0;" data-ux-init data-injest="({
+        Styling: {
+                link: { href: 'https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css', rel: 'stylesheet' },
+                script: { src: 'https://cdn.tailwindcss.com' }
+        },
+        Ace: {
+                script: { src: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/ace.js', type: 'module' }
+        }
+})">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexus-UX: Component</title>
     <script type="module" src="../../../../dist/nexus-ux.js"></script>
+    <style>
+        .nx-editor-container { position: relative; min-height: 400px; width: 100%; }
+        .nx-editor { position: absolute; top: 0; left: 0; right: 0; bottom: 0; font-family: 'Fira Code', 'Cascadia Code', monospace; font-size: 14px; }
+        .nx-cmdbar { border-radius: 0 0 calc(var(--rounded-box, 1rem)) calc(var(--rounded-box, 1rem)); }
+    </style>
 </head>
-<body data-signal="{ activeFragment: 'none' }" data-ux-init>
+<body data-signal="{ activeFragment: 'none' }">
 
-    <div id="demo-component" class="dashboard-fragment p-8 bg-base-200 min-h-screen text-base-content" 
-         data-injest="{ css: { link: 'href=\'https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css\' rel=\'stylesheet\'' }, tw: { script: 'src=\'https://cdn.tailwindcss.com\'' } }">
-        
-        <div class="max-w-4xl mx-auto">
-            <h1 class="text-4xl font-bold mb-4 text-primary">data-component</h1>
-            <p class="mb-8 text-lg opacity-80">This page demonstrates the <code>data-component</code> attribute—the revolutionary lazy-loading template injesting engine powering this entire dashboard.</p>
-
-            
-            <div class="card bg-base-100 shadow-xl border border-base-300 mb-8 mt-8">
-                <div class="card-body">
-                    <h2 class="card-title text-secondary border-b border-base-300 pb-2 flex gap-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg> Syntax & API Usage</h2>
-                    <pre class="mockup-code bg-neutral text-neutral-content p-4 font-mono text-sm mt-4 w-full overflow-x-auto"><code>&lt;div data-component="/path/to/component.html"&gt;&lt;/div&gt;</code></pre>
-                </div>
-            </div>
-
-            <div class="card bg-base-100 shadow-xl border border-base-300 mb-8" data-signal="{ activeTab: 'preview' }">
-                <div class="card-body">
-                    <div class="flex flex-col md:flex-row justify-between md:items-center border-b border-base-300 pb-4 mb-4 gap-4">
-                        <h2 class="card-title text-secondary">Interactive Demonstration</h2>
-                        <div class="tabs tabs-boxed bg-base-200">
-                            <a class="tab" data-class-tab-active="activeTab === 'preview'" data-on-click="activeTab = 'preview'">Preview</a> 
-                            <a class="tab" data-class-tab-active="activeTab === 'code'" data-on-click="activeTab = 'code'">Code</a> 
-                        </div>
-                    </div>
-
-                    <div data-show="activeTab === 'preview'">
-                        <div class="p-8 bg-base-200 rounded-box border shadow-inner">
-                            <div class="flex gap-4 mb-8">
-                                <button class="btn btn-outline btn-primary shadow-sm" data-on-click="activeFragment = 'test_component_card.html'">Load Component A</button>
-                                <button class="btn btn-outline btn-secondary shadow-sm" data-on-click="activeFragment = 'test_component_alert.html'">Load Component B</button>
-                                <button class="btn btn-error shadow-sm" data-on-click="activeFragment = 'none'">Destroy Component Tree</button>
-                            </div>
-                            
-                            <div class="divider">Ingested Component DOM Mount Point</div>
-                            
-                            <div data-show="activeFragment === 'none'" class="h-32 flex items-center justify-center border-2 border-dashed border-base-300 rounded-xl text-base-content/50 font-medium bg-base-100">
-                                No component mounted. Awaiting fetch request...
-                            </div>
-                            
-                            <div data-show="activeFragment !== 'none'">
-                                <!-- The actual component router fetching literal HTML files! -->
-                                <div data-component="activeFragment" style="min-height: 128px;" class="border-2 border-primary rounded-xl overflow-hidden shadow-lg transition-all duration-300 bg-base-100"></div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div data-show="activeTab === 'code'" style="display: none;">
-                        <pre class="mockup-code bg-neutral text-neutral-content p-4 font-mono text-sm mt-0 w-full overflow-x-auto"><code>&lt;div class="p-8 bg-base-200 rounded-box border shadow-inner"&gt;
-    &lt;div class="flex gap-4 mb-8"&gt;
-        &lt;button class="btn btn-outline btn-primary shadow-sm" data-on-click="activeFragment = 'test_component_card.html'"&gt;Load Component A&lt;/button&gt;
-        &lt;button class="btn btn-outline btn-secondary shadow-sm" data-on-click="activeFragment = 'test_component_alert.html'"&gt;Load Component B&lt;/button&gt;
-        &lt;button class="btn btn-error shadow-sm" data-on-click="activeFragment = 'none'"&gt;Destroy Component Tree&lt;/button&gt;
-    &lt;/div&gt;
-    
-    &lt;div class="divider"&gt;Ingested Component DOM Mount Point&lt;/div&gt;
-    
-    &lt;div data-show="activeFragment === 'none'" class="h-32 flex items-center justify-center border-2 border-dashed border-base-300 rounded-xl text-base-content/50 font-medium bg-base-100"&gt;
-        No component mounted. Awaiting fetch request...
-    &lt;/div&gt;
-    
-    &lt;div data-show="activeFragment !== 'none'"&gt;
-        &lt;!-- The actual component router fetching literal HTML files! --&gt;
-        &lt;div data-component="activeFragment" style="min-height: 128px;" class="border-2 border-primary rounded-xl overflow-hidden shadow-lg transition-all duration-300 bg-base-100"&gt;&lt;/div&gt;
-    &lt;/div&gt;
-&lt;/div&gt;</code></pre>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card bg-base-100 shadow-xl border border-base-300 mt-8">
-                <div class="card-body">
-                    <h2 class="card-title text-secondary border-b border-base-300 pb-2 flex gap-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.827M15.75 15.75L21 21m-5.25-5.25l-1.5-1.5m3-3l1.5-1.5m-3 3L11.42 15.17M11.42 15.17A4.475 4.475 0 0012 11.25c0-2.485-2.015-4.5-4.5-4.5s-4.5 2.015-4.5 4.5c0 2.485 2.015 4.5 4.5 4.5 1.574 0 3.012-.81 3.82-2.08m0 0L3.75 3.75" /></svg> Extensibility Notes</h2>
-                    <p class="opacity-80 mt-4 leading-relaxed">The <code>src/modules/attributes/component.ts</code> loader mounts dynamically. Integrating a global HTTP cache interceptor significantly reduces template repaints in large layouts.</p>
-                </div>
-                </div>
-            </div>
-
-    <!-- Hidden template files mapping for this demonstration since we don't have secondary files -->
-    <template id="test_component_card.html">
-        <div class="p-6 bg-primary text-primary-content">
-            <h2 class="text-2xl font-bold mb-2">Component A Loaded!</h2>
-            <p>I am an HTML fragment successfully fetched, extracted via RegExp, and mapped cleanly into the global AST scope.</p>
-        </div>
-    </template>
-    
-    <template id="test_component_alert.html">
-         <div class="p-6 bg-secondary text-secondary-content">
-            <h2 class="text-2xl font-bold mb-2">Component B Loaded!</h2>
-            <p>This demonstrates completely modular micro-frontend construction directly inside purely declarative HTML files.</p>
-        </div>
-    </template>
-
-    <script>
-        // Very quick API mockup to hijack fetch to use the templates above for demo
-        const originalFetch = window.fetch;
-        window.fetch = async (url, options) => {
-            if (url.includes('test_component_card.html')) {
-                return new Response(document.getElementById('test_component_card.html').innerHTML, { headers: { 'content-type': 'text/html' }});
-            } else if (url.includes('test_component_alert.html')) {
-                return new Response(document.getElementById('test_component_alert.html').innerHTML, { headers: { 'content-type': 'text/html' }});
-            }
-            return originalFetch(url, options);
-        };
-    </script>
+    <!-- Living Documentation Shell -->
+    <div data-signal="{ doc: $get('/examples/dashboard/pages/attributes/component.json') }" data-cloak>
+        <div data-component="'../../components/document.html'"></div>
+    </div>
 </body>
 </html>

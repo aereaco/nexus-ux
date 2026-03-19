@@ -1,0 +1,9 @@
+{
+  "Title": "data-text",
+  "Description": "This page demonstrates secure, XSS-proof plaintext node mathematical binding via <code>data-text</code>.",
+  "Syntax": "<div data-text=\"signalName\"></div>\n<span data-text=\"complex.nested.item\"></span>",
+  "SourceModule": "/modules/attributes/text.ts",
+  "SnippetModule": "data-text",
+  "Extensibility": "<p class=\"opacity-80 mt-4 leading-relaxed\">Located in <code>src/modules/attributes/text.ts</code>, you can override the native <code>textContent</code> mapping or introduce custom string sanitizers natively into the AST.</p>",
+  "Snippet": "<div class=\"p-8 bg-base-200 rounded-box border shadow-inner\">\n    <div class=\"stats shadow w-full bg-base-100\">\n        <div class=\"stat place-items-center\">\n            <div class=\"stat-title font-bold\">Concurrent Global Users</div>\n            <div class=\"stat-value text-primary font-mono\" data-text=\"activeUsers.toLocaleString()\"></div>\n            <div class=\"stat-desc mt-4\">\n                <button class=\"btn btn-sm btn-primary btn-outline font-bold\" data-on-click=\"activeUsers += Math.floor(Math.random() * 50)\">Simulate Traffic Spike</button>\n            </div>\n        </div>\n        \n        <div class=\"stat place-items-center\">\n            <div class=\"stat-title font-bold\">Environment Status</div>\n            <div class=\"stat-value text-success\" data-text=\"serverStatus\" data-class-text-success=\"serverStatus === 'Online'\" data-class-text-error=\"serverStatus !== 'Online'\"></div>\n            <div class=\"stat-desc mt-4\">\n                <button class=\"btn btn-sm btn-secondary btn-outline font-bold\" data-on-click=\"serverStatus = serverStatus === 'Online' ? 'Critical Outage' : 'Online'\">Toggle Status</button>\n            </div>\n        </div>\n    </div>\n</div>"
+}

@@ -1,0 +1,9 @@
+{
+  "Title": "data-raf",
+  "Description": "Demonstrates the <code>data-raf</code> module binding arbitrary logic executions directly into the native browser <code>requestAnimationFrame</code> loop for bleeding-edge 60FPS mathematically smooth logic.",
+  "Syntax": "<div data-raf=\"gameLoopLogic()\"></div>",
+  "SourceModule": "/modules/attributes/raf.ts",
+  "SnippetModule": "data-raf",
+  "Extensibility": "<p class=\"opacity-80 mt-4 leading-relaxed\">Frame pipeline hooks inside <code>src/modules/attributes/raf.ts</code> execute directly 60 times a second natively. Optimize internal DOM nodes recursively to bypass AST latency during canvas renders.</p>",
+  "Snippet": "<div class=\"p-8 bg-base-200 rounded-box border shadow-inner\">\n    <!-- High Frequency Logic Runner Bound to Render Frames -->\n    <div class=\"stats shadow bg-base-100 w-full\"\n         data-raf=\"\n             hardwareLoops++;\n             const now = performance.now();\n             const delta = now - lastTime;\n             if (delta >= 1000) {\n                 fps = Math.round((hardwareLoops * 1000) / delta);\n                 hardwareLoops = 0;\n                 lastTime = now;\n             }\n         \">\n         \n        <div class=\"stat place-items-center\">\n            <div class=\"stat-title text-lg font-bold\">Hardware RAF Cycle Binding</div>\n            <div class=\"stat-value text-accent text-6xl my-2\" data-text=\"fps\"></div>\n            <div class=\"stat-desc font-bold text-lg\">Frames Per Second Measured</div>\n        </div>\n    </div>\n</div>"
+}

@@ -7,6 +7,7 @@ export * from './store.ts';
 export * from './fetch.ts';
 export * from './http.ts';
 export * from './sql.ts';
+export * from './gql.ts';
 export * from './animate.ts';
 export * from './mask.ts';
 export * from './clipboard.ts';

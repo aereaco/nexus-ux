@@ -1,19 +1,35 @@
 import { RuntimeContext } from '../../engine/composition.ts';
 import { FetchOptions } from '../../engine/fetch.ts';
 
+const proxyCache = new WeakMap<Promise<any>, any>();
+
 // A deeply reactive Suspense proxy that throws its pending Promise when accessed
 // Instead of undefined crashes, this gracefully pauses elementBoundEffect until the fetch completes.
 function createSuspenseProxy(promise: Promise<any>): any {
+  if (proxyCache.has(promise)) {
+    return proxyCache.get(promise);
+  }
+
   let isResolved = false;
   let isRejected = false;
   let result: any;
   let error: any;
 
-  // Evaluate the promise
+  // Settlement Tracking
   promise.then(
-    res => { isResolved = true; result = res; },
-    err => { isRejected = true; error = err; }
+    res => { 
+       isResolved = true; 
+       result = res; 
+    },
+    err => { 
+       isRejected = true; 
+       error = err; 
+    }
   );
+
+  // Sync Check for already settled promises (e.g. from cache)
+  // We can't synchronously check native Promises, so we rely on the .then() above.
+  // However, we can use microtasks to ensure we don't spin.
 
   const handler: ProxyHandler<any> = {
     get(target, prop) {
@@ -33,15 +49,20 @@ function createSuspenseProxy(promise: Promise<any>): any {
 
       if (result === undefined || result === null) return undefined;
       
-      const value = result[prop as string];
+      // ZCZS: Lazy JSON Hydration. E.g if text response from network resolves as string, parse it upon first property read.
+      let finalResult = result;
+      if (typeof result === 'string') {
+        try { finalResult = JSON.parse(result); } catch (e) { /* fallback to string */ }
+      }
       
-      // If the property is an object itself, we don't strictly *need* to re-wrap it 
-      // because it's already resolved, but we return it cleanly.
+      const value = finalResult && typeof finalResult === 'object' ? finalResult[prop as string] : undefined;
       return value;
     }
   };
 
-  return new Proxy(promise, handler);
+  const proxy = new Proxy(promise, handler);
+  proxyCache.set(promise, proxy);
+  return proxy;
 }
 
 export function fetchSprite(runtime: RuntimeContext) {
@@ -55,7 +76,9 @@ export function fetchSprite(runtime: RuntimeContext) {
 }
 
 export default function(runtime: RuntimeContext) {
+  const fetchFn = fetchSprite(runtime);
   return {
-    $fetch: fetchSprite(runtime)
+    $fetch: fetchFn,
+    $get: (url: string, options: FetchOptions = {}) => fetchFn(url, { ...options, responseType: 'json' })
   };
 }

@@ -16,6 +16,8 @@ declare module "./composition.ts" {
 registerScopeProvider('__global', (_, runtime) => runtime.globalSignals());
 
 let shouldAutoEvaluateFunctions = true;
+let currentEvalDepth = 0;
+const MAX_EVAL_DEPTH = 50;
 
 export function dontAutoEvaluateFunctions<R>(callback: () => R): R {
   const cache = shouldAutoEvaluateFunctions;
@@ -112,7 +114,8 @@ export function evaluateLater(
         for (const data of dataStack) {
           if (key in data) {
             const val = (data as any)[key];
-            if (runtime.isDevMode) runtime.debug(`[Evaluator] Resolved "${key}" from local stack ->`, val);
+            // Disable noisy resolution logs to prevent recursive console loops with Proxy values
+            // if (runtime.isDevMode) runtime.debug(`[Evaluator] Resolved "${key}" from local stack`);
             return runtime.unref(val);
           }
         }
@@ -121,14 +124,14 @@ export function evaluateLater(
         const globalSignals = runtime.globalSignals();
         if (key in globalSignals) {
           const val = (globalSignals as any)[key];
-          if (runtime.isDevMode) runtime.debug(`[Evaluator] Resolved "${key}" from global signals ->`, val);
+          // if (runtime.isDevMode) runtime.debug(`[Evaluator] Resolved "${key}" from global signals`);
           return runtime.unref(val);
         }
 
         // 4. Runtime / Host Context
         if (key in target) {
           const val = (target as any)[key];
-          // runtime.debug(`[Evaluator] Resolved "${key}" from runtime ->`, val);
+          // if (runtime.isDevMode) runtime.debug(`[Evaluator] Resolved "${key}" from runtime`);
           return runtime.unref(val);
         }
 
@@ -186,6 +189,13 @@ export function evaluateLater(
   }
 
   return (receiver: (value: unknown) => void, callExtras: Record<string, unknown> = {}) => {
+    if (currentEvalDepth > MAX_EVAL_DEPTH) {
+      console.warn(`[Nexus Loop Guard] Stopped runaway evaluation at depth ${currentEvalDepth} for expression: "${expression}"`);
+      receiver(undefined);
+      return;
+    }
+
+    currentEvalDepth++;
     try {
       const currentScope = new Proxy(callExtras, {
         has(target, key): boolean {
@@ -221,15 +231,18 @@ export function evaluateLater(
         receiver(result);
       }
     } catch (e) {
-      if (e instanceof TypeError && e.message.includes('Cannot read properties of')) {
+      if (e instanceof Promise) throw e; // Rethrow for Suspense support
+      if ((e instanceof TypeError && e.message.includes('Cannot read properties of')) || e instanceof ReferenceError) {
         if (runtime.isDevMode) {
-          console.warn(`[Nexus Omni-Safe] Gracefully caught undefined property access in expression: "${expression}". Yielding undefined.`);
+          console.warn(`[Nexus Omni-Safe] Gracefully caught undefined access in expression: "${expression}". Yielding undefined.`);
         }
         receiver(undefined);
       } else {
         console.error(`[Evaluator Error] Expression "${expression}" failed:`, e);
         evaluationError(expression, e instanceof Error ? e : new Error(String(e)), el as HTMLElement);
       }
+    } finally {
+      currentEvalDepth--;
     }
   };
 }

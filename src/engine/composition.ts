@@ -1,5 +1,6 @@
 import { ActionFunction } from './modules.ts';
 import { AttributeModule, ActionModule, ListenerModule, ObserverModule, UtilityModule } from './modules.ts';
+import type { TierLevel, TierConfig } from './topology.ts';
 
 export interface InitContext {
   registerAttributeModule: (name: string, module: AttributeModule) => void;
@@ -26,6 +27,7 @@ export interface RuntimeContext {
   triggerRef: typeof import('@vue/reactivity').triggerRef;
   unref: typeof import('@vue/reactivity').unref;
   ref: typeof import('@vue/reactivity').ref;
+  shallowRef: typeof import('@vue/reactivity').shallowRef;
   isRef: typeof import('@vue/reactivity').isRef;
   toRefs: typeof import('@vue/reactivity').toRefs;
   toRef: typeof import('@vue/reactivity').toRef;
@@ -66,6 +68,15 @@ export interface RuntimeContext {
   // Garbage-Free Architecture Utils
   elUniqId: (el: Element) => string;
   attrHash: (key: string | number, val: string | number) => number;
+
+  // Engine Topology (Tier 0-3)
+  topology: {
+    getTier: () => TierLevel;
+    getConfig: () => TierConfig;
+    getActiveWorkers: () => number;
+    isSABAvailable: () => boolean;
+    getLagVariance: () => number;
+  };
 
   log: (...args: any[]) => void;
   warn: (...args: any[]) => void;

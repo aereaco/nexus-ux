@@ -181,16 +181,19 @@ function createStoreProxy(storeName: string) {
   const cache = getStoreCache(storeName);
 
   let keysTrigger: (() => void) | null = null;
+  let isDirty = true;
   const keysRef = customRef((track, trigger) => {
-    keysTrigger = trigger;
+    keysTrigger = () => {
+      isDirty = true;
+      trigger();
+    };
     let currentKeys: string[] = [];
-    let initialFetchDone = false;
 
     return {
       get() {
         track();
-        if (!initialFetchDone) {
-          initialFetchDone = true;
+        if (isDirty) {
+          isDirty = false;
           idbList(storeName).then(keys => {
             currentKeys = keys;
             trigger();
@@ -200,7 +203,7 @@ function createStoreProxy(storeName: string) {
         }
         return currentKeys;
       },
-      set() {} // Read-only from the outside
+      set() {}
     };
   });
 
@@ -342,3 +345,7 @@ export const indexedDBMirror = new Proxy({} as any, {
     return storeProxies.get(storeName);
   }
 });
+
+if (typeof window !== 'undefined') {
+  (window as any)._indexedDB = indexedDBMirror;
+}

@@ -1,0 +1,9 @@
+{
+  "Title": "data-if",
+  "Description": "Demonstrating true physical DOM injection and destruction via <code>data-if</code> conditional boundaries.",
+  "Syntax": "<div data-if=\"signal === true\">Rendered</div>",
+  "SourceModule": "/modules/attributes/if.ts",
+  "SnippetModule": "data-if",
+  "Extensibility": "<p class=\"opacity-80 mt-4 leading-relaxed\">The VDOM node persister in <code>src/modules/attributes/if.ts</code> builds a <code>&lt;!----&gt;</code> comment anchor. You can modify this per-framework to teleport nodes to global cache fragments instead of memory.</p>",
+  "Snippet": "<div class=\"mt-4 p-8 bg-base-200 rounded-box flex flex-col items-center justify-center border shadow-inner\">\n    <div class=\"form-control w-64 mb-8\">\n        <label class=\"label cursor-pointer shadow-sm bg-base-100 p-4 rounded-lg border border-base-300\">\n            <span class=\"label-text font-bold text-lg\">Enable Feature</span> \n            <input type=\"checkbox\" class=\"toggle toggle-secondary\" data-model=\"isFeatureFlagEnabled\">\n        </label>\n    </div>\n\n    <!-- Physical injection boundary -->\n    <template data-if=\"isFeatureFlagEnabled\">\n        <div class=\"alert alert-success shadow-lg text-white\">\n            <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"stroke-current shrink-0 h-6 w-6\" fill=\"none\" viewbox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z\"></path></svg>\n            <div>\n                <h3 class=\"font-bold\">Feature Online!</h3>\n                <div class=\"text-sm\">This DOM node physically exists now.</div>\n            </div>\n        </div>\n    </template>\n</div>"
+}
