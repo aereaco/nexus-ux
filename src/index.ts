@@ -243,4 +243,8 @@ if (typeof window !== 'undefined' && Nexus) {
       return captureCrashBeacon(new Error(message), context);
     }
   };
+
+  // Expose Runtime Context for debugging
+  // @ts-ignore
+  globalThis._NEXUS_RUNTIME = (Nexus as any).coordinator.runtimeContext;
 }

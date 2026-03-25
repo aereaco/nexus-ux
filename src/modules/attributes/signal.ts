@@ -58,17 +58,21 @@ const signalModule: AttributeModule = {
 
     const scopeId = el.id || `el_${Math.random().toString(36).slice(2)}`;
 
-    // 3. Use UNIFIED REF - ZCZS woven into Vue reactivity (NOT context switch)
-    // This is the key difference: we use a single unifiedRef that internally
-    // handles numeric values with typed arrays while keeping object/array reactivity
-    // Pass typeHints for proper heap pre-allocation
-    const stateRef = unifiedRef<Record<string, unknown>>(initialGhostState, scopeId, typeHints);
+    // 3. Use UNIFIED REF - ZCZS woven into Vue reactivity
+    const stateRef = isGlobal 
+      ? runtime.ref(runtime.globalSignals()) 
+      : unifiedRef<Record<string, unknown>>(initialGhostState, scopeId, typeHints);
 
     const scopeProxy = new Proxy({}, {
       has(_, key) { return Reflect.has(stateRef.value, key); },
       get(_, key) { return Reflect.get(stateRef.value, key); },
       set(_, key, value) { 
         const res = Reflect.set(stateRef.value, key, value);
+        if (isGlobal) {
+          // Sync to global record for other components
+          const globals = runtime.globalSignals();
+          (globals as any)[key as string] = value;
+        }
         runtime.triggerRef(stateRef);
         return res;
       },
@@ -79,21 +83,17 @@ const signalModule: AttributeModule = {
     let addCleanup: (() => void) | undefined;
 
     const [_runner, effectCleanup] = runtime.elementBoundEffect(el, () => {
-      // 4. Evaluate to get Initial State (might throw Suspense Promise)
+      // 4. Evaluate to get Initial State
       const initialState = runtime.evaluate(el, expression);
       
       if (typeof initialState === 'object' && initialState !== null) {
-        const reactiveState = runtime.isReactive(initialState) ? initialState : runtime.reactive(initialState as object);
-        
         if (isGlobal) {
           const globals = runtime.globalSignals();
           Object.keys(initialState as object).forEach(key => {
             (globals as any)[key] = (initialState as any)[key];
           });
+          stateRef.value = globals;
         } else {
-          // Use unifiedRef's set - this handles ZCZS internally
-          // No context switch needed - ZCZS is woven into the reactivity
-          if (runtime.isDevMode) console.log(`[Signal] Initial state for <${el.tagName}>:`, initialState);
           stateRef.value = initialState as Record<string, unknown>;
         }
       }

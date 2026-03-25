@@ -13,7 +13,7 @@ import { ZCZS_SUPPORTED, heap } from './reactivity.ts';
 
 export type TierLevel = 0 | 1 | 2 | 3;
 
-interface TierConfig {
+export interface TierConfig {
   level: TierLevel;
   name: string;
   threads: number;
