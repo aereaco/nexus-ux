@@ -1,29 +1,49 @@
 <!DOCTYPE html>
-<html lang="en" style="opacity: 0;" data-ux-init data-injest="({
-        Styling: {
-                link: { href: 'https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css', rel: 'stylesheet' },
-                script: { src: 'https://cdn.tailwindcss.com' }
-        },
-        Ace: {
-                script: { src: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/ace.js', type: 'module' }
-        }
-})">
+<html lang="en" data-ux-init data-debug
+      data-injest="{
+          daisy: { link: 'https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css' },
+          tailwind: { script: 'https://cdn.tailwindcss.com' },
+          ace: { script: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/ace.js' }
+      }"
+      data-signal="{
+          doc: {
+            Title: 'data-on',
+            Description: 'This page demonstrates the universal native event interception engine routing DOM events mathematically into the execution AST using &lt;code&gt;data-on-*&lt;/code&gt;.',
+            Syntax: '&lt;button data-on-click=\&quot;handleClick()\&quot;&gt;&lt;/button&gt;\n&lt;form data-on-submit:prevent=\&quot;sendData()\&quot;&gt;&lt;/form&gt;',
+            SourceModule: '/modules/attributes/on.ts',
+            SnippetModule: '/examples/dashboard/pages/attributes/on.html',
+            Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;The universal event listener in &lt;code&gt;src/modules/attributes/on.ts&lt;/code&gt; orchestrates native DOM events. You can inject synthetic events (like React\'s) into this pipeline.&lt;/p&gt;',
+            Snippet: '&lt;div class=\&quot;flex flex-col gap-6 p-6 bg-base-200 rounded-box border shadow-inner\&quot;&gt;\n    &lt;button class=\&quot;btn btn-primary\&quot; data-on-click=\&quot;logs.push(\'Primary Button Clicked!\')\&quot;&gt;\n        Single Click Listener\n    &lt;/button&gt;\n    \n    &lt;button class=\&quot;btn btn-secondary\&quot; data-on-dblclick=\&quot;logs.push(\'Secondary Button Double-Clicked!\')\&quot;&gt;\n        Double Click Listener\n    &lt;/button&gt;\n    \n    &lt;input type=\&quot;text\&quot; class=\&quot;input input-bordered\&quot; placeholder=\&quot;Hover or focus me...\&quot; data-on-mouseenter=\&quot;logs.push(\'Mouse Entered Input Node\')\&quot; data-on-focus=\&quot;logs.push(\'Focus Captured\')\&quot; data-on-blur=\&quot;logs.push(\'Focus Released\')\&quot;&gt;\n    \n    &lt;!-- A log output area to display `logs` array --&gt;\n    &lt;div class=\&quot;mt-4 p-4 bg-neutral text-neutral-content rounded overflow-auto h-32 font-mono text-sm\&quot;&gt;\n        &lt;div data-for=\&quot;log in logs.slice().reverse()\&quot;&gt;\n            &lt;span class=\&quot;text-secondary opacity-50\&quot;&gt;&gt; &lt;/span&gt; &lt;span data-text=\&quot;log\&quot;&gt;&lt;/span&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+          },
+          appReady: false,
+          logs: []
+      }">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus-UX: On</title>
+    <title>Nexus-UX | data-on</title>
     <script type="module" src="../../../../dist/nexus-ux.js"></script>
     <style>
+        progress { appearance: none; -webkit-appearance: none; border: none; background: transparent; height: 0.5rem; margin: 0; display: block; }
+        progress::-webkit-progress-bar { background-color: rgba(166, 173, 187, 0.2); }
+        progress::-webkit-progress-value { background-color: #570df8; }
+        progress::-moz-progress-bar { background-color: #570df8; }
+        main { opacity: 0; transition: opacity 0.5s ease-in; }
+        .nexus-ready main { opacity: 1; }
+        .nexus-progress-mount { position: fixed; top: 0; left: 0; right: 0; z-index: 9999; }
         .nx-editor-container { position: relative; min-height: 400px; width: 100%; }
         .nx-editor { position: absolute; top: 0; left: 0; right: 0; bottom: 0; font-family: 'Fira Code', 'Cascadia Code', monospace; font-size: 14px; }
-        .nx-cmdbar { border-radius: 0 0 calc(var(--rounded-box, 1rem)) calc(var(--rounded-box, 1rem)); }
     </style>
 </head>
-<body data-signal="{ logs: [] }">
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-class-nexus-ready="appReady" data-on-load.window="appReady = true">
 
-    <!-- Living Documentation Shell -->
-    <div data-signal="{ doc: $get('/examples/dashboard/pages/attributes/on.json') }" data-cloak>
-        <div data-component="'../../components/document.html'"></div>
+    <div class="nexus-progress-mount" data-class-hidden="appReady">
+        <progress class="progress progress-primary w-full"></progress>
     </div>
+
+    <main class="relative p-6">
+        <div data-component="'/examples/dashboard/components/document.html'">
+        </div>
+    </main>
+
 </body>
 </html>

@@ -1,29 +1,50 @@
 <!DOCTYPE html>
-<html lang="en" style="opacity: 0;" data-ux-init data-injest="({
-        Styling: {
-                link: { href: 'https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css', rel: 'stylesheet' },
-                script: { src: 'https://cdn.tailwindcss.com' }
-        },
-        Ace: {
-                script: { src: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/ace.js', type: 'module' }
-        }
-})">
+<html lang="en" data-ux-init data-debug
+      data-injest="{
+          daisy: { link: 'https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css' },
+          tailwind: { script: 'https://cdn.tailwindcss.com' },
+          ace: { script: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/ace.js' }
+      }"
+      data-signal="{
+          doc: {
+            Title: 'data-class',
+            Description: 'This page demonstrates reactive boolean tokenization bridging mathematical signals to CSS Class mutation using identical &lt;code&gt;data-class-*&lt;/code&gt; boundaries.',
+            Syntax: '&lt;div data-class-active=\&quot;isActive\&quot;&gt;&lt;/div&gt;\n&lt;div data-class=\&quot;{ \'border-red\': hasError }\&quot;&gt;&lt;/div&gt;',
+            SourceModule: '/modules/attributes/class.ts',
+            SnippetModule: '/examples/dashboard/pages/attributes/class.html',
+            Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;Class hydration in &lt;code&gt;src/modules/attributes/class.ts&lt;/code&gt; intercepts &lt;code&gt;classList.toggle&lt;/code&gt; vectors. Extend it to resolve tailwind-merge or clsx conflicts dynamically.&lt;/p&gt;',
+            Snippet: '&lt;div class=\&quot;p-8 bg-base-200 rounded-box border shadow-inner\&quot;&gt;\n    &lt;div class=\&quot;flex gap-4 w-full justify-center mb-8\&quot;&gt;\n        &lt;label class=\&quot;cursor-pointer label bg-base-100 shadow-sm px-6 py-3 rounded-lg border border-base-300 gap-4\&quot;&gt;\n            &lt;span class=\&quot;label-text font-bold text-lg text-error\&quot;&gt;Simulate Error Alert&lt;/span&gt; \n            &lt;input type=\&quot;checkbox\&quot; class=\&quot;toggle toggle-error\&quot; data-model=\&quot;hasError\&quot; /&gt;\n        &lt;/label&gt;\n        \n        &lt;label class=\&quot;cursor-pointer label bg-base-100 shadow-sm px-6 py-3 rounded-lg border border-base-300 gap-4\&quot;&gt;\n            &lt;span class=\&quot;label-text font-bold text-lg text-secondary\&quot;&gt;Engage Pulse Animation&lt;/span&gt; \n            &lt;input type=\&quot;checkbox\&quot; class=\&quot;toggle toggle-secondary\&quot; data-model=\&quot;isPulsing\&quot; /&gt;\n        &lt;/label&gt;\n    &lt;/div&gt;\n\n    &lt;!-- Reactive Element --&gt;\n    &lt;div class=\&quot;w-64 h-64 mx-auto border-4 rounded-3xl flex items-center justify-center text-center font-bold text-2xl transition-all duration-500 bg-base-100\&quot;\n         data-class-border-error=\&quot;hasError\&quot;\n         data-class-bg-error=\&quot;hasError\&quot;\n         data-class-text-error-content=\&quot;hasError\&quot;\n         data-class-border-success=\&quot;!hasError\&quot;\n         data-class-text-success=\&quot;!hasError\&quot;\n         data-class-animate-pulse=\&quot;isPulsing\&quot;\n         data-class-scale-110=\&quot;isPulsing\&quot;&gt;\n        \n        &lt;span data-text=\&quot;hasError ? \'System Failed!\' : \'All Systems Nominal\'\&quot;&gt;&lt;/span&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+          },
+          appReady: false,
+          hasError: false,
+          isPulsing: false
+      }">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus-UX: Class</title>
+    <title>Nexus-UX | data-class</title>
     <script type="module" src="../../../../dist/nexus-ux.js"></script>
     <style>
+        progress { appearance: none; -webkit-appearance: none; border: none; background: transparent; height: 0.5rem; margin: 0; display: block; }
+        progress::-webkit-progress-bar { background-color: rgba(166, 173, 187, 0.2); }
+        progress::-webkit-progress-value { background-color: #570df8; }
+        progress::-moz-progress-bar { background-color: #570df8; }
+        main { opacity: 0; transition: opacity 0.5s ease-in; }
+        .nexus-ready main { opacity: 1; }
+        .nexus-progress-mount { position: fixed; top: 0; left: 0; right: 0; z-index: 9999; }
         .nx-editor-container { position: relative; min-height: 400px; width: 100%; }
         .nx-editor { position: absolute; top: 0; left: 0; right: 0; bottom: 0; font-family: 'Fira Code', 'Cascadia Code', monospace; font-size: 14px; }
-        .nx-cmdbar { border-radius: 0 0 calc(var(--rounded-box, 1rem)) calc(var(--rounded-box, 1rem)); }
     </style>
 </head>
-<body data-signal="{ hasError: false, isPulsing: false }">
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-class-nexus-ready="appReady" data-on-load.window="appReady = true">
 
-    <!-- Living Documentation Shell -->
-    <div data-signal="{ doc: $get('/examples/dashboard/pages/attributes/class.json') }" data-cloak>
-        <div data-component="'../../components/document.html'"></div>
+    <div class="nexus-progress-mount" data-class-hidden="appReady">
+        <progress class="progress progress-primary w-full"></progress>
     </div>
+
+    <main class="relative p-6">
+        <div data-component="'/examples/dashboard/components/document.html'">
+        </div>
+    </main>
+
 </body>
 </html>

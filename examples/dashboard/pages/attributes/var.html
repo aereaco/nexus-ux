@@ -1,89 +1,48 @@
 <!DOCTYPE html>
-<html lang="en"><head>
+<html lang="en" data-ux-init data-debug
+      data-injest="{
+          daisy: { link: 'https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css' },
+          tailwind: { script: 'https://cdn.tailwindcss.com' },
+          ace: { script: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/ace.js' }
+      }"
+      data-signal="{
+          doc: {
+            Title: 'data-var',
+            Description: 'Demonstrates the &lt;code&gt;data-var&lt;/code&gt; attribute declaring single-variable ephemeral lexical memory footprints directly in the DOM template bypassing heavy global definitions.',
+            Syntax: '&lt;div data-var-counter=\&quot;0\&quot;&gt;&lt;/div&gt;',
+            SourceModule: '/modules/attributes/var.ts',
+            SnippetModule: '/examples/dashboard/pages/attributes/var.html',
+            Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;Ephemeral mapping inside &lt;code&gt;src/modules/attributes/var.ts&lt;/code&gt; operates entirely within local closure trees. Extend it for garbage isolation algorithms ensuring Zero memory leaks dynamically.&lt;/p&gt;',
+            Snippet: '&lt;div class=\&quot;mt-4 grid grid-cols-1 md:grid-cols-2 gap-8 bg-base-200 p-8 rounded-box border shadow-inner\&quot;&gt;\n    &lt;!-- Lexical Scoped Counter (Only exists inside this isolated DOM tree) --&gt;\n    &lt;div data-var-clicks=\&quot;0\&quot; class=\&quot;flex flex-col items-center justify-center w-full p-6 bg-base-100 rounded border border-base-300 shadow\&quot;&gt;\n        &lt;h3 class=\&quot;font-bold mb-4\&quot;&gt;Instance A&lt;/h3&gt;\n        &lt;div class=\&quot;stat-value text-primary mb-4\&quot; data-text=\&quot;clicks\&quot;&gt;&lt;/div&gt;\n        &lt;button class=\&quot;btn btn-outline btn-primary\&quot; data-on-click=\&quot;clicks++\&quot;&gt;Mutate Local Var Space&lt;/button&gt;\n    &lt;/div&gt;\n    \n    &lt;!-- Totally independent Lexical Boundary mapped to the same variable name structurally --&gt;\n    &lt;div data-var-clicks=\&quot;1000\&quot; class=\&quot;flex flex-col items-center justify-center w-full p-6 bg-base-100 rounded border border-base-300 shadow\&quot;&gt;\n        &lt;h3 class=\&quot;font-bold mb-4\&quot;&gt;Instance B (Isolated Clone)&lt;/h3&gt;\n        &lt;div class=\&quot;stat-value text-secondary mb-4\&quot; data-text=\&quot;clicks\&quot;&gt;&lt;/div&gt;\n        &lt;button class=\&quot;btn btn-outline btn-secondary\&quot; data-on-click=\&quot;clicks += 50\&quot;&gt;Mutate Independent Space&lt;/button&gt;\n    &lt;/div&gt;\n&lt;/div&gt;\n&lt;p class=\&quot;mt-8 text-xs font-mono text-center opacity-40\&quot;&gt;Notice neither `clicks` space leaks globally. These namespaces are bound physically to the element they attach to.&lt;/p&gt;'
+          },
+          appReady: false
+      }">
+<head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus-UX: Var</title>
+    <title>Nexus-UX | data-var</title>
     <script type="module" src="../../../../dist/nexus-ux.js"></script>
+    <style>
+        progress { appearance: none; -webkit-appearance: none; border: none; background: transparent; height: 0.5rem; margin: 0; display: block; }
+        progress::-webkit-progress-bar { background-color: rgba(166, 173, 187, 0.2); }
+        progress::-webkit-progress-value { background-color: #570df8; }
+        progress::-moz-progress-bar { background-color: #570df8; }
+        main { opacity: 0; transition: opacity 0.5s ease-in; }
+        .nexus-ready main { opacity: 1; }
+        .nexus-progress-mount { position: fixed; top: 0; left: 0; right: 0; z-index: 9999; }
+        .nx-editor-container { position: relative; min-height: 400px; width: 100%; }
+        .nx-editor { position: absolute; top: 0; left: 0; right: 0; bottom: 0; font-family: 'Fira Code', 'Cascadia Code', monospace; font-size: 14px; }
+    </style>
 </head>
-<body data-ux-init="">
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-class-nexus-ready="appReady" data-on-load.window="appReady = true">
 
-    <!-- Global root has no logic signals -->
-    <div id="demo-var" class="dashboard-fragment p-8 bg-base-200 min-h-screen text-base-content" data-injest="{ css: { link: 'href=\'https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css\' rel=\'stylesheet\'' }, tw: { script: 'src=\'https://cdn.tailwindcss.com\'' } }">
-        
-        <div class="max-w-4xl mx-auto">
-            <h1 class="text-4xl font-bold mb-4 text-primary">data-var</h1>
-            <p class="mb-8 text-lg opacity-80">Demonstrates the <code>data-var</code> attribute declaring single-variable ephemeral lexical memory footprints directly in the DOM template bypassing heavy global definitions.</p>
+    <div class="nexus-progress-mount" data-class-hidden="appReady">
+        <progress class="progress progress-primary w-full"></progress>
+    </div>
 
-            
-            
-            <div class="card bg-base-100 shadow-xl border border-base-300 mb-8 mt-8">
-                <div class="card-body">
-                    <h2 class="card-title text-secondary border-b border-base-300 pb-2 flex gap-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg> Syntax & API Usage</h2>
-                    <pre class="mockup-code bg-neutral text-neutral-content p-4 font-mono text-sm mt-4 w-full overflow-x-auto"><code>&lt;div data-var-counter="0"&gt;&lt;/div&gt;</code></pre>
-                </div>
-            </div>
+    <main class="relative p-6">
+        <div data-component="'/examples/dashboard/components/document.html'">
+        </div>
+    </main>
 
-            <div class="card bg-base-100 shadow-xl border border-base-300 mb-8" data-signal="{ activeTab: 'preview' }">
-                <div class="card-body">
-                    <div class="flex flex-col md:flex-row justify-between md:items-center border-b border-base-300 pb-4 mb-4 gap-4">
-                        <h2 class="card-title text-secondary">Interactive Demonstration</h2>
-                        <div class="tabs tabs-boxed bg-base-200">
-                            <a class="tab" data-class-tab-active="activeTab === 'preview'" data-on-click="activeTab = 'preview'">Preview</a> 
-                            <a class="tab" data-class-tab-active="activeTab === 'code'" data-on-click="activeTab = 'code'">Code</a> 
-                        </div>
-                    </div>
-
-                    <div data-show="activeTab === 'preview'">
-                        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-8 bg-base-200 p-8 rounded-box border shadow-inner">
-                            <!-- Lexical Scoped Counter (Only exists inside this isolated DOM tree) -->
-                            <div data-var-clicks="0" class="flex flex-col items-center justify-center w-full p-6 bg-base-100 rounded border border-base-300 shadow">
-                                <h3 class="font-bold mb-4">Instance A</h3>
-                                <div class="stat-value text-primary mb-4" data-text="clicks"></div>
-                                <button class="btn btn-outline btn-primary" data-on-click="clicks++">Mutate Local Var Space</button>
-                            </div>
-                            
-                            <!-- Totally independent Lexical Boundary mapped to the same variable name structurally -->
-                            <div data-var-clicks="1000" class="flex flex-col items-center justify-center w-full p-6 bg-base-100 rounded border border-base-300 shadow">
-                                <h3 class="font-bold mb-4">Instance B (Isolated Clone)</h3>
-                                <div class="stat-value text-secondary mb-4" data-text="clicks"></div>
-                                <button class="btn btn-outline btn-secondary" data-on-click="clicks += 50">Mutate Independent Space</button>
-                            </div>
-                        </div>
-                        <p class="mt-8 text-xs font-mono text-center opacity-40">Notice neither `clicks` space leaks globally. These namespaces are bound physically to the element they attach to.</p>
-                    </div>
-                    
-                    <div data-show="activeTab === 'code'" style="display: none;">
-                        <pre class="mockup-code bg-neutral text-neutral-content p-4 font-mono text-sm mt-0 w-full overflow-x-auto"><code>&lt;div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-8 bg-base-200 p-8 rounded-box border shadow-inner"&gt;
-    &lt;!-- Lexical Scoped Counter (Only exists inside this isolated DOM tree) --&gt;
-    &lt;div data-var-clicks="0" class="flex flex-col items-center justify-center w-full p-6 bg-base-100 rounded border border-base-300 shadow"&gt;
-        &lt;h3 class="font-bold mb-4"&gt;Instance A&lt;/h3&gt;
-        &lt;div class="stat-value text-primary mb-4" data-text="clicks"&gt;&lt;/div&gt;
-        &lt;button class="btn btn-outline btn-primary" data-on-click="clicks++"&gt;Mutate Local Var Space&lt;/button&gt;
-    &lt;/div&gt;
-    
-    &lt;!-- Totally independent Lexical Boundary mapped to the same variable name structurally --&gt;
-    &lt;div data-var-clicks="1000" class="flex flex-col items-center justify-center w-full p-6 bg-base-100 rounded border border-base-300 shadow"&gt;
-        &lt;h3 class="font-bold mb-4"&gt;Instance B (Isolated Clone)&lt;/h3&gt;
-        &lt;div class="stat-value text-secondary mb-4" data-text="clicks"&gt;&lt;/div&gt;
-        &lt;button class="btn btn-outline btn-secondary" data-on-click="clicks += 50"&gt;Mutate Independent Space&lt;/button&gt;
-    &lt;/div&gt;
-&lt;/div&gt;</code></pre>
-                    </div>
-                </div>
-            </div>
-            
-        
-            
-            <p class="mt-8 text-xs font-mono text-center opacity-40">Notice neither `clicks` space leaks globally. These namespaces are bound physically to the element they attach to.</p>
-
-            <div class="card bg-base-100 shadow-xl border border-base-300 mt-8">
-                <div class="card-body">
-                    <h2 class="card-title text-secondary border-b border-base-300 pb-2 flex gap-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewbox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.827M15.75 15.75L21 21m-5.25-5.25l-1.5-1.5m3-3l1.5-1.5m-3 3L11.42 15.17M11.42 15.17A4.475 4.475 0 0012 11.25c0-2.485-2.015-4.5-4.5-4.5s-4.5 2.015-4.5 4.5c0 2.485 2.015 4.5 4.5 4.5 1.574 0 3.012-.81 3.82-2.08m0 0L3.75 3.75"></path></svg> Extensibility Notes</h2>
-                    <p class="opacity-80 mt-4 leading-relaxed">Ephemeral mapping inside <code>src/modules/attributes/var.ts</code> operates entirely within local closure trees. Extend it for garbage isolation algorithms ensuring Zero memory leaks dynamically.</p>
-                </div>
-                </div>
-            </div>
-
-
-
-</body></html>
+</body>
+</html>

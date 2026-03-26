@@ -1,29 +1,49 @@
 <!DOCTYPE html>
-<html lang="en" style="opacity: 0;" data-ux-init data-injest="({
-        Styling: {
-                link: { href: 'https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css', rel: 'stylesheet' },
-                script: { src: 'https://cdn.tailwindcss.com' }
-        },
-        Ace: {
-                script: { src: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/ace.js', type: 'module' }
-        }
-})">
+<html lang="en" data-ux-init data-debug
+      data-injest="{
+          daisy: { link: 'https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css' },
+          tailwind: { script: 'https://cdn.tailwindcss.com' },
+          ace: { script: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/ace.js' }
+      }"
+      data-signal="{
+          doc: {
+            Title: 'data-preserve',
+            Description: 'This page demonstrates the &lt;code&gt;data-preserve&lt;/code&gt; attribute physically locking DOM memory blocks so they perfectly survive virtual template replacements and routing morphs untouched.',
+            Syntax: '&lt;div data-preserve=\&quot;optional-id\&quot;&gt;Non-Reactive Area&lt;/div&gt;',
+            SourceModule: '/modules/attributes/preserve.ts',
+            SnippetModule: '/examples/dashboard/pages/attributes/preserve.html',
+            Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;The DOM isolator in &lt;code&gt;src/modules/attributes/preserve.ts&lt;/code&gt; halts AST tree walking recursively. You can modify the compiler to ignore specific CSS namespaces identically.&lt;/p&gt;',
+            Snippet: '&lt;div class=\&quot;tabs tabs-boxed mb-6\&quot;&gt;\n    &lt;a class=\&quot;tab tab-lg\&quot; data-class-tab-active=\&quot;activeTab === \'A\'\&quot; data-on-click=\&quot;activeTab = \'A\'\&quot;&gt;Morph Template A&lt;/a&gt; \n    &lt;a class=\&quot;tab tab-lg\&quot; data-class-tab-active=\&quot;activeTab === \'B\'\&quot; data-on-click=\&quot;activeTab = \'B\'\&quot;&gt;Morph Template B&lt;/a&gt; \n&lt;/div&gt;\n\n&lt;div class=\&quot;mt-4 p-8 bg-base-200 rounded-box border shadow-inner relative overflow-hidden\&quot;&gt;\n    \n    &lt;!-- Reactive Morph Target Container --&gt;\n    &lt;div id=\&quot;morph-container\&quot; class=\&quot;transition-all duration-300\&quot;&gt;\n        \n        &lt;template data-if=\&quot;activeTab === \'A\'\&quot;&gt;\n            &lt;div class=\&quot;bg-primary/20 p-6 rounded-lg mb-6 border-l-4 border-primary\&quot;&gt;\n                &lt;h3 class=\&quot;font-bold text-xl mb-2 text-primary\&quot;&gt;Context Template A Active&lt;/h3&gt;\n                &lt;p&gt;The containing array structure completely shifts, yet the video player below remains completely unmutated by memory referencing.&lt;/p&gt;\n            &lt;/div&gt;\n        &lt;/template&gt;\n\n        &lt;template data-if=\&quot;activeTab === \'B\'\&quot;&gt;\n            &lt;div class=\&quot;bg-secondary/20 p-6 rounded-lg mb-6 border-l-4 border-secondary\&quot;&gt;\n                &lt;h3 class=\&quot;font-bold text-xl mb-2 text-secondary\&quot;&gt;Context Template B Active&lt;/h3&gt;\n                &lt;p&gt;Notice how the DOM structurally mutated, but the preserved element gracefully avoided virtual DOM diff destruction algorithms!&lt;/p&gt;\n            &lt;/div&gt;\n        &lt;/template&gt;\n        \n        &lt;!-- The Protected Node --&gt;\n        &lt;div data-preserve=\&quot;demo-locked-video\&quot; class=\&quot;mockup-window border border-base-300 bg-neutral shadow-2xl\&quot;&gt;\n            &lt;div class=\&quot;flex justify-center px-4 py-8 bg-neutral-content flex-col items-center\&quot;&gt;\n                &lt;h4 class=\&quot;font-bold text-neutral text-xl\&quot;&gt;Locked Element&lt;/h4&gt;\n                &lt;!-- Play around with native inputs inside preserved zones --&gt;\n                &lt;input type=\&quot;text\&quot; placeholder=\&quot;Type here, switch tabs, state persists!\&quot; class=\&quot;input input-bordered w-full max-w-xs mt-4\&quot;&gt;\n            &lt;/div&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+          },
+          appReady: false,
+          activeTab: 'A'
+      }">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus-UX: Preserve</title>
+    <title>Nexus-UX | data-preserve</title>
     <script type="module" src="../../../../dist/nexus-ux.js"></script>
     <style>
+        progress { appearance: none; -webkit-appearance: none; border: none; background: transparent; height: 0.5rem; margin: 0; display: block; }
+        progress::-webkit-progress-bar { background-color: rgba(166, 173, 187, 0.2); }
+        progress::-webkit-progress-value { background-color: #570df8; }
+        progress::-moz-progress-bar { background-color: #570df8; }
+        main { opacity: 0; transition: opacity 0.5s ease-in; }
+        .nexus-ready main { opacity: 1; }
+        .nexus-progress-mount { position: fixed; top: 0; left: 0; right: 0; z-index: 9999; }
         .nx-editor-container { position: relative; min-height: 400px; width: 100%; }
         .nx-editor { position: absolute; top: 0; left: 0; right: 0; bottom: 0; font-family: 'Fira Code', 'Cascadia Code', monospace; font-size: 14px; }
-        .nx-cmdbar { border-radius: 0 0 calc(var(--rounded-box, 1rem)) calc(var(--rounded-box, 1rem)); }
     </style>
 </head>
-<body data-signal="{ activeTab: 'A' }">
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-class-nexus-ready="appReady" data-on-load.window="appReady = true">
 
-    <!-- Living Documentation Shell -->
-    <div data-signal="{ doc: $get('/examples/dashboard/pages/attributes/preserve.json') }" data-cloak>
-        <div data-component="'../../components/document.html'"></div>
+    <div class="nexus-progress-mount" data-class-hidden="appReady">
+        <progress class="progress progress-primary w-full"></progress>
     </div>
+
+    <main class="relative p-6">
+        <div data-component="'/examples/dashboard/components/document.html'">
+        </div>
+    </main>
+
 </body>
 </html>
