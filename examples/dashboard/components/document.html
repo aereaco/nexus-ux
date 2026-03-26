@@ -136,11 +136,19 @@
                     <div
                         class="flex flex-col md:flex-row justify-between md:items-center border-b border-base-300 pb-4 mb-4 gap-4">
                         <h2 class="card-title text-secondary">Syntax &amp; Framework Source</h2>
-                        <div class="tabs tabs-boxed bg-base-200">
-                            <a class="tab" data-class-tab-active="syntaxTab === 'usage'"
-                                data-on-click="syntaxTab = 'usage'">Usage</a>
-                            <a class="tab" data-class-tab-active="syntaxTab === 'source'"
-                                data-on-click="syntaxTab = 'source'; setTimeout(() => ace.edit('source-editor').resize(), 50)">Source</a>
+                        <div class="join bg-base-200 p-1">
+                            <button class="join-item btn btn-sm tooltip tooltip-top" data-tip="Usage" 
+                                data-class-btn-primary="syntaxTab === 'usage'"
+                                data-class-btn-ghost="syntaxTab !== 'usage'"
+                                data-on-click="syntaxTab = 'usage'">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+                            </button>
+                            <button class="join-item btn btn-sm tooltip tooltip-top" data-tip="Source" 
+                                data-class-btn-primary="syntaxTab === 'source'"
+                                data-class-btn-ghost="syntaxTab !== 'source'"
+                                data-on-click="syntaxTab = 'source'; setTimeout(() => ace.edit('source-editor').resize(), 50)">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>
+                            </button>
                         </div>
                     </div>
                     <div data-show="syntaxTab === 'usage'" class="pb-4">
@@ -164,7 +172,8 @@
                     <div class="flex items-center gap-2">
                         <div class="dropdown dropdown-bottom">
                             <div tabindex="0" role="button"
-                                class="btn btn-bordered btn-sm w-48 justify-between bg-base-100/50 font-bold overflow-hidden">
+                                class="btn btn-bordered btn-sm w-48 justify-between bg-base-100/50 font-bold overflow-hidden"
+                                data-bind="{ disabled: forks.length === 0 }" data-class-btn-disabled="forks.length === 0">
                                 <span data-text="activeFork" class="truncate mr-2"></span>
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                                     stroke="currentColor" class="w-4 h-4 opacity-50">
@@ -330,21 +339,21 @@
                         <div class="join bg-base-200 p-1">
                             <!-- Preview Icon -->
                             <button class="join-item btn btn-sm tooltip tooltip-top" data-tip="Preview" 
-                                data-class-btn-active="demoTab === 'preview'"
+                                data-class-btn-primary="demoTab === 'preview'"
                                 data-class-btn-ghost="demoTab !== 'preview'"
                                 data-on-click="demoTab = 'preview'; setTimeout(() => ace.edit('snippet-editor').resize(), 50)">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                             </button>
                             <!-- Code Icon -->
                             <button class="join-item btn btn-sm tooltip tooltip-top" data-tip="Code" 
-                                data-class-btn-active="demoTab === 'code'"
+                                data-class-btn-primary="demoTab === 'code'"
                                 data-class-btn-ghost="demoTab !== 'code'"
                                 data-on-click="demoTab = 'code'; setTimeout(() => ace.edit('snippet-editor').resize(), 50)">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>
                             </button>
                             <!-- Split View Icon (At the end as requested) -->
                             <button class="join-item btn btn-sm tooltip tooltip-top" data-tip="Split View" 
-                                data-class-btn-active="demoTab === 'split'"
+                                data-class-btn-primary="demoTab === 'split'"
                                 data-class-btn-ghost="demoTab !== 'split'"
                                 data-on-click="demoTab = 'split'; setTimeout(() => ace.edit('snippet-editor').resize(), 50)">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19.5h6m-6-15h6M3 4.5h18A2.25 2.25 0 0123.25 6.75v10.5A2.25 2.25 0 0121 19.5H3a2.25 2.25 0 01-2.25-2.25V6.75A2.25 2.25 0 013 4.5zM9 4.5v15" /></svg>
@@ -380,7 +389,8 @@
                     <div class="flex items-center gap-2">
                         <div class="dropdown dropdown-bottom">
                             <div tabindex="0" role="button"
-                                class="btn btn-bordered btn-sm w-48 justify-between bg-base-100/50 font-bold overflow-hidden">
+                                class="btn btn-bordered btn-sm w-48 justify-between bg-base-100/50 font-bold overflow-hidden"
+                                data-bind="{ disabled: snippets.length === 0 }" data-class-btn-disabled="snippets.length === 0">
                                 <span data-text="activeSnippet" class="truncate mr-2"></span>
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                                     stroke="currentColor" class="w-4 h-4 opacity-50">
