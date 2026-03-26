@@ -126,7 +126,7 @@
 
             <div class="card-body pb-0">
                 <div class="flex flex-col md:flex-row justify-between md:items-center border-b border-base-300 pb-4 mb-4 gap-4">
-                    <h2 class="card-title text-secondary">Syntax &amp; Framework Source <span class="text-[10px] opacity-30 font-mono" data-text="'(' + forks.length + ')'"></span></h2>
+                    <h2 class="card-title text-secondary">Syntax &amp; Framework Source</h2>
                     <div class="tabs tabs-boxed bg-base-200">
                         <a class="tab" data-class-tab-active="syntaxTab === 'usage'" data-on-click="syntaxTab = 'usage'">Usage</a>
                         <a class="tab" data-class-tab-active="syntaxTab === 'source'" data-on-click="syntaxTab = 'source'; setTimeout(() => ace.edit('source-editor').resize(), 50)">Source</a>
@@ -157,6 +157,7 @@
                             data-on-click="showForkModal = true; forkName = ''; forkError = ''">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                     </button>
+                    <span class="badge badge-primary text-[10px] opacity-30" data-show="forks.length > 0" data-text="forks.length"></span>
                 </div>
 
                 <!-- Center: Download + Copy (Restored) -->
@@ -284,6 +285,7 @@
                             data-on-click="showSnippetModal = true; snippetName = ''; snippetError = ''">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                     </button>
+                    <span class="badge badge-primary text-[10px] opacity-30" data-show="snippets.length > 0" data-text="snippets.length"></span>
                 </div>
 
                 <!-- Center: Download + Copy (Restored) -->
