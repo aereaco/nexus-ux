@@ -21,7 +21,14 @@
         forks: [],
         snippets: [],
         forksLoaded: false,
-        snippetsLoaded: false
+        snippetsLoaded: false,
+        manageTarget: '',
+        newName: '',
+        showRenameForkModal: false,
+        showDeleteForkModal: false,
+        showRenameSnippetModal: false,
+        showDeleteSnippetModal: false,
+        manageError: ''
      }"
      data-computed="{
          currentForkCode: () => (activeFork === 'Default' || !doc) ? (forkSource || '') : _indexedDB?.forks?.[doc.SourceModule + '_' + activeFork],
@@ -108,6 +115,43 @@
                 setTimeout(() => ed2.resize(), 100);
             }
         }
+
+        // Shared Management Logic (Rename/Delete)
+        window.$deleteItem = (type, name) => {
+            const store = _indexedDB?.[type + 's'];
+            if (!store) return;
+            const prefix = type === 'fork' ? doc.SourceModule : doc.SnippetModule;
+            store.delete(prefix + '_' + name).then(() => {
+                const list = type === 'fork' ? forks : snippets;
+                const idx = list.indexOf(name);
+                if (idx !== -1) list.splice(idx, 1);
+                if (type === 'fork' && activeFork === name) activeFork = 'Default';
+                if (type === 'snippet' && activeSnippet === name) activeSnippet = 'Default';
+                toastMsg = name + ' deleted'; toastType = 'info'; showToast = true;
+                showDeleteForkModal = false; showDeleteSnippetModal = false;
+            });
+        };
+
+        window.$renameItem = (type, oldName, newName) => {
+            const store = _indexedDB?.[type + 's'];
+            if (!store || !newName) return;
+            const prefix = type === 'fork' ? doc.SourceModule : doc.SnippetModule;
+            const oldKey = prefix + '_' + oldName;
+            const newKey = prefix + '_' + newName;
+            
+            store.get(oldKey).then(code => {
+                store[newKey] = code;
+                store.delete(oldKey).then(() => {
+                    const list = type === 'fork' ? forks : snippets;
+                    const idx = list.indexOf(oldName);
+                    if (idx !== -1) list[idx] = newName;
+                    if (type === 'fork' && activeFork === oldName) activeFork = newName;
+                    if (type === 'snippet' && activeSnippet === oldName) activeSnippet = newName;
+                    toastMsg = 'Renamed to ' + newName; toastType = 'success'; showToast = true;
+                    showRenameForkModal = false; showRenameSnippetModal = false;
+                });
+            });
+        };
     ">
 
     <div class="max-w-5xl mx-auto space-y-12" data-if="doc">
@@ -146,13 +190,31 @@
             <div class="nx-cmdbar flex items-center justify-between px-6 py-3 bg-base-200/50 border-t border-base-300" style="border-radius: 0 0 calc(var(--rounded-box, 1rem)) calc(var(--rounded-box, 1rem));">
                 <!-- Left: Selector -->
                 <div class="flex items-center gap-2">
-                    <select class="select select-bordered select-sm w-48 bg-base-100/50"
-                            data-model="activeFork">
-                        <option value="Default">Default</option>
-                        <template data-for="f in forks">
-                            <option data-attr-value="f" data-text="f"></option>
-                        </template>
-                    </select>
+                    <div class="dropdown dropdown-bottom">
+                        <div tabindex="0" role="button" class="btn btn-bordered btn-sm w-48 justify-between bg-base-100/50 font-bold overflow-hidden">
+                            <span data-text="activeFork" class="truncate mr-2"></span>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 opacity-50"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+                        </div>
+                        <ul tabindex="0" class="dropdown-content z-[100] menu p-2 shadow-2xl bg-base-100 rounded-box w-56 border border-base-300 mt-1">
+                            <li><a data-on-click="activeFork = 'Default'" data-class-active="activeFork === 'Default'" class="font-bold">Default</a></li>
+                            <div class="divider my-0 opacity-20"></div>
+                            <template data-for="f in forks">
+                                <li class="group flex flex-row items-center justify-between">
+                                    <a data-on-click="activeFork = f" data-class-active="activeFork === f" data-text="f" class="flex-1 truncate"></a>
+                                    <div class="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity pr-2">
+                                        <button class="btn btn-ghost btn-xs text-info p-1 h-auto min-h-0" 
+                                                data-on-click="manageTarget = f; newName = f; showRenameForkModal = true" title="Rename">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
+                                        </button>
+                                        <button class="btn btn-ghost btn-xs text-error p-1 h-auto min-h-0" 
+                                                data-on-click="manageTarget = f; showDeleteForkModal = true" title="Delete">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.34 9m-4.72 0L9.36 9m11.17-6.23a4.5 4.5 0 01-1.24.58L18 3.32V3h-3.41l-.14-.49A2.25 2.25 0 0012.31 1h-0.62a2.25 2.25 0 00-2.14 1.51l-.14.49H6v.32l-2.12.09a4.5 4.5 0 00-1.24-.58L1 3.77l.79 2.14 1.16-.05V18.75A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V5.86l1.16.05.79-2.14-0.21-.09z" /></svg>
+                                        </button>
+                                    </div>
+                                </li>
+                            </template>
+                        </ul>
+                    </div>
                     <button class="btn btn-sm btn-secondary btn-outline" title="New fork"
                             data-on-click="showForkModal = true; forkName = ''; forkError = ''">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
@@ -274,13 +336,31 @@
             <div class="nx-cmdbar flex items-center justify-between px-6 py-3 bg-base-200/50 border-t border-base-300" style="border-radius: 0 0 calc(var(--rounded-box, 1rem)) calc(var(--rounded-box, 1rem));">
                 <!-- Left: Selector -->
                 <div class="flex items-center gap-2">
-                    <select class="select select-bordered select-sm w-48 bg-base-100/50"
-                            data-model="activeSnippet">
-                        <option value="Default">Default</option>
-                        <template data-for="s in snippets">
-                            <option data-attr-value="s" data-text="s"></option>
-                        </template>
-                    </select>
+                    <div class="dropdown dropdown-bottom">
+                        <div tabindex="0" role="button" class="btn btn-bordered btn-sm w-48 justify-between bg-base-100/50 font-bold overflow-hidden">
+                            <span data-text="activeSnippet" class="truncate mr-2"></span>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 opacity-50"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+                        </div>
+                        <ul tabindex="0" class="dropdown-content z-[100] menu p-2 shadow-2xl bg-base-100 rounded-box w-56 border border-base-300 mt-1">
+                            <li><a data-on-click="activeSnippet = 'Default'" data-class-active="activeSnippet === 'Default'" class="font-bold">Default</a></li>
+                            <div class="divider my-0 opacity-20"></div>
+                            <template data-for="s in snippets">
+                                <li class="group flex flex-row items-center justify-between">
+                                    <a data-on-click="activeSnippet = s" data-class-active="activeSnippet === s" data-text="s" class="flex-1 truncate"></a>
+                                    <div class="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity pr-2">
+                                        <button class="btn btn-ghost btn-xs text-info p-1 h-auto min-h-0" 
+                                                data-on-click="manageTarget = s; newName = s; showRenameSnippetModal = true" title="Rename">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
+                                        </button>
+                                        <button class="btn btn-ghost btn-xs text-error p-1 h-auto min-h-0" 
+                                                data-on-click="manageTarget = s; showDeleteSnippetModal = true" title="Delete">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.34 9m-4.72 0L9.36 9m11.17-6.23a4.5 4.5 0 01-1.24.58L18 3.32V3h-3.41l-.14-.49A2.25 2.25 0 0012.31 1h-0.62a2.25 2.25 0 00-2.14 1.51l-.14.49H6v.32l-2.12.09a4.5 4.5 0 00-1.24-.58L1 3.77l.79 2.14 1.16-.05V18.75A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V5.86l1.16.05.79-2.14-0.21-.09z" /></svg>
+                                        </button>
+                                    </div>
+                                </li>
+                            </template>
+                        </ul>
+                    </div>
                     <button class="btn btn-sm btn-secondary btn-outline" title="New snippet"
                             data-on-click="showSnippetModal = true; snippetName = ''; snippetError = ''">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
@@ -376,6 +456,71 @@
                     Extensibility Notes
                 </h2>
                 <div class="opacity-80 leading-relaxed" data-html="doc.Extensibility"></div>
+        </div>
+
+        <!-- ═══════════ 5. MANAGEMENT MODALS ═══════════ -->
+        
+        <!-- Rename Fork Modal -->
+        <div data-show="showRenameForkModal" class="fixed inset-0 bg-black/50 z-[9998] flex items-center justify-center" style="display:none;">
+            <div class="card bg-base-100 shadow-2xl border border-base-300 max-w-md w-full mx-4">
+                <div class="card-body">
+                    <h3 class="card-title text-info">Rename Fork</h3>
+                    <p class="py-2 opacity-70 text-sm italic">Original: <span class="font-bold" data-text="manageTarget"></span></p>
+                    <input type="text" class="input input-bordered input-info w-full" data-model="newName" placeholder="new-branch-name">
+                    <div class="card-actions justify-end mt-4">
+                        <button class="btn btn-ghost" data-on-click="showRenameForkModal = false">Cancel</button>
+                        <button class="btn btn-info" data-on-click="$renameItem('fork', manageTarget, newName)">Rename</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Fork Modal -->
+        <div data-show="showDeleteForkModal" class="fixed inset-0 bg-black/50 z-[9998] flex items-center justify-center" style="display:none;">
+            <div class="card bg-base-100 shadow-2xl border border-error max-w-md w-full mx-4">
+                <div class="card-body">
+                    <h3 class="card-title text-error flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+                        Confirm Deletion
+                    </h3>
+                    <p class="py-2">Are you sure you want to delete the fork <span class="font-bold text-error" data-text="manageTarget"></span>? This action cannot be undone.</p>
+                    <div class="card-actions justify-end mt-4">
+                        <button class="btn btn-ghost" data-on-click="showDeleteForkModal = false">Cancel</button>
+                        <button class="btn btn-error" data-on-click="$deleteItem('fork', manageTarget)">Delete Forever</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rename Snippet Modal -->
+        <div data-show="showRenameSnippetModal" class="fixed inset-0 bg-black/50 z-[9998] flex items-center justify-center" style="display:none;">
+            <div class="card bg-base-100 shadow-2xl border border-base-300 max-w-md w-full mx-4">
+                <div class="card-body">
+                    <h3 class="card-title text-info">Rename Snippet</h3>
+                    <p class="py-2 opacity-70 text-sm italic">Original: <span class="font-bold" data-text="manageTarget"></span></p>
+                    <input type="text" class="input input-bordered input-info w-full" data-model="newName" placeholder="new-snippet-name">
+                    <div class="card-actions justify-end mt-4">
+                        <button class="btn btn-ghost" data-on-click="showRenameSnippetModal = false">Cancel</button>
+                        <button class="btn btn-info" data-on-click="$renameItem('snippet', manageTarget, newName)">Rename</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Snippet Modal -->
+        <div data-show="showDeleteSnippetModal" class="fixed inset-0 bg-black/50 z-[9998] flex items-center justify-center" style="display:none;">
+            <div class="card bg-base-100 shadow-2xl border border-error max-w-md w-full mx-4">
+                <div class="card-body">
+                    <h3 class="card-title text-error flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+                        Confirm Deletion
+                    </h3>
+                    <p class="py-2">Are you sure you want to delete the snippet <span class="font-bold text-error" data-text="manageTarget"></span>? This action cannot be undone.</p>
+                    <div class="card-actions justify-end mt-4">
+                        <button class="btn btn-ghost" data-on-click="showDeleteSnippetModal = false">Cancel</button>
+                        <button class="btn btn-error" data-on-click="$deleteItem('snippet', manageTarget)">Delete Forever</button>
+                    </div>
+                </div>
             </div>
         </div>
 
