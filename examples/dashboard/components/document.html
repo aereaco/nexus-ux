@@ -327,27 +327,47 @@
                     <div
                         class="flex flex-col md:flex-row justify-between md:items-center border-b border-base-300 pb-4 mb-4 gap-4">
                         <h2 class="card-title text-secondary">Interactive Demonstration</h2>
-                        <div class="tabs tabs-boxed bg-base-200">
-                            <a class="tab" data-class-tab-active="demoTab === 'preview'"
-                                data-on-click="demoTab = 'preview'">Preview</a>
-                            <a class="tab" data-class-tab-active="demoTab === 'code'"
-                                data-on-click="demoTab = 'code'; setTimeout(() => ace.edit('snippet-editor').resize(), 50)">Code</a>
+                        <div class="join bg-base-200 p-1">
+                            <!-- Preview Icon -->
+                            <button class="join-item btn btn-sm tooltip tooltip-top" data-tip="Preview" 
+                                data-class-btn-active="demoTab === 'preview'"
+                                data-class-btn-ghost="demoTab !== 'preview'"
+                                data-on-click="demoTab = 'preview'; setTimeout(() => ace.edit('snippet-editor').resize(), 50)">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                            </button>
+                            <!-- Code Icon -->
+                            <button class="join-item btn btn-sm tooltip tooltip-top" data-tip="Code" 
+                                data-class-btn-active="demoTab === 'code'"
+                                data-class-btn-ghost="demoTab !== 'code'"
+                                data-on-click="demoTab = 'code'; setTimeout(() => ace.edit('snippet-editor').resize(), 50)">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>
+                            </button>
+                            <!-- Split View Icon (At the end as requested) -->
+                            <button class="join-item btn btn-sm tooltip tooltip-top" data-tip="Split View" 
+                                data-class-btn-active="demoTab === 'split'"
+                                data-class-btn-ghost="demoTab !== 'split'"
+                                data-on-click="demoTab = 'split'; setTimeout(() => ace.edit('snippet-editor').resize(), 50)">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19.5h6m-6-15h6M3 4.5h18A2.25 2.25 0 0123.25 6.75v10.5A2.25 2.25 0 0121 19.5H3a2.25 2.25 0 01-2.25-2.25V6.75A2.25 2.25 0 013 4.5zM9 4.5v15" /></svg>
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Preview — dynamically renders snippetCode via data-html -->
-                    <div data-show="demoTab === 'preview'" class="pb-6">
-                        <div class="bg-base-300/30 rounded-lg p-6 min-h-[140px] border border-dashed border-base-300"
-                            data-html="snippetCode">
+                    <!-- Split / Interactive Grid Layout -->
+                    <div class="grid grid-cols-1 gap-6" data-class-md:grid-cols-2="demoTab === 'split'">
+                        <!-- Preview Panel -->
+                        <div data-show="demoTab === 'preview' || demoTab === 'split'" class="pb-6 w-full h-full">
+                            <div class="bg-base-300/30 rounded-lg p-6 min-h-[140px] h-full border border-dashed border-base-300"
+                                data-html="snippetCode">
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Snippet Editor -->
-                    <div data-show="demoTab === 'code'" style="display:none;">
-                        <div class="nx-editor-container border border-neutral/50 rounded-xl overflow-hidden mb-6"
-                            style="position: relative; min-height: 400px; width: 100%;">
-                            <div id="snippet-editor" class="nx-editor"
-                                style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; font-family: 'Fira Code', 'Cascadia Code', monospace; font-size: 14px;">
+                        <!-- Snippet Editor Panel -->
+                        <div data-show="demoTab === 'code' || demoTab === 'split'" style="display:none;" class="w-full h-full pb-6">
+                            <div class="nx-editor-container border border-neutral/50 rounded-xl overflow-hidden h-full"
+                                style="position: relative; min-height: 400px; width: 100%;">
+                                <div id="snippet-editor" class="nx-editor"
+                                    style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; font-family: 'Fira Code', 'Cascadia Code', monospace; font-size: 14px;">
+                                </div>
                             </div>
                         </div>
                     </div>
