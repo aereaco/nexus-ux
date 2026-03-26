@@ -29,9 +29,14 @@
      }"
     data-effect="
         if (doc) {
+            // Immediate sync to avoid waiting for Ace to populate the preview
+            if (!snippetCode && doc.Snippet) snippetCode = doc.Snippet;
+            if (activeFork === 'Default' && forkSource && !forkCode) forkCode = forkSource;
+
             if (!forkSource && doc.SourceModule) {
                 $get('/src' + doc.SourceModule, { responseType: 'text' }).then(d => {
                     forkSource = d;
+                    if (activeFork === 'Default') forkCode = d;
                 });
             }
 
