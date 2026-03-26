@@ -185,7 +185,7 @@
                                             <div
                                                 class="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity pr-2">
                                                 <button class="btn btn-ghost btn-xs text-info p-1 h-auto min-h-0"
-                                                    data-on-click="$evt.stopPropagation(); manageTarget = f; newName = f; void _indexedDB.forks[doc.SourceModule + '_' + f]; showRenameForkModal = true"
+                                                    data-on-click="$evt.stopPropagation(); manageTarget = f; newName = f; showRenameForkModal = true"
                                                     title="Rename">
                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none"
                                                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
@@ -382,7 +382,7 @@
                                             <div
                                                 class="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity pr-2">
                                                 <button class="btn btn-ghost btn-xs text-info p-1 h-auto min-h-0"
-                                                    data-on-click="$evt.stopPropagation(); manageTarget = s; newName = s; void _indexedDB.snippets[doc.SnippetModule + '_' + s]; showRenameSnippetModal = true"
+                                                    data-on-click="$evt.stopPropagation(); manageTarget = s; newName = s; showRenameSnippetModal = true"
                                                     title="Rename">
                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none"
                                                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
@@ -548,15 +548,18 @@
                             const prefix = doc.SourceModule;
                             const oldKey = prefix + '_' + manageTarget;
                             const newKey = prefix + '_' + newName;
-                            const code = store[oldKey];
-                            if (code === undefined) { toastMsg = 'Error: Source not loaded'; toastType = 'error'; showToast = true; return; }
-                            store[newKey] = code;
-                            store.delete(oldKey);
-                            const idx = forks.indexOf(manageTarget);
-                            if (idx !== -1) forks.splice(idx, 1, newName);
-                            if (activeFork === manageTarget) activeFork = newName;
-                            toastMsg = 'Renamed to ' + newName; toastType = 'success'; showToast = true;
-                            showRenameForkModal = false;
+                            store.get(oldKey).then(code => {
+                                if (code === undefined) { toastMsg = 'Error: Source not loaded'; toastType = 'error'; showToast = true; return; }
+                                store.set(newKey, code).then(() => {
+                                    store.delete(oldKey).then(() => {
+                                        const idx = forks.indexOf(manageTarget);
+                                        if (idx !== -1) forks.splice(idx, 1, newName);
+                                        if (activeFork === manageTarget) activeFork = newName;
+                                        toastMsg = 'Renamed to ' + newName; toastType = 'success'; showToast = true;
+                                        showRenameForkModal = false;
+                                    });
+                                });
+                            });
                         ">Rename</button>
                             </div>
                         </div>
@@ -585,12 +588,13 @@
                             const store = _indexedDB.forks;
                             const prefix = doc.SourceModule;
                             const key = prefix + '_' + manageTarget;
-                            store.delete(key);
-                            const idx = forks.indexOf(manageTarget);
-                            if (idx !== -1) forks.splice(idx, 1);
-                            if (activeFork === manageTarget) activeFork = 'Default';
-                            toastMsg = manageTarget + ' deleted'; toastType = 'info'; showToast = true;
-                            showDeleteForkModal = false;
+                            store.delete(key).then(() => {
+                                const idx = forks.indexOf(manageTarget);
+                                if (idx !== -1) forks.splice(idx, 1);
+                                if (activeFork === manageTarget) activeFork = 'Default';
+                                toastMsg = manageTarget + ' deleted'; toastType = 'info'; showToast = true;
+                                showDeleteForkModal = false;
+                            });
                         ">Delete Forever</button>
                             </div>
                         </div>
@@ -615,15 +619,18 @@
                             const prefix = doc.SnippetModule;
                             const oldKey = prefix + '_' + manageTarget;
                             const newKey = prefix + '_' + newName;
-                            const code = store[oldKey];
-                            if (code === undefined) { toastMsg = 'Error: Snippet not loaded'; toastType = 'error'; showToast = true; return; }
-                            store[newKey] = code;
-                            store.delete(oldKey);
-                            const idx = snippets.indexOf(manageTarget);
-                            if (idx !== -1) snippets.splice(idx, 1, newName);
-                            if (activeSnippet === manageTarget) activeSnippet = newName;
-                            toastMsg = 'Renamed to ' + newName; toastType = 'success'; showToast = true;
-                            showRenameSnippetModal = false;
+                            store.get(oldKey).then(code => {
+                                if (code === undefined) { toastMsg = 'Error: Snippet not loaded'; toastType = 'error'; showToast = true; return; }
+                                store.set(newKey, code).then(() => {
+                                    store.delete(oldKey).then(() => {
+                                        const idx = snippets.indexOf(manageTarget);
+                                        if (idx !== -1) snippets.splice(idx, 1, newName);
+                                        if (activeSnippet === manageTarget) activeSnippet = newName;
+                                        toastMsg = 'Renamed to ' + newName; toastType = 'success'; showToast = true;
+                                        showRenameSnippetModal = false;
+                                    });
+                                });
+                            });
                         ">Rename</button>
                             </div>
                         </div>
@@ -653,12 +660,13 @@
                             const store = _indexedDB.snippets;
                             const prefix = doc.SnippetModule;
                             const key = prefix + '_' + manageTarget;
-                            store.delete(key);
-                            const idx = snippets.indexOf(manageTarget);
-                            if (idx !== -1) snippets.splice(idx, 1);
-                            if (activeSnippet === manageTarget) activeSnippet = 'Default';
-                            toastMsg = manageTarget + ' deleted'; toastType = 'info'; showToast = true;
-                            showDeleteSnippetModal = false;
+                            store.delete(key).then(() => {
+                                const idx = snippets.indexOf(manageTarget);
+                                if (idx !== -1) snippets.splice(idx, 1);
+                                if (activeSnippet === manageTarget) activeSnippet = 'Default';
+                                toastMsg = manageTarget + ' deleted'; toastType = 'info'; showToast = true;
+                                showDeleteSnippetModal = false;
+                            });
                         ">Delete Forever</button>
                             </div>
                         </div>

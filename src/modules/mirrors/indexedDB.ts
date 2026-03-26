@@ -87,7 +87,7 @@ function openDB(storeName: string): Promise<IDBDatabase> {
 
       const newVersion = currentVersion + 1;
       const upgradeReq = indexedDB.open(DB_NAME, newVersion);
-      
+
       upgradeReq.onblocked = () => {
         if (isDebug()) console.warn(`[_indexedDB] Upgrade to v${newVersion} blocked by an open connection.`);
       };
@@ -129,8 +129,8 @@ function openDB(storeName: string): Promise<IDBDatabase> {
   }));
 
   // Update the tail of the queue
-  dbOpenQueue = queuedPromise.then(() => {}).catch(() => {});
-  
+  dbOpenQueue = queuedPromise.then(() => { }).catch(() => { });
+
   return queuedPromise;
 }
 
@@ -221,7 +221,7 @@ function createStoreProxy(storeName: string) {
         }
         return currentKeys;
       },
-      set() {}
+      set() { }
     };
   });
 
@@ -238,10 +238,36 @@ function createStoreProxy(storeName: string) {
     },
 
     /**
+     * Get a key from this store directly.
+     */
+    get(key: string): Promise<unknown> {
+      return idbGet(storeName, key).catch(e => {
+        if (isDebug()) console.error(`[_indexedDB] get error for '${storeName}/${key}':`, e);
+        return undefined;
+      });
+    },
+
+    /**
+     * Set a value in this store directly, bypassing typical proxy reactivity triggers during initialization, but updating the cache.
+     */
+    set(key: string, value: unknown): Promise<void> {
+      return idbSet(storeName, key, value)
+        .then(() => {
+          const r = cache.get(key);
+          if (r) r.value = value;
+          if (keysTrigger) keysTrigger();
+          if (isDebug()) console.debug(`[_indexedDB] SET-DIRECT: '${storeName}/${key}' =`, value);
+        })
+        .catch(e => {
+          if (isDebug()) console.error(`[_indexedDB] set error for '${storeName}/${key}':`, e);
+        });
+    },
+
+    /**
      * Delete a key from this store.
      */
-    delete(key: string): void {
-      idbDelete(storeName, key)
+    delete(key: string): Promise<void> {
+      return idbDelete(storeName, key)
         .then(() => {
           // Update the reactive ref if it exists
           const r = cache.get(key);
@@ -257,8 +283,8 @@ function createStoreProxy(storeName: string) {
     /**
      * Clear all entries in this store.
      */
-    clear(): void {
-      idbClear(storeName)
+    clear(): Promise<void> {
+      return idbClear(storeName)
         .then(() => {
           // Reset all cached refs
           cache.forEach(r => r.value = undefined);
