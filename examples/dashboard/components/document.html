@@ -115,43 +115,6 @@
                 setTimeout(() => ed2.resize(), 100);
             }
         }
-
-        // Shared Management Logic (Rename/Delete)
-        window.$deleteItem = (type, name) => {
-            const store = _indexedDB?.[type + 's'];
-            if (!store) return;
-            const prefix = type === 'fork' ? doc.SourceModule : doc.SnippetModule;
-            store.delete(prefix + '_' + name).then(() => {
-                const list = type === 'fork' ? forks : snippets;
-                const idx = list.indexOf(name);
-                if (idx !== -1) list.splice(idx, 1);
-                if (type === 'fork' && activeFork === name) activeFork = 'Default';
-                if (type === 'snippet' && activeSnippet === name) activeSnippet = 'Default';
-                toastMsg = name + ' deleted'; toastType = 'info'; showToast = true;
-                showDeleteForkModal = false; showDeleteSnippetModal = false;
-            });
-        };
-
-        window.$renameItem = (type, oldName, newName) => {
-            const store = _indexedDB?.[type + 's'];
-            if (!store || !newName) return;
-            const prefix = type === 'fork' ? doc.SourceModule : doc.SnippetModule;
-            const oldKey = prefix + '_' + oldName;
-            const newKey = prefix + '_' + newName;
-            
-            store.get(oldKey).then(code => {
-                store[newKey] = code;
-                store.delete(oldKey).then(() => {
-                    const list = type === 'fork' ? forks : snippets;
-                    const idx = list.indexOf(oldName);
-                    if (idx !== -1) list[idx] = newName;
-                    if (type === 'fork' && activeFork === oldName) activeFork = newName;
-                    if (type === 'snippet' && activeSnippet === oldName) activeSnippet = newName;
-                    toastMsg = 'Renamed to ' + newName; toastType = 'success'; showToast = true;
-                    showRenameForkModal = false; showRenameSnippetModal = false;
-                });
-            });
-        };
     ">
 
     <div class="max-w-5xl mx-auto space-y-12" data-if="doc">
@@ -200,17 +163,19 @@
                             <div class="divider my-0 opacity-20"></div>
                             <template data-for="f in forks">
                                 <li class="group flex flex-row items-center justify-between">
-                                    <a data-on-click="activeFork = f" data-class-active="activeFork === f" data-text="f" class="flex-1 truncate"></a>
+                                    <a data-on-click="activeFork = f" data-class-active="activeFork === f" class="flex-1 flex items-center justify-between">
+                                    <div data-text="f" class="truncate"></div>
                                     <div class="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity pr-2">
                                         <button class="btn btn-ghost btn-xs text-info p-1 h-auto min-h-0" 
-                                                data-on-click="manageTarget = f; newName = f; showRenameForkModal = true" title="Rename">
+                                                data-on-click="$event.stopPropagation(); manageTarget = f; newName = f; void _indexedDB.forks[doc.SourceModule + '_' + f]; showRenameForkModal = true" title="Rename">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
                                         </button>
                                         <button class="btn btn-ghost btn-xs text-error p-1 h-auto min-h-0" 
-                                                data-on-click="manageTarget = f; showDeleteForkModal = true" title="Delete">
+                                                data-on-click="$event.stopPropagation(); manageTarget = f; showDeleteForkModal = true" title="Delete">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.34 9m-4.72 0L9.36 9m11.17-6.23a4.5 4.5 0 01-1.24.58L18 3.32V3h-3.41l-.14-.49A2.25 2.25 0 0012.31 1h-0.62a2.25 2.25 0 00-2.14 1.51l-.14.49H6v.32l-2.12.09a4.5 4.5 0 00-1.24-.58L1 3.77l.79 2.14 1.16-.05V18.75A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V5.86l1.16.05.79-2.14-0.21-.09z" /></svg>
                                         </button>
                                     </div>
+                                    </a>
                                 </li>
                             </template>
                         </ul>
@@ -346,17 +311,19 @@
                             <div class="divider my-0 opacity-20"></div>
                             <template data-for="s in snippets">
                                 <li class="group flex flex-row items-center justify-between">
-                                    <a data-on-click="activeSnippet = s" data-class-active="activeSnippet === s" data-text="s" class="flex-1 truncate"></a>
+                                    <a data-on-click="activeSnippet = s" data-class-active="activeSnippet === s" class="flex-1 flex items-center justify-between">
+                                    <div data-text="s" class="truncate"></div>
                                     <div class="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity pr-2">
                                         <button class="btn btn-ghost btn-xs text-info p-1 h-auto min-h-0" 
-                                                data-on-click="manageTarget = s; newName = s; showRenameSnippetModal = true" title="Rename">
+                                                data-on-click="$event.stopPropagation(); manageTarget = s; newName = s; void _indexedDB.snippets[doc.SnippetModule + '_' + s]; showRenameSnippetModal = true" title="Rename">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
                                         </button>
                                         <button class="btn btn-ghost btn-xs text-error p-1 h-auto min-h-0" 
-                                                data-on-click="manageTarget = s; showDeleteSnippetModal = true" title="Delete">
+                                                data-on-click="$event.stopPropagation(); manageTarget = s; showDeleteSnippetModal = true" title="Delete">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.34 9m-4.72 0L9.36 9m11.17-6.23a4.5 4.5 0 01-1.24.58L18 3.32V3h-3.41l-.14-.49A2.25 2.25 0 0012.31 1h-0.62a2.25 2.25 0 00-2.14 1.51l-.14.49H6v.32l-2.12.09a4.5 4.5 0 00-1.24-.58L1 3.77l.79 2.14 1.16-.05V18.75A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V5.86l1.16.05.79-2.14-0.21-.09z" /></svg>
                                         </button>
                                     </div>
+                                    </a>
                                 </li>
                             </template>
                         </ul>
@@ -469,7 +436,21 @@
                     <input type="text" class="input input-bordered input-info w-full" data-model="newName" placeholder="new-branch-name">
                     <div class="card-actions justify-end mt-4">
                         <button class="btn btn-ghost" data-on-click="showRenameForkModal = false">Cancel</button>
-                        <button class="btn btn-info" data-on-click="$renameItem('fork', manageTarget, newName)">Rename</button>
+                        <button class="btn btn-info" data-on-click="
+                            const store = _indexedDB.forks;
+                            const prefix = doc.SourceModule;
+                            const oldKey = prefix + '_' + manageTarget;
+                            const newKey = prefix + '_' + newName;
+                            const code = store[oldKey];
+                            if (code === undefined) { toastMsg = 'Error: Source not loaded'; toastType = 'error'; showToast = true; return; }
+                            store[newKey] = code;
+                            store.delete(oldKey);
+                            const idx = forks.indexOf(manageTarget);
+                            if (idx !== -1) forks.splice(idx, 1, newName);
+                            if (activeFork === manageTarget) activeFork = newName;
+                            toastMsg = 'Renamed to ' + newName; toastType = 'success'; showToast = true;
+                            showRenameForkModal = false;
+                        ">Rename</button>
                     </div>
                 </div>
             </div>
@@ -486,7 +467,17 @@
                     <p class="py-2">Are you sure you want to delete the fork <span class="font-bold text-error" data-text="manageTarget"></span>? This action cannot be undone.</p>
                     <div class="card-actions justify-end mt-4">
                         <button class="btn btn-ghost" data-on-click="showDeleteForkModal = false">Cancel</button>
-                        <button class="btn btn-error" data-on-click="$deleteItem('fork', manageTarget)">Delete Forever</button>
+                        <button class="btn btn-error" data-on-click="
+                            const store = _indexedDB.forks;
+                            const prefix = doc.SourceModule;
+                            const key = prefix + '_' + manageTarget;
+                            store.delete(key);
+                            const idx = forks.indexOf(manageTarget);
+                            if (idx !== -1) forks.splice(idx, 1);
+                            if (activeFork === manageTarget) activeFork = 'Default';
+                            toastMsg = manageTarget + ' deleted'; toastType = 'info'; showToast = true;
+                            showDeleteForkModal = false;
+                        ">Delete Forever</button>
                     </div>
                 </div>
             </div>
@@ -501,7 +492,21 @@
                     <input type="text" class="input input-bordered input-info w-full" data-model="newName" placeholder="new-snippet-name">
                     <div class="card-actions justify-end mt-4">
                         <button class="btn btn-ghost" data-on-click="showRenameSnippetModal = false">Cancel</button>
-                        <button class="btn btn-info" data-on-click="$renameItem('snippet', manageTarget, newName)">Rename</button>
+                        <button class="btn btn-info" data-on-click="
+                            const store = _indexedDB.snippets;
+                            const prefix = doc.SnippetModule;
+                            const oldKey = prefix + '_' + manageTarget;
+                            const newKey = prefix + '_' + newName;
+                            const code = store[oldKey];
+                            if (code === undefined) { toastMsg = 'Error: Snippet not loaded'; toastType = 'error'; showToast = true; return; }
+                            store[newKey] = code;
+                            store.delete(oldKey);
+                            const idx = snippets.indexOf(manageTarget);
+                            if (idx !== -1) snippets.splice(idx, 1, newName);
+                            if (activeSnippet === manageTarget) activeSnippet = newName;
+                            toastMsg = 'Renamed to ' + newName; toastType = 'success'; showToast = true;
+                            showRenameSnippetModal = false;
+                        ">Rename</button>
                     </div>
                 </div>
             </div>
@@ -518,7 +523,17 @@
                     <p class="py-2">Are you sure you want to delete the snippet <span class="font-bold text-error" data-text="manageTarget"></span>? This action cannot be undone.</p>
                     <div class="card-actions justify-end mt-4">
                         <button class="btn btn-ghost" data-on-click="showDeleteSnippetModal = false">Cancel</button>
-                        <button class="btn btn-error" data-on-click="$deleteItem('snippet', manageTarget)">Delete Forever</button>
+                        <button class="btn btn-error" data-on-click="
+                            const store = _indexedDB.snippets;
+                            const prefix = doc.SnippetModule;
+                            const key = prefix + '_' + manageTarget;
+                            store.delete(key);
+                            const idx = snippets.indexOf(manageTarget);
+                            if (idx !== -1) snippets.splice(idx, 1);
+                            if (activeSnippet === manageTarget) activeSnippet = 'Default';
+                            toastMsg = manageTarget + ' deleted'; toastType = 'info'; showToast = true;
+                            showDeleteSnippetModal = false;
+                        ">Delete Forever</button>
                     </div>
                 </div>
             </div>
