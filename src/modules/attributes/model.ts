@@ -29,29 +29,18 @@ const modelModule: AttributeModule = {
           const syncSelect = () => {
             const options = Array.from(el.options);
             const found = options.some(opt => opt.value === targetValue);
-            const isDebug = (window as unknown as { _nexusDebug?: boolean })._nexusDebug;
-            if (isDebug) console.debug(`[Nexus Model Sync] <${el.tagName}> Target: "${targetValue}", Found: ${found}, Options:`, options.map(o => o.value));
             if (found || targetValue === '') {
               if (el.value !== targetValue) {
                 el.value = targetValue;
-                // Double check for quirky browsers
-                if (el.value !== targetValue) setTimeout(() => el.value = targetValue, 0);
               }
             }
           };
 
           syncSelect();
 
-          // Persistent Reconciliation: Dynamic options (data-for) may churn multiple times.
-          // We attach a persistent MutationObserver for the life of this effect.
-          const observer = new MutationObserver((mutations) => {
-            const isDebug = (window as unknown as { _nexusDebug?: boolean })._nexusDebug;
-            if (isDebug) console.debug(`[Nexus Model Mutation] <${el.tagName}> Mutation detected:`, mutations.length);
-            syncSelect();
-            // Also try deferred to catch late hydration
-            setTimeout(syncSelect, 10);
-          });
-          observer.observe(el, { childList: true, subtree: true, attributes: true });
+          // Standard Reconciliation: Watch for childList changes (data-for hydration)
+          const observer = new MutationObserver(() => syncSelect());
+          observer.observe(el, { childList: true, subtree: true });
           cleanupFns.push(() => observer.disconnect());
         } else if (el instanceof HTMLTextAreaElement) {
           el.value = result !== undefined && result !== null ? String(result) : '';

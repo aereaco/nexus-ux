@@ -15,25 +15,42 @@
         forkError: '',
         snippetError: '',
         engine: 15,
-        docSource: '',
-        sourceCode: '',
-        snippetCode: ''
-    }"
-    data-computed="{
-        forks: () => (_indexedDB?.forks && doc) ? _indexedDB.forks.keys.filter(k => k.startsWith(doc.SourceModule + '_')).map(k => k.substring(doc.SourceModule.length + 1)) : [],
-        snippets: () => (_indexedDB?.snippets && doc) ? _indexedDB.snippets.keys.filter(k => k.startsWith(doc.SnippetModule + '_')).map(k => k.substring(doc.SnippetModule.length + 1)) : [],
-        currentForkCode: () => (activeFork === 'Default' || !doc) ? docSource : (_indexedDB?.forks?.[doc.SourceModule + '_' + activeFork] || ''),
-        currentSnippetCode: () => (activeSnippet === 'Default' || !doc) ? (doc?.Snippet || '') : (_indexedDB?.snippets?.[doc.SnippetModule + '_' + activeSnippet] || '')
-    }"
+        forkSource: '',
+        forkCode: '',
+        snippetCode: '',
+        forks: [],
+        snippets: [],
+        forksLoaded: false,
+        snippetsLoaded: false
+     }"
+     data-computed="{
+         currentForkCode: () => (activeFork === 'Default' || !doc) ? (forkSource || '') : _indexedDB?.forks?.[doc.SourceModule + '_' + activeFork],
+         currentSnippetCode: () => (activeSnippet === 'Default' || !doc) ? (doc?.Snippet || '') : _indexedDB?.snippets?.[doc.SnippetModule + '_' + activeSnippet]
+     }"
     data-effect="
         if (doc) {
-            if (!docSource && doc.SourceModule) {
+            if (!forkSource && doc.SourceModule) {
                 $get('/src' + doc.SourceModule, { responseType: 'text' }).then(d => {
-                    docSource = d;
+                    forkSource = d;
                 });
             }
-            if (!snippetCode && doc.Snippet) {
-                snippetCode = doc.Snippet;
+
+            // Initialize lists from mirrors explicitly (avoiding async computed flicker)
+            if (_indexedDB?.forks && !forksLoaded) {
+                forksLoaded = true;
+                if (window._nexusDebug) console.log(`[document] Listing forks for prefix: ${doc.SourceModule}_`);
+                _indexedDB.forks.list(doc.SourceModule + '_').then(keys => {
+                    if (window._nexusDebug) console.log(`[document] Found fork keys:`, keys);
+                    forks = keys.map(k => k.substring(doc.SourceModule.length + 1));
+                });
+            }
+            if (_indexedDB?.snippets && !snippetsLoaded) {
+                snippetsLoaded = true;
+                if (window._nexusDebug) console.log(`[document] Listing snippets for prefix: ${doc.SnippetModule}_`);
+                _indexedDB.snippets.list(doc.SnippetModule + '_').then(keys => {
+                    if (window._nexusDebug) console.log(`[document] Found snippet keys:`, keys);
+                    snippets = keys.map(k => k.substring(doc.SnippetModule.length + 1));
+                });
             }
         }
 
@@ -41,22 +58,24 @@
             ace.config.set('basePath', 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/');
             
             // Source Editor Init
-            if (docSource && !window._sourceEditor) {
+            if (forkSource && !window._sourceEditor) {
                 const ed1 = ace.edit('source-editor');
                 window._sourceEditor = ed1;
                 ed1.setTheme('ace/theme/tomorrow_night_eighties');
                 ed1.session.setMode('ace/mode/typescript');
-                ed1.setValue(docSource || '', -1);
-                ed1.setReadOnly(true);
                 ed1.session.on('change', () => { 
                     const val = ed1.getValue();
-                    if (sourceCode !== val) sourceCode = val; 
+                    if (forkCode !== val) forkCode = val; 
                 });
+                ed1.setValue(forkSource || '', -1);
+                ed1.setReadOnly(true);
                 $watch(() => currentForkCode, (code) => {
-                    if (ed1.getValue() !== code) {
-                        ed1.setValue(code || docSource || '', -1);
+                    if (code !== undefined && ed1.getValue() !== code) {
+                        ed1.setValue(code || forkSource || '', -1);
                     }
-                    ed1.setReadOnly(activeFork === 'Default');
+                });
+                $watch(() => activeFork, (fork) => {
+                    ed1.setReadOnly(fork === 'Default');
                 });
                 setTimeout(() => ed1.resize(), 100);
             }
@@ -67,17 +86,19 @@
                 window._snippetEditor = ed2;
                 ed2.setTheme('ace/theme/tomorrow_night_eighties');
                 ed2.session.setMode('ace/mode/html');
-                ed2.setValue(doc.Snippet || '', -1);
-                ed2.setReadOnly(true);
                 ed2.session.on('change', () => { 
                     const val = ed2.getValue();
                     if (snippetCode !== val) snippetCode = val; 
                 });
+                ed2.setValue(doc.Snippet || '', -1);
+                ed2.setReadOnly(true);
                 $watch(() => currentSnippetCode, (code) => {
-                    if (ed2.getValue() !== code) {
+                    if (code !== undefined && ed2.getValue() !== code) {
                         ed2.setValue(code || doc?.Snippet || '', -1);
                     }
-                    ed2.setReadOnly(activeSnippet === 'Default');
+                });
+                $watch(() => activeSnippet, (snip) => {
+                    ed2.setReadOnly(snip === 'Default');
                 });
                 setTimeout(() => ed2.resize(), 100);
             }
@@ -138,19 +159,20 @@
                     <button class="btn btn-sm btn-ghost join-item border border-base-300 gap-1.5" 
                             title="Download current code"
                             data-on-click="
-                                const blob = new Blob([activeFork === 'Default' ? docSource : _indexedDB.forks[doc.SourceModule + '_' + activeFork]], { type: 'text/plain' });
+                                const blob = new Blob([activeFork === 'Default' ? forkSource : _indexedDB.forks[doc.SourceModule + '_' + activeFork]], { type: 'text/plain' });
                                 const url = URL.createObjectURL(blob);
                                 const a = document.createElement('a');
                                 a.href = url;
-                                a.download = 'framework-' + activeFork.toLowerCase() + '.ts';
+                                const moduleName = doc.SourceModule.split('/').pop().split('.')[0];
+                                a.download = moduleName + '_' + activeFork.toLowerCase() + '.ts';
                                 a.click();
                             ">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
                     </button>
-                    <button class="btn btn-sm btn-ghost join-item border border-base-300 gap-1.5" 
+                    <button class="btn btn-sm btn-ghost join-item border border-base-300 gap-1.5"
                             title="Copy to clipboard"
                             data-on-click="
-                                $clipboard.write(currentForkCode);
+                                navigator.clipboard.writeText(forkCode).catch(e => console.error('Copy failed', e));
                                 toastMsg = 'Source copied to clipboard'; toastType = 'info'; showToast = true;
                             ">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
@@ -159,26 +181,27 @@
 
                 <!-- Right: Save + Reset -->
                 <div class="flex items-center gap-2">
-                    <button class="btn btn-sm btn-primary btn-outline gap-1"
+                    <button class="btn btn-sm btn-ghost gap-2 text-secondary border-secondary/20 hover:bg-secondary/10"
                             data-bind="{ disabled: activeFork === 'Default' }"
                             data-class-btn-disabled="activeFork === 'Default'"
                             data-on-click="
                                 if (activeFork !== 'Default') {
                                     const anns = ace.edit('source-editor').session.getAnnotations();
                                     if (anns.some(a => a.type === 'error')) { toastMsg = 'Fix errors before saving'; toastType = 'warning'; showToast = true; return; }
+                                    _indexedDB.forks[doc.SourceModule + '_' + activeFork] = forkCode;
                                     toastMsg = 'Fork saved: ' + activeFork; toastType = 'success'; showToast = true;
-                                    _indexedDB.forks[doc.SourceModule + '_' + activeFork] = window._sourceEditor.getValue();
                                 }
                             ">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg> Save
                     </button>
-                    <button class="btn btn-sm btn-warning btn-outline"
+                    <button class="btn btn-sm btn-ghost gap-2 text-error border-error/20 hover:bg-error/10"
                             data-bind="{ disabled: activeFork === 'Default' }"
                             data-class-btn-disabled="activeFork === 'Default'"
                             data-on-click="
                                 if (activeFork !== 'Default') {
+                                    const resetVal = _indexedDB.forks[doc.SourceModule + '_' + activeFork];
+                                    if (resetVal !== undefined) window._sourceEditor.setValue(resetVal || forkSource || '', -1);
                                     toastMsg = 'Resetting...'; toastType = 'info'; showToast = true;
-                                    ace.edit('source-editor').setValue(_indexedDB.forks[doc.SourceModule + '_' + activeFork] || docSource || '', -1);
                                 }
                             ">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" /></svg> Reset
@@ -201,7 +224,8 @@
                                 if (!name) { forkError = 'Name is required'; return; }
                                 if (name === 'Default') { forkError = 'Reserved name'; return; }
                                 if (forks.indexOf(name) !== -1) { forkError = 'Already exists'; return; }
-                                _indexedDB.forks[doc.SourceModule + '_' + name] = window._sourceEditor.getValue();
+                                _indexedDB.forks[doc.SourceModule + '_' + name] = forkCode;
+                                forks.push(name);
                                 activeFork = name;
                                 showForkModal = false;
                                 toastMsg = 'Fork created: ' + name; toastType = 'success'; showToast = true;
@@ -266,7 +290,8 @@
                                 const url = URL.createObjectURL(blob);
                                 const a = document.createElement('a');
                                 a.href = url;
-                                a.download = 'snippet-' + activeSnippet.toLowerCase() + '.html';
+                                const moduleName = doc.SnippetModule.split('/').pop().split('.')[0];
+                                a.download = moduleName + '_' + activeSnippet.toLowerCase() + '.html';
                                 a.click();
                             ">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
@@ -274,7 +299,7 @@
                     <button class="btn btn-sm btn-ghost join-item border border-base-300 gap-1.5" 
                             title="Copy to clipboard"
                             data-on-click="
-                                $clipboard.write(activeSnippet === 'Default' ? doc.Snippet : _indexedDB.snippets[doc.SnippetModule + '_' + activeSnippet]);
+                                navigator.clipboard.writeText(snippetCode).catch(e => console.error('Copy failed', e));
                                 toastMsg = 'Snippet copied to clipboard'; toastType = 'info'; showToast = true;
                             ">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
@@ -283,24 +308,25 @@
 
                 <!-- Right: Save + Reset -->
                 <div class="flex items-center gap-2">
-                    <button class="btn btn-sm btn-primary btn-outline gap-1"
+                    <button class="btn btn-sm btn-ghost gap-2 text-secondary border-secondary/20 hover:bg-secondary/10"
                             data-bind="{ disabled: activeSnippet === 'Default' }"
                             data-class-btn-disabled="activeSnippet === 'Default'"
                             data-on-click="
                                 if (activeSnippet !== 'Default') {
-                                    toastMsg = 'Snippet saved: ' + activeSnippet; toastType = 'success'; showToast = true;
                                     _indexedDB.snippets[doc.SnippetModule + '_' + activeSnippet] = snippetCode;
+                                    toastMsg = 'Snippet saved: ' + activeSnippet; toastType = 'success'; showToast = true;
                                 }
                             ">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg> Save
                     </button>
-                    <button class="btn btn-sm btn-warning btn-outline"
+                    <button class="btn btn-sm btn-ghost gap-2 text-error border-error/20 hover:bg-error/10"
                             data-bind="{ disabled: activeSnippet === 'Default' }"
                             data-class-btn-disabled="activeSnippet === 'Default'"
                             data-on-click="
                                 if (activeSnippet !== 'Default') {
+                                    const resetVal = _indexedDB.snippets[doc.SnippetModule + '_' + activeSnippet];
+                                    if (resetVal !== undefined) window._snippetEditor.setValue(resetVal || doc.Snippet || '', -1);
                                     toastMsg = 'Resetting...'; toastType = 'info'; showToast = true;
-                                    ace.edit('snippet-editor').setValue(_indexedDB.snippets[doc.SnippetModule + '_' + activeSnippet] || doc.Snippet || '', -1);
                                 }
                             ">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" /></svg> Reset
@@ -323,7 +349,8 @@
                                 if (!name) { snippetError = 'Name is required'; return; }
                                 if (name === 'Default') { snippetError = 'Reserved name'; return; }
                                 if (snippets.indexOf(name) !== -1) { snippetError = 'Already exists'; return; }
-                                _indexedDB.snippets[doc.SnippetModule + '_' + name] = window._snippetEditor.getValue();
+                                _indexedDB.snippets[doc.SnippetModule + '_' + name] = snippetCode;
+                                snippets.push(name);
                                 activeSnippet = name;
                                 showSnippetModal = false;
                                 toastMsg = 'Snippet saved: ' + name; toastType = 'success'; showToast = true;

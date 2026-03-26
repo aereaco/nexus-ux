@@ -23,7 +23,7 @@ const storeRefs = new Map<string, Map<string, Ref<unknown>>>();
 // Track known object stores and current DB version
 const knownStores = new Set<string>();
 let dbInstance: IDBDatabase | null = null;
-let dbOpenPromise: Promise<IDBDatabase> | null = null;
+let dbOpenQueue: Promise<void> = Promise.resolve();
 
 // Helper to check if debug mode is active
 const isDebug = () => {
@@ -31,8 +31,16 @@ const isDebug = () => {
   return document.documentElement.hasAttribute('data-debug');
 };
 
+function attachVersionChange(db: IDBDatabase) {
+  db.onversionchange = () => {
+    db.close();
+    dbInstance = null;
+  };
+}
+
 /**
  * Opens (or reopens) the database, ensuring the requested store exists.
+ * Queues requests to prevent concurrent schema upgrades.
  */
 function openDB(storeName: string): Promise<IDBDatabase> {
   // Fast path: DB already open and store exists
@@ -40,20 +48,12 @@ function openDB(storeName: string): Promise<IDBDatabase> {
     return Promise.resolve(dbInstance);
   }
 
-  // If we're already opening with this store, reuse the promise
-  if (dbOpenPromise && knownStores.has(storeName)) {
-    return dbOpenPromise;
-  }
-
-  dbOpenPromise = new Promise<IDBDatabase>((resolve, reject) => {
-    // Close existing connection before version change
-    if (dbInstance) {
-      dbInstance.close();
-      dbInstance = null;
+  // Queue DB open requests to prevent concurrent schema upgrades
+  const queuedPromise = dbOpenQueue.then(() => new Promise<IDBDatabase>((resolve, reject) => {
+    // Check again when it's our turn
+    if (dbInstance && knownStores.has(storeName)) {
+      return resolve(dbInstance);
     }
-
-    // Determine version — increment if we need a new store
-    const needsNewStore = !knownStores.has(storeName);
     // Read current version from a temporary open if needed
     const tempOpen = indexedDB.open(DB_NAME);
     tempOpen.onsuccess = () => {
@@ -65,20 +65,33 @@ function openDB(storeName: string): Promise<IDBDatabase> {
       tempOpen.result.close();
 
       // If store already exists, just open normally
-      if (tempOpen.result.objectStoreNames.contains(storeName)) {
-        knownStores.add(storeName);
+      if (knownStores.has(storeName)) {
+        if (dbInstance) return resolve(dbInstance);
         const openReq = indexedDB.open(DB_NAME, currentVersion);
         openReq.onsuccess = () => {
           dbInstance = openReq.result;
+          attachVersionChange(dbInstance);
           resolve(dbInstance);
         };
         openReq.onerror = () => reject(openReq.error);
         return;
       }
 
-      // Need to create the store — version bump required
-      const newVersion = needsNewStore ? currentVersion + 1 : currentVersion;
+      // We need to create the store — version bump required.
+      // Must CLOSE any existing connection to allow the upgrade,
+      // otherwise this request will hang indefinitely in 'onblocked'
+      if (dbInstance) {
+        dbInstance.close();
+        dbInstance = null;
+      }
+
+      const newVersion = currentVersion + 1;
       const upgradeReq = indexedDB.open(DB_NAME, newVersion);
+      
+      upgradeReq.onblocked = () => {
+        if (isDebug()) console.warn(`[_indexedDB] Upgrade to v${newVersion} blocked by an open connection.`);
+      };
+
       upgradeReq.onupgradeneeded = () => {
         const db = upgradeReq.result;
         if (!db.objectStoreNames.contains(storeName)) {
@@ -93,6 +106,7 @@ function openDB(storeName: string): Promise<IDBDatabase> {
       };
       upgradeReq.onsuccess = () => {
         dbInstance = upgradeReq.result;
+        attachVersionChange(dbInstance);
         knownStores.add(storeName);
         resolve(dbInstance);
       };
@@ -106,14 +120,18 @@ function openDB(storeName: string): Promise<IDBDatabase> {
       };
       createReq.onsuccess = () => {
         dbInstance = createReq.result;
+        attachVersionChange(dbInstance);
         knownStores.add(storeName);
         resolve(dbInstance);
       };
       createReq.onerror = () => reject(createReq.error);
     };
-  });
+  }));
 
-  return dbOpenPromise;
+  // Update the tail of the queue
+  dbOpenQueue = queuedPromise.then(() => {}).catch(() => {});
+  
+  return queuedPromise;
 }
 
 function idbRequest<T>(request: IDBRequest<T>): Promise<T> {
