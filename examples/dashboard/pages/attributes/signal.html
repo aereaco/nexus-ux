@@ -31,9 +31,9 @@
         .nx-editor { position: absolute; top: 0; left: 0; right: 0; bottom: 0; font-family: 'Fira Code', 'Cascadia Code', monospace; font-size: 14px; }
     </style>
 </head>
-<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-class-nexus-ready="appReady">
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-class-nexus-ready="appReady" data-on-load.window="appReady = true">
 
-    <div class="nexus-progress-mount" data-show="!appReady">
+    <div class="nexus-progress-mount" data-class-hidden="appReady">
         <progress class="progress w-full"></progress>
     </div>
 
