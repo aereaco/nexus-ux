@@ -40,7 +40,7 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
   const modifiers: string[] = [];
   let target: string | undefined = undefined;
 
-  const COMMON_PREFIXES = ['on-', 'class-', 'style-', 'attr-', 'bind-', 'prop-'];
+  const COMMON_PREFIXES = ['on-', 'class-', 'style-', 'attr-', 'bind-', 'prop-', 'animate-'];
   let startIndex = 0;
   let state = 0; // 0=DIRECTIVE, 1=ARGUMENT, 2=MODIFIER
 

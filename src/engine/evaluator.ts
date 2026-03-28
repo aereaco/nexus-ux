@@ -72,7 +72,7 @@ function preProcessExpression(expression: string): string {
   // We map it to __global to ensure it bypasses local scope shadowing without
   // colliding with the $ namespace reserved exclusively for predefined sprites.
   if (processed.includes('#')) {
-    processed = processed.replace(/(^|[^a-zA-Z0-9_$])#([a-zA-Z_$][\w$]*)/g, '$1__global.$2');
+    processed = processed.replace(/(^|[^a-zA-Z0-9_$'"`])#([a-zA-Z_$][\w$]*)/g, '$1__global.$2');
   }
 
   return processed;
