@@ -8,7 +8,7 @@ import { reportError } from '../../engine/errors.ts';
  */
 const INJEST_DB = 'nexus-store';
 
-async function readFromIDB(key: string): Promise<string | null> {
+function readFromIDB(key: string): Promise<string | null> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(INJEST_DB, 1);
     request.onupgradeneeded = () => {
@@ -144,9 +144,8 @@ async function ingestLink(
 
   // Optimize: Skip VFS resolution for standard HTTP/HTTPS links to avoid CORS noise
   // Use standard <link> tag injection which is robust against CORS
-  const isExternal = href.startsWith('http');
-  
-  if (!isExternal && 'CSSStyleSheet' in globalThis && 'replace' in CSSStyleSheet.prototype) {
+  // 1. Attempt Constructable Stylesheet adoption (High Performance / ZCZS)
+  if ('CSSStyleSheet' in globalThis && 'replace' in CSSStyleSheet.prototype) {
     let cssText = assetCache.get(href);
     if (!cssText) {
       const resolved = await resolveContent(href);
@@ -162,20 +161,21 @@ async function ingestLink(
       cleanupFns.push(() => {
         document.adoptedStyleSheets = document.adoptedStyleSheets.filter(s => s !== sheet);
       });
-      runtime.log(`Nexus Injest: CSS adopted: ${href}`);
+      runtime.log(`Nexus Injest: CSS adopted (Constructable): ${href}`);
       return;
     }
   }
-    // Fallback: standard <link> element injection
-    await new Promise<void>((resolve, reject) => {
-      const link = document.createElement('link');
-      Object.keys(attrs).forEach(k => link.setAttribute(k, attrs[k]));
-      link.onload = () => resolve();
-      link.onerror = () => reject(new Error(`Link load failed for ${href}`));
-      document.head.appendChild(link);
-      cleanupFns.push(() => link.remove());
-    });
-    runtime.log(`Nexus Injest: CSS loaded: ${href}`);
+
+  // 2. Fallback: standard <link> element injection (Backward Compatibility)
+  await new Promise<void>((resolve, reject) => {
+    const link = document.createElement('link');
+    Object.keys(attrs).forEach(k => link.setAttribute(k, attrs[k]));
+    link.onload = () => resolve();
+    link.onerror = () => reject(new Error(`Link load failed for ${href}`));
+    document.head.appendChild(link);
+    cleanupFns.push(() => link.remove());
+  });
+  runtime.log(`Nexus Injest: CSS loaded via <link>: ${href}`);
 }
 
 async function ingestScript(
@@ -227,7 +227,7 @@ async function ingestScript(
     Object.keys(attrs).forEach(k => {
       if (k !== 'src') {
         if (k === 'type') {
-          (script as any).type = attrs[k];
+          (script as HTMLScriptElement).type = attrs[k];
           script.setAttribute('type', attrs[k]);
         } else {
           script.setAttribute(k, attrs[k]);

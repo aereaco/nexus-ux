@@ -1,76 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-ux-init
+      data-signal="{
+          doc: {
+            Title: '$animate',
+            Description: 'The unified Zenith Animation Engine. Provides imperative control over native <b>WAAPI</b> keyframes, <b>FLIP</b> layout transitions, and legacy class sequences.',
+            Syntax: '$animate($el, keyframes[], options) | $animate.flip(targets, callback) | $animate.out($el, config)',
+            SourceModule: '/modules/sprites/animate.ts',
+            SnippetModule: '/examples/dashboard/pages/sprites/animate.html',
+            Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;The &lt;code&gt;$animate&lt;/code&gt; sprite provides a unified API for all animation needs in Nexus-UX.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1\&quot;&gt;&lt;li&gt;&lt;strong&gt;WAAPI&lt;/strong&gt; — Native browser performance with declarative keyframe objects&lt;/li&gt;&lt;li&gt;&lt;strong&gt;FLIP&lt;/strong&gt; — Smooth layout transitions without complex offset calculations&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Classes&lt;/strong&gt; — Automatic management of &lt;code&gt;.nx-entering&lt;/code&gt; and &lt;code&gt;.nx-leave&lt;/code&gt; states&lt;/li&gt;&lt;/ul&gt;',
+            DefaultSnippetName: 'WAAPI Pulse',
+            Examples: {
+                'WAAPI Pulse': '&lt;div class=\&quot;flex flex-col items-center gap-8 py-8\&quot;&gt;\n    &lt;div data-ref=\&quot;waapiBox\&quot; class=\&quot;w-32 h-32 bg-primary rounded-2xl shadow-xl flex items-center justify-center text-primary-content font-bold\&quot;&gt;\n        TARGET\n    &lt;/div&gt;\n    &lt;div class=\&quot;flex gap-2\&quot;&gt;\n        &lt;button class=\&quot;btn btn-outline btn-md\&quot; data-on-click=\&quot;$animate($refs.waapiBox, [\n            { transform: \&apos;scale(1)\&apos;, background: \&apos;#4f46e5\&apos; },\n            { transform: \&apos;scale(1.2) rotate(15deg)\&apos;, background: \&apos;#ec4899\&apos; },\n            { transform: \&apos;scale(1) rotate(0deg)\&apos;, background: \&apos;#4f46e5\&apos; }\n        ], { duration: 400, easing: \&apos;ease-out\&apos; })\&quot;&gt;\n            Pulse &amp; Rotate\n        &lt;/button&gt;\n    &lt;/div&gt;\n&lt;/div&gt;',
+                'FLIP List': '&lt;div class=\&quot;bg-base-200 p-6 rounded-box\&quot; data-signal=\&quot;{ items: [ {id: 1, n: \&apos;Alpha\&apos;}, {id: 2, n: \&apos;Beta\&apos;}, {id: 3, n: \&apos;Gamma\&apos;} ] }\&quot;&gt;\n    &lt;button class=\&quot;btn btn-primary btn-md mb-4\&quot; data-on-click=\&quot;$animate.flip(\&apos;.flip-item\&apos;, () =&gt; items = [...items].reverse())\&quot;&gt;Reverse List&lt;/button&gt;\n    &lt;div class=\&quot;grid grid-cols-3 gap-4\&quot;&gt;\n        &lt;template data-for=\&quot;item in items\&quot;&gt;\n            &lt;div class=\&quot;flip-item p-4 bg-base-100 border border-base-300 rounded-lg shadow-sm text-center font-bold\&quot; data-id=\&quot;{{item.id}}\&quot; data-text=\&quot;item.n\&quot;&gt;&lt;/div&gt;\n        &lt;/template&gt;\n    &lt;/div&gt;\n&lt;/div&gt;',
+                'Smart Selector': '&lt;div class=\&quot;flex flex-col gap-4 p-4\&quot;&gt;\n    &lt;div class=\&quot;flex gap-3\&quot;&gt;\n        &lt;div class=\&quot;target-head w-20 h-20 rounded-full bg-success shadow-lg\&quot;&gt;&lt;/div&gt;\n        &lt;div class=\&quot;target-head w-20 h-20 rounded-full bg-success shadow-lg\&quot;&gt;&lt;/div&gt;\n        &lt;div class=\&quot;target-head w-20 h-20 rounded-full bg-success shadow-lg\&quot;&gt;&lt;/div&gt;\n    &lt;/div&gt;\n    &lt;div class=\&quot;flex flex-wrap gap-2\&quot;&gt;\n        &lt;button class=\&quot;btn btn-soft btn-sm\&quot; data-on-click=\&quot;$(\&apos;.target-head\&apos;).style.opacity = \&apos;0.2\&apos;\&quot;&gt;First&lt;/button&gt;\n        &lt;button class=\&quot;btn btn-soft btn-sm\&quot; data-on-click=\&quot;$(\&apos;.target-head\&apos;)[1].style.opacity = \&apos;0.2\&apos;\&quot;&gt;Second&lt;/button&gt;\n        &lt;button class=\&quot;btn btn-soft btn-sm\&quot; data-on-click=\&quot;$(\&apos;.target-head\&apos;)[2].style.opacity = \&apos;0.2\&apos;\&quot;&gt;Last&lt;/button&gt;\n        &lt;button class=\&quot;btn btn-soft btn-sm\&quot; data-on-click=\&quot;$(\&apos;.target-head\&apos;).forEach(el =&gt; el.style.opacity = \&apos;0.2\&apos;)\&quot;&gt;All&lt;/button&gt;\n        &lt;button class=\&quot;btn btn-soft btn-primary btn-sm\&quot; data-on-click=\&quot;$(\&apos;.target-head\&apos;).forEach(el =&gt; el.style.opacity = \&apos;1\&apos;)\&quot;&gt;Restore&lt;/button&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+            }
+          },
+          appReady: false
+      }">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus-UX: Sprite - Animate</title>
-    <script type="module" src="../../../../dist/nexus-ux.js"></script>
+    <title>Nexus-UX: Sprite - $animate</title>
+    <script type="module" src="../../../../dist/nexus-ux.js?v={{TIMESTAMP}}"></script>
+    <style>
+        progress { appearance: none; -webkit-appearance: none; border: none; background: transparent; height: 0.5rem; margin: 0; display: block; }
+        progress::-webkit-progress-bar { background-color: rgba(166, 173, 187, 0.2); }
+        progress::-webkit-progress-value { background-color: #570df8; }
+        progress::-moz-progress-bar { background-color: #570df8; }
+        main { opacity: 0; transition: opacity 0.5s ease-in; }
+        .nexus-ready main { opacity: 1; }
+        .target-head { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
+        .target-head:hover { transform: scale(1.15); filter: brightness(1.2) drop-shadow(0 0 8px rgba(34, 197, 94, 0.4)); }
+        .nexus-progress-mount { position: fixed; top: 0; left: 0; right: 0; z-index: 9999; }
+        /* CM6: auto-height until max, then CM scrollbars */
+        .nx-editor .cm-editor { max-height: 500px; }
+        .nx-editor .cm-scroller { overflow: auto; }
+    </style>
 </head>
-<body data-ux-init>
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-class-nexus-ready="appReady" data-on-load.window="appReady = true">
 
-    <div id="demo-sprite-animate" class="dashboard-fragment p-8 bg-base-200 min-h-screen text-base-content" 
-         data-injest="{ css: { link: 'href=\'https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css\' rel=\'stylesheet\'' }, tw: { script: 'src=\'https://cdn.tailwindcss.com\'' } }">
-        
-        <div class="max-w-4xl mx-auto">
-            <h1 class="text-4xl font-bold mb-4 text-primary">$animate Sprite</h1>
-            <p class="mb-8 text-lg opacity-80">This page demonstrates the <code>$animate</code> Async Utility Sprite executing high-performance Native CSS physical keyframes natively within AST execution flows without heavy external JS animation loops.</p>
+    <div class="nexus-progress-mount" data-class-hidden="appReady">
+        <progress class="progress progress-primary w-full"></progress>
+    </div>
 
-            
-            <div class="card bg-base-100 shadow-xl border border-base-300 mb-8 mt-8" data-signal="{ activeTab: 'preview' }">
-                <div class="card-body">
-                    <div class="flex flex-col md:flex-row justify-between md:items-center border-b border-base-300 pb-4 mb-4 gap-4">
-                        <h2 class="card-title text-secondary">Interactive Demonstration</h2>
-                        <div class="tabs tabs-boxed bg-base-200">
-                            <a class="tab" data-class-tab-active="activeTab === 'preview'" data-on-click="activeTab = 'preview'">Preview</a> 
-                            <a class="tab" data-class-tab-active="activeTab === 'code'" data-on-click="activeTab = 'code'">Code</a> 
-                        </div>
-                    </div>
-
-                    <div data-show="activeTab === 'preview'">
-                        <div class="p-8 bg-base-200 rounded-box border shadow-inner">
-                            
-                        
-                        <div class="w-full flex justify-center gap-4 border-b border-base-300 pb-8">
-                            <!-- Native $animate(element, [enter/leave]) syntax mapped directly to explicit DaisyUI Keyframes or internal physical DOM transitions -->
-                            <button class="btn btn-primary shadow-sm" data-on-click="$animate($refs.blockTarget, 'enter')">Execute 'Enter' Sequence</button>
-                            <button class="btn btn-secondary shadow-sm" data-on-click="$animate($refs.blockTarget, 'leave')">Execute 'Leave' Sequence</button>
-                            <button class="btn btn-accent shadow-sm" data-on-click="$animate($refs.blockTarget, 'spin')">Trigger Custom 'Spin' Hook</button>
-                        </div>
-
-                        <!-- Target Node -->
-                        <!-- Internally, the Sprite appends `.nx-entering`, `.nx-enter-active` etc classes managing display states automatically -->
-                        <div data-ref="blockTarget" class="bg-base-100 border border-primary p-12 shadow-xl rounded-2xl w-64 h-64 flex items-center justify-center transition-all duration-700 mx-auto">
-                             <div class="text-center">
-                                 <svg xmlns="http://www.w3.org/2000/svg" class="stroke-primary shrink-0 h-16 w-16 mx-auto mb-4" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                                 <h3 class="font-bold text-xl uppercase tracking-widest text-primary">Sprite Geometry Subject</h3>
-                             </div>
-                        </div>
-                        
-                        <!-- Internal CSS mapping the hooks -->
-                        <style>
-                            .nx-entering { opacity: 0; transform: scale(0.5) translateY(50px); }
-                            .nx-enter-active { opacity: 1; transform: scale(1) translateY(0); display: flex !important; }
-                            
-                            .nx-leave { opacity: 1; transform: scale(1); }
-                            .nx-leave-active { opacity: 0; transform: scale(0.1) rotate(45deg); pointer-events: none; }
-                            
-                            .nx-spin-active { transform: rotate(1080deg) scale(1.1); background-color: oklch(var(--a)); border-color: oklch(var(--a)); color: oklch(var(--ac)); }
-                        </style>
-                        
-                    </div>
-                    <div data-show="activeTab === 'code'" style="display: none;">
-                        <pre class="mockup-code bg-neutral text-neutral-content p-4 font-mono text-sm mt-0 w-full overflow-x-auto"><code>$animate($el, 'enter')</code></pre>
-                                        </div>
-                </div>
-            </div>
-
-            <div class="card bg-base-100 shadow-xl border border-base-300 mt-8">
-                <div class="card-body">
-                    <h2 class="card-title text-secondary border-b border-base-300 pb-2 flex gap-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.827M15.75 15.75L21 21m-5.25-5.25l-1.5-1.5m3-3l1.5-1.5m-3 3L11.42 15.17M11.42 15.17A4.475 4.475 0 0012 11.25c0-2.485-2.015-4.5-4.5-4.5s-4.5 2.015-4.5 4.5c0 2.485 2.015 4.5 4.5 4.5 1.574 0 3.012-.81 3.82-2.08m0 0L3.75 3.75" /></svg> Extensibility Notes</h2>
-                    <p class="opacity-80 mt-4 leading-relaxed">The programmatic animation utility inside <code>src/modules/sprites/animate.ts</code> natively manages structural CSS classes <code>.nx-enter-active</code>. Overwrite these hardcoded identifiers natively supporting Tailwind mapping.</p>
-                </div>
-            </div>
+    <main class="relative p-6">
+        <div data-component="'/examples/dashboard/components/document.html'">
         </div>
+    </main>
 
 </body>
 </html>

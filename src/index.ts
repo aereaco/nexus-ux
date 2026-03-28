@@ -1,4 +1,5 @@
 import { ModuleCoordinator } from './engine/modules.ts';
+import { registerScopeProvider } from './engine/scope.ts';
 import { ROOT_SELECTOR } from './engine/consts.ts';
 import { topology } from './engine/topology.ts';
 import { initSelfHeal, getBeaconHistory, type CrashBeacon } from './engine/agent.ts';
@@ -20,6 +21,8 @@ import {
   autoObservers 
 } from './manifest.ts';
 
+import { resolveSelector } from './modules/sprites/selector.ts';
+import { animate } from './modules/sprites/animate.ts';
 import { fetchModule } from './engine/fetch.ts';
 
 
@@ -66,9 +69,19 @@ export class UX {
       Object.entries(exportsObj).forEach(([name, handler]) => {
          if (name === 'default') return;
 
+         // Use a Proxy for the handle to preserve properties (like $animate.flip)
+         const handle = (_el: HTMLElement, ...args: any[]) => (handler as any)(...args);
+         const proxyHandle = new Proxy(handle, {
+           get(target, key) {
+             if (key in target) return (target as any)[key];
+             const val = (handler as any)[key];
+             return typeof val === 'function' ? val.bind(handler) : val;
+           }
+         });
+
          this.coordinator.registerActionModule(name, {
            name,
-           handle: (_el, ...args) => (handler as any)(...args)
+           handle: proxyHandle
          });
       });
     });
@@ -97,8 +110,14 @@ export class UX {
       return predictive;
     })());
 
-    // Note: $ selector sprite now self-registers via scope provider registry
-    // in sprites/selector.ts — no manual registration needed here.
+    // 5. Contextual Selector ($), Animation Engine ($animate), and Refs ($refs)
+    registerScopeProvider('$', (el: any) => {
+      return (selector: string) => resolveSelector(el as HTMLElement, selector);
+    });
+
+    registerScopeProvider('$animate', () => animate);
+
+    registerScopeProvider('$refs', () => this.coordinator.runtimeContext.refs);
 
     // Auto-Register Mirrors
     autoMirrors.forEach(({ name, module }) => {

@@ -1,7 +1,7 @@
 /**
- * $animate Sprite
- * Provides imperative control over animations, including the FLIP (First, Last, Invert, Play) technique.
+ * Provides universal, expressive control over animations (WAAPI, FLIP, Class Transitions).
  */
+import { resolveSelector } from './selector.ts';
 
 export interface AnimationConfig {
   enter: string;
@@ -14,15 +14,19 @@ export interface AnimationConfig {
 
 /**
  * Executes a callback (which typically changes the DOM) and animates the transition
- * of elements marked with data-animate-flip.
+ * of elements using the FLIP (First, Last, Invert, Play) technique.
  */
 export async function flip(
-  targets: Element[] | NodeListOf<Element>,
+  targets: Element[] | NodeListOf<Element> | string,
   changeCallback: () => void | Promise<void>,
   options: { duration?: number; easing?: string } = {}
 ) {
   const { duration = 300, easing = 'ease-out' } = options;
-  const targetArray = Array.from(targets) as HTMLElement[];
+  
+  // Resolve targets using the core selector engine
+  const targetArray = typeof targets === 'string' 
+    ? Array.from(resolveSelector(document.body, targets)) as HTMLElement[]
+    : Array.from(targets as any) as HTMLElement[];
 
   // 1. First: Capture the initial positions
   const initialRects = new Map<HTMLElement, DOMRect>();
@@ -32,6 +36,11 @@ export async function flip(
 
   // 2. Last: Execute the change
   await changeCallback();
+  
+  // Wait for Zenith reactive DOM cycle to settle completely before capturing final positions
+  // We double-tick to ensure both the microtask (reactivity) and paint (layout) have occurred.
+  await new Promise(requestAnimationFrame);
+  await new Promise(requestAnimationFrame);
 
   // 3. Invert & Play
   targetArray.forEach((el) => {
@@ -68,62 +77,57 @@ export async function flip(
   });
 }
 
-export const getEffectDurations = (el: HTMLElement): number => {
-  if (typeof globalThis.window === 'undefined') return 0;
-  const styles = globalThis.window.getComputedStyle(el);
-  
-  // Handle comma-separated multiple transition durations (e.g., "0.3s, 0.6s")
-  const parseDurations = (str: string) => {
-    return str.split(',').map(s => parseFloat(s) * 1000 || 0);
-  };
-  
-  const transDurations = parseDurations(styles.transitionDuration);
-  const transDelays = parseDurations(styles.transitionDelay);
-  const animDurations = parseDurations(styles.animationDuration);
-  
-  let maxTrans = 0;
-  for (let i = 0; i < transDurations.length; i++) {
-    const delay = transDelays[i] || 0;
-    maxTrans = Math.max(maxTrans, transDurations[i] + delay);
-  }
-  
-  const maxAnim = Math.max(...animDurations, 0);
-  return Math.max(maxTrans, maxAnim);
-};
-
-const applyClasses = (el: HTMLElement, classString: string) => {
-  if (!classString) return;
-  classString.split(' ').filter(Boolean).forEach(c => el.classList.add(c));
-};
-
-const removeClasses = (el: HTMLElement, classString: string) => {
-  if (!classString) return;
-  classString.split(' ').filter(Boolean).forEach(c => el.classList.remove(c));
-};
-
-export const $animate = (
+/**
+ * Universal $animate Engine
+ * Usage:
+ *  - $animate($el, [{ opacity: 0 }, { opacity: 1 }], { duration: 500 })
+ *  - $animate.flip('.item', () => state.change())
+ *  - $animate.out($el, { leave: 'fade-out' })
+ */
+export function animate(
   el: HTMLElement, 
-  state: 'enter' | 'leave', 
-  config: Partial<AnimationConfig> = {}, 
+  keyframesOrState: Keyframe[] | 'enter' | 'leave', 
+  optionsOrConfig: KeyframeAnimationOptions | Partial<AnimationConfig> = {}, 
   callback?: () => void
-): void => {
+): Animation | void {
   if (typeof globalThis.window === 'undefined') {
     if (callback) callback();
     return;
   }
 
+  // Case 1: Native WAAPI Keyframes
+  if (Array.isArray(keyframesOrState)) {
+    const anim = el.animate(keyframesOrState, optionsOrConfig as KeyframeAnimationOptions);
+    if (callback) anim.onfinish = callback;
+    return anim;
+  }
+
+  // Case 2: Class Transitions (legacy)
+  return $animate_legacy(el, keyframesOrState as 'enter' | 'leave', optionsOrConfig as Partial<AnimationConfig>, callback);
+}
+
+// Attach sub-methods for cleaner API
+animate.flip = flip;
+animate.out = (el: HTMLElement, config: Partial<AnimationConfig>, cb?: () => void) => animate(el, 'leave', config, cb);
+
+/**
+ * Legacy Class-based Transition Implementation
+ */
+function $animate_legacy(
+  el: HTMLElement, 
+  state: 'enter' | 'leave', 
+  config: Partial<AnimationConfig> = {}, 
+  callback?: () => void
+): void {
   const base = state === 'enter' ? config.enter : config.leave;
   const start = state === 'enter' ? config.enterStart : config.leaveStart;
   const end = state === 'enter' ? config.enterEnd : config.leaveEnd;
 
-  // 1. Setup Start State
   applyClasses(el, base || '');
   applyClasses(el, start || '');
 
-  // Force reflow to ensure the 'start' state is painted
   void el.offsetHeight;
 
-  // 2. Transition to End State (Requires double rAF to avoid "display: none" rendering gaps)
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       removeClasses(el, start || '');
@@ -135,27 +139,32 @@ export const $animate = (
       const cleanup = () => {
         if (finished) return;
         finished = true;
-        
-        // Clean up all animation classes
         removeClasses(el, base || '');
         removeClasses(el, end || '');
-        
-        el.removeEventListener('transitionend', completionHandler);
-        el.removeEventListener('transitioncancel', cleanup);
-        
         if (callback) callback();
       };
 
-      const completionHandler = (e: Event) => { if (e.target === el) cleanup(); };
-
       if (duration > 0) {
-        el.addEventListener('transitionend', completionHandler);
-        el.addEventListener('transitioncancel', cleanup);
-        // Fallback timeout in case tab is backgrounded or events drop
+        el.addEventListener('transitionend', (e) => { if (e.target === el) cleanup(); }, { once: true });
         setTimeout(cleanup, duration + 50);
       } else {
         cleanup();
       }
     });
   });
+}
+
+const getEffectDurations = (el: HTMLElement): number => {
+  const styles = globalThis.window.getComputedStyle(el);
+  const parse = (str: string) => str.split(',').map(s => parseFloat(s) * 1000 || 0);
+  const trans = parse(styles.transitionDuration);
+  const delay = parse(styles.transitionDelay);
+  const anim = parse(styles.animationDuration);
+  
+  let max = 0;
+  trans.forEach((d, i) => max = Math.max(max, d + (delay[i] || 0)));
+  return Math.max(max, ...anim, 0);
 };
+
+const applyClasses = (el: HTMLElement, s: string) => s.split(' ').filter(Boolean).forEach(c => el.classList.add(c));
+const removeClasses = (el: HTMLElement, s: string) => s.split(' ').filter(Boolean).forEach(c => el.classList.remove(c));

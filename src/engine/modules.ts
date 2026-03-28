@@ -516,7 +516,16 @@ function getLocalActions(_el: HTMLElement): Record<string, ActionFunction> {
 function getGlobalActions(this: ModuleCoordinator): Record<string, ActionFunction> {
   const actions: Record<string, ActionFunction> = {};
   this.actionModules.forEach((module, name) => {
-    actions[name] = (...args: any[]) => module.handle(document.body, ...args);
+    // Create a wrapper that preserves properties from module.handle
+    const action = (...args: any[]) => module.handle(document.body, ...args);
+    const proxyAction = new Proxy(action, {
+      get(target, key) {
+        if (key in target) return (target as any)[key];
+        const val = (module.handle as any)[key];
+        return typeof val === 'function' ? val.bind(module.handle) : val;
+      }
+    });
+    actions[name] = proxyAction;
   });
   return actions;
 }

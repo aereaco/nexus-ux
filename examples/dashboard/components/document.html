@@ -1,6 +1,7 @@
-<template data-name="document">
     <div class="dashboard-fragment" data-injest="{ 
-        cm: { script: '/examples/dashboard/assets/cm.js', type: 'module' } 
+        cm: { script: '/examples/dashboard/assets/cm.js', type: 'module' },
+        daisy: { link: 'https://cdn.jsdelivr.net/npm/daisyui@5' },
+        tailwind: { script: 'https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4' }
     }" data-signal="{ 
         toastMsg: '', 
         toastType: 'info', 
@@ -15,7 +16,6 @@
         snippetName: '',
         forkError: '',
         snippetError: '',
-        engine: 15,
         forkSource: '',
         forkCode: '',
         snippetCode: '',
@@ -29,14 +29,31 @@
         showDeleteForkModal: false,
         showRenameSnippetModal: false,
         showDeleteSnippetModal: false,
-        manageError: ''
+        manageError: '',
+        baseSnippets: []
      }" data-computed="{
-         currentForkCode: () => (activeFork === 'Default' || !doc) ? (forkSource || '') : _indexedDB?.forks?.[doc.SourceModule + '_' + activeFork],
-         currentSnippetCode: () => (activeSnippet === 'Default' || !doc) ? (doc?.Snippet || '') : _indexedDB?.snippets?.[doc.SnippetModule + '_' + activeSnippet]
+         // Redundant computed properties removed in favor of explicit $watch buffer management
      }" data-effect="
         if (doc) {
+            // Populate base snippets from doc definition
+            if (baseSnippets.length === 0) {
+                const bases = [];
+                if (doc.Examples) {
+                    Object.keys(doc.Examples).forEach(k => bases.push(k));
+                } else if (doc.Snippet) {
+                    bases.push(doc.DefaultSnippetName || 'Default');
+                }
+                baseSnippets = bases;
+                if (bases.length > 0 && activeSnippet === 'Default') activeSnippet = bases[0];
+            }
+
             // Immediate sync to avoid waiting for editors to populate the preview
-            if (!snippetCode && doc.Snippet) snippetCode = doc.Snippet;
+            if (!snippetCode && doc.Examples && doc.Examples[activeSnippet]) {
+                snippetCode = doc.Examples[activeSnippet];
+            } else if (!snippetCode && doc.Snippet && activeSnippet === (doc.DefaultSnippetName || 'Default')) {
+                snippetCode = doc.Snippet;
+            }
+
             if (activeFork === 'Default' && forkSource && !forkCode) forkCode = forkSource;
 
             if (!forkSource && doc.SourceModule) {
@@ -78,6 +95,7 @@
                             basicSetup,
                             javascript(),
                             oneDark,
+                            EditorView.lineWrapping,
                             readOnly.of(EditorState.readOnly.of(true)),
                             EditorView.updateListener.of(update => {
                                 if (update.docChanged) {
@@ -90,15 +108,22 @@
                     parent: document.getElementById('source-editor')
                 });
 
-                $watch(() => currentForkCode, (code) => {
+                $watch(() => forkCode, (code) => {
                     if (code !== undefined && window._sourceEditor.state.doc.toString() !== code) {
                         window._sourceEditor.dispatch({
-                             changes: { from: 0, to: window._sourceEditor.state.doc.length, insert: code || forkSource || '' }
+                             changes: { from: 0, to: window._sourceEditor.state.doc.length, insert: code || '' }
                         });
                     }
                 });
 
                 $watch(() => activeFork, (fork) => {
+                    if (fork === 'Default') {
+                        forkCode = forkSource;
+                    } else {
+                        _indexedDB.forks.get(doc.SourceModule + '_' + fork).then(val => {
+                            forkCode = val || forkSource || '';
+                        });
+                    }
                     window._sourceEditor.dispatch({
                         effects: readOnly.reconfigure(EditorState.readOnly.of(fork === 'Default'))
                     });
@@ -106,15 +131,16 @@
             }
 
             // Snippet Editor — singleton init
-            if (doc?.Snippet && !window._snippetEditor) {
+            if ((doc?.Snippet || doc?.Examples) && !window._snippetEditor) {
                 const snippetReadOnly = new Compartment();
                 window._snippetEditor = new EditorView({
                     state: EditorState.create({
-                        doc: doc.Snippet,
+                        doc: snippetCode || '',
                         extensions: [
                             basicSetup,
                             html(),
                             oneDark,
+                            EditorView.lineWrapping,
                             snippetReadOnly.of(EditorState.readOnly.of(activeSnippet === 'Default')),
                             EditorView.updateListener.of(update => {
                                 if (update.docChanged) {
@@ -127,17 +153,26 @@
                     parent: document.getElementById('snippet-editor')
                 });
 
-                $watch(() => currentSnippetCode, (code) => {
+                $watch(() => snippetCode, (code) => {
                     if (code !== undefined && window._snippetEditor.state.doc.toString() !== code) {
                         window._snippetEditor.dispatch({
-                             changes: { from: 0, to: window._snippetEditor.state.doc.length, insert: code || doc.Snippet || '' }
+                             changes: { from: 0, to: window._snippetEditor.state.doc.length, insert: code || '' }
                         });
                     }
                 });
 
                 $watch(() => activeSnippet, (snippet) => {
+                    if (doc.Examples && doc.Examples[snippet]) {
+                        snippetCode = doc.Examples[snippet];
+                    } else if (snippet === (doc.DefaultSnippetName || 'Default')) {
+                        snippetCode = doc.Snippet;
+                    } else {
+                        _indexedDB.snippets.get(doc.SnippetModule + '_' + snippet).then(val => {
+                            snippetCode = val || doc.Snippet || '';
+                        });
+                    }
                     window._snippetEditor.dispatch({
-                        effects: snippetReadOnly.reconfigure(EditorState.readOnly.of(snippet === 'Default'))
+                        effects: snippetReadOnly.reconfigure(EditorState.readOnly.of(baseSnippets.includes(snippet)))
                     });
                 });
             }
@@ -148,7 +183,7 @@
         $el._mountEditors = mountEditors;
 
         // Try synchronous mount (CM already loaded + forkSource available)
-        mountEditors();
+        if (window.CM) mountEditors();
 
         // If CM not yet loaded, register ONE listener (singleton guard on element)
         if (!window.CM && !$el._cmListenerRegistered) {
@@ -162,11 +197,6 @@
             <!-- ═══════════ 1. TITLE & DESCRIPTION ═══════════ -->
             <div class="mb-12">
                 <h1 class="text-4xl font-bold mb-4 flex items-center gap-3 text-primary">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-10 h-10">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25zm.75-12h9v9h-9v-9z" />
-                    </svg>
                     <span data-text="doc.Title"></span>
                 </h1>
                 <p class="text-xl opacity-80 max-w-3xl leading-relaxed" data-html="doc.Description"></p>
@@ -182,11 +212,13 @@
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>
                             Syntax &amp; Framework Source
                         </h2>
-                        <div class="tabs tabs-boxed bg-base-200">
-                            <a class="tab" data-class-tab-active="syntaxTab === 'usage'"
-                                data-on-click="syntaxTab = 'usage'">Usage</a>
-                            <a class="tab" data-class-tab-active="syntaxTab === 'source'"
-                                data-on-click="syntaxTab = 'source'">Source</a>
+                        <div class="join bg-base-200 p-1">
+                            <button class="join-item btn btn-sm" data-class-btn-primary="syntaxTab === 'usage'"
+                                data-class-btn-ghost="syntaxTab !== 'usage'"
+                                data-on-click="syntaxTab = 'usage'">Usage</button>
+                            <button class="join-item btn btn-sm" data-class-btn-primary="syntaxTab === 'source'"
+                                data-class-btn-ghost="syntaxTab !== 'source'"
+                                data-on-click="syntaxTab = 'source'">Source</button>
                         </div>
                     </div>
                     <div data-show="syntaxTab === 'usage'" class="pb-4">
@@ -195,9 +227,9 @@
                     </div>
                     <div data-show="syntaxTab === 'source'" style="display:none;">
                         <div class="nx-editor-container border border-neutral/50 rounded-xl overflow-hidden mb-6"
-                            style="position: relative; min-height: 400px; width: 100%;">
+                        style="width: 100%;">
                             <div id="source-editor" class="nx-editor"
-                                style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; font-family: 'Fira Code', 'Cascadia Code', monospace; font-size: 14px;">
+                                style="font-family: 'Fira Code', 'Cascadia Code', monospace; font-size: 14px;">
                             </div>
                         </div>
                     </div>
@@ -212,7 +244,7 @@
                             <div tabindex="0" role="button"
                                 class="btn btn-bordered btn-sm w-48 justify-between bg-base-100/50 font-bold overflow-hidden"
                                 data-bind="{ disabled: forks.length === 0 }" data-class-btn-disabled="forks.length === 0">
-                                <span data-text="activeFork" class="truncate mr-2"></span>
+                                <span data-text="activeFork" class="truncate me-2"></span>
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                                     stroke="currentColor" class="w-4 h-4 opacity-50">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -221,16 +253,16 @@
                             </div>
                             <ul tabindex="0"
                                 class="dropdown-content z-[100] menu p-2 shadow-2xl bg-base-100 rounded-box w-56 border border-base-300 mt-1">
-                                <li><a data-on-click="activeFork = 'Default'"
+                                <li><a data-on-click="activeFork = 'Default'; if (document.activeElement instanceof HTMLElement) document.activeElement.blur()"
                                         data-class-active="activeFork === 'Default'" class="font-bold">Default</a></li>
                                 <div class="divider my-0 opacity-20"></div>
                                 <template data-for="f in forks">
                                     <li class="group flex flex-row items-center justify-between">
-                                        <a data-on-click="activeFork = f" data-class-active="activeFork === f"
+                                        <a data-on-click="activeFork = f; if (document.activeElement instanceof HTMLElement) document.activeElement.blur()" data-class-active="activeFork === f"
                                             class="flex-1 flex items-center justify-between">
                                             <div data-text="f" class="truncate"></div>
                                             <div
-                                                class="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity pr-2">
+                                                class="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity pe-1">
                                                 <button class="btn btn-ghost btn-xs text-info p-1 h-auto min-h-0"
                                                     data-on-click="$evt.stopPropagation(); manageTarget = f; newName = f; showRenameForkModal = true"
                                                     title="Rename">
@@ -318,16 +350,15 @@
                         </button>
                         <button class="btn btn-sm btn-ghost gap-2 text-error border-error/20 hover:bg-error/10"
                             data-bind="{ disabled: activeFork === 'Default' }"
-                            data-class-btn-disabled="activeFork === 'Default'" data-on-click="
+                             data-class-btn-disabled="activeFork === 'Default'" data-on-click="
                                 if (activeFork !== 'Default') {
                                     _indexedDB.forks.get(doc.SourceModule + '_' + activeFork).then(val => {
-                                        if (val !== undefined) {
-                                            window._sourceEditor.dispatch({
-                                                changes: { from: 0, to: window._sourceEditor.state.doc.length, insert: val || forkSource || '' }
-                                            });
-                                        }
+                                        forkCode = val || forkSource || '';
                                         toastMsg = 'Reset complete'; toastType = 'success'; showToast = true;
                                     });
+                                } else {
+                                    forkCode = forkSource;
+                                    toastMsg = 'Reverted to document source'; toastType = 'success'; showToast = true;
                                 }
                             ">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
@@ -400,7 +431,9 @@
                                 data-class-btn-primary="demoTab === 'split'"
                                 data-class-btn-ghost="demoTab !== 'split'"
                                 data-on-click="demoTab = 'split'">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19.5h6m-6-15h6M3 4.5h18A2.25 2.25 0 0123.25 6.75v10.5A2.25 2.25 0 0121 19.5H3a2.25 2.25 0 01-2.25-2.25V6.75A2.25 2.25 0 013 4.5zM9 4.5v15" /></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5v15m6-15v15m-10.875 0h15.75c.621 0 1.125-.504 1.125-1.125V5.625c0-.621-.504-1.125-1.125-1.125H4.125C3.504 4.5 3 5.004 3 5.625v12.75c0 .621.504 1.125 1.125 1.125z" />
+                                </svg>
                             </button>
                         </div>
                     </div>
@@ -417,9 +450,9 @@
                         <!-- Snippet Editor Panel -->
                         <div data-show="demoTab === 'code' || demoTab === 'split'" style="display:none;" class="w-full h-full pb-6">
                             <div class="nx-editor-container border border-neutral/50 rounded-xl overflow-hidden h-full"
-                                style="position: relative; min-height: 400px; width: 100%;">
+                                style="width: 100%;">
                                 <div id="snippet-editor" class="nx-editor"
-                                    style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; font-family: 'Fira Code', 'Cascadia Code', monospace; font-size: 14px;">
+                                    style="font-family: 'Fira Code', 'Cascadia Code', monospace; font-size: 14px;">
                                 </div>
                             </div>
                         </div>
@@ -434,8 +467,9 @@
                         <div class="dropdown dropdown-bottom">
                             <div tabindex="0" role="button"
                                 class="btn btn-bordered btn-sm w-48 justify-between bg-base-100/50 font-bold overflow-hidden"
-                                data-bind="{ disabled: snippets.length === 0 }" data-class-btn-disabled="snippets.length === 0">
-                                <span data-text="activeSnippet" class="truncate mr-2"></span>
+                                data-bind="{ disabled: (baseSnippets.length + snippets.length) <= 1 }" 
+                                data-class-btn-disabled="(baseSnippets.length + snippets.length) <= 1">
+                                <span data-text="activeSnippet" class="truncate me-2"></span>
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                                     stroke="currentColor" class="w-4 h-4 opacity-50">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -444,17 +478,19 @@
                             </div>
                             <ul tabindex="0"
                                 class="dropdown-content z-[100] menu p-2 shadow-2xl bg-base-100 rounded-box w-56 border border-base-300 mt-1">
-                                <li><a data-on-click="activeSnippet = 'Default'"
-                                        data-class-active="activeSnippet === 'Default'" class="font-bold">Default</a>
-                                </li>
-                                <div class="divider my-0 opacity-20"></div>
+                                <template data-for="bs in baseSnippets">
+                                    <li><a data-on-click="activeSnippet = bs; if (document.activeElement instanceof HTMLElement) document.activeElement.blur()"
+                                            data-class-active="activeSnippet === bs" class="font-bold" data-text="bs"></a>
+                                    </li>
+                                </template>
+                                <div class="divider my-0 opacity-20" data-show="snippets.length > 0"></div>
                                 <template data-for="s in snippets">
                                     <li class="group flex flex-row items-center justify-between">
-                                        <a data-on-click="activeSnippet = s" data-class-active="activeSnippet === s"
+                                        <a data-on-click="activeSnippet = s; if (document.activeElement instanceof HTMLElement) document.activeElement.blur()" data-class-active="activeSnippet === s"
                                             class="flex-1 flex items-center justify-between">
                                             <div data-text="s" class="truncate"></div>
                                             <div
-                                                class="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity pr-2">
+                                                class="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity pe-1">
                                                 <button class="btn btn-ghost btn-xs text-info p-1 h-auto min-h-0"
                                                     data-on-click="$evt.stopPropagation(); manageTarget = s; newName = s; showRenameSnippetModal = true"
                                                     title="Rename">
@@ -496,7 +532,11 @@
                     <div class="join">
                         <button class="btn btn-sm btn-ghost join-item border border-base-300 gap-1.5"
                             title="Download current snippet" data-on-click="
-                                const blob = new Blob([activeSnippet === 'Default' ? doc.Snippet : _indexedDB.snippets[doc.SnippetModule + '_' + activeSnippet]], { type: 'text/html' });
+                                let code = snippetCode;
+                                if (activeSnippet === (doc.DefaultSnippetName || 'Default')) code = doc.Snippet;
+                                else if (doc.Examples && doc.Examples[activeSnippet]) code = doc.Examples[activeSnippet];
+                                
+                                const blob = new Blob([code], { type: 'text/html' });
                                 const url = URL.createObjectURL(blob);
                                 const a = document.createElement('a');
                                 a.href = url;
@@ -527,9 +567,9 @@
                     <div class="flex items-center gap-2">
                         <button
                             class="btn btn-sm btn-ghost gap-2 text-secondary border-secondary/20 hover:bg-secondary/10"
-                            data-bind="{ disabled: activeSnippet === 'Default' }"
-                            data-class-btn-disabled="activeSnippet === 'Default'" data-on-click="
-                                if (activeSnippet !== 'Default') {
+                            data-bind="{ disabled: baseSnippets.includes(activeSnippet) }"
+                            data-class-btn-disabled="baseSnippets.includes(activeSnippet)" data-on-click="
+                                if (!baseSnippets.includes(activeSnippet)) {
                                     _indexedDB.snippets[doc.SnippetModule + '_' + activeSnippet] = snippetCode;
                                     toastMsg = 'Snippet saved: ' + activeSnippet; toastType = 'success'; showToast = true;
                                 }
@@ -541,17 +581,16 @@
                             </svg> Save
                         </button>
                         <button class="btn btn-sm btn-ghost gap-2 text-error border-error/20 hover:bg-error/10"
-                            data-bind="{ disabled: activeSnippet === 'Default' }"
-                            data-class-btn-disabled="activeSnippet === 'Default'" data-on-click="
-                                if (activeSnippet !== 'Default') {
+                            data-bind="{ disabled: baseSnippets.includes(activeSnippet) }"
+                             data-class-btn-disabled="baseSnippets.includes(activeSnippet)" data-on-click="
+                                if (!baseSnippets.includes(activeSnippet)) {
                                     _indexedDB.snippets.get(doc.SnippetModule + '_' + activeSnippet).then(val => {
-                                        if (val !== undefined) {
-                                            window._snippetEditor.dispatch({
-                                                changes: { from: 0, to: window._snippetEditor.state.doc.length, insert: val || doc.Snippet || '' }
-                                            });
-                                        }
+                                        snippetCode = val || (doc.Examples && doc.Examples[activeSnippet]) || doc.Snippet || '';
                                         toastMsg = 'Reset complete'; toastType = 'success'; showToast = true;
                                     });
+                                } else {
+                                    snippetCode = (doc.Examples && doc.Examples[activeSnippet]) || doc.Snippet;
+                                    toastMsg = 'Reverted to document source'; toastType = 'success'; showToast = true;
                                 }
                             ">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
@@ -579,7 +618,7 @@
                                 <button class="btn btn-secondary" data-on-click="
                                 const name = snippetName.trim();
                                 if (!name) { snippetError = 'Name is required'; return; }
-                                if (name === 'Default') { snippetError = 'Reserved name'; return; }
+                                if (baseSnippets.includes(name)) { snippetError = 'Reserved name'; return; }
                                 if (snippets.indexOf(name) !== -1) { snippetError = 'Already exists'; return; }
                                 _indexedDB.snippets[doc.SnippetModule + '_' + name] = snippetCode;
                                 snippets.push(name);
@@ -753,7 +792,7 @@
                 </div>
 
                 <!-- Toast -->
-                <div data-show="showToast" class="fixed bottom-6 right-6 z-[9999] shadow-2xl" style="display:none;"
+                <div data-show="showToast" class="fixed bottom-6 end-6 z-[9999] shadow-2xl" style="display:none;"
                     data-effect="if (showToast) setTimeout(() => showToast = false, 3000)">
                     <div class="alert shadow-lg" data-class-alert-success="toastType === 'success'"
                         data-class-alert-info="toastType === 'info'" data-class-alert-warning="toastType === 'warning'">
@@ -762,4 +801,3 @@
                 </div>
             </div>
         </div>
-</template>

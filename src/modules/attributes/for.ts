@@ -62,67 +62,78 @@ const forModule: AttributeModule = {
       });
     };
 
-    const mountedNodes: Node[] = [];
+    const mountedMap = new Map<any, Node[]>();
+    const order: any[] = [];
 
     try {
-      // runner is used for debugging/inspection in the future, but unused for now
       const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
-        // 3. Reactivity: Get Items
         const items = runtime.evaluate(el, itemsExpr) as unknown as unknown[];
-        if (runtime.isDevMode) runtime.debug(`[data-for] Items for "${itemsExpr}":`, items);
+        if (!Array.isArray(items)) return;
 
-        // 4. Reconciliation (Naive: Clear & Re-render)
-        disposeNodes(mountedNodes);
-        mountedNodes.length = 0;
+        const currentKeys = new Set();
+        const nextNodes: Node[] = [];
 
-        if (Array.isArray(items)) {
-          const frag = document.createDocumentFragment();
+        items.forEach((item, index) => {
+          const key = (item as any).id ?? index;
+          currentKeys.add(key);
 
-          items.forEach((item, index) => {
+          let nodes = mountedMap.get(key);
+          if (!nodes) {
+            // Create New
             const clone = isTemplate 
               ? (blueprint as DocumentFragment).cloneNode(true) 
               : (blueprint as HTMLElement).cloneNode(true);
-
-            // 5. Scope Creation & Attachment
-            // If it's a template, we work with children of the fragmented clone.
-            // If it's a regular element, the clone itself is the target.
-            const nodesToProcess: HTMLElement[] = isTemplate 
-              ? Array.from((clone as DocumentFragment).children).filter(n => n instanceof HTMLElement) as HTMLElement[]
+            
+            nodes = isTemplate 
+              ? Array.from((clone as DocumentFragment).childNodes)
               : [clone as HTMLElement];
 
-            nodesToProcess.forEach(child => {
-              const scope: Record<string, unknown> = {};
-              scope[itemKey] = item;
-              if (indexKey) scope[indexKey] = index;
-
-              addScopeToNode(child, runtime.reactive(scope), el);
-
-              // 6. Recursion
-
-              // 6. Recursion
-              runtime.processElement(child);
-              mountedNodes.push(child);
+            nodes.forEach(n => {
+              if (n instanceof HTMLElement) {
+                const scope: Record<string, any> = { [itemKey]: item };
+                if (indexKey) scope[indexKey] = index;
+                addScopeToNode(n, runtime.reactive(scope), el);
+                
+                if (!isTemplate) {
+                  n.style.display = '';
+                  n.removeAttribute('data-for');
+                  n.removeAttribute('data-ux-template');
+                }
+                runtime.processElement(n);
+              }
             });
+            mountedMap.set(key, nodes);
+          } else {
+            // Update Existing Scope
+            nodes.forEach(n => {
+              if (n instanceof HTMLElement) {
+                const scope: Record<string, any> = { [itemKey]: item };
+                if (indexKey) scope[indexKey] = index;
+                addScopeToNode(n, runtime.reactive(scope), el);
+              }
+            });
+          }
+          nextNodes.push(...nodes);
+        });
 
-            if (isTemplate) {
-              frag.appendChild(clone as DocumentFragment);
-            } else {
-              // For non-templates, the clone is an HTMLElement. 
-              // We must ensure it's visible (blueprint was display:none)
-              (clone as HTMLElement).style.display = '';
-              (clone as HTMLElement).removeAttribute('data-for');
-              (clone as HTMLElement).removeAttribute('data-ux-template');
-              frag.appendChild(clone as HTMLElement);
-            }
-          });
-
-          anchor.parentNode?.insertBefore(frag, anchor);
+        // Remove old nodes
+        for (const [key, nodes] of mountedMap.entries()) {
+          if (!currentKeys.has(key)) {
+            disposeNodes(nodes);
+            mountedMap.delete(key);
+          }
         }
+
+        // Re-order in DOM
+        nextNodes.forEach(node => {
+          anchor.parentNode?.insertBefore(node, anchor);
+        });
       });
 
       return () => {
         cleanup();
-        disposeNodes(mountedNodes);
+        for (const nodes of mountedMap.values()) disposeNodes(nodes);
+        mountedMap.clear();
         anchor.remove();
       }
 

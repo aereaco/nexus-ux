@@ -88,7 +88,9 @@ const componentModule: AttributeModule = {
             });
 
             let html = '';
-            if (config.path.startsWith('#')) {
+            if (config.path.trim().startsWith('<')) {
+              html = config.path;
+            } else if (config.path.startsWith('#')) {
               const template = document.querySelector(config.path) as HTMLTemplateElement;
               if (!template) throw new Error(`Template ${config.path} not found`);
               html = template.innerHTML;
@@ -99,25 +101,14 @@ const componentModule: AttributeModule = {
 
             if (runtime.isDevMode) console.log(`[Component] Template loaded for <${el.tagName}>, length: ${html.length}`);
             
-            // Zenith Enhancement: Auto-unwrap <template> tags
-            let finalOutput = html;
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const template = doc.querySelector('template');
-            
-            if (template) {
-                finalOutput = template.innerHTML;
-                if (runtime.isDevMode) console.log(`[Component] Unwrapped <template> for <${el.tagName}>`);
-            }
-
-            componentState.templateContent = finalOutput;
+            componentState.templateContent = html;
 
             if (config.shadowrootmode) {
               if (!el.shadowRoot) el.attachShadow({ mode: config.shadowrootmode });
-              runtime.morphDOM(el.shadowRoot! as unknown as HTMLElement, finalOutput);
+              runtime.morphDOM(el.shadowRoot! as unknown as HTMLElement, html);
               runtime.processElement(el.shadowRoot! as unknown as HTMLElement);
             } else {
-              runtime.morphDOM(el, finalOutput);
+              runtime.morphDOM(el, html);
               runtime.processElement(el);
             }
 
