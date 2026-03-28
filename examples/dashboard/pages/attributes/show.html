@@ -3,7 +3,6 @@
       data-injest="{
           daisy: { link: 'https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css' },
           tailwind: { script: 'https://cdn.tailwindcss.com' },
-          ace: { script: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/ace.js' }
       }"
       data-signal="{
           doc: {
@@ -32,6 +31,9 @@
         .nexus-progress-mount { position: fixed; top: 0; left: 0; right: 0; z-index: 9999; }
         .nx-editor-container { position: relative; min-height: 400px; width: 100%; }
         .nx-editor { position: absolute; top: 0; left: 0; right: 0; bottom: 0; font-family: 'Fira Code', 'Cascadia Code', monospace; font-size: 14px; }
+        /* CM6: fill container and enable native scrolling */
+        .nx-editor .cm-editor { height: 100%; }
+        .nx-editor .cm-scroller { overflow: auto; }
     </style>
 </head>
 <body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-class-nexus-ready="appReady" data-on-load.window="appReady = true">

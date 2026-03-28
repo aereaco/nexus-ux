@@ -72,6 +72,7 @@ interface InjestPayload {
   pattern?: string;
   component?: string;
   theme?: string;
+  type?: string;     // Script/link type attribute (e.g. 'module' for ES modules)
   target?: string;   // CSS selector for where to inject patterns/components (default: self)
   position?: 'replace' | 'prepend' | 'append' | 'before' | 'after'; // Injection position (default: 'append')
 }
@@ -221,7 +222,23 @@ async function ingestScript(
   // Legacy: standard <script> element injection
   await new Promise<void>((resolve, reject) => {
     const script = document.createElement('script');
-    Object.keys(attrs).forEach(k => script.setAttribute(k, attrs[k]));
+    
+    // Set non-src attributes first to ensure type="module" is set before src triggers loading
+    Object.keys(attrs).forEach(k => {
+      if (k !== 'src') {
+        if (k === 'type') {
+          (script as any).type = attrs[k];
+          script.setAttribute('type', attrs[k]);
+        } else {
+          script.setAttribute(k, attrs[k]);
+        }
+      }
+    });
+
+    if (attrs['src']) {
+      script.setAttribute('src', attrs['src']);
+    }
+
     script.onload = () => resolve();
     script.onerror = () => reject(new Error(`Script load failed for ${src}`));
     document.head.appendChild(script);
@@ -367,7 +384,13 @@ const injestModule: AttributeModule = {
       try {
         const itemTasks = [];
         if (item.link) itemTasks.push(ingestLink(id, item.link, cleanupFns, runtime));
-        if (item.script) itemTasks.push(ingestScript(id, item.script, cleanupFns, runtime));
+        if (item.script) {
+          // Promote string to object when sibling 'type' exists (e.g. type: 'module')
+          const scriptPayload = (typeof item.script === 'string' && item.type)
+            ? { src: item.script, type: item.type } as Record<string, string>
+            : item.script;
+          itemTasks.push(ingestScript(id, scriptPayload, cleanupFns, runtime));
+        }
         if (item.pattern) itemTasks.push(ingestPattern(id, item.pattern, el, item, cleanupFns, runtime));
         if (item.component) itemTasks.push(ingestComponent(id, item.component, cleanupFns, runtime));
         if (item.theme) itemTasks.push(ingestTheme(id, item.theme, cleanupFns, runtime));
