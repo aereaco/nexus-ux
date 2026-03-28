@@ -320,9 +320,14 @@
                             data-bind="{ disabled: activeFork === 'Default' }"
                             data-class-btn-disabled="activeFork === 'Default'" data-on-click="
                                 if (activeFork !== 'Default') {
-                                    const resetVal = _indexedDB.forks[doc.SourceModule + '_' + activeFork];
-                                    if (resetVal !== undefined) window._sourceEditor.setValue(resetVal || forkSource || '', -1);
-                                    toastMsg = 'Resetting...'; toastType = 'info'; showToast = true;
+                                    _indexedDB.forks.get(doc.SourceModule + '_' + activeFork).then(val => {
+                                        if (val !== undefined) {
+                                            window._sourceEditor.dispatch({
+                                                changes: { from: 0, to: window._sourceEditor.state.doc.length, insert: val || forkSource || '' }
+                                            });
+                                        }
+                                        toastMsg = 'Reset complete'; toastType = 'success'; showToast = true;
+                                    });
                                 }
                             ">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
@@ -539,9 +544,14 @@
                             data-bind="{ disabled: activeSnippet === 'Default' }"
                             data-class-btn-disabled="activeSnippet === 'Default'" data-on-click="
                                 if (activeSnippet !== 'Default') {
-                                    const resetVal = _indexedDB.snippets[doc.SnippetModule + '_' + activeSnippet];
-                                    if (resetVal !== undefined) window._snippetEditor.setValue(resetVal || doc.Snippet || '', -1);
-                                    toastMsg = 'Resetting...'; toastType = 'info'; showToast = true;
+                                    _indexedDB.snippets.get(doc.SnippetModule + '_' + activeSnippet).then(val => {
+                                        if (val !== undefined) {
+                                            window._snippetEditor.dispatch({
+                                                changes: { from: 0, to: window._snippetEditor.state.doc.length, insert: val || doc.Snippet || '' }
+                                            });
+                                        }
+                                        toastMsg = 'Reset complete'; toastType = 'success'; showToast = true;
+                                    });
                                 }
                             ">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
