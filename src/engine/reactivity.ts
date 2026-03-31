@@ -23,7 +23,8 @@ import {
   onEffectCleanup,
   ReactiveEffectOptions,
   ReactiveEffectRunner,
-  Ref
+  Ref,
+  ComputedRef
 } from '@vue/reactivity';
 
 import { CLEANUP_FUNCTIONS_KEY, EFFECT_RUNNERS_KEY, RUN_EFFECT_RUNNERS_KEY, DATA_STACK_KEY, MARKER_KEY } from './consts.ts';
@@ -295,25 +296,28 @@ export interface Borrow {
 }
 
 class OwnershipTracker {
-  private _ownerships = new Map<unknown, Ownership>();
-  private _borrows = new Map<unknown, Borrow[]>();
+  private _ownerships = new WeakMap<object, Ownership>();
+  private _borrows = new WeakMap<object, Borrow[]>();
 
-  acquire(value: unknown, ownerId: string): void {
-    this._ownerships.set(value, { ownerId, refCount: 1, acquiredAt: Date.now() });
-    (value as any)[OWNERSHIP_KEY] = this._ownerships.get(value);
+  acquire(value: object, ownerId: string): void {
+    const ownership = { ownerId, refCount: 1, acquiredAt: Date.now() };
+    this._ownerships.set(value, ownership);
+    (value as any)[OWNERSHIP_KEY] = ownership;
   }
 
-  release(value: unknown, ownerId: string): void {
+  release(value: object, ownerId: string): void {
     const ownership = this._ownerships.get(value);
     if (!ownership || ownership.ownerId !== ownerId) return;
     ownership.refCount--;
     if (ownership.refCount <= 0) {
+      // WeakMap handles deletion from its internal table automatically
+      // when the key is no longer reachable, but we can explicitly delete it too.
       this._ownerships.delete(value);
       delete (value as any)[OWNERSHIP_KEY];
     }
   }
 
-  borrowImmutable(value: unknown, borrowerId: string): boolean {
+  borrowImmutable(value: object, borrowerId: string): boolean {
     const borrows = this._borrows.get(value) || [];
     if (borrows.some(b => b.type === 'mutable')) return false;
     borrows.push({ borrowerId, type: 'immutable', borrowedAt: Date.now() });
@@ -322,7 +326,7 @@ class OwnershipTracker {
     return true;
   }
 
-  borrowMutable(value: unknown, borrowerId: string): boolean {
+  borrowMutable(value: object, borrowerId: string): boolean {
     const borrows = this._borrows.get(value);
     if (borrows && borrows.length > 0) return false;
     const borrow = { borrowerId, type: 'mutable' as const, borrowedAt: Date.now() };
@@ -331,7 +335,7 @@ class OwnershipTracker {
     return true;
   }
 
-  returnBorrow(value: unknown, borrowerId: string): void {
+  returnBorrow(value: object, borrowerId: string): void {
     const borrows = this._borrows.get(value);
     if (!borrows) return;
     const idx = borrows.findIndex(b => b.borrowerId === borrowerId);
@@ -342,13 +346,13 @@ class OwnershipTracker {
     }
   }
 
-  validateBorrow(value: unknown, type: 'immutable' | 'mutable'): void {
+  validateBorrow(value: object, type: 'immutable' | 'mutable'): void {
     const borrows = this._borrows.get(value);
     if (type === 'mutable' && borrows && borrows.length > 0) {
-      throw new Error('Mutable borrow denied: active borrows exist');
+      throw new Error(`Mutable borrow denied for ${type}: active borrows exist`);
     }
     if (type === 'immutable' && borrows?.some(b => b.type === 'mutable')) {
-      throw new Error('Immutable borrow denied: mutable borrow exists');
+      throw new Error(`Immutable borrow denied for ${type}: mutable borrow exists`);
     }
   }
 }
@@ -395,36 +399,35 @@ export function unifiedRef<T extends Record<string, unknown>>(
     });
   }
   
+  // Wrap initialValue in Vue's deep reactivity proxy
+  let state = reactive(initialValue);
+  
   // Acquire ownership (Rust-inspired)
   const ownerId = heapKey;
-  ownership.acquire(initialValue, ownerId);
+  ownership.acquire(state, ownerId);
   
   return customRef<T>((track, trigger) => ({
     get() {
-      // Track Vue dependency - this makes it reactive
       track();
-      
-      // Borrow validation (Rust-inspired: no mutable borrow while immutable exists)
-      ownership.validateBorrow(initialValue, 'immutable');
-      
-      // Return value - for objects, Vue handles reactivity; for primitives, we use heap
-      return initialValue;
+      ownership.validateBorrow(state, 'immutable');
+      return state as T;
     },
     set(newValue) {
-      // Borrow validation for mutable borrow
-      ownership.validateBorrow(initialValue, 'mutable');
+      ownership.validateBorrow(state, 'mutable');
       
-      // Zero-Copy: Sync values to heap based on type
       if (newValue && typeof newValue === 'object') {
         Object.entries(newValue).forEach(([k, v]) => {
           const fullKey = `${heapKey}.${k}`;
-          // Use heap.set() which auto-detects type
           heap.set(fullKey, v);
+          // Sync properties to the reactive state
+          (state as any)[k] = v;
         });
+      } else {
+        // If non-object value is set, we must replace the whole state
+        // (This happens during two-way binding to simple signals)
+        state = newValue as any;
       }
       
-      // Update the ref value (triggers Vue reactivity)
-      initialValue = newValue;
       trigger();
     }
   }));
@@ -436,10 +439,10 @@ export function unifiedRef<T extends Record<string, unknown>>(
 export function unifiedComputed<T>(
   getter: () => T,
   key?: string
-): ReturnType<typeof computed<T>> {
+): ComputedRef<T> {
   const heapKey = key || `computed_${Math.random().toString(36).slice(2)}`;
   
-  return computed<T>(() => {
+  return computed<any>(() => {
     const value = getter();
     
     // Track all value types in heap (ZCZS)
@@ -476,18 +479,6 @@ export {
   type Ref
 };
 
-export interface Ownership {
-  ownerId: string;
-  refCount: number;
-  acquiredAt: number;
-}
-
-export interface Borrow {
-  borrowerId: string;
-  type: 'immutable' | 'mutable';
-  borrowedAt: number;
-}
-
 export interface NexusEnhancedElement extends HTMLElement {
   [EFFECT_RUNNERS_KEY]?: Set<ReactiveEffectRunner<void>>;
   [RUN_EFFECT_RUNNERS_KEY]?: () => void;
@@ -516,6 +507,7 @@ export function elementBoundEffect(
   // Track which promises are currently pending for this specific effect to avoid multiple finally() listeners
   // which can lead to infinite microtask loops on settled promises from cache.
   const pendingPromises = new WeakSet<Promise<any>>();
+  let pendingCount = 0;
 
   // Wrap the callback to catch Suspense Promises thrown by network proxies
   const suspenseWrappedCallback = () => {
@@ -528,8 +520,10 @@ export function elementBoundEffect(
 
         if ((window as any)._nexusDebug) console.debug(`[Nexus Suspense] <${el.tagName}> suspended pending network resolution.`);
         
+        pendingCount++;
         pendingPromises.add(err);
         err.finally(() => {
+          pendingCount--;
           pendingPromises.delete(err);
           if ((window as any)._nexusDebug) console.debug(`[Nexus Suspense] <${el.tagName}> resumed.`);
           
@@ -540,7 +534,7 @@ export function elementBoundEffect(
             const MAX_REENTRY = 10;
 
             const safeRun = () => {
-              if (pendingPromises.size > 0) return; // Wait for the new pending promise
+              if (pendingCount > 0) return; // Wait for the new pending promise
               if (reEntryCount++ > MAX_REENTRY) {
                 console.warn(`[Nexus Loop Guard] Stopped runaway effect on <${el.tagName}> after ${MAX_REENTRY} re-entries.`);
                 return;

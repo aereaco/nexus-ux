@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" data-ux-init
+      data-signal="{
+          doc: {
+            Title: '.debounce',
+            Description: 'This page demonstrates the &lt;code&gt;.debounce&lt;/code&gt; pipeline modifier intercepting rapid execution attempts until a designated physical resting period has mathematically elapsed.',
+            Syntax: '&lt;input data-on-input.debounce.500ms=\&quot;search()\&quot;&gt;',
+            SourceModule: '/modules/modifiers/debounce.ts',
+            SnippetModule: '/examples/dashboard/pages/modifiers/debounce.html',
+            Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;The execution blocker mapped inside &lt;code&gt;src/modules/modifiers/debounce.ts&lt;/code&gt; sets hard JS timeout layers. Rewrite mathematically enabling distinct named queues ensuring multi-element delays.&lt;/p&gt;',
+            Snippet: '&lt;div class=\&quot;p-8 bg-base-200 rounded-box border shadow-inner\&quot;&gt;\n    &lt;div class=\&quot;grid grid-cols-1 md:grid-cols-2 gap-8 items-start\&quot;&gt;\n        &lt;div class=\&quot;form-control w-full\&quot;&gt;\n            &lt;label class=\&quot;label font-bold\&quot;&gt;Mock Search Input &lt;span class=\&quot;badge badge-error ml-2\&quot;&gt;750ms Delay&lt;/span&gt;&lt;/label&gt;\n            &lt;input type=\&quot;text\&quot; class=\&quot;input input-bordered input-primary shadow-sm\&quot; placeholder=\&quot;Type aggressively to test...\&quot; \n                   data-on-input.debounce.750ms=\&quot;\n                        searchQuery = $event.target.value;\n                        mockResults.push({ time: new Date().toLocaleTimeString(), query: searchQuery });\n                   \&quot;&gt;\n            &lt;p class=\&quot;text-xs opacity-50 mt-2\&quot;&gt;The state payload will NEVER evaluate until you physically stop typing for exactly 750 milliseconds.&lt;/p&gt;\n        &lt;/div&gt;\n\n        &lt;div class=\&quot;mockup-code h-full min-h-64 shadow-xl\&quot;&gt;\n            &lt;div class=\&quot;px-4 py-2 border-b border-neutral/50 mb-2 font-mono text-sm opacity-50 text-success\&quot;&gt;Compiled AST Execution Log&lt;/div&gt;\n            &lt;template data-for=\&quot;result in mockResults.slice(-5)\&quot;&gt;\n                &lt;pre data-prefix=\&quot;~\&quot;&gt;&lt;code class=\&quot;text-white\&quot;&gt;Payload Received @ &lt;span data-text=\&quot;result.time\&quot; class=\&quot;text-neutral-content\&quot;&gt;&lt;/span&gt;: &lt;span class=\&quot;text-primary font-bold\&quot;&gt;\&quot;&lt;span data-text=\&quot;result.query\&quot;&gt;&lt;/span&gt;\&quot;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;\n            &lt;/template&gt;\n            &lt;pre data-show=\&quot;mockResults.length === 0\&quot; data-prefix=\&quot;&gt;\&quot;&gt;&lt;code class=\&quot;text-neutral-content opacity-50\&quot;&gt;Awaiting debounced payload...&lt;/code&gt;&lt;/pre&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+          },
+          appReady: false,
+          searchQuery: '',
+          mockResults: []
+      }">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus-UX: Modifier - .debounce</title>
+    <script type="module" src="../../../../dist/nexus-ux.js?v={{TIMESTAMP}}"></script>
+</head>
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
+    <div data-component="'/examples/dashboard/components/document.html'"></div>
+</body>
+</html>

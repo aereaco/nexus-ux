@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" data-ux-init data-debug
+      data-injest="{
+          daisy: { link: 'https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css' },
+          tailwind: { script: 'https://cdn.tailwindcss.com' },
+      }"
+      data-signal="{
+          doc: {
+            Title: 'data-router',
+            Description: 'Demonstrates declarative SPA navigation. Generate a hash-based routing table seamlessly with &lt;code&gt;data-route&lt;/code&gt; and &lt;code&gt;data-router&lt;/code&gt; evaluation for zero-JS view swapping.',
+            Syntax: '&lt;div data-router=\&quot;activeRoute\&quot;&gt;\n    &lt;div data-route=\&quot;/\&quot;&gt;Home&lt;/div&gt;\n&lt;/div&gt;',
+            SourceModule: '/modules/attributes/router.ts',
+            SnippetModule: '/examples/dashboard/pages/attributes/router.html',
+            Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;The routing engine in &lt;code&gt;src/modules/attributes/router.ts&lt;/code&gt; intercepts &lt;code&gt;hashchange&lt;/code&gt; vectors. You can extend this to support i18n path segments or analytical tracking physically.&lt;/p&gt;',
+            Snippet: '&lt;div class=\&quot;p-10 bg-base-100 rounded-[3rem] border border-base-300 shadow-xl overflow-hidden\&quot;&gt;\n    &lt;div class=\&quot;flex flex-wrap gap-4 p-4 bg-base-200 rounded-2xl mb-10 justify-center shadow-inner\&quot;&gt;\n        &lt;a href=\&quot;#/\&quot; \n           class=\&quot;btn btn-lg rounded-xl font-black transition-all border-none\&quot; \n           data-class-bg-primary=\&quot;activeRoute === \&apos;/\&apos;\&quot; \n           data-class-text-primary-content=\&quot;activeRoute === \&apos;/\&apos;\&quot;&gt;CORE_GRID&lt;/a&gt;\n        &lt;a href=\&quot;#/users\&quot; \n           class=\&quot;btn btn-lg rounded-xl font-black transition-all border-none\&quot; \n           data-class-bg-secondary=\&quot;activeRoute === \&apos;/users\&apos;\&quot; \n           data-class-text-secondary-content=\&quot;activeRoute === \&apos;/users\&apos;\&quot;&gt;USER_NODES&lt;/a&gt;\n        &lt;a href=\&quot;#/settings\&quot; \n           class=\&quot;btn btn-lg rounded-xl font-black transition-all border-none\&quot; \n           data-class-bg-accent=\&quot;activeRoute === \&apos;/settings\&apos;\&quot; \n           data-class-text-accent-content=\&quot;activeRoute === \&apos;/settings\&apos;\&quot;&gt;SYS_VECTORS&lt;/a&gt;\n    &lt;/div&gt;\n    \n    &lt;div data-router=\&quot;activeRoute\&quot; class=\&quot;relative min-h-[300px]\&quot;&gt;\n        &lt;!-- DASHBOARD_VIEW --&gt;\n        &lt;div data-route=\&quot;/\&quot; class=\&quot;animate-in fade-in zoom-in duration-500\&quot;&gt;\n            &lt;div class=\&quot;p-10 bg-primary/10 rounded-3xl border-2 border-primary/20\&quot;&gt;\n                &lt;div class=\&quot;text-xs font-black text-primary tracking-widest mb-4\&quot;&gt;LOCATION: /CORE_GRID&lt;/div&gt;\n                &lt;h2 class=\&quot;text-5xl font-black tracking-tighter text-primary\&quot;&gt;DASHBOARD_COMMAND&lt;/h2&gt;\n                &lt;p class=\&quot;mt-6 text-sm opacity-60 leading-relaxed\&quot;&gt;The primary AST context is currently mounted. Structural view swapping is managed via hash-relative evaluation within the Router module.&lt;/p&gt;\n            &lt;/div&gt;\n        &lt;/div&gt;\n\n        &lt;!-- USERS_VIEW --&gt;\n        &lt;div data-route=\&quot;/users\&quot; class=\&quot;animate-in fade-in zoom-in duration-500\&quot;&gt;\n            &lt;div class=\&quot;p-10 bg-secondary/10 rounded-3xl border-2 border-secondary/20\&quot;&gt;\n                &lt;div class=\&quot;text-xs font-black text-secondary tracking-widest mb-4\&quot;&gt;LOCATION: /USER_NODES&lt;/div&gt;\n                &lt;h2 class=\&quot;text-5xl font-black tracking-tighter text-secondary\&quot;&gt;DIRECTORY_TRAVERSAL&lt;/h2&gt;\n                &lt;p class=\&quot;mt-6 text-sm opacity-60 leading-relaxed\&quot;&gt;Dynamic fragment swap confirmed. The memory footprint remains stable as nodes are mathematically shifted around the active viewport.&lt;/p&gt;\n            &lt;/div&gt;\n        &lt;/div&gt;\n\n        &lt;!-- SETTINGS_VIEW --&gt;\n        &lt;div data-route=\&quot;/settings\&quot; class=\&quot;animate-in fade-in zoom-in duration-500\&quot;&gt;\n            &lt;div class=\&quot;p-10 bg-accent/10 rounded-3xl border-2 border-accent/20\&quot;&gt;\n                &lt;div class=\&quot;text-xs font-black text-accent tracking-widest mb-4\&quot;&gt;LOCATION: /SYS_VECTORS&lt;/div&gt;\n                &lt;h2 class=\&quot;text-5xl font-black tracking-tighter text-accent\&quot;&gt;SYSTEM_CONFIGURATION&lt;/h2&gt;\n                &lt;p class=\&quot;mt-6 text-sm opacity-60 leading-relaxed\&quot;&gt;State persistence across routing boundaries is physically maintained. The Router engine ensures zero-JS view transitions.&lt;/p&gt;\n            &lt;/div&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+          },
+          appReady: false,
+          activeRoute: '/'
+      }">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus-UX | data-router</title>
+    <script type="module" src="../../../../dist/nexus-ux.js"></script>
+</head>
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
+    <div data-component="'/examples/dashboard/components/document.html'"></div>
+</body>
+</html>

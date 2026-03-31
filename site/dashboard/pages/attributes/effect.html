@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" data-ux-init
+      data-signal="{
+          doc: {
+            Title: 'data-effect',
+            Description: 'Demonstrates the &lt;code&gt;data-effect&lt;/code&gt; attribute which isolates raw mathematical side-effects. It triggers solely when its underlying memory tokens are mutated.',
+            Syntax: '&lt;span data-effect=\&quot;console.log(signalName)\&quot;&gt;&lt;/span&gt;',
+            SourceModule: '/modules/attributes/effect.ts',
+            SnippetModule: '/examples/dashboard/pages/attributes/effect.html',
+            Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;Side effects defined in &lt;code&gt;src/modules/attributes/effect.ts&lt;/code&gt; execute silently. Extend this array memory to register explicit teardown hooks on node unmount.&lt;/p&gt;',
+            Snippet: '&lt;div class=\&quot;mt-4 grid grid-cols-1 md:grid-cols-2 gap-8 p-8 bg-base-200 rounded-box border shadow-inner\&quot;&gt;\n    &lt;div class=\&quot;flex flex-col gap-4\&quot;&gt;\n        &lt;label class=\&quot;font-bold\&quot;&gt;Mutate X Coordinate&lt;/label&gt;\n        &lt;input type=\&quot;range\&quot; class=\&quot;range range-info range-sm\&quot; data-bind=\&quot;activeTarget.pos.x\&quot; min=\&quot;0\&quot; max=\&quot;100\&quot;&gt;\n        \n        &lt;label class=\&quot;font-bold mt-4\&quot;&gt;Mutate Y Coordinate&lt;/label&gt;\n        &lt;input type=\&quot;range\&quot; class=\&quot;range range-warning range-sm\&quot; data-bind=\&quot;activeTarget.pos.y\&quot; min=\&quot;0\&quot; max=\&quot;100\&quot;&gt;\n    &lt;/div&gt;\n    \n    &lt;div class=\&quot;mockup-code bg-neutral text-neutral-content shadow-xl h-full flex flex-col items-center justify-center relative p-0 overflow-hidden min-h-[200px]\&quot; data-effect=\&quot;\n            // Note: this intrinsically maps to the container processing the AST effect\n            const box = this.querySelector(\&apos;.tracking-box\&apos;);\n            box.style.left = activeTarget.pos.x + \&apos;%\&apos;;\n            box.style.top = activeTarget.pos.y + \&apos;%\&apos;;\n            box.innerHTML = `(${activeTarget.pos.x}, ${activeTarget.pos.y})`;\n         \&quot;&gt;\n        \n        &lt;div class=\&quot;tracking-box absolute w-16 h-16 bg-primary text-primary-content font-bold shadow-2xl rounded flex items-center justify-center text-xs transition-all duration-100 ease-out\&quot; style=\&quot;transform: translate(-50%, -50%);\&quot;&gt;\n            &lt;!-- Effect updates this element\&apos;s position mathematically --&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+          },
+          appReady: false,
+          activeTarget: { pos: { x: 50, y: 50 } }
+      }">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus-UX: Attribute - data-effect</title>
+    <script type="module" src="../../../../dist/nexus-ux.js?v={{TIMESTAMP}}"></script>
+</head>
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
+    <div data-component="'/examples/dashboard/components/document.html'"></div>
+</body>
+</html>

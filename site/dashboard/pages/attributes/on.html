@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" data-ux-init
+      data-signal="{
+          doc: {
+            Title: 'data-on',
+            Description: 'This page demonstrates the universal native event interception engine routing DOM events mathematically into the execution AST using &lt;code&gt;data-on-*&lt;/code&gt;.',
+            Syntax: '&lt;button data-on-click=\&quot;handleClick()\&quot;&gt;&lt;/button&gt;\n&lt;form data-on-submit:prevent=\&quot;sendData()\&quot;&gt;&lt;/form&gt;',
+            SourceModule: '/modules/attributes/on.ts',
+            SnippetModule: '/site/dashboard/pages/attributes/on.html',
+            Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;The universal event listener in &lt;code&gt;src/modules/attributes/on.ts&lt;/code&gt; orchestrates native DOM events. You can inject synthetic events (like React\&apos;s) into this pipeline.&lt;/p&gt;',
+            Snippet: '&lt;div class=\&quot;flex flex-col gap-6 p-6 bg-base-200 rounded-box border shadow-inner\&quot;&gt;\n    &lt;button class=\&quot;btn btn-primary\&quot; data-on-click=\&quot;logs.push(\&apos;Primary Button Clicked!\&apos;)\&quot;&gt;\n        Single Click Listener\n    &lt;/button&gt;\n    \n    &lt;button class=\&quot;btn btn-secondary\&quot; data-on-dblclick=\&quot;logs.push(\&apos;Secondary Button Double-Clicked!\&apos;)\&quot;&gt;\n        Double Click Listener\n    &lt;/button&gt;\n    \n    &lt;input type=\&quot;text\&quot; class=\&quot;input input-bordered\&quot; placeholder=\&quot;Hover or focus me...\&quot; data-on-mouseenter=\&quot;logs.push(\&apos;Mouse Entered Input Node\&apos;)\&quot; data-on-focus=\&quot;logs.push(\&apos;Focus Captured\&apos;)\&quot; data-on-blur=\&quot;logs.push(\&apos;Focus Released\&apos;)\&quot;&gt;\n    \n    &lt;!-- A log output area to display `logs` array --&gt;\n    &lt;div class=\&quot;mt-4 p-4 bg-neutral text-neutral-content rounded overflow-auto h-32 font-mono text-sm\&quot;&gt;\n        &lt;div data-for=\&quot;log in logs.slice().reverse()\&quot;&gt;\n            &lt;span class=\&quot;text-secondary opacity-50\&quot;&gt;&amp;gt; &lt;/span&gt; &lt;span data-bind=\&quot;log\&quot;&gt;&lt;/span&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+          },
+          appReady: false,
+          logs: []
+      }">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus-UX: Attribute - data-on</title>
+    <script type="module" src="../../../../dist/nexus-ux.js?v={{TIMESTAMP}}"></script>
+</head>
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
+    <div data-component="'/site/dashboard/components/document.html'"></div>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" data-ux-init
+      data-signal="{
+          doc: {
+            Title: '$animate',
+            Description: 'The unified Zenith Animation Engine. Provides imperative control over native <b>WAAPI</b> keyframes, <b>FLIP</b> layout transitions, and legacy class sequences.',
+            Syntax: '$animate($el, keyframes[], options) | $animate.flip(targets, callback) | $animate.out($el, config)',
+            SourceModule: '/modules/sprites/animate.ts',
+            SnippetModule: '/examples/dashboard/pages/sprites/animate.html',
+            Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;The &lt;code&gt;$animate&lt;/code&gt; sprite provides a unified API for all animation needs in Nexus-UX.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1\&quot;&gt;&lt;li&gt;&lt;strong&gt;WAAPI&lt;/strong&gt; — Native browser performance with declarative keyframe objects&lt;/li&gt;&lt;li&gt;&lt;strong&gt;FLIP&lt;/strong&gt; — Smooth layout transitions without complex offset calculations&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Classes&lt;/strong&gt; — Automatic management of &lt;code&gt;.nx-entering&lt;/code&gt; and &lt;code&gt;.nx-leave&lt;/code&gt; states&lt;/li&gt;&lt;/ul&gt;',
+            DefaultSnippetName: 'WAAPI Pulse',
+            Examples: {
+                'WAAPI Pulse': '&lt;div class=\&quot;flex flex-col items-center gap-8 py-8\&quot;&gt;\n    &lt;div id=\&quot;pulse-target\&quot; class=\&quot;w-32 h-32 bg-primary rounded-2xl shadow-xl flex items-center justify-center text-primary-content font-bold\&quot;&gt;\n        TARGET\n    &lt;/div&gt;\n    &lt;div class=\&quot;flex gap-2\&quot;&gt;\n        &lt;button class=\&quot;btn btn-outline btn-md\&quot; data-on-click=\&quot;$animate($(\&apos;#pulse-target\&apos;), [\n            { transform: \&apos;scale(1)\&apos;, background: \&apos;#4f46e5\&apos; },\n            { transform: \&apos;scale(1.2) rotate(15deg)\&apos;, background: \&apos;#ec4899\&apos; },\n            { transform: \&apos;scale(1) rotate(0deg)\&apos;, background: \&apos;#4f46e5\&apos; }\n        ], { duration: 400, easing: \&apos;ease-out\&apos; })\&quot;&gt;\n            Pulse &amp; Rotate\n        &lt;/button&gt;\n    &lt;/div&gt;\n&lt;/div&gt;',
+                'FLIP List': '&lt;div class=\&quot;bg-base-200 p-6 rounded-box\&quot; data-signal=\&quot;{ items: [ {id: 1, n: \&apos;Alpha\&apos;}, {id: 2, n: \&apos;Beta\&apos;}, {id: 3, n: \&apos;Gamma\&apos;} ] }\&quot;&gt;\n    &lt;button class=\&quot;btn btn-primary btn-md mb-4\&quot; data-on-click=\&quot;$animate.flip(\&apos;.flip-item\&apos;, () =&gt; items = [...items].reverse())\&quot;&gt;Reverse List&lt;/button&gt;\n    &lt;div class=\&quot;grid grid-cols-3 gap-4\&quot;&gt;\n        &lt;template data-for=\&quot;item in items\&quot;&gt;\n            &lt;div class=\&quot;flip-item p-4 bg-base-100 border border-base-300 rounded-lg shadow-sm text-center font-bold\&quot; data-id=\&quot;{{item.id}}\&quot; data-bind=\&quot;item.n\&quot;&gt;&lt;/div&gt;\n        &lt;/template&gt;\n    &lt;/div&gt;\n&lt;/div&gt;',
+                'Smart Selector': '&lt;div class=\&quot;flex flex-col gap-4 p-4\&quot;&gt;\n    &lt;div class=\&quot;flex gap-3\&quot;&gt;\n        &lt;div class=\&quot;target-head w-20 h-20 rounded-full bg-success shadow-lg\&quot;&gt;&lt;/div&gt;\n        &lt;div class=\&quot;target-head w-20 h-20 rounded-full bg-success shadow-lg\&quot;&gt;&lt;/div&gt;\n        &lt;div class=\&quot;target-head w-20 h-20 rounded-full bg-success shadow-lg\&quot;&gt;&lt;/div&gt;\n    &lt;/div&gt;\n    &lt;div class=\&quot;flex flex-wrap gap-2\&quot;&gt;\n        &lt;button class=\&quot;btn btn-soft btn-sm\&quot; data-on-click=\&quot;$(\&apos;.target-head\&apos;).style.opacity = \&apos;0.2\&apos;\&quot;&gt;First&lt;/button&gt;\n        &lt;button class=\&quot;btn btn-soft btn-sm\&quot; data-on-click=\&quot;$(\&apos;.target-head\&apos;)[1].style.opacity = \&apos;0.2\&apos;\&quot;&gt;Second&lt;/button&gt;\n        &lt;button class=\&quot;btn btn-soft btn-sm\&quot; data-on-click=\&quot;$(\&apos;.target-head\&apos;)[2].style.opacity = \&apos;0.2\&apos;\&quot;&gt;Last&lt;/button&gt;\n        &lt;button class=\&quot;btn btn-soft btn-sm\&quot; data-on-click=\&quot;$(\&apos;.target-head\&apos;).forEach(el =&gt; el.style.opacity = \&apos;0.2\&apos;)\&quot;&gt;All&lt;/button&gt;\n        &lt;button class=\&quot;btn btn-soft btn-primary btn-sm\&quot; data-on-click=\&quot;$(\&apos;.target-head\&apos;).forEach(el =&gt; el.style.opacity = \&apos;1\&apos;)\&quot;&gt;Restore&lt;/button&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+            }
+          },
+          appReady: false
+      }">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus-UX: Sprite - $animate</title>
+    <script type="module" src="../../../../dist/nexus-ux.js?v={{TIMESTAMP}}"></script>
+    <style>
+        .target-head { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
+        .target-head:hover { transform: scale(1.15); filter: brightness(1.2) drop-shadow(0 0 8px rgba(34, 197, 94, 0.4)); }
+    </style>
+</head>
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
+    <div data-component="'/examples/dashboard/components/document.html'"></div>
+</body>
+</html>

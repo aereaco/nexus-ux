@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" data-ux-init
+      data-signal="{
+          doc: {
+            Title: 'data-if',
+            Description: 'Demonstrating true physical DOM injection and destruction via &lt;code&gt;data-if&lt;/code&gt; conditional boundaries.',
+            Syntax: '&lt;div data-if=\&quot;signal === true\&quot;&gt;Rendered&lt;/div&gt;',
+            SourceModule: '/modules/attributes/if.ts',
+            SnippetModule: '/examples/dashboard/pages/attributes/if.html',
+            Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;The VDOM node persister in &lt;code&gt;src/modules/attributes/if.ts&lt;/code&gt; builds a &lt;code&gt;&amp;lt;!----&amp;gt;&lt;/code&gt; comment anchor. You can modify this per-framework to teleport nodes to global cache fragments instead of memory.&lt;/p&gt;',
+            Snippet: '&lt;div class=\&quot;mt-4 p-8 bg-base-200 rounded-box flex flex-col items-center justify-center border shadow-inner\&quot;&gt;\n    &lt;div class=\&quot;form-control w-64 mb-8\&quot;&gt;\n        &lt;label class=\&quot;label cursor-pointer shadow-sm bg-base-100 p-4 rounded-lg border border-base-300\&quot;&gt;\n            &lt;span class=\&quot;label-text font-bold text-lg\&quot;&gt;Enable Feature&lt;/span&gt; \n            &lt;input type=\&quot;checkbox\&quot; class=\&quot;toggle toggle-secondary\&quot; data-bind=\&quot;isFeatureFlagEnabled\&quot;&gt;\n        &lt;/label&gt;\n    &lt;/div&gt;\n\n    &lt;!-- Physical injection boundary --&gt;\n    &lt;template data-if=\&quot;isFeatureFlagEnabled\&quot;&gt;\n        &lt;div class=\&quot;alert alert-success shadow-lg text-white\&quot;&gt;\n            &lt;svg xmlns=\&quot;http://www.w3.org/2000/svg\&quot; class=\&quot;stroke-current shrink-0 h-6 w-6\&quot; fill=\&quot;none\&quot; viewbox=\&quot;0 0 24 24\&quot;&gt;&lt;path stroke-linecap=\&quot;round\&quot; stroke-linejoin=\&quot;round\&quot; stroke-width=\&quot;2\&quot; d=\&quot;M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z\&quot;&gt;&lt;/path&gt;&lt;/svg&gt;\n            &lt;div&gt;\n                &lt;h3 class=\&quot;font-bold\&quot;&gt;Feature Online!&lt;/h3&gt;\n                &lt;div class=\&quot;text-sm\&quot;&gt;This DOM node physically exists now.&lt;/div&gt;\n            &lt;/div&gt;\n        &lt;/div&gt;\n    &lt;/template&gt;\n&lt;/div&gt;'
+          },
+          appReady: false,
+          isFeatureFlagEnabled: false
+      }">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus-UX: Attribute - data-if</title>
+    <script type="module" src="../../../../dist/nexus-ux.js?v={{TIMESTAMP}}"></script>
+</head>
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
+    <div data-component="'/examples/dashboard/components/document.html'"></div>
+</body>
+</html>

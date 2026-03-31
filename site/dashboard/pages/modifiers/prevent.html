@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" data-ux-init
+      data-signal="{
+          doc: {
+            Title: '.prevent',
+            Description: 'Demonstrates the &lt;code class=\&quot;text-primary font-bold\&quot;&gt;.prevent&lt;/code&gt; interceptor acting as a declarative wrapper for &lt;code class=\&quot;text-secondary italic\&quot;&gt;event.preventDefault()&lt;/code&gt; stopping native browser behavioral shifts.',
+            Syntax: '&lt;form data-on-submit.prevent=\&quot;send()\&quot;&gt;&lt;/form&gt;',
+            SourceModule: '/modules/modifiers/prevent.ts',
+            SnippetModule: '/examples/dashboard/pages/modifiers/prevent.html',
+            Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;Event interceptions via &lt;code&gt;src/modules/modifiers/prevent.ts&lt;/code&gt; utilize native &lt;code&gt;e.preventDefault()&lt;/code&gt; wrappers seamlessly. Map default action simulations natively mimicking UI behavior synthetically.&lt;/p&gt;',
+            Snippet: '&lt;div class=\&quot;p-12 bg-base-200 rounded-box border shadow-inner flex flex-col gap-12 w-full justify-center items-center\&quot;&gt;\n    &lt;div class=\&quot;alert shadow-sm border border-base-300 text-sm max-w-md\&quot;&gt;\n        &lt;span&gt;Both of these elements natively force the Browser Window to physically reload. But we &lt;code&gt;.prevent&lt;/code&gt; it declaratively below!&lt;/span&gt;\n    &lt;/div&gt;\n\n    &lt;div class=\&quot;grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-3xl\&quot;&gt;\n        &lt;div class=\&quot;flex flex-col items-center p-6 bg-base-100 rounded-xl shadow-md border border-base-300\&quot;&gt;\n            &lt;h3 class=\&quot;font-bold opacity-60 uppercase mb-4 text-sm text-center\&quot;&gt;URL Routing Prevention&lt;/h3&gt;\n            &lt;a href=\&quot;https://example.com\&quot; class=\&quot;link link-primary font-bold text-xl\&quot; data-on-click.prevent=\&quot;captureCount++\&quot;&gt;\n                Click Me (Native Link)\n            &lt;/a&gt;\n            &lt;div class=\&quot;mt-4 text-xs opacity-50\&quot;&gt;The browser does NOT navigate to example.com.&lt;/div&gt;\n        &lt;/div&gt;\n        \n        &lt;div class=\&quot;flex flex-col items-center p-6 bg-base-100 rounded-xl shadow-md border border-base-300\&quot;&gt;\n            &lt;h3 class=\&quot;font-bold opacity-60 uppercase mb-4 text-sm text-center\&quot;&gt;Form Submission Prevention&lt;/h3&gt;\n            &lt;form data-on-submit.prevent=\&quot;captureCount++\&quot; class=\&quot;w-full flex justify-center gap-2\&quot;&gt;\n                &lt;input type=\&quot;text\&quot; placeholder=\&quot;Type and hit Enter...\&quot; required class=\&quot;input input-sm input-secondary shadow-sm\&quot;&gt;\n                &lt;button type=\&quot;submit\&quot; class=\&quot;btn btn-sm btn-secondary shadow-sm\&quot;&gt;Submit&lt;/button&gt;\n            &lt;/form&gt;\n            &lt;div class=\&quot;mt-4 text-xs opacity-50\&quot;&gt;The browser does NOT execute an HTTP POST reload.&lt;/div&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n\n    &lt;div class=\&quot;stats shadow border border-base-300 w-full max-w-md mx-auto\&quot;&gt;\n        &lt;div class=\&quot;stat text-center\&quot;&gt;\n            &lt;div class=\&quot;stat-title border-b border-base-200 pb-2 mb-2\&quot;&gt;Handled Interceptions&lt;/div&gt;\n            &lt;div class=\&quot;stat-value text-accent font-mono text-5xl\&quot; data-text=\&quot;captureCount\&quot;&gt;&lt;/div&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+          },
+          appReady: false,
+          captureCount: 0
+      }">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus-UX: Modifier - .prevent</title>
+    <script type="module" src="../../../../dist/nexus-ux.js?v={{TIMESTAMP}}"></script>
+</head>
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
+    <div data-component="'/examples/dashboard/components/document.html'"></div>
+</body>
+</html>

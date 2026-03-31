@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" data-ux-init
+      data-signal="{
+          doc: {
+            Title: '.morph',
+            Description: 'Demonstrates the &lt;code class=\&quot;text-primary font-bold\&quot;&gt;.morph&lt;/code&gt; execution interceptor seamlessly routing DOM node target structures via ID/Selector pointers mathematically bypassing hardcoded memory trees during state execution.',
+            Syntax: '&lt;button data-on-click.morph.#target-element=\&quot;state = \&apos;loading\&apos;\&quot;&gt;&lt;/button&gt;',
+            SourceModule: '/modules/modifiers/morph.ts',
+            SnippetModule: '/examples/dashboard/pages/modifiers/morph.html',
+            Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;Structural injection maps inside &lt;code&gt;src/modules/modifiers/morph.ts&lt;/code&gt; hijack execution targets visually physically mutating external layout geometry mathematically.&lt;/p&gt;',
+            Snippet: '&lt;div class=\&quot;p-8 bg-base-200 rounded-box border shadow-inner\&quot;&gt;\n    &lt;div class=\&quot;flex gap-4 w-full justify-center mb-8 pb-8 border-b border-base-300\&quot;&gt;\n        &lt;button class=\&quot;btn btn-primary\&quot; data-on-click=\&quot;layoutState = \&apos;in-progress\&apos;\&quot;&gt;Process Data&lt;/button&gt;\n        &lt;button class=\&quot;btn btn-secondary\&quot; data-on-click=\&quot;layoutState = \&apos;complete\&apos;\&quot;&gt;Finalize Execution&lt;/button&gt;\n        &lt;button class=\&quot;btn btn-error\&quot; data-on-click=\&quot;layoutState = \&apos;initial\&apos;\&quot;&gt;Reset Context&lt;/button&gt;\n    &lt;/div&gt;\n    \n    &lt;div id=\&quot;target-morph-node\&quot; class=\&quot;w-full bg-base-100 rounded-2xl p-12 text-center shadow-lg border-2 transition-all duration-300 border-base-300\&quot;\n         data-class-border-primary=\&quot;layoutState === \&apos;in-progress\&apos;\&quot;\n         data-class-border-success=\&quot;layoutState === \&apos;complete\&apos;\&quot;&gt;\n         \n         &lt;div data-show=\&quot;layoutState === \&apos;initial\&apos;\&quot; class=\&quot;opacity-50 font-bold text-2xl uppercase tracking-wider text-base-content/50\&quot;&gt;Neutral Initialized Layout Node&lt;/div&gt;\n         \n         &lt;div data-show=\&quot;layoutState === \&apos;in-progress\&quot; class=\&quot;flex flex-col items-center justify-center text-primary gap-4\&quot;&gt;\n             &lt;span class=\&quot;loading loading-bars loading-lg\&quot;&gt;&lt;/span&gt;\n             &lt;h3 class=\&quot;font-bold text-2xl uppercase tracking-wider\&quot;&gt;Compiling AST Geometry Proxy...&lt;/h3&gt;\n         &lt;/div&gt;\n\n         &lt;div data-show=\&quot;layoutState === \&apos;complete\&apos;\&quot; class=\&quot;flex flex-col items-center justify-center text-success gap-4\&quot;&gt;\n             &lt;svg xmlns=\&quot;http://www.w3.org/2000/svg\&quot; class=\&quot;stroke-current shrink-0 h-16 w-16\&quot; fill=\&quot;none\&quot; viewBox=\&quot;0 0 24 24\&quot;&gt;&lt;path stroke-linecap=\&quot;round\&quot; stroke-linejoin=\&quot;round\&quot; stroke-width=\&quot;2\&quot; d=\&quot;M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z\&quot; /&gt;&lt;/svg&gt;\n             &lt;h3 class=\&quot;font-bold text-2xl uppercase tracking-wider\&quot;&gt;Morph Target Override Succeeded!&lt;/h3&gt;\n         &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+          },
+          appReady: false,
+          layoutState: 'initial'
+      }">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus-UX: Modifier - .morph</title>
+    <script type="module" src="../../../../dist/nexus-ux.js?v={{TIMESTAMP}}"></script>
+</head>
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
+    <div data-component="'/examples/dashboard/components/document.html'"></div>
+</body>
+</html>

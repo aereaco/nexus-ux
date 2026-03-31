@@ -12,7 +12,6 @@ export interface ComponentConfig {
 }
 
 export interface ComponentContext {
-  props: Record<string, unknown>;
   element: HTMLElement | ShadowRoot;
   isConnected: boolean;
   isLoading: boolean;
@@ -39,8 +38,7 @@ const componentModule: AttributeModule = {
         isLoading: false,
         hasError: false,
         errorMessage: '',
-        templateContent: '',
-        props: {} as Record<string, unknown>
+        templateContent: ''
       });
 
       const ctx: ComponentContext = {
@@ -73,20 +71,6 @@ const componentModule: AttributeModule = {
           componentState.isLoading = true;
           componentState.hasError = false;
           try {
-            // 1. Resolve Props (data-signals-*)
-            // This satisfies the "Zenith-Class" specification for parent-to-child isolation.
-            Array.from(el.attributes).forEach(attr => {
-              const parsed = runtime.parseAttribute(attr.name, runtime, el);
-              if (parsed?.directive === 'prop' && parsed.argument) {
-                const propName = parsed.argument;
-                // Support both direct signal names and $(...) universal selectors
-                runtime.effect(() => {
-                  const val = runtime.evaluate(el, attr.value);
-                  componentState.props[propName] = val;
-                });
-              }
-            });
-
             let html = '';
             if (config.path.trim().startsWith('<')) {
               html = config.path;

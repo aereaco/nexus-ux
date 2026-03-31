@@ -3,196 +3,186 @@ import type { AttributeModule } from './engine/modules.ts';
 import * as mod_0 from './modules/attributes/mask.ts';
 import * as mod_1 from './modules/attributes/sort.ts';
 import * as mod_2 from './modules/attributes/preserve.ts';
-import * as mod_3 from './modules/attributes/text.ts';
-import * as mod_4 from './modules/attributes/bind.ts';
-import * as mod_5 from './modules/attributes/computed.ts';
-import * as mod_6 from './modules/attributes/on.ts';
-import * as mod_7 from './modules/attributes/assert.ts';
-import * as mod_8 from './modules/attributes/switcher.ts';
-import * as mod_9 from './modules/attributes/model.ts';
-import * as mod_10 from './modules/attributes/if.ts';
-import * as mod_11 from './modules/attributes/effect.ts';
-import * as mod_12 from './modules/attributes/component.ts';
-import * as mod_13 from './modules/attributes/attr.ts';
-import * as mod_14 from './modules/attributes/for.ts';
-import * as mod_15 from './modules/attributes/router.ts';
-import * as mod_16 from './modules/attributes/pwa.ts';
-import * as mod_17 from './modules/attributes/var.ts';
-import * as mod_18 from './modules/attributes/injest.ts';
-import * as mod_19 from './modules/attributes/style.ts';
-import * as mod_20 from './modules/attributes/theme.ts';
-import * as mod_21 from './modules/attributes/ref.ts';
-import * as mod_22 from './modules/attributes/progress.ts';
-import * as mod_23 from './modules/attributes/build.ts';
-import * as mod_24 from './modules/attributes/show.ts';
-import * as mod_25 from './modules/attributes/route.ts';
-import * as mod_26 from './modules/attributes/class.ts';
-import * as mod_27 from './modules/attributes/debug.ts';
-import * as mod_28 from './modules/attributes/html.ts';
-import * as mod_29 from './modules/attributes/signal.ts';
-import * as mod_30 from './modules/attributes/raf.ts';
+import * as mod_3 from './modules/attributes/bind.ts';
+import * as mod_4 from './modules/attributes/computed.ts';
+import * as mod_5 from './modules/attributes/on.ts';
+import * as mod_6 from './modules/attributes/assert.ts';
+import * as mod_7 from './modules/attributes/switcher.ts';
+import * as mod_8 from './modules/attributes/if.ts';
+import * as mod_9 from './modules/attributes/effect.ts';
+import * as mod_10 from './modules/attributes/component.ts';
+import * as mod_11 from './modules/attributes/for.ts';
+import * as mod_12 from './modules/attributes/router.ts';
+import * as mod_13 from './modules/attributes/pwa.ts';
+import * as mod_14 from './modules/attributes/var.ts';
+import * as mod_15 from './modules/attributes/injest.ts';
+import * as mod_16 from './modules/attributes/style.ts';
+import * as mod_17 from './modules/attributes/theme.ts';
+import * as mod_18 from './modules/attributes/progress.ts';
+import * as mod_19 from './modules/attributes/build.ts';
+import * as mod_20 from './modules/attributes/show.ts';
+import * as mod_21 from './modules/attributes/route.ts';
+import * as mod_22 from './modules/attributes/class.ts';
+import * as mod_23 from './modules/attributes/debug.ts';
+import * as mod_24 from './modules/attributes/html.ts';
+import * as mod_25 from './modules/attributes/signal.ts';
+import * as mod_26 from './modules/attributes/raf.ts';
 
 export const autoAttributes: any[] = [
   { name: 'mask', module: mod_0 },
   { name: 'sort', module: mod_1 },
   { name: 'preserve', module: mod_2 },
-  { name: 'text', module: mod_3 },
-  { name: 'bind', module: mod_4 },
-  { name: 'computed', module: mod_5 },
-  { name: 'on', module: mod_6 },
-  { name: 'assert', module: mod_7 },
-  { name: 'switcher', module: mod_8 },
-  { name: 'model', module: mod_9 },
-  { name: 'if', module: mod_10 },
-  { name: 'effect', module: mod_11 },
-  { name: 'component', module: mod_12 },
-  { name: 'attr', module: mod_13 },
-  { name: 'for', module: mod_14 },
-  { name: 'router', module: mod_15 },
-  { name: 'pwa', module: mod_16 },
-  { name: 'var', module: mod_17 },
-  { name: 'injest', module: mod_18 },
-  { name: 'style', module: mod_19 },
-  { name: 'theme', module: mod_20 },
-  { name: 'ref', module: mod_21 },
-  { name: 'progress', module: mod_22 },
-  { name: 'build', module: mod_23 },
-  { name: 'show', module: mod_24 },
-  { name: 'route', module: mod_25 },
-  { name: 'class', module: mod_26 },
-  { name: 'debug', module: mod_27 },
-  { name: 'html', module: mod_28 },
-  { name: 'signal', module: mod_29 },
-  { name: 'raf', module: mod_30 }
+  { name: 'bind', module: mod_3 },
+  { name: 'computed', module: mod_4 },
+  { name: 'on', module: mod_5 },
+  { name: 'assert', module: mod_6 },
+  { name: 'switcher', module: mod_7 },
+  { name: 'if', module: mod_8 },
+  { name: 'effect', module: mod_9 },
+  { name: 'component', module: mod_10 },
+  { name: 'for', module: mod_11 },
+  { name: 'router', module: mod_12 },
+  { name: 'pwa', module: mod_13 },
+  { name: 'var', module: mod_14 },
+  { name: 'injest', module: mod_15 },
+  { name: 'style', module: mod_16 },
+  { name: 'theme', module: mod_17 },
+  { name: 'progress', module: mod_18 },
+  { name: 'build', module: mod_19 },
+  { name: 'show', module: mod_20 },
+  { name: 'route', module: mod_21 },
+  { name: 'class', module: mod_22 },
+  { name: 'debug', module: mod_23 },
+  { name: 'html', module: mod_24 },
+  { name: 'signal', module: mod_25 },
+  { name: 'raf', module: mod_26 }
 ];
-import * as mod_31 from './modules/sprites/notification.ts';
-import * as mod_32 from './modules/sprites/mask.ts';
-import * as mod_33 from './modules/sprites/animate.ts';
-import * as mod_34 from './modules/sprites/watch.ts';
-import * as mod_35 from './modules/sprites/dispatch.ts';
-import * as mod_36 from './modules/sprites/fetch.ts';
-import * as mod_37 from './modules/sprites/gql.ts';
-import * as mod_38 from './modules/sprites/download.ts';
-import * as mod_39 from './modules/sprites/periodicSync.ts';
-import * as mod_40 from './modules/sprites/http.ts';
-import * as mod_41 from './modules/sprites/cache.ts';
-import * as mod_42 from './modules/sprites/bgSync.ts';
-import * as mod_43 from './modules/sprites/bgFetch.ts';
-import * as mod_44 from './modules/sprites/store.ts';
-import * as mod_45 from './modules/sprites/nextTick.ts';
-import * as mod_46 from './modules/sprites/id.ts';
-import * as mod_47 from './modules/sprites/push.ts';
-import * as mod_48 from './modules/sprites/selector.ts';
-import * as mod_49 from './modules/sprites/el.ts';
-import * as mod_50 from './modules/sprites/predictive.ts';
-import * as mod_51 from './modules/sprites/sql.ts';
-import * as mod_52 from './modules/sprites/global.ts';
-import * as mod_53 from './modules/sprites/sw.ts';
-import * as mod_54 from './modules/sprites/refs.ts';
-import * as mod_55 from './modules/sprites/payment.ts';
-import * as mod_56 from './modules/sprites/clipboard.ts';
-import * as mod_57 from './modules/sprites/ws.ts';
+import * as mod_27 from './modules/sprites/notification.ts';
+import * as mod_28 from './modules/sprites/mask.ts';
+import * as mod_29 from './modules/sprites/animate.ts';
+import * as mod_30 from './modules/sprites/watch.ts';
+import * as mod_31 from './modules/sprites/dispatch.ts';
+import * as mod_32 from './modules/sprites/fetch.ts';
+import * as mod_33 from './modules/sprites/gql.ts';
+import * as mod_34 from './modules/sprites/download.ts';
+import * as mod_35 from './modules/sprites/periodicSync.ts';
+import * as mod_36 from './modules/sprites/http.ts';
+import * as mod_37 from './modules/sprites/cache.ts';
+import * as mod_38 from './modules/sprites/bgSync.ts';
+import * as mod_39 from './modules/sprites/bgFetch.ts';
+import * as mod_40 from './modules/sprites/store.ts';
+import * as mod_41 from './modules/sprites/nextTick.ts';
+import * as mod_42 from './modules/sprites/id.ts';
+import * as mod_43 from './modules/sprites/push.ts';
+import * as mod_44 from './modules/sprites/selector.ts';
+import * as mod_45 from './modules/sprites/el.ts';
+import * as mod_46 from './modules/sprites/predictive.ts';
+import * as mod_47 from './modules/sprites/sql.ts';
+import * as mod_48 from './modules/sprites/global.ts';
+import * as mod_49 from './modules/sprites/sw.ts';
+import * as mod_50 from './modules/sprites/payment.ts';
+import * as mod_51 from './modules/sprites/clipboard.ts';
+import * as mod_52 from './modules/sprites/ws.ts';
 
 export const autoSprites: any[] = [
-  { name: 'notification', module: mod_31 },
-  { name: 'mask', module: mod_32 },
-  { name: 'animate', module: mod_33 },
-  { name: 'watch', module: mod_34 },
-  { name: 'dispatch', module: mod_35 },
-  { name: 'fetch', module: mod_36 },
-  { name: 'gql', module: mod_37 },
-  { name: 'download', module: mod_38 },
-  { name: 'periodicSync', module: mod_39 },
-  { name: 'http', module: mod_40 },
-  { name: 'cache', module: mod_41 },
-  { name: 'bgSync', module: mod_42 },
-  { name: 'bgFetch', module: mod_43 },
-  { name: 'store', module: mod_44 },
-  { name: 'nextTick', module: mod_45 },
-  { name: 'id', module: mod_46 },
-  { name: 'push', module: mod_47 },
-  { name: 'selector', module: mod_48 },
-  { name: 'el', module: mod_49 },
-  { name: 'predictive', module: mod_50 },
-  { name: 'sql', module: mod_51 },
-  { name: 'global', module: mod_52 },
-  { name: 'sw', module: mod_53 },
-  { name: 'refs', module: mod_54 },
-  { name: 'payment', module: mod_55 },
-  { name: 'clipboard', module: mod_56 },
-  { name: 'ws', module: mod_57 }
+  { name: 'notification', module: mod_27 },
+  { name: 'mask', module: mod_28 },
+  { name: 'animate', module: mod_29 },
+  { name: 'watch', module: mod_30 },
+  { name: 'dispatch', module: mod_31 },
+  { name: 'fetch', module: mod_32 },
+  { name: 'gql', module: mod_33 },
+  { name: 'download', module: mod_34 },
+  { name: 'periodicSync', module: mod_35 },
+  { name: 'http', module: mod_36 },
+  { name: 'cache', module: mod_37 },
+  { name: 'bgSync', module: mod_38 },
+  { name: 'bgFetch', module: mod_39 },
+  { name: 'store', module: mod_40 },
+  { name: 'nextTick', module: mod_41 },
+  { name: 'id', module: mod_42 },
+  { name: 'push', module: mod_43 },
+  { name: 'selector', module: mod_44 },
+  { name: 'el', module: mod_45 },
+  { name: 'predictive', module: mod_46 },
+  { name: 'sql', module: mod_47 },
+  { name: 'global', module: mod_48 },
+  { name: 'sw', module: mod_49 },
+  { name: 'payment', module: mod_50 },
+  { name: 'clipboard', module: mod_51 },
+  { name: 'ws', module: mod_52 }
 ];
-import * as mod_58 from './modules/mirrors/navigator.ts';
-import * as mod_59 from './modules/mirrors/battery.ts';
-import * as mod_60 from './modules/mirrors/frames.ts';
-import * as mod_61 from './modules/mirrors/sessionStorage.ts';
-import * as mod_62 from './modules/mirrors/network.ts';
-import * as mod_63 from './modules/mirrors/geolocation.ts';
-import * as mod_64 from './modules/mirrors/window.ts';
-import * as mod_65 from './modules/mirrors/cookies.ts';
-import * as mod_66 from './modules/mirrors/storage.ts';
-import * as mod_67 from './modules/mirrors/indexedDB.ts';
-import * as mod_68 from './modules/mirrors/screen.ts';
-import * as mod_69 from './modules/mirrors/localStorage.ts';
+import * as mod_53 from './modules/mirrors/navigator.ts';
+import * as mod_54 from './modules/mirrors/battery.ts';
+import * as mod_55 from './modules/mirrors/frames.ts';
+import * as mod_56 from './modules/mirrors/sessionStorage.ts';
+import * as mod_57 from './modules/mirrors/network.ts';
+import * as mod_58 from './modules/mirrors/geolocation.ts';
+import * as mod_59 from './modules/mirrors/window.ts';
+import * as mod_60 from './modules/mirrors/cookies.ts';
+import * as mod_61 from './modules/mirrors/storage.ts';
+import * as mod_62 from './modules/mirrors/indexedDB.ts';
+import * as mod_63 from './modules/mirrors/screen.ts';
+import * as mod_64 from './modules/mirrors/localStorage.ts';
 
 export const autoMirrors: any[] = [
-  { name: 'navigator', module: mod_58 },
-  { name: 'battery', module: mod_59 },
-  { name: 'frames', module: mod_60 },
-  { name: 'sessionStorage', module: mod_61 },
-  { name: 'network', module: mod_62 },
-  { name: 'geolocation', module: mod_63 },
-  { name: 'window', module: mod_64 },
-  { name: 'cookies', module: mod_65 },
-  { name: 'storage', module: mod_66 },
-  { name: 'indexedDB', module: mod_67 },
-  { name: 'screen', module: mod_68 },
-  { name: 'localStorage', module: mod_69 }
+  { name: 'navigator', module: mod_53 },
+  { name: 'battery', module: mod_54 },
+  { name: 'frames', module: mod_55 },
+  { name: 'sessionStorage', module: mod_56 },
+  { name: 'network', module: mod_57 },
+  { name: 'geolocation', module: mod_58 },
+  { name: 'window', module: mod_59 },
+  { name: 'cookies', module: mod_60 },
+  { name: 'storage', module: mod_61 },
+  { name: 'indexedDB', module: mod_62 },
+  { name: 'screen', module: mod_63 },
+  { name: 'localStorage', module: mod_64 }
 ];
-import * as mod_70 from './modules/scopes/container.ts';
-import * as mod_71 from './modules/scopes/view.ts';
-import * as mod_72 from './modules/scopes/media.ts';
-import * as mod_73 from './modules/scopes/auth.ts';
-import * as mod_74 from './modules/scopes/os.ts';
-import * as mod_75 from './modules/scopes/native.ts';
+import * as mod_65 from './modules/scopes/container.ts';
+import * as mod_66 from './modules/scopes/view.ts';
+import * as mod_67 from './modules/scopes/media.ts';
+import * as mod_68 from './modules/scopes/auth.ts';
+import * as mod_69 from './modules/scopes/os.ts';
+import * as mod_70 from './modules/scopes/native.ts';
 
 export const autoScopes: any[] = [
-  { name: 'container', module: mod_70 },
-  { name: 'view', module: mod_71 },
-  { name: 'media', module: mod_72 },
-  { name: 'auth', module: mod_73 },
-  { name: 'os', module: mod_74 },
-  { name: 'native', module: mod_75 }
+  { name: 'container', module: mod_65 },
+  { name: 'view', module: mod_66 },
+  { name: 'media', module: mod_67 },
+  { name: 'auth', module: mod_68 },
+  { name: 'os', module: mod_69 },
+  { name: 'native', module: mod_70 }
 ];
-import * as mod_76 from './modules/modifiers/intersect.ts';
-import * as mod_77 from './modules/modifiers/stop.ts';
-import * as mod_78 from './modules/modifiers/keys.ts';
-import * as mod_79 from './modules/modifiers/self.ts';
-import * as mod_80 from './modules/modifiers/prevent.ts';
-import * as mod_81 from './modules/modifiers/throttle.ts';
-import * as mod_82 from './modules/modifiers/once.ts';
-import * as mod_83 from './modules/modifiers/debounce.ts';
-import * as mod_84 from './modules/modifiers/morph.ts';
+import * as mod_71 from './modules/modifiers/intersect.ts';
+import * as mod_72 from './modules/modifiers/stop.ts';
+import * as mod_73 from './modules/modifiers/keys.ts';
+import * as mod_74 from './modules/modifiers/self.ts';
+import * as mod_75 from './modules/modifiers/prevent.ts';
+import * as mod_76 from './modules/modifiers/throttle.ts';
+import * as mod_77 from './modules/modifiers/once.ts';
+import * as mod_78 from './modules/modifiers/debounce.ts';
+import * as mod_79 from './modules/modifiers/morph.ts';
 
 export const autoModifiers: any[] = [
-  { name: 'intersect', module: mod_76 },
-  { name: 'stop', module: mod_77 },
-  { name: 'keys', module: mod_78 },
-  { name: 'self', module: mod_79 },
-  { name: 'prevent', module: mod_80 },
-  { name: 'throttle', module: mod_81 },
-  { name: 'once', module: mod_82 },
-  { name: 'debounce', module: mod_83 },
-  { name: 'morph', module: mod_84 }
+  { name: 'intersect', module: mod_71 },
+  { name: 'stop', module: mod_72 },
+  { name: 'keys', module: mod_73 },
+  { name: 'self', module: mod_74 },
+  { name: 'prevent', module: mod_75 },
+  { name: 'throttle', module: mod_76 },
+  { name: 'once', module: mod_77 },
+  { name: 'debounce', module: mod_78 },
+  { name: 'morph', module: mod_79 }
 ];
-import * as mod_85 from './modules/observers/performance.ts';
-import * as mod_86 from './modules/observers/intersection.ts';
-import * as mod_87 from './modules/observers/mutation.ts';
-import * as mod_88 from './modules/observers/resize.ts';
+import * as mod_80 from './modules/observers/performance.ts';
+import * as mod_81 from './modules/observers/intersection.ts';
+import * as mod_82 from './modules/observers/mutation.ts';
+import * as mod_83 from './modules/observers/resize.ts';
 
 export const autoObservers: any[] = [
-  { name: 'performance', module: mod_85 },
-  { name: 'intersection', module: mod_86 },
-  { name: 'mutation', module: mod_87 },
-  { name: 'resize', module: mod_88 }
+  { name: 'performance', module: mod_80 },
+  { name: 'intersection', module: mod_81 },
+  { name: 'mutation', module: mod_82 },
+  { name: 'resize', module: mod_83 }
 ];

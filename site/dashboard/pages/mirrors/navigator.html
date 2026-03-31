@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" data-ux-init data-debug
+      data-injest="{
+          daisy: { link: 'https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css' },
+          tailwind: { script: 'https://cdn.tailwindcss.com' },
+      }"
+      data-signal="{
+          doc: {
+            Title: '_navigator',
+            Description: 'Demonstrates the &lt;code&gt;_navigator&lt;/code&gt; pipeline tracking physical device capabilities and telemetry automatically upon initialization.',
+            Syntax: '&lt;div data-text=\&quot;_navigator.userAgent\&quot;&gt;&lt;/div&gt;',
+            SourceModule: '/modules/mirrors/navigator.ts',
+            SnippetModule: '/examples/dashboard/pages/mirrors/navigator.html',
+            Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;The client metadata payload inside &lt;code&gt;src/modules/mirrors/navigator.ts&lt;/code&gt; maps structural navigator properties explicitly. Integrate feature-flag detection actively based on mapped capabilities natively.&lt;/p&gt;',
+            Snippet: '&lt;div class=\&quot;p-10 bg-base-100 rounded-[3rem] border border-base-300 shadow-xl overflow-hidden\&quot;&gt;\n    &lt;div class=\&quot;grid grid-cols-1 md:grid-cols-2 gap-6\&quot;&gt;\n        &lt;div class=\&quot;bg-neutral p-6 rounded-2xl border-4 border-base-200 shadow-2xl\&quot;&gt;\n            &lt;div class=\&quot;text-[10px] font-black text-info tracking-widest mb-1\&quot;&gt;USER_AGENT_STRING&lt;/div&gt;\n            &lt;div class=\&quot;text-xs font-mono break-all text-neutral-content opacity-70\&quot; data-text=\&quot;_navigator.userAgent\&quot;&gt;&lt;/div&gt;\n        &lt;/div&gt;\n        \n        &lt;div class=\&quot;bg-neutral p-6 rounded-2xl border-4 border-base-200 shadow-2xl\&quot;&gt;\n            &lt;div class=\&quot;text-[10px] font-black text-accent tracking-widest mb-1\&quot;&gt;LANGUAGE_CONTEXT&lt;/div&gt;\n            &lt;div class=\&quot;text-3xl font-black text-white\&quot; data-text=\&quot;_navigator.language\&quot;&gt;&lt;/div&gt;\n        &lt;/div&gt;\n        \n        &lt;div class=\&quot;bg-neutral p-6 rounded-2xl border-4 border-base-200 shadow-2xl flex items-center justify-between\&quot;&gt;\n            &lt;div&gt;\n                &lt;div class=\&quot;text-[10px] font-black text-warning tracking-widest mb-1\&quot;&gt;CONCURRENT_CORES&lt;/div&gt;\n                &lt;div class=\&quot;text-4xl font-black text-white\&quot; data-text=\&quot;_navigator.hardwareConcurrency\&quot;&gt;&lt;/div&gt;\n            &lt;/div&gt;\n            &lt;div class=\&quot;w-12 h-12 rounded-full bg-warning/20 flex items-center justify-center\&quot;&gt;\n                &lt;svg xmlns=\&quot;http://www.w3.org/2000/svg\&quot; fill=\&quot;none\&quot; viewBox=\&quot;0 0 24 24\&quot; stroke-width=\&quot;2\&quot; stroke=\&quot;currentColor\&quot; class=\&quot;w-6 h-6 text-warning\&quot;&gt;&lt;path stroke-linecap=\&quot;round\&quot; stroke-linejoin=\&quot;round\&quot; d=\&quot;M8.25 3v1.5M4.5 8.25H3m18 0h-1.5m-1.5 1.5l1.061 1.061M1.061 1.061L2.121 2.121m15.364 0l-1.061 1.061m-12.021 0L2.121 1.061m15.364 15.364l1.061 1.061m-10.939 0l-1.061 1.061m15.364-15.364l-1.061 1.061M16.5 12a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z\&quot; /&gt;&lt;/svg&gt;\n            &lt;/div&gt;\n        &lt;/div&gt;\n        \n        &lt;div class=\&quot;bg-neutral p-6 rounded-2xl border-4 border-base-200 shadow-2xl flex items-center justify-between\&quot;&gt;\n            &lt;div&gt;\n                &lt;div class=\&quot;text-[10px] font-black text-success tracking-widest mb-1\&quot;&gt;CLIPBOARD_REACH&lt;/div&gt;\n                &lt;div class=\&quot;text-3xl font-black\&quot; data-text=\&quot;_navigator.clipboard ? \&apos;GRANTED\&apos; : \&apos;DENIED\&apos;\&quot; data-class-text-success=\&quot;_navigator.clipboard\&quot; data-class-text-error=\&quot;!_navigator.clipboard\&quot;&gt;&lt;/div&gt;\n            &lt;/div&gt;\n            &lt;div class=\&quot;w-12 h-12 rounded-full flex items-center justify-center\&quot; data-class-bg-success-20=\&quot;_navigator.clipboard\&quot; data-class-bg-error-20=\&quot;!_navigator.clipboard\&quot;&gt;\n                &lt;svg xmlns=\&quot;http://www.w3.org/2000/svg\&quot; fill=\&quot;none\&quot; viewBox=\&quot;0 0 24 24\&quot; stroke-width=\&quot;2\&quot; stroke=\&quot;currentColor\&quot; class=\&quot;w-6 h-6\&quot;&gt;&lt;path stroke-linecap=\&quot;round\&quot; stroke-linejoin=\&quot;round\&quot; d=\&quot;M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.492 1.068 1.258 1.068 2.112v11.25c0 1.242-1.008 2.25-2.25 2.25H7.5c-1.242 0-2.25-1.008-2.25-2.25V6c0-.854.422-1.62 1.068-2.112\&quot; /&gt;&lt;/svg&gt;\n            &lt;/div&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+          },
+          appReady: false
+      }">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus-UX | _navigator</title>
+    <script type="module" src="../../../../dist/nexus-ux.js"></script>
+</head>
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
+    <div data-component="'/examples/dashboard/components/document.html'"></div>
+</body>
+</html>

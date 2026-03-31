@@ -1,6 +1,6 @@
 import { ModifierModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { morphDOM } from '../../engine/morph.ts';
+import { morphDOM } from '../../engine/reconciler.ts';
 import { resolveSelector } from '../sprites/selector.ts';
 
 export const morphModifier: ModifierModule = {
@@ -16,7 +16,8 @@ export const morphModifier: ModifierModule = {
       
       const applyMorph = (htmlString: string) => {
         const target = arg ? resolveSelector(element, arg) : element;
-        if (target) morphDOM(target, htmlString);
+        const realTarget = Array.isArray(target) ? target[0] : target;
+        if (realTarget) morphDOM(realTarget as Element, htmlString);
       };
 
       if (result instanceof Promise) {

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" data-ux-init data-debug
+      data-injest="{
+          daisy: { link: 'https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css' },
+          tailwind: { script: 'https://cdn.tailwindcss.com' },
+      }"
+      data-signal="{
+          doc: {
+            Title: '$id Sprite',
+            Description: 'Demonstrates the &lt;code&gt;$id(\&apos;prefix\&apos;)&lt;/code&gt; utility Sprite enforcing perfectly deterministic sequential ID generation matrices across globally hydrated VDOM components preventing collisions.',
+            Syntax: '&lt;input data-attr-id=\&quot;$id(\&apos;prefix\&apos;)\&quot;&gt;',
+            SourceModule: '/modules/sprites/id.ts',
+            SnippetModule: '/examples/dashboard/pages/sprites/id.html',
+            Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;Sequential hash generation mappings via &lt;code&gt;src/modules/sprites/id.ts&lt;/code&gt; return simple counter metrics globally tracking execution ticks manually. Map deterministic UUID algorithms generating truly unique matrix hashes.&lt;/p&gt;',
+            Snippet: '&lt;div class=\&quot;p-10 bg-base-100 rounded-[3rem] border border-base-300 shadow-xl overflow-hidden\&quot; data-signal=\&quot;{ activeRowId: \&apos;\&apos; }\&quot;&gt;\n    &lt;div class=\&quot;overflow-x-auto rounded-3xl border-2 border-base-200\&quot;&gt;\n        &lt;table class=\&quot;table w-full bg-base-100\&quot;&gt;\n            &lt;thead&gt;\n                &lt;tr class=\&quot;bg-neutral text-neutral-content uppercase font-black text-[10px] tracking-widest border-b-4 border-base-200\&quot;&gt;\n                    &lt;th class=\&quot;w-24 p-6\&quot;&gt;SELECT&lt;/th&gt;\n                    &lt;th class=\&quot;p-6\&quot;&gt;DETERMINISTIC_HASH&lt;/th&gt;\n                    &lt;th class=\&quot;p-6\&quot;&gt;STATUS_LABEL&lt;/th&gt;\n                &lt;/tr&gt;\n            &lt;/thead&gt;\n            &lt;tbody&gt;\n                &lt;template data-for=\&quot;row in [1, 2, 3]\&quot;&gt;\n                    &lt;tr class=\&quot;hover:bg-base-200 transition-colors\&quot; data-class-bg-primary-10=\&quot;activeRowId === $id(\&apos;toggle\&apos;)\&quot;&gt;\n                        &lt;td class=\&quot;p-6\&quot;&gt;\n                            &lt;input type=\&quot;radio\&quot; name=\&quot;radioDemo\&quot; class=\&quot;radio radio-primary radio-lg\&quot; data-attr-id=\&quot;$id(\&apos;toggle\&apos;)\&quot; data-on-click=\&quot;activeRowId = $el.id\&quot; /&gt;\n                        &lt;/td&gt;\n                        &lt;td class=\&quot;p-6 font-mono font-black text-secondary\&quot; data-text=\&quot;$id(\&apos;toggle\&apos;)\&quot;&gt;&lt;/td&gt;\n                        &lt;td class=\&quot;p-6\&quot;&gt;\n                            &lt;label class=\&quot;cursor-pointer badge badge-primary font-black text-[10px] py-3 px-4 rounded-xl shadow-sm\&quot; data-attr-for=\&quot;$id(\&apos;toggle\&apos;)\&quot;&gt;ACTIVATE_ROW&lt;/label&gt;\n                        &lt;/td&gt;\n                    &lt;/tr&gt;\n                &lt;/template&gt;\n            &lt;/tbody&gt;\n        &lt;/table&gt;\n    &lt;/div&gt;\n    \n    &lt;div class=\&quot;alert shadow-2xl bg-neutral text-neutral-content mt-10 rounded-[2rem] border-4 border-base-200 p-8\&quot;&gt;\n        &lt;div class=\&quot;w-14 h-14 bg-primary/20 rounded-2xl flex items-center justify-center mr-4\&quot;&gt;\n            &lt;svg xmlns=\&quot;http://www.w3.org/2000/svg\&quot; fill=\&quot;none\&quot; viewBox=\&quot;0 0 24 24\&quot; class=\&quot;stroke-primary w-8 h-8\&quot; stroke-width=\&quot;3\&quot;&gt;&lt;path stroke-linecap=\&quot;round\&quot; stroke-linejoin=\&quot;round\&quot; d=\&quot;M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244\&quot; /&gt;&lt;/svg&gt;\n        &lt;/div&gt;\n        &lt;div&gt;\n            &lt;div class=\&quot;text-[10px] font-black opacity-40 tracking-widest\&quot;&gt;GLOBAL_SELECTED_IDENTITY&lt;/div&gt;\n            &lt;div class=\&quot;text-3xl font-black font-mono text-primary\&quot; data-text=\&quot;activeRowId || \&apos;NULL_PTR\&apos;\&quot;&gt;&lt;/div&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+          },
+          appReady: false
+      }">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus-UX | $id Sprite</title>
+    <script type="module" src="../../../../dist/nexus-ux.js"></script>
+</head>
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
+    <div data-component="'/examples/dashboard/components/document.html'"></div>
+</body>
+</html>

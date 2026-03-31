@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" data-ux-init
+      data-signal="{
+          doc: {
+            Title: '.self',
+            Description: 'This page demonstrates the &lt;code class=\&quot;text-primary font-bold\&quot;&gt;.self&lt;/code&gt; target filter preventing execution unless the exact physical node emitting the event precisely matches the node hosting the event listener.',
+            Syntax: '&lt;div data-on-click.self=\&quot;closeModal()\&quot;&gt;&lt;/div&gt;',
+            SourceModule: '/modules/modifiers/self.ts',
+            SnippetModule: '/examples/dashboard/pages/modifiers/self.html',
+            Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;Event target isolation in &lt;code&gt;src/modules/modifiers/self.ts&lt;/code&gt; evaluates &lt;code&gt;e.target === e.currentTarget&lt;/code&gt; matrices structurally. Map precise coordinate checking verifying mouse hits natively.&lt;/p&gt;',
+            Snippet: '&lt;div class=\&quot;p-8 bg-base-200 rounded-box border shadow-inner\&quot;&gt;\n    &lt;div class=\&quot;bg-primary/20 p-12 rounded-2xl shadow border-2 border-primary cursor-pointer hover:bg-primary/30 transition-colors flex flex-col items-center gap-8 relative\&quot; \n         data-on-click.self=\&quot;isolationHits++\&quot;&gt;\n         \n         &lt;h3 class=\&quot;font-bold text-lg uppercase tracking-wider text-primary text-center pointer-events-none\&quot;&gt;\n             The Outer Box listens via `.self` Filter.&lt;br&gt;Click the blue background to score!\n         &lt;/h3&gt;\n         \n         &lt;div class=\&quot;flex gap-4 p-8 bg-base-100 shadow-md border border-base-300 rounded-xl\&quot; data-on-click=\&quot;strayHits++\&quot;&gt;\n             &lt;p class=\&quot;font-bold cursor-default opacity-80 text-sm\&quot;&gt;Nested Node (Child)&lt;/p&gt;\n             &lt;button class=\&quot;btn btn-secondary shadow-sm\&quot;&gt;Nested Button&lt;/button&gt;\n         &lt;/div&gt;\n    &lt;/div&gt;\n    \n    &lt;div class=\&quot;stats bg-base-100 border border-base-300 shadow w-full mt-4\&quot;&gt;\n        &lt;div class=\&quot;stat text-center\&quot;&gt;\n            &lt;div class=\&quot;stat-title font-bold text-success\&quot;&gt;`.self` Hits&lt;/div&gt;\n            &lt;div class=\&quot;stat-value\&quot; data-text=\&quot;isolationHits\&quot;&gt;&lt;/div&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;stat text-center border-l border-base-200\&quot;&gt;\n            &lt;div class=\&quot;stat-title font-bold text-error\&quot;&gt;Discarded Bubble Events&lt;/div&gt;\n            &lt;div class=\&quot;stat-value\&quot; data-text=\&quot;strayHits\&quot;&gt;&lt;/div&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+          },
+          appReady: false,
+          isolationHits: 0,
+          strayHits: 0
+      }">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus-UX: Modifier - .self</title>
+    <script type="module" src="../../../../dist/nexus-ux.js?v={{TIMESTAMP}}"></script>
+</head>
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
+    <div data-component="'/examples/dashboard/components/document.html'"></div>
+</body>
+</html>

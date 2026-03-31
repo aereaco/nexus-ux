@@ -1,54 +1,16 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { reportError } from '../../engine/errors.ts';
+import { writeIDB } from '../../engine/utils/idb.ts';
 
 /**
  * Lightweight IndexedDB write helper for build output.
  * Replaces the previous VFS dependency — build targets are always IDB.
  */
-const BUILD_DB = 'nexus-store';
 const BUILD_STORE = 'builds';
 
 async function writeToIDB(key: string, data: string, meta?: Record<string, unknown>): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(BUILD_DB, 1);
-    request.onupgradeneeded = () => {
-      const db = request.result;
-      if (!db.objectStoreNames.contains(BUILD_STORE)) {
-        db.createObjectStore(BUILD_STORE);
-      }
-    };
-    request.onsuccess = () => {
-      const db = request.result;
-      // Ensure the store exists (may need version bump)
-      if (!db.objectStoreNames.contains(BUILD_STORE)) {
-        db.close();
-        const upgradeReq = indexedDB.open(BUILD_DB, db.version + 1);
-        upgradeReq.onupgradeneeded = () => {
-          const udb = upgradeReq.result;
-          if (!udb.objectStoreNames.contains(BUILD_STORE)) {
-            udb.createObjectStore(BUILD_STORE);
-          }
-        };
-        upgradeReq.onsuccess = () => {
-          const udb = upgradeReq.result;
-          const tx = udb.transaction(BUILD_STORE, 'readwrite');
-          const store = tx.objectStore(BUILD_STORE);
-          store.put({ data, meta, updatedAt: Date.now() }, key);
-          tx.oncomplete = () => { udb.close(); resolve(); };
-          tx.onerror = () => { udb.close(); reject(tx.error); };
-        };
-        upgradeReq.onerror = () => reject(upgradeReq.error);
-        return;
-      }
-      const tx = db.transaction(BUILD_STORE, 'readwrite');
-      const store = tx.objectStore(BUILD_STORE);
-      store.put({ data, meta, updatedAt: Date.now() }, key);
-      tx.oncomplete = () => { db.close(); resolve(); };
-      tx.onerror = () => { db.close(); reject(tx.error); };
-    };
-    request.onerror = () => reject(request.error);
-  });
+  await writeIDB(BUILD_STORE, key, { data, meta, updatedAt: Date.now() });
 }
 
 /**

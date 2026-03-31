@@ -1,6 +1,6 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { getDataStack, addScopeToNode } from '../../engine/scope.ts';
+import { addScopeToNode, parseGhostKeys, createScopeProxy } from '../../engine/scope.ts';
 import { initError } from '../../engine/errors.ts';
 import { unifiedRef, unifiedComputed } from '../../engine/reactivity.ts';
 
@@ -12,14 +12,7 @@ const computedModule: AttributeModule = {
     const computedCleanup: (() => void)[] = [];
 
     // 0. Parse Ghost Keys for pre-allocation
-    const ghostKeys: string[] = [];
-    if (value.trim().startsWith('{')) {
-       // Match object literal keys: handle both standard and quoted keys
-       const keyMatches = value.matchAll(/['"]?([a-zA-Z_$][\w$]*)['"]?\s*:/g);
-       for (const match of keyMatches) {
-         ghostKeys.push(match[1]);
-       }
-    }
+    const { ghostKeys } = parseGhostKeys(value);
 
     const initialGhostState: Record<string, unknown> = {};
     ghostKeys.forEach(key => initialGhostState[key] = undefined);
@@ -35,13 +28,7 @@ const computedModule: AttributeModule = {
 
     // Format 1: data-computed="{ prop: () => expr, ... }"
     if (el.hasAttribute('data-computed')) {
-      const scopeProxy = new Proxy({}, {
-        has(_, key) { return Reflect.has(stateRef.value, key); },
-        get(_, key) { return Reflect.get(stateRef.value, key); },
-        set(_, key, value) { return Reflect.set(stateRef.value, key, value); },
-        ownKeys() { return Reflect.ownKeys(stateRef.value); },
-        getOwnPropertyDescriptor(_, key) { return Reflect.getOwnPropertyDescriptor(stateRef.value, key); }
-      });
+      const scopeProxy = createScopeProxy(stateRef as any);
       
       let addCleanup: (() => void) | undefined;
       // Scopes only needed if not global and we have an existing datastack context boundary

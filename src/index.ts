@@ -110,14 +110,12 @@ export class UX {
       return predictive;
     })());
 
-    // 5. Contextual Selector ($), Animation Engine ($animate), and Refs ($refs)
+    // 5. Contextual Selector ($) and Animation Engine ($animate)
     registerScopeProvider('$', (el: any) => {
       return (selector: string) => resolveSelector(el as HTMLElement, selector);
     });
 
     registerScopeProvider('$animate', () => animate);
-
-    registerScopeProvider('$refs', () => this.coordinator.runtimeContext.refs);
 
     // Auto-Register Mirrors
     autoMirrors.forEach(({ name, module }) => {
@@ -176,7 +174,7 @@ export class UX {
     });
 
     // Initialize Self-Heal Agent (Crash Beacons)
-    initSelfHeal({
+    initSelfHeal(this.coordinator.runtimeContext, {
       enabled: true,
       emitToConsole: this.coordinator.runtimeContext.isDevMode ?? false,
       emitToPlatform: false

@@ -99,3 +99,20 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
     target: target
   };
 }
+
+/**
+ * Helper to find all attributes on an element that match a specific directive.
+ * Supports data-directive, data-directive:arg, and data-directive-arg formats.
+ */
+export function matchAttributes(el: HTMLElement, directive: string, value?: string): Attr[] {
+  const prefixColon = `data-${directive}:`;
+  const prefixDash = `data-${directive}-`;
+  const exact = `data-${directive}`;
+  
+  return Array.from(el.attributes).filter(a => {
+    const isMatch = a.name === exact || a.name.startsWith(prefixColon) || a.name.startsWith(prefixDash);
+    if (!isMatch) return false;
+    if (value !== undefined && a.value !== value) return false;
+    return true;
+  });
+}

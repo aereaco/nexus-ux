@@ -1,48 +1,134 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { initError } from '../../engine/errors.ts';
+import { matchAttributes } from '../../engine/attributeParser.ts';
 
 const bindModule: AttributeModule = {
   name: 'bind',
   attribute: 'bind',
   handle: (el: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void => {
-    // 1. Identify Target Attribute
-    // format: data-bind:href="url" -> target="href"
-    // The parser separates directive ("bind") and argument ("href")
-
-    // We need to re-parse because the initial scan passed just value, but for bind 
-    // we often rely on the argument. The AttributeModule interface passes 'value', 
-    // but we might need the full attribute name to get the argument?
-    // Actually, distinct attributes (data-bind:src, data-bind:href) invoke handle separately?
-    // Yes, assuming the coordinator correctly maps them. 
-    // BUT, our current Coordinator logic might need to pass the *parsed* info or the attribute name.
-    // For now, let's assume we can re-find the attribute or traverse attributes to find matching ones.
-
-    // Better strategy: The Coordinator should ideally pass the argument. 
-    // But sticking to the interface:
-
-    const attrs = Array.from(el.attributes).filter(a =>
-      (a.name.startsWith('data-bind:') || a.name.startsWith('data-bind-')) && a.value === value
-    );
-
-    // If multiple binds have same value, we might process them multiple times, which is fine but inefficient.
-    // Let's iterate found attributes.
+    if (!value) return;
 
     const cleanupFns: (() => void)[] = [];
+
+    // ─── Auto-Detect Mode (data-bind="expr" without sub-directive) ───
+    // When data-bind has no argument (no data-bind-* or data-bind:* variants),
+    // auto-detect the property based on element type — absorbs data-model behavior.
+    const allBindAttrs = matchAttributes(el, 'bind', value);
+    const hasSubDirective = allBindAttrs.some(a => a.name !== 'data-bind');
+
+    if (!hasSubDirective && el.hasAttribute('data-bind') && el.getAttribute('data-bind') === value) {
+      try {
+        // 1. Reactive Effect: State → DOM
+        const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
+          const result = runtime.evaluate(el, value);
+
+          // ─── Direct Heap/Object Mapping ───
+          // If the result is a non-null object (not array), treat as mass property assignment.
+          if (result && typeof result === 'object' && !Array.isArray(result)) {
+            Object.entries(result).forEach(([param, val]) => {
+              if (param in el) {
+                (el as any)[param] = val;
+              } else {
+                if (val === false || val === null || val === undefined) {
+                  el.removeAttribute(param);
+                } else {
+                  el.setAttribute(param, String(val));
+                }
+              }
+            });
+            return;
+          }
+
+          // ─── Standard Model Detection (Single Value) ───
+          if (el instanceof HTMLInputElement) {
+            if (el.type === 'checkbox') {
+              el.checked = Boolean(result);
+            } else if (el.type === 'radio') {
+              el.checked = (el.value === String(result));
+            } else {
+              el.value = result !== undefined && result !== null ? String(result) : '';
+            }
+          } else if (el instanceof HTMLSelectElement) {
+            const targetValue = result !== undefined && result !== null ? String(result) : '';
+
+            const syncSelect = () => {
+              const options = Array.from(el.options);
+              const found = options.some(opt => opt.value === targetValue);
+              if (found || targetValue === '') {
+                if (el.value !== targetValue) {
+                  el.value = targetValue;
+                }
+              }
+            };
+
+            syncSelect();
+
+            const observer = new MutationObserver(() => syncSelect());
+            observer.observe(el, { childList: true, subtree: true });
+            cleanupFns.push(() => observer.disconnect());
+          } else if (el instanceof HTMLTextAreaElement) {
+            el.value = result !== undefined && result !== null ? String(result) : '';
+          } else {
+            el.textContent = result !== undefined && result !== null ? String(result) : '';
+          }
+        });
+        cleanupFns.push(cleanup);
+
+        // 2. Event Listener: DOM → State
+        const isLazy = el.hasAttribute('data-bind:lazy') || el.hasAttribute('data-bind.lazy');
+        const eventName = isLazy ? 'change' : (
+          el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')
+          || el instanceof HTMLSelectElement ? 'change' : 'input'
+        );
+
+        const inputHandler = (_e: Event) => {
+          let newValue: unknown;
+          if (el instanceof HTMLInputElement && el.type === 'checkbox') {
+            newValue = el.checked;
+          } else if (el instanceof HTMLInputElement && el.type === 'radio') {
+            newValue = el.checked ? el.value : undefined;
+            if (newValue === undefined) return;
+          } else if ('value' in el) {
+            newValue = (el as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value;
+          }
+
+          // ─── Smart Assignment ───
+          // If the bound value is an object, update its 'value' property
+          // to avoid overwriting the whole object with a string.
+          const current = runtime.evaluate(el, value);
+          if (current && typeof current === 'object' && 'value' in (current as object)) {
+            runtime.evaluate(el, `${value}.value = $newValue`, { $newValue: newValue });
+          } else {
+            runtime.evaluate(el, `${value} = $newValue`, { $newValue: newValue });
+          }
+        };
+
+        el.addEventListener(eventName, inputHandler);
+        cleanupFns.push(() => el.removeEventListener(eventName, inputHandler));
+
+      } catch (e) {
+        initError('bind', `Failed to auto-bind: ${e instanceof Error ? e.message : String(e)}`, el, value);
+      }
+
+      return () => cleanupFns.forEach(fn => fn());
+    }
+
+    // ─── Sub-Directive Mode (data-bind-value, data-bind:href, etc.) ───
+    const attrs = allBindAttrs.filter(a => a.name !== 'data-bind');
 
     attrs.forEach(attr => {
       const parsed = runtime.parseAttribute(attr.name, runtime, el);
       if (!parsed || !parsed.argument) return;
 
       const target = parsed.argument;
+      if (target === 'lazy') return;
 
       try {
-        // Reactive Effect for Binding
         const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
-          const result = runtime.evaluate(el, value);
+          const result = runtime.evaluate(el, attr.value);
           const attrValue = result !== undefined && result !== null ? String(result) : '';
 
-          // Handle specific constraints
           if (target === 'value' || target === 'checked') {
             if (el instanceof HTMLInputElement && el.type === 'checkbox') {
               el.checked = Boolean(result);
@@ -64,27 +150,26 @@ const bindModule: AttributeModule = {
 
         // Two-Way Binding Setup (Input Listener)
         if (target === 'value' || target === 'checked') {
+          const isLazy = el.hasAttribute('data-bind:lazy') || el.hasAttribute('data-bind.lazy');
+          const eventName = isLazy ? 'change' : (
+            el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')
+            || el instanceof HTMLSelectElement ? 'change' : 'input'
+          );
+
           const inputHandler = (e: Event) => {
             let newValue: unknown;
             if (el instanceof HTMLInputElement && el.type === 'checkbox') {
               newValue = el.checked;
             } else if (el instanceof HTMLInputElement && el.type === 'radio') {
-              // Only update if checked? Radio logic is tricky. 
-              // Usually we bind group to same value.
               newValue = el.checked ? el.value : undefined;
             } else {
               newValue = (e.target as HTMLInputElement).value;
             }
-
-            // Reverse assignment: expression = newValue
-            // This requires an assignable expression.
-            // We use a temporary scope to inject $newValue and execute assignment.
-            // "varName = $newValue"
-            runtime.evaluate(el, `${value} = $newValue`, { $newValue: newValue });
+            runtime.evaluate(el, `${attr.value} = $newValue`, { $newValue: newValue });
           };
 
-          el.addEventListener('input', inputHandler);
-          cleanupFns.push(() => el.removeEventListener('input', inputHandler));
+          el.addEventListener(eventName, inputHandler);
+          cleanupFns.push(() => el.removeEventListener(eventName, inputHandler));
         }
 
       } catch (e) {

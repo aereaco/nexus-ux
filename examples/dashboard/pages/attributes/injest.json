@@ -1,9 +1,0 @@
-{
-  "Title": "data-injest",
-  "Description": "This page demonstrates the <code>data-injest</code> attribute natively fetching CSS / Scripts (like Tailwind and DaisyUI) dynamically and suspending DOM rendering until parsing completes.",
-  "Syntax": "<div data-injest=\"{ css: { link: `href='...'` }, js: { script: `src='...'` } }\"></div>",
-  "SourceModule": "/modules/attributes/injest.ts",
-  "SnippetModule": "data-injest",
-  "Extensibility": "<p class=\"opacity-80 mt-4 leading-relaxed\">The <code>data-injest</code> module manages the lifecycle of external dependencies, ensuring that the DOM remains hidden until all specified resources are fully loaded and parsed.</p>",
-  "Snippet": "<div class=\"p-8 bg-base-200 rounded-box border shadow-inner text-center font-bold text-xl text-success flex flex-col items-center justify-center gap-4\">\n    <span class=\"loading loading-spinner text-success\" data-show=\"!hasLoaded\"></span>\n    <div data-show=\"hasLoaded\" class=\"badge badge-success badge-lg p-6 shadow-sm\">\n        <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6 mr-2\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M5 13l4 4L19 7\"></path></svg>\n        DaisyUI &amp; Tailwind Dynamically Injected!\n    </div>\n</div>"
-}

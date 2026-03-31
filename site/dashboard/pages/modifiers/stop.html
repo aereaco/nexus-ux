@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" data-ux-init
+      data-signal="{
+          doc: {
+            Title: '.stop',
+            Description: 'This page demonstrates the &lt;code class=\&quot;text-primary font-bold\&quot;&gt;.stop&lt;/code&gt; interceptor which physically prevents JavaScript event bubbling upward through the DOM hierarchy via &lt;code class=\&quot;text-secondary italic\&quot;&gt;event.stopPropagation()&lt;/code&gt;.',
+            Syntax: '&lt;div data-on-click.stop=\&quot;handle()\&quot;&gt;&lt;/div&gt;',
+            SourceModule: '/modules/modifiers/stop.ts',
+            SnippetModule: '/examples/dashboard/pages/modifiers/stop.html',
+            Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;Event bubbling blocks mapped inside &lt;code&gt;src/modules/modifiers/stop.ts&lt;/code&gt; leverage &lt;code&gt;e.stopPropagation()&lt;/code&gt; isolated execution natively. Hook capturing-phase overrides implementing specialized top-down data flow visually.&lt;/p&gt;',
+            Snippet: '&lt;div class=\&quot;p-8 bg-base-200 rounded-box border shadow-inner\&quot;&gt;\n    &lt;div class=\&quot;h-64 w-full bg-base-100 rounded-xl border border-error shadow p-6 flex flex-col justify-center items-center transition-all duration-300 relative\&quot; \n         data-on-click=\&quot;propagationLog.push(\&apos;FATAL: Captured bubbling click event at parent level Container!\&apos;)\&quot;&gt;\n         \n         &lt;h3 class=\&quot;absolute top-4 inset-x-0 text-center font-bold text-error uppercase text-xs tracking-widest opacity-60\&quot;&gt;\n             Parent Bubble Trajectory End Point\n         &lt;/h3&gt;\n\n         &lt;button class=\&quot;btn btn-primary relative z-10 shadow-xl\&quot; data-on-click.stop=\&quot;propagationLog.push(\&apos;SUCCESS: Handled at source node. Stopped bubbling upward.\&apos;)\&quot;&gt;\n             Click Me (Safely Shielded by `.stop`)\n         &lt;/button&gt;\n         \n         &lt;button class=\&quot;btn btn-warning mt-4 relative z-10 shadow border border-warning-content\&quot; data-on-click=\&quot;propagationLog.push(\&apos;WARNING: Clicked vulnerable element. Floating upwards...\&apos;)\&quot;&gt;\n             Click Me (Vulnerable, Bubbles upward)\n         &lt;/button&gt;\n    &lt;/div&gt;\n\n    &lt;div class=\&quot;mockup-code h-full min-h-64 shadow overflow-y-auto bg-neutral border border-neutral-content/20 mt-4\&quot;&gt;\n        &lt;template data-for=\&quot;log in propagationLog.slice(-6)\&quot;&gt;\n            &lt;pre data-prefix=\&quot;~\&quot;&gt;&lt;code data-text=\&quot;log\&quot; data-class-text-error=\&quot;log.includes(\&apos;FATAL\&apos;)\&quot; data-class-text-success=\&quot;log.includes(\&apos;SUCCESS\&apos;)\&quot; data-class-text-warning=\&quot;log.includes(\&apos;WARNING\&apos;)\&quot;&gt;&lt;/code&gt;&lt;/pre&gt;\n        &lt;/template&gt;\n        &lt;pre data-show=\&quot;propagationLog.length === 0\&quot; data-prefix=\&quot;&gt;\&quot;&gt;&lt;code class=\&quot;text-neutral-content opacity-50\&quot;&gt;Monitoring event bubbling patterns...&lt;/code&gt;&lt;/pre&gt;\n    &lt;/div&gt;\n    &lt;div class=\&quot;text-center mt-4\&quot;&gt;\n        &lt;button class=\&quot;btn btn-outline btn-xs opacity-50\&quot; data-on-click=\&quot;propagationLog = []\&quot;&gt;Clear Logs&lt;/button&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+          },
+          appReady: false,
+          propagationLog: []
+      }">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus-UX: Modifier - .stop</title>
+    <script type="module" src="../../../../dist/nexus-ux.js?v={{TIMESTAMP}}"></script>
+</head>
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
+    <div data-component="'/examples/dashboard/components/document.html'"></div>
+</body>
+</html>

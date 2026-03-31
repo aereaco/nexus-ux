@@ -12,7 +12,9 @@
  */
 
 import { topology } from './topology.ts';
-import type { TierLevel } from './topology.ts';
+import type { TierLevel, TierConfig } from './topology.ts';
+import type { RuntimeContext } from './composition.ts';
+import { heap } from './reactivity.ts';
 
 // Beacon types for crash reporting
 export interface CrashBeacon {
@@ -100,8 +102,13 @@ export class SelfHealAgent {
   private isCapturing = false;
   private globalErrorHandler: ((error: Error, context?: unknown) => void) | null = null;
   private globalRejectionHandler: ((reason: unknown, promise?: Promise<unknown>) => void) | null = null;
+  private runtime: RuntimeContext | null = null;
 
-  constructor(config: Partial<SelfHealConfig> = {}) {
+  constructor(runtime?: RuntimeContext, config: Partial<SelfHealConfig> = {}) {
+    if (runtime) {
+      this.runtime = runtime;
+      this.runtime.agent = this;
+    }
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.setupGlobalHandlers();
   }
@@ -116,14 +123,14 @@ export class SelfHealAgent {
     this.globalErrorHandler = (error: Error, context?: unknown) => {
       this.captureBeacon(error, 'error', context);
     };
-    window.addEventListener('error', this.globalErrorHandler as EventListener);
+    globalThis.addEventListener('error', this.globalErrorHandler as any);
 
     // Unhandled promise rejection
     this.globalRejectionHandler = (reason: unknown, promise?: Promise<unknown>) => {
       const error = reason instanceof Error ? reason : new Error(String(reason));
       this.captureBeacon(error, 'unhandledRejection', { promise });
     };
-    window.addEventListener('unhandledrejection', this.globalRejectionHandler as EventListener);
+    globalThis.addEventListener('unhandledrejection', this.globalRejectionHandler as any);
   }
 
   /**
@@ -136,7 +143,7 @@ export class SelfHealAgent {
     }
 
     this.isCapturing = true;
-    const startTime = performance.now();
+    const _startTime = performance.now();
 
     try {
       const beacon: CrashBeacon = {
@@ -201,26 +208,22 @@ export class SelfHealAgent {
     let signalIndexMap: Record<string, number> = {};
 
     try {
-      // Access SignalHeap from reactivity module if available
-      const reactivityModule = (globalThis as any).__nexus_reactivity;
-      if (reactivityModule?.signalHeap) {
-        const heap = reactivityModule.signalHeap;
-        
-        // Copy typed arrays (transferable would be better but we need to keep original)
-        if (heap.numericSignals instanceof Float64Array) {
-          numericSignals = new Float64Array(heap.numericSignals);
+      // Access SignalHeap from runtime context if available
+      if (this.runtime) {
+        if (heap) {
+           // Copy typed arrays if they match the expected internal names
+           // (Assuming we want to keep the "completing" logic as robust as possible)
+           const h = heap as any;
+           if (h._floatHeap instanceof Float64Array) numericSignals = new Float64Array(h._floatHeap);
+           if (h._intHeap instanceof Int32Array) booleanSignals = new Int32Array(h._intHeap);
+           signalIndexMap = { ...(h._indexMap || {}) };
         }
-        if (heap.booleanSignals instanceof Int32Array) {
-          booleanSignals = new Int32Array(heap.booleanSignals);
-        }
-        
-        signalIndexMap = { ...heap.signalIndexMap };
-      }
 
-      // Capture global reactive state if available
-      const globalState = (globalThis as any).__nexus_globalState;
-      if (globalState) {
-        objectSignals = [globalState];
+        // Capture global reactive state from runtime
+        const globalState = this.runtime.globalSignals();
+        if (globalState) {
+          objectSignals = [globalState];
+        }
       }
     } catch (e) {
       // Silently fail - capture what we can
@@ -463,13 +466,13 @@ export class SelfHealAgent {
    * Cleanup - remove global handlers
    */
   public dispose(): void {
-    if (typeof window === 'undefined') return;
+    if (typeof globalThis === 'undefined') return;
 
     if (this.globalErrorHandler) {
-      window.removeEventListener('error', this.globalErrorHandler as EventListener);
+      globalThis.removeEventListener('error', this.globalErrorHandler as any);
     }
     if (this.globalRejectionHandler) {
-      window.removeEventListener('unhandledrejection', this.globalRejectionHandler as EventListener);
+      globalThis.removeEventListener('unhandledrejection', this.globalRejectionHandler as any);
     }
 
     this.beaconHistory = [];
@@ -482,9 +485,9 @@ let agentInstance: SelfHealAgent | null = null;
 /**
  * Get or create the Self-Heal agent singleton
  */
-export function getSelfHealAgent(config?: Partial<SelfHealConfig>): SelfHealAgent {
+export function getSelfHealAgent(runtime?: RuntimeContext, config?: Partial<SelfHealConfig>): SelfHealAgent {
   if (!agentInstance) {
-    agentInstance = new SelfHealAgent(config);
+    agentInstance = new SelfHealAgent(runtime, config);
   }
   return agentInstance;
 }
@@ -492,13 +495,13 @@ export function getSelfHealAgent(config?: Partial<SelfHealConfig>): SelfHealAgen
 /**
  * Initialize Self-Heal with custom configuration
  */
-export function initSelfHeal(config?: Partial<SelfHealConfig>): SelfHealAgent {
+export function initSelfHeal(runtime?: RuntimeContext, config?: Partial<SelfHealConfig>): SelfHealAgent {
   if (agentInstance) {
     agentInstance.updateConfig(config || {});
     return agentInstance;
   }
   
-  agentInstance = new SelfHealAgent(config);
+  agentInstance = new SelfHealAgent(runtime, config);
   return agentInstance;
 }
 

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" data-ux-init
+      data-signal="{
+          doc: {
+            Title: 'data-var',
+            Description: 'Demonstrates ephemeral lexical memory. Declare single-variable memory footprints directly in the DOM template, bypassing global state for localized, garbage-isolated logic.',
+            Syntax: '&lt;div data-var-counter=\&quot;0\&quot;&gt;&lt;/div&gt;',
+            SourceModule: '/modules/attributes/var.ts',
+            SnippetModule: '/examples/dashboard/pages/attributes/var.html',
+            Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;Lexical mapping in &lt;code&gt;src/modules/attributes/var.ts&lt;/code&gt; creates a localized proxy. Extend this to implement automatic state persistence for local variables via IndexedDB physically.&lt;/p&gt;',
+            Snippet: '&lt;div class=\&quot;p-8 bg-base-200 rounded-box border shadow-inner\&quot;&gt;\n    &lt;div class=\&quot;grid grid-cols-1 md:grid-cols-2 gap-10\&quot;&gt;\n        &lt;!-- Instance A --&gt;\n        &lt;div data-var-clicks=\&quot;0\&quot; class=\&quot;flex flex-col items-center justify-center p-8 bg-base-100 rounded-xl border border-base-300 shadow-sm\&quot;&gt;\n            &lt;div class=\&quot;text-sm font-bold opacity-50 mb-4 uppercase\&quot;&gt;Instance Alpha&lt;/div&gt;\n            &lt;div class=\&quot;text-6xl font-black mb-6\&quot; data-text=\&quot;clicks\&quot;&gt;&lt;/div&gt;\n            &lt;button class=\&quot;btn btn-primary shadow-md\&quot; data-on-click=\&quot;clicks++\&quot;&gt;\n                Increment Local Variable\n            &lt;/button&gt;\n        &lt;/div&gt;\n        \n        &lt;!-- Instance B --&gt;\n        &lt;div data-var-clicks=\&quot;1024\&quot; class=\&quot;flex flex-col items-center justify-center p-8 bg-base-100 rounded-xl border border-base-300 shadow-sm\&quot;&gt;\n            &lt;div class=\&quot;text-sm font-bold opacity-50 mb-4 uppercase\&quot;&gt;Instance Beta&lt;/div&gt;\n            &lt;div class=\&quot;text-6xl font-black mb-6\&quot; data-text=\&quot;clicks\&quot;&gt;&lt;/div&gt;\n            &lt;button class=\&quot;btn btn-secondary shadow-md\&quot; data-on-click=\&quot;clicks += 128\&quot;&gt;\n                Increment Local Variable (+128)\n            &lt;/button&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n\n    &lt;div class=\&quot;mt-8 p-4 bg-neutral text-neutral-content rounded-lg text-center text-sm\&quot;&gt;\n        Variables declared via &lt;code&gt;data-var-*&lt;/code&gt; are bound to their container node. \n        Neither instance leaks into the global AST scope.\n    &lt;/div&gt;\n&lt;/div&gt;'
+          },
+          appReady: false
+      }">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus-UX: Attribute - data-var</title>
+    <script type="module" src="../../../../dist/nexus-ux.js?v={{TIMESTAMP}}"></script>
+</head>
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
+    <div data-component="'/examples/dashboard/components/document.html'"></div>
+</body>
+</html>

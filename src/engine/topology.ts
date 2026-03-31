@@ -282,6 +282,28 @@ class EngineTopology {
   }
 
   /**
+   * Get number of active workers
+   */
+  public getActiveWorkers(): number {
+    return this.workers.length;
+  }
+
+  /**
+   * Check if SAB is available
+   */
+  public isSABAvailable(): boolean {
+    return !!this.sharedBuffer;
+  }
+
+  /**
+   * Get lag variance
+   */
+  public getLagVariance(): number {
+    if (this.lagHistory.length === 0) return 0;
+    return this.lagHistory.reduce((a, b) => a + b, 0) / this.lagHistory.length;
+  }
+
+  /**
    * Get SharedArrayBuffer for cross-thread communication
    */
   public getSharedBuffer(): SharedArrayBuffer | null {

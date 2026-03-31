@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" data-ux-init
+      data-signal="{
+          doc: {
+            Title: 'data-html',
+            Description: 'This page demonstrates raw physical DOM interpretation through the &lt;code&gt;data-html&lt;/code&gt; attribute (Warning: Requires trusted context).',
+            Syntax: '&lt;div data-html=\&quot;rawHTMLString\&quot;&gt;&lt;/div&gt;',
+            SourceModule: '/modules/attributes/html.ts',
+            SnippetModule: '/examples/dashboard/pages/attributes/html.html',
+            Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/attributes/html.ts&lt;/code&gt;, evaluating to &lt;code&gt;innerHTML&lt;/code&gt;. It is highly recommended to inject DOMPurify hooks organically here.&lt;/p&gt;',
+            Snippet: '&lt;div class=\&quot;p-8 bg-base-200 rounded-box border shadow-inner\&quot;&gt;\n    &lt;textarea data-bind=\&quot;rawMarkup\&quot; class=\&quot;textarea textarea-bordered w-full font-mono text-sm h-32 mb-6 shadow-inner\&quot;&gt;&lt;/textarea&gt;\n    \n    &lt;div class=\&quot;divider\&quot;&gt;Live Rendered Execution Output&lt;/div&gt;\n    \n    &lt;div class=\&quot;p-6 bg-base-100 rounded shadow-md border border-neutral\&quot;&gt;\n        &lt;h3&gt;Output: &lt;span data-html=\&quot;rawMarkup\&quot; class=\&quot;ml-2 text-xl\&quot;&gt;&lt;/span&gt;&lt;/h3&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+          },
+          appReady: false,
+          rawMarkup: '&lt;div class=\&quot;flex flex-col items-center gap-4\&quot;&gt;\n    &lt;div class=\&quot;badge badge-lg badge-primary font-black\&quot;&gt;INJECTED&lt;/div&gt;\n    &lt;p class=\&quot;font-black text-3xl\&quot;&gt;Synthesized via data-html&lt;/p&gt;\n&lt;/div&gt;'
+      }">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus-UX: Attribute - data-html</title>
+    <script type="module" src="../../../../dist/nexus-ux.js?v={{TIMESTAMP}}"></script>
+</head>
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
+    <div data-component="'/examples/dashboard/components/document.html'"></div>
+</body>
+</html>

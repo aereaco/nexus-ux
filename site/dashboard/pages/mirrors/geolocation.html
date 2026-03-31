@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" data-ux-init data-debug
+      data-injest="{
+          daisy: { link: 'https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css' },
+          tailwind: { script: 'https://cdn.tailwindcss.com' },
+      }"
+      data-signal="{
+          doc: {
+            Title: '_geolocation',
+            Description: 'Demonstrating native continuous physical GPS tracking coordinates wired securely into AST Memory Space via &lt;code&gt;_geolocation&lt;/code&gt;.',
+            Syntax: '&lt;div data-text=\&quot;_geolocation.latitude\&quot;&gt;&lt;/div&gt;',
+            SourceModule: '/modules/mirrors/geolocation.ts',
+            SnippetModule: '/examples/dashboard/pages/mirrors/geolocation.html',
+            Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;GPS locators in &lt;code&gt;src/modules/mirrors/geolocation.ts&lt;/code&gt; map &lt;code&gt;navigator.geolocation.watchPosition&lt;/code&gt; natively. Integrate Mapbox geometry matrix translation immediately inside the hook.&lt;/p&gt;',
+            Snippet: '&lt;div class=\&quot;p-10 bg-base-100 rounded-[3rem] border border-base-300 shadow-xl overflow-hidden relative backdrop-blur\&quot; data-class-animate-pulse=\&quot;!_geolocation.latitude\&quot;&gt;\n    &lt;div class=\&quot;absolute inset-0 z-0\&quot;&gt;\n        &lt;div class=\&quot;w-full h-full\&quot; style=\&quot;background-image: radial-gradient(#6b7280 1px, transparent 1px); background-size: 20px 20px; opacity: 0.1;\&quot;&gt;&lt;/div&gt;\n    &lt;/div&gt;\n\n    &lt;div class=\&quot;relative z-10\&quot;&gt;\n        &lt;h3 class=\&quot;font-black text-2xl mb-8 text-center text-primary flex items-center justify-center gap-3\&quot;&gt;\n            &lt;div class=\&quot;w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center\&quot;&gt;\n                &lt;svg xmlns=\&quot;http://www.w3.org/2000/svg\&quot; fill=\&quot;none\&quot; viewBox=\&quot;0 0 24 24\&quot; stroke-width=\&quot;2\&quot; stroke=\&quot;currentColor\&quot; class=\&quot;w-6 h-6\&quot;&gt;&lt;path stroke-linecap=\&quot;round\&quot; stroke-linejoin=\&quot;round\&quot; d=\&quot;M15 10.5a3 3 0 11-6 0 3 3 0 016 0z\&quot; /&gt;&lt;path stroke-linecap=\&quot;round\&quot; stroke-linejoin=\&quot;round\&quot; d=\&quot;M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z\&quot; /&gt;&lt;/svg&gt;\n            &lt;/div&gt;\n            SATELLITE_UPLINK\n        &lt;/h3&gt;\n        \n        &lt;div data-show=\&quot;!_geolocation.latitude\&quot; class=\&quot;text-center text-warning font-black text-xs p-6 bg-warning/10 rounded-2xl border-2 border-dashed border-warning animate-pulse tracking-widest\&quot;&gt;\n            WAITING_FOR_GPS_TRIANGULATION_LOCK...\n        &lt;/div&gt;\n        \n        &lt;div data-show=\&quot;_geolocation.latitude\&quot; class=\&quot;grid grid-cols-1 md:grid-cols-2 gap-6\&quot;&gt;\n            &lt;div class=\&quot;bg-neutral p-6 rounded-2xl border border-neutral-content/10 shadow-2xl\&quot;&gt;\n                &lt;div class=\&quot;text-[10px] font-black text-info uppercase tracking-widest mb-1\&quot;&gt;LATITUDE_Y&lt;/div&gt;\n                &lt;div class=\&quot;text-2xl font-black text-white font-mono\&quot; data-text=\&quot;_geolocation.latitude\&quot;&gt;&lt;/div&gt;\n            &lt;/div&gt;\n            &lt;div class=\&quot;bg-neutral p-6 rounded-2xl border border-neutral-content/10 shadow-2xl\&quot;&gt;\n                &lt;div class=\&quot;text-[10px] font-black text-accent uppercase tracking-widest mb-1\&quot;&gt;LONGITUDE_X&lt;/div&gt;\n                &lt;div class=\&quot;text-2xl font-black text-white font-mono\&quot; data-text=\&quot;_geolocation.longitude\&quot;&gt;&lt;/div&gt;\n            &lt;/div&gt;\n        &lt;/div&gt;\n        \n        &lt;div class=\&quot;flex items-center justify-between text-[10px] font-black mt-8 opacity-40 px-2 border-t border-base-300 pt-6 tracking-widest\&quot;&gt;\n            &lt;span&gt;ACCURACY_RADIUS: &lt;strong data-text=\&quot;Math.floor(_geolocation.accuracy || 0)\&quot;&gt;&lt;/strong&gt;M&lt;/span&gt;\n            &lt;span class=\&quot;flex items-center gap-2\&quot;&gt;&lt;span class=\&quot;w-2 h-2 rounded-full bg-success\&quot;&gt;&lt;/span&gt; SIGNAL_LOCK: ACTIVE&lt;/span&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+          },
+          appReady: false
+      }">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus-UX | _geolocation</title>
+    <script type="module" src="../../../../dist/nexus-ux.js"></script>
+</head>
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
+    <div data-component="'/examples/dashboard/components/document.html'"></div>
+</body>
+</html>

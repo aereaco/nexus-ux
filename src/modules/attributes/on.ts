@@ -1,6 +1,7 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { initError } from '../../engine/errors.ts';
+import { matchAttributes } from '../../engine/attributeParser.ts';
 
 // Deterministic Registry for Zero-GC Event Delegation
 // Structure: Map<EventName, Map<nxId, EventListener[]>>
@@ -21,7 +22,7 @@ function getGlobalHandler(eventName: string) {
     for (const target of path) {
       if (e.cancelBubble) break; // Respect :stop modifier (stopPropagation)
       
-      const nxId = (target as any)[NEXUS_ID];
+      const nxId = (target as unknown as Record<symbol, number>)[NEXUS_ID];
       if (nxId && flatMap.has(nxId)) {
         flatMap.get(nxId)!.forEach(fn => fn(e));
       }
@@ -33,7 +34,7 @@ const onModule: AttributeModule = {
   name: 'on',
   attribute: 'on',
   handle: (el: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void => {
-    const attrs = Array.from(el.attributes).filter(a => (a.name.startsWith('data-on:') || a.name.startsWith('data-on-')) && a.value === value);
+    const attrs = matchAttributes(el, 'on', value);
     const cleanupFns: (() => void)[] = [];
 
     attrs.forEach(attr => {
@@ -50,9 +51,9 @@ const onModule: AttributeModule = {
           const extras = {
             $evt: e,
             $detail: detail,
-            $newValue: (e.target as any)?.value ?? (e.target as any)?.checked ?? detail
+            $newValue: (e.target as HTMLInputElement)?.value ?? (e.target as HTMLInputElement)?.checked ?? detail
           };
-          return runtime.evaluate(el, value, extras) as any;
+          return runtime.evaluate(el, value, extras);
         };
 
         // Apply Modifiers
@@ -90,9 +91,9 @@ const onModule: AttributeModule = {
 
           // Late Event Ignition: If event already happened, trigger it now for initialization safety.
           if (target === window && eventName === 'load' && document.readyState === 'complete') {
-             queueMicrotask(() => (handler as any)(new Event('load')));
+             queueMicrotask(() => (handler as EventListener)(new Event('load')));
           } else if (target === document && eventName === 'DOMContentLoaded' && (document.readyState === 'interactive' || document.readyState === 'complete')) {
-             queueMicrotask(() => (handler as any)(new Event('DOMContentLoaded')));
+             queueMicrotask(() => (handler as EventListener)(new Event('DOMContentLoaded')));
           }
         } else {
           // GC-Free Global Delegation
@@ -104,10 +105,10 @@ const onModule: AttributeModule = {
           const flatMap = globalListeners.get(eventName)!;
           
           // Assign deterministic ID if missing
-          if (!(target as any)[NEXUS_ID]) {
-            (target as any)[NEXUS_ID] = ++listenerIdCounter;
+          if (!(target as unknown as Record<symbol, number>)[NEXUS_ID]) {
+            (target as unknown as Record<symbol, number>)[NEXUS_ID] = ++listenerIdCounter;
           }
-          const nxId = (target as any)[NEXUS_ID];
+          const nxId = (target as unknown as Record<symbol, number>)[NEXUS_ID];
 
           let elementHandlers = flatMap.get(nxId);
           if (!elementHandlers) {

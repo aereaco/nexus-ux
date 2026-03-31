@@ -6,60 +6,84 @@ const ifModule: AttributeModule = {
   name: 'if',
   attribute: 'if',
   handle: (el: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void => {
-    // 1. Create Placeholder
-    const placeholder = document.createComment(` if: ${value} `);
     const parent = el.parentNode;
+    if (!parent || parent instanceof DocumentFragment) return;
 
-    if (!parent) {
-      initError('if', 'Element has no parent node', el, value);
-      return;
-    }
-
-    // 2. Initial State: We don't remove yet, wait for effect.
-    // But we need a reference anchor. 
-    // Actually, if we remove `el`, we lose the anchor for `insertBefore`.
-    // So placeholder serves as anchor when `el` is missing.
-
+    // 1. Placeholder & Anchor
+    const placeholder = document.createComment(` if: ${value} `);
     const anchor = document.createTextNode('');
     parent.insertBefore(anchor, el);
 
-    // 3. Effect
+    const isTemplate = el instanceof HTMLTemplateElement;
+    const blueprint = isTemplate ? (el as HTMLTemplateElement).content : null;
+
+    let currentNodes: Node[] = isTemplate ? [] : [el];
+    let isMounted = !isTemplate;
+
+    // CLEANUP SYMBOL for child disposal
+    const CLEANUP_SYMBOL = Symbol.for('__cleanup_functions__');
+    interface NexusElement extends HTMLElement { [CLEANUP_SYMBOL]?: (() => void)[] }
+
+    const disposeNodes = (nodes: Node[]) => {
+      nodes.forEach(n => {
+        if (n instanceof HTMLElement) {
+          const enhanced = n as NexusElement;
+          const elRemovals = enhanced[CLEANUP_SYMBOL];
+          if (elRemovals) {
+            elRemovals.forEach(c => c());
+            delete enhanced[CLEANUP_SYMBOL];
+          }
+        }
+        n.parentNode?.removeChild(n);
+      });
+    };
+
     try {
-      // runner is unused for now
       const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
-        // If el is detached (e.g. hidden), use placeholder to resolve scope from parent
-        const target: any = el.isConnected ? el : (placeholder.isConnected ? placeholder : anchor);
-        const condition = runtime.evaluate(target, value);
+        // Resolve condition relative to el (or placeholder if detached)
+        const target = el.isConnected ? el : (placeholder.isConnected ? placeholder : anchor);
+        const condition = Boolean(runtime.evaluate(target, value));
 
         if (condition) {
-          if (!el.parentNode || el.parentNode instanceof DocumentFragment || (el as Node) === placeholder) {
-            // Insert back or replace placeholder
-            if (placeholder.parentNode) {
-              placeholder.replaceWith(el);
-            } else if (anchor.parentNode) {
-              anchor.parentNode.insertBefore(el, anchor);
+          if (!isMounted) {
+            if (isTemplate && blueprint) {
+              const clone = blueprint.cloneNode(true);
+              currentNodes = Array.from(clone.childNodes);
+              currentNodes.forEach(n => {
+                anchor.parentNode?.insertBefore(n, anchor);
+                if (n instanceof HTMLElement) runtime.processElement(n);
+              });
+            } else {
+              if (placeholder.parentNode) {
+                placeholder.replaceWith(el);
+              } else {
+                anchor.parentNode?.insertBefore(el, anchor);
+              }
+              currentNodes = [el];
             }
+            isMounted = true;
           }
         } else {
-          if (el.parentNode && !(el.parentNode instanceof DocumentFragment) || el.isConnected) {
-             // If it's already a placeholder, no-op. 
-             // But we need to be careful not to remove if it's already removed.
-             if (el.parentNode) el.replaceWith(placeholder);
-          } else if (el.parentNode instanceof DocumentFragment) {
-             // In a fragment during initialization
-             el.replaceWith(placeholder);
+          if (isMounted) {
+            if (isTemplate) {
+              disposeNodes(currentNodes);
+              currentNodes = [];
+            } else {
+              el.replaceWith(placeholder);
+            }
+            isMounted = false;
           }
         }
       });
 
       return () => {
         cleanup();
+        if (isTemplate) {
+          disposeNodes(currentNodes);
+        }
         if (placeholder.parentNode) placeholder.remove();
         if (anchor.parentNode) anchor.remove();
-        // Should we restore `el`? usually yes, or let it die.
-        // Nexus lifecycle: if component destroyed, we leave it? 
-        // Best effort cleanup.
-      }
+      };
     } catch (e) {
       initError('if', `Failed to initialize if: ${e instanceof Error ? e.message : String(e)}`, el, value);
     }

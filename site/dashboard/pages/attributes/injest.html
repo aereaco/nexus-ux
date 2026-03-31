@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" data-ux-init
+      data-signal="{
+          doc: {
+            Title: 'data-injest',
+            Description: 'This page demonstrates the &lt;code&gt;data-injest&lt;/code&gt; attribute natively fetching CSS / Scripts (like Tailwind and DaisyUI) dynamically and suspending DOM rendering until parsing completes.',
+            Syntax: '&lt;div data-injest=\&quot;{ css: { link: `href=\&apos;...\&apos;` }, js: { script: `src=\&apos;...\&apos;` } }\&quot;&gt;&lt;/div&gt;',
+            SourceModule: '/modules/attributes/injest.ts',
+            SnippetModule: '/examples/dashboard/pages/attributes/injest.html',
+            Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;The &lt;code&gt;data-injest&lt;/code&gt; module manages the lifecycle of external dependencies, ensuring that the DOM remains hidden until all specified resources are fully loaded and parsed.&lt;/p&gt;',
+            Snippet: '&lt;div class=\&quot;p-8 bg-base-200 rounded-box border shadow-inner text-center font-bold text-xl text-success flex flex-col items-center justify-center gap-4\&quot;&gt;\n    &lt;span class=\&quot;loading loading-spinner text-success\&quot; data-show=\&quot;!hasLoaded\&quot;&gt;&lt;/span&gt;\n    &lt;div data-show=\&quot;hasLoaded\&quot; class=\&quot;badge badge-success badge-lg p-6 shadow-sm\&quot;&gt;\n        &lt;svg xmlns=\&quot;http://www.w3.org/2000/svg\&quot; class=\&quot;h-6 w-6 mr-2\&quot; fill=\&quot;none\&quot; viewBox=\&quot;0 0 24 24\&quot; stroke=\&quot;currentColor\&quot;&gt;&lt;path stroke-linecap=\&quot;round\&quot; stroke-linejoin=\&quot;round\&quot; stroke-width=\&quot;2\&quot; d=\&quot;M5 13l4 4L19 7\&quot;&gt;&lt;/path&gt;&lt;/svg&gt;\n        DaisyUI &amp;amp; Tailwind Dynamically Injected!\n    &lt;/div&gt;\n&lt;/div&gt;'
+          },
+          appReady: false,
+          hasLoaded: true
+      }">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus-UX: Attribute - data-injest</title>
+    <script type="module" src="../../../../dist/nexus-ux.js?v={{TIMESTAMP}}"></script>
+</head>
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
+    <div data-component="'/examples/dashboard/components/document.html'"></div>
+</body>
+</html>

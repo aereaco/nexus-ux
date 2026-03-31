@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" data-ux-init data-debug
+      data-injest="{
+          daisy: { link: 'https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css' },
+          tailwind: { script: 'https://cdn.tailwindcss.com' },
+      }"
+      data-signal="{
+          doc: {
+            Title: 'data-switcher',
+            Description: 'Demonstrates looping mathematical toggling. Pairs with &lt;code&gt;data-switcher-options&lt;/code&gt; to cycle through a set of states with native index wrapping and zero-JS orchestration.',
+            Syntax: '&lt;div data-switcher=\&quot;currentSlide\&quot; data-switcher-options=\&quot;[\&apos;A\&apos;, \&apos;B\&apos;, \&apos;C\&apos;]\&quot;&gt;&lt;/div&gt;',
+            SourceModule: '/modules/attributes/switcher.ts',
+            SnippetModule: '/examples/dashboard/pages/attributes/switcher.html',
+            Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;The switching engine in &lt;code&gt;src/modules/attributes/switcher.ts&lt;/code&gt; provides the &lt;code&gt;$switch()&lt;/code&gt; helper. This can be extended to support bidirectional cycling or weighted random selection physically.&lt;/p&gt;',
+            Snippet: '&lt;div class=\&quot;p-10 bg-base-100 rounded-[3rem] border border-base-300 shadow-xl overflow-hidden\&quot;&gt;\n    &lt;div class=\&quot;flex flex-col items-center\&quot;&gt;\n        &lt;!-- PRIMARY_CONTROLLER --&gt;\n        &lt;div data-switcher=\&quot;currentSlide\&quot; data-switcher-options=\&quot;[\&apos;TELEMETRY\&apos;, \&apos;DIAGNOSTICS\&apos;, \&apos;CONFIGURATION\&apos;]\&quot; class=\&quot;w-full max-w-sm mb-10\&quot;&gt;\n            &lt;button class=\&quot;btn btn-lg btn-block btn-primary rounded-2xl font-black shadow-xl h-20 text-xl tracking-tighter\&quot; data-on-click=\&quot;$switch()\&quot;&gt;\n                EXEC_VECTOR_SHIFT\n            &lt;/button&gt;\n        &lt;/div&gt;\n        \n        &lt;div class=\&quot;badge badge-lg font-black bg-base-300 border-none mb-10 gap-2\&quot;&gt;\n            &lt;span class=\&quot;opacity-40\&quot;&gt;ACTIVE_LAYER:&lt;/span&gt; \n            &lt;span class=\&quot;text-primary\&quot; data-text=\&quot;currentSlide\&quot;&gt;&lt;/span&gt;\n        &lt;/div&gt;\n\n        &lt;!-- VIEWPORT_PIPELINE --&gt;\n        &lt;div class=\&quot;w-full bg-neutral rounded-[2rem] border-4 border-base-200 shadow-2xl relative overflow-hidden min-h-[300px]\&quot;&gt;\n            &lt;div class=\&quot;absolute inset-0 flex flex-col items-center justify-center p-10 transition-all duration-700\&quot; \n                 data-class-opacity-100=\&quot;currentSlide === \&apos;TELEMETRY\&apos;\&quot; \n                 data-class-opacity-0=\&quot;currentSlide !== \&apos;TELEMETRY\&apos;\&quot; \n                 data-class-translate-y-0=\&quot;currentSlide === \&apos;TELEMETRY\&apos;\&quot;\n                 data-class-translate-y-10=\&quot;currentSlide !== \&apos;TELEMETRY\&apos;\&quot;\n                 data-class-pointer-events-none=\&quot;currentSlide !== \&apos;TELEMETRY\&apos;\&quot;&gt;\n                &lt;div class=\&quot;text-info font-black text-6xl tracking-tighter mb-4\&quot;&gt;ALPHA_01&lt;/div&gt;\n                &lt;p class=\&quot;text-xs font-mono text-white/40 tracking-widest\&quot;&gt;UPLINK_STATUS_ESTABLISHED&lt;/p&gt;\n            &lt;/div&gt;\n            \n            &lt;div class=\&quot;absolute inset-0 flex flex-col items-center justify-center p-10 transition-all duration-700\&quot; \n                 data-class-opacity-100=\&quot;currentSlide === \&apos;DIAGNOSTICS\&apos;\&quot; \n                 data-class-opacity-0=\&quot;currentSlide !== \&apos;DIAGNOSTICS\&apos;\&quot; \n                 data-class-translate-y-0=\&quot;currentSlide === \&apos;DIAGNOSTICS\&apos;\&quot;\n                 data-class-translate-y-10=\&quot;currentSlide !== \&apos;DIAGNOSTICS\&apos;\&quot;\n                 data-class-pointer-events-none=\&quot;currentSlide !== \&apos;DIAGNOSTICS\&apos;\&quot;&gt;\n                &lt;div class=\&quot;text-success font-black text-6xl tracking-tighter mb-4\&quot;&gt;BETA_02&lt;/div&gt;\n                &lt;p class=\&quot;text-xs font-mono text-white/40 tracking-widest\&quot;&gt;PATTERN_ANALYSIS_COMPLETE&lt;/p&gt;\n            &lt;/div&gt;\n            \n            &lt;div class=\&quot;absolute inset-0 flex flex-col items-center justify-center p-10 transition-all duration-700\&quot; \n                 data-class-opacity-100=\&quot;currentSlide === \&apos;CONFIGURATION\&apos;\&quot; \n                 data-class-opacity-0=\&quot;currentSlide !== \&apos;CONFIGURATION\&apos;\&quot; \n                 data-class-translate-y-0=\&quot;currentSlide === \&apos;CONFIGURATION\&apos;\&quot;\n                 data-class-translate-y-10=\&quot;currentSlide !== \&apos;CONFIGURATION\&apos;\&quot;\n                 data-class-pointer-events-none=\&quot;currentSlide !== \&apos;CONFIGURATION\&apos;\&quot;&gt;\n                &lt;div class=\&quot;text-accent font-black text-6xl tracking-tighter mb-4\&quot;&gt;GAMMA_03&lt;/div&gt;\n                &lt;p class=\&quot;text-xs font-mono text-white/40 tracking-widest\&quot;&gt;PROTOCOL_SYNC_UNLOCKED&lt;/p&gt;\n            &lt;/div&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+          },
+          appReady: false,
+          currentSlide: 'TELEMETRY'
+      }">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus-UX | data-switcher</title>
+    <script type="module" src="../../../../dist/nexus-ux.js"></script>
+</head>
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
+    <div data-component="'/examples/dashboard/components/document.html'"></div>
+</body>
+</html>

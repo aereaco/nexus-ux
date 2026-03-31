@@ -1,9 +1,0 @@
-{
-  "Title": "data-on",
-  "Description": "This page demonstrates the universal native event interception engine routing DOM events mathematically into the execution AST using <code>data-on-*</code>.",
-  "Syntax": "<button data-on-click=\"handleClick()\"></button>\n<form data-on-submit:prevent=\"sendData()\"></form>",
-  "SourceModule": "/modules/attributes/on.ts",
-  "SnippetModule": "data-on",
-  "Extensibility": "<p class=\"opacity-80 mt-4 leading-relaxed\">The universal event listener in <code>src/modules/attributes/on.ts</code> orchestrates native DOM events. You can inject synthetic events (like React's) into this pipeline.</p>",
-  "Snippet": "<div class=\"flex flex-col gap-6 p-6 bg-base-200 rounded-box border shadow-inner\">\n    <button class=\"btn btn-primary\" data-on-click=\"logs.push('Primary Button Clicked!')\">\n        Single Click Listener\n    </button>\n    \n    <button class=\"btn btn-secondary\" data-on-dblclick=\"logs.push('Secondary Button Double-Clicked!')\">\n        Double Click Listener\n    </button>\n    \n    <input type=\"text\" class=\"input input-bordered\" placeholder=\"Hover or focus me...\" data-on-mouseenter=\"logs.push('Mouse Entered Input Node')\" data-on-focus=\"logs.push('Focus Captured')\" data-on-blur=\"logs.push('Focus Released')\">\n    \n    <!-- A log output area to display `logs` array -->\n    <div class=\"mt-4 p-4 bg-neutral text-neutral-content rounded overflow-auto h-32 font-mono text-sm\">\n        <div data-for=\"log in logs.slice().reverse()\">\n            <span class=\"text-secondary opacity-50\">&gt; </span> <span data-text=\"log\"></span>\n        </div>\n    </div>\n</div>"
-}

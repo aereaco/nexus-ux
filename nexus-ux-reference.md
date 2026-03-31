@@ -99,12 +99,12 @@ legacy frameworks by utilizing direct token-to-function mapping.
 
 | Symbol | Designation          | Technical Role                                                                             | Practical Example                                                 |
 | :----- | :------------------- | :----------------------------------------------------------------------------------------- | :---------------------------------------------------------------- |
-| `.`    | **Native Access**    | **Unwrapped Integrity**. Bypasses the Reactive Proxy for high-frequency/raw JS/DOM access. | `<div data-text="user.name"></div>`                               |
-| `#`    | **Global Signal**    | **Reactive Source**. Accesses user-defined Global Signals managed by the Binary Heap.      | `<div data-text="#auth.user"></div>`                              |
-| `_`    | **Env Mirror**       | **API Snapshot**. Read-only access to reactive wrappers of Browser/OS APIs.                | `<div data-text="_window.innerWidth"></div>`                      |
-| `:`    | **Modifier**         | **Pipeline Anchor**. Defines interceptors, wrappers, and pipeways for logical execution.   | `<button data-on-click:once="save()"></button>`                  |
-| `$`    | **Logic / Selector** | **Sprite / Command**. Framework-level tools (tools) and the Unified Selector engine.      | `<button data-on-click="$(^form).save()"></button>`              |
-| `@`    | **Scope Rule**       | **Boundary Rule**. Site-aware logic based on environment, OS, or security state.           | `<div data-text="@media(min-width: 1024px) { 'Desktop' }"></div>` |
+| `.`    | **Native Access**    | **Unwrapped Integrity**. Bypasses the Reactive Proxy for high-frequency/raw JS/DOM access. | `<div data-bind="user.name"></div>`                               |
+| `#`    | **Global Signal**    | **Reactive Source**. Accesses user-defined Global Signals managed by the Binary Heap.      | `<div data-bind="#auth.user"></div>`                              |
+| `_`    | **Env Mirror**       | **API Snapshot**. Read-only access to reactive wrappers of Browser/OS APIs.                | `<div data-bind="_window.innerWidth"></div>`                      |
+| `:`    | **Modifier**         | **Pipeline Anchor**. Defines interceptors, wrappers, and pipeways for logical execution.   | `<button data-on-click:once="save()"></button>`                   |
+| `$`    | **Logic / Selector** | **Sprite / Command**. Framework-level tools (tools) and the Unified Selector engine.       | `<button data-on-click="$(^form).save()"></button>`               |
+| `@`    | **Scope Rule**       | **Boundary Rule**. Site-aware logic based on environment, OS, or security state.           | `<div data-bind="@media(min-width: 1024px) { 'Desktop' }"></div>` |
 
 ### 1.2. The Unified Reactive Selector $(path)
 
@@ -133,10 +133,10 @@ without centralized stores.
 Nexus-UX bypasses custom parsers by treating directive values as native JS
 template strings. This allows for zero-overhead visual logic.
 
-- **Dynamic Properties**: `data-style-width="percent + '%'"`
-- **Logical Branching**: `data-class-active="status === 'ready'"`
-- **Complex Templates**: `data-style-background="`linear-gradient(${angle}deg,
-  #f06, #4a9)`"`
+- **Dynamic Properties**: `data-style="{ width: percent + '%' }"`
+- **Logical Branching**: `data-class="{ active: status === 'ready' }"`
+- **Complex Templates**:
+  `data-style="{ background: \`linear-gradient(\${angle}deg, #f06, #4a9)\` }"`
 
 ### 1.4. Scope Rules (@)
 
@@ -162,12 +162,12 @@ write them. This is the operational primitive of the entire framework.
 
 #### 1.5.1. Declarative vs. Imperative Patterns
 
-| Pattern                 | Syntax                                         | When to Use                                                |
-| :---------------------- | :--------------------------------------------- | :--------------------------------------------------------- |
-| **Declarative (HTML)**  | `<input data-bind-value="name">`              | Defining the UI structure and binding map                  |
-| **Imperative Read**     | `el.dataset.bindValue`                         | Inspecting a directive's expression at runtime             |
+| Pattern                 | Syntax                                        | When to Use                                                |
+| :---------------------- | :-------------------------------------------- | :--------------------------------------------------------- |
+| **Declarative (HTML)**  | `<input data-bind="name">`                    | Defining the UI structure and binding map                  |
+| **Imperative Read**     | `el.dataset.bindValue`                        | Inspecting a directive's expression at runtime             |
 | **Imperative Write**    | `el.dataset.bindValue = "email"`              | Dynamically reassigning a binding (triggers re-evaluation) |
-| **Raw Attribute Read**  | `el.getAttribute('data-bind-value')`           | High-frequency reads where marginal perf matters           |
+| **Raw Attribute Read**  | `el.getAttribute('data-bind-value')`          | High-frequency reads where marginal perf matters           |
 | **Raw Attribute Write** | `el.setAttribute('data-bind-value', 'email')` | Equivalent to `dataset` write; updates both sides          |
 
 #### 1.5.2. Naming Convention: Automatic Kebab ↔ CamelCase
@@ -323,19 +323,19 @@ changes.
 ```html
 <!-- Text input -->
 <div data-signal="{ name: '' }">
-  <input type="text" data-bind-value="name">
+  <input type="text" data-bind="name">
   <p>Hello, {name}!</p>
 </div>
 
 <!-- Checkbox -->
 <div data-signal="{ agreed: false }">
-  <input type="checkbox" data-bind-checked="agreed">
+  <input type="checkbox" data-bind="agreed">
   <p data-if="agreed">Thank you for agreeing!</p>
 </div>
 
 <!-- Select dropdown -->
 <div data-signal="{ color: 'red' }">
-  <select data-bind-value="color">
+  <select data-bind="color">
     <option value="red">Red</option>
     <option value="green">Green</option>
     <option value="blue">Blue</option>
@@ -360,36 +360,38 @@ changes.
 <div
   data-signal="{ user: { profile: { name: 'John', email: 'john@example.com' } } }"
 >
-  <input type="text" data-bind-value="user.profile.name">
-  <input type="email" data-bind-value="user.profile.email">
+  <input type="text" data-bind="user.profile.name">
+  <input type="email" data-bind="user.profile.email">
 </div>
 ```
 
 #### 2.2.1. Content & Attribute Binding
 
-| Directive          | Designation        | Technical Scope                                                                                                                                          |
-| :----------------- | :----------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `data-text`        | **Text Content**   | Sets `innerText` via reactive subscription.                                                                                                              |
-| `data-html`        | **HTML Content**   | Sets `innerHTML`. **CAUTION**: Use only for trusted content.                                                                                             |
-| `data-var-[name]`  | **Variable Sync**  | **CSS Custom Property Bridge**. Direct synchronization of state to CSS variables (`--[name]`). Essential for "Data Painting" and UI library integration. |
-| `data-bind-[attr]` | **Attribute Sync** | Reactively syncs a signal to any native HTML attribute.                                                                                                  |
+| **`data-bind`** | **Auto-Detect** | **The Unified Binding Engine**.
+Auto-detects target property (text, value, checked) based on element type.
+Absorbs legacy `data-text` and `data-model`. | | **`data-html`** | **HTML
+Content** | Sets `innerHTML`. **CAUTION**: Use only for trusted content. | |
+**`data-var-[name]`** | **Variable Sync** | **CSS Custom Property Bridge**.
+Direct synchronization of state to CSS variables (`--[name]`). | |
+**`data-bind-[attr]`** | **Attribute Sync** | Reactively syncs a signal to any
+native HTML attribute. |
 
 #### 2.2.2. Form Two-Way Binding
 
 Nexus-UX provides robust two-way binding for all standard form elements via
 `data-bind`.
 
-- **Input/Textarea**: `<input data-bind-value="username">`
+- **Input/Textarea**: `<input data-bind="username">`
 - **Select**:
   ```html
-  <select data-bind-value="selectedId">
+  <select data-bind="selectedId">
     <template data-for="opt in options">
-      <option data-bind-value="opt.id" data-text="opt.label"></option>
+      <option data-bind="opt.id" data-bind="opt.label"></option>
     </template>
   </select>
   ```
-- **Checkbox**: `<input type="checkbox" data-bind-checked="isActive">` (Binds
-  to Boolean).
+- **Checkbox**: `<input type="checkbox" data-bind="isActive">` (Binds to
+  Boolean).
 
 #### 2.2.3. Automatic Unit Appending (data-style)
 
@@ -415,16 +417,21 @@ Directly sync state to CSS Custom Properties. Essential for DaisyUI integration.
 - **Spinner**:
   `<div data-progress="{ type: 'spinner', size: '20px', value: 'isBusy' }"></div>`
 
-#### 2.2.6. "Data Injest" for Zero-Flicker Assets
+#### 2.2.6. "Data Injest" 2.0 — Reactive Grouped Namespaces
 
-**Syntax**: `data-injest="['url1.css', 'url2.js']"`
+**Syntax**: `data-injest="{ groupName: { type: 'url' } }"`
 
 **Purpose**: Defers HTML rendering until critical external assets (like tailwind
 CDN or custom fonts) are fully loaded, parsed, and adopted via Constructable
-Stylesheets. Eliminates FOUC entirely.
+Stylesheets. Supports reactive updates and multiple asset types per namespace.
 
-- **Pattern**:
-  `<html data-injest="['https://cdn.tailwindcss.com']"> ... </html>`
+- **Standard Pattern**:
+  `<html data-injest="{ tailwind: { link: 'https://cdn.tailwindcss.com' } }"> ... </html>`
+
+- **Reactive Theme Switcher**:
+  ```html
+  <div data-injest="{ theme: { theme: 'themes/' + currentTheme + '.css' } }">
+  ```
 
 ---
 
@@ -572,7 +579,7 @@ changes.
 
 ```html
 <template data-for="user in users" data-key="user.id">
-  <li data-text="user.name"></li>
+  <li data-bind="user.name"></li>
 </template>
 ```
 
@@ -727,9 +734,11 @@ chain of execution.
 
 ### 5.1. `data-style` — Dynamic Styles
 
-**Syntax**: `data-style-property="expression"`
+**Syntax**: `data-style="{ property: expression, ... }"`
 
-**Purpose**: Dynamically bind CSS properties to signal values.
+**Purpose**: Dynamically bind CSS properties to signal values using object
+mapping. Suffix-based binding (e.g. `data-style-color`) is deprecated in favor
+of the unified object syntax.
 
 **Examples**:
 
@@ -741,9 +750,12 @@ chain of execution.
   <button data-on-click="color = 'blue'">Make Blue</button>
 </div>
 
-<!-- Width/height -->
+<!-- Width/height (Object syntax) -->
 <div data-signal="{ width: 50 }">
-  <div data-style-width="width + '%'" style="background: blue; height: 50px">
+  <div
+    data-style="{ width: width + '%' }"
+    style="background: blue; height: 50px"
+  >
   </div>
   <input type="range" min="0" max="100" data-bind-value="width">
 </div>
@@ -758,12 +770,14 @@ chain of execution.
   </button>
 </div>
 
-<!-- Multiple style properties -->
+<!-- Multiple style properties (Cleanest Pattern) -->
 <div data-signal="{ theme: { bg: '#222', fg: '#fff', size: '16px' } }">
   <div
-    data-style-background-color="theme.bg"
-    data-style-color="theme.fg"
-    data-style-font-size="theme.size"
+    data-style="{
+      backgroundColor: theme.bg,
+      color: theme.fg,
+      fontSize: theme.size
+    }"
   >
     Themed content
   </div>
@@ -791,9 +805,12 @@ that need units (width, height, padding, margin, etc.).
 
 ### 5.2. `data-class` — Dynamic CSS Classes
 
-**Syntax**: `data-class-className="booleanExpression"`
+**Syntax**: `data-class="{ className: booleanExpression, ... }"` or
+`data-class="['cls1', ... ]"`
 
-**Purpose**: Toggle CSS classes based on conditions.
+**Purpose**: Toggle CSS classes based on object or array conditions.
+Suffix-based binding (e.g. `data-class-active`) is deprecated in favor of the
+unified reconciliation engine.
 
 **Examples**:
 
@@ -2509,13 +2526,13 @@ template source:
 
 #### 10.1.1. Template Sources
 
-| Source Type      | Syntax               | Example                                              |
-| :--------------- | :------------------- | :--------------------------------------------------- |
-| **URL**          | Path string          | `data-component="/components/nav.html"`              |
-| **Same-page ID** | `#id` reference      | `data-component="#my-template"`                      |
-| **Inline**       | `<template>` string  | `data-component="<template><p>Hello</p></template>"` |
-| **Data URI**     | `data:` URL          | `data-component="data:text/html;base64,..."`         |
-| **Signal**       | `signal` expression | `data-component="currentView"`                      |
+| Source Type      | Syntax              | Example                                              |
+| :--------------- | :------------------ | :--------------------------------------------------- |
+| **URL**          | Path string         | `data-component="/components/nav.html"`              |
+| **Same-page ID** | `#id` reference     | `data-component="#my-template"`                      |
+| **Inline**       | `<template>` string | `data-component="<template><p>Hello</p></template>"` |
+| **Data URI**     | `data:` URL         | `data-component="data:text/html;base64,..."`         |
+| **Signal**       | `signal` expression | `data-component="currentView"`                       |
 
 ### 10.2. Component Template Structure
 
@@ -2571,19 +2588,17 @@ The engine automatically rewrites `:host` → `my-component` in Light DOM mode.
 **Shadow DOM**: Uses Constructable Stylesheets (`adoptedStyleSheets`) for
 optimal performance when available.
 
-### 10.4. Reactive Props
+### 10.4. Signal Inheritance
 
-Pass data into components using `data-signals-[name]` attributes:
+Nexus-UX follows a **Zero-Copy Signal Inheritance** model. Components
+automatically inherit the reactive scope of their parent. There is no need for
+explicit "Props" or complex state passing.
 
 ```html
 <!-- Parent -->
 <div data-signal="{ userName: 'Ada', userAge: 30 }">
-  <user-card
-    data-component="/components/user-card.html"
-    data-signals-name="userName"
-    data-signals-age="userAge"
-  >
-  </user-card>
+  <!-- component inherits userName and userAge automatically -->
+  <user-card data-component="/components/user-card.html"></user-card>
 </div>
 ```
 
@@ -2591,30 +2606,31 @@ Pass data into components using `data-signals-[name]` attributes:
 <!-- /components/user-card.html -->
 <template>
   <div>
-    <h2>{props.name}</h2>
-    <p>Age: {props.age}</p>
+    <h2 data-bind="userName"></h2>
+    <p>Age: <span data-bind="userAge"></span></p>
   </div>
 </template>
 ```
 
-Props are **reactive** — when the parent's signal changes, the component's
-`props` update automatically.
+**Two-Way Flow**: Because signals are shared by reference, a component can
+modify a parent's signal directly (if permitted by the scope), enabling
+seamless, zero-serialization orchestration.
 
 ### 10.5. Script Isolation & Context
 
 Inline `<script>` blocks execute as ES modules with an injected component
 context:
 
-| Context Variable         | Description                                                |
-| :----------------------- | :--------------------------------------------------------- |
-| `componentInstance`      | The Custom Element instance (`this` equivalent)            |
-| `ds`                     | The Nexus-UX runtime context                               |
-| `signals`               | Proxy for reading scoped signals (e.g., `signals.count`) |
-| `props`                 | Reactive props passed via `data-signals-*`                 |
-| `emit(name, detail)`     | Dispatch a custom event (bubbles, composed)                |
-| `registerCleanup(fn)`    | Register a function to run on component disconnect         |
-| `generateScopedId(base)` | Generate a unique, instance-scoped ID                      |
-| `actions`               | Object populated with exported functions from the script   |
+| Context Variable         | Description                                              |
+| :----------------------- | :------------------------------------------------------- |
+| `componentInstance`      | The Custom Element instance (`this` equivalent)          |
+| `ds`                     | The Nexus-UX runtime context                             |
+| `signals`                | Proxy for reading scoped signals (e.g., `signals.count`) |
+| `props`                  | Reactive props passed via `data-signals-*`               |
+| `emit(name, detail)`     | Dispatch a custom event (bubbles, composed)              |
+| `registerCleanup(fn)`    | Register a function to run on component disconnect       |
+| `generateScopedId(base)` | Generate a unique, instance-scoped ID                    |
+| `actions`                | Object populated with exported functions from the script |
 
 ```html
 <template>
@@ -2641,8 +2657,8 @@ context:
 | `connectedCallback`           | Element enters the DOM                   | Auto-handled; triggers template render             |
 | `disconnectedCallback`        | Element leaves the DOM                   | Auto-handled; runs cleanup functions               |
 | `contentReadyCallback()`      | Template + styles + scripts fully loaded | Override in component script for post-render logic |
-| `data-component-connected`    | Declarative connected hook               | `data-component-connected="onConnect()"`          |
-| `data-component-disconnected` | Declarative disconnected hook            | `data-component-disconnected="onDisconnect()"`    |
+| `data-component-connected`    | Declarative connected hook               | `data-component-connected="onConnect()"`           |
+| `data-component-disconnected` | Declarative disconnected hook            | `data-component-disconnected="onDisconnect()"`     |
 
 ### 10.7. Form-Associated Components
 

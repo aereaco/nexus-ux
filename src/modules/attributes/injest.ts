@@ -1,44 +1,21 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { reportError } from '../../engine/errors.ts';
+import { readIDB } from '../../engine/utils/idb.ts';
 
 /**
  * Lightweight IndexedDB read helper for idb:// URIs.
  * Replaces the previous VFS dependency.
  */
-const INJEST_DB = 'nexus-store';
-
-function readFromIDB(key: string): Promise<string | null> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(INJEST_DB, 1);
-    request.onupgradeneeded = () => {
-      // Don't create stores here — if it doesn't exist, there's nothing to read
-    };
-    request.onsuccess = () => {
-      const db = request.result;
-      // Extract store name from key (first path segment)
-      const storeName = key.split('/')[0] || 'files';
-      if (!db.objectStoreNames.contains(storeName)) {
-        db.close();
-        resolve(null);
-        return;
-      }
-      const tx = db.transaction(storeName, 'readonly');
-      const store = tx.objectStore(storeName);
-      const getReq = store.get(key);
-      getReq.onsuccess = () => {
-        db.close();
-        const result = getReq.result;
-        if (!result) { resolve(null); return; }
-        if (typeof result === 'string') { resolve(result); return; }
-        if (result.data && typeof result.data === 'string') { resolve(result.data); return; }
-        if (result.data instanceof ArrayBuffer) { resolve(new TextDecoder().decode(result.data)); return; }
-        resolve(null);
-      };
-      getReq.onerror = () => { db.close(); reject(getReq.error); };
-    };
-    request.onerror = () => reject(request.error);
-  });
+async function readFromIDB(key: string): Promise<string | null> {
+  const storeName = key.split('/')[0] || 'files';
+  const result = await readIDB(storeName, key);
+  
+  if (!result) return null;
+  if (typeof result === 'string') return result;
+  if (result.data && typeof result.data === 'string') return result.data;
+  if (result.data instanceof ArrayBuffer) return new TextDecoder().decode(result.data);
+  return null;
 }
 
 /**
@@ -67,14 +44,15 @@ const assetCache = new Map<string, string>();
  */
 
 interface InjestPayload {
-  link?: string | Record<string, string>;
-  script?: string | Record<string, string>;
+  link?: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>;
+  script?: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>;
+  style?: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>;
+  theme?: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>; // Alias for style
   pattern?: string;
   component?: string;
-  theme?: string;
-  type?: string;     // Script/link type attribute (e.g. 'module' for ES modules)
-  target?: string;   // CSS selector for where to inject patterns/components (default: self)
-  position?: 'replace' | 'prepend' | 'append' | 'before' | 'after'; // Injection position (default: 'append')
+  type?: string;     // Legacy support
+  target?: string;   // For patterns
+  position?: 'replace' | 'prepend' | 'append' | 'before' | 'after';
 }
 
 /**
@@ -86,8 +64,6 @@ function isVFSUri(str: string): boolean {
 
 /**
  * Resolves content from either a VFS URI or a legacy inline attribute string.
- * For VFS URIs, fetches via VFS. For legacy strings, falls back to the original
- * attribute-parsing + fetch() pipeline.
  */
 async function resolveContent(uri: string): Promise<string | null> {
   if (isVFSUri(uri) && uri.startsWith('idb://')) {
@@ -109,8 +85,7 @@ async function resolveContent(uri: string): Promise<string | null> {
 }
 
 /**
- * Parses an inline attribute string like "href='...' rel='stylesheet'" into
- * a key-value record. Preserves backward compatibility with v1 injest.
+ * Parses an inline attribute string like "href='...' rel='stylesheet'".
  */
 function parseInlineAttrs(raw: string): Record<string, string> {
   const attrs: Record<string, string> = {};
@@ -122,129 +97,146 @@ function parseInlineAttrs(raw: string): Record<string, string> {
   return attrs;
 }
 
+/**
+ * Optimized attribute applier for injected elements.
+ */
+function applyAttributes(el: HTMLElement | HTMLLinkElement | HTMLScriptElement | HTMLStyleElement, attrs: Record<string, string | boolean | number>) {
+  Object.entries(attrs).forEach(([key, value]) => {
+    if (key === 'content' || key === 'innerText' || key === 'textContent' || key === 'href' || key === 'src') return;
+    if (value === true) el.setAttribute(key, '');
+    else if (value === false) el.removeAttribute(key);
+    else el.setAttribute(key, String(value));
+  });
+}
+
 // ─── Ingest Handlers ───────────────────────────────────────────
 
 async function ingestLink(
-  _id: string,
-  rawOrObj: string | Record<string, string>,
+  id: string,
+  payload: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>,
   cleanupFns: Array<() => void>,
   runtime: RuntimeContext
 ): Promise<void> {
-  let attrs: Record<string, string>;
-  if (typeof rawOrObj === 'string') {
-    attrs = parseInlineAttrs(rawOrObj);
-    if (!attrs['href']) {
-      attrs = { href: rawOrObj, rel: 'stylesheet' };
+  const items = Array.isArray(payload) ? payload : [payload];
+  
+  for (const item of items) {
+    let attrs: Record<string, string | boolean | number> = typeof item === 'string' ? { href: item, rel: 'stylesheet' } : (item as Record<string, string | boolean | number>);
+    if (typeof item === 'string' && !attrs.href) {
+        attrs = parseInlineAttrs(item);
+        if (!attrs.href) attrs = { href: item, rel: 'stylesheet' };
     }
-  } else {
-    attrs = rawOrObj;
-  }
-  const href = attrs['href'];
-  if (!href) throw new Error(`Missing href attribute`);
+    
+    const href = attrs.href as string;
+    if (!href) continue;
 
-  // Optimize: Skip VFS resolution for standard HTTP/HTTPS links to avoid CORS noise
-  // Use standard <link> tag injection which is robust against CORS
-  // 1. Attempt Constructable Stylesheet adoption (High Performance / ZCZS)
-  if ('CSSStyleSheet' in globalThis && 'replace' in CSSStyleSheet.prototype) {
-    let cssText = assetCache.get(href);
-    if (!cssText) {
-      const resolved = await resolveContent(href);
-      if (resolved) {
-        cssText = resolved;
-        assetCache.set(href, cssText);
+    // ZCZS Mandate: Constructable Stylesheets
+    if ('CSSStyleSheet' in globalThis && (attrs.rel === 'stylesheet' || !attrs.rel)) {
+      const cssText = await resolveContent(href);
+      if (cssText) {
+        const sheet = new CSSStyleSheet();
+        await sheet.replace(cssText);
+        document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+        cleanupFns.push(() => {
+          document.adoptedStyleSheets = document.adoptedStyleSheets.filter(s => s !== sheet);
+        });
+        runtime.log(`Nexus Injest [${id}]: CSS adopted (ZCZS): ${href}`);
+        continue;
       }
     }
-    if (cssText) {
+
+    // Fallback: <link> tag
+    const link = document.createElement('link');
+    applyAttributes(link, attrs);
+    document.head.appendChild(link);
+    cleanupFns.push(() => link.remove());
+    runtime.log(`Nexus Injest [${id}]: CSS loaded (Tag): ${href}`);
+  }
+}
+
+async function ingestScript(
+  id: string,
+  payload: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>,
+  cleanupFns: Array<() => void>,
+  runtime: RuntimeContext
+): Promise<void> {
+  const items = Array.isArray(payload) ? payload : [payload];
+  
+  for (const item of items) {
+    let attrs: Record<string, string | boolean | number> = typeof item === 'string' ? { src: item } : (item as Record<string, string | boolean | number>);
+    if (typeof item === 'string' && !attrs.src) {
+        attrs = parseInlineAttrs(item);
+        if (!attrs.src) attrs = { src: item };
+    }
+    
+    const src = attrs.src as string;
+    if (!src) continue;
+
+    const script = document.createElement('script');
+    applyAttributes(script, attrs);
+    
+    // Handle VFS/IDB for scripts
+    if (src.startsWith('idb://')) {
+        const content = await resolveContent(src);
+        if (content) {
+            const blob = new Blob([content], { type: (attrs.type as string) || 'text/javascript' });
+            const url = URL.createObjectURL(blob);
+            script.src = url;
+            cleanupFns.push(() => URL.revokeObjectURL(url));
+        }
+    } else {
+        script.src = src;
+    }
+
+    document.head.appendChild(script);
+    cleanupFns.push(() => script.remove());
+    runtime.log(`Nexus Injest [${id}]: Script loaded: ${src}`);
+  }
+}
+
+async function ingestStyle(
+  id: string,
+  payload: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>,
+  cleanupFns: Array<() => void>,
+  runtime: RuntimeContext
+): Promise<void> {
+  const items = Array.isArray(payload) ? payload : [payload];
+  
+  for (const item of items) {
+    const attrs: Record<string, string | boolean | number> = typeof item === 'string' ? { content: item } : item;
+    const content = (attrs.content as string) || (typeof item === 'string' ? item : '');
+    
+    if (!content && !attrs.href) continue;
+
+    // If it's a link-like theme, delegate to ingestLink
+    if (attrs.href) {
+        await ingestLink(id, attrs as Record<string, string | boolean | number>, cleanupFns, runtime);
+        continue;
+    }
+
+    // Resolve content if it's a VFS URI
+    const cssText = isVFSUri(content) ? await resolveContent(content) : content;
+    if (!cssText) continue;
+
+    // ZCZS Mandate: Constructable Stylesheets
+    if ('CSSStyleSheet' in globalThis) {
       const sheet = new CSSStyleSheet();
       await sheet.replace(cssText);
       document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
       cleanupFns.push(() => {
         document.adoptedStyleSheets = document.adoptedStyleSheets.filter(s => s !== sheet);
       });
-      runtime.log(`Nexus Injest: CSS adopted (Constructable): ${href}`);
-      return;
+      runtime.log(`Nexus Injest [${id}]: Style adopted (ZCZS)`);
+      continue;
     }
+
+    // Fallback: <style> tag
+    const style = document.createElement('style');
+    applyAttributes(style, attrs);
+    style.textContent = cssText;
+    document.head.appendChild(style);
+    cleanupFns.push(() => style.remove());
+    runtime.log(`Nexus Injest [${id}]: Style loaded (Tag)`);
   }
-
-  // 2. Fallback: standard <link> element injection (Backward Compatibility)
-  await new Promise<void>((resolve, reject) => {
-    const link = document.createElement('link');
-    Object.keys(attrs).forEach(k => link.setAttribute(k, attrs[k]));
-    link.onload = () => resolve();
-    link.onerror = () => reject(new Error(`Link load failed for ${href}`));
-    document.head.appendChild(link);
-    cleanupFns.push(() => link.remove());
-  });
-  runtime.log(`Nexus Injest: CSS loaded via <link>: ${href}`);
-}
-
-async function ingestScript(
-  _id: string,
-  rawOrObj: string | Record<string, string>,
-  cleanupFns: Array<() => void>,
-  runtime: RuntimeContext
-): Promise<void> {
-  let attrs: Record<string, string>;
-  if (typeof rawOrObj === 'string') {
-    attrs = parseInlineAttrs(rawOrObj);
-    if (!attrs['src']) {
-      attrs = { src: rawOrObj };
-    }
-  } else {
-    attrs = rawOrObj;
-  }
-  const src = attrs['src'];
-  if (!src) throw new Error(`Missing src attribute`);
-
-  // Optimize: Standard HTTP/HTTPS scripts should always use tag injection to avoid CORS fetch issues
-  const isExternal = src.startsWith('http');
-
-  // VFS Resolution (idb://)
-  if (!isExternal && src.startsWith('idb://')) {
-    const content = await resolveContent(src);
-    if (content) {
-      // Inject as inline script blob
-      const blob = new Blob([content], { type: 'text/javascript' });
-      const blobUrl = URL.createObjectURL(blob);
-      await new Promise<void>((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = blobUrl;
-        script.onload = () => { URL.revokeObjectURL(blobUrl); resolve(); };
-        script.onerror = () => { URL.revokeObjectURL(blobUrl); reject(new Error(`Script load failed for VFS: ${src}`)); };
-        document.head.appendChild(script);
-        cleanupFns.push(() => script.remove());
-      });
-      runtime.log(`Nexus Injest: Script loaded from VFS: ${src}`);
-      return;
-    }
-  }
-
-  // Legacy: standard <script> element injection
-  await new Promise<void>((resolve, reject) => {
-    const script = document.createElement('script');
-    
-    // Set non-src attributes first to ensure type="module" is set before src triggers loading
-    Object.keys(attrs).forEach(k => {
-      if (k !== 'src') {
-        if (k === 'type') {
-          (script as HTMLScriptElement).type = attrs[k];
-          script.setAttribute('type', attrs[k]);
-        } else {
-          script.setAttribute(k, attrs[k]);
-        }
-      }
-    });
-
-    if (attrs['src']) {
-      script.setAttribute('src', attrs['src']);
-    }
-
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error(`Script load failed for ${src}`));
-    document.head.appendChild(script);
-    cleanupFns.push(() => script.remove());
-  });
-  runtime.log(`Nexus Injest: Script loaded: ${src}`);
 }
 
 async function ingestPattern(
@@ -325,104 +317,87 @@ async function ingestComponent(
   }
 }
 
-async function ingestTheme(
-  id: string,
-  uri: string,
-  cleanupFns: Array<() => void>,
-  runtime: RuntimeContext
-): Promise<void> {
-  const content = await resolveContent(uri);
-  if (!content) throw new Error(`Theme not found: ${uri}`);
-
-  // Theme content is pure CSS (custom properties, color schemes, etc.)
-  if ('CSSStyleSheet' in globalThis && 'replace' in CSSStyleSheet.prototype) {
-    const sheet = new CSSStyleSheet();
-    await sheet.replace(content);
-    document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
-    cleanupFns.push(() => {
-      document.adoptedStyleSheets = document.adoptedStyleSheets.filter(s => s !== sheet);
-    });
-  } else {
-    const style = document.createElement('style');
-    style.setAttribute('data-injest-theme', id);
-    style.textContent = content;
-    document.head.appendChild(style);
-    cleanupFns.push(() => style.remove());
-  }
-  runtime.log(`Nexus Injest [${id}]: Theme loaded from ${uri}`);
-}
-
 // ─── Module Definition ──────────────────────────────────────────
 
 const injestModule: AttributeModule = {
   name: 'injest',
   attribute: 'injest',
   handle: (el: HTMLElement, expression: string, runtime: RuntimeContext): (() => void) | void => {
-    let config: Record<string, InjestPayload>;
+    // Differential update state
+    let activeCleanup: (() => void) | null = null;
+    let lastConfigStr = '';
 
-    try {
-      config = runtime.evaluate(el, expression) as Record<string, InjestPayload>;
-    } catch (e) {
-      reportError(new Error(`Injest: Failed to evaluate configuration: ${e}`), el);
-      return;
-    }
+    const stopEffect = runtime.effect(() => {
+      const config = runtime.evaluate(el, expression) as Record<string, InjestPayload>;
+      const configStr = JSON.stringify(config);
+      
+      // Optimization: Skip if config hasn't changed
+      if (configStr === lastConfigStr) return;
+      lastConfigStr = configStr;
 
-    if (!config || typeof config !== 'object') return;
-
-    const ids = Object.keys(config);
-    const total = ids.length;
-
-    // Loading state
-    el.classList.add('nexus-loading');
-    el.setAttribute('data-nexus-loading', '');
-
-    const cleanupFns: Array<() => void> = [];
-
-    // Parallel ingestion
-    const ingestTasks = ids.map(async id => {
-      const item = config[id];
-      try {
-        const itemTasks = [];
-        if (item.link) itemTasks.push(ingestLink(id, item.link, cleanupFns, runtime));
-        if (item.script) {
-          // Promote string to object when sibling 'type' exists (e.g. type: 'module')
-          const scriptPayload = (typeof item.script === 'string' && item.type)
-            ? { src: item.script, type: item.type } as Record<string, string>
-            : item.script;
-          itemTasks.push(ingestScript(id, scriptPayload, cleanupFns, runtime));
-        }
-        if (item.pattern) itemTasks.push(ingestPattern(id, item.pattern, el, item, cleanupFns, runtime));
-        if (item.component) itemTasks.push(ingestComponent(id, item.component, cleanupFns, runtime));
-        if (item.theme) itemTasks.push(ingestTheme(id, item.theme, cleanupFns, runtime));
-        await Promise.all(itemTasks);
-      } catch (e) {
-        reportError(new Error(`Nexus Injest [${id}]: Error ${e}`), el);
+      // Clean up previous iteration
+      if (activeCleanup) {
+        activeCleanup();
+        activeCleanup = null;
       }
+
+      if (!config || typeof config !== 'object') return;
+
+      const ids = Object.keys(config);
+      if (ids.length === 0) return;
+
+      // Loading state
+      el.classList.add('nexus-loading');
+      el.setAttribute('data-nexus-loading', '');
+
+      const iterationCleanupFns: Array<() => void> = [];
+      activeCleanup = () => iterationCleanupFns.forEach(fn => fn());
+
+      const ingestTasks = ids.map(async id => {
+        const item = config[id];
+        try {
+          const itemTasks = [];
+          
+          // Links
+          if (item.link) {
+              itemTasks.push(ingestLink(id, item.link, iterationCleanupFns, runtime));
+          }
+          
+          // Scripts
+          if (item.script) {
+              itemTasks.push(ingestScript(id, item.script, iterationCleanupFns, runtime));
+          }
+          
+          // Styles / Themes (Unified)
+          const stylePayload = item.style || item.theme;
+          if (stylePayload) {
+              itemTasks.push(ingestStyle(id, stylePayload, iterationCleanupFns, runtime));
+          }
+          
+          // Patterns & Components (Legacy/Existing)
+          if (item.pattern) itemTasks.push(ingestPattern(id, item.pattern, el, item, iterationCleanupFns, runtime));
+          if (item.component) itemTasks.push(ingestComponent(id, item.component, iterationCleanupFns, runtime));
+          
+          await Promise.all(itemTasks);
+        } catch (e) {
+          reportError(new Error(`Nexus Injest [${id}]: Error ${e}`), el);
+        }
+      });
+
+      const finalize = () => {
+        el.classList.remove('nexus-loading');
+        el.classList.add('nexus-ready');
+        el.removeAttribute('data-nexus-loading');
+        el.setAttribute('data-nexus-ready', '');
+        runtime.log(`Nexus Injest: Assets synchronized.`);
+      };
+
+      Promise.all(ingestTasks).then(finalize);
     });
 
-    const finalize = () => {
-      el.classList.remove('nexus-loading');
-      el.classList.add('nexus-ready');
-      el.removeAttribute('data-nexus-loading');
-      el.setAttribute('data-nexus-ready', '');
-      el.style.opacity = '';
-      runtime.log(`Nexus Injest: All ${total} asset ingestion tasks completed.`);
-    };
-
-    Promise.all(ingestTasks).then(finalize);
-    
-    // 5. Absolute Watchdog: Reveal page no matter what after 10s
-    setTimeout(() => {
-      if (el.hasAttribute('data-nexus-loading')) {
-         console.warn(`[Nexus Injest] Absolute watchdog triggered after 10s. Forcefully revealing page.`);
-         finalize();
-      }
-    }, 10000);
-
-    if (total === 0) finalize();
-
     return () => {
-      cleanupFns.forEach(fn => fn());
+      stopEffect();
+      if (activeCleanup) activeCleanup();
     };
   }
 };

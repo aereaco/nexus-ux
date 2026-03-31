@@ -9,8 +9,9 @@ import {
 } from './consts.ts';
 
 import * as reactivity from './reactivity.ts'; 
+import * as reconciler from './reconciler.ts'; 
 import { readonly } from './reactivity.ts';
-import { morphDOM } from './morph.ts'; 
+import { morphDOM } from './reconciler.ts'; 
 import { fetchUtilities } from './fetch.ts'; 
 import { getDataStack } from './scope.ts';
 import { evaluate } from './evaluator.ts'; 
@@ -22,7 +23,7 @@ import { elUniqId, attrHash } from './utils/hash.ts';
 import { MARKER_KEY } from './consts.ts';
 import { NexusEnhancedElement } from './reactivity.ts';
 import { attachObserver, registerObserver, disposeObservers } from './observers.ts';
-import { topology } from './topology.ts';
+import { topology, TierLevel } from './topology.ts';
 
 /**
  * Defines the shape of an action function.
@@ -152,7 +153,7 @@ declare module "./composition.ts" {
     localActions: (el: HTMLElement) => Record<string, ActionFunction>;
     globalActions: () => Record<string, ActionFunction>;
     getModifier: (name: string) => ModifierModule | undefined;
-    reportError: (error: Error, el?: HTMLElement, expression?: string) => void;
+    reportError: (err: Error, el?: HTMLElement, expr?: string) => void;
   }
 }
 
@@ -210,10 +211,12 @@ export class ModuleCoordinator {
       globalActions: getGlobalActions.bind(this),
       getModifier: (name: string) => this.modifierModules.get(name),
       processElement: this.processElement.bind(this),
+      reconcileClass: (el, val) => reconciler.reconcileClass(el, val),
+      reconcileStyle: (el, val) => reconciler.reconcileStyle(el, val),
       parseAttribute: parseAttribute,
       scheduler: scheduler,
-      reportError: reportError,
-      refs: {}, // Placeholder for refs
+      reportError: (err: Error, el?: HTMLElement, expr?: string) => logger.error(this.runtimeContext, err.message, el, expr),
+
       $: (selector: string) => {
         if (typeof document === 'undefined') return null;
         return resolveSelector(document.body as any, selector);
@@ -226,16 +229,16 @@ export class ModuleCoordinator {
       // Engine Topology (Tier 0-3)
       topology: {
         getTier: () => topology.getTier(),
-        getConfig: () => topology.getConfig(),
+        getConfig: () => topology.getTierConfig(),
         getActiveWorkers: () => topology.getActiveWorkers(),
         isSABAvailable: () => topology.isSABAvailable(),
-        getLagVariance: () => topology.getLagVariance()
+        getLagVariance: () => topology.getLagVariance(),
       },
 
-      log: (...args: any[]) => logger.log(this.runtimeContext, ...args),
-      warn: (...args: any[]) => logger.warn(this.runtimeContext, ...args),
-      info: (...args: any[]) => logger.info(this.runtimeContext, ...args),
-      debug: (...args: any[]) => logger.debug(this.runtimeContext, ...args),
+      log: (...args: unknown[]) => logger.log(this.runtimeContext, ...args),
+      warn: (...args: unknown[]) => logger.warn(this.runtimeContext, ...args),
+      info: (...args: unknown[]) => logger.info(this.runtimeContext, ...args),
+      debug: (...args: unknown[]) => logger.debug(this.runtimeContext, ...args),
     };
     // Dynamic Debug Support
     if (typeof MutationObserver !== 'undefined' && typeof document !== 'undefined') {
@@ -394,6 +397,10 @@ export class ModuleCoordinator {
     return this.initContext;
   }
 
+
+  /**
+   * Get current lag variance (average lag ratio)
+   */
   public processElement(element: HTMLElement, forceReWalk: boolean = false): void {
     // 1. Element-level gating: If already initialized, skip structure walk
     if (!forceReWalk && (element as NexusEnhancedElement)[MARKER_KEY]) return;

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" data-ux-init data-debug
+      data-injest="{
+          daisy: { link: 'https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css' },
+          tailwind: { script: 'https://cdn.tailwindcss.com' },
+      }"
+      data-signal="{
+          doc: {
+            Title: 'data-ux-theme',
+            Description: 'Demonstrates structural theme propagation. Automatically propagate DaisyUI CSS variables and data-attributes across the DOM scope with zero-JS orchestration and native variable mirroring.',
+            Syntax: '&lt;html data-ux-theme=\&quot;activeTheme\&quot;&gt;',
+            SourceModule: '/modules/attributes/theme.ts',
+            SnippetModule: '/examples/dashboard/pages/attributes/theme.html',
+            Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;The theme engine in &lt;code&gt;src/modules/attributes/theme.ts&lt;/code&gt; rewrites physical CSS variables. You can bind system preference observers to automatically toggle themes based on hardware light/dark settings.&lt;/p&gt;',
+            Snippet: '&lt;div class=\&quot;p-10 bg-base-100 rounded-[3rem] border border-base-300 shadow-xl overflow-hidden\&quot;&gt;\n    &lt;div class=\&quot;grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10\&quot;&gt;\n        &lt;button class=\&quot;btn btn-lg rounded-2xl font-black border-none transition-all\&quot; \n                data-class-bg-primary=\&quot;localTheme === \&apos;light\&apos;\&quot; \n                data-class-text-primary-content=\&quot;localTheme === \&apos;light\&apos;\&quot;\n                data-on-click=\&quot;localTheme = \&apos;light\&apos;\&quot;&gt;LIGHT_V1&lt;/button&gt;\n        &lt;button class=\&quot;btn btn-lg rounded-2xl font-black border-none transition-all\&quot; \n                data-class-bg-secondary=\&quot;localTheme === \&apos;dim\&apos;\&quot; \n                data-class-text-secondary-content=\&quot;localTheme === \&apos;dim\&apos;\&quot;\n                data-on-click=\&quot;localTheme = \&apos;dim\&apos;\&quot;&gt;DIM_PROTO&lt;/button&gt;\n        &lt;button class=\&quot;btn btn-lg rounded-2xl font-black border-none transition-all\&quot; \n                data-class-bg-accent=\&quot;localTheme === \&apos;cyberpunk\&apos;\&quot; \n                data-class-text-accent-content=\&quot;localTheme === \&apos;cyberpunk\&apos;\&quot;\n                data-on-click=\&quot;localTheme = \&apos;cyberpunk\&apos;\&quot;&gt;CYBER_RUN&lt;/button&gt;\n        &lt;button class=\&quot;btn btn-lg rounded-2xl font-black border-none transition-all\&quot; \n                data-class-bg-error=\&quot;localTheme === \&apos;synthwave\&apos;\&quot; \n                data-class-text-error-content=\&quot;localTheme === \&apos;synthwave\&apos;\&quot;\n                data-on-click=\&quot;localTheme = \&apos;synthwave\&apos;\&quot;&gt;SYNTH_GRID&lt;/button&gt;\n    &lt;/div&gt;\n\n    &lt;!-- REFRACTION_ENGINE_DISPLAY --&gt;\n    &lt;div class=\&quot;grid grid-cols-4 gap-4 w-full h-48 rounded-[2rem] overflow-hidden shadow-2xl border-4 border-base-300 p-2 bg-base-300\&quot;&gt;\n        &lt;div class=\&quot;bg-primary rounded-xl flex flex-col items-center justify-center gap-2 shadow-lg\&quot;&gt;\n            &lt;div class=\&quot;text-[10px] font-black tracking-widest opacity-40\&quot;&gt;PRIMARY&lt;/div&gt;\n            &lt;div class=\&quot;w-8 h-8 rounded-full bg-primary-content/20 animate-pulse\&quot;&gt;&lt;/div&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;bg-secondary rounded-xl flex flex-col items-center justify-center gap-2 shadow-lg\&quot;&gt;\n            &lt;div class=\&quot;text-[10px] font-black tracking-widest opacity-40\&quot;&gt;SECONDARY&lt;/div&gt;\n            &lt;div class=\&quot;w-8 h-8 rounded-full bg-secondary-content/20 animate-pulse\&quot;&gt;&lt;/div&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;bg-accent rounded-xl flex flex-col items-center justify-center gap-2 shadow-lg\&quot;&gt;\n            &lt;div class=\&quot;text-[10px] font-black tracking-widest opacity-40\&quot;&gt;ACCENT&lt;/div&gt;\n            &lt;div class=\&quot;w-8 h-8 rounded-full bg-accent-content/20 animate-pulse\&quot;&gt;&lt;/div&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;bg-neutral rounded-xl flex flex-col items-center justify-center gap-2 shadow-lg\&quot;&gt;\n            &lt;div class=\&quot;text-[10px] font-black tracking-widest opacity-40\&quot;&gt;NEUTRAL&lt;/div&gt;\n            &lt;div class=\&quot;w-8 h-8 rounded-full bg-neutral-content/20 animate-pulse\&quot;&gt;&lt;/div&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n    \n    &lt;div class=\&quot;flex justify-between items-center mt-10 p-6 bg-base-200 rounded-3xl border border-base-300\&quot;&gt;\n        &lt;div class=\&quot;text-xs font-black tracking-widest opacity-40\&quot;&gt;EVALUATED_SYSTEM_TARGET&lt;/div&gt;\n        &lt;div class=\&quot;badge badge-lg bg-primary text-primary-content border-none font-black px-6 h-10\&quot;&gt;\n            [data-theme=\&quot;&lt;span data-text=\&quot;localTheme\&quot;&gt;&lt;/span&gt;\&quot;]\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+          },
+          appReady: false,
+          localTheme: 'dim'
+      }">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus-UX | data-ux-theme</title>
+    <script type="module" src="../../../../dist/nexus-ux.js"></script>
+</head>
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true" data-ux-theme="localTheme">
+    <div data-component="'/examples/dashboard/components/document.html'"></div>
+</body>
+</html>

@@ -1,9 +1,0 @@
-{
-  "Title": "data-sort",
-  "Description": "This page demonstrates how <code>data-sort</code> intercepts HTML5 Native Drag & Drop to mutate backing array signals.",
-  "Syntax": "<div data-sort=\"itemsArray\">...</div>",
-  "SourceModule": "/modules/attributes/sort.ts",
-  "SnippetModule": "data-sort",
-  "Extensibility": "<p class=\"opacity-80 mt-4 leading-relaxed\">Drag &amp; Drop behavior in <code>src/modules/attributes/sort.ts</code> implements HTML5 Native Drag vectors. This can be extended to support <code>touch</code> interfaces by shim injecting touch-events.</p>",
-  "Snippet": "<div class=\"p-8 bg-base-200 rounded-box border shadow-inner\">\n    <div class=\"menu bg-base-200 w-full rounded-box shadow-inner min-h-64 p-4 gap-2\" data-sort=\"kanban\">\n        <template data-for=\"ticket in kanban\">\n            <li class=\"bg-base-100 rounded-lg shadow-sm border border-base-300 cursor-move active:cursor-grabbing hover:bg-neutral hover:text-neutral-content transition-colors duration-200\">\n                <a data-text=\"ticket\" class=\"font-bold text-lg py-4\"></a>\n            </li>\n        </template>\n    </div>\n</div>"
-}

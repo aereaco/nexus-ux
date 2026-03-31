@@ -1,6 +1,5 @@
-import { ActionFunction } from './modules.ts';
-import { AttributeModule, ActionModule, ListenerModule, ObserverModule, UtilityModule } from './modules.ts';
-import type { TierLevel, TierConfig } from './topology.ts';
+import { ActionFunction, AttributeModule, ActionModule, ListenerModule, ObserverModule, UtilityModule } from './modules.ts';
+import { topology, TierLevel, TierConfig, TIER_CONFIGS } from './topology.ts';
 
 export interface InitContext {
   registerAttributeModule: (name: string, module: AttributeModule) => void;
@@ -41,7 +40,9 @@ export interface RuntimeContext {
   parseAttribute: (attrName: string, context: RuntimeContext, element: HTMLElement) => any;
 
   // DOM
-  morphDOM: any;
+  morphDOM: (from: Element, to: Element | string, options?: Record<string, unknown>) => void;
+  reconcileClass: (el: HTMLElement, value: unknown) => void;
+  reconcileStyle: (el: HTMLElement, value: unknown) => void;
   processElement: (element: HTMLElement) => void;
 
   // State Management
@@ -61,9 +62,9 @@ export interface RuntimeContext {
 
   // Utilities
   fetch?: any;
-  refs: Record<string, HTMLElement>;
   $: (selector: string) => any;
   isDevMode?: boolean;
+  agent?: any; // SelfHealAgent (typed as any to avoid circular dependency)
 
   // Garbage-Free Architecture Utils
   elUniqId: (el: Element) => string;

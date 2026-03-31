@@ -109,3 +109,61 @@ export function resolveScopeProvider(key: string, el: Element | Text | Comment, 
   const provider = scopeProviderRegistry.get(key);
   return provider ? provider(el, runtime) : undefined;
 }
+
+/**
+ * Parses an object literal expression to identify "ghost keys" and infer their types.
+ * Ghost keys are used for pre-allocating ZCZS heap slots.
+ */
+export function parseGhostKeys(expression: string): { 
+  ghostKeys: string[]; 
+  typeHints: Record<string, 'number' | 'boolean' | 'string' | 'object'> 
+} {
+  const ghostKeys: string[] = [];
+  const typeHints: Record<string, 'number' | 'boolean' | 'string' | 'object'> = {};
+  
+  const trimmed = expression.trim();
+  if (trimmed.startsWith('({') || trimmed.startsWith('{')) {
+     // Robust regex for identifying keys in object literals (standard, single-quoted, double-quoted)
+     const keyMatches = expression.matchAll(/['"]?([a-zA-Z_$][\w$]*)['"]?\s*:/g);
+     for (const match of keyMatches) {
+       ghostKeys.push(match[1]);
+     }
+     
+     // Improved Type Inference for ZCZS pre-allocation
+     ghostKeys.forEach((key) => {
+       const valueRegex = new RegExp(`['"]?${key}['"]?\\s*:\\s*([^,}\\s]*)`, 'g');
+       const valueMatch = valueRegex.exec(expression);
+       
+       if (valueMatch && valueMatch[1]) {
+         const valToken = valueMatch[1].trim();
+         if (valToken.startsWith('true') || valToken.startsWith('false')) typeHints[key] = 'boolean';
+         else if (/^-?\d/.test(valToken)) typeHints[key] = 'number';
+         else if (/^['"`]/.test(valToken)) typeHints[key] = 'string';
+         else if (valToken.startsWith('[') || valToken.startsWith('{')) typeHints[key] = 'object';
+       }
+     });
+  }
+  return { ghostKeys, typeHints };
+}
+
+/**
+ * Creates a reactive proxy for a state object to be used as a scope.
+ */
+export function createScopeProxy(
+  stateRef: { value: Record<string, unknown> }, 
+  onSet?: (key: string, value: unknown) => void,
+  onTrigger?: () => void
+): Record<string, unknown> {
+  return new Proxy({}, {
+    has(_, key) { return Reflect.has(stateRef.value, key); },
+    get(_, key) { return Reflect.get(stateRef.value, key); },
+    set(_, key, value) { 
+      const res = Reflect.set(stateRef.value, key, value);
+      if (onSet) onSet(key as string, value);
+      if (onTrigger) onTrigger();
+      return res;
+    },
+    ownKeys() { return Reflect.ownKeys(stateRef.value); },
+    getOwnPropertyDescriptor(_, key) { return Reflect.getOwnPropertyDescriptor(stateRef.value, key); }
+  });
+}

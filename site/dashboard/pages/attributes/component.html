@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" data-ux-init data-debug
+      data-signal="{
+          doc: {
+            Title: 'data-component',
+            Description: 'Demonstrates lazy-loading HTML fragments. Ingest entire template ecosystems dynamically from the server or local hidden DOM sources for zero-JS routing.',
+            Syntax: '&lt;div data-component=\&quot;/api/header.html\&quot;&gt;&lt;/div&gt;',
+            SourceModule: '/modules/attributes/component.ts',
+            SnippetModule: '/examples/dashboard/pages/attributes/component.html',
+            Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;The &lt;code&gt;component&lt;/code&gt; loader supports recursive state inheritance and WAAPI transition lifecycle hooks natively.&lt;/p&gt;',
+            DefaultSnippetName: 'Template ID',
+            Examples: {
+              'Template ID': '&lt;div class=\&quot;p-10 bg-base-100 rounded-3xl border border-base-300 shadow-2xl\&quot; \n     data-signal=\&quot;{ activeId: \&apos;none\&apos; }\&quot;&gt;\n    &lt;h3 class=\&quot;text-[10px] font-black uppercase tracking-widest opacity-30 mb-8\&quot;&gt;In-DOM Selector&lt;/h3&gt;\n    &lt;div class=\&quot;flex gap-3 justify-center mb-10\&quot;&gt;\n        &lt;button class=\&quot;btn btn-primary rounded-xl px-6\&quot; data-on-click=\&quot;activeId = \&apos;#card-tpl\&apos;\&quot;&gt;\n            Load &amp;#35;card-tpl\n        &lt;/button&gt;\n        &lt;button class=\&quot;btn btn-outline rounded-xl\&quot; data-on-click=\&quot;activeId = \&apos;none\&apos;\&quot;&gt;Clear&lt;/button&gt;\n    &lt;/div&gt;\n\n    &lt;div class=\&quot;min-h-[120px] rounded-2xl overflow-hidden bg-base-200/30\&quot;&gt;\n        &lt;template data-if=\&quot;activeId !== \&apos;none\&apos;\&quot;&gt;\n            &lt;div data-component=\&quot;activeId\&quot;&gt;&lt;/div&gt;\n        &lt;/template&gt;\n    &lt;/div&gt;\n\n    &lt;template id=\&quot;card-tpl\&quot;&gt;\n        &lt;div class=\&quot;p-8 bg-primary/10 border-l-4 border-primary\&quot;&gt;\n            &lt;h3 class=\&quot;font-black text-xl\&quot;&gt;In-DOM Resource&lt;/h3&gt;\n            &lt;p class=\&quot;opacity-70 text-sm\&quot;&gt;Fetched from local &amp;lt;template&amp;gt; ID.&lt;/p&gt;\n        &lt;/div&gt;\n    &lt;/template&gt;\n&lt;/div&gt;',
+              'HTML Literal': '&lt;div class=\&quot;p-10 bg-base-100 rounded-3xl border border-base-300 shadow-2xl\&quot; \n     data-signal=\&quot;{ \n        activeId: \&apos;none\&apos;, \n        myLiteral: \&apos;&lt;div class=&amp;quot;p-8 bg-secondary/10 border-l-4 border-secondary&amp;quot;&gt;&lt;h3 class=&amp;quot;font-black text-xl&amp;quot;&gt;LITERAL HTML!&lt;/h3&gt;&lt;p class=&amp;quot;opacity-70 text-sm&amp;quot;&gt;Injected via raw string evaluation.&lt;/p&gt;&lt;/div&gt;\&apos; \n     }\&quot;&gt;\n    &lt;h3 class=\&quot;text-[10px] font-black uppercase tracking-widest opacity-30 mb-8\&quot;&gt;Direct String Injection&lt;/h3&gt;\n    &lt;div class=\&quot;flex gap-3 justify-center mb-10\&quot;&gt;\n        &lt;button class=\&quot;btn btn-secondary rounded-xl px-6\&quot; data-on-click=\&quot;activeId = myLiteral\&quot;&gt;\n            Inject Literal\n        &lt;/button&gt;\n        &lt;button class=\&quot;btn btn-outline rounded-xl\&quot; data-on-click=\&quot;activeId = \&apos;none\&apos;\&quot;&gt;Clear&lt;/button&gt;\n    &lt;/div&gt;\n\n    &lt;div class=\&quot;min-h-[120px] rounded-2xl overflow-hidden bg-base-200/30\&quot;&gt;\n        &lt;template data-if=\&quot;activeId !== \&apos;none\&apos;\&quot;&gt;\n            &lt;div data-component=\&quot;activeId\&quot;&gt;&lt;/div&gt;\n        &lt;/template&gt;\n    &lt;/div&gt;\n&lt;/div&gt;',
+              'Remote Fetch': '&lt;div class=\&quot;p-10 bg-base-100 rounded-3xl border border-base-300 shadow-2xl\&quot; \n     data-signal=\&quot;{ activeId: \&apos;none\&apos; }\&quot;&gt;\n    &lt;h3 class=\&quot;text-[10px] font-black uppercase tracking-widest opacity-30 mb-8\&quot;&gt;Network Resource&lt;/h3&gt;\n    &lt;div class=\&quot;flex gap-3 justify-center mb-10\&quot;&gt;\n        &lt;button class=\&quot;btn btn-accent rounded-xl px-6\&quot; data-on-click=\&quot;activeId = \&apos;/examples/dashboard/pages/attributes/test_fragment.html\&apos;\&quot;&gt;\n            Fetch Remote Task\n        &lt;/button&gt;\n        &lt;button class=\&quot;btn btn-outline rounded-xl\&quot; data-on-click=\&quot;activeId = \&apos;none\&apos;\&quot;&gt;Clear&lt;/button&gt;\n    &lt;/div&gt;\n\n    &lt;div class=\&quot;min-h-[120px] rounded-2xl overflow-hidden bg-base-200/30\&quot;&gt;\n        &lt;template data-if=\&quot;activeId !== \&apos;none\&apos;\&quot;&gt;\n            &lt;div data-component=\&quot;activeId\&quot;&gt;&lt;/div&gt;\n        &lt;/template&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+            }
+          },
+          appReady: false
+      }">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus-UX | data-component</title>
+    <script type="module" src="../../../../dist/nexus-ux.js?v={{TIMESTAMP}}"></script>
+</head>
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
+    <div data-component="'/examples/dashboard/components/document.html'"></div>
+</body>
+</html>

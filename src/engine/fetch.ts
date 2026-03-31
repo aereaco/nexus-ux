@@ -14,6 +14,7 @@ const fetchCacheTimers = new Map<string, number>();
 
 export interface FetchUtilities {
   request(url: string, options: FetchOptions, el: HTMLElement): Promise<unknown>;
+  createSuspenseProxy<T>(promise: Promise<T>): T;
 }
 
 export const fetchUtilities: FetchUtilities = {
@@ -97,6 +98,44 @@ export const fetchUtilities: FetchUtilities = {
 
     return promise;
   },
+
+  /**
+   * Creates a deeply reactive Suspense proxy that throws its pending Promise when accessed.
+   * This allows Nexus-UX to gracefully pause elementBoundEffect until the fetch completes.
+   */
+  createSuspenseProxy: <T>(promise: Promise<T>): T => {
+    let isResolved = false;
+    let isRejected = false;
+    let result: T | undefined;
+    let error: unknown | undefined;
+
+    promise.then(
+      res => { isResolved = true; result = res; },
+      err => { isRejected = true; error = err; }
+    );
+
+    return new Proxy(promise, {
+      get(target, prop) {
+        if (prop === 'then') return target.then.bind(target);
+        if (prop === 'catch') return target.catch.bind(target);
+        if (prop === 'finally') return target.finally.bind(target);
+        
+        if (prop === '__v_isRef' || prop === '__v_isReactive') return false;
+
+        if (isRejected) throw error;
+        if (!isResolved) throw promise; 
+
+        if (result === undefined || result === null) return undefined;
+        
+        let finalResult = result;
+        if (typeof result === 'string') {
+          try { finalResult = JSON.parse(result); } catch (_e) { /* ignore */ }
+        }
+        
+        return finalResult && typeof finalResult === 'object' ? (finalResult as Record<string, unknown>)[prop as string] : undefined;
+      }
+    }) as unknown as T;
+  }
 };
 
 export const fetchModule: UtilityModule = {

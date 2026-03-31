@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" data-ux-init
+      data-signal="{
+          doc: {
+            Title: '.once',
+            Description: 'This page demonstrates the &lt;code class=\&quot;text-primary font-bold\&quot;&gt;.once&lt;/code&gt; modification interceptor permanently destroying its own event listener from the V8 Heap immediately after its very first successful evaluation cycle.',
+            Syntax: '&lt;button data-on-click.once=\&quot;initiate()\&quot;&gt;&lt;/button&gt;',
+            SourceModule: '/modules/modifiers/once.ts',
+            SnippetModule: '/examples/dashboard/pages/modifiers/once.html',
+            Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;Self-destructing evaluation via &lt;code&gt;src/modules/modifiers/once.ts&lt;/code&gt; leverages &lt;code&gt;removeEventListener&lt;/code&gt; specifically. Adjust internal compilation caching assuring VDOM diffs bypass dead nodes inherently.&lt;/p&gt;',
+            Snippet: '&lt;div class=\&quot;p-8 bg-base-200 rounded-box border shadow-inner\&quot;&gt;\n    &lt;div class=\&quot;alert shadow\&quot;&gt;\n        &lt;svg xmlns=\&quot;http://www.w3.org/2000/svg\&quot; fill=\&quot;none\&quot; viewBox=\&quot;0 0 24 24\&quot; class=\&quot;stroke-info shrink-0 w-6 h-6\&quot;&gt;&lt;path stroke-linecap=\&quot;round\&quot; stroke-linejoin=\&quot;round\&quot; stroke-width=\&quot;2\&quot; d=\&quot;M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\&quot;&gt;&lt;/path&gt;&lt;/svg&gt;\n        &lt;span&gt;Clicking the button below evaluates the AST logic identically as normal. But clicking it a second time does absolutely nothing.&lt;/span&gt;\n    &lt;/div&gt;\n    \n    &lt;button class=\&quot;btn btn-primary btn-lg shadow-xl px-12 transition-all duration-300 relative group mt-8\&quot;\n            data-class-btn-success=\&quot;hasSubscribed\&quot;\n            data-class-btn-disabled=\&quot;hasSubscribed\&quot;\n            data-on-click.once=\&quot;hasSubscribed = true\&quot;&gt;\n            &lt;span data-show=\&quot;!hasSubscribed\&quot;&gt;Subscribe to Matrix&lt;/span&gt;\n            &lt;span data-show=\&quot;hasSubscribed\&quot; class=\&quot;flex items-center gap-2\&quot;&gt;\n                &lt;svg xmlns=\&quot;http://www.w3.org/2000/svg\&quot; fill=\&quot;none\&quot; viewBox=\&quot;0 0 24 24\&quot; stroke-width=\&quot;2\&quot; stroke="currentColor\&quot; class=\&quot;w-6 h-6\&quot;&gt;&lt;path stroke-linecap=\&quot;round\&quot; stroke-linejoin=\&quot;round\&quot; d=\&quot;M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z\&quot; /&gt;&lt;/svg&gt;\n                Uplink Secured\n            &lt;/span&gt;\n    &lt;/button&gt;\n    \n    &lt;div data-show=\&quot;hasSubscribed\&quot; class=\&quot;badge badge-error p-4 shadow mt-4 border border-error max-w-sm text-center\&quot;&gt;\n        The Event Listener was successfully untethered from the DOM!\n    &lt;/div&gt;\n&lt;/div&gt;'
+          },
+          appReady: false,
+          hasSubscribed: false
+      }">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus-UX: Modifier - .once</title>
+    <script type="module" src="../../../../dist/nexus-ux.js?v={{TIMESTAMP}}"></script>
+</head>
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
+    <div data-component="'/examples/dashboard/components/document.html'"></div>
+</body>
+</html>
