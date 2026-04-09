@@ -1,8 +1,8 @@
-import { ObserverModule } from '../../engine/modules.ts';
-import { RuntimeContext } from '../../engine/composition.ts';
-import { NexusEnhancedElement } from '../../engine/reactivity.ts';
-import { reportError } from '../../engine/errors.ts';
-import { CLEANUP_FUNCTIONS_KEY } from '../../engine/consts.ts';
+import { ObserverModule } from '../modules.ts';
+import { RuntimeContext } from '../composition.ts';
+import { NexusEnhancedElement, ownership } from '../reactivity.ts';
+import { reportError } from '../errors.ts';
+import { CLEANUP_FUNCTIONS_KEY, RUN_EFFECT_RUNNERS_KEY } from '../consts.ts';
 
 const mutationObserverModule: ObserverModule = {
   name: 'mutationObserver',
@@ -40,11 +40,24 @@ const mutationObserverModule: ObserverModule = {
                 });
               }
             });
+          } else if (mutation.type === 'attributes') {
+            const target = mutation.target as any;
+            
+            // Pulse self (using Symbol for speed)
+            target[RUN_EFFECT_RUNNERS_KEY]?.();
+            
+            // Pulse Ownership-Based Dependents (Selectors)
+            const borrows = ownership.getBorrowers(target);
+            borrows.forEach(borrow => {
+              const borrower = borrow.borrower as any;
+              // Borrower must be an element with reactive effects
+              borrower[RUN_EFFECT_RUNNERS_KEY]?.();
+            });
           }
         }
       });
 
-      observer.observe(el, { childList: true, subtree: true, attributes: false });
+      observer.observe(el, { childList: true, subtree: true, attributes: true });
 
       return () => observer.disconnect();
 

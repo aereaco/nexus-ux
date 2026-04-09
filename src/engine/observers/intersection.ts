@@ -1,7 +1,7 @@
-import { ObserverModule } from '../../engine/modules.ts';
-import { RuntimeContext } from '../../engine/composition.ts';
-import { reportError } from '../../engine/errors.ts';
-import { CUSTOM_EVENT_PREFIX } from '../../engine/consts.ts';
+import { ObserverModule } from '../modules.ts';
+import { RuntimeContext } from '../composition.ts';
+import { reportError } from '../errors.ts';
+import { CUSTOM_EVENT_PREFIX } from '../consts.ts';
 
 export interface IntersectionObserverDetail {
   entry: IntersectionObserverEntry;

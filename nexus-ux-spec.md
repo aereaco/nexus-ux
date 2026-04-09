@@ -504,27 +504,27 @@ context. Each sprite is a single-purpose function, invoked via the `$` prefix.
 
 ---
 
-### 2.6. Environment Mirrors (`_`) — Reactive Browser-Native API Catalog
+### 2.6. Environment Mirrors (`_`) — The Unified JIT Proxy
 
-Mirrors are **reactive wrappers** around browser-native and OS-level APIs. They
-use the `_` prefix and automatically update when the underlying API value
-changes, enabling declarative data-binding to platform state without manual
-event listeners. Access mode is determined by the underlying API.
+Mirrors are **reactive wrappers** mapped directly to the `globalThis.window`
+object. They use the `_` prefix, triggering the framework's lazy JIT proxy
+engine that directly binds browser capabilities to visual state without
+requiring static module wrappers or framework updates for novel browser APIs.
 
-| Mirror                | Access         | Reactive Properties                                                                                                                                                                                       | Practical Example                                                           |
-| :-------------------- | :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------- |
-| **`_window`**         | **read-write** | **Readable**: `innerWidth`, `innerHeight`, `outerWidth`, `outerHeight`, `devicePixelRatio`. **Writable**: `scrollX`, `scrollY` (→ `scrollTo()`), `title` (→ `document.title`), `location` (→ navigation). | `data-text="'Viewport: ' + _window.innerWidth + 'x' + _window.innerHeight"` |
-| **`_localStorage`**   | **read-write** | Any key — reads return stored value reactively; writes (`_localStorage.key = value`) persist immediately and sync across tabs via `storage` event.                                                        | `data-on-click="_localStorage.theme = 'dark'"`                              |
-| **`_sessionStorage`** | **read-write** | Same API as `_localStorage` but **per-tab** — values do not sync across tabs and are cleared when the tab closes. Ideal for draft state and active selection tracking.                                    | `data-on-load="draft = _sessionStorage['editor:draft'] \|\| ''"`            |
-| **`_indexedDB`**      | **read-write** | Nested Proxy: first level selects store (`_indexedDB.storeName`), second level is reactive key-value. Methods: `.list(prefix?)`, `.delete(key)`, `.clear()`. Persistent cross-session.                    | `data-on-click="_indexedDB.forks['main/app.ts'] = sourceCode"`              |
-| **`_cookies`**        | **read-write** | Any key — reads parse `document.cookie` reactively; writes set cookies via `document.cookie`. Methods: `.set(key, val, opts)`, `.delete(key)`, `.all()`. Polls every 2s for external changes.             | `data-on-click="_cookies.theme = 'dark'"`                                   |
-| **`_storage`**        | read-only      | `usage` (bytes), `quota` (bytes), `persisted` (boolean). Auto-polls via `navigator.storage.estimate()`. Methods: `.estimate()` (force poll), `.persist()` (request persistent storage).                   | `data-text="Math.round(_storage.usage / 1024 / 1024) + 'MB'"`               |
-| **`_frames`**         | read-only      | `length` (frame count), `list` (array of `{ index, name, src }`). Methods: `.postMessage(index, data)`, `.postMessageByName(name, data)`. Auto-updates on iframe DOM changes.                             | `data-text="_frames.length + ' frames'"`                                    |
-| **`_navigator`**      | read-only      | `onLine`, `language`, `userAgent`, `hardwareConcurrency`. Updates on browser events (e.g., `online`/`offline`).                                                                                           | `data-if="_navigator.onLine"`                                               |
-| **`_screen`**         | read-only      | `width`, `height`, `orientation`, `colorDepth`. Updates on orientation/resize changes.                                                                                                                    | `data-text="_screen.width + 'x' + _screen.height"`                          |
-| **`_geolocation`**    | read-only      | `latitude`, `longitude`, `accuracy`, `altitude`, `heading`, `speed`. Updates via `watchPosition`. Triggers permission prompt on first access.                                                             | `data-text="'Lat: ' + _geolocation.latitude?.toFixed(4)"`                   |
-| **`_network`**        | read-only      | `effectiveType`, `downlink`, `rtt`, `saveData`. Updates on connection change events.                                                                                                                      | `data-if="_network.saveData"`                                               |
-| **`_battery`**        | read-only      | `level` (0-1), `charging` (boolean), `chargingTime` (seconds), `dischargingTime` (seconds). Updates on battery status change events.                                                                      | `data-text="Math.round(_battery.level * 100) + '%'"`                        |
+- **Lazy Reactivity Allocation (ZCZS)**: Memory for synchronization (like
+  `resize`, `storage`, or `hashchange` event listeners) is only allocated to the
+  runtime heap if an HTML template explicitly registers a read dependency on
+  that property. If your application never accesses `_localStorage`, no tracking
+  payload or system listener is booted.
+
+| Mirror Concept        | Access         | Underlying Resolution                                                                                                                                                   | Practical Example                                                           |
+| :-------------------- | :------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------- |
+| **`_window`**         | **read-write** | Returns a tracked proxy directly to `globalThis.window`, allowing arbitrary property reads (e.g., `_window.innerWidth`) and mutation (e.g., `_window.scrollY = 0`).     | `data-text="'Viewport: ' + _window.innerWidth + 'x' + _window.innerHeight"` |
+| **`_localStorage`**   | **read-write** | Resolves natively to `window.localStorage`. Reads are reactive. Writes persist immediately and sync across tabs via dynamic JIT `storage` event bindings.               | `data-on-click="_localStorage.theme = 'dark'"`                              |
+| **`_sessionStorage`** | **read-write** | Resolves to `window.sessionStorage`. Same API as `localStorage` but per-tab.                                                                                            | `data-on-load="draft = _sessionStorage['editor:draft'] \|\| ''"`            |
+| **`_navigator`**      | read-only      | Resolves to `window.navigator`. Allows tracking of dynamic native states like `_navigator.onLine` and `_navigator.hardwareConcurrency`.                                 | `data-if="_navigator.onLine"`                                               |
+| **`_screen`**         | read-only      | Resolves to `window.screen`. Updates dynamically on orientation/resize changes tracked by the JIT proxy.                                                                | `data-text="_screen.width + 'x' + _screen.height"`                          |
+| **`_<anything>`**     | native         | Because the `_` identifier resolves universally to the `window` object, literally any Global API (existing or future) is supported instantly without framework updates. | `data-on-click="_indexedDB.open('db')"`                                     |
 
 ---
 

@@ -1,0 +1,92 @@
+<div class="drawer lg:drawer-open" data-signal="{ collapsed: true, hovered: false, isMobile: _window.innerWidth < 1024 }">
+  <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
+  <div class="drawer-content">
+    <!-- Drawer Header -->
+    <nav class="navbar w-full bg-base-300">
+      <label for="my-drawer-4" aria-label="open sidebar" class="btn btn-square btn-ghost lg:hidden">
+        <!-- Sidebar toggle icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor" class="my-1.5 inline-block size-4"><path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"></path><path d="M9 4v16"></path><path d="M14 10l2 2l-2 2"></path></svg>
+      </label>
+        <div class="flex-none">
+          <button data-on-click="collapsed = !collapsed" aria-label="toggle sidebar" class="btn btn-square btn-ghost hidden lg:block" data-class="{ 'scale-x-[-1]': !collapsed || hovered }">
+            <!-- Sidebar toggle icon -->
+            <iconify-icon icon="material-symbols-light:double-arrow" style="font-size: 24px"></iconify-icon>
+          </button>
+        </div>
+      <div class="px-4">Navbar Title</div>
+    </nav>
+    <!-- Page content here -->
+    <div class="p-4">Page Content</div>
+    <p class="pb-4 ps-4" data-bind="'Windows Size: ' + _window.innerWidth"></p>
+    <p class="pb-4 ps-4" data-bind="'Windows Size < 1024: ' + isMobile"></p>
+    <p class="pb-4 ps-4" data-bind="'Collapsed: ' + collapsed"></p>
+    <p class="pb-4 ps-4" data-bind="'Hovered: ' + hovered"></p>
+  </div>
+
+  <div class="drawer-side" data-class="{ 'overflow-visible': hovered || !collapsed || isMobile }">
+    <label for="my-drawer-4" aria-label="close sidebar" class="drawer-overlay"></label>
+    <div class="flex min-h-full flex-col items-start bg-base-100" data-class="{ 'lg:w-16': collapsed, 'w-80': !collapsed || isMobile }">
+      <!-- Sidebar content here -->
+      <div class="flex flex-col h-dvh w-full transition-all" data-class="{ 'lg:w-80': !collapsed || hovered || isMobile, 'bg-base-100/70': !collapsed || hovered || isMobile, 'backdrop-blur-sm': !collapsed || hovered || isMobile }"
+      data-on-mouseenter="hovered = true"
+      data-on-mouseleave="hovered = false"
+      data-on-touchstart="hovered = true"
+      >
+        <div class="navbar">
+          <div class="flex flex-1">
+            <a class="btn btn-ghost text-xl ps-1">
+              <svg class="w-10 h-10">
+                <use href="/site/_assets/images/emblem.svg"></use>
+              </svg>
+              <template data-if="!collapsed || hovered || isMobile">
+                <span>Nexus-UX</span>
+              </template>
+            </a>
+          </div>
+         
+        </div>
+        
+
+        <ul class="menu w-full grow">
+          <!-- List item -->
+          <li>
+            <button>
+              <!-- Home icon -->
+              <iconify-icon icon="material-symbols-light:home-outline" style="font-size: 24px"></iconify-icon>
+              <span data-class="{ 'hidden': collapsed && !hovered && !isMobile }">Homepage</span>
+            </button>
+          </li>
+
+          <!-- List item -->
+          <li>
+            <button>
+              <!-- Settings icon -->
+              <iconify-icon icon="material-symbols-light:settings-outline" style="font-size: 24px"></iconify-icon>
+              <span data-class="{ 'hidden': collapsed && !hovered && !isMobile }">Settings</span>
+            </button>
+          </li>
+        </ul>
+
+        <template data-if="collapsed && !hovered && !isMobile">
+          <div class="dock">
+            <iconify-icon icon="material-symbols-light:left-panel-open-outline" style="font-size: 24px"></iconify-icon>
+          </div>
+        </template>
+        <template data-if="!collapsed || hovered || isMobile">
+          <div class="dock">
+          <button class="tooltip tooltip-top" data-tip="Guide">
+            <iconify-icon icon="material-symbols-light:list" style="font-size: 24px"></iconify-icon>
+          </button>
+
+          <button class="tooltip tooltip-top" data-tip="Favorites">
+            <iconify-icon icon="material-symbols-light:star-outline" style="font-size: 24px"></iconify-icon>
+          </button>
+          
+          <button class="tooltip tooltip-top" data-tip="Settings">
+            <iconify-icon icon="material-symbols-light:tune" style="font-size: 24px"></iconify-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

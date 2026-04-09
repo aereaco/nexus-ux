@@ -6,7 +6,7 @@
             Description: 'The universal binding engine for Nexus-UX. It automatically detects the appropriate target (value, checked, or textContent) based on the element type, absorbing both data-model and data-text into a single optimized pipeline.',
             Syntax: '&lt;input data-bind=\&quot;signal\&quot;&gt; | &lt;div data-bind=\&quot;signal\&quot;&gt; | &lt;button data-bind:disabled=\&quot;locked\&quot;&gt;',
             SourceModule: '/modules/attributes/bind.ts',
-            SnippetModule: '/examples/dashboard/pages/attributes/bind.html',
+            SnippetModule: '/site/dashboard/pages/attributes/bind.html',
             DefaultSnippetName: 'Object Mapping',
             Examples: {
               'Object Mapping': '&lt;div class=\&quot;flex flex-col gap-6\&quot; data-signal=\&quot;{ customProps: { value: \&apos;INITIAL_HEAP_VALUE\&apos;, disabled: false }, nativeType: \&apos;text\&apos; }\&quot;&gt;\n    &lt;div class=\&quot;bg-base-100 p-8 rounded-3xl border border-base-300 shadow-sm\&quot;&gt;\n        &lt;label class=\&quot;label py-0 mb-4\&quot;&gt;\n            &lt;span class=\&quot;text-[10px] font-black uppercase tracking-widest opacity-40\&quot;&gt;Object Mapping&lt;/span&gt;\n        &lt;/label&gt;\n\n        &lt;div class=\&quot;form-control mb-8\&quot;&gt;\n            &lt;input data-bind=\&quot;customProps\&quot; data-bind:type=\&quot;nativeType\&quot; \n                   class=\&quot;input input-bordered input-primary w-full h-16 text-xl font-bold shadow-inner\&quot;&gt;\n            &lt;div class=\&quot;flex justify-between mt-2 px-1\&quot;&gt;\n                &lt;span class=\&quot;text-[10px] font-mono opacity-50\&quot;&gt;Value: &lt;span data-bind=\&quot;customProps.value\&quot;&gt;&lt;/span&gt;&lt;/span&gt;\n                &lt;span class=\&quot;text-[10px] font-mono opacity-50\&quot;&gt;Disabled: &lt;span data-bind=\&quot;customProps.disabled\&quot;&gt;&lt;/span&gt;&lt;/span&gt;\n            &lt;/div&gt;\n        &lt;/div&gt;\n\n        &lt;div class=\&quot;grid grid-cols-1 md:grid-cols-3 gap-3\&quot;&gt;\n            &lt;button class=\&quot;btn btn-sm btn-outline rounded-xl\&quot; data-on-click=\&quot;customProps.disabled = !customProps.disabled\&quot;&gt;\n                Toggle State\n            &lt;/button&gt;\n            &lt;button class=\&quot;btn btn-sm btn-outline rounded-xl\&quot; data-on-click=\&quot;nativeType = nativeType === \&apos;password\&apos; ? \&apos;text\&apos; : \&apos;password\&apos;\&quot;&gt;\n                Swap Input Type\n            &lt;/button&gt;\n            &lt;button class=\&quot;btn btn-sm btn-primary rounded-xl\&quot; data-on-click=\&quot;customProps.value = \&apos;VAL_\&apos; + Math.random().toString(36).substring(7)\&quot;&gt;\n                Randomize\n            &lt;/button&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;',
@@ -22,6 +22,6 @@
     <script type="module" src="../../../../dist/nexus-ux.js?v={{TIMESTAMP}}"></script>
 </head>
 <body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
-    <div data-component="'/examples/dashboard/components/document.html'"></div>
+    <div data-component="'/site/dashboard/components/document.html'"></div>
 </body>
 </html>

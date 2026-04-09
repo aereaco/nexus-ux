@@ -6,7 +6,7 @@
             Description: 'This page demonstrates reactive boolean tokenization bridging mathematical signals to CSS Class mutation using identical &lt;code&gt;data-class-*&lt;/code&gt; boundaries.',
             Syntax: '&lt;div data-class-active=\&quot;isActive\&quot;&gt;&lt;/div&gt;\n&lt;div data-class=\&quot;{ \&apos;border-red\&apos;: hasError }\&quot;&gt;&lt;/div&gt;',
             SourceModule: '/modules/attributes/class.ts',
-            SnippetModule: '/examples/dashboard/pages/attributes/class.html',
+            SnippetModule: '/site/dashboard/pages/attributes/class.html',
             Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;Class hydration in &lt;code&gt;src/modules/attributes/class.ts&lt;/code&gt; intercepts &lt;code&gt;classList.toggle&lt;/code&gt; vectors. Extend it to resolve tailwind-merge or clsx conflicts dynamically.&lt;/p&gt;',
             Snippet: '&lt;div class=\&quot;p-8 bg-base-200 rounded-box border shadow-inner\&quot; data-signal=\&quot;{ isSystemError: false, isPulsing: false }\&quot;&gt;\n    &lt;div class=\&quot;flex gap-4 w-full justify-center mb-8\&quot;&gt;\n        &lt;label class=\&quot;cursor-pointer label bg-base-100 shadow-sm px-6 py-3 rounded-lg border border-base-300 gap-4\&quot;&gt;\n            &lt;span class=\&quot;label-text font-bold text-lg text-error\&quot;&gt;Simulate Error Alert&lt;/span&gt; \n            &lt;input type=\&quot;checkbox\&quot; class=\&quot;toggle toggle-error\&quot; data-bind=\&quot;isSystemError\&quot; /&gt;\n        &lt;/label&gt;\n        \n        &lt;label class=\&quot;cursor-pointer label bg-base-100 shadow-sm px-6 py-3 rounded-lg border border-base-300 gap-4\&quot;&gt;\n            &lt;span class=\&quot;label-text font-bold text-lg text-secondary\&quot;&gt;Engage Pulse Animation&lt;/span&gt; \n            &lt;input type=\&quot;checkbox\&quot; class=\&quot;toggle toggle-secondary\&quot; data-bind=\&quot;isPulsing\&quot; /&gt;\n        &lt;/label&gt;\n    &lt;/div&gt;\n\n    &lt;!-- Reactive Element --&gt;\n    &lt;div class=\&quot;w-64 h-64 mx-auto border-4 rounded-3xl flex items-center justify-center text-center font-bold text-2xl transition-all duration-500 bg-base-100\&quot;\n         data-class-border-error=\&quot;isSystemError\&quot;\n         data-class-bg-error=\&quot;isSystemError\&quot;\n         data-class-text-error-content=\&quot;isSystemError\&quot;\n         data-class-border-success=\&quot;!isSystemError\&quot;\n         data-class-text-success=\&quot;!isSystemError\&quot;\n         data-class-animate-scale-pulse=\&quot;isPulsing\&quot;&gt;\n        \n        &lt;span data-bind=\&quot;isSystemError ? \&apos;System Failed!\&apos; : \&apos;All Systems Nominal\&apos;\&quot;&gt;&lt;/span&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
           },
@@ -27,6 +27,6 @@
     <script type="module" src="../../../../dist/nexus-ux.js?v={{TIMESTAMP}}"></script>
 </head>
 <body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
-    <div data-component="'/examples/dashboard/components/document.html'"></div>
+    <div data-component="'/site/dashboard/_components/document.html'"></div>
 </body>
 </html>

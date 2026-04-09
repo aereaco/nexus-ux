@@ -25,9 +25,15 @@ export const MODIFIER_ARGUMENT_DELIMITER = NEG_TOKENS.MODIFIER;
 
 // 3. Relational Combinators
 export const RELATIONAL_COMBINATORS = {
+  PARENT: '^',
   CHILD: '>',
   SIBLING: '~',
-  ADJACENT: '+',
+  PREVIOUS: '-',
+  NEXT: '+',
+  ANCESTOR: '^^',
+  DESCENDANT: '>>',
+  PRIOR: '--',
+  SUBSEQUENT: '++',
 } as const;
 
 // 4. Internal Keys for HTMLElement Augmentation

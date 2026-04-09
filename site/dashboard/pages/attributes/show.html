@@ -6,7 +6,7 @@
             Description: 'This page demonstrates layout toggling modifying the native &lt;code&gt;display&lt;/code&gt; CSS property via &lt;code&gt;data-show&lt;/code&gt;.',
             Syntax: '&lt;div data-show=\&quot;isVisible\&quot;&gt;Toggled Display&lt;/div&gt;',
             SourceModule: '/modules/attributes/show.ts',
-            SnippetModule: '/examples/dashboard/pages/attributes/show.html',
+            SnippetModule: '/site/dashboard/pages/attributes/show.html',
             Extensibility: '&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1\&quot;&gt;\n  &lt;li&gt;The visibility toggler in &lt;code&gt;src/modules/attributes/show.ts&lt;/code&gt; strictly maps to &lt;code&gt;display: none&lt;/code&gt;.&lt;/li&gt;\n  &lt;li&gt;This can be adapted to toggle CSS classes like &lt;code&gt;.hidden&lt;/code&gt; for Tailwind synergy natively.&lt;/li&gt;\n&lt;/ul&gt;',
             Snippet: '&lt;div class=\&quot;p-8 bg-base-200 rounded-box border shadow-inner\&quot; data-signal=\&quot;{ blockVisible: true }\&quot;&gt;\n    &lt;button class=\&quot;btn btn-primary shadow-lg mb-8\&quot; data-on-click=\&quot;blockVisible = !blockVisible\&quot;&gt;\n        Toggle Visibility\n    &lt;/button&gt;\n    &lt;div data-show=\&quot;blockVisible\&quot; class=\&quot;p-8 bg-warning text-warning-content rounded-xl font-bold text-center text-3xl shadow-xl transition-opacity duration-300\&quot;&gt;\n        I am structurally permanent but visually togglable!\n    &lt;/div&gt;\n&lt;/div&gt;'
           },
@@ -18,6 +18,6 @@
     <script type="module" src="../../../../dist/nexus-ux.js?v={{TIMESTAMP}}"></script>
 </head>
 <body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
-    <div data-component="'/examples/dashboard/components/document.html'"></div>
+    <div data-component="'/site/dashboard/_components/document.html'"></div>
 </body>
 </html>

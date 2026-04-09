@@ -21,7 +21,6 @@ try {
   const manifestJsonData: Record<string, string[]> = {
     attributes: [],
     sprites: [],
-    mirrors: [],
     scopes: [],
     modifiers: [],
     observers: []
@@ -50,10 +49,9 @@ try {
 
   await generateRegistry("modules/attributes", "autoAttributes", "attributes");
   await generateRegistry("modules/sprites", "autoSprites", "sprites");
-  await generateRegistry("modules/mirrors", "autoMirrors", "mirrors");
   await generateRegistry("modules/scopes", "autoScopes", "scopes");
   await generateRegistry("modules/modifiers", "autoModifiers", "modifiers");
-  await generateRegistry("modules/observers", "autoObservers", "observers");
+  await generateRegistry("engine/observers", "autoObservers", "observers");
 
   await Deno.writeTextFile(manifestPath, manifestLines.join("\n"));
   console.log("Generated manifest:", manifestPath);

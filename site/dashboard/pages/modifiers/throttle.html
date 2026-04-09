@@ -6,7 +6,7 @@
             Description: 'Demonstrates the &lt;code class=\&quot;text-primary font-bold\&quot;&gt;.throttle&lt;/code&gt; pipeline modifier actively capping execution frequencies to prevent AST memory flooding during aggressive native events.',
             Syntax: '&lt;div data-on-scroll.throttle.100ms=\&quot;handleScroll()\&quot;&gt;&lt;/div&gt;',
             SourceModule: '/modules/modifiers/throttle.ts',
-            SnippetModule: '/examples/dashboard/pages/modifiers/throttle.html',
+            SnippetModule: '/site/dashboard/pages/modifiers/throttle.html',
             Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;Velocity limiters via &lt;code&gt;src/modules/modifiers/throttle.ts&lt;/code&gt; map strict numeric timestamps. Inject logic validating dynamic 60fps frame delays against performance matrices explicitly.&lt;/p&gt;',
             Snippet: '&lt;div class=\&quot;p-8 bg-base-200 rounded-box border shadow-inner\&quot;&gt;\n    &lt;p class=\&quot;font-bold text-center w-full uppercase opacity-70 mb-4 tracking-widest text-warning border-b border-warning/20 pb-2\&quot;&gt;Scroll inside the box below to measure the diff.&lt;/p&gt;\n    \n    &lt;div class=\&quot;h-64 w-full bg-base-100 border-2 border-dashed border-base-300 rounded shadow-inner overflow-y-scroll relative z-20\&quot;\n         data-on-scroll=\&quot;rawScrolls++\&quot;\n         data-on-scroll.throttle.1000ms=\&quot;throttledScrolls++\&quot;&gt;\n         \n         &lt;div style=\&quot;height: 2000px;\&quot; class=\&quot;p-8 font-mono text-center opacity-30 tracking-widest bg-[url(\&apos;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+CjxwYXRoIGQ9Ik0wIDEwaDIwdjFIMHoiIGZpbGw9IiM2YjcyODAiIGZpbGwtb3BhY2l0eT0iLjIiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPgo8cGF0aCBkPSJNMTAgMHYyMGgxdi0yMGgtMXoiIGZpbGw9IiM2YjcyODAiIGZpbGwtb3BhY2l0eT0iLjIiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvc3ZnPg==\&apos;)]\&quot;&gt;\n            SCROLL SURFACE\n         &lt;/div&gt;\n    &lt;/div&gt;\n\n    &lt;div class=\&quot;stats bg-base-100 shadow border border-base-300 w-full mt-4\&quot;&gt;\n        &lt;div class=\&quot;stat text-center\&quot;&gt;\n            &lt;div class=\&quot;stat-title border-b border-base-200 pb-2 mb-2\&quot;&gt;Raw Events&lt;/div&gt;\n            &lt;div class=\&quot;stat-value text-error text-4xl\&quot; data-text=\&quot;rawScrolls\&quot;&gt;&lt;/div&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;stat text-center\&quot;&gt;\n            &lt;div class=\&quot;stat-title border-b border-base-200 pb-2 mb-2\&quot;&gt;Throttled (1000ms)&lt;/div&gt;\n            &lt;div class=\&quot;stat-value text-accent text-6xl\&quot; data-text=\&quot;throttledScrolls\&quot;&gt;&lt;/div&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
           },
@@ -20,6 +20,6 @@
     <script type="module" src="../../../../dist/nexus-ux.js?v={{TIMESTAMP}}"></script>
 </head>
 <body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
-    <div data-component="'/examples/dashboard/components/document.html'"></div>
+    <div data-component="'/site/dashboard/_components/document.html'"></div>
 </body>
 </html>

@@ -6,7 +6,7 @@
             Description: 'Demonstrates the massive power of the &lt;code class=\&quot;text-primary font-bold\&quot;&gt;.intersect&lt;/code&gt; pipeline modifier seamlessly generating native IntersectionObserver matrices mapping physically visible viewport intersections into active AST evaluations without explicit DOM setup.',
             Syntax: '&lt;div data-on-intersect=\&quot;isActive = true\&quot;&gt;&lt;/div&gt;',
             SourceModule: '/modules/modifiers/intersect.ts',
-            SnippetModule: '/examples/dashboard/pages/modifiers/intersect.html',
+            SnippetModule: '/site/dashboard/pages/modifiers/intersect.html',
             Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;Intersection Observers via &lt;code&gt;src/modules/modifiers/intersect.ts&lt;/code&gt; map pure unassigned viewport logic. Introduce CSS margin matrices mapping bounding-boxes natively configuring threshold logic.&lt;/p&gt;',
             Snippet: '&lt;div class=\&quot;h-96 w-full bg-base-200 border border-base-300 rounded-box shadow-inner overflow-y-scroll relative pointer-events-auto p-4 z-20\&quot;&gt;\n    &lt;div style=\&quot;height: 1200px;\&quot; class=\&quot;w-full flex flex-col justify-between items-center relative\&quot;&gt;\n        &lt;div class=\&quot;badge badge-lg p-6 bg-base-100 shadow border border-base-300 opacity-50 sticky top-4\&quot;&gt;\n            Scrolled &lt;span data-text=\&quot;viewCount\&quot;&gt;&lt;/span&gt; Times Out of Physical View\n        &lt;/div&gt;\n        \n        &lt;div class=\&quot;card bg-primary text-primary-content shadow-2xl w-full max-w-sm mb-16 transition-all duration-1000 scale-90 translate-y-16 opacity-0\&quot; \n             data-on-intersect=\&quot;hasAppeared = true; viewCount++; $el.classList.remove(\&apos;scale-90\&apos;, \&apos;translate-y-16\&apos;, \&apos;opacity-0\&apos;)\&quot; \n             data-on-intersect-leave=\&quot;$el.classList.add(\&apos;scale-90\&apos;, \&apos;translate-y-16\&apos;, \&apos;opacity-0\&apos;)\&quot;&gt;\n            &lt;div class=\&quot;card-body items-center text-center\&quot;&gt;\n                &lt;h2 class=\&quot;card-title text-3xl mb-4\&quot;&gt;You found me!&lt;/h2&gt;\n                &lt;p&gt;This DOM node instantiated a physical IntersectionObserver purely through the &lt;code&gt;data-on-intersect&lt;/code&gt; declaration hook.&lt;/p&gt;\n            &lt;/div&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
           },
@@ -20,6 +20,6 @@
     <script type="module" src="../../../../dist/nexus-ux.js?v={{TIMESTAMP}}"></script>
 </head>
 <body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
-    <div data-component="'/examples/dashboard/components/document.html'"></div>
+    <div data-component="'/site/dashboard/_components/document.html'"></div>
 </body>
 </html>

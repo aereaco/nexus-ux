@@ -10,7 +10,7 @@
             Description: 'Demonstrating &lt;code&gt;_screen&lt;/code&gt; passing hardware monitor geometry properties instantly into AST Logic Space.',
             Syntax: '&lt;div data-text=\&quot;_screen.width\&quot;&gt;&lt;/div&gt;',
             SourceModule: '/modules/mirrors/screen.ts',
-            SnippetModule: '/examples/dashboard/pages/mirrors/screen.html',
+            SnippetModule: '/site/dashboard/pages/mirrors/screen.html',
             Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;Physical monitor interfaces via &lt;code&gt;src/modules/mirrors/screen.ts&lt;/code&gt; extract &lt;code&gt;window.screen&lt;/code&gt;. Integrate multi-monitor layout APIs physically extending Chrome bindings.&lt;/p&gt;',
             Snippet: '&lt;div class=\&quot;p-10 bg-base-100 rounded-[3rem] border border-base-300 shadow-xl overflow-hidden\&quot;&gt;\n    &lt;div class=\&quot;grid grid-cols-1 md:grid-cols-2 gap-8 w-full mb-10\&quot;&gt;\n        &lt;div class=\&quot;bg-neutral p-8 border-4 border-base-200 shadow-2xl rounded-[2rem] text-center\&quot;&gt;\n            &lt;h4 class=\&quot;font-black opacity-40 uppercase text-xs mb-4 tracking-widest text-primary\&quot;&gt;WIDTH_GEOMETRY&lt;/h4&gt;\n            &lt;div class=\&quot;font-mono text-5xl font-black text-white\&quot; data-text=\&quot;_screen.width + \&apos;PX\&apos;\&quot;&gt;&lt;/div&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;bg-neutral p-8 border-4 border-base-200 shadow-2xl rounded-[2rem] text-center\&quot;&gt;\n            &lt;h4 class=\&quot;font-black opacity-40 uppercase text-xs mb-4 tracking-widest text-primary\&quot;&gt;HEIGHT_GEOMETRY&lt;/h4&gt;\n            &lt;div class=\&quot;font-mono text-5xl font-black text-white\&quot; data-text=\&quot;_screen.height + \&apos;PX\&apos;\&quot;&gt;&lt;/div&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n    \n    &lt;div class=\&quot;alert shadow-2xl bg-base-200 border-2 border-base-300 rounded-3xl p-6\&quot;&gt;\n        &lt;div class=\&quot;w-12 h-12 bg-info/20 rounded-xl flex items-center justify-center\&quot;&gt;\n            &lt;svg xmlns=\&quot;http://www.w3.org/2000/svg\&quot; fill=\&quot;none\&quot; viewBox=\&quot;0 0 24 24\&quot; class=\&quot;stroke-info w-8 h-8 font-black\&quot;&gt;&lt;path stroke-linecap=\&quot;round\&quot; stroke-linejoin=\&quot;round\&quot; stroke-width=\&quot;3\&quot; d=\&quot;M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\&quot;&gt;&lt;/path&gt;&lt;/svg&gt;\n        &lt;/div&gt;\n        &lt;div&gt;\n            &lt;h3 class=\&quot;font-black text-lg tracking-tight\&quot;&gt;COLOR_DEPTH_PAYLOAD&lt;/h3&gt;\n            &lt;p class=\&quot;text-xs opacity-60 font-mono tracking-wide\&quot;&gt;PHYSICAL_RENDER_TARGET: &lt;strong class=\&quot;text-primary\&quot; data-text=\&quot;_screen.colorDepth + \&apos;-BIT\&apos;\&quot;&gt;&lt;/strong&gt;_COMPUTATIONAL_ARRAY&lt;/p&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
           },
@@ -22,6 +22,6 @@
     <script type="module" src="../../../../dist/nexus-ux.js"></script>
 </head>
 <body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
-    <div data-component="'/examples/dashboard/components/document.html'"></div>
+    <div data-component="'/site/dashboard/_components/document.html'"></div>
 </body>
 </html>

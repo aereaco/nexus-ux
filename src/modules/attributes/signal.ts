@@ -50,27 +50,55 @@ const signalModule: AttributeModule = {
     );
     
     let addCleanup: (() => void) | undefined;
+    let lastEvaluatedState: Record<string, unknown> | null = null;
 
     const [_runner, effectCleanup] = runtime.elementBoundEffect(el, () => {
       // 4. Evaluate to get Initial State
-      const initialState = runtime.evaluate(el, expression);
-      
-      if (typeof initialState === 'object' && initialState !== null) {
-        if (isGlobal) {
-          const globals = runtime.globalSignals() as Record<string, unknown>;
-          Object.keys(initialState as object).forEach(key => {
-            globals[key] = (initialState as Record<string, unknown>)[key];
-          });
-          stateRef.value = globals;
+      let newState: unknown;
+      try {
+        newState = runtime.evaluate(el, expression);
+      } catch (e) {
+        runtime.reportError(e instanceof Error ? e : new Error(String(e)), el, expression);
+        return;
+      }
+
+      if (typeof newState === 'object' && newState !== null) {
+        if (!lastEvaluatedState) {
+          // First run: populate all
+          lastEvaluatedState = { ...(newState as Record<string, unknown>) };
+          if (isGlobal) {
+            const globals = runtime.globalSignals() as Record<string, unknown>;
+            Object.keys(newState as object).forEach(key => {
+              globals[key] = (newState as Record<string, unknown>)[key];
+            });
+            stateRef.value = globals;
+          } else {
+            stateRef.value = newState as Record<string, unknown>;
+          }
         } else {
-          stateRef.value = initialState as Record<string, unknown>;
+          // Subsequent run: only sync keys that CHANGED from the last EVALUATED state
+          const currentEval = newState as Record<string, unknown>;
+          if (isGlobal) {
+            const globals = runtime.globalSignals() as Record<string, unknown>;
+            Object.keys(currentEval).forEach(key => {
+              if (currentEval[key] !== lastEvaluatedState![key]) {
+                globals[key] = currentEval[key];
+                lastEvaluatedState![key] = currentEval[key];
+              }
+            });
+          } else {
+            const value = stateRef.value;
+            Object.keys(currentEval).forEach(key => {
+              if (currentEval[key] !== lastEvaluatedState![key]) {
+                value[key] = currentEval[key];
+                lastEvaluatedState![key] = currentEval[key];
+              }
+            });
+          }
         }
       }
     });
-    
-    // Add scope to node AFTER the first run of the effect
-    // This prevents the signal from tracking itself during bootstrap, 
-    // which causes a synchronous infinite loop.
+
     if (!isGlobal) {
       addCleanup = addScopeToNode(el, scopeProxy);
     }

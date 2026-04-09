@@ -10,7 +10,7 @@
             Description: 'This page demonstrates the &lt;code&gt;_window&lt;/code&gt; mapping continuous viewport dimension resizes directly into bound Signal primitives for rapid responsive logic evaluations mathematically.',
             Syntax: '&lt;div data-text=\&quot;_window.innerWidth\&quot;&gt;&lt;/div&gt;',
             SourceModule: '/modules/mirrors/window.ts',
-            SnippetModule: '/examples/dashboard/pages/mirrors/window.html',
+            SnippetModule: '/site/dashboard/pages/mirrors/window.html',
             Extensibility: '&lt;p class=\&quot;opacity-80 mt-4 leading-relaxed\&quot;&gt;Client Window interfaces inside &lt;code&gt;src/modules/mirrors/window.ts&lt;/code&gt; track global layout events dynamically. Connect a `.throttle` implementation organically inside the native resize tracker.&lt;/p&gt;',
             Snippet: '&lt;div class=\&quot;p-10 bg-base-100 rounded-[3rem] border border-base-300 shadow-xl overflow-hidden relative backdrop-blur\&quot;&gt;\n    &lt;p class=\&quot;text-[10px] font-black opacity-30 uppercase tracking-widest text-center mb-10\&quot;&gt;RESIZE_VIEWPORT_TO_TRIGGER_REACTIVE_CASCADE&lt;/p&gt;\n    \n    &lt;!-- Visual scale element based entirely on viewport dimensions math --&gt;\n    &lt;div class=\&quot;absolute inset-x-0 bottom-0 bg-primary pointer-events-none transition-all duration-300\&quot; \n         data-style-height=\&quot;(_window.innerHeight / 4) + \&apos;px\&apos;\&quot; \n         data-style-opacity=\&quot;_window.innerWidth / 3000\&quot;&gt;&lt;/div&gt;\n\n    &lt;div class=\&quot;grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-2xl mx-auto relative z-10\&quot;&gt;\n        &lt;div class=\&quot;bg-neutral p-10 border-4 border-base-200 shadow-2xl rounded-[2.5rem] flex flex-col items-center\&quot;&gt;\n            &lt;div class=\&quot;text-[10px] font-black text-info tracking-widest mb-4\&quot;&gt;INNER_WIDTH_RES&lt;/div&gt;\n            &lt;div class=\&quot;text-6xl font-black text-white font-mono\&quot; data-text=\&quot;_window.innerWidth\&quot;&gt;&lt;/div&gt;\n            &lt;div class=\&quot;text-[10px] font-black opacity-30 mt-2\&quot;&gt;PX_VECTOR_X&lt;/div&gt;\n        &lt;/div&gt;\n        \n        &lt;div class=\&quot;bg-neutral p-10 border-4 border-base-200 shadow-2xl rounded-[2.5rem] flex flex-col items-center\&quot;&gt;\n            &lt;div class=\&quot;text-[10px] font-black text-accent tracking-widest mb-4\&quot;&gt;INNER_HEIGHT_RES&lt;/div&gt;\n            &lt;div class=\&quot;text-6xl font-black text-white font-mono\&quot; data-text=\&quot;_window.innerHeight\&quot;&gt;&lt;/div&gt;\n            &lt;div class=\&quot;text-[10px] font-black opacity-30 mt-2\&quot;&gt;PX_VECTOR_Y&lt;/div&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
           },
@@ -22,6 +22,6 @@
     <script type="module" src="../../../../dist/nexus-ux.js"></script>
 </head>
 <body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
-    <div data-component="'/examples/dashboard/components/document.html'"></div>
+    <div data-component="'/site/dashboard/_components/document.html'"></div>
 </body>
 </html>

@@ -112,77 +112,50 @@ export const autoSprites: any[] = [
   { name: 'clipboard', module: mod_51 },
   { name: 'ws', module: mod_52 }
 ];
-import * as mod_53 from './modules/mirrors/navigator.ts';
-import * as mod_54 from './modules/mirrors/battery.ts';
-import * as mod_55 from './modules/mirrors/frames.ts';
-import * as mod_56 from './modules/mirrors/sessionStorage.ts';
-import * as mod_57 from './modules/mirrors/network.ts';
-import * as mod_58 from './modules/mirrors/geolocation.ts';
-import * as mod_59 from './modules/mirrors/window.ts';
-import * as mod_60 from './modules/mirrors/cookies.ts';
-import * as mod_61 from './modules/mirrors/storage.ts';
-import * as mod_62 from './modules/mirrors/indexedDB.ts';
-import * as mod_63 from './modules/mirrors/screen.ts';
-import * as mod_64 from './modules/mirrors/localStorage.ts';
-
-export const autoMirrors: any[] = [
-  { name: 'navigator', module: mod_53 },
-  { name: 'battery', module: mod_54 },
-  { name: 'frames', module: mod_55 },
-  { name: 'sessionStorage', module: mod_56 },
-  { name: 'network', module: mod_57 },
-  { name: 'geolocation', module: mod_58 },
-  { name: 'window', module: mod_59 },
-  { name: 'cookies', module: mod_60 },
-  { name: 'storage', module: mod_61 },
-  { name: 'indexedDB', module: mod_62 },
-  { name: 'screen', module: mod_63 },
-  { name: 'localStorage', module: mod_64 }
-];
-import * as mod_65 from './modules/scopes/container.ts';
-import * as mod_66 from './modules/scopes/view.ts';
-import * as mod_67 from './modules/scopes/media.ts';
-import * as mod_68 from './modules/scopes/auth.ts';
-import * as mod_69 from './modules/scopes/os.ts';
-import * as mod_70 from './modules/scopes/native.ts';
+import * as mod_53 from './modules/scopes/container.ts';
+import * as mod_54 from './modules/scopes/view.ts';
+import * as mod_55 from './modules/scopes/media.ts';
+import * as mod_56 from './modules/scopes/auth.ts';
+import * as mod_57 from './modules/scopes/os.ts';
+import * as mod_58 from './modules/scopes/native.ts';
 
 export const autoScopes: any[] = [
-  { name: 'container', module: mod_65 },
-  { name: 'view', module: mod_66 },
-  { name: 'media', module: mod_67 },
-  { name: 'auth', module: mod_68 },
-  { name: 'os', module: mod_69 },
-  { name: 'native', module: mod_70 }
+  { name: 'container', module: mod_53 },
+  { name: 'view', module: mod_54 },
+  { name: 'media', module: mod_55 },
+  { name: 'auth', module: mod_56 },
+  { name: 'os', module: mod_57 },
+  { name: 'native', module: mod_58 }
 ];
-import * as mod_71 from './modules/modifiers/intersect.ts';
-import * as mod_72 from './modules/modifiers/stop.ts';
-import * as mod_73 from './modules/modifiers/keys.ts';
-import * as mod_74 from './modules/modifiers/self.ts';
-import * as mod_75 from './modules/modifiers/prevent.ts';
-import * as mod_76 from './modules/modifiers/throttle.ts';
-import * as mod_77 from './modules/modifiers/once.ts';
-import * as mod_78 from './modules/modifiers/debounce.ts';
-import * as mod_79 from './modules/modifiers/morph.ts';
+import * as mod_59 from './modules/modifiers/intersect.ts';
+import * as mod_60 from './modules/modifiers/stop.ts';
+import * as mod_61 from './modules/modifiers/keys.ts';
+import * as mod_62 from './modules/modifiers/self.ts';
+import * as mod_63 from './modules/modifiers/prevent.ts';
+import * as mod_64 from './modules/modifiers/throttle.ts';
+import * as mod_65 from './modules/modifiers/once.ts';
+import * as mod_66 from './modules/modifiers/debounce.ts';
+import * as mod_67 from './modules/modifiers/morph.ts';
 
 export const autoModifiers: any[] = [
-  { name: 'intersect', module: mod_71 },
-  { name: 'stop', module: mod_72 },
-  { name: 'keys', module: mod_73 },
-  { name: 'self', module: mod_74 },
-  { name: 'prevent', module: mod_75 },
-  { name: 'throttle', module: mod_76 },
-  { name: 'once', module: mod_77 },
-  { name: 'debounce', module: mod_78 },
-  { name: 'morph', module: mod_79 }
+  { name: 'intersect', module: mod_59 },
+  { name: 'stop', module: mod_60 },
+  { name: 'keys', module: mod_61 },
+  { name: 'self', module: mod_62 },
+  { name: 'prevent', module: mod_63 },
+  { name: 'throttle', module: mod_64 },
+  { name: 'once', module: mod_65 },
+  { name: 'debounce', module: mod_66 },
+  { name: 'morph', module: mod_67 }
 ];
-import * as mod_80 from './modules/observers/performance.ts';
-import * as mod_81 from './modules/observers/intersection.ts';
-import * as mod_82 from './modules/observers/mutation.ts';
-import * as mod_83 from './modules/observers/resize.ts';
+import * as mod_68 from './engine/observers/performance.ts';
+import * as mod_69 from './engine/observers/intersection.ts';
+import * as mod_70 from './engine/observers/mutation.ts';
+import * as mod_71 from './engine/observers/resize.ts';
 
 export const autoObservers: any[] = [
-  { name: 'performance', module: mod_80 },
-  { name: 'intersection', module: mod_81 },
-  { name: 'mutation', module: mod_82 },
-  { name: 'resize', module: mod_83 }
+  { name: 'performance', module: mod_68 },
+  { name: 'intersection', module: mod_69 },
+  { name: 'mutation', module: mod_70 },
+  { name: 'resize', module: mod_71 }
 ];

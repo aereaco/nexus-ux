@@ -2,6 +2,7 @@ import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { reportError } from '../../engine/errors.ts';
 import { writeIDB } from '../../engine/utils/idb.ts';
+import { stylesheet } from '../../engine/stylesheet.ts';
 
 /**
  * Lightweight IndexedDB write helper for build output.
@@ -66,16 +67,9 @@ function minifyJS(js: string): string {
 function collectStyles(root: Element, shouldMinify: boolean): string {
   const sheets: string[] = [];
 
-  // Adopted stylesheets
-  document.adoptedStyleSheets.forEach(sheet => {
-    const rules: string[] = [];
-    try {
-      for (const rule of sheet.cssRules) {
-        rules.push(rule.cssText);
-      }
-    } catch { /* cross-origin sheets are inaccessible */ }
-    if (rules.length) sheets.push(rules.join('\n'));
-  });
+  // Managed stylesheets via StyleSheetManager
+  const managedRules = stylesheet.collectRules();
+  if (managedRules) sheets.push(managedRules);
 
   // <style> elements in <head>
   document.querySelectorAll('head style').forEach(style => {

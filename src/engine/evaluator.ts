@@ -2,6 +2,8 @@ import { RuntimeContext } from './composition.ts';
 import { evaluationError } from './errors.ts';
 import { getDataStack, hasScopeProvider, resolveScopeProvider, registerScopeProvider } from './scope.ts';
 
+import { MirrorProxy } from './mirror.ts';
+
 declare module "./composition.ts" {
   interface RuntimeContext {
     evaluate: (
@@ -97,6 +99,7 @@ export function evaluateLater(
     has(target, key): boolean {
       if (key === Symbol.unscopables) return false;
       if (typeof key === 'string') {
+        if (key.startsWith('_')) return true;
         if (hasScopeProvider(key)) return true;
         const globalSignals = runtime.globalSignals();
         const globalActions = runtime.globalActions();
@@ -107,7 +110,14 @@ export function evaluateLater(
     get(target, key): unknown {
       if (key === Symbol.unscopables) return undefined;
       if (typeof key === 'string') {
-        // 1. Scope Providers (modular sprites)
+        // 1. Mirror Proxy (`_` prefix) maps to JIT global browser object listeners
+        if (key.startsWith('_')) {
+          if (key === '_' || key === '_window') return MirrorProxy;
+          const rawKey = key.slice(1);
+          return (MirrorProxy as any)[rawKey];
+        }
+
+        // 2. Scope Providers (modular sprites)
         if (hasScopeProvider(key)) return resolveScopeProvider(key, el, runtime);
 
         // 2. Data Stack (Local Scopes) - Should take precedence over globals

@@ -15,7 +15,6 @@ import themeModule from './modules/attributes/theme.ts';
 import { 
   autoAttributes,
   autoSprites,
-  autoMirrors,
   autoScopes,
   autoModifiers,
   autoObservers 
@@ -117,28 +116,7 @@ export class UX {
 
     registerScopeProvider('$animate', () => animate);
 
-    // Auto-Register Mirrors
-    autoMirrors.forEach(({ name, module }) => {
-      // Look for an export matching the name or a default export
-      const val = module[`${name}Mirror`] || module.default || Object.values(module)[0];
-      if (val) {
-        if (this.coordinator.runtimeContext.isDevMode) console.log(`[Nexus Mirror] Registering _${name}`);
-        this.coordinator.runtimeContext.setGlobalSignal(`_${name}`, val);
-      }
 
-      const initFn = module.onGlobalInit || module.default?.onGlobalInit;
-      if (initFn) {
-        try {
-          initFn(this.coordinator.runtimeContext);
-        } catch (e) {
-          this.coordinator.runtimeContext.reportError(
-            e instanceof Error ? e : new Error(String(e)),
-            undefined,
-            `Failed to initialize mirror module: ${name}`
-          );
-        }
-      }
-    });
 
     // Auto-Register Scopes
     const scopesDef: Record<string, any> = {};

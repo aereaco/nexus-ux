@@ -290,7 +290,7 @@ export interface Ownership {
 }
 
 export interface Borrow {
-  borrowerId: string;
+  borrower : object;
   type: 'immutable' | 'mutable';
   borrowedAt: number;
 }
@@ -317,28 +317,28 @@ class OwnershipTracker {
     }
   }
 
-  borrowImmutable(value: object, borrowerId: string): boolean {
+  borrowImmutable(value: object, borrower: object): boolean {
     const borrows = this._borrows.get(value) || [];
     if (borrows.some(b => b.type === 'mutable')) return false;
-    borrows.push({ borrowerId, type: 'immutable', borrowedAt: Date.now() });
+    borrows.push({ borrower, type: 'immutable', borrowedAt: Date.now() });
     this._borrows.set(value, borrows);
     (value as any)[BORROW_KEY] = borrows[borrows.length - 1];
     return true;
   }
 
-  borrowMutable(value: object, borrowerId: string): boolean {
+  borrowMutable(value: object, borrower: object): boolean {
     const borrows = this._borrows.get(value);
     if (borrows && borrows.length > 0) return false;
-    const borrow = { borrowerId, type: 'mutable' as const, borrowedAt: Date.now() };
+    const borrow = { borrower, type: 'mutable' as const, borrowedAt: Date.now() };
     this._borrows.set(value, [borrow]);
     (value as any)[BORROW_KEY] = borrow;
     return true;
   }
 
-  returnBorrow(value: object, borrowerId: string): void {
+  returnBorrow(value: object, borrower: object): void {
     const borrows = this._borrows.get(value);
     if (!borrows) return;
-    const idx = borrows.findIndex(b => b.borrowerId === borrowerId);
+    const idx = borrows.findIndex(b => b.borrower === borrower);
     if (idx !== -1) {
       borrows.splice(idx, 1);
       if (borrows.length === 0) this._borrows.delete(value);
@@ -354,6 +354,10 @@ class OwnershipTracker {
     if (type === 'immutable' && borrows?.some(b => b.type === 'mutable')) {
       throw new Error(`Immutable borrow denied for ${type}: mutable borrow exists`);
     }
+  }
+
+  getBorrowers(value: object): Borrow[] {
+    return this._borrows.get(value) || [];
   }
 }
 

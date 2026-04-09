@@ -1652,52 +1652,46 @@ Payment Request API.
 
 ---
 
-## Chapter 7.5: Environment Mirrors (`_`)
+## Chapter 7.5: Environment Mirrors (`_`) — The Unified JIT Proxy
 
-Mirrors are **reactive wrappers** around browser-native APIs. They use the `_`
-prefix and automatically update when the underlying platform value changes,
-enabling declarative data-binding to device and browser state without manual
-event listeners. Access mode is per-mirror — some support both reading and
-writing, others are read-only.
+Mirrors are **reactive wrappers** mapped directly to the `globalThis.window`
+object. They use the `_` prefix, triggering the framework's lazy JIT proxy
+engine that directly binds browser capabilities to visual state without
+requiring static module wrappers or framework updates for novel browser APIs.
+
+- **Lazy Reactivity Allocation (ZCZS)**: Memory for synchronization (like
+  `resize`, `storage`, or `hashchange` event listeners) is only allocated to the
+  runtime heap if an HTML template explicitly registers a read dependency on
+  that property. If your application never accesses `_localStorage`, no tracking
+  payload or system listener is booted.
 
 ### 7.5.1. `_window` (read-write)
 
-Reactive proxy of `window` properties. Dimensions and DPR are read-only
-(hardware-derived). Scroll position, title, and location are writable.
+Because `_` proxies `window` natively, any global state point is directly
+accessible without specialized syntax.
 
 ```html
-<!-- Read: responsive layout info -->
+<!-- Read: responsive layout info tracked lazily on native 'resize' -->
 <p data-text="'Viewport: ' + _window.innerWidth + 'x' + _window.innerHeight">
 </p>
 
-<!-- Read: scroll-linked animation -->
+<!-- Read: scroll-linked animation wrapped securely around native scroll properties -->
 <div data-style-opacity="Math.max(0, 1 - _window.scrollY / 300)">
   Hero Content
 </div>
 
-<!-- Read: DPR-aware rendering -->
-<canvas
-  data-on-load="$el.width = $el.clientWidth * _window.devicePixelRatio"
-></canvas>
-
-<!-- Write: scroll to top -->
-<button data-on-click="_window.scrollY = 0">Back to Top</button>
-
-<!-- Write: update document title -->
-<div data-effect="_window.title = 'Dashboard (' + notifications.length + ')'">
+<!-- Write: update native document title directly -->
+<div
+  data-effect="_window.document.title = 'Dashboard (' + notifications.length + ')'"
+>
 </div>
 ```
 
-**Read-only properties**: `innerWidth`, `innerHeight`, `outerWidth`,
-`outerHeight`, `devicePixelRatio`. **Writable properties**: `scrollX`, `scrollY`
-(triggers `scrollTo()`), `title` (maps to `document.title`), `location`
-(triggers navigation).
-
 ### 7.5.2. `_localStorage` (read-write)
 
-Reactive proxy of `localStorage`. Reads are reactive. Writes persist immediately
-to `localStorage` and trigger reactive updates across tabs via the `storage`
-event.
+Because `window.localStorage` is globally accessible, `_localStorage` maps to it
+seamlessly. Reads are reactive, and writes persist immediately while syncing
+across tabs via dynamic JIT `storage` event bindings.
 
 ```html
 <!-- Read: initialize from stored value -->
@@ -1709,21 +1703,12 @@ event.
 
 <!-- Write: persist directly -->
 <button data-on-click="_localStorage.theme = 'dark'">Force Dark Mode</button>
-<button data-on-click="_localStorage.lastVisit = new Date().toISOString()">
-  Mark Visited
-</button>
-
-<!-- Read: cross-tab reactive -->
-<p data-text="'Last visited: ' + _localStorage.lastVisit"></p>
 ```
-
-**All properties are read-write**. Any key can be read or written. Writes
-persist to `localStorage` and sync across tabs.
 
 ### 7.5.3. `_sessionStorage` (read-write)
 
-Reactive proxy of `sessionStorage`. Same API as `_localStorage` but **per-tab**
-— values do not sync across tabs and are cleared when the tab closes.
+Functions exactly like `_localStorage`, mapping dynamically to `sessionStorage`.
+Values do not sync across tabs and are cleared when the tab closes.
 
 ```html
 <!-- Persist draft state across page reloads (within the same tab) -->
@@ -1737,263 +1722,21 @@ Reactive proxy of `sessionStorage`. Same API as `_localStorage` but **per-tab**
   >
   </textarea>
 </div>
-
-<!-- Track active selection state -->
-<select
-  data-model="activeFork"
-  data-on-change="_sessionStorage['active:signal.ts'] = activeFork"
->
-  <option>Default</option>
-</select>
-
-<!-- Read persisted state on load -->
-<div
-  data-on-load="activeFork = _sessionStorage['active:signal.ts'] || 'Default'"
->
-</div>
 ```
 
-**All properties are read-write**. Per-tab only — no cross-tab sync by design.
+### 7.5.4. Future-Proof Forward Compatibility
 
-### 7.5.4. `_indexedDB` (read-write)
+Because the `_` identifier resolves universally to the `globalThis.window`
+object, **literally any Global API (existing or future) is supported instantly
+without framework updates.**
 
-Reactive nested Proxy wrapper around IndexedDB. Works like `_localStorage` but
-with persistent cross-session storage organized by object stores. First-level
-property access selects the store, second-level provides reactive key-value
-access.
+If the W3C releases a new `window.ai` Native LLM API tomorrow, Nexus-UX natively
+supports declarative tracking of it today.
 
 ```html
-<!-- Read: auto-fetches from IDB on first access, reactive -->
-<div
-  data-signal="{ code: '' }"
-  data-on-load="code = _indexedDB.forks['main/app.ts']"
->
-  <pre data-text="code"></pre>
-</div>
-
-<!-- Write: immediate reactive update + async IDB persist -->
-<button data-on-click="_indexedDB.forks['main/app.ts'] = sourceCode">
-  Save to IDB
-</button>
-
-<!-- Methods for complex operations -->
-<div data-signal="{ keys: [] }" data-on-load="keys = _indexedDB.forks.list()">
-  <template data-for="k in keys">
-    <li data-text="k"></li>
-  </template>
-</div>
-
-<!-- Delete and clear -->
-<button data-on-click="_indexedDB.forks.delete('old-key')">Delete</button>
-<button data-on-click="_indexedDB.forks.clear()">Clear Store</button>
+<!-- Experimental or custom properties exposed by plugins / host OS -->
+<div data-text="_experimentalAPI.status"></div>
 ```
-
-**Property access**: Any `_indexedDB.storeName.key` is read-write. Reads
-auto-fetch from IndexedDB and return `undefined` until resolved. Writes update
-the reactive value immediately and persist asynchronously.
-
-**Methods** (on each store proxy):
-
-- `.list(prefix?)` — returns array of keys (populates asynchronously)
-- `.delete(key)` — removes a key from the store
-- `.clear()` — removes all entries in the store
-
-### 7.5.5. `_cookies` (read-write)
-
-Reactive proxy for `document.cookie`. Property access reads/writes cookies.
-Polls every 2 seconds for external cookie changes (e.g., server-set cookies).
-
-```html
-<!-- Read: reactive cookie access -->
-<div data-show="_cookies.theme === 'dark'" class="dark-mode">
-  Dark mode is active
-</div>
-
-<!-- Write: set a session cookie -->
-<button data-on-click="_cookies.theme = 'dark'">Dark Mode</button>
-
-<!-- Write with options (maxAge, path, secure, sameSite) -->
-<button
-  data-on-click="_cookies.set('theme', 'dark', { maxAge: 86400, sameSite: 'Lax' })"
->
-  Persist Dark Mode (24h)
-</button>
-
-<!-- Delete -->
-<button data-on-click="_cookies.delete('theme')">Reset Theme</button>
-```
-
-**Property access**: Read-write. Reads parse `document.cookie`. Writes set
-session cookies (path `/`). For advanced options use `.set(key, value, opts)`.
-
-**Methods**:
-
-- `.set(key, value, options?)` — set with
-  `{ maxAge, expires, path, domain, secure, sameSite }`
-- `.delete(key, path?)` — remove a cookie
-- `.all()` — returns `Record<string, string>` of all cookies
-
-### 7.5.6. `_storage` (read-only)
-
-Reactive wrapper around the Storage Manager API (`navigator.storage`).
-Auto-polls usage and quota. Useful for showing storage pressure indicators.
-
-```html
-<!-- Storage usage bar -->
-<div
-  data-text="'Storage: ' + Math.round(_storage.usage / 1024 / 1024) + 'MB / ' +
-                Math.round(_storage.quota / 1024 / 1024) + 'MB'"
->
-</div>
-
-<!-- Warning when storage is nearly full -->
-<div data-show="_storage.usage / _storage.quota > 0.9" class="alert">
-  ⚠️ Storage almost full!
-</div>
-
-<!-- Request persistent storage -->
-<button data-on-click="_storage.persist()">
-  <span
-    data-text="_storage.persisted ? 'Persistent ✓' : 'Request Persistence'"
-  ></span>
-</button>
-```
-
-**Reactive properties** (read-only): `usage` (bytes), `quota` (bytes),
-`persisted` (boolean).
-
-**Methods**:
-
-- `.estimate()` — force re-poll storage estimate
-- `.persist()` — request persistent storage (updates `persisted` reactively)
-
-### 7.5.7. `_navigator` (read-only)
-
-Reactive proxy of `navigator` properties.
-
-```html
-<!-- Online/offline indicator -->
-<div data-class-offline="!_navigator.onLine">
-  <span data-if="_navigator.onLine">🟢 Online</span>
-  <span data-if="!_navigator.onLine">🔴 Offline</span>
-</div>
-
-<!-- Language-aware content -->
-<p data-text="_navigator.language.startsWith('es') ? 'Hola' : 'Hello'"></p>
-```
-
-**Reactive properties**: `onLine`, `language`, `userAgent`,
-`hardwareConcurrency`, `maxTouchPoints`.
-
-### 7.5.8. `_screen` (read-only)
-
-Reactive proxy of screen dimensions and orientation.
-
-```html
-<!-- Orientation-aware layout -->
-<div data-class-landscape="_screen.orientation?.type?.includes('landscape')">
-  <p data-text="_screen.width + 'x' + _screen.height"></p>
-</div>
-```
-
-**Reactive properties**: `width`, `height`, `orientation`, `colorDepth`,
-`pixelDepth`.
-
-### 7.5.9. `_geolocation` (read-only)
-
-Reactive wrapper around `navigator.geolocation`. Automatically watches position
-changes.
-
-```html
-<div
-  data-signal="{ mapCenter: null }"
-  data-effect="mapCenter = { lat: _geolocation.latitude, lng: _geolocation.longitude }"
->
-  <p data-text="'Lat: ' + _geolocation.latitude?.toFixed(4)"></p>
-  <p data-text="'Lng: ' + _geolocation.longitude?.toFixed(4)"></p>
-  <p data-text="'Accuracy: ' + _geolocation.accuracy + 'm'"></p>
-</div>
-```
-
-**Reactive properties**: `latitude`, `longitude`, `accuracy`, `altitude`,
-`heading`, `speed`.
-
-> **Note**: Accessing `_geolocation` triggers browser permission prompt on first
-> use.
-
-### 7.5.10. `_network` (read-only)
-
-Reactive proxy of the Network Information API (`navigator.connection`).
-
-```html
-<!-- Adaptive media quality -->
-<video
-  data-bind-src="_network.effectiveType === '4g' ? '/video/hd.mp4' : '/video/sd.mp4'"
->
-</video>
-
-<!-- Data saver warning -->
-<div data-if="_network.saveData">
-  <p>⚠️ Data Saver enabled — images compressed</p>
-</div>
-
-<p
-  data-text="'Connection: ' + _network.effectiveType + ' (' + _network.downlink + ' Mbps)'"
->
-</p>
-```
-
-**Reactive properties**: `effectiveType` (`'slow-2g'`/`'2g'`/`'3g'`/`'4g'`),
-`downlink`, `rtt`, `saveData`.
-
-### 7.5.11. `_battery` (read-only)
-
-Reactive proxy of the Battery Status API.
-
-```html
-<div data-class-low-battery="_battery.level < 0.2 && !_battery.charging">
-  <p data-text="'Battery: ' + Math.round(_battery.level * 100) + '%'"></p>
-  <span data-if="_battery.charging">🔌 Charging</span>
-  <span
-    data-if="!_battery.charging"
-    data-text="'Time remaining: ' + Math.round(_battery.dischargingTime / 60) + ' min'"
-  ></span>
-</div>
-```
-
-**Reactive properties**: `level` (0-1), `charging` (boolean), `chargingTime`
-(seconds), `dischargingTime` (seconds).
-
-### 7.5.12. `_frames` (read-only)
-
-Reactive mirror for window frames and cross-frame communication. Auto-detects
-iframe additions/removals via MutationObserver.
-
-```html
-<div data-text="_frames.length + ' frames on this page'"></div>
-
-<!-- List all iframes -->
-<template data-for="f in _frames.list">
-  <div data-text="f.name + ': ' + f.src"></div>
-</template>
-
-<!-- Post message to a frame -->
-<button data-on-click="_frames.postMessage(0, { type: 'refresh' })">
-  Refresh Frame
-</button>
-<button data-on-click="_frames.postMessageByName('editor', { type: 'save' })">
-  Save in Editor
-</button>
-```
-
-**Reactive properties** (read-only): `length`, `list`
-(`{ index, name, src }[]`).
-
-**Methods**:
-
-- `.postMessage(index, data, targetOrigin?)` — send to frame by index
-- `.postMessageByName(name, data, targetOrigin?)` — send to named frame
-- `.refresh()` — force rescan of frames
 
 ---
 
@@ -2515,7 +2258,7 @@ template source:
 
 ```html
 <!-- From URL -->
-<my-counter data-component="/components/counter.html"></my-counter>
+<my-counter data-component="/_components/counter.html"></my-counter>
 
 <!-- From same-page template -->
 <my-card data-component="#card-template"></my-card>
@@ -2528,7 +2271,7 @@ template source:
 
 | Source Type      | Syntax              | Example                                              |
 | :--------------- | :------------------ | :--------------------------------------------------- |
-| **URL**          | Path string         | `data-component="/components/nav.html"`              |
+| **URL**          | Path string         | `data-component="/_components/nav.html"`             |
 | **Same-page ID** | `#id` reference     | `data-component="#my-template"`                      |
 | **Inline**       | `<template>` string | `data-component="<template><p>Hello</p></template>"` |
 | **Data URI**     | `data:` URL         | `data-component="data:text/html;base64,..."`         |
@@ -2536,7 +2279,7 @@ template source:
 
 ### 10.2. Component Template Structure
 
-A component template file (`/components/counter.html`):
+A component template file (`/_components/counter.html`):
 
 ```html
 <template>
@@ -2559,8 +2302,8 @@ A component template file (`/components/counter.html`):
 
   <script>
     // Script executes with component context
-  console.log("Counter component loaded");
-  registerCleanup(() => console.log("Counter destroyed"));
+    console.log("Counter component loaded");
+    registerCleanup(() => console.log("Counter destroyed"));
   </script>
 </template>
 ```
@@ -2598,12 +2341,12 @@ explicit "Props" or complex state passing.
 <!-- Parent -->
 <div data-signal="{ userName: 'Ada', userAge: 30 }">
   <!-- component inherits userName and userAge automatically -->
-  <user-card data-component="/components/user-card.html"></user-card>
+  <user-card data-component="/_components/user-card.html"></user-card>
 </div>
 ```
 
 ```html
-<!-- /components/user-card.html -->
+<!-- /_components/user-card.html -->
 <template>
   <div>
     <h2 data-bind="userName"></h2>
@@ -2640,12 +2383,12 @@ context:
 
   <script>
     export function handleClick() {
-    emit("button-clicked", { timestamp: Date.now() });
-  }
+      emit("button-clicked", { timestamp: Date.now() });
+    }
 
-  registerCleanup(() => {
-    console.log("Component cleanup");
-  });
+    registerCleanup(() => {
+      console.log("Component cleanup");
+    });
   </script>
 </template>
 ```
@@ -2667,7 +2410,7 @@ Components can participate in HTML forms by adding
 
 ```html
 <custom-input
-  data-component="/components/input.html"
+  data-component="/_components/input.html"
   data-component-formAssociated
 >
 </custom-input>
@@ -2682,12 +2425,12 @@ participation.
 The component source can be a reactive signal, enabling dynamic view switching:
 
 ```html
-<div data-signal="{ currentView: '/components/dashboard.html' }">
+<div data-signal="{ currentView: '/_components/dashboard.html' }">
   <nav>
-    <button data-on-click="currentView = '/components/dashboard.html'">
+    <button data-on-click="currentView = '/_components/dashboard.html'">
       Dashboard
     </button>
-    <button data-on-click="currentView = '/components/settings.html'">
+    <button data-on-click="currentView = '/_components/settings.html'">
       Settings
     </button>
   </nav>

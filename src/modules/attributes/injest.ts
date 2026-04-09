@@ -2,6 +2,7 @@ import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { reportError } from '../../engine/errors.ts';
 import { readIDB } from '../../engine/utils/idb.ts';
+import { stylesheet } from '../../engine/stylesheet.ts';
 
 /**
  * Lightweight IndexedDB read helper for idb:// URIs.
@@ -39,7 +40,7 @@ const assetCache = new Map<string, string>();
  * Examples:
  *   data-injest="{ css: { link: 'href=\'...\'' } }"
  *   data-injest="{ nav: { pattern: 'idb://patterns/navbar' } }"
- *   data-injest="{ card: { component: 'idb://components/card' } }"
+ *   data-injest="{ card: { component: 'idb://_components/card' } }"
  *   data-injest="{ dark: { theme: 'idb://themes/dark' } }"
  */
 
@@ -129,16 +130,12 @@ async function ingestLink(
     const href = attrs.href as string;
     if (!href) continue;
 
-    // ZCZS Mandate: Constructable Stylesheets
+    // ZCZS Mandate: Constructable Stylesheets via StyleSheetManager
     if ('CSSStyleSheet' in globalThis && (attrs.rel === 'stylesheet' || !attrs.rel)) {
       const cssText = await resolveContent(href);
       if (cssText) {
-        const sheet = new CSSStyleSheet();
-        await sheet.replace(cssText);
-        document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
-        cleanupFns.push(() => {
-          document.adoptedStyleSheets = document.adoptedStyleSheets.filter(s => s !== sheet);
-        });
+        const cleanup = await stylesheet.adoptCSS(cssText, `injest-${id}-${href}`);
+        cleanupFns.push(cleanup);
         runtime.log(`Nexus Injest [${id}]: CSS adopted (ZCZS): ${href}`);
         continue;
       }
@@ -217,14 +214,10 @@ async function ingestStyle(
     const cssText = isVFSUri(content) ? await resolveContent(content) : content;
     if (!cssText) continue;
 
-    // ZCZS Mandate: Constructable Stylesheets
+    // ZCZS Mandate: Constructable Stylesheets via StyleSheetManager
     if ('CSSStyleSheet' in globalThis) {
-      const sheet = new CSSStyleSheet();
-      await sheet.replace(cssText);
-      document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
-      cleanupFns.push(() => {
-        document.adoptedStyleSheets = document.adoptedStyleSheets.filter(s => s !== sheet);
-      });
+      const cleanup = await stylesheet.adoptCSS(cssText, `injest-style-${id}`);
+      cleanupFns.push(cleanup);
       runtime.log(`Nexus Injest [${id}]: Style adopted (ZCZS)`);
       continue;
     }
