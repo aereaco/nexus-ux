@@ -555,6 +555,21 @@ doesn't give you structure; it gives you raw power. Nexus-UX provides the
 **Infrastructure** (Signals, Rules, Beacons) to harness that power into a
 predictable application.
 
+### 3.2.1 Constant O(1) Engine Mechanics & ZCZS
+
+The framework architecture has been recently compressed to enforce a strict
+Zero-Copy Zero-Serialization (ZCZS) boundary inside the core engine:
+
+- **Constructable `StyleSheetManager`**: Nexus completely eliminates inline
+  `<style>` tag pollution and external build systems. Assets and dynamically
+  synthesized class definitions are routed directly to
+  `document.adoptedStyleSheets` memory structures, achieving near 0-ms
+  compilation.
+- **JIT JavaScript Observers**: Intersection, Resize, Mutation, and Performance
+  tracking are not standalone active listeners. Rather, the `engine/observers`
+  layer attaches them transparently only when the evaluated proxy strictly
+  requires them for tracking DOM dependencies.
+
 ### 3.3. The Browser-Native Foundation: `data-*` Attributes & the `dataset` API
 
 Nexus-UX's entire directive system is built on a browser-native primitive:
@@ -684,6 +699,8 @@ directive catalog:
 - **`data-computed`**: Logic Derivative — creates cached read-only derived
   signals.
 - **`data-ref`**: Element References — programmatic DOM access via `$refs`.
+- **`data-effect`**: Side-effects Execution — resolves logic without natively
+  attaching a return value to the DOM.
 - **`data-progress`**: Progress Visualization — provides highly customizable
   bars and spinners for tracking loading states or background tasks. Supports
   various locations (top, bottom, left, right) and styles (gradients, patterns,
@@ -703,6 +720,8 @@ directive catalog:
   reconciliation.
 - **`data-key`**: Keyed Reconciliation — provides a unique identity for
   `data-for` items to optimize DOM reuse.
+- **`data-sort`**: List Ordering — triggers keyed positional DOM reconciliation
+  based on dynamic criteria.
 
 #### 3.6.3. Advanced Interoperability & Themes
 
@@ -738,6 +757,8 @@ directive catalog:
 - **`data-var-[name]`**: CSS Variable Sync — direct synchronization to CSS
   custom properties (`--[name]`). Essential for **Data Painting** and UI library
   integration (e.g., DaisyUI).
+- **`data-mask`**: Visual Masking — dynamically synchronizes custom SVG assets
+  or variables into the standard CSS Mask/Webkit-Mask compliance layers.
 
 #### 3.6.5. Structural & Development Directives
 
@@ -1752,6 +1773,66 @@ native power through the "HTML-Centric Renaissance."
 
 - **Website**: [aerea.co](https://aerea.co)
 - **Support**: [support@aerea.co](mailto:support@aerea.co)
+
+---
+
+## Chapter 11: Roadmap & Development Log
+
+This section serves as a living, embedded document of the Nexus-UX platform
+capabilities, active issues, and ongoing evolution.
+
+### 11.1. Functionality Status
+
+#### Current (Production Verified)
+
+- ZCZS Reactor Core (`Proxy` and `Binary Heaps`)
+- Unified JIT Mirror Proxy (`_window`, `_localStorage`, etc.)
+- Constructable `StyleSheetManager` Integration
+- Native Hypermedia Interoperability (`:morph`)
+- Comprehensive Routing Ecosystem (`data-router`)
+
+#### Testing (Beta Validation)
+
+- Adaptive Device Prefetching Streams
+- SharedWorker Web Locks (`worker.logic.ts`)
+- Multi-Tab Signal Synchronization via IndexedDB Diffing
+
+#### Planned Sub-sections
+
+- Automated Dynamic Tailwind-to-ESSL Class Complier
+- Agentic Schema Generators (AI-to-USRL bindings)
+- ThreeJS/WebGPU Reactive Target Offloading
+
+### 11.2. Bug & Defect Register
+
+- **Resolved / Patched**:
+  - _Bug 0x1A_: Circular Proxy dependency crashing native `_window` mirror
+    mapping. (Patched).
+  - _Bug 0x1B_: `data-show` bypass bypasses layout flow; replaced raw inline
+    styling with robust Reconciler/JIT Style Manager invocation.
+  - _Bug 0x1C_: Re-evaluation overwrites signal data references. Mitigated by
+    explicit `Object.keys` deep diffing in `reactivity.ts`.
+- **Remediating / In-Progress**:
+  - CSS Variable Synchronization logic can block animation frames when highly
+    nested or when complex array structures are mutated rapidly.
+- **Reported / Known**:
+  - Deep-nested `<template>` routing creates orphaned nodes in the `unmount`
+    cycle during rigorous ViewTransition API flips. Need strict disposal
+    tracking on children elements.
+
+### 11.3. Roadmap Notes & Architectural Shifts
+
+- **Engine Consolidation Shift**: We have recently completed a massive
+  consolidation shift where arbitrary manual DOM mirrors (12 legacy modules)
+  were completely eliminated and replaced directly by the engine's unified JIT
+  proxy trap. Memory consumption and boot traversal paths were radically
+  improved.
+- **StyleSheet Displacements**: `adoptCSS` and `collectRules` have been
+  successfully implemented directly in the engine as part of our strategic
+  mandate against excessive node build systems.
+- **The Zero-Overhead Goal**: We are rapidly aligning the engine towards
+  standardizing declarative HTML capabilities, mathematically maximizing
+  performance thresholds without external JavaScript dependencies.
 
 ---
 
