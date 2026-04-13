@@ -1371,7 +1371,38 @@ function serializeAST(nodes: ASTNode[], candidate: Candidate): string {
     }
   }
   
-  for (const node of nodes) {
+  // Deterministic Property Sort Order (Tailwind Parity)
+  const PROPERTY_ORDER_MAP: Record<string, number> = {
+    'appearance': 1, 'display': 2, 'position': 3, 'top': 4, 'right': 5, 'bottom': 6, 'left': 7, 'inset': 8,
+    'flex': 10, 'flex-basis': 11, 'flex-direction': 12, 'flex-grow': 13, 'flex-shrink': 14, 'flex-wrap': 15,
+    'grid': 20, 'grid-area': 21, 'gap': 25, 'align-content': 30, 'align-items': 31, 'align-self': 32,
+    'justify-content': 35, 'justify-items': 36, 'justify-self': 37,
+    'order': 40, 'float': 45, 'clear': 46,
+    'width': 50, 'min-width': 51, 'max-width': 52, 'height': 53, 'min-height': 54, 'max-height': 55,
+    'inline-size': 56, 'block-size': 57,
+    'margin': 60, 'margin-top': 61, 'margin-right': 62, 'margin-bottom': 63, 'margin-left': 64,
+    'padding': 70, 'padding-top': 71, 'padding-right': 72, 'padding-bottom': 73, 'padding-left': 74,
+    'font-family': 80, 'font-size': 81, 'font-weight': 82, 'line-height': 83, 'letter-spacing': 84,
+    'color': 90, 'text-align': 91, 'text-decoration': 92, 'text-transform': 93,
+    'background': 100, 'background-color': 101, 'background-image': 102,
+    'border': 110, 'border-width': 111, 'border-style': 112, 'border-color': 113, 'border-radius': 114,
+    'outline': 120, 'outline-width': 121, 'outline-style': 122, 'outline-color': 123, 'outline-offset': 124,
+    'opacity': 130, 'visibility': 131, 'z-index': 132, 'content': 133,
+    'transition': 140, 'transition-property': 141, 'transition-duration': 142, 'transition-timing-function': 143,
+    'transform': 150, 'animation': 151, 'filter': 152, 'backdrop-filter': 153
+  };
+
+  const sortedNodes = [...nodes].sort((a, b) => {
+    if (a.kind !== 'declaration' || b.kind !== 'declaration') return 0;
+    const propA = a.property || "";
+    const propB = b.property || "";
+    const orderA = PROPERTY_ORDER_MAP[propA] || 999;
+    const orderB = PROPERTY_ORDER_MAP[propB] || 999;
+    if (orderA !== orderB) return orderA - orderB;
+    return propA.localeCompare(propB);
+  });
+
+  for (const node of sortedNodes) {
     if (node.kind === 'declaration') {
       declarations += `${node.property}: ${node.value}${node.important || candidate.important ? ' !important' : ''};`;
     }
@@ -2317,6 +2348,52 @@ export function populateStandardUtilities(ds: DesignSystem) {
     ['outline-dotted', [['outline-style', 'dotted']]],
     ['outline-double', [['outline-style', 'double']]],
   ]);
+
+  // Outline Functional (Composited)
+  ds.functional('outline', (c) => {
+    if (!c.value) return;
+    const v = c.value.value;
+    const color = resolveColor(v, c.modifier);
+    if (color) {
+      return [
+        { kind: 'declaration', property: '--tw-outline-color', value: color },
+        { kind: 'declaration', property: 'outline', value: 'var(--tw-outline-style, solid) var(--tw-outline-width, 1px) var(--tw-outline-color, currentColor)' }
+      ];
+    }
+    const width = resolveSpacing(v);
+    return [
+      { kind: 'declaration', property: '--tw-outline-width', value: width },
+      { kind: 'declaration', property: 'outline', value: 'var(--tw-outline-style, solid) var(--tw-outline-width, 1px) var(--tw-outline-color, currentColor)' }
+    ];
+  });
+  ds.functional('outline-style', (c) => {
+    if (!c.value) return;
+    return [{ kind: 'declaration', property: '--tw-outline-style', value: c.value.value }];
+  });
+
+  // Aspect
+  ds.functional('aspect', (c) => {
+    if (!c.value) return;
+    const v = c.value.value;
+    if (v === 'auto') return [d('aspect-ratio', 'auto')];
+    if (v === 'square') return [d('aspect-ratio', '1 / 1')];
+    if (v === 'video') return [d('aspect-ratio', '16 / 9')];
+    if (v.includes('/')) return [d('aspect-ratio', v.replace('/', ' / '))];
+    return [d('aspect-ratio', v)];
+  });
+
+  // Additional Insets
+  const insetFuncMap: Record<string, string> = {
+    'inset-inline': 'inset-inline', 'inset-block': 'inset-block',
+    'inset-is': 'inset-inline-start', 'inset-ie': 'inset-inline-end',
+    'inset-bs': 'inset-block-start', 'inset-be': 'inset-block-end',
+  };
+  for (const [root, prop] of Object.entries(insetFuncMap)) {
+    ds.functional(root, (c) => {
+      if (!c.value) return;
+      return [d(prop, resolveSpacing(c.value.value, c.negative))];
+    });
+  }
 
   // ═══════════════════════════════════════════════════════
   // 24. SCROLL SPACING
