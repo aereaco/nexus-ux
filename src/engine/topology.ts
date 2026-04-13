@@ -123,7 +123,7 @@ class EngineTopology {
         console.log('[Nexus Topology] SharedArrayBuffer initialized');
       } catch (e) {
         console.warn('[Nexus Topology] Failed to initialize SAB, falling back:', e);
-        this.currentTier = Math.max(0, this.currentTier - 1);
+        this.currentTier = Math.max(0, this.currentTier - 1) as TierLevel;
         this.initializeTier();
         return;
       }

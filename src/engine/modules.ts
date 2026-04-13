@@ -24,6 +24,7 @@ import { MARKER_KEY } from './consts.ts';
 import { NexusEnhancedElement } from './reactivity.ts';
 import { attachObserver, registerObserver, disposeObservers } from './observers.ts';
 import { topology, TierLevel } from './topology.ts';
+import { stylesheet } from './stylesheet.ts';
 
 /**
  * Defines the shape of an action function.
@@ -410,6 +411,11 @@ export class ModuleCoordinator {
     // Mark as initialized IMMEDIATELY to prevent circularity or double-walk
     (element as NexusEnhancedElement)[MARKER_KEY] = this.markerDispenser++;
 
+    // ZCZS Target: Lexing static DOM classes instantaneously upon discovery
+    if (element.classList && element.classList.length > 0) {
+      element.classList.forEach(cls => stylesheet.adoptClass(cls, element as HTMLElement, this.runtimeContext));
+    }
+
     const handlersToExecute: {
       directiveName: string;
       handle: () => (() => void) | void;
@@ -498,6 +504,15 @@ export class ModuleCoordinator {
     Array.from(element.children).forEach(child => {
       if (child instanceof HTMLElement) {
         this.processElement(child, forceReWalk);
+      } else if (child instanceof Element && child.classList && child.classList.length > 0) {
+        // SVG and other non-HTML elements: adopt their classes for JIT compilation
+        child.classList.forEach(cls => stylesheet.adoptClass(cls, child as unknown as HTMLElement, this.runtimeContext));
+        // Walk SVG children too
+        Array.from(child.children).forEach(grandchild => {
+          if (grandchild instanceof Element && grandchild.classList && grandchild.classList.length > 0) {
+            grandchild.classList.forEach(cls => stylesheet.adoptClass(cls, grandchild as unknown as HTMLElement, this.runtimeContext));
+          }
+        });
       }
     });
   }

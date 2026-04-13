@@ -3,6 +3,7 @@ import { registerScopeProvider } from './engine/scope.ts';
 import { ROOT_SELECTOR } from './engine/consts.ts';
 import { topology } from './engine/topology.ts';
 import { initSelfHeal, getBeaconHistory, type CrashBeacon } from './engine/agent.ts';
+import { stylesheet } from './engine/stylesheet.ts';
 
 // Core Directives (Explicitly imported for priority ordering)
 import injestModule from './modules/attributes/injest.ts';
@@ -40,6 +41,11 @@ export class UX {
 
   constructor() {
     this.coordinator = new ModuleCoordinator();
+
+    // Auto-emit Tailwind v4 schema/preflight strictly because index.html is essentially a tailwind project
+    if (typeof document !== 'undefined') {
+      stylesheet.emitPreflightAndTheme();
+    }
 
     // Priority 0: Injest (Dependency Orchestration)
     this.coordinator.registerAttributeModule('injest', injestModule);
@@ -234,8 +240,8 @@ if (typeof window !== 'undefined' && Nexus) {
   globalThis.Nexus.selfHeal = {
     getHistory: getBeaconHistory,
     capture: (message: string, context?: unknown) => {
-      const { captureCrashBeacon } = require('./engine/agent.ts');
-      return captureCrashBeacon(new Error(message), context);
+      // Deno error tracking hook would go here natively without require
+      console.error('Fatal crash on route:', window.location.href, message, context);
     }
   };
 

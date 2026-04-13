@@ -2,6 +2,7 @@
 import { Idiomorph } from 'idiomorph/dist/idiomorph.esm.js';
 import { DATA_PRESERVE_ATTR, CLEANUP_FUNCTIONS_KEY, MARKER_KEY } from './consts.ts';
 import { NexusEnhancedElement } from './reactivity.ts';
+import { stylesheet } from './stylesheet.ts';
 
 // Configure Idiomorph defaults
 const defaults = {
@@ -104,6 +105,7 @@ export function reconcileClass(el: HTMLElement, value: unknown): void {
     if (!el.classList.contains(cls)) {
       el.classList.add(cls);
       currentAdded.add(cls);
+      stylesheet.adoptClass(cls, el);
     }
   });
 
