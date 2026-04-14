@@ -85,7 +85,7 @@ const onModule: AttributeModule = {
         const forceDirect = target === window || target === document || NON_BUBBLING_EVENTS.has(eventName) || options !== false;
 
         if (eventName === 'hover') {
-          // Virtual Event: maps to mouseenter/mouseleave
+          // Interactive Orchestration: maps to native mouseenter/mouseleave pair
           const enterHandler = (e: Event) => {
             const extras = { $evt: e, $newValue: true, $hovered: true };
             return runtime.evaluate(el, value, extras);

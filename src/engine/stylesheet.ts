@@ -550,7 +550,9 @@ export const PREFLIGHT_CSS = `
   img, video { max-width: 100%; height: auto; }
   [hidden] { display: none; }
 }
+`;
 
+const KEYFRAMES_CSS = `
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
 @keyframes pulse { 50% { opacity: 0.5; } }
@@ -2063,7 +2065,13 @@ class StyleSheetManager {
 
   emitPreflightAndTheme(): void {
     if (this._preflightEmitted) return;
+    
+    // Base Styles (Traditional Global Style Tag)
     this.adoptCSS(PREFLIGHT_CSS, 'tailwind-preflight');
+    
+    // Framework Keyframes (Modern Adopted StyleSheet - Global Scope)
+    this.adoptCSS(KEYFRAMES_CSS, 'tailwind-keyframes');
+
     // Convert @theme default { ... } to :root { ... } — browsers reject unknown at-rules
     const rootTheme = THEME_CSS.replace(/^@theme\s+default\s*\{/, ':root {');
     
