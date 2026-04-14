@@ -131,7 +131,7 @@ async function ingestLink(
     if (!href) continue;
 
     // ZCZS Mandate: Constructable Stylesheets via StyleSheetManager
-    if ('CSSStyleSheet' in globalThis && (attrs.rel === 'stylesheet' || !attrs.rel)) {
+    if (attrs.rel === 'stylesheet' || !attrs.rel) {
       const cssText = await resolveContent(href);
       if (cssText) {
         const cleanup = await stylesheet.adoptCSS(cssText, `injest-${id}-${href}`);
@@ -140,13 +140,6 @@ async function ingestLink(
         continue;
       }
     }
-
-    // Fallback: <link> tag
-    const link = document.createElement('link');
-    applyAttributes(link, attrs);
-    document.head.appendChild(link);
-    cleanupFns.push(() => link.remove());
-    runtime.log(`Nexus Injest [${id}]: CSS loaded (Tag): ${href}`);
   }
 }
 
@@ -215,20 +208,9 @@ async function ingestStyle(
     if (!cssText) continue;
 
     // ZCZS Mandate: Constructable Stylesheets via StyleSheetManager
-    if ('CSSStyleSheet' in globalThis) {
-      const cleanup = await stylesheet.adoptCSS(cssText, `injest-style-${id}`);
-      cleanupFns.push(cleanup);
-      runtime.log(`Nexus Injest [${id}]: Style adopted (ZCZS)`);
-      continue;
-    }
-
-    // Fallback: <style> tag
-    const style = document.createElement('style');
-    applyAttributes(style, attrs);
-    style.textContent = cssText;
-    document.head.appendChild(style);
-    cleanupFns.push(() => style.remove());
-    runtime.log(`Nexus Injest [${id}]: Style loaded (Tag)`);
+    const cleanup = await stylesheet.adoptCSS(cssText, `injest-style-${id}`);
+    cleanupFns.push(cleanup);
+    runtime.log(`Nexus Injest [${id}]: Style adopted (ZCZS)`);
   }
 }
 

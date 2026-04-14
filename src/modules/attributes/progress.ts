@@ -1,6 +1,7 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { reportError } from '../../engine/errors.ts';
+import { stylesheet } from '../../engine/stylesheet.ts';
 
 /**
  * data-progress="{ type: 'bar', location: 'top', color: 'primary', value: '$progress' }"
@@ -20,8 +21,7 @@ interface ProgressConfig {
 let globalStylesInjected = false;
 function injectGlobalStyles() {
   if (globalStylesInjected) return;
-  const style = document.createElement('style');
-  style.textContent = `
+  const css = `
     @keyframes nexus-rotate { 100% { transform: rotate(360deg); } }
     @keyframes nexus-dash { 
       0% { stroke-dasharray: 1, 150; stroke-dashoffset: 0; }
@@ -47,7 +47,7 @@ function injectGlobalStyles() {
       transform-origin: top center;
     }
   `;
-  document.head.appendChild(style);
+  stylesheet.adoptCSSSync(css, 'nexus-progress-internal');
   globalStylesInjected = true;
 }
 

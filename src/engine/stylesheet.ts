@@ -2055,9 +2055,14 @@ class StyleSheetManager {
 
   private _getJitSheet(): CSSStyleSheet {
     if (!this._jitSheet) {
-      this._jitSheet = new CSSStyleSheet();
-      if ('document' in globalThis) {
-        document.adoptedStyleSheets = [...document.adoptedStyleSheets, this._jitSheet];
+      if ('CSSStyleSheet' in globalThis) {
+        this._jitSheet = new CSSStyleSheet();
+        if ('document' in globalThis) {
+          document.adoptedStyleSheets = [...document.adoptedStyleSheets, this._jitSheet];
+        }
+      } else {
+        // Fallback for extremely niche environments if necessary, but Nexus-UX mandates modern APIs
+        throw new Error("Nexus-UX: CSSStyleSheet (AdoptedStyleSheets) is required for JIT.");
       }
     }
     return this._jitSheet;
@@ -2066,20 +2071,40 @@ class StyleSheetManager {
   emitPreflightAndTheme(): void {
     if (this._preflightEmitted) return;
     
-    // Base Styles (Traditional Global Style Tag)
-    this.adoptCSS(PREFLIGHT_CSS, 'tailwind-preflight');
+    // 1. Base Framework Styles (Preflight)
+    this.adoptCSSSync(PREFLIGHT_CSS, 'nexus-preflight');
     
-    // Framework Keyframes (Modern Adopted StyleSheet - Global Scope)
-    this.adoptCSS(KEYFRAMES_CSS, 'tailwind-keyframes');
+    // 2. Framework Keyframes (Animations)
+    this.adoptCSSSync(KEYFRAMES_CSS, 'nexus-keyframes');
 
-    // Convert @theme default { ... } to :root { ... } — browsers reject unknown at-rules
+    // 3. Theme Orchestration
     const rootTheme = THEME_CSS.replace(/^@theme\s+default\s*\{/, ':root {');
-    
-    // Official v4 Parity: Register @property for compositing variables
     const compositingCSS = registerCompositingProperties();
-    
-    this.adoptCSS(rootTheme + '\n' + compositingCSS, 'tailwind-theme');
+    this.adoptCSSSync(rootTheme + '\n' + compositingCSS, 'nexus-theme');
+
     this._preflightEmitted = true;
+  }
+
+  /**
+   * Synchronous adoption for immediate framework boot.
+   */
+  adoptCSSSync(cssText: string, id?: string): () => void {
+    const sheetId = id || `_auto_${this._nextId++}`;
+    const existing = this._adoptedSheets.get(sheetId);
+    
+    if (existing) {
+      existing.replaceSync(cssText);
+      return () => this.removeSheet(sheetId);
+    }
+
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(cssText);
+    this._adoptedSheets.set(sheetId, sheet);
+    
+    if ('document' in globalThis) {
+      document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+    }
+    return () => this.removeSheet(sheetId);
   }
 
   async adoptCSS(cssText: string, id?: string): Promise<() => void> {
