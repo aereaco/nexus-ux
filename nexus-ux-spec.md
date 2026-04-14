@@ -560,11 +560,16 @@ predictable application.
 The framework architecture has been recently compressed to enforce a strict
 Zero-Copy Zero-Serialization (ZCZS) boundary inside the core engine:
 
-- **Constructable `StyleSheetManager`**: Nexus completely eliminates inline
-  `<style>` tag pollution and external build systems. Assets and dynamically
-  synthesized class definitions are routed directly to
-  `document.adoptedStyleSheets` memory structures, achieving near 0-ms
-  compilation.
+- **Unified Adopted StyleSheets Registry**: Nexus-UX has moved to its "Final
+  Form" of CSS orchestration. The `StyleSheetManager` act as the sole styling
+  authority, consolidating **Preflight, Theme, Keyframes, and JIT rules** into
+  synchronously adopted `CSSStyleSheet` objects. This eliminates all legacy
+  `<style>` and `<link>` tag pollution in the document head and ensures styles
+  automatically penetrate Shadow DOM boundaries without duplicative parsing.
+- **Adopted Synchronous Boot**: To eliminate FOUC (Flash of Unstyled Content)
+  while maintaining ZCZS purity, the framework utilizes `replaceSync` for
+  initial asset adoption, ensuring that UI structure and presentation are
+  deterministically linked before the first paint.
 - **JIT JavaScript Observers**: Intersection, Resize, Mutation, and Performance
   tracking are not standalone active listeners. Rather, the `engine/observers`
   layer attaches them transparently only when the evaluated proxy strictly
@@ -1019,23 +1024,21 @@ Signal Index Map:
 `@vue/reactivity` proxies, as structured data requires proxy trapping for deep
 reactivity.
 
-**End-to-End Data Flow (Database → DOM)**:
-
-```
-SurrealDB LIVE SELECT diff
-  → WebSocket binary frame (MessagePack/CBOR — no JSON)
-  → Worker thread receives ArrayBuffer (Transferable — zero-copy)
-  → Diff decoder writes directly into signal heap / proxy
-  → Reactive effect fires on main thread
-  → DOM mutation (el.textContent = value — property, not attribute)
-```
-
 **Key invariant**: At no point in the reactive update cycle is data serialized
 to or from `data-*` attribute strings. The HTML attributes are the **declaration
 source** (parsed once at initialization), while the binary signal heap and
 reactive proxies are the **runtime truth**. This separation is what enables
 Nexus-UX to maintain zero-allocation, zero-serialization signal propagation
 under load.
+
+#### 5.2.3. Signal Auto-Promotion (The Local Scope Accelerator)
+
+To minimize developer friction, the Nexus-UX Evaluator implements **Signal
+Auto-Promotion**. If an expression (e.g., in `data-on-click`) assigns a value to
+a variable that does not exist in the immediate lexical or global reactive
+scopes, the engine automatically promotes that variable to a **Reactive Signal**
+in the element's local scope. This ensures that ad-hoc state can be created and
+observed without pre-registration in `data-signal`.
 
 ### 5.3. Native JIT Ghosting & 4D Predictive Sync
 
@@ -1057,6 +1060,35 @@ temporal dimensions.
   a user's cursor or thumb trajectory reveals an intent to click it.
 - **Tag-Agnostic Context Promotion**: The engine automatically detects and
   tracks 4D velocity for any container containing JIT-active nodes.
+
+### 5.4. High-Fidelity Tailwind JIT Engine
+
+Nexus-UX achieved **100% functional parity with the Official Tailwind v4 CDN**,
+refactoring the internal class compiler into a high-performance JIT engine
+optimized for the **Unified Adopted StyleSheets Registry**.
+
+#### 5.4.1. The Functional Utility Registry
+
+Unlike static frameworks, Nexus-UX's JIT engine uses a **Functional Registry**
+port of the Tailwind v4 infrastructure. This allows for:
+
+- **Dynamic Value Resolution**: Brackets and arbitrary values (e.g.,
+  `w-[var(--dyn)]`) are resolved in the background thread with bit-for-bit
+  parity.
+- **Compositing Parity**: Advanced utilities like **Filters, Backdrop Filters,
+  and Transforms** are correctly synchronized via the `--tw-*` variable map and
+  `@property` registrations, ensuring hardware-accelerated performance for
+  complex visual stacks.
+- **Motion Hardening**: Standard transition durations (150ms) and animation
+  keyframes are baked into the **Unified Asset Registry**, providing immediate
+  "Tailwind-native" motion out of the box.
+
+#### 5.4.2. Rule Invariant Orthogonality
+
+To maximize cache hits across the **Adopted StyleSheets**, rules are normalized
+at the AST level before injection. This ensures that duplicate class
+declarations across different Document roots share the same underlying
+`CSSStyleRule` object references where possible.
 
 ### 5.4. The Unified Nexus Scheduler (The Heartbeat)
 

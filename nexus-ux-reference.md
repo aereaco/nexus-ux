@@ -644,6 +644,37 @@ changes.
 - `.enter`, `.escape`, `.space` - keyboard key filters
 - `.ctrl`, `.shift`, `.alt`, `.meta` - modifier key combinations
 
+### 4.2. Native Event Binding (Interactivity Orchestration)
+
+Nexus-UX provides **Native Event Binding** for high-fidelity interactivity.
+Directives like `data-on-hover` are not virtual; they map directly to the
+browser's native event stack to drive reactive orchestration.
+
+#### 4.2.1. `data-on-hover` — Reactive Hover Orchestration
+
+**Syntax**: `data-on-hover="expression"`
+
+**Purpose**: Sets a local signal named `$hovered` to `true` (mouseenter) and
+`false` (mouseleave), while executing the provided expression.
+
+**Practical Examples**:
+
+```html
+<!-- Native hover orchestration -->
+<div
+  class="p-4 transition-colors"
+  data-class="{ 'bg-primary': $hovered }"
+  data-on-hover="console.log('Hover state:', $hovered)"
+>
+  Hover to Reveal Registry
+</div>
+```
+
+> [!NOTE]
+> **Orchestration Rule**: Because `$hovered` is a native-mapped signal, it can
+> be referenced in any other directive (like `data-class` or `data-style`) on
+> the same element or its descendants for complex visual reactions.
+
 ### 4.2. Event Listener Modifiers (Extended)
 
 Modifiers composed with `data-on-[event]` to alter the native event behavior.
