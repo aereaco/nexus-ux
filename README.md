@@ -35,14 +35,14 @@ v4**.
 
 Nexus-UX utilizes a deterministic, token-based grammar for high-baud efficiency.
 
-| Token   | Designation       | Purpose                                         | Example                    |
-| :------ | :---------------- | :---------------------------------------------- | :------------------------- |
-| **`.`** | Native Access     | Unwrapped, raw JS/DOM property access.          | `user.name`                |
-| **`#`** | Global Signal     | The Global Registry of reactive sources.        | `#auth.user`               |
-| **`_`** | Env Mirror        | Read-only reactive snapshots of Browser APIs.   | `_window.innerWidth`       |
-| **`:`** | Modifier          | Pipeline anchors and interceptors.              | `data-on:click:once`       |
-| **`$`** | Sprite / Selector | Framework tools, Sprites, and the $() engine.   | `$(^card).$save()`         |
-| **`@`** | Scope Rule        | Context-aware boundary rules (Media, OS, Auth). | `@media(max-width: 600px)` |
+| Token   | Designation       | Purpose                                         | Example                            |
+| :------ | :---------------- | :---------------------------------------------- | :--------------------------------- |
+| **`.`** | Native Access     | Unwrapped, raw JS/DOM property access.          | `user.name`                        |
+| **`#`** | Global Signal     | The Global Registry of reactive sources.        | `#auth.user`                       |
+| **`_`** | Env Mirror        | Read-only reactive snapshots of Browser APIs.   | `_window.innerWidth`               |
+| **`:`** | Modifier          | Pipeline anchors and interceptors.              | `data-on:click:once`               |
+| **`$`** | Sprite / Selector | Framework tools, Sprites, and the $() engine.   | `$(^card).$save()`                 |
+| **`@`** | Scope Rule        | Context-aware boundary rules (Media, OS, Auth). | `@media(min-width: 600px) { ... }` |
 
 ---
 
@@ -91,7 +91,17 @@ v4 Design System** logic natively.
 No transpilant, no bundler, no delay.
 
 ```html
-<html data-injest="['/styles/base.css', '/styles/theme.css']">
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Nexus-UX Get Started</title>
+    <!-- Framework Ignition -->
+    <script
+      src="/dist/nexus-ux.js"
+      data-injest="['/styles/theme.css']"
+    ></script>
+  </head>
   <body
     data-signal="{ count: 0 }"
     class="bg-slate-900 text-white font-sans antialiased"
@@ -99,27 +109,38 @@ No transpilant, no bundler, no delay.
     <div
       class="flex flex-col items-center justify-center min-h-screen space-y-8"
     >
+      <!-- Reactive Text Binding -->
       <h1
         class="text-6xl font-black tracking-tight"
         data-text="'Count is ' + count"
       >
       </h1>
 
-      <!-- Tailwind v4 JIT with Signal Orchestration -->
-      <button
-        class="px-8 py-4 bg-primary text-white rounded-full transition-all duration-300 transform"
-        data-class="{ 'scale-110 shadow-2xl shadow-primary/50': $hovered }"
-        data-on-hover="count++"
-      >
-        Increment On Hover
-      </button>
+      <div class="flex space-x-4">
+        <!-- Native Event Mapping (hover) + Signal Orchestration -->
+        <button
+          class="px-8 py-4 bg-primary text-white rounded-full transition-all duration-300 transform"
+          data-class="{ 'scale-110 shadow-2xl shadow-primary/50': $hovered }"
+          data-on-hover="count++"
+        >
+          Hover to Increment
+        </button>
 
-      <!-- Agentic Resolution Beacon -->
+        <!-- Standard Click with Modifier -->
+        <button
+          class="px-8 py-4 bg-secondary text-white rounded-full"
+          data-on:click:debounce.50ms="count = 0"
+        >
+          Reset Counter
+        </button>
+      </div>
+
+      <!-- Agentic Resolution Beacon Demo -->
       <div
-        class="opacity-50 blur-sm hover:blur-none transition-all"
+        class="opacity-50 blur-sm hover:blur-none transition-all cursor-pointer"
         data-on:click="$('#missing-target').focus()"
       >
-        Click to Trigger Agent Beacon
+        Click to Trigger Agent Beacon (See Console)
       </div>
     </div>
   </body>
