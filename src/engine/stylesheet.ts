@@ -516,398 +516,47 @@ export const THEME_CSS = `@theme default {
   --max-width-prose: 65ch;
 }
 `;
-export const PREFLIGHT_CSS = `/*
-  1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)
-  2. Remove default margins and padding
-  3. Reset all borders.
-*/
+export const PREFLIGHT_CSS = `
+@layer theme, base, components, utilities;
 
-*,
-::after,
-::before,
-::backdrop,
-::file-selector-button {
-  box-sizing: border-box; /* 1 */
-  margin: 0; /* 2 */
-  padding: 0; /* 2 */
-  border: 0 solid; /* 3 */
-}
+@layer theme {
+  :root, :host {
+    --font-sans: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    --spacing: 0.25rem;
+    --default-transition-duration: 150ms;
+    --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    --default-font-family: var(--font-sans);
+    --default-mono-font-family: var(--font-mono);
 
-/*
-  1. Use a consistent sensible line-height in all browsers.
-  2. Prevent adjustments of font size after orientation changes in iOS.
-  3. Use a more readable tab size.
-  4. Use the user's configured \`sans\` font-family by default.
-  5. Use the user's configured \`sans\` font-feature-settings by default.
-  6. Use the user's configured \`sans\` font-variation-settings by default.
-  7. Disable tap highlights on iOS.
-*/
-
-html,
-:host {
-  line-height: 1.5; /* 1 */
-  -webkit-text-size-adjust: 100%; /* 2 */
-  tab-size: 4; /* 3 */
-  font-family: --theme(
-    --default-font-family,
-    ui-sans-serif,
-    system-ui,
-    sans-serif,
-    'Apple Color Emoji',
-    'Segoe UI Emoji',
-    'Segoe UI Symbol',
-    'Noto Color Emoji'
-  ); /* 4 */
-  font-feature-settings: --theme(--default-font-feature-settings, normal); /* 5 */
-  font-variation-settings: --theme(--default-font-variation-settings, normal); /* 6 */
-  -webkit-tap-highlight-color: transparent; /* 7 */
-}
-
-/*
-  1. Add the correct height in Firefox.
-  2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)
-  3. Reset the default border style to a 1px solid border.
-*/
-
-hr {
-  height: 0; /* 1 */
-  color: inherit; /* 2 */
-  border-top-width: 1px; /* 3 */
-}
-
-/*
-  Add the correct text decoration in Chrome, Edge, and Safari.
-*/
-
-abbr:where([title]) {
-  -webkit-text-decoration: underline dotted;
-  text-decoration: underline dotted;
-}
-
-/*
-  Remove the default font size and weight for headings.
-*/
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-size: inherit;
-  font-weight: inherit;
-}
-
-/*
-  Reset links to optimize for opt-in styling instead of opt-out.
-*/
-
-a {
-  color: inherit;
-  -webkit-text-decoration: inherit;
-  text-decoration: inherit;
-}
-
-/*
-  Add the correct font weight in Edge and Safari.
-*/
-
-b,
-strong {
-  font-weight: bolder;
-}
-
-/*
-  1. Use the user's configured \`mono\` font-family by default.
-  2. Use the user's configured \`mono\` font-feature-settings by default.
-  3. Use the user's configured \`mono\` font-variation-settings by default.
-  4. Correct the odd \`em\` font sizing in all browsers.
-*/
-
-code,
-kbd,
-samp,
-pre {
-  font-family: --theme(
-    --default-mono-font-family,
-    ui-monospace,
-    SFMono-Regular,
-    Menlo,
-    Monaco,
-    Consolas,
-    'Liberation Mono',
-    'Courier New',
-    monospace
-  ); /* 1 */
-  font-feature-settings: --theme(--default-mono-font-feature-settings, normal); /* 2 */
-  font-variation-settings: --theme(--default-mono-font-variation-settings, normal); /* 3 */
-  font-size: 1em; /* 4 */
-}
-
-/*
-  Add the correct font size in all browsers.
-*/
-
-small {
-  font-size: 80%;
-}
-
-/*
-  Prevent \`sub\` and \`sup\` elements from affecting the line height in all browsers.
-*/
-
-sub,
-sup {
-  font-size: 75%;
-  line-height: 0;
-  position: relative;
-  vertical-align: baseline;
-}
-
-sub {
-  bottom: -0.25em;
-}
-
-sup {
-  top: -0.5em;
-}
-
-/*
-  1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)
-  2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)
-  3. Remove gaps between table borders by default.
-*/
-
-table {
-  text-indent: 0; /* 1 */
-  border-color: inherit; /* 2 */
-  border-collapse: collapse; /* 3 */
-}
-
-/*
-  Use the modern Firefox focus style for all focusable elements.
-*/
-
-:-moz-focusring {
-  outline: auto;
-}
-
-/*
-  Add the correct vertical alignment in Chrome and Firefox.
-*/
-
-progress {
-  vertical-align: baseline;
-}
-
-/*
-  Add the correct display in Chrome and Safari.
-*/
-
-summary {
-  display: list-item;
-}
-
-/*
-  Make lists unstyled by default.
-*/
-
-ol,
-ul,
-menu {
-  list-style: none;
-}
-
-/*
-  1. Make replaced elements \`display: block\` by default. (https://github.com/mozdevs/cssremedy/issues/14)
-  2. Add \`vertical-align: middle\` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)
-      This can trigger a poorly considered lint error in some tools but is included by design.
-*/
-
-img,
-svg,
-video,
-canvas,
-audio,
-iframe,
-embed,
-object {
-  display: block; /* 1 */
-  vertical-align: middle; /* 2 */
-}
-
-/*
-  Constrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)
-*/
-
-img,
-video {
-  max-width: 100%;
-  height: auto;
-}
-
-/*
-  1. Inherit font styles in all browsers.
-  2. Remove border radius in all browsers.
-  3. Remove background color in all browsers.
-  4. Ensure consistent opacity for disabled states in all browsers.
-*/
-
-button,
-input,
-select,
-optgroup,
-textarea,
-::file-selector-button {
-  font: inherit; /* 1 */
-  font-feature-settings: inherit; /* 1 */
-  font-variation-settings: inherit; /* 1 */
-  letter-spacing: inherit; /* 1 */
-  color: inherit; /* 1 */
-  border-radius: 0; /* 2 */
-  background-color: transparent; /* 3 */
-  opacity: 1; /* 4 */
-}
-
-/*
-  Restore default font weight.
-*/
-
-:where(select:is([multiple], [size])) optgroup {
-  font-weight: bolder;
-}
-
-/*
-  Restore indentation.
-*/
-
-:where(select:is([multiple], [size])) optgroup option {
-  padding-inline-start: 20px;
-}
-
-/*
-  Restore space after button.
-*/
-
-::file-selector-button {
-  margin-inline-end: 4px;
-}
-
-/*
-  Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)
-*/
-
-::placeholder {
-  opacity: 1;
-}
-
-/*
-  Set the default placeholder color to a semi-transparent version of the current text color in browsers that do not
-  crash when using \`color-mix(…)\` with \`currentcolor\`. (https://github.com/tailwindlabs/tailwindcss/issues/17194)
-*/
-
-@supports (not (-webkit-appearance: -apple-pay-button)) /* Not Safari */ or
-  (contain-intrinsic-size: 1px) /* Safari 17+ */ {
-  ::placeholder {
-    color: color-mix(in oklab, currentcolor 50%, transparent);
+    --animate-spin: spin 1s linear infinite;
+    --animate-ping: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+    --animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    --animate-bounce: bounce 1s infinite;
   }
 }
 
-/*
-  Prevent resizing textareas horizontally by default.
-*/
-
-textarea {
-  resize: vertical;
+@layer base {
+  *, ::after, ::before, ::backdrop {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: var(--color-gray-200, currentColor);
+  }
+  blockquote, dl, dd, h1, h2, h3, h4, h5, h6, hr, figure, p, pre { margin: 0; }
+  h1, h2, h3, h4, h5, h6 { font-size: inherit; font-weight: inherit; }
+  ol, ul { list-style: none; margin: 0; padding: 0; }
+  img, svg, video, canvas, audio, iframe, embed, object { display: block; vertical-align: middle; }
+  img, video { max-width: 100%; height: auto; }
+  [hidden] { display: none; }
 }
 
-/*
-  Remove the inner padding in Chrome and Safari on macOS.
-*/
-
-::-webkit-search-decoration {
-  -webkit-appearance: none;
-}
-
-/*
-  1. Ensure date/time inputs have the same height when empty in iOS Safari.
-  2. Ensure text alignment can be changed on date/time inputs in iOS Safari.
-*/
-
-::-webkit-date-and-time-value {
-  min-height: 1lh; /* 1 */
-  text-align: inherit; /* 2 */
-}
-
-/*
-  Prevent height from changing on date/time inputs in macOS Safari when the input is set to \`display: block\`.
-*/
-
-::-webkit-datetime-edit {
-  display: inline-flex;
-}
-
-/*
-  Remove excess padding from pseudo-elements in date/time inputs to ensure consistent height across browsers.
-*/
-
-::-webkit-datetime-edit-fields-wrapper {
-  padding: 0;
-}
-
-::-webkit-datetime-edit,
-::-webkit-datetime-edit-year-field,
-::-webkit-datetime-edit-month-field,
-::-webkit-datetime-edit-day-field,
-::-webkit-datetime-edit-hour-field,
-::-webkit-datetime-edit-minute-field,
-::-webkit-datetime-edit-second-field,
-::-webkit-datetime-edit-millisecond-field,
-::-webkit-datetime-edit-meridiem-field {
-  padding-block: 0;
-}
-
-/*
-  Center dropdown marker shown on inputs with paired \`<datalist>\`s in Chrome. (https://github.com/tailwindlabs/tailwindcss/issues/18499)
-*/
-
-::-webkit-calendar-picker-indicator {
-  line-height: 1;
-}
-
-/*
-  Remove the additional \`:invalid\` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)
-*/
-
-:-moz-ui-invalid {
-  box-shadow: none;
-}
-
-/*
-  Correct the inability to style the border radius in iOS Safari.
-*/
-
-button,
-input:where([type='button'], [type='reset'], [type='submit']),
-::file-selector-button {
-  appearance: button;
-}
-
-/*
-  Correct the cursor style of increment and decrement buttons in Safari.
-*/
-
-::-webkit-inner-spin-button,
-::-webkit-outer-spin-button {
-  height: auto;
-}
-
-/*
-  Make elements with the HTML hidden attribute stay hidden by default.
-*/
-
-[hidden]:where(:not([hidden='until-found'])) {
-  display: none !important;
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+@keyframes pulse { 50% { opacity: 0.5; } }
+@keyframes bounce {
+  0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
+  50% { transform: none; animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
 }
 `;
 
@@ -919,7 +568,7 @@ input:where([type='button'], [type='reset'], [type='submit']),
 // deno-lint-ignore-file no-explicit-any
 
 export interface ASTNode {
-  kind: 'declaration' | 'rule' | 'at-rule';
+  kind: 'declaration' | 'rule' | 'at-rule' | 'at-root';
   property?: string;
   value?: string;
   important?: boolean;
@@ -929,11 +578,16 @@ export interface ASTNode {
   params?: string;
 }
 
+export interface ValueNode {
+  kind: 'named' | 'arbitrary' | 'color';
+  value: string;
+}
+
 export interface Candidate {
   kind: 'static' | 'functional' | 'arbitrary';
   root: string;
-  value?: any; // E.g., numeric string, signal name, etc.
-  modifier?: any; // The opacity modifier (/50)
+  value?: ValueNode;
+  modifier?: ValueNode | null;
   property?: string; // For arbitrary properties [prop:val]
   variants: string[];
   important: boolean;
@@ -971,14 +625,12 @@ export class DesignSystem {
     compound: new Map()
   };
 
-  static(name: string, compileFn: CompileFn) {
-    if (!this._utilities.static.has(name)) this._utilities.static.set(name, []);
-    this._utilities.static.get(name)!.push(compileFn);
+  static(this: DesignSystem, root: string, compileFn: CompileFn, _options?: Record<string, unknown>): void {
+    this._utilities.static.set(root, (this._utilities.static.get(root) || []).concat([compileFn]));
   }
 
-  functional(name: string, compileFn: CompileFn, options?: Record<string, unknown>) {
-    if (!this._utilities.functional.has(name)) this._utilities.functional.set(name, []);
-    this._utilities.functional.get(name)!.push({ compileFn, options });
+  functional(this: DesignSystem, root: string, compileFn: CompileFn, _options?: Record<string, unknown>): void {
+    this._utilities.functional.set(root, (this._utilities.functional.get(root) || []).concat([{ compileFn, options: _options }]));
   }
 
   variant(name: string, definition: ASTNode[] | CompileFn) {
@@ -1010,36 +662,35 @@ export class DesignSystem {
   }
 
   *parseCandidate(raw: string): Generator<Candidate> {
-    const parts = contextAwareSplit(raw, ':');
-    const base = parts.pop()!;
-    const variants = parts;
-
+    const variants: string[] = [];
     let important = false;
-    let utility = base;
-    if (utility.endsWith('!')) {
-      important = true;
-      utility = utility.slice(0, -1);
-    } else if (utility.startsWith('!')) {
-      important = true;
-      utility = utility.slice(1);
-    }
-
     let negative = false;
-    if (utility.startsWith('-')) {
-      negative = true;
-      utility = utility.slice(1);
+    let baseTerm = raw;
+
+    if (baseTerm.endsWith('!')) {
+       baseTerm = baseTerm.slice(0, -1);
+       important = true;
+    }
+    
+    const parts = baseTerm.split(':');
+    baseTerm = parts.pop() || '';
+    variants.push(...parts);
+
+    if (baseTerm.startsWith('-')) {
+       baseTerm = baseTerm.slice(1);
+       negative = true;
     }
 
     // Arbitrary property [prop:value]
-    if (utility.startsWith('[') && utility.endsWith(']')) {
-      const content = utility.slice(1, -1);
+    if (baseTerm.startsWith('[') && baseTerm.endsWith(']')) {
+      const content = baseTerm.slice(1, -1);
       const colonIndex = content.indexOf(':');
       if (colonIndex > 0) {
         yield {
           kind: 'arbitrary',
           root: '',
           property: content.slice(0, colonIndex),
-          value: content.slice(colonIndex + 1).replace(/_/g, ' '),
+          value: { kind: 'arbitrary', value: content.slice(colonIndex + 1).replace(/_/g, ' ') },
           variants,
           important,
           negative,
@@ -1049,28 +700,24 @@ export class DesignSystem {
       }
     }
 
-    const slashParts = contextAwareSplit(utility, '/');
+    const slashParts = contextAwareSplit(baseTerm, '/');
     let term = slashParts[0];
-    let modifier = slashParts[1] || null;
+    const modifierValue = slashParts[1] || null;
 
-    // Fraction detection: w-1/2 → term should stay as root-numerator, value becomes "num/den"
-    // We detect this when modifier is all digits and term ends with -{digits}
-    let fractionValue: string | null = null;
-    if (modifier && /^\d+$/.test(modifier)) {
+    // Fraction detection: w-1/2
+    if (modifierValue && /^\d+$/.test(modifierValue)) {
       const lastDash = term.lastIndexOf('-');
       if (lastDash > 0) {
         const possibleNum = term.slice(lastDash + 1);
         if (/^\d+$/.test(possibleNum)) {
-          fractionValue = `${possibleNum}/${modifier}`;
-          term = term.slice(0, lastDash) + '-' + fractionValue;
-          modifier = null;
+          term = term.slice(0, lastDash) + '-' + `${possibleNum}/${modifierValue}`;
         }
       }
     }
 
-    // Signal detection w-[sidebarWidth]
+    // Bracket value functional match?
+    let valNode: ValueNode | undefined = undefined;
     let hasSignal: string | undefined = undefined;
-    let valNode: any = undefined;
     if (term.includes('[') && term.endsWith(']')) {
        const bStart = term.indexOf('[');
        const inside = term.slice(bStart + 1, -1);
@@ -1084,20 +731,40 @@ export class DesignSystem {
 
     if (this.has(term, 'static')) {
       yield { kind: 'static', root: term, variants, important, negative, raw, hasSignal };
-      return; // Static match takes priority — no functional fallback
+      return; 
     }
 
-    const dashIndex = term.lastIndexOf('-');
-    if (!valNode && dashIndex > 0) {
-      const root = term.slice(0, dashIndex);
-      const value = term.slice(dashIndex + 1);
-      valNode = { kind: 'named', value };
+    // Functional parsing iterative lookup
+    if (!valNode) {
+      const parts = term.split('-');
+      for (let i = parts.length; i >= 1; i--) {
+        const root = parts.slice(0, i).join('-');
+        const value = parts.slice(i).join('-');
+        
+        if (this.has(root, 'functional')) {
+          yield {
+            kind: 'functional',
+            root,
+            value: value ? { kind: 'named', value } : undefined,
+            modifier: modifierValue ? { kind: 'named', value: modifierValue } : null,
+            variants,
+            important,
+            negative,
+            raw,
+            hasSignal
+          };
+          if (value || i === parts.length) return; // Matched, and it's the longest root
+        }
+      }
+    } else {
+      const bIdx = term.indexOf('[');
+      const root = bIdx > 0 ? (term[bIdx-1] === '-' ? term.slice(0, bIdx - 1) : term.slice(0, bIdx)) : term.slice(0, bIdx);
       if (this.has(root, 'functional')) {
         yield {
           kind: 'functional',
           root,
           value: valNode,
-          modifier: modifier ? { kind: 'named', value: modifier } : null,
+          modifier: modifierValue ? { kind: 'named', value: modifierValue } : null,
           variants,
           important,
           negative,
@@ -1105,21 +772,6 @@ export class DesignSystem {
           hasSignal
         };
       }
-    } else if (valNode) {
-       const root = term.slice(0, term.indexOf('[')-1);
-       if (this.has(root, 'functional')) {
-         yield {
-            kind: 'functional',
-            root,
-            value: valNode,
-            modifier: modifier ? { kind: 'named', value: modifier } : null,
-            variants,
-            important,
-            negative,
-            raw,
-            hasSignal
-         };
-       }
     }
   }
 
@@ -1144,10 +796,11 @@ export class DesignSystem {
         if (result) nodes.push(...result);
       }
     } else if (candidate.kind === 'arbitrary') {
+      const v = typeof candidate.value === 'object' ? candidate.value.value : (candidate.value || '');
       nodes.push({
         kind: 'declaration',
         property: candidate.property,
-        value: candidate.negative ? `calc(${candidate.value} * -1)` : candidate.value,
+        value: candidate.negative ? `calc(${v} * -1)` : v,
         important: candidate.important
       });
     }
@@ -1176,136 +829,7 @@ function contextAwareSplit(str: string, delimiter: string): string[] {
   return result;
 }
 
-export function* parseCandidate(raw: string, ds: DesignSystem): Generator<Candidate> {
-  const parts = contextAwareSplit(raw, ':');
-  const base = parts.pop()!;
-  const variants = parts;
 
-  let important = false;
-  let utility = base;
-  if (utility.endsWith('!')) {
-    important = true;
-    utility = utility.slice(0, -1);
-  } else if (utility.startsWith('!')) {
-    important = true;
-    utility = utility.slice(1);
-  }
-
-  let negative = false;
-  if (utility.startsWith('-')) {
-    negative = true;
-    utility = utility.slice(1);
-  }
-
-  // Arbitrary property [prop:value]
-  if (utility.startsWith('[') && utility.endsWith(']')) {
-    const content = utility.slice(1, -1);
-    const colonIndex = content.indexOf(':');
-    if (colonIndex > 0) {
-      yield {
-        kind: 'arbitrary',
-        root: '',
-        property: content.slice(0, colonIndex),
-        value: content.slice(colonIndex + 1).replace(/_/g, ' '),
-        variants,
-        important,
-        negative,
-        raw
-      };
-      return;
-    }
-  }
-
-  const slashParts = contextAwareSplit(utility, '/');
-  const term = slashParts[0];
-  const modifier = slashParts[1] || null;
-
-  // Signal detection w-[sidebarWidth]
-  let hasSignal: string | undefined = undefined;
-  let valNode: any = undefined;
-  if (term.includes('[') && term.endsWith(']')) {
-     const bStart = term.indexOf('[');
-     const inside = term.slice(bStart + 1, -1);
-     if (/^[a-zA-Z_$][\w$]*$/.test(inside)) {
-        hasSignal = inside;
-        valNode = { kind: 'named', value: `var(--nx-${inside})` };
-     } else {
-        valNode = { kind: 'named', value: inside.replace(/_/g, ' ') };
-     }
-  }
-
-  if (ds.has(term, 'static')) {
-    yield { kind: 'static', root: term, variants, important, negative, raw, hasSignal };
-  }
-
-  const dashIndex = term.lastIndexOf('-');
-  if (!valNode && dashIndex > 0) {
-    const root = term.slice(0, dashIndex);
-    const value = term.slice(dashIndex + 1);
-    valNode = { kind: 'named', value };
-    if (ds.has(root, 'functional')) {
-      yield {
-        kind: 'functional',
-        root,
-        value: valNode,
-        modifier: modifier ? { kind: 'named', value: modifier } : null,
-        variants,
-        important,
-        negative,
-        raw,
-        hasSignal
-      };
-    }
-  } else if (valNode) {
-     const root = term.slice(0, term.indexOf('[')-1);
-     if (ds.has(root, 'functional')) {
-       yield {
-          kind: 'functional',
-          root,
-          value: valNode,
-          modifier: modifier ? { kind: 'named', value: modifier } : null,
-          variants,
-          important,
-          negative,
-          raw,
-          hasSignal
-       };
-     }
-  }
-}
-
-export function generateCSS(candidate: Candidate, ds: DesignSystem): string {
-  const nodes: ASTNode[] = [];
-  
-  if (candidate.kind === 'static') {
-    const fns = ds.getStatic(candidate.root);
-    for (const fn of fns) {
-      const result = fn(candidate, ds);
-      if (result) nodes.push(...result);
-    }
-  } else if (candidate.kind === 'functional') {
-    const registry = ds.getFunctional(candidate.root);
-    for (const item of registry) {
-      if (typeof item.compileFn !== 'function') {
-        console.error(`[FATAL] JIT Crash on "${candidate.root}": item.compileFn is NOT a function! Item structure:`, item);
-        console.error(`[FATAL] Full functional registry for ${candidate.root}:`, registry);
-      }
-      
-      const result = item.compileFn(candidate, ds);
-      if (result) nodes.push(...result);
-    }
-  } else if (candidate.kind === 'arbitrary') {
-    nodes.push({
-      kind: 'declaration',
-      property: candidate.property,
-      value: candidate.negative ? `calc(${candidate.value} * -1)` : candidate.value,
-      important: candidate.important
-    });
-  }
-
-  if (nodes.length === 0) return '';
-  return serializeAST(nodes, candidate);
-}
 
 function serializeAST(nodes: ASTNode[], candidate: Candidate): string {
   let declarations = "";
@@ -1402,13 +926,22 @@ function serializeAST(nodes: ASTNode[], candidate: Candidate): string {
     return propA.localeCompare(propB);
   });
 
+  let extraCSS = "";
   for (const node of sortedNodes) {
     if (node.kind === 'declaration') {
       declarations += `${node.property}: ${node.value}${node.important || candidate.important ? ' !important' : ''};`;
+    } else if (node.kind === 'at-rule') {
+      extraCSS += `@${node.name} ${node.params} { ${node.nodes ? node.nodes.map(n => `${n.property}: ${n.value};`).join(' ') : ''} } `;
+    } else if (node.kind === 'at-root' && node.nodes) {
+      for (const child of node.nodes) {
+        if (child.kind === 'declaration') {
+            declarations += `${child.property}: ${child.value};`;
+        }
+      }
     }
   }
   
-  return `${wrapperStart}${selectorTarget} { ${declarations} }${wrapperEnd}`;
+  return `${extraCSS}${wrapperStart}${selectorTarget} { ${declarations} }${wrapperEnd}`;
 }
 
 
@@ -1425,6 +958,11 @@ function serializeAST(nodes: ASTNode[], candidate: Candidate): string {
 // Helper: create a declaration node (borrowing pattern — no allocation beyond the literal)
 function d(property: string, value: string, important = false): ASTNode {
   return { kind: 'declaration', property, value, important };
+}
+
+// Helper: create an at-root node
+function K(nodes: ASTNode[]): ASTNode {
+  return { kind: 'at-root', nodes };
 }
 
 // Helper: register a batch of static name→declarations
@@ -1450,14 +988,25 @@ function resolveSpacing(val: string, negative = false): string {
   return val;
 }
 
+function resolveThemeValue(key: string, v: string): string {
+  if (v === 'none') return 'none';
+  if (v.startsWith('[') || v.startsWith('#') || v.includes('(')) return v;
+  // v4 convention: use theme variables for named keys
+  return `var(--${key}-${v}, ${v})`;
+}
+
 // Helper: resolve color with optional opacity modifier
-function resolveColor(val: string, modifier?: { value: string } | null): string {
-  if (val === 'transparent') return 'transparent';
-  if (val === 'current') return 'currentcolor';
-  if (val === 'inherit') return 'inherit';
-  let color = val.startsWith('#') || val.includes('var(') || val.includes('(')
-    ? val
-    : `var(--color-${val})`;
+function resolveColor(val: string | ValueNode | undefined, modifier?: ValueNode | null): string {
+  const v = (typeof val === 'string' ? val : val?.value) || '';
+  if (v === 'transparent') return 'transparent';
+  if (v === 'current') return 'currentcolor';
+  if (v === 'inherit') return 'inherit';
+  
+  // v4 convention: if it starts with [ it is already resolved or arbitrary
+  let color = v.startsWith('#') || v.includes('var(') || v.includes('(') || v.startsWith('[')
+    ? v
+    : `var(--color-${v})`;
+    
   if (modifier?.value) {
     const op = Number.isNaN(Number(modifier.value)) ? modifier.value : `${modifier.value}%`;
     color = `color-mix(in oklab, ${color} ${op}, transparent)`;
@@ -1522,8 +1071,9 @@ export function populateStandardUtilities(ds: DesignSystem) {
   ]);
   ds.functional('z', (c) => {
     if (!c.value) return;
-    if (c.value.value === 'auto') return [d('z-index', 'auto')];
-    return [d('z-index', c.negative ? `calc(${c.value.value} * -1)` : c.value.value)];
+    const v = c.value.value;
+    if (v === 'auto') return [d('z-index', 'auto')];
+    return [d('z-index', c.negative ? `calc(${v} * -1)` : v)];
   });
 
   // ═══════════════════════════════════════════════════════
@@ -1682,12 +1232,46 @@ export function populateStandardUtilities(ds: DesignSystem) {
   ]);
 
   // ═══════════════════════════════════════════════════════
-  // 8. BOX SIZING
+  // 6. ASPECT RATIO
+  // ═══════════════════════════════════════════════════════
+  ds.functional('aspect', (c) => {
+    if (!c.value) return;
+    const val = c.value.value;
+    if (val === 'auto') return [d('aspect-ratio', 'auto')];
+    if (val === 'square') return [d('aspect-ratio', '1 / 1')];
+    if (val === 'video') return [d('aspect-ratio', '16 / 9')];
+    return [d('aspect-ratio', val.replace('_', ' / '))];
+  });
+
+  // ═══════════════════════════════════════════════════════
+  // 7. BOX SIZING & OUTLINE
   // ═══════════════════════════════════════════════════════
   statics(ds, [
     ['box-border', [['box-sizing', 'border-box']]],
     ['box-content', [['box-sizing', 'content-box']]],
+    ['outline-none', [['outline', '2px solid transparent'], ['outline-offset', '2px']]],
+    ['outline', [['outline-style', 'solid']]],
+    ['outline-dashed', [['outline-style', 'dashed']]],
+    ['outline-dotted', [['outline-style', 'dotted']]],
+    ['outline-double', [['outline-style', 'double']]],
   ]);
+
+  ds.functional('outline', (c) => {
+    if (!c.value) return;
+    const val = c.value.value;
+    // Handle colors vs widths
+    if (c.value.kind === 'color') {
+        const color = resolveColor(c.value, c.modifier);
+        return [d('outline-color', color)];
+    }
+    // Handle specific widths
+    return [d('outline-width', resolveSpacing(val))];
+  });
+
+  ds.functional('outline-offset', (c) => {
+    if (!c.value) return;
+    return [d('outline-offset', resolveSpacing(c.value.value))];
+  });
 
   // ═══════════════════════════════════════════════════════
   // 9. OVERFLOW
@@ -1820,7 +1404,8 @@ export function populateStandardUtilities(ds: DesignSystem) {
     ds.static(`${root}-full`, () => props.map(p => d(p, '100%')));
     ds.functional(root, (c) => {
       if (!c.value) return;
-      return props.map(p => d(p, resolveSpacing(c.value.value, c.negative)));
+      const v = c.value.value;
+      return props.map(p => d(p, resolveSpacing(v, c.negative)));
     });
   }
 
@@ -1828,15 +1413,15 @@ export function populateStandardUtilities(ds: DesignSystem) {
   // 13. COLORS (bg, text, border, outline, fill, stroke, accent, caret, divide)
   // ═══════════════════════════════════════════════════════
   const colorRoots: [string, string][] = [
-    ['bg', 'background-color'], ['text', 'color'],
-    ['border', 'border-color'], ['outline', 'outline-color'],
+    ['bg', 'background-color'], 
+    ['border', 'border-color'],
     ['fill', 'fill'], ['stroke', 'stroke'],
     ['accent', 'accent-color'], ['caret', 'caret-color'],
   ];
   for (const [root, prop] of colorRoots) {
     ds.functional(root, (c) => {
       if (!c.value) return;
-      const color = resolveColor(c.value.value, c.modifier);
+      const color = resolveColor(c.value, c.modifier);
       return [d(prop, color)];
     });
   }
@@ -1853,14 +1438,28 @@ export function populateStandardUtilities(ds: DesignSystem) {
   ds.functional('text', (c) => {
     if (!c.value) return;
     const v = c.value.value;
-    // Size values: xs, sm, base, lg, xl, 2xl, etc.
-    const sizes = ['xs', 'sm', 'base', 'lg', 'xl', '2xl', '3xl', '4xl', '5xl', '6xl', '7xl', '8xl', '9xl'];
-    if (sizes.includes(v)) {
-      return [d('font-size', `var(--text-${v})`)];
+    if (v.startsWith('#') || v.startsWith('okl') || v.startsWith('rgb')) {
+      return [d('color', resolveColor(c.value, c.modifier))];
     }
-    // Otherwise treat as color
-    const color = resolveColor(v, c.modifier);
-    return [d('color', color)];
+    // Typography extraction parity (v4 refined metrics)
+    const metrics: Record<string, {s: string, lh: string}> = {
+      'xs': {s: '0.75rem', lh: '1rem'},
+      'sm': {s: '0.875rem', lh: '1.25rem'},
+      'base': {s: '1rem', lh: '1.5rem'},
+      'lg': {s: '1.125rem', lh: '1.75rem'},
+      'xl': {s: '1.25rem', lh: '1.75rem'},
+      '2xl': {s: '1.5rem', lh: '2rem'}
+    };
+    if (metrics[v]) {
+      return [
+        d('font-size', `var(--text-${v}, ${metrics[v].s})`),
+        d('line-height', `var(--text-${v}--line-height, ${metrics[v].lh})`)
+      ];
+    }
+    if (v.includes('.')) {
+       return [d('font-size', v), d('line-height', '1.5')];
+    }
+    return [d('color', resolveColor(c.value, c.modifier))];
   });
 
   statics(ds, [
@@ -1922,8 +1521,10 @@ export function populateStandardUtilities(ds: DesignSystem) {
   ds.functional('leading', (c) => {
     if (!c.value) return;
     const v = c.value.value;
-    if (v === 'none') return [d('line-height', '1')];
-    return [d('line-height', resolveSpacing(v))];
+    const leadings: Record<string, string> = {
+      'none': '1', 'tight': '1.25', 'snug': '1.375', 'normal': '1.5', 'relaxed': '1.625', 'loose': '2'
+    };
+    return [d('line-height', leadings[v] || resolveSpacing(v))];
   });
   // tracking (letter-spacing)
   ds.functional('tracking', (c) => {
@@ -1938,7 +1539,7 @@ export function populateStandardUtilities(ds: DesignSystem) {
   });
 
   // ═══════════════════════════════════════════════════════
-  // 15. BORDERS
+  // 15. BORDERS & ROUNDED (OFFICIAL v4 PARITY)
   // ═══════════════════════════════════════════════════════
   statics(ds, [
     ['border-solid', [['border-style', 'solid']]],
@@ -1950,7 +1551,7 @@ export function populateStandardUtilities(ds: DesignSystem) {
     ['border-collapse', [['border-collapse', 'collapse']]],
     ['border-separate', [['border-collapse', 'separate']]],
   ]);
-  // border width functional
+
   const borderWidthMap: Record<string, string[]> = {
     border: ['border-width'],
     'border-x': ['border-inline-width'], 'border-y': ['border-block-width'],
@@ -1958,24 +1559,20 @@ export function populateStandardUtilities(ds: DesignSystem) {
     'border-b': ['border-bottom-width'], 'border-l': ['border-left-width'],
     'border-s': ['border-inline-start-width'], 'border-e': ['border-inline-end-width'],
   };
+
   for (const [root, props] of Object.entries(borderWidthMap)) {
     ds.functional(root, (c) => {
       if (!c.value) return;
       const v = c.value.value;
-      // Check if it's a color or width
       if (v === 'transparent' || v === 'current' || v === 'inherit' || v.includes('-') || v.startsWith('#')) {
-        // Color
         const color = resolveColor(v, c.modifier);
-        const colorProps = props.map(p => p.replace('-width', '-color'));
-        return colorProps.map(p => d(p, color));
+        return props.map(p => d(p.replace('-width', '-color'), color));
       }
-      // Width
       const width = /^\d+$/.test(v) ? `${v}px` : v;
       return [...props.map(p => d(p, width)), d('border-style', 'solid')];
     });
   }
 
-  // rounded
   const radiusMap: Record<string, string[]> = {
     rounded: ['border-radius'],
     'rounded-t': ['border-top-left-radius', 'border-top-right-radius'],
@@ -1989,14 +1586,14 @@ export function populateStandardUtilities(ds: DesignSystem) {
     'rounded-ss': ['border-start-start-radius'], 'rounded-se': ['border-start-end-radius'],
     'rounded-ee': ['border-end-end-radius'], 'rounded-es': ['border-end-start-radius'],
   };
+
   for (const [root, props] of Object.entries(radiusMap)) {
     ds.static(`${root}-none`, () => props.map(p => d(p, '0')));
     ds.static(`${root}-full`, () => props.map(p => d(p, 'calc(infinity * 1px)')));
     ds.functional(root, (c) => {
       if (!c.value) return;
       const v = c.value.value;
-      const resolved = v.includes('var(') ? v : `var(--radius-${v}, ${v})`;
-      return props.map(p => d(p, resolved));
+      return props.map(p => d(p, v.includes('var(') ? v : `var(--radius-${v}, ${v})`));
     });
   }
 
@@ -2011,193 +1608,248 @@ export function populateStandardUtilities(ds: DesignSystem) {
   });
 
   // ═══════════════════════════════════════════════════════
-  // 17. SHADOWS
+  // 17. SHADOWS & RING (OFFICIAL v4 PARITY)
   // ═══════════════════════════════════════════════════════
+  const shadowValue = 'var(--tw-inset-shadow, 0 0 #0000), var(--tw-inset-ring-shadow, 0 0 #0000), var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000)';
+  
   ds.functional('shadow', (c) => {
+    if (!c.value) return [d('--tw-shadow', '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)'), d('box-shadow', shadowValue)];
+    const v = c.value.value;
+    if (v === 'none') return [d('box-shadow', 'none')];
+    
+    // Improved color detection: if it's not a known shadow size, treat as color
+    const sizes = ['sm', 'md', 'lg', 'xl', '2xl', 'inner'];
+    if (!sizes.includes(v) && !/^\d/.test(v)) {
+      return [d('--tw-shadow-color', resolveColor(c.value, c.modifier)), d('box-shadow', shadowValue)];
+    }
+    
+    return [d('--tw-shadow', `var(--shadow-${v}, ${v})`), d('box-shadow', shadowValue)];
+  });
+
+  ds.functional('ring', (c) => {
+    if (!c.value) return [d('--tw-ring-shadow', 'var(--tw-ring-inset, ) 0 0 0 calc(3px + var(--tw-ring-offset-width, 0px)) var(--tw-ring-color, currentColor)'), d('box-shadow', shadowValue)];
+    const v = c.value.value;
+    
+    // If it's a color (not a number/spacing)
+    if (!/^\d/.test(v) && v !== 'auto' && v !== 'px') {
+      return [d('--tw-ring-color', resolveColor(c.value, c.modifier)), d('box-shadow', shadowValue)];
+    }
+    
+    // v4 Parity: ring-<number> is pixels, not spacing scale
+    const width = /^\d+$/.test(v) ? `${v}px` : resolveSpacing(v);
+    return [d('--tw-ring-shadow', `var(--tw-ring-inset, ) 0 0 0 calc(${width} + var(--tw-ring-offset-width, 0px)) var(--tw-ring-color, currentColor)`), d('box-shadow', shadowValue)];
+  });
+
+  // ═══════════════════════════════════════════════════════
+  // 17b. TYPOGRAPHY ENHANCEMENTS
+  // ═══════════════════════════════════════════════════════
+  ds.functional('font', (c) => {
     if (!c.value) return;
     const v = c.value.value;
-    // Map shadow color directly if it's a hex or known color
-    if (v.startsWith('#') || v.startsWith('okl') || v.startsWith('rgb')) {
-      return [{ kind: 'declaration', property: '--tw-shadow-color', value: v }];
-    }
-    const val = resolveSpacing(v) || (v === 'none' ? '0 0 #0000' : `var(--shadow-${v}, ${v})`);
-    return [
-      { kind: 'declaration', property: '--tw-shadow', value: val },
-      { kind: 'declaration', property: 'box-shadow', value: 'var(--tw-inset-shadow, 0 0 #0000), var(--tw-inset-ring-shadow, 0 0 #0000), var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000)' }
-    ];
+    if (v === 'sans' || v === 'serif' || v === 'mono') return;
+    
+    // Check for font-size (text-xs, text-sm etc are handled by 'text' functional)
+    // But font-size can also be numeric weights or var()
+    if (/^\d{3}$/.test(v)) return [d('font-weight', v)];
+    
+    const weights: Record<string, string> = {
+      thin: '100', extralight: '200', light: '300', normal: '400',
+      medium: '500', semibold: '600', bold: '700', extrabold: '800', black: '900'
+    };
+    if (weights[v]) return [d('font-weight', weights[v])];
+    
+    return [d('font-family', v.includes('-') ? `var(--font-${v})` : v)];
   });
-  
-  ds.functional('ring', (c) => {
-    if (c.value?.kind === 'named') {
-      const v = c.value.value;
-      if (v.startsWith('#') || v.startsWith('okl') || v.startsWith('rgb')) {
-        return [{ kind: 'declaration', property: '--tw-ring-color', value: v }];
-      }
-      const val = resolveSpacing(v) || (v + 'px');
-      return [
-        { kind: 'declaration', property: '--tw-ring-shadow', value: `0 0 0 calc(${val} + var(--tw-ring-offset-width, 0px)) var(--tw-ring-color, currentColor)` },
-        { kind: 'declaration', property: 'box-shadow', value: 'var(--tw-inset-shadow, 0 0 #0000), var(--tw-inset-ring-shadow, 0 0 #0000), var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000)' }
-      ];
-    }
-  });
-
-  ds.functional('ring-offset', (c) => {
-    if (c.value?.kind === 'named') {
-      const v = c.value.value;
-      if (v.startsWith('#') || v.startsWith('okl') || v.startsWith('rgb')) {
-        return [{ kind: 'declaration', property: '--tw-ring-offset-color', value: v }];
-      }
-      const val = resolveSpacing(v) || (v + 'px');
-      return [
-        { kind: 'declaration', property: '--tw-ring-offset-width', value: val },
-        { kind: 'declaration', property: '--tw-ring-offset-shadow', value: '0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color, #fff)' }
-      ];
-    }
-  });
-
-  // ═══════════════════════════════════════════════════════
-  // 18. TRANSFORMS
-  // ═══════════════════════════════════════════════════════
   statics(ds, [
     ['transform-none', [['transform', 'none']]],
     ['transform-gpu', [['transform', 'translateZ(0)']]],
     ['backface-visible', [['backface-visibility', 'visible']]],
     ['backface-hidden', [['backface-visibility', 'hidden']]],
   ]);
+  // Compositing helper for transforms
+  const tpl = () => K([
+    d('--tw-scale-x', '1'), d('--tw-scale-y', '1'), d('--tw-scale-z', '1'),
+    d('--tw-rotate-x', '0deg'), d('--tw-rotate-y', '0deg'), d('--tw-rotate-z', '0deg'),
+    d('--tw-translate-x', '0'), d('--tw-translate-y', '0'), d('--tw-translate-z', '0'),
+    d('--tw-skew-x', '0deg'), d('--tw-skew-y', '0deg')
+  ]);
+  const transformStr = 'var(--tw-rotate-x) var(--tw-rotate-y) var(--tw-rotate-z) var(--tw-skew-x) var(--tw-skew-y)';
+
   ds.functional('scale', (c) => {
     if (!c.value) return;
-    const v = c.value.value;
-    const val = /^\d+$/.test(v) ? `${v}%` : v;
-    return [d('scale', c.negative ? `calc(${val} * -1)` : val)];
+    const v = /^\d+$/.test(c.value.value) ? `${c.value.value}%` : c.value.value;
+    const val = c.negative ? `calc(${v} * -1)` : v;
+    return [tpl(), d('--tw-scale-x', val), d('--tw-scale-y', val), d('--tw-scale-z', val), d('scale', 'var(--tw-scale-x) var(--tw-scale-y)')];
   });
-  for (const axis of ['x', 'y']) {
+  ['x', 'y', 'z'].forEach(axis => {
     ds.functional(`scale-${axis}`, (c) => {
       if (!c.value) return;
       const v = /^\d+$/.test(c.value.value) ? `${c.value.value}%` : c.value.value;
-      return [d(`--tw-scale-${axis}`, c.negative ? `calc(${v} * -1)` : v),
-              d('scale', 'var(--tw-scale-x, 1) var(--tw-scale-y, 1)')];
+      const val = c.negative ? `calc(${v} * -1)` : v;
+      return [tpl(), d(`--tw-scale-${axis}`, val), d('scale', 'var(--tw-scale-x) var(--tw-scale-y)' + (axis === 'z' ? ' var(--tw-scale-z)' : ''))];
     });
-  }
+  });
+
   ds.functional('rotate', (c) => {
-    if (!c.value) return;
-    const v = c.value.value;
-    const val = /^\d+$/.test(v) ? `${v}deg` : v;
-    return [d('rotate', c.negative ? `calc(${val} * -1)` : val)];
-  });
-  for (const axis of ['x', 'y']) {
-    ds.functional(`translate-${axis}`, (c) => {
-      if (!c.value) return;
-      return [d(`--tw-translate-${axis}`, resolveSpacing(c.value.value, c.negative)),
-              d('translate', 'var(--tw-translate-x, 0) var(--tw-translate-y, 0)')];
-    });
-  }
-  ds.functional('translate', (c) => {
-    if (!c.value) return;
-    const v = resolveSpacing(c.value.value, c.negative);
-    return [d('--tw-translate-x', v), d('--tw-translate-y', v),
-            d('translate', 'var(--tw-translate-x) var(--tw-translate-y)')];
-  });
-  ds.functional('skew', (c) => {
     if (!c.value) return;
     const v = /^\d+$/.test(c.value.value) ? `${c.value.value}deg` : c.value.value;
     const val = c.negative ? `calc(${v} * -1)` : v;
-    return [d('--tw-skew-x', `skewX(${val})`), d('--tw-skew-y', `skewY(${val})`)];
+    return [d('rotate', val)];
   });
-  for (const axis of ['x', 'y']) {
-    ds.functional(`skew-${axis}`, (c) => {
+  ['x', 'y', 'z'].forEach(axis => {
+    ds.functional(`rotate-${axis}`, (c) => {
       if (!c.value) return;
       const v = /^\d+$/.test(c.value.value) ? `${c.value.value}deg` : c.value.value;
-      return [d(`--tw-skew-${axis}`, `skew${axis.toUpperCase()}(${c.negative ? `calc(${v} * -1)` : v})`)];
+      const val = c.negative ? `calc(${v} * -1)` : v;
+      return [K([d(`--tw-rotate-${axis}`, '0deg'), d('--tw-rotate-x', ' '), d('--tw-rotate-y', ' '), d('--tw-rotate-z', ' ')]), 
+              d(`--tw-rotate-${axis}`, `rotate${axis.toUpperCase()}(${val})`), 
+              d('transform', transformStr)];
+    });
+  });
+
+  ds.functional('translate', (c) => {
+    if (!c.value) return;
+    const v = resolveSpacing(c.value.value, c.negative);
+    return [tpl(), d('--tw-translate-x', v), d('--tw-translate-y', v), d('translate', 'var(--tw-translate-x) var(--tw-translate-y)')];
+  });
+  ['x', 'y', 'z'].forEach(axis => {
+    ds.functional(`translate-${axis}`, (c) => {
+      if (!c.value) return;
+      const v = resolveSpacing(c.value.value, c.negative);
+      return [tpl(), d(`--tw-translate-${axis}`, v), 
+              d('translate', axis === 'z' ? 'var(--tw-translate-x) var(--tw-translate-y) var(--tw-translate-z)' : 'var(--tw-translate-x) var(--tw-translate-y)')];
+    });
+  });
+
+  ds.functional('skew-x', (c) => {
+    if (!c.value) return;
+    const v = /^\d+$/.test(c.value.value) ? `${c.value.value}deg` : c.value.value;
+    const val = c.negative ? `calc(${v} * -1)` : v;
+    return [K([d('--tw-skew-x', '0deg'), d('--tw-skew-y', '0deg')]), d('--tw-skew-x', `skewX(${val})`), d('transform', transformStr)];
+  });
+  ds.functional('skew-y', (c) => {
+    if (!c.value) return;
+    const v = /^\d+$/.test(c.value.value) ? `${c.value.value}deg` : c.value.value;
+    const val = c.negative ? `calc(${v} * -1)` : v;
+    return [K([d('--tw-skew-x', '0deg'), d('--tw-skew-y', '0deg')]), d('--tw-skew-y', `skewY(${val})`), d('transform', transformStr)];
+  });
+
+  // ═══════════════════════════════════════════════════════
+  // 19. FILTERS & BACKDROP FILTERS (OFFICIAL v4 PARITY)
+  // ═══════════════════════════════════════════════════════
+  const filterVars = () => K([
+    d('--tw-blur', ' '), d('--tw-brightness', ' '), d('--tw-contrast', ' '),
+    d('--tw-grayscale', ' '), d('--tw-hue-rotate', ' '), d('--tw-invert', ' '),
+    d('--tw-saturate', ' '), d('--tw-sepia', ' '), d('--tw-drop-shadow', ' ')
+  ]);
+  const filterStr = 'var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)';
+
+  ds.functional('filter', (c) => {
+    if (!c.value) return [filterVars(), d('filter', filterStr)];
+    if (c.value.value === 'none') return [d('filter', 'none')];
+  });
+
+  const filters: Record<string, string> = {
+    blur: '--tw-blur', brightness: '--tw-brightness', contrast: '--tw-contrast',
+    grayscale: '--tw-grayscale', 'hue-rotate': '--tw-hue-rotate', invert: '--tw-invert',
+    saturate: '--tw-saturate', sepia: '--tw-sepia'
+  };
+
+  for (const [root, varName] of Object.entries(filters)) {
+    ds.functional(root, (c) => {
+      if (!c.value) return;
+      let val = c.value.value;
+      if (root === 'blur') val = /^\d/.test(val) ? resolveSpacing(val) : resolveThemeValue('blur', val);
+      else if (root === 'hue-rotate') val = /^\d+$/.test(val) ? `${val}deg` : val;
+      else if (/^\d+$/.test(val)) val = `${val}%`;
+      else val = resolveThemeValue(root, val);
+
+      const res = `${root}(${c.negative ? `calc(${val} * -1)` : val})`;
+      return [filterVars(), d(varName, res), d('filter', filterStr)];
     });
   }
 
-  // ═══════════════════════════════════════════════════════
-  // 19. TRANSITIONS & ANIMATION
-  // ═══════════════════════════════════════════════════════
-  // Transition functional
-  ds.functional('transition', (c) => {
-    if (!c.value) return [
-      d('transition-property', 'color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, translate, scale, rotate, filter, backdrop-filter'),
-      d('transition-timing-function', 'var(--tw-ease, ease)'),
-      d('transition-duration', 'var(--tw-duration, 0s)'),
-    ];
+  // Backdrop Filters
+  const backdropVars = () => K([
+    d('--tw-backdrop-blur', ' '), d('--tw-backdrop-brightness', ' '), d('--tw-backdrop-contrast', ' '),
+    d('--tw-backdrop-grayscale', ' '), d('--tw-backdrop-hue-rotate', ' '), d('--tw-backdrop-invert', ' '),
+    d('--tw-backdrop-opacity', ' '), d('--tw-backdrop-saturate', ' '), d('--tw-backdrop-sepia', ' ')
+  ]);
+
+  const backdropStr = 'var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)';
+
+  ds.functional('backdrop-filter', (c) => {
+    if (!c.value) return [backdropVars(), d('-webkit-backdrop-filter', backdropStr), d('backdrop-filter', backdropStr)];
+    if (c.value.value === 'none') return [d('-webkit-backdrop-filter', 'none'), d('backdrop-filter', 'none')];
+  });
+
+  for (const [root] of Object.entries(filters)) {
+    ds.functional(`backdrop-${root}`, (c) => {
+      if (!c.value) return;
+      let val = c.value.value;
+      if (root === 'blur') val = /^\d/.test(val) ? resolveSpacing(val) : resolveThemeValue('blur', val);
+      else if (root === 'hue-rotate') val = /^\d+$/.test(val) ? `${val}deg` : val;
+      else if (/^\d+$/.test(val)) val = `${val}%`;
+      else val = resolveThemeValue(root, val);
+
+      const res = `${root}(${c.negative ? `calc(${val} * -1)` : val})`;
+      return [backdropVars(), d(`--tw-backdrop-${root}`, res), d('-webkit-backdrop-filter', backdropStr), d('backdrop-filter', backdropStr)];
+    });
+  }
+  ds.functional('backdrop-opacity', (c) => {
+    if (!c.value) return;
+    const v = /^\d+$/.test(c.value.value) ? `${c.value.value}%` : c.value.value;
+    return [backdropVars(), d('--tw-backdrop-opacity', `opacity(${v})`), d('-webkit-backdrop-filter', backdropStr), d('backdrop-filter', backdropStr)];
+  });
+
+  // Masks
+  ds.functional('mask', (c) => {
+    if (!c.value) return;
     const v = c.value.value;
-    if (v === 'none') return [d('transition-property', 'none')];
-    if (v === 'all') return [d('transition-property', 'all'), d('transition-timing-function', 'var(--tw-ease, ease)'), d('transition-duration', 'var(--tw-duration, 0s)')];
-    if (v === 'colors') return [d('transition-property', 'color, background-color, border-color, outline-color, text-decoration-color, fill, stroke'), d('transition-timing-function', 'var(--tw-ease, ease)'), d('transition-duration', 'var(--tw-duration, 0s)')];
-    if (v === 'opacity') return [d('transition-property', 'opacity'), d('transition-timing-function', 'var(--tw-ease, ease)'), d('transition-duration', 'var(--tw-duration, 0s)')];
-    if (v === 'shadow') return [d('transition-property', 'box-shadow'), d('transition-timing-function', 'var(--tw-ease, ease)'), d('transition-duration', 'var(--tw-duration, 0s)')];
-    if (v === 'transform') return [d('transition-property', 'transform, translate, scale, rotate'), d('transition-timing-function', 'var(--tw-ease, ease)'), d('transition-duration', 'var(--tw-duration, 0s)')];
-    return;
+    return [
+      d('mask-image', v.startsWith('url') ? v : `url(${v})`),
+      d('-webkit-mask-image', v.startsWith('url') ? v : `url(${v})`)
+    ];
+  });
+  // ═══════════════════════════════════════════════════════
+  // 19. TRANSITIONS & ANIMATIONS (Consolidated)
+  // ═══════════════════════════════════════════════════════
+  ds.functional('transition', (c) => {
+    const prop = c.value?.value || 'color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, translate, scale, rotate, filter, backdrop-filter';
+    const v = prop === 'none' ? 'none' : (prop === 'all' ? 'all' : (prop === 'colors' ? 'color, background-color, border-color, outline-color, text-decoration-color, fill, stroke' : (prop === 'shadow' ? 'box-shadow' : (prop === 'transform' ? 'transform, translate, scale, rotate' : prop))));
+    
+    return [
+      d('transition-property', v),
+      d('transition-timing-function', 'var(--tw-ease, ease)'),
+      d('transition-duration', 'var(--tw-duration, 150ms)'),
+    ];
   });
   ds.functional('duration', (c) => {
     if (!c.value) return;
     const v = /^\d+$/.test(c.value.value) ? `${c.value.value}ms` : c.value.value;
-    return [d('--tw-duration', v), d('transition-duration', v)];
+    return [d('--tw-duration', v), d('transition-duration', v), d('animation-duration', v)];
   });
   ds.functional('delay', (c) => {
     if (!c.value) return;
     const v = /^\d+$/.test(c.value.value) ? `${c.value.value}ms` : c.value.value;
-    return [d('transition-delay', v)];
+    return [d('transition-delay', v), d('animation-delay', v)];
   });
   ds.functional('ease', (c) => {
     if (!c.value) return;
     const v = c.value.value;
-    if (v === 'linear') return [d('--tw-ease', 'linear'), d('transition-timing-function', 'linear')];
-    return [d('--tw-ease', v), d('transition-timing-function', v)];
+    return [d('--tw-ease', v), d('transition-timing-function', v), d('animation-timing-function', v)];
   });
   ds.functional('animate', (c) => {
     if (!c.value) return;
     if (c.value.value === 'none') return [d('animation', 'none')];
-    return [d('animation', `var(--animate-${c.value.value})`)];
+    const v = c.value.value;
+    const val = v.startsWith('[') ? v.slice(1, -1).replace(/_/g, ' ') : `var(--animate-${v}, ${v})`;
+    return [d('animation', val)];
   });
 
   // ═══════════════════════════════════════════════════════
-  // 20. FILTERS
+  // 20. GRID & LAYOUT
   // ═══════════════════════════════════════════════════════
-  ds.functional('blur', (c) => {
-    if (!c.value) return;
-    if (c.value.value === 'none') return [d('filter', 'none')];
-    return [d('--tw-blur', `blur(${c.value.value})`), d('filter', 'var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-sepia,) var(--tw-drop-shadow,)')];
-  });
-  for (const [name, fn] of [['brightness', 'brightness'], ['contrast', 'contrast'], ['grayscale', 'grayscale'], ['saturate', 'saturate'], ['sepia', 'sepia']] as const) {
-    ds.functional(name, (c) => {
-      if (!c.value) return;
-      const v = /^\d+$/.test(c.value.value) ? `${c.value.value}%` : c.value.value;
-      return [d(`--tw-${name}`, `${fn}(${v})`), d('filter', 'var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-sepia,) var(--tw-drop-shadow,)')];
-    });
-  }
-  ds.functional('backdrop-blur', (c) => {
-    if (!c.value) return;
-    return [d('--tw-backdrop-blur', `blur(${c.value.value})`), d('backdrop-filter', 'var(--tw-backdrop-blur,)')];
-  });
-
-  // ═══════════════════════════════════════════════════════
-  // 21. CURSORS & POINTER EVENTS
-  // ═══════════════════════════════════════════════════════
-  statics(ds, [
-    ['pointer-events-none', [['pointer-events', 'none']]],
-    ['pointer-events-auto', [['pointer-events', 'auto']]],
-  ]);
-  for (const v of ['auto', 'default', 'pointer', 'wait', 'text', 'move', 'help', 'not-allowed', 'none',
-    'context-menu', 'progress', 'cell', 'crosshair', 'vertical-text', 'alias', 'copy', 'no-drop',
-    'grab', 'grabbing', 'all-scroll', 'col-resize', 'row-resize', 'zoom-in', 'zoom-out']) {
-    ds.static(`cursor-${v}`, () => [d('cursor', v)]);
-  }
-  for (const v of ['none', 'text', 'all', 'auto']) {
-    ds.static(`select-${v}`, () => [d('-webkit-user-select', v), d('user-select', v)]);
-  }
-
-  // ═══════════════════════════════════════════════════════
-  // 22. GRID
-  // ═══════════════════════════════════════════════════════
-  statics(ds, [
-    ['grid-flow-row', [['grid-auto-flow', 'row']]],
-    ['grid-flow-col', [['grid-auto-flow', 'column']]],
-    ['grid-flow-dense', [['grid-auto-flow', 'dense']]],
-    ['grid-flow-row-dense', [['grid-auto-flow', 'row dense']]],
-    ['grid-flow-col-dense', [['grid-auto-flow', 'column dense']]],
-  ]);
   ds.functional('grid-cols', (c) => {
     if (!c.value) return;
     const v = c.value.value;
@@ -2226,58 +1878,8 @@ export function populateStandardUtilities(ds: DesignSystem) {
     if (v === 'full') return [d('grid-row', '1 / -1')];
     return [d('grid-row', `span ${v} / span ${v}`)];
   });
-  for (const [root, prop] of [['col-start', 'grid-column-start'], ['col-end', 'grid-column-end'],
-    ['row-start', 'grid-row-start'], ['row-end', 'grid-row-end']] as const) {
-    ds.functional(root, (c) => {
-      if (!c.value) return;
-      if (c.value.value === 'auto') return [d(prop, 'auto')];
-      return [d(prop, c.negative ? `calc(${c.value.value} * -1)` : c.value.value)];
-    });
-  }
-  for (const [root, prop] of [['auto-cols', 'grid-auto-columns'], ['auto-rows', 'grid-auto-rows']] as const) {
-    ds.functional(root, (c) => {
-      if (!c.value) return;
-      const v = c.value.value;
-      if (v === 'auto') return [d(prop, 'auto')];
-      if (v === 'min') return [d(prop, 'min-content')];
-      if (v === 'max') return [d(prop, 'max-content')];
-      if (v === 'fr') return [d(prop, 'minmax(0, 1fr)')];
-      return [d(prop, v)];
-    });
-  }
 
-  // ═══════════════════════════════════════════════════════
-  // 23. MISCELLANEOUS STATICS
-  // ═══════════════════════════════════════════════════════
-  statics(ds, [
-    ['sr-only', [['position', 'absolute'], ['width', '1px'], ['height', '1px'], ['padding', '0'], ['margin', '-1px'], ['overflow', 'hidden'], ['clip-path', 'inset(50%)'], ['white-space', 'nowrap'], ['border-width', '0']]],
-    ['not-sr-only', [['position', 'static'], ['width', 'auto'], ['height', 'auto'], ['padding', '0'], ['margin', '0'], ['overflow', 'visible'], ['clip-path', 'none'], ['white-space', 'normal']]],
-    ['appearance-none', [['appearance', 'none']]],
-    ['appearance-auto', [['appearance', 'auto']]],
-    ['resize-none', [['resize', 'none']]],
-    ['resize-x', [['resize', 'horizontal']]],
-    ['resize-y', [['resize', 'vertical']]],
-    ['resize', [['resize', 'both']]],
-    ['scroll-auto', [['scroll-behavior', 'auto']]],
-    ['scroll-smooth', [['scroll-behavior', 'smooth']]],
-    ['will-change-auto', [['will-change', 'auto']]],
-    ['will-change-scroll', [['will-change', 'scroll-position']]],
-    ['will-change-contents', [['will-change', 'contents']]],
-    ['will-change-transform', [['will-change', 'transform']]],
-    ['object-contain', [['object-fit', 'contain']]],
-    ['object-cover', [['object-fit', 'cover']]],
-    ['object-fill', [['object-fit', 'fill']]],
-    ['object-none', [['object-fit', 'none']]],
-    ['object-scale-down', [['object-fit', 'scale-down']]],
-    ['list-inside', [['list-style-position', 'inside']]],
-    ['list-outside', [['list-style-position', 'outside']]],
-    ['table-auto', [['table-layout', 'auto']]],
-    ['table-fixed', [['table-layout', 'fixed']]],
-    ['caption-top', [['caption-side', 'top']]],
-    ['caption-bottom', [['caption-side', 'bottom']]],
-  ]);
-
-  // aspect ratio
+  // aspect-ratio with fraction support
   ds.functional('aspect', (c) => {
     if (!c.value) return;
     const v = c.value.value;
@@ -2287,113 +1889,37 @@ export function populateStandardUtilities(ds: DesignSystem) {
     return [d('aspect-ratio', v)];
   });
 
-  // columns
-  ds.functional('columns', (c) => {
-    if (!c.value) return;
-    if (c.value.value === 'auto') return [d('columns', 'auto')];
-    return [d('columns', c.value.value)];
-  });
-
-  // line-clamp
-  ds.functional('line-clamp', (c) => {
-    if (!c.value) return;
-    if (c.value.value === 'none') return [d('overflow', 'visible'), d('display', 'block'), d('-webkit-line-clamp', 'unset')];
-    return [d('overflow', 'hidden'), d('display', '-webkit-box'), d('-webkit-box-orient', 'vertical'), d('-webkit-line-clamp', c.value.value)];
-  });
-
-  // outline width/offset
-  ds.functional('outline-offset', (c) => {
-    if (!c.value) return;
-    const v = /^\d+$/.test(c.value.value) ? `${c.value.value}px` : c.value.value;
-    return [d('outline-offset', c.negative ? `calc(${v} * -1)` : v)];
-  });
-
-  // ring (simplified)
-  ds.functional('ring', (c) => {
-    if (!c.value) return [d('box-shadow', '0 0 0 1px currentcolor')];
-    const v = c.value.value;
-    if (/^\d+$/.test(v)) return [d('box-shadow', `0 0 0 ${v}px currentcolor`)];
-    const color = resolveColor(v, c.modifier);
-    return [d('--tw-ring-color', color)];
-  });
-
-  // Background statics
+  // ═══════════════════════════════════════════════════════
+  // 21. CURSORS & POINTER EVENTS
+  // ═══════════════════════════════════════════════════════
   statics(ds, [
-    ['bg-auto', [['background-size', 'auto']]],
-    ['bg-cover', [['background-size', 'cover']]],
-    ['bg-contain', [['background-size', 'contain']]],
-    ['bg-fixed', [['background-attachment', 'fixed']]],
-    ['bg-local', [['background-attachment', 'local']]],
-    ['bg-scroll', [['background-attachment', 'scroll']]],
-    ['bg-clip-text', [['background-clip', 'text']]],
-    ['bg-clip-border', [['background-clip', 'border-box']]],
-    ['bg-clip-padding', [['background-clip', 'padding-box']]],
-    ['bg-clip-content', [['background-clip', 'content-box']]],
-    ['bg-repeat', [['background-repeat', 'repeat']]],
-    ['bg-no-repeat', [['background-repeat', 'no-repeat']]],
-    ['bg-repeat-x', [['background-repeat', 'repeat-x']]],
-    ['bg-repeat-y', [['background-repeat', 'repeat-y']]],
-    ['bg-center', [['background-position', 'center']]],
-    ['bg-top', [['background-position', 'top']]],
-    ['bg-bottom', [['background-position', 'bottom']]],
-    ['bg-left', [['background-position', 'left']]],
-    ['bg-right', [['background-position', 'right']]],
+    ['pointer-events-none', [['pointer-events', 'none']]],
+    ['pointer-events-auto', [['pointer-events', 'auto']]],
   ]);
+  const cursors = ['auto', 'default', 'pointer', 'wait', 'text', 'move', 'help', 'not-allowed', 'none', 'context-menu', 'progress', 'cell', 'crosshair', 'vertical-text', 'alias', 'copy', 'no-drop', 'grab', 'grabbing', 'all-scroll', 'col-resize', 'row-resize', 'zoom-in', 'zoom-out'];
+  cursors.forEach(v => ds.static(`cursor-${v}`, () => [d('cursor', v)]));
 
-  // Outline statics
-  statics(ds, [
-    ['outline-none', [['outline-style', 'none']]],
-    ['outline-solid', [['outline-style', 'solid']]],
-    ['outline-dashed', [['outline-style', 'dashed']]],
-    ['outline-dotted', [['outline-style', 'dotted']]],
-    ['outline-double', [['outline-style', 'double']]],
-  ]);
+  // Insets
 
-  // Outline Functional (Composited)
-  ds.functional('outline', (c) => {
-    if (!c.value) return;
-    const v = c.value.value;
-    const color = resolveColor(v, c.modifier);
-    if (color) {
-      return [
-        { kind: 'declaration', property: '--tw-outline-color', value: color },
-        { kind: 'declaration', property: 'outline', value: 'var(--tw-outline-style, solid) var(--tw-outline-width, 1px) var(--tw-outline-color, currentColor)' }
-      ];
-    }
-    const width = resolveSpacing(v);
-    return [
-      { kind: 'declaration', property: '--tw-outline-width', value: width },
-      { kind: 'declaration', property: 'outline', value: 'var(--tw-outline-style, solid) var(--tw-outline-width, 1px) var(--tw-outline-color, currentColor)' }
-    ];
-  });
-  ds.functional('outline-style', (c) => {
-    if (!c.value) return;
-    return [{ kind: 'declaration', property: '--tw-outline-style', value: c.value.value }];
-  });
 
-  // Aspect
-  ds.functional('aspect', (c) => {
-    if (!c.value) return;
-    const v = c.value.value;
-    if (v === 'auto') return [d('aspect-ratio', 'auto')];
-    if (v === 'square') return [d('aspect-ratio', '1 / 1')];
-    if (v === 'video') return [d('aspect-ratio', '16 / 9')];
-    if (v.includes('/')) return [d('aspect-ratio', v.replace('/', ' / '))];
-    return [d('aspect-ratio', v)];
-  });
 
-  // Additional Insets
-  const insetFuncMap: Record<string, string> = {
-    'inset-inline': 'inset-inline', 'inset-block': 'inset-block',
-    'inset-is': 'inset-inline-start', 'inset-ie': 'inset-inline-end',
-    'inset-bs': 'inset-block-start', 'inset-be': 'inset-block-end',
+
+  // Additional Insets (Logical Properties)
+  const insets: Record<string, string[]> = {
+    'inset-inline': ['inset-inline-start', 'inset-inline-end'],
+    'inset-block': ['inset-block-start', 'inset-block-end'],
+    'inset-is': ['inset-inline-start'],
+    'inset-ie': ['inset-inline-end'],
+    'inset-bs': ['inset-block-start'],
+    'inset-be': ['inset-block-end'],
   };
-  for (const [root, prop] of Object.entries(insetFuncMap)) {
+  Object.entries(insets).forEach(([root, props]) => {
     ds.functional(root, (c) => {
       if (!c.value) return;
-      return [d(prop, resolveSpacing(c.value.value, c.negative))];
+      const val = resolveSpacing(c.value.value, c.negative);
+      return props.map(p => d(p, val));
     });
-  }
+  });
 
   // ═══════════════════════════════════════════════════════
   // 24. SCROLL SPACING
@@ -2414,95 +1940,40 @@ export function populateStandardUtilities(ds: DesignSystem) {
   }
 
   // ═══════════════════════════════════════════════════════
-  // 25. SNAP
+  // 23. MISC & SNAP (OFFICIAL v4 PARITY)
   // ═══════════════════════════════════════════════════════
   statics(ds, [
-    ['snap-none', [['scroll-snap-type', 'none']]],
     ['snap-x', [['scroll-snap-type', 'x var(--tw-scroll-snap-strictness, proximity)']]],
     ['snap-y', [['scroll-snap-type', 'y var(--tw-scroll-snap-strictness, proximity)']]],
-    ['snap-both', [['scroll-snap-type', 'both var(--tw-scroll-snap-strictness, proximity)']]],
     ['snap-mandatory', [['--tw-scroll-snap-strictness', 'mandatory']]],
     ['snap-proximity', [['--tw-scroll-snap-strictness', 'proximity']]],
-    ['snap-start', [['scroll-snap-align', 'start']]],
-    ['snap-end', [['scroll-snap-align', 'end']]],
-    ['snap-center', [['scroll-snap-align', 'center']]],
-    ['snap-align-none', [['scroll-snap-align', 'none']]],
-    ['snap-normal', [['scroll-snap-stop', 'normal']]],
-    ['snap-always', [['scroll-snap-stop', 'always']]],
   ]);
 
-  // ═══════════════════════════════════════════════════════
-  // 8. PHASE 1 ADDITIONS (82 MISSING ROOTS)
-  // ═══════════════════════════════════════════════════════
-
-  // 1A. Backdrop Filters
-  const backdropFilters = ['brightness', 'contrast', 'grayscale', 'hue-rotate', 'invert', 'opacity', 'saturate', 'sepia'];
-  backdropFilters.forEach(filter => {
-    ds.functional(`backdrop-${filter}`, (c) => {
-      if (c.value?.kind === 'named') {
-        const val = resolveSpacing(c.value.value) || c.value.value;
-        return [
-          { kind: 'declaration', property: `--tw-backdrop-${filter}`, value: `${filter}(${val})` },
-          { kind: 'declaration', property: 'backdrop-filter', value: 'var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)' }
-        ];
-      }
-      return undefined;
-    });
+  ds.functional('scroll-m', (c) => {
+    if (!c.value) return;
+    return [d('scroll-margin', resolveSpacing(c.value.value, c.negative))];
+  });
+  ds.functional('scroll-p', (c) => {
+    if (!c.value) return;
+    return [d('scroll-padding', resolveSpacing(c.value.value))];
   });
 
-  // 1B. Gradients
   ds.functional('bg-linear', (c) => {
     if (c.value?.kind === 'named') {
       return [{ kind: 'declaration', property: 'background-image', value: `linear-gradient(${c.value.value}, var(--tw-gradient-stops))` }];
     }
   });
-  ds.functional('bg-radial', (c) => [{ kind: 'declaration', property: 'background-image', value: `radial-gradient(${c.value?.value || 'circle'}, var(--tw-gradient-stops))` }]);
-  ds.functional('bg-conic', (c) => [{ kind: 'declaration', property: 'background-image', value: `conic-gradient(${c.value?.value || 'from 0deg'}, var(--tw-gradient-stops))` }]);
+
   ds.functional('from', (c) => {
     if (c.value?.kind === 'named') {
-      const color = resolveColor(c.value.value) || c.value.value;
+      const color = resolveColor(c.value, c.modifier);
       return [
         { kind: 'declaration', property: '--tw-gradient-from', value: color },
-        { kind: 'declaration', property: '--tw-gradient-stops', value: `var(--tw-gradient-from), var(--tw-gradient-to, ${color}00)` }
+        { kind: 'declaration', property: '--tw-gradient-stops', value: `var(--tw-gradient-from), var(--tw-gradient-to, transparent)` }
       ];
     }
   });
-  ds.functional('via', (c) => {
-    if (c.value?.kind === 'named') {
-      const color = resolveColor(c.value.value) || c.value.value;
-      return [
-        { kind: 'declaration', property: '--tw-gradient-via', value: color },
-        { kind: 'declaration', property: '--tw-gradient-stops', value: `var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to, ${color}00)` }
-      ];
-    }
-  });
-  ds.functional('to', (c) => {
-    if (c.value?.kind === 'named') {
-      const color = resolveColor(c.value.value) || c.value.value;
-      return [{ kind: 'declaration', property: '--tw-gradient-to', value: color }];
-    }
-  });
 
-  // 1C. Scroll Margin & Padding
-  const scrollDirs = [
-    ['scroll-m', ['scroll-margin']], ['scroll-mb', ['scroll-margin-bottom']], ['scroll-mt', ['scroll-margin-top']],
-    ['scroll-ml', ['scroll-margin-left']], ['scroll-mr', ['scroll-margin-right']], ['scroll-mx', ['scroll-margin-left', 'scroll-margin-right']],
-    ['scroll-my', ['scroll-margin-top', 'scroll-margin-bottom']], ['scroll-ms', ['scroll-margin-inline-start']], ['scroll-me', ['scroll-margin-inline-end']],
-    ['scroll-p', ['scroll-padding']], ['scroll-pb', ['scroll-padding-bottom']], ['scroll-pt', ['scroll-padding-top']],
-    ['scroll-pl', ['scroll-padding-left']], ['scroll-pr', ['scroll-padding-right']], ['scroll-px', ['scroll-padding-left', 'scroll-padding-right']],
-    ['scroll-py', ['scroll-padding-top', 'scroll-padding-bottom']], ['scroll-ps', ['scroll-padding-inline-start']], ['scroll-pe', ['scroll-padding-inline-end']]
-  ];
-  (scrollDirs as [string, string[]][]).forEach(([root, props]) => {
-    ds.functional(root, (c) => {
-      if (c.value?.kind === 'named') {
-        const val = resolveSpacing(c.value.value) || c.value.value;
-        const out = props.map(p => ({ kind: 'declaration' as const, property: p, value: val }));
-        return out as ASTNode[];
-      }
-    });
-  });
-
-  // 1D. Masks
   ds.functional('mask', (c) => {
     if (c.value?.kind === 'named') {
       return [
@@ -2511,318 +1982,60 @@ export function populateStandardUtilities(ds: DesignSystem) {
       ];
     }
   });
-  // (Simplified mask setup for PoC parity - full directional/conic needs extended parsers, implemented as arbitrary properties [mask-image:url(...)])
 
-  // 1E. Space & Divide
-  ds.functional('space-x', (c) => {
-    if (c.value?.kind === 'named') {
-      const val = resolveSpacing(c.value.value) || c.value.value;
-      c.raw = `${c.raw} > :not([hidden]) ~ :not([hidden])`; // Selector mutation for child combinators
-      return [
-        { kind: 'declaration', property: '--tw-space-x-reverse', value: '0' },
-        { kind: 'declaration', property: 'margin-right', value: `calc(${val} * var(--tw-space-x-reverse))` },
-        { kind: 'declaration', property: 'margin-left', value: `calc(${val} * calc(1 - var(--tw-space-x-reverse)))` }
-      ];
+  ds.functional('outline', (c) => {
+    if (!c.value) return;
+    const v = c.value.value;
+    if (v === 'none') return [d('outline', 'none')];
+    const color = resolveColor(c.value, c.modifier);
+    if (color && !/^\d/.test(v)) {
+      return [d('--tw-outline-color', color), d('outline', 'var(--tw-outline-style, solid) var(--tw-outline-width, 1px) var(--tw-outline-color, currentColor)')];
     }
+    return [d('--tw-outline-width', resolveSpacing(v)), d('outline', 'var(--tw-outline-style, solid) var(--tw-outline-width, 1px) var(--tw-outline-color, currentColor)')];
   });
-  ds.functional('space-y', (c) => {
-    if (c.value?.kind === 'named') {
-      const val = resolveSpacing(c.value.value) || c.value.value;
-      c.raw = `${c.raw} > :not([hidden]) ~ :not([hidden])`;
-      return [
-        { kind: 'declaration', property: '--tw-space-y-reverse', value: '0' },
-        { kind: 'declaration', property: 'margin-bottom', value: `calc(${val} * var(--tw-space-y-reverse))` },
-        { kind: 'declaration', property: 'margin-top', value: `calc(${val} * calc(1 - var(--tw-space-y-reverse)))` }
-      ];
-    }
-  });
-  ds.functional('divide-x', (c) => {
-    if (c.value?.kind === 'named') {
-      const val = c.value.value === 'reverse' ? '0' : (resolveSpacing(c.value.value) || c.value.value + 'px');
-      if (c.value.value === 'reverse') {
-         return [{ kind: 'declaration', property: '--tw-divide-x-reverse', value: '1' }];
-      }
-      c.raw = `${c.raw} > :not([hidden]) ~ :not([hidden])`;
-      return [
-        { kind: 'declaration', property: '--tw-divide-x-reverse', value: '0' },
-        { kind: 'declaration', property: 'border-right-width', value: `calc(${val} * var(--tw-divide-x-reverse))` },
-        { kind: 'declaration', property: 'border-left-width', value: `calc(${val} * calc(1 - var(--tw-divide-x-reverse)))` }
-      ];
-    }
-  });
-  ds.functional('divide-y', (c) => {
-    if (c.value?.kind === 'named') {
-      const val = c.value.value === 'reverse' ? '0' : (resolveSpacing(c.value.value) || c.value.value + 'px');
-      if (c.value.value === 'reverse') {
-         return [{ kind: 'declaration', property: '--tw-divide-y-reverse', value: '1' }];
-      }
-      c.raw = `${c.raw} > :not([hidden]) ~ :not([hidden])`;
-      return [
-        { kind: 'declaration', property: '--tw-divide-y-reverse', value: '0' },
-        { kind: 'declaration', property: 'border-bottom-width', value: `calc(${val} * var(--tw-divide-y-reverse))` },
-        { kind: 'declaration', property: 'border-top-width', value: `calc(${val} * calc(1 - var(--tw-divide-y-reverse)))` }
-      ];
-    }
-  });
-  ds.functional('divide', (c) => {
-    if (c.value?.kind === 'named') {
-      const color = resolveColor(c.value.value) || c.value.value;
-      c.raw = `${c.raw} > :not([hidden]) ~ :not([hidden])`;
-      return [{ kind: 'declaration', property: 'border-color', value: color }];
-    }
-  });
+}
 
-  // 1F. Shadow Extras
-  ds.functional('inset-ring', (c) => {
-    if (c.value?.kind === 'named') {
-      const val = resolveColor(c.value.value) || c.value.value;
-      // Either color or width
-      if (val.startsWith('#') || val.startsWith('okl') || val.startsWith('rgb')) {
-        return [{ kind: 'declaration', property: '--tw-inset-ring-color', value: val }];
-      }
-      return [
-        { kind: 'declaration', property: '--tw-inset-ring-shadow', value: `inset 0 0 0 calc(${val}px + var(--tw-inset-ring-offset-width, 0px)) var(--tw-inset-ring-color, currentColor)` },
-        { kind: 'declaration', property: 'box-shadow', value: 'var(--tw-inset-shadow, 0 0 #0000), var(--tw-inset-ring-shadow, 0 0 #0000), var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000)' }
-      ];
-    }
-  });
-  ds.functional('inset-shadow', (c) => {
-    if (c.value?.kind === 'named') {
-      const val = resolveSpacing(c.value.value) || `var(--inset-shadow-${c.value.value})`;
-      return [
-        { kind: 'declaration', property: '--tw-inset-shadow', value: val },
-        { kind: 'declaration', property: 'box-shadow', value: 'var(--tw-inset-shadow, 0 0 #0000), var(--tw-inset-ring-shadow, 0 0 #0000), var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000)' }
-      ];
-    }
-  });
-  ds.functional('drop-shadow', (c) => {
-    if (c.value?.kind === 'named') {
-      const val = `var(--drop-shadow-${c.value.value}, drop-shadow(0 1px 2px rgb(0 0 0 / 0.1)))`;
-      return [{ kind: 'declaration', property: 'filter', value: val }];
-    }
-  });
+// ═══════════════════════════════════════════════════════
+// 25. COMPOSITING @PROPERTY REGISTRATIONS
+// ═══════════════════════════════════════════════════════
+const COMPOSITING_VARS = [
+  { name: '--tw-blur', initial: ' ', syntax: '*' },
+  { name: '--tw-brightness', initial: ' ', syntax: '*' },
+  { name: '--tw-contrast', initial: ' ', syntax: '*' },
+  { name: '--tw-grayscale', initial: ' ', syntax: '*' },
+  { name: '--tw-hue-rotate', initial: ' ', syntax: '*' },
+  { name: '--tw-invert', initial: ' ', syntax: '*' },
+  { name: '--tw-saturate', initial: ' ', syntax: '*' },
+  { name: '--tw-sepia', initial: ' ', syntax: '*' },
+  { name: '--tw-drop-shadow', initial: ' ', syntax: '*' },
+  { name: '--tw-backdrop-blur', initial: ' ', syntax: '*' },
+  { name: '--tw-backdrop-brightness', initial: ' ', syntax: '*' },
+  { name: '--tw-backdrop-contrast', initial: ' ', syntax: '*' },
+  { name: '--tw-backdrop-grayscale', initial: ' ', syntax: '*' },
+  { name: '--tw-backdrop-hue-rotate', initial: ' ', syntax: '*' },
+  { name: '--tw-backdrop-invert', initial: ' ', syntax: '*' },
+  { name: '--tw-backdrop-opacity', initial: ' ', syntax: '*' },
+  { name: '--tw-backdrop-saturate', initial: ' ', syntax: '*' },
+  { name: '--tw-backdrop-sepia', initial: ' ', syntax: '*' },
+  { name: '--tw-scale-x', initial: '1', syntax: '<number>' },
+  { name: '--tw-scale-y', initial: '1', syntax: '<number>' },
+  { name: '--tw-scale-z', initial: '1', syntax: '<number>' },
+  { name: '--tw-rotate-x', initial: '0deg', syntax: '<angle>' },
+  { name: '--tw-rotate-y', initial: '0deg', syntax: '<angle>' },
+  { name: '--tw-rotate-z', initial: '0deg', syntax: '<angle>' },
+  { name: '--tw-translate-x', initial: '0', syntax: '*' },
+  { name: '--tw-translate-y', initial: '0', syntax: '*' },
+  { name: '--tw-translate-z', initial: '0', syntax: '*' },
+  { name: '--tw-skew-x', initial: '0deg', syntax: '<angle>' },
+  { name: '--tw-skew-y', initial: '0deg', syntax: '<angle>' },
+];
 
-  // 1G. Text & Decoration
-  ds.functional('text-shadow', (c) => {
-    if (c.value?.kind === 'named') {
-      return [{ kind: 'declaration', property: 'text-shadow', value: `var(--text-shadow-${c.value.value})` }];
-    }
-  });
-  ds.functional('decoration', (c) => {
-    if (c.value?.kind === 'named') {
-      const val = resolveColor(c.value.value) || c.value.value;
-      if (val.startsWith('#') || val.startsWith('okl') || val.startsWith('rgb')) {
-        return [{ kind: 'declaration', property: 'text-decoration-color', value: val }];
-      }
-      return [{ kind: 'declaration', property: 'text-decoration-thickness', value: val }];
-    }
-  });
-  ds.functional('underline-offset', (c) => {
-    if (c.value?.kind === 'named') {
-      return [{ kind: 'declaration', property: 'text-underline-offset', value: resolveSpacing(c.value.value) || c.value.value }];
-    }
-  });
-  statics(ds, [['decoration-from-font', [['text-decoration-thickness', 'from-font']]]]);
-
-  // 1H. Border Extras
-  const borderExtras = [['border-bs', 'border-block-start-width'], ['border-be', 'border-block-end-width']];
-  borderExtras.forEach(([root, prop]) => {
-    ds.functional(root, (c) => {
-      if (c.value?.kind === 'named') {
-        const val = resolveColor(c.value.value) || resolveSpacing(c.value.value) || (c.value.value + 'px');
-        return [{ kind: 'declaration', property: val.includes('oklch') || val.includes('#') ? prop.replace('-width', '-color') : prop, value: val }];
-      }
-    });
-  });
-  ds.functional('border-spacing', (c) => {
-    if (c.value?.kind === 'named') {
-      const val = resolveSpacing(c.value.value) || c.value.value;
-      return [{ kind: 'declaration', property: 'border-spacing', value: `${val} ${val}` }];
-    }
-  });
-  ds.functional('border-spacing-x', (c) => {
-    if (c.value?.kind === 'named') {
-      return [{ kind: 'declaration', property: '--tw-border-spacing-x', value: resolveSpacing(c.value.value) || c.value.value }, { kind: 'declaration', property: 'border-spacing', value: 'var(--tw-border-spacing-x) var(--tw-border-spacing-y, 0)' }];
-    }
-  });
-  ds.functional('border-spacing-y', (c) => {
-    if (c.value?.kind === 'named') {
-      return [{ kind: 'declaration', property: '--tw-border-spacing-y', value: resolveSpacing(c.value.value) || c.value.value }, { kind: 'declaration', property: 'border-spacing', value: 'var(--tw-border-spacing-x, 0) var(--tw-border-spacing-y)' }];
-    }
-  });
-
-  // 1I. Transform Extras
-  ds.functional('transform-origin', (c) => {
-    if (c.value?.kind === 'named') return [{ kind: 'declaration', property: 'transform-origin', value: c.value.value }];
-  });
-  ds.functional('perspective', (c) => {
-    if (c.value?.kind === 'named') return [{ kind: 'declaration', property: 'perspective', value: `var(--perspective-${c.value.value}, ${c.value.value})` }];
-  });
-  ds.functional('translate-z', (c) => {
-    if (c.value?.kind === 'named') return [{ kind: 'declaration', property: 'transform', value: `translateZ(${resolveSpacing(c.value.value) || c.value.value})` }];
-  });
-
-  // 1J. Filter Extras
-  ds.functional('hue-rotate', (c) => {
-    if (c.value?.kind === 'named') {
-      return [
-        { kind: 'declaration', property: '--tw-hue-rotate', value: `hue-rotate(${c.value.value})` },
-        { kind: 'declaration', property: 'filter', value: 'var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)' }
-      ];
-    }
-  });
-  ds.functional('invert', (c) => {
-    if (c.value?.kind === 'named') {
-      return [
-        { kind: 'declaration', property: '--tw-invert', value: `invert(${c.value.value})` },
-        { kind: 'declaration', property: 'filter', value: 'var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)' }
-      ];
-    }
-  });
-
-  // 1K. Misc (container, cursor functional, list, will-change, etc)
-  ds.functional('cursor', (c) => {
-    if (c.value?.kind === 'named') return [{ kind: 'declaration', property: 'cursor', value: c.value.value }];
-  });
-  ds.functional('list', (c) => {
-    if (c.value?.kind === 'named') {
-      if (['image', 'position', 'type'].includes(c.value.value.split('-')[0])) return [{ kind: 'declaration', property: `list-style-${c.value.value.split('-')[0]}`, value: c.value.value.substring(c.value.value.indexOf('-')+1) }];
-      return [{ kind: 'declaration', property: 'list-style-type', value: c.value.value }];
-    }
-  });
-  ds.functional('will-change', (c) => {
-    if (c.value?.kind === 'named') return [{ kind: 'declaration', property: 'will-change', value: c.value.value }];
-  });
-  ds.functional('container', (c) => {
-    if (c.value?.kind === 'named') return [{ kind: 'declaration', property: 'max-width', value: `var(--container-${c.value.value})` }];
-  });
-  ds.functional('color-scheme', (c) => {
-    if (c.value?.kind === 'named') return [{ kind: 'declaration', property: 'color-scheme', value: c.value.value }];
-  });
-  ds.functional('field-sizing', (c) => {
-    if (c.value?.kind === 'named') return [{ kind: 'declaration', property: 'field-sizing', value: c.value.value }];
-  });
-  ds.functional('forced-color-adjust', (c) => {
-    if (c.value?.kind === 'named') return [{ kind: 'declaration', property: 'forced-color-adjust', value: c.value.value }];
-  });
-  ds.functional('appearance', (c) => {
-    if (c.value?.kind === 'named') return [{ kind: 'declaration', property: 'appearance', value: c.value.value }];
-  });
-  ds.functional('stroke-width', (c) => {
-    if (c.value?.kind === 'named') return [{ kind: 'declaration', property: 'stroke-width', value: c.value.value }];
-  });
-
-  // ═══════════════════════════════════════════════════════
-  // PHASE 3: CDN-PARITY FUNCTIONAL UTILITIES
-  // ═══════════════════════════════════════════════════════
-
-  // Font Stretch
-  statics(ds, [
-    ['font-stretch-normal', [['font-stretch', 'normal']]],
-    ['font-stretch-ultra-condensed', [['font-stretch', 'ultra-condensed']]],
-    ['font-stretch-extra-condensed', [['font-stretch', 'extra-condensed']]],
-    ['font-stretch-condensed', [['font-stretch', 'condensed']]],
-    ['font-stretch-semi-condensed', [['font-stretch', 'semi-condensed']]],
-    ['font-stretch-semi-expanded', [['font-stretch', 'semi-expanded']]],
-    ['font-stretch-expanded', [['font-stretch', 'expanded']]],
-    ['font-stretch-extra-expanded', [['font-stretch', 'extra-expanded']]],
-    ['font-stretch-ultra-expanded', [['font-stretch', 'ultra-expanded']]],
-  ]);
-  ds.functional('font-stretch', (c) => {
-    if (c.value?.kind === 'named') return [d('font-stretch', c.value.value)];
-  });
-
-  // Contain
-  statics(ds, [
-    ['contain-none', [['contain', 'none']]],
-    ['contain-content', [['contain', 'content']]],
-    ['contain-strict', [['contain', 'strict']]],
-    ['contain-size', [['contain', 'size']]],
-    ['contain-inline-size', [['contain', 'inline-size']]],
-    ['contain-layout', [['contain', 'layout']]],
-    ['contain-paint', [['contain', 'paint']]],
-    ['contain-style', [['contain', 'style']]],
-  ]);
-  ds.functional('contain', (c) => {
-    if (c.value?.kind === 'named') return [d('contain', c.value.value)];
-  });
-
-  // Forced Color Adjust (statics)
-  statics(ds, [
-    ['forced-color-adjust-none', [['forced-color-adjust', 'none']]],
-    ['forced-color-adjust-auto', [['forced-color-adjust', 'auto']]],
-  ]);
-
-  // Font Features
-  ds.functional('font-features', (c) => {
-    if (c.value?.kind === 'named') return [d('font-feature-settings', c.value.value)];
-  });
-
-  // Font Variant Numeric (composited via --tw-* variables)
-  const numericVariantComposite = 'var(--tw-ordinal, ) var(--tw-slashed-zero, ) var(--tw-numeric-figure, ) var(--tw-numeric-spacing, ) var(--tw-numeric-fraction, )';
-  statics(ds, [
-    ['normal-nums', [['font-variant-numeric', 'normal']]],
-    ['ordinal', [['--tw-ordinal', 'ordinal'], ['font-variant-numeric', numericVariantComposite]]],
-    ['slashed-zero', [['--tw-slashed-zero', 'slashed-zero'], ['font-variant-numeric', numericVariantComposite]]],
-    ['lining-nums', [['--tw-numeric-figure', 'lining-nums'], ['font-variant-numeric', numericVariantComposite]]],
-    ['oldstyle-nums', [['--tw-numeric-figure', 'oldstyle-nums'], ['font-variant-numeric', numericVariantComposite]]],
-    ['proportional-nums', [['--tw-numeric-spacing', 'proportional-nums'], ['font-variant-numeric', numericVariantComposite]]],
-    ['tabular-nums', [['--tw-numeric-spacing', 'tabular-nums'], ['font-variant-numeric', numericVariantComposite]]],
-    ['diagonal-fractions', [['--tw-numeric-fraction', 'diagonal-fractions'], ['font-variant-numeric', numericVariantComposite]]],
-    ['stacked-fractions', [['--tw-numeric-fraction', 'stacked-fractions'], ['font-variant-numeric', numericVariantComposite]]],
-  ]);
-
-  // Placeholder color (pseudo-element handler)
-  ds.functional('placeholder', (c) => {
-    if (c.value?.kind === 'named') {
-      const color = resolveColor(c.value.value, c.modifier);
-      return [{ kind: 'declaration', property: 'color', value: color }];
-    }
-  });
-
-  // Text Shadow
-  ds.functional('text-shadow', (c) => {
-    if (c.value?.kind === 'named') {
-      const v = c.value.value;
-      if (v === 'none') return [d('text-shadow', 'none')];
-      if (v.startsWith('#') || v.startsWith('okl') || v.startsWith('rgb')) {
-        return [d('--tw-text-shadow-color', v)];
-      }
-      return [d('text-shadow', `var(--text-shadow-${v}, ${v})`)];
-    }
-  });
-
-  // Vertical Align (functional complement to statics already registered)
-  ds.functional('align', (c) => {
-    if (c.value?.kind === 'named') return [d('vertical-align', c.value.value)];
-  });
-
-  // Decoration color/thickness (functional complement) 
-  ds.functional('decoration', (c) => {
-    if (c.value?.kind === 'named') {
-      const v = c.value.value;
-      // Color values
-      if (v.startsWith('#') || v.startsWith('okl') || v.startsWith('rgb') || v === 'current' || v === 'inherit' || v === 'transparent') {
-        return [d('text-decoration-color', resolveColor(v, c.modifier))];
-      }
-      // Thickness values
-      return [d('text-decoration-thickness', v)];
-    }
-  });
-
-  // Origin statics
-  statics(ds, [
-    ['origin-center', [['transform-origin', 'center']]],
-    ['origin-top', [['transform-origin', 'top']]],
-    ['origin-top-right', [['transform-origin', '100% 0']]],
-    ['origin-right', [['transform-origin', '100%']]],
-    ['origin-bottom-right', [['transform-origin', '100% 100%']]],
-    ['origin-bottom', [['transform-origin', 'bottom']]],
-    ['origin-bottom-left', [['transform-origin', '0 100%']]],
-    ['origin-left', [['transform-origin', '0']]],
-    ['origin-top-left', [['transform-origin', '0 0']]],
-  ]);
-
+function registerCompositingProperties() {
+  let css = '';
+  for (const v of COMPOSITING_VARS) {
+    css += `@property ${v.name} { syntax: "${v.syntax}"; inherits: false; initial-value: ${v.initial}; }\n`;
+  }
+  return css;
 }
 
 
@@ -2853,7 +2066,11 @@ class StyleSheetManager {
     this.adoptCSS(PREFLIGHT_CSS, 'tailwind-preflight');
     // Convert @theme default { ... } to :root { ... } — browsers reject unknown at-rules
     const rootTheme = THEME_CSS.replace(/^@theme\s+default\s*\{/, ':root {');
-    this.adoptCSS(rootTheme, 'tailwind-theme');
+    
+    // Official v4 Parity: Register @property for compositing variables
+    const compositingCSS = registerCompositingProperties();
+    
+    this.adoptCSS(rootTheme + '\n' + compositingCSS, 'tailwind-theme');
     this._preflightEmitted = true;
   }
 
@@ -2918,7 +2135,9 @@ class StyleSheetManager {
     try {
       sheet.insertRule(cssText, sheet.cssRules.length);
       this._knownClasses.add(className);
-    } catch {}
+    } catch (_e) {
+      /* ignore */
+    }
   }
 
   collectRules(): string {
@@ -2927,7 +2146,9 @@ class StyleSheetManager {
       const rules: string[] = [];
       try {
         for (const rule of sheet.cssRules) rules.push(rule.cssText);
-      } catch {}
+      } catch (_e) {
+      /* ignore */
+    }
       if (rules.length) sheets.push(rules.join('\n'));
     });
 
@@ -2935,7 +2156,9 @@ class StyleSheetManager {
       const rules: string[] = [];
       try {
         for (const rule of this._jitSheet.cssRules) rules.push(rule.cssText);
-      } catch {}
+      } catch (_e) {
+      /* ignore */
+    }
       if (rules.length) sheets.push(rules.join('\n'));
     }
     return sheets.join('\n\n');

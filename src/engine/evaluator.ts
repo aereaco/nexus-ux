@@ -167,10 +167,22 @@ export function evaluateLater(
             return true;
           }
         }
+        
+        // Fallback: If not found in stack, auto-create in the closest reactive local scope
+        // or global signals to ensure "virtual" signals can be established on-the-fly.
+        if (dataStack.length > 0) {
+          (dataStack[0] as any)[key] = value;
+          return true;
+        }
+
         if (key in target) {
           (target as any)[key] = value;
           return true;
         }
+
+        // Global fallback
+        (globalSignals as any)[key] = value;
+        return true;
       }
       return false;
     }

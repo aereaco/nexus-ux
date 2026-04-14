@@ -84,6 +84,26 @@ const onModule: AttributeModule = {
 
         const forceDirect = target === window || target === document || NON_BUBBLING_EVENTS.has(eventName) || options !== false;
 
+        if (eventName === 'hover') {
+          // Virtual Event: maps to mouseenter/mouseleave
+          const enterHandler = (e: Event) => {
+            const extras = { $evt: e, $newValue: true, $hovered: true };
+            return runtime.evaluate(el, value, extras);
+          };
+          const leaveHandler = (e: Event) => {
+            const extras = { $evt: e, $newValue: false, $hovered: false };
+            return runtime.evaluate(el, value, extras);
+          };
+
+          el.addEventListener('mouseenter', enterHandler);
+          el.addEventListener('mouseleave', leaveHandler);
+          cleanupFns.push(() => {
+            el.removeEventListener('mouseenter', enterHandler);
+            el.removeEventListener('mouseleave', leaveHandler);
+          });
+          return;
+        }
+
         if (forceDirect) {
           // Direct Attachment
           target.addEventListener(eventName, handler as EventListener, options);

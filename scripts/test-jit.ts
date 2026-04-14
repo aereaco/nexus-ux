@@ -1,11 +1,17 @@
-import { designSystem, parseCandidate, generateCSS } from '../src/engine/tailwind-engine.ts';
+import { designSystem } from '../src/engine/stylesheet.ts';
 
-const candidates = Array.from(parseCandidate('flex-1', designSystem));
-console.log("Parsed candidates:", candidates);
-for (const c of candidates) {
-  try {
-     console.log("CSS Output:", generateCSS(c, designSystem));
-  } catch (e) {
-     console.error("Crash during generateCSS!", e);
+const inputClasses = Deno.args[0] || 'flex-1';
+const classList = inputClasses.split(/\s+/);
+
+for (const className of classList) {
+  const candidates = Array.from(designSystem.parseCandidate(className));
+  console.log(`--- [${className}] ---`);
+  for (const c of candidates) {
+    try {
+       console.log(designSystem.generateCSS(c));
+    } catch (e) {
+       console.error("Crash during generateCSS!", e);
+    }
   }
 }
+Deno.exit(0);
