@@ -3,17 +3,28 @@
   <div class="drawer-content">
     <!-- Drawer Header -->
     <nav class="navbar w-full bg-base-300">
-      <label for="my-drawer-4" aria-label="open sidebar" class="btn btn-square btn-ghost lg:hidden">
+      <label for="my-drawer-4" aria-label="open sidebar" class="btn btn-circle btn-ghost lg:hidden">
         <!-- Sidebar toggle icon -->
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor" class="my-1.5 inline-block size-4"><path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"></path><path d="M9 4v16"></path><path d="M14 10l2 2l-2 2"></path></svg>
+        <iconify-icon icon="material-symbols-light:menu" style="font-size: 24px"></iconify-icon>
       </label>
         <div class="flex-none">
-          <button data-on-click="collapsed = !collapsed" aria-label="toggle sidebar" class="btn btn-square btn-ghost hidden lg:block" data-class="{ 'scale-x-[-1]': !collapsed || hovered }">
-            <!-- Sidebar toggle icon -->
+          <button data-on-click="collapsed = !collapsed" aria-label="toggle sidebar" class="btn btn-circle btn-ghost hidden lg:block" data-class="{ 'scale-x-[-1]': !collapsed || hovered }">
+            <!-- Sidebar collapse icon -->
             <iconify-icon icon="material-symbols-light:double-arrow" style="font-size: 24px"></iconify-icon>
           </button>
         </div>
       <div class="px-4">Navbar Title</div>
+      <div class="navbar-end">
+        <button class="btn btn-ghost btn-circle">
+          <iconify-icon icon="material-symbols-light:search" style="font-size: 24px"></iconify-icon>
+        </button>
+        <button class="btn btn-ghost btn-circle">
+          <div class="indicator">
+            <iconify-icon icon="material-symbols-light:notifications" style="font-size: 24px"></iconify-icon>
+            <span class="badge badge-xs badge-primary indicator-item"></span>
+          </div>
+        </button>
+      </div>
     </nav>
     <!-- Page content here -->
     <div class="p-4">Page Content</div>
@@ -25,9 +36,9 @@
 
   <div class="drawer-side" data-class="{ 'overflow-visible': hovered || !collapsed || isMobile }">
     <label for="my-drawer-4" aria-label="close sidebar" class="drawer-overlay"></label>
-    <div class="flex min-h-full flex-col items-start bg-base-100" data-class="{ 'lg:w-16': collapsed, 'w-80': !collapsed || isMobile }">
+    <div class="flex min-h-full flex-col items-start bg-base-100" data-class="{ 'lg:w-16': collapsed, 'w-[20vw]': !collapsed, 'w-[75vw]': isMobile }">
       <!-- Sidebar content here -->
-      <div class="flex flex-col h-dvh w-full transition-all" data-class="{ 'lg:w-80': !collapsed || hovered || isMobile, 'bg-base-100/70': !collapsed || hovered || isMobile, 'backdrop-blur-sm': !collapsed || hovered || isMobile }"
+      <div class="flex flex-col h-dvh w-full transition-all" data-class="{ 'lg:w-[20vw]': !collapsed || hovered, 'w-[75vw]': isMobile, 'bg-base-100/70': !collapsed || hovered || isMobile, 'backdrop-blur-sm': !collapsed || hovered || isMobile }"
       data-on-mouseenter="hovered = true"
       data-on-mouseleave="hovered = false"
       data-on-touchstart="hovered = true"
@@ -35,7 +46,7 @@
         <div class="navbar">
           <div class="flex flex-1">
             <a class="btn btn-ghost text-xl ps-1">
-              <svg class="w-10 h-10">
+              <svg class="w-10 h-10 scale-[0.8]">
                 <use href="/site/_assets/images/emblem.svg"></use>
               </svg>
               <template data-if="!collapsed || hovered || isMobile">

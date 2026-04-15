@@ -7,7 +7,7 @@ import { Ref } from '@vue/reactivity';
 const signalModule: AttributeModule = {
   name: 'signal',
   attribute: 'signal',
-  metadata: { after: ['injest'] },
+  metadata: { after: ['ingest'] },
   handle: (el: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void => {
     runtime.log(`[Nexus Signal] Handling signal on <${el.tagName}> with value:`, value.substring(0, 50) + '...');
     // 1. Determine Expression & Context

@@ -7,11 +7,27 @@ import { stylesheet } from './stylesheet.ts';
 // Configure Idiomorph defaults
 const defaults = {
   morphStyle: 'innerHTML',
+  ignoreActiveValue: true, // Zenith-Class: Never clobber what the user is currently typing
   callbacks: {
-    beforeNodeMorphed: (from: Node, _to: Node) => {
+    beforeNodeMorphed: (from: Node, to: Node) => {
       // Respect data-preserve attribute
       if (from instanceof Element && from.hasAttribute(DATA_PRESERVE_ATTR)) {
         return false; // Skip morphing this node
+      }
+
+      // State Preservation Logic for Form Elements
+      if (from instanceof HTMLInputElement || from instanceof HTMLTextAreaElement || from instanceof HTMLSelectElement) {
+        if (from === document.activeElement) {
+          // Carry over the current value and selection to the 'to' node before morphing
+          // so Idiomorph sees them as identical and doesn't trigger unnecessary updates.
+          if (to instanceof HTMLInputElement || to instanceof HTMLTextAreaElement || to instanceof HTMLSelectElement) {
+             (to as any).value = (from as any).value;
+             if (from instanceof HTMLInputElement || from instanceof HTMLTextAreaElement) {
+               (to as any).selectionStart = from.selectionStart;
+               (to as any).selectionEnd = from.selectionEnd;
+             }
+          }
+        }
       }
       
       // Deterministic Teardown: If the node is about to be morphed, 

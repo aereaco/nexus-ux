@@ -41,7 +41,7 @@ async function main() {
                 h2.textContent.includes('Self Execution') ||
                 h2.textContent.includes('Network Payload') ||
                 h2.textContent.includes('System Preference') ||
-                h2.textContent.includes('Injest Matrix') ||
+                h2.textContent.includes('Ingest Matrix') ||
                 h2.textContent.includes('State Expiry')) {
                 demoH2 = h2;
                 break;

@@ -713,7 +713,7 @@ directive catalog:
 - **`data-pwa`**: PWA Orchestration — manages Progressive Web App features
   including Service Worker registration, manifest integration, and offline state
   tracking via the `$pwa` signal.
-- **`data-injest`**: Asset Ingestion 2.0 — asynchronously fetches and manages
+- **`data-ingest`**: Asset Ingestion 2.0 — asynchronously fetches and manages
   3rd party scripts and stylesheets. Supports reactive, grouped, and namespaced
   loading with ZCZS (Constructable Stylesheets) performance mandate.
 
@@ -1399,7 +1399,7 @@ Extensibility is not limited to the build step. For third-party libraries and
 runtime augmentation, the engine exposes `Nexus.register()`.
 
 ```javascript
-// Third-party plugin (e.g., loaded via data-injest)
+// Third-party plugin (e.g., loaded via data-ingest)
 Nexus.register({
   type: "attribute",
   name: "todo-plugin",

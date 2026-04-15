@@ -417,20 +417,20 @@ Directly sync state to CSS Custom Properties. Essential for DaisyUI integration.
 - **Spinner**:
   `<div data-progress="{ type: 'spinner', size: '20px', value: 'isBusy' }"></div>`
 
-#### 2.2.6. "Data Injest" 2.0 — Reactive Grouped Namespaces
+#### 2.2.6. "Data Ingest" 2.0 — Reactive Grouped Namespaces
 
-**Syntax**: `data-injest="{ groupName: { type: 'url' } }"`
+**Syntax**: `data-ingest="{ groupName: { type: 'url' } }"`
 
 **Purpose**: Defers HTML rendering until critical external assets (like tailwind
 CDN or custom fonts) are fully loaded, parsed, and adopted via Constructable
 Stylesheets. Supports reactive updates and multiple asset types per namespace.
 
 - **Standard Pattern**:
-  `<html data-injest="{ tailwind: { link: 'https://cdn.tailwindcss.com' } }"> ... </html>`
+  `<html data-ingest="{ tailwind: { link: 'https://cdn.tailwindcss.com' } }"> ... </html>`
 
 - **Reactive Theme Switcher**:
   ```html
-  <div data-injest="{ theme: { theme: 'themes/' + currentTheme + '.css' } }">
+  <div data-ingest="{ theme: { theme: 'themes/' + currentTheme + '.css' } }">
   ```
 
 ---
@@ -2818,18 +2818,18 @@ inevitable.**
 ## Chapter 14: Premium Assets & Themes
 
 This chapter covers the advanced orchestration of external resources and visual
-styling using the `data-injest` and `data-theme` systems.
+styling using the `data-ingest` and `data-theme` systems.
 
-### 14.1. `data-injest` — Asset Lifecycle Orchestration
+### 14.1. `data-ingest` — Asset Lifecycle Orchestration
 
-The `data-injest` directive manages 3rd party scripts and stylesheets, ensuring
+The `data-ingest` directive manages 3rd party scripts and stylesheets, ensuring
 the page remains hidden via `nexus-loading` until all assets are resolved.
 
 **Example**:
 
 ```html
 <html
-  data-injest='{
+  data-ingest='{
   "daisy": { "link": "href=\"https://cdn.jsdelivr.net/npm/daisyui@4/dist/full.min.css\" rel=\"stylesheet\" crossorigin=\"anonymous\"" },
   "tailwind": { "script": "src=\"https://cdn.tailwindcss.com\" crossorigin=\"anonymous\"" }
 }'

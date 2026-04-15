@@ -40,7 +40,7 @@ Nexus-UX utilizes a deterministic, token-based grammar for high-baud efficiency.
 | **`.`** | Native Access     | Unwrapped, raw JS/DOM property access.          | `user.name`                        |
 | **`#`** | Global Signal     | The Global Registry of reactive sources.        | `#auth.user`                       |
 | **`_`** | Env Mirror        | Read-only reactive snapshots of Browser APIs.   | `_window.innerWidth`               |
-| **`:`** | Modifier          | Pipeline anchors and interceptors.              | `data-on:click:once`               |
+| **`:`** | Modifier          | Pipeline anchors and interceptors.              | `data-on-click:once`               |
 | **`$`** | Sprite / Selector | Framework tools, Sprites, and the $() engine.   | `$(^card).$save()`                 |
 | **`@`** | Scope Rule        | Context-aware boundary rules (Media, OS, Auth). | `@media(min-width: 600px) { ... }` |
 
@@ -48,16 +48,16 @@ Nexus-UX utilizes a deterministic, token-based grammar for high-baud efficiency.
 
 ## 🧩 Core Directives
 
-| Directive       | Role               | Description                                                                  |
-| :-------------- | :----------------- | :--------------------------------------------------------------------------- |
-| `data-signal`   | **State**          | Initializes reactive signals. Supports **Signal Auto-Promotion** on-the-fly. |
-| `data-class`    | **Hardened JIT**   | Reconciles Tailwind v4 utilities against reactive state with 0ms latency.    |
-| `data-bind`     | **Binding**        | High-performance bidirectional binding to inputs and state.                  |
-| `data-text`     | **Painting**       | Injects reactive expressions into `textContent`.                             |
-| `data-on`       | **Behavior**       | Standard and **Native Event Mapping** (`hover`, `click:debounce.200ms`).     |
-| `data-on-hover` | **Orchestration**  | Maps native mouseenter/mouseleave to a local `$hovered` signal.              |
-| `data-injest`   | **Asset Registry** | Synchronously adopts external/local CSS into the Unified Style Registry.     |
-| `data-switcher` | **Iteration**      | Automates cycling through states (e.g., Theme Toggles).                      |
+| Directive       | Role               | Description                                                                     |
+| :-------------- | :----------------- | :------------------------------------------------------------------------------ |
+| `data-signal`   | **State**          | Initializes reactive signals. Supports **Signal Auto-Promotion** on-the-fly.    |
+| `data-class`    | **Hardened JIT**   | Reconciles Tailwind v4 utilities against reactive state with 0ms latency.       |
+| `data-bind`     | **Binding**        | High-performance bidirectional binding to inputs and state.                     |
+| `data-text`     | **Painting**       | Injects reactive expressions into `textContent`.                                |
+| `data-on`       | **Behavior**       | Standard and **Native Event Mapping** (`hover`, `click:debounce.200ms`).        |
+| `data-on-hover` | **Orchestration**  | Maps native mouseenter/mouseleave to a local `hovered` signal.                  |
+| `data-ingest`   | **Asset Registry** | Asynchronously adopts links, scripts, and components into the Unified Registry. |
+| `data-switcher` | **Iteration**      | Automates cycling through states (e.g., Theme Toggles).                         |
 
 ---
 
@@ -95,56 +95,90 @@ No transpilant, no bundler, no delay.
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>Nexus-UX Get Started</title>
-    <!-- Framework Ignition -->
-    <script
-      src="/dist/nexus-ux.js"
-      data-injest="['/styles/theme.css']"
-    ></script>
+    <title>Nexus-UX: Hello World</title>
+    <!-- Zero-Copy Zero-Serialization Core -->
+    <script src="/dist/nexus-ux.js"></script>
   </head>
   <body
-    data-signal="{ count: 0 }"
-    class="bg-slate-900 text-white font-sans antialiased"
+    class="bg-slate-900 text-white flex items-center justify-center min-h-screen"
   >
-    <div
-      class="flex flex-col items-center justify-center min-h-screen space-y-8"
+    <!-- Direct JIT Signal Integration: Brackets map directly to reactive variables -->
+    <main
+      class="p-8 rounded-xl bg-white/5 backdrop-blur-lg border border-white/10 shadow-2xl transition-all duration-500 w-[width]"
+      data-signal="{ count: 0, width: '400px' }"
+      data-on-hover="width = hovered ? '500px' : '400px'"
     >
-      <!-- Reactive Text Binding -->
       <h1
-        class="text-6xl font-black tracking-tight"
-        data-text="'Count is ' + count"
+        class="text-6xl font-black bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent mb-4"
       >
+        Nexus Zenith
       </h1>
 
-      <div class="flex space-x-4">
-        <!-- Native Event Mapping (hover) + Signal Orchestration -->
-        <button
-          class="px-8 py-4 bg-primary text-white rounded-full transition-all duration-300 transform"
-          data-class="{ 'scale-110 shadow-2xl shadow-primary/50': $hovered }"
-          data-on-hover="count++"
-        >
-          Hover to Increment
-        </button>
+      <p class="text-neutral-400 mb-8">
+        Counter: <span class="font-mono text-blue-400" data-text="count"
+        >0</span>
+      </p>
 
-        <!-- Standard Click with Modifier -->
-        <button
-          class="px-8 py-4 bg-secondary text-white rounded-full"
-          data-on:click:debounce.50ms="count = 0"
-        >
-          Reset Counter
-        </button>
-      </div>
-
-      <!-- Agentic Resolution Beacon Demo -->
-      <div
-        class="opacity-50 blur-sm hover:blur-none transition-all cursor-pointer"
-        data-on:click="$('#missing-target').focus()"
+      <!-- Native NEG Event Syntax: data-on-EVENT:MODIFIER -->
+      <button
+        data-on-click:once="count++"
+        class="px-8 py-4 bg-blue-600 hover:bg-blue-500 active:scale-95 rounded-full font-bold transition-all"
       >
-        Click to Trigger Agent Beacon (See Console)
+        Increment Once
+      </button>
+
+      <!-- Asset Ingestion 2.0: Unified Registry for ZCZS Parity -->
+      <div
+        data-ingest="{ 
+      charts: { 
+        script: [ { src: '/js/stats.js', defer: true }, '/js/charts.js' ],
+        link: { href: '/css/charts.css', rel: 'stylesheet' }
+      },
+      theme: { theme: 'idb://themes/nebula' }
+    }"
+      >
       </div>
-    </div>
+
+      <!-- Global Signal JIT Integration -->
+      <div
+        class="bg-[#auth.theme.primary] p-4 rounded mt-4"
+        data-show="#auth.loggedIn"
+      >
+        Welcome back, <span data-text="#auth.user.name">User</span>
+      </div>
+    </main>
   </body>
 </html>
+```
+
+### Direct JIT Signal Parity
+
+Nexus-UX includes a native Tailwind v4 JIT engine. You can use reactive signals
+directly in utility classes using brackets. The engine automatically
+synchronizes these to local CSS variables:
+
+- **Usage**: `class="w-[width]"`
+- **Mapping**: Matches signal `width` to `--nx-width`.
+- **Global Mapping**: Matches `#auth.theme.primary` to
+  `--nx-auth-theme-primary`.
+- **Performance**: Zero-copy updates via direct `CSSStyleRule` modification.
+
+### Asset Ingestion 2.0 (`data-ingest`)
+
+The framework manages 3rd party scripts and styles via a unified ingestion
+schema:
+
+```javascript
+data-ingest="{ 
+  analytics: { 
+    script: { src: '/js/stats.js', defer: true }, // or '/path/to/script.js'
+    link: '/path/to/style.css',                   // External CSS (adopted via ZCZS)
+    component: 'idb://lib/card',                  // VFS registration
+    theme: 'idb://themes/nebula',                 // External theme link
+    target: '#main',                              // Optional: Inject into specific target
+    position: 'prepend'                           // Optional: before | after | append | prepend
+  }
+}"
 ```
 
 ---

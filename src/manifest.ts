@@ -11,11 +11,11 @@ import * as mod_7 from './modules/attributes/switcher.ts';
 import * as mod_8 from './modules/attributes/if.ts';
 import * as mod_9 from './modules/attributes/effect.ts';
 import * as mod_10 from './modules/attributes/component.ts';
-import * as mod_11 from './modules/attributes/for.ts';
-import * as mod_12 from './modules/attributes/router.ts';
-import * as mod_13 from './modules/attributes/pwa.ts';
-import * as mod_14 from './modules/attributes/var.ts';
-import * as mod_15 from './modules/attributes/injest.ts';
+import * as mod_11 from './modules/attributes/ingest.ts';
+import * as mod_12 from './modules/attributes/for.ts';
+import * as mod_13 from './modules/attributes/router.ts';
+import * as mod_14 from './modules/attributes/pwa.ts';
+import * as mod_15 from './modules/attributes/var.ts';
 import * as mod_16 from './modules/attributes/style.ts';
 import * as mod_17 from './modules/attributes/theme.ts';
 import * as mod_18 from './modules/attributes/progress.ts';
@@ -40,11 +40,11 @@ export const autoAttributes: any[] = [
   { name: 'if', module: mod_8 },
   { name: 'effect', module: mod_9 },
   { name: 'component', module: mod_10 },
-  { name: 'for', module: mod_11 },
-  { name: 'router', module: mod_12 },
-  { name: 'pwa', module: mod_13 },
-  { name: 'var', module: mod_14 },
-  { name: 'injest', module: mod_15 },
+  { name: 'ingest', module: mod_11 },
+  { name: 'for', module: mod_12 },
+  { name: 'router', module: mod_13 },
+  { name: 'pwa', module: mod_14 },
+  { name: 'var', module: mod_15 },
   { name: 'style', module: mod_16 },
   { name: 'theme', module: mod_17 },
   { name: 'progress', module: mod_18 },

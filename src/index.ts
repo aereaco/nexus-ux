@@ -6,7 +6,7 @@ import { initSelfHeal, getBeaconHistory, type CrashBeacon } from './engine/agent
 import { stylesheet } from './engine/stylesheet.ts';
 
 // Core Directives (Explicitly imported for priority ordering)
-import injestModule from './modules/attributes/injest.ts';
+import ingestModule from './modules/attributes/ingest.ts';
 import signalModule from './modules/attributes/signal.ts';
 import computedModule from './modules/attributes/computed.ts';
 import switcherModule from './modules/attributes/switcher.ts';
@@ -47,8 +47,8 @@ export class UX {
       stylesheet.emitPreflightAndTheme();
     }
 
-    // Priority 0: Injest (Dependency Orchestration)
-    this.coordinator.registerAttributeModule('injest', injestModule);
+    // Priority 0: Ingest (Dependency Orchestration)
+    this.coordinator.registerAttributeModule('ingest', ingestModule);
 
     // Phase 2: Core Directives (Prioritized explicitly for execution order)
     this.coordinator.registerAttributeModule('signal', signalModule);
@@ -210,7 +210,7 @@ export class UX {
 
   /**
    * Public API for Decentralized Module Registration.
-   * Allows third-party scripts (e.g., loaded via data-injest) to register themselves dynamically.
+   * Allows third-party scripts (e.g., loaded via data-ingest) to register themselves dynamically.
    */
   public register(type: 'attribute' | 'action' | 'modifier' | 'listener' | 'observer' | 'utility', name: string, module: any) {
     if (typeof window !== 'undefined' && this.coordinator.runtimeContext.isDevMode) {

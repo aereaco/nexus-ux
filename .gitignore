@@ -4,3 +4,7 @@ dist/
 *.log
 .gemini/
 .env
+.kilocode/
+.vscode/
+.system_generated/
+.kilocodemodes

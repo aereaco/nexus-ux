@@ -31,7 +31,7 @@ interface BuildConfig {
   scope?: string;              // CSS selector for the root to serialize (default: 'html')
   minify?: boolean;            // Whether to minify CSS/JS in output (default: false)
   includeStyles?: boolean;     // Include adopted stylesheets (default: true)
-  includeScripts?: boolean;    // Include injested scripts (default: true)
+  includeScripts?: boolean;    // Include ingested scripts (default: true)
   standalone?: boolean;        // Produce a full standalone HTML document (default: true)
   nexusSrc?: string;           // Custom nexus-ux.js source URL for the bundle
 }

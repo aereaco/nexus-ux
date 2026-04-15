@@ -87,11 +87,11 @@ const onModule: AttributeModule = {
         if (eventName === 'hover') {
           // Interactive Orchestration: maps to native mouseenter/mouseleave pair
           const enterHandler = (e: Event) => {
-            const extras = { $evt: e, $newValue: true, $hovered: true };
+            const extras = { $evt: e, $newValue: true, hovered: true };
             return runtime.evaluate(el, value, extras);
           };
           const leaveHandler = (e: Event) => {
-            const extras = { $evt: e, $newValue: false, $hovered: false };
+            const extras = { $evt: e, $newValue: false, hovered: false };
             return runtime.evaluate(el, value, extras);
           };
 

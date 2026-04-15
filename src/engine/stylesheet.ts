@@ -723,9 +723,10 @@ export class DesignSystem {
     if (term.includes('[') && term.endsWith(']')) {
        const bStart = term.indexOf('[');
        const inside = term.slice(bStart + 1, -1);
-       if (/^[a-zA-Z_$][\w$]*$/.test(inside)) {
+       if (/^[#a-zA-Z_$][\w$#.]*$/.test(inside)) {
           hasSignal = inside;
-          valNode = { kind: 'named', value: `var(--nx-${inside})` };
+          const varName = inside.replace(/[#.]/g, '-');
+          valNode = { kind: 'named', value: `var(--nx-${varName})` };
        } else {
           valNode = { kind: 'named', value: inside.replace(/_/g, ' ') };
        }
@@ -2154,9 +2155,10 @@ class StyleSheetManager {
            currentBindings.push(signalName);
            (el as HTMLElement & { _signalBindings?: string[] })._signalBindings = currentBindings;
            
+           const varName = signalName.replace(/[#.]/g, '-');
            runtime.effect(() => {
               const val = runtime.evaluate(el, signalName);
-              el.style.setProperty(`--nx-${signalName}`, String(val !== undefined ? val : ''));
+              el.style.setProperty(`--nx-${varName}`, String(val !== undefined ? val : ''));
            });
        }
     }

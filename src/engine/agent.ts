@@ -463,6 +463,38 @@ export class SelfHealAgent {
   }
 
   /**
+   * Report a non-breaking resolution failure to the Agentic Host.
+   * This is used for missing selectors or failed expression evaluations
+   * that don't throw but impede framework functionality.
+   */
+  public reportResolutionFailure(type: 'selector' | 'expression' | 'tier', identifier: string, context?: unknown): void {
+    if (!this.config.enabled) return;
+
+    if (this.config.emitToConsole) {
+      console.warn(`[Nexus Resolution Beacon] ${type.toUpperCase()} Failure: "${identifier}"`, {
+        context,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    if (this.config.emitToPlatform && this.config.platformEndpoint) {
+      // Emit a specialized light-weight beacon for resolution failures
+      const resolutionBeacon = {
+        id: `res_${this.generateBeaconId()}`,
+        timestamp: Date.now(),
+        type: 'resolution_failure',
+        failureType: type,
+        identifier,
+        context,
+        tier: topology.getTier(),
+        navigator: this.captureNavigator()
+      };
+      
+      this.emitToPlatform(resolutionBeacon as any);
+    }
+  }
+
+  /**
    * Cleanup - remove global handlers
    */
   public dispose(): void {

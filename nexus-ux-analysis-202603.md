@@ -148,7 +148,7 @@ const stateRef = unifiedRef<Record<string, unknown>>(initialGhostState, scopeId,
 | `data-ref` | 3.6.1 | ✅ | `modules/attributes/ref.ts` |
 | `data-progress` | 3.6.1 | ✅ | `modules/attributes/progress.ts` |
 | `data-pwa` | 3.6.1 | ✅ | `modules/attributes/pwa.ts` |
-| `data-injest` | 3.6.1 | ✅ | `modules/attributes/injest.ts` |
+| `data-ingest` | 3.6.1 | ✅ | `modules/attributes/ingest.ts` |
 | `data-if` | 3.6.2 | ✅ | `modules/attributes/if.ts` |
 | `data-show` | 3.6.2 | ✅ | `modules/attributes/show.ts` |
 | `data-for` | 3.6.2 | ✅ | `modules/attributes/for.ts` |

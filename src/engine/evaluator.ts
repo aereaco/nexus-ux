@@ -1,4 +1,5 @@
 import { RuntimeContext } from './composition.ts';
+import { getSelfHealAgent } from './agent.ts';
 import { evaluationError } from './errors.ts';
 import { getDataStack, hasScopeProvider, resolveScopeProvider, registerScopeProvider } from './scope.ts';
 
@@ -257,6 +258,14 @@ export function evaluateLater(
       if ((e instanceof TypeError && e.message.includes('Cannot read properties of')) || e instanceof ReferenceError) {
         if (runtime.isDevMode) {
           console.warn(`[Nexus Omni-Safe] Gracefully caught undefined access in expression: "${expression}". Yielding undefined.`);
+          
+          // Agentic Resolution Beacon: Signal that an expression failed to resolve a member/variable
+          try {
+            getSelfHealAgent().reportResolutionFailure('expression', expression, { 
+              error: e.message, 
+              element: el instanceof Element ? el.tagName : 'text/comment' 
+            });
+          } catch (_err) { /* ignore during boot */ }
         }
         receiver(undefined);
       } else {

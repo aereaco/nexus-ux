@@ -1,4 +1,5 @@
 import { getDataStack } from '../../engine/scope.ts';
+import { getSelfHealAgent } from '../../engine/agent.ts';
 import { registerScopeProvider } from '../../engine/scope.ts';
 
 /**
@@ -64,7 +65,14 @@ export function resolveSelector(contextEl: HTMLElement, selector: string | HTMLE
     // Standard search: try descendants first, then fallback to global (HTMX parity)
     const items = Array.from(contextEl.querySelectorAll(selector));
     if (items.length > 0) return createNexusCollection(items as HTMLElement[]);
-    return createNexusCollection(Array.from(document.querySelectorAll(selector)) as HTMLElement[]);
+    const globalItems = Array.from(document.querySelectorAll(selector)) as HTMLElement[];
+    if (globalItems.length === 0) {
+      // Agentic Resolution Beacon: Signal that a selector failed to find targets
+      try {
+        getSelfHealAgent().reportResolutionFailure('selector', selector, { contextEl });
+      } catch (e) { /* ignore during boot */ }
+    }
+    return createNexusCollection(globalItems);
   }
 
   // Refine child search if combinators left a target
