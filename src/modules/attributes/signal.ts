@@ -3,6 +3,7 @@ import { RuntimeContext } from '../../engine/composition.ts';
 import { addScopeToNode, parseGhostKeys, createScopeProxy } from '../../engine/scope.ts';
 import { unifiedRef } from '../../engine/reactivity.ts';
 import { Ref } from '@vue/reactivity';
+import { deepEqual } from '../../engine/reconciler.ts';
 
 const signalModule: AttributeModule = {
   name: 'signal',
@@ -91,7 +92,7 @@ const signalModule: AttributeModule = {
               
               let changed = curVal !== lastVal;
               if (changed && typeof curVal === 'object' && curVal !== null) {
-                 changed = JSON.stringify(curVal) !== JSON.stringify(lastVal);
+                 changed = !deepEqual(curVal, lastVal);
               }
               
               if (changed) {
@@ -107,7 +108,7 @@ const signalModule: AttributeModule = {
               
               let changed = curVal !== lastVal;
               if (changed && typeof curVal === 'object' && curVal !== null) {
-                 changed = JSON.stringify(curVal) !== JSON.stringify(lastVal);
+                 changed = !deepEqual(curVal, lastVal);
               }
               
               if (changed) {
