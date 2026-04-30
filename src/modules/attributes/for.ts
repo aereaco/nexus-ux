@@ -2,6 +2,7 @@ import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { initError } from '../../engine/errors.ts';
 import { addScopeToNode } from '../../engine/scope.ts';
+import { CLEANUP_FUNCTIONS_KEY } from '../../engine/consts.ts';
 
 const forModule: AttributeModule = {
   name: 'for',
@@ -51,10 +52,10 @@ const forModule: AttributeModule = {
       nodes.forEach(n => {
         if (n instanceof HTMLElement) {
           const enhanced = n as any;
-          const elRemovals = enhanced[Symbol.for('__cleanup_functions__')];
+          const elRemovals = enhanced[CLEANUP_FUNCTIONS_KEY];
           if (elRemovals) {
             elRemovals.forEach((cleanup: () => void) => cleanup());
-            delete enhanced[Symbol.for('__cleanup_functions__')];
+            delete enhanced[CLEANUP_FUNCTIONS_KEY];
           }
           disposeNodes(Array.from(n.childNodes));
         }
@@ -63,7 +64,6 @@ const forModule: AttributeModule = {
     };
 
     const mountedMap = new Map<any, Node[]>();
-    const order: any[] = [];
 
     try {
       const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {

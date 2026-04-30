@@ -79,13 +79,13 @@ const computedModule: AttributeModule = {
     const attrs = Array.from(el.attributes).filter(a => a.name.startsWith('data-computed-'));
     if (attrs.length > 0) {
       // Use unifiedRef for ZCZS support instead of shallowRef
-      const stateRef = unifiedRef<Record<string, unknown>>({}, `computed_${scopeId}`);
+      const attrStateRef = unifiedRef<Record<string, unknown>>({}, `computed_${scopeId}`);
       const scopeProxy = new Proxy({}, {
-        has(_, key) { return Reflect.has(stateRef.value, key); },
-        get(_, key) { return Reflect.get(stateRef.value, key); },
-        set(_, key, value) { return Reflect.set(stateRef.value, key, value); },
-        ownKeys() { return Reflect.ownKeys(stateRef.value); },
-        getOwnPropertyDescriptor(_, key) { return Reflect.getOwnPropertyDescriptor(stateRef.value, key); }
+        has(_, key) { return Reflect.has(attrStateRef.value, key); },
+        get(_, key) { return Reflect.get(attrStateRef.value, key); },
+        set(_, key, value) { return Reflect.set(attrStateRef.value, key, value); },
+        ownKeys() { return Reflect.ownKeys(attrStateRef.value); },
+        getOwnPropertyDescriptor(_, key) { return Reflect.getOwnPropertyDescriptor(attrStateRef.value, key); }
       });
       
       let addCleanup: (() => void) | undefined;
@@ -114,11 +114,11 @@ const computedModule: AttributeModule = {
               const stop = runtime.watch(computedVal, val => runtime.setGlobalSignal(propName, val));
               computedCleanup.push(stop);
           } else {
-              const newState = runtime.reactive<Record<string, unknown>>({ ...stateRef.value });
+              const newState = runtime.reactive<Record<string, unknown>>({ ...attrStateRef.value });
               newState[propName] = computedVal.value;
               const stop = runtime.watch(computedVal, val => { newState[propName] = val; });
               computedCleanup.push(stop);
-              stateRef.value = newState;
+              attrStateRef.value = newState;
           }
         });
         computedCleanup.push(effectCleanup);

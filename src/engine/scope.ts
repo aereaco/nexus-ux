@@ -120,29 +120,74 @@ export function parseGhostKeys(expression: string): {
 } {
   const ghostKeys: string[] = [];
   const typeHints: Record<string, 'number' | 'boolean' | 'string' | 'object'> = {};
-  
+
   const trimmed = expression.trim();
-  if (trimmed.startsWith('({') || trimmed.startsWith('{')) {
-     // Robust regex for identifying keys in object literals (standard, single-quoted, double-quoted)
-     const keyMatches = expression.matchAll(/['"]?([a-zA-Z_$][\w$]*)['"]?\s*:/g);
-     for (const match of keyMatches) {
-       ghostKeys.push(match[1]);
-     }
-     
-     // Improved Type Inference for ZCZS pre-allocation
-     ghostKeys.forEach((key) => {
-       const valueRegex = new RegExp(`['"]?${key}['"]?\\s*:\\s*([^,}\\s]*)`, 'g');
-       const valueMatch = valueRegex.exec(expression);
-       
-       if (valueMatch && valueMatch[1]) {
-         const valToken = valueMatch[1].trim();
-         if (valToken.startsWith('true') || valToken.startsWith('false')) typeHints[key] = 'boolean';
-         else if (/^-?\d/.test(valToken)) typeHints[key] = 'number';
-         else if (/^['"`]/.test(valToken)) typeHints[key] = 'string';
-         else if (valToken.startsWith('[') || valToken.startsWith('{')) typeHints[key] = 'object';
-       }
-     });
+  if (!trimmed.startsWith('{') && !trimmed.startsWith('({')) return { ghostKeys, typeHints };
+
+  const start = trimmed.indexOf('{');
+  let i = start + 1;
+  const len = trimmed.length;
+
+  while (i < len) {
+    // Skip whitespace
+    while (i < len && /\s/.test(trimmed[i])) i++;
+
+    // Parse key
+    let key = '';
+    if (trimmed[i] === '"' || trimmed[i] === "'") {
+      const quote = trimmed[i++];
+      while (i < len && trimmed[i] !== quote) key += trimmed[i++];
+      i++; // closing quote
+    } else {
+      while (i < len && /[\w$]/.test(trimmed[i])) key += trimmed[i++];
+    }
+
+    if (!key) break;
+
+    // Skip whitespace and colon
+    while (i < len && /[\s:]/.test(trimmed[i])) i++;
+
+    // Parse value with full nesting + string awareness
+    let value = '';
+    let depth = 0;
+    let inString: string | null = null;
+
+    while (i < len) {
+      const ch = trimmed[i];
+
+      if (inString) {
+        if (ch === '\\') { 
+          value += ch + (trimmed[i + 1] || ''); 
+          i += 2; 
+          continue; 
+        }
+        if (ch === inString) inString = null;
+        value += ch; i++;
+        continue;
+      }
+
+      if (ch === '"' || ch === "'" || ch === '`') { inString = ch; value += ch; i++; continue; }
+      if (ch === '{' || ch === '[' || ch === '(') { depth++; value += ch; i++; continue; }
+      if (ch === '}' || ch === ']' || ch === ')') {
+        if (depth === 0) break; // end of object
+        depth--;
+        value += ch; i++;
+        continue;
+      }
+      if (ch === ',' && depth === 0) { i++; break; }
+      value += ch; i++;
+    }
+
+    const valToken = value.trim();
+    if (key) {
+      ghostKeys.push(key);
+      if (valToken.startsWith('true') || valToken.startsWith('false')) typeHints[key] = 'boolean';
+      else if (/^-?\d/.test(valToken)) typeHints[key] = 'number';
+      else if (/^['"`]/.test(valToken)) typeHints[key] = 'string';
+      else if (valToken.startsWith('[') || valToken.startsWith('{')) typeHints[key] = 'object';
+    }
   }
+
   return { ghostKeys, typeHints };
 }
 
