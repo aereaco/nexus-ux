@@ -31,27 +31,38 @@ export const svgModule: SpriteModule = {
       /**
        * Connects two elements with a reactive SVG path.
        */
-      connect: (elA: HTMLElement, elB: HTMLElement, options: { type?: string } = {}) => {
+      connect: (elA: HTMLElement, elB: HTMLElement, options: { type?: string, offset?: number } = {}) => {
         const type = options.type || 'bezier';
         const pathData = reactive({ d: '' });
 
-        // Update loop synced to reconciler/animation frames
         const update = () => {
+          // Safety guard: elA and elB might be Proxies or null during initialization
           if (!elA || !elB) return;
-          const rA = elA.getBoundingClientRect();
-          const rB = elB.getBoundingClientRect();
           
-          // Calculate anchors (center to center or ports)
-          const x1 = rA.left + rA.width / 2;
-          const y1 = rA.top + rA.height / 2;
-          const x2 = rB.left + rB.width / 2;
-          const y2 = rB.top + rB.height / 2;
+          try {
+            const rA = typeof (elA as any).getBoundingClientRect === 'function' 
+              ? (elA as any).getBoundingClientRect() 
+              : null;
+            const rB = typeof (elB as any).getBoundingClientRect === 'function' 
+              ? (elB as any).getBoundingClientRect() 
+              : null;
 
-          const generator = generators[type] || generators.bezier;
-          pathData.d = generator(x1, y1, x2, y2);
+            if (!rA || !rB) return;
+            
+            // Calculate anchors (center to center)
+            const x1 = rA.left + rA.width / 2;
+            const y1 = rA.top + rA.height / 2;
+            const x2 = rB.left + rB.width / 2;
+            const y2 = rB.top + rB.height / 2;
+
+            const generator = generators[type] || generators.bezier;
+            pathData.d = generator(x1, y1, x2, y2);
+          } catch (e) {
+            // Silently fail to allow self-healing or deferred initialization
+          }
         };
 
-        // Hook into the engine's resize/mutation bus if possible, or simple RAF for now
+        // Sync with animation frame
         const ticker = () => {
            update();
            requestAnimationFrame(ticker);
@@ -75,21 +86,41 @@ export const svgModule: SpriteModule = {
       },
 
       /**
-       * Orchestrates path-based animations (e.g. drawing lines).
+       * Animates any SVG attribute using native WAAPI.
        */
-      animate: (pathEl: SVGPathElement, options: { duration?: number, ease?: string } = {}) => {
-        const length = pathEl.getTotalLength();
-        pathEl.style.strokeDasharray = `${length}`;
-        pathEl.style.strokeDashoffset = `${length}`;
-        
-        // Integration with animate sprite
-        if (context.$animate) {
-           context.$animate(pathEl, {
-              strokeDashoffset: 0,
-              duration: options.duration || 1000,
-              ease: options.ease || 'power2.out'
-           });
-        }
+      animate: (el: SVGElement, keyframes: Keyframe[], options: KeyframeAnimationOptions) => {
+        return el.animate(keyframes, options);
+      },
+
+      /**
+       * Pulse an element using a native scale transform.
+       */
+      pulse: (el: SVGElement, options: { scale?: number, duration?: number } = {}) => {
+        return el.animate([
+          { transform: 'scale(1)' },
+          { transform: `scale(${options.scale || 1.1})` },
+          { transform: 'scale(1)' }
+        ], {
+          duration: options.duration || 1000,
+          iterations: Infinity,
+          easing: 'ease-in-out'
+        });
+      },
+
+      /**
+       * Morph one path into another.
+       * Uses path() notation for WAAPI support in modern browsers.
+       */
+      morph: (el: SVGPathElement, targetD: string, options: { duration?: number, easing?: string } = {}) => {
+        const currentD = el.getAttribute('d') || '';
+        return el.animate([
+          { d: `path("${currentD}")` },
+          { d: `path("${targetD}")` }
+        ], {
+          duration: options.duration || 500,
+          easing: options.easing || 'ease-in-out',
+          fill: 'forwards'
+        });
       }
     };
   }

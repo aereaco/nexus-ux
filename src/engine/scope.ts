@@ -22,20 +22,14 @@ export function getDataStack(element: HTMLElement | Text | Comment | Element): R
     return [];
   }
 
-  if (parent instanceof HTMLElement) {
-     return getDataStack(parent);
-  }
-  
-  // Handle DocumentFragment (e.g. within templates)
+  // Handle DocumentFragment or ShadowRoot (end of climb for detached trees)
   if (parent instanceof DocumentFragment || (typeof ShadowRoot !== 'undefined' && parent instanceof ShadowRoot)) {
-    // If it's a template fragment, we might need a way to reach the template element itself?
-    // In our `for.ts`, we add the scope to the fragment's children directly.
-    // If we're inside a child of one of those children, we need to climb up.
-    return getDataStack(parent as any);
+    return [];
   }
-  
+
+  // Climb up through Elements and SVGElements
   if (parent instanceof Element) {
-     return getDataStack(parent as Element);
+     return getDataStack(parent as any);
   }
 
   return [];

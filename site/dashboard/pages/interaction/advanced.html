@@ -40,16 +40,43 @@
         <!-- 1. Sortable List Pattern -->
         <section class="card bg-base-200 shadow-xl overflow-hidden">
             <div class="card-body">
-                <h2 class="card-title opacity-50 uppercase text-xs tracking-widest mb-4">Sortable Pattern</h2>
-                <div class="space-y-2">
-                    <div data-for="item in list" 
-                         class="p-4 bg-base-300 rounded-lg flex items-center gap-4 cursor-move select-none"
-                         data-on-pointermove:drag="item.pos = $drag.move($event)"
-                         data-on-pointerdown="$drag.start($event)"
-                         data-on-pointerup="$drag.stop($event)"
-                         data-style-transform="`translate(${item.pos?.dx || 0}px, ${item.pos?.dy || 0}px)`">
-                        <div class="w-2 h-6 bg-base-100/50 rounded-full"></div>
-                        <span data-bind="item.t"></span>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="card-title opacity-50 uppercase text-xs tracking-widest">Sortable Pattern</h2>
+                    <span class="badge badge-outline badge-sm opacity-50">data-drag</span>
+                </div>
+                
+                <div class="space-y-6">
+                    <!-- Standard List -->
+                    <div>
+                        <h3 class="text-[10px] uppercase tracking-tighter opacity-30 mb-2">Standard (Infinite)</h3>
+                        <div class="space-y-2">
+                            <div data-for="item in list" 
+                                 class="p-4 bg-base-300 rounded-lg flex items-center gap-4 select-none hover:bg-base-300/80 transition-colors"
+                                 data-drag
+                                 data-on:nexus:drag-end="list.splice($event.detail.to, 0, list.splice($event.detail.from, 1)[0])">
+                                <div class="w-2 h-6 bg-base-100/50 rounded-full cursor-move hover:bg-primary transition-colors" data-drag-handle></div>
+                                <span data-bind="item.t" class="font-medium"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Limited List -->
+                    <div>
+                        <h3 class="text-[10px] uppercase tracking-tighter opacity-30 mb-2">Limited (2 Drags Max)</h3>
+                        <div class="space-y-2">
+                            <div data-for="item in list" 
+                                 class="p-4 bg-base-300/50 rounded-lg flex items-center gap-4 select-none border border-white/5"
+                                 data-drag
+                                 data-drag:limit="2"
+                                 data-on:nexus:drag-end="list.splice($event.detail.to, 0, list.splice($event.detail.from, 1)[0])">
+                                <div class="w-2 h-6 bg-secondary/30 rounded-full cursor-move" data-drag-handle></div>
+                                <div class="flex-1 flex justify-between items-center">
+                                    <span data-bind="item.t"></span>
+                                    <span class="text-[10px] opacity-40 font-mono" 
+                                          data-bind="(item._nexus_drag_count >= 2 ? '⚠️ Limit Reached' : `${item._nexus_drag_count || 0}/2 Drags`)"></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -62,26 +89,24 @@
                     <h2 class="card-title opacity-50 uppercase text-xs tracking-widest mb-4">Flow Pattern (xyflow)</h2>
                 </div>
                 
-                <div class="flow-container" 
-                     data-on-wheel:zoom="viewport.transform = $zoom($event)">
-                    
-                    <!-- SVG Overlay for reactive connections -->
-                    <svg class="absolute inset-0 pointer-events-none w-full h-full">
-                        <path data-for="edge in edges" 
-                              data-bind-d="$svg.connect($(`#node-${edge.a}`), $(`#node-${edge.b}`)).d"
-                              fill="none" stroke="currentColor" stroke-width="2" class="text-primary opacity-50"></path>
-                    </svg>
+                <div class="flow-container" data-flow="{ x: 0, y: 0, zoom: 1 }">
+                    <div class="nexus-flow-content w-full h-full">
+                        <!-- SVG Overlay for reactive connections -->
+                        <svg class="absolute inset-0 pointer-events-none w-full h-full overflow-visible">
+                            <path data-for="edge in edges" 
+                                  data-bind-d="$svg.connect($(`#node-${edge.a}`), $(`#node-${edge.b}`)).d"
+                                  fill="none" stroke="currentColor" stroke-width="2" class="text-primary opacity-50"></path>
+                        </svg>
 
-                    <!-- Draggable Nodes -->
-                    <div data-for="node in nodes" 
-                         data-id="`node-${node.id}`"
-                         class="flow-node card bg-primary text-primary-content p-4 shadow-lg w-32"
-                         data-style-left="`${node.x + (node.drag?.dx || 0)}px`"
-                         data-style-top="`${node.y + (node.drag?.dy || 0)}px`"
-                         data-on-pointerdown="$drag.start($event)"
-                         data-on-pointermove:drag="node.drag = $drag.move($event)"
-                         data-on-pointerup="node.x += node.drag?.dx || 0; node.y += node.drag?.dy || 0; node.drag = null; $drag.stop($event)">
-                         <span class="font-bold text-center" data-bind="node.t"></span>
+                        <!-- Draggable Nodes -->
+                        <div data-for="node in nodes" 
+                             data-bind-id="`node-${node.id}`"
+                             class="flow-node card bg-primary text-primary-content p-4 shadow-lg w-32"
+                             data-node="node">
+                             <span class="font-bold text-center" data-bind="node.t"></span>
+                             <!-- Handle visualization -->
+                             <div class="absolute -right-1 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-accent" data-handle="'source'"></div>
+                        </div>
                     </div>
                 </div>
             </div>

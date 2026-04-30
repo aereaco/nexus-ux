@@ -20,3 +20,5 @@ export * from './bgFetch.ts';
 export * from './bgSync.ts';
 export * from './periodicSync.ts';
 export * from './payment.ts';
+export * from './svg.ts';
+export * from './flow.ts';

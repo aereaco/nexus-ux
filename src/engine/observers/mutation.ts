@@ -2,75 +2,76 @@ import { ObserverModule } from '../modules.ts';
 import { RuntimeContext } from '../composition.ts';
 import { NexusEnhancedElement, ownership } from '../reactivity.ts';
 import { reportError } from '../errors.ts';
-import { CLEANUP_FUNCTIONS_KEY, RUN_EFFECT_RUNNERS_KEY } from '../consts.ts';
+import { CLEANUP_FUNCTIONS_KEY, RUN_EFFECT_RUNNERS_KEY, MARKER_KEY } from '../consts.ts';
 
 const mutationObserverModule: ObserverModule = {
   name: 'mutationObserver',
   observerType: 'MutationObserver',
   observe: (el: HTMLElement, context: RuntimeContext) => {
     try {
+      let isProcessing = false;
       const observer = new MutationObserver((mutationsList) => {
-        let hasAddedNodes = false;
-        for (const mutation of mutationsList) {
-          if (mutation.type === 'childList') {
-            if (mutation.addedNodes.length > 0) hasAddedNodes = true;
-            // Added nodes: initialize directives via microtask.
-            // queueMicrotask runs before the browser paints, guaranteeing
-            // users never see unprocessed content (no flash). This is the
-            // same scheduling tier as MutationObserver itself — both live
-            // on the microtask queue, keeping initialization eager without
-            // risking layout thrashing from fully synchronous processing.
-            mutation.addedNodes.forEach(node => {
-              if (node instanceof HTMLElement) {
-                // Trigger JIT Style Adoption eagerly
-                context.adoptStyle(node as HTMLElement);
-                node.querySelectorAll('*').forEach(child => {
-                   if (child instanceof HTMLElement) context.adoptStyle(child as HTMLElement);
-                });
+        if (isProcessing) return;
+        isProcessing = true;
 
-                queueMicrotask(() => context.processElement(node as HTMLElement));
-              }
-            });
+        try {
+          let hasAddedNodes = false;
+          for (const mutation of mutationsList) {
+            if (mutation.type === 'childList') {
+              if (mutation.addedNodes.length > 0) hasAddedNodes = true;
+              mutation.addedNodes.forEach(node => {
+                if (node instanceof HTMLElement) {
+                  // MutationObserver callbacks are microtasks. 
+                  // Running processElement synchronously here ensures it finishes before the next paint.
+                  context.processElement(node as HTMLElement);
+                }
+              });
 
-            // Removed nodes: run cleanup via scheduler (paint phase).
-            // Cleanup is less timing-critical — there's no visual artifact
-            // from a brief delay, and batching prevents churn during rapid
-            // DOM removals (e.g. data-for reconciliation).
-            mutation.removedNodes.forEach(node => {
-              if (node instanceof HTMLElement) {
-                const target = node as HTMLElement;
-                context.scheduler.enqueueClean(() => {
-                  const enhancedTarget = target as NexusEnhancedElement;
+              // Removed nodes: Cleanup must be synchronous to support same-frame re-insertion (moves)
+              mutation.removedNodes.forEach(node => {
+                if (node instanceof HTMLElement) {
+                  const enhancedTarget = node as NexusEnhancedElement;
+                  
                   if (enhancedTarget[CLEANUP_FUNCTIONS_KEY]) {
                     enhancedTarget[CLEANUP_FUNCTIONS_KEY]!.forEach((cleanup: () => void) => cleanup());
                     delete enhancedTarget[CLEANUP_FUNCTIONS_KEY];
                   }
-                });
+                  
+                  // Strip marker synchronously to allow re-init in addedNodes handler
+                  delete (enhancedTarget as any)[MARKER_KEY];
+                }
+              });
+            } else if (mutation.type === 'attributes') {
+              const target = mutation.target as HTMLElement;
+              const attrName = mutation.attributeName;
+              
+              // 1. JIT Style Adoption on class changes
+              if (attrName === 'class') {
+                context.adoptStyle(target);
               }
-            });
-          } else if (mutation.type === 'attributes') {
-            const target = mutation.target as HTMLElement;
-            
-            // Trigger JIT Style Adoption on class changes
-            if (mutation.attributeName === 'class') {
-              context.adoptStyle(target);
-            }
 
-            // Pulse self (using Symbol for speed)
-            (target as any)[RUN_EFFECT_RUNNERS_KEY]?.();
-            
-            // Pulse Ownership-Based Dependents (Selectors)
-            const borrows = ownership.getBorrowers(target);
-            borrows.forEach(borrow => {
-              const borrower = borrow.borrower as any;
-              // Borrower must be an element with reactive effects
-              borrower[RUN_EFFECT_RUNNERS_KEY]?.();
-            });
+              // 2. Loop Guard: Never pulse for 'style' changes or internal markers.
+              // These are managed by the engine's effects; pulsing here causes recursion.
+              if (attrName === 'style' || attrName?.startsWith('data-nexus-') || attrName?.startsWith('nexus-')) return;
+
+              // 3. Pulse self (using Symbol for speed)
+              (target as NexusEnhancedElement)[RUN_EFFECT_RUNNERS_KEY]?.();
+              
+              // 4. Pulse Ownership-Based Dependents (Selectors)
+              const borrows = ownership.getBorrowers(target);
+              borrows.forEach(borrow => {
+                const borrower = borrow.borrower as NexusEnhancedElement;
+                // Borrower must be an element with reactive effects
+                borrower[RUN_EFFECT_RUNNERS_KEY]?.();
+              });
+            }
           }
-        }
-        
-        if (hasAddedNodes) {
-          globalThis.dispatchEvent(new CustomEvent('nexus:dom-mutated'));
+          
+          if (hasAddedNodes) {
+            globalThis.dispatchEvent(new CustomEvent('nexus:dom-mutated'));
+          }
+        } finally {
+          isProcessing = false;
         }
       });
 
