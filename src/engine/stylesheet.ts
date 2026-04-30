@@ -5,368 +5,83 @@ import { RuntimeContext } from './composition.ts';
 // ============================================================================
 // 1. THEME CONSTANTS 
 // ============================================================================
-export const THEME_CSS = `@theme default {
-  --font-sans:
-    ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-    'Noto Color Emoji';
+export const THEME_CSS = `:root {
+  --font-sans: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   --font-serif: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
-  --font-mono:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
-    monospace;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 
-  --color-red-50: oklch(97.1% 0.013 17.38);
-  --color-red-100: oklch(93.6% 0.032 17.717);
-  --color-red-200: oklch(88.5% 0.062 18.334);
-  --color-red-300: oklch(80.8% 0.114 19.571);
-  --color-red-400: oklch(70.4% 0.191 22.216);
-  --color-red-500: oklch(63.7% 0.237 25.331);
-  --color-red-600: oklch(57.7% 0.245 27.325);
-  --color-red-700: oklch(50.5% 0.213 27.518);
-  --color-red-800: oklch(44.4% 0.177 26.899);
-  --color-red-900: oklch(39.6% 0.141 25.723);
-  --color-red-950: oklch(25.8% 0.092 26.042);
-
-  --color-orange-50: oklch(98% 0.016 73.684);
-  --color-orange-100: oklch(95.4% 0.038 75.164);
-  --color-orange-200: oklch(90.1% 0.076 70.697);
-  --color-orange-300: oklch(83.7% 0.128 66.29);
-  --color-orange-400: oklch(75% 0.183 55.934);
-  --color-orange-500: oklch(70.5% 0.213 47.604);
-  --color-orange-600: oklch(64.6% 0.222 41.116);
-  --color-orange-700: oklch(55.3% 0.195 38.402);
-  --color-orange-800: oklch(47% 0.157 37.304);
-  --color-orange-900: oklch(40.8% 0.123 38.172);
-  --color-orange-950: oklch(26.6% 0.079 36.259);
-
-  --color-amber-50: oklch(98.7% 0.022 95.277);
-  --color-amber-100: oklch(96.2% 0.059 95.617);
-  --color-amber-200: oklch(92.4% 0.12 95.746);
-  --color-amber-300: oklch(87.9% 0.169 91.605);
-  --color-amber-400: oklch(82.8% 0.189 84.429);
-  --color-amber-500: oklch(76.9% 0.188 70.08);
-  --color-amber-600: oklch(66.6% 0.179 58.318);
-  --color-amber-700: oklch(55.5% 0.163 48.998);
-  --color-amber-800: oklch(47.3% 0.137 46.201);
-  --color-amber-900: oklch(41.4% 0.112 45.904);
-  --color-amber-950: oklch(27.9% 0.077 45.635);
-
-  --color-yellow-50: oklch(98.7% 0.026 102.212);
-  --color-yellow-100: oklch(97.3% 0.071 103.193);
-  --color-yellow-200: oklch(94.5% 0.129 101.54);
-  --color-yellow-300: oklch(90.5% 0.182 98.111);
-  --color-yellow-400: oklch(85.2% 0.199 91.936);
-  --color-yellow-500: oklch(79.5% 0.184 86.047);
-  --color-yellow-600: oklch(68.1% 0.162 75.834);
-  --color-yellow-700: oklch(55.4% 0.135 66.442);
-  --color-yellow-800: oklch(47.6% 0.114 61.907);
-  --color-yellow-900: oklch(42.1% 0.095 57.708);
-  --color-yellow-950: oklch(28.6% 0.066 53.813);
-
-  --color-lime-50: oklch(98.6% 0.031 120.757);
-  --color-lime-100: oklch(96.7% 0.067 122.328);
-  --color-lime-200: oklch(93.8% 0.127 124.321);
-  --color-lime-300: oklch(89.7% 0.196 126.665);
-  --color-lime-400: oklch(84.1% 0.238 128.85);
-  --color-lime-500: oklch(76.8% 0.233 130.85);
-  --color-lime-600: oklch(64.8% 0.2 131.684);
-  --color-lime-700: oklch(53.2% 0.157 131.589);
-  --color-lime-800: oklch(45.3% 0.124 130.933);
-  --color-lime-900: oklch(40.5% 0.101 131.063);
-  --color-lime-950: oklch(27.4% 0.072 132.109);
-
-  --color-green-50: oklch(98.2% 0.018 155.826);
-  --color-green-100: oklch(96.2% 0.044 156.743);
-  --color-green-200: oklch(92.5% 0.084 155.995);
-  --color-green-300: oklch(87.1% 0.15 154.449);
-  --color-green-400: oklch(79.2% 0.209 151.711);
-  --color-green-500: oklch(72.3% 0.219 149.579);
-  --color-green-600: oklch(62.7% 0.194 149.214);
-  --color-green-700: oklch(52.7% 0.154 150.069);
-  --color-green-800: oklch(44.8% 0.119 151.328);
-  --color-green-900: oklch(39.3% 0.095 152.535);
-  --color-green-950: oklch(26.6% 0.065 152.934);
-
-  --color-emerald-50: oklch(97.9% 0.021 166.113);
-  --color-emerald-100: oklch(95% 0.052 163.051);
-  --color-emerald-200: oklch(90.5% 0.093 164.15);
-  --color-emerald-300: oklch(84.5% 0.143 164.978);
-  --color-emerald-400: oklch(76.5% 0.177 163.223);
-  --color-emerald-500: oklch(69.6% 0.17 162.48);
-  --color-emerald-600: oklch(59.6% 0.145 163.225);
-  --color-emerald-700: oklch(50.8% 0.118 165.612);
-  --color-emerald-800: oklch(43.2% 0.095 166.913);
-  --color-emerald-900: oklch(37.8% 0.077 168.94);
-  --color-emerald-950: oklch(26.2% 0.051 172.552);
-
-  --color-teal-50: oklch(98.4% 0.014 180.72);
-  --color-teal-100: oklch(95.3% 0.051 180.801);
-  --color-teal-200: oklch(91% 0.096 180.426);
-  --color-teal-300: oklch(85.5% 0.138 181.071);
-  --color-teal-400: oklch(77.7% 0.152 181.912);
-  --color-teal-500: oklch(70.4% 0.14 182.503);
-  --color-teal-600: oklch(60% 0.118 184.704);
-  --color-teal-700: oklch(51.1% 0.096 186.391);
-  --color-teal-800: oklch(43.7% 0.078 188.216);
-  --color-teal-900: oklch(38.6% 0.063 188.416);
-  --color-teal-950: oklch(27.7% 0.046 192.524);
-
-  --color-cyan-50: oklch(98.4% 0.019 200.873);
-  --color-cyan-100: oklch(95.6% 0.045 203.388);
-  --color-cyan-200: oklch(91.7% 0.08 205.041);
-  --color-cyan-300: oklch(86.5% 0.127 207.078);
-  --color-cyan-400: oklch(78.9% 0.154 211.53);
-  --color-cyan-500: oklch(71.5% 0.143 215.221);
-  --color-cyan-600: oklch(60.9% 0.126 221.723);
-  --color-cyan-700: oklch(52% 0.105 223.128);
-  --color-cyan-800: oklch(45% 0.085 224.283);
-  --color-cyan-900: oklch(39.8% 0.07 227.392);
-  --color-cyan-950: oklch(30.2% 0.056 229.695);
-
-  --color-sky-50: oklch(97.7% 0.013 236.62);
-  --color-sky-100: oklch(95.1% 0.026 236.824);
-  --color-sky-200: oklch(90.1% 0.058 230.902);
-  --color-sky-300: oklch(82.8% 0.111 230.318);
-  --color-sky-400: oklch(74.6% 0.16 232.661);
-  --color-sky-500: oklch(68.5% 0.169 237.323);
-  --color-sky-600: oklch(58.8% 0.158 241.966);
-  --color-sky-700: oklch(50% 0.134 242.749);
-  --color-sky-800: oklch(44.3% 0.11 240.79);
-  --color-sky-900: oklch(39.1% 0.09 240.876);
-  --color-sky-950: oklch(29.3% 0.066 243.157);
-
-  --color-blue-50: oklch(97% 0.014 254.604);
-  --color-blue-100: oklch(93.2% 0.032 255.585);
-  --color-blue-200: oklch(88.2% 0.059 254.128);
-  --color-blue-300: oklch(80.9% 0.105 251.813);
-  --color-blue-400: oklch(70.7% 0.165 254.624);
-  --color-blue-500: oklch(62.3% 0.214 259.815);
-  --color-blue-600: oklch(54.6% 0.245 262.881);
-  --color-blue-700: oklch(48.8% 0.243 264.376);
-  --color-blue-800: oklch(42.4% 0.199 265.638);
-  --color-blue-900: oklch(37.9% 0.146 265.522);
-  --color-blue-950: oklch(28.2% 0.091 267.935);
-
-  --color-indigo-50: oklch(96.2% 0.018 272.314);
-  --color-indigo-100: oklch(93% 0.034 272.788);
-  --color-indigo-200: oklch(87% 0.065 274.039);
-  --color-indigo-300: oklch(78.5% 0.115 274.713);
-  --color-indigo-400: oklch(67.3% 0.182 276.935);
-  --color-indigo-500: oklch(58.5% 0.233 277.117);
-  --color-indigo-600: oklch(51.1% 0.262 276.966);
-  --color-indigo-700: oklch(45.7% 0.24 277.023);
-  --color-indigo-800: oklch(39.8% 0.195 277.366);
-  --color-indigo-900: oklch(35.9% 0.144 278.697);
-  --color-indigo-950: oklch(25.7% 0.09 281.288);
-
-  --color-violet-50: oklch(96.9% 0.016 293.756);
-  --color-violet-100: oklch(94.3% 0.029 294.588);
-  --color-violet-200: oklch(89.4% 0.057 293.283);
-  --color-violet-300: oklch(81.1% 0.111 293.571);
-  --color-violet-400: oklch(70.2% 0.183 293.541);
-  --color-violet-500: oklch(60.6% 0.25 292.717);
-  --color-violet-600: oklch(54.1% 0.281 293.009);
-  --color-violet-700: oklch(49.1% 0.27 292.581);
-  --color-violet-800: oklch(43.2% 0.232 292.759);
-  --color-violet-900: oklch(38% 0.189 293.745);
-  --color-violet-950: oklch(28.3% 0.141 291.089);
-
-  --color-purple-50: oklch(97.7% 0.014 308.299);
-  --color-purple-100: oklch(94.6% 0.033 307.174);
-  --color-purple-200: oklch(90.2% 0.063 306.703);
-  --color-purple-300: oklch(82.7% 0.119 306.383);
-  --color-purple-400: oklch(71.4% 0.203 305.504);
-  --color-purple-500: oklch(62.7% 0.265 303.9);
-  --color-purple-600: oklch(55.8% 0.288 302.321);
-  --color-purple-700: oklch(49.6% 0.265 301.924);
-  --color-purple-800: oklch(43.8% 0.218 303.724);
-  --color-purple-900: oklch(38.1% 0.176 304.987);
-  --color-purple-950: oklch(29.1% 0.149 302.717);
-
-  --color-fuchsia-50: oklch(97.7% 0.017 320.058);
-  --color-fuchsia-100: oklch(95.2% 0.037 318.852);
-  --color-fuchsia-200: oklch(90.3% 0.076 319.62);
-  --color-fuchsia-300: oklch(83.3% 0.145 321.434);
-  --color-fuchsia-400: oklch(74% 0.238 322.16);
-  --color-fuchsia-500: oklch(66.7% 0.295 322.15);
-  --color-fuchsia-600: oklch(59.1% 0.293 322.896);
-  --color-fuchsia-700: oklch(51.8% 0.253 323.949);
-  --color-fuchsia-800: oklch(45.2% 0.211 324.591);
-  --color-fuchsia-900: oklch(40.1% 0.17 325.612);
-  --color-fuchsia-950: oklch(29.3% 0.136 325.661);
-
-  --color-pink-50: oklch(97.1% 0.014 343.198);
-  --color-pink-100: oklch(94.8% 0.028 342.258);
-  --color-pink-200: oklch(89.9% 0.061 343.231);
-  --color-pink-300: oklch(82.3% 0.12 346.018);
-  --color-pink-400: oklch(71.8% 0.202 349.761);
-  --color-pink-500: oklch(65.6% 0.241 354.308);
-  --color-pink-600: oklch(59.2% 0.249 0.584);
-  --color-pink-700: oklch(52.5% 0.223 3.958);
-  --color-pink-800: oklch(45.9% 0.187 3.815);
-  --color-pink-900: oklch(40.8% 0.153 2.432);
-  --color-pink-950: oklch(28.4% 0.109 3.907);
-
-  --color-rose-50: oklch(96.9% 0.015 12.422);
-  --color-rose-100: oklch(94.1% 0.03 12.58);
-  --color-rose-200: oklch(89.2% 0.058 10.001);
-  --color-rose-300: oklch(81% 0.117 11.638);
-  --color-rose-400: oklch(71.2% 0.194 13.428);
-  --color-rose-500: oklch(64.5% 0.246 16.439);
-  --color-rose-600: oklch(58.6% 0.253 17.585);
-  --color-rose-700: oklch(51.4% 0.222 16.935);
-  --color-rose-800: oklch(45.5% 0.188 13.697);
-  --color-rose-900: oklch(41% 0.159 10.272);
-  --color-rose-950: oklch(27.1% 0.105 12.094);
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-white: #fff;
+  --color-black: #000;
 
   --color-slate-50: oklch(98.4% 0.003 247.858);
-  --color-slate-100: oklch(96.8% 0.007 247.896);
+  --color-slate-100: oklch(96.8% 0.007 247.858);
   --color-slate-200: oklch(92.9% 0.013 255.508);
-  --color-slate-300: oklch(86.9% 0.022 252.894);
-  --color-slate-400: oklch(70.4% 0.04 256.788);
-  --color-slate-500: oklch(55.4% 0.046 257.417);
-  --color-slate-600: oklch(44.6% 0.043 257.281);
-  --color-slate-700: oklch(37.2% 0.044 257.287);
-  --color-slate-800: oklch(27.9% 0.041 260.031);
-  --color-slate-900: oklch(20.8% 0.042 265.755);
-  --color-slate-950: oklch(12.9% 0.042 264.695);
+  --color-slate-300: oklch(88.1% 0.021 259.75);
+  --color-slate-400: oklch(82.3% 0.031 259.75);
+  --color-slate-500: oklch(70.7% 0.022 261.325);
+  --color-slate-600: oklch(52.6% 0.03 264.767);
+  --color-slate-700: oklch(43.9% 0.027 268.808);
+  --color-slate-800: oklch(37% 0.025 268.808);
+  --color-slate-900: oklch(31.3% 0.02 268.808);
+  --color-slate-950: oklch(21.3% 0.014 268.808);
 
-  --color-gray-50: oklch(98.5% 0.002 247.839);
-  --color-gray-100: oklch(96.7% 0.003 264.542);
-  --color-gray-200: oklch(92.8% 0.006 264.531);
-  --color-gray-300: oklch(87.2% 0.01 258.338);
-  --color-gray-400: oklch(70.7% 0.022 261.325);
-  --color-gray-500: oklch(55.1% 0.027 264.364);
-  --color-gray-600: oklch(44.6% 0.03 256.802);
-  --color-gray-700: oklch(37.3% 0.034 259.733);
-  --color-gray-800: oklch(27.8% 0.033 256.848);
-  --color-gray-900: oklch(21% 0.034 264.665);
-  --color-gray-950: oklch(13% 0.028 261.692);
+  --color-gray-500: oklch(70.7% 0.022 261.325);
+  --color-zinc-500: oklch(70.7% 0.022 261.325);
+  --color-neutral-500: oklch(70.7% 0.022 261.325);
+  --color-stone-500: oklch(70.7% 0.022 261.325);
 
-  --color-zinc-50: oklch(98.5% 0 0);
-  --color-zinc-100: oklch(96.7% 0.001 286.375);
-  --color-zinc-200: oklch(92% 0.004 286.32);
-  --color-zinc-300: oklch(87.1% 0.006 286.286);
-  --color-zinc-400: oklch(70.5% 0.015 286.067);
-  --color-zinc-500: oklch(55.2% 0.016 285.938);
-  --color-zinc-600: oklch(44.2% 0.017 285.786);
-  --color-zinc-700: oklch(37% 0.013 285.805);
-  --color-zinc-800: oklch(27.4% 0.006 286.033);
-  --color-zinc-900: oklch(21% 0.006 285.885);
-  --color-zinc-950: oklch(14.1% 0.005 285.823);
-
-  --color-neutral-50: oklch(98.5% 0 0);
-  --color-neutral-100: oklch(97% 0 0);
-  --color-neutral-200: oklch(92.2% 0 0);
-  --color-neutral-300: oklch(87% 0 0);
-  --color-neutral-400: oklch(70.8% 0 0);
-  --color-neutral-500: oklch(55.6% 0 0);
-  --color-neutral-600: oklch(43.9% 0 0);
-  --color-neutral-700: oklch(37.1% 0 0);
-  --color-neutral-800: oklch(26.9% 0 0);
-  --color-neutral-900: oklch(20.5% 0 0);
-  --color-neutral-950: oklch(14.5% 0 0);
-
-  --color-stone-50: oklch(98.5% 0.001 106.423);
-  --color-stone-100: oklch(97% 0.001 106.424);
-  --color-stone-200: oklch(92.3% 0.003 48.717);
-  --color-stone-300: oklch(86.9% 0.005 56.366);
-  --color-stone-400: oklch(70.9% 0.01 56.259);
-  --color-stone-500: oklch(55.3% 0.013 58.071);
-  --color-stone-600: oklch(44.4% 0.011 73.639);
-  --color-stone-700: oklch(37.4% 0.01 67.558);
-  --color-stone-800: oklch(26.8% 0.007 34.298);
-  --color-stone-900: oklch(21.6% 0.006 56.043);
-  --color-stone-950: oklch(14.7% 0.004 49.25);
-
-  --color-mauve-50: oklch(98.5% 0 0);
-  --color-mauve-100: oklch(96% 0.003 325.6);
-  --color-mauve-200: oklch(92.2% 0.005 325.62);
-  --color-mauve-300: oklch(86.5% 0.012 325.68);
-  --color-mauve-400: oklch(71.1% 0.019 323.02);
-  --color-mauve-500: oklch(54.2% 0.034 322.5);
-  --color-mauve-600: oklch(43.5% 0.029 321.78);
-  --color-mauve-700: oklch(36.4% 0.029 323.89);
-  --color-mauve-800: oklch(26.3% 0.024 320.12);
-  --color-mauve-900: oklch(21.2% 0.019 322.12);
-  --color-mauve-950: oklch(14.5% 0.008 326);
-
-  --color-olive-50: oklch(98.8% 0.003 106.5);
-  --color-olive-100: oklch(96.6% 0.005 106.5);
-  --color-olive-200: oklch(93% 0.007 106.5);
-  --color-olive-300: oklch(88% 0.011 106.6);
-  --color-olive-400: oklch(73.7% 0.021 106.9);
-  --color-olive-500: oklch(58% 0.031 107.3);
-  --color-olive-600: oklch(46.6% 0.025 107.3);
-  --color-olive-700: oklch(39.4% 0.023 107.4);
-  --color-olive-800: oklch(28.6% 0.016 107.4);
-  --color-olive-900: oklch(22.8% 0.013 107.4);
-  --color-olive-950: oklch(15.3% 0.006 107.1);
-
-  --color-mist-50: oklch(98.7% 0.002 197.1);
-  --color-mist-100: oklch(96.3% 0.002 197.1);
-  --color-mist-200: oklch(92.5% 0.005 214.3);
-  --color-mist-300: oklch(87.2% 0.007 219.6);
-  --color-mist-400: oklch(72.3% 0.014 214.4);
-  --color-mist-500: oklch(56% 0.021 213.5);
-  --color-mist-600: oklch(45% 0.017 213.2);
-  --color-mist-700: oklch(37.8% 0.015 216);
-  --color-mist-800: oklch(27.5% 0.011 216.9);
-  --color-mist-900: oklch(21.8% 0.008 223.9);
-  --color-mist-950: oklch(14.8% 0.004 228.8);
-
-  --color-taupe-50: oklch(98.6% 0.002 67.8);
-  --color-taupe-100: oklch(96% 0.002 17.2);
-  --color-taupe-200: oklch(92.2% 0.005 34.3);
-  --color-taupe-300: oklch(86.8% 0.007 39.5);
-  --color-taupe-400: oklch(71.4% 0.014 41.2);
-  --color-taupe-500: oklch(54.7% 0.021 43.1);
-  --color-taupe-600: oklch(43.8% 0.017 39.3);
-  --color-taupe-700: oklch(36.7% 0.016 35.7);
-  --color-taupe-800: oklch(26.8% 0.011 36.5);
-  --color-taupe-900: oklch(21.4% 0.009 43.1);
-  --color-taupe-950: oklch(14.7% 0.004 49.3);
-
-  --color-black: #000;
-  --color-white: #fff;
+  --color-red-500: oklch(63.7% 0.237 25.331);
+  --color-orange-500: oklch(70.5% 0.213 47.604);
+  --color-amber-500: oklch(76.9% 0.188 70.08);
+  --color-yellow-500: oklch(85.2% 0.199 91.936);
+  --color-lime-500: oklch(86.8% 0.189 124.166);
+  --color-green-500: oklch(72.7% 0.192 149.33);
+  --color-emerald-500: oklch(69.6% 0.17 162.48);
+  --color-teal-500: oklch(66.1% 0.125 182.018);
+  --color-cyan-500: oklch(71.5% 0.143 215.221);
+  --color-sky-500: oklch(71.4% 0.142 232.661);
+  --color-blue-500: oklch(62.3% 0.214 259.815);
+  --color-indigo-500: oklch(58.5% 0.233 277.117);
+  --color-violet-500: oklch(60.6% 0.25 293.628);
+  --color-purple-500: oklch(62.7% 0.265 303.9);
+  --color-fuchsia-500: oklch(66.7% 0.295 322.15);
+  --color-pink-500: oklch(69.7% 0.274 342.55);
+  --color-rose-500: oklch(65.6% 0.241 354.308);
 
   --spacing: 0.25rem;
-
   --breakpoint-sm: 40rem;
   --breakpoint-md: 48rem;
   --breakpoint-lg: 64rem;
   --breakpoint-xl: 80rem;
   --breakpoint-2xl: 96rem;
 
-  --container-3xs: 16rem;
-  --container-2xs: 18rem;
-  --container-xs: 20rem;
-  --container-sm: 24rem;
-  --container-md: 28rem;
-  --container-lg: 32rem;
-  --container-xl: 36rem;
-  --container-2xl: 42rem;
-  --container-3xl: 48rem;
-  --container-4xl: 56rem;
-  --container-5xl: 64rem;
-  --container-6xl: 72rem;
-  --container-7xl: 80rem;
+  --radius-xs: 0.125rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+  --radius-full: 9999px;
 
   --text-xs: 0.75rem;
-  --text-xs--line-height: calc(1 / 0.75);
+  --text-xs--line-height: 1rem;
   --text-sm: 0.875rem;
-  --text-sm--line-height: calc(1.25 / 0.875);
+  --text-sm--line-height: 1.25rem;
   --text-base: 1rem;
-  --text-base--line-height: calc(1.5 / 1);
+  --text-base--line-height: 1.5rem;
   --text-lg: 1.125rem;
-  --text-lg--line-height: calc(1.75 / 1.125);
+  --text-lg--line-height: 1.75rem;
   --text-xl: 1.25rem;
-  --text-xl--line-height: calc(1.75 / 1.25);
+  --text-xl--line-height: 1.75rem;
   --text-2xl: 1.5rem;
-  --text-2xl--line-height: calc(2 / 1.5);
+  --text-2xl--line-height: 2rem;
   --text-3xl: 1.875rem;
-  --text-3xl--line-height: calc(2.25 / 1.875);
+  --text-3xl--line-height: 2.25rem;
   --text-4xl: 2.25rem;
-  --text-4xl--line-height: calc(2.5 / 2.25);
+  --text-4xl--line-height: 2.5rem;
   --text-5xl: 3rem;
   --text-5xl--line-height: 1;
   --text-6xl: 3.75rem;
@@ -378,16 +93,6 @@ export const THEME_CSS = `@theme default {
   --text-9xl: 8rem;
   --text-9xl--line-height: 1;
 
-  --font-weight-thin: 100;
-  --font-weight-extralight: 200;
-  --font-weight-light: 300;
-  --font-weight-normal: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
-  --font-weight-extrabold: 800;
-  --font-weight-black: 900;
-
   --tracking-tighter: -0.05em;
   --tracking-tight: -0.025em;
   --tracking-normal: 0em;
@@ -395,160 +100,46 @@ export const THEME_CSS = `@theme default {
   --tracking-wider: 0.05em;
   --tracking-widest: 0.1em;
 
-  --leading-tight: 1.25;
-  --leading-snug: 1.375;
-  --leading-normal: 1.5;
-  --leading-relaxed: 1.625;
-  --leading-loose: 2;
+  --blur-sm: 4px;
+  --blur-md: 8px;
+  --blur-lg: 12px;
+  --blur-xl: 16px;
+  --blur-2xl: 24px;
+  --blur-3xl: 40px;
 
-  --radius-xs: 0.125rem;
-  --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
-  --radius-2xl: 1rem;
-  --radius-3xl: 1.5rem;
-  --radius-4xl: 2rem;
-
-  --shadow-2xs: 0 1px rgb(0 0 0 / 0.05);
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
   --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-
-  --inset-shadow-2xs: inset 0 1px rgb(0 0 0 / 0.05);
-  --inset-shadow-xs: inset 0 1px 1px rgb(0 0 0 / 0.05);
-  --inset-shadow-sm: inset 0 2px 4px rgb(0 0 0 / 0.05);
-
-  --drop-shadow-xs: 0 1px 1px rgb(0 0 0 / 0.05);
-  --drop-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.15);
-  --drop-shadow-md: 0 3px 3px rgb(0 0 0 / 0.12);
-  --drop-shadow-lg: 0 4px 4px rgb(0 0 0 / 0.15);
-  --drop-shadow-xl: 0 9px 7px rgb(0 0 0 / 0.1);
-  --drop-shadow-2xl: 0 25px 25px rgb(0 0 0 / 0.15);
-
-  --text-shadow-2xs: 0px 1px 0px rgb(0 0 0 / 0.15);
-  --text-shadow-xs: 0px 1px 1px rgb(0 0 0 / 0.2);
-  --text-shadow-sm:
-    0px 1px 0px rgb(0 0 0 / 0.075), 0px 1px 1px rgb(0 0 0 / 0.075), 0px 2px 2px rgb(0 0 0 / 0.075);
-  --text-shadow-md:
-    0px 1px 1px rgb(0 0 0 / 0.1), 0px 1px 2px rgb(0 0 0 / 0.1), 0px 2px 4px rgb(0 0 0 / 0.1);
-  --text-shadow-lg:
-    0px 1px 2px rgb(0 0 0 / 0.1), 0px 3px 2px rgb(0 0 0 / 0.1), 0px 4px 8px rgb(0 0 0 / 0.1);
-
-  --ease-in: cubic-bezier(0.4, 0, 1, 1);
-  --ease-out: cubic-bezier(0, 0, 0.2, 1);
-  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-
-  --animate-spin: spin 1s linear infinite;
-  --animate-ping: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
-  --animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  --animate-bounce: bounce 1s infinite;
-
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
-  @keyframes ping {
-    75%,
-    100% {
-      transform: scale(2);
-      opacity: 0;
-    }
-  }
-
-  @keyframes pulse {
-    50% {
-      opacity: 0.5;
-    }
-  }
-
-  @keyframes bounce {
-    0%,
-    100% {
-      transform: translateY(-25%);
-      animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
-    }
-
-    50% {
-      transform: none;
-      animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
-    }
-  }
-
-  --blur-xs: 4px;
-  --blur-sm: 8px;
-  --blur-md: 12px;
-  --blur-lg: 16px;
-  --blur-xl: 24px;
-  --blur-2xl: 40px;
-  --blur-3xl: 64px;
-
-  --perspective-dramatic: 100px;
-  --perspective-near: 300px;
-  --perspective-normal: 500px;
-  --perspective-midrange: 800px;
-  --perspective-distant: 1200px;
-
-  --aspect-video: 16 / 9;
-
-  --default-transition-duration: 150ms;
-  --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  --default-font-family: --theme(--font-sans, initial);
-  --default-font-feature-settings: --theme(--font-sans--font-feature-settings, initial);
-  --default-font-variation-settings: --theme(--font-sans--font-variation-settings, initial);
-  --default-mono-font-family: --theme(--font-mono, initial);
-  --default-mono-font-feature-settings: --theme(--font-mono--font-feature-settings, initial);
-  --default-mono-font-variation-settings: --theme(--font-mono--font-variation-settings, initial);
-}
-
-/* Deprecated */
-@theme default inline reference {
-  --blur: 8px;
-  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
-  --drop-shadow: 0 1px 2px rgb(0 0 0 / 0.1), 0 1px 1px rgb(0 0 0 / 0.06);
-  --radius: 0.25rem;
-  --max-width-prose: 65ch;
+
+  --default-font-family: var(--font-sans);
+  --default-mono-font-family: var(--font-mono);
 }
 `;
+
+
 export const PREFLIGHT_CSS = `
-@layer theme, base, components, utilities;
-
-@layer theme {
-  :root, :host {
-    --font-sans: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-    --spacing: 0.25rem;
-    --default-transition-duration: 150ms;
-    --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    --default-font-family: var(--font-sans);
-    --default-mono-font-family: var(--font-mono);
-
-    --animate-spin: spin 1s linear infinite;
-    --animate-ping: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
-    --animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    --animate-bounce: bounce 1s infinite;
-  }
-}
+@layer properties, theme, base, components, utilities;
 
 @layer base {
-  *, ::after, ::before, ::backdrop {
+  *, ::after, ::before, ::backdrop, ::file-selector-button {
     box-sizing: border-box;
-    border-width: 0;
-    border-style: solid;
-    border-color: var(--color-gray-200, currentColor);
+    margin: 0;
+    padding: 0;
+    border: 0 solid;
   }
-  blockquote, dl, dd, h1, h2, h3, h4, h5, h6, hr, figure, p, pre { margin: 0; }
-  h1, h2, h3, h4, h5, h6 { font-size: inherit; font-weight: inherit; }
-  ol, ul { list-style: none; margin: 0; padding: 0; }
+  html, :host {
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    tab-size: 4;
+    font-family: var(--default-font-family, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji');
+    -webkit-tap-highlight-color: transparent;
+  }
+  ol, ul, menu { list-style: none; }
   img, svg, video, canvas, audio, iframe, embed, object { display: block; vertical-align: middle; }
   img, video { max-width: 100%; height: auto; }
-  [hidden] { display: none; }
 }
 `;
 
@@ -561,6 +152,7 @@ const KEYFRAMES_CSS = `
   50% { transform: none; animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
 }
 `;
+
 
 
 // ============================================================================
@@ -641,6 +233,22 @@ export class DesignSystem {
     } else {
       this._variants.static.set(name, definition);
     }
+  }
+
+  /**
+   * Registers a custom component or utility rule dynamically.
+   * Matches Tailwind v4 @utility and @layer components behavior.
+   */
+  registerCustomRule(root: string, cssText: string) {
+    this.static(root, (candidate) => {
+      // Return a rule node that directly contains the custom CSS
+      // We wrap it in a pseudo-node that serializeAST can handle
+      return [{
+        kind: 'at-root',
+        selector: `.${candidate.raw.replace(/([\[\]/!:#.])/g, '\\$1')}`,
+        nodes: [{ kind: 'declaration', property: 'raw', value: cssText }]
+      }];
+    });
   }
 
   has(name: string, kind: 'static' | 'functional'): boolean {
@@ -932,19 +540,25 @@ function serializeAST(nodes: ASTNode[], candidate: Candidate): string {
   let extraCSS = "";
   for (const node of sortedNodes) {
     if (node.kind === 'declaration') {
-      declarations += `${node.property}: ${node.value}${node.important || candidate.important ? ' !important' : ''};`;
+      if (node.property === 'raw') {
+        declarations += node.value;
+      } else {
+        declarations += `${node.property}: ${node.value}${node.important || candidate.important ? ' !important' : ''}; `;
+      }
     } else if (node.kind === 'at-rule') {
       extraCSS += `@${node.name} ${node.params} { ${node.nodes ? node.nodes.map(n => `${n.property}: ${n.value};`).join(' ') : ''} } `;
-    } else if (node.kind === 'at-root' && node.nodes) {
-      for (const child of node.nodes) {
-        if (child.kind === 'declaration') {
-            declarations += `${child.property}: ${child.value};`;
-        }
-      }
+    } else if (node.kind === 'at-root' && node.selector) {
+      // Direct nested rule injection with '&' resolution
+      const fullSelector = node.selector.includes('&') 
+        ? node.selector.replace(/&/g, selectorTarget)
+        : `${selectorTarget} ${node.selector}`;
+      const body = node.nodes?.map(n => n.property === 'raw' ? n.value : `${n.property}: ${n.value};`).join('') || '';
+      declarations += `} ${fullSelector} { ${body} `;
     }
   }
   
-  return `${extraCSS}${wrapperStart}${selectorTarget} { ${declarations} }${wrapperEnd}`;
+  if (!declarations && !extraCSS) return "";
+  return `${extraCSS}${wrapperStart}${selectorTarget} { ${declarations}}${wrapperEnd}`;
 }
 
 
@@ -1010,9 +624,9 @@ function resolveColor(val: string | ValueNode | undefined, modifier?: ValueNode 
     ? v
     : `var(--color-${v})`;
     
-  if (modifier?.value) {
-    const op = Number.isNaN(Number(modifier.value)) ? modifier.value : `${modifier.value}%`;
-    color = `color-mix(in oklab, ${color} ${op}, transparent)`;
+  if (modifier) {
+    const opacity = /^\d+$/.test(modifier.value) ? `${modifier.value}%` : modifier.value;
+    return `color-mix(in oklch, ${color} ${opacity}, transparent)`;
   }
   return color;
 }
@@ -1029,7 +643,7 @@ export function populateStandardUtilities(ds: DesignSystem) {
     ['inline-flex', [['display', 'inline-flex']]],
     ['grid', [['display', 'grid']]],
     ['inline-grid', [['display', 'inline-grid']]],
-    ['hidden', [['display', 'none']]],
+    ['hidden', [['display', 'none', true]]],
     ['contents', [['display', 'contents']]],
     ['flow-root', [['display', 'flow-root']]],
     ['list-item', [['display', 'list-item']]],
@@ -1316,6 +930,20 @@ export function populateStandardUtilities(ds: DesignSystem) {
     });
   }
 
+  // space-x / space-y container spacing
+  ['x', 'y'].forEach(axis => {
+    ds.functional(`space-${axis}`, (c) => {
+      if (!c.value) return;
+      const val = resolveSpacing(c.value.value, c.negative);
+      const prop = axis === 'x' ? 'margin-left' : 'margin-top';
+      return [{
+        kind: 'at-root',
+        selector: `& > :not([hidden], template) ~ :not([hidden], template)`,
+        nodes: [d(prop, val)]
+      }];
+    });
+  });
+
   // ═══════════════════════════════════════════════════════
   // 11. SIZING (w, h, min-w, min-h, max-w, max-h, size)
   // ═══════════════════════════════════════════════════════
@@ -1441,27 +1069,19 @@ export function populateStandardUtilities(ds: DesignSystem) {
   ds.functional('text', (c) => {
     if (!c.value) return;
     const v = c.value.value;
-    if (v.startsWith('#') || v.startsWith('okl') || v.startsWith('rgb')) {
-      return [d('color', resolveColor(c.value, c.modifier))];
-    }
-    // Typography extraction parity (v4 refined metrics)
-    const metrics: Record<string, {s: string, lh: string}> = {
-      'xs': {s: '0.75rem', lh: '1rem'},
-      'sm': {s: '0.875rem', lh: '1.25rem'},
-      'base': {s: '1rem', lh: '1.5rem'},
-      'lg': {s: '1.125rem', lh: '1.75rem'},
-      'xl': {s: '1.25rem', lh: '1.75rem'},
-      '2xl': {s: '1.5rem', lh: '2rem'}
-    };
-    if (metrics[v]) {
+    
+    // 1. Check for standard font sizes
+    const sizes = ['xs', 'sm', 'base', 'lg', 'xl', '2xl', '3xl', '4xl', '5xl', '6xl', '7xl', '8xl', '9xl'];
+    if (sizes.includes(v) || /^\d/.test(v)) {
+      const res = v.startsWith('[') ? v.slice(1, -1) : resolveThemeValue('text', v);
+      // Tailwind v4: text-{size} also sets line-height
       return [
-        d('font-size', `var(--text-${v}, ${metrics[v].s})`),
-        d('line-height', `var(--text-${v}--line-height, ${metrics[v].lh})`)
+        d('font-size', res), 
+        d('line-height', `var(--text-${v}--line-height, 1.5)`)
       ];
     }
-    if (v.includes('.')) {
-       return [d('font-size', v), d('line-height', '1.5')];
-    }
+
+    // 2. Otherwise treat as color
     return [d('color', resolveColor(c.value, c.modifier))];
   });
 
@@ -1644,25 +1264,9 @@ export function populateStandardUtilities(ds: DesignSystem) {
   });
 
   // ═══════════════════════════════════════════════════════
-  // 17b. TYPOGRAPHY ENHANCEMENTS
+  // 18. TRANSITIONS & ANIMATIONS
   // ═══════════════════════════════════════════════════════
-  ds.functional('font', (c) => {
-    if (!c.value) return;
-    const v = c.value.value;
-    if (v === 'sans' || v === 'serif' || v === 'mono') return;
-    
-    // Check for font-size (text-xs, text-sm etc are handled by 'text' functional)
-    // But font-size can also be numeric weights or var()
-    if (/^\d{3}$/.test(v)) return [d('font-weight', v)];
-    
-    const weights: Record<string, string> = {
-      thin: '100', extralight: '200', light: '300', normal: '400',
-      medium: '500', semibold: '600', bold: '700', extrabold: '800', black: '900'
-    };
-    if (weights[v]) return [d('font-weight', weights[v])];
-    
-    return [d('font-family', v.includes('-') ? `var(--font-${v})` : v)];
-  });
+
   statics(ds, [
     ['transform-none', [['transform', 'none']]],
     ['transform-gpu', [['transform', 'translateZ(0)']]],
@@ -1741,9 +1345,9 @@ export function populateStandardUtilities(ds: DesignSystem) {
   // 19. FILTERS & BACKDROP FILTERS (OFFICIAL v4 PARITY)
   // ═══════════════════════════════════════════════════════
   const filterVars = () => K([
-    d('--tw-blur', ' '), d('--tw-brightness', ' '), d('--tw-contrast', ' '),
-    d('--tw-grayscale', ' '), d('--tw-hue-rotate', ' '), d('--tw-invert', ' '),
-    d('--tw-saturate', ' '), d('--tw-sepia', ' '), d('--tw-drop-shadow', ' ')
+    d('--tw-blur', ''), d('--tw-brightness', ''), d('--tw-contrast', ''),
+    d('--tw-grayscale', ''), d('--tw-hue-rotate', ''), d('--tw-invert', ''),
+    d('--tw-saturate', ''), d('--tw-sepia', ''), d('--tw-drop-shadow', '')
   ]);
   const filterStr = 'var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)';
 
@@ -1774,9 +1378,9 @@ export function populateStandardUtilities(ds: DesignSystem) {
 
   // Backdrop Filters
   const backdropVars = () => K([
-    d('--tw-backdrop-blur', ' '), d('--tw-backdrop-brightness', ' '), d('--tw-backdrop-contrast', ' '),
-    d('--tw-backdrop-grayscale', ' '), d('--tw-backdrop-hue-rotate', ' '), d('--tw-backdrop-invert', ' '),
-    d('--tw-backdrop-opacity', ' '), d('--tw-backdrop-saturate', ' '), d('--tw-backdrop-sepia', ' ')
+    d('--tw-backdrop-blur', ''), d('--tw-backdrop-brightness', ''), d('--tw-backdrop-contrast', ''),
+    d('--tw-backdrop-grayscale', ''), d('--tw-backdrop-hue-rotate', ''), d('--tw-backdrop-invert', ''),
+    d('--tw-backdrop-opacity', ''), d('--tw-backdrop-saturate', ''), d('--tw-backdrop-sepia', '')
   ]);
 
   const backdropStr = 'var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)';
@@ -2031,6 +1635,12 @@ const COMPOSITING_VARS = [
   { name: '--tw-translate-z', initial: '0', syntax: '*' },
   { name: '--tw-skew-x', initial: '0deg', syntax: '<angle>' },
   { name: '--tw-skew-y', initial: '0deg', syntax: '<angle>' },
+  { name: '--tw-inset-shadow', initial: '0 0 #0000', syntax: '*' },
+  { name: '--tw-inset-ring-shadow', initial: '0 0 #0000', syntax: '*' },
+  { name: '--tw-ring-offset-shadow', initial: '0 0 #0000', syntax: '*' },
+  { name: '--tw-ring-shadow', initial: '0 0 #0000', syntax: '*' },
+  { name: '--tw-shadow', initial: '0 0 #0000', syntax: '*' },
+  { name: '--tw-shadow-colored', initial: '0 0 #0000', syntax: '*' },
 ];
 
 function registerCompositingProperties() {
@@ -2069,7 +1679,13 @@ class StyleSheetManager {
     return this._jitSheet;
   }
 
-  emitPreflightAndTheme(): void {
+  /**
+   * Initializes the JIT engine and starts the passive style scanner.
+   * Scans existing DOM and watches for new classes to eliminate FOUC.
+   */
+  public emitPreflightAndTheme(): void {
+    if (typeof document === 'undefined') return;
+
     if (this._preflightEmitted) return;
     
     // 1. Base Framework Styles (Preflight)
@@ -2079,11 +1695,21 @@ class StyleSheetManager {
     this.adoptCSSSync(KEYFRAMES_CSS, 'nexus-keyframes');
 
     // 3. Theme Orchestration
-    const rootTheme = THEME_CSS.replace(/^@theme\s+default\s*\{/, ':root {');
     const compositingCSS = registerCompositingProperties();
-    this.adoptCSSSync(rootTheme + '\n' + compositingCSS, 'nexus-theme');
+    this.adoptCSSSync(THEME_CSS + '\n' + compositingCSS, 'nexus-theme');
 
     this._preflightEmitted = true;
+
+    // Passive Style Scanner: Synchronously scan existing DOM to adopt classes.
+    // This kills FOUC by ensuring styles are registered before the first paint 
+    // for all elements already in the buffer during initial boot.
+    // Continuous scanning is now handled by the main framework MutationObserver.
+    const all = document.querySelectorAll('*');
+    all.forEach(el => {
+      if (el instanceof HTMLElement) {
+        el.classList.forEach(cls => this.adoptClass(cls, el));
+      }
+    });
   }
 
   /**
@@ -2109,15 +1735,18 @@ class StyleSheetManager {
   }
 
   async adoptCSS(cssText: string, id?: string): Promise<() => void> {
+    // 1. Tailwind v4 At-Rule Intersection (Play CDN Parity)
+    const processedCSS = this.processAtRules(cssText);
+    
     const sheetId = id || `_auto_${this._nextId++}`;
     const existing = this._adoptedSheets.get(sheetId);
     if (existing) {
-      await existing.replace(cssText);
+      await existing.replace(processedCSS);
       return () => this.removeSheet(sheetId);
     }
 
     const sheet = new CSSStyleSheet();
-    await sheet.replace(cssText);
+    await sheet.replace(processedCSS);
     this._adoptedSheets.set(sheetId, sheet);
     if ('document' in globalThis) {
       document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
@@ -2125,8 +1754,69 @@ class StyleSheetManager {
     return () => this.removeSheet(sheetId);
   }
 
+  /**
+   * Scans and interprets Tailwind v4 at-rules.
+   * Internal logic for achieveing 100% Play CDN functional parity.
+   */
+  private processAtRules(css: string): string {
+    let result = css;
+
+    // A. @theme parsing (Handle multiple blocks)
+    const themeRegex = /@theme\s*(?:default|inline|reference)?\s*\{([\s\S]*?)\}/g;
+    let themeMatch;
+    while ((themeMatch = themeRegex.exec(css)) !== null) {
+      const themeInternal = themeMatch[1];
+      const varRegex = /(--[\w-]+)\s*:\s*([^;]+);/g;
+      let m;
+      while ((m = varRegex.exec(themeInternal)) !== null) {
+        const [_, key, _val] = m;
+        if (key.startsWith('--color-')) {
+          const colorName = key.replace('--color-', '');
+          designSystem.functional(colorName, (c) => {
+            const propertyMap: Record<string, string> = { bg: 'background-color', text: 'color', border: 'border-color', fill: 'fill', stroke: 'stroke' };
+            const prop = propertyMap[c.root] || c.root;
+            const color = resolveColor(key, c.modifier);
+            return [{ kind: 'declaration', property: prop, value: color }];
+          });
+        }
+      }
+    }
+
+    // B. @utility parsing (Tailwind v4 syntax)
+    const utilityRegex = /@utility\s+([\w-]+)\s*\{([\s\S]*?)\}/g;
+    result = result.replace(utilityRegex, (_, root, body) => {
+      designSystem.registerCustomRule(root, body);
+      return '';
+    });
+
+    // C. @layer parsing (Robust component scanning for DaisyUI)
+    const layerRegex = /@layer\s+([\w-]+)\s*\{([\s\S]*?)\}(?!\s*\{)/g;
+    result = result.replace(layerRegex, (match, layerName, body) => {
+       if (layerName === 'components') {
+          // Robust scanning for class-based components (including complex selectors)
+          const classDefRegex = /\.([\w-]+)[^{]*\{([\s\S]*?)\}/g;
+          let cm;
+          while ((cm = classDefRegex.exec(body)) !== null) {
+             designSystem.registerCustomRule(cm[1], cm[2]);
+          }
+          return ''; // Strip components layer, handled by JIT
+       }
+       return match; // Keep base/utilities as pure CSS
+    });
+
+    return result;
+  }
+
   adoptClass(className: string, el?: HTMLElement, runtime?: RuntimeContext): void {
     if (!className || className.trim() === '') return;
+
+    // ZCZS Requirement: Native Style Firewall
+    // If the element belongs to an isolated external styling branch, completely 
+    // abort JIT evaluation to prevent compilation conflicts.
+    if (el && el.closest && el.closest('[data-ignore\\:style]')) {
+      return;
+    }
+
     if (this._knownClasses.has(className)) return;
 
     try {
@@ -2136,7 +1826,19 @@ class StyleSheetManager {
         const cssRules = designSystem.generateCSS(candidate);
         if (cssRules) {
           const sheet = this._getJitSheet();
-          sheet.insertRule(cssRules, sheet.cssRules.length);
+          // Split by rules (Tailwind v4 JIT generates multiple rules for container queries/space-y)
+          // Simple split by the closing brace followed by space/newline
+          const rules = cssRules.split(/(?<=\})\s*(?=\.)|(?<=\})\s*(?=@)/g);
+          for (const rule of rules) {
+            if (rule.trim()) {
+              try {
+                sheet.insertRule(rule.trim(), sheet.cssRules.length);
+              } catch (e) {
+                // Ignore individual rule failures (e.g. invalid experimental selectors)
+                console.debug(`Nexus-UX: Non-critical JIT insertion failure:`, e);
+              }
+            }
+          }
 
           if (candidate.hasSignal && el && runtime) {
             this.adoptSignalBinding(el, candidate.hasSignal, runtime);

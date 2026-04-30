@@ -38,7 +38,7 @@ export function evaluate(
   runtime: RuntimeContext,
   extras: Record<string, unknown> = {}
 ): unknown {
-  if (!expression || expression.trim() === '') return {};
+  if (typeof expression !== 'string' || !expression || expression.trim() === '') return {};
 
   const runner = evaluateLater(el, expression, runtime);
   let res: unknown;

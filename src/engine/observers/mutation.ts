@@ -10,8 +10,10 @@ const mutationObserverModule: ObserverModule = {
   observe: (el: HTMLElement, context: RuntimeContext) => {
     try {
       const observer = new MutationObserver((mutationsList) => {
+        let hasAddedNodes = false;
         for (const mutation of mutationsList) {
           if (mutation.type === 'childList') {
+            if (mutation.addedNodes.length > 0) hasAddedNodes = true;
             // Added nodes: initialize directives via microtask.
             // queueMicrotask runs before the browser paints, guaranteeing
             // users never see unprocessed content (no flash). This is the
@@ -20,6 +22,12 @@ const mutationObserverModule: ObserverModule = {
             // risking layout thrashing from fully synchronous processing.
             mutation.addedNodes.forEach(node => {
               if (node instanceof HTMLElement) {
+                // Trigger JIT Style Adoption eagerly
+                context.adoptStyle(node as HTMLElement);
+                node.querySelectorAll('*').forEach(child => {
+                   if (child instanceof HTMLElement) context.adoptStyle(child as HTMLElement);
+                });
+
                 queueMicrotask(() => context.processElement(node as HTMLElement));
               }
             });
@@ -41,10 +49,15 @@ const mutationObserverModule: ObserverModule = {
               }
             });
           } else if (mutation.type === 'attributes') {
-            const target = mutation.target as any;
+            const target = mutation.target as HTMLElement;
             
+            // Trigger JIT Style Adoption on class changes
+            if (mutation.attributeName === 'class') {
+              context.adoptStyle(target);
+            }
+
             // Pulse self (using Symbol for speed)
-            target[RUN_EFFECT_RUNNERS_KEY]?.();
+            (target as any)[RUN_EFFECT_RUNNERS_KEY]?.();
             
             // Pulse Ownership-Based Dependents (Selectors)
             const borrows = ownership.getBorrowers(target);
@@ -54,6 +67,10 @@ const mutationObserverModule: ObserverModule = {
               borrower[RUN_EFFECT_RUNNERS_KEY]?.();
             });
           }
+        }
+        
+        if (hasAddedNodes) {
+          globalThis.dispatchEvent(new CustomEvent('nexus:dom-mutated'));
         }
       });
 

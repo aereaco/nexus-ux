@@ -78,8 +78,8 @@ const bindModule: AttributeModule = {
         // 2. Event Listener: DOM → State
         const isLazy = el.hasAttribute('data-bind:lazy') || el.hasAttribute('data-bind.lazy');
         const eventName = isLazy ? 'change' : (
-          el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')
-          || el instanceof HTMLSelectElement ? 'change' : 'input'
+          el instanceof HTMLSelectElement || (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio'))
+          ? 'change' : 'input'
         );
 
         const inputHandler = (_e: Event) => {
@@ -89,15 +89,15 @@ const bindModule: AttributeModule = {
           } else if (el instanceof HTMLInputElement && el.type === 'radio') {
             newValue = el.checked ? el.value : undefined;
             if (newValue === undefined) return;
+          } else if (el instanceof HTMLSelectElement && el.multiple) {
+            newValue = Array.from(el.selectedOptions).map(opt => opt.value);
           } else if ('value' in el) {
-            newValue = (el as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value;
+            newValue = (el as any).value;
           }
 
           // ─── Smart Assignment ───
-          // If the bound value is an object, update its 'value' property
-          // to avoid overwriting the whole object with a string.
           const current = runtime.evaluate(el, value);
-          if (current && typeof current === 'object' && 'value' in (current as object)) {
+          if (current && typeof current === 'object' && 'value' in (current as Record<string, unknown>)) {
             runtime.evaluate(el, `${value}.value = $newValue`, { $newValue: newValue });
           } else {
             runtime.evaluate(el, `${value} = $newValue`, { $newValue: newValue });
@@ -108,7 +108,7 @@ const bindModule: AttributeModule = {
         cleanupFns.push(() => el.removeEventListener(eventName, inputHandler));
 
       } catch (e) {
-        initError('bind', `Failed to auto-bind: ${e instanceof Error ? e.message : String(e)}`, el, value);
+        runtime.reportError(e instanceof Error ? e : new Error(String(e)), el, `Auto-bind failed: ${value}`);
       }
 
       return () => cleanupFns.forEach(fn => fn());

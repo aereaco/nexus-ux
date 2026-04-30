@@ -1,4 +1,4 @@
-    <div class="dashboard-fragment" 
+<div class="dashboard-fragment" 
     data-ingest="{ 
         'DaisyUI': { 
           link: [
@@ -6,9 +6,6 @@
             { href: 'https://cdn.jsdelivr.net/npm/daisyui@5/themes.css' }
           ] 
         }, 
-        'Tailwind': { 
-          script: { src: 'https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4' }
-        },
         'CodeMirror': { 
           script: { src: '/site/dashboard/assets/cm.js', type: 'module' }
         } 
@@ -210,7 +207,7 @@
 
         /* Main Layout */
         main.nx-main { opacity: 0; transition: opacity 0.5s ease-in; position: relative; padding: 1.5rem; }
-        .nexus-ready main.nx-main { opacity: 1; }
+        main.nx-main.nexus-ready { opacity: 1; }
 
         /* Editor Styles - CM6 auto-height until max, then scroll */
         .nx-editor-container { position: relative; min-height: 400px; width: 100%; }

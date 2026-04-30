@@ -2,7 +2,7 @@ import { ModuleCoordinator } from './engine/modules.ts';
 import { registerScopeProvider } from './engine/scope.ts';
 import { ROOT_SELECTOR } from './engine/consts.ts';
 import { topology } from './engine/topology.ts';
-import { initSelfHeal, getBeaconHistory, type CrashBeacon } from './engine/agent.ts';
+import { initSelfHeal, getBeaconHistory } from './engine/agent.ts';
 import { stylesheet } from './engine/stylesheet.ts';
 
 // Core Directives (Explicitly imported for priority ordering)
@@ -16,7 +16,6 @@ import themeModule from './modules/attributes/theme.ts';
 import { 
   autoAttributes,
   autoSprites,
-  autoScopes,
   autoModifiers,
   autoObservers 
 } from './manifest.ts';
@@ -25,14 +24,6 @@ import { resolveSelector } from './modules/sprites/selector.ts';
 import { animate } from './modules/sprites/animate.ts';
 import { fetchModule } from './engine/fetch.ts';
 
-
-
-// Re-export core types for consumers
-export type { RuntimeContext, InitContext } from './engine/composition.ts';
-export type { Module, AttributeModule, ActionModule, ListenerModule, ObserverModule, UtilityModule, MirrorModule, SpriteModule, ScopeModule } from './engine/modules.ts';
-export type { TierLevel, TierConfig } from './engine/topology.ts';
-export type { CrashBeacon, SelfHealConfig } from './engine/agent.ts';
-
 /**
  * Nexus-UX Framework Entry Point.
  */
@@ -40,17 +31,15 @@ export class UX {
   private coordinator: ModuleCoordinator;
 
   constructor() {
-    this.coordinator = new ModuleCoordinator();
-
-    // Auto-emit Tailwind v4 schema/preflight strictly because index.html is essentially a tailwind project
+    // 1. ZENITH-PRIORITY: Emit Tailwind v4 tokens IMMEDIATELY
     if (typeof document !== 'undefined') {
       stylesheet.emitPreflightAndTheme();
     }
 
+    this.coordinator = new ModuleCoordinator();
+
     // Priority 0: Ingest (Dependency Orchestration)
     this.coordinator.registerAttributeModule('ingest', ingestModule);
-
-    // Phase 2: Core Directives (Prioritized explicitly for execution order)
     this.coordinator.registerAttributeModule('signal', signalModule);
     this.coordinator.registerAttributeModule('computed', computedModule);
     this.coordinator.registerAttributeModule('switcher', switcherModule);
@@ -95,11 +84,9 @@ export class UX {
     autoModifiers.forEach(({ module }) => {
       let exportsObj = module.default || module;
       
-      // Single default export (e.g. morph.ts, stop.ts)
       if (exportsObj && exportsObj.name && typeof exportsObj.handle === 'function') {
         this.coordinator.registerModifierModule(exportsObj.name, exportsObj);
       } 
-      // Object containing multiple modifiers (e.g. keys.ts)
       else if (typeof exportsObj === 'object') {
         Object.values(exportsObj).forEach((mod: any) => {
           if (mod && mod.name && typeof mod.handle === 'function') {
@@ -116,40 +103,13 @@ export class UX {
     })());
 
     // 5. Contextual Selector ($) and Animation Engine ($animate)
-    registerScopeProvider('$', (el: any) => {
-      return (selector: string) => resolveSelector(el as HTMLElement, selector);
-    });
-
+    registerScopeProvider('$', (el: any) => (selector: string) => resolveSelector(el as HTMLElement, selector));
     registerScopeProvider('$animate', () => animate);
-
-
-
-    // Auto-Register Scopes
-    const scopesDef: Record<string, any> = {};
-    autoScopes.forEach(({ name, module }) => {
-      // We expect the scope module to export `scopeRule`
-      if (module.scopeRule) {
-         scopesDef[name] = module.scopeRule;
-      }
-
-      if (module.onGlobalInit) {
-        try {
-          module.onGlobalInit(this.coordinator.runtimeContext);
-        } catch (e) {
-          this.coordinator.runtimeContext.reportError(
-            e instanceof Error ? e : new Error(String(e)),
-            undefined,
-            `Failed to initialize scope module: ${name}`
-          );
-        }
-      }
-    });
-    this.coordinator.runtimeContext.setGlobalSignal('_scopes', scopesDef);
 
     // Utilities
     this.coordinator.registerUtilityModule('fetch', fetchModule);
 
-    // Auto-Register Observer Modules — auto-attached to roots during initializeModules()
+    // Auto-Register Observer Modules
     autoObservers.forEach(({ name, module }: { name: string; module: any }) => {
       const obsMod = module.default || Object.values(module)[0];
       if (obsMod) {
@@ -157,43 +117,28 @@ export class UX {
       }
     });
 
-    // Initialize Self-Heal Agent (Crash Beacons)
     initSelfHeal(this.coordinator.runtimeContext, {
       enabled: true,
       emitToConsole: this.coordinator.runtimeContext.isDevMode ?? false,
       emitToPlatform: false
     });
 
-    // Diagnostic Heartbeat
-    if (this.coordinator.runtimeContext.isDevMode) {
-      (window as any)._NEXUS_HEARTBEAT = 0;
-      setInterval(() => { (window as any)._NEXUS_HEARTBEAT++; }, 1000);
-    }
-
     this.init();
 
-    // Zenith Ignition: Global broadcast when engine is fully scanned and ready
     if (typeof document !== 'undefined') {
       document.dispatchEvent(new CustomEvent('nexus-ready', { bubbles: true }));
     }
   }
 
   private init() {
-    // Auto-discover and initialize on DOMContentLoaded
-    if (typeof window !== 'undefined') {
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-           this.scan();
-        });
-      } else {
-        this.scan();
-      }
+    if (typeof window === 'undefined') return;
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => this.scan());
+    } else {
+      this.scan();
     }
   }
 
-  /**
-   * Scans the document for roots and initializes distinct trees.
-   */
   public scan() {
     const roots = document.querySelectorAll(ROOT_SELECTOR);
     roots.forEach(root => {
@@ -203,49 +148,37 @@ export class UX {
     });
   }
 
-  // Exposure for plugins/modules
-  public get coordinate() {
-    return this.coordinator;
-  }
+  public get coordinate() { return this.coordinator; }
 
-  /**
-   * Public API for Decentralized Module Registration.
-   * Allows third-party scripts (e.g., loaded via data-ingest) to register themselves dynamically.
-   */
-  public register(type: 'attribute' | 'action' | 'modifier' | 'listener' | 'observer' | 'utility', name: string, module: any) {
-    if (typeof window !== 'undefined' && this.coordinator.runtimeContext.isDevMode) {
-      console.log(`[Nexus Registration] Dynamically registering ${type} module: ${name}`);
-    }
+  public register(type: string, name: string, module: any) {
+    const c = this.coordinator;
     switch (type) {
-      case 'attribute': this.coordinator.registerAttributeModule(name, module); break;
-      case 'action': this.coordinator.registerActionModule(name, module); break;
-      case 'modifier': this.coordinator.registerModifierModule(name, module); break;
-      case 'listener': this.coordinator.registerListenerModule(name, module); break;
-      case 'observer': this.coordinator.registerObserverModule(name, module); break;
-      case 'utility': this.coordinator.registerUtilityModule(name, module); break;
+      case 'attribute': c.registerAttributeModule(name, module); break;
+      case 'action': c.registerActionModule(name, module); break;
+      case 'modifier': c.registerModifierModule(name, module); break;
+      case 'listener': c.registerListenerModule(name, module); break;
+      case 'observer': c.registerObserverModule(name, module); break;
+      case 'utility': c.registerUtilityModule(name, module); break;
     }
   }
 }
 
-// Global singleton instance
+const isWorker = typeof (globalThis as any).WorkerGlobalScope !== 'undefined' && typeof document === 'undefined';
 export const Nexus = (typeof document !== 'undefined') ? new UX() : null as unknown as UX;
 
-// Expose on window for CDN usage
-if (typeof window !== 'undefined' && Nexus) {
-  // @ts-ignore: Exposing Nexus to global scope
-  globalThis.Nexus = Nexus;
-  
-  // Expose Self-Heal agent for developer access
-  // @ts-ignore
-  globalThis.Nexus.selfHeal = {
-    getHistory: getBeaconHistory,
-    capture: (message: string, context?: unknown) => {
-      // Deno error tracking hook would go here natively without require
-      console.error('Fatal crash on route:', window.location.href, message, context);
-    }
+if (isWorker) {
+  self.onmessage = (e: MessageEvent) => {
+     if (e.data.type === 'INIT_HEAP') console.log('[Nexus Worker] Predictive Heap Handshake OK');
   };
+} else if (typeof document !== 'undefined') {
+  topology.start();
+}
 
-  // Expose Runtime Context for debugging
+if (typeof window !== 'undefined' && Nexus) {
+  // @ts-ignore
+  globalThis.Nexus = Nexus;
+  // @ts-ignore
+  globalThis.Nexus.selfHeal = { getHistory: getBeaconHistory };
   // @ts-ignore
   globalThis._NEXUS_RUNTIME = (Nexus as any).coordinator.runtimeContext;
 }

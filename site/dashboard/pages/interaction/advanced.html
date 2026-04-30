@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-debug data-ux-init
+      data-ingest="{ 
+        'DaisyUI': { 
+          link: [
+            { href: 'https://cdn.jsdelivr.net/npm/daisyui@5' },
+            { href: 'https://cdn.jsdelivr.net/npm/daisyui@5/themes.css' }
+          ] 
+        }
+      }">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Interaction Demo | Nexus-UX</title>
+    <script type="module" src="/dist/nexus-ux.js"></script>
+    <style>
+        .flow-container {
+            width: 100%;
+            height: 500px;
+            background-image: 
+                radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 1rem;
+        }
+        .flow-node {
+            position: absolute;
+            cursor: move;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="bg-base-100 text-base-content p-8">
+    <h1 class="text-4xl font-black mb-8 tracking-tighter">Phase 20: Advanced Primitives</h1>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8" data-var="{ list: [{t: 'Item 1'}, {t: 'Item 2'}, {t: 'Item 3'}, {t: 'Item 4'}], nodes: [{id: 1, x: 100, y: 100, t: 'Node A'}, {id: 2, x: 300, y: 250, t: 'Node B'}] }">
+        
+        <!-- 1. Sortable List Pattern -->
+        <section class="card bg-base-200 shadow-xl overflow-hidden">
+            <div class="card-body">
+                <h2 class="card-title opacity-50 uppercase text-xs tracking-widest mb-4">Sortable Pattern</h2>
+                <div class="space-y-2">
+                    <div data-for="item in list" 
+                         class="p-4 bg-base-300 rounded-lg flex items-center gap-4 cursor-move select-none"
+                         data-on-pointermove:drag="item.pos = $drag.move($event)"
+                         data-on-pointerdown="$drag.start($event)"
+                         data-on-pointerup="$drag.stop($event)"
+                         data-style-transform="`translate(${item.pos?.dx || 0}px, ${item.pos?.dy || 0}px)`">
+                        <div class="w-2 h-6 bg-base-100/50 rounded-full"></div>
+                        <span data-bind="item.t"></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Flow Diagram Pattern -->
+        <section class="card bg-base-200 shadow-xl overflow-hidden">
+            <div class="card-body p-0">
+                <div class="p-6 pb-2">
+                    <h2 class="card-title opacity-50 uppercase text-xs tracking-widest mb-4">Flow Pattern (xyflow)</h2>
+                </div>
+                
+                <div class="flow-container" 
+                     data-on-wheel:zoom="viewport.transform = $zoom($event)">
+                    
+                    <!-- SVG Overlay for reactive connections -->
+                    <svg class="absolute inset-0 pointer-events-none w-full h-full">
+                        <path data-for="edge in edges" 
+                              data-bind-d="$svg.connect($(`#node-${edge.a}`), $(`#node-${edge.b}`)).d"
+                              fill="none" stroke="currentColor" stroke-width="2" class="text-primary opacity-50"></path>
+                    </svg>
+
+                    <!-- Draggable Nodes -->
+                    <div data-for="node in nodes" 
+                         data-id="`node-${node.id}`"
+                         class="flow-node card bg-primary text-primary-content p-4 shadow-lg w-32"
+                         data-style-left="`${node.x + (node.drag?.dx || 0)}px`"
+                         data-style-top="`${node.y + (node.drag?.dy || 0)}px`"
+                         data-on-pointerdown="$drag.start($event)"
+                         data-on-pointermove:drag="node.drag = $drag.move($event)"
+                         data-on-pointerup="node.x += node.drag?.dx || 0; node.y += node.drag?.dy || 0; node.drag = null; $drag.stop($event)">
+                         <span class="font-bold text-center" data-bind="node.t"></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Logic initialization -->
+    <div data-on-load.window="edges = [{a: 1, b: 2}]"></div>
+
+</body>
+</html>

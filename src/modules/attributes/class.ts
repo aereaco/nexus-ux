@@ -12,12 +12,23 @@ const classModule: AttributeModule = {
 
     attrs.forEach(attr => {
       const parsed = runtime.parseAttribute(attr.name, runtime, el);
-      if (!parsed || parsed.argument) return; // Skip suffixes (elimination)
+      if (!parsed) return;
 
       try {
         const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
           const result = runtime.evaluate(el, value);
-          runtime.reconcileClass(el, result);
+          
+          if (parsed.argument) {
+             // Handle suffixed class binding (e.g. data-class-active="isActive")
+             if (result) {
+               el.classList.add(parsed.argument);
+             } else {
+               el.classList.remove(parsed.argument);
+             }
+          } else {
+             // Handle standard class binding
+             runtime.reconcileClass(el, result);
+          }
         });
         cleanupFns.push(cleanup);
       } catch (e) {

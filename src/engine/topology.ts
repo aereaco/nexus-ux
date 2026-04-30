@@ -69,6 +69,10 @@ class EngineTopology {
   private monitoringInterval: number | null = null;
 
   constructor() {
+    // Boot is now explicitly started by the framework entrypoint
+  }
+
+  public start() {
     this.boot();
   }
 
@@ -151,19 +155,12 @@ class EngineTopology {
 
     for (let i = 0; i < workerCount; i++) {
       try {
-        // In production, this would load from a bundled worker file
-        // For now, we'll create inline workers
-        const workerCode = `
-          self.onmessage = function(e) {
-            if (e.data.type === 'EXECUTE') {
-              // Worker logic would go here
-              self.postMessage({ type: 'RESULT', id: e.data.id, result: null });
-            }
-          };
-        `;
+        let scriptSrc = '/dist/nexus-ux.js';
+        if (typeof document !== 'undefined' && document.currentScript instanceof HTMLScriptElement) {
+           scriptSrc = document.currentScript.src;
+        }
         
-        const blob = new Blob([workerCode], { type: 'application/javascript' });
-        const worker = new Worker(URL.createObjectURL(blob));
+        const worker = new Worker(scriptSrc, { type: 'module' });
         
         worker.onmessage = (e) => {
           // Handle worker messages

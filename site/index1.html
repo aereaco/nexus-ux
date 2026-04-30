@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"
       data-ux-init
+      data-ignore:style
       data-theme="synthwave"
       data-ingest="{ 
         'DaisyUI': { 
@@ -23,7 +24,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Nexus-UX</title>
-    <script type="module" src="../dist/nexus-ux1.js"></script>
+    <script type="module" src="../dist/nexus-ux.js"></script>
     <style>
         /* Progress Bar */
         .nexus-progress-mount { position: fixed; top: 0; left: 0; right: 0; z-index: 9999; }
@@ -34,7 +35,7 @@
 
         /* Main Layout */
         main.nx-main { opacity: 0; transition: opacity 0.5s ease-in; }
-        .nexus-ready main.nx-main { opacity: 1; }
+        main.nx-main.nexus-ready { opacity: 1; }
     </style>
 </head>
 <body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">

@@ -68,6 +68,7 @@ export function morphDOM(from: Element, to: Element | string, options: Record<st
 
   // @ts-ignore - Idiomorph types might need adjustment or ignore
   Idiomorph.morph(from, to, config);
+  from.dispatchEvent(new CustomEvent('nexus:dom-morphed', { bubbles: true }));
 }
 
 // ─── Visual Reconciliation ───

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="nexus-mcp-server" content="http://localhost:8000/mcp">
+    <title>Phase 19 Verification</title>
+</head>
+<body>
+    <div id="app"></div>
+    <script type="module">
+        // Mock modules to allow the test to run without full build
+        window.Nexus = { coordinator: { runtimeContext: { isDevMode: true } } };
+        import { runPhase19Verification } from './verify-phase19.ts';
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            window.runPhase19Verification();
+        });
+    </script>
+</body>
+</html>

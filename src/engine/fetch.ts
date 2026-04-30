@@ -127,12 +127,24 @@ export const fetchUtilities: FetchUtilities = {
 
         if (result === undefined || result === null) return undefined;
         
-        let finalResult = result;
+        // Adaptive Ingress: Auto-Lex JSON and Dive into envelopes
+        let finalResult = result as any;
         if (typeof result === 'string') {
           try { finalResult = JSON.parse(result); } catch (_e) { /* ignore */ }
         }
+
+        if (finalResult && typeof finalResult === 'object') {
+          const envelopes = ['data', 'results', 'items', 'value', '_embedded', 'entries'];
+          for (const envelope of envelopes) {
+            if (finalResult[envelope] !== undefined) {
+              finalResult = finalResult[envelope];
+              break;
+            }
+          }
+        }
         
-        return finalResult && typeof finalResult === 'object' ? (finalResult as Record<string, unknown>)[prop as string] : undefined;
+        const val = finalResult && typeof finalResult === 'object' ? (finalResult as Record<string, unknown>)[prop as string] : undefined;
+        return typeof val === 'function' ? val.bind(finalResult) : val;
       }
     }) as unknown as T;
   }

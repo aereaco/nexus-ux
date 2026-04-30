@@ -25,6 +25,7 @@ import { NexusEnhancedElement } from './reactivity.ts';
 import { attachObserver, registerObserver, disposeObservers } from './observers.ts';
 import { topology, TierLevel } from './topology.ts';
 import { stylesheet } from './stylesheet.ts';
+import { MCPClient } from './mcp.ts';
 
 /**
  * Defines the shape of an action function.
@@ -214,6 +215,7 @@ export class ModuleCoordinator {
       processElement: this.processElement.bind(this),
       reconcileClass: (el, val) => reconciler.reconcileClass(el, val),
       reconcileStyle: (el, val) => reconciler.reconcileStyle(el, val),
+      adoptStyle: (el) => el.classList.forEach(cls => stylesheet.adoptClass(cls, el)),
       parseAttribute: parseAttribute,
       scheduler: scheduler,
       reportError: (err: Error, el?: HTMLElement, expr?: string) => logger.error(this.runtimeContext, err.message, el, expr),
@@ -240,7 +242,19 @@ export class ModuleCoordinator {
       warn: (...args: unknown[]) => logger.warn(this.runtimeContext, ...args),
       info: (...args: unknown[]) => logger.info(this.runtimeContext, ...args),
       debug: (...args: unknown[]) => logger.debug(this.runtimeContext, ...args),
+      mcp: undefined as any // Placeholder for initialization below
     };
+
+    // Optional MCP Initialization
+    if (typeof document !== 'undefined') {
+      const mcpUrl = document.querySelector('meta[name="nexus-mcp-server"]')?.getAttribute('content');
+      if (mcpUrl) {
+        this.runtimeContext.mcp = new MCPClient(mcpUrl);
+        this.runtimeContext.mcp.connect().catch(() => {
+          this.runtimeContext.debug(`[Coordinator] MCP Connection skipped: ${mcpUrl}`);
+        });
+      }
+    }
     // Dynamic Debug Support
     if (typeof MutationObserver !== 'undefined' && typeof document !== 'undefined') {
       this.debugObserver = new MutationObserver((mutations) => {
@@ -400,119 +414,134 @@ export class ModuleCoordinator {
 
 
   /**
-   * Get current lag variance (average lag ratio)
+   * Processes a DOM element and its children, applying directive modules.
+   * Now supports recursive Isolation Firewalls via data-ignore.
    */
-  public processElement(element: HTMLElement, forceReWalk: boolean = false): void {
-    // 1. Element-level gating: If already initialized, skip structure walk
+  public processElement(
+    element: HTMLElement, 
+    forceReWalk: boolean = false, 
+    isolationLevel: 'none' | 'total' | 'ux' | 'style' = 'none'
+  ): void {
+    // 1. Isolation Level Detection (Nested Overrides)
+    let currentIsolation = isolationLevel;
+    
+    if (element.hasAttribute('data-ignore:off')) {
+      currentIsolation = 'none';
+    } else    if (element.hasAttribute('data-nexus-ignore')) {
+      currentIsolation = 'total';
+    } else if (element.hasAttribute('data-ux-ignore')) {
+      currentIsolation = 'ux';
+    } else if (element.hasAttribute('data-style-ignore')) {
+      currentIsolation = 'style';
+    }
+
+    // 2. Early Gating
+    if (currentIsolation === 'total') return; // Absolute Firewall: Stop recursion instantly
+
+    // Element-level gating: If already initialized, skip structure walk
     if (!forceReWalk && (element as NexusEnhancedElement)[MARKER_KEY]) return;
 
-    if (this.runtimeContext.isDevMode && !forceReWalk) this.runtimeContext.debug(`[Coordinator] Processing <${element.tagName}>`, element);
+    if (this.runtimeContext.isDevMode && !forceReWalk) this.runtimeContext.debug(`[Coordinator] Processing <${element.tagName}> (Isolation: ${currentIsolation})`, element);
     
     // Mark as initialized IMMEDIATELY to prevent circularity or double-walk
     (element as NexusEnhancedElement)[MARKER_KEY] = this.markerDispenser++;
 
-    // ZCZS Target: Lexing static DOM classes instantaneously upon discovery
-    if (element.classList && element.classList.length > 0) {
+    // 3. JIT Style Adoption (Gated by 'style' isolation)
+    if (currentIsolation !== 'style' && element.classList && element.classList.length > 0) {
       element.classList.forEach(cls => stylesheet.adoptClass(cls, element as HTMLElement, this.runtimeContext));
     }
 
-    const handlersToExecute: {
-      directiveName: string;
-      handle: () => (() => void) | void;
-      originalIndex: number;
-    }[] = [];
+    // 4. Directive Processing (Gated by 'ux' isolation)
+    if (currentIsolation !== 'ux') {
+      const handlersToExecute: {
+        directiveName: string;
+        handle: () => (() => void) | void;
+        originalIndex: number;
+      }[] = [];
 
-    Array.from(element.attributes).forEach((attr, index) => {
-      const parsedAttr = this.runtimeContext.parseAttribute(attr.name, this.runtimeContext, element);
-      if (parsedAttr?.directive) {
-        const module = this.attributeModules.get(parsedAttr.directive);
-        if (module) {
-          handlersToExecute.push({
-            directiveName: parsedAttr.directive,
-            handle: () => {
-              // Construct a Scoped Runtime Context to execute Universal Pipeline Modifiers
-              let scopedRuntime = this.runtimeContext;
-              
-              if (parsedAttr.modifiers && parsedAttr.modifiers.length > 0) {
-                scopedRuntime = { ...this.runtimeContext };
-                
-                // Execute Universal Pipeline Interceptors (e.g. :morph, :intersect) dynamically
-                let currentEvaluate = scopedRuntime.evaluate;
-
-                parsedAttr.modifiers.forEach((modFull: string) => {
-                   let modName = modFull;
-                   let modArg = '';
-                   const dashIdx = modFull.indexOf('-');
-                   if (dashIdx !== -1) {
-                     modName = modFull.substring(0, dashIdx);
-                     modArg = modFull.substring(dashIdx + 1);
-                   }
-
-                   const modModule = this.modifierModules.get(modName);
-                   if (modModule && typeof modModule.interceptPipeline === 'function') {
+      Array.from(element.attributes).forEach((attr, index) => {
+        const parsedAttr = this.runtimeContext.parseAttribute(attr.name, this.runtimeContext, element);
+        if (parsedAttr?.directive) {
+          const module = this.attributeModules.get(parsedAttr.directive);
+          if (module) {
+            handlersToExecute.push({
+              directiveName: parsedAttr.directive,
+              handle: () => {
+                let scopedRuntime = this.runtimeContext;
+                if (parsedAttr.modifiers && parsedAttr.modifiers.length > 0) {
+                  scopedRuntime = { ...this.runtimeContext };
+                  let currentEvaluate = scopedRuntime.evaluate;
+                  parsedAttr.modifiers.forEach((modFull: string) => {
+                    let modName = modFull;
+                    let modArg = '';
+                    const dashIdx = modFull.indexOf('-');
+                    if (dashIdx !== -1) {
+                      modName = modFull.substring(0, dashIdx);
+                      modArg = modFull.substring(dashIdx + 1);
+                    }
+                    const modModule = this.modifierModules.get(modName);
+                    if (modModule && typeof modModule.interceptPipeline === 'function') {
                       currentEvaluate = modModule.interceptPipeline(currentEvaluate, element, modArg || parsedAttr.target || '', scopedRuntime);
-                   }
-                });
-
-                scopedRuntime.evaluate = currentEvaluate;
-              }
-
-              return module.handle(element, attr.value, scopedRuntime);
-            },
-            originalIndex: index,
-          });
-        }
-      }
-    });
-
-    handlersToExecute.sort((a, b) => {
-      const indexA = this.directiveOrder.indexOf(a.directiveName);
-      const indexB = this.directiveOrder.indexOf(b.directiveName);
-      const effA = indexA === -1 ? this.directiveOrder.length : indexA;
-      const effB = indexB === -1 ? this.directiveOrder.length : indexB;
-      return effA === effB ? a.originalIndex - b.originalIndex : effA - effB;
-    });
-
-    handlersToExecute.forEach(handler => {
-      const enhancedEl = element as NexusEnhancedElement;
-      const fullAttrName = Array.from(element.attributes)[handler.originalIndex]?.name || handler.directiveName;
-      const hashKey = `${fullAttrName}:${this.runtimeContext.attrHash(handler.directiveName, element.getAttribute(fullAttrName) || '')}`;
-
-      // Check if already applied and hash matches (directive-level gating)
-      let elRemovals = enhancedEl[CLEANUP_FUNCTIONS_KEY];
-      if (elRemovals?.has(hashKey)) return;
-
-      try {
-        const cleanup = handler.handle();
-        if (cleanup) {
-          if (!elRemovals) {
-            elRemovals = new Map();
-            enhancedEl[CLEANUP_FUNCTIONS_KEY] = elRemovals;
+                    }
+                  });
+                  scopedRuntime.evaluate = currentEvaluate;
+                }
+                return module.handle(element, attr.value, scopedRuntime);
+              },
+              originalIndex: index,
+            });
           }
-          elRemovals.set(hashKey, cleanup);
         }
-      } catch (e) {
-        // Prevent a single bad attribute from halting compilation of the whole element
-        this.runtimeContext.reportError(
-           e instanceof Error ? e : new Error(String(e)), 
-           element, 
-           `Attribute compilation failed for: ${fullAttrName}`
-        );
-      }
-    });
+      });
 
+      handlersToExecute.sort((a, b) => {
+        const indexA = this.directiveOrder.indexOf(a.directiveName);
+        const indexB = this.directiveOrder.indexOf(b.directiveName);
+        const effA = indexA === -1 ? this.directiveOrder.length : indexA;
+        const effB = indexB === -1 ? this.directiveOrder.length : indexB;
+        return effA === effB ? a.originalIndex - b.originalIndex : effA - effB;
+      });
+
+      handlersToExecute.forEach(handler => {
+        const enhancedEl = element as NexusEnhancedElement;
+        const fullAttrName = Array.from(element.attributes)[handler.originalIndex]?.name || handler.directiveName;
+        const hashKey = `${fullAttrName}:${this.runtimeContext.attrHash(handler.directiveName, element.getAttribute(fullAttrName) || '')}`;
+
+        let elRemovals = enhancedEl[CLEANUP_FUNCTIONS_KEY];
+        if (elRemovals?.has(hashKey)) return;
+
+        try {
+          const cleanup = handler.handle();
+          if (cleanup) {
+            if (!elRemovals) {
+              elRemovals = new Map();
+              enhancedEl[CLEANUP_FUNCTIONS_KEY] = elRemovals;
+            }
+            elRemovals.set(hashKey, cleanup);
+          }
+        } catch (e) {
+          this.runtimeContext.reportError(
+            e instanceof Error ? e : new Error(String(e)), 
+            element, 
+            `Attribute compilation failed for: ${fullAttrName}`
+          );
+        }
+      });
+    }
+
+    // 5. Recursive Walk (Passing current Isolation state)
     Array.from(element.children).forEach(child => {
       if (child instanceof HTMLElement) {
-        this.processElement(child, forceReWalk);
+        this.processElement(child, forceReWalk, currentIsolation);
       } else if (child instanceof Element && child.classList && child.classList.length > 0) {
-        // SVG and other non-HTML elements: adopt their classes for JIT compilation
-        child.classList.forEach(cls => stylesheet.adoptClass(cls, child as unknown as HTMLElement, this.runtimeContext));
-        // Walk SVG children too
-        Array.from(child.children).forEach(grandchild => {
-          if (grandchild instanceof Element && grandchild.classList && grandchild.classList.length > 0) {
-            grandchild.classList.forEach(cls => stylesheet.adoptClass(cls, grandchild as unknown as HTMLElement, this.runtimeContext));
-          }
-        });
+        if (currentIsolation !== 'style') {
+          child.classList.forEach(cls => stylesheet.adoptClass(cls, child as unknown as HTMLElement, this.runtimeContext));
+          Array.from(child.children).forEach(grandchild => {
+            if (grandchild instanceof Element && grandchild.classList && grandchild.classList.length > 0) {
+              grandchild.classList.forEach(cls => stylesheet.adoptClass(cls, grandchild as unknown as HTMLElement, this.runtimeContext));
+            }
+          });
+        }
       }
     });
   }

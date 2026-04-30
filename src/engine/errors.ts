@@ -17,12 +17,45 @@ export class UXError extends Error {
  * Reports a framework-specific error.
  * This function centralizes error reporting and can be extended to provide
  * more sophisticated logging, UI notifications, or developer debugging tools.
+ * Unified with MCP for AI-First Auto-Repair Diagnosis.
  */
 export function reportError(error: Error, element?: HTMLElement, expression?: string): void {
   const errorMessage = `[UX Error] ${error.message}`;
   console.error(errorMessage, { element, expression, originalError: error });
 
-  // Dispatch a custom event for external error handling or monitoring
+  // 1. Diagnostic Routing (AI-First MCP Integration)
+  const Nexus = (globalThis as any).Nexus;
+  const runtime = Nexus?.coordinator?.runtimeContext;
+  
+  if (runtime?.mcp && runtime.isDevMode) {
+    runtime.mcp.sendRequest('sampling/createMessage', {
+      messages: [{
+        role: 'user',
+        content: {
+          type: 'text',
+          text: `Diagnose and suggest a fix for this Nexus-UX engine error:\n` +
+                `Message: ${error.message}\n` +
+                `Expression: ${expression || 'N/A'}\n` +
+                `Element: ${element?.outerHTML?.substring(0, 500) || 'N/A'}\n` +
+                `Stack: ${error.stack}`
+        }
+      }]
+    }).then((res: any) => {
+       const suggestion = res?.content?.text || res?.content?.[0]?.text;
+       if (suggestion) {
+         console.info(`[Nexus AI Diagnosis] ✨ Suggested Fix:\n${suggestion}`);
+         // Populate internal debug signal if it exists
+         if (runtime.setGlobalSignal) {
+           const diagnoses = runtime.globalSignals()._debug_diagnoses || [];
+           runtime.setGlobalSignal('_debug_diagnoses', [...diagnoses, { error: error.message, suggestion }]);
+         }
+       }
+    }).catch(() => {
+       // Silent fail for diagnostic bridge
+    });
+  }
+
+  // 2. Dispatch custom event
   if (typeof CustomEvent !== 'undefined') {
     const errorEvent = new CustomEvent(`${CUSTOM_EVENT_PREFIX}error`, {
       bubbles: true,

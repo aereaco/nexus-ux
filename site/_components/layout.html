@@ -26,12 +26,17 @@
         </button>
       </div>
     </nav>
-    <!-- Page content here -->
-    <div class="p-4">Page Content</div>
-    <p class="pb-4 ps-4" data-bind="'Windows Size: ' + _window.innerWidth"></p>
-    <p class="pb-4 ps-4" data-bind="'Windows Size < 1024: ' + isMobile"></p>
-    <p class="pb-4 ps-4" data-bind="'Collapsed: ' + collapsed"></p>
-    <p class="pb-4 ps-4" data-bind="'Hovered: ' + hovered"></p>
+    <!-- Dynamic Router Outlet / Component Insertion -->
+    <div data-if="dashboardComponent" class="w-full h-full relative" data-component="dashboardComponent"></div>
+
+    <!-- Default Diagnostic Content (fallback if no route component provided) -->
+    <div data-if="!dashboardComponent">
+      <div class="p-4 text-2xl font-bold">Nexus-UX Engine Layout Shell</div>
+      <p class="pb-4 ps-4 text-accent" data-bind="'Windows Size: ' + _window.innerWidth"></p>
+      <p class="pb-4 ps-4 text-secondary" data-bind="'Windows Size < 1024 (Mobile Match): ' + isMobile"></p>
+      <p class="pb-4 ps-4 text-info" data-bind="'Sidebar Collapsed: ' + collapsed"></p>
+      <p class="pb-4 ps-4 text-success" data-bind="'Sidebar Hovered: ' + hovered"></p>
+    </div>
   </div>
 
   <div class="drawer-side" data-class="{ 'overflow-visible': hovered || !collapsed || isMobile }">

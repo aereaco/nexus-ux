@@ -51,11 +51,16 @@ const signalModule: AttributeModule = {
     
     let addCleanup: (() => void) | undefined;
     let lastEvaluatedState: Record<string, unknown> | null = null;
+    let isEvaluating = false;
 
     const [_runner, effectCleanup] = runtime.elementBoundEffect(el, () => {
-      // 4. Evaluate to get Initial State
-      let newState: unknown;
+      if (isEvaluating) return;
+      isEvaluating = true;
+
       try {
+        // 4. Evaluate to get Initial State
+        let newState: unknown;
+        try {
         newState = runtime.evaluate(el, expression);
       } catch (e) {
         runtime.reportError(e instanceof Error ? e : new Error(String(e)), el, expression);
@@ -81,21 +86,40 @@ const signalModule: AttributeModule = {
           if (isGlobal) {
             const globals = runtime.globalSignals() as Record<string, unknown>;
             Object.keys(currentEval).forEach(key => {
-              if (currentEval[key] !== lastEvaluatedState![key]) {
-                globals[key] = currentEval[key];
-                lastEvaluatedState![key] = currentEval[key];
+              const curVal = currentEval[key];
+              const lastVal = lastEvaluatedState![key];
+              
+              let changed = curVal !== lastVal;
+              if (changed && typeof curVal === 'object' && curVal !== null) {
+                 changed = JSON.stringify(curVal) !== JSON.stringify(lastVal);
+              }
+              
+              if (changed) {
+                globals[key] = curVal;
+                lastEvaluatedState![key] = curVal;
               }
             });
           } else {
             const value = stateRef.value;
             Object.keys(currentEval).forEach(key => {
-              if (currentEval[key] !== lastEvaluatedState![key]) {
-                value[key] = currentEval[key];
-                lastEvaluatedState![key] = currentEval[key];
+              const curVal = currentEval[key];
+              const lastVal = lastEvaluatedState![key];
+              
+              let changed = curVal !== lastVal;
+              if (changed && typeof curVal === 'object' && curVal !== null) {
+                 changed = JSON.stringify(curVal) !== JSON.stringify(lastVal);
+              }
+              
+              if (changed) {
+                value[key] = curVal;
+                lastEvaluatedState![key] = curVal;
               }
             });
           }
         }
+      }
+      } finally {
+        isEvaluating = false;
       }
     });
 

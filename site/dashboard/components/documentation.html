@@ -1,0 +1,855 @@
+<div class="dashboard-fragment" 
+    data-ingest="{ 
+        'DaisyUI': { 
+          link: [
+            { href: 'https://cdn.jsdelivr.net/npm/daisyui@5' },
+            { href: 'https://cdn.jsdelivr.net/npm/daisyui@5/themes.css' }
+          ] 
+        }, 
+        'CodeMirror': { 
+          script: { src: '/site/dashboard/assets/cm.js', type: 'module' }
+        } 
+      }"
+    data-signal="{ 
+        toastMsg: '', 
+        toastType: 'info', 
+        showToast: false,
+        syntaxTab: 'usage',
+        demoTab: 'preview',
+        activeFork: 'Default',
+        activeSnippet: 'Default',
+        showForkModal: false,
+        showSnippetModal: false,
+        forkName: '',
+        snippetName: '',
+        forkError: '',
+        snippetError: '',
+        forkSource: '',
+        forkCode: '',
+        snippetCode: '',
+        forks: [],
+        snippets: [],
+        forksLoaded: false,
+        snippetsLoaded: false,
+        manageTarget: '',
+        newName: '',
+        showRenameForkModal: false,
+        showDeleteForkModal: false,
+        showRenameSnippetModal: false,
+        showDeleteSnippetModal: false,
+        manageError: '',
+        baseSnippets: [],
+        initComplete: false
+     }" data-effect="
+        if (!initComplete && doc) {
+            initComplete = true;
+            // Populate base snippets from doc definition
+            if (baseSnippets.length === 0) {
+                const bases = [];
+                if (doc.Examples) {
+                    Object.keys(doc.Examples).forEach(k => bases.push(k));
+                } else if (doc.Snippet) {
+                    bases.push(doc.DefaultSnippetName || 'Default');
+                }
+                baseSnippets = bases;
+                if (bases.length > 0 && activeSnippet === 'Default') activeSnippet = bases[0];
+            }
+
+            // Immediate sync to avoid waiting for editors to populate the preview
+            if (!snippetCode && doc.Examples && doc.Examples[activeSnippet]) {
+                snippetCode = doc.Examples[activeSnippet];
+            } else if (!snippetCode && doc.Snippet && activeSnippet === (doc.DefaultSnippetName || 'Default')) {
+                snippetCode = doc.Snippet;
+            }
+
+            if (activeFork === 'Default' && forkSource && !forkCode) forkCode = forkSource;
+
+            if (!forkSource && doc.SourceModule) {
+                $get('/src' + doc.SourceModule, { responseType: 'text' }).then(d => {
+                    forkSource = d;
+                    if (activeFork === 'Default') forkCode = d;
+                });
+            }
+
+            // Initialize lists from mirrors explicitly
+            if (_indexedDB?.forks && !forksLoaded) {
+                forksLoaded = true;
+                _indexedDB.forks.list(doc.SourceModule + '_').then(keys => {
+                    forks = keys.map(k => k.substring(doc.SourceModule.length + 1));
+                });
+            }
+            if (_indexedDB?.snippets && !snippetsLoaded) {
+                snippetsLoaded = true;
+                _indexedDB.snippets.list(doc.SnippetModule + '_').then(keys => {
+                    snippets = keys.map(k => k.substring(doc.SnippetModule.length + 1));
+                });
+            }
+
+        // ZCZS: Singleton registration + dispatch callback + cleanup
+        // Mount editors — gates on both CM singleton and reactive forkSource data
+        const mountEditors = () => {
+            if (!window.CM || !forkSource) return;
+
+            const { EditorView, EditorState, Compartment, basicSetup, javascript, html, oneDark } = window.CM;
+
+            // Source Editor — singleton init
+            if (!window._sourceEditor) {
+                const readOnly = new Compartment();
+                window._sourceEditor = new EditorView({
+                    state: EditorState.create({
+                        doc: forkSource,
+                        extensions: [
+                            basicSetup,
+                            javascript(),
+                            oneDark,
+                            EditorView.lineWrapping,
+                            readOnly.of(EditorState.readOnly.of(true)),
+                            EditorView.updateListener.of(update => {
+                                if (update.docChanged) {
+                                    const val = update.state.doc.toString();
+                                    if (forkCode !== val) forkCode = val;
+                                }
+                            })
+                        ]
+                    }),
+                    parent: document.getElementById('source-editor')
+                });
+
+                $watch(() => forkCode, (code) => {
+                    if (code !== undefined && window._sourceEditor.state.doc.toString() !== code) {
+                        window._sourceEditor.dispatch({
+                             changes: { from: 0, to: window._sourceEditor.state.doc.length, insert: code || '' }
+                        });
+                    }
+                });
+
+                $watch(() => activeFork, (fork) => {
+                    if (fork === 'Default') {
+                        forkCode = forkSource;
+                    } else {
+                        _indexedDB.forks.get(doc.SourceModule + '_' + fork).then(val => {
+                            forkCode = val || forkSource || '';
+                        });
+                    }
+                    window._sourceEditor.dispatch({
+                        effects: readOnly.reconfigure(EditorState.readOnly.of(fork === 'Default'))
+                    });
+                });
+            }
+
+            // Snippet Editor — singleton init
+            if ((doc?.Snippet || doc?.Examples) && !window._snippetEditor) {
+                const snippetReadOnly = new Compartment();
+                window._snippetEditor = new EditorView({
+                    state: EditorState.create({
+                        doc: snippetCode || '',
+                        extensions: [
+                            basicSetup,
+                            html(),
+                            oneDark,
+                            EditorView.lineWrapping,
+                            snippetReadOnly.of(EditorState.readOnly.of(activeSnippet === 'Default')),
+                            EditorView.updateListener.of(update => {
+                                if (update.docChanged) {
+                                    const val = update.state.doc.toString();
+                                    if (snippetCode !== val) snippetCode = val;
+                                }
+                            })
+                        ]
+                    }),
+                    parent: document.getElementById('snippet-editor')
+                });
+
+                $watch(() => snippetCode, (code) => {
+                    if (code !== undefined && window._snippetEditor.state.doc.toString() !== code) {
+                        window._snippetEditor.dispatch({
+                             changes: { from: 0, to: window._snippetEditor.state.doc.length, insert: code || '' }
+                        });
+                    }
+                });
+
+                $watch(() => activeSnippet, (snippet) => {
+                    if (doc.Examples && doc.Examples[snippet]) {
+                        snippetCode = doc.Examples[snippet];
+                    } else if (snippet === (doc.DefaultSnippetName || 'Default')) {
+                        snippetCode = doc.Snippet;
+                    } else {
+                        _indexedDB.snippets.get(doc.SnippetModule + '_' + snippet).then(val => {
+                            snippetCode = val || doc.Snippet || '';
+                        });
+                    }
+                    window._snippetEditor.dispatch({
+                        effects: snippetReadOnly.reconfigure(EditorState.readOnly.of(baseSnippets.includes(snippet)))
+                    });
+                });
+            }
+        };
+
+        // Store latest mount closure on element — allows the one-shot listener
+        // to always invoke the freshest closure (no stale captures)
+        $el._mountEditors = mountEditors;
+
+        // Try synchronous mount (CM already loaded + forkSource available)
+        if (window.CM) mountEditors();
+
+        // If CM not yet loaded, register ONE listener (singleton guard on element)
+        if (!window.CM && !$el._cmListenerRegistered) {
+            $el._cmListenerRegistered = true;
+            window.addEventListener('nexus:cm-ready', () => $el._mountEditors?.(), { once: true });
+        }
+    }
+    ">
+    <style>
+        /* Progress Bar */
+        .nexus-progress-mount { position: fixed; top: 0; left: 0; right: 0; z-index: 9999; }
+        progress { appearance: none; -webkit-appearance: none; border: none; background: transparent; height: 0.5rem; margin: 0; display: block; }
+        progress::-webkit-progress-bar { background-color: rgba(166, 173, 187, 0.2); }
+        progress::-webkit-progress-value { background-color: #570df8; }
+        progress::-moz-progress-bar { background-color: #570df8; }
+
+        /* Main Layout */
+        main.nx-main { opacity: 0; transition: opacity 0.5s ease-in; position: relative; padding: 1.5rem; }
+        main.nx-main.nexus-ready { opacity: 1; }
+
+        /* Editor Styles - CM6 auto-height until max, then scroll */
+        .nx-editor-container { position: relative; min-height: 400px; width: 100%; }
+        .nx-editor { position: absolute; top: 0; left: 0; right: 0; bottom: 0; font-family: 'Fira Code', 'Cascadia Code', monospace; font-size: 14px; }
+        .nx-editor .cm-editor { height: 100%; max-height: 500px; }
+        .nx-editor .cm-scroller { overflow: auto; }
+
+        /* Animation Library */
+        @keyframes scale-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .animate-scale-pulse {
+            animation: scale-pulse 2s ease-in-out infinite;
+        }
+
+        /* Animate Sprite Helpers */
+        .target-head { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
+        .target-head:hover { transform: scale(1.15); filter: brightness(1.2) drop-shadow(0 0 8px rgba(34, 197, 94, 0.4)); }
+    </style>
+
+    <div class="nexus-progress-mount" data-class-hidden="appReady">
+        <progress class="progress progress-primary w-full"></progress>
+    </div>
+
+    <main class="nx-main" data-class-nexus-ready="appReady">
+        <div class="max-w-5xl mx-auto space-y-12" data-if="doc">
+
+            <!-- ═══════════ 1. TITLE & DESCRIPTION ═══════════ -->
+            <div class="mb-12">
+                <h1 class="text-4xl font-bold mb-4 flex items-center gap-3 text-primary">
+                    <span data-bind="doc.Title"></span>
+                </h1>
+                <p class="text-xl opacity-80 max-w-3xl leading-relaxed" data-markdown="doc.Description"></p>
+            </div>
+
+            <!-- ═══════════ 2. SYNTAX & SOURCE ═══════════ -->
+            <div class="card bg-base-100 shadow-xl border border-base-300 mb-12">
+
+                <div class="card-body pb-0">
+                    <div
+                        class="flex flex-col md:flex-row justify-between md:items-center border-b border-base-300 pb-4 mb-4 gap-4">
+                        <h2 class="card-title text-secondary flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>
+                            Syntax &amp; Framework Source
+                        </h2>
+                        <div class="join bg-base-200 p-1">
+                            <button class="join-item btn btn-sm" data-class-btn-primary="syntaxTab === 'usage'"
+                                data-class-btn-ghost="syntaxTab !== 'usage'"
+                                data-on-click="syntaxTab = 'usage'">Usage</button>
+                            <button class="join-item btn btn-sm" data-class-btn-primary="syntaxTab === 'source'"
+                                data-class-btn-ghost="syntaxTab !== 'source'"
+                                data-on-click="syntaxTab = 'source'">Source</button>
+                        </div>
+                    </div>
+                    <div data-show="syntaxTab === 'usage'" class="pb-4">
+                        <pre
+                            class="mockup-code bg-neutral text-neutral-content p-4 font-mono text-sm w-full overflow-x-auto"><code data-bind="doc.Syntax || ''"></code></pre>
+                    </div>
+                    <div data-show="syntaxTab === 'source'" style="display:none;">
+                        <div class="nx-editor-container border border-neutral/50 rounded-xl overflow-hidden mb-6"
+                        style="width: 100%;">
+                            <div id="source-editor" class="nx-editor"
+                                style="font-family: 'Fira Code', 'Cascadia Code', monospace; font-size: 14px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Syntax Codebar -->
+                <div class="nx-cmdbar flex items-center justify-between px-6 py-3 bg-base-200/50 border-t border-base-300"
+                    style="border-radius: 0 0 calc(var(--rounded-box, 1rem)) calc(var(--rounded-box, 1rem));">
+                    <!-- Left: Selector -->
+                    <div class="flex items-center gap-2">
+                        <div class="dropdown dropdown-bottom">
+                            <div tabindex="0" role="button"
+                                class="btn btn-bordered btn-sm w-48 justify-between bg-base-100/50 font-bold overflow-hidden"
+                                data-bind="{ disabled: forks.length === 0 }" data-class-btn-disabled="forks.length === 0">
+                                <span data-bind="activeFork" class="truncate me-2"></span>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                    stroke="currentColor" class="w-4 h-4 opacity-50">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                </svg>
+                            </div>
+                            <ul tabindex="0"
+                                class="dropdown-content z-[100] menu p-2 shadow-2xl bg-base-100 rounded-box w-56 border border-base-300 mt-1">
+                                <li><a data-on-click="activeFork = 'Default'; if (document.activeElement instanceof HTMLElement) document.activeElement.blur()"
+                                        data-class-active="activeFork === 'Default'" class="font-bold">Default</a></li>
+                                <div class="divider my-0 opacity-20"></div>
+                                <template data-for="f in forks">
+                                    <li class="group flex flex-row items-center justify-between">
+                                        <a data-on-click="activeFork = f; if (document.activeElement instanceof HTMLElement) document.activeElement.blur()" data-class-active="activeFork === f"
+                                            class="flex-1 flex items-center justify-between">
+                                            <div data-bind="f" class="truncate"></div>
+                                            <div
+                                                class="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity pe-1">
+                                                <button class="btn btn-ghost btn-xs text-info p-1 h-auto min-h-0"
+                                                    data-on-click="$evt.stopPropagation(); manageTarget = f; newName = f; showRenameForkModal = true"
+                                                    title="Rename">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                                                        class="w-3.5 h-3.5">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                                    </svg>
+                                                </button>
+                                                <button class="btn btn-ghost btn-xs text-error p-1 h-auto min-h-0"
+                                                    data-on-click="$evt.stopPropagation(); manageTarget = f; showDeleteForkModal = true"
+                                                    title="Delete">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                                                        class="w-3.5 h-3.5">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            d="M14.74 9l-.34 9m-4.72 0L9.36 9m11.17-6.23a4.5 4.5 0 01-1.24.58L18 3.32V3h-3.41l-.14-.49A2.25 2.25 0 0012.31 1h-0.62a2.25 2.25 0 00-2.14 1.51l-.14.49H6v.32l-2.12.09a4.5 4.5 0 00-1.24-.58L1 3.77l.79 2.14 1.16-.05V18.75A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V5.86l1.16.05.79-2.14-0.21-.09z" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </a>
+                                    </li>
+                                </template>
+                            </ul>
+                        </div>
+                        <button class="btn btn-sm btn-secondary btn-outline" title="New fork"
+                            data-on-click="showForkModal = true; forkName = ''; forkError = ''">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                        </button>
+                        <span class="badge badge-primary text-[10px] opacity-30" data-show="forks.length > 0"
+                            data-bind="forks.length"></span>
+                    </div>
+
+                    <!-- Center: Download + Copy (Restored) -->
+                    <div class="join">
+                        <button class="btn btn-sm btn-ghost join-item border border-base-300 gap-1.5"
+                            title="Download current code" data-on-click="
+                                const blob = new Blob([activeFork === 'Default' ? forkSource : _indexedDB.forks[doc.SourceModule + '_' + activeFork]], { type: 'text/plain' });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                const moduleName = doc.SourceModule.split('/').pop().split('.')[0];
+                                a.download = moduleName + '_' + activeFork.toLowerCase() + '.ts';
+                                a.click();
+                            ">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                            </svg>
+                        </button>
+                        <button class="btn btn-sm btn-ghost join-item border border-base-300 gap-1.5"
+                            title="Copy to clipboard" data-on-click="
+                                navigator.clipboard.writeText(forkCode).catch(e => console.error('Copy failed', e));
+                                toastMsg = 'The ' + activeFork + ' fork copied to clipboard'; toastType = 'info'; showToast = true;
+                            ">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Right: Save + Reset -->
+                    <div class="flex items-center gap-2">
+                        <button
+                            class="btn btn-sm btn-ghost gap-2 text-secondary border-secondary/20 hover:bg-secondary/10"
+                            data-bind="{ disabled: activeFork === 'Default' }"
+                            data-class-btn-disabled="activeFork === 'Default'" data-on-click="
+                                if (activeFork !== 'Default') {
+                                    _indexedDB.forks[doc.SourceModule + '_' + activeFork] = forkCode;
+                                    toastMsg = 'Fork saved: ' + activeFork; toastType = 'success'; showToast = true;
+                                }
+                            ">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                            </svg> Save
+                        </button>
+                        <button class="btn btn-sm btn-ghost gap-2 text-error border-error/20 hover:bg-error/10"
+                            data-bind="{ disabled: activeFork === 'Default' }"
+                             data-class-btn-disabled="activeFork === 'Default'" data-on-click="
+                                if (activeFork !== 'Default') {
+                                    _indexedDB.forks.get(doc.SourceModule + '_' + activeFork).then(val => {
+                                        forkCode = val || forkSource || '';
+                                        toastMsg = 'Reset complete'; toastType = 'success'; showToast = true;
+                                    });
+                                } else {
+                                    forkCode = forkSource;
+                                    toastMsg = 'Reverted to document source'; toastType = 'success'; showToast = true;
+                                }
+                            ">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
+                            </svg> Reset
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Fork Modal -->
+                <template data-if="showForkModal">
+                    <div class="fixed inset-0 bg-black/50 z-[9998] flex items-center justify-center">
+                        <div class="card bg-base-100 shadow-2xl border border-base-300 max-w-md w-full mx-4">
+                            <div class="card-body">
+                                <h3 class="card-title text-secondary">Create Fork</h3>
+                                <p class="py-2 opacity-70">Fork the framework source under a new name:</p>
+                                <input type="text" class="input input-bordered input-secondary w-full" data-bind="forkName"
+                                    placeholder="my-feature-branch">
+                                <p data-show="forkError !== ''" class="text-error text-sm mt-1" data-bind="forkError"
+                                    style="display:none;"></p>
+                                <div class="card-actions justify-end mt-4">
+                                    <button class="btn btn-ghost" data-on-click="showForkModal = false">Cancel</button>
+                                    <button class="btn btn-secondary" data-on-click="
+                                    const name = forkName.trim();
+                                    if (!name) { forkError = 'Name is required'; return; }
+                                    if (name === 'Default') { forkError = 'Reserved name'; return; }
+                                    if (forks.indexOf(name) !== -1) { forkError = 'Already exists'; return; }
+                                    _indexedDB.forks[doc.SourceModule + '_' + name] = forkCode;
+                                    forks.push(name);
+                                    activeFork = name;
+                                    showForkModal = false;
+                                    toastMsg = 'Fork created: ' + name; toastType = 'success'; showToast = true;
+                                    setTimeout(() => window._sourceEditor?.focus(), 100);
+                                ">Create</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- ═══════════ 3. INTERACTIVE DEMO ═══════════ -->
+            <div class="card bg-base-100 shadow-xl border border-base-300 mb-8" data-if="doc.Snippet || doc.Examples">
+
+                <div class="card-body pb-0">
+                    <div
+                        class="flex flex-col md:flex-row justify-between md:items-center border-b border-base-300 pb-4 mb-4 gap-4">
+                        <h2 class="card-title text-secondary flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" /></svg>
+                            Interactive Demonstration
+                        </h2>
+                        <div class="join bg-base-200 p-1">
+                            <!-- Preview Icon -->
+                            <button class="join-item btn btn-sm tooltip tooltip-top" data-tip="Preview" 
+                                data-class-btn-primary="demoTab === 'preview'"
+                                data-class-btn-ghost="demoTab !== 'preview'"
+                                data-on-click="demoTab = 'preview'">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                            </button>
+                            <!-- Code Icon -->
+                            <button class="join-item btn btn-sm tooltip tooltip-top" data-tip="Code" 
+                                data-class-btn-primary="demoTab === 'code'"
+                                data-class-btn-ghost="demoTab !== 'code'"
+                                data-on-click="demoTab = 'code'">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>
+                            </button>
+                            <!-- Split View Icon (At the end as requested) -->
+                            <button class="join-item btn btn-sm tooltip tooltip-top" data-tip="Split View" 
+                                data-class-btn-primary="demoTab === 'split'"
+                                data-class-btn-ghost="demoTab !== 'split'"
+                                data-on-click="demoTab = 'split'">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5v15m6-15v15m-10.875 0h15.75c.621 0 1.125-.504 1.125-1.125V5.625c0-.621-.504-1.125-1.125-1.125H4.125C3.504 4.5 3 5.004 3 5.625v12.75c0 .621.504 1.125 1.125 1.125z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Split / Interactive Grid Layout -->
+                    <div class="grid grid-cols-1 gap-6" data-class-md:grid-cols-2="demoTab === 'split'">
+                        <!-- Preview Panel -->
+                        <div data-show="demoTab === 'preview' || demoTab === 'split'" class="pb-6 w-full h-full">
+                            <div class="bg-base-300/30 rounded-lg p-6 min-h-[140px] h-full border border-dashed border-base-300"
+                                data-html="snippetCode">
+                            </div>
+                        </div>
+
+                        <!-- Snippet Editor Panel -->
+                        <div data-show="demoTab === 'code' || demoTab === 'split'" style="display:none;" class="w-full h-full pb-6">
+                            <div class="nx-editor-container border border-neutral/50 rounded-xl overflow-hidden h-full"
+                                style="width: 100%;">
+                                <div id="snippet-editor" class="nx-editor"
+                                    style="font-family: 'Fira Code', 'Cascadia Code', monospace; font-size: 14px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Demo Codebar -->
+                <div class="nx-cmdbar flex items-center justify-between px-6 py-3 bg-base-200/50 border-t border-base-300"
+                    style="border-radius: 0 0 calc(var(--rounded-box, 1rem)) calc(var(--rounded-box, 1rem));">
+                    <!-- Left: Selector -->
+                    <div class="flex items-center gap-2">
+                        <div class="dropdown dropdown-bottom">
+                            <div tabindex="0" role="button"
+                                class="btn btn-bordered btn-sm w-48 justify-between bg-base-100/50 font-bold overflow-hidden"
+                                data-bind="{ disabled: (baseSnippets.length + snippets.length) <= 1 }" 
+                                data-class-btn-disabled="(baseSnippets.length + snippets.length) <= 1">
+                                <span data-bind="activeSnippet" class="truncate me-2"></span>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                    stroke="currentColor" class="w-4 h-4 opacity-50">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                </svg>
+                            </div>
+                            <ul tabindex="0"
+                                class="dropdown-content z-[100] menu p-2 shadow-2xl bg-base-100 rounded-box w-56 border border-base-300 mt-1">
+                                <template data-for="bs in baseSnippets">
+                                    <li><a data-on-click="activeSnippet = bs; if (document.activeElement instanceof HTMLElement) document.activeElement.blur()"
+                                            data-class-active="activeSnippet === bs" class="font-bold" data-bind="bs"></a>
+                                    </li>
+                                </template>
+                                <div class="divider my-0 opacity-20" data-show="snippets.length > 0"></div>
+                                <template data-for="s in snippets">
+                                    <li class="group flex flex-row items-center justify-between">
+                                        <a data-on-click="activeSnippet = s; if (document.activeElement instanceof HTMLElement) document.activeElement.blur()" data-class-active="activeSnippet === s"
+                                            class="flex-1 flex items-center justify-between">
+                                            <div data-bind="s" class="truncate"></div>
+                                            <div
+                                                class="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity pe-1">
+                                                <button class="btn btn-ghost btn-xs text-info p-1 h-auto min-h-0"
+                                                    data-on-click="$evt.stopPropagation(); manageTarget = s; newName = s; showRenameSnippetModal = true"
+                                                    title="Rename">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                                                        class="w-3.5 h-3.5">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                                    </svg>
+                                                </button>
+                                                <button class="btn btn-ghost btn-xs text-error p-1 h-auto min-h-0"
+                                                    data-on-click="$evt.stopPropagation(); manageTarget = s; showDeleteSnippetModal = true"
+                                                    title="Delete">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                                                        class="w-3.5 h-3.5">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            d="M14.74 9l-.34 9m-4.72 0L9.36 9m11.17-6.23a4.5 4.5 0 01-1.24.58L18 3.32V3h-3.41l-.14-.49A2.25 2.25 0 0012.31 1h-0.62a2.25 2.25 0 00-2.14 1.51l-.14.49H6v.32l-2.12.09a4.5 4.5 0 00-1.24-.58L1 3.77l.79 2.14 1.16-.05V18.75A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V5.86l1.16.05.79-2.14-0.21-.09z" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </a>
+                                    </li>
+                                </template>
+                            </ul>
+                        </div>
+                        <button class="btn btn-sm btn-secondary btn-outline" title="New snippet"
+                            data-on-click="showSnippetModal = true; snippetName = ''; snippetError = ''">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                        </button>
+                        <span class="badge badge-primary text-[10px] opacity-30" data-show="snippets.length > 0"
+                            data-bind="snippets.length"></span>
+                    </div>
+
+                    <!-- Center: Download + Copy (Restored) -->
+                    <div class="join">
+                        <button class="btn btn-sm btn-ghost join-item border border-base-300 gap-1.5"
+                            title="Download current snippet" data-on-click="
+                                let code = snippetCode;
+                                if (activeSnippet === (doc.DefaultSnippetName || 'Default')) code = doc.Snippet;
+                                else if (doc.Examples && doc.Examples[activeSnippet]) code = doc.Examples[activeSnippet];
+                                
+                                const blob = new Blob([code], { type: 'text/html' });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                const moduleName = doc.SnippetModule.split('/').pop().split('.')[0];
+                                a.download = moduleName + '_' + activeSnippet.toLowerCase() + '.html';
+                                a.click();
+                            ">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                            </svg>
+                        </button>
+                        <button class="btn btn-sm btn-ghost join-item border border-base-300 gap-1.5"
+                            title="Copy to clipboard" data-on-click="
+                                navigator.clipboard.writeText(snippetCode).catch(e => console.error('Copy failed', e));
+                                toastMsg = 'The ' + activeSnippet + ' snippet copied to clipboard'; toastType = 'info'; showToast = true;
+                            ">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Right: Save + Reset -->
+                    <div class="flex items-center gap-2">
+                        <button
+                            class="btn btn-sm btn-ghost gap-2 text-secondary border-secondary/20 hover:bg-secondary/10"
+                            data-bind="{ disabled: baseSnippets.includes(activeSnippet) }"
+                            data-class-btn-disabled="baseSnippets.includes(activeSnippet)" data-on-click="
+                                if (!baseSnippets.includes(activeSnippet)) {
+                                    _indexedDB.snippets[doc.SnippetModule + '_' + activeSnippet] = snippetCode;
+                                    toastMsg = 'Snippet saved: ' + activeSnippet; toastType = 'success'; showToast = true;
+                                }
+                            ">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                            </svg> Save
+                        </button>
+                        <button class="btn btn-sm btn-ghost gap-2 text-error border-error/20 hover:bg-error/10"
+                            data-bind="{ disabled: baseSnippets.includes(activeSnippet) }"
+                             data-class-btn-disabled="baseSnippets.includes(activeSnippet)" data-on-click="
+                                if (!baseSnippets.includes(activeSnippet)) {
+                                    _indexedDB.snippets.get(doc.SnippetModule + '_' + activeSnippet).then(val => {
+                                        snippetCode = val || (doc.Examples && doc.Examples[activeSnippet]) || doc.Snippet || '';
+                                        toastMsg = 'Reset complete'; toastType = 'success'; showToast = true;
+                                    });
+                                } else {
+                                    snippetCode = (doc.Examples && doc.Examples[activeSnippet]) || doc.Snippet;
+                                    toastMsg = 'Reverted to document source'; toastType = 'success'; showToast = true;
+                                }
+                            ">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
+                            </svg> Reset
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Snippet Modal -->
+                <template data-if="showSnippetModal">
+                    <div class="fixed inset-0 bg-black/50 z-[9998] flex items-center justify-center">
+                        <div class="card bg-base-100 shadow-2xl border border-base-300 max-w-md w-full mx-4">
+                            <div class="card-body">
+                                <h3 class="card-title text-secondary">Save Snippet</h3>
+                                <p class="py-2 opacity-70">Save this demo template under a name:</p>
+                                <input type="text" class="input input-bordered input-secondary w-full"
+                                    data-bind="snippetName" placeholder="nested-signals-test">
+                                <p data-show="snippetError !== ''" class="text-error text-sm mt-1" data-bind="snippetError"
+                                    style="display:none;"></p>
+                                <div class="card-actions justify-end mt-4">
+                                    <button class="btn btn-ghost" data-on-click="showSnippetModal = false">Cancel</button>
+                                    <button class="btn btn-secondary" data-on-click="
+                                    const name = snippetName.trim();
+                                    if (!name) { snippetError = 'Name is required'; return; }
+                                    if (baseSnippets.includes(name)) { snippetError = 'Reserved name'; return; }
+                                    if (snippets.indexOf(name) !== -1) { snippetError = 'Already exists'; return; }
+                                    _indexedDB.snippets[doc.SnippetModule + '_' + name] = snippetCode;
+                                    snippets.push(name);
+                                    activeSnippet = name;
+                                    showSnippetModal = false;
+                                    toastMsg = 'Snippet saved: ' + name; toastType = 'success'; showToast = true;
+                                ">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- ═══════════ 4. EXTENSIBILITY ═══════════ -->
+            <div class="card bg-base-100 shadow-xl border border-base-300">
+                <div class="card-body">
+                    <h2 class="card-title text-secondary border-b border-base-300 pb-2 flex gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                            stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.827M15.75 15.75L21 21m-5.25-5.25l-1.5-1.5m3-3l1.5-1.5m-3 3L11.42 15.17M11.42 15.17A4.475 4.475 0 0012 11.25c0-2.485-2.015-4.5-4.5-4.5s-4.5 2.015-4.5 4.5c0 2.485 2.015 4.5 4.5 4.5 1.574 0 3.012-.81 3.82-2.08m0 0L3.75 3.75" />
+                        </svg>
+                        Extensibility Notes
+                    </h2>
+                    <div class="opacity-80 leading-relaxed" data-html="doc.Extensibility"></div>
+                </div>
+
+                <!-- ═══════════ 5. MANAGEMENT MODALS ═══════════ -->
+
+                <!-- Rename Fork Modal -->
+                <template data-if="showRenameForkModal">
+                    <div class="fixed inset-0 bg-black/50 z-[9998] flex items-center justify-center">
+                        <div class="card bg-base-100 shadow-2xl border border-base-300 max-w-md w-full mx-4">
+                            <div class="card-body">
+                                <h3 class="card-title text-info">Rename Fork</h3>
+                                <p class="py-2 opacity-70 text-sm italic">Original: <span class="font-bold"
+                                        data-bind="manageTarget"></span></p>
+                                <input type="text" class="input input-bordered input-info w-full" data-bind="newName"
+                                    placeholder="new-branch-name">
+                                <div class="card-actions justify-end mt-4">
+                                    <button class="btn btn-ghost"
+                                        data-on-click="showRenameForkModal = false">Cancel</button>
+                                    <button class="btn btn-info" data-on-click="
+                                const store = _indexedDB.forks;
+                                const prefix = doc.SourceModule;
+                                const oldKey = prefix + '_' + manageTarget;
+                                const newKey = prefix + '_' + newName;
+                                store.get(oldKey).then(code => {
+                                    if (code === undefined) { toastMsg = 'Error: Source not loaded'; toastType = 'error'; showToast = true; return; }
+                                    store.set(newKey, code).then(() => {
+                                        store.delete(oldKey).then(() => {
+                                            const idx = forks.indexOf(manageTarget);
+                                            if (idx !== -1) forks.splice(idx, 1, newName);
+                                            if (activeFork === manageTarget) activeFork = newName;
+                                            toastMsg = 'Renamed to ' + newName; toastType = 'success'; showToast = true;
+                                            showRenameForkModal = false;
+                                        });
+                                    });
+                                });
+                            ">Rename</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Delete Fork Modal -->
+                <template data-if="showDeleteForkModal">
+                    <div class="fixed inset-0 bg-black/50 z-[9998] flex items-center justify-center">
+                        <div class="card bg-base-100 shadow-2xl border border-error max-w-md w-full mx-4">
+                            <div class="card-body">
+                                <h3 class="card-title text-error flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                        stroke="currentColor" class="w-6 h-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                                    </svg>
+                                    Confirm Deletion
+                                </h3>
+                                <p class="py-2">Are you sure you want to delete the fork <span class="font-bold text-error"
+                                        data-bind="manageTarget"></span>? This action cannot be undone.</p>
+                                <div class="card-actions justify-end mt-4">
+                                    <button class="btn btn-ghost"
+                                        data-on-click="showDeleteForkModal = false">Cancel</button>
+                                    <button class="btn btn-error" data-on-click="
+                                const store = _indexedDB.forks;
+                                const prefix = doc.SourceModule;
+                                const key = prefix + '_' + manageTarget;
+                                store.delete(key).then(() => {
+                                    const idx = forks.indexOf(manageTarget);
+                                    if (idx !== -1) forks.splice(idx, 1);
+                                    if (activeFork === manageTarget) activeFork = 'Default';
+                                    toastMsg = manageTarget + ' deleted'; toastType = 'info'; showToast = true;
+                                    showDeleteForkModal = false;
+                                });
+                            ">Delete Forever</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Rename Snippet Modal -->
+                <template data-if="showRenameSnippetModal">
+                    <div class="fixed inset-0 bg-black/50 z-[9998] flex items-center justify-center">
+                        <div class="card bg-base-100 shadow-2xl border border-base-300 max-w-md w-full mx-4">
+                            <div class="card-body">
+                                <h3 class="card-title text-info">Rename Snippet</h3>
+                                <p class="py-2 opacity-70 text-sm italic">Original: <span class="font-bold"
+                                        data-bind="manageTarget"></span></p>
+                                <input type="text" class="input input-bordered input-info w-full" data-bind="newName"
+                                    placeholder="new-snippet-name">
+                                <div class="card-actions justify-end mt-4">
+                                    <button class="btn btn-ghost"
+                                        data-on-click="showRenameSnippetModal = false">Cancel</button>
+                                    <button class="btn btn-info" data-on-click="
+                                const store = _indexedDB.snippets;
+                                const prefix = doc.SnippetModule;
+                                const oldKey = prefix + '_' + manageTarget;
+                                const newKey = prefix + '_' + newName;
+                                store.get(oldKey).then(code => {
+                                    if (code === undefined) { toastMsg = 'Error: Snippet not loaded'; toastType = 'error'; showToast = true; return; }
+                                    store.set(newKey, code).then(() => {
+                                        store.delete(oldKey).then(() => {
+                                            const idx = snippets.indexOf(manageTarget);
+                                            if (idx !== -1) snippets.splice(idx, 1, newName);
+                                            if (activeSnippet === manageTarget) activeSnippet = newName;
+                                            toastMsg = 'Renamed to ' + newName; toastType = 'success'; showToast = true;
+                                            showRenameSnippetModal = false;
+                                        });
+                                    });
+                                });
+                            ">Rename</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Delete Snippet Modal -->
+                <template data-if="showDeleteSnippetModal">
+                    <div class="fixed inset-0 bg-black/50 z-[9998] flex items-center justify-center">
+                        <div class="card bg-base-100 shadow-2xl border border-error max-w-md w-full mx-4">
+                            <div class="card-body">
+                                <h3 class="card-title text-error flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                        stroke="currentColor" class="w-6 h-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                                    </svg>
+                                    Confirm Deletion
+                                </h3>
+                                <p class="py-2">Are you sure you want to delete the snippet <span
+                                        class="font-bold text-error" data-bind="manageTarget"></span>? This action cannot be
+                                    undone.</p>
+                                <div class="card-actions justify-end mt-4">
+                                    <button class="btn btn-ghost"
+                                        data-on-click="showDeleteSnippetModal = false">Cancel</button>
+                                    <button class="btn btn-error" data-on-click="
+                                const store = _indexedDB.snippets;
+                                const prefix = doc.SnippetModule;
+                                const key = prefix + '_' + manageTarget;
+                                store.delete(key).then(() => {
+                                    const idx = snippets.indexOf(manageTarget);
+                                    if (idx !== -1) snippets.splice(idx, 1);
+                                    if (activeSnippet === manageTarget) activeSnippet = 'Default';
+                                    toastMsg = manageTarget + ' deleted'; toastType = 'info'; showToast = true;
+                                    showDeleteSnippetModal = false;
+                                });
+                            ">Delete Forever</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Toast -->
+                <div data-show="showToast" class="fixed bottom-6 end-6 z-[9999] shadow-2xl" style="display:none;"
+                    data-effect="if (showToast) setTimeout(() => showToast = false, 3000)">
+                    <div class="alert shadow-lg" data-class-alert-success="toastType === 'success'"
+                        data-class-alert-info="toastType === 'info'" data-class-alert-warning="toastType === 'warning'">
+                        <span data-bind="toastMsg" class="font-bold"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>

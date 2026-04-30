@@ -185,5 +185,4 @@ data-ingest="{
 
 ## 🛡️ License
 
-Nexus-UX is released under the **MIT License**. Created with ❤️ by the Nexus-UX
-Authors.
+Nexus-UX is released under the **MIT License**. Created with ❤️ by Aerea Co.

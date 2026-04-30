@@ -43,6 +43,7 @@ export interface RuntimeContext {
   morphDOM: (from: Element, to: Element | string, options?: Record<string, unknown>) => void;
   reconcileClass: (el: HTMLElement, value: unknown) => void;
   reconcileStyle: (el: HTMLElement, value: unknown) => void;
+  adoptStyle: (el: HTMLElement) => void;
   processElement: (element: HTMLElement) => void;
 
   // State Management
@@ -83,4 +84,9 @@ export interface RuntimeContext {
   warn: (...args: any[]) => void;
   info: (...args: any[]) => void;
   debug: (...args: any[]) => void;
+  mcp?: any; // MCPClient instance
+  predictive?: any; // PredictiveEngine instance
+  spatial?: any; // $spatial sprite API
+  svg?: any; // $svg sprite API
+  $animate?: any; // $animate sprite reference
 }

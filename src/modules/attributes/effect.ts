@@ -7,8 +7,15 @@ const effectModule: AttributeModule = {
   attribute: 'effect',
   handle: (el: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void => {
     try {
+      let isEvaluating = false;
       const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
-        runtime.evaluate(el, value);
+        if (isEvaluating) return;
+        isEvaluating = true;
+        try {
+          runtime.evaluate(el, value);
+        } finally {
+          isEvaluating = false;
+        }
       });
       return cleanup;
     } catch (e) {
