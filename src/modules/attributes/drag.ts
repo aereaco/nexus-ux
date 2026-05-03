@@ -23,17 +23,23 @@ export const dragAttribute: AttributeModule = {
         return;
       }
 
-      // Resolve the reactive list from the teleport drop zone on the parent
-      const moveExpr = sourceContainer.getAttribute('data-teleport:drop');
+      // Resolve the reactive list by climbing the DOM tree to find the
+      // nearest ancestor with data-teleport:drop. This handles nested layouts
+      // where data-drag items aren't direct children of the drop zone.
+      const dropZone = element.closest('[data-teleport\\:drop]') as HTMLElement | null;
       let sourceList = null;
-      if (moveExpr) {
-        try {
-          sourceList = runtime.evaluate(sourceContainer, moveExpr);
-        } catch { /* Source list may not be directly on the parent */ }
+      if (dropZone) {
+        const moveExpr = dropZone.getAttribute('data-teleport:drop');
+        if (moveExpr) {
+          try {
+            sourceList = runtime.evaluate(dropZone, moveExpr);
+          } catch { /* Source list evaluation failed — will be null */ }
+        }
       }
 
-      // Calculate initial index among draggable siblings
-      const siblings = Array.from(sourceContainer.children).filter(
+      // Calculate initial index among draggable siblings within the resolved drop zone
+      const siblingContainer = dropZone || sourceContainer;
+      const siblings = Array.from(siblingContainer.children).filter(
         c => c.hasAttribute('data-drag') && (c as HTMLElement).style.display !== 'none'
       );
       const initialIndex = siblings.indexOf(element);
@@ -41,7 +47,7 @@ export const dragAttribute: AttributeModule = {
       // ZCZS: Store raw memory reference in global heap pointer
       (globalThis as any)._dragState = { 
         fromIndex: initialIndex, 
-        sourceContainer, 
+        sourceContainer: siblingContainer, 
         element, 
         sourceList 
       };

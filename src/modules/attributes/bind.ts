@@ -52,21 +52,18 @@ const bindModule: AttributeModule = {
           } else if (el instanceof HTMLSelectElement) {
             const targetValue = result !== undefined && result !== null ? String(result) : '';
 
-            const syncSelect = () => {
-              const options = Array.from(el.options);
-              const found = options.some(opt => opt.value === targetValue);
-              if (found || targetValue === '') {
-                if (el.value !== targetValue) {
-                  el.value = targetValue;
-                }
+            // Sync select value with available options.
+            // When data-for populates <option> children, the framework observer's
+            // childList mutation pulse triggers RUN_EFFECT_RUNNERS_KEY on this element,
+            // which re-runs this effect and calls the sync logic below.
+            // No scoped MutationObserver needed — ownership tracking handles it.
+            const options = Array.from(el.options);
+            const found = options.some(opt => opt.value === targetValue);
+            if (found || targetValue === '') {
+              if (el.value !== targetValue) {
+                el.value = targetValue;
               }
-            };
-
-            syncSelect();
-
-            const observer = new MutationObserver(() => syncSelect());
-            observer.observe(el, { childList: true, subtree: true });
-            cleanupFns.push(() => observer.disconnect());
+            }
           } else if (el instanceof HTMLTextAreaElement) {
             el.value = result !== undefined && result !== null ? String(result) : '';
           } else {
