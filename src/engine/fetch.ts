@@ -1,6 +1,6 @@
 import { UtilityModule } from './modules.ts';
 import { RuntimeContext } from './composition.ts';
-import { reportError } from './errors.ts';
+import { reportError } from './debug.ts';
 import { CUSTOM_EVENT_PREFIX } from './consts.ts';
 
 export interface FetchOptions extends RequestInit {

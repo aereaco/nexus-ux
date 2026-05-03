@@ -353,19 +353,42 @@ The framework permits exactly **two** MutationObserver contexts:
 
 ### 1B.3. The Lazy Debug Engine (`data-debug`)
 
-The full debug engine maximizes production performance by remaining completely
-dormant until explicitly invoked:
+The debug engine is a **crash-isolated, lazily-initialized companion** to the framework observer. It maximizes production performance by staying completely dormant until explicitly invoked — there is zero runtime overhead when `data-debug` is absent.
+
+> [!IMPORTANT]
+> This is a **two-observer policy**: The Framework Observer (`mutation.ts`) handles all reactive work. The Sanitizing Observer (`debug.ts`) handles diagnostics only. They are independent; if the framework crashes, the sanitizer keeps running.
+
+#### Activation Modes
 
 | Usage | Effect |
 |:---|:---|
-| No `data-debug` (production) | Debug engine is never instantiated. Only basic `console.error` fires for critical failures. Zero overhead. |
-| `data-debug` (no value) | Boots the full debug engine scoped to the element subtree. Enables crash beacons, verbose logging, and `element.nexus` DevTools surface. |
-| `data-debug="{ mcp: 'http://...' }"` | Same as above, plus connects to the specified MCP server (via `engine/mcp.ts`) for AI-assisted diagnostics, crash reporting, and remote action definitions. |
+| **No `data-debug`** (production) | Debug engine is never instantiated. Only basic `console.error` fires for critical failures. Zero overhead. |
+| **`data-debug`** (no value) | Boots the full sanitizing engine scoped to the element subtree. Enables crash beacons, verbose logging, and the `element.nexus` DevTools surface. |
+| **`data-debug="{ mcp: 'http://...' }"`** | Same as above, plus connects to the specified MCP server (via `engine/mcp.ts`) for AI-assisted diagnostics, crash reporting, and remote action definitions. |
 
-`engine/mcp.ts` remains an **independent, omni-directional module** — it serves
-as the standardized MCP transport primitive for both runtime features (e.g.,
-`$sql`, server-driven actions) and debug diagnostics. The debug engine consumes
-it when configured; it does not own it.
+#### Diagnostic Capabilities
+
+When active, the sanitizing engine provides:
+
+- **Crash Beacons**: If the framework observer throws, `debug.ts` captures the failure context (element, expression, stack) and routes it through the MCP transport (if configured) for AI-assisted repair suggestions.
+- **Error Event Pipeline**: All errors dispatch a custom `ux-error` event (bubbles, cancelable: false) with full detail `{ message, element, expression, originalError }`, enabling in-app error boundaries.
+- **DevTools Surface**: The engine manages `element.nexus.effectRunners` — a live `Set` of active reactive effect runners. You can inspect, filter, or manually trigger them from the console.
+- **Scoped Targeting**: Diagnostics are scoped to the subtree where `data-debug` is declared — not the entire document. This allows surgical inspection of problematic components.
+
+#### MCP Diagnostic Routing
+
+The sanitizing engine consumes `engine/mcp.ts` as a transport layer when an MCP endpoint is configured. It sends a `sampling/createMessage` request containing the error context, stack trace, and element HTML to the server, which returns an AI-generated repair suggestion that prints to the console:
+
+```text
+[Nexus AI Diagnosis] ✨ Suggested Fix:
+Consider replacing direct MutationObserver in your modifier with the centralized intersection observer via attachObserver('intersection', el, runtime).
+```
+
+The MCP integration is **opt-in only** and fully lazy-loaded on first `data-debug` encounter.
+
+#### Crash Isolation Guarantees
+
+The sanitizing `MutationObserver` runs in its own `try/catch` boundary completely independent of the framework observer. Even if `mutation.ts` encounters a fatal error and stops processing, `debug.ts` continues watching `data-debug` attribute changes and can still report subsequent failures. The two observers are **architecturally decoupled**.
 
 ### 1B.4. Development Compliance
 
@@ -782,26 +805,17 @@ directive catalog:
 
 #### 3.6.1. Core Directives
 
-- **`data-signal`**: Reactive Data Binding — declares reactive state on an
-  element.
-- **`data-bind`**: Two-Way Data Binding — syncs element properties to signals.
-- **`data-text`**: Text Content — sets `innerText` via reactive subscription.
+- **`data-signal`**: Reactive State Declaration — defines reactive signals on an element, forming the source of truth for UI state.
+- **`data-bind`**: Two-Way Binding — synchronizes element properties (value, checked, etc.) with signals automatically.
+- **`data-text`**: Text Content — sets `innerText` reactively.
 - **`data-html`**: HTML Content — sets `innerHTML` for trusted content.
-- **`data-computed`**: Logic Derivative — creates cached read-only derived
-  signals.
-- **`data-ref`**: Element References — programmatic DOM access via `$refs`.
-- **`data-effect`**: Side-effects Execution — resolves logic without natively
-  attaching a return value to the DOM.
-- **`data-progress`**: Progress Visualization — provides highly customizable
-  bars and spinners for tracking loading states or background tasks. Supports
-  various locations (top, bottom, left, right) and styles (gradients, patterns,
-  SVG spinners).
-- **`data-pwa`**: PWA Orchestration — manages Progressive Web App features
-  including Service Worker registration, manifest integration, and offline state
-  tracking via the `$pwa` signal.
-- **`data-ingest`**: Asset Ingestion 2.0 — asynchronously fetches and manages
-  3rd party scripts and stylesheets. Supports reactive, grouped, and namespaced
-  loading with ZCZS (Constructable Stylesheets) performance mandate.
+- **`data-computed`**: Derived Signals — creates cached, read-only computed values derived from other signals.
+- **`data-effect`**: Side-effects — runs arbitrary logic in response to signal changes without touching the DOM.
+- **`data-ingest`**: Asset Ingestion — asynchronously loads and manages third-party scripts and stylesheets with ZCZS-optimized constructable stylesheets.
+- **`data-markdown`**: Markdown Rendering — zero-dependency markdown-to-HTML transpilation directly in the browser.
+- **`data-progress`**: Progress Indicators — customizable bars and spinners for tracking loading states.
+- **`data-pwa`**: PWA Orchestration — manages Service Worker registration, manifest integration, and offline state via `$pwa`.
+- **`data-mask`**: Visual Masking — applies SVG masks and CSS mask-image dynamically.
 
 #### 3.6.2. Control Flow Directives
 
@@ -827,18 +841,20 @@ directive catalog:
 
 #### 3.6.4. Event & Interaction Directives
 
-- **`data-on`**: Event Handlers — responds to user interaction (e.g.,
-  `data-on-click`).
-- **`data-on-load`**: Lifecycle Hook — runs code when the element enters the
-  DOM.
-- **`data-on-raf`**: Animation Frame Hook — runs code on every
-  `requestAnimationFrame` tick.
-- **`data-on-intersect`**: Visibility Hook — runs code when the element
-  enters/exits the viewport (Intersection Observer).
-- **`data-on-signal-change`**: Signal Watcher — runs code when a specific
-  signal's value changes.
+- **`data-on`**: Event Handlers — responds to user interaction (e.g., `data-on-click`).
+- **`data-on-load`**: Lifecycle Hook — runs code when the element enters the DOM.
+- **`data-on-raf`**: Animation Frame Hook — runs code on every `requestAnimationFrame` tick with `$time` and `$delta`.
+- **`data-on-intersect`**: Visibility Hook — fires when the element enters/exits the viewport.
+- **`data-on-signal-change`**: Signal Watcher — reacts to specific signal changes.
+- **`data-drag`**: Drag Source — makes an element draggable, emitting a ZCZS memory pointer for drop targets to consume via `data-teleport:drop`.
 
-#### 3.6.4. Styling Directives
+#### 3.6.5. Spatial, Flow & Rendering Directives
+
+- **`data-flow`**: Viewport Flow Layout — orchestrates a virtual canvas with pan and zoom controls, maintaining a reactive spatial state `{ x, y, zoom }`.
+- **`data-spatial`**: Spatial Marker — tags an element for inclusion in the 4D predictive engine's spatial index (quadtree) for layout transition orchestration.
+- **`data-markdown`**: Markdown Transpilation — zero-dependency parsing of markdown strings into styled HTML, leveraging the framework's native utility classes.
+
+#### 3.6.6. Styling Directives
 
 - **`data-style`**: Dynamic Styling — binds CSS properties to signals using
   object literals, strings, or arrays. When numeric signals are used, the engine
@@ -851,22 +867,15 @@ directive catalog:
 - **`data-mask`**: Visual Masking — dynamically synchronizes custom SVG assets
   or variables into the standard CSS Mask/Webkit-Mask compliance layers.
 
-#### 3.6.5. Structural & Development Directives
+#### 3.6.7. Structural & Development Directives
 
-- **`data-preserve`**: Structural Shield — prevents node loss during
-  server-driven morphs.
-- **`data-component`**: Component Declaration — defines a reusable Custom
-  Element. Supports template sources via URL, inline HTML, data-URI, or
-  same-page `#id` reference. Supports Shadow DOM (via `shadowrootmode` on the
-  `<template>` tag), Constructable Stylesheets, script isolation, form
-  association, and lifecycle hooks (`contentReadyCallback`, `connectedCallback`,
-  `disconnectedCallback`).
-- **`data-debug`**: Debug Inspector — prints signal state to the console on
-  every change (development mode only).
-- **`data-assert`**: Development Assertion — fires console warnings when
-  conditions fail (stripped in production).
+- **`data-preserve`**: Structural Shield — prevents node loss during server-driven morphs.
+- **`data-component`**: Component Declaration — defines reusable Custom Elements with Shadow DOM, constructable stylesheets, and lifecycle hooks.
+- **`data-debug`**: Debug Inspector — activates the sanitizing engine and DevTools surface for the element subtree.
+- **`data-assert`**: Development Assertion — fires console warnings when conditions fail (stripped in production).
+- **`data-build`**: In-Browser Bundler — serializes the current DOM state and assets into a deployable bundle, writing directly to IndexedDB. Enables fully client-side build pipelines.
 
-#### 3.6.6. Routing & Navigation Directives
+#### 3.6.8. Routing & Navigation Directives
 
 - **`data-router`**: Router Initialization — declares the application's router
   on the `<html>` element. Creates the `$router` signal with full navigation
@@ -882,7 +891,7 @@ directive catalog:
   parameterized paths (`:id`), optional parameters (`:id?`), and wildcards
   (`*`).
 
-#### 3.6.7. Route Configuration Attributes
+#### 3.6.9. Route Configuration Attributes
 
 Route elements support additional configuration via companion attributes:
 
@@ -1206,15 +1215,71 @@ at the AST level before injection. This ensures that duplicate class
 declarations across different Document roots share the same underlying
 `CSSStyleRule` object references where possible.
 
-### 5.4. The Unified Nexus Scheduler (The Heartbeat)
+### 5.4. The Global Async Process Loop (The Heartbeat)
 
-1. **Capture**: Orchestrator captures input and flags the specific signal index.
-2. **Evaluate**: Logic Engine calculates the downstream effects and updates the
-   Ghost DOM.
-3. **Resolve**: Visual Marshaller translates state changes into an **Instruction
-   Queue**.
-4. **Paint (rAF)**: Orchestrator executes the queue at the next browser
-   animation frame.
+Nexus-UX doesn't just schedule work — it **reimagines the browser's execution model**. The traditional `requestAnimationFrame`-locked reactive loop binds all computation to the paint cycle, creating artificial ~16 ms budgets that can stall the UI under load. We break free with a **Node.js/Deno-inspired async process loop** running on the shared memory heap, decoupling pure computation from visual updates.
+
+> [!IMPORTANT]
+> This is the **single source of truth** for all reactive scheduling. Every directive, every effect, every mutation flows through this loop. It's why Nexus-UX stays buttery-smooth even during intensive data sync.
+
+#### 5.4.1. The Four Phases: Capture → Evaluate → Resolve → Paint
+
+The loop executes in strict atomic order, four distinct phases that repeat on every flush:
+
+| Phase | What Happens | Where It Runs | Why It Matters |
+|:---:|:---|:---|:---|
+| **Capture** | Input events, signal writes, and DOM mutations are **flagged** and enqueued. | Microtask queue (`queueMicrotask`) | Immediate signal propagation — no waiting for paint. |
+| **Evaluate** | Reactive effects compute downstream values; the Ghost DOM updates. | Microtask queue, with **stall detection** | Expensive derivations can yield to the browser without blocking. |
+| **Resolve** | Computed values translate into **DOM instructions** (class, style, property updates). | Microtask queue | Instruction batching minimizes discrete DOM writes. |
+| **Paint** | Orchestrator flushes the instruction queue to the **real DOM**. | `requestAnimationFrame` (frame-aligned) | Visual updates are always in-sync with the browser's compositor. |
+
+This separation means that even if your `data-effect` chain takes 50ms, the UI remains responsive — the loop yields mid-evaluation via `MessageChannel`, then resumes on the next microtask.
+
+#### 5.4.2. Shared Memory Heap & Zero-Copy Coordination
+
+When Cross-Origin Isolation is present (`crossOriginIsolated === true`), the scheduler provisions a `SharedArrayBuffer` backed `Int32Array` to hold phase state and queue lengths. This isn't just a performance tweak — it's a **fundamental architectural shift**:
+
+```typescript
+// Phase state slots in the shared buffer
+const PHASE_CURRENT = 0;   // Currently executing phase (0 = idle, 1-4 = phases)
+const PHASE_PENDING = 1;   // 1 if a flush is pending
+const CAPTURE_LEN    = 2;  // Number of jobs in the capture queue
+const EVALUATE_LEN   = 3;
+const RESOLVE_LEN    = 4;
+const PAINT_LEN      = 5;
+```
+
+Workers can read this buffer with zero-copy to monitor scheduler load, coordinate work-stealing, or throttle their own processing without any message passing. This is **ZCZS at the system level**.
+
+#### 5.4.3. Stall Detection & Cooperative Yielding
+
+If any phase exceeds the configurable budget (default: **8ms**), the scheduler voluntarily yields control back to the browser:
+
+```typescript
+private async runQueueWithYielding(queue: Job[]): Promise<void> {
+  const startTime = performance.now();
+  while (queue.length > 0) {
+    const job = queue.shift()!;
+    job();
+    if (performance.now() - startTime > this.stallBudget) {
+      await yieldToBrowser(); // MessageChannel or scheduler.yield()
+    }
+  }
+}
+```
+
+This cooperatively prevents long-running effect chains from causing dropped frames, without requiring manual chunking from the developer.
+
+#### 5.4.4. The Complete Data Flow
+
+Summarizing the full journey from user interaction to paint:
+
+1. User taps button → `data-on-click` captures the event in the **Capture** phase.
+2. Signal updates are scheduled → **Evaluate** runs bound effects (e.g., `data-bind`, `data-for`).
+3. Ghost DOM mutations are recorded → **Resolve** translates them into concrete instruction objects (`setAttribute`, `style.update`, etc.).
+4. Next `requestAnimationFrame` → **Paint** applies all instructions atomically.
+
+Because phases 1–3 are microtask-driven, multiple signal updates occurring in the same tick are automatically batched together, eliminating redundant renders. This is the **reactive core** that makes Nexus-UX feel instant.
 
 ### 5.5. Infinite Logic Virtualization (The End of Manual Optimization)
 

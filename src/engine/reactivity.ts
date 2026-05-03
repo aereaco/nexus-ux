@@ -28,7 +28,7 @@ import {
 } from '@vue/reactivity';
 
 import { CLEANUP_FUNCTIONS_KEY, EFFECT_RUNNERS_KEY, RUN_EFFECT_RUNNERS_KEY, DATA_STACK_KEY, MARKER_KEY } from './consts.ts';
-import { reportError } from './errors.ts';
+import { reportError } from './debug.ts';
 
 // =============================================================================
 // ZCZS: Zero-Copy Zero-Serialization Infrastructure (Embedded)

@@ -1,4 +1,4 @@
-import { reportError } from './errors.ts';
+import { reportError } from './debug.ts';
 
 /**
  * Standardized MCP Client for Nexus-UX.

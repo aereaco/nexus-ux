@@ -1,6 +1,6 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { reportError } from '../../engine/errors.ts';
+import { reportError } from '../../engine/debug.ts';
 
 /**
  * data-pwa="{ sw: '/sw.js', manifest: '/manifest.json', themeColor: '#570df8' }"

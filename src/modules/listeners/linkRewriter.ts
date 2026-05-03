@@ -1,6 +1,6 @@
 import { ListenerModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { reportError } from '../../engine/errors.ts';
+import { reportError } from '../../engine/debug.ts';
 import { CUSTOM_EVENT_PREFIX } from '../../engine/consts.ts';
 
 const linkRewriterModule: ListenerModule = {

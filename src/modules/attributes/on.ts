@@ -1,6 +1,6 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { initError } from '../../engine/errors.ts';
+import { initError } from '../../engine/debug.ts';
 import { matchAttributes } from '../../engine/attributeParser.ts';
 
 // Deterministic Registry for Zero-GC Event Delegation

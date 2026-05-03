@@ -2,7 +2,7 @@ import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { addScopeToNode } from '../../engine/scope.ts';
 import { COMPONENT_CONTEXT_KEY } from '../../engine/consts.ts';
-import { initError } from '../../engine/errors.ts';
+import { initError } from '../../engine/debug.ts';
 
 export interface ComponentConfig {
   path: string;

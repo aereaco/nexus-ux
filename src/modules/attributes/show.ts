@@ -1,6 +1,6 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { initError } from '../../engine/errors.ts';
+import { initError } from '../../engine/debug.ts';
 import { reconcileStyle } from '../../engine/reconciler.ts';
 
 const showModule: AttributeModule = {

@@ -766,7 +766,56 @@ chain of execution.
   </button>
   ```
   _Logic_: Confirm with user, check admin rights, then post and morph the
-  result.
+   result.
+
+### 4.6. Drag-and-Drop & Teleportation
+
+Nexus-UX implements **drag-and-drop** via a clean two-directive system that respects ZCZS and reactive data structures. No heavy libraries, just native HTML5 DnD events wired to your signals.
+
+#### `data-drag` — The Drag Source
+
+**Syntax**: `data-drag` (value optional, reserved for metadata)
+
+**Purpose**: Makes an element draggable. On `dragstart`, captures a ZCZS memory pointer to the source reactive array and stores it in `globalThis._dragState`. The drop target consumes this pointer to perform the actual mutation.
+
+**Example: Simple Sortable List**
+```html
+<div data-signal="{ items: ['A', 'B', 'C'] }">
+  <ul data-teleport:drop="items">
+    <li data-for="item in items"
+        data-drag
+        data-bind="item">{item}</li>
+  </ul>
+</div>
+```
+Dragging an item reorders the `items` array reactively.
+
+#### `data-teleport:drop` — The Drop Zone
+
+**Syntax**: `data-teleport:drop="listExpression"`  
+**Modifiers**: `:clone` (copy), `:swap` (exchange positions)
+
+**Purpose**: Turns the element into an HTML5 drop zone. On `drop`, reads the global drag state and mutates the target array directly. View Transitions are used automatically when available.
+
+**Example: Shared Transfer**
+```html
+<!-- Source container -->
+<ul data-teleport:drop="sourceList">
+  <li data-for="item in sourceList"
+      data-drag
+      data-bind="item">{item}</li>
+</ul>
+
+<!-- Target container -->
+<ul data-teleport:drop="targetList">
+  <li data-for="item in targetList"
+      data-drag
+      data-bind="item">{item}</li>
+</ul>
+```
+
+> [!IMPORTANT]
+> **ZCZS Guarantee**: The dragged item's identity is preserved as a **memory reference**, not a JSON copy. Nested objects, circular references, and reactive proxies survive the transfer intact — zero serialization cost.
 
 ---
 
@@ -2958,53 +3007,177 @@ layer scoped to the target element's subtree.
 | MutationObserver | Framework only | Framework + Sanitizing (crash-isolated) |
 | MCP diagnostics | None | AI-assisted repair suggestions (if endpoint configured) |
 
-### 15.2. DevTools Introspection
+### 15.2. DevTools Introspection & Effect Runner Mastery
 
-When `data-debug` is active, enhanced elements expose a `.nexus` property:
+When `data-debug` is active, enhanced elements expose a `.nexus.effectRunners` property — a live `Set` of the reactive effect runners powering their directives. This is your window into the framework's reactive graph.
+
+**Basic inspection**:
+```javascript
+const el = document.querySelector('[data-bind]');
+console.log(el.nexus.effectRunners);
+// Set(2) [ƒ boundEffect, ƒ eventListenerCleanup]
+```
+
+**Practical techniques**:
+
+- **Count active directives**: `el.nexus.effectRunners.size`
+- **Manually trigger re-evaluation**:
+  ```javascript
+  const runners = Array.from(el.nexus.effectRunners);
+  runners[0](); // Force the first effect to run immediately
+  ```
+- **Filter by directive name** (approximate):
+  ```javascript
+  const bindRunner = [...el.nexus.effectRunners].find(r =>
+    r.toString().includes('bindModule')
+  );
+  ```
+- **Audit all directive-heavy elements**:
+  ```javascript
+  document.querySelectorAll('[data-bind], [data-for], [data-on]').forEach(el => {
+    if (el.nexus?.effectRunners) {
+      console.log(`<${el.tagName}> → ${el.nexus.effectRunners.size} active effects`);
+    }
+  });
+  ```
+
+**Lifecycle at a glance**:
+- **Registration**: Each directive's `elementBoundEffect` adds a runner to the set.
+- **Mirroring**: The set is mirrored to `el.nexus.effectRunners` for console access.
+- **Disposal**: When a directive's cleanup runs, its runner is removed. The property deletes itself once empty.
+
+This introspection surface is crucial for understanding why a binding isn't updating, or tracing which directives are active on an element.
+
+### 15.3. The Engine-vs-Module Architectural Contract (Deep Dive)
+
+All Nexus-UX source files follow a strict architectural boundary. Violations cause memory leaks, duplicate observers, and lost reactivity.
+
+#### The Single-Framework-Observer Guarantee
+
+Only two `MutationObserver` instances can ever exist:
+1. **Framework Observer** (`src/engine/observers/mutation.ts`) — handles all reactive needs.
+2. **Sanitizing Observer** (`src/engine/debug.ts`) — crash-isolated diagnostics.
+
+Module-level code must **never** create its own observer.
+
+#### Violation Example: The `intersect` Modifier (Before Refactor)
+
+```typescript
+// ❌ BEFORE: Direct IntersectionObserver in a module file
+export const intersectModifier: ModifierModule = {
+  handle: (payload, el, arg, runtime) => {
+    if (typeof payload === 'function') {
+      return () => {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) payload(entry);
+          });
+        });
+        observer.observe(el);
+        return () => observer.disconnect();
+      };
+    }
+
+    // Pipeline mode also created a fresh observer each call
+    return (evalEl, expr, extras) => new Promise(resolve => {
+      const observer = new IntersectionObserver(entries => {
+        if (entries[0].isIntersecting) resolve(runtime.evaluate(evalEl, expr, extras));
+      });
+      observer.observe(el);
+    });
+  }
+};
+```
+
+**Why this is catastrophic**:
+- Each directive instance creates a new `IntersectionObserver` → memory explosion.
+- No shared lifecycle; observers are disconnected only when the element's directive cleanup runs, which may be skipped if the element is moved.
+- Bypasses the ownership tracking system entirely → parent effects not pulsed correctly.
+- No crash isolation; an observer exception leaks into the module scope.
+
+#### Correct Pattern: Engine Delegation (After Refactor)
+
+```typescript
+// ✅ AFTER: Delegates to centralized observer
+import { attachObserver } from '../../engine/observers';
+
+export const intersectModifier: ModifierModule = {
+  handle: (payload, el, arg, runtime) => {
+    const triggerOnLeave = arg === 'leave';
+    const triggerOnce = arg === 'once';
+
+    // 1. Hand off observation to engine (single shared observer per element)
+    const observerCleanup = attachObserver('intersection', el, runtime);
+
+    const shouldTrigger = (isIntersecting: boolean) =>
+      (!triggerOnLeave && isIntersecting) || (triggerOnLeave && !isIntersecting);
+
+    // 2. Event-wrapper mode
+    if (typeof payload === 'function') {
+      const handler = (e: Event) => {
+        const detail = (e as CustomEvent).detail;
+        if (shouldTrigger(detail.isIntersecting)) {
+          if (triggerOnce) cleanup();
+          payload(e, detail);
+        }
+      };
+      el.addEventListener('ux-intersection', handler);
+      return () => {
+        el.removeEventListener('ux-intersection', handler);
+        observerCleanup?.();
+      };
+    }
+
+    // 3. Pipeline-interceptor mode
+    return (evalEl, expr, extras) => new Promise(resolve => {
+      const handler = (e: Event) => {
+        const detail = (e as CustomEvent).detail;
+        if (shouldTrigger(detail.isIntersecting)) {
+          if (triggerOnce) observerCleanup?.();
+          else el.removeEventListener('ux-intersection', handler);
+          resolve(runtime.evaluate(evalEl, expr, extras));
+        }
+      };
+      el.addEventListener('ux-intersection', handler);
+    });
+  }
+};
+```
+
+**Benefits of the correct pattern**:
+- **Single observer per element** managed by engine.
+- **Automatic cleanup** tied to element lifecycle (`CLEANUP_FUNCTIONS_KEY`).
+- **Event bubbling** via `ux-intersection` — consistent with the framework's observer architecture.
+- **Crash isolation** — the intersection observer lives in engine code with its own try/catch.
+
+#### Quick Checklist
+
+- ❌ **NEVER** write `new MutationObserver()`, `new IntersectionObserver()`, `new ResizeObserver()` in `src/modules/`.
+- ✅ **DO** import `attachObserver`, `registerObserver` from `engine/observers.ts`.
+- ✅ **DO** listen for custom events like `ux-intersection` that the engine emits.
+- ✅ **DO** rely on `(target as NexusEnhancedElement)[RUN_EFFECT_RUNNERS_KEY]()` to propagate DOM changes.
+
+### 15.4. Listening to `ux-error` for In-App Diagnostics
+
+All framework errors emit a bubble `ux-error` event. Catch it at `document` to integrate with Sentry, LogRocket, or custom dashboards:
 
 ```javascript
-// Inspect an element's active reactive effects
-const el = document.querySelector('[data-signal]');
-console.log(el.nexus.effectRunners); // Set of active effect runner references
+document.addEventListener('ux-error', (e) => {
+  const { message, element, expression, originalError } = e.detail;
+  console.error('Captured Nexus error:', { message, element, expression });
+
+  // Example: send to Sentry with context
+  Sentry.captureException(originalError, {
+    tags: {
+      nexus_directive: expression,
+      element_tag: element?.tagName,
+    },
+    extra: { element_html: element?.outerHTML?.slice(0, 500) }
+  });
+});
 ```
 
-### 15.3. The Engine-vs-Module Contract
-
-All Nexus-UX source files follow a strict architectural boundary:
-
-**Engine files** (`src/engine/*`) own web API primitives:
-
-```typescript
-// ✅ CORRECT: Engine-level file wraps MutationObserver
-// src/engine/observers/mutation.ts
-const observer = new MutationObserver((mutations) => { ... });
-observer.observe(root, { childList: true, subtree: true });
-```
-
-**Module files** (`src/modules/*`) schedule through the engine — never
-instantiate web primitives directly:
-
-```typescript
-// ✅ CORRECT: Module registers with engine, receives callbacks
-export const bindAttribute: AttributeModule = {
-  name: 'bind',
-  handle: (element, value, runtime) => {
-    // Uses runtime.evaluate() and ownership tracking
-    // Does NOT create its own MutationObserver
-  }
-};
-```
-
-```typescript
-// ❌ VIOLATION: Module instantiates web API primitive directly
-export const bindAttribute: AttributeModule = {
-  handle: (element, value, runtime) => {
-    const observer = new MutationObserver(() => syncSelect());
-    observer.observe(element, { childList: true });
-    // This bypasses the engine's ownership tracking
-  }
-};
-```
+This works whether or not `data-debug` is present — the sanitizing engine and the framework observer both fire this event on errors.
 
 ---
 

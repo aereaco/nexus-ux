@@ -1,7 +1,7 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { addScopeToNode } from '../../engine/scope.ts';
-import { initError } from '../../engine/errors.ts';
+import { initError } from '../../engine/debug.ts';
 
 /**
  * data-ux-theme="{ default: 'auto', auto: {}, light: {}, dark: {} }"

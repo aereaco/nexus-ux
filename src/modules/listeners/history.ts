@@ -1,6 +1,6 @@
 import { ListenerModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { reportError } from '../../engine/errors.ts';
+import { reportError } from '../../engine/debug.ts';
 
 const historyModule: ListenerModule = {
   name: 'history',

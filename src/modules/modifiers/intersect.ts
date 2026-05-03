@@ -1,77 +1,53 @@
 import { ModifierModule } from '../../engine/modules.ts';
-import { NexusEnhancedElement } from '../../engine/reactivity.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { CLEANUP_FUNCTIONS_KEY } from '../../engine/consts.ts';
+import { attachObserver } from '../../engine/observers.ts';
 
 export const intersectModifier: ModifierModule = {
   name: 'intersect',
-  handle: (payload: any, el: HTMLElement, arg: string, _runtime: RuntimeContext) => {
+  handle: (payload: any, el: HTMLElement, arg: string, runtime: RuntimeContext) => {
     const triggerOnLeave = arg === 'leave';
     const triggerOnce = arg === 'once';
 
-    // 1. Event Handler Synthesis (If stacked on an event listener)
+    // Delegate observation to engine's centralized intersection observer
+    const observerCleanup = attachObserver('intersection', el, runtime);
+
+    const shouldTrigger = (isIntersecting: boolean) =>
+      (!triggerOnLeave && isIntersecting) || (triggerOnLeave && !isIntersecting);
+
+    // Event-wrapper mode: payload is a function
     if (typeof payload === 'function') {
-      return (...args: any[]) => {
-        const hashKey = `__intersect_evt_${Date.now()}_${Math.random()}`;
-        const observer = new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-            if ((!triggerOnLeave && entry.isIntersecting) || (triggerOnLeave && !entry.isIntersecting)) {
-              if (triggerOnce) {
-                observer.disconnect();
-                const removals = (el as NexusEnhancedElement)[CLEANUP_FUNCTIONS_KEY];
-                if (removals) removals.delete(hashKey);
-              }
-              payload(...args, entry);
-            }
-          });
-        });
-        observer.observe(el);
-
-        const enhancedEl = el as NexusEnhancedElement;
-        let removals = enhancedEl[CLEANUP_FUNCTIONS_KEY];
-        if (!removals) {
-          removals = new Map();
-          enhancedEl[CLEANUP_FUNCTIONS_KEY] = removals;
+      const handler = (e: Event) => {
+        const detail = (e as CustomEvent).detail;
+        if (shouldTrigger(detail.isIntersecting)) {
+          if (triggerOnce) cleanup();
+          payload(e, detail);
         }
-        removals.set(hashKey, () => observer.disconnect());
       };
+
+      el.addEventListener('ux-intersection', handler);
+
+      const cleanupFns: (() => void)[] = [() => el.removeEventListener('ux-intersection', handler)];
+      if (observerCleanup) cleanupFns.push(observerCleanup);
+
+      return () => cleanupFns.forEach(fn => fn());
     }
-    return payload;
-  },
-  interceptPipeline: (evaluate, el, arg, _runtime) => {
-    const triggerOnLeave = arg === 'leave';
-    const triggerOnce = arg === 'once';
 
-    // 2. Universal Pipeline Interceptor
-    // Defers the actual pipeline evaluation execution until visibility is achieved!
-    return (evalEl, expr, extras) => {
-      const hashKey = `__intersect_pipe_${Date.now()}_${Math.random()}`;
+    // Pipeline-interceptor mode: returns Promise
+    return (evalEl: Element, expr: string, extras?: Record<string, unknown>) => {
       return new Promise((resolve) => {
-        const observer = new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-            if ((!triggerOnLeave && entry.isIntersecting) || (triggerOnLeave && !entry.isIntersecting)) {
-              if (triggerOnce) {
-                observer.disconnect();
-                const removals = (el as NexusEnhancedElement)[CLEANUP_FUNCTIONS_KEY];
-                if (removals) removals.delete(hashKey);
-              } else {
-                observer.unobserve(el); // Fire once per evaluation demand
-              }
-              
-              // Proceed with standard evaluation now that it is visible
-              resolve(evaluate(evalEl, expr, extras));
+        const handler = (e: Event) => {
+          const detail = (e as CustomEvent).detail;
+          if (shouldTrigger(detail.isIntersecting)) {
+            if (triggerOnce) {
+              observerCleanup?.();
+            } else {
+              el.removeEventListener('ux-intersection', handler);
             }
-          });
-        });
-        observer.observe(el);
-
-        const enhancedEl = el as NexusEnhancedElement;
-        let removals = enhancedEl[CLEANUP_FUNCTIONS_KEY];
-        if (!removals) {
-          removals = new Map();
-          enhancedEl[CLEANUP_FUNCTIONS_KEY] = removals;
-        }
-        removals.set(hashKey, () => observer.disconnect());
+            resolve(runtime.evaluate(evalEl, expr, extras));
+          }
+        };
+        el.addEventListener('ux-intersection', handler);
       });
     };
   }

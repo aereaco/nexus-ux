@@ -1,8 +1,12 @@
 import { ObserverModule } from '../modules.ts';
 import { RuntimeContext } from '../composition.ts';
 import { NexusEnhancedElement, ownership } from '../reactivity.ts';
-import { reportError } from '../errors.ts';
+import { reportError } from '../debug.ts';
 import { CLEANUP_FUNCTIONS_KEY, RUN_EFFECT_RUNNERS_KEY, MARKER_KEY } from '../consts.ts';
+
+// Module-level state for cross-batch move detection
+const movedNodes = new WeakSet<HTMLElement>();
+const movedNodeTimers = new Map<HTMLElement, number>();
 
 const mutationObserverModule: ObserverModule = {
   name: 'mutationObserver',
@@ -14,70 +18,65 @@ const mutationObserverModule: ObserverModule = {
         if (isProcessing) return;
         isProcessing = true;
 
+        const addedThisBatch = new Set<HTMLElement>();
+        const now = performance.now();
+
+        // Purge stale moved node entries (>2 frames old ≈ 32ms)
+        for (const [node, ts] of movedNodeTimers) {
+          if (now - ts > 32) {
+            movedNodeTimers.delete(node);
+            movedNodes.delete(node);
+          }
+        }
+
         try {
-          let hasAddedNodes = false;
           for (const mutation of mutationsList) {
             if (mutation.type === 'childList') {
-              if (mutation.addedNodes.length > 0) hasAddedNodes = true;
-              mutation.addedNodes.forEach(node => {
-                if (node instanceof HTMLElement) {
-                  // ZCZS: Detect if this is a moved node vs a new node.
-                  // If it's a move, it already has the engine marker. Skip re-processing
-                  // to prevent duplicated effect runners and event listeners.
-                  const enhancedTarget = node as NexusEnhancedElement;
-                  if (enhancedTarget[MARKER_KEY]) return;
+              if (mutation.addedNodes.length > 0) {
+                mutation.addedNodes.forEach(node => {
+                  if (node instanceof HTMLElement) {
+                    addedThisBatch.add(node);
+                    const enhancedTarget = node as NexusEnhancedElement;
+                    if (enhancedTarget[MARKER_KEY]) return;
+                    context.processElement(node as HTMLElement);
+                  }
+                });
+              }
 
-                  // MutationObserver callbacks are microtasks. 
-                  // Running processElement synchronously here ensures it finishes before the next paint.
-                  context.processElement(node as HTMLElement);
-                }
-              });
-
-              // Removed nodes: Cleanup must be synchronous to support same-frame re-insertion (moves)
               mutation.removedNodes.forEach(node => {
                 if (node instanceof HTMLElement) {
-                  // ZCZS: Detect "Move" vs "Remove"
-                  // If the node is still connected to the DOM by the time the microtask runs,
-                  // it was merely moved (e.g. during a sort/drag operation). Do not tear it down.
-                  if (node.isConnected) return;
+                  if (node.isConnected || movedNodes.has(node)) return;
 
                   const enhancedTarget = node as NexusEnhancedElement;
-                  
                   if (enhancedTarget[CLEANUP_FUNCTIONS_KEY]) {
                     enhancedTarget[CLEANUP_FUNCTIONS_KEY]!.forEach((cleanup: () => void) => cleanup());
                     delete enhancedTarget[CLEANUP_FUNCTIONS_KEY];
                   }
-                  
-                  // Strip marker synchronously to allow re-init in addedNodes handler
                   delete (enhancedTarget as any)[MARKER_KEY];
                 }
               });
+
+              // Pulse parent effect for this subtree mutation
+              (mutation.target as NexusEnhancedElement)[RUN_EFFECT_RUNNERS_KEY]?.();
             } else if (mutation.type === 'attributes') {
               const target = mutation.target as HTMLElement;
-              if (!target) return; // JSDom headless mock guard
+              if (!target) return;
               const attrName = mutation.attributeName;
-              
-              // 1. JIT Style Adoption on class changes
+
               if (attrName === 'class') {
                 context.adoptStyle(target);
               }
 
-              // 2. Loop Guard: Never pulse for 'style' changes or internal markers.
-              // These are managed by the engine's effects; pulsing here causes recursion.
               if (attrName === 'style' || attrName?.startsWith('data-nexus-') || attrName?.startsWith('nexus-')) return;
 
-              // 3. Pulse self (using Symbol for speed)
               (target as NexusEnhancedElement)[RUN_EFFECT_RUNNERS_KEY]?.();
-              
-              // 4. Pulse Ownership-Based Dependents (Selectors)
+
               const borrows = ownership.getBorrowers(target);
               borrows.forEach(borrow => {
                 const borrower = borrow.borrower as NexusEnhancedElement;
-                // Borrower must be an element with reactive effects
                 try {
                   borrower[RUN_EFFECT_RUNNERS_KEY]?.();
                 } catch (err) {
-                  // Isolate: a failed borrower must not break sibling borrowers
                   console.error(
                     `[Nexus Isolation] Borrower <${(borrower as HTMLElement).tagName}> ` +
                     `failed during ownership pulse from <${target.tagName}>:`, err
@@ -86,17 +85,18 @@ const mutationObserverModule: ObserverModule = {
               });
             }
           }
-          
-          if (hasAddedNodes) {
-            // globalThis.dispatchEvent(new CustomEvent('nexus:dom-mutated'));
-          }
+
+          // Track moved nodes for cross-batch stability
+          addedThisBatch.forEach(node => {
+            movedNodes.add(node);
+            movedNodeTimers.set(node, performance.now());
+          });
         } finally {
           isProcessing = false;
         }
       });
 
       observer.observe(el, { childList: true, subtree: true, attributes: true });
-
       return () => observer.disconnect();
 
     } catch (e) {
