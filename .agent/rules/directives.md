@@ -18,13 +18,32 @@ trigger: always_on
   Singleton -> Registration -> Dispatch -> Callback -> Cleanup sequence for
   high-efficiency reactive systems.
 
+### Nexus-UX Architectural Contract
+
+Nexus-UX is a modern, HTML declarative-first reactive UX framework that
+coordinates HTML directives with modern web-native APIs. The following contract
+governs all file-level design decisions:
+
+- **Engine-level files (src/engine/*):** Wrap modern web APIs within the
+  reactive ownership tracker. They provide the foundational infrastructure —
+  reactivity, scheduling, observation, evaluation, reconciliation, and
+  diagnostics. Engine files own the lifecycle of web-native primitives and
+  expose them through the ownership/borrowing system.
+- **Module-level files (src/modules/*):** Serve exclusively as small wrappers
+  designed to schedule their specific semantically aligned directives
+  (attributes, listeners, modifiers, scopes, sprites, etc.). Modules must
+  **never** instantiate web API primitives directly (e.g., MutationObserver,
+  IntersectionObserver, ResizeObserver). They register with the engine and
+  receive callbacks through the reactive ownership graph.
+
 ### Framework-Specific Directives
 
 - **Deno Project Integrity:** Never pollute Deno projects with non-Deno tooling,
   build scripts, or configurations.
 - **Nexus-UX Implementation:**
-  - Adhere strictly to core architectural rules, the local specification, and
-    reference .md files within the nexus-ux directory.
+  - Adhere strictly to core architectural rules, the local architectural
+    contract, the local specification, and reference .md files within the
+    nexus-ux directory.
   - **Strict Limit:** Never instantiate a secondary MutationObserver. Maintain a
     single observer context.
 - **Nexus-IO Implementation:**
@@ -33,10 +52,12 @@ trigger: always_on
 
 ### Workflow & Documentation Management
 
-- **Conversational Alignment:** When a question is asked, always engage in a
-  dialogue to clarify intent and context before proceeding with any actions.
-  This ensures that all subsequent implementations are fully aligned with the
-  ongoing conversation and project expectations.
+- **Conversational Alignment & Analysis:** When a question is asked, always
+  engage in a dialogue to clarify intent and context before proceeding with any
+  actions. During this phase, agents are explicitly permitted and encouraged to
+  analyze relevant files as needed to provide informed contributions to the
+  conversation. This ensures that all subsequent implementations are fully
+  aligned with the codebase context and project expectations.
 - **Pre-Code Implementation Plan:** Always draft a comprehensive Implementation
   Plan before modifying any code. This plan must detail the underlying thought
   process and proposed changes, providing an opportunity to review, align

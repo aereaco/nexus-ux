@@ -11,6 +11,15 @@ on outcomes and practical implementation patterns. Built on the **Omni-State
 (DOM-as-State)** philosophy, it demonstrates how to use Nexus-UX as the
 "Functional Soul" for modern web components.
 
+> [!IMPORTANT]
+> **Contributing & Compliance**: All development on Nexus-UX — by human
+> contributors and AI agents alike — must adhere to the workspace directives
+> defined in `.agent/rules/directives.md`. This includes the ZCZS mandate,
+> ownership tracking patterns, the engine-vs-module architectural contract,
+> MutationObserver policy, DDD workflow, and granular version control. See
+> [Spec §1B](nexus-ux-spec.md#chapter-1b-architecture-contract--development-compliance)
+> for the full contract.
+
 ---
 
 ## Table of Contents
@@ -2911,9 +2920,97 @@ accessible anywhere in your application:
 
 ---
 
+## Chapter 15: Debugging & Architecture Contract
+
+### 15.1. The `data-debug` Directive
+
+**Syntax**: `data-debug` or `data-debug="{ mcp: '<endpoint>' }"`
+
+**Purpose**: Activates the Nexus-UX Sanitizing Engine — a crash-isolated debug
+layer scoped to the target element's subtree.
+
+**Activation modes**:
+
+```html
+<!-- Production: No debug attribute. Zero overhead. -->
+<div data-signal="{ count: 0 }">
+  <p data-bind="count"></p>
+</div>
+
+<!-- Development: Full debug engine scoped to this subtree -->
+<div data-signal="{ count: 0 }" data-debug>
+  <p data-bind="count"></p>
+</div>
+
+<!-- Development + AI Diagnostics via MCP -->
+<div data-signal="{ count: 0 }" data-debug="{ mcp: 'http://localhost:3001/mcp' }">
+  <p data-bind="count"></p>
+</div>
+```
+
+**What activates**:
+
+| Feature | Without `data-debug` | With `data-debug` |
+|:---|:---|:---|
+| Error reporting | Basic `console.error` | Full crash beacons with element + expression context |
+| Logging | Silent | Verbose `[Nexus Debug]` output |
+| DevTools surface | None | `element.nexus.effectRunners` introspection |
+| MutationObserver | Framework only | Framework + Sanitizing (crash-isolated) |
+| MCP diagnostics | None | AI-assisted repair suggestions (if endpoint configured) |
+
+### 15.2. DevTools Introspection
+
+When `data-debug` is active, enhanced elements expose a `.nexus` property:
+
+```javascript
+// Inspect an element's active reactive effects
+const el = document.querySelector('[data-signal]');
+console.log(el.nexus.effectRunners); // Set of active effect runner references
+```
+
+### 15.3. The Engine-vs-Module Contract
+
+All Nexus-UX source files follow a strict architectural boundary:
+
+**Engine files** (`src/engine/*`) own web API primitives:
+
+```typescript
+// ✅ CORRECT: Engine-level file wraps MutationObserver
+// src/engine/observers/mutation.ts
+const observer = new MutationObserver((mutations) => { ... });
+observer.observe(root, { childList: true, subtree: true });
+```
+
+**Module files** (`src/modules/*`) schedule through the engine — never
+instantiate web primitives directly:
+
+```typescript
+// ✅ CORRECT: Module registers with engine, receives callbacks
+export const bindAttribute: AttributeModule = {
+  name: 'bind',
+  handle: (element, value, runtime) => {
+    // Uses runtime.evaluate() and ownership tracking
+    // Does NOT create its own MutationObserver
+  }
+};
+```
+
+```typescript
+// ❌ VIOLATION: Module instantiates web API primitive directly
+export const bindAttribute: AttributeModule = {
+  handle: (element, value, runtime) => {
+    const observer = new MutationObserver(() => syncSelect());
+    observer.observe(element, { childList: true });
+    // This bypasses the engine's ownership tracking
+  }
+};
+```
+
+---
+
 **Nexus-UX Technical Reference v2026.02.14 (Zenith Release)**\
 **Maintained by**: Aerea Co.\
 **See Also**:
-[nexus-ux-spec.20260214.md](file:///home/aerea/development/nexus-ux-spec.20260214.md),
-[nexus-io-spec.20260204.md](file:///home/aerea/development/nexus-io-spec.20260204.md)\
+[nexus-ux-spec.md](nexus-ux-spec.md),
+[.agent/rules/directives.md](.agent/rules/directives.md)\
 **Contact**: support@aerea.co

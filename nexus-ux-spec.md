@@ -308,6 +308,92 @@ over every directive value before execution.
 
 ---
 
+## Chapter 1B: Architecture Contract & Development Compliance
+
+### 1B.1. The Nexus-UX Architectural Contract
+
+Nexus-UX is a modern, HTML declarative-first reactive UX framework that
+coordinates HTML directives with modern web-native APIs. The following contract
+governs all file-level design decisions:
+
+- **Engine-level files (`src/engine/*`)**: Wrap modern web APIs within the
+  reactive ownership tracker. They provide the foundational infrastructure —
+  reactivity, scheduling, observation, evaluation, reconciliation, and
+  diagnostics. Engine files own the lifecycle of web-native primitives and
+  expose them through the ownership/borrowing system.
+
+- **Module-level files (`src/modules/*`)**: Serve exclusively as small wrappers
+  designed to schedule their specific semantically aligned directives
+  (attributes, listeners, modifiers, scopes, sprites, etc.). Modules must
+  **never** instantiate web API primitives directly (e.g., `MutationObserver`,
+  `IntersectionObserver`, `ResizeObserver`). They register with the engine and
+  receive callbacks through the reactive ownership graph.
+
+> [!IMPORTANT]
+> This contract is enforced at the architectural level. Any module-level file
+> that directly instantiates a web API primitive is considered a **violation**
+> and must be refactored to delegate through the engine layer.
+
+### 1B.2. MutationObserver Policy
+
+The framework permits exactly **two** MutationObserver contexts:
+
+| Observer | Location | Scope | Lifecycle |
+|:---|:---|:---|:---|
+| **Framework Observer** | `engine/observers/mutation.ts` | Reactive ownership tracking for all directive needs | Always active |
+| **Sanitizing Observer** | `engine/debug.ts` | Error reporting, crash beacons, DevTools surface | Lazy — only boots when `data-debug` is present |
+
+- All element-scoped observation needs (e.g., `<select>` childList sync) must
+  utilize the **ownership tracking** system in `reactivity.ts`. Reactivity is
+  expressed as isolated processes — no special-case logic is injected into the
+  framework observer for individual directives.
+- The Sanitizing Observer is **crash-isolated** from the Framework Observer. If
+  the framework observer throws, the sanitizing observer continues capturing
+  diagnostics.
+
+### 1B.3. The Lazy Debug Engine (`data-debug`)
+
+The full debug engine maximizes production performance by remaining completely
+dormant until explicitly invoked:
+
+| Usage | Effect |
+|:---|:---|
+| No `data-debug` (production) | Debug engine is never instantiated. Only basic `console.error` fires for critical failures. Zero overhead. |
+| `data-debug` (no value) | Boots the full debug engine scoped to the element subtree. Enables crash beacons, verbose logging, and `element.nexus` DevTools surface. |
+| `data-debug="{ mcp: 'http://...' }"` | Same as above, plus connects to the specified MCP server (via `engine/mcp.ts`) for AI-assisted diagnostics, crash reporting, and remote action definitions. |
+
+`engine/mcp.ts` remains an **independent, omni-directional module** — it serves
+as the standardized MCP transport primitive for both runtime features (e.g.,
+`$sql`, server-driven actions) and debug diagnostics. The debug engine consumes
+it when configured; it does not own it.
+
+### 1B.4. Development Compliance
+
+All development on Nexus-UX — by human contributors and AI agents alike — must
+follow the workspace directives defined in `.agent/rules/directives.md`. Key
+mandates include:
+
+- **Zero-Copy Zero-Serialization (ZCZS)**: Eliminate data serialization across
+  all boundaries.
+- **Shared Memory Heap**: Maximize use of `SharedArrayBuffer`, atomic
+  operations, and direct memory references.
+- **Rust-Inspired Borrowing**: Enforce clear memory ownership and strict
+  borrowing patterns.
+- **Reactive Orchestration**: Singleton → Registration → Dispatch → Callback →
+  Cleanup.
+- **Single Framework MutationObserver**: Never instantiate secondary framework
+  observers.
+- **Conversational Alignment**: Engage in dialogue before implementation.
+- **Pre-Code Implementation Plans**: Draft comprehensive plans before modifying
+  code.
+- **Documentation-Driven Development**: Documentation must remain updated and
+  ahead of the codebase.
+- **Direct Focus over Tool Sprawl**: Fix core functionality, not self-engineered
+  tooling.
+- **Granular Version Control**: Commit after every code edit batch.
+
+---
+
 ## Chapter 2: The Language (NEG Grammar & Selectors)
 
 Before diving into architecture and usage, the reader must understand the
@@ -1030,6 +1116,36 @@ source** (parsed once at initialization), while the binary signal heap and
 reactive proxies are the **runtime truth**. This separation is what enables
 Nexus-UX to maintain zero-allocation, zero-serialization signal propagation
 under load.
+
+##### 5.2.2.1. ZCZS Engine Symbols
+
+The engine uses JavaScript `Symbol` keys as internal ZCZS markers to track node
+state without polluting the DOM attribute namespace:
+
+- **`MARKER_KEY`** (`Symbol.for('__nexus_marker__')`): Stamped on every element
+  processed by `ModuleCoordinator.processElement()`. During MutationObserver
+  `addedNodes` processing, if an element already carries this marker, it is
+  identified as a **move** (e.g., drag-and-drop reorder) rather than a new
+  insertion, preventing duplicate effect runner registration and event listener
+  attachment.
+
+- **`EFFECT_RUNNERS_KEY`** (`Symbol.for('__effect_runners__')`): A `Set` of
+  active reactive effect runner references attached to each enhanced element.
+  Used by the ownership tracking system to pulse dependent effects when
+  attributes change. Also exposed on `element.nexus.effectRunners` for DevTools
+  introspection (when `data-debug` is active).
+
+- **`CLEANUP_FUNCTIONS_KEY`** (`Symbol.for('__cleanup_fns__')`): A `Map` of
+  cleanup functions keyed by directive hash. Invoked synchronously when an
+  element is removed from the DOM (and confirmed disconnected via
+  `node.isConnected` check) to tear down event listeners, effect runners, and
+  ownership registrations.
+
+- **`RUN_EFFECT_RUNNERS_KEY`** (`Symbol.for('__run_effects__')`): A function
+  reference that, when called, re-executes all effect runners in the element's
+  `EFFECT_RUNNERS_KEY` set. Used by the MutationObserver to pulse dependent
+  nodes during attribute changes and by the ownership graph to propagate
+  borrower updates.
 
 #### 5.2.3. Signal Auto-Promotion (The Local Scope Accelerator)
 
