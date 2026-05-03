@@ -1,24 +1,8 @@
-import { RuntimeContext } from './composition.ts';
-
 /**
- * Global logging utility for Nexus-UX.
- * Respects the data-debug flag on the root element.
+ * Re-export barrel for backward compatibility.
+ * All logging logic has been consolidated into engine/debug.ts
+ * (the Integrated Sanitizing Engine).
+ * 
+ * @deprecated Import directly from './debug.ts' instead.
  */
-export const logger = {
-  log: (context: RuntimeContext, ...args: any[]) => {
-    if (context.isDevMode) console.log(`[Nexus]`, ...args);
-  },
-  warn: (context: RuntimeContext, ...args: any[]) => {
-    if (context.isDevMode) console.warn(`[Nexus]`, ...args);
-  },
-  info: (context: RuntimeContext, ...args: any[]) => {
-    if (context.isDevMode) console.info(`[Nexus]`, ...args);
-  },
-  debug: (context: RuntimeContext, ...args: any[]) => {
-    if (context.isDevMode) console.debug(`[Nexus Debug]`, ...args);
-  },
-  error: (context: RuntimeContext, ...args: any[]) => {
-    // Errors are always logged, but prefixed
-    console.error(`[Nexus Error]`, ...args);
-  }
-};
+export { logger } from './debug.ts';

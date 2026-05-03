@@ -18,6 +18,7 @@ import { evaluate } from './evaluator.ts';
 import { parseAttribute, ParsedAttribute } from './attributeParser.ts'; 
 import { scheduler } from './scheduler.ts'; 
 import { logger } from './logger.ts';
+import { initSanitizingEngine, disposeSanitizingEngine } from './debug.ts';
 import { resolveSelector } from '../modules/sprites/selector.ts';
 import { elUniqId, attrHash } from './utils/hash.ts';
 import { MARKER_KEY } from './consts.ts';
@@ -255,17 +256,9 @@ export class ModuleCoordinator {
         });
       }
     }
-    // Dynamic Debug Support
-    if (typeof MutationObserver !== 'undefined' && typeof document !== 'undefined') {
-      this.debugObserver = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.type === 'attributes' && mutation.attributeName === 'data-debug') {
-            this.runtimeContext.isDevMode = document.documentElement.hasAttribute('data-debug');
-          }
-        });
-      });
-      this.debugObserver.observe(document.documentElement, { attributes: true });
-    }
+    // Dynamic Debug Support — delegated to the Integrated Sanitizing Engine
+    // The sanitizing observer is crash-isolated from the framework observer.
+    initSanitizingEngine(this.runtimeContext);
 
     this.initContext = {
       registerAttributeModule: this.registerAttributeModule.bind(this),
@@ -281,13 +274,8 @@ export class ModuleCoordinator {
     };
   }
 
-  private debugObserver: MutationObserver | null = null;
-
   public dispose(): void {
-    if (this.debugObserver) {
-      this.debugObserver.disconnect();
-      this.debugObserver = null;
-    }
+    disposeSanitizingEngine();
     this.attributeModules.clear();
     this.actionModules.clear();
     this.modifierModules.clear();
