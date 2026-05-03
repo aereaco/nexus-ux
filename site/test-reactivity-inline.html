@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" data-ux-init>
+<head>
+    <meta charset="UTF-8">
+    <title>Reactivity Isolated Test</title>
+    <script type="module" src="/dist/nexus-ux.js"></script>
+</head>
+<body>
+    <div id="app" data-var="{ items: [{id: 'a', n: 'One'}, {id: 'b', n: 'Two'}] }">
+        <div id="list-container" data-teleport:drop="items">
+            <div data-for="item in items" data-drag class="item">
+                <span data-bind="item.n"></span>
+            </div>
+        </div>
+        <div id="results" style="margin-top:20px; padding:10px; background:#222; color:#0f0; font-family:monospace; white-space:pre;"></div>
+    </div>
+
+    <script type="module">
+        const log = (msg) => {
+            const el = document.getElementById('results');
+            if (el) el.textContent += msg + '\n';
+            console.log(msg);
+        };
+
+        // Wait for framework to initialize
+        setTimeout(() => {
+            const DS = Symbol.for('__data_stack__');
+            const ER = Symbol.for('__effect_runners__');
+
+            const rt = globalThis._NEXUS_RUNTIME;
+            log('RT exists: ' + !!rt);
+
+            const forEl = document.querySelector('[data-for]');
+            log('data-for el: ' + !!forEl);
+            log('data-for display: ' + forEl?.style.display);
+
+            const visibleBefore = document.querySelectorAll('.item:not([style*="display: none"])').length;
+            log('Visible items before: ' + visibleBefore);
+
+            // Get data stack from data-for element
+            const stack = forEl?.[DS];
+            log('Stack depth: ' + (stack?.length || 0));
+
+            if (stack) {
+                for (let i = 0; i < stack.length; i++) {
+                    const scope = stack[i];
+                    const keys = Object.keys(scope);
+                    log('  Stack[' + i + '] keys: ' + keys.join(', '));
+                    if (scope.items) {
+                        log('  items.length: ' + scope.items.length);
+                        log('  isReactive(items): ' + rt?.isReactive(scope.items));
+                        log('  isReactive(scope): ' + rt?.isReactive(scope));
+                    }
+                }
+            }
+
+            // Check effect runners
+            const runners = forEl?.[ER];
+            log('Effect runners: ' + (runners instanceof Set ? runners.size : 'none'));
+
+            // Raw Vue reactivity test
+            const testObj = rt.reactive({ arr: [1, 2, 3] });
+            let effectCount = 0;
+            rt.effect(() => {
+                const _len = testObj.arr.length;
+                effectCount++;
+            });
+            testObj.arr.push(4);
+            log('Vue reactivity: effectCount=' + effectCount + ' (expect 2)');
+
+            // Now test pushing to the actual items array
+            if (stack) {
+                for (const scope of stack) {
+                    if (scope.items && Array.isArray(scope.items)) {
+                        log('Pushing to items...');
+                        scope.items.push({ id: 'test', n: 'Pushed' });
+                        setTimeout(() => {
+                            const visibleAfter = document.querySelectorAll('.item:not([style*="display: none"])').length;
+                            log('Visible items after push: ' + visibleAfter);
+                            log('items.length after: ' + scope.items.length);
+                            log(visibleAfter > visibleBefore ? 'PASS: DOM updated' : 'FAIL: DOM not updated');
+                        }, 200);
+                        break;
+                    }
+                }
+            }
+
+            // Check beacons
+            if (rt?.agent) {
+                const beacons = rt.agent.getBeaconHistory();
+                log('Crash beacons: ' + beacons.length);
+                beacons.forEach((b, i) => {
+                    log('  Beacon ' + i + ': ' + (b.callStack[0]?.function || 'unknown'));
+                });
+            }
+        }, 2000);
+    </script>
+</body>
+</html>

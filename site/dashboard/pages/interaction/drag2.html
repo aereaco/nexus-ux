@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-debug data-ux-init
+      data-ingest="{ 
+        'Tailwind': { link: [{ href: 'https://cdn.jsdelivr.net/npm/daisyui@5/themes.css' }], script: [{ src: 'https://cdn.tailwindcss.com' }] }
+      }">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tailwind Parity Lab | Nexus-UX</title>
+    <script type="module" src="/dist/nexus-ux.js"></script>
+</head>
+<body class="bg-base-100 text-base-content p-8 min-h-screen">
+    <header class="mb-12">
+        <h1 class="text-4xl font-black tracking-tight mb-2">Nexus Spatial Engine</h1>
+        <p class="opacity-40 text-sm uppercase tracking-widest font-mono italic">Tailwind PlayCDN Baseline</p>
+    </header>
+
+    <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12" data-var="{ 
+        listA: [{id: '1', t: 'Item 1'}, {id: '2', t: 'Item 2'}, {id: '3', t: 'Item 3'}],
+        listB: [{id: '4', t: 'Item 4'}, {id: '5', t: 'Item 5'}],
+        isExpanded: false
+    }">
+        
+        <!-- 01. Simple List -->
+        <section class="card bg-base-200 shadow-xl overflow-hidden">
+            <div class="card-body">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="card-title opacity-50 text-xs uppercase tracking-widest">01. Simple Reordering</h2>
+                    <span class="badge badge-outline opacity-50">data-drag-move</span>
+                </div>
+                <div class="space-y-2" data-drag-move="listA">
+                    <div data-for="item in listA" data-drag class="p-4 bg-base-300 rounded-lg flex items-center gap-4 cursor-grab hover:bg-base-300/80 transition-colors border border-white/5">
+                        <div class="w-2 h-6 bg-base-100/50 rounded-full cursor-move hover:bg-primary transition-colors" data-drag-handle></div>
+                        <span data-bind="item.t" class="font-medium"></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 02. Shared Lists -->
+        <section class="card bg-base-200 shadow-xl overflow-hidden">
+            <div class="card-body">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="card-title opacity-50 text-xs uppercase tracking-widest">02. Shared Transfer</h2>
+                    <span class="badge badge-outline opacity-50">data-drag-transfer</span>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-2 p-4 bg-black/20 rounded-2xl min-h-[200px] border border-dashed border-white/5" 
+                         data-drag-group="shared" data-drag-move="listA" data-drag-transfer="listA">
+                        <div data-for="item in listA" data-drag class="p-3 bg-base-300 rounded-lg text-xs shadow-sm border border-white/5">
+                            <span data-bind="item.t"></span>
+                        </div>
+                    </div>
+                    <div class="space-y-2 p-4 bg-black/20 rounded-2xl min-h-[200px] border border-dashed border-white/5" 
+                         data-drag-group="shared" data-drag-move="listB" data-drag-transfer="listB">
+                        <div data-for="item in listB" data-drag class="p-3 bg-base-300 rounded-lg text-xs shadow-sm border border-white/5">
+                            <span data-bind="item.t"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 03. Grid Thresholds -->
+        <section class="card bg-base-200 shadow-xl overflow-hidden">
+            <div class="card-body">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="card-title opacity-50 text-xs uppercase tracking-widest">03. Grid Layout</h2>
+                    <span class="badge badge-outline opacity-50">Spatial Hit-Test</span>
+                </div>
+                <div class="grid grid-cols-3 gap-4" data-drag-move="listA">
+                    <div data-for="item in listA" data-drag class="aspect-square bg-base-300 rounded-2xl flex flex-col items-center justify-center text-center p-4 border border-white/5 hover:border-primary/50 transition-colors">
+                        <span class="text-3xl font-black mb-1" data-bind="item.id"></span>
+                        <span class="text-[10px] opacity-30 uppercase tracking-tighter" data-bind="item.t"></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 04. Shape-Shifting Morph -->
+        <section class="card bg-base-200 shadow-xl overflow-hidden">
+            <div class="card-body">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="card-title opacity-50 text-xs uppercase tracking-widest">04. Native Morphing</h2>
+                    <span class="badge badge-outline opacity-50">Idiomorph + VT</span>
+                </div>
+                <div class="flex items-center justify-center h-48">
+                    <div data-spatial 
+                         data-bind-class="isExpanded ? 'w-full h-48 rounded-3xl text-4xl' : 'w-24 h-24 rounded-2xl text-base'"
+                         class="bg-gradient-to-br from-primary to-secondary text-white font-black flex items-center justify-center cursor-pointer shadow-2xl transition-all duration-500 overflow-hidden"
+                         data-on:click="isExpanded = !isExpanded"
+                         data-bind="isExpanded ? 'TRANSITION' : 'MORPH'">
+                    </div>
+                </div>
+                <p class="text-[10px] opacity-30 text-center mt-4 uppercase tracking-tighter">Click to trigger native layout interpolation</p>
+            </div>
+        </section>
+
+    </main>
+
+</body>
+</html>

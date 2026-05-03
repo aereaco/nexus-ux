@@ -1,6 +1,6 @@
 import { RuntimeContext } from './composition.ts';
 import { getSelfHealAgent } from './agent.ts';
-import { evaluationError } from './errors.ts';
+import { evaluationError, syntaxError } from './errors.ts';
 import { getDataStack, hasScopeProvider, resolveScopeProvider, registerScopeProvider } from './scope.ts';
 
 import { MirrorProxy } from './mirror.ts';
@@ -81,6 +81,113 @@ function preProcessExpression(expression: string): string {
   return processed;
 }
 
+export interface UXDiagnostic {
+  severity: 'error' | 'warning';
+  message: string;
+  suggestion: string;
+  element: Element;
+  expression: string;
+}
+
+function checkBalanced(expr: string): { type: string, expected: string, position: number } | null {
+  const stack: { char: string, pos: number }[] = [];
+  const pairs: Record<string, string> = { '{': '}', '[': ']', '(': ')' };
+  let inString: string | null = null;
+  let escape = false;
+
+  for (let i = 0; i < expr.length; i++) {
+    const char = expr[i];
+    if (escape) {
+      escape = false;
+      continue;
+    }
+    if (char === '\\') {
+      escape = true;
+      continue;
+    }
+    if (inString) {
+      if (char === inString) inString = null;
+      continue;
+    }
+    if (char === '"' || char === "'" || char === '`') {
+      inString = char;
+      continue;
+    }
+    if (pairs[char]) {
+      stack.push({ char, pos: i });
+    } else if (char === '}' || char === ']' || char === ')') {
+      const last = stack.pop();
+      if (!last || pairs[last.char] !== char) {
+        return { type: 'bracket', expected: last ? pairs[last.char] : 'none', position: i };
+      }
+    }
+  }
+  if (inString) {
+    return { type: 'quote', expected: inString, position: expr.length };
+  }
+  if (stack.length > 0) {
+    const last = stack[stack.length - 1];
+    return { type: 'bracket', expected: pairs[last.char], position: last.pos };
+  }
+  return null;
+}
+
+function validateExpression(expression: string, el: Element | Text | Comment): UXDiagnostic | null {
+  const trimmed = expression.trim();
+  let attrName = '';
+  
+  if (el instanceof Element) {
+    for (const attr of Array.from(el.attributes)) {
+      if (attr.value === expression) {
+        attrName = attr.name;
+        break;
+      }
+    }
+  }
+
+  // Declarative: data-for syntax check
+  if (attrName === 'data-for') {
+    if (!trimmed.includes(' in ')) {
+      return {
+        severity: 'error',
+        message: `Invalid data-for syntax: "${trimmed}". Expected "item in items".`,
+        suggestion: trimmed.includes(' of ') 
+          ? `Replace 'of' with 'in': "${trimmed.replace(' of ', ' in ')}"` 
+          : `Use pattern: "(item, index) in list"`,
+        element: el as Element,
+        expression: trimmed
+      };
+    }
+  }
+
+  // Declarative: data-var must be an object literal
+  if (attrName === 'data-var') {
+    if (!trimmed.startsWith('{') && !trimmed.startsWith('({')) {
+      return {
+        severity: 'error',
+        message: `data-var must evaluate to an object literal. Got: "${trimmed.substring(0, 40)}..."`,
+        suggestion: `Wrap in braces: "{ ${trimmed} }"`,
+        element: el as Element,
+        expression: trimmed
+      };
+    }
+  }
+
+  // General: unbalanced brackets/parens/quotes
+  const balanced = checkBalanced(trimmed);
+  if (balanced) {
+    return {
+      severity: 'error',
+      message: `Unbalanced ${balanced.type} in expression: "${trimmed.substring(0, 60)}..."`,
+      suggestion: `Check for missing closing '${balanced.expected}' near position ${balanced.position}`,
+      element: el as Element,
+      expression: trimmed
+    };
+  }
+
+  return null;
+}
+
 
 export function evaluateLater(
   el: Element | Text | Comment,
@@ -88,7 +195,6 @@ export function evaluateLater(
   runtime: RuntimeContext,
   initialExtras: Record<string, unknown> = {}
 ): (receiver: (value: unknown) => void, callExtras?: Record<string, unknown>) => void {
-  const dataStack = getDataStack(el as HTMLElement);
   const processedExpression = preProcessExpression(expression);
 
   const baseScope: Record<string | symbol, unknown> = {
@@ -104,6 +210,10 @@ export function evaluateLater(
         if (hasScopeProvider(key)) return true;
         const globalSignals = runtime.globalSignals();
         const globalActions = runtime.globalActions();
+        
+        // ZCZS: Live Scope Resolution — always fetches current context
+        const dataStack = getDataStack(el as HTMLElement);
+        
         return (key in target) || (key in globalSignals) || (key in globalActions) || dataStack.some(data => key in data);
       }
       return false;
@@ -121,28 +231,21 @@ export function evaluateLater(
         // 2. Scope Providers (modular sprites)
         if (hasScopeProvider(key)) return resolveScopeProvider(key, el, runtime);
 
-        // 2. Data Stack (Local Scopes) - Should take precedence over globals
+        // ZCZS: Live Scope Resolution — evaluate relative to exact current DOM position
+        const dataStack = getDataStack(el as HTMLElement);
+
+        // 3. Data Stack (Local Scopes) - Should take precedence over globals
         for (const data of dataStack) {
           if (key in data) {
             const val = (data as any)[key];
-            // Disable noisy resolution logs to prevent recursive console loops with Proxy values
-            // if (runtime.isDevMode) runtime.debug(`[Evaluator] Resolved "${key}" from local stack`);
             return runtime.unref(val);
           }
         }
 
-        // 3. Global Signals
+        // 4. Global Signals
         const globalSignals = runtime.globalSignals();
         if (key in globalSignals) {
           const val = (globalSignals as any)[key];
-          // if (runtime.isDevMode) runtime.debug(`[Evaluator] Resolved "${key}" from global signals`);
-          return runtime.unref(val);
-        }
-
-        // 4. Runtime / Host Context
-        if (key in target) {
-          const val = (target as any)[key];
-          // if (runtime.isDevMode) runtime.debug(`[Evaluator] Resolved "${key}" from runtime`);
           return runtime.unref(val);
         }
 
@@ -161,6 +264,8 @@ export function evaluateLater(
           (globalSignals as any)[key] = value;
           return true;
         }
+
+        const dataStack = getDataStack(el as HTMLElement);
 
         for (const data of dataStack) {
           if (key in data) {
@@ -194,6 +299,17 @@ export function evaluateLater(
   // IMPORTANT — CSP: this requires `unsafe-eval` in Content-Security-Policy.
   // This is the same trade-off as Alpine.js. A CSP-compatible build would
   // pre-compile expressions at build time (not implemented yet).
+  
+  const diagnostic = validateExpression(expression, el);
+  if (diagnostic) {
+    syntaxError(
+      diagnostic.element ? diagnostic.element.tagName.toLowerCase() : 'unknown',
+      expression,
+      `${diagnostic.message}\n💡 Suggestion: ${diagnostic.suggestion}`,
+      el instanceof HTMLElement ? el : undefined
+    );
+  }
+
   let func;
   if (runtime.isDevMode) {
     console.log("Raw Expr:", expression);
@@ -204,8 +320,17 @@ export function evaluateLater(
     func = new Function('scope', `with (scope) { return (${processedExpression}) }`);
   } catch (e) {
     if (e instanceof SyntaxError) {
-      // Fallback to statement block
-      func = new Function('scope', `with (scope) { ${processedExpression} }`);
+      // Log syntax error before attempting statement fallback
+      console.warn(`[Nexus Syntax] Expression failed to compile as value: "${processedExpression}"`);
+      try {
+        // Fallback to statement block
+        func = new Function('scope', `with (scope) { ${processedExpression} }`);
+      } catch (e2) {
+        if (e2 instanceof SyntaxError) {
+          syntaxError('eval', expression, e2.message, el instanceof HTMLElement ? el : undefined);
+        }
+        throw e2;
+      }
     } else {
       throw e;
     }
@@ -257,13 +382,12 @@ export function evaluateLater(
       if (e instanceof Promise) throw e; // Rethrow for Suspense support
       if ((e instanceof TypeError && e.message.includes('Cannot read properties of')) || e instanceof ReferenceError) {
         if (runtime.isDevMode) {
-          console.warn(`[Nexus Omni-Safe] Gracefully caught undefined access in expression: "${expression}". Yielding undefined.`);
-          
-          // Agentic Resolution Beacon: Signal that an expression failed to resolve a member/variable
+          // Agentic Resolution Beacon: Delegate console warnings to the SelfHeal agent
+          // to suppress transient resolution noise during initial DOM hydration.
           try {
             getSelfHealAgent().reportResolutionFailure('expression', expression, { 
               error: e.message, 
-              element: el instanceof Element ? el.tagName : 'text/comment' 
+              node: el 
             });
           } catch (_err) { /* ignore during boot */ }
         }

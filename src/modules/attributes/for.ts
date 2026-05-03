@@ -46,6 +46,11 @@ const forModule: AttributeModule = {
       el.style.display = 'none';
       // Mark as hidden template to avoid multiple processing if needed
       el.setAttribute('data-ux-template', 'true');
+      // ZCZS: Do NOT strip attributes from the template blueprint.
+      // The template is the shared memory source-of-truth — clones inherit
+      // its full attribute surface via cloneNode(true). Index filters in
+      // teleport.ts already exclude templates from drop-zone calculations
+      // via data-ux-template and display:none checks.
     }
 
     const disposeNodes = (nodes: Node[]) => {
@@ -69,6 +74,10 @@ const forModule: AttributeModule = {
       const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
         const items = runtime.evaluate(el, itemsExpr) as unknown as unknown[];
         if (!Array.isArray(items)) return;
+        
+        if ((window as any)._nexusDebugFor) {
+            console.log(`[for.ts] Effect running for ${itemsExpr}. Items count:`, items.length, items);
+        }
 
         const currentKeys = new Set();
         const nextNodes: Node[] = [];
@@ -107,9 +116,19 @@ const forModule: AttributeModule = {
             // Update Existing Scope
             nodes.forEach(n => {
               if (n instanceof HTMLElement) {
-                const scope: Record<string, any> = { [itemKey]: item };
-                if (indexKey) scope[indexKey] = index;
-                addScopeToNode(n, runtime.reactive(scope), el);
+                const enhanced = n as any;
+                const stack = enhanced[Symbol.for('__data_stack__')] || enhanced['__data_stack__'];
+                if (stack && stack.length > 0) {
+                  // Mutate existing proxy to trigger bound effects
+                  const scope = stack[0];
+                  scope[itemKey] = item;
+                  if (indexKey) scope[indexKey] = index;
+                } else {
+                  // Fallback if scope was somehow lost
+                  const scope: Record<string, any> = { [itemKey]: item };
+                  if (indexKey) scope[indexKey] = index;
+                  addScopeToNode(n, runtime.reactive(scope), el);
+                }
               }
             });
           }

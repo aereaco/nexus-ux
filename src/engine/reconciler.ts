@@ -30,6 +30,16 @@ const defaults = {
         }
       }
       
+      // Preserve VT and Nexus Keys across patches
+      if (from instanceof HTMLElement && to instanceof HTMLElement) {
+        if (from.style.viewTransitionName) {
+          to.style.viewTransitionName = from.style.viewTransitionName;
+        }
+        if ('_nexus_key' in from) {
+          (to as any)._nexus_key = (from as any)._nexus_key;
+        }
+      }
+      
       // Deterministic Teardown: If the node is about to be morphed, 
       // instantly execute and sever all its "borrowed" teardown leases.
       if (from instanceof Element) {

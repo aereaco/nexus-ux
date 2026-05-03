@@ -470,27 +470,61 @@ export class SelfHealAgent {
   public reportResolutionFailure(type: 'selector' | 'expression' | 'tier', identifier: string, context?: unknown): void {
     if (!this.config.enabled) return;
 
-    if (this.config.emitToConsole) {
-      console.warn(`[Nexus Resolution Beacon] ${type.toUpperCase()} Failure: "${identifier}"`, {
-        context,
-        timestamp: new Date().toISOString()
-      });
-    }
+    const emitBeacon = () => {
+      if (this.config.emitToConsole) {
+        console.warn(`[Nexus Resolution Beacon] ${type.toUpperCase()} Failure: "${identifier}"`, {
+          context,
+          timestamp: new Date().toISOString()
+        });
+      }
 
-    if (this.config.emitToPlatform && this.config.platformEndpoint) {
-      // Emit a specialized light-weight beacon for resolution failures
-      const resolutionBeacon = {
-        id: `res_${this.generateBeaconId()}`,
-        timestamp: Date.now(),
-        type: 'resolution_failure',
-        failureType: type,
-        identifier,
-        context,
-        tier: topology.getTier(),
-        navigator: this.captureNavigator()
-      };
+      if (this.config.emitToPlatform && this.config.platformEndpoint) {
+        // Emit a specialized light-weight beacon for resolution failures
+        const resolutionBeacon = {
+          id: `res_${this.generateBeaconId()}`,
+          timestamp: Date.now(),
+          type: 'resolution_failure',
+          failureType: type,
+          identifier,
+          context,
+          tier: topology.getTier(),
+          navigator: this.captureNavigator()
+        };
+        
+        this.emitToPlatform(resolutionBeacon as any);
+      }
+    };
+
+    // Telemetry noise suppression: 
+    // Wait for the next paint frame. If the element successfully rendered 
+    // or gained its scope in the microtask, suppress the "undefined" noise.
+    if (type === 'expression' && context && (context as any).node instanceof Element) {
+      const el = (context as any).node as Element;
       
-      this.emitToPlatform(resolutionBeacon as any);
+      requestAnimationFrame(() => {
+        // If the element is now a hidden template, it means it's managed by a structural
+        // directive (like data-for) and should not be throwing independent warnings.
+        if (el.hasAttribute('data-ux-template')) return;
+        
+        // If the element was detached, suppress the beacon.
+        if (!el.isConnected) return;
+        
+        if (this.runtime) {
+          let resolved = false;
+          try {
+            // Evaluate again to see if hydration resolved it.
+            const res = this.runtime.evaluate(el, identifier);
+            if (res !== undefined) resolved = true;
+          } catch (_e) {
+            resolved = false;
+          }
+          if (resolved) return;
+        }
+
+        emitBeacon();
+      });
+    } else {
+      emitBeacon();
     }
   }
 

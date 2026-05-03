@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en" data-ux-init>
+<head>
+    <meta charset="UTF-8">
+    <title>Reactivity Test</title>
+    <script type="module" src="/dist/nexus-ux.js"></script>
+</head>
+<body>
+    <div id="app" data-var="{ items: [{id: 'a', n: 'One'}, {id: 'b', n: 'Two'}] }">
+        <div class="list" data-teleport:drop="items">
+            <div data-for="item in items" data-drag class="item">
+                <span data-bind="item.n"></span>
+            </div>
+        </div>
+        <button id="test-push" data-on-click="items.push({id: 'c', n: 'Three'})">Push</button>
+    </div>
+
+    <script type="module">
+        // Wait for framework init
+        setTimeout(() => {
+            const rt = globalThis._NEXUS_RUNTIME;
+            const forEl = document.querySelector('[data-for]');
+            const appEl = document.getElementById('app');
+            
+            console.log('=== REACTIVITY DIAGNOSTIC ===');
+            console.log('1. Runtime exists:', !!rt);
+            console.log('2. data-for element:', !!forEl);
+            
+            // Check data stack
+            const DS = Symbol.for('__data_stack__');
+            const ER = Symbol.for('__effect_runners__');
+            const CL = Symbol.for('__cleanup_functions__');
+            
+            const appStack = appEl?.[DS];
+            console.log('3. App data stack:', appStack?.length, appStack ? Object.keys(appStack[0] || {}) : 'none');
+            
+            const forStack = forEl?.[DS];
+            console.log('4. For data stack:', forStack?.length);
+            
+            if (forStack && forStack.length > 0) {
+                // Find scope with 'items'
+                for (let i = 0; i < forStack.length; i++) {
+                    const scope = forStack[i];
+                    const keys = Object.keys(scope);
+                    console.log(`   Stack[${i}] keys:`, keys);
+                    if (scope.items) {
+                        console.log('   items length:', scope.items.length);
+                        console.log('   items isReactive:', rt?.isReactive(scope.items));
+                        console.log('   scope isReactive:', rt?.isReactive(scope));
+                    }
+                }
+            }
+            
+            // Check effect runners on forEl
+            const runners = forEl?.[ER];
+            console.log('5. Effect runners on for:', runners instanceof Set ? runners.size : 'none');
+            
+            // Check cleanup functions
+            const cleanups = forEl?.[CL];
+            console.log('6. Cleanups on for:', cleanups instanceof Map ? cleanups.size : 'none');
+            
+            // Check if agent has beacons
+            if (rt?.agent) {
+                const beacons = rt.agent.getBeaconHistory();
+                console.log('7. Crash beacons:', beacons.length);
+                beacons.forEach((b, i) => {
+                    console.log(`   Beacon[${i}]:`, b.callStack[0]?.function, b.callStack[0]?.file);
+                });
+            }
+            
+            // Test raw Vue reactivity
+            if (rt) {
+                const testObj = rt.reactive({ arr: [1, 2, 3] });
+                let effectCount = 0;
+                rt.effect(() => { 
+                    const _len = testObj.arr.length;
+                    effectCount++;
+                });
+                testObj.arr.push(4);
+                console.log('8. Vue reactivity test: effectCount=' + effectCount + ' (expected 2)');
+            }
+            
+            // Count visible items
+            const visibleItems = document.querySelectorAll('.item:not([style*="display: none"])').length;
+            console.log('9. Visible items:', visibleItems);
+            
+            // Try manual push via data stack
+            if (forStack) {
+                for (const scope of forStack) {
+                    if (scope.items && Array.isArray(scope.items)) {
+                        const beforeCount = document.querySelectorAll('.item:not([style*="display: none"])').length;
+                        scope.items.push({ id: 'manual', n: 'Manual' });
+                        // Wait a tick for reactivity
+                        setTimeout(() => {
+                            const afterCount = document.querySelectorAll('.item:not([style*="display: none"])').length;
+                            console.log('10. Manual push: before=' + beforeCount + ' after=' + afterCount + ' items.length=' + scope.items.length);
+                            console.log('=== END DIAGNOSTIC ===');
+                        }, 100);
+                        break;
+                    }
+                }
+            }
+        }, 2000);
+    </script>
+</body>
+</html>

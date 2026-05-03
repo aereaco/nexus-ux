@@ -195,9 +195,11 @@ class PredictiveEngine {
   private fadeTimer: number | null = null;
 
   constructor() {
-    this.quadtree = new Quadtree({ x: 0, y: 0, width: window.innerWidth, height: window.innerHeight }, 20);
-    this.viewportWidth = window.innerWidth;
-    this.viewportHeight = window.innerHeight;
+    const w = typeof window !== 'undefined' ? window.innerWidth : 0;
+    const h = typeof window !== 'undefined' ? window.innerHeight : 0;
+    this.quadtree = new Quadtree({ x: 0, y: 0, width: w, height: h }, 20);
+    this.viewportWidth = w;
+    this.viewportHeight = h;
     this.init();
   }
 

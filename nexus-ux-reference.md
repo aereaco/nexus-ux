@@ -99,7 +99,7 @@ legacy frameworks by utilizing direct token-to-function mapping.
 
 | Symbol | Designation          | Technical Role                                                                             | Practical Example                                                 |
 | :----- | :------------------- | :----------------------------------------------------------------------------------------- | :---------------------------------------------------------------- |
-| `.`    | **Native Access**    | **Unwrapped Integrity**. Bypasses the Reactive Proxy for high-frequency/raw JS/DOM access. | `<div data-bind="user.name"></div>`                               |
+| `.`    | **Native Access**    | **Reactive Property Traversal**. Standard property access through the reactive proxy for JS/DOM access. | `<div data-bind="user.name"></div>`                               |
 | `#`    | **Global Signal**    | **Reactive Source**. Accesses user-defined Global Signals managed by the Binary Heap.      | `<div data-bind="#auth.user"></div>`                              |
 | `_`    | **Env Mirror**       | **API Snapshot**. Read-only access to reactive wrappers of Browser/OS APIs.                | `<div data-bind="_window.innerWidth"></div>`                      |
 | `:`    | **Modifier**         | **Pipeline Anchor**. Defines interceptors, wrappers, and pipeways for logical execution.   | `<button data-on-click:once="save()"></button>`                   |

@@ -21,7 +21,7 @@ export const NEG_TOKENS = {
   MIRROR: '_',
 } as const;
 
-export const MODIFIER_ARGUMENT_DELIMITER = NEG_TOKENS.MODIFIER;
+export const MODIFIER_DELIMITER = NEG_TOKENS.MODIFIER;
 
 // 3. Relational Combinators
 export const RELATIONAL_COMBINATORS = {

@@ -15,7 +15,7 @@ import { morphDOM } from './reconciler.ts';
 import { fetchUtilities } from './fetch.ts'; 
 import { getDataStack } from './scope.ts';
 import { evaluate } from './evaluator.ts'; 
-import { parseAttribute } from './attributeParser.ts'; 
+import { parseAttribute, ParsedAttribute } from './attributeParser.ts'; 
 import { scheduler } from './scheduler.ts'; 
 import { logger } from './logger.ts';
 import { resolveSelector } from '../modules/sprites/selector.ts';
@@ -54,7 +54,7 @@ export interface DirectiveMetadata {
 export interface AttributeModule extends Module {
   attribute?: string;
   metadata?: DirectiveMetadata;
-  handle(element: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void;
+  handle(element: HTMLElement, value: string, runtime: RuntimeContext, parsed?: ParsedAttribute): (() => void) | void;
 }
 
 /**
@@ -486,7 +486,7 @@ export class ModuleCoordinator {
                   });
                   scopedRuntime.evaluate = currentEvaluate;
                 }
-                return module.handle(element, attr.value, scopedRuntime);
+                return module.handle(element, attr.value, scopedRuntime, parsedAttr);
               },
               originalIndex: index,
             });
@@ -527,6 +527,13 @@ export class ModuleCoordinator {
           );
         }
       });
+    }
+
+    if (element.hasAttribute('data-ux-template')) {
+      // ZCZS: Do not traverse into templates during initialization or broad sweeps.
+      // Template children are strictly managed and processed by the structural 
+      // directives (data-for, data-if) when instantiated and scoped.
+      return;
     }
 
     // 5. Recursive Walk (Passing current Isolation state)

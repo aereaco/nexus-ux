@@ -43,8 +43,13 @@ function attachListenerIfNeeded(prop: string) {
       break;
       
     case 'location':
-      window.addEventListener('popstate', update);
-      window.addEventListener('hashchange', update);
+    case 'navigation':
+      if ('navigation' in window) {
+        (window as any).navigation.addEventListener('currententrychange', update);
+      } else {
+        window.addEventListener('popstate', update);
+        window.addEventListener('hashchange', update);
+      }
       activeListeners.add(prop);
       break;
       

@@ -1,5 +1,5 @@
 import { RuntimeContext } from './composition.ts';
-import { ATTRIBUTE_PREFIX, MODIFIER_ARGUMENT_DELIMITER } from './consts.ts';
+import { ATTRIBUTE_PREFIX, MODIFIER_DELIMITER } from './consts.ts';
 
 export interface ParsedAttribute {
   name: string;
@@ -13,8 +13,19 @@ export interface ParsedAttribute {
 /**
  * Parses an HTML attribute into a structured Nexus-UX directive object.
  * 
- * Format: data-[directive]:[argument].[modifier1].[modifier2]
- * Example: data-on:click.prevent.stop
+ * Universal Grammar (per §2.1 NEG Token Set):
+ *   data-{directive}[-{argument}][:{modifier1}[:{modifier2}]]
+ * 
+ * - `-` separates directive from argument
+ * - `:` ALWAYS introduces modifiers (Pipeline Anchors)
+ * - `.` also introduces modifiers (alternative syntax)
+ * 
+ * Examples:
+ *   data-on-click:once       → { directive: "on", argument: "click", modifiers: ["once"] }
+ *   data-teleport:drop       → { directive: "teleport", modifiers: ["drop"] }
+ *   data-bind-attr:draggable → { directive: "bind", argument: "attr", modifiers: ["draggable"] }
+ *   data-for                 → { directive: "for" }
+ *   data-signal              → { directive: "signal" }
  */
 export function parseAttribute(name: string, _runtime: RuntimeContext, element: HTMLElement): ParsedAttribute | null {
   let rawName = '';
@@ -24,10 +35,10 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
     rawName = name.slice(ATTRIBUTE_PREFIX.length); // Remove 'data-'
     isNexus = true;
   } else if (name.startsWith(':')) {
-    rawName = `attr:${name.slice(1)}`; // shorthand for data-attr:
+    rawName = `bind-${name.slice(1)}`; // shorthand for data-bind-
     isNexus = true;
   } else if (name.startsWith('@')) {
-    rawName = `on:${name.slice(1)}`; // shorthand for data-on:
+    rawName = `on-${name.slice(1)}`; // shorthand for data-on-
     isNexus = true;
   }
 
@@ -40,27 +51,21 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
   const modifiers: string[] = [];
   let target: string | undefined = undefined;
 
-  const COMMON_PREFIXES = ['on-', 'class-', 'style-', 'attr-', 'bind-', 'prop-'];
-  let startIndex = 0;
-  let state = 0; // 0=DIRECTIVE, 1=ARGUMENT, 2=MODIFIER
-
-  for (let i = 0; i < COMMON_PREFIXES.length; i++) {
-    const p = COMMON_PREFIXES[i];
-    if (rawName.startsWith(p)) {
-      directive = p.slice(0, -1);
-      startIndex = p.length;
-      state = 1;
-      break;
-    }
-  }
-
-  let currentTokenStart = startIndex;
+  // State machine: 0=DIRECTIVE, 1=ARGUMENT, 2=MODIFIER
+  let state = 0;
+  let currentTokenStart = 0;
   const len = rawName.length;
 
-  for (let i = startIndex; i <= len; i++) {
+  for (let i = 0; i <= len; i++) {
     const isEnd = i === len;
     const char = isEnd ? '' : rawName[i];
-    const isDelim = char === MODIFIER_ARGUMENT_DELIMITER || char === '.'; // ':' or '.'
+
+    // `:` ALWAYS transitions to MODIFIER state (per §2.1)
+    // `-` transitions from DIRECTIVE to ARGUMENT state
+    // `.` transitions to MODIFIER state
+    const isModifierDelim = char === MODIFIER_DELIMITER || char === '.';
+    const isArgDelim = char === '-';
+    const isDelim = isModifierDelim || isArgDelim;
 
     if (isDelim || isEnd) {
       if (i > currentTokenStart) {
@@ -68,7 +73,7 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
         if (state === 0) {
           directive = token;
         } else if (state === 1) {
-          argument = token;
+          argument = argument ? argument + '-' + token : token;
         } else {
           if (token.startsWith('$(') && token.endsWith(')')) {
             target = token.slice(2, -1);
@@ -79,11 +84,15 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
       }
 
       if (isDelim) {
-        if (state === 0) {
-          state = char === MODIFIER_ARGUMENT_DELIMITER ? 1 : 2;
-        } else {
+        if (isModifierDelim) {
+          // `:` and `.` ALWAYS move to modifier state regardless of current state
           state = 2;
+        } else if (isArgDelim && state === 0) {
+          // `-` after directive introduces the argument
+          state = 1;
         }
+        // `-` while already in ARGUMENT state: we concatenate (e.g., `data-on-signal-change` → argument = "signal-change")
+        // `-` while in MODIFIER state: part of modifier token (e.g., debounce-500ms)
       }
       
       currentTokenStart = i + 1;

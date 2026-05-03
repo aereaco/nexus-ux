@@ -1724,6 +1724,8 @@ class StyleSheetManager {
       return () => this.removeSheet(sheetId);
     }
 
+    if (typeof CSSStyleSheet === 'undefined') return () => {};
+
     const sheet = new CSSStyleSheet();
     sheet.replaceSync(cssText);
     this._adoptedSheets.set(sheetId, sheet);
@@ -1744,6 +1746,8 @@ class StyleSheetManager {
       await existing.replace(processedCSS);
       return () => this.removeSheet(sheetId);
     }
+
+    if (typeof CSSStyleSheet === 'undefined') return () => {};
 
     const sheet = new CSSStyleSheet();
     await sheet.replace(processedCSS);

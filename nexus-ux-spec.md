@@ -323,27 +323,27 @@ legacy frameworks by utilizing direct token-to-function mapping.
 
 | Symbol | Designation          | Technical Role                                                                             | Practical Example                                                 |
 | :----- | :------------------- | :----------------------------------------------------------------------------------------- | :---------------------------------------------------------------- |
-| `.`    | **Native Access**    | **Unwrapped Integrity**. Bypasses the Reactive Proxy for high-frequency/raw JS/DOM access. | `<div data-bind="user.name"></div>`                               |
+| `.`    | **Native Access**    | **Reactive Property Traversal**. Standard property access through the reactive proxy for JS/DOM access. | `<div data-bind="user.name"></div>`                               |
 | `#`    | **Global Signal**    | **Reactive Source**. Accesses user-defined Global Signals managed by the Binary Heap.      | `<div data-bind="#auth.user"></div>`                              |
 | `_`    | **Env Mirror**       | **API Snapshot**. Read-only access to reactive wrappers of Browser/OS APIs.                | `<div data-bind="_window.innerWidth"></div>`                      |
 | `:`    | **Modifier**         | **Pipeline Anchor**. Defines interceptors, wrappers, and pipeways for logical execution.   | `<button data-on-click:once="save()"></button>`                   |
 | `$`    | **Logic / Selector** | **Sprite / Command**. Framework-level tools (tools) and the Unified Selector engine.       | `<button data-on-click="$(^form).save()"></button>`               |
 | `@`    | **Scope Rule**       | **Boundary Rule**. Site-aware logic based on environment, OS, or security state.           | `<div data-bind="@media(min-width: 1024px) { 'Desktop' }"></div>` |
 
-#### 2.1.1. Deep-Dive: Native Access (`.`) vs. Reactive Signals (`#`)
+#### 2.1.1. Deep-Dive: Native Access (`.`) vs. Global Signals (`#`)
 
-Understanding the distinction between Native Access and Reactive Signals is
-critical for high-performance orchestration.
+Understanding the distinction between Native Access and Global Signals is
+critical for effective orchestration.
 
-- **Reactive Signals (`#`)**: These are "Smart" references. Modifying a signal
+- **Global Signals (`#`)**: These are "Beacon" references. They access
+  user-defined signals on the shared Global Binary Heap, making state
+  accessible from anywhere in the DOM tree. Modifying a global signal
   triggers a cascade through the **Unified Nexus Scheduler**, updating all
   dependent DOM nodes.
-- **Native Access (`.`)**: These are "Raw" references. When an expression uses
-  `.property`, it reaches through the framework's reactive veil to manipulate
-  the underlying object directly. This is essential for **High-Frequency
-  Visualization** (e.g., updating a `canvas` or `transform` value 60 times per
-  second) where the tracking overhead of a signal would induce main-thread
-  jitter.
+- **Native Access (`.`)**: Standard reactive property traversal. When an
+  expression uses `.property`, it accesses the property through the reactive
+  proxy, ensuring that reads are tracked and writes trigger updates. The `.`
+  token is the default accessor for local scope signals and object properties.
 
 ---
 

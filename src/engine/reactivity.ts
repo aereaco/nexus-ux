@@ -28,6 +28,7 @@ import {
 } from '@vue/reactivity';
 
 import { CLEANUP_FUNCTIONS_KEY, EFFECT_RUNNERS_KEY, RUN_EFFECT_RUNNERS_KEY, DATA_STACK_KEY, MARKER_KEY } from './consts.ts';
+import { reportError } from './errors.ts';
 
 // =============================================================================
 // ZCZS: Zero-Copy Zero-Serialization Infrastructure (Embedded)
@@ -512,11 +513,17 @@ export function elementBoundEffect(
   // which can lead to infinite microtask loops on settled promises from cache.
   const pendingPromises = new WeakSet<Promise<any>>();
   let pendingCount = 0;
+  // Per-effect error classification: transient (hydration timing) vs persistent (developer bug)
+  let consecutiveFailures = 0;
+  let lastErrorMessage = '';
 
-  // Wrap the callback to catch Suspense Promises thrown by network proxies
+  // Wrap the callback to catch Suspense Promises and classify standard errors
   const suspenseWrappedCallback = () => {
     try {
       effectCallback();
+      // Success resets the failure counter
+      consecutiveFailures = 0;
+      lastErrorMessage = '';
     } catch (err) {
       if (err instanceof Promise) {
         // Deep Suspense Proxy tripped. Suspend this specific effect and resume when resolved.
@@ -550,7 +557,46 @@ export function elementBoundEffect(
           }
         });
       } else {
-        throw err; // Standard error, bubble up
+        // Standard error — classify as transient or persistent
+        const msg = err instanceof Error ? err.message : String(err);
+
+        if (msg === lastErrorMessage) {
+          consecutiveFailures++;
+        } else {
+          consecutiveFailures = 1;
+          lastErrorMessage = msg;
+        }
+
+        if (consecutiveFailures >= 3) {
+          // PERSISTENT: Developer error. Report with full diagnostics,
+          // then quarantine THIS runner only. Sibling effects survive via isolation.
+          console.error(
+            `[Nexus Diagnostic] Persistent error on <${el.tagName}> (${consecutiveFailures}x):`,
+            err
+          );
+          reportError(
+            err instanceof Error ? err : new Error(msg),
+            el,
+            `Persistent failure (${consecutiveFailures}x) — effect quarantined`
+          );
+          // Surgically stop only this runner. The RUN_EFFECT_RUNNERS_KEY
+          // isolation loop ensures sibling runners on this element continue.
+          stop(runner);
+          const enhanced = el as NexusEnhancedElement;
+          enhanced[EFFECT_RUNNERS_KEY]?.delete(runner);
+        } else {
+          // TRANSIENT: Likely hydration timing or DOM mid-mutation. 
+          // Log at debug level, allow the effect to survive for the next pulse.
+          if ((globalThis as any).Nexus?.coordinator?.runtimeContext?.isDevMode) {
+            console.debug(
+              `[Nexus Transient] <${el.tagName}> effect attempt ${consecutiveFailures}/3:`,
+              msg
+            );
+          }
+        }
+        // CRITICAL: Never re-throw. The isolation boundary catches here so
+        // Vue's effect() doesn't deactivate, and the RUN_EFFECT_RUNNERS_KEY
+        // loop continues to sibling runners.
       }
     }
   };
@@ -567,13 +613,36 @@ export function elementBoundEffect(
 
   if (!enhancedEl[EFFECT_RUNNERS_KEY]) {
     enhancedEl[EFFECT_RUNNERS_KEY] = new Set();
+    
+    // Expose for developer tooling and console debugging
+    if (!(enhancedEl as any).nexus) (enhancedEl as any).nexus = {};
+    (enhancedEl as any).nexus.effectRunners = enhancedEl[EFFECT_RUNNERS_KEY];
   }
   enhancedEl[EFFECT_RUNNERS_KEY].add(runner);
 
   if (!enhancedEl[RUN_EFFECT_RUNNERS_KEY]) {
+    // Per-runner isolation: each runner is individually try-caught so a failure
+    // in one directive (e.g. data-bind) never kills sibling directives (e.g. data-for)
+    // on the same element. The reactive graph becomes a fault-tolerant mesh.
     enhancedEl[RUN_EFFECT_RUNNERS_KEY] = () => {
-      if (enhancedEl[EFFECT_RUNNERS_KEY]) {
-        enhancedEl[EFFECT_RUNNERS_KEY].forEach((r: ReactiveEffectRunner<void>) => r());
+      if (!enhancedEl[EFFECT_RUNNERS_KEY]) return;
+      for (const r of enhancedEl[EFFECT_RUNNERS_KEY]) {
+        try {
+          r();
+        } catch (err) {
+          // Isolate: this runner failed, but all other runners on this
+          // element continue. Report the failure with full element context.
+          console.error(
+            `[Nexus Isolation] Effect failed on <${enhancedEl.tagName}>, ` +
+            `isolated from ${enhancedEl[EFFECT_RUNNERS_KEY]!.size - 1} sibling effects:`,
+            err
+          );
+          reportError(
+            err instanceof Error ? err : new Error(String(err)),
+            enhancedEl,
+            'Isolated effect failure'
+          );
+        }
       }
     };
   }

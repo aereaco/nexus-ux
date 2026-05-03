@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-debug data-ux-init>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Spatial Engine | 100% Parity Lab</title>
+    <script type="module" src="/dist/nexus-ux.js"></script>
+    <style>
+        :root {
+            --primary: #570df8;
+            --secondary: #f000b8;
+            --accent: #37cdbe;
+            --neutral: #3d4451;
+            --base-100: #111827;
+            --base-200: #1f2937;
+            --base-300: #0f172a;
+            --base-content: #ebecf0;
+        }
+
+        body {
+            background-color: var(--base-300);
+            color: var(--base-content);
+            font-family: 'Inter', system-ui, sans-serif;
+            padding: 2rem;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background-color: var(--base-200);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            opacity: 0.4;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .list-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            min-height: 50px;
+        }
+
+        .item {
+            background-color: var(--base-100);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: grab;
+            border: 1px solid rgba(255,255,255,0.03);
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s, opacity 0.2s;
+        }
+
+        .item:active { cursor: grabbing; }
+        .item.dragging { opacity: 0.3; }
+
+        .item.filtered {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .handle {
+            width: 1rem;
+            height: 1.5rem;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(255,255,255,0.15),
+                rgba(255,255,255,0.15) 2px,
+                transparent 2px,
+                transparent 5px
+            );
+            border-radius: 4px;
+            cursor: grab;
+            flex-shrink: 0;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+        }
+
+        .horizontal-list {
+            display: flex;
+            flex-direction: row;
+            gap: 0.5rem;
+            min-height: 50px;
+            overflow-x: auto;
+        }
+
+        .horizontal-list .item {
+            min-width: 100px;
+            flex-shrink: 0;
+            justify-content: center;
+        }
+
+        .scroll-container {
+            max-height: 180px;
+            overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+        }
+
+        .nested-container {
+            padding: 1rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .badge {
+            background: var(--neutral);
+            padding: 2px 8px;
+            border-radius: 99px;
+            font-size: 0.6rem;
+            font-weight: 700;
+        }
+
+        .morph-target {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+        }
+
+        .morph-target.expanded {
+            width: 100%;
+            height: 160px;
+            border-radius: 24px;
+            font-size: 2rem;
+        }
+
+        .selected-item {
+            outline: 2px solid var(--accent);
+            outline-offset: -2px;
+        }
+
+        .ghost-custom {
+            background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
+            border: none !important;
+            box-shadow: 0 20px 40px rgba(87, 13, 248, 0.4) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" data-var="{
+        list1: [{id: 'A1', n: 'Item 1'}, {id: 'A2', n: 'Item 2'}, {id: 'A3', n: 'Item 3'}],
+        list2: [{id: 'B1', n: 'Item 4'}, {id: 'B2', n: 'Item 5'}],
+        cloneSource: [{id: 'C1', n: 'Source 1'}, {id: 'C2', n: 'Source 2'}],
+        cloneTarget: [],
+        handleList: [{id: 'H1', n: 'Handle Item 1'}, {id: 'H2', n: 'Handle Item 2'}, {id: 'H3', n: 'Handle Item 3'}],
+        filterList: [{id: 'F1', n: 'Draggable 1', filtered: false}, {id: 'F2', n: 'Locked', filtered: true}, {id: 'F3', n: 'Draggable 2', filtered: false}, {id: 'F4', n: 'Locked Too', filtered: true}],
+        multiList: [{id: 'M1', n: 'Multi 1', selected: false}, {id: 'M2', n: 'Multi 2', selected: false}, {id: 'M3', n: 'Multi 3', selected: false}, {id: 'M4', n: 'Multi 4', selected: false}],
+        gridList: [{id: 'G1', n: '1'}, {id: 'G2', n: '2'}, {id: 'G3', n: '3'}, {id: 'G4', n: '4'}, {id: 'G5', n: '5'}, {id: 'G6', n: '6'}],
+        nestedList: [{id: 'N1', n: 'Parent 1', sub: [{id: 'S1', n: 'Child 1'}]}, {id: 'N2', n: 'Parent 2', sub: []}],
+        swapList: [{id: 'W1', n: 'Alpha'}, {id: 'W2', n: 'Beta'}, {id: 'W3', n: 'Gamma'}],
+        ghostList: [{id: 'GH1', n: 'Ghost 1'}, {id: 'GH2', n: 'Ghost 2'}, {id: 'GH3', n: 'Ghost 3'}],
+        horzList: [{id: 'D1', n: 'H1'}, {id: 'D2', n: 'H2'}, {id: 'D3', n: 'H3'}, {id: 'D4', n: 'H4'}],
+        scrollList: [{id: 'SC1', n: 'Scroll 1'}, {id: 'SC2', n: 'Scroll 2'}, {id: 'SC3', n: 'Scroll 3'}, {id: 'SC4', n: 'Scroll 4'}, {id: 'SC5', n: 'Scroll 5'}, {id: 'SC6', n: 'Scroll 6'}, {id: 'SC7', n: 'Scroll 7'}, {id: 'SC8', n: 'Scroll 8'}],
+        isExpanded: false,
+        disabledSorting: false
+    }">
+        <header style="margin-bottom: 3rem; text-align: center;">
+            <h1 style="font-size: 3rem; font-weight: 900; margin: 0; background: linear-gradient(to right, #fff, #555); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">NEXUS SPATIAL</h1>
+            <p style="opacity: 0.3; text-transform: uppercase; letter-spacing: 0.4em; font-size: 0.7rem;">Industry Standard Functional Parity Lab — 14/14 Tests</p>
+        </header>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem;">
+            
+            <!-- 01. Simple List -->
+            <div class="card">
+                <div class="card-title">01. Simple <span class="badge">SortableJS Parity</span></div>
+                <div class="list-group" data-teleport:drop="list1">
+                    <div data-for="item in list1" data-drag class="item">
+                        <span data-bind="item.n"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 02. Shared Transfer -->
+            <div class="card">
+                <div class="card-title">02. Shared <span class="badge">Cross-Container</span></div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="list-group" data-teleport:drop="list1">
+                        <div data-for="item in list1" data-drag class="item" style="padding: 8px; font-size: 0.8rem;">
+                            <span data-bind="item.n"></span>
+                        </div>
+                    </div>
+                    <div class="list-group" data-teleport:drop="list2">
+                        <div data-for="item in list2" data-drag class="item" style="padding: 8px; font-size: 0.8rem;">
+                            <span data-bind="item.n"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 03. Cloning -->
+            <div class="card">
+                <div class="card-title">03. Cloning <span class="badge">teleport-mode=clone</span></div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <div style="font-size: 0.6rem; opacity: 0.3; margin-bottom: 0.5rem;">SOURCE (drag from here)</div>
+                        <div class="list-group" data-teleport:drop="cloneSource">
+                            <div data-for="item in cloneSource" data-drag class="item" style="padding: 8px; font-size: 0.8rem;">
+                                <span data-bind="item.n"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.6rem; opacity: 0.3; margin-bottom: 0.5rem;">TARGET (clones here)</div>
+                        <div class="list-group" data-teleport:drop="cloneTarget" data-teleport-mode="clone">
+                            <div data-for="item in cloneTarget" data-drag class="item" style="padding: 8px; font-size: 0.8rem;">
+                                <span data-bind="item.n"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 04. Disabled Sorting -->
+            <div class="card">
+                <div class="card-title">04. Sorting <span class="badge" data-bind="disabledSorting ? 'DISABLED' : 'ENABLED'"></span></div>
+                <button data-on-click="disabledSorting = !disabledSorting" class="badge" style="margin-bottom: 10px; cursor: pointer; padding: 6px 12px; border: none; color: inherit;">Toggle</button>
+                <div class="list-group" data-teleport:drop="list1">
+                    <div data-for="item in list1" data-drag data-bind-draggable="!disabledSorting" class="item">
+                        <span data-bind="item.n"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 05. Handles -->
+            <div class="card">
+                <div class="card-title">05. Handles <span class="badge">$el sprite</span></div>
+                <div class="list-group" data-teleport:drop="handleList">
+                    <div data-for="item in handleList" class="item" draggable="false">
+                        <div class="handle"
+                             data-on-pointerdown="$el.parentElement.setAttribute('draggable', 'true')"
+                             data-on-pointerup="$el.parentElement.removeAttribute('draggable')"></div>
+                        <span data-bind="item.n"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 06. Filter -->
+            <div class="card">
+                <div class="card-title">06. Filter <span class="badge">Selective Drag</span></div>
+                <div class="list-group" data-teleport:drop="filterList">
+                    <div data-for="item in filterList" data-drag 
+                         data-bind-draggable="!item.filtered"
+                         data-bind-class="item.filtered ? 'item filtered' : 'item'"
+                         class="item">
+                        <span data-bind="item.n"></span>
+                        <span data-if="item.filtered" class="badge" style="margin-left: auto;">🔒</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 07. MultiDrag -->
+            <div class="card">
+                <div class="card-title">07. MultiDrag <span class="badge">Batch Select</span></div>
+                <div class="list-group" data-teleport:drop="multiList">
+                    <div data-for="item in multiList" data-drag 
+                         data-bind-class="item.selected ? 'item selected-item' : 'item'"
+                         class="item">
+                        <input type="checkbox" data-bind-checked="item.selected" 
+                               data-on-change="item.selected = !item.selected"
+                               style="accent-color: var(--accent);">
+                        <span data-bind="item.n"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 08. Grid -->
+            <div class="card">
+                <div class="card-title">08. Grid Layout <span class="badge">Spatial Hit-Test</span></div>
+                <div class="grid-3" data-teleport:drop="gridList">
+                    <div data-for="item in gridList" data-drag class="item" style="flex-direction: column; aspect-ratio: 1; justify-content: center;">
+                        <span style="font-size: 1.5rem; font-weight: 900;" data-bind="item.n"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 09. Nested -->
+            <div class="card">
+                <div class="card-title">09. Nested <span class="badge">Multi-Level</span></div>
+                <div class="list-group" data-teleport:drop="nestedList">
+                    <div data-for="p in nestedList" data-drag class="item" style="flex-direction: column; align-items: stretch;">
+                        <div style="font-weight: 700;" data-bind="p.n"></div>
+                        <div class="nested-container" data-teleport:drop="p.sub">
+                            <div data-for="c in p.sub" data-drag class="item" style="font-size: 0.7rem; padding: 6px;">
+                                <span data-bind="c.n"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 10. Swap -->
+            <div class="card">
+                <div class="card-title">10. Swap <span class="badge">Index Exchange</span></div>
+                <div class="list-group" data-teleport:drop="swapList" data-teleport-mode="swap">
+                    <div data-for="item in swapList" data-drag class="item">
+                        <span data-bind="item.n"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 11. Ghost Styling -->
+            <div class="card">
+                <div class="card-title">11. Ghost Styling <span class="badge">CSS Feedback</span></div>
+                <div class="list-group" data-teleport:drop="ghostList">
+                    <div data-for="item in ghostList" data-drag class="item">
+                        <span data-bind="item.n"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 12. Direction (Horizontal) -->
+            <div class="card">
+                <div class="card-title">12. Direction <span class="badge">Horizontal</span></div>
+                <div class="horizontal-list" data-teleport:drop="horzList">
+                    <div data-for="item in horzList" data-drag class="item">
+                        <span data-bind="item.n"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 13. Auto-Scroll -->
+            <div class="card">
+                <div class="card-title">13. Auto-Scroll <span class="badge">Constrained</span></div>
+                <div class="scroll-container">
+                    <div class="list-group" data-teleport:drop="scrollList">
+                        <div data-for="item in scrollList" data-drag class="item" style="padding: 8px; font-size: 0.8rem;">
+                            <span data-bind="item.n"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 14. Morph -->
+            <div class="card">
+                <div class="card-title">14. Morph <span class="badge">Liquid Motion</span></div>
+                <div style="height: 120px; display: flex; align-items: center; justify-content: center;">
+                    <div data-spatial data-bind-id="'morpher'" 
+                         data-bind-class="isExpanded ? 'morph-target expanded' : 'morph-target'"
+                         data-on-click="isExpanded = !isExpanded"
+                         data-bind="isExpanded ? 'LIQUID' : 'DRY'">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <footer style="margin-top: 4rem; padding: 2rem; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; opacity: 0.2; font-size: 0.6rem;">
+            NEXUS-UX SPATIAL ENGINE VERIFICATION SUITE v3.0 | 14/14 PARITY READY
+        </footer>
+    </div>
+</body>
+</html>

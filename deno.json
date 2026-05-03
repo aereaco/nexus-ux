@@ -1,7 +1,8 @@
 {
   "tasks": {
     "build": "deno run -A scripts/build.ts",
-    "test": "deno test -A src/"
+    "test": "deno test -A src/",
+    "serve": "deno run -A https://deno.land/std@0.212.0/http/file_server.ts --reload"
   },
   "imports": {
     "@vue/reactivity": "npm:@vue/reactivity@^3.4.15",

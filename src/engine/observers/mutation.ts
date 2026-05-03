@@ -21,6 +21,12 @@ const mutationObserverModule: ObserverModule = {
               if (mutation.addedNodes.length > 0) hasAddedNodes = true;
               mutation.addedNodes.forEach(node => {
                 if (node instanceof HTMLElement) {
+                  // ZCZS: Detect if this is a moved node vs a new node.
+                  // If it's a move, it already has the engine marker. Skip re-processing
+                  // to prevent duplicated effect runners and event listeners.
+                  const enhancedTarget = node as NexusEnhancedElement;
+                  if (enhancedTarget[MARKER_KEY]) return;
+
                   // MutationObserver callbacks are microtasks. 
                   // Running processElement synchronously here ensures it finishes before the next paint.
                   context.processElement(node as HTMLElement);
@@ -30,6 +36,11 @@ const mutationObserverModule: ObserverModule = {
               // Removed nodes: Cleanup must be synchronous to support same-frame re-insertion (moves)
               mutation.removedNodes.forEach(node => {
                 if (node instanceof HTMLElement) {
+                  // ZCZS: Detect "Move" vs "Remove"
+                  // If the node is still connected to the DOM by the time the microtask runs,
+                  // it was merely moved (e.g. during a sort/drag operation). Do not tear it down.
+                  if (node.isConnected) return;
+
                   const enhancedTarget = node as NexusEnhancedElement;
                   
                   if (enhancedTarget[CLEANUP_FUNCTIONS_KEY]) {
@@ -43,6 +54,7 @@ const mutationObserverModule: ObserverModule = {
               });
             } else if (mutation.type === 'attributes') {
               const target = mutation.target as HTMLElement;
+              if (!target) return; // JSDom headless mock guard
               const attrName = mutation.attributeName;
               
               // 1. JIT Style Adoption on class changes
@@ -62,13 +74,21 @@ const mutationObserverModule: ObserverModule = {
               borrows.forEach(borrow => {
                 const borrower = borrow.borrower as NexusEnhancedElement;
                 // Borrower must be an element with reactive effects
-                borrower[RUN_EFFECT_RUNNERS_KEY]?.();
+                try {
+                  borrower[RUN_EFFECT_RUNNERS_KEY]?.();
+                } catch (err) {
+                  // Isolate: a failed borrower must not break sibling borrowers
+                  console.error(
+                    `[Nexus Isolation] Borrower <${(borrower as HTMLElement).tagName}> ` +
+                    `failed during ownership pulse from <${target.tagName}>:`, err
+                  );
+                }
               });
             }
           }
           
           if (hasAddedNodes) {
-            globalThis.dispatchEvent(new CustomEvent('nexus:dom-mutated'));
+            // globalThis.dispatchEvent(new CustomEvent('nexus:dom-mutated'));
           }
         } finally {
           isProcessing = false;
