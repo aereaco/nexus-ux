@@ -33,6 +33,10 @@ trigger: always_on
 
 ### Workflow & Documentation Management
 
+- **Conversational Alignment:** When a question is asked, always engage in a
+  dialogue to clarify intent and context before proceeding with any actions.
+  This ensures that all subsequent implementations are fully aligned with the
+  ongoing conversation and project expectations.
 - **Pre-Code Implementation Plan:** Always draft a comprehensive Implementation
   Plan before modifying any code. This plan must detail the underlying thought
   process and proposed changes, providing an opportunity to review, align
