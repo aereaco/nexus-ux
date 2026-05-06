@@ -690,7 +690,8 @@ Nexus-UX completely eliminates the need for external styling compilation pipelin
 
 - **ZCZS AST Tokenization**: The internal `StyleSheetManager` parses CSS directives (`@theme`, `@utility`, `@variant`) and DOM class names using a Zero-Copy Zero-Shim character-level state machine.
 - **Functional Resolution**: Resolvers for standard utilities (e.g., `bg-blue-500/50`) and responsive/state variants (e.g., `hover:`, `md:`) execute in-memory, compiling deterministically to standard CSS AST nodes.
-- **Integrated Orchestration**: The styling engine reads classes directly from the DOM structure via the `ModuleCoordinator` and injects them efficiently. There is no external build step required to use modern Tailwind features, and dynamic class generation via signals is fully supported in real-time.
+- **Integrated Orchestration**: The styling engine reads classes directly from the DOM structure via the `ModuleCoordinator` and injects them efficiently. There is no external build step required to use modern Tailwind features.
+- **Dynamic Signal Interpolation**: Because directives are evaluated as native JavaScript, signals can be directly interpolated into Tailwind arbitrary values (e.g., `data-class="\`bg-[${dynamicColor}]\`"`) to generate highly dynamic, state-driven utility classes on the fly.
 
 ### 3.3. The Browser-Native Foundation: `data-*` Attributes & the `dataset` API
 
