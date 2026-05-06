@@ -985,6 +985,17 @@ Nexus-UX provides a built-in, zero-dependency Tailwind v4 (Oxide) compiler. This
   >
   <button data-on-click="hasError = !hasError" class="ml-2 px-3 py-2 bg-slate-200 rounded">Toggle State</button>
 </div>
+
+<!-- Signals within Tailwind Arbitrary Values -->
+<div data-signal="{ dynamicColor: '#8b5cf6', paddingSize: '2rem' }">
+  <!-- Use string interpolation to dynamically generate JIT classes on the fly -->
+  <div data-class="[`bg-[${dynamicColor}]`, `p-[${paddingSize}]`, 'text-white', 'rounded-lg']">
+     Highly Dynamic Tailwind (Generates: bg-[#8b5cf6] p-[2rem])
+  </div>
+  
+  <input type="color" data-bind="dynamicColor" class="mt-4">
+  <input type="text" data-bind="paddingSize" class="mt-4 border rounded">
+</div>
 ```
 
 ### 5.4. Bridging UI Libraries with `data-var`
