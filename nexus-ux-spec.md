@@ -684,6 +684,14 @@ Zero-Copy Zero-Serialization (ZCZS) boundary inside the core engine:
   layer attaches them transparently only when the evaluated proxy strictly
   requires them for tracking DOM dependencies.
 
+### 3.2.2 Native Tailwind JIT & PlayCDN Parity
+
+Nexus-UX completely eliminates the need for external styling compilation pipelines or standalone CDNs (like `@tailwindcss/browser`). The framework features a **100% architectural parity implementation of the Tailwind v4 (Oxide) compiler**, built directly into the reactivity engine.
+
+- **ZCZS AST Tokenization**: The internal `StyleSheetManager` parses CSS directives (`@theme`, `@utility`, `@variant`) and DOM class names using a Zero-Copy Zero-Shim character-level state machine.
+- **Functional Resolution**: Resolvers for standard utilities (e.g., `bg-blue-500/50`) and responsive/state variants (e.g., `hover:`, `md:`) execute in-memory, compiling deterministically to standard CSS AST nodes.
+- **Integrated Orchestration**: The styling engine reads classes directly from the DOM structure via the `ModuleCoordinator` and injects them efficiently. There is no external build step required to use modern Tailwind features, and dynamic class generation via signals is fully supported in real-time.
+
 ### 3.3. The Browser-Native Foundation: `data-*` Attributes & the `dataset` API
 
 Nexus-UX's entire directive system is built on a browser-native primitive:

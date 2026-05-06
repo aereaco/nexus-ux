@@ -953,7 +953,41 @@ unified reconciliation engine.
 }
 ```
 
-### 5.3. Bridging UI Libraries with `data-var`
+### 5.3. Native Tailwind JIT (Oxide Parity)
+
+Nexus-UX provides a built-in, zero-dependency Tailwind v4 (Oxide) compiler. This eliminates the need for external build steps (like the Tailwind CLI or PostCSS) or runtime libraries (like `@tailwindcss/browser` PlayCDN).
+
+**Key Features:**
+
+- **Automatic Class Discovery**: Any Tailwind class used in the DOM (`<div class="bg-blue-500 hover:scale-105">`) is automatically detected by the `ModuleCoordinator` and compiled in-memory.
+- **Dynamic Class Generation**: Tailwind classes bound via `data-class` are compiled JIT and injected synchronously.
+- **Native Theme & Utility Directives**: The engine supports importing CSS files containing `@theme`, `@utility`, and `@variant` directives via the `data-ingest` module, seamlessly updating the framework's internal design system.
+
+**Examples:**
+
+```html
+<!-- Native PlayCDN Parity (No external scripts required) -->
+<div class="flex items-center justify-center min-h-screen bg-slate-900 text-white">
+  <div class="p-8 max-w-md w-full bg-slate-800 rounded-xl shadow-lg border border-slate-700">
+    <h1 class="text-2xl font-bold mb-4 text-blue-400">Tailwind Engine</h1>
+    <button class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-md transition-colors">
+      Action
+    </button>
+  </div>
+</div>
+
+<!-- Dynamic Signal-Bound Classes -->
+<div data-signal="{ hasError: false }">
+  <input 
+    type="text" 
+    class="border rounded px-3 py-2 outline-none transition-colors"
+    data-class="{ 'border-red-500 focus:border-red-600 bg-red-50': hasError, 'border-slate-300 focus:border-blue-500': !hasError }"
+  >
+  <button data-on-click="hasError = !hasError" class="ml-2 px-3 py-2 bg-slate-200 rounded">Toggle State</button>
+</div>
+```
+
+### 5.4. Bridging UI Libraries with `data-var`
 
 Modern CSS libraries (e.g., DaisyUI) utilize CSS Custom Properties for internal
 logic.
@@ -971,7 +1005,7 @@ logic.
   </body>
   ```
 
-### 5.4. `data-ux-theme` — Intelligent Theme Orchrestration
+### 5.5. `data-ux-theme` — Intelligent Theme Orchrestration
 
 **Syntax**: `data-ux-theme="{ default: 'mode', themes: { mode: { config } } }"`
 
