@@ -108,19 +108,29 @@ function getObjectMirror(
 }
 
 /**
- * Registry for shared observer instances (IntersectionObserver, ResizeObserver)
+ * Registry for shared observer instances.
+ * Supports both element-based observers (IntersectionObserver, ResizeObserver, MutationObserver)
+ * and global observers (PerformanceObserver).
  */
 const singletonRegistry = new Map<
   string,
-  { observer: any; callbacks: WeakMap<HTMLElement, Set<Function>> }
+  { observer: any; callbacks: Map<HTMLElement, Set<Function>>; globalCallbacks?: Set<Function> }
 >();
 
 /**
- * Manages shared IntersectionObserver / ResizeObserver instances.
- * Bare invocation routes to singleton registry for multiplexing.
+ * Check if an observer type is element-based (intersects viewport/resizes/mutates elements).
+ */
+function isElementBasedObserver(name: string): boolean {
+  return ['IntersectionObserver', 'ResizeObserver', 'MutationObserver'].includes(name);
+}
+
+/**
+ * Manages shared observer instances for multiplexing.
+ * Bare invocation routes to singleton registry for sharing across elements.
+ * Works with: IntersectionObserver, ResizeObserver, MutationObserver, PerformanceObserver
  */
 function registerToSingletonObserver(
-  name: 'IntersectionObserver' | 'ResizeObserver',
+  name: 'IntersectionObserver' | 'ResizeObserver' | 'MutationObserver' | 'PerformanceObserver',
   callback: Function,
   scheduler: RuntimeContext['scheduler'],
   element: HTMLElement
@@ -128,34 +138,67 @@ function registerToSingletonObserver(
   let entry = singletonRegistry.get(name);
   if (!entry) {
     const RealCtor = (globalThis as any)[name];
+    const isElementBased = isElementBasedObserver(name);
+    const entryCallbacks = new Map<HTMLElement, Set<Function>>();
+    let entryGlobalCallbacks: Set<Function> | undefined;
+    
     const observer = new RealCtor((entries: any[]) => {
-      for (const entry of entries) {
-        const el = entry.target as HTMLElement;
-        const cbs = entry.callbacks?.get(el);
-        if (cbs) {
-          cbs.forEach((cb: Function) => scheduler.enqueueEffect(() => cb(entry)));
+      for (const obsEntry of entries) {
+        // Element-based observers have per-target callbacks
+        // Global observers (PerformanceObserver) have single callback
+        if (isElementBased && obsEntry.target) {
+          const cbs = entryCallbacks.get(obsEntry.target as HTMLElement);
+          if (cbs) {
+            cbs.forEach((cb: Function) => scheduler.enqueueEffect(() => cb(obsEntry)));
+          }
+        } else {
+          // Global observer (PerformanceObserver) - all callbacks receive all entries
+          entryGlobalCallbacks?.forEach((cb: Function) => 
+            scheduler.enqueueEffect(() => cb(entries))
+          );
         }
       }
     });
-    entry = { observer, callbacks: new WeakMap() };
+    entry = { observer, callbacks: entryCallbacks, globalCallbacks: entryGlobalCallbacks };
     singletonRegistry.set(name, entry);
-  }
-
-  let cbs = entry.callbacks.get(element);
-  if (!cbs) {
-    cbs = new Set();
-    entry.callbacks.set(element, cbs);
-    entry.observer.observe(element);
-  }
-  cbs.add(callback);
-
-  return () => {
-    cbs?.delete(callback);
-    if (cbs?.size === 0) {
-      entry.callbacks.delete(element);
-      entry.observer.unobserve(element);
+    
+    if (!isElementBased) {
+      entry.globalCallbacks = new Set();
+      // Global observers auto-start observing
+      observer.observe({ entryTypes: ['navigation', 'resource', 'paint', 'largest-contentful-paint'] });
     }
-  };
+  }
+
+  if (isElementBasedObserver(name)) {
+    let cbs = entry.callbacks.get(element);
+    if (!cbs) {
+      cbs = new Set();
+      entry.callbacks.set(element, cbs);
+      entry.observer.observe(element);
+    }
+    cbs.add(callback);
+
+    return () => {
+      cbs?.delete(callback);
+      if (cbs?.size === 0) {
+        entry.callbacks.delete(element);
+        entry.observer.unobserve(element);
+      }
+    };
+  } else {
+    // Global observer (PerformanceObserver)
+    if (!entry.globalCallbacks) {
+      entry.globalCallbacks = new Set();
+    }
+    entry.globalCallbacks.add(callback);
+
+    return () => {
+      entry.globalCallbacks?.delete(callback);
+      if (entry.globalCallbacks?.size === 0) {
+        entry.globalCallbacks = undefined;
+      }
+    };
+  }
 }
 
 /**
@@ -235,7 +278,8 @@ export function generateDynamicMirror(name: string, target: any, runtime: Runtim
       return getObjectMirror(instance, name, runtime.globalSignals(), scheduler);
     },
     apply(_ctor, _thisArg, args) {
-      if (name === 'IntersectionObserver' || name === 'ResizeObserver') {
+      if (name === 'IntersectionObserver' || name === 'ResizeObserver' || 
+          name === 'MutationObserver' || name === 'PerformanceObserver') {
         if (element) {
           return registerToSingletonObserver(name, args[0], scheduler, element);
         }
