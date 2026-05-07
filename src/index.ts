@@ -60,12 +60,6 @@ export class UX {
          exportsObj = module.default(this.coordinator.runtimeContext);
       }
       
-      // Check if module has SpriteModule interface (has 'sprites' method)
-      if (exportsObj && typeof (exportsObj as any).sprites === 'function') {
-        this.coordinator.registerSpriteModule((exportsObj as any).name || 'sprite', exportsObj as any);
-        return;
-      }
-      
       Object.entries(exportsObj).forEach(([name, handler]) => {
          if (name === 'default') return;
 
