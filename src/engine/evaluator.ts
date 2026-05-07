@@ -3,7 +3,7 @@ import { getSelfHealAgent } from './agent.ts';
 import { evaluationError, syntaxError } from './debug.ts';
 import { getDataStack, hasScopeProvider, resolveScopeProvider, registerScopeProvider } from './scope.ts';
 
-import { MirrorProxy } from './mirror.ts';
+import { MirrorProxy, generateDynamicMirror } from './mirror.ts';
 
 declare module "./composition.ts" {
   interface RuntimeContext {
@@ -221,11 +221,23 @@ export function evaluateLater(
     get(target, key): unknown {
       if (key === Symbol.unscopables) return undefined;
       if (typeof key === 'string') {
-        // 1. Mirror Proxy (`_` prefix) maps to JIT global browser object listeners
+        // 1. Mirror Proxy (`_` prefix) - Dynamic mirror generation for any browser API
         if (key.startsWith('_')) {
           if (key === '_' || key === '_window') return MirrorProxy;
-          const rawKey = key.slice(1);
-          return (MirrorProxy as any)[rawKey];
+          
+          const realName = key.slice(1);
+          const globalSignals = runtime.globalSignals();
+          let val = (globalSignals as any)[key];
+          
+          if (val !== undefined) return val;
+          
+          const nativeTarget = (globalThis as any)[realName];
+          if (nativeTarget !== undefined) {
+            const wrapped = generateDynamicMirror(realName, nativeTarget, runtime, el as HTMLElement);
+            (globalSignals as any)[key] = wrapped;
+            return wrapped;
+          }
+          return undefined;
         }
 
         // 2. Scope Providers (modular sprites)

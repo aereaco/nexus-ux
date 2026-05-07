@@ -1,12 +1,12 @@
 /**
  * Observer Registry & Coordinator.
  * 
- * Serves as the centralized registry for all observer services.
- * Each observer module (mutation, resize, intersection, performance)
- * defines its own observer and registers itself here.
+ * Serves as the centralized registry for observer services.
+ * The mutation observer module defines itself here.
  * 
- * This file does NOT instantiate any observers directly — that is
- * the responsibility of each module in `src/modules/observers/`.
+ * Note: IntersectionObserver and ResizeObserver are now handled dynamically
+ * via the mirror system (`_IntersectionObserver`, `_ResizeObserver`) for
+ * singleton multiplexing via bare invocation.
  */
 
 import { ObserverModule } from './modules.ts';

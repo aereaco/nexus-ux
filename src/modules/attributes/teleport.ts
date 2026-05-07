@@ -150,7 +150,7 @@ export const teleportAttribute: AttributeModule = {
     // Clone the element/template content
     let clone: HTMLElement;
     if (element.tagName.toLowerCase() === 'template') {
-      clone = (element as HTMLTemplateElement).content.cloneNode(true).firstElementChild as HTMLElement;
+      clone = ((element as HTMLTemplateElement).content.cloneNode(true) as DocumentFragment).firstElementChild as HTMLElement;
     } else {
       clone = element.cloneNode(true) as HTMLElement;
       clone.removeAttribute('data-teleport');

@@ -1,4 +1,4 @@
-import { SpriteModule } from '../index.ts';
+import { SpriteModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { reactive, effect } from '../../engine/reactivity.ts';
 
@@ -9,7 +9,7 @@ import { reactive, effect } from '../../engine/reactivity.ts';
 export const mcpModule: SpriteModule = {
   name: 'mcp',
   key: '$mcp',
-  handle: (context: RuntimeContext) => {
+  sprites: (context: RuntimeContext) => {
     const client = context.mcp;
 
     /**

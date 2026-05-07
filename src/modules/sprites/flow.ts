@@ -1,4 +1,4 @@
-import { SpriteModule } from '../index.ts';
+import { SpriteModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 
 /**

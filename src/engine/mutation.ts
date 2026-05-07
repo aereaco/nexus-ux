@@ -1,8 +1,8 @@
-import { ObserverModule } from '../modules.ts';
-import { RuntimeContext } from '../composition.ts';
-import { NexusEnhancedElement, ownership } from '../reactivity.ts';
-import { reportError } from '../debug.ts';
-import { CLEANUP_FUNCTIONS_KEY, RUN_EFFECT_RUNNERS_KEY, MARKER_KEY } from '../consts.ts';
+import { ObserverModule } from './modules.ts';
+import { RuntimeContext } from './composition.ts';
+import { NexusEnhancedElement, ownership } from './reactivity.ts';
+import { reportError } from './debug.ts';
+import { CLEANUP_FUNCTIONS_KEY, RUN_EFFECT_RUNNERS_KEY, MARKER_KEY } from './consts.ts';
 
 // Module-level state for cross-batch move detection
 const movedNodes = new WeakSet<HTMLElement>();
@@ -85,6 +85,9 @@ const mutationObserverModule: ObserverModule = {
               });
             }
           }
+
+          // Dispatch event once per batch to notify modules (like Predictive Engine) that DOM has changed
+          document.dispatchEvent(new CustomEvent('nexus:dom-mutated', { bubbles: true }));
 
           // Track moved nodes for cross-batch stability
           addedThisBatch.forEach(node => {

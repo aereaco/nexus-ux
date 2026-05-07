@@ -120,10 +120,17 @@ async function ingestLink(
   const items = Array.isArray(payload) ? payload : [payload];
   
   for (const item of items) {
-    let attrs: Record<string, string | boolean | number> = typeof item === 'string' ? { href: item, rel: 'stylesheet' } : (item as Record<string, string | boolean | number>);
-    if (typeof item === 'string' && !attrs.href) {
-        attrs = parseInlineAttrs(item);
-        if (!attrs.href) attrs = { href: item, rel: 'stylesheet' };
+    let attrs: Record<string, string | boolean | number>;
+    if (typeof item === 'string') {
+      // Try to parse inline attributes first (e.g., "href='...' rel='stylesheet'")
+      const parsed = parseInlineAttrs(item);
+      if (parsed.href) {
+        attrs = parsed;
+      } else {
+        attrs = { href: item, rel: 'stylesheet' };
+      }
+    } else {
+      attrs = item as Record<string, string | boolean | number>;
     }
     
     const href = attrs.href as string;

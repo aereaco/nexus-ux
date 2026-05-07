@@ -69,10 +69,10 @@ export default function pushFactory(runtime: RuntimeContext) {
               key = applicationServerKey;
             }
 
-            const sub = await reg.pushManager.subscribe({
-              userVisibleOnly: true,
-              applicationServerKey: key
-            });
+const sub = await reg.pushManager.subscribe({
+               userVisibleOnly: true,
+               applicationServerKey: key as unknown as ArrayBuffer
+             });
             state.subscription = sub;
             state.status = 'active';
             op.data = sub;

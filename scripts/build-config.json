@@ -1,0 +1,11 @@
+{
+  "configs": [
+    {
+      "outputName": "nexus-ux-full"
+    },
+    {
+      "outputName": "nexus-ux-small",
+      "excludeModules": ["gql", "sql", "mcp", "bgSync", "bgFetch", "periodicSync", "cache", "payment"]
+    }
+  ]
+}

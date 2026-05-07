@@ -418,10 +418,10 @@ class PredictiveEngine {
 
     // 2. ZCZS: Use quadtree for O(log n) query instead of O(n) elementsFromPoint
     // Query radius of 150px around projected point for target snapping
-    const targets = this.quadtree.queryRadius(px, py, 150);
+const targets = this.quadtree.queryRadius(px, py, 150);
     
     const newPredictiveNodes = new Set<HTMLElement>();
-    let snappedTarget: { cx: number, cy: number } | null = null;
+    let snappedTarget: { cx: number, cy: number } | undefined = undefined;
     let minD = Infinity;
     
     targets.forEach(target => {
@@ -431,10 +431,10 @@ class PredictiveEngine {
         // Find closest interactive element to project line towards
         const className = target.className || '';
         const hasTailwindInteraction = typeof className === 'string' && 
-                                      (className.includes('hover:') || 
-                                       className.includes('active:') || 
-                                       className.includes('focus:'));
-                                       
+                                        (className.includes('hover:') || 
+                                         className.includes('active:') || 
+                                         className.includes('focus:'));
+                                        
         const isInteractiveNode = target.hasAttribute('data-on-click') || 
                                   target.hasAttribute('data-on-hover') ||
                                   target.hasAttribute('data-on-mouseenter') ||
@@ -473,14 +473,15 @@ class PredictiveEngine {
        this.debugTracker.line.setAttribute('x2', trajX.toString());
        this.debugTracker.line.setAttribute('y2', trajY.toString());
        
-       if (snappedTarget) {
-         // Show active green snap line to predicted target
-         const targetX = 100 + (snappedTarget.cx - x);
-         const targetY = 100 + (snappedTarget.cy - y);
-         this.debugTracker.targetLine.setAttribute('x2', targetX.toString());
-         this.debugTracker.targetLine.setAttribute('y2', targetY.toString());
-         this.debugTracker.targetLine.style.opacity = '1';
-       } else {
+if (snappedTarget) {
+          // Show active green snap line to predicted target
+          const target = snappedTarget as { cx: number; cy: number };
+          const targetX = 100 + (target.cx - x);
+          const targetY = 100 + (target.cy - y);
+          this.debugTracker.targetLine.setAttribute('x2', targetX.toString());
+          this.debugTracker.targetLine.setAttribute('y2', targetY.toString());
+          this.debugTracker.targetLine.style.opacity = '1';
+        } else {
          // Hide the targeting line completely if no interactive target is locked
          this.debugTracker.targetLine.style.opacity = '0';
          this.debugTracker.targetLine.setAttribute('x2', '100');
@@ -523,7 +524,7 @@ class PredictiveEngine {
 
 export const predictive = new PredictiveEngine();
 
-import { SpriteModule } from '../index.ts';
+import { SpriteModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 
 export const predictiveModule: SpriteModule = {

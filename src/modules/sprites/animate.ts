@@ -23,10 +23,11 @@ export async function flip(
 ) {
   const { duration = 300, easing = 'ease-out' } = options;
   
-  // Resolve targets using the core selector engine
-  const targetArray = typeof targets === 'string' 
-    ? Array.from(resolveSelector(document.body, targets)) as HTMLElement[]
-    : Array.from(targets as any) as HTMLElement[];
+// Resolve targets using the core selector engine
+   const resolved = typeof targets === 'string' ? resolveSelector(document.body, targets) : null;
+   const targetArray = resolved
+     ? Array.isArray(resolved) ? resolved : [resolved]
+     : Array.from(targets as any) as HTMLElement[];
 
   // 1. First: Capture the initial positions
   const initialRects = new Map<HTMLElement, DOMRect>();

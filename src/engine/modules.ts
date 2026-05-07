@@ -116,6 +116,7 @@ export interface MirrorModule extends Module {
  * Sprites are injected with the `$` prefix.
  */
 export interface SpriteModule extends Module {
+  key?: string;
   sprites(runtime: RuntimeContext): Record<string, unknown>;  // e.g. { $cache: {...} }
 }
 

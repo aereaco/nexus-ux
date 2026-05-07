@@ -242,7 +242,12 @@ export function sqlSprite(runtime: RuntimeContext) {
     const isLive = query.trim().toUpperCase().startsWith('LIVE');
     
     // 2. Create reactive container for the result
-    const result = runtime.reactive({
+    const result: {
+      data: unknown[];
+      status: string;
+      error: string | null;
+      liveId: string | null;
+    } = runtime.reactive({
       data: [],
       status: isLive ? 'connecting' : 'loading',
       error: null,
@@ -271,19 +276,22 @@ export function sqlSprite(runtime: RuntimeContext) {
         }
 
         // Subscribe to live query
-        const liveId = await subscribeLive(url, query, (data) => {
+        const liveId = await subscribeLive(url, query, (data: unknown) => {
           // ZCZS: Update heap directly for numeric fields
-          if (Array.isArray(data) && numericFields.length > 0) {
-            data.forEach((row: Record<string, unknown>, idx: number) => {
-              numericFields.forEach(field => {
-                if (typeof row[field] === 'number') {
-                  heap.setNumeric(`${field}_${idx}`, row[field] as number);
-                }
-              });
+          const arr = Array.isArray(data) ? data : [];
+          if (numericFields.length > 0) {
+            arr.forEach((row, idx) => {
+              if (row && typeof row === 'object') {
+                numericFields.forEach(field => {
+                  if (typeof (row as Record<string, unknown>)[field] === 'number') {
+                    heap.setNumeric(`${field}_${idx}`, (row as Record<string, unknown>)[field] as number);
+                  }
+                });
+              }
             });
           }
           
-          result.data = data;
+          result.data = arr;
           result.status = 'live';
         }, ns, db);
         
@@ -309,13 +317,15 @@ export function sqlSprite(runtime: RuntimeContext) {
                 }
               });
               
-              queryResult.forEach((row: Record<string, unknown>, idx: number) => {
-                keys.forEach(k => {
-                  if (typeof row[k] === 'number') {
-                    heap.setNumeric(`${k}_${idx}`, row[k] as number);
-                  }
+queryResult.forEach((row, idx) => {
+                if (row && typeof row === 'object') {
+                  keys.forEach(k => {
+                    if (typeof (row as Record<string, unknown>)[k] === 'number') {
+                      heap.setNumeric(`${k}_${idx}`, (row as Record<string, unknown>)[k] as number);
+                    }
+                  });
+                }
                 });
-              });
             }
           }
         }
