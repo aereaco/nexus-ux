@@ -1,0 +1,29 @@
+{
+  "$schema": "https://swc.rs/schema.json",
+  "jsc": {
+    "target": "es2022",
+    "parser": {
+      "syntax": "typescript",
+      "tsx": false,
+      "decorators": true
+    },
+    "minify": {
+      "compress": {
+        "passes": 3,
+        "unused": true,
+        "dead_code": true,
+        "toplevel": true,
+        "drop_console": true,
+        "pure_getters": true,
+        "unsafe": true
+      },
+      "mangle": {
+        "toplevel": true,
+        "keep_classnames": false,
+        "safari10": false,
+        "reserved": ["UX", "connectedCallback", "observedAttributes", "attributeChangedCallback"]
+      }
+    }
+  },
+  "minify": true
+}

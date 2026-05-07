@@ -1,19 +1,35 @@
 import * as esbuild from "esbuild";
 import { denoPlugins } from "esbuild-deno-loader";
 import * as path from "std/path";
+import { minify as swcMinify } from "@swc/core";
+import { compress } from "brotli";
+
+function minifyCSS(css: string): string {
+  // Remove C-style comments
+  let min = css.replace(/\/\*[\s\S]*?\*\//g, "");
+  // Remove whitespace around structural characters
+  min = min.replace(/\s*([\{\,:;])\s*/g, "$1");
+  // Remove trailing semicolon before closing brace
+  min = min.replace(/;\}/g, "}");
+  // Collapse multiple whitespace to single space
+  min = min.replace(/\s+/g, " ");
+  // Trim leading/trailing whitespace
+  return min.trim();
+}
 
 interface BuildOptions {
   outputName?: string;
   excludeModules?: string[];
   gitRef?: string;
+  minify?: boolean;
 }
 
 /**
  * Builds the Nexus-UX bundle with optional git history, custom naming, and tree shaking.
  */
 async function buildBundle(options: BuildOptions = {}) {
-  const { outputName = "nexus-ux", excludeModules = [], gitRef } = options;
-  
+  const { outputName = "nexus-ux", excludeModules = [], gitRef, minify = false } = options;
+
   // If gitRef is specified, checkout that commit temporarily
   let originalCwd = Deno.cwd();
   if (gitRef) {
@@ -21,12 +37,12 @@ async function buildBundle(options: BuildOptions = {}) {
       args: ["rev-parse", "--verify", gitRef],
       cwd: originalCwd,
     }).output();
-    
+
     if (!result.success) {
       throw new Error(`Git ref '${gitRef}' not found`);
     }
   }
-  
+
   try {
     await Deno.mkdir("./dist", { recursive: true });
 
@@ -54,8 +70,8 @@ async function buildBundle(options: BuildOptions = {}) {
     };
 
     async function generateRegistry(
-      dir: string, 
-      exportName: string, 
+      dir: string,
+      exportName: string,
       jsonKey: string,
       excludeList: string[] = []
     ) {
@@ -77,7 +93,7 @@ async function buildBundle(options: BuildOptions = {}) {
           }
         }
       } catch(e) { /* ignore if dir missing */ }
-      
+
       manifestLines.push("");
       manifestLines.push(`export const ${exportName}: any[] = [`);
       manifestLines.push(`  ${arr.join(',\n  ')}`);
@@ -88,7 +104,7 @@ async function buildBundle(options: BuildOptions = {}) {
     await generateRegistry("modules/sprites", "autoSprites", "sprites", excludeModules);
     await generateRegistry("modules/scopes", "autoScopes", "scopes", excludeModules);
     await generateRegistry("modules/modifiers", "autoModifiers", "modifiers", excludeModules);
-    
+
     // Mutation observer - static import like other engine files
     const mutationPath = path.resolve(cwd, "src", "engine", "mutation.ts");
     try {
@@ -120,10 +136,12 @@ async function buildBundle(options: BuildOptions = {}) {
     const assetsDir = path.resolve(cwd, "src", "engine", "assets");
     const cssFiles = ["index.css", "preflight.css", "theme.css", "utilities.css"];
     const assetEntries = [];
-    
+
     for (const file of cssFiles) {
       try {
-        const content = await Deno.readTextFile(path.join(assetsDir, file));
+        let content = await Deno.readTextFile(path.join(assetsDir, file));
+        // Minify CSS to reduce bundle size
+        content = minifyCSS(content);
         const exportName = file.replace(".css", "");
         const escaped = content
           .replace(/\\/g, "\\\\")
@@ -150,18 +168,110 @@ export type TailwindAssetName = keyof typeof tailwindAssets;
     await Deno.writeTextFile(assetsPath, assetsContent);
     console.log("Generated assets:", assetsPath);
 
-    // Build using ESBuild
-    console.log("Starting esbuild...");
+    // Build using ESBuild - main unminified bundle
+    console.log("Starting esbuild (unminified)...");
     await esbuild.build({
       plugins: [...denoPlugins({ configPath })],
       entryPoints: [entryPoint],
       outfile: outFile,
       bundle: true,
       format: "iife",
-      globalName: "NexusLib",
+      globalName: "UX",
       target: "es2022",
+      legalComments: "none",
+      external: [
+        "window", "document", "customElements",
+        "HTMLElement", "CSSStyleSheet", "AdoptedStyleSheets",
+        "Response", "Request", "fetch",
+      ],
     });
     console.log(`Build complete: ${outFile}`);
+
+    // Build minified version with two-pass: esbuild minify → SWC minify → Brotli
+    if (options.minify) {
+      const minFile = outFile.replace(/\.js$/, ".min.js");
+      const brFile = `${minFile}.br`;
+
+      // First pass: esbuild bundler + minify
+      console.log("First pass: esbuild bundle + minify...");
+      const bundleResult = await esbuild.build({
+        plugins: [...denoPlugins({ configPath })],
+        entryPoints: [entryPoint],
+        outfile: minFile,
+        bundle: true,
+        format: "iife",
+        globalName: "UX",
+        target: "es2022",
+        minify: true,
+        write: false,
+        sourcemap: false,
+        legalComments: "none",
+        external: [
+          "window", "document", "customElements",
+          "HTMLElement", "CSSStyleSheet", "AdoptedStyleSheets",
+          "Response", "Request", "fetch",
+        ],
+      });
+
+      const esbuildCode = bundleResult.outputFiles?.[0]?.text;
+      if (!esbuildCode) {
+        throw new Error("Esbuild minify produced no output");
+      }
+      console.log(`  esbuild minify complete: ${(esbuildCode.length / 1024).toFixed(2)} KB`);
+
+      // Second pass: SWC minification with Nexus-tuned config
+      console.log("Second pass: SWC minification...");
+      let swcCode: string;
+      try {
+        const result = await swcMinify(esbuildCode, {
+          compress: {
+            passes: 3,
+            unused: true,
+            dead_code: true,
+            drop_console: true,
+            pure_getters: true,
+            unsafe: true,
+            side_effects: true,
+            hoist_funs: true,
+            hoist_vars: true,
+            join_vars: true,
+          },
+          mangle: {
+            toplevel: true,
+            keep_classnames: false,
+            keep_fnames: false,
+            safari10: false,
+            reserved: [
+              "UX",
+              "connectedCallback",
+              "disconnectedCallback",
+              "attributeChangedCallback",
+              "observedAttributes",
+              "adoptedCallback",
+              "formAssociated",
+              "customElements",
+              "adoptedStyleSheets",
+            ],
+          },
+        });
+        swcCode = result.code ?? esbuildCode;
+      } catch (e) {
+        console.warn("SWC minification failed, using esbuild output:", e);
+        swcCode = esbuildCode;
+      }
+      console.log(`  SWC minify complete: ${(swcCode.length / 1024).toFixed(2)} KB`);
+
+      // Write final minified JS
+      await Deno.writeTextFile(minFile, swcCode);
+      console.log(`Minified build: ${minFile} (${(swcCode.length / 1024).toFixed(2)} KB)`);
+
+      // Brotli-11 compression
+      const uint8Code = new TextEncoder().encode(swcCode);
+      const compressed = compress(uint8Code, 11);
+      await Deno.writeFile(brFile, compressed);
+      console.log(`Brotli compressed: ${brFile} (${(compressed.length / 1024).toFixed(2)} KB)`);
+    }
+
   } catch (e) {
     console.error("Build failed:", e);
     throw e;
@@ -199,16 +309,18 @@ if (args.includes("--batch")) {
     Deno.exit(1);
   }
 } else {
-  // Single build mode
-  const outputName = args.find(a => a.startsWith("--name="))?.split("=")[1];
-  const excludes = args.find(a => a.startsWith("--exclude="))?.split("=")[1]?.split(",");
-  const gitRef = args.find(a => a.startsWith("--ref="))?.split("=")[1];
-  
-  await buildBundle({
-    outputName,
-    excludeModules: excludes,
-    gitRef,
-  });
+   // Single build mode
+   const outputName = args.find(a => a.startsWith("--name="))?.split("=")[1];
+   const excludes = args.find(a => a.startsWith("--exclude="))?.split("=")[1]?.split(",");
+   const gitRef = args.find(a => a.startsWith("--ref="))?.split("=")[1];
+   const minify = args.includes("--minify");
+
+   await buildBundle({
+     outputName,
+     excludeModules: excludes,
+     gitRef,
+     minify,
+   });
 }
 
 // Export for programmatic use

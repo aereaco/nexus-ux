@@ -4,26 +4,30 @@
     "test": "deno test -A src/",
     "serve": "deno run -A https://deno.land/std@0.212.0/http/file_server.ts --reload"
   },
-  "imports": {
-    "@vue/reactivity": "npm:@vue/reactivity@^3.4.15",
-    "idiomorph": "npm:idiomorph@^0.3.0",
-    "@msgpack/msgpack": "npm:@msgpack/msgpack@^3.0.0-beta2",
-    "tailwindcss": "npm:tailwindcss@^4",
-    "esbuild": "https://deno.land/x/esbuild@v0.20.0/mod.js",
-    "esbuild-deno-loader": "https://deno.land/x/esbuild_deno_loader@0.9.0/mod.ts",
-    "std/path": "https://deno.land/std@0.212.0/path/mod.ts",
-    "std/assert": "https://deno.land/std@0.212.0/assert/mod.ts",
-    "jsdom": "npm:jsdom@24.0.0"
-  },
-  "compilerOptions": {
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "dom.asynciterable",
-      "deno.ns"
-    ],
-    "strict": true
-  },
+    "imports": {
+      "@vue/reactivity": "npm:@vue/reactivity@^3.4.15",
+      "idiomorph": "npm:idiomorph@^0.3.0",
+      "@msgpack/msgpack": "npm:@msgpack/msgpack@^3.0.0-beta2",
+      "tailwindcss": "npm:tailwindcss@^4",
+      "esbuild": "https://deno.land/x/esbuild@v0.20.0/mod.js",
+      "esbuild-deno-loader": "https://deno.land/x/esbuild_deno_loader@0.9.0/mod.ts",
+      "brotli": "https://deno.land/x/brotli@v0.1.4/mod.ts",
+      "std/path": "https://deno.land/std@0.212.0/path/mod.ts",
+      "std/assert": "https://deno.land/std@0.212.0/assert/mod.ts",
+      "jsdom": "npm:jsdom@24.0.0",
+      "@swc/core": "npm:@swc/core@1.15.24",
+      "@std/encoding-brotli": "jsr:@std/encoding-brotli@^0.225.2"
+    },
+   "compilerOptions": {
+     "lib": [
+       "dom",
+       "dom.iterable",
+       "dom.asynciterable",
+       "deno.ns"
+     ],
+     "strict": true
+   },
+   "nodeModulesDir": "auto",
   "lint": {
     "exclude": ["dist/"]
   },
