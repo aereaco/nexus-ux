@@ -1166,7 +1166,57 @@ event listeners), return a cleanup function:
 
 ---
 
-## Chapter 7: Sprites (`$`) & Data Integration
+## Chapter 7: Sprites (`$`) & Environment Mirrors (`_`)
+
+Nexus-UX provides two complementary namespaces for imperative operations:
+
+- **Sprites (`$`)** — Framework-level commands and value-add integrations (SurrealDB,
+  GraphQL, animation, selector engine, etc.). These remain as explicit sprite modules.
+- **Environment Mirrors (`_`)** — **Native browser API access** with full reactivity,
+  ownership tracking, and automatic cleanup. The `_` prefix triggers lazy JIT proxy
+  generation for *any* browser API without requiring framework wrapper modules.
+
+> **⚠️ Mirror-First Policy**: For all browser-native functionality, use `_` mirrors
+> instead of legacy sprite wrappers. Sprites like `$fetch`, `$clipboard`, `$cache`,
+> `$notification`, `$payment`, `$ws`, `$download`, `$http` are **deprecated**.
+> Direct native mirror equivalents are available as `_fetch`, `_clipboard`,
+> `_cache`, `_Notification`, `_PaymentRequest`, `_WebSocket`, `_download` (utility
+> function), `_http` (namespace). See [§2.6](#26-environment-mirrors-) and
+> [Chapter 7.5](#75-environment-mirrors-).
+
+### Quick Migration Reference
+
+| Deprecated Sprite | Native Mirror Equivalent | Migration |
+| :---------------- | :----------------------- | :-------- |
+| `$fetch(url, opts)` | `_fetch(url, opts)` | Replace `$fetch(...)` with `_fetch(...)` |
+| `$get(url, opts)` | `_http.get(url, opts)` | Replace `$get(...)` → `_http.get(...)` |
+| `$post(url, body, opts)` | `_http.post(url, body, opts)` | Replace `$post(...)` → `_http.post(...)` |
+| `$put(url, body, opts)` | `_http.put(url, body, opts)` | Replace `$put(...)` → `_http.put(...)` |
+| `$patch(url, body, opts)` | `_http.patch(url, body, opts)` | Replace `$patch(...)` → `_http.patch(...)` |
+| `$delete(url, opts)` | `_http.delete(url, opts)` | Replace `$delete(...)` → `_http.delete(...)` |
+| `$clipboard.write(text)` | `_clipboard.writeText(text)` | Replace `$clipboard.write(...)` → `_clipboard.writeText(...)` |
+| `$clipboard.read()` | `_clipboard.readText()` | Replace `$clipboard.read()` → `_clipboard.readText()` |
+| `$cache.put(name, url, res)` | `_caches.default.put(url, res)` | Use `_caches` Cache Storage API directly |
+| `$cache.match(name, url)` | `_caches.default.match(url)` | Returns `Response` or `null` |
+| `$cache.delete(name, url)` | `_caches.default.delete(url)` | |
+| `$cache.keys(name)` | `_caches.default.keys()` | |
+| `$notification.send(title, opts)` | `_Notification(title, opts)` | Replace `$notification.send(...)` → `new _Notification(...)` |
+| `$notification.permission` | `_Notification.permission` | Read-only reactive string |
+| `$notification.requestPermission()` | `_Notification.requestPermission()` | Returns Promise<string> |
+| `$payment.request(methods, details)` | `new _PaymentRequest(methods, details)` | Replace `$payment.request(...)` → `new _PaymentRequest(...)` |
+| `$payment.canMakePayment(methods)` | `_PaymentRequest.canMakePayment(methods)` | |
+| `$ws(url)` | `_WebSocket(url)` | Replace `$ws(...)` → `_WebSocket(...)` |
+| `$download(filename, content, mime)` | `_download(filename, content, mime)` | Utility function, same name |
+| `$store(name, initial)` | `#name` via global signals | Use `data-signal-global` and `#storeName` |
+| `$watch(expr, cb)` | `watch(() => expr, cb)` | Use Vue's `watch()` directly in `data-effect` |
+
+> **Note**: Legacy sprite wrappers are **removed** from the codebase as of the
+> mirror-auto-wrap refactor. The native `_` mirrors provide identical functionality
+> with zero wrapper maintenance overhead. All remaining sprites (`$sql`, `$gql`,
+> `$router`, `$refs`, `$animate`, `$selector`, `$device`, `$fs`, etc.) are
+> **retained** as they provide unique value beyond native browser APIs.
+
+---
 
 ### 7.1. `$sql()` Function
 
@@ -1313,20 +1363,33 @@ loading state:
 - `auth.email` - Current user's email
 - `auth.role` - Current user's role
 
-### 7.4. External APIs (`$fetch`)
+### 7.4. External APIs (`$fetch`) — DEPRECATED
 
-**Syntax**: `$fetch(url, options)`
+> **⚠️ DEPRECATED**: Use `_fetch` environment mirror instead. The `$fetch` sprite
+> wrapper is a legacy compatibility layer. Native `_fetch()` provides identical
+> SuspenseProxy integration with zero wrapper overhead. See [Chapter 7.5](#75-environment-mirrors-).
 
-**Purpose**: Call external (non-SurrealDB) APIs.
+**Deprecated Syntax**: `$fetch(url, options)`
+
+**Modern Equivalent**: `_fetch(url, options)`
 
 ```html
+<!-- DEPRECATED -->
 <div data-signal="{ weather: null }">
   <button
     data-on-click="$fetch('https://api.weather.com/v1/london').then(res => res.json()).then(data => weather = data)"
   >
     Get Weather
   </button>
-  <p data-if="weather">Temp: {weather.temp}</p>
+</div>
+
+<!-- ✅ RECOMMENDED -->
+<div data-signal="{ weather: null }">
+  <button
+    data-on-click="weather = (await _fetch('https://api.weather.com/v1/london')).json()"
+  >
+    Get Weather
+  </button>
 </div>
 ```
 
@@ -1362,51 +1425,37 @@ by Nexus-IO).
 </div>
 ```
 
-### 7.7. WebSocket (`$ws`)
+### 7.7. WebSocket (`$ws`) — DEPRECATED
 
-**Syntax**: `$ws(url, [protocols])`
+> **⚠️ DEPRECATED**: Use `_WebSocket` environment mirror instead. `$ws` provided
+> custom reconnection logic and state wrapping, but the native `_WebSocket` mirror
+> now offers identical reactive multiplexing with auto-cleanup. See [§2.6.1](#261-native-mirror-quick-reference).
 
-**Purpose**: Open a managed WebSocket connection with reactive state tracking
-and automatic cleanup.
+**Deprecated Syntax**: `$ws(url, [protocols])`
+
+**Modern Equivalent**: `_WebSocket(url, protocols)`
 
 ```html
+<!-- DEPRECATED -->
 <div data-signal="{ socket: null, messages: [] }">
-  <button data-on-click="socket = $ws('wss://chat.example.com')">
-    Connect
-  </button>
-
-  <!-- Reactive connection state -->
+  <button data-on-click="socket = $ws('wss://chat.example.com')">Connect</button>
   <p data-text="socket?.state"></p>
-  <!-- 'connecting' | 'open' | 'closed' -->
+</div>
 
-  <!-- Listen for messages -->
-  <div
-    data-effect="if (socket?.lastMessage) { messages = [...messages, socket.lastMessage] }"
-  >
-  </div>
-
-  <!-- Send message -->
-  <input
-    data-signal="{ draft: '' }"
-    data-bind-value="draft"
-    data-on-keydown-enter="socket?.send(draft); draft = ''"
-  >
-
-  <!-- Message list -->
-  <div data-for="msg in messages">{msg}</div>
-
-  <button data-on-click="socket?.close()">Disconnect</button>
+<!-- ✅ RECOMMENDED (identical API surface) -->
+<div data-signal="{ socket: null, messages: [] }">
+  <button data-on-click="socket = _WebSocket('wss://chat.example.com')">Connect</button>
+  <p data-text="socket?.state"></p>
 </div>
 ```
 
-**Key Properties**:
-
-- `.state`: Reactive — `'connecting'`, `'open'`, `'closing'`, `'closed'`
-- `.lastMessage`: Reactive — last received message (string or parsed JSON)
-- `.send(data)`: Send data through the connection
-- `.close()`: Close the connection
-- Auto-reconnects on unexpected disconnection with exponential backoff
-- Automatically closed when the owning element is removed from the DOM
+The `_WebSocket` mirror returns a reactive proxy with:
+- `.state` — `'connecting' | 'open' | 'closing' | 'closed'`
+- `.lastMessage` — last received message
+- `.send(data)` — send data
+- `.close()` — close connection
+- Auto-reconnects with exponential backoff (bare invocation multiplexing)
+- Auto-cleanup when owning element unmounts
 
 ### 7.8. GraphQL (`$gql`)
 
@@ -1454,58 +1503,29 @@ endpoint.
 `$nexus.config.graphql.endpoint` or set per-call with
 `$gql(query, variables, { endpoint: '...' })`.
 
-### 7.9. HTTP Convenience Methods
+### 7.9. HTTP Convenience Methods — DEPRECATED
 
-Shorthand wrappers around `$fetch` that auto-serialize request bodies and
-auto-parse JSON responses.
+> **⚠️ DEPRECATED**: Use the `_http` namespace mirror instead. `$get`, `$post`,
+> `$put`, `$patch`, `$delete` are thin wrappers around `_http` with identical
+> semantics. See [§2.6.1](#261-native-mirror-quick-reference) for migration.
 
-#### 7.9.1. `$get(url, [options])`
+**Legacy**:
+- `$get(url, [options])`
+- `$post(url, body, [options])`
+- `$put(url, body, [options])`
+- `$patch(url, body, [options])`
+- `$delete(url, [options])`
 
-```html
-<div
-  data-signal="{ users: [] }"
-  data-on-load="users = await $get('/api/users')"
->
-  <div data-for="user in users">{user.name}</div>
-</div>
-```
-
-#### 7.9.2. `$post(url, body, [options])`
+**Modern equivalents** (same options, same auto-JSON behavior):
 
 ```html
-<button
-  data-on-click="await $post('/api/users', { name: name, email: email })"
->
-  Create User
-</button>
-```
+<!-- DEPRECATED -->
+<div data-on-load="users = await $get('/api/users')"></div>
+<button data-on-click="await $post('/api/users', { name })"></button>
 
-#### 7.9.3. `$put(url, body, [options])`
-
-```html
-<button
-  data-on-click="await $put('/api/users/' + userId, { name: name, email: email })"
->
-  Replace User
-</button>
-```
-
-#### 7.9.4. `$patch(url, body, [options])`
-
-```html
-<button
-  data-on-click="await $patch('/api/users/' + userId, { email: newEmail })"
->
-  Update Email
-</button>
-```
-
-#### 7.9.5. `$delete(url, [options])`
-
-```html
-<button data-on-click="await $delete('/api/users/' + userId)">
-  Delete User
-</button>
+<!-- ✅ RECOMMENDED -->
+<div data-on-load="users = await _http.get('/api/users')"></div>
+<button data-on-click="await _http.post('/api/users', { name })"></button>
 ```
 
 **Common options** (all HTTP sprites):
@@ -1562,149 +1582,160 @@ Dispatches a `CustomEvent` on the current element. Bubbles by default.
 </div>
 ```
 
-### 7.11. State Sprites
+### 7.11. State Sprites — DEPRECATED
 
-#### 7.11.1. `$store(name, [initialValue])`
+#### 7.11.1. `$store(name, [initialValue])` — DEPRECATED
 
-Access a named, cross-component reactive store. Creates it with `initialValue`
-on first access.
+> **⚠️ DEPRECATED**: Use global signals with `data-signal-global` or the `#`
+> namespace instead. `$store` was a convenience for cross-component state; global
+> signals (`#myStore`) are now the recommended pattern.
+
+**Migration**:
 
 ```html
-<!-- Component A: writes to store -->
-<div data-signal="{ cart: $store('cart', []) }">
-  <button data-on-click="cart = [...cart, { id: product.id, qty: 1 }]">
-    Add to Cart
-  </button>
-</div>
+<!-- DEPRECATED -->
+<div data-signal="{ cart: $store('cart', []) }"></div>
 
-<!-- Component B: reads same store (anywhere in the DOM) -->
-<div data-signal="{ cart: $store('cart') }">
-  <p data-text="cart.length + ' items in cart'"></p>
-</div>
+<!-- ✅ RECOMMENDED: Use global signals -->
+<body data-signal-global="appState">
+  <div data-signal="{ cart: appState.cart || [] }"></div>
+</body>
 ```
 
-#### 7.11.2. `$watch(expression, callback)`
+#### 7.11.2. `$watch(expression, callback)` — DEPRECATED
 
-Observe a reactive expression and invoke a callback when it changes.
+> **⚠️ DEPRECATED**: Use the reactive `watch()` function directly inside a
+> `data-effect`. The `watch()` API is available from the reactivity system.
+
+**Migration**:
 
 ```html
-<div
-  data-signal="{ searchQuery: '' }"
-  data-on-load="$watch('searchQuery', (newVal, oldVal) => {
-       console.log('Search changed from', oldVal, 'to', newVal);
-       results = await $get('/api/search?q=' + newVal);
-     })"
->
-  <input data-bind-value="searchQuery" placeholder="Search...">
-</div>
+<!-- DEPRECATED -->
+<div data-on-load="$watch('searchQuery', (n, o) => results = $get('/api?q=' + n))"></div>
+
+<!-- ✅ RECOMMENDED -->
+<div data-effect="watch(() => searchQuery, (n, o) => results = _http.get('/api?q=' + n))"></div>
 ```
 
-**Returns**: An `unwatch()` function to stop observing.
+### 7.12. Utility Sprites — ALL DEPRECATED
 
-### 7.12. Utility Sprites
+> **⚠️ ALL DEPRECATED**: These utility sprites have been replaced by native
+> environment mirrors. See [§2.6](#26-environment-mirrors-) and
+> [Chapter 7.5](#75-environment-mirrors-) for the modern equivalents.
 
-#### 7.12.1. `$clipboard`
+#### 7.12.1. `$clipboard` → `_clipboard`
 
-Clipboard API wrapper. Returns reactive containers.
+**DEPRECATED**: Use `_clipboard` (native Clipboard API mirror).
+
+**Legacy**: `$clipboard.write(text)`, `$clipboard.read()`
+**Modern**: `_clipboard.writeText(text)`, `_clipboard.readText()`
 
 ```html
-<!-- Copy text to clipboard -->
-<button data-on-click="$clipboard.write(sourceCode)">
-  📋 Copy
+<!-- DEPRECATED -->
+<button data-on-click="$clipboard.write(code)">Copy</button>
+
+<!-- ✅ RECOMMENDED -->
+<button data-on-click="_clipboard.writeText(code)">Copy</button>
+```
+
+#### 7.12.2. `$download` → `_download` utility
+
+**STATUS**: Kept as a utility function (not a sprite module). The `_download()`
+helper remains available globally; it's a thin synchronous wrapper around
+`URL.createObjectURL` + anchor click and does not require a sprite wrapper.
+
+```html
+<button data-on-click="_download('report.csv', csvData, 'text/csv')">
+  Export CSV
 </button>
-
-<!-- Read from clipboard (requires user gesture + permission) -->
-<div data-signal="{ pasted: null }">
-  <button data-on-click="pasted = $clipboard.read()">Paste</button>
-  <p data-show="pasted?.status === 'ready'" data-text="pasted.data"></p>
-</div>
 ```
 
-**Methods**:
+#### 7.12.3. `$cache` → `_caches`
 
-- `$clipboard.write(text)` → `{ status, error }`
-- `$clipboard.read()` → `{ data: string, status, error }`
+**DEPRECATED**: Use the native `_caches` Cache Storage mirror.
 
-#### 7.12.2. `$download(filename, content, [mimeType])`
-
-Triggers a browser file download. Synchronous — creates a Blob URL and clicks an
-anchor element.
+**Legacy**: `$cache.put(name, url, res)`, `$cache.match(name, url)`, etc.
+**Modern**: `_caches.default.put(url, response)`, `_caches.default.match(url)`, etc.
 
 ```html
-<button data-on-click="$download('app.ts', sourceCode, 'text/typescript')">
-  ⬇ Download
-</button>
+<!-- DEPRECATED -->
+<button data-on-click="cache.put('assets', '/api/data')">Cache</button>
 
-<!-- Download JSON data -->
+<!-- ✅ RECOMMENDED -->
+<button data-on-click="_caches.default.put('/api/data', response)">Cache</button>
+```
+
+> **Note**: The native Cache API uses `Cache` objects directly. The `_caches`
+> mirror provides reactive access to `caches.open(name)`, `put()`, `match()`,
+> `delete()`, `keys()`, `clear()`.
+
+#### 7.12.4. `$notification` → `_Notification`
+
+**DEPRECATED**: Use the native `_Notification` constructor and `.permission`
+property directly.
+
+**Legacy**: `$notification.send(title, opts)`, `$notification.permission`,
+`$notification.requestPermission()`
+**Modern**:
+- `new _Notification(title, options)` — show notification
+- `_Notification.permission` — reactive permission state
+- `_Notification.requestPermission()` — request access
+
+```html
+<!-- DEPRECATED -->
+<button data-on-click="$notification.send('Hello!')">Notify</button>
+
+<!-- ✅ RECOMMENDED -->
+<button data-on-click="new _Notification('Hello!')">Notify</button>
+```
+
+#### 7.12.5. `$payment` → `_PaymentRequest`
+
+**DEPRECATED**: Use `new _PaymentRequest(methods, details)` directly.
+
+```html
+<!-- DEPRECATED -->
+<button data-on-click="payment.request(methods, details)">Pay</button>
+
+<!-- ✅ RECOMMENDED -->
+<button data-on-click="new _PaymentRequest(methods, details).show()">Pay</button>
+```
+
+### 7.13. Cache Sprites — DEPRECATED
+
+> **⚠️ DEPRECATED**: Use `_caches` native Cache Storage mirror instead.
+
+**Legacy sprite**: `$cache` — Cache Storage API wrapper.
+**Modern**: `_caches` — direct reactive access to the native Cache API.
+
+```html
+<!-- DEPRECATED -->
+<button data-on-click="cache.put('assets', '/api/config')">Cache Config</button>
+
+<!-- ✅ RECOMMENDED -->
 <button
-  data-on-click="$download('data.json', JSON.stringify(myData, null, 2), 'application/json')"
->
-  Export JSON
-</button>
+  data-on-click="
+    fetch('/api/config').then(res => _caches.default.put('/api/config', res))
+  "
+>Cache Config</button>
 ```
 
-**Parameters**:
-
-- `filename` — Name of the downloaded file
-- `content` — `string | Blob | ArrayBuffer`
-- `mimeType` — Optional MIME type (default: `'text/plain'`)
-
-### 7.13. Cache Sprites
-
-#### 7.13.1. `cache`
-
-Cache Storage API wrapper. Returns reactive containers.
-
-```html
-<!-- Cache a fetch response -->
-<button data-on-click="cache.put('assets', '/api/config')">
-  Cache Config
-</button>
-
-<!-- Read from cache -->
-<div
-  data-signal="{ config: null }"
-  data-on-load="config = cache.match('assets', '/api/config')"
->
-  <span data-show="config.status === 'loading'">Loading...</span>
-  <pre data-show="config.status === 'ready'" data-text="config.data"></pre>
-</div>
-
-<!-- Check if URL is cached -->
-<div
-  data-signal="{ isCached: null }"
-  data-on-load="isCached = cache.has('assets', '/api/config')"
->
-  <span data-text="isCached.data ? 'Cached ✓' : 'Not cached'"></span>
-</div>
-
-<!-- List cached URLs -->
-<div data-signal="{ urls: null }" data-on-load="urls = cache.keys('assets')">
-  <template data-for="u in urls.data">
-    <li data-text="u"></li>
-  </template>
-</div>
-
-<!-- Clear cache -->
-<button data-on-click="cache.clear('assets')">Clear Cache</button>
-```
-
-**Methods**:
-
-- `cache.put(name, url, [response])` → `{ status, error }` — caches a URL
-  (fetches if no response given)
-- `cache.match(name, url)` → `{ data: string, status, error }` — lookup +
-  auto-extract text
-- `cache.has(name, url)` → `{ data: boolean, status, error }`
-- `cache.delete(name, url)` → `{ status, error }`
+The native `_caches` API exposes:
+- `_caches.default` — default Cache object (reactive)
+- `.put(url, response)` — cache a Response
+- `.match(url)` — returns `Response | null`
+- `.delete(url)` — remove entry
+- `.keys()` — iterator of cached URLs
+- `.clear()` — empty the cache
 - `cache.keys(name)` → `{ data: string[], status, error }`
 - `cache.clear(name)` → `{ status, error }`
 
 ### 7.14. Application & Background Sprites
 
-#### 7.14.1. `sw`
+#### 7.14.1. `sw` — Service Worker Sprite (RETAINED)
 
-Service Worker lifecycle management.
+Service Worker lifecycle management — a value-add integration over the raw
+`_ServiceWorker` API.
 
 ```html
 <div data-on-load="sw.register('/sw.js')">
@@ -1719,19 +1750,20 @@ Service Worker lifecycle management.
 **Methods**: `.register(url, opts)`, `.update()`, `.unregister()`,
 `.postMessage(data)`, `.skipWaiting()`
 
-#### 7.14.2. `notification`
+#### 7.14.2. `notification` — DEPRECATED
 
-Web Notifications with auto-permission handling.
+> **⚠️ DEPRECATED**: Use `_Notification` mirror directly.
+
+Replaced by the native `_Notification` constructor. See [§7.12.4](#71243-notification---_notification).
 
 ```html
-<button data-on-click="notification.send('Hello!', { body: 'World' })">
-  Notify
-</button>
-<span data-text="'Permission: ' + notification.permission"></span>
-```
+<!-- DEPRECATED -->
+<button data-on-click="$notification.send('Hello!')">Notify</button>
 
-**Properties**: `notification.permission` (reactive), `notification.supported`
-**Methods**: `.send(title, opts)`, `.requestPermission()`, `.closeAll()`
+<!-- ✅ RECOMMENDED -->
+<button data-on-click="new _Notification('Hello!')">Notify</button>
+```
+---
 
 #### 7.14.3. `push`
 
@@ -1770,19 +1802,21 @@ Periodic Background Sync.
 **Methods**: `.register(tag, { minInterval })`, `.unregister(tag)`
 **Properties**: `.tags` — returns `{ data: string[], status, error }`
 
-#### 7.14.7. `payment`
+#### 7.14.7. `payment` — DEPRECATED
 
-Payment Request API.
+> **⚠️ DEPRECATED**: Use `new _PaymentRequest(methods, details)` directly.
+
+Payment Request API replaced by native mirror.
 
 ```html
-<button data-on-click="result = payment.request(methods, details)">
+<!-- DEPRECATED -->
+<button data-on-click="result = payment.request(methods, details)">Pay Now</button>
+
+<!-- ✅ RECOMMENDED -->
+<button data-on-click="result = (new _PaymentRequest(methods, details)).show()">
   Pay Now
 </button>
-<span data-show="result?.status === 'done'">✓ Payment Complete</span>
-<span data-show="result?.status === 'cancelled'">Payment Cancelled</span>
 ```
-
-**Methods**: `.request(methods, details, opts)`, `.canMakePayment(methods)`
 
 ---
 

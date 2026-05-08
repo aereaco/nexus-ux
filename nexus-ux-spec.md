@@ -528,22 +528,32 @@ context. Each sprite is a single-purpose function, invoked via the `$` prefix.
 
 #### 2.5.1. Data Sprites
 
-| Sprite                         | Description                                                                                                                                                                                          | Practical Example                                                               |
-| :----------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| **`$sql(query, [bindings])`**  | SurrealQL — executes a SurrealDB query via the Nexus-IO WebSocket. Supports `LIVE SELECT` for real-time subscriptions. Returns a `Promise`.                                                          | `data-signal="{ users: $sql('LIVE SELECT * FROM user') }"`                      |
-| **`$gql(query, [variables])`** | GraphQL — executes a GraphQL query/mutation against a configured endpoint. Returns a `Promise<{ data, errors }>`.                                                                                    | `data-on-load="users = (await $gql('query { users { id name } }')).data.users"` |
-| **`$ws(url, [protocols])`**    | WebSocket — opens a managed WebSocket connection. Returns a reactive handle with `.send(data)`, `.close()`, and reactive `.state` / `.lastMessage`. Auto-reconnects; cleaned up on element disposal. | `data-on-load="socket = $ws('wss://chat.example.com')"`                         |
+| Sprite                         | Description                                                                                                                                                                                          | Practical Example                                                               | Status |
+| :----------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------ | :----: |
+| **`$sql(query, [bindings])`**  | SurrealQL — executes a SurrealDB query via the Nexus-IO WebSocket. Supports `LIVE SELECT` for real-time subscriptions. Returns a `Promise`.                                                          | `data-signal="{ users: $sql('LIVE SELECT * FROM user') }"`                      |   ✅   |
+| **`$gql(query, [variables])`** | GraphQL — executes a GraphQL query/mutation against a configured endpoint. Returns a `Promise<{ data, errors }>`.                                                                                    | `data-on-load="users = (await $gql('query { users { id name } }')).data.users"` |   ✅   |
+| **`$ws(url, [protocols])`**    | WebSocket — opens a managed WebSocket connection. Returns a reactive handle with `.send(data)`, `.close()`, and reactive `.state` / `.lastMessage`. Auto-reconnects; cleaned up on element disposal. | `data-on-load="socket = $ws('wss://chat.example.com')"`                         |  ❌    |
 
-#### 2.5.2. Network Sprites (HTTP)
+> **DEPRECATED**: `$ws` replaced by `_WebSocket` native mirror. See [§2.6.1](#261-native-mirror-quick-reference).
 
-| Sprite                             | Description                                                                                            | Practical Example                                                     |
-| :--------------------------------- | :----------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------- |
-| **`$fetch(url, [options])`**       | Fetch — raw `fetch()` wrapper with AbortController integration. Returns an Auto-suspending Deep Proxy. | `data-signal="{ res: $fetch('/api/data') }"`                          |
-| **`$get(url, [options])`**         | GET — convenience wrapper. Auto-parses JSON response. Returns an Auto-suspending Deep Proxy.           | `data-signal="{ users: $get('/api/users') }"`                         |
-| **`$post(url, body, [options])`**  | POST — convenience wrapper with auto-serialized body. Auto-parses JSON response.                       | `data-on-click="users = $post('/api/users', { name: name })"`         |
-| **`$put(url, body, [options])`**   | PUT — convenience wrapper for full-resource replacement.                                               | `data-on-click="userData = $put('/api/users/' + id, userData)"`       |
-| **`$patch(url, body, [options])`** | PATCH — convenience wrapper for partial updates.                                                       | `data-on-click="user = $patch('/api/users/' + id, { email: email })"` |
-| **`$delete(url, [options])`**      | DELETE — convenience wrapper for resource deletion.                                                    | `data-on-click="success = $delete('/api/users/' + id)"`               |
+#### 2.5.2. Network Sprites (HTTP) — DEPRECATED
+
+> **⚠️ DEPRECATED**: Use native `_fetch` / `_http` environment mirrors instead.
+> The HTTP/Network sprite wrappers have been removed in favor of direct
+> browser API mirrors. See [§2.6.1](#261-native-mirror-quick-reference).
+
+| Legacy Sprite             | Native Mirror Replacement                                                                  | Migration |
+| :------------------------ | :----------------------------------------------------------------------------------------- | :-------- |
+| **`$fetch(url, opts)`**   | `_fetch(url, opts)` — raw fetch with SuspenseProxy integration                             | Replace `$fetch(...)` → `_fetch(...)` |
+| **`$get(url, opts)`**     | `_http.get(url, opts)` — convenience method on native `_http` object                      | Replace `$get(...)` → `_http.get(...)` |
+| **`$post(url, body, opts)`** | `_http.post(url, body, opts)`                                                             | Replace `$post(...)` → `_http.post(...)` |
+| **`$put(url, body, opts)`**   | `_http.put(url, body, opts)`                                                               | Replace `$put(...)` → `_http.put(...)` |
+| **`$patch(url, body, opts)`** | `_http.patch(url, body, opts)`                                                             | Replace `$patch(...)` → `_http.patch(...)` |
+| **`$delete(url, opts)`**      | `_http.delete(url, opts)`                                                                  | Replace `$delete(...)` → `_http.delete(...)` |
+
+> **Note**: `_http` methods auto-serialize JSON bodies and auto-parse responses,
+> identical to the legacy sprite behavior. Suspense/loading states are handled
+> identically via the reactive proxy returned by `_fetch`.
 
 #### 2.5.3. DOM Sprites
 
@@ -554,12 +564,21 @@ context. Each sprite is a single-purpose function, invoked via the `$` prefix.
 | **`$nextTick([callback])`**      | Next Tick — schedules `callback` after the current reactive flush completes. Returns a `Promise` if no callback provided. | `data-on-click="count++; await $nextTick(); console.log($refs.counter.textContent)"` |
 | **`$dispatch(event, [detail])`** | Dispatch — dispatches a `CustomEvent` on the current element. Bubbles by default.                                         | `data-on-click="$dispatch('item-selected', { id: itemId })"`                         |
 
-#### 2.5.4. State Sprites
+#### 2.5.4. State Sprites — DEPRECATED
 
-| Sprite                        | Description                                                                                                                     | Practical Example                                                               |
-| :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------ |
-| **`$store(name, [initial])`** | Store — accesses a named cross-component reactive store. Creates the store with `initial` if it doesn't exist.                  | `data-signal="{ cart: $store('cart', []) }"`                                    |
-| **`$watch(expr, callback)`**  | Watch — observes a reactive expression and invokes `callback(newVal, oldVal)` when it changes. Returns an `unwatch()` function. | `data-on-load="$watch('searchQuery', (n) => results = $get('/search?q=' + n))"` |
+> **⚠️ DEPRECATED**: Use global signals (`#storeName`) and `watch()` instead.
+> These sprites have been replaced by built-in reactivity primitives.
+
+| Sprite                        | Description                                                                                                                     | Practical Example                                                               | Status |
+| :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------ | :----: |
+| **`$store(name, [initial])`** | Store — accesses a named cross-component reactive store. Creates the store with `initial` if it doesn't exist.                  | `data-signal="{ cart: $store('cart', []) }"`                                    |  ❌    |
+| **`$watch(expr, callback)`**  | Watch — observes a reactive expression and invokes `callback(newVal, oldVal)` when it changes. Returns an `unwatch()` function. | `data-on-load="$watch('searchQuery', (n) => results = $get('/search?q=' + n))"` |  ❌    |
+
+**Migration**:
+- `$store('name', init)` → use `data-signal-global` on a parent to define a global signal, access via `#name`
+- `$watch(expr, cb)` → use `watch(() => expr, cb)` inside a `data-effect`
+
+See [§7.11](#711-state-sprites--deprecated) in the reference for detailed examples.
 
 #### 2.5.5. Navigation Sprites
 
@@ -574,42 +593,50 @@ context. Each sprite is a single-purpose function, invoked via the `$` prefix.
 | **`$fs`**     | Filesystem — sandboxed filesystem access. Methods: `.read(path)`, `.write(path, content)`, `.list(path)`. | `data-on-click="$fs.write('log.txt', 'Clicked at ' + new Date())"`                    |
 | **`$device`** | Device — hardware capability access. Properties: `.battery`, `.location`, `.camera`.                      | `data-on-click="$device.location.getCurrentPosition().then(pos => console.log(pos))"` |
 
-#### 2.5.7. Utility Sprites
+#### 2.5.7. Utility Sprites — DEPRECATED
 
-| Sprite                                         | Description                                                                                          | Practical Example                                                    |
-| :--------------------------------------------- | :--------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------- |
-| **`$clipboard.write(text)`**                   | Clipboard WRITE — copies text to clipboard. Returns reactive `{ status, error }`.                    | `data-on-click="$clipboard.write(sourceCode)"`                       |
-| **`$clipboard.read()`**                        | Clipboard READ — reads text from clipboard (requires permission). Returns `{ data, status, error }`. | `data-on-click="pasted = $clipboard.read()"`                         |
-| **`$download(filename, content, [mimeType])`** | Download — triggers a browser file download via Blob URL. Synchronous.                               | `data-on-click="$download('app.ts', sourceCode, 'text/typescript')"` |
-| **`cache.put(name, url, [response])`**         | Cache PUT — stores a response in a named cache. Returns reactive `{ status, error }`.                | `data-on-click="cache.put('assets', '/api/data', response)"`         |
-| **`cache.match(name, url)`**                   | Cache MATCH — looks up cached response text. Returns `{ data, status, error }`.                      | `data-on-load="cached = cache.match('assets', '/api/data')"`         |
-| **`cache.delete(name, url)`**                  | Cache DELETE — removes a URL from a named cache. Returns `{ status, error }`.                        | `data-on-click="cache.delete('assets', '/old-url')"`                 |
-| **`cache.keys(name)`**                         | Cache KEYS — lists all cached URLs. Returns `{ data: string[], status, error }`.                     | `data-on-load="urls = cache.keys('assets')"`                         |
-| **`cache.clear(name)`**                        | Cache CLEAR — deletes entire named cache. Returns `{ status, error }`.                               | `data-on-click="cache.clear('assets')"`                              |
+> **⚠️ DEPRECATED**: All utility sprites replaced by native `_` environment mirrors.
+> See [Chapter 7.12](#712-utility-sprites--deprecated) of the reference for complete
+> migration guide.
+
+| Sprite                                         | Native Mirror Equivalent                                              | Status |
+| :--------------------------------------------- | :-------------------------------------------------------------------- | :----: |
+| **`$clipboard.write(text)`**                   | → `_clipboard.writeText(text)`                                        |  ❌    |
+| **`$clipboard.read()`**                        | → `_clipboard.readText()`                                             |  ❌    |
+| **`$download(filename, content, [mime])`**     | → `_download(filename, content, mime)` utility function (retained)    |   ⚠️   |
+| **`cache.put(name, url, [res])`**              | → `_caches.default.put(url, res)`                                     |  ❌    |
+| **`cache.match(name, url)`**                   | → `_caches.default.match(url)` (returns `Response \| null`)          |  ❌    |
+| **`cache.delete(name, url)`**                  | → `_caches.default.delete(url)`                                       |  ❌    |
+| **`cache.keys(name)`**                         | → `_caches.default.keys()`                                            |  ❌    |
+| **`cache.clear(name)`**                        | → `_caches.default.clear()`                                           |  ❌    |
 
 #### 2.5.8. Application Sprites
 
-| Sprite                                 | Description                                                                                        | Practical Example                                                |
-| :------------------------------------- | :------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------- |
-| **`sw.register(url, [opts])`**         | Service Worker REGISTER — registers a SW. Returns reactive `{ status, error }`.                    | `data-on-load="sw.register('/sw.js')"`                           |
-| **`sw.status`**                        | Reactive SW lifecycle state: `'idle'`, `'registering'`, `'active'`, `'waiting'`, `'error'`.        | `data-bind="'SW: ' + sw.status"`                                 |
-| **`sw.update()`**                      | Check for SW updates. Returns reactive container.                                                  | `data-on-click="sw.update()"`                                    |
-| **`sw.skipWaiting()`**                 | Activate waiting worker immediately.                                                               | `data-on-click="sw.skipWaiting()"`                               |
-| **`notification.send(title, [opts])`** | Send a notification. Auto-requests permission. Returns reactive `{ status, error, notification }`. | `data-on-click="notification.send('Hello!', { body: 'World' })"` |
-| **`notification.permission`**          | Reactive notification permission state: `'default'`, `'granted'`, `'denied'`.                      | `data-show="notification.permission === 'granted'"`              |
-| **`notification.requestPermission()`** | Request notification permission. Returns reactive `{ data, status, error }`.                       | `data-on-click="notification.requestPermission()"`               |
+| Sprite                                 | Description                                                                                        | Practical Example                                                | Status |
+| :------------------------------------- | :------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------- | :----: |
+| **`sw.register(url, [opts])`**         | Service Worker REGISTER — registers a SW. Returns reactive `{ status, error }`.                    | `data-on-load="sw.register('/sw.js')"`                           |   ✅   |
+| **`sw.status`**                        | Reactive SW lifecycle state: `'idle'`, `'registering'`, `'active'`, `'waiting'`, `'error'`.        | `data-bind="'SW: ' + sw.status"`                                 |   ✅   |
+| **`sw.update()`**                      | Check for SW updates. Returns reactive container.                                                  | `data-on-click="sw.update()"`                                    |   ✅   |
+| **`sw.skipWaiting()`**                 | Activate waiting worker immediately.                                                               | `data-on-click="sw.skipWaiting()"`                               |   ✅   |
+| **`notification.send(title, [opts])`** | Send a notification. Auto-requests permission. Returns reactive `{ status, error, notification }`. | `data-on-click="notification.send('Hello!', { body: 'World' })"` |  ❌    |
+| **`notification.permission`**          | Reactive notification permission state: `'default'`, `'granted'`, `'denied'`.                      | `data-show="notification.permission === 'granted'"`              |  ❌    |
+| **`notification.requestPermission()`** | Request notification permission. Returns reactive `{ data, status, error }`.                       | `data-on-click="notification.requestPermission()"`               |  ❌    |
+
+> **DEPRECATED** entries: Use `_Notification` mirror directly. See [§7.12.4](#71243-notification---_notification).
 
 #### 2.5.9. Background Service Sprites
 
-| Sprite                                            | Description                                                                                                         | Practical Example                                                             |
-| :------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------- |
-| **`push.subscribe(vapidKey)`**                    | Push subscribe — subscribes to push notifications. Returns reactive `{ data, status, error }`.                      | `data-on-click="push.subscribe(vapidPublicKey)"`                              |
-| **`push.unsubscribe()`**                          | Push unsubscribe. Returns reactive `{ status, error }`.                                                             | `data-on-click="push.unsubscribe()"`                                          |
-| **`bgFetch.fetch(id, urls, [opts])`**             | Background Fetch — downloads large assets in the background. Returns reactive container with progress.              | `data-on-click="bgFetch.fetch('update', ['/large.zip'])"`                     |
-| **`bgSync.register(tag)`**                        | Background Sync — registers a one-time sync for when the device comes online. Returns reactive `{ status, error }`. | `data-on-click="bgSync.register('sync-messages')"`                            |
-| **`periodicSync.register(tag, { minInterval })`** | Periodic Sync — registers a periodic background sync. Returns reactive `{ status, error }`.                         | `data-on-click="periodicSync.register('content', { minInterval: 86400000 })"` |
-| **`payment.request(methods, details, [opts])`**   | Payment Request — shows browser-native payment UI. Returns reactive `{ data, status, error }`.                      | `data-on-click="payment.request(methods, details)"`                           |
-| **`payment.canMakePayment(methods)`**             | Payment check — checks if payment method is available. Returns `{ data: boolean, status, error }`.                  | `data-on-load="canPay = payment.canMakePayment(methods)"`                     |
+| Sprite                                            | Description                                                                                                         | Practical Example                                                             | Status |
+| :------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------- | :----: |
+| **`push.subscribe(vapidKey)`**                    | Push subscribe — subscribes to push notifications. Returns reactive `{ data, status, error }`.                      | `data-on-click="push.subscribe(vapidPublicKey)"`                              |   ✅   |
+| **`push.unsubscribe()`**                          | Push unsubscribe. Returns reactive `{ status, error }`.                                                             | `data-on-click="push.unsubscribe()"`                                          |   ✅   |
+| **`bgFetch.fetch(id, urls, [opts])`**             | Background Fetch — downloads large assets in the background. Returns reactive container with progress.              | `data-on-click="bgFetch.fetch('update', ['/large.zip'])"`                     |   ✅   |
+| **`bgSync.register(tag)`**                        | Background Sync — registers a one-time sync for when the device comes online. Returns reactive `{ status, error }`. | `data-on-click="bgSync.register('sync-messages')"`                            |   ✅   |
+| **`periodicSync.register(tag, { minInterval })`** | Periodic Sync — registers a periodic background sync. Returns reactive `{ status, error }`.                         | `data-on-click="periodicSync.register('content', { minInterval: 86400000 })"` |   ✅   |
+| **`payment.request(methods, details, [opts])`**   | Payment Request — shows browser-native payment UI. Returns reactive `{ data, status, error }`.                      | `data-on-click="payment.request(methods, details)"`                           |  ❌    |
+| **`payment.canMakePayment(methods)`**             | Payment check — checks if payment method is available. Returns `{ data: boolean, status, error }`.                  | `data-on-load="canPay = payment.canMakePayment(methods)"`                     |  ❌    |
+
+> **DEPRECATED** entries: Use `new _PaymentRequest(methods, details)` directly. See [§7.14.7](#7147-payment--deprecated) in the reference.
 
 ---
 
@@ -626,14 +653,33 @@ requiring static module wrappers or framework updates for novel browser APIs.
   that property. If your application never accesses `_localStorage`, no tracking
   payload or system listener is booted.
 
-| Mirror Concept        | Access         | Underlying Resolution                                                                                                                                                   | Practical Example                                                           |
-| :-------------------- | :------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------- |
-| **`_window`**         | **read-write** | Returns a tracked proxy directly to `globalThis.window`, allowing arbitrary property reads (e.g., `_window.innerWidth`) and mutation (e.g., `_window.scrollY = 0`).     | `data-text="'Viewport: ' + _window.innerWidth + 'x' + _window.innerHeight"` |
-| **`_localStorage`**   | **read-write** | Resolves natively to `window.localStorage`. Reads are reactive. Writes persist immediately and sync across tabs via dynamic JIT `storage` event bindings.               | `data-on-click="_localStorage.theme = 'dark'"`                              |
-| **`_sessionStorage`** | **read-write** | Resolves to `window.sessionStorage`. Same API as `localStorage` but per-tab.                                                                                            | `data-on-load="draft = _sessionStorage['editor:draft'] \|\| ''"`            |
-| **`_navigator`**      | read-only      | Resolves to `window.navigator`. Allows tracking of dynamic native states like `_navigator.onLine` and `_navigator.hardwareConcurrency`.                                 | `data-if="_navigator.onLine"`                                               |
-| **`_screen`**         | read-only      | Resolves to `window.screen`. Updates dynamically on orientation/resize changes tracked by the JIT proxy.                                                                | `data-text="_screen.width + 'x' + _screen.height"`                          |
-| **`_<anything>`**     | native         | Because the `_` identifier resolves universally to the `window` object, literally any Global API (existing or future) is supported instantly without framework updates. | `data-on-click="_indexedDB.open('db')"`                                     |
+#### 2.6.1. Native Mirror Quick Reference
+
+| Mirror / Namespace     | Type          | Read-Write?  | Description & Replacement Notes                                                                                             | Migration From           |
+| :--------------------- | :------------ | :----------- | :-------------------------------------------------------------------------------------------------------------------------- | :----------------------- |
+| **`_window`**          | `Window`      | ✅ yes       | Full reactive proxy to `window`. Arbitrary properties tracked lazily (e.g., `_window.innerWidth`).                          | —                        |
+| **`_localStorage`**    | `Storage`     | ✅ yes       | Reactive localStorage with cross-tab `storage` event sync.                                                                 | —                        |
+| **`_sessionStorage`**  | `Storage`     | ✅ yes       | Reactive sessionStorage (tab-scoped).                                                                                      | —                        |
+| **`_navigator`**       | `Navigator`   | ⚠️ read-only | Reactive online/offline, hardware concurrency, etc.                                                                        | —                        |
+| **`_screen`**          | `Screen`      | ⚠️ read-only | Reactive orientation/dimensions via JIT resize listener.                                                                   | —                        |
+| **`_fetch()`**         | `Function`    | ✅ yes       | Raw fetch with SuspenseProxy integration. **Replaces** `$fetch`.                                                           | `$fetch` → `_fetch()`    |
+| **`_http`**            | `Namespace`   | ✅ yes       | `{ get, post, put, patch, delete }` — auto-JSON helpers. **Replaces** `$http` family.                                     | `$get` → `_http.get()`   |
+| **`_clipboard`**       | `Clipboard`   | ⚠️ read-only | Native Clipboard API (`writeText()`, `readText()`). **Replaces** `$clipboard`.                                            | `$clipboard` → `_clipboard` |
+| **`_caches`**          | `CacheStorage`| ✅ yes       | Reactive Cache Storage (`default` cache + `open()`, `put()`, `match()`). **Replaces** `$cache`.                           | `$cache` → `_caches`     |
+| **`_Notification`**    | `Constructor` | ⚠️ ctor-only | `new _Notification(title, opts)`; static `.permission`, `.requestPermission()`. **Replaces** `$notification`.            | `$notification` → `_Notification` |
+| **`_PaymentRequest`**  | `Constructor` | ⚠️ ctor-only | `new _PaymentRequest(methods, details)`; `.canMakePayment()`. **Replaces** `$payment`.                                    | `$payment` → `_PaymentRequest` |
+| **`_WebSocket`**       | `Constructor` | ✅ yes       | Reactive WebSocket with singleton multiplexing + auto-cleanup. **Replaces** `$ws`.                                         | `$ws` → `_WebSocket()`   |
+| **`_download()**       | `Function`    | ✅ yes       | Utility function `_download(filename, content, mime)` — synchronous Blob URL generator. **Retained** (not a sprite).      | — (utility unchanged)    |
+| **`_IntersectionObserver`**  | `Constructor` | ✅ yes  | Bare `_IntersectionObserver(cb)` → global singleton; `new` → isolated instance with cleanup.                               | — (mirrors were always `_` prefixed) |
+| **`_ResizeObserver`**  | `Constructor` | ✅ yes       | Same pattern: bare = singleton; `new` = isolated.                                                                          | —                        |
+| **`_MutationObserver`**| `Constructor` | ✅ yes       | Used internally by framework mutation engine.                                                                              | —                        |
+| **`_PerformanceObserver`** | `Constructor` | ✅ yes  | Global performance entry observer.                                                                                          | —                        |
+| **`_Worker`**          | `Constructor` | ✅ yes       | Web Worker multiplexing (shared instances by URL).                                                                          | —                        |
+| **`_BroadcastChannel`**| `Constructor` | ✅ yes       | BroadcastChannel multiplexing (shared by channel name).                                                                    | —                        |
+
+> **Universal Forward-Compatibility**: Any global `window` property, present or future, is
+> automatically available via `_<PropertyName>`. If the browser introduces `window.ai`
+> or `window.uhd`, you can immediately use `_ai` or `_uhd` without framework changes.
 
 ---
 
