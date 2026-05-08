@@ -10,10 +10,10 @@ import * as mod_6 from './modules/attributes/computed.ts';
 import * as mod_7 from './modules/attributes/on.ts';
 import * as mod_8 from './modules/attributes/assert.ts';
 import * as mod_9 from './modules/attributes/switcher.ts';
-import * as mod_10 from './modules/attributes/if.ts';
-import * as mod_11 from './modules/attributes/effect.ts';
-import * as mod_12 from './modules/attributes/component.ts';
-import * as mod_13 from './modules/attributes/ingest.ts';
+import * as mod_10 from './modules/attributes/import.ts';
+import * as mod_11 from './modules/attributes/if.ts';
+import * as mod_12 from './modules/attributes/effect.ts';
+import * as mod_13 from './modules/attributes/component.ts';
 import * as mod_14 from './modules/attributes/flow.ts';
 import * as mod_15 from './modules/attributes/for.ts';
 import * as mod_16 from './modules/attributes/router.ts';
@@ -41,10 +41,10 @@ export const autoAttributes: any[] = [  { name: 'mask', module: mod_0 },
   { name: 'on', module: mod_7 },
   { name: 'assert', module: mod_8 },
   { name: 'switcher', module: mod_9 },
-  { name: 'if', module: mod_10 },
-  { name: 'effect', module: mod_11 },
-  { name: 'component', module: mod_12 },
-  { name: 'ingest', module: mod_13 },
+  { name: 'import', module: mod_10 },
+  { name: 'if', module: mod_11 },
+  { name: 'effect', module: mod_12 },
+  { name: 'component', module: mod_13 },
   { name: 'flow', module: mod_14 },
   { name: 'for', module: mod_15 },
   { name: 'router', module: mod_16 },

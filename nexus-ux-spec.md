@@ -866,7 +866,7 @@ directive catalog:
 - **`data-html`**: HTML Content — sets `innerHTML` for trusted content.
 - **`data-computed`**: Derived Signals — creates cached, read-only computed values derived from other signals.
 - **`data-effect`**: Side-effects — runs arbitrary logic in response to signal changes without touching the DOM.
-- **`data-ingest`**: Asset Ingestion — asynchronously loads and manages third-party scripts and stylesheets with ZCZS-optimized constructable stylesheets.
+- **`data-import`**: Asset Import — asynchronously loads and manages third-party scripts and stylesheets with ZCZS-optimized constructable stylesheets.
 - **`data-markdown`**: Markdown Rendering — zero-dependency markdown-to-HTML transpilation directly in the browser.
 - **`data-progress`**: Progress Indicators — customizable bars and spinners for tracking loading states.
 - **`data-pwa`**: PWA Orchestration — manages Service Worker registration, manifest integration, and offline state via `$pwa`.
@@ -1641,7 +1641,7 @@ Extensibility is not limited to the build step. For third-party libraries and
 runtime augmentation, the engine exposes `Nexus.register()`.
 
 ```javascript
-// Third-party plugin (e.g., loaded via data-ingest)
+// Third-party plugin (e.g., loaded via data-import)
 Nexus.register({
   type: "attribute",
   name: "todo-plugin",

@@ -6,7 +6,7 @@ import { initSelfHeal, getBeaconHistory } from './engine/agent.ts';
 import { stylesheet } from './engine/stylesheet.ts';
 
 // Core Directives (Explicitly imported for priority ordering)
-import ingestModule from './modules/attributes/ingest.ts';
+import importModule from './modules/attributes/import.ts';
 import signalModule from './modules/attributes/signal.ts';
 import computedModule from './modules/attributes/computed.ts';
 import switcherModule from './modules/attributes/switcher.ts';
@@ -84,8 +84,8 @@ export class UX {
       handle: (_el, ...args: any[]) => ($nextTick as any)(...args)
     });
 
-    // Priority 0: Ingest (Dependency Orchestration)
-    this.coordinator.registerAttributeModule('ingest', ingestModule);
+    // Priority 0: Import (Dependency Orchestration)
+    this.coordinator.registerAttributeModule('import', importModule);
     this.coordinator.registerAttributeModule('signal', signalModule);
     this.coordinator.registerAttributeModule('computed', computedModule);
     this.coordinator.registerAttributeModule('switcher', switcherModule);

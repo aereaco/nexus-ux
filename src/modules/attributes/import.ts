@@ -20,12 +20,12 @@ async function readFromIDB(key: string): Promise<string | null> {
 }
 
 /**
- * In-memory cache for ingested assets (preserves backward compatibility).
+ * In-memory cache for imported assets (preserves backward compatibility).
  */
 const assetCache = new Map<string, string>();
 
 /**
- * Payload type definitions for data-ingest 2.0
+ * Payload type definitions for data-import 2.0
  * 
  * Supported payload types:
  *   - link:      CSS stylesheet (url, array, or object with href)
@@ -42,7 +42,7 @@ const assetCache = new Map<string, string>();
  *   - Any other key (async, defer, type) is applied to the script/link tag.
  */
 
-interface IngestPayload {
+interface ImportPayload {
   link?: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>;
   script?: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>;
   style?: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>;
@@ -108,9 +108,9 @@ function applyAttributes(el: HTMLElement | HTMLLinkElement | HTMLScriptElement |
   });
 }
 
-// ─── Ingest Handlers ───────────────────────────────────────────
+// ─── Import Handlers ───────────────────────────────────────────
 
-async function ingestLink(
+async function importLink(
   id: string,
   payload: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>,
   cleanupFns: Array<() => void>,
@@ -140,9 +140,9 @@ async function ingestLink(
     if (attrs.rel === 'stylesheet' || !attrs.rel) {
       const cssText = await resolveContent(href);
       if (cssText) {
-        const cleanup = await stylesheet.adoptCSS(cssText, `ingest-${id}-${href}`);
+        const cleanup = await stylesheet.adoptCSS(cssText, `import-${id}-${href}`);
         cleanupFns.push(cleanup);
-        runtime.log(`Nexus Ingest [${id}]: CSS adopted (ZCZS): ${href}`);
+        runtime.log(`Nexus Import [${id}]: CSS adopted (ZCZS): ${href}`);
         continue;
       }
     }
@@ -154,7 +154,7 @@ async function ingestLink(
         link.href = href;
         link.onload = () => resolve();
         link.onerror = () => {
-            reportError(new Error(`Nexus Ingest: Failed to load ${href}`), el);
+            reportError(new Error(`Nexus Import: Failed to load ${href}`), el);
             resolve();
         };
         document.head.appendChild(link);
@@ -163,7 +163,7 @@ async function ingestLink(
   }
 }
 
-async function ingestScript(
+async function importScript(
   id: string,
   payload: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>,
   cleanupFns: Array<() => void>,
@@ -199,18 +199,18 @@ async function ingestScript(
         applyAttributes(script, attrs);
         script.onload = () => resolve();
         script.onerror = () => {
-            reportError(new Error(`Nexus Ingest: Failed to load script ${src}`), el);
+            reportError(new Error(`Nexus Import: Failed to load script ${src}`), el);
             resolve();
         };
         script.src = finalSrc;
         document.head.appendChild(script);
         cleanupFns.push(() => script.remove());
-        runtime.log(`Nexus Ingest [${id}]: Script injected: ${src}`);
+        runtime.log(`Nexus Import [${id}]: Script injected: ${src}`);
     });
   }
 }
 
-async function ingestStyle(
+async function importStyle(
   id: string,
   payload: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>,
   cleanupFns: Array<() => void>,
@@ -225,9 +225,9 @@ async function ingestStyle(
     
     if (!content && !attrs.href) continue;
 
-    // If it's a link-like theme, delegate to ingestLink
+    // If it's a link-like theme, delegate to importLink
     if (attrs.href) {
-        await ingestLink(id, attrs as Record<string, string | boolean | number>, cleanupFns, runtime, el);
+        await importLink(id, attrs as Record<string, string | boolean | number>, cleanupFns, runtime, el);
         continue;
     }
 
@@ -236,17 +236,17 @@ async function ingestStyle(
     if (!cssText) continue;
 
     // ZCZS Mandate: Constructable Stylesheets via StyleSheetManager
-    const cleanup = await stylesheet.adoptCSS(cssText, `ingest-style-${id}`);
+    const cleanup = await stylesheet.adoptCSS(cssText, `import-style-${id}`);
     cleanupFns.push(cleanup);
-    runtime.log(`Nexus Ingest [${id}]: Style adopted (ZCZS)`);
+    runtime.log(`Nexus Import [${id}]: Style adopted (ZCZS)`);
   }
 }
 
-async function ingestPattern(
+async function importPattern(
   id: string,
   uri: string,
   el: HTMLElement,
-  item: IngestPayload,
+  item: ImportPayload,
   cleanupFns: Array<() => void>,
   runtime: RuntimeContext
 ): Promise<void> {
@@ -257,7 +257,7 @@ async function ingestPattern(
   const position = item.position || 'append';
 
   const wrapper = document.createElement('div');
-  wrapper.setAttribute('data-ingest-pattern', id);
+  wrapper.setAttribute('data-import-pattern', id);
   wrapper.innerHTML = content;
 
   switch (position) {
@@ -280,10 +280,10 @@ async function ingestPattern(
   }
 
   cleanupFns.push(() => wrapper.remove());
-  runtime.log(`Nexus Ingest [${id}]: Pattern loaded from ${uri}`);
+  runtime.log(`Nexus Import [${id}]: Pattern loaded from ${uri}`);
 }
 
-async function ingestComponent(
+async function importComponent(
   id: string,
   uri: string,
   cleanupFns: Array<() => void>,
@@ -307,7 +307,7 @@ async function ingestComponent(
       templateEl.innerHTML = (template as HTMLTemplateElement).innerHTML;
       document.body.appendChild(templateEl);
       cleanupFns.push(() => templateEl.remove());
-      runtime.log(`Nexus Ingest [${id}]: Component "${name}" registered from ${uri}`);
+      runtime.log(`Nexus Import [${id}]: Component "${name}" registered from ${uri}`);
     });
   } else {
     // Single component — register using the id as the component name
@@ -316,24 +316,24 @@ async function ingestComponent(
     templateEl.innerHTML = content;
     document.body.appendChild(templateEl);
     cleanupFns.push(() => templateEl.remove());
-    runtime.log(`Nexus Ingest [${id}]: Component registered from ${uri}`);
+    runtime.log(`Nexus Import [${id}]: Component registered from ${uri}`);
   }
 }
 
 // ─── Module Definition ──────────────────────────────────────────
 
-const ingestModule: AttributeModule = {
-  name: 'ingest',
-  attribute: 'ingest',
+const importModule: AttributeModule = {
+  name: 'import',
+  attribute: 'import',
   handle: (el: HTMLElement, expression: string, runtime: RuntimeContext): (() => void) | void => {
     // Differential update state
     let activeCleanup: (() => void) | null = null;
     let lastConfigStr = '';
 
     const stopEffect = runtime.effect(() => {
-      // data-ingest
-      const attrExpr = el.getAttribute('data-ingest') || expression;
-      const config = runtime.evaluate(el, attrExpr) as Record<string, IngestPayload>;
+      // data-import
+      const attrExpr = el.getAttribute('data-import') || expression;
+      const config = runtime.evaluate(el, attrExpr) as Record<string, ImportPayload>;
       const configStr = JSON.stringify(config);
       
       // Optimization: Skip if config hasn't changed
@@ -358,34 +358,34 @@ const ingestModule: AttributeModule = {
       const iterationCleanupFns: Array<() => void> = [];
       activeCleanup = () => iterationCleanupFns.forEach(fn => fn());
 
-      const ingestTasks = ids.map(async id => {
+      const importTasks = ids.map(async id => {
         const item = config[id];
         try {
           const itemTasks = [];
           
           // Links
           if (item.link) {
-              itemTasks.push(ingestLink(id, item.link, iterationCleanupFns, runtime, el));
+              itemTasks.push(importLink(id, item.link, iterationCleanupFns, runtime, el));
           }
           
           // Scripts
           if (item.script) {
-              itemTasks.push(ingestScript(id, item.script, iterationCleanupFns, runtime, el));
+              itemTasks.push(importScript(id, item.script, iterationCleanupFns, runtime, el));
           }
           
           // Styles / Themes (Unified)
           const stylePayload = item.style || item.theme;
           if (stylePayload) {
-              itemTasks.push(ingestStyle(id, stylePayload, iterationCleanupFns, runtime, el));
+              itemTasks.push(importStyle(id, stylePayload, iterationCleanupFns, runtime, el));
           }
           
           // Patterns & Components (Legacy/Existing)
-          if (item.pattern) itemTasks.push(ingestPattern(id, item.pattern, el, item, iterationCleanupFns, runtime));
-          if (item.component) itemTasks.push(ingestComponent(id, item.component, iterationCleanupFns, runtime));
+          if (item.pattern) itemTasks.push(importPattern(id, item.pattern, el, item, iterationCleanupFns, runtime));
+          if (item.component) itemTasks.push(importComponent(id, item.component, iterationCleanupFns, runtime));
           
           await Promise.all(itemTasks);
         } catch (e) {
-          reportError(new Error(`Nexus Ingest [${id}]: Error ${e}`), el);
+          reportError(new Error(`Nexus Import [${id}]: Error ${e}`), el);
         }
       });
 
@@ -394,10 +394,10 @@ const ingestModule: AttributeModule = {
         el.classList.add('nexus-ready');
         el.removeAttribute('data-nexus-loading');
         el.setAttribute('data-nexus-ready', '');
-        runtime.log(`Nexus Ingest: Assets synchronized.`);
+        runtime.log(`Nexus Import: Assets synchronized.`);
       };
 
-      Promise.all(ingestTasks).then(finalize);
+      Promise.all(importTasks).then(finalize);
     });
 
     return () => {
@@ -407,4 +407,4 @@ const ingestModule: AttributeModule = {
   }
 };
 
-export default ingestModule;
+export default importModule;

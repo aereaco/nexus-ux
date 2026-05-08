@@ -34,7 +34,7 @@ PlayCDN-style browser JIT integration for Nexus-UX, preserving the **single Muta
 | All Tailwind v4 utilities generate correct CSS | ✅ Complete |
 | Browser-native (no Node.js APIs) | ✅ Complete |
 | Single MutationObserver preserved | ✅ Complete |
-| `data-ingest` custom directives | ✅ Complete (`adoptCSS`, `processAtRules`) |
+| `data-import` custom directives | ✅ Complete (`adoptCSS`, `processAtRules`) |
 | Arbitrary values: `w-[200px]`, `bg-[#fff]` | ✅ Complete |
 | Variants: `hover:`, `sm:`, `dark:` | ✅ Complete |
 
@@ -49,4 +49,4 @@ The PlayCDN JIT engine (`src/engine/stylesheet.ts`) is integrated by:
 3. **`populateStandardUtilities()`** - Registers 200+ utility classes (display, spacing, colors, flexbox, grid, etc.)
 4. **`populateStandardVariants()`** - Handles pseudo-variants (`hover`, `focus`, `sm`, `dark`, media queries)
 5. **Single MutationObserver** - JIT triggered by `ModuleCoordinator.processElement()` calling `stylesheet.adoptClass()`
-6. **`data-ingest`** - Custom CSS via `adoptCSS()` with `@theme`, `@utility`, `@layer` parsing
+6. **`data-import`** - Custom CSS via `adoptCSS()` with `@theme`, `@utility`, `@layer` parsing

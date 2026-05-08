@@ -426,20 +426,20 @@ Directly sync state to CSS Custom Properties. Essential for DaisyUI integration.
 - **Spinner**:
   `<div data-progress="{ type: 'spinner', size: '20px', value: 'isBusy' }"></div>`
 
-#### 2.2.6. "Data Ingest" 2.0 — Reactive Grouped Namespaces
+#### 2.2.6. "Data Import" 2.0 — Reactive Grouped Namespaces
 
-**Syntax**: `data-ingest="{ groupName: { type: 'url' } }"`
+**Syntax**: `data-import="{ groupName: { type: 'url' } }"`
 
 **Purpose**: Defers HTML rendering until critical external assets (like tailwind
 CDN or custom fonts) are fully loaded, parsed, and adopted via Constructable
 Stylesheets. Supports reactive updates and multiple asset types per namespace.
 
 - **Standard Pattern**:
-  `<html data-ingest="{ tailwind: { link: 'https://cdn.tailwindcss.com' } }"> ... </html>`
+  `<html data-import="{ tailwind: { link: 'https://cdn.tailwindcss.com' } }"> ... </html>`
 
 - **Reactive Theme Switcher**:
   ```html
-  <div data-ingest="{ theme: { theme: 'themes/' + currentTheme + '.css' } }">
+  <div data-import="{ theme: { theme: 'themes/' + currentTheme + '.css' } }">
   ```
 
 ---
@@ -961,7 +961,7 @@ Nexus-UX provides a built-in, zero-dependency Tailwind v4 (Oxide) compiler. This
 
 - **Automatic Class Discovery**: Any Tailwind class used in the DOM (`<div class="bg-blue-500 hover:scale-105">`) is automatically detected by the `ModuleCoordinator` and compiled in-memory.
 - **Dynamic Class Generation**: Tailwind classes bound via `data-class` are compiled JIT and injected synchronously.
-- **Native Theme & Utility Directives**: The engine supports importing CSS files containing `@theme`, `@utility`, and `@variant` directives via the `data-ingest` module, seamlessly updating the framework's internal design system.
+- **Native Theme & Utility Directives**: The engine supports importing CSS files containing `@theme`, `@utility`, and `@variant` directives via the `data-import` module, seamlessly updating the framework's internal design system.
 
 **Examples:**
 
@@ -2955,18 +2955,18 @@ inevitable.**
 ## Chapter 14: Premium Assets & Themes
 
 This chapter covers the advanced orchestration of external resources and visual
-styling using the `data-ingest` and `data-theme` systems.
+styling using the `data-import` and `data-theme` systems.
 
-### 14.1. `data-ingest` — Asset Lifecycle Orchestration
+### 14.1. `data-import` — Asset Lifecycle Orchestration
 
-The `data-ingest` directive manages 3rd party scripts and stylesheets, ensuring
+The `data-import` directive manages 3rd party scripts and stylesheets, ensuring
 the page remains hidden via `nexus-loading` until all assets are resolved.
 
 **Example**:
 
 ```html
 <html
-  data-ingest='{
+  data-import='{
   "daisy": { "link": "href=\"https://cdn.jsdelivr.net/npm/daisyui@4/dist/full.min.css\" rel=\"stylesheet\" crossorigin=\"anonymous\"" },
   "tailwind": { "script": "src=\"https://cdn.tailwindcss.com\" crossorigin=\"anonymous\"" }
 }'

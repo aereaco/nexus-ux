@@ -103,7 +103,7 @@ Nexus-UX utilizes a deterministic, token-based grammar for high-baud efficiency.
 | `data-text`     | **Painting**       | Injects reactive expressions into `textContent`.                                |
 | `data-on`       | **Behavior**       | Standard and **Native Event Mapping** (`hover`, `click:debounce.200ms`).        |
 | `data-on-hover` | **Orchestration**  | Maps native mouseenter/mouseleave to a local `hovered` signal.                  |
-| `data-ingest`   | **Asset Registry** | Asynchronously adopts links, scripts, and components into the Unified Registry. |
+| `data-import`   | **Asset Registry** | Asynchronously adopts links, scripts, and components into the Unified Registry. |
 | `data-switcher` | **Iteration**      | Automates cycling through states (e.g., Theme Toggles).                         |
 
 ---
@@ -186,16 +186,16 @@ No transpilant, no bundler, no delay.
         Increment Once
       </button>
 
-      <!-- Asset Ingestion 2.0: Unified Registry for ZCZS Parity -->
-      <div
-        data-ingest="{ 
-      charts: { 
-        script: [ { src: '/js/stats.js', defer: true }, '/js/charts.js' ],
-        link: { href: '/css/charts.css', rel: 'stylesheet' }
-      },
-      theme: { theme: 'idb://themes/nebula' }
-    }"
-        >
+<!-- Asset Import 2.0: Unified Registry for ZCZS Parity -->
+       <div
+         data-import="{ 
+       charts: { 
+         script: [ { src: '/js/stats.js', defer: true }, '/js/charts.js' ],
+         link: { href: '/css/charts.css', rel: 'stylesheet' }
+       },
+       theme: { theme: 'idb://themes/nebula' }
+     }"
+         >
       </div>
 
       <!-- Global Signal JIT Integration -->
@@ -222,13 +222,13 @@ synchronizes these to local CSS variables:
   `--nx-auth-theme-primary`.
 - **Performance**: Zero-copy updates via direct `CSSStyleRule` modification.
 
-### Asset Ingestion 2.0 (`data-ingest`)
+### Asset Import 2.0 (`data-import`)
 
-The framework manages 3rd party scripts and styles via a unified ingestion
+The framework manages 3rd party scripts and styles via a unified import
 schema:
 
 ```javascript
-data-ingest="{ 
+data-import="{ 
   analytics: { 
     script: { src: '/js/stats.js', defer: true }, // or '/path/to/script.js'
     link: '/path/to/style.css',                   // External CSS (adopted via ZCZS)
