@@ -1618,16 +1618,22 @@ global sprite (`$fetch`), a scope rule (`@os`), or an environment mirror
 
 ### 8.2. Build-Time Manifest Generation
 
-Running `deno task build` triggers `scripts/build.ts`, an architectural
-orchestrator that recursively crawls `src/modules/*`.
+Running `deno task build` triggers `scripts/build.ts`, the build orchestrator:
 
-1. **Discovery**: It detects all valid module exports.
-2. **manifest.ts Generation**: It writes a strictly typed `src/manifest.ts` file
-   containing categorical arrays (`autoAttributes`, `autoSprites`, etc.).
-3. **Zero-Maintenance Registration**: The core runtime (`src/index.ts`) simply
-   iterates over these manifest arrays, injecting them into the
-   `ModuleCoordinator` dynamically. Adding a new framework feature requires zero
-   registration boilerplate.
+1. **Discovery**: Crawls `src/modules/*` to detect module files.
+2. **Manifest Generation**: Writes `src/manifest.ts` with categorical arrays (`autoAttributes`, `autoSprites`, `autoModifiers`, `autoObservers`).
+3. **Tree-Shaking** (with `--app=DIR`): Scans the app directory, analyzes HTML/TS usage,
+   and generates a whitelist of only the modules actually used. Auto-injected sprites
+   (`el`, `id`, `global`, `dispatch`, `nextTick`) and mirror-provided browser APIs
+   (`fetch`, `http`, `download`, `clipboard`, `cache`, `notification`, `payment`, `ws`)
+   are automatically excluded from the bundle.
+4. **Bundling**: esbuild creates a single IIFE bundle (`dist/nexus-ux.js`).
+5. **Minification** (with `--minify` or `--app`): Two-pass minification (esbuild + SWC)
+   followed by Brotli‑11 compression produces `nexus-ux.min.js.br`.
+
+Zero-Maintenance Registration: The core runtime (`src/index.ts`) iterates over the
+manifest arrays, injecting them into the `ModuleCoordinator` dynamically. Adding a
+new framework feature requires zero registration boilerplate.
 
 ### 8.3. The Runtime Plugin API (`Nexus.register`)
 

@@ -6,8 +6,7 @@
 Nexus-UX is a "Zenith-Class" reactive framework designed for developers who
 demand absolute performance, granular control, and a **zero-build** experience.
 It collapses the traditional frontend stack by treating the DOM as a queryable,
-reactive state graph while achieving **100% functional parity with Tailwind
-v4**.
+reactive state graph while achieving **100% functional parity with Tailwind v4**.
 
 ---
 
@@ -28,6 +27,54 @@ v4**.
 5. **Agentic Readiness**: Built for **Machine Reasoning Efficiency**. Built-in
    **Resolution Beacons** report missing selectors and failed expressions back
    to Agentic Hosts (like Aerea) for automated self-healing.
+
+---
+
+## 🎯 Mirror-Auto-Wrap Architecture (2026 Refactor)
+
+Nexus-UX now uses **native environment mirrors** (`_fetch`, `_clipboard`, `_cache`,
+etc.) instead of legacy sprite wrappers. All browser API sprites have been removed
+and replaced with first-class `_`-prefixed mirrors that provide:
+
+- **Deep reactivity** with automatic ownership tracking
+- **Zero wrapper maintenance** — direct browser API parity
+- **Automatic cleanup** on element disposal
+
+### Auto-Injected Utilities (Inline)
+
+The following utility sprites are auto-injected by the core runtime and do
+_not_ require module imports:
+
+| Sprite       | Description                                      |
+| :----------- | :----------------------------------------------- |
+| **`$el`**    | Current element reference                        |
+| **`$id`**   | Generate unique IDs                              |
+| **`$dispatch`** | Dispatch CustomEvents on current element      |
+| **`$global`** | Access runtime global signals                  |
+| **`$nextTick`** | Schedule after reactive flush                  |
+
+### Retained Sprites (Unique Value)
+
+These sprites provide capabilities beyond native browser APIs and remain as
+explicit modules:
+
+| Sprite         | Description                                                                 |
+| :------------- | :-------------------------------------------------------------------------- |
+| **`$animate`** | Reactive animation engine with keyframes and timeline control              |
+| **`$selector`** | High-performance DOM query engine (`$()` selector)                         |
+| **`$predictive`** | 4D predictive interaction engine (frustum projection, quadtree)         |
+| **`$sql`**     | SurrealDB reactive queries (LIVE SELECT support)                           |
+| **`$gql`**     | GraphQL queries with reactive results                                      |
+| **`$mcp`**     | Model Context Protocol integration for AI agents                           |
+| **`$svg`**     | Reactive SVG manipulation engine                                           |
+| **`$spatial`** | 3D spatial tracking (x, y, z coordinates)                                  |
+| **`$flow`**    | Gesture flow recognizer (swipes, pans)                                     |
+| **`$mask`**    | Advanced clipping and masking                                              |
+| **`$sw`**      | Service Worker registration & lifecycle management                         |
+| **`$push`**    | Push notification subscription                                             |
+| **`$bgSync`**  | Background Sync API wrapper                                                |
+| **`$bgFetch`** | Background Fetch API wrapper                                               |
+| **`$periodicSync`** | Periodic Background Sync API wrapper                                |
 
 ---
 
@@ -78,11 +125,23 @@ v4 Design System** logic natively.
 
 ## ⚡ High-Order Sprites (`$`)
 
-- **`$fetch`**: Managed, reactive HTTP requests with **Suspense Proxy** support.
-- **`$sql`**: Direct database integration (SurrealDB LIVE queries).
-- **`$nextTick`**: Deferred execution after the next DOM update cycle.
-- **`$()`**: Reactive selector engine with combinators (`^` parent, `+` sibling,
-  `*` global).
+- **`$sql`**: Direct SurrealDB integration with LIVE queries.
+- **`$gql`**: GraphQL queries with reactive results.
+- **`$animate`**: Keyframe animation engine.
+- **`$selector`**: Reactive DOM query engine (`$()`).
+- **`$predictive`**: 4D predictive tracking (velocity, quadtree).
+- **`$spatial`**: 3D spatial coordinates (`$spatial.x/y/z`).
+- **`$flow`**: Gesture recognizer (swipe, pan, pinch).
+- **`$mask`**: Advanced clipping/masking.
+- **`$sw`**: Service Worker lifecycle management.
+- **`$push` / `$bgSync` / `$bgFetch` / `$periodicSync`**: Background APIs.
+- **`$mcp`**: Model Context Protocol for AI agent integration.
+- **`$svg`**: Reactive SVG manipulation.
+
+**Note**: Legacy network sprites (`$fetch`, `$get`, `$post`, etc.) and utility
+sprites (`$clipboard`, `$cache`, `$store`, `$watch`) have been **removed**.
+Use native `_fetch`, `_clipboard`, `_caches`, global signals `#store`, and
+`watch()` instead. See **§2.6.1** in the spec for mirror equivalents.
 
 ---
 
@@ -136,7 +195,7 @@ No transpilant, no bundler, no delay.
       },
       theme: { theme: 'idb://themes/nebula' }
     }"
-      >
+        >
       </div>
 
       <!-- Global Signal JIT Integration -->
@@ -183,6 +242,128 @@ data-ingest="{
 
 ---
 
-## 🛡️ License
+## 🏗️ Build System
 
-Nexus-UX is released under the **MIT License**. Created with ❤️ by Aerea Co.
+Nexus-UX uses a Deno-based build system (`scripts/build.ts`) that supports both
+full and app-specific builds.
+
+### Standard Build
+
+Produces the full framework bundle including all modules:
+
+```bash
+deno run --allow-all scripts/build.ts
+```
+
+Output: `dist/nexus-ux.js` (~418 KB unminified)
+
+### App-Specific Build with Tree-Shaking
+
+Analyze an application's source to include only the modules actually used:
+
+```bash
+deno run --allow-all scripts/build.ts --app=./site
+```
+
+This:
+- Scans the app directory for `data-*` directives, `$` sprite calls, and Tailwind classes
+- Filters out auto-injected sprites (`$el`, `$id`, `$dispatch`, `$global`, `$nextTick`)
+- Filters out mirror-provided APIs (`$fetch`, `$clipboard`, `$cache`, etc.) accessed via `_` prefix
+- Generates a tailored manifest with only used modules
+- Tree-shakes ~15+ unused modules automatically
+- Produces optimized bundles (typical reduction: 30–50%)
+
+**Example output**: Standard build includes all 15 sprite modules; app-specific
+build may include only 3 (`animate`, `sql`, `svg`) depending on usage.
+
+### Minification & Compression
+
+Two-pass minification with Brotli compression:
+
+```bash
+deno run --allow-all scripts/build.ts --minify
+# or combine with app analysis:
+deno run --allow-all scripts/build.ts --app=./site --minify
+```
+
+Pipeline:
+1. esbuild bundles + minifies
+2. SWC second-pass minification (3 passes, dead code elimination, drop console)
+3. Brotli‑11 compression
+
+Output:
+- `dist/nexus-ux.min.js` (~140–200 KB depending on modules)
+- `dist/nexus-ux.min.js.br` (~38–56 KB)
+
+### Build Options
+
+| Flag | Description |
+| :--- | :--- |
+| `--name=NAME` | Output filename (default: `nexus-ux`) |
+| `--app=DIR` | App directory to analyze for tree-shaking |
+| `--exclude=MOD1,MOD2` | Explicitly exclude modules (comma-separated) |
+| `--minify` | Enable two-pass minification + Brotli |
+| `--ref=GIT_REF` | Build from a specific git commit |
+
+### Batch Builds
+
+Use a JSON config for multi-target builds:
+
+```json
+{
+  "configs": [
+    { "outputName": "nexus-ux-full", "minify": true },
+    { "outputName": "nexus-ux-lite", "excludeModules": ["predictive", "mcp"] }
+  ]
+}
+```
+
+Run: `deno run --allow-all scripts/build.ts --batch --config=build-config.json`
+
+---
+
+## 🔬 Browser Compatibility
+
+Nexus-UX targets **ES2022** and uses modern web APIs:
+
+- **Adopted StyleSheets** (`CSSStyleSheet`) — native constructable stylesheets
+- **Custom Elements** v1 — custom element lifecycle
+- **ResizeObserver**, **MutationObserver** — efficient DOM observation
+- **WebSocket**, **BroadcastChannel** — real-time communication
+- **Cache API**, **Background Sync**, **Push API** — progressive web app features
+- **requestIdleCallback**, **requestAnimationFrame** — scheduler integration
+
+All non-DOM APIs are provided via environment mirrors (`_` prefix) and work in
+both browser and Deno runtimes where available.
+
+---
+
+## 📦 Module Architecture
+
+```
+src/
+├── index.ts              # Entry point — UX class, inline utilities
+├── manifest.ts           # AUTO-GENERATED module registry
+├── engine/               # Core runtime (ZCZS, scheduler, topology)
+├── modules/
+│   ├── attributes/       # data-* directive handlers (bind, on, if, etc.)
+│   ├── sprites/          # $ sprite implementations (animate, sql, svg, ...)
+│   ├── modifiers/        # Pipeline modifiers (debounce, throttle, prevent, ...)
+│   └── scopes/           # Context rules (@media, @os, @auth, ...)
+└── lib/                  # Utilities (drag-reorder, etc.)
+```
+
+**Zero-maintenance**: New modules are auto-discovered and registered via the
+manifest. No manual registration required.
+
+---
+
+## 🤝 Contributing
+
+Nexus-UX is developed under the **MIT License**. Contributions are welcome via
+pull request. See `nexus-ux-spec.md` for full architectural specifications and
+`nexus-ux-reference.md` for API documentation.
+
+---
+
+**Created with ❤️ by Aerea Co.**

@@ -23,14 +23,13 @@ import * as mod_19 from './modules/attributes/style.ts';
 import * as mod_20 from './modules/attributes/theme.ts';
 import * as mod_21 from './modules/attributes/progress.ts';
 import * as mod_22 from './modules/attributes/teleport.ts';
-import * as mod_23 from './modules/attributes/build.ts';
-import * as mod_24 from './modules/attributes/show.ts';
-import * as mod_25 from './modules/attributes/route.ts';
-import * as mod_26 from './modules/attributes/class.ts';
-import * as mod_27 from './modules/attributes/debug.ts';
-import * as mod_28 from './modules/attributes/html.ts';
-import * as mod_29 from './modules/attributes/signal.ts';
-import * as mod_30 from './modules/attributes/raf.ts';
+import * as mod_23 from './modules/attributes/show.ts';
+import * as mod_24 from './modules/attributes/route.ts';
+import * as mod_25 from './modules/attributes/class.ts';
+import * as mod_26 from './modules/attributes/debug.ts';
+import * as mod_27 from './modules/attributes/html.ts';
+import * as mod_28 from './modules/attributes/signal.ts';
+import * as mod_29 from './modules/attributes/raf.ts';
 export const autoAttributes: any[] = [  { name: 'mask', module: mod_0 },
   { name: 'drag', module: mod_1 },
   { name: 'markdown', module: mod_2 },
@@ -54,75 +53,40 @@ export const autoAttributes: any[] = [  { name: 'mask', module: mod_0 },
   { name: 'theme', module: mod_20 },
   { name: 'progress', module: mod_21 },
   { name: 'teleport', module: mod_22 },
-  { name: 'build', module: mod_23 },
-  { name: 'show', module: mod_24 },
-  { name: 'route', module: mod_25 },
-  { name: 'class', module: mod_26 },
-  { name: 'debug', module: mod_27 },
-  { name: 'html', module: mod_28 },
-  { name: 'signal', module: mod_29 },
-  { name: 'raf', module: mod_30 }];
-import * as mod_31 from './modules/sprites/mask.ts';
-import * as mod_32 from './modules/sprites/animate.ts';
-import * as mod_33 from './modules/sprites/spatial.ts';
-import * as mod_34 from './modules/sprites/gql.ts';
-import * as mod_35 from './modules/sprites/mcp.ts';
-import * as mod_36 from './modules/sprites/periodicSync.ts';
-import * as mod_37 from './modules/sprites/flow.ts';
-import * as mod_38 from './modules/sprites/bgSync.ts';
-import * as mod_39 from './modules/sprites/bgFetch.ts';
-import * as mod_40 from './modules/sprites/push.ts';
-import * as mod_41 from './modules/sprites/selector.ts';
-import * as mod_42 from './modules/sprites/predictive.ts';
-import * as mod_43 from './modules/sprites/sql.ts';
-import * as mod_44 from './modules/sprites/sw.ts';
-import * as mod_45 from './modules/sprites/svg.ts';
-export const autoSprites: any[] = [  { name: 'mask', module: mod_31 },
-  { name: 'animate', module: mod_32 },
-  { name: 'spatial', module: mod_33 },
-  { name: 'gql', module: mod_34 },
-  { name: 'mcp', module: mod_35 },
-  { name: 'periodicSync', module: mod_36 },
-  { name: 'flow', module: mod_37 },
-  { name: 'bgSync', module: mod_38 },
-  { name: 'bgFetch', module: mod_39 },
-  { name: 'push', module: mod_40 },
-  { name: 'selector', module: mod_41 },
-  { name: 'predictive', module: mod_42 },
-  { name: 'sql', module: mod_43 },
-  { name: 'sw', module: mod_44 },
-  { name: 'svg', module: mod_45 }];
-import * as mod_46 from './modules/scopes/container.ts';
-import * as mod_47 from './modules/scopes/view.ts';
-import * as mod_48 from './modules/scopes/media.ts';
-import * as mod_49 from './modules/scopes/auth.ts';
-import * as mod_50 from './modules/scopes/os.ts';
-import * as mod_51 from './modules/scopes/native.ts';
-export const autoScopes: any[] = [  { name: 'container', module: mod_46 },
-  { name: 'view', module: mod_47 },
-  { name: 'media', module: mod_48 },
-  { name: 'auth', module: mod_49 },
-  { name: 'os', module: mod_50 },
-  { name: 'native', module: mod_51 }];
-import * as mod_52 from './modules/modifiers/drag.ts';
-import * as mod_53 from './modules/modifiers/zoom.ts';
-import * as mod_54 from './modules/modifiers/stop.ts';
-import * as mod_55 from './modules/modifiers/keys.ts';
-import * as mod_56 from './modules/modifiers/self.ts';
-import * as mod_57 from './modules/modifiers/prevent.ts';
-import * as mod_58 from './modules/modifiers/throttle.ts';
-import * as mod_59 from './modules/modifiers/once.ts';
-import * as mod_60 from './modules/modifiers/debounce.ts';
-import * as mod_61 from './modules/modifiers/morph.ts';
-export const autoModifiers: any[] = [  { name: 'drag', module: mod_52 },
-  { name: 'zoom', module: mod_53 },
-  { name: 'stop', module: mod_54 },
-  { name: 'keys', module: mod_55 },
-  { name: 'self', module: mod_56 },
-  { name: 'prevent', module: mod_57 },
-  { name: 'throttle', module: mod_58 },
-  { name: 'once', module: mod_59 },
-  { name: 'debounce', module: mod_60 },
-  { name: 'morph', module: mod_61 }];
+  { name: 'show', module: mod_23 },
+  { name: 'route', module: mod_24 },
+  { name: 'class', module: mod_25 },
+  { name: 'debug', module: mod_26 },
+  { name: 'html', module: mod_27 },
+  { name: 'signal', module: mod_28 },
+  { name: 'raf', module: mod_29 }];
+import * as mod_30 from './modules/sprites/animate.ts';
+import * as mod_31 from './modules/sprites/sql.ts';
+import * as mod_32 from './modules/sprites/svg.ts';
+export const autoSprites: any[] = [  { name: 'animate', module: mod_30 },
+  { name: 'sql', module: mod_31 },
+  { name: 'svg', module: mod_32 }];
+import * as mod_33 from './modules/scopes/container.ts';
+import * as mod_34 from './modules/scopes/view.ts';
+import * as mod_35 from './modules/scopes/media.ts';
+import * as mod_36 from './modules/scopes/auth.ts';
+import * as mod_37 from './modules/scopes/os.ts';
+import * as mod_38 from './modules/scopes/native.ts';
+export const autoScopes: any[] = [  { name: 'container', module: mod_33 },
+  { name: 'view', module: mod_34 },
+  { name: 'media', module: mod_35 },
+  { name: 'auth', module: mod_36 },
+  { name: 'os', module: mod_37 },
+  { name: 'native', module: mod_38 }];
+import * as mod_39 from './modules/modifiers/drag.ts';
+import * as mod_40 from './modules/modifiers/zoom.ts';
+import * as mod_41 from './modules/modifiers/stop.ts';
+import * as mod_42 from './modules/modifiers/prevent.ts';
+import * as mod_43 from './modules/modifiers/morph.ts';
+export const autoModifiers: any[] = [  { name: 'drag', module: mod_39 },
+  { name: 'zoom', module: mod_40 },
+  { name: 'stop', module: mod_41 },
+  { name: 'prevent', module: mod_42 },
+  { name: 'morph', module: mod_43 }];
 import * as mod_mutation from './engine/mutation.ts';
 export const autoObservers: any[] = [{ name: 'mutation', module: mod_mutation }];
