@@ -3,44 +3,130 @@ import { denoPlugins } from "esbuild-deno-loader";
 import * as path from "std/path";
 import { minify as swcMinify } from "@swc/core";
 import { compress } from "brotli";
+import { walk } from "https://deno.land/std@0.212.0/fs/walk.ts";
 
-function minifyCSS(css: string): string {
-  // Remove C-style comments
-  let min = css.replace(/\/\*[\s\S]*?\*\//g, "");
-  // Remove whitespace around structural characters
-  min = min.replace(/\s*([\{\,:;])\s*/g, "$1");
-  // Remove trailing semicolon before closing brace
-  min = min.replace(/;\}/g, "}");
-  // Collapse multiple whitespace to single space
-  min = min.replace(/\s+/g, " ");
-  // Trim leading/trailing whitespace
-  return min.trim();
-}
+const AUTO_INJECTED_SPRITES = ["el", "id", "global", "dispatch", "nextTick"];
+const MIRROR_PROVIDED_SPRITES = ["fetch", "http", "download", "clipboard", "cache", "notification", "payment", "ws"];
 
 interface BuildOptions {
   outputName?: string;
   excludeModules?: string[];
   gitRef?: string;
   minify?: boolean;
+  appDir?: string;
 }
 
-/**
- * Builds the Nexus-UX bundle with optional git history, custom naming, and tree shaking.
- */
-async function buildBundle(options: BuildOptions = {}) {
-  const { outputName = "nexus-ux", excludeModules = [], gitRef, minify = false } = options;
+async function collectFiles(dir: string, extensions: string[] = [".html", ".ts", ".js", ".md"]): Promise<string[]> {
+  const files: string[] = [];
+  for await (const entry of walk(dir, { includeDirs: false })) {
+    if (extensions.includes(path.extname(entry.name))) {
+      files.push(entry.path);
+    }
+  }
+  return files;
+}
 
-  // If gitRef is specified, checkout that commit temporarily
+async function listModuleNames(dir: string): Promise<string[]> {
+  const names: string[] = [];
+  try {
+    for await (const entry of Deno.readDir(dir)) {
+      if (entry.isFile && entry.name.endsWith(".ts") && entry.name !== "index.ts") {
+        names.push(entry.name.replace(".ts", ""));
+      }
+    }
+  } catch { /* ignore */ }
+  return names;
+}
+
+function analyzeFile(content: string): {
+  attributeDirectives: Set<string>;
+  spriteNames: Set<string>;
+  modifiers: Set<string>;
+  tailwindClasses: Set<string>;
+} {
+  const attributeDirectives = new Set<string>();
+  const spriteNames = new Set<string>();
+  const modifiers = new Set<string>();
+  const tailwindClasses = new Set<string>();
+
+  const attrRegex = /data-([a-z]+(?:[.:-][a-zA-Z0-9-]+)*)/g;
+  let match: RegExpExecArray | null;
+  while ((match = attrRegex.exec(content)) !== null) {
+    const base = match[1].split(/[.:-]/)[0];
+    if (base) attributeDirectives.add(base);
+  }
+
+  const exprRegex = /\$([a-zA-Z_$][\w$]*)/g;
+  while ((match = exprRegex.exec(content)) !== null) {
+    spriteNames.add(match[1]);
+  }
+
+  const classRegex = /class\s*=\s*["']([^"']+)["']/g;
+  while ((match = classRegex.exec(content)) !== null) {
+    for (const cls of match[1].split(/\s+/)) {
+      if (cls && !cls.startsWith("{") && !cls.includes(":")) {
+        tailwindClasses.add(cls);
+      }
+    }
+  }
+
+  const modRegex = /:([a-zA-Z_$][\w$]*)(?:\([^)]*\))?/g;
+  while ((match = modRegex.exec(content)) !== null) {
+    modifiers.add(match[1]);
+  }
+
+  return { attributeDirectives, spriteNames, modifiers, tailwindClasses };
+}
+
+async function analyzeAppFiles(appDir: string): Promise<{
+  attributeDirectives: Set<string>;
+  spriteNames: Set<string>;
+  modifiers: Set<string>;
+  tailwindClasses: Set<string>;
+  autoInjectedSprites: string[];
+  mirrorProvidedSprites: string[];
+}> {
+  const absAppDir = path.resolve(Deno.cwd(), appDir);
+  const files = await collectFiles(absAppDir);
+  
+  const attributeDirectives = new Set<string>();
+  const spriteNames = new Set<string>();
+  const modifiers = new Set<string>();
+  const tailwindClasses = new Set<string>();
+
+  for (const file of files) {
+    try {
+      const content = await Deno.readTextFile(file);
+      const analysis = analyzeFile(content);
+      analysis.attributeDirectives.forEach(d => attributeDirectives.add(d));
+      analysis.spriteNames.forEach(s => spriteNames.add(s));
+      analysis.modifiers.forEach(m => modifiers.add(m));
+      analysis.tailwindClasses.forEach(c => tailwindClasses.add(c));
+    } catch (e) {
+      console.warn(`  Skipping ${file}: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+
+  return {
+    attributeDirectives,
+    spriteNames,
+    modifiers,
+    tailwindClasses,
+    autoInjectedSprites: Array.from(spriteNames).filter(s => AUTO_INJECTED_SPRITES.includes(s)),
+    mirrorProvidedSprites: Array.from(spriteNames).filter(s => MIRROR_PROVIDED_SPRITES.includes(s)),
+  };
+}
+
+async function buildBundle(options: BuildOptions = {}) {
+  const { outputName = "nexus-ux", excludeModules = [], gitRef, minify = false, appDir } = options;
+
   let originalCwd = Deno.cwd();
   if (gitRef) {
     const result = await new Deno.Command("git", {
       args: ["rev-parse", "--verify", gitRef],
       cwd: originalCwd,
     }).output();
-
-    if (!result.success) {
-      throw new Error(`Git ref '${gitRef}' not found`);
-    }
+    if (!result.success) throw new Error(`Git ref '${gitRef}' not found`);
   }
 
   try {
@@ -50,30 +136,52 @@ async function buildBundle(options: BuildOptions = {}) {
     const entryPoint = path.resolve(cwd, "src", "index.ts");
     const outFile = path.resolve(cwd, "dist", `${outputName}.js`);
     const configPath = path.resolve(cwd, "deno.json");
-
     const manifestPath = path.resolve(cwd, "src", "manifest.ts");
     const manifestJsonPath = path.resolve(cwd, "dist", "manifest.json");
-    const assetsPath = path.resolve(cwd, "src", "engine", "assets.ts");
 
-    const manifestLines = [
-      "// AUTO-GENERATED BY scripts/build.ts",
-      "import type { AttributeModule } from './engine/modules.ts';",
-    ];
+    let analysisResult: any = null;
+    
+    if (appDir) {
+      console.log(`\n🔍 Analyzing app: ${appDir}`);
+      analysisResult = await analyzeAppFiles(appDir);
+      console.log(`   Attributes: ${Array.from(analysisResult.attributeDirectives).join(", ")}`);
+      console.log(`   Sprites: ${Array.from(analysisResult.spriteNames).join(", ")}`);
+      console.log(`   Modifiers: ${Array.from(analysisResult.modifiers).join(", ")}`);
+      console.log(`   Auto-injected sprites: ${analysisResult.autoInjectedSprites.join(", ") || "none"}`);
+      console.log(`   Mirror-provided sprites: ${analysisResult.mirrorProvidedSprites.join(", ") || "none"}`);
+    }
+
+    const manifestLines = ["// AUTO-GENERATED", "import type { AttributeModule } from './engine/modules.ts';"];
     let counter = 0;
-
-    const manifestJsonData: Record<string, string[]> = {
+    const manifestJsonData: Record<string, any> = {
       attributes: [],
       sprites: [],
       scopes: [],
       modifiers: [],
-      observers: []
+      observers: [],
+      // Include analysis data for app-specific builds
+      ...(appDir && analysisResult ? {
+        analysis: {
+          attributeDirectives: Array.from(analysisResult.attributeDirectives),
+          spriteNames: Array.from(analysisResult.spriteNames),
+          modifiers: Array.from(analysisResult.modifiers),
+          tailwindClassCount: analysisResult.tailwindClasses.size,
+          autoInjectedSprites: analysisResult.autoInjectedSprites,
+          mirrorProvidedSprites: analysisResult.mirrorProvidedSprites,
+        }
+      } : {})
     };
+
+    // Load available module names
+    const availableAttrs = await listModuleNames(path.resolve(cwd, "src", "modules", "attributes"));
+    const availableSprites = await listModuleNames(path.resolve(cwd, "src", "modules", "sprites"));
+    const availableModifiers = await listModuleNames(path.resolve(cwd, "src", "modules", "modifiers"));
 
     async function generateRegistry(
       dir: string,
       exportName: string,
       jsonKey: string,
-      excludeList: string[] = []
+      whitelist: string[] | undefined
     ) {
       const arr: string[] = [];
       try {
@@ -81,8 +189,8 @@ async function buildBundle(options: BuildOptions = {}) {
         for await (const entry of Deno.readDir(fullPath)) {
           if (entry.isFile && entry.name.endsWith(".ts") && entry.name !== "index.ts") {
             const nameWithoutExt = entry.name.replace(".ts", "");
-            // Tree shaking: skip excluded modules
-            if (excludeList.includes(nameWithoutExt)) {
+            // Apply whitelist filter if provided
+            if (whitelist && !whitelist.includes(nameWithoutExt)) {
               console.log(`  [Tree-shaken] ${dir}/${entry.name}`);
               continue;
             }
@@ -92,37 +200,40 @@ async function buildBundle(options: BuildOptions = {}) {
             manifestJsonData[jsonKey].push(nameWithoutExt);
           }
         }
-      } catch(e) { /* ignore if dir missing */ }
+      } catch { /* ignore */ }
 
-      manifestLines.push("");
-      manifestLines.push(`export const ${exportName}: any[] = [`);
-      manifestLines.push(`  ${arr.join(',\n  ')}`);
-      manifestLines.push("];");
+      manifestLines.push(`export const ${exportName}: any[] = [${arr.map(a => `  ${a}`).join(',\n')}];`);
     }
 
-    await generateRegistry("modules/attributes", "autoAttributes", "attributes", excludeModules);
-    await generateRegistry("modules/sprites", "autoSprites", "sprites", excludeModules);
-    await generateRegistry("modules/scopes", "autoScopes", "scopes", excludeModules);
-    await generateRegistry("modules/modifiers", "autoModifiers", "modifiers", excludeModules);
+    // Determine whitelists for app-specific builds
+    let attrWhitelist: string[] | undefined;
+    let spriteWhitelist: string[] | undefined;
+    let modWhitelist: string[] | undefined;
 
-    // Mutation observer - static import like other engine files
+    if (appDir && analysisResult) {
+      attrWhitelist = Array.from(analysisResult.attributeDirectives).filter(a => availableAttrs.includes(a)) as string[];
+      spriteWhitelist = Array.from(analysisResult.spriteNames)
+        .filter(s => !AUTO_INJECTED_SPRITES.includes(s) && !MIRROR_PROVIDED_SPRITES.includes(s) && availableSprites.includes(s)) as string[];
+      modWhitelist = Array.from(analysisResult.modifiers).filter(m => availableModifiers.includes(m)) as string[];
+    }
+
+    await generateRegistry("modules/attributes", "autoAttributes", "attributes", attrWhitelist);
+    await generateRegistry("modules/sprites", "autoSprites", "sprites", spriteWhitelist);
+    await generateRegistry("modules/scopes", "autoScopes", "scopes", undefined);
+    await generateRegistry("modules/modifiers", "autoModifiers", "modifiers", modWhitelist);
+
+    // Mutation observer
     const mutationPath = path.resolve(cwd, "src", "engine", "mutation.ts");
     try {
       const stat = await Deno.stat(mutationPath);
       if (stat.isFile && !excludeModules.includes("mutation")) {
-        manifestLines.push("");
-        manifestLines.push("// Mutation observer module");
         manifestLines.push("import * as mod_mutation from './engine/mutation.ts';");
-        manifestLines.push("export const autoObservers: any[] = [");
-        manifestLines.push("  { name: 'mutation', module: mod_mutation }");
-        manifestLines.push("];");
+        manifestLines.push("export const autoObservers: any[] = [{ name: 'mutation', module: mod_mutation }];");
         manifestJsonData["observers"].push("mutation");
       } else {
-        manifestLines.push("");
         manifestLines.push("export const autoObservers: any[] = [];");
       }
     } catch {
-      manifestLines.push("");
       manifestLines.push("export const autoObservers: any[] = [];");
     }
 
@@ -132,45 +243,7 @@ async function buildBundle(options: BuildOptions = {}) {
     await Deno.writeTextFile(manifestJsonPath, JSON.stringify(manifestJsonData, null, 2));
     console.log("Generated JSON manifest:", manifestJsonPath);
 
-    // Read CSS files and generate assets.ts with inline strings
-    const assetsDir = path.resolve(cwd, "src", "engine", "assets");
-    const cssFiles = ["index.css", "preflight.css", "theme.css", "utilities.css"];
-    const assetEntries = [];
-
-    for (const file of cssFiles) {
-      try {
-        let content = await Deno.readTextFile(path.join(assetsDir, file));
-        // Minify CSS to reduce bundle size
-        content = minifyCSS(content);
-        const exportName = file.replace(".css", "");
-        const escaped = content
-          .replace(/\\/g, "\\\\")
-          .replace(/`/g, "\\`")
-          .replace(/\$\{/g, "\\${");
-        assetEntries.push(`  ${exportName}: \`${escaped}\``);
-      } catch {
-        console.warn(`Warning: Could not read ${file}, skipping`);
-      }
-    }
-
-    const assetsContent = `/**
- * Tailwind CSS Assets - AUTO-GENERATED
- * Bundled CSS files from Tailwind v4 (Oxide) engine.
- */
-
-export const tailwindAssets = {
-${assetEntries.join(",\n")}
-} as const;
-
-export type TailwindAssetName = keyof typeof tailwindAssets;
-`;
-
-    await Deno.writeTextFile(assetsPath, assetsContent);
-    console.log("Generated assets:", assetsPath);
-
-    // Build using ESBuild - main unminified bundle
-    console.log("Starting esbuild (unminified)...");
-    await esbuild.build({
+    const esbuildOptions: esbuild.BuildOptions = {
       plugins: [...denoPlugins({ configPath })],
       entryPoints: [entryPoint],
       outfile: outFile,
@@ -179,95 +252,28 @@ export type TailwindAssetName = keyof typeof tailwindAssets;
       globalName: "UX",
       target: "es2022",
       legalComments: "none",
-      external: [
-        "window", "document", "customElements",
-        "HTMLElement", "CSSStyleSheet", "AdoptedStyleSheets",
-        "Response", "Request", "fetch",
-      ],
-    });
+      minify,
+    };
+
+    console.log("Starting esbuild...");
+    await esbuild.build(esbuildOptions);
     console.log(`Build complete: ${outFile}`);
 
-    // Build minified version with two-pass: esbuild minify → SWC minify → Brotli
-    if (options.minify) {
-      const minFile = outFile.replace(/\.js$/, ".min.js");
+    if (minify) {
+      const minFile = outFile.replace(".js", ".min.js");
       const brFile = `${minFile}.br`;
-
-      // First pass: esbuild bundler + minify
-      console.log("First pass: esbuild bundle + minify...");
-      const bundleResult = await esbuild.build({
-        plugins: [...denoPlugins({ configPath })],
-        entryPoints: [entryPoint],
-        outfile: minFile,
-        bundle: true,
-        format: "iife",
-        globalName: "UX",
-        target: "es2022",
-        minify: true,
-        write: false,
-        sourcemap: false,
-        legalComments: "none",
-        external: [
-          "window", "document", "customElements",
-          "HTMLElement", "CSSStyleSheet", "AdoptedStyleSheets",
-          "Response", "Request", "fetch",
-        ],
+      
+      console.log("Minifying with SWC...");
+      const code = await Deno.readTextFile(outFile);
+      const result = await swcMinify(code, {
+        compress: { passes: 3, unused: true, dead_code: true, drop_console: true },
+        mangle: { toplevel: true, reserved: ["UX"] }
       });
+      const minified = result.code || code;
+      await Deno.writeTextFile(minFile, minified);
+      console.log(`Minified: ${minFile} (${(minified.length / 1024).toFixed(2)} KB)`);
 
-      const esbuildCode = bundleResult.outputFiles?.[0]?.text;
-      if (!esbuildCode) {
-        throw new Error("Esbuild minify produced no output");
-      }
-      console.log(`  esbuild minify complete: ${(esbuildCode.length / 1024).toFixed(2)} KB`);
-
-      // Second pass: SWC minification with Nexus-tuned config
-      console.log("Second pass: SWC minification...");
-      let swcCode: string;
-      try {
-        const result = await swcMinify(esbuildCode, {
-          compress: {
-            passes: 3,
-            unused: true,
-            dead_code: true,
-            drop_console: true,
-            pure_getters: true,
-            unsafe: true,
-            side_effects: true,
-            hoist_funs: true,
-            hoist_vars: true,
-            join_vars: true,
-          },
-          mangle: {
-            toplevel: true,
-            keep_classnames: false,
-            keep_fnames: false,
-            safari10: false,
-            reserved: [
-              "UX",
-              "connectedCallback",
-              "disconnectedCallback",
-              "attributeChangedCallback",
-              "observedAttributes",
-              "adoptedCallback",
-              "formAssociated",
-              "customElements",
-              "adoptedStyleSheets",
-            ],
-          },
-        });
-        swcCode = result.code ?? esbuildCode;
-      } catch (e) {
-        console.warn("SWC minification failed, using esbuild output:", e);
-        swcCode = esbuildCode;
-      }
-      console.log(`  SWC minify complete: ${(swcCode.length / 1024).toFixed(2)} KB`);
-
-      // Write final minified JS
-      await Deno.writeTextFile(minFile, swcCode);
-      console.log(`Minified build: ${minFile} (${(swcCode.length / 1024).toFixed(2)} KB)`);
-
-      // Brotli-11 compression
-      const uint8Code = new TextEncoder().encode(swcCode);
-      const compressed = compress(uint8Code, 11);
+      const compressed = compress(new TextEncoder().encode(minified), 11);
       await Deno.writeFile(brFile, compressed);
       console.log(`Brotli compressed: ${brFile} (${(compressed.length / 1024).toFixed(2)} KB)`);
     }
@@ -280,48 +286,32 @@ export type TailwindAssetName = keyof typeof tailwindAssets;
   }
 }
 
-/**
- * Batch build multiple configurations.
- */
 async function batchBuild(configs: BuildOptions[]) {
   for (const config of configs) {
     console.log(`\n=== Building: ${config.outputName || 'default'} ===`);
-    if (config.excludeModules?.length) {
-      console.log(`  Excluded modules: ${config.excludeModules.join(", ")}`);
-    }
-    if (config.gitRef) {
-      console.log(`  Git ref: ${config.gitRef}`);
-    }
     await buildBundle(config);
   }
 }
 
-// Parse CLI arguments
+// CLI
 const args = Deno.args;
 if (args.includes("--batch")) {
-  // Batch mode: read config from stdin or file
   const configFile = args.find(a => a.startsWith("--config="))?.split("=")[1];
   if (configFile) {
-    const configData = JSON.parse(await Deno.readTextFile(configFile));
+    const configData = JSON.parse(await Deno.readTextFile(configFile)) as { configs?: BuildOptions[] };
     await batchBuild(configData.configs || []);
   } else {
     console.error("Batch mode requires --config=file.json");
     Deno.exit(1);
   }
 } else {
-   // Single build mode
-   const outputName = args.find(a => a.startsWith("--name="))?.split("=")[1];
-   const excludes = args.find(a => a.startsWith("--exclude="))?.split("=")[1]?.split(",");
-   const gitRef = args.find(a => a.startsWith("--ref="))?.split("=")[1];
-   const minify = args.includes("--minify");
+  const outputName = args.find(a => a.startsWith("--name="))?.split("=")[1];
+  const appDir = args.find(a => a.startsWith("--app="))?.split("=")[1];
+  const excludes = args.find(a => a.startsWith("--exclude="))?.split("=")[1]?.split(",") || [];
+  const gitRef = args.find(a => a.startsWith("--ref="))?.split("=")[1];
+  const minify = args.includes("--minify") || args.includes("--app");
 
-   await buildBundle({
-     outputName,
-     excludeModules: excludes,
-     gitRef,
-     minify,
-   });
+  await buildBundle({ outputName, appDir, excludeModules: excludes, gitRef, minify });
 }
 
-// Export for programmatic use
 export { buildBundle, batchBuild };
