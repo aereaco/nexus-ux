@@ -2,6 +2,43 @@ import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { DragReorderEngine, buildReorderContext } from '../../lib/drag-reorder.ts';
 
+/**
+ * Calculate the index of an element among its draggable siblings.
+ * Uses DOM traversal (like SortableJS `index()`), not array indexOf.
+ * Ensures identity-based tracking that survives DOM mutations.
+ */
+/**
+ * Calculate the index of an element among its draggable siblings.
+ * Uses DOM traversal (like SortableJS `index()`), not array indexOf.
+ * Ensures identity-based tracking survives DOM mutations.
+ */
+function calculateDraggableIndex(
+  element: HTMLElement,
+  sourceDropZone: HTMLElement | null
+): number {
+  let index = 0;
+  let sibling = element.previousElementSibling;
+  
+  while (sibling) {
+    if (sibling.nodeName.toUpperCase() !== 'TEMPLATE') {
+      const hasDataDrag = sibling.hasAttribute('data-drag');
+      const isDraggable = (sibling as HTMLElement).draggable === true;
+      const style = getComputedStyle(sibling);
+      const isHidden = style.display === 'none';
+      const isTemplate = sibling.hasAttribute('data-ux-template');
+      const siblingDropZone = sibling.closest('[data-teleport\\:drop]') as HTMLElement | null;
+      const correctZone = sourceDropZone ? siblingDropZone === sourceDropZone : !siblingDropZone;
+      
+      if (hasDataDrag && isDraggable && !isHidden && !isTemplate && correctZone) {
+        index++;
+      }
+    }
+    sibling = sibling.previousElementSibling;
+  }
+  
+  return index;
+}
+
 export const dragAttribute: AttributeModule = {
   name: 'drag',
   attribute: 'drag',
@@ -45,14 +82,11 @@ export const dragAttribute: AttributeModule = {
         }
 
         const siblingContainer = sourceDropZone || sourceContainer;
-        const siblings = Array.from(siblingContainer.querySelectorAll('[data-drag]')).filter(
-          c => (c.closest('[data-teleport\\:drop]') === sourceDropZone || !sourceDropZone) &&
-               (c as HTMLElement).style.display !== 'none' &&
-               !c.hasAttribute('data-ux-template')
-        );
-        const initialIndex = siblings.indexOf(element);
+        
+        // Use SortableJS-style index calculation
+        const initialIndex = calculateDraggableIndex(element, sourceDropZone);
 
-         const dragState: Record<string, unknown> = {
+        const dragState: Record<string, unknown> = {
            fromIndex: initialIndex,
            sourceContainer: siblingContainer,
            element,
@@ -73,42 +107,43 @@ export const dragAttribute: AttributeModule = {
            });
          }
 
-         // Initialize in-list reorder engine if enabled
-         if (detectReorder(sourceDropZone) && Array.isArray(sourceList)) {
-           const listExpr = sourceDropZone!.getAttribute('data-teleport:drop')!;
-           const direction = (sourceDropZone!.getAttribute('data-drag-direction') as 'vertical' | 'horizontal') || 'vertical';
-           const animDuration = parseInt(sourceDropZone!.getAttribute('data-drag-animation') || '150', 10);
+          // Initialize in-list reorder engine if enabled
+          if (detectReorder(sourceDropZone) && Array.isArray(sourceList)) {
+            if (!sourceDropZone) return; // safety guard, should not happen
+            const listExpr = sourceDropZone.getAttribute('data-teleport:drop')!;
+            const direction = (sourceDropZone.getAttribute('data-drag-direction') as 'vertical' | 'horizontal') || 'vertical';
+            const animDuration = parseInt(sourceDropZone.getAttribute('data-drag-animation') || '150', 10);
 
-           const ctx = buildReorderContext(sourceDropZone!, listExpr, runtime, {
-             direction,
-             animationDuration: animDuration,
-             onAutoScroll: async (delta) => {
-               if (sourceDropZone) {
-                 sourceDropZone.scrollBy({ left: delta.x, top: delta.y, behavior: 'smooth' });
-                 return true;
-               }
-               return false;
-             },
-             onReorder: (list, oldIdx, newIdx) => {
-               globalSignals['drag:reorder'] = { list, oldIndex: oldIdx, newIndex: newIdx };
-             }
-           });
+            const ctx = buildReorderContext(sourceDropZone, listExpr, runtime, {
+              direction,
+              animationDuration: animDuration,
+              onAutoScroll: async (delta) => {
+                if (sourceDropZone) {
+                  sourceDropZone.scrollBy({ left: delta.x, top: delta.y, behavior: 'smooth' });
+                  return true;
+                }
+                return false;
+              },
+              onReorder: (list, oldIdx, newIdx) => {
+                globalSignals['drag:reorder'] = { list, oldIndex: oldIdx, newIndex: newIdx };
+              }
+            });
 
-           reorderEngine = new DragReorderEngine(ctx);
-           dragState.reorderEngine = reorderEngine;
+            reorderEngine = new DragReorderEngine(ctx);
+            dragState.reorderEngine = reorderEngine;
 
-           // Initialize engine at drag start
-           reorderEngine.startDrag({ element, sourceList, fromIndex: initialIndex }, e);
+            // Initialize engine at drag start
+            reorderEngine.startDrag({ element, sourceList, fromIndex: initialIndex }, e);
 
-           // Attach dragover to the drop zone for live updates
-           dropZoneDragOverListener = (ev: DragEvent) => {
-             if (reorderEngine && ev.clientX && ev.clientY) {
-               reorderEngine.updateDrag(ev.clientX, ev.clientY, ev);
-               globalSignals['drag:move'] = { element, x: ev.clientX, y: ev.clientY, originalEvent: ev };
-             }
-           };
-           sourceDropZone.addEventListener('dragover', dropZoneDragOverListener);
-         }
+            // Attach dragover to the drop zone for live updates
+            dropZoneDragOverListener = (ev: DragEvent) => {
+              if (reorderEngine && ev.clientX && ev.clientY) {
+                reorderEngine.updateDrag(ev.clientX, ev.clientY, ev);
+                globalSignals['drag:move'] = { element, x: ev.clientX, y: ev.clientY, originalEvent: ev };
+              }
+            };
+            sourceDropZone.addEventListener('dragover', dropZoneDragOverListener);
+          }
 
         globalSignals['drag:start'] = { element, originalEvent: e, fromIndex: initialIndex, sourceList };
 

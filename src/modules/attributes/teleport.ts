@@ -76,23 +76,31 @@ export const teleportAttribute: AttributeModule = {
               return;
             }
           } else {
-            // Determine drop target index using hit-testing within the precise ownership boundary
+            // Determine drop target using precise DOM-based list of valid draggable children
             const dropTarget = (e.target as HTMLElement).closest('[data-drag]');
-            const draggableChildren = Array.from(element.querySelectorAll('[data-drag]')).filter(
-              c => c.closest('[data-teleport\\:drop]') === element &&
-                   (c as HTMLElement).style.display !== 'none' &&
-                   !c.hasAttribute('data-ux-template')
-            );
+            
+            // Build the list of valid draggable children using direct children iteration (SortableJS style)
+            const draggableChildren: HTMLElement[] = [];
+            for (let i = 0; i < element.children.length; i++) {
+              const child = element.children[i] as HTMLElement;
+              if (child.hasAttribute('data-drag') &&
+                  child.draggable === true &&
+                  getComputedStyle(child).display !== 'none' &&
+                  !child.hasAttribute('data-ux-template') &&
+                  child.closest('[data-teleport\\:drop]') === element) {
+                draggableChildren.push(child);
+              }
+            }
 
-            toIndex = dropTarget ? draggableChildren.indexOf(dropTarget) : draggableChildren.length;
-
-            if (dropTarget && toIndex !== -1) {
+            if (dropTarget && draggableChildren.includes(dropTarget as HTMLElement)) {
+              toIndex = draggableChildren.indexOf(dropTarget as HTMLElement);
+              // Adjust toIndex based on cursor position (drop after half-point)
               const rect = dropTarget.getBoundingClientRect();
               const cursorY = e.clientY - rect.top;
               if (cursorY > rect.height / 2) {
                 toIndex += 1;
               }
-            } else if (toIndex === -1) {
+            } else {
               toIndex = draggableChildren.length;
             }
           }

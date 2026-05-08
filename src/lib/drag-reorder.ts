@@ -2,7 +2,7 @@
  * DragReorderEngine — In-List Real-Time Reordering for Nexus-UX
  */
 
-import type { RuntimeContext } from '../../engine/composition.ts';
+import type { RuntimeContext } from '../engine/composition.ts';
 
 export interface DragReorderContext<T> {
   getList: () => T[];
@@ -152,19 +152,40 @@ export class DragReorderEngine<T> {
 
   // ─── Hit-Testing ──────────────────────────────────────────────────────────
 
+  /**
+   * Check if a child element is a valid draggable item.
+   * Mirrors the filtering logic from calculateDraggableIndex in drag.ts
+   */
+  private isValidDraggableChild(child: HTMLElement): boolean {
+    if (child === this.ghostEl || child === this.placeholderEl) return false;
+    if (child === this.activeDrag?.element) return false;
+    if (child.hasAttribute('data-ux-template')) return false;
+    if (getComputedStyle(child).display === 'none') return false;
+    // draggable property on HTMLElement is boolean; must be true
+    if (child.draggable !== true) return false;
+    const dz = child.closest('[data-teleport\\:drop]');
+    return dz === this.ctx.container || !dz;
+  }
+
+  private getDraggableChildren(): HTMLElement[] {
+    const children: HTMLElement[] = [];
+    const container = this.ctx.container;
+    // Use direct children iteration (like SortableJS container.children) 
+    // to avoid including nested drop zone items
+    for (let i = 0; i < container.children.length; i++) {
+      const child = container.children[i] as HTMLElement;
+      if (this.isValidDraggableChild(child)) {
+        children.push(child);
+      }
+    }
+    return children;
+  }
+
   private calculateInsertIndex(clientX: number, clientY: number): number {
     if (!this.activeDrag) return -1;
-    const { container, direction = 'vertical' } = this.ctx;
+    const { direction = 'vertical' } = this.ctx;
 
-    const children = Array.from(container.querySelectorAll('[data-drag]')).filter(el => {
-      if (el === this.ghostEl || el === this.placeholderEl) return false;
-      if (el === this.activeDrag?.element) return false;
-      if (el.hasAttribute('data-ux-template')) return false;
-      if ((el as HTMLElement).style.display === 'none') return false;
-      const dz = el.closest('[data-teleport\\:drop]');
-      return dz === container || !dz;
-    });
-
+    const children = this.getDraggableChildren();
     if (children.length === 0) return 0;
 
     let closest = children.length;
@@ -208,18 +229,7 @@ export class DragReorderEngine<T> {
       const ref = children[toIndex];
       this.ctx.container.insertBefore(this.placeholderEl, ref);
     }
-  }
-
-  private getDraggableChildren(): HTMLElement[] {
-    return Array.from(this.ctx.container.querySelectorAll('[data-drag]')).filter(el => {
-      if (el === this.ghostEl || el === this.placeholderEl) return false;
-      if (el === this.activeDrag?.element) return false;
-      if (el.hasAttribute('data-ux-template')) return false;
-      if ((el as HTMLElement).style.display === 'none') return false;
-      const dz = el.closest('[data-teleport\\:drop]');
-      return dz === this.ctx.container || !dz;
-    });
-  }
+   }
 
   // ─── Auto-Scroll ──────────────────────────────────────────────────────────
 

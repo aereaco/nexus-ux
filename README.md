@@ -84,9 +84,9 @@ Nexus-UX utilizes a deterministic, token-based grammar for high-baud efficiency.
 
 | Token   | Designation       | Purpose                                         | Example                            |
 | :------ | :---------------- | :---------------------------------------------- | :--------------------------------- |
-| **`.`** | Native Access     | Unwrapped, raw JS/DOM property access.          | `user.name`                        |
-| **`#`** | Global Signal     | The Global Registry of reactive sources.        | `#auth.user`                       |
-| **`_`** | Env Mirror        | Read-only reactive snapshots of Browser APIs.   | `_window.innerWidth`               |
+| **`.`** | Native Access | Unwrapped, raw JS/DOM property access. | `user.name` |
+| **`#`** | Global Signal | The Global Registry of reactive sources. | `#auth.user` |
+| **`_`** | Env Mirror | Reactive ownership-tracked proxies for native Browser APIs. | `_window.innerWidth` |
 | **`:`** | Modifier          | Pipeline anchors and interceptors.              | `data-on-click:once`               |
 | **`$`** | Sprite / Selector | Framework tools, Sprites, and the $() engine.   | `$(^card).$save()`                 |
 | **`@`** | Scope Rule        | Context-aware boundary rules (Media, OS, Auth). | `@media(min-width: 600px) { ... }` |
@@ -255,7 +255,7 @@ Produces the full framework bundle including all modules:
 deno run --allow-all scripts/build.ts
 ```
 
-Output: `dist/nexus-ux.js` (~418 KB unminified)
+Output: `dist/nexus-ux.js` (unminified, size varies with modules)
 
 ### App-Specific Build with Tree-Shaking
 
@@ -268,9 +268,9 @@ deno run --allow-all scripts/build.ts --app=./site
 This:
 - Scans the app directory for `data-*` directives, `$` sprite calls, and Tailwind classes
 - Filters out auto-injected sprites (`$el`, `$id`, `$dispatch`, `$global`, `$nextTick`)
-- Filters out mirror-provided APIs (`$fetch`, `$clipboard`, `$cache`, etc.) accessed via `_` prefix
+- Filters out mirror-provided APIs (`$fetch`, `$http`, `$download`, `$clipboard`, `$cache`, `$notification`, `$payment`, `$ws`) accessed via `_` prefix
+- Tree-shakes **attribute modules**, **sprite modules**, and **modifier modules** based on actual usage
 - Generates a tailored manifest with only used modules
-- Tree-shakes ~15+ unused modules automatically
 - Produces optimized bundles (typical reduction: 30–50%)
 
 **Example output**: Standard build includes all 15 sprite modules; app-specific
@@ -333,8 +333,7 @@ Nexus-UX targets **ES2022** and uses modern web APIs:
 - **Cache API**, **Background Sync**, **Push API** — progressive web app features
 - **requestIdleCallback**, **requestAnimationFrame** — scheduler integration
 
-All non-DOM APIs are provided via environment mirrors (`_` prefix) and work in
-both browser and Deno runtimes where available.
+All Environment APIs are provided via environment mirrors (`_` prefix) and work in both browser and Deno runtimes where available.
 
 ---
 
