@@ -1,20 +1,23 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
+import { DragReorderEngine, buildReorderContext } from '../../lib/drag-reorder.ts';
 
-/**
- * data-drag: Native HTML5 Drag payload generator.
- *
- * Makes an element draggable and stores a ZCZS (Zero-Copy Zero-Serialization)
- * memory pointer in globalThis._dragState on dragstart. The actual drop-zone
- * logic and array mutation is handled by data-teleport:drop (teleport.ts).
- */
 export const dragAttribute: AttributeModule = {
   name: 'drag',
   attribute: 'drag',
   handle: (element: HTMLElement, _value: string, runtime: RuntimeContext) => {
-    // Enable Native HTML5 Drag and Drop
     element.setAttribute('draggable', 'true');
     element.style.userSelect = 'none';
+
+    let reorderEngine: DragReorderEngine<any> | null = null;
+    let dropZoneDragOverListener: ((e: DragEvent) => void) | null = null;
+    let sourceDropZone: HTMLElement | null = null;
+
+    // Resolve if reorder is enabled on draggable or its drop zone
+    const detectReorder = (zone: HTMLElement | null): boolean => {
+      if (!zone) return false;
+      return zone.hasAttribute('data-drag-reorder') || element.hasAttribute('data-drag-reorder');
+    };
 
     const onDragStart = (e: DragEvent) => {
       try {
@@ -24,48 +27,90 @@ export const dragAttribute: AttributeModule = {
           return;
         }
 
-        // Resolve the reactive list by climbing the DOM tree to find the
-        // nearest ancestor with data-teleport:drop. This handles nested layouts
-        // where data-drag items aren't direct children of the drop zone.
-        const dropZone = element.closest('[data-teleport\\:drop]') as HTMLElement | null;
+        sourceDropZone = element.closest('[data-teleport\\:drop]') as HTMLElement | null;
         let sourceList: any[] | null = null;
 
-        if (dropZone) {
-          const moveExpr = dropZone.getAttribute('data-teleport:drop');
+        if (sourceDropZone) {
+          const moveExpr = sourceDropZone.getAttribute('data-teleport:drop');
           if (moveExpr) {
             try {
-              const result = runtime.evaluate(dropZone, moveExpr);
+              const result = runtime.evaluate(sourceDropZone, moveExpr);
               if (Array.isArray(result)) {
                 sourceList = result;
-              } else {
-                console.warn('[drag] Expression did not evaluate to an array:', moveExpr);
               }
             } catch (err) {
               console.warn('[drag] Failed to evaluate source list:', err);
             }
           }
-        } else {
-          console.warn('[drag] No drop zone found for draggable element');
         }
 
-        // Calculate initial index among draggable siblings within the resolved drop zone
-        // Using querySelectorAll with ownership check allows data-drag items to be nested
-        // inside layout wrappers while ignoring items belonging to sub-drop-zones.
-        const siblingContainer = dropZone || sourceContainer;
+        const siblingContainer = sourceDropZone || sourceContainer;
         const siblings = Array.from(siblingContainer.querySelectorAll('[data-drag]')).filter(
-          c => (c.closest('[data-teleport\\:drop]') === dropZone || !dropZone) && 
+          c => (c.closest('[data-teleport\\:drop]') === sourceDropZone || !sourceDropZone) &&
                (c as HTMLElement).style.display !== 'none' &&
                !c.hasAttribute('data-ux-template')
         );
         const initialIndex = siblings.indexOf(element);
 
-        // ZCZS: Store raw memory reference in global heap pointer
-        (globalThis as any)._dragState = {
-          fromIndex: initialIndex,
-          sourceContainer: siblingContainer,
-          element,
-          sourceList
-        };
+         const dragState: Record<string, unknown> = {
+           fromIndex: initialIndex,
+           sourceContainer: siblingContainer,
+           element,
+           sourceList
+         };
+         (globalThis as any)._dragState = dragState;
+
+         const globalSignals = runtime.globalSignals() as any;
+
+         // DEBUG
+         if ((window as any)._nexusDebugDrag) {
+           console.log('[drag] Drag started', {
+             element: element.tagName,
+             fromIndex: initialIndex,
+             sourceDropZone: sourceDropZone?.tagName,
+             sourceListIsArray: Array.isArray(sourceList),
+             sourceListLength: sourceList?.length
+           });
+         }
+
+         // Initialize in-list reorder engine if enabled
+         if (detectReorder(sourceDropZone) && Array.isArray(sourceList)) {
+           const listExpr = sourceDropZone!.getAttribute('data-teleport:drop')!;
+           const direction = (sourceDropZone!.getAttribute('data-drag-direction') as 'vertical' | 'horizontal') || 'vertical';
+           const animDuration = parseInt(sourceDropZone!.getAttribute('data-drag-animation') || '150', 10);
+
+           const ctx = buildReorderContext(sourceDropZone!, listExpr, runtime, {
+             direction,
+             animationDuration: animDuration,
+             onAutoScroll: async (delta) => {
+               if (sourceDropZone) {
+                 sourceDropZone.scrollBy({ left: delta.x, top: delta.y, behavior: 'smooth' });
+                 return true;
+               }
+               return false;
+             },
+             onReorder: (list, oldIdx, newIdx) => {
+               globalSignals['drag:reorder'] = { list, oldIndex: oldIdx, newIndex: newIdx };
+             }
+           });
+
+           reorderEngine = new DragReorderEngine(ctx);
+           dragState.reorderEngine = reorderEngine;
+
+           // Initialize engine at drag start
+           reorderEngine.startDrag({ element, sourceList, fromIndex: initialIndex }, e);
+
+           // Attach dragover to the drop zone for live updates
+           dropZoneDragOverListener = (ev: DragEvent) => {
+             if (reorderEngine && ev.clientX && ev.clientY) {
+               reorderEngine.updateDrag(ev.clientX, ev.clientY, ev);
+               globalSignals['drag:move'] = { element, x: ev.clientX, y: ev.clientY, originalEvent: ev };
+             }
+           };
+           sourceDropZone.addEventListener('dragover', dropZoneDragOverListener);
+         }
+
+        globalSignals['drag:start'] = { element, originalEvent: e, fromIndex: initialIndex, sourceList };
 
         if (e.dataTransfer) {
           e.dataTransfer.effectAllowed = 'move';
@@ -82,10 +127,27 @@ export const dragAttribute: AttributeModule = {
       }
     };
 
-    const onDragEnd = (_e: DragEvent) => {
+    const onDragEnd = (e: DragEvent) => {
+      if (reorderEngine) {
+        reorderEngine.endDrag(e);
+        reorderEngine = null;
+      }
+      if (sourceDropZone && dropZoneDragOverListener) {
+        sourceDropZone.removeEventListener('dragover', dropZoneDragOverListener);
+        dropZoneDragOverListener = null;
+      }
+
       element.style.opacity = '';
       element.classList.remove('dragging');
-      (globalThis as any)._dragState = null; // Clear ZCZS memory pointer
+
+      const globalSignals = runtime.globalSignals() as any;
+      globalSignals['drag:end'] = {
+        element,
+        originalEvent: e,
+        cancelled: e.dataTransfer?.dropEffect === 'none'
+      };
+
+      (globalThis as any)._dragState = null;
     };
 
     element.addEventListener('dragstart', onDragStart);
@@ -94,6 +156,9 @@ export const dragAttribute: AttributeModule = {
     return () => {
       element.removeEventListener('dragstart', onDragStart);
       element.removeEventListener('dragend', onDragEnd);
+      if (sourceDropZone && dropZoneDragOverListener) {
+        sourceDropZone.removeEventListener('dragover', dropZoneDragOverListener);
+      }
     };
   }
 };

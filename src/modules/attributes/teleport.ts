@@ -2,24 +2,23 @@ import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { ParsedAttribute } from '../../engine/attributeParser.ts';
 import { DATA_STACK_KEY } from '../../engine/consts.ts';
+import { DragReorderEngine, buildReorderContext } from '../../lib/drag-reorder.ts';
 
 /**
  * data-teleport: Dual-mode teleportation engine.
  *
- * Mode 1 — DOM Teleportation (Alpine x-teleport style):
- *   <template data-teleport="body">...</template>
- *   Clones the template content and appends it to the target selector.
- *
- * Mode 2 — Data Teleportation (Drop Zone for Drag & Drop):
+ * Mode 1 — Data Teleportation (Drop Zone for Drag & Drop):
  *   <div data-teleport:drop="listExpression">
  *   The :drop modifier turns the element into a native HTML5 drop zone.
- *   On native `drop`, it reads the ZCZS global memory pointer and
- *   mutates the reactive array directly in memory.
  *
  *   Optional data-teleport-mode attribute:
  *     "move"  (default) — splice item from source, insert into target
  *     "clone" — copy item into target without removing from source
  *     "swap"  — swap items at source and target indices
+ *
+ *   In-list reordering: when the drop zone has data-drag-reorder and the
+ *   source and target lists are the same, the reordering is handled live by
+ *   the DragReorderEngine during dragover; onDrop becomes a no-op.
  */
 export const teleportAttribute: AttributeModule = {
   name: 'teleport',
@@ -51,33 +50,12 @@ export const teleportAttribute: AttributeModule = {
             return;
           }
 
-          const { fromIndex, sourceContainer, element: draggedEl, sourceList } = dragState;
+          const { fromIndex, sourceContainer, element: draggedEl, sourceList, reorderEngine } = dragState;
 
           // Validate sourceList is an array (ZCZS contract)
           if (!Array.isArray(sourceList)) {
             console.warn('[teleport] sourceList is not an array - check expression evaluation');
             return;
-          }
-
-          // Determine drop target index using hit-testing within the precise ownership boundary
-          const dropTarget = (e.target as HTMLElement).closest('[data-drag]');
-          const draggableChildren = Array.from(element.querySelectorAll('[data-drag]')).filter(
-            c => c.closest('[data-teleport\\:drop]') === element &&
-                 (c as HTMLElement).style.display !== 'none' &&
-                 !c.hasAttribute('data-ux-template')
-          );
-
-          let toIndex = dropTarget ? draggableChildren.indexOf(dropTarget) : draggableChildren.length;
-
-          if (dropTarget && toIndex !== -1) {
-            // Refine with mouse position: above/below midpoint for precise insertion
-            const rect = dropTarget.getBoundingClientRect();
-            const cursorY = e.clientY - rect.top;
-            if (cursorY > rect.height / 2) {
-              toIndex += 1;
-            }
-          } else if (toIndex === -1) {
-            toIndex = draggableChildren.length;
           }
 
           const targetList = runtime.evaluate(element, value);
@@ -86,8 +64,46 @@ export const teleportAttribute: AttributeModule = {
             return;
           }
 
+          const isSameList = sourceList === targetList;
+          let toIndex: number;
+
+          // If in-list reorder engine is active on same list, it already mutated the array.
+          // Use its final index and skip mutation.
+          if (reorderEngine && isSameList) {
+            toIndex = reorderEngine.getFinalToIndex();
+            if (toIndex === -1) {
+              console.warn('[teleport] Reorder engine active but no final index available');
+              return;
+            }
+          } else {
+            // Determine drop target index using hit-testing within the precise ownership boundary
+            const dropTarget = (e.target as HTMLElement).closest('[data-drag]');
+            const draggableChildren = Array.from(element.querySelectorAll('[data-drag]')).filter(
+              c => c.closest('[data-teleport\\:drop]') === element &&
+                   (c as HTMLElement).style.display !== 'none' &&
+                   !c.hasAttribute('data-ux-template')
+            );
+
+            toIndex = dropTarget ? draggableChildren.indexOf(dropTarget) : draggableChildren.length;
+
+            if (dropTarget && toIndex !== -1) {
+              const rect = dropTarget.getBoundingClientRect();
+              const cursorY = e.clientY - rect.top;
+              if (cursorY > rect.height / 2) {
+                toIndex += 1;
+              }
+            } else if (toIndex === -1) {
+              toIndex = draggableChildren.length;
+            }
+          }
+
           const doMutate = () => {
             try {
+              // Skip mutation if in-list reorder already handled it
+              if (reorderEngine && isSameList) {
+                return;
+              }
+
               if (mode === 'clone') {
                 const item = sourceList[fromIndex];
                 if (item !== undefined) {
@@ -123,6 +139,12 @@ export const teleportAttribute: AttributeModule = {
           } else {
             doMutate();
           }
+
+          // Emit drop signal after mutation
+          runtime.globalSignals()['drag:drop'] = {
+            sourceList, targetList, fromIndex, toIndex, mode,
+            item: targetList[toIndex]
+          };
         } catch (err) {
           runtime.reportError(err instanceof Error ? err : new Error(String(err)), element, 'teleport-drop');
         }

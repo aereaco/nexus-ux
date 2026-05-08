@@ -126,21 +126,24 @@ const bindModule: AttributeModule = {
           const result = runtime.evaluate(el, attr.value);
           const attrValue = result !== undefined && result !== null ? String(result) : '';
 
-          if (target === 'value' || target === 'checked') {
-            if (el instanceof HTMLInputElement && el.type === 'checkbox') {
-              el.checked = Boolean(result);
-            } else if (el instanceof HTMLInputElement && el.type === 'radio') {
-              el.checked = (el.value === attrValue);
-            } else if ('value' in el) {
-              (el as HTMLInputElement).value = attrValue;
-            }
-          } else {
-            if (result === false || result === null || result === undefined) {
-              el.removeAttribute(target);
-            } else {
-              el.setAttribute(target, attrValue);
-            }
-          }
+           if (target === 'value' || target === 'checked') {
+             if (el instanceof HTMLInputElement && el.type === 'checkbox') {
+               el.checked = Boolean(result);
+             } else if (el instanceof HTMLInputElement && el.type === 'radio') {
+               el.checked = (el.value === attrValue);
+             } else if ('value' in el) {
+               (el as HTMLInputElement).value = attrValue;
+             }
+           } else if (target === 'draggable') {
+             // draggable attribute must be explicitly "true" or "false"
+             el.setAttribute('draggable', result ? 'true' : 'false');
+           } else {
+             if (result === false || result === null || result === undefined) {
+               el.removeAttribute(target);
+             } else {
+               el.setAttribute(target, attrValue);
+             }
+           }
         });
 
         cleanupFns.push(cleanup);

@@ -24,6 +24,29 @@ import { resolveSelector } from './modules/sprites/selector.ts';
 import { animate } from './modules/sprites/animate.ts';
 import { fetchModule } from './engine/fetch.ts';
 
+// --- Inline utilities from deleted sprite modules ---
+// Legacy sprites (el, id, global, dispatch, nextTick, store, watch,
+// fetch, http, download, clipboard, cache, notification, payment, ws)
+// are replaced by native mirrors (_fetch, _clipboard, etc.) or inline below.
+
+const _idCounters: Record<string, number> = {};
+export function $id(groupName: string = 'default'): string {
+  if (!_idCounters[groupName]) {
+    _idCounters[groupName] = 1;
+  } else {
+    _idCounters[groupName]++;
+  }
+  return `${groupName}-${_idCounters[groupName]}`;
+}
+
+export function $nextTick(): Promise<void> {
+  return new Promise(resolve => {
+    Promise.resolve().then(() => {
+      requestAnimationFrame(() => resolve());
+    });
+  });
+}
+
 /**
  * Nexus-UX Framework Entry Point.
  */
@@ -37,6 +60,29 @@ export class UX {
     }
 
     this.coordinator = new ModuleCoordinator();
+
+    // --- Inline Scope Provider registrations for deleted utility sprites ---
+    // $el: current element reference
+    registerScopeProvider('$el', (el) => el);
+    // $dispatch: CustomEvent dispatcher on current element
+    registerScopeProvider('$dispatch', (el) => (eventName: string, detail?: unknown) => {
+      if (!(el instanceof Element)) return;
+      el.dispatchEvent(new CustomEvent(eventName, { detail, bubbles: true, cancelable: true }));
+    });
+    // $global: access to runtime global signals
+    registerScopeProvider('$global', (_el, runtime) => runtime.globalSignals());
+    // $actions: access to registered action modules
+    registerScopeProvider('$actions', (_el, runtime) => runtime.globalActions());
+
+    // --- Inline Action Module registrations for deleted utility sprites ---
+    this.coordinator.registerActionModule('$id', {
+      name: '$id',
+      handle: (_el, ...args: any[]) => ($id as any)(...args)
+    });
+    this.coordinator.registerActionModule('$nextTick', {
+      name: '$nextTick',
+      handle: (_el, ...args: any[]) => ($nextTick as any)(...args)
+    });
 
     // Priority 0: Ingest (Dependency Orchestration)
     this.coordinator.registerAttributeModule('ingest', ingestModule);

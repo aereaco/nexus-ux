@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexus Spatial Engine | 100% Parity Lab</title>
-    <script type="module" src="/dist/nexus-ux.js"></script>
+    <script type="module" src="/dist/nexus-ux.min.js"></script>
     <style>
         :root {
             --primary: #570df8;
@@ -197,7 +197,7 @@
             <!-- 01. Simple List -->
             <div class="card">
                 <div class="card-title">01. Simple <span class="badge">SortableJS Parity</span></div>
-                <div class="list-group" data-teleport:drop="list1">
+                <div class="list-group" data-teleport:drop="list1" data-drag-reorder>
                     <div data-for="item in list1" data-drag class="item">
                         <span data-bind="item.n"></span>
                     </div>
@@ -248,7 +248,7 @@
             <div class="card">
                 <div class="card-title">04. Sorting <span class="badge" data-bind="disabledSorting ? 'DISABLED' : 'ENABLED'"></span></div>
                 <button data-on-click="disabledSorting = !disabledSorting" class="badge" style="margin-bottom: 10px; cursor: pointer; padding: 6px 12px; border: none; color: inherit;">Toggle</button>
-                <div class="list-group" data-teleport:drop="list1">
+                <div class="list-group" data-teleport:drop="list1" data-drag-reorder>
                     <div data-for="item in list1" data-drag data-bind-draggable="!disabledSorting" class="item">
                         <span data-bind="item.n"></span>
                     </div>
@@ -258,8 +258,8 @@
             <!-- 05. Handles -->
             <div class="card">
                 <div class="card-title">05. Handles <span class="badge">$el sprite</span></div>
-                <div class="list-group" data-teleport:drop="handleList">
-                    <div data-for="item in handleList" class="item" draggable="false">
+                <div class="list-group" data-teleport:drop="handleList" data-drag-reorder>
+                    <div data-for="item in handleList" class="item" data-drag draggable="false">
                         <div class="handle"
                              data-on-pointerdown="$el.parentElement.setAttribute('draggable', 'true')"
                              data-on-pointerup="$el.parentElement.removeAttribute('draggable')"></div>
@@ -271,7 +271,7 @@
             <!-- 06. Filter -->
             <div class="card">
                 <div class="card-title">06. Filter <span class="badge">Selective Drag</span></div>
-                <div class="list-group" data-teleport:drop="filterList">
+                <div class="list-group" data-teleport:drop="filterList" data-drag-reorder>
                     <div data-for="item in filterList" data-drag 
                          data-bind-draggable="!item.filtered"
                          data-bind-class="item.filtered ? 'item filtered' : 'item'"
@@ -290,7 +290,6 @@
                          data-bind-class="item.selected ? 'item selected-item' : 'item'"
                          class="item">
                         <input type="checkbox" data-bind-checked="item.selected" 
-                               data-on-change="item.selected = !item.selected"
                                style="accent-color: var(--accent);">
                         <span data-bind="item.n"></span>
                     </div>
@@ -300,7 +299,7 @@
             <!-- 08. Grid -->
             <div class="card">
                 <div class="card-title">08. Grid Layout <span class="badge">Spatial Hit-Test</span></div>
-                <div class="grid-3" data-teleport:drop="gridList">
+                <div class="grid-3" data-teleport:drop="gridList" data-drag-reorder>
                     <div data-for="item in gridList" data-drag class="item" style="flex-direction: column; aspect-ratio: 1; justify-content: center;">
                         <span style="font-size: 1.5rem; font-weight: 900;" data-bind="item.n"></span>
                     </div>
@@ -310,10 +309,10 @@
             <!-- 09. Nested -->
             <div class="card">
                 <div class="card-title">09. Nested <span class="badge">Multi-Level</span></div>
-                <div class="list-group" data-teleport:drop="nestedList">
+                <div class="list-group" data-teleport:drop="nestedList" data-drag-reorder>
                     <div data-for="p in nestedList" data-drag class="item" style="flex-direction: column; align-items: stretch;">
                         <div style="font-weight: 700;" data-bind="p.n"></div>
-                        <div class="nested-container" data-teleport:drop="p.sub">
+                        <div class="nested-container" data-teleport:drop="p.sub" data-drag-reorder>
                             <div data-for="c in p.sub" data-drag class="item" style="font-size: 0.7rem; padding: 6px;">
                                 <span data-bind="c.n"></span>
                             </div>
@@ -335,7 +334,7 @@
             <!-- 11. Ghost Styling -->
             <div class="card">
                 <div class="card-title">11. Ghost Styling <span class="badge">CSS Feedback</span></div>
-                <div class="list-group" data-teleport:drop="ghostList">
+                <div class="list-group" data-teleport:drop="ghostList" data-drag-reorder>
                     <div data-for="item in ghostList" data-drag class="item">
                         <span data-bind="item.n"></span>
                     </div>
@@ -345,7 +344,7 @@
             <!-- 12. Direction (Horizontal) -->
             <div class="card">
                 <div class="card-title">12. Direction <span class="badge">Horizontal</span></div>
-                <div class="horizontal-list" data-teleport:drop="horzList">
+                <div class="horizontal-list" data-teleport:drop="horzList" data-drag-reorder data-drag-direction="horizontal">
                     <div data-for="item in horzList" data-drag class="item">
                         <span data-bind="item.n"></span>
                     </div>
@@ -356,7 +355,7 @@
             <div class="card">
                 <div class="card-title">13. Auto-Scroll <span class="badge">Constrained</span></div>
                 <div class="scroll-container">
-                    <div class="list-group" data-teleport:drop="scrollList">
+                    <div class="list-group" data-teleport:drop="scrollList" data-drag-reorder>
                         <div data-for="item in scrollList" data-drag class="item" style="padding: 8px; font-size: 0.8rem;">
                             <span data-bind="item.n"></span>
                         </div>
@@ -368,7 +367,7 @@
             <div class="card">
                 <div class="card-title">14. Morph <span class="badge">Liquid Motion</span></div>
                 <div style="height: 120px; display: flex; align-items: center; justify-content: center;">
-                    <div data-spatial data-bind-id="'morpher'" 
+                    <div data-spatial id="morpher" 
                          data-bind-class="isExpanded ? 'morph-target expanded' : 'morph-target'"
                          data-on-click="isExpanded = !isExpanded"
                          data-bind="isExpanded ? 'LIQUID' : 'DRY'">
