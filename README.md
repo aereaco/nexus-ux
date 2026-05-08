@@ -88,7 +88,7 @@ Nexus-UX utilizes a deterministic, token-based grammar for high-baud efficiency.
 | **`#`** | Global Signal | The Global Registry of reactive sources. | `#auth.user` |
 | **`_`** | Env Mirror | Reactive ownership-tracked proxies for native Browser APIs. | `_window.innerWidth` |
 | **`:`** | Modifier          | Pipeline anchors and interceptors.              | `data-on-click:once`               |
-| **`$`** | Sprite / Selector | Framework tools, Sprites, and the $() engine.   | `$(^card).$save()`                 |
+| **`$`** | Sprite / Selector | Framework tools, Sprites, and the $() engine. | `$(^card).$animate()` |
 | **`@`** | Scope Rule        | Context-aware boundary rules (Media, OS, Auth). | `@media(min-width: 600px) { ... }` |
 
 ---
