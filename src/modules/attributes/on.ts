@@ -7,7 +7,7 @@ import { matchAttributes } from '../../engine/attributeParser.ts';
 // Structure: Map<EventName, Map<nxId, EventListener[]>>
 const globalListeners = new Map<string, Map<number, EventListener[]>>();
 let listenerIdCounter = 0;
-const NEXUS_ID = Symbol('_nx_id');
+const NEXUS_ID = Symbol.for('_nx_id');
 
 // Events that do not bubble and must be attached directly
 const NON_BUBBLING_EVENTS = new Set(['focus', 'blur', 'mouseenter', 'mouseleave', 'scroll', 'load', 'error']);
@@ -20,10 +20,13 @@ function getGlobalHandler(eventName: string) {
     // Trace the composed path from the target up to the document
     const path = e.composedPath();
     for (const target of path) {
-      if (e.cancelBubble) break; // Respect :stop modifier (stopPropagation)
+      if (e.cancelBubble) break;
       
-      const nxId = (target as unknown as Record<symbol, number>)[NEXUS_ID];
+      const nxId = (target as any)[NEXUS_ID];
       if (nxId && flatMap.has(nxId)) {
+        if (document.documentElement.hasAttribute('data-debug')) {
+          console.log(`[Nexus Event] Triggering "${eventName}" for nxId: ${nxId} on <${(target as HTMLElement).tagName}>`);
+        }
         flatMap.get(nxId)!.forEach(fn => fn(e));
       }
     }

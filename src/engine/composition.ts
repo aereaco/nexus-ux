@@ -89,4 +89,6 @@ export interface RuntimeContext {
   spatial?: any; // $spatial sprite API
   svg?: any; // $svg sprite API
   $animate?: any; // $animate sprite reference
+  sprites: any; // Namespace for all registered sprites
+  update: (fn: () => void) => void; // Batch update or immediate execution hook
 }

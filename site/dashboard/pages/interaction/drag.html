@@ -171,6 +171,7 @@
 </head>
 <body>
     <div class="container" data-var="{
+        simpleList: [{id: 'S1', n: 'Item 1'}, {id: 'S2', n: 'Item 2'}, {id: 'S3', n: 'Item 3'}],
         list1: [{id: 'A1', n: 'Item 1'}, {id: 'A2', n: 'Item 2'}, {id: 'A3', n: 'Item 3'}],
         list2: [{id: 'B1', n: 'Item 4'}, {id: 'B2', n: 'Item 5'}],
         cloneSource: [{id: 'C1', n: 'Source 1'}, {id: 'C2', n: 'Source 2'}],
@@ -184,6 +185,7 @@
         ghostList: [{id: 'GH1', n: 'Ghost 1'}, {id: 'GH2', n: 'Ghost 2'}, {id: 'GH3', n: 'Ghost 3'}],
         horzList: [{id: 'D1', n: 'H1'}, {id: 'D2', n: 'H2'}, {id: 'D3', n: 'H3'}, {id: 'D4', n: 'H4'}],
         scrollList: [{id: 'SC1', n: 'Scroll 1'}, {id: 'SC2', n: 'Scroll 2'}, {id: 'SC3', n: 'Scroll 3'}, {id: 'SC4', n: 'Scroll 4'}, {id: 'SC5', n: 'Scroll 5'}, {id: 'SC6', n: 'Scroll 6'}, {id: 'SC7', n: 'Scroll 7'}, {id: 'SC8', n: 'Scroll 8'}],
+        sortToggleList: [{id: 'T1', n: 'Toggle 1'}, {id: 'T2', n: 'Toggle 2'}, {id: 'T3', n: 'Toggle 3'}],
         isExpanded: false,
         disabledSorting: false
     }">
@@ -197,8 +199,8 @@
             <!-- 01. Simple List -->
             <div class="card">
                 <div class="card-title">01. Simple <span class="badge">SortableJS Parity</span></div>
-                <div class="list-group" data-teleport:drop="list1" data-drag-reorder>
-                    <div data-for="item in list1" data-drag class="item">
+                <div class="list-group" data-teleport:drop="simpleList" data-drag-reorder data-spatial="sortable">
+                    <div data-for="item in simpleList" data-drag class="item">
                         <span data-bind="item.n"></span>
                     </div>
                 </div>
@@ -248,8 +250,8 @@
             <div class="card">
                 <div class="card-title">04. Sorting <span class="badge" data-bind="disabledSorting ? 'DISABLED' : 'ENABLED'"></span></div>
                 <button data-on-click="disabledSorting = !disabledSorting" class="badge" style="margin-bottom: 10px; cursor: pointer; padding: 6px 12px; border: none; color: inherit;">Toggle</button>
-                <div class="list-group" data-teleport:drop="list1" data-drag-reorder>
-                    <div data-for="item in list1" data-drag data-bind-draggable="!disabledSorting" class="item">
+                <div class="list-group" data-teleport:drop="sortToggleList" data-drag-reorder data-spatial="sortable">
+                    <div data-for="item in sortToggleList" data-drag data-bind-draggable="!disabledSorting" class="item">
                         <span data-bind="item.n"></span>
                     </div>
                 </div>
@@ -262,7 +264,7 @@
                     <div data-for="item in handleList" class="item" data-drag draggable="false">
                         <div class="handle"
                              data-on-pointerdown="$el.parentElement.setAttribute('draggable', 'true')"
-                             data-on-pointerup="$el.parentElement.removeAttribute('draggable')"></div>
+                             data-on-pointerup="$el.parentElement.setAttribute('draggable', 'false')"></div>
                         <span data-bind="item.n"></span>
                     </div>
                 </div>
@@ -299,7 +301,7 @@
             <!-- 08. Grid -->
             <div class="card">
                 <div class="card-title">08. Grid Layout <span class="badge">Spatial Hit-Test</span></div>
-                <div class="grid-3" data-teleport:drop="gridList" data-drag-reorder>
+                <div class="grid-3" data-teleport:drop="gridList" data-drag-reorder data-spatial="sortable">
                     <div data-for="item in gridList" data-drag class="item" style="flex-direction: column; aspect-ratio: 1; justify-content: center;">
                         <span style="font-size: 1.5rem; font-weight: 900;" data-bind="item.n"></span>
                     </div>
@@ -344,7 +346,7 @@
             <!-- 12. Direction (Horizontal) -->
             <div class="card">
                 <div class="card-title">12. Direction <span class="badge">Horizontal</span></div>
-                <div class="horizontal-list" data-teleport:drop="horzList" data-drag-reorder data-drag-direction="horizontal">
+                <div class="horizontal-list" data-teleport:drop="horzList" data-drag-reorder data-spatial="sortable" data-drag-direction="horizontal">
                     <div data-for="item in horzList" data-drag class="item">
                         <span data-bind="item.n"></span>
                     </div>

@@ -134,6 +134,12 @@ const bindModule: AttributeModule = {
              } else if ('value' in el) {
                (el as HTMLInputElement).value = attrValue;
              }
+           } else if (target === 'text') {
+             el.textContent = attrValue;
+           } else if (target === 'html') {
+             el.innerHTML = attrValue;
+           } else if (target === 'style') {
+             runtime.reconcileStyle(el, result);
            } else if (target === 'draggable') {
              // draggable attribute must be explicitly "true" or "false"
              el.setAttribute('draggable', result ? 'true' : 'false');

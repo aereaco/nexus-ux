@@ -100,30 +100,36 @@ export class UX {
     });
 
     // Auto-Register Sprites (Action Modules)
-    autoSprites.forEach(({ module }) => {
-      let exportsObj = module;
-      if (typeof module.default === 'function') {
-         exportsObj = module.default(this.coordinator.runtimeContext);
-      }
+    autoSprites.forEach(({ name, module }) => {
+      const spriteMod = module.default || Object.values(module).find((m: any) => m && typeof m.sprites === 'function');
       
-      Object.entries(exportsObj).forEach(([name, handler]) => {
-         if (name === 'default') return;
+      if (spriteMod && typeof spriteMod.sprites === 'function') {
+        this.coordinator.registerSpriteModule(spriteMod.name || name, spriteMod);
+      } else {
+        let exportsObj = module;
+        if (typeof module.default === 'function') {
+          exportsObj = module.default(this.coordinator.runtimeContext);
+        }
+        
+        Object.entries(exportsObj).forEach(([exportName, handler]) => {
+          if (exportName === 'default') return;
 
-         // Use a Proxy for the handle to preserve properties (like $animate.flip)
-         const handle = (_el: HTMLElement, ...args: any[]) => (handler as any)(...args);
-         const proxyHandle = new Proxy(handle, {
-           get(target, key) {
-             if (key in target) return (target as any)[key];
-             const val = (handler as any)[key];
-             return typeof val === 'function' ? val.bind(handler) : val;
-           }
-         });
+          // Use a Proxy for the handle to preserve properties (like $animate.flip)
+          const handle = (_el: HTMLElement, ...args: any[]) => (handler as any)(...args);
+          const proxyHandle = new Proxy(handle, {
+            get(target, key) {
+              if (key in target) return (target as any)[key];
+              const val = (handler as any)[key];
+              return typeof val === 'function' ? val.bind(handler) : val;
+            }
+          });
 
-         this.coordinator.registerActionModule(name, {
-           name,
-           handle: proxyHandle
-         });
-      });
+          this.coordinator.registerActionModule(exportName, {
+            name: exportName,
+            handle: proxyHandle
+          });
+        });
+      }
     });
 
     // Auto-Register Modifiers

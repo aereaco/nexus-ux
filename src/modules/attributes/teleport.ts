@@ -2,7 +2,7 @@ import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { ParsedAttribute } from '../../engine/attributeParser.ts';
 import { DATA_STACK_KEY } from '../../engine/consts.ts';
-import { DragReorderEngine, buildReorderContext } from '../../lib/drag-reorder.ts';
+import { DragReorderEngine, buildReorderContext } from './drag.ts';
 
 /**
  * data-teleport: Dual-mode teleportation engine.
@@ -84,7 +84,7 @@ export const teleportAttribute: AttributeModule = {
             for (let i = 0; i < element.children.length; i++) {
               const child = element.children[i] as HTMLElement;
               if (child.hasAttribute('data-drag') &&
-                  child.draggable === true &&
+                  (child.getAttribute('draggable') === 'true') &&
                   getComputedStyle(child).display !== 'none' &&
                   !child.hasAttribute('data-ux-template') &&
                   child.closest('[data-teleport\\:drop]') === element) {
@@ -124,13 +124,15 @@ export const teleportAttribute: AttributeModule = {
                 sourceList[fromIndex] = targetList[toIndex];
                 targetList[toIndex] = tmp;
               } else {
-                // Move
+                // Move mode
                 if (sourceList === targetList) {
+                  // Same list - in-list reorder (should have been handled by reorderEngine, but fallback)
                   if (fromIndex === toIndex) return;
                   const [item] = sourceList.splice(fromIndex, 1);
                   const insertIndex = fromIndex < toIndex ? toIndex - 1 : toIndex;
                   sourceList.splice(insertIndex, 0, item);
                 } else {
+                  // Cross-container move of same array (two containers, one array)
                   const [item] = sourceList.splice(fromIndex, 1);
                   if (item !== undefined) {
                     targetList.splice(toIndex, 0, item);

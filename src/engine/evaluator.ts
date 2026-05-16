@@ -43,9 +43,11 @@ export function evaluate(
   const runner = evaluateLater(el, expression, runtime);
   let res: unknown;
   runner(v => res = v, extras);
+  /*
   if (runtime.isDevMode && !expression.startsWith('_')) {
     runtime.debug(`[Evaluator] Result of "${expression}":`, res);
   }
+  */
   return res;
 }
 
@@ -323,10 +325,12 @@ export function evaluateLater(
   }
 
   let func;
+  /*
   if (runtime.isDevMode) {
     console.log("Raw Expr:", expression);
     console.log("Processed:", processedExpression);
   }
+  */
   try {
     // Try as an expression first
     func = new Function('scope', `with (scope) { return (${processedExpression}) }`);

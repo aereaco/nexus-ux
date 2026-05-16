@@ -29,6 +29,7 @@ import {
 
 import { CLEANUP_FUNCTIONS_KEY, EFFECT_RUNNERS_KEY, RUN_EFFECT_RUNNERS_KEY, DATA_STACK_KEY, MARKER_KEY } from './consts.ts';
 import { reportError } from './debug.ts';
+import { scheduler } from './scheduler.ts';
 
 // =============================================================================
 // ZCZS: Zero-Copy Zero-Serialization Infrastructure (Embedded)
@@ -603,7 +604,16 @@ export function elementBoundEffect(
 
   let runner: ReactiveEffectRunner<void>;
   try {
-    runner = effect(suspenseWrappedCallback, options);
+    // Spec 5.4: All effects MUST run via the unified scheduler.
+    // This provides microtask yielding, stall detection, and loop guards.
+    const schedulerOptions: ReactiveEffectOptions = {
+      scheduler: () => {
+        // runner will be assigned by the time this is called in a microtask
+        scheduler.enqueueEvaluate(runner);
+      },
+      ...options
+    };
+    runner = effect(suspenseWrappedCallback, schedulerOptions);
   } catch (e) {
     console.error(`[Reactivity Error] effect() failed for <${el.tagName}>:`, e);
     throw e;

@@ -150,12 +150,24 @@ const nexusStyleMap = new WeakMap<Element, Set<string>>();
  * @param value The style map (Object)
  */
 export function reconcileStyle(el: HTMLElement, value: unknown): void {
-  if (typeof value !== 'object' || value === null) return;
+  if (!value) return;
 
   const currentAdded = nexusStyleMap.get(el) || new Set<string>();
   const toAdd = new Set<string>();
+  let styleObj: Record<string, unknown> = {};
 
-  Object.entries(value as Record<string, unknown>).forEach(([prop, val]) => {
+  if (typeof value === 'string') {
+    value.split(';').forEach(pair => {
+      const [prop, val] = pair.split(':').map(s => s.trim());
+      if (prop && val) styleObj[prop] = val;
+    });
+  } else if (typeof value === 'object' && value !== null) {
+    styleObj = value as Record<string, unknown>;
+  } else {
+    return;
+  }
+
+  Object.entries(styleObj).forEach(([prop, val]) => {
     const cssProp = prop.replace(/[A-Z]/g, m => `-${m.toLowerCase()}`);
     if (val !== null && val !== undefined && val !== false) {
       el.style.setProperty(cssProp, String(val));
@@ -169,7 +181,7 @@ export function reconcileStyle(el: HTMLElement, value: unknown): void {
 
   // Cleanup properties that were previously set by Nexus but are now missing
   currentAdded.forEach(prop => {
-    if (!(prop in value) && !(prop.replace(/-([a-z])/g, (_m, c) => c.toUpperCase()) in value)) {
+    if (!(prop in styleObj) && !(prop.replace(/-([a-z])/g, (_m, c) => c.toUpperCase()) in styleObj)) {
       el.style.removeProperty(prop);
       currentAdded.delete(prop);
     }

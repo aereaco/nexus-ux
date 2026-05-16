@@ -244,7 +244,9 @@ export class ModuleCoordinator {
       warn: (...args: unknown[]) => logger.warn(this.runtimeContext, ...args),
       info: (...args: unknown[]) => logger.info(this.runtimeContext, ...args),
       debug: (...args: unknown[]) => logger.debug(this.runtimeContext, ...args),
-      mcp: undefined as any // Placeholder for initialization below
+      mcp: undefined as any, // Placeholder for initialization below
+      sprites: {}, // Namespace for all registered sprites
+      update: (fn: () => void) => fn() // Immediate execution for now
     };
 
     // Optional MCP Initialization
@@ -369,6 +371,14 @@ export class ModuleCoordinator {
     this.spriteModules.set(name, module);
     // Auto-inject sprite commands into expression scope
     const sprites = module.sprites(this.runtimeContext);
+    
+    // ZCZS: Populate the sprites namespace for direct engine access
+    if (module.key) {
+      this.runtimeContext.sprites[module.key] = sprites;
+    } else {
+      this.runtimeContext.sprites[`$${name}`] = sprites;
+    }
+
     Object.entries(sprites).forEach(([spriteName, handler]) => {
       this.registerActionModule(spriteName, {
         name: spriteName,

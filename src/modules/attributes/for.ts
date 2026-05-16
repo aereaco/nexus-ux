@@ -101,7 +101,11 @@ const forModule: AttributeModule = {
               if (n instanceof HTMLElement) {
                 const scope: Record<string, any> = { [itemKey]: item };
                 if (indexKey) scope[indexKey] = index;
-                addScopeToNode(n, runtime.reactive(scope), el);
+                // ZCZS: Use shallowReactive to preserve the original reactive proxy
+                // references from the parent collection. Deep reactive() would create
+                // disconnected copies, breaking bidirectional state synchronization
+                // between parent array items and child scope references.
+                addScopeToNode(n, runtime.shallowReactive(scope), el);
                 
                 if (!isTemplate) {
                   n.style.display = '';
@@ -127,7 +131,7 @@ const forModule: AttributeModule = {
                   // Fallback if scope was somehow lost
                   const scope: Record<string, any> = { [itemKey]: item };
                   if (indexKey) scope[indexKey] = index;
-                  addScopeToNode(n, runtime.reactive(scope), el);
+                  addScopeToNode(n, runtime.shallowReactive(scope), el);
                 }
               }
             });
