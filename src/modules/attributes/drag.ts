@@ -542,10 +542,12 @@ export const dragAttribute: AttributeModule = {
     if ((element as any).__nexusDragBound) return (element as any).__nexusDragCleanup;
     (element as any).__nexusDragBound = true;
 
-    if (!element.hasAttribute("draggable")) {
+    if (element.getAttribute("draggable") !== "true") {
       element.setAttribute("draggable", "true");
     }
-    element.style.userSelect = "none";
+    if (element.style.userSelect !== "none") {
+      element.style.userSelect = "none";
+    }
 
     let reorderEngine: DragReorderEngine<any> | null = null;
     let dropZoneDragOverListener: ((e: DragEvent) => void) | null = null;

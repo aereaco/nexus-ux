@@ -28,12 +28,13 @@ const bindModule: AttributeModule = {
           if (result && typeof result === 'object' && !Array.isArray(result)) {
             Object.entries(result).forEach(([param, val]) => {
               if (param in el) {
-                (el as any)[param] = val;
+                if ((el as any)[param] !== val) (el as any)[param] = val;
               } else {
                 if (val === false || val === null || val === undefined) {
-                  el.removeAttribute(param);
+                  if (el.hasAttribute(param)) el.removeAttribute(param);
                 } else {
-                  el.setAttribute(param, String(val));
+                  const strVal = String(val);
+                  if (el.getAttribute(param) !== strVal) el.setAttribute(param, strVal);
                 }
               }
             });
@@ -128,26 +129,30 @@ const bindModule: AttributeModule = {
 
            if (target === 'value' || target === 'checked') {
              if (el instanceof HTMLInputElement && el.type === 'checkbox') {
-               el.checked = Boolean(result);
+               if (el.checked !== Boolean(result)) el.checked = Boolean(result);
              } else if (el instanceof HTMLInputElement && el.type === 'radio') {
-               el.checked = (el.value === attrValue);
+               const shouldCheck = (el.value === attrValue);
+               if (el.checked !== shouldCheck) el.checked = shouldCheck;
              } else if ('value' in el) {
-               (el as HTMLInputElement).value = attrValue;
+               if ((el as HTMLInputElement).value !== attrValue) (el as HTMLInputElement).value = attrValue;
              }
            } else if (target === 'text') {
-             el.textContent = attrValue;
+             if (el.textContent !== attrValue) el.textContent = attrValue;
            } else if (target === 'html') {
-             el.innerHTML = attrValue;
+             if (el.innerHTML !== attrValue) el.innerHTML = attrValue;
            } else if (target === 'style') {
              runtime.reconcileStyle(el, result);
            } else if (target === 'draggable') {
              // draggable attribute must be explicitly "true" or "false"
-             el.setAttribute('draggable', result ? 'true' : 'false');
+             const newVal = result ? 'true' : 'false';
+             if (el.getAttribute('draggable') !== newVal) {
+               el.setAttribute('draggable', newVal);
+             }
            } else {
              if (result === false || result === null || result === undefined) {
-               el.removeAttribute(target);
+               if (el.hasAttribute(target)) el.removeAttribute(target);
              } else {
-               el.setAttribute(target, attrValue);
+               if (el.getAttribute(target) !== attrValue) el.setAttribute(target, attrValue);
              }
            }
         });

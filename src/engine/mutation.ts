@@ -56,8 +56,13 @@ const mutationObserverModule: ObserverModule = {
                 }
               });
 
-              // Pulse parent effect for this subtree mutation
-              (mutation.target as NexusEnhancedElement)[RUN_EFFECT_RUNNERS_KEY]?.();
+              // NOTE: Removed RUN_EFFECT_RUNNERS_KEY pulse here.
+              // Pulsing parent effects on childList mutations created microtask storms:
+              //   textContent change → childList mutation → RUN_EFFECT_RUNNERS_KEY
+              //   → effect re-runs → textContent change → childList mutation → ∞
+              // The data-for module handles its own re-rendering via Vue effects.
+              // New elements are processed by processElement() above (line 41).
+              // Element cleanup is handled by the removedNodes loop above.
             } else if (mutation.type === 'attributes') {
               const target = mutation.target as HTMLElement;
               if (!target) return;
@@ -67,10 +72,19 @@ const mutationObserverModule: ObserverModule = {
                 context.adoptStyle(target);
               }
 
-              if (attrName === 'style' || attrName?.startsWith('data-nexus-') || attrName?.startsWith('nexus-')) return;
+              // Skip framework-managed attributes entirely.
+              // Effects that write these attributes are already scheduled via
+              // Vue's reactive system. Re-running them here via
+              // RUN_EFFECT_RUNNERS_KEY creates a dual-path feedback loop:
+              //   effect → setAttribute → observer → RUN_EFFECT_RUNNERS_KEY
+              //   → effect → setAttribute → observer → ∞
+              if (attrName === 'style' || attrName === 'draggable' ||
+                  attrName?.startsWith('data-') || attrName?.startsWith('nexus-')) return;
 
-              (target as NexusEnhancedElement)[RUN_EFFECT_RUNNERS_KEY]?.();
-
+              // For non-framework attributes (e.g. third-party library changes),
+              // notify borrowers only — NOT the element's own effects.
+              // This preserves cross-element ownership tracking while avoiding
+              // the setAttribute→observer→effect→setAttribute infinite loop.
               const borrows = ownership.getBorrowers(target);
               borrows.forEach(borrow => {
                 const borrower = borrow.borrower as NexusEnhancedElement;

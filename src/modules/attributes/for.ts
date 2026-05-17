@@ -147,10 +147,17 @@ const forModule: AttributeModule = {
           }
         }
 
-        // Re-order in DOM
-        nextNodes.forEach(node => {
-          anchor.parentNode?.insertBefore(node, anchor);
-        });
+        // Re-order in DOM — only move nodes that are out of position.
+        // Avoids triggering unnecessary childList mutations which cascade
+        // into effect re-runs via RUN_EFFECT_RUNNERS_KEY on the parent.
+        let expectedBefore: Node | null = anchor;
+        for (let i = nextNodes.length - 1; i >= 0; i--) {
+          const node = nextNodes[i];
+          if (node.nextSibling !== expectedBefore) {
+            anchor.parentNode?.insertBefore(node, expectedBefore);
+          }
+          expectedBefore = node;
+        }
       });
 
       return () => {

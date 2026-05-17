@@ -115,6 +115,9 @@ class Scheduler {
   private nextTickQueue: Job[] = [];
   private pending = false;
   private flushing = false;
+  // Deduplication set: prevents the same runner from being enqueued multiple
+  // times in the same flush cycle, which was the root cause of infinite loops.
+  private evaluateSet = new Set<Job>();
 
   /** Configurable stall detection budget (ms). Phases yielding after this. */
   public stallBudget = STALL_BUDGET_MS;
@@ -130,8 +133,11 @@ class Scheduler {
 
   /**
    * Phase 2: Evaluate (Legacy enqueueEffect/enqueueMorph mapping)
+   * Deduplicates: if a runner is already queued, skip re-enqueue.
    */
   enqueueEvaluate(job: Job): void {
+    if (this.evaluateSet.has(job)) return;
+    this.evaluateSet.add(job);
     this.evaluateQueue.push(job);
     this.syncSharedState();
     this.requestFlush();
@@ -224,6 +230,8 @@ class Scheduler {
       // Phase 2: Evaluate (may yield if expensive)
       Atomics.store(sharedState, PHASE_CURRENT, 2);
       await this.runQueueWithYielding(this.evaluateQueue);
+      // Clear the dedup set after the evaluate phase completes
+      this.evaluateSet.clear();
 
       // Phase 3: Resolve (microtask-immediate)
       Atomics.store(sharedState, PHASE_CURRENT, 3);
@@ -288,6 +296,9 @@ class Scheduler {
 
   // ─── Queue Execution ──────────────────────────────────────────────────
 
+  /** Maximum iterations per queue flush to prevent infinite loops */
+  private static readonly MAX_QUEUE_ITERATIONS = 10000;
+
   /**
    * Run a queue with stall detection. If execution exceeds the budget,
    * yield to the browser and resume processing.
@@ -296,8 +307,18 @@ class Scheduler {
     if (queue.length === 0) return;
 
     const startTime = performance.now();
+    let iterations = 0;
     
     while (queue.length > 0) {
+      if (++iterations > Scheduler.MAX_QUEUE_ITERATIONS) {
+        console.error(
+          `[Nexus Scheduler] Loop guard: ${iterations} iterations exceeded. ` +
+          `Remaining queue size: ${queue.length}. Draining queue to prevent infinite loop.`
+        );
+        queue.length = 0;
+        break;
+      }
+
       const job = queue.shift()!;
       try {
         job();
