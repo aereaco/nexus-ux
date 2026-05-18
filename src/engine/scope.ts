@@ -43,7 +43,7 @@ export function addScopeToNode(element: HTMLElement, data: Record<string, unknow
   const parentStack = getDataStack(referenceNode || element);
   node[DATA_STACK_KEY] = [data, ...parentStack];
   
-  if (document.documentElement.hasAttribute('data-debug')) {
+  if (typeof document !== 'undefined' && document.documentElement.hasAttribute('data-debug')) {
     console.log(`[Nexus Scope] Added scope to <${element.tagName}>. New stack depth: ${node[DATA_STACK_KEY].length}`);
   }
 

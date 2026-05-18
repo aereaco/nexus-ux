@@ -229,7 +229,9 @@ class PredictiveEngine {
     this.quadtree = new Quadtree({ x: 0, y: 0, width: w, height: h }, 20);
     this.viewportWidth = w;
     this.viewportHeight = h;
-    this.init();
+    if (typeof document !== "undefined") {
+      this.init();
+    }
   }
 
   init() {

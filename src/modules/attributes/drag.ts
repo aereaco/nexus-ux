@@ -8,7 +8,15 @@ interface DragReorderContext<T> {
   getList: () => T[];
   updateList: (mutate: (list: T[]) => void) => void;
   container: HTMLElement;
-  direction?: "vertical" | "horizontal";
+  direction?: "vertical" | "horizontal" | "grid";
+  ghostClass?: string;
+  dragClass?: string;
+  group?: string | { name: string; pull?: "clone" | boolean; put?: boolean; revertClone?: boolean };
+  sort?: boolean;
+  swap?: boolean;
+  swapClass?: string;
+  fallbackOnBody?: boolean;
+  swapThreshold?: number;
   edgeScrollThreshold?: number;
   autoScrollSpeed?: number;
   animationDuration?: number;
@@ -24,17 +32,22 @@ interface DragItemInfo<T> {
 
 class DragReorderEngine<T> {
   private ctx: DragReorderContext<T>;
+  private runtime: RuntimeContext;
   private activeDrag: DragItemInfo<T> | null = null;
   private ghostEl: HTMLElement | null = null;
   private placeholderEl: HTMLElement | null = null;
   private containerBounds: DOMRect | null = null;
   private currentToIndex: number = -1;
+  private currentDropZone: HTMLElement | null = null;
+  private multiItems: DragItemInfo<T>[] = [];
+  private isSwapMode: boolean = false;
   // SortableJS tapDistance pattern: cursor-to-element offset at drag start
   private tapOffsetX: number = 0;
   private tapOffsetY: number = 0;
 
-  constructor(ctx: DragReorderContext<T>) {
+  constructor(ctx: DragReorderContext<T>, runtime: RuntimeContext) {
     this.ctx = ctx;
+    this.runtime = runtime;
   }
 
   startDrag(
@@ -50,7 +63,23 @@ class DragReorderEngine<T> {
     if (currentIndex === -1) return;
 
     this.activeDrag = { item, element, index: currentIndex };
+    (this.activeDrag as any).originalNextSibling = element.nextElementSibling;
+    (this.activeDrag as any).originalParent = element.parentElement;
     this.currentToIndex = currentIndex;
+
+    const dragItems = (dragState as any).dragItems as T[];
+    const dragElements = (dragState as any).dragElements as HTMLElement[];
+    const fromIndices = (dragState as any).fromIndices as number[];
+
+    if (dragItems && dragElements && fromIndices && dragItems.length > 1) {
+       this.multiItems = dragItems.map((itm, i) => ({
+         item: itm,
+         element: dragElements[i],
+         index: fromIndices[i]
+       }));
+    } else {
+       this.multiItems = [this.activeDrag];
+    }
 
     if ((globalThis as any)._nexusDebugDrag) {
       console.log("[drag-reorder] startDrag", { currentIndex, item });
@@ -67,15 +96,26 @@ class DragReorderEngine<T> {
       this.tapOffsetY = rect.height / 2;
     }
 
-    this.ghostEl = this.createGhost(element);
-    document.body.appendChild(this.ghostEl);
+    this.ghostEl = this.createGhost(element, this.ctx.dragClass);
+    const fallbackContainer = this.ctx.fallbackOnBody ? document.body : (element.parentElement || document.body);
+    fallbackContainer.appendChild(this.ghostEl);
     this.positionGhost(element, _event);
 
-    this.placeholderEl = this.createPlaceholder(element);
-    const parent = element.parentElement;
-    if (parent) {
-      parent.insertBefore(this.placeholderEl, element);
-      element.style.visibility = "hidden";
+    this.placeholderEl = element;
+    this.placeholderEl.classList.add("sortable-ghost");
+    if (this.ctx.ghostClass) {
+      this.ctx.ghostClass.split(" ").forEach(c => {
+        if (c.trim()) this.placeholderEl!.classList.add(c.trim());
+      });
+    }
+
+    // Hide secondary multi-drag items
+    if (this.multiItems.length > 1) {
+      for (const m of this.multiItems) {
+        if (m.element !== element) {
+          m.element.style.display = "none";
+        }
+      }
     }
 
     this.containerBounds = this.ctx.container.getBoundingClientRect();
@@ -85,19 +125,23 @@ class DragReorderEngine<T> {
   updateDrag(clientX: number, clientY: number, _event: Event): void {
     if (!this.activeDrag || !this.ghostEl) return;
 
+    this.isSwapMode = this.ctx.swap === true || ((_event as PointerEvent).shiftKey === true);
+
     this.positionGhostAt(clientX, clientY);
     this.containerBounds = this.ctx.container.getBoundingClientRect();
     this.maybeAutoScroll(clientX, clientY);
 
     const toIndex = this.calculateInsertIndex(clientX, clientY, _event as DragEvent);
+    
+    const target = (this.activeDrag as any).lastHoverTarget || null;
+    const currentZone = this.currentDropZone || this.ctx.container;
+    this.updateHighlight(target, currentZone, clientX, clientY);
+
     if (toIndex === -1) return;
 
     this.currentToIndex = toIndex;
     const fromIndex = this.activeDrag.index;
-    if (toIndex !== fromIndex) {
-      this.executeReorder(fromIndex, toIndex);
-    }
-    this.repositionPlaceholder(toIndex);
+    this.repositionPlaceholder(currentZone, toIndex);
 
     if ((globalThis as any)._nexusDebugDrag) {
       console.log("[drag-reorder] updateDrag", {
@@ -108,7 +152,62 @@ class DragReorderEngine<T> {
     }
   }
 
+  private updateHighlight(target: HTMLElement | null, container: HTMLElement, clientX: number, clientY: number) {
+     const beforeClass = container.getAttribute('data-drag-before-class') || 'drop-target-before';
+     const afterClass = container.getAttribute('data-drag-after-class') || 'drop-target-after';
+     const swapClass = this.ctx.swapClass || 'drop-target-swap';
+     
+     Array.from(container.querySelectorAll('.' + beforeClass)).forEach(el => el.classList.remove(beforeClass));
+     Array.from(container.querySelectorAll('.' + afterClass)).forEach(el => el.classList.remove(afterClass));
+     Array.from(container.querySelectorAll('.' + swapClass)).forEach(el => el.classList.remove(swapClass));
+
+     if (!target) return;
+
+     if (this.isSwapMode) {
+         target.classList.add(swapClass);
+         return;
+     }
+
+     const direction = this.ctx.direction || 'vertical';
+     const rect = target.getBoundingClientRect();
+     let isAfter = false;
+     
+     if (direction === 'horizontal') {
+         isAfter = (clientX - rect.left) > rect.width / 2;
+     } else if (direction === 'grid') {
+         // Primary X axis, but if very clear Y difference, use Y
+         const dx = clientX - (rect.left + rect.width / 2);
+         const dy = clientY - (rect.top + rect.height / 2);
+         isAfter = Math.abs(dx) > Math.abs(dy) ? dx > 0 : dy > 0;
+     } else {
+         isAfter = (clientY - rect.top) > rect.height / 2;
+     }
+     
+     target.classList.add(isAfter ? afterClass : beforeClass);
+  }
+
   endDrag(_event: Event): void {
+    this.updateHighlight(null, this.ctx.container, 0, 0);
+    
+    const fromIndex = this.activeDrag?.index ?? -1;
+    const toIndex = this.currentToIndex;
+    
+    // ZCZS: Commit the array mutation ONLY on drop to prevent reactive loops during drag
+    if (this.activeDrag && toIndex !== -1 && (toIndex !== fromIndex || this.currentDropZone !== this.ctx.container)) {
+        // CRITICAL VDOM FIX: Revert the manual DOM mutation BEFORE updating the array state!
+        // This ensures the declarative `data-for` directive reconciles against a clean state.
+        const originalNext = (this.activeDrag as any).originalNextSibling;
+        const originalParent = (this.activeDrag as any).originalParent;
+        if (originalParent && this.placeholderEl) {
+            if (originalNext && originalNext.parentNode === originalParent) {
+                originalParent.insertBefore(this.placeholderEl, originalNext);
+            } else {
+                originalParent.appendChild(this.placeholderEl);
+            }
+        }
+        this.executeReorder(fromIndex, toIndex);
+    }
+
     this.cleanupGhost();
     this.activeDrag = null;
     this.ghostEl = null;
@@ -120,9 +219,34 @@ class DragReorderEngine<T> {
     return this.currentToIndex;
   }
 
-  private createGhost(sourceEl: HTMLElement): HTMLElement {
+  private createGhost(sourceEl: HTMLElement, dragClass?: string): HTMLElement {
     const ghost = sourceEl.cloneNode(true) as HTMLElement;
-    ghost.classList.add("nexus-drag-ghost");
+    
+    // ZCZS Mandate: The ghost is purely visual. Strip all Nexus-UX reactive attributes 
+    // to prevent the MutationObserver from compiling it and triggering infinite loops 
+    // or out-of-scope expression failures.
+    const stripReactiveAttributes = (el: HTMLElement) => {
+      const attrsToRemove = [];
+      for (let i = 0; i < el.attributes.length; i++) {
+        const attrName = el.attributes[i].name;
+        if (attrName.startsWith('data-') || attrName.startsWith('nexus-')) {
+          attrsToRemove.push(attrName);
+        }
+      }
+      attrsToRemove.forEach(attr => el.removeAttribute(attr));
+      el.id = '';
+      for (let i = 0; i < el.children.length; i++) {
+        stripReactiveAttributes(el.children[i] as HTMLElement);
+      }
+    };
+    stripReactiveAttributes(ghost);
+
+    ghost.classList.add("sortable-drag");
+    if (dragClass) {
+      dragClass.split(" ").forEach(c => {
+        if (c.trim()) ghost.classList.add(c.trim());
+      });
+    }
     Object.assign(ghost.style, {
       position: "fixed",
       top: "0",
@@ -140,19 +264,7 @@ class DragReorderEngine<T> {
     return ghost;
   }
 
-  private createPlaceholder(sourceEl: HTMLElement): HTMLElement {
-    const ph = document.createElement("div");
-    ph.classList.add("nexus-drag-placeholder");
-    const rect = sourceEl.getBoundingClientRect();
-    ph.style.width = rect.width + "px";
-    ph.style.height = rect.height + "px";
-    const computed = window.getComputedStyle(sourceEl);
-    ph.style.display = computed.display;
-    ph.style.margin = computed.margin;
-    ph.style.padding = computed.padding;
-    ph.style.border = computed.border;
-    return ph;
-  }
+
 
   private positionGhost(sourceEl: HTMLElement, _event: Event): void {
     if (!this.ghostEl) return;
@@ -169,22 +281,43 @@ class DragReorderEngine<T> {
     this.ghostEl.style.transform = `translate3d(${ghostX}px, ${ghostY}px, 0) scale(1.03)`;
   }
 
-  private isValidDraggableChild(child: HTMLElement): boolean {
-    if (child === this.ghostEl || child === this.placeholderEl) return false;
-    if (child === this.activeDrag?.element) return false;
+  private isValidDraggableChild(child: HTMLElement, targetZone: HTMLElement | null = null): boolean {
+    if (child === this.ghostEl) return false;
     if (child.hasAttribute("data-ux-template")) return false;
     if (getComputedStyle(child).display === "none") return false;
-    if (child.getAttribute("draggable") !== "true") return false;
-    const dz = child.closest("[data-teleport\\:drop]");
-    return dz === this.ctx.container || !dz;
+    if (!child.hasAttribute("data-drag")) return false;
+    const dz = child.closest("[data-teleport\\:drop]") as HTMLElement | null;
+    if (targetZone && dz !== targetZone) return false;
+
+    if (dz === this.ctx.container || !dz) {
+        if (this.ctx.sort === false) return false;
+        return true;
+    }
+
+    // Check cross-list group
+    const myGroup = this.ctx.group;
+    if (!myGroup) return false;
+    
+    const theirGroupName = dz.getAttribute("data-drag-group");
+    const myGroupName = typeof myGroup === 'string' ? myGroup : myGroup.name;
+    
+    if (theirGroupName === myGroupName) {
+      const theirPut = dz.getAttribute("data-drag-put");
+      if (theirPut === "false") return false;
+      
+      const myGroupConfig = typeof myGroup === 'object' ? myGroup : null;
+      if (myGroupConfig && myGroupConfig.put === false) return false;
+
+      return true;
+    }
+    return false;
   }
 
-  private getDraggableChildren(): HTMLElement[] {
+  private getDraggableChildren(container: HTMLElement): HTMLElement[] {
     const children: HTMLElement[] = [];
-    const container = this.ctx.container;
     for (let i = 0; i < container.children.length; i++) {
       const child = container.children[i] as HTMLElement;
-      if (this.isValidDraggableChild(child)) {
+      if (this.isValidDraggableChild(child, container)) {
         children.push(child);
       }
     }
@@ -198,21 +331,36 @@ class DragReorderEngine<T> {
   ): number {
     if (!this.activeDrag) return -1;
 
-    // Step 1: Find target under cursor using quadtree (ZCZS: O(log n) vs O(n))
-    const target = this.findTargetUnderCursor(clientX, clientY);
-    if (!target) return -1;
+    // Step 1: Find target under cursor
+    const targetInfo = this.findTargetUnderCursor(clientX, clientY);
+    const target = targetInfo.target;
+    const dropZone = targetInfo.zone;
+    
+    (this.activeDrag as any).lastHoverTarget = target;
+    
+    if (!dropZone) return -1;
 
-    const { direction = "vertical" } = this.ctx;
+    // Switch active drop zone if changed
+    this.currentDropZone = dropZone;
+
+    if (!target) {
+       // If no target but valid dropzone (e.g. empty list), index is 0
+       return 0;
+    }
+
+    const { direction = "vertical" } = this.ctx; // TODO: read from dropZone
 
     // Step 2: Calculate swap direction using SortableJS algorithm
     const swapDirection = this._getSwapDirection(
       event,
       target,
-      direction === "vertical",
+      dropZone,
+      direction,
+      this.ctx.swapThreshold
     );
 
     // Step 3: Determine insertion index based on direction
-    const children = this.getDraggableChildren();
+    const children = this.getDraggableChildren(dropZone);
     const targetIndex = children.indexOf(target);
 
     if (swapDirection === 1) return targetIndex + 1; // insert after target
@@ -227,7 +375,7 @@ class DragReorderEngine<T> {
   private findTargetUnderCursor(
     clientX: number,
     clientY: number,
-  ): HTMLElement | null {
+  ): { target: HTMLElement | null, zone: HTMLElement | null } {
     // ZCZS: Use quadtree from predictive engine for O(log n) query
     const quadtree = (globalThis as any)._nexusQuadtree;
     if (quadtree) {
@@ -236,34 +384,50 @@ class DragReorderEngine<T> {
         if (
           target instanceof HTMLElement && this.isValidDraggableChild(target)
         ) {
-          return target;
+          const zone = target.closest("[data-teleport\\:drop]") as HTMLElement;
+          return { target, zone };
         }
       }
     }
 
-    // Fallback: temporarily hide ghost/placeholder for accurate element detection
+    // Fallback: temporarily hide ghost for accurate element detection
     const ghostDisplay = this.ghostEl?.style.display;
-    const placeholderDisplay = this.placeholderEl?.style.display;
     if (this.ghostEl) this.ghostEl.style.display = "none";
-    if (this.placeholderEl) this.placeholderEl.style.display = "none";
 
     let target: HTMLElement | null = null;
+    let zone: HTMLElement | null = null;
     const el = document.elementFromPoint(clientX, clientY) as HTMLElement;
+    
+    if ((globalThis as any)._nexusDebugDrag) {
+       console.log("[drag hit-test] el:", el?.tagName, el?.className);
+    }
 
     if (el) {
-      target = el.closest('[draggable="true"]') as HTMLElement;
+      target = el.closest('[data-drag]') as HTMLElement;
       if (target && !this.isValidDraggableChild(target)) {
         target = null;
       }
+      if (target) {
+        zone = target.closest("[data-teleport\\:drop]") as HTMLElement;
+      } else {
+        zone = el.closest("[data-teleport\\:drop]") as HTMLElement;
+        if (zone) {
+            // Check if we can drop into this empty zone
+            // Just use a dummy element to test zone compatibility
+            const dummy = document.createElement("div");
+            dummy.setAttribute("data-drag", "true");
+            zone.appendChild(dummy);
+            const isValid = this.isValidDraggableChild(dummy, zone);
+            zone.removeChild(dummy);
+            if (!isValid) zone = null;
+        }
+      }
     }
 
-    // Restore ghost/placeholder display
+    // Restore ghost display
     if (this.ghostEl) this.ghostEl.style.display = ghostDisplay || "";
-    if (this.placeholderEl) {
-      this.placeholderEl.style.display = placeholderDisplay || "";
-    }
 
-    return target;
+    return { target, zone };
   }
 
   /**
@@ -272,19 +436,42 @@ class DragReorderEngine<T> {
    *
    * @param event - Drag event (optional for fallback)
    * @param target - Target element
-   * @param vertical - Whether the container is vertical
+   * @param direction - Container direction (vertical, horizontal, grid)
    * @param swapThreshold - Threshold for safe zone (0-1, default 0.5)
    * @returns -1 (insert before), 0 (no insert), 1 (insert after)
    */
   private _getSwapDirection(
     event: DragEvent | undefined,
     target: HTMLElement,
-    vertical: boolean,
+    dropZone: HTMLElement,
+    direction: "vertical" | "horizontal" | "grid",
     swapThreshold: number = 0.5,
   ): -1 | 0 | 1 {
     if (!event) return 0;
+    if (target === this.placeholderEl) return 0;
 
     const targetRect = target.getBoundingClientRect();
+    
+    if (direction === "grid") {
+      const clientX = event.clientX;
+      const clientY = event.clientY;
+      const targetCenterX = targetRect.left + targetRect.width / 2;
+      const targetCenterY = targetRect.top + targetRect.height / 2;
+      
+      const children = this.getDraggableChildren(dropZone);
+      const dragIndex = this.activeDrag ? children.indexOf(this.activeDrag.element) : -1;
+      const targetIndex = children.indexOf(target);
+
+      // Dead-zone logic to prevent flickering in grids
+      if (dragIndex < targetIndex) {
+         if (clientX > targetCenterX || clientY > targetCenterY) return 1;
+      } else if (dragIndex > targetIndex) {
+         if (clientX < targetCenterX || clientY < targetCenterY) return -1;
+      }
+      return 0;
+    }
+
+    const vertical = direction === "vertical";
     const clientCoord = vertical ? event.clientY : event.clientX;
     const targetLength = vertical ? targetRect.height : targetRect.width;
     const targetS1 = vertical ? targetRect.top : targetRect.left;
@@ -296,7 +483,7 @@ class DragReorderEngine<T> {
 
     if (clientCoord > safeZoneStart && clientCoord < safeZoneEnd) {
       // In safe zone - use index comparison to determine direction
-      return this._getInsertDirection(target);
+      return this._getInsertDirection(target, dropZone);
     }
 
     return 0; // outside safe zone, no insert
@@ -306,8 +493,8 @@ class DragReorderEngine<T> {
    * Determine insert direction based on drag element vs target index comparison.
    * Ported from Sortable.js _getInsertDirection (lines 1909-1915).
    */
-  private _getInsertDirection(target: HTMLElement): -1 | 1 {
-    const children = this.getDraggableChildren();
+  private _getInsertDirection(target: HTMLElement, dropZone: HTMLElement): -1 | 1 {
+    const children = this.getDraggableChildren(dropZone);
     const dragIndex = this.activeDrag
       ? children.indexOf(this.activeDrag.element)
       : -1;
@@ -319,14 +506,39 @@ class DragReorderEngine<T> {
     return -1;
   }
 
-  private repositionPlaceholder(toIndex: number): void {
-    if (!this.placeholderEl || !this.ctx.container) return;
-    const children = this.getDraggableChildren();
-    if (toIndex >= children.length) {
-      this.ctx.container.appendChild(this.placeholderEl);
+  private repositionPlaceholder(targetZone: HTMLElement, toIndex: number): void {
+    if (!this.placeholderEl || !targetZone) return;
+
+    if (this.isSwapMode) {
+      this.placeholderEl.style.display = 'none';
+      return;
     } else {
-      const ref = children[toIndex];
-      this.ctx.container.insertBefore(this.placeholderEl, ref);
+      this.placeholderEl.style.display = '';
+    }
+
+    const children = this.getDraggableChildren(targetZone);
+    const ref = toIndex >= children.length ? null : children[toIndex];
+
+    // Only move if the DOM position would actually change
+    if (this.placeholderEl.nextSibling !== ref || this.placeholderEl.parentNode !== targetZone) {
+      const oldZone = this.placeholderEl.parentNode as HTMLElement;
+      
+      // Capture states before mutation
+      const states = new Map<Element, DOMRect>();
+      if (oldZone) this.captureAnimationState(oldZone, states);
+      if (targetZone !== oldZone) this.captureAnimationState(targetZone, states);
+
+      if (ref) {
+        targetZone.insertBefore(this.placeholderEl, ref);
+      } else {
+        targetZone.appendChild(this.placeholderEl);
+      }
+
+      // Animate siblings after mutation
+      requestAnimationFrame(() => {
+          if (oldZone) this.animateAll(oldZone, states, this.ctx.animationDuration ?? 150);
+          if (targetZone !== oldZone) this.animateAll(targetZone, states, this.ctx.animationDuration ?? 150);
+      });
     }
   }
 
@@ -363,12 +575,22 @@ class DragReorderEngine<T> {
       this.ghostEl.remove();
       this.ghostEl = null;
     }
-    if (this.placeholderEl && this.placeholderEl.parentNode) {
-      this.placeholderEl.remove();
+    if (this.placeholderEl) {
+      this.placeholderEl.classList.remove("sortable-ghost");
+      if (this.ctx.ghostClass) {
+        this.ctx.ghostClass.split(" ").forEach(c => {
+          if (c.trim()) this.placeholderEl!.classList.remove(c.trim());
+        });
+      }
       this.placeholderEl = null;
     }
-    if (this.activeDrag) {
-      this.activeDrag.element.style.visibility = "";
+    // Restore secondary multi-drag items
+    if (this.multiItems.length > 1) {
+      for (const m of this.multiItems) {
+        if (m.element !== this.activeDrag?.element) {
+          m.element.style.display = "";
+        }
+      }
     }
   }
 
@@ -376,10 +598,9 @@ class DragReorderEngine<T> {
    * Capture bounding rects of all children before a DOM mutation.
    * Ported from SortableJS AnimationStateManager.captureAnimationState.
    */
-  private captureAnimationState(): Map<Element, DOMRect> {
-    const states = new Map<Element, DOMRect>();
-    for (let i = 0; i < this.ctx.container.children.length; i++) {
-      const child = this.ctx.container.children[i];
+  private captureAnimationState(container: HTMLElement = this.ctx.container, states = new Map<Element, DOMRect>()): Map<Element, DOMRect> {
+    for (let i = 0; i < container.children.length; i++) {
+      const child = container.children[i];
       if (child === this.ghostEl || child === this.placeholderEl) continue;
       if ((child as HTMLElement).style?.display === 'none') continue;
       states.set(child, child.getBoundingClientRect());
@@ -391,61 +612,145 @@ class DragReorderEngine<T> {
    * FLIP-animate children from their captured positions to their new positions.
    * Ported from SortableJS Animation.js: animate() method.
    */
-  private animateAll(prevStates: Map<Element, DOMRect>, duration: number): void {
-    for (let i = 0; i < this.ctx.container.children.length; i++) {
-      const child = this.ctx.container.children[i];
+  private animateAll(container: HTMLElement, prevStates: Map<Element, DOMRect>, duration: number): void {
+    // Phase 1: Clear all ongoing animations to get accurate final resting DOM rects
+    for (let i = 0; i < container.children.length; i++) {
+      const child = container.children[i] as HTMLElement;
       if (child === this.ghostEl || child === this.placeholderEl) continue;
-      const el = child as HTMLElement;
+      child.style.transition = '';
+      child.style.transform = '';
+    }
+
+    // Force repaint after clearing transforms to ensure accurate layout measurement
+    // container.offsetWidth; // This is sometimes needed in older browsers, but getBoundingClientRect forces layout anyway
+
+    // Phase 2: Calculate dx/dy and setup initial FLIP transform
+    const toAnimate = [];
+    for (let i = 0; i < container.children.length; i++) {
+      const child = container.children[i] as HTMLElement;
+      if (child === this.ghostEl || child === this.placeholderEl) continue;
+      
       const fromRect = prevStates.get(child);
       if (!fromRect) continue;
 
-      const toRect = el.getBoundingClientRect();
+      const toRect = child.getBoundingClientRect();
       const dx = fromRect.left - toRect.left;
       const dy = fromRect.top - toRect.top;
+      
       if (dx === 0 && dy === 0) continue;
 
       // Jump to old position instantly
-      el.style.transition = '';
-      el.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+      child.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+      toAnimate.push(child);
+    }
 
-      // Force repaint (SortableJS repaint pattern)
-      el.offsetWidth; // eslint-disable-line @typescript-eslint/no-unused-expressions
+    // Phase 3: Force repaint once for all elements, then start transitions
+    if (toAnimate.length > 0) {
+      container.offsetWidth; // eslint-disable-line @typescript-eslint/no-unused-expressions
 
-      // Animate to new position
-      el.style.transition = `transform ${duration}ms ease`;
-      el.style.transform = 'translate3d(0, 0, 0)';
+      for (const el of toAnimate) {
+        el.style.transition = `transform ${duration}ms ease`;
+        el.style.transform = 'translate3d(0, 0, 0)';
 
-      // Cleanup after animation completes
-      const cleanup = () => {
-        el.style.transition = '';
-        el.style.transform = '';
-      };
-      el.addEventListener('transitionend', cleanup, { once: true });
-      setTimeout(cleanup, duration + 50); // fallback if transitionend doesn't fire
+        // Cleanup after animation completes
+        const cleanup = () => {
+          el.style.transition = '';
+          el.style.transform = '';
+        };
+        el.addEventListener('transitionend', cleanup, { once: true });
+        setTimeout(cleanup, duration + 50); // fallback if transitionend doesn't fire
+      }
     }
   }
 
   private executeReorder(fromIndex: number, toIndex: number): void {
+    if (!this.activeDrag) return;
+    const isSameZone = !this.currentDropZone || this.currentDropZone === this.ctx.container;
+    if (fromIndex === toIndex && isSameZone) return;
+    
     // Capture child positions BEFORE mutation (SortableJS FLIP Step 1)
-    const prevStates = this.captureAnimationState();
+    const prevStates = new Map<Element, DOMRect>();
+    this.captureAnimationState(this.ctx.container, prevStates);
+    if (this.currentDropZone && this.currentDropZone !== this.ctx.container) {
+        this.captureAnimationState(this.currentDropZone, prevStates);
+    }
 
-    const { item } = this.activeDrag!;
-    this.ctx.updateList((list) => {
-      const cur = list.indexOf(item);
-      if (cur === -1) return;
-      list.splice(cur, 1);
-      list.splice(toIndex, 0, item);
-    });
+    let adjToIndex = toIndex;
+    
+    if (!isSameZone && this.currentDropZone) {
+       const targetExpr = this.currentDropZone.getAttribute("data-teleport:drop");
+       if (targetExpr) {
+           const targetList = this.runtime.evaluate(this.currentDropZone, targetExpr) as any[];
+           if (Array.isArray(targetList)) {
+               const myGroupConfig = typeof this.ctx.group === 'object' ? this.ctx.group : null;
+               const isClone = myGroupConfig?.pull === 'clone';
 
-    this.activeDrag!.index = toIndex;
+               this.ctx.updateList((sourceList) => {
+                 const itemsToInsert = this.multiItems.map(m => {
+                    try {
+                        return isClone ? structuredClone(m.item) : m.item;
+                    } catch {
+                        return { ...m.item }; // fallback if structuredClone fails on proxies
+                    }
+                 });
+                 
+                 if (!isClone) {
+                   const toRemove = [...this.multiItems].sort((a,b) => b.index - a.index);
+                   for (const removed of toRemove) {
+                     sourceList.splice(removed.index, 1);
+                   }
+                 }
+                 
+                 // ZCZS Mandate: Mutate target array directly to trigger proxy traps
+                 targetList.splice(toIndex, 0, ...itemsToInsert);
+               });
+           }
+       }
+    } else {
+        this.ctx.updateList((list) => {
+          if (this.isSwapMode) {
+              // Swap Mode
+              const toRemove = [...this.multiItems].sort((a,b) => b.index - a.index);
+              for (let i = 0; i < toRemove.length; i++) {
+                  const m = toRemove[i];
+                  const temp = list[toIndex];
+                  list[toIndex] = list[m.index];
+                  list[m.index] = temp;
+              }
+          } else {
+              // Shift Mode
+              const toRemove = [...this.multiItems].sort((a,b) => b.index - a.index);
+              
+              for (const removed of toRemove) {
+                if (removed.index < toIndex) {
+                  adjToIndex--;
+                }
+              }
+              
+              for (const removed of toRemove) {
+                list.splice(removed.index, 1);
+              }
+              
+              const itemsToInsert = this.multiItems.map(m => m.item);
+              list.splice(adjToIndex, 0, ...itemsToInsert);
+          }
+        });
+    }
+
+    for (let i = 0; i < this.multiItems.length; i++) {
+       this.multiItems[i].index = adjToIndex + i;
+    }
+    this.activeDrag!.index = adjToIndex;
 
     // Animate siblings AFTER mutation (SortableJS FLIP Step 2)
-    // Use rAF to wait for DOM reconciliation from reactive mutation
     requestAnimationFrame(() => {
-      this.animateAll(prevStates, this.ctx.animationDuration ?? 150);
+      this.animateAll(this.ctx.container, prevStates, this.ctx.animationDuration ?? 150);
+      if (this.currentDropZone && this.currentDropZone !== this.ctx.container) {
+          this.animateAll(this.currentDropZone, prevStates, this.ctx.animationDuration ?? 150);
+      }
     });
 
-    this.ctx.onReorder?.(this.ctx.getList(), fromIndex, toIndex);
+    this.ctx.onReorder?.(this.ctx.getList(), fromIndex, adjToIndex);
   }
 }
 
@@ -454,7 +759,15 @@ function buildReorderContext<T>(
   listExpr: string,
   runtime: RuntimeContext,
   options?: {
-    direction?: "vertical" | "horizontal";
+    direction?: "vertical" | "horizontal" | "grid";
+    ghostClass?: string;
+    dragClass?: string;
+    group?: string | { name: string; pull?: "clone" | boolean; put?: boolean; revertClone?: boolean };
+    sort?: boolean;
+    swap?: boolean;
+    swapClass?: string;
+    fallbackOnBody?: boolean;
+    swapThreshold?: number;
     animationDuration?: number;
     edgeScrollThreshold?: number;
     autoScrollSpeed?: number;
@@ -479,6 +792,14 @@ function buildReorderContext<T>(
     },
     container,
     direction: options?.direction,
+    ghostClass: options?.ghostClass,
+    dragClass: options?.dragClass,
+    group: options?.group,
+    sort: options?.sort !== false, // default true
+    swap: options?.swap,
+    swapClass: options?.swapClass,
+    fallbackOnBody: options?.fallbackOnBody,
+    swapThreshold: options?.swapThreshold,
     edgeScrollThreshold: options?.edgeScrollThreshold ?? 40,
     autoScrollSpeed: options?.autoScrollSpeed ?? 15,
     animationDuration: options?.animationDuration ?? 150,
@@ -503,7 +824,7 @@ function calculateDraggableIndex(
     if (sibling.nodeName.toUpperCase() !== "TEMPLATE") {
       const hasDataDrag = sibling.hasAttribute("data-drag");
       const el = sibling as HTMLElement;
-      const isDraggable = el.getAttribute("draggable") === "true";
+      const isDraggable = el.hasAttribute("data-drag");
       const style = getComputedStyle(sibling);
       const isHidden = style.display === "none";
       const isTemplate = sibling.hasAttribute("data-ux-template");
@@ -542,16 +863,17 @@ export const dragAttribute: AttributeModule = {
     if ((element as any).__nexusDragBound) return (element as any).__nexusDragCleanup;
     (element as any).__nexusDragBound = true;
 
-    if (element.getAttribute("draggable") !== "true") {
-      element.setAttribute("draggable", "true");
-    }
+    // Remove HTML5 drag
+    element.removeAttribute("draggable");
     if (element.style.userSelect !== "none") {
       element.style.userSelect = "none";
     }
+    element.style.touchAction = "none";
 
     let reorderEngine: DragReorderEngine<any> | null = null;
-    let dropZoneDragOverListener: ((e: DragEvent) => void) | null = null;
     let sourceDropZone: HTMLElement | null = null;
+    let startEvent: PointerEvent | null = null;
+    let dragInitiated = false;
 
     const detectReorder = (zone: HTMLElement | null): boolean => {
       if (!zone) return false;
@@ -561,17 +883,12 @@ export const dragAttribute: AttributeModule = {
         element.hasAttribute("data-nexus-spatial-sortable");
     };
 
-    const onDragStart = (e: DragEvent) => {
+    const startDragSequence = (e: PointerEvent) => {
       try {
         const sourceContainer = element.parentElement;
-        if (!sourceContainer) {
-          e.preventDefault();
-          return;
-        }
+        if (!sourceContainer) return;
 
-        sourceDropZone = element.closest("[data-teleport\\:drop]") as
-          | HTMLElement
-          | null;
+        sourceDropZone = element.closest("[data-teleport\\:drop]") as HTMLElement | null;
         let sourceList: any[] | null = null;
 
         if (sourceDropZone) {
@@ -579,9 +896,7 @@ export const dragAttribute: AttributeModule = {
           if (moveExpr) {
             try {
               const result = runtime.evaluate(sourceDropZone, moveExpr);
-              if (Array.isArray(result)) {
-                sourceList = result;
-              }
+              if (Array.isArray(result)) sourceList = result;
             } catch (err) {
               console.warn("[drag] Failed to evaluate source list:", err);
             }
@@ -591,8 +906,30 @@ export const dragAttribute: AttributeModule = {
         const siblingContainer = sourceDropZone || sourceContainer;
         const initialIndex = calculateDraggableIndex(element, sourceDropZone);
 
+        const isMulti = siblingContainer.getAttribute("data-drag-multi") === "true" || element.getAttribute("data-drag-multi") === "true";
+        const selectedClass = siblingContainer.getAttribute("data-drag-selected-class") || element.getAttribute("data-drag-selected-class") || "selected";
+
+        let dragElements = [element];
+        let fromIndices = [initialIndex];
+        let dragItems = [sourceList?.[initialIndex]];
+
+        if (isMulti && element.classList.contains(selectedClass)) {
+          dragElements = Array.from(siblingContainer.children).filter(c => c.classList.contains(selectedClass)) as HTMLElement[];
+          fromIndices = dragElements.map(el => calculateDraggableIndex(el, sourceDropZone));
+          
+          const paired = dragElements.map((el, i) => ({ el, idx: fromIndices[i], item: sourceList?.[fromIndices[i]] }));
+          paired.sort((a,b) => a.idx - b.idx);
+          
+          dragElements = paired.map(p => p.el);
+          fromIndices = paired.map(p => p.idx);
+          dragItems = paired.map(p => p.item);
+        }
+
         const dragState: Record<string, unknown> = {
           fromIndex: initialIndex,
+          fromIndices,
+          dragItems,
+          dragElements,
           sourceContainer: siblingContainer,
           element,
           sourceList,
@@ -601,71 +938,68 @@ export const dragAttribute: AttributeModule = {
 
         const globalSignals = runtime.globalSignals() as any;
 
-        if ((window as any)._nexusDebugDrag) {
-          console.log("[drag] Drag started", {
+        if ((globalThis as any)._nexusDebugDrag) {
+          console.log("[drag] Drag started via PointerEvent", {
             element: element.tagName,
             fromIndex: initialIndex,
-            sourceDropZone: sourceDropZone?.tagName,
-            sourceListIsArray: Array.isArray(sourceList),
-            sourceListLength: sourceList?.length,
           });
         }
 
         if (detectReorder(sourceDropZone) && Array.isArray(sourceList)) {
           if (!sourceDropZone) return;
           const listExpr = sourceDropZone.getAttribute("data-teleport:drop")!;
-          const direction =
-            (sourceDropZone.getAttribute("data-drag-direction") as
-              | "vertical"
-              | "horizontal") || "vertical";
-          const animDuration = parseInt(
-            sourceDropZone.getAttribute("data-drag-animation") || "150",
-            10,
-          );
+          const direction = (sourceDropZone.getAttribute("data-drag-direction") as "vertical" | "horizontal" | "grid") || "vertical";
+          const ghostClass = sourceDropZone.getAttribute("data-drag-ghost-class") || element.getAttribute("data-drag-ghost-class") || "sortable-ghost";
+          const dragClass = sourceDropZone.getAttribute("data-drag-class") || element.getAttribute("data-drag-class") || "sortable-drag";
+          const animDuration = parseInt(sourceDropZone.getAttribute("data-drag-animation") || "150", 10);
+
+          const groupName = sourceDropZone.getAttribute("data-drag-group");
+          const clone = sourceDropZone.getAttribute("data-drag-clone") === "true";
+          const put = sourceDropZone.getAttribute("data-drag-put") !== "false";
+          const sort = sourceDropZone.getAttribute("data-drag-sort") !== "false";
+          const swap = sourceDropZone.getAttribute("data-drag-swap") === "true";
+          const swapClass = sourceDropZone.getAttribute("data-drag-swap-class") || undefined;
+          const fallbackOnBody = sourceDropZone.getAttribute("data-drag-fallback-on-body") === "true";
+          const swapThresholdAttr = sourceDropZone.getAttribute("data-drag-swap-threshold");
+          const swapThreshold = swapThresholdAttr ? parseFloat(swapThresholdAttr) : undefined;
+          const revertClone = sourceDropZone.getAttribute("data-drag-revert-clone") === "true";
+
+          let groupConfig = undefined;
+          if (groupName) {
+            groupConfig = {
+              name: groupName,
+              pull: (clone ? "clone" : true) as "clone" | boolean,
+              put: put,
+              revertClone: revertClone
+            };
+          }
 
           const ctx = buildReorderContext(sourceDropZone, listExpr, runtime, {
             direction,
+            ghostClass,
+            dragClass,
             animationDuration: animDuration,
+            group: groupConfig,
+            sort,
+            swap,
+            swapClass,
+            fallbackOnBody,
+            swapThreshold,
             onAutoScroll: async (delta) => {
               if (sourceDropZone) {
-                sourceDropZone.scrollBy({
-                  left: delta.x,
-                  top: delta.y,
-                  behavior: "smooth",
-                });
+                sourceDropZone.scrollBy({ left: delta.x, top: delta.y, behavior: "smooth" });
                 return true;
               }
               return false;
             },
             onReorder: (list, oldIdx, newIdx) => {
-              globalSignals["drag:reorder"] = {
-                list,
-                oldIndex: oldIdx,
-                newIndex: newIdx,
-              };
+              globalSignals["drag:reorder"] = { list, oldIndex: oldIdx, newIndex: newIdx };
             },
           });
 
-          reorderEngine = new DragReorderEngine(ctx);
+          reorderEngine = new DragReorderEngine(ctx, runtime);
           dragState.reorderEngine = reorderEngine;
-          reorderEngine.startDrag({
-            element,
-            sourceList,
-            fromIndex: initialIndex,
-          }, e);
-
-          dropZoneDragOverListener = (ev: DragEvent) => {
-            if (reorderEngine && ev.clientX && ev.clientY) {
-              reorderEngine.updateDrag(ev.clientX, ev.clientY, ev);
-              globalSignals["drag:move"] = {
-                element,
-                x: ev.clientX,
-                y: ev.clientY,
-                originalEvent: ev,
-              };
-            }
-          };
-          sourceDropZone.addEventListener("dragover", dropZoneDragOverListener);
+          reorderEngine.startDrag({ element, sourceList, fromIndex: initialIndex }, e);
         }
 
         globalSignals["drag:start"] = {
@@ -675,63 +1009,112 @@ export const dragAttribute: AttributeModule = {
           sourceList,
         };
 
-        if (e.dataTransfer) {
-          e.dataTransfer.effectAllowed = "move";
-          e.dataTransfer.setData("text/plain", "");
-        }
+        const chosenClass = sourceContainer.getAttribute("data-drag-chosen-class") || element.getAttribute("data-drag-chosen-class") || "sortable-chosen";
+        element.classList.add(chosenClass);
 
         requestAnimationFrame(() => {
-          element.style.opacity = "0.3";
           element.classList.add("dragging");
         });
       } catch (err) {
-        runtime.reportError(
-          err instanceof Error ? err : new Error(String(err)),
-          element,
-          "drag-start",
-        );
-        e.preventDefault();
+        runtime.reportError(err instanceof Error ? err : new Error(String(err)), element, "drag-start");
       }
     };
 
-    const onDragEnd = (e: DragEvent) => {
+    const endDragSequence = (e: PointerEvent) => {
       if (reorderEngine) {
         reorderEngine.endDrag(e);
         reorderEngine = null;
       }
-      if (sourceDropZone && dropZoneDragOverListener) {
-        sourceDropZone.removeEventListener(
-          "dragover",
-          dropZoneDragOverListener,
-        );
-        dropZoneDragOverListener = null;
-      }
 
-      element.style.opacity = "";
+      const sourceContainer = element.parentElement || sourceDropZone;
+      const chosenClass = sourceContainer?.getAttribute("data-drag-chosen-class") || element.getAttribute("data-drag-chosen-class") || "sortable-chosen";
       element.classList.remove("dragging");
+      element.classList.remove(chosenClass);
 
       const globalSignals = runtime.globalSignals() as any;
       globalSignals["drag:end"] = {
         element,
         originalEvent: e,
-        cancelled: e.dataTransfer?.dropEffect === "none",
+        cancelled: false,
       };
 
       (globalThis as any)._dragState = null;
     };
 
-    element.addEventListener("dragstart", onDragStart);
-    element.addEventListener("dragend", onDragEnd);
+    const onPointerDown = (e: PointerEvent) => {
+      if (e.button !== 0) return;
+
+      const sourceContainer = element.parentElement;
+      if (!sourceContainer) return;
+      
+      const target = e.target as HTMLElement;
+      const handleSelector = sourceContainer.getAttribute("data-drag-handle") || element.getAttribute("data-drag-handle");
+      if (handleSelector && !target.closest(handleSelector)) return;
+
+      const filterSelector = sourceContainer.getAttribute("data-drag-filter") || element.getAttribute("data-drag-filter");
+      if (filterSelector && target.closest(filterSelector)) return;
+
+      // Prevent default text selection during pointer interaction
+      e.preventDefault();
+
+      startEvent = e;
+      dragInitiated = false;
+      document.addEventListener("pointermove", onPointerMove);
+      document.addEventListener("pointerup", onPointerUp);
+      document.addEventListener("pointercancel", onPointerUp);
+      
+      (element as any).__nexusLastPointerTarget = target;
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (!startEvent) return;
+
+      if (!dragInitiated) {
+        const dx = e.clientX - startEvent.clientX;
+        const dy = e.clientY - startEvent.clientY;
+        if (Math.sqrt(dx * dx + dy * dy) > 3) {
+          dragInitiated = true;
+          startDragSequence(startEvent);
+        } else {
+          return;
+        }
+      }
+
+      if (dragInitiated && reorderEngine) {
+         reorderEngine.updateDrag(e.clientX, e.clientY, e);
+         const globalSignals = runtime.globalSignals() as any;
+         
+         if ((globalThis as any)._dragState) {
+            (globalThis as any)._dragState.toIndex = reorderEngine.getFinalToIndex();
+            (globalThis as any)._dragState.targetContainer = sourceDropZone;
+         }
+         
+         globalSignals["drag:move"] = {
+            element,
+            x: e.clientX,
+            y: e.clientY,
+            originalEvent: e,
+         };
+      }
+    };
+
+    const onPointerUp = (e: PointerEvent) => {
+      document.removeEventListener("pointermove", onPointerMove);
+      document.removeEventListener("pointerup", onPointerUp);
+      document.removeEventListener("pointercancel", onPointerUp);
+
+      if (dragInitiated) endDragSequence(e);
+      startEvent = null;
+      dragInitiated = false;
+    };
+
+    element.addEventListener("pointerdown", onPointerDown);
 
     const cleanup = () => {
-      element.removeEventListener('dragstart', onDragStart);
-      element.removeEventListener('dragend', onDragEnd);
-      if (sourceDropZone && dropZoneDragOverListener) {
-        sourceDropZone.removeEventListener(
-          'dragover',
-          dropZoneDragOverListener,
-        );
-      }
+      element.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener("pointermove", onPointerMove);
+      document.removeEventListener("pointerup", onPointerUp);
+      document.removeEventListener("pointercancel", onPointerUp);
       (element as any).__nexusDragBound = false;
       (element as any).__nexusDragCleanup = undefined;
     };
