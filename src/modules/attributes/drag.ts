@@ -294,6 +294,12 @@ class DragReorderEngine<T> {
         return true;
     }
 
+    // ZCZS: gate on filter selector
+    const filterSel = this.ctx.container.getAttribute("data-drag-filter");
+    if (filterSel) {
+      const fs = filterSel.trim();
+      if (fs && child.matches(fs)) return false;
+    }
     // Check cross-list group
     const myGroup = this.ctx.group;
     if (!myGroup) return false;
@@ -519,8 +525,9 @@ class DragReorderEngine<T> {
     const children = this.getDraggableChildren(targetZone);
     const ref = toIndex >= children.length ? null : children[toIndex];
 
-    // Only move if the DOM position would actually change
-    if (this.placeholderEl.nextSibling !== ref || this.placeholderEl.parentNode !== targetZone) {
+    // ZCZS: Only move if the DOM position would actually change.
+    // Guard: skip when ref is null (append) — check with === null explicitly.
+    if (ref === null ? this.placeholderEl.nextSibling !== null : this.placeholderEl.nextSibling !== ref) {
       const oldZone = this.placeholderEl.parentNode as HTMLElement;
       
       // Capture states before mutation
@@ -649,7 +656,7 @@ class DragReorderEngine<T> {
       container.offsetWidth; // eslint-disable-line @typescript-eslint/no-unused-expressions
 
       for (const el of toAnimate) {
-        el.style.transition = `transform ${duration}ms ease`;
+        el.style.transition = `transform ${duration}ms cubic-bezier(0.25, 0.46, 0.45, 0.94)`;
         el.style.transform = 'translate3d(0, 0, 0)';
 
         // Cleanup after animation completes
@@ -880,7 +887,9 @@ export const dragAttribute: AttributeModule = {
       return zone.hasAttribute("data-drag-reorder") ||
         element.hasAttribute("data-drag-reorder") ||
         zone.hasAttribute("data-nexus-spatial-sortable") ||
-        element.hasAttribute("data-nexus-spatial-sortable");
+        element.hasAttribute("data-nexus-spatial-sortable") ||
+        zone.getAttribute("data-spatial") === "sortable" ||
+        element.getAttribute("data-spatial") === "sortable";
     };
 
     const startDragSequence = (e: PointerEvent) => {
@@ -948,7 +957,8 @@ export const dragAttribute: AttributeModule = {
         if (detectReorder(sourceDropZone) && Array.isArray(sourceList)) {
           if (!sourceDropZone) return;
           const listExpr = sourceDropZone.getAttribute("data-teleport:drop")!;
-          const direction = (sourceDropZone.getAttribute("data-drag-direction") as "vertical" | "horizontal" | "grid") || "vertical";
+          const dragDirection = sourceDropZone.getAttribute("data-drag-direction") || element.getAttribute("data-drag-direction") || "vertical";
+          const direction = dragDirection as "vertical" | "horizontal" | "grid" | undefined;
           const ghostClass = sourceDropZone.getAttribute("data-drag-ghost-class") || element.getAttribute("data-drag-ghost-class") || "sortable-ghost";
           const dragClass = sourceDropZone.getAttribute("data-drag-class") || element.getAttribute("data-drag-class") || "sortable-drag";
           const animDuration = parseInt(sourceDropZone.getAttribute("data-drag-animation") || "150", 10);
@@ -1046,13 +1056,19 @@ export const dragAttribute: AttributeModule = {
 
       const sourceContainer = element.parentElement;
       if (!sourceContainer) return;
-      
+      // ZCZS: Gate on draggable="false" before drag (data-bind-draggable support)
+      if (element.getAttribute("draggable") === "false") return;
+
       const target = e.target as HTMLElement;
       const handleSelector = sourceContainer.getAttribute("data-drag-handle") || element.getAttribute("data-drag-handle");
       if (handleSelector && !target.closest(handleSelector)) return;
 
       const filterSelector = sourceContainer.getAttribute("data-drag-filter") || element.getAttribute("data-drag-filter");
-      if (filterSelector && target.closest(filterSelector)) return;
+      if (filterSelector) {
+        const fs = filterSelector.trim();
+        if (!fs) return;
+        if (target.closest(fs)) return;
+      }
 
       // Prevent default text selection during pointer interaction
       e.preventDefault();

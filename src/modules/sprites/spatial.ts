@@ -45,6 +45,8 @@ class SpatialCanvasEngine {
     startPos: { x: number; y: number };
     startNodePos: { x: number; y: number };
   } | null = null;
+  private rafId: number | null = null;
+  private pendingUpdate: { x: number; y: number } | null = null;
 
   // Store bound references for proper removeEventListener cleanup
   private boundPointerDown: (e: PointerEvent) => void;
@@ -136,18 +138,36 @@ class SpatialCanvasEngine {
       y = Math.round(y / gy) * gy;
     }
 
-    // Update the reactive store — this triggers the data-bind-style effect
-    // which will reconcile the transform. This is the ZCZS-correct path:
-    // mutation → reactivity trigger → effect → reconcileStyle → DOM update
-    const node = this.activeDrag.node;
-    node.position.x = x;
-    node.position.y = y;
+    this.pendingUpdate = { x, y };
 
-    this.ctx.onDrag?.(node, x, y);
+    if (this.rafId === null) {
+      this.rafId = requestAnimationFrame(() => {
+        if (!this.activeDrag || !this.pendingUpdate) {
+          this.rafId = null;
+          return;
+        }
+
+        // Update the reactive store — this triggers the data-bind-style effect
+        // which will reconcile the transform. This is the ZCZS-correct path:
+        // mutation → reactivity trigger → effect → reconcileStyle → DOM update
+        const { x: newX, y: newY } = this.pendingUpdate;
+        const node = this.activeDrag.node;
+        node.position.x = newX;
+        node.position.y = newY;
+
+        this.ctx.onDrag?.(node, newX, newY);
+        this.rafId = null;
+      });
+    }
   }
 
   private onPointerUp(_e: PointerEvent) {
     if (!this.activeDrag) return;
+
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
 
     if (this.runtime.isDevMode) {
       const n = this.activeDrag.node;
