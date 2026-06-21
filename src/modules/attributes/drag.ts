@@ -515,6 +515,9 @@ class DragReorderEngine<T> {
   private repositionPlaceholder(targetZone: HTMLElement, toIndex: number): void {
     if (!this.placeholderEl || !targetZone) return;
 
+    // Guard: Never insert an element into its own descendant to prevent HierarchyRequestError
+    if (this.placeholderEl.contains(targetZone)) return;
+
     if (this.isSwapMode) {
       this.placeholderEl.style.display = 'none';
       return;
@@ -525,9 +528,8 @@ class DragReorderEngine<T> {
     const children = this.getDraggableChildren(targetZone);
     const ref = toIndex >= children.length ? null : children[toIndex];
 
-    // ZCZS: Only move if the DOM position would actually change.
-    // Guard: skip when ref is null (append) — check with === null explicitly.
-    if (ref === null ? this.placeholderEl.nextSibling !== null : this.placeholderEl.nextSibling !== ref) {
+    // ZCZS: Only move if the parent container changed OR if the sibling position within the same container changed
+    if (this.placeholderEl.parentNode !== targetZone || (ref === null ? this.placeholderEl.nextSibling !== null : this.placeholderEl.nextSibling !== ref)) {
       const oldZone = this.placeholderEl.parentNode as HTMLElement;
       
       // Capture states before mutation

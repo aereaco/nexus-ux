@@ -62,6 +62,28 @@ function isVFSUri(str: string): boolean {
 }
 
 /**
+ * Custom fetch wrapper with a timeout.
+ * Prevents network requests from blocking page loading in sandboxed or offline contexts.
+ */
+async function fetchWithTimeout(resource: string, options: RequestInit & { timeout?: number } = {}) {
+  const { timeout = 3000 } = options;
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  
+  try {
+    const response = await fetch(resource, {
+      ...options,
+      signal: controller.signal
+    });
+    clearTimeout(id);
+    return response;
+  } catch (error) {
+    clearTimeout(id);
+    throw error;
+  }
+}
+
+/**
  * Resolves content from either a VFS URI or a legacy inline attribute string.
  */
 async function resolveContent(uri: string): Promise<string | null> {
@@ -73,7 +95,7 @@ async function resolveContent(uri: string): Promise<string | null> {
   const cached = assetCache.get(uri);
   if (cached) return cached;
   try {
-    const response = await fetch(uri, { mode: 'cors' });
+    const response = await fetchWithTimeout(uri, { mode: 'cors', timeout: 3000 });
     if (!response.ok) return null;
     const text = await response.text();
     assetCache.set(uri, text);
