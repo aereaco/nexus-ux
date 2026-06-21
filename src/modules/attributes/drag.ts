@@ -528,6 +528,9 @@ class DragReorderEngine<T> {
     const children = this.getDraggableChildren(targetZone);
     const ref = toIndex >= children.length ? null : children[toIndex];
 
+    // Guard: Never insert an element before its own descendant to prevent HierarchyRequestError
+    if (ref && this.placeholderEl.contains(ref)) return;
+
     // ZCZS: Only move if the parent container changed OR if the sibling position within the same container changed
     if (this.placeholderEl.parentNode !== targetZone || (ref === null ? this.placeholderEl.nextSibling !== null : this.placeholderEl.nextSibling !== ref)) {
       const oldZone = this.placeholderEl.parentNode as HTMLElement;
@@ -891,11 +894,19 @@ export const dragAttribute: AttributeModule = {
         zone.hasAttribute("data-nexus-spatial-sortable") ||
         element.hasAttribute("data-nexus-spatial-sortable") ||
         zone.getAttribute("data-spatial") === "sortable" ||
-        element.getAttribute("data-spatial") === "sortable";
+        element.getAttribute("data-spatial") === "sortable" ||
+        zone.getAttribute("data-teleport-mode") === "swap";
     };
 
     const startDragSequence = (e: PointerEvent) => {
       try {
+        if ((globalThis as any)._dragState) {
+          if ((globalThis as any)._nexusDebugDrag) {
+            console.warn("[drag] startDragSequence ignored: drag already in progress");
+          }
+          return;
+        }
+
         const sourceContainer = element.parentElement;
         if (!sourceContainer) return;
 
@@ -966,10 +977,10 @@ export const dragAttribute: AttributeModule = {
           const animDuration = parseInt(sourceDropZone.getAttribute("data-drag-animation") || "150", 10);
 
           const groupName = sourceDropZone.getAttribute("data-drag-group");
-          const clone = sourceDropZone.getAttribute("data-drag-clone") === "true";
+          const clone = sourceDropZone.getAttribute("data-drag-clone") === "true" || sourceDropZone.getAttribute("data-teleport-mode") === "clone";
           const put = sourceDropZone.getAttribute("data-drag-put") !== "false";
           const sort = sourceDropZone.getAttribute("data-drag-sort") !== "false";
-          const swap = sourceDropZone.getAttribute("data-drag-swap") === "true";
+          const swap = sourceDropZone.getAttribute("data-drag-swap") === "true" || sourceDropZone.getAttribute("data-teleport-mode") === "swap";
           const swapClass = sourceDropZone.getAttribute("data-drag-swap-class") || undefined;
           const fallbackOnBody = sourceDropZone.getAttribute("data-drag-fallback-on-body") === "true";
           const swapThresholdAttr = sourceDropZone.getAttribute("data-drag-swap-threshold");
@@ -1055,6 +1066,7 @@ export const dragAttribute: AttributeModule = {
 
     const onPointerDown = (e: PointerEvent) => {
       if (e.button !== 0) return;
+      if ((globalThis as any)._dragState) return;
 
       const sourceContainer = element.parentElement;
       if (!sourceContainer) return;
@@ -1074,6 +1086,7 @@ export const dragAttribute: AttributeModule = {
 
       // Prevent default text selection during pointer interaction
       e.preventDefault();
+      e.stopPropagation();
 
       startEvent = e;
       dragInitiated = false;
@@ -1086,6 +1099,10 @@ export const dragAttribute: AttributeModule = {
 
     const onPointerMove = (e: PointerEvent) => {
       if (!startEvent) return;
+      if ((globalThis as any)._dragState && !dragInitiated) {
+        onPointerUp(e);
+        return;
+      }
 
       if (!dragInitiated) {
         const dx = e.clientX - startEvent.clientX;

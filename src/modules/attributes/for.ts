@@ -76,7 +76,7 @@ const forModule: AttributeModule = {
         if (!Array.isArray(items)) return;
         
         if ((window as any)._nexusDebugFor) {
-            console.log(`[for.ts] Effect running for ${itemsExpr}. Items count:`, items.length, items);
+            console.log(`[for.ts] Effect running for ${itemsExpr}. Items:`, JSON.stringify(items));
         }
 
         const currentKeys = new Set();
