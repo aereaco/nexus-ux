@@ -390,8 +390,11 @@ class DragReorderEngine<T> {
         if (
           target instanceof HTMLElement && this.isValidDraggableChild(target)
         ) {
-          const zone = target.closest("[data-teleport\\:drop]") as HTMLElement;
-          return { target, zone };
+          const rect = target.getBoundingClientRect();
+          if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
+            const zone = target.closest("[data-teleport\\:drop]") as HTMLElement;
+            return { target, zone };
+          }
         }
       }
     }
@@ -461,18 +464,24 @@ class DragReorderEngine<T> {
     if (direction === "grid") {
       const clientX = event.clientX;
       const clientY = event.clientY;
-      const targetCenterX = targetRect.left + targetRect.width / 2;
-      const targetCenterY = targetRect.top + targetRect.height / 2;
-      
-      const children = this.getDraggableChildren(dropZone);
-      const dragIndex = this.activeDrag ? children.indexOf(this.activeDrag.element) : -1;
-      const targetIndex = children.indexOf(target);
 
-      // Dead-zone logic to prevent flickering in grids
-      if (dragIndex < targetIndex) {
-         if (clientX > targetCenterX || clientY > targetCenterY) return 1;
-      } else if (dragIndex > targetIndex) {
-         if (clientX < targetCenterX || clientY < targetCenterY) return -1;
+      // Vertical dominant check
+      if (clientY < targetRect.top + targetRect.height * (1 - swapThreshold) / 2) {
+        return -1;
+      }
+      if (clientY > targetRect.bottom - targetRect.height * (1 - swapThreshold) / 2) {
+        return 1;
+      }
+
+      // Horizontal check
+      const thresholdXBefore = targetRect.left + targetRect.width * (swapThreshold / 2);
+      const thresholdXAfter = targetRect.right - targetRect.width * (swapThreshold / 2);
+
+      if (clientX < thresholdXBefore) {
+        return -1;
+      }
+      if (clientX > thresholdXAfter) {
+        return 1;
       }
       return 0;
     }
@@ -483,33 +492,17 @@ class DragReorderEngine<T> {
     const targetS1 = vertical ? targetRect.top : targetRect.left;
     const targetS2 = vertical ? targetRect.bottom : targetRect.right;
 
-    // Check if cursor is in the safe zone (middle region of target)
-    const safeZoneStart = targetS1 + (targetLength * (1 - swapThreshold) / 2);
-    const safeZoneEnd = targetS2 - (targetLength * (1 - swapThreshold) / 2);
+    // Define thresholds for insert before/after
+    const thresholdBefore = targetS1 + targetLength * (swapThreshold / 2);
+    const thresholdAfter = targetS2 - targetLength * (swapThreshold / 2);
 
-    if (clientCoord > safeZoneStart && clientCoord < safeZoneEnd) {
-      // In safe zone - use index comparison to determine direction
-      return this._getInsertDirection(target, dropZone);
+    if (clientCoord < thresholdBefore) {
+      return -1; // insert before
     }
-
-    return 0; // outside safe zone, no insert
-  }
-
-  /**
-   * Determine insert direction based on drag element vs target index comparison.
-   * Ported from Sortable.js _getInsertDirection (lines 1909-1915).
-   */
-  private _getInsertDirection(target: HTMLElement, dropZone: HTMLElement): -1 | 1 {
-    const children = this.getDraggableChildren(dropZone);
-    const dragIndex = this.activeDrag
-      ? children.indexOf(this.activeDrag.element)
-      : -1;
-    const targetIndex = children.indexOf(target);
-
-    // DragEl before target → insert after (1)
-    // DragEl after target → insert before (-1)
-    if (dragIndex < targetIndex) return 1;
-    return -1;
+    if (clientCoord > thresholdAfter) {
+      return 1; // insert after
+    }
+    return 0; // inside dead zone
   }
 
   private repositionPlaceholder(targetZone: HTMLElement, toIndex: number): void {
