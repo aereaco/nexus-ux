@@ -46,6 +46,12 @@ class DragReorderEngine<T> {
   private tapOffsetY: number = 0;
   private startClientX: number = 0;
   private startClientY: number = 0;
+  private lastTarget: HTMLElement | null = null;
+  private lastDirection: number = 0;
+  private pastFirstInvertThresh: boolean = false;
+  private isCircumstantialInvert: boolean = false;
+  private targetMoveDistance: number = 0;
+  private targetBeforeFirstSwap: number = 0;
 
   constructor(ctx: DragReorderContext<T>, runtime: RuntimeContext) {
     this.ctx = ctx;
@@ -56,6 +62,13 @@ class DragReorderEngine<T> {
     dragState: { element: HTMLElement; sourceList: T[]; fromIndex: number },
     _event: Event,
   ): void {
+    this.lastTarget = null;
+    this.lastDirection = 0;
+    this.pastFirstInvertThresh = false;
+    this.isCircumstantialInvert = false;
+    this.targetMoveDistance = 0;
+    this.targetBeforeFirstSwap = 0;
+
     const { element, sourceList, fromIndex } = dragState;
     const item = sourceList[fromIndex];
     if (item === undefined) return;
@@ -131,13 +144,14 @@ class DragReorderEngine<T> {
   updateDrag(clientX: number, clientY: number, _event: Event): void {
     if (!this.activeDrag || !this.ghostEl) return;
 
+    const fromIndex = this.activeDrag.index;
     this.isSwapMode = this.ctx.swap === true || ((_event as PointerEvent).shiftKey === true);
 
     this.positionGhostAt(clientX, clientY);
     this.containerBounds = this.ctx.container.getBoundingClientRect();
     this.maybeAutoScroll(clientX, clientY);
 
-    const toIndex = this.calculateInsertIndex(clientX, clientY, _event as DragEvent);
+    const toIndex = this.calculateInsertIndex(clientX, clientY, _event as PointerEvent | DragEvent);
     
     const target = (this.activeDrag as any).lastHoverTarget || null;
     const currentZone = this.currentDropZone || this.ctx.container;
@@ -145,9 +159,22 @@ class DragReorderEngine<T> {
 
     if (toIndex === -1) return;
 
-    this.currentToIndex = toIndex;
-    const fromIndex = this.activeDrag.index;
     this.repositionPlaceholder(currentZone, toIndex);
+
+    // Read live DOM index to keep tracking aligned
+    const currentChildren = this.getDraggableChildren(currentZone);
+    const liveIndex = currentChildren.indexOf(this.placeholderEl!);
+    if (liveIndex !== -1) {
+      this.currentToIndex = liveIndex;
+    }
+
+    // After DOM insertion, calculate targetMoveDistance (must be done before animation/next frame)
+    if (target && this.targetBeforeFirstSwap !== undefined && !this.isCircumstantialInvert) {
+      const direction = this._detectDirection(currentZone);
+      const vertical = direction === "vertical";
+      const side1 = vertical ? 'top' : 'left';
+      this.targetMoveDistance = Math.abs(this.targetBeforeFirstSwap - target.getBoundingClientRect()[side1]);
+    }
 
     if ((globalThis as any)._nexusDebugDrag) {
       console.log("[drag-reorder] updateDrag", {
@@ -341,7 +368,7 @@ class DragReorderEngine<T> {
   private calculateInsertIndex(
     clientX: number,
     clientY: number,
-    event?: DragEvent,
+    event?: PointerEvent | DragEvent,
   ): number {
     if (!this.activeDrag) return -1;
 
@@ -362,24 +389,62 @@ class DragReorderEngine<T> {
        return 0;
     }
 
-    const { direction = "vertical" } = this.ctx; // TODO: read from dropZone
+    if (target === this.placeholderEl) return -1;
 
-    // Step 2: Calculate swap direction using SortableJS algorithm
+    const direction = this._detectDirection(dropZone);
+    const vertical = direction === "vertical";
+    const targetRect = target.getBoundingClientRect();
+    const dragRect = this.placeholderEl!.getBoundingClientRect();
+
+    const differentLevel = this.placeholderEl!.parentNode !== dropZone;
+    const differentRowCol = !this._dragElInRowColumn(dragRect, targetRect, vertical);
+    const side1 = vertical ? 'top' : 'left';
+
+    const isLastTarget = this.lastTarget === target;
+
+    if (!isLastTarget) {
+      this.targetBeforeFirstSwap = targetRect[side1];
+      this.pastFirstInvertThresh = false;
+      this.isCircumstantialInvert = (!differentRowCol && (this.ctx.swap === true)) || differentLevel;
+    }
+
+    const swapThreshold = differentRowCol ? 1 : (this.ctx.swapThreshold ?? 0.5);
+    const invertedSwapThreshold = this.ctx.swapThreshold ?? 0.5;
+
     const swapDirection = this._getSwapDirection(
       event,
       target,
-      dropZone,
-      direction,
-      this.ctx.swapThreshold
+      targetRect,
+      vertical,
+      swapThreshold,
+      invertedSwapThreshold,
+      this.isCircumstantialInvert,
+      isLastTarget
     );
+
+    if (swapDirection === 0) return -1;
 
     // Step 3: Determine insertion index based on direction
     const children = this.getDraggableChildren(dropZone);
+    const dragIndex = children.indexOf(this.placeholderEl!);
     const targetIndex = children.indexOf(target);
 
-    if (swapDirection === 1) return targetIndex + 1; // insert after target
-    if (swapDirection === -1) return targetIndex; // insert before target
-    return -1; // no valid insertion point
+    // If dragEl is already beside target: Do not insert
+    let checkIndex = dragIndex;
+    let sibling: HTMLElement | null = null;
+    do {
+      checkIndex -= swapDirection;
+      sibling = children[checkIndex] || null;
+    } while (sibling && (getComputedStyle(sibling).display === 'none' || sibling === this.ghostEl));
+
+    if (sibling === target) {
+      return -1;
+    }
+
+    this.lastTarget = target;
+    this.lastDirection = swapDirection;
+
+    return swapDirection === 1 ? targetIndex + 1 : targetIndex;
   }
 
   /**
@@ -447,103 +512,114 @@ class DragReorderEngine<T> {
     return { target, zone };
   }
 
-  /**
-   * Calculate swap direction for inserting before/after target.
-   * Ported from Sortable.js _getSwapDirection (lines 1832-1901).
-   *
-   * @param event - Drag event (optional for fallback)
-   * @param target - Target element
-   * @param direction - Container direction (vertical, horizontal, grid)
-   * @param swapThreshold - Threshold for safe zone (0-1, default 0.5)
-   * @returns -1 (insert before), 0 (no insert), 1 (insert after)
-   */
+  private _detectDirection(container: HTMLElement): "vertical" | "horizontal" {
+    const direction = this.ctx.direction;
+    if (direction === "vertical") return "vertical";
+    if (direction === "horizontal") return "horizontal";
+
+    const style = getComputedStyle(container);
+    if (style.display === "flex") {
+      return (style.flexDirection === "column" || style.flexDirection === "column-reverse")
+        ? "vertical" : "horizontal";
+    }
+    if (style.display === "grid") {
+      return (style.gridTemplateColumns.split(" ").length <= 1)
+        ? "vertical" : "horizontal";
+    }
+
+    const children = this.getDraggableChildren(container);
+    if (children.length >= 2) {
+      const rect1 = children[0].getBoundingClientRect();
+      const rect2 = children[1].getBoundingClientRect();
+      return Math.abs(rect1.top - rect2.top) < 4 ? "horizontal" : "vertical";
+    }
+    return "vertical";
+  }
+
+  private _dragElInRowColumn(dragRect: DOMRect, targetRect: DOMRect, vertical: boolean): boolean {
+    const dragElS1Opp = vertical ? dragRect.left : dragRect.top;
+    const dragElS2Opp = vertical ? dragRect.right : dragRect.bottom;
+    const dragElOppLength = vertical ? dragRect.width : dragRect.height;
+    const targetS1Opp = vertical ? targetRect.left : targetRect.top;
+    const targetS2Opp = vertical ? targetRect.right : targetRect.bottom;
+    const targetOppLength = vertical ? targetRect.width : targetRect.height;
+
+    const dragCenter = dragElS1Opp + dragElOppLength / 2;
+    const targetCenter = targetS1Opp + targetOppLength / 2;
+
+    const eps = 4;
+    return (
+      Math.abs(dragElS1Opp - targetS1Opp) < eps ||
+      Math.abs(dragElS2Opp - targetS2Opp) < eps ||
+      Math.abs(dragCenter - targetCenter) < eps
+    );
+  }
+
+  private getInsertDirection(target: HTMLElement): -1 | 1 {
+    const children = this.getDraggableChildren(this.currentDropZone || this.ctx.container);
+    const dragIdx = children.indexOf(this.placeholderEl!);
+    const targetIdx = children.indexOf(target);
+    return dragIdx < targetIdx ? 1 : -1;
+  }
+
   private _getSwapDirection(
-    event: DragEvent | undefined,
+    event: PointerEvent | DragEvent | undefined,
     target: HTMLElement,
-    dropZone: HTMLElement,
-    direction: "vertical" | "horizontal" | "grid",
-    swapThreshold: number = 0.5,
+    targetRect: DOMRect,
+    vertical: boolean,
+    swapThreshold: number,
+    invertedSwapThreshold: number,
+    invertSwap: boolean,
+    isLastTarget: boolean,
   ): -1 | 0 | 1 {
     if (!event) return 0;
-    if (target === this.placeholderEl) return 0;
+    const mouseOnAxis = vertical ? event.clientY : event.clientX;
+    const targetLength = vertical ? targetRect.height : targetRect.width;
+    const targetS1 = vertical ? targetRect.top : targetRect.left;
+    const targetS2 = vertical ? targetRect.bottom : targetRect.right;
+    let invert = false;
 
-    const targetRect = target.getBoundingClientRect();
-    const children = this.getDraggableChildren(dropZone);
-    const dragIndex = this.activeDrag ? children.indexOf(this.activeDrag.element) : -1;
-    const targetIndex = children.indexOf(target);
+    if (!invertSwap) {
+      // Check if target movement causes mouse to move past the end of swapThreshold
+      if (isLastTarget && this.targetMoveDistance < targetLength * swapThreshold) {
+        if (!this.pastFirstInvertThresh &&
+          (this.lastDirection === 1 ?
+            (mouseOnAxis > targetS1 + targetLength * invertedSwapThreshold / 2) :
+            (mouseOnAxis < targetS2 - targetLength * invertedSwapThreshold / 2)
+          )
+        ) {
+          this.pastFirstInvertThresh = true;
+        }
 
-    const safeMargin = (1 - swapThreshold) / 2;
-
-    // Cross-container drag logic (where target list does not contain the active drag element)
-    if (dragIndex === -1) {
-      if (direction === "vertical") {
-        return event.clientY < (targetRect.top + targetRect.height / 2) ? -1 : 1;
-      }
-      if (direction === "horizontal") {
-        return event.clientX < (targetRect.left + targetRect.width / 2) ? -1 : 1;
-      }
-      // Grid cross-container default
-      const dx = event.clientX - (targetRect.left + targetRect.width / 2);
-      const dy = event.clientY - (targetRect.top + targetRect.height / 2);
-      return (Math.abs(dx) > Math.abs(dy) ? dx : dy) < 0 ? -1 : 1;
-    }
-
-    // In-list drag logic with 1:1 SortableJS trigger points + built-in hysteresis
-    if (direction === "vertical") {
-      const clientY = event.clientY;
-      if (dragIndex < targetIndex) {
-        // Dragging down: swap if cursor passes the safe zone top threshold
-        if (clientY > targetRect.top + targetRect.height * safeMargin) {
-          return 1;
+        if (!this.pastFirstInvertThresh) {
+          if (this.lastDirection === 1 ?
+            (mouseOnAxis < targetS1 + this.targetMoveDistance) :
+            (mouseOnAxis > targetS2 - this.targetMoveDistance)
+          ) {
+            return -this.lastDirection as -1 | 0 | 1;
+          }
+        } else {
+          invert = true;
         }
       } else {
-        // Dragging up: swap if cursor passes the safe zone bottom threshold
-        if (clientY < targetRect.bottom - targetRect.height * safeMargin) {
-          return -1;
+        // Regular Threshold
+        if (
+          mouseOnAxis > targetS1 + (targetLength * (1 - swapThreshold) / 2) &&
+          mouseOnAxis < targetS2 - (targetLength * (1 - swapThreshold) / 2)
+        ) {
+          return this.getInsertDirection(target);
         }
       }
-      return 0;
     }
 
-    if (direction === "horizontal") {
-      const clientX = event.clientX;
-      if (dragIndex < targetIndex) {
-        // Dragging right
-        if (clientX > targetRect.left + targetRect.width * safeMargin) {
-          return 1;
-        }
-      } else {
-        // Dragging left
-        if (clientX < targetRect.right - targetRect.width * safeMargin) {
-          return -1;
-        }
+    invert = invert || invertSwap;
+    if (invert) {
+      if (
+        mouseOnAxis < targetS1 + (targetLength * invertedSwapThreshold / 2) ||
+        mouseOnAxis > targetS2 - (targetLength * invertedSwapThreshold / 2)
+      ) {
+        return ((mouseOnAxis > targetS1 + targetLength / 2) ? 1 : -1);
       }
-      return 0;
-    }
-
-    // Grid layout sorting
-    if (direction === "grid") {
-      const clientX = event.clientX;
-      const clientY = event.clientY;
-
-      if (dragIndex < targetIndex) {
-        // Dragging forward in grid
-        const passX = clientX > targetRect.left + targetRect.width * safeMargin;
-        const passY = clientY > targetRect.top + targetRect.height * safeMargin;
-        const sameRow = Math.abs(clientY - (targetRect.top + targetRect.height / 2)) < targetRect.height / 2;
-        if (sameRow ? passX : passY) {
-          return 1;
-        }
-      } else {
-        // Dragging backward in grid
-        const passX = clientX < targetRect.right - targetRect.width * safeMargin;
-        const passY = clientY < targetRect.bottom - targetRect.height * safeMargin;
-        const sameRow = Math.abs(clientY - (targetRect.top + targetRect.height / 2)) < targetRect.height / 2;
-        if (sameRow ? passX : passY) {
-          return -1;
-        }
-      }
-      return 0;
     }
 
     return 0;
@@ -769,12 +845,6 @@ class DragReorderEngine<T> {
           } else {
               // Shift Mode
               const toRemove = [...this.multiItems].sort((a,b) => b.index - a.index);
-              
-              for (const removed of toRemove) {
-                if (removed.index < toIndex) {
-                  adjToIndex--;
-                }
-              }
               
               for (const removed of toRemove) {
                 list.splice(removed.index, 1);
