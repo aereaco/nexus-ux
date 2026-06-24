@@ -144,13 +144,13 @@
                         02. Shared <span class="badge badge-outline badge-sm">Cross-Container</span>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box" data-teleport:drop="list1" data-drag-reorder>
+                        <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box" data-teleport:drop="list1" data-drag-reorder data-drag-group="shared">
                             <div data-for="item in list1" data-drag class="flex items-center gap-2 p-3 bg-base-100 rounded-box cursor-grab hover:bg-base-200 text-sm item">
                                 <iconify-icon icon="material-symbols-light:folder" class="text-primary"></iconify-icon>
                                 <span data-bind="item.n"></span>
                             </div>
                         </div>
-                        <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box" data-teleport:drop="list2" data-drag-reorder>
+                        <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box" data-teleport:drop="list2" data-drag-reorder data-drag-group="shared">
                             <div data-for="item in list2" data-drag class="flex items-center gap-2 p-3 bg-base-100 rounded-box cursor-grab hover:bg-base-200 text-sm item">
                                 <iconify-icon icon="material-symbols-light:folder" class="text-secondary"></iconify-icon>
                                 <span data-bind="item.n"></span>

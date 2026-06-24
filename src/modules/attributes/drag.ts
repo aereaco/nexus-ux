@@ -460,49 +460,85 @@ class DragReorderEngine<T> {
     if (target === this.placeholderEl) return 0;
 
     const targetRect = target.getBoundingClientRect();
-    
-    if (direction === "grid") {
-      const clientX = event.clientX;
+    const children = this.getDraggableChildren(dropZone);
+    const dragIndex = this.activeDrag ? children.indexOf(this.activeDrag.element) : -1;
+    const targetIndex = children.indexOf(target);
+
+    const safeMargin = (1 - swapThreshold) / 2;
+
+    // Cross-container drag logic (where target list does not contain the active drag element)
+    if (dragIndex === -1) {
+      if (direction === "vertical") {
+        return event.clientY < (targetRect.top + targetRect.height / 2) ? -1 : 1;
+      }
+      if (direction === "horizontal") {
+        return event.clientX < (targetRect.left + targetRect.width / 2) ? -1 : 1;
+      }
+      // Grid cross-container default
+      const dx = event.clientX - (targetRect.left + targetRect.width / 2);
+      const dy = event.clientY - (targetRect.top + targetRect.height / 2);
+      return (Math.abs(dx) > Math.abs(dy) ? dx : dy) < 0 ? -1 : 1;
+    }
+
+    // In-list drag logic with 1:1 SortableJS trigger points + built-in hysteresis
+    if (direction === "vertical") {
       const clientY = event.clientY;
-
-      // Vertical dominant check
-      if (clientY < targetRect.top + targetRect.height * (1 - swapThreshold) / 2) {
-        return -1;
-      }
-      if (clientY > targetRect.bottom - targetRect.height * (1 - swapThreshold) / 2) {
-        return 1;
-      }
-
-      // Horizontal check
-      const thresholdXBefore = targetRect.left + targetRect.width * (swapThreshold / 2);
-      const thresholdXAfter = targetRect.right - targetRect.width * (swapThreshold / 2);
-
-      if (clientX < thresholdXBefore) {
-        return -1;
-      }
-      if (clientX > thresholdXAfter) {
-        return 1;
+      if (dragIndex < targetIndex) {
+        // Dragging down: swap if cursor passes the safe zone top threshold
+        if (clientY > targetRect.top + targetRect.height * safeMargin) {
+          return 1;
+        }
+      } else {
+        // Dragging up: swap if cursor passes the safe zone bottom threshold
+        if (clientY < targetRect.bottom - targetRect.height * safeMargin) {
+          return -1;
+        }
       }
       return 0;
     }
 
-    const vertical = direction === "vertical";
-    const clientCoord = vertical ? event.clientY : event.clientX;
-    const targetLength = vertical ? targetRect.height : targetRect.width;
-    const targetS1 = vertical ? targetRect.top : targetRect.left;
-    const targetS2 = vertical ? targetRect.bottom : targetRect.right;
-
-    // Define thresholds for insert before/after
-    const thresholdBefore = targetS1 + targetLength * (swapThreshold / 2);
-    const thresholdAfter = targetS2 - targetLength * (swapThreshold / 2);
-
-    if (clientCoord < thresholdBefore) {
-      return -1; // insert before
+    if (direction === "horizontal") {
+      const clientX = event.clientX;
+      if (dragIndex < targetIndex) {
+        // Dragging right
+        if (clientX > targetRect.left + targetRect.width * safeMargin) {
+          return 1;
+        }
+      } else {
+        // Dragging left
+        if (clientX < targetRect.right - targetRect.width * safeMargin) {
+          return -1;
+        }
+      }
+      return 0;
     }
-    if (clientCoord > thresholdAfter) {
-      return 1; // insert after
+
+    // Grid layout sorting
+    if (direction === "grid") {
+      const clientX = event.clientX;
+      const clientY = event.clientY;
+
+      if (dragIndex < targetIndex) {
+        // Dragging forward in grid
+        const passX = clientX > targetRect.left + targetRect.width * safeMargin;
+        const passY = clientY > targetRect.top + targetRect.height * safeMargin;
+        const sameRow = Math.abs(clientY - (targetRect.top + targetRect.height / 2)) < targetRect.height / 2;
+        if (sameRow ? passX : passY) {
+          return 1;
+        }
+      } else {
+        // Dragging backward in grid
+        const passX = clientX < targetRect.right - targetRect.width * safeMargin;
+        const passY = clientY < targetRect.bottom - targetRect.height * safeMargin;
+        const sameRow = Math.abs(clientY - (targetRect.top + targetRect.height / 2)) < targetRect.height / 2;
+        if (sameRow ? passX : passY) {
+          return -1;
+        }
+      }
+      return 0;
     }
-    return 0; // inside dead zone
+
+    return 0;
   }
 
   private repositionPlaceholder(targetZone: HTMLElement, toIndex: number): void {
