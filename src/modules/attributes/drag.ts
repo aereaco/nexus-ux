@@ -44,6 +44,8 @@ class DragReorderEngine<T> {
   // SortableJS tapDistance pattern: cursor-to-element offset at drag start
   private tapOffsetX: number = 0;
   private tapOffsetY: number = 0;
+  private startClientX: number = 0;
+  private startClientY: number = 0;
 
   constructor(ctx: DragReorderContext<T>, runtime: RuntimeContext) {
     this.ctx = ctx;
@@ -91,9 +93,13 @@ class DragReorderEngine<T> {
       const e = _event as DragEvent;
       this.tapOffsetX = e.clientX - rect.left;
       this.tapOffsetY = e.clientY - rect.top;
+      this.startClientX = e.clientX;
+      this.startClientY = e.clientY;
     } else {
       this.tapOffsetX = rect.width / 2;
       this.tapOffsetY = rect.height / 2;
+      this.startClientX = rect.left + rect.width / 2;
+      this.startClientY = rect.top + rect.height / 2;
     }
 
     this.ghostEl = this.createGhost(element, this.ctx.dragClass);
@@ -192,19 +198,21 @@ class DragReorderEngine<T> {
     const fromIndex = this.activeDrag?.index ?? -1;
     const toIndex = this.currentToIndex;
     
+    // Always revert the manual DOM mutation to ensure clean state
+    if (this.activeDrag && this.placeholderEl) {
+      const originalNext = (this.activeDrag as any).originalNextSibling;
+      const originalParent = (this.activeDrag as any).originalParent;
+      if (originalParent) {
+        if (originalNext && originalNext.parentNode === originalParent) {
+          originalParent.insertBefore(this.placeholderEl, originalNext);
+        } else {
+          originalParent.appendChild(this.placeholderEl);
+        }
+      }
+    }
+
     // ZCZS: Commit the array mutation ONLY on drop to prevent reactive loops during drag
     if (this.activeDrag && toIndex !== -1 && (toIndex !== fromIndex || this.currentDropZone !== this.ctx.container)) {
-        // CRITICAL VDOM FIX: Revert the manual DOM mutation BEFORE updating the array state!
-        // This ensures the declarative `data-for` directive reconciles against a clean state.
-        const originalNext = (this.activeDrag as any).originalNextSibling;
-        const originalParent = (this.activeDrag as any).originalParent;
-        if (originalParent && this.placeholderEl) {
-            if (originalNext && originalNext.parentNode === originalParent) {
-                originalParent.insertBefore(this.placeholderEl, originalNext);
-            } else {
-                originalParent.appendChild(this.placeholderEl);
-            }
-        }
         this.executeReorder(fromIndex, toIndex);
     }
 
@@ -271,14 +279,14 @@ class DragReorderEngine<T> {
     const rect = sourceEl.getBoundingClientRect();
     this.ghostEl.style.left = rect.left + "px";
     this.ghostEl.style.top = rect.top + "px";
+    this.ghostEl.style.transform = `translate3d(0px, 0px, 0) scale(1.03)`;
   }
 
   private positionGhostAt(x: number, y: number): void {
     if (!this.ghostEl) return;
-    // Position ghost so cursor stays at the same relative point it was grabbed
-    const ghostX = x - this.tapOffsetX;
-    const ghostY = y - this.tapOffsetY;
-    this.ghostEl.style.transform = `translate3d(${ghostX}px, ${ghostY}px, 0) scale(1.03)`;
+    const dx = x - this.startClientX;
+    const dy = y - this.startClientY;
+    this.ghostEl.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(1.03)`;
   }
 
   private isValidDraggableChild(child: HTMLElement, targetZone: HTMLElement | null = null): boolean {
@@ -1011,7 +1019,7 @@ export const dragAttribute: AttributeModule = {
           const sort = sourceDropZone.getAttribute("data-drag-sort") !== "false";
           const swap = sourceDropZone.getAttribute("data-drag-swap") === "true" || sourceDropZone.getAttribute("data-teleport-mode") === "swap";
           const swapClass = sourceDropZone.getAttribute("data-drag-swap-class") || undefined;
-          const fallbackOnBody = sourceDropZone.getAttribute("data-drag-fallback-on-body") === "true";
+          const fallbackOnBody = sourceDropZone.getAttribute("data-drag-fallback-on-body") !== "false";
           const swapThresholdAttr = sourceDropZone.getAttribute("data-drag-swap-threshold");
           const swapThreshold = swapThresholdAttr ? parseFloat(swapThresholdAttr) : undefined;
           const revertClone = sourceDropZone.getAttribute("data-drag-revert-clone") === "true";
