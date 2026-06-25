@@ -284,14 +284,11 @@ class DragReorderEngine<T> {
     }
     Object.assign(ghost.style, {
       position: "fixed",
-      top: "0",
-      left: "0",
       pointerEvents: "none",
       opacity: "0.85",
       zIndex: "999999",
-      transform: "translate3d(0,0,0) scale(1.03)",
-      transition: `transform 0.15s ease-out, opacity 0.15s ease-out`,
       boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
+      transition: "opacity 0.15s ease-out",
     });
     const rect = sourceEl.getBoundingClientRect();
     ghost.style.width = rect.width + "px";
@@ -299,21 +296,19 @@ class DragReorderEngine<T> {
     return ghost;
   }
 
-
-
   private positionGhost(sourceEl: HTMLElement, _event: Event): void {
     if (!this.ghostEl) return;
     const rect = sourceEl.getBoundingClientRect();
     this.ghostEl.style.left = rect.left + "px";
     this.ghostEl.style.top = rect.top + "px";
-    this.ghostEl.style.transform = `translate3d(0px, 0px, 0) scale(1.03)`;
   }
 
   private positionGhostAt(x: number, y: number): void {
     if (!this.ghostEl) return;
-    const dx = x - this.startClientX;
-    const dy = y - this.startClientY;
-    this.ghostEl.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(1.03)`;
+    const left = x - this.tapOffsetX;
+    const top = y - this.tapOffsetY;
+    this.ghostEl.style.left = left + "px";
+    this.ghostEl.style.top = top + "px";
   }
 
   private isValidDraggableChild(child: HTMLElement, targetZone: HTMLElement | null = null): boolean {
@@ -1250,10 +1245,16 @@ export const dragAttribute: AttributeModule = {
       dragInitiated = false;
     };
 
+    const onDragStart = (e: Event) => {
+      e.preventDefault();
+    };
+
     element.addEventListener("pointerdown", onPointerDown);
+    element.addEventListener("dragstart", onDragStart);
 
     const cleanup = () => {
       element.removeEventListener('pointerdown', onPointerDown);
+      element.removeEventListener('dragstart', onDragStart);
       document.removeEventListener("pointermove", onPointerMove);
       document.removeEventListener("pointerup", onPointerUp);
       document.removeEventListener("pointercancel", onPointerUp);
