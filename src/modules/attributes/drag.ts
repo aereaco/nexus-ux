@@ -916,13 +916,6 @@ class DragReorderEngine<T> {
     }
 
     let adjToIndex = toIndex;
-    if (isSameZone) {
-      for (const m of this.multiItems) {
-        if (m.index < toIndex) {
-          adjToIndex--;
-        }
-      }
-    }
     
     if (!isSameZone && this.currentDropZone) {
        const targetExpr = this.currentDropZone.getAttribute("data-teleport:drop");
