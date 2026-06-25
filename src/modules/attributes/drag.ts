@@ -294,7 +294,14 @@ class DragReorderEngine<T> {
     const fromIndex = this.activeDrag?.index ?? -1;
     const toIndex = this.currentToIndex;
     
-    // Always revert the manual DOM mutations to ensure clean state before array commit
+    // 1. Capture child positions BEFORE reverting the manual DOM mutations
+    const prevStates = new Map<Element, DOMRect>();
+    this.captureAnimationState(this.ctx.container, prevStates);
+    if (this.currentDropZone && this.currentDropZone !== this.ctx.container) {
+        this.captureAnimationState(this.currentDropZone, prevStates);
+    }
+
+    // 2. Always revert the manual DOM mutations to ensure clean state before array commit
     if (this.originalDOMStates) {
       for (const state of this.originalDOMStates) {
         while (state.container.firstChild) {
@@ -312,9 +319,9 @@ class DragReorderEngine<T> {
       }
     }
 
-    // ZCZS: Commit the array mutation ONLY on drop to prevent reactive loops during drag
+    // 3. Commit the array mutation ONLY on drop to prevent reactive loops during drag
     if (this.activeDrag && toIndex !== -1 && (toIndex !== fromIndex || (this.currentDropZone && this.currentDropZone !== this.ctx.container))) {
-        this.executeReorder(fromIndex, toIndex);
+        this.executeReorder(fromIndex, toIndex, prevStates);
     }
 
     this.cleanupGhost();
@@ -903,17 +910,10 @@ class DragReorderEngine<T> {
     }
   }
 
-  private executeReorder(fromIndex: number, toIndex: number): void {
+  private executeReorder(fromIndex: number, toIndex: number, prevStates: Map<Element, DOMRect>): void {
     if (!this.activeDrag) return;
     const isSameZone = !this.currentDropZone || this.currentDropZone === this.ctx.container;
     if (fromIndex === toIndex && isSameZone) return;
-    
-    // Capture child positions BEFORE mutation (SortableJS FLIP Step 1)
-    const prevStates = new Map<Element, DOMRect>();
-    this.captureAnimationState(this.ctx.container, prevStates);
-    if (this.currentDropZone && this.currentDropZone !== this.ctx.container) {
-        this.captureAnimationState(this.currentDropZone, prevStates);
-    }
 
     let adjToIndex = toIndex;
     
