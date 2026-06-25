@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark" data-debug data-ux-init
       data-import="{ 
-        'Tailwind': { script: { src: 'https://unpkg.com/@tailwindcss/browser@4' } },
         'DaisyUI': { 
           link: [
             { href: 'https://cdn.jsdelivr.net/npm/daisyui@5' },
@@ -19,78 +18,6 @@
     <script type="module" src="/dist/nexus-ux.js"></script>
     <style>
         body { overflow-x: hidden; }
-
-        /* Nexus Spatial Engine Core Hooks */
-        .sortable-chosen {
-            background-color: var(--fallback-b3, oklch(var(--b3))) !important;
-            box-shadow: inset 0 0 0 2px var(--fallback-p, oklch(var(--p))) !important;
-        }
-
-        .sortable-drag {
-            opacity: 1 !important;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
-            transform: scale(1.05) !important;
-            cursor: grabbing !important;
-            z-index: 9999 !important;
-        }
-
-        .sortable-ghost {
-            opacity: 0.4 !important;
-            background-color: var(--fallback-b2, oklch(var(--b2))) !important;
-            border: 2px dashed rgba(255, 255, 255, 0.2) !important;
-        }
-
-        .sortable-swap-highlight {
-            background-color: color-mix(in srgb, var(--fallback-p, oklch(var(--p))) 20%, transparent) !important;
-            box-shadow: inset 0 0 0 2px var(--fallback-p, oklch(var(--p))) !important;
-        }
-        
-        .drop-target-before {
-            background: linear-gradient(to bottom, color-mix(in srgb, var(--fallback-p, oklch(var(--p))) 30%, transparent) 0%, transparent 20%) !important;
-            box-shadow: inset 0 2px 0 0 var(--fallback-p, oklch(var(--p))) !important;
-        }
-
-        .drop-target-after {
-            background: linear-gradient(to top, color-mix(in srgb, var(--fallback-p, oklch(var(--p))) 30%, transparent) 0%, transparent 20%) !important;
-            box-shadow: inset 0 -2px 0 0 var(--fallback-p, oklch(var(--p))) !important;
-        }
-
-        .item.filtered {
-            opacity: 0.3 !important;
-            cursor: not-allowed !important;
-        }
-        
-        /* Demo specific hooks */
-        .ghost-custom {
-            background: linear-gradient(to bottom right, var(--fallback-p, oklch(var(--p))), var(--fallback-s, oklch(var(--s)))) !important;
-            border: none !important;
-            box-shadow: 0 20px 40px color-mix(in srgb, var(--fallback-p, oklch(var(--p))) 40%, transparent) !important;
-            color: white !important;
-        }
-        
-        .selected-item {
-            box-shadow: inset 0 0 0 2px var(--fallback-a, oklch(var(--a))) !important;
-        }
-        .morph-target {
-            width: 5rem !important;
-            height: 5rem !important;
-            background: linear-gradient(to bottom right, var(--fallback-p, oklch(var(--p))), var(--fallback-s, oklch(var(--s)))) !important;
-            border-radius: 0.75rem !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            font-weight: 900 !important;
-            cursor: pointer !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        }
-        .morph-target.expanded {
-            width: 100% !important;
-            height: 10rem !important;
-            border-radius: 1.5rem !important;
-            font-size: 2.25rem !important;
-            line-height: 2.5rem !important;
-        }
     </style>
 </head>
 <body class="bg-base-300 text-base-content min-h-screen p-8 font-sans antialiased">
@@ -104,7 +31,18 @@
         filterList: [{id: 'F1', n: 'Draggable 1', filtered: false}, {id: 'F2', n: 'Locked', filtered: true}, {id: 'F3', n: 'Draggable 2', filtered: false}, {id: 'F4', n: 'Locked Too', filtered: true}],
         multiList: [{id: 'M1', n: 'Multi 1', selected: false}, {id: 'M2', n: 'Multi 2', selected: false}, {id: 'M3', n: 'Multi 3', selected: false}, {id: 'M4', n: 'Multi 4', selected: false}],
         gridList: [{id: 'G1', n: '1'}, {id: 'G2', n: '2'}, {id: 'G3', n: '3'}, {id: 'G4', n: '4'}, {id: 'G5', n: '5'}, {id: 'G6', n: '6'}],
-        nestedList: [{id: 'N1', n: 'Parent 1', sub: [{id: 'S1', n: 'Child 1'}]}, {id: 'N2', n: 'Parent 2', sub: []}],
+        nestedList: [
+            { id: 'N1', n: 'Folder A', sub: [
+                { id: 'S1', n: 'Sub-Folder A.1', sub: [] },
+                { id: 'S2', n: 'Sub-Folder A.2', sub: [
+                    { id: 'G1', n: 'Doc A.2.1', sub: [] },
+                    { id: 'G2', n: 'Doc A.2.2', sub: [] }
+                ]}
+            ]},
+            { id: 'N2', n: 'Folder B', sub: [
+                { id: 'S3', n: 'Doc B.1', sub: [] }
+            ]}
+        ],
         swapList: [{id: 'W1', n: 'Alpha'}, {id: 'W2', n: 'Beta'}, {id: 'W3', n: 'Gamma'}],
         ghostList: [{id: 'GH1', n: 'Ghost 1'}, {id: 'GH2', n: 'Ghost 2'}, {id: 'GH3', n: 'Ghost 3'}],
         horzList: [{id: 'D1', n: 'H1'}, {id: 'D2', n: 'H2'}, {id: 'D3', n: 'H3'}, {id: 'D4', n: 'H4'}],
@@ -230,7 +168,7 @@
                     </div>
                     <div class="flex flex-col gap-2 min-h-[50px]" data-teleport:drop="filterList" data-drag-reorder data-drag-filter=".filtered">
                         <div data-for="item in filterList" data-drag 
-                             data-bind-class="item.filtered ? 'flex items-center gap-4 p-4 bg-base-100/50 rounded-box border border-base-content/5 item filtered' : 'flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item'">
+                             data-bind-class="item.filtered ? 'flex items-center gap-4 p-4 bg-base-100/30 rounded-box border border-base-content/5 item opacity-30 cursor-not-allowed filtered' : 'flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item'">
                             <iconify-icon icon="material-symbols-light:drag-indicator" class="text-base-content/30" data-bind-class="item.filtered ? 'hidden' : 'text-base-content/30'"></iconify-icon>
                             <span data-bind="item.n" class="font-medium"></span>
                             <iconify-icon data-if="item.filtered" icon="material-symbols-light:lock" class="text-error ml-auto text-xl"></iconify-icon>
@@ -245,9 +183,9 @@
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         07. MultiDrag <span class="badge badge-outline badge-sm">Batch Select</span>
                     </div>
-                    <div class="flex flex-col gap-2 min-h-[50px]" data-teleport:drop="multiList" data-drag-multi="true" data-drag-selected-class="selected-item" data-drag-reorder>
+                    <div class="flex flex-col gap-2 min-h-[50px]" data-teleport:drop="multiList" data-drag-multi="true" data-drag-reorder>
                         <div data-for="item in multiList" data-drag 
-                             data-bind-class="item.selected ? 'flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 transition-colors item selected-item' : 'flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item'">
+                             data-bind-class="item.selected ? 'flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 transition-colors item sortable-selected' : 'flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item'">
                             <input type="checkbox" data-bind-checked="item.selected" class="checkbox checkbox-primary checkbox-sm">
                             <span data-bind="item.n" class="font-medium"></span>
                         </div>
@@ -270,21 +208,54 @@
             </div>
 
             <!-- 09. Nested -->
-            <div class="card bg-base-200 shadow-xl border border-base-content/5">
+            <div class="card bg-base-200 shadow-xl border border-base-content/5 lg:col-span-2">
                 <div class="card-body p-6">
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         09. Nested <span class="badge badge-outline badge-sm">Multi-Level</span>
                     </div>
-                    <div class="flex flex-col gap-4 min-h-[50px]" data-teleport:drop="nestedList" data-drag-reorder>
-                        <div data-for="p in nestedList" data-drag class="flex flex-col p-4 bg-base-100 rounded-box border border-base-content/5 item">
-                            <div class="flex items-center gap-2 mb-3 cursor-grab">
+                    <div class="flex flex-col gap-2 min-h-[100px] p-4 bg-base-300 rounded-box border border-base-content/10" 
+                         data-teleport:drop="nestedList" 
+                         data-drag-reorder 
+                         data-drag-group="nested"
+                         data-drag-fallback-on-body="true"
+                         data-drag-swap-threshold="0.65">
+                        
+                        <!-- Level 1 Items -->
+                        <div data-for="item1 in nestedList" data-drag class="flex flex-col p-4 bg-base-100 rounded-box border border-base-content/5 item mb-2">
+                            <div class="flex items-center gap-2 mb-2 cursor-grab">
                                 <iconify-icon icon="material-symbols-light:folder-open" class="text-accent text-xl"></iconify-icon>
-                                <span class="font-bold" data-bind="p.n"></span>
+                                <span class="font-bold text-sm" data-bind="item1.n"></span>
                             </div>
-                            <div class="flex flex-col gap-2 min-h-[40px] p-3 bg-base-300 rounded-box border border-dashed border-base-content/10" data-teleport:drop="p.sub" data-drag-reorder data-drag-group="nested-sub">
-                                <div data-for="c in p.sub" data-drag class="flex items-center gap-2 p-2 bg-base-200 rounded cursor-grab hover:bg-base-100 item">
-                                    <iconify-icon icon="material-symbols-light:draft" class="text-base-content/50"></iconify-icon>
-                                    <span class="text-sm" data-bind="c.n"></span>
+                            
+                            <!-- Level 2 Container -->
+                            <div class="flex flex-col gap-2 min-h-[40px] p-3 bg-base-300/50 rounded-box border border-dashed border-base-content/10 ml-6" 
+                                 data-teleport:drop="item1.sub" 
+                                 data-drag-reorder 
+                                 data-drag-group="nested"
+                                 data-drag-fallback-on-body="true"
+                                 data-drag-swap-threshold="0.65">
+                                
+                                <!-- Level 2 Items -->
+                                <div data-for="item2 in item1.sub" data-drag class="flex flex-col p-3 bg-base-100 rounded-box border border-base-content/5 item">
+                                    <div class="flex items-center gap-2 mb-2 cursor-grab">
+                                        <iconify-icon icon="material-symbols-light:folder" class="text-secondary text-lg"></iconify-icon>
+                                        <span class="font-semibold text-xs text-base-content/90" data-bind="item2.n"></span>
+                                    </div>
+                                    
+                                    <!-- Level 3 Container -->
+                                    <div class="flex flex-col gap-2 min-h-[30px] p-2 bg-base-300/30 rounded-box border border-dashed border-base-content/5 ml-6" 
+                                         data-teleport:drop="item2.sub" 
+                                         data-drag-reorder 
+                                         data-drag-group="nested"
+                                         data-drag-fallback-on-body="true"
+                                         data-drag-swap-threshold="0.65">
+                                        
+                                        <!-- Level 3 Items -->
+                                        <div data-for="item3 in item2.sub" data-drag class="flex items-center gap-2 p-2 bg-base-100 rounded cursor-grab hover:bg-base-200 text-xs item">
+                                            <iconify-icon icon="material-symbols-light:draft" class="text-base-content/50"></iconify-icon>
+                                            <span data-bind="item3.n"></span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -362,8 +333,9 @@
                     </div>
                     <div class="h-[180px] flex items-center justify-center bg-base-300 rounded-box relative overflow-hidden">
                         <div data-spatial id="morpher" 
-                             data-bind-class="isExpanded ? 'morph-target expanded' : 'morph-target'"
-                             data-on-click="isExpanded = !isExpanded"
+                             class="bg-gradient-to-br from-primary to-secondary flex items-center justify-center font-black cursor-pointer transition-all duration-300"
+                             data-bind-class="isExpanded ? 'w-full h-40 rounded-3xl shadow-2xl text-4xl' : 'w-20 h-20 rounded-xl shadow-lg'"
+                             data-on-click="$animate.orchestrate(() => { isExpanded = !isExpanded })"
                              data-bind="isExpanded ? 'LIQUID' : 'DRY'">
                         </div>
                     </div>

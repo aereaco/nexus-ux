@@ -17,6 +17,20 @@ function getScrollParent(el: HTMLElement): HTMLElement {
   return document.documentElement;
 }
 
+function getEventCoordinates(e: Event): { clientX: number; clientY: number } | null {
+  if (e instanceof DragEvent || (e as any).clientX !== undefined) {
+    const pe = e as PointerEvent;
+    return { clientX: pe.clientX, clientY: pe.clientY };
+  }
+  if ((e as any).touches && (e as any).touches.length > 0) {
+    return { clientX: (e as any).touches[0].clientX, clientY: (e as any).touches[0].clientY };
+  }
+  if ((e as any).changedTouches && (e as any).changedTouches.length > 0) {
+    return { clientX: (e as any).changedTouches[0].clientX, clientY: (e as any).changedTouches[0].clientY };
+  }
+  return null;
+}
+
 function swapNodes(n1: HTMLElement, n2: HTMLElement) {
   const p1 = n1.parentNode;
   const p2 = n2.parentNode;
@@ -75,6 +89,7 @@ class DragReorderEngine<T> {
   private currentDropZone: HTMLElement | null = null;
   private multiItems: DragItemInfo<T>[] = [];
   private isSwapMode: boolean = false;
+  private lastSwapEl: HTMLElement | null = null;
   // SortableJS tapDistance pattern: cursor-to-element offset at drag start
   private tapOffsetX: number = 0;
   private tapOffsetY: number = 0;
@@ -186,13 +201,20 @@ class DragReorderEngine<T> {
       });
     }
 
-    // Hide secondary multi-drag items
+    // Fold/Remove secondary multi-drag items
     if (this.multiItems.length > 1) {
+      const prevStates = new Map<Element, DOMRect>();
+      this.captureAnimationState(this.ctx.container, prevStates);
+
       for (const m of this.multiItems) {
         if (m.element !== element) {
-          m.element.style.display = "none";
+          m.element.parentNode?.removeChild(m.element);
         }
       }
+
+      requestAnimationFrame(() => {
+          this.animateAll(this.ctx.container, prevStates, this.ctx.animationDuration ?? 150);
+      });
     }
 
     this.containerBounds = this.ctx.container.getBoundingClientRect();
@@ -230,11 +252,15 @@ class DragReorderEngine<T> {
 
     this.repositionPlaceholder(currentZone, toIndex);
 
-    // Read live DOM index to keep tracking aligned
-    const currentChildren = this.getDraggableChildren(currentZone);
-    const liveIndex = currentChildren.indexOf(this.placeholderEl!);
-    if (liveIndex !== -1) {
-      this.currentToIndex = liveIndex;
+    if (this.isSwapMode) {
+      this.currentToIndex = toIndex;
+    } else {
+      // Read live DOM index to keep tracking aligned
+      const currentChildren = this.getDraggableChildren(currentZone);
+      const liveIndex = currentChildren.indexOf(this.placeholderEl!);
+      if (liveIndex !== -1) {
+        this.currentToIndex = liveIndex;
+      }
     }
 
     // After DOM insertion, calculate targetMoveDistance (must be done before animation/next frame)
@@ -289,7 +315,16 @@ class DragReorderEngine<T> {
   }
 
   endDrag(_event: Event): void {
+    // Process final coordinates from the release event
+    const coords = getEventCoordinates(_event);
+    if (coords) {
+      this.updateDrag(coords.clientX, coords.clientY, _event);
+    }
+
     this.updateHighlight(null, this.ctx.container, 0, 0);
+    if (this.currentDropZone && this.currentDropZone !== this.ctx.container) {
+      this.updateHighlight(null, this.currentDropZone, 0, 0);
+    }
     
     const fromIndex = this.activeDrag?.index ?? -1;
     const toIndex = this.currentToIndex;
@@ -299,6 +334,16 @@ class DragReorderEngine<T> {
     this.captureAnimationState(this.ctx.container, prevStates);
     if (this.currentDropZone && this.currentDropZone !== this.ctx.container) {
         this.captureAnimationState(this.currentDropZone, prevStates);
+    }
+
+    // Set unfolding starting states for secondary multi-drag items
+    const dragRect = this.placeholderEl ? this.placeholderEl.getBoundingClientRect() : null;
+    if (dragRect) {
+      for (const m of this.multiItems) {
+        if (m.element !== this.placeholderEl) {
+          prevStates.set(m.element, dragRect);
+        }
+      }
     }
 
     // 2. Always revert the manual DOM mutations to ensure clean state before array commit
@@ -313,6 +358,15 @@ class DragReorderEngine<T> {
             if (origDisplay !== undefined) {
               child.style.display = origDisplay;
             }
+            if (child.style.position === 'absolute' && child.hasAttribute("data-folded")) {
+              child.style.position = '';
+              child.style.top = '';
+              child.style.left = '';
+              child.style.width = '';
+              child.style.height = '';
+              child.style.zIndex = '';
+              child.removeAttribute("data-folded");
+            }
           }
           state.container.appendChild(child);
         }
@@ -322,6 +376,11 @@ class DragReorderEngine<T> {
     // 3. Commit the array mutation ONLY on drop to prevent reactive loops during drag
     if (this.activeDrag && toIndex !== -1 && (toIndex !== fromIndex || (this.currentDropZone && this.currentDropZone !== this.ctx.container))) {
         this.executeReorder(fromIndex, toIndex, prevStates);
+    } else {
+        // Cancel/No-change reorder: trigger fallback FLIP animation to return elements smoothly
+        requestAnimationFrame(() => {
+          this.animateAll(this.ctx.container, prevStates, this.ctx.animationDuration ?? 150);
+        });
     }
 
     this.cleanupGhost();
@@ -733,18 +792,13 @@ class DragReorderEngine<T> {
 
     const target = (this.activeDrag as any).lastHoverTarget;
     if (this.isSwapMode && target) {
-      if (this.placeholderEl.parentNode !== target.parentNode || this.placeholderEl.nextSibling !== target.nextSibling) {
-        const oldZone = this.placeholderEl.parentNode as HTMLElement;
-        const states = new Map<Element, DOMRect>();
-        if (oldZone) this.captureAnimationState(oldZone, states);
-        if (targetZone !== oldZone) this.captureAnimationState(targetZone, states);
-
-        swapNodes(this.placeholderEl, target);
-
-        requestAnimationFrame(() => {
-          if (oldZone) this.animateAll(oldZone, states, this.ctx.animationDuration ?? 150);
-          if (targetZone !== oldZone) this.animateAll(targetZone, states, this.ctx.animationDuration ?? 150);
-        });
+      if (this.lastSwapEl && this.lastSwapEl !== target) {
+        this.lastSwapEl.classList.remove(this.ctx.swapClass || "sortable-swap-highlight");
+        this.lastSwapEl = null;
+      }
+      if (target !== this.placeholderEl) {
+        target.classList.add(this.ctx.swapClass || "sortable-swap-highlight");
+        this.lastSwapEl = target;
       }
       return;
     }
@@ -835,9 +889,20 @@ class DragReorderEngine<T> {
     if (this.multiItems.length > 1) {
       for (const m of this.multiItems) {
         if (m.element !== this.activeDrag?.element) {
-          m.element.style.display = "";
+          m.element.style.position = '';
+          m.element.style.top = '';
+          m.element.style.left = '';
+          m.element.style.width = '';
+          m.element.style.height = '';
+          m.element.style.zIndex = '';
+          m.element.removeAttribute("data-folded");
         }
       }
+    }
+    
+    if (this.lastSwapEl) {
+      this.lastSwapEl.classList.remove(this.ctx.swapClass || "sortable-swap-highlight");
+      this.lastSwapEl = null;
     }
   }
 
@@ -848,8 +913,7 @@ class DragReorderEngine<T> {
   private captureAnimationState(container: HTMLElement = this.ctx.container, states = new Map<Element, DOMRect>()): Map<Element, DOMRect> {
     for (let i = 0; i < container.children.length; i++) {
       const child = container.children[i];
-      if (child === this.ghostEl || child === this.placeholderEl) continue;
-      if ((child as HTMLElement).style?.display === 'none') continue;
+      if (child === this.ghostEl || (child as HTMLElement).style.display === 'none') continue;
       states.set(child, child.getBoundingClientRect());
     }
     return states;
@@ -863,7 +927,7 @@ class DragReorderEngine<T> {
     // Phase 1: Clear all ongoing animations to get accurate final resting DOM rects
     for (let i = 0; i < container.children.length; i++) {
       const child = container.children[i] as HTMLElement;
-      if (child === this.ghostEl || child === this.placeholderEl) continue;
+      if (child === this.ghostEl || child.style.display === 'none') continue;
       child.style.transition = '';
       child.style.transform = '';
     }
@@ -875,7 +939,7 @@ class DragReorderEngine<T> {
     const toAnimate = [];
     for (let i = 0; i < container.children.length; i++) {
       const child = container.children[i] as HTMLElement;
-      if (child === this.ghostEl || child === this.placeholderEl) continue;
+      if (child === this.ghostEl || child.style.display === 'none') continue;
       
       const fromRect = prevStates.get(child);
       if (!fromRect) continue;
@@ -1151,7 +1215,7 @@ export const dragAttribute: AttributeModule = {
         const initialIndex = calculateDraggableIndex(element, sourceDropZone);
 
         const isMulti = siblingContainer.getAttribute("data-drag-multi") === "true" || element.getAttribute("data-drag-multi") === "true";
-        const selectedClass = siblingContainer.getAttribute("data-drag-selected-class") || element.getAttribute("data-drag-selected-class") || "selected";
+        const selectedClass = siblingContainer.getAttribute("data-drag-selected-class") || element.getAttribute("data-drag-selected-class") || "sortable-selected";
 
         let dragElements = [element];
         let fromIndices = [initialIndex];
