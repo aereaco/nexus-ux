@@ -1,6 +1,40 @@
 import { AttributeModule } from "../../engine/modules.ts";
 import { RuntimeContext } from "../../engine/composition.ts";
 
+function getScrollParent(el: HTMLElement): HTMLElement {
+  let parent = el.parentElement;
+  while (parent) {
+    const style = getComputedStyle(parent);
+    const overflowY = style.overflowY;
+    const overflowX = style.overflowX;
+    const isScrollableY = overflowY === 'auto' || overflowY === 'scroll';
+    const isScrollableX = overflowX === 'auto' || overflowX === 'scroll';
+    if (isScrollableY || isScrollableX) {
+      return parent;
+    }
+    parent = parent.parentElement;
+  }
+  return document.documentElement;
+}
+
+function swapNodes(n1: HTMLElement, n2: HTMLElement) {
+  const p1 = n1.parentNode;
+  const p2 = n2.parentNode;
+  if (!p1 || !p2) return;
+  
+  const s1 = n1.nextSibling;
+  const s2 = n2.nextSibling;
+  
+  if (s1 === n2) {
+    p1.insertBefore(n2, n1);
+  } else if (s2 === n1) {
+    p2.insertBefore(n1, n2);
+  } else {
+    p1.insertBefore(n2, s1);
+    p2.insertBefore(n1, s2);
+  }
+}
+
 /**
  * DragReorderEngine — In-List Real-Time Reordering for Nexus-UX
  */
@@ -52,10 +86,23 @@ class DragReorderEngine<T> {
   private isCircumstantialInvert: boolean = false;
   private targetMoveDistance: number = 0;
   private targetBeforeFirstSwap: number = 0;
+  private originalDOMStates: { container: HTMLElement; children: HTMLElement[]; displays: string[] }[] = [];
+  private scrollParent: HTMLElement | null = null;
+  private scrollParentBounds: DOMRect | null = null;
 
   constructor(ctx: DragReorderContext<T>, runtime: RuntimeContext) {
     this.ctx = ctx;
     this.runtime = runtime;
+  }
+
+  private captureDOMState(container: HTMLElement) {
+    if (this.originalDOMStates.some(s => s.container === container)) return;
+    const children = Array.from(container.children) as HTMLElement[];
+    this.originalDOMStates.push({
+      container,
+      children,
+      displays: children.map(c => c.style.display)
+    });
   }
 
   startDrag(
@@ -68,6 +115,11 @@ class DragReorderEngine<T> {
     this.isCircumstantialInvert = false;
     this.targetMoveDistance = 0;
     this.targetBeforeFirstSwap = 0;
+    this.originalDOMStates = [];
+    this.captureDOMState(this.ctx.container);
+
+    this.scrollParent = getScrollParent(this.ctx.container);
+    this.scrollParentBounds = this.scrollParent.getBoundingClientRect();
 
     const { element, sourceList, fromIndex } = dragState;
     const item = sourceList[fromIndex];
@@ -149,12 +201,23 @@ class DragReorderEngine<T> {
 
     this.positionGhostAt(clientX, clientY);
     this.containerBounds = this.ctx.container.getBoundingClientRect();
+
+    const currentZone = this.currentDropZone || this.ctx.container;
+    if (this.currentDropZone) {
+      this.captureDOMState(this.currentDropZone);
+      this.scrollParent = getScrollParent(this.currentDropZone);
+    } else {
+      this.scrollParent = getScrollParent(this.ctx.container);
+    }
+    if (this.scrollParent) {
+      this.scrollParentBounds = this.scrollParent.getBoundingClientRect();
+    }
+
     this.maybeAutoScroll(clientX, clientY);
 
     const toIndex = this.calculateInsertIndex(clientX, clientY, _event as PointerEvent | DragEvent);
     
     const target = (this.activeDrag as any).lastHoverTarget || null;
-    const currentZone = this.currentDropZone || this.ctx.container;
     this.updateHighlight(target, currentZone, clientX, clientY);
 
     if (toIndex === -1) return;
@@ -225,21 +288,22 @@ class DragReorderEngine<T> {
     const fromIndex = this.activeDrag?.index ?? -1;
     const toIndex = this.currentToIndex;
     
-    // Always revert the manual DOM mutation to ensure clean state
-    if (this.activeDrag && this.placeholderEl) {
-      const originalNext = (this.activeDrag as any).originalNextSibling;
-      const originalParent = (this.activeDrag as any).originalParent;
-      if (originalParent) {
-        if (originalNext && originalNext.parentNode === originalParent) {
-          originalParent.insertBefore(this.placeholderEl, originalNext);
-        } else {
-          originalParent.appendChild(this.placeholderEl);
+    // Always revert the manual DOM mutations to ensure clean state before array commit
+    if (this.originalDOMStates) {
+      for (const state of this.originalDOMStates) {
+        while (state.container.firstChild) {
+          state.container.removeChild(state.container.firstChild);
+        }
+        for (let i = 0; i < state.children.length; i++) {
+          const child = state.children[i];
+          child.style.display = state.displays[i];
+          state.container.appendChild(child);
         }
       }
     }
 
     // ZCZS: Commit the array mutation ONLY on drop to prevent reactive loops during drag
-    if (this.activeDrag && toIndex !== -1 && (toIndex !== fromIndex || this.currentDropZone !== this.ctx.container)) {
+    if (this.activeDrag && toIndex !== -1 && (toIndex !== fromIndex || (this.currentDropZone && this.currentDropZone !== this.ctx.container))) {
         this.executeReorder(fromIndex, toIndex);
     }
 
@@ -275,6 +339,25 @@ class DragReorderEngine<T> {
       }
     };
     stripReactiveAttributes(ghost);
+
+    if (this.multiItems.length > 1) {
+      const badge = document.createElement("div");
+      badge.textContent = String(this.multiItems.length);
+      Object.assign(badge.style, {
+        position: "absolute",
+        top: "-8px",
+        right: "-8px",
+        background: "var(--fallback-p, oklch(var(--p)))",
+        color: "var(--fallback-pc, oklch(var(--pc)))",
+        borderRadius: "9999px",
+        padding: "2px 8px",
+        fontSize: "12px",
+        fontWeight: "bold",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+        zIndex: "100000",
+      });
+      ghost.appendChild(badge);
+    }
 
     ghost.classList.add("sortable-drag");
     if (dragClass) {
@@ -419,10 +502,15 @@ class DragReorderEngine<T> {
 
     if (swapDirection === 0) return -1;
 
-    // Step 3: Determine insertion index based on direction
     const children = this.getDraggableChildren(dropZone);
     const dragIndex = children.indexOf(this.placeholderEl!);
     const targetIndex = children.indexOf(target);
+
+    if (this.isSwapMode) {
+      this.lastTarget = target;
+      this.lastDirection = swapDirection;
+      return targetIndex;
+    }
 
     // If dragEl is already beside target: Do not insert
     let checkIndex = dragIndex;
@@ -626,12 +714,25 @@ class DragReorderEngine<T> {
     // Guard: Never insert an element into its own descendant to prevent HierarchyRequestError
     if (this.placeholderEl.contains(targetZone)) return;
 
-    if (this.isSwapMode) {
-      this.placeholderEl.style.display = 'none';
+    const target = (this.activeDrag as any).lastHoverTarget;
+    if (this.isSwapMode && target) {
+      if (this.placeholderEl.parentNode !== target.parentNode || this.placeholderEl.nextSibling !== target.nextSibling) {
+        const oldZone = this.placeholderEl.parentNode as HTMLElement;
+        const states = new Map<Element, DOMRect>();
+        if (oldZone) this.captureAnimationState(oldZone, states);
+        if (targetZone !== oldZone) this.captureAnimationState(targetZone, states);
+
+        swapNodes(this.placeholderEl, target);
+
+        requestAnimationFrame(() => {
+          if (oldZone) this.animateAll(oldZone, states, this.ctx.animationDuration ?? 150);
+          if (targetZone !== oldZone) this.animateAll(targetZone, states, this.ctx.animationDuration ?? 150);
+        });
+      }
       return;
-    } else {
-      this.placeholderEl.style.display = '';
     }
+
+    this.placeholderEl.style.display = '';
 
     const children = this.getDraggableChildren(targetZone);
     const ref = toIndex >= children.length ? null : children[toIndex];
@@ -665,28 +766,37 @@ class DragReorderEngine<T> {
   private maybeAutoScroll(clientX: number, clientY: number): void {
     const { onAutoScroll, edgeScrollThreshold = 40, autoScrollSpeed = 15 } =
       this.ctx;
-    if (!onAutoScroll || !this.containerBounds) return;
+    if (!this.scrollParent || !this.scrollParentBounds) return;
 
-    const { left, top, width, height } = this.containerBounds;
+    const { left, top, width, height } = this.scrollParentBounds;
     const dl = clientX - left;
     const dr = left + width - clientX;
     const dt = clientY - top;
     const db = top + height - clientY;
 
     let dx = 0, dy = 0;
-    if (dl < edgeScrollThreshold) {
+    const canScrollLeft = this.scrollParent.scrollLeft > 0;
+    const canScrollRight = this.scrollParent.scrollLeft < (this.scrollParent.scrollWidth - this.scrollParent.clientWidth);
+    const canScrollTop = this.scrollParent.scrollTop > 0;
+    const canScrollBottom = this.scrollParent.scrollTop < (this.scrollParent.scrollHeight - this.scrollParent.clientHeight);
+
+    if (dl < edgeScrollThreshold && canScrollLeft) {
       dx = -autoScrollSpeed * (1 - dl / edgeScrollThreshold);
-    } else if (dr < edgeScrollThreshold) {
+    } else if (dr < edgeScrollThreshold && canScrollRight) {
       dx = autoScrollSpeed * (1 - dr / edgeScrollThreshold);
     }
-    if (dt < edgeScrollThreshold) {
+    if (dt < edgeScrollThreshold && canScrollTop) {
       dy = -autoScrollSpeed * (1 - dt / edgeScrollThreshold);
-    } else if (db < edgeScrollThreshold) {
+    } else if (db < edgeScrollThreshold && canScrollBottom) {
       dy = autoScrollSpeed * (1 - db / edgeScrollThreshold);
     }
 
     if (dx !== 0 || dy !== 0) {
-      onAutoScroll({ x: dx, y: dy });
+      if (onAutoScroll) {
+        onAutoScroll({ x: dx, y: dy });
+      } else {
+        this.scrollParent.scrollBy({ left: dx, top: dy });
+      }
     }
   }
 
@@ -796,6 +906,13 @@ class DragReorderEngine<T> {
     }
 
     let adjToIndex = toIndex;
+    if (isSameZone) {
+      for (const m of this.multiItems) {
+        if (m.index < toIndex) {
+          adjToIndex--;
+        }
+      }
+    }
     
     if (!isSameZone && this.currentDropZone) {
        const targetExpr = this.currentDropZone.getAttribute("data-teleport:drop");
@@ -803,7 +920,7 @@ class DragReorderEngine<T> {
            const targetList = this.runtime.evaluate(this.currentDropZone, targetExpr) as any[];
            if (Array.isArray(targetList)) {
                const myGroupConfig = typeof this.ctx.group === 'object' ? this.ctx.group : null;
-               const isClone = myGroupConfig?.pull === 'clone';
+               const isClone = (myGroupConfig?.pull === 'clone') || (this.currentDropZone.getAttribute("data-teleport-mode") === "clone");
 
                this.ctx.updateList((sourceList) => {
                  const itemsToInsert = this.multiItems.map(m => {
@@ -1112,7 +1229,8 @@ export const dragAttribute: AttributeModule = {
             swapThreshold,
             onAutoScroll: async (delta) => {
               if (sourceDropZone) {
-                sourceDropZone.scrollBy({ left: delta.x, top: delta.y, behavior: "smooth" });
+                const scrollParent = getScrollParent(sourceDropZone);
+                scrollParent.scrollBy({ left: delta.x, top: delta.y });
                 return true;
               }
               return false;
@@ -1173,7 +1291,14 @@ export const dragAttribute: AttributeModule = {
       const sourceContainer = element.parentElement;
       if (!sourceContainer) return;
       // ZCZS: Gate on draggable="false" before drag (data-bind-draggable support)
-      if (element.getAttribute("draggable") === "false") return;
+      if (element.getAttribute("draggable") === "false") {
+        const target = e.target as HTMLElement;
+        const isInput = target.tagName === "INPUT" || target.tagName === "SELECT" || target.tagName === "TEXTAREA" || (target as any).button !== undefined || target.closest("button");
+        if (!isInput) {
+          e.preventDefault();
+        }
+        return;
+      }
 
       const target = e.target as HTMLElement;
       const handleSelector = sourceContainer.getAttribute("data-drag-handle") || element.getAttribute("data-drag-handle");

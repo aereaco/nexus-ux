@@ -169,7 +169,7 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <div class="text-[0.65rem] opacity-40 mb-2 font-bold tracking-wider">SOURCE</div>
-                            <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box border border-dashed border-base-content/20" data-teleport:drop="cloneSource" data-drag-reorder>
+                            <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box border border-dashed border-base-content/20" data-teleport:drop="cloneSource" data-drag-reorder data-drag-group="clone">
                                 <div data-for="item in cloneSource" data-drag class="flex items-center gap-2 p-3 bg-base-100 rounded-box cursor-grab hover:bg-base-200 text-sm item">
                                     <iconify-icon icon="material-symbols-light:file-copy" class="text-accent"></iconify-icon>
                                     <span data-bind="item.n"></span>
@@ -178,7 +178,7 @@
                         </div>
                         <div>
                             <div class="text-[0.65rem] opacity-40 mb-2 font-bold tracking-wider">TARGET</div>
-                            <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box" data-teleport:drop="cloneTarget" data-teleport-mode="clone" data-drag-reorder>
+                            <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box" data-teleport:drop="cloneTarget" data-teleport-mode="clone" data-drag-reorder data-drag-group="clone">
                                 <div data-for="item in cloneTarget" data-drag class="flex items-center gap-2 p-3 bg-base-100 rounded-box cursor-grab hover:bg-base-200 text-sm item">
                                     <iconify-icon icon="material-symbols-light:file-copy" class="text-success"></iconify-icon>
                                     <span data-bind="item.n"></span>
@@ -281,7 +281,7 @@
                                 <iconify-icon icon="material-symbols-light:folder-open" class="text-accent text-xl"></iconify-icon>
                                 <span class="font-bold" data-bind="p.n"></span>
                             </div>
-                            <div class="flex flex-col gap-2 min-h-[40px] p-3 bg-base-300 rounded-box border border-dashed border-base-content/10" data-teleport:drop="p.sub" data-drag-reorder>
+                            <div class="flex flex-col gap-2 min-h-[40px] p-3 bg-base-300 rounded-box border border-dashed border-base-content/10" data-teleport:drop="p.sub" data-drag-reorder data-drag-group="nested-sub">
                                 <div data-for="c in p.sub" data-drag class="flex items-center gap-2 p-2 bg-base-200 rounded cursor-grab hover:bg-base-100 item">
                                     <iconify-icon icon="material-symbols-light:draft" class="text-base-content/50"></iconify-icon>
                                     <span class="text-sm" data-bind="c.n"></span>
