@@ -86,7 +86,7 @@ class DragReorderEngine<T> {
   private isCircumstantialInvert: boolean = false;
   private targetMoveDistance: number = 0;
   private targetBeforeFirstSwap: number = 0;
-  private originalDOMStates: { container: HTMLElement; children: HTMLElement[]; displays: string[] }[] = [];
+  private originalDOMStates: { container: HTMLElement; childNodes: Node[]; displays: Map<HTMLElement, string> }[] = [];
   private scrollParent: HTMLElement | null = null;
   private scrollParentBounds: DOMRect | null = null;
 
@@ -97,11 +97,17 @@ class DragReorderEngine<T> {
 
   private captureDOMState(container: HTMLElement) {
     if (this.originalDOMStates.some(s => s.container === container)) return;
-    const children = Array.from(container.children) as HTMLElement[];
+    const childNodes = Array.from(container.childNodes);
+    const displays = new Map<HTMLElement, string>();
+    for (const node of childNodes) {
+      if (node instanceof HTMLElement) {
+        displays.set(node, node.style.display);
+      }
+    }
     this.originalDOMStates.push({
       container,
-      children,
-      displays: children.map(c => c.style.display)
+      childNodes,
+      displays
     });
   }
 
@@ -294,9 +300,13 @@ class DragReorderEngine<T> {
         while (state.container.firstChild) {
           state.container.removeChild(state.container.firstChild);
         }
-        for (let i = 0; i < state.children.length; i++) {
-          const child = state.children[i];
-          child.style.display = state.displays[i];
+        for (const child of state.childNodes) {
+          if (child instanceof HTMLElement) {
+            const origDisplay = state.displays.get(child);
+            if (origDisplay !== undefined) {
+              child.style.display = origDisplay;
+            }
+          }
           state.container.appendChild(child);
         }
       }
