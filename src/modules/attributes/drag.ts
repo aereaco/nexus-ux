@@ -1,6 +1,8 @@
 import { AttributeModule } from "../../engine/modules.ts";
 import { RuntimeContext } from "../../engine/composition.ts";
+import { flip } from "../sprites/animate.ts";
 
+// Helper to find scrollable parent container
 function getScrollParent(el: HTMLElement): HTMLElement {
   let parent = el.parentElement;
   while (parent) {
@@ -17,42 +19,7 @@ function getScrollParent(el: HTMLElement): HTMLElement {
   return document.documentElement;
 }
 
-function getEventCoordinates(e: Event): { clientX: number; clientY: number } | null {
-  if (e instanceof DragEvent || (e as any).clientX !== undefined) {
-    const pe = e as PointerEvent;
-    return { clientX: pe.clientX, clientY: pe.clientY };
-  }
-  if ((e as any).touches && (e as any).touches.length > 0) {
-    return { clientX: (e as any).touches[0].clientX, clientY: (e as any).touches[0].clientY };
-  }
-  if ((e as any).changedTouches && (e as any).changedTouches.length > 0) {
-    return { clientX: (e as any).changedTouches[0].clientX, clientY: (e as any).changedTouches[0].clientY };
-  }
-  return null;
-}
-
-function swapNodes(n1: HTMLElement, n2: HTMLElement) {
-  const p1 = n1.parentNode;
-  const p2 = n2.parentNode;
-  if (!p1 || !p2) return;
-  
-  const s1 = n1.nextSibling;
-  const s2 = n2.nextSibling;
-  
-  if (s1 === n2) {
-    p1.insertBefore(n2, n1);
-  } else if (s2 === n1) {
-    p2.insertBefore(n1, n2);
-  } else {
-    p1.insertBefore(n2, s1);
-    p2.insertBefore(n1, s2);
-  }
-}
-
-/**
- * DragReorderEngine — In-List Real-Time Reordering for Nexus-UX
- */
-interface DragReorderContext<T> {
+export interface DragReorderContext<T> {
   getList: () => T[];
   updateList: (mutate: (list: T[]) => void) => void;
   container: HTMLElement;
@@ -72,627 +39,454 @@ interface DragReorderContext<T> {
   onAutoScroll?: (delta: { x: number; y: number }) => void | Promise<boolean>;
 }
 
-interface DragItemInfo<T> {
-  item: T;
-  element: HTMLElement;
-  index: number;
+export interface SortableOptions {
+  animation?: number;
+  ghostClass?: string;
+  dragClass?: string;
+  chosenClass?: string;
+  fallbackOnBody?: boolean;
+  swapThreshold?: number;
+  invertedSwapThreshold?: number;
+  invertSwap?: boolean;
+  direction?: 'vertical' | 'horizontal' | 'grid';
+  handle?: string;
+  filter?: string;
+  draggable?: string;
+  multiDrag?: boolean;
+  selectedClass?: string;
+  swap?: boolean;
+  swapClass?: string;
+  group?: string | { name: string; pull?: 'clone' | boolean; put?: boolean; revertClone?: boolean };
+  sort?: boolean;
+  onStart?: (evt: any) => void;
+  onEnd?: (evt: any) => void;
 }
 
-class DragReorderEngine<T> {
-  private ctx: DragReorderContext<T>;
-  private runtime: RuntimeContext;
-  private activeDrag: DragItemInfo<T> | null = null;
-  private ghostEl: HTMLElement | null = null;
-  private placeholderEl: HTMLElement | null = null;
-  private containerBounds: DOMRect | null = null;
-  private currentToIndex: number = -1;
-  private currentDropZone: HTMLElement | null = null;
-  private multiItems: DragItemInfo<T>[] = [];
-  private isSwapMode: boolean = false;
-  private lastSwapEl: HTMLElement | null = null;
-  // SortableJS tapDistance pattern: cursor-to-element offset at drag start
-  private tapOffsetX: number = 0;
-  private tapOffsetY: number = 0;
-  private startClientX: number = 0;
-  private startClientY: number = 0;
+// ---------------------------------------------------------------------------
+// Pure TypeScript Sortable Engine
+// ---------------------------------------------------------------------------
+export class Sortable {
+  static active: Sortable | null = null;
+  static ghost: HTMLElement | null = null;
+  static clone: HTMLElement | null = null;
+
+  public el: HTMLElement;
+  public options: SortableOptions;
+
+  private _pointerDownBound: (e: PointerEvent) => void;
+  private _pointerMoveBound: (e: PointerEvent) => void;
+  private _pointerUpBound: (e: PointerEvent) => void;
+
+  private dragEl: HTMLElement | null = null;
+  private parentEl: HTMLElement | null = null;
+  private nextEl: HTMLElement | null = null;
   private lastTarget: HTMLElement | null = null;
-  private lastDirection: number = 0;
-  private pastFirstInvertThresh: boolean = false;
-  private isCircumstantialInvert: boolean = false;
-  private targetMoveDistance: number = 0;
-  private targetBeforeFirstSwap: number = 0;
-  private originalDOMStates: { container: HTMLElement; childNodes: Node[]; displays: Map<HTMLElement, string> }[] = [];
+  private lastDirection = 0;
+  private pastFirstInvertThresh = false;
+  private isCircumstantialInvert = false;
+  private targetMoveDistance = 0;
+  private targetBeforeFirstSwap?: number;
+
+  private tapEvt: PointerEvent | null = null;
+  private dragStarted = false;
+  private multiDragElements: HTMLElement[] = [];
+  private originalIndices = new Map<HTMLElement, number>();
+
   private scrollParent: HTMLElement | null = null;
   private scrollParentBounds: DOMRect | null = null;
 
-  constructor(ctx: DragReorderContext<T>, runtime: RuntimeContext) {
-    this.ctx = ctx;
-    this.runtime = runtime;
+  constructor(el: HTMLElement, options: SortableOptions) {
+    this.el = el;
+    this.options = {
+      animation: 150,
+      ghostClass: 'sortable-ghost',
+      dragClass: 'sortable-drag',
+      chosenClass: 'sortable-chosen',
+      selectedClass: 'sortable-selected',
+      swapClass: 'sortable-swap-highlight',
+      fallbackOnBody: true,
+      swapThreshold: 1,
+      invertedSwapThreshold: 1,
+      invertSwap: false,
+      draggable: '[data-drag]',
+      sort: true,
+      ...options,
+    };
+
+    this._pointerDownBound = this._onPointerDown.bind(this);
+    this._pointerMoveBound = this._onPointerMove.bind(this);
+    this._pointerUpBound = this._onPointerUp.bind(this);
+
+    this.el.addEventListener('pointerdown', this._pointerDownBound);
   }
 
-  private captureDOMState(container: HTMLElement) {
-    if (this.originalDOMStates.some(s => s.container === container)) return;
-    const childNodes = Array.from(container.childNodes);
-    const displays = new Map<HTMLElement, string>();
-    for (const node of childNodes) {
-      if (node instanceof HTMLElement) {
-        displays.set(node, node.style.display);
+  public destroy() {
+    this.el.removeEventListener('pointerdown', this._pointerDownBound);
+    this._cleanupDragListeners();
+  }
+
+  private _onPointerDown(e: PointerEvent) {
+    if (e.button !== 0) return; // Only left click
+    if (Sortable.active) return;
+
+    const target = e.target as HTMLElement;
+    const dragEl = target.closest(this.options.draggable!) as HTMLElement | null;
+    if (!dragEl || !this.el.contains(dragEl)) return;
+
+    // Bubbling Gating: ensure the closest Sortable container is this.el
+    const closestSortableContainer = dragEl.closest('[data-teleport\\:drop]');
+    if (closestSortableContainer !== this.el) {
+      return; // Let the nested Sortable handle it!
+    }
+
+    if (dragEl.getAttribute('draggable') === 'false') {
+      return;
+    }
+
+    // Handle Selector
+    if (this.options.handle && !target.closest(this.options.handle)) return;
+
+    // Filter Selector
+    if (this.options.filter) {
+      if (target.closest(this.options.filter)) {
+        return;
       }
     }
-    this.originalDOMStates.push({
-      container,
-      childNodes,
-      displays
-    });
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    this.dragEl = dragEl;
+    this.tapEvt = e;
+    this.dragStarted = false;
+
+    // MultiDrag selection toggle (tap handler)
+    if (this.options.multiDrag) {
+      const idx = this.multiDragElements.indexOf(dragEl);
+      if (idx !== -1) {
+        if (e.ctrlKey || e.metaKey || dragEl.classList.contains(this.options.selectedClass!)) {
+          // De-select on click if already selected
+          dragEl.classList.remove(this.options.selectedClass!);
+          this.multiDragElements.splice(idx, 1);
+        }
+      } else {
+        if (e.ctrlKey || e.metaKey || !dragEl.classList.contains(this.options.selectedClass!)) {
+          dragEl.classList.add(this.options.selectedClass!);
+          this.multiDragElements.push(dragEl);
+        }
+      }
+    }
+
+    document.addEventListener('pointermove', this._pointerMoveBound);
+    document.addEventListener('pointerup', this._pointerUpBound);
+    document.addEventListener('pointercancel', this._pointerUpBound);
   }
 
-  startDrag(
-    dragState: { element: HTMLElement; sourceList: T[]; fromIndex: number },
-    _event: Event,
-  ): void {
-    this.lastTarget = null;
-    this.lastDirection = 0;
-    this.pastFirstInvertThresh = false;
-    this.isCircumstantialInvert = false;
-    this.targetMoveDistance = 0;
-    this.targetBeforeFirstSwap = 0;
-    this.originalDOMStates = [];
-    this.captureDOMState(this.ctx.container);
+  private _onPointerMove(e: PointerEvent) {
+    if (!this.tapEvt || !this.dragEl) return;
 
-    this.scrollParent = getScrollParent(this.ctx.container);
+    const dx = e.clientX - this.tapEvt.clientX;
+    const dy = e.clientY - this.tapEvt.clientY;
+
+    if (!this.dragStarted) {
+      if (Math.sqrt(dx * dx + dy * dy) > 3) {
+        this._startDrag(e);
+      }
+      return;
+    }
+
+    // Move ghost
+    if (Sortable.ghost) {
+      Sortable.ghost.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+    }
+
+    // Autoscroll
+    this._maybeAutoScroll(e.clientX, e.clientY);
+
+    // Hit-testing
+    this._onDragOver(e);
+  }
+
+  private _startDrag(e: PointerEvent) {
+    this.dragStarted = true;
+    Sortable.active = this;
+    this.parentEl = this.dragEl!.parentElement;
+    this.nextEl = this.dragEl!.nextElementSibling as HTMLElement | null;
+
+    // Capture starting indices
+    this.originalIndices.clear();
+    Array.from(this.el.children).forEach((child: any, idx) => {
+      if (child.nodeName.toUpperCase() !== 'TEMPLATE') {
+        child.sortableIndex = idx;
+        this.originalIndices.set(child, idx);
+      }
+    });
+
+    // Handle Clone
+    const pull = typeof this.options.group === 'object' && this.options.group.pull === 'clone';
+    if (pull) {
+      Sortable.clone = this.dragEl!.cloneNode(true) as HTMLElement;
+      this.dragEl!.parentNode!.insertBefore(Sortable.clone, this.dragEl!);
+    }
+
+    // Create ghost
+    const rect = this.dragEl!.getBoundingClientRect();
+    Sortable.ghost = this.dragEl!.cloneNode(true) as HTMLElement;
+    Sortable.ghost.style.position = 'fixed';
+    Sortable.ghost.style.top = `${rect.top}px`;
+    Sortable.ghost.style.left = `${rect.left}px`;
+    Sortable.ghost.style.width = `${rect.width}px`;
+    Sortable.ghost.style.height = `${rect.height}px`;
+    Sortable.ghost.style.opacity = '0.8';
+    Sortable.ghost.style.pointerEvents = 'none';
+    Sortable.ghost.style.zIndex = '100000';
+    Sortable.ghost.classList.add(this.options.ghostClass!);
+    document.body.appendChild(Sortable.ghost);
+
+    // Add chosen class
+    this.dragEl!.classList.add(this.options.chosenClass!);
+    this.dragEl!.classList.add(this.options.dragClass!);
+
+    // Fold MultiDrag items
+    if (this.options.multiDrag && this.multiDragElements.length > 0) {
+      this.multiDragElements.forEach(el => {
+        if (el !== this.dragEl) {
+          el.style.display = 'none';
+        }
+      });
+    }
+
+    // Setup scroll parent
+    this.scrollParent = getScrollParent(this.el);
     this.scrollParentBounds = this.scrollParent.getBoundingClientRect();
 
-    const { element, sourceList, fromIndex } = dragState;
-    const item = sourceList[fromIndex];
-    if (item === undefined) return;
-
-    const list = this.ctx.getList();
-    const currentIndex = list.indexOf(item);
-    if (currentIndex === -1) return;
-
-    this.activeDrag = { item, element, index: currentIndex };
-    (this.activeDrag as any).originalNextSibling = element.nextElementSibling;
-    (this.activeDrag as any).originalParent = element.parentElement;
-    this.currentToIndex = currentIndex;
-
-    const dragItems = (dragState as any).dragItems as T[];
-    const dragElements = (dragState as any).dragElements as HTMLElement[];
-    const fromIndices = (dragState as any).fromIndices as number[];
-
-    if (dragItems && dragElements && fromIndices && dragItems.length > 1) {
-       this.multiItems = dragItems.map((itm, i) => ({
-         item: itm,
-         element: dragElements[i],
-         index: fromIndices[i]
-       }));
-    } else {
-       this.multiItems = [this.activeDrag];
-    }
-
-    if ((globalThis as any)._nexusDebugDrag) {
-      console.log("[drag-reorder] startDrag", { currentIndex, item });
-    }
-
-    // Capture cursor-to-element offset (SortableJS tapDistanceLeft/Top)
-    const rect = element.getBoundingClientRect();
-    if (_event instanceof DragEvent || (_event as any).clientX !== undefined) {
-      const e = _event as DragEvent;
-      this.tapOffsetX = e.clientX - rect.left;
-      this.tapOffsetY = e.clientY - rect.top;
-      this.startClientX = e.clientX;
-      this.startClientY = e.clientY;
-    } else {
-      this.tapOffsetX = rect.width / 2;
-      this.tapOffsetY = rect.height / 2;
-      this.startClientX = rect.left + rect.width / 2;
-      this.startClientY = rect.top + rect.height / 2;
-    }
-
-    this.ghostEl = this.createGhost(element, this.ctx.dragClass);
-    const fallbackContainer = this.ctx.fallbackOnBody ? document.body : (element.parentElement || document.body);
-    fallbackContainer.appendChild(this.ghostEl);
-    this.positionGhost(element, _event);
-
-    this.placeholderEl = element;
-    this.placeholderEl.classList.add("sortable-ghost");
-    if (this.ctx.ghostClass) {
-      this.ctx.ghostClass.split(" ").forEach(c => {
-        if (c.trim()) this.placeholderEl!.classList.add(c.trim());
-      });
-    }
-
-    // Fold/Remove secondary multi-drag items
-    if (this.multiItems.length > 1) {
-      const prevStates = new Map<Element, DOMRect>();
-      this.captureAnimationState(this.ctx.container, prevStates);
-
-      for (const m of this.multiItems) {
-        if (m.element !== element) {
-          m.element.parentNode?.removeChild(m.element);
-        }
-      }
-
-      requestAnimationFrame(() => {
-          this.animateAll(this.ctx.container, prevStates, this.ctx.animationDuration ?? 150);
-      });
-    }
-
-    this.containerBounds = this.ctx.container.getBoundingClientRect();
-    this.ctx.onReorder?.(list, currentIndex, currentIndex);
-  }
-
-  updateDrag(clientX: number, clientY: number, _event: Event): void {
-    if (!this.activeDrag || !this.ghostEl) return;
-
-    const fromIndex = this.activeDrag.index;
-    this.isSwapMode = this.ctx.swap === true || ((_event as PointerEvent).shiftKey === true);
-
-    this.positionGhostAt(clientX, clientY);
-    this.containerBounds = this.ctx.container.getBoundingClientRect();
-
-    const currentZone = this.currentDropZone || this.ctx.container;
-    if (this.currentDropZone) {
-      this.captureDOMState(this.currentDropZone);
-      this.scrollParent = getScrollParent(this.currentDropZone);
-    } else {
-      this.scrollParent = getScrollParent(this.ctx.container);
-    }
-    if (this.scrollParent) {
-      this.scrollParentBounds = this.scrollParent.getBoundingClientRect();
-    }
-
-    this.maybeAutoScroll(clientX, clientY);
-
-    const toIndex = this.calculateInsertIndex(clientX, clientY, _event as PointerEvent | DragEvent);
-    
-    const target = (this.activeDrag as any).lastHoverTarget || null;
-    this.updateHighlight(target, currentZone, clientX, clientY);
-
-    if (toIndex === -1) return;
-
-    this.repositionPlaceholder(currentZone, toIndex);
-
-    if (this.isSwapMode) {
-      this.currentToIndex = toIndex;
-    } else {
-      // Read live DOM index to keep tracking aligned
-      const currentChildren = this.getDraggableChildren(currentZone);
-      const liveIndex = currentChildren.indexOf(this.placeholderEl!);
-      if (liveIndex !== -1) {
-        this.currentToIndex = liveIndex;
-      }
-    }
-
-    // After DOM insertion, calculate targetMoveDistance (must be done before animation/next frame)
-    if (target && this.targetBeforeFirstSwap !== undefined && !this.isCircumstantialInvert) {
-      const direction = this._detectDirection(currentZone);
-      const vertical = direction === "vertical";
-      const side1 = vertical ? 'top' : 'left';
-      this.targetMoveDistance = Math.abs(this.targetBeforeFirstSwap - this.getElementRect(target)[side1]);
-    }
-
-    if ((globalThis as any)._nexusDebugDrag) {
-      console.log("[drag-reorder] updateDrag", {
-        fromIndex,
-        toIndex,
-        active: !!this.activeDrag,
+    if (this.options.onStart) {
+      this.options.onStart({
+        item: this.dragEl,
+        oldIndex: this.originalIndices.get(this.dragEl!),
+        originalEvent: e,
       });
     }
   }
 
-  private updateHighlight(target: HTMLElement | null, container: HTMLElement, clientX: number, clientY: number) {
-     const beforeClass = container.getAttribute('data-drag-before-class') || 'drop-target-before';
-     const afterClass = container.getAttribute('data-drag-after-class') || 'drop-target-after';
-     const swapClass = this.ctx.swapClass || 'drop-target-swap';
-     
-     Array.from(container.querySelectorAll('.' + beforeClass)).forEach(el => el.classList.remove(beforeClass));
-     Array.from(container.querySelectorAll('.' + afterClass)).forEach(el => el.classList.remove(afterClass));
-     Array.from(container.querySelectorAll('.' + swapClass)).forEach(el => el.classList.remove(swapClass));
+  private _onDragOver(e: PointerEvent) {
+    if (!this.dragEl) return;
 
-     if (!target) return;
+    // Find closest container target
+    const target = this._findTargetUnderCursor(e.clientX, e.clientY);
+    if (!target || target === this.dragEl) return;
 
-     if (this.isSwapMode) {
-         target.classList.add(swapClass);
-         return;
-     }
+    // Circular containment prevention
+    if (this.dragEl.contains(target)) return;
 
-     const direction = this.ctx.direction || 'vertical';
-     const rect = this.getElementRect(target);
-     let isAfter = false;
-     
-     if (direction === 'horizontal') {
-         isAfter = (clientX - rect.left) > rect.width / 2;
-     } else if (direction === 'grid') {
-         // Primary X axis, but if very clear Y difference, use Y
-         const dx = clientX - (rect.left + rect.width / 2);
-         const dy = clientY - (rect.top + rect.height / 2);
-         isAfter = Math.abs(dx) > Math.abs(dy) ? dx > 0 : dy > 0;
-     } else {
-         isAfter = (clientY - rect.top) > rect.height / 2;
-     }
-     
-     target.classList.add(isAfter ? afterClass : beforeClass);
-  }
+    const targetParent = target.hasAttribute('data-teleport:drop') ? target : target.closest('[data-teleport\\:drop]') as HTMLElement | null;
+    if (!targetParent) return;
 
-  endDrag(_event: Event): void {
-    // Process final coordinates from the release event
-    const coords = getEventCoordinates(_event);
-    if (coords) {
-      this.updateDrag(coords.clientX, coords.clientY, _event);
+    let targetSortable: Sortable | null = null;
+    const reorderEngine = (targetParent as any).__sortable;
+    if (reorderEngine && reorderEngine.sortable) {
+      targetSortable = reorderEngine.sortable;
     }
 
-    this.updateHighlight(null, this.ctx.container, 0, 0);
-    if (this.currentDropZone && this.currentDropZone !== this.ctx.container) {
-      this.updateHighlight(null, this.currentDropZone, 0, 0);
-    }
-    
-    const fromIndex = this.activeDrag?.index ?? -1;
-    const toIndex = this.currentToIndex;
-    
-    // 1. Capture child positions BEFORE reverting the manual DOM mutations
-    const prevStates = new Map<Element, DOMRect>();
-    this.captureAnimationState(this.ctx.container, prevStates);
-    if (this.currentDropZone && this.currentDropZone !== this.ctx.container) {
-        this.captureAnimationState(this.currentDropZone, prevStates);
-    }
-
-    // Set unfolding starting states for secondary multi-drag items
-    const dragRect = this.placeholderEl ? this.placeholderEl.getBoundingClientRect() : null;
-    if (dragRect) {
-      for (const m of this.multiItems) {
-        if (m.element !== this.placeholderEl) {
-          prevStates.set(m.element, dragRect);
-        }
+    const isSameContainer = targetParent === this.el;
+    if (!isSameContainer) {
+      if (!targetSortable || !this._canPullPut(targetSortable)) {
+        return; // Pull/Put not allowed between groups
       }
     }
 
-    // 2. Always revert the manual DOM mutations to ensure clean state before array commit
-    if (this.originalDOMStates) {
-      for (const state of this.originalDOMStates) {
-        while (state.container.firstChild) {
-          state.container.removeChild(state.container.firstChild);
-        }
-        for (const child of state.childNodes) {
-          if (child instanceof HTMLElement) {
-            const origDisplay = state.displays.get(child);
-            if (origDisplay !== undefined) {
-              child.style.display = origDisplay;
-            }
-            if (child.style.position === 'absolute' && child.hasAttribute("data-folded")) {
-              child.style.position = '';
-              child.style.top = '';
-              child.style.left = '';
-              child.style.width = '';
-              child.style.height = '';
-              child.style.zIndex = '';
-              child.removeAttribute("data-folded");
-            }
-          }
-          state.container.appendChild(child);
-        }
+    if (target.hasAttribute('data-teleport:drop')) {
+      // Dragged over an empty container: append directly!
+      if (this.dragEl.parentElement !== target) {
+        const srcBefore = this._captureRects(this.dragEl.parentElement!);
+        const destBefore = this._captureRects(target);
+        
+        target.appendChild(this.dragEl);
+        
+        this._animateShift(this.dragEl.parentElement!, srcBefore);
+        this._animateShift(target, destBefore);
       }
+      return;
     }
 
-    // 3. Commit the array mutation ONLY on drop to prevent reactive loops during drag
-    if (this.activeDrag && toIndex !== -1 && (toIndex !== fromIndex || (this.currentDropZone && this.currentDropZone !== this.ctx.container))) {
-        this.executeReorder(fromIndex, toIndex, prevStates);
-    } else {
-        // Cancel/No-change reorder: trigger fallback FLIP animation to return elements smoothly
-        requestAnimationFrame(() => {
-          this.animateAll(this.ctx.container, prevStates, this.ctx.animationDuration ?? 150);
-        });
-    }
+    const targetRect = target.getBoundingClientRect();
+    const dragRect = this.dragEl.getBoundingClientRect();
+    const vertical = this._detectDirection(targetParent) === 'vertical';
 
-    this.cleanupGhost();
-    this.activeDrag = null;
-    this.ghostEl = null;
-    this.placeholderEl = null;
-    this.currentToIndex = -1;
-  }
-
-  getFinalToIndex(): number {
-    return this.currentToIndex;
-  }
-
-  private createGhost(sourceEl: HTMLElement, dragClass?: string): HTMLElement {
-    const ghost = sourceEl.cloneNode(true) as HTMLElement;
-    
-    // ZCZS Mandate: The ghost is purely visual. Strip all Nexus-UX reactive attributes 
-    // to prevent the MutationObserver from compiling it and triggering infinite loops 
-    // or out-of-scope expression failures.
-    const stripReactiveAttributes = (el: HTMLElement) => {
-      const attrsToRemove = [];
-      for (let i = 0; i < el.attributes.length; i++) {
-        const attrName = el.attributes[i].name;
-        if (attrName.startsWith('data-') || attrName.startsWith('nexus-')) {
-          attrsToRemove.push(attrName);
-        }
-      }
-      attrsToRemove.forEach(attr => el.removeAttribute(attr));
-      el.id = '';
-      for (let i = 0; i < el.children.length; i++) {
-        stripReactiveAttributes(el.children[i] as HTMLElement);
-      }
-    };
-    stripReactiveAttributes(ghost);
-
-    if (this.multiItems.length > 1) {
-      const badge = document.createElement("div");
-      badge.textContent = String(this.multiItems.length);
-      Object.assign(badge.style, {
-        position: "absolute",
-        top: "-8px",
-        right: "-8px",
-        background: "var(--fallback-p, oklch(var(--p)))",
-        color: "var(--fallback-pc, oklch(var(--pc)))",
-        borderRadius: "9999px",
-        padding: "2px 8px",
-        fontSize: "12px",
-        fontWeight: "bold",
-        boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-        zIndex: "100000",
-      });
-      ghost.appendChild(badge);
-    }
-
-    ghost.classList.add("sortable-drag");
-    if (dragClass) {
-      dragClass.split(" ").forEach(c => {
-        if (c.trim()) ghost.classList.add(c.trim());
-      });
-    }
-    Object.assign(ghost.style, {
-      position: "fixed",
-      pointerEvents: "none",
-      opacity: "0.85",
-      zIndex: "999999",
-      boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
-      transition: "opacity 0.15s ease-out",
-    });
-    const rect = sourceEl.getBoundingClientRect();
-    ghost.style.width = rect.width + "px";
-    ghost.style.height = rect.height + "px";
-    return ghost;
-  }
-
-  private positionGhost(sourceEl: HTMLElement, _event: Event): void {
-    if (!this.ghostEl) return;
-    const rect = sourceEl.getBoundingClientRect();
-    this.ghostEl.style.left = rect.left + "px";
-    this.ghostEl.style.top = rect.top + "px";
-  }
-
-  private positionGhostAt(x: number, y: number): void {
-    if (!this.ghostEl) return;
-    const left = x - this.tapOffsetX;
-    const top = y - this.tapOffsetY;
-    this.ghostEl.style.left = left + "px";
-    this.ghostEl.style.top = top + "px";
-  }
-
-  private isValidDraggableChild(child: HTMLElement, targetZone: HTMLElement | null = null): boolean {
-    if (child === this.ghostEl) return false;
-    if (child.hasAttribute("data-ux-template")) return false;
-    if (getComputedStyle(child).display === "none") return false;
-    if (!child.hasAttribute("data-drag")) return false;
-    const dz = child.closest("[data-teleport\\:drop]") as HTMLElement | null;
-    if (targetZone && dz !== targetZone) return false;
-
-    if (dz === this.ctx.container || !dz) {
-        if (this.ctx.sort === false) return false;
-        return true;
-    }
-
-    // ZCZS: gate on filter selector
-    const filterSel = this.ctx.container.getAttribute("data-drag-filter");
-    if (filterSel) {
-      const fs = filterSel.trim();
-      if (fs && child.matches(fs)) return false;
-    }
-    // Check cross-list group
-    const myGroup = this.ctx.group;
-    if (!myGroup) return false;
-    
-    const theirGroupName = dz.getAttribute("data-drag-group");
-    const myGroupName = typeof myGroup === 'string' ? myGroup : myGroup.name;
-    
-    if (theirGroupName === myGroupName) {
-      const theirPut = dz.getAttribute("data-drag-put");
-      if (theirPut === "false") return false;
-      
-      const myGroupConfig = typeof myGroup === 'object' ? myGroup : null;
-      if (myGroupConfig && myGroupConfig.put === false) return false;
-
-      return true;
-    }
-    return false;
-  }
-
-  private getDraggableChildren(container: HTMLElement): HTMLElement[] {
-    const children: HTMLElement[] = [];
-    for (let i = 0; i < container.children.length; i++) {
-      const child = container.children[i] as HTMLElement;
-      if (this.isValidDraggableChild(child, container)) {
-        children.push(child);
-      }
-    }
-    return children;
-  }
-
-  private calculateInsertIndex(
-    clientX: number,
-    clientY: number,
-    event?: PointerEvent | DragEvent,
-  ): number {
-    if (!this.activeDrag) return -1;
-
-    // Step 1: Find target under cursor
-    const targetInfo = this.findTargetUnderCursor(clientX, clientY);
-    const target = targetInfo.target;
-    const dropZone = targetInfo.zone;
-    
-    (this.activeDrag as any).lastHoverTarget = target;
-    
-    if (!dropZone) return -1;
-
-    // Switch active drop zone if changed
-    this.currentDropZone = dropZone;
-
-    if (!target) {
-       // If no target but valid dropzone (e.g. empty list), index is 0
-       return 0;
-    }
-
-    if (target === this.placeholderEl) return -1;
-
-    const direction = this._detectDirection(dropZone);
-    const vertical = direction === "vertical";
-    const targetRect = this.getElementRect(target);
-    const dragRect = this.getElementRect(this.placeholderEl!);
-
-    const differentLevel = this.placeholderEl!.parentNode !== dropZone;
+    const differentLevel = this.dragEl.parentNode !== targetParent;
     const differentRowCol = !this._dragElInRowColumn(dragRect, targetRect, vertical);
     const side1 = vertical ? 'top' : 'left';
 
-    const isLastTarget = this.lastTarget === target;
-
-    if (!isLastTarget) {
+    if (this.lastTarget !== target) {
       this.targetBeforeFirstSwap = targetRect[side1];
       this.pastFirstInvertThresh = false;
-      this.isCircumstantialInvert = (!differentRowCol && (this.ctx.swap === true)) || differentLevel;
+      this.isCircumstantialInvert = (!differentRowCol && this.options.invertSwap) || differentLevel;
     }
 
-    const swapThreshold = differentRowCol ? 1 : (this.ctx.swapThreshold ?? 0.5);
-    const invertedSwapThreshold = this.ctx.swapThreshold ?? 0.5;
-
-    const swapDirection = this._getSwapDirection(
-      event,
+    const direction = this._getSwapDirection(
+      e,
       target,
       targetRect,
       vertical,
-      swapThreshold,
-      invertedSwapThreshold,
+      differentRowCol ? 1 : this.options.swapThreshold!,
+      this.options.invertedSwapThreshold!,
       this.isCircumstantialInvert,
-      isLastTarget
+      this.lastTarget === target
     );
 
-    if (swapDirection === 0) return -1;
+    if (direction !== 0) {
+      // Check if already beside target
+      let sibling: HTMLElement | null = null;
+      let dragIndex = Array.from(this.dragEl.parentElement!.children).indexOf(this.dragEl);
+      if (dragIndex !== -1) {
+        do {
+          dragIndex -= direction;
+          sibling = this.dragEl.parentElement!.children[dragIndex] as HTMLElement | null;
+        } while (sibling && (getComputedStyle(sibling).display === 'none' || sibling === Sortable.ghost));
+      }
+      if (sibling === target) {
+        return;
+      }
 
-    const children = this.getDraggableChildren(dropZone);
-    const dragIndex = children.indexOf(this.placeholderEl!);
-    const targetIndex = children.indexOf(target);
-
-    if (this.isSwapMode) {
       this.lastTarget = target;
-      this.lastDirection = swapDirection;
-      return targetIndex;
-    }
+      this.lastDirection = direction;
 
-    // If dragEl is already beside target: Do not insert
-    let checkIndex = dragIndex;
-    let sibling: HTMLElement | null = null;
-    do {
-      checkIndex -= swapDirection;
-      sibling = children[checkIndex] || null;
-    } while (sibling && (getComputedStyle(sibling).display === 'none' || sibling === this.ghostEl));
+      // Capture before states
+      const srcBefore = this._captureRects(this.dragEl.parentElement!);
+      const destBefore = isSameContainer ? srcBefore : this._captureRects(targetParent);
 
-    if (sibling === target) {
-      return -1;
-    }
-
-    this.lastTarget = target;
-    this.lastDirection = swapDirection;
-
-    return swapDirection === 1 ? targetIndex + 1 : targetIndex;
-  }
-
-  /**
-   * Find target element under cursor using quadtree for O(log n) query.
-   * Falls back to elementFromPoint if quadtree unavailable.
-   */
-  private findTargetUnderCursor(
-    clientX: number,
-    clientY: number,
-  ): { target: HTMLElement | null, zone: HTMLElement | null } {
-    // ZCZS: Use quadtree from predictive engine for O(log n) query
-    const quadtree = (globalThis as any)._nexusQuadtree;
-    if (quadtree) {
-      const targets = quadtree.queryRadius(clientX, clientY, 20);
-      for (const target of targets) {
-        if (
-          target instanceof HTMLElement && this.isValidDraggableChild(target)
-        ) {
-          const rect = this.getElementRect(target);
-          if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
-            const zone = target.closest("[data-teleport\\:drop]") as HTMLElement;
-            return { target, zone };
-          }
-        }
-      }
-    }
-
-    // Fallback: temporarily hide ghost for accurate element detection
-    const ghostDisplay = this.ghostEl?.style.display;
-    if (this.ghostEl) this.ghostEl.style.display = "none";
-
-    let target: HTMLElement | null = null;
-    let zone: HTMLElement | null = null;
-    const el = document.elementFromPoint(clientX, clientY) as HTMLElement;
-    
-    if ((globalThis as any)._nexusDebugDrag) {
-       console.log("[drag hit-test] el:", el?.tagName, el?.className);
-    }
-
-    if (el) {
-      target = el.closest('[data-drag]') as HTMLElement;
-      if (target && !this.isValidDraggableChild(target)) {
-        target = null;
-      }
-      if (target) {
-        zone = target.closest("[data-teleport\\:drop]") as HTMLElement;
+      // Perform reorder mutation in DOM
+      if (this.options.swap) {
+        this._swapNodes(this.dragEl, target);
       } else {
-        zone = el.closest("[data-teleport\\:drop]") as HTMLElement;
-        if (zone) {
-            // Check if we can drop into this empty zone
-            // Just use a dummy element to test zone compatibility
-            const dummy = document.createElement("div");
-            dummy.setAttribute("data-drag", "true");
-            zone.appendChild(dummy);
-            const isValid = this.isValidDraggableChild(dummy, zone);
-            zone.removeChild(dummy);
-            if (!isValid) zone = null;
+        const nextSibling = target.nextElementSibling;
+        const after = direction === 1;
+        if (after && !nextSibling) {
+          targetParent.appendChild(this.dragEl);
+        } else {
+          targetParent.insertBefore(this.dragEl, after ? nextSibling : target);
         }
+      }
+
+      // Animate shifts in both containers
+      this._animateShift(this.dragEl.parentElement!, srcBefore);
+      if (!isSameContainer) {
+        this._animateShift(targetParent, destBefore);
+      }
+
+      // Recalculate targetMoveDistance
+      if (this.targetBeforeFirstSwap !== undefined && !this.isCircumstantialInvert) {
+        const newTargetRect = target.getBoundingClientRect();
+        this.targetMoveDistance = Math.abs(this.targetBeforeFirstSwap - newTargetRect[side1]);
+      }
+    }
+  }
+
+  private _onPointerUp(e: PointerEvent) {
+    this._cleanupDragListeners();
+
+    if (this.dragStarted && this.dragEl) {
+      // Remove classes
+      this.dragEl.classList.remove(this.options.chosenClass!);
+      this.dragEl.classList.remove(this.options.dragClass!);
+
+      // Restore MultiDrag elements visibility
+      if (this.options.multiDrag && this.multiDragElements.length > 0) {
+        this.multiDragElements.forEach(el => {
+          el.style.display = '';
+        });
+      }
+
+      // Remove clone
+      if (Sortable.clone) {
+        Sortable.clone.parentNode?.removeChild(Sortable.clone);
+        Sortable.clone = null;
+      }
+
+      // Remove ghost
+      if (Sortable.ghost) {
+        Sortable.ghost.parentNode?.removeChild(Sortable.ghost);
+        Sortable.ghost = null;
+      }
+
+      const finalIndex = Array.from(this.el.children)
+        .filter(c => c.nodeName.toUpperCase() !== 'TEMPLATE')
+        .indexOf(this.dragEl);
+
+      const oldIndex = this.originalIndices.get(this.dragEl);
+
+      if (this.options.onEnd) {
+        this.options.onEnd({
+          item: this.dragEl,
+          from: this.parentEl,
+          to: this.dragEl.parentElement,
+          oldIndex,
+          newIndex: finalIndex,
+          originalEvent: e,
+          items: [...this.multiDragElements],
+          oldIndicies: this.multiDragElements.map(el => ({
+            multiDragElement: el,
+            index: this.originalIndices.get(el) ?? -1,
+          })),
+        });
       }
     }
 
-    // Restore ghost display
-    if (this.ghostEl) this.ghostEl.style.display = ghostDisplay || "";
-
-    return { target, zone };
+    Sortable.active = null;
+    this.dragEl = null;
+    this.tapEvt = null;
+    this.dragStarted = false;
   }
 
-  private _detectDirection(container: HTMLElement): "vertical" | "horizontal" {
-    const direction = this.ctx.direction;
-    if (direction === "vertical") return "vertical";
-    if (direction === "horizontal") return "horizontal";
+  private _cleanupDragListeners() {
+    document.removeEventListener('pointermove', this._pointerMoveBound);
+    document.removeEventListener('pointerup', this._pointerUpBound);
+    document.removeEventListener('pointercancel', this._pointerUpBound);
+  }
 
+  private _findTargetUnderCursor(clientX: number, clientY: number): HTMLElement | null {
+    const el = document.elementFromPoint(clientX, clientY) as HTMLElement | null;
+    if (!el) return null;
+
+    const dragItem = el.closest(this.options.draggable!) as HTMLElement | null;
+    if (dragItem) return dragItem;
+
+    const container = el.closest('[data-teleport\\:drop]') as HTMLElement | null;
+    if (container && (container as any).__sortable) {
+      // Check if container has visible children (excluding ghost and the current drag element)
+      const children = Array.from(container.children).filter(c => 
+        c.nodeName.toUpperCase() !== 'TEMPLATE' && 
+        c !== this.dragEl && 
+        c !== Sortable.ghost &&
+        !(c as HTMLElement).classList.contains('sortable-ghost')
+      ) as HTMLElement[];
+
+      if (children.length === 0) {
+        return container; // Empty container target
+      }
+
+      // If container has children, return the last child so we can insert after/before it
+      return children[children.length - 1];
+    }
+    return null;
+  }
+
+  private _detectDirection(container: HTMLElement): 'vertical' | 'horizontal' {
+    if (this.options.direction) return this.options.direction === 'grid' ? 'vertical' : this.options.direction;
     const style = getComputedStyle(container);
-    if (style.display === "flex") {
-      return (style.flexDirection === "column" || style.flexDirection === "column-reverse")
-        ? "vertical" : "horizontal";
+    if (style.display === 'flex') {
+      return (style.flexDirection === 'column' || style.flexDirection === 'column-reverse') ? 'vertical' : 'horizontal';
     }
-    if (style.display === "grid") {
-      return (style.gridTemplateColumns.split(" ").length <= 1)
-        ? "vertical" : "horizontal";
+    if (style.display === 'grid') {
+      return (style.gridTemplateColumns.split(' ').length <= 1) ? 'vertical' : 'horizontal';
     }
-
-    const children = this.getDraggableChildren(container);
+    const children = Array.from(container.children).filter(c => c.nodeName.toUpperCase() !== 'TEMPLATE') as HTMLElement[];
     if (children.length >= 2) {
-      const rect1 = this.getElementRect(children[0]);
-      const rect2 = this.getElementRect(children[1]);
-      return Math.abs(rect1.top - rect2.top) < 4 ? "horizontal" : "vertical";
+      const rect1 = children[0].getBoundingClientRect();
+      const rect2 = children[1].getBoundingClientRect();
+      return Math.abs(rect1.top - rect2.top) < 4 ? 'horizontal' : 'vertical';
     }
-    return "vertical";
+    return 'vertical';
   }
 
   private _dragElInRowColumn(dragRect: DOMRect, targetRect: DOMRect, vertical: boolean): boolean {
@@ -703,43 +497,30 @@ class DragReorderEngine<T> {
     const targetS2Opp = vertical ? targetRect.right : targetRect.bottom;
     const targetOppLength = vertical ? targetRect.width : targetRect.height;
 
-    const dragCenter = dragElS1Opp + dragElOppLength / 2;
-    const targetCenter = targetS1Opp + targetOppLength / 2;
-
-    const eps = 4;
     return (
-      Math.abs(dragElS1Opp - targetS1Opp) < eps ||
-      Math.abs(dragElS2Opp - targetS2Opp) < eps ||
-      Math.abs(dragCenter - targetCenter) < eps
+      dragElS1Opp === targetS1Opp ||
+      dragElS2Opp === targetS2Opp ||
+      (dragElS1Opp + dragElOppLength / 2) === (targetS1Opp + targetOppLength / 2)
     );
   }
 
-  private getInsertDirection(target: HTMLElement): -1 | 1 {
-    const children = this.getDraggableChildren(this.currentDropZone || this.ctx.container);
-    const dragIdx = children.indexOf(this.placeholderEl!);
-    const targetIdx = children.indexOf(target);
-    return dragIdx < targetIdx ? 1 : -1;
-  }
-
   private _getSwapDirection(
-    event: PointerEvent | DragEvent | undefined,
+    evt: PointerEvent,
     target: HTMLElement,
     targetRect: DOMRect,
     vertical: boolean,
     swapThreshold: number,
     invertedSwapThreshold: number,
     invertSwap: boolean,
-    isLastTarget: boolean,
-  ): -1 | 0 | 1 {
-    if (!event) return 0;
-    const mouseOnAxis = vertical ? event.clientY : event.clientX;
+    isLastTarget: boolean
+  ): number {
+    const mouseOnAxis = vertical ? evt.clientY : evt.clientX;
     const targetLength = vertical ? targetRect.height : targetRect.width;
     const targetS1 = vertical ? targetRect.top : targetRect.left;
     const targetS2 = vertical ? targetRect.bottom : targetRect.right;
     let invert = false;
 
     if (!invertSwap) {
-      // Check if target movement causes mouse to move past the end of swapThreshold
       if (isLastTarget && this.targetMoveDistance < targetLength * swapThreshold) {
         if (!this.pastFirstInvertThresh &&
           (this.lastDirection === 1 ?
@@ -755,18 +536,17 @@ class DragReorderEngine<T> {
             (mouseOnAxis < targetS1 + this.targetMoveDistance) :
             (mouseOnAxis > targetS2 - this.targetMoveDistance)
           ) {
-            return -this.lastDirection as -1 | 0 | 1;
+            return -this.lastDirection;
           }
         } else {
           invert = true;
         }
       } else {
-        // Regular Threshold
         if (
           mouseOnAxis > targetS1 + (targetLength * (1 - swapThreshold) / 2) &&
           mouseOnAxis < targetS2 - (targetLength * (1 - swapThreshold) / 2)
         ) {
-          return this.getInsertDirection(target);
+          return this._getInsertDirection(evt, target, targetRect, vertical);
         }
       }
     }
@@ -777,75 +557,52 @@ class DragReorderEngine<T> {
         mouseOnAxis < targetS1 + (targetLength * invertedSwapThreshold / 2) ||
         mouseOnAxis > targetS2 - (targetLength * invertedSwapThreshold / 2)
       ) {
-        return ((mouseOnAxis > targetS1 + targetLength / 2) ? 1 : -1);
+        return (mouseOnAxis > targetS1 + targetLength / 2) ? 1 : -1;
       }
     }
 
     return 0;
   }
 
-  private repositionPlaceholder(targetZone: HTMLElement, toIndex: number): void {
-    if (!this.placeholderEl || !targetZone) return;
+  private _getInsertDirection(evt: PointerEvent, target: HTMLElement, targetRect: DOMRect, vertical: boolean): number {
+    const mouseOnAxis = vertical ? evt.clientY : evt.clientX;
+    const targetS1 = vertical ? targetRect.top : targetRect.left;
+    const targetLength = vertical ? targetRect.height : targetRect.width;
+    return (mouseOnAxis > targetS1 + targetLength / 2) ? 1 : -1;
+  }
 
-    // Guard: Never insert an element into its own descendant to prevent HierarchyRequestError
-    if (this.placeholderEl.contains(targetZone)) return;
+  private _swapNodes(n1: HTMLElement, n2: HTMLElement) {
+    const p1 = n1.parentNode;
+    const p2 = n2.parentNode;
+    if (!p1 || !p2 || p1.isEqualNode(n2) || p2.isEqualNode(n1)) return;
 
-    const target = (this.activeDrag as any).lastHoverTarget;
-    if (this.isSwapMode && target) {
-      if (this.lastSwapEl && this.lastSwapEl !== target) {
-        this.lastSwapEl.classList.remove(this.ctx.swapClass || "sortable-swap-highlight");
-        this.lastSwapEl = null;
-      }
-      if (target !== this.placeholderEl) {
-        target.classList.add(this.ctx.swapClass || "sortable-swap-highlight");
-        this.lastSwapEl = target;
-      }
-      return;
-    }
+    const children = Array.from(p1.children);
+    const i1 = children.indexOf(n1);
+    const i2 = children.indexOf(n2);
 
-    this.placeholderEl.style.display = '';
-
-    const children = this.getDraggableChildren(targetZone);
-    const ref = toIndex >= children.length ? null : children[toIndex];
-
-    // Guard: Never insert an element before its own descendant to prevent HierarchyRequestError
-    if (ref && this.placeholderEl.contains(ref)) return;
-
-    // ZCZS: Only move if the parent container changed OR if the sibling position within the same container changed
-    if (this.placeholderEl.parentNode !== targetZone || (ref === null ? this.placeholderEl.nextSibling !== null : this.placeholderEl.nextSibling !== ref)) {
-      const oldZone = this.placeholderEl.parentNode as HTMLElement;
-      
-      // Capture states before mutation
-      const states = new Map<Element, DOMRect>();
-      if (oldZone) this.captureAnimationState(oldZone, states);
-      if (targetZone !== oldZone) this.captureAnimationState(targetZone, states);
-
-      if (ref) {
-        targetZone.insertBefore(this.placeholderEl, ref);
-      } else {
-        targetZone.appendChild(this.placeholderEl);
-      }
-
-      // Animate siblings after mutation
-      requestAnimationFrame(() => {
-          if (oldZone) this.animateAll(oldZone, states, this.ctx.animationDuration ?? 150);
-          if (targetZone !== oldZone) this.animateAll(targetZone, states, this.ctx.animationDuration ?? 150);
-      });
+    if (p1.isEqualNode(p2) && i1 < i2) {
+      p1.insertBefore(n2, children[i1]);
+      p2.insertBefore(n1, children[i2 + 1] || null);
+    } else {
+      p1.insertBefore(n2, children[i1]);
+      p2.insertBefore(n1, children[i2] || null);
     }
   }
 
-  private maybeAutoScroll(clientX: number, clientY: number): void {
-    const { onAutoScroll, edgeScrollThreshold = 40, autoScrollSpeed = 15 } =
-      this.ctx;
+  private _maybeAutoScroll(clientX: number, clientY: number) {
     if (!this.scrollParent || !this.scrollParentBounds) return;
-
     const { left, top, width, height } = this.scrollParentBounds;
-    const dl = clientX - left;
-    const dr = left + width - clientX;
-    const dt = clientY - top;
-    const db = top + height - clientY;
+    const edgeScrollThreshold = 40;
+    const autoScrollSpeed = 15;
 
-    let dx = 0, dy = 0;
+    const dl = clientX - left;
+    const dr = (left + width) - clientX;
+    const dt = clientY - top;
+    const db = (top + height) - clientY;
+
+    let dx = 0;
+    let dy = 0;
+
     const canScrollLeft = this.scrollParent.scrollLeft > 0;
     const canScrollRight = this.scrollParent.scrollLeft < (this.scrollParent.scrollWidth - this.scrollParent.clientWidth);
     const canScrollTop = this.scrollParent.scrollTop > 0;
@@ -856,6 +613,7 @@ class DragReorderEngine<T> {
     } else if (dr < edgeScrollThreshold && canScrollRight) {
       dx = autoScrollSpeed * (1 - dr / edgeScrollThreshold);
     }
+
     if (dt < edgeScrollThreshold && canScrollTop) {
       dy = -autoScrollSpeed * (1 - dt / edgeScrollThreshold);
     } else if (db < edgeScrollThreshold && canScrollBottom) {
@@ -863,237 +621,273 @@ class DragReorderEngine<T> {
     }
 
     if (dx !== 0 || dy !== 0) {
-      if (onAutoScroll) {
-        onAutoScroll({ x: dx, y: dy });
-      } else {
-        this.scrollParent.scrollBy({ left: dx, top: dy });
-      }
+      this.scrollParent.scrollBy({ left: dx, top: dy });
     }
   }
 
-  private cleanupGhost(): void {
-    if (this.ghostEl && this.ghostEl.parentNode) {
-      this.ghostEl.remove();
-      this.ghostEl = null;
-    }
-    if (this.placeholderEl) {
-      this.placeholderEl.classList.remove("sortable-ghost");
-      if (this.ctx.ghostClass) {
-        this.ctx.ghostClass.split(" ").forEach(c => {
-          if (c.trim()) this.placeholderEl!.classList.remove(c.trim());
-        });
-      }
-      this.placeholderEl = null;
-    }
-    // Restore secondary multi-drag items
-    if (this.multiItems.length > 1) {
-      for (const m of this.multiItems) {
-        if (m.element !== this.activeDrag?.element) {
-          m.element.style.position = '';
-          m.element.style.top = '';
-          m.element.style.left = '';
-          m.element.style.width = '';
-          m.element.style.height = '';
-          m.element.style.zIndex = '';
-          m.element.removeAttribute("data-folded");
-        }
-      }
-    }
+  private _canPullPut(toSortable: Sortable): boolean {
+    const fromGroup = this.options.group;
+    const toGroup = toSortable.options.group;
+    if (!fromGroup || !toGroup) return false;
     
-    if (this.lastSwapEl) {
-      this.lastSwapEl.classList.remove(this.ctx.swapClass || "sortable-swap-highlight");
-      this.lastSwapEl = null;
-    }
-  }
-
-  private getElementRect(el: HTMLElement): DOMRect {
-    if ((el as any)._isAnimating && (el as any)._toRect) {
-      return (el as any)._toRect;
-    }
-    return el.getBoundingClientRect();
-  }
-
-  /**
-   * Capture bounding rects of all children before a DOM mutation.
-   * Ported from SortableJS AnimationStateManager.captureAnimationState.
-   */
-  private captureAnimationState(container: HTMLElement = this.ctx.container, states = new Map<Element, DOMRect>()): Map<Element, DOMRect> {
-    for (let i = 0; i < container.children.length; i++) {
-      const child = container.children[i];
-      if (child === this.ghostEl || (child as HTMLElement).style.display === 'none') continue;
-      states.set(child, child.getBoundingClientRect());
-    }
-    return states;
-  }
-
-  /**
-   * FLIP-animate children from their captured positions to their new positions.
-   * Ported from SortableJS Animation.js: animate() method.
-   */
-  private animateAll(container: HTMLElement, prevStates: Map<Element, DOMRect>, duration: number): void {
-    // Phase 1: Clear all ongoing animations to get accurate final resting DOM rects
-    for (let i = 0; i < container.children.length; i++) {
-      const child = container.children[i] as HTMLElement;
-      if (child === this.ghostEl || child.style.display === 'none') continue;
-      child.style.transition = '';
-      child.style.transform = '';
-      (child as any)._isAnimating = false;
-      (child as any)._toRect = null;
-      if ((child as any)._animTimeout) {
-        clearTimeout((child as any)._animTimeout);
-      }
-    }
-
-    // Force repaint after clearing transforms to ensure accurate layout measurement
-    // container.offsetWidth; // This is sometimes needed in older browsers, but getBoundingClientRect forces layout anyway
-
-    // Phase 2: Calculate dx/dy and setup initial FLIP transform
-    const toAnimate = [];
-    for (let i = 0; i < container.children.length; i++) {
-      const child = container.children[i] as HTMLElement;
-      if (child === this.ghostEl || child.style.display === 'none') continue;
-      
-      const fromRect = prevStates.get(child);
-      if (!fromRect) continue;
-
-      const toRect = child.getBoundingClientRect();
-      const dx = fromRect.left - toRect.left;
-      const dy = fromRect.top - toRect.top;
-      
-      if (dx === 0 && dy === 0) continue;
-
-      // Store destination rect for stable checks during animation
-      (child as any)._toRect = toRect;
-      (child as any)._isAnimating = true;
-
-      // Jump to old position instantly
-      child.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
-      toAnimate.push(child);
-    }
-
-    // Phase 3: Force repaint once for all elements, then start transitions
-    if (toAnimate.length > 0) {
-      container.offsetWidth; // eslint-disable-line @typescript-eslint/no-unused-expressions
-
-      for (const el of toAnimate) {
-        el.style.transition = `transform ${duration}ms cubic-bezier(0.25, 0.46, 0.45, 0.94)`;
-        el.style.transform = 'translate3d(0, 0, 0)';
-
-        // Cleanup after animation completes
-        const cleanup = () => {
-          el.style.transition = '';
-          el.style.transform = '';
-          (el as any)._isAnimating = false;
-          (el as any)._toRect = null;
-        };
-        el.addEventListener('transitionend', cleanup, { once: true });
-        
-        if ((el as any)._animTimeout) {
-          clearTimeout((el as any)._animTimeout);
-        }
-        (el as any)._animTimeout = setTimeout(cleanup, duration + 50); // fallback if transitionend doesn't fire
-      }
-    }
-  }
-
-  private executeReorder(fromIndex: number, toIndex: number, prevStates: Map<Element, DOMRect>): void {
-    if (!this.activeDrag) return;
-    const isSameZone = !this.currentDropZone || this.currentDropZone === this.ctx.container;
-    if (fromIndex === toIndex && isSameZone) return;
-
-    let adjToIndex = toIndex;
+    const fromName = typeof fromGroup === 'object' ? fromGroup.name : fromGroup;
+    const toName = typeof toGroup === 'object' ? toGroup.name : toGroup;
     
-    if (!isSameZone && this.currentDropZone) {
-       const targetExpr = this.currentDropZone.getAttribute("data-teleport:drop");
-       if (targetExpr) {
-           const targetList = this.runtime.evaluate(this.currentDropZone, targetExpr) as any[];
-           if (Array.isArray(targetList)) {
-               const myGroupConfig = typeof this.ctx.group === 'object' ? this.ctx.group : null;
-               const isClone = (myGroupConfig?.pull === 'clone') || (this.currentDropZone.getAttribute("data-teleport-mode") === "clone");
-
-               this.ctx.updateList((sourceList) => {
-                 const itemsToInsert = this.multiItems.map(m => {
-                    try {
-                        return isClone ? structuredClone(m.item) : m.item;
-                    } catch {
-                        return { ...m.item }; // fallback if structuredClone fails on proxies
-                    }
-                 });
-                 
-                 if (!isClone) {
-                   const toRemove = [...this.multiItems].sort((a,b) => b.index - a.index);
-                   for (const removed of toRemove) {
-                     sourceList.splice(removed.index, 1);
-                   }
-                 }
-                 
-                 // ZCZS Mandate: Mutate target array directly to trigger proxy traps
-                 targetList.splice(toIndex, 0, ...itemsToInsert);
-               });
-           }
-       }
-    } else {
-        this.ctx.updateList((list) => {
-          if (this.isSwapMode) {
-              // Swap Mode
-              const toRemove = [...this.multiItems].sort((a,b) => b.index - a.index);
-              for (let i = 0; i < toRemove.length; i++) {
-                  const m = toRemove[i];
-                  const temp = list[toIndex];
-                  list[toIndex] = list[m.index];
-                  list[m.index] = temp;
-              }
-          } else {
-              // Shift Mode
-              const toRemove = [...this.multiItems].sort((a,b) => b.index - a.index);
-              
-              for (const removed of toRemove) {
-                list.splice(removed.index, 1);
-              }
-              
-              const itemsToInsert = this.multiItems.map(m => m.item);
-              list.splice(adjToIndex, 0, ...itemsToInsert);
-          }
-        });
+    if (fromName && toName && fromName === toName) {
+      const fromPull = typeof fromGroup === 'object' && fromGroup.pull !== undefined ? fromGroup.pull : true;
+      const toPut = typeof toGroup === 'object' && toGroup.put !== undefined ? toGroup.put : true;
+      return !!fromPull && !!toPut;
     }
+    return false;
+  }
 
-    for (let i = 0; i < this.multiItems.length; i++) {
-       this.multiItems[i].index = adjToIndex + i;
-    }
-    this.activeDrag!.index = adjToIndex;
-
-    // Animate siblings AFTER mutation (SortableJS FLIP Step 2)
-    requestAnimationFrame(() => {
-      this.animateAll(this.ctx.container, prevStates, this.ctx.animationDuration ?? 150);
-      if (this.currentDropZone && this.currentDropZone !== this.ctx.container) {
-          this.animateAll(this.currentDropZone, prevStates, this.ctx.animationDuration ?? 150);
+  private _captureRects(container: HTMLElement): Map<HTMLElement, DOMRect> {
+    const rects = new Map<HTMLElement, DOMRect>();
+    Array.from(container.children).forEach((child: any) => {
+      if (child.nodeName.toUpperCase() !== 'TEMPLATE') {
+        rects.set(child, child.getBoundingClientRect());
       }
     });
+    return rects;
+  }
 
-    this.ctx.onReorder?.(this.ctx.getList(), fromIndex, adjToIndex);
+  private _animateShift(container: HTMLElement, beforeRects: Map<HTMLElement, DOMRect>) {
+    Array.from(container.children).forEach((child: any) => {
+      if (child.nodeName.toUpperCase() === 'TEMPLATE' || child === this.dragEl) return;
+      const beforeRect = beforeRects.get(child);
+      if (!beforeRect) return;
+
+      const afterRect = child.getBoundingClientRect();
+      const dx = beforeRect.left - afterRect.left;
+      const dy = beforeRect.top - afterRect.top;
+
+      if (dx !== 0 || dy !== 0) {
+        child.style.transition = 'none';
+        child.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+        child.offsetHeight; // force repaint
+        child.style.transition = `transform ${this.options.animation}ms ease-out`;
+        child.style.transform = 'translate3d(0, 0, 0)';
+        
+        const clean = () => {
+          child.style.transition = '';
+          child.style.transform = '';
+        };
+        child.addEventListener('transitionend', clean, { once: true });
+      }
+    });
   }
 }
 
-function buildReorderContext<T>(
+// ---------------------------------------------------------------------------
+// Nexus-UX Compatibility Wrappers
+// ---------------------------------------------------------------------------
+export class DragReorderEngine<T> {
+  public sortable: Sortable | null = null;
+  private finalToIndex = -1;
+
+  constructor(private ctx: DragReorderContext<T>, private runtime?: RuntimeContext) {
+    if (this.ctx.container) {
+      this.init();
+    }
+  }
+
+  private init() {
+    const container = this.ctx.container;
+    const isMulti = container.getAttribute("data-drag-multi") === "true";
+    const selectedClass = container.getAttribute("data-drag-selected-class") || "sortable-selected";
+    const swap = container.getAttribute("data-teleport-mode") === "swap" || container.getAttribute("data-drag-swap") === "true";
+    const swapClass = container.getAttribute("data-drag-swap-class") || "sortable-swap-highlight";
+
+    const groupAttr = container.getAttribute("data-drag-group");
+    let group: any = undefined;
+    if (groupAttr) {
+      group = { name: groupAttr };
+      const pull = container.getAttribute("data-teleport-mode") === "clone" || container.getAttribute("data-drag-clone") === "true" ? "clone" : true;
+      const put = container.getAttribute("data-drag-put") !== "false";
+      const revertClone = container.getAttribute("data-drag-revert-clone") === "true";
+      group.pull = pull;
+      group.put = put;
+      group.revertClone = revertClone;
+    }
+
+    const directionAttr = container.getAttribute("data-drag-direction");
+    const direction = directionAttr === "grid" ? undefined : (directionAttr as "vertical" | "horizontal" | undefined);
+    
+    // Auto-enable invertSwap and 0.65 threshold for nested group
+    const isNested = groupAttr === "nested";
+    const swapThresholdAttr = container.getAttribute("data-drag-swap-threshold");
+    const swapThreshold = swapThresholdAttr ? parseFloat(swapThresholdAttr) : (isNested ? 0.65 : 1);
+    
+    const invertSwapAttr = container.getAttribute("data-drag-invert-swap");
+    const invertSwap = invertSwapAttr === "true" || isNested;
+
+    this.sortable = new Sortable(container, {
+      animation: this.ctx.animationDuration ?? 150,
+      ghostClass: this.ctx.ghostClass ?? "sortable-ghost",
+      dragClass: this.ctx.dragClass ?? "sortable-drag",
+      fallbackOnBody: this.ctx.fallbackOnBody !== false,
+      swapThreshold,
+      invertSwap,
+      direction,
+      handle: container.getAttribute("data-drag-handle") || undefined,
+      filter: container.getAttribute("data-drag-filter") || undefined,
+      draggable: "[data-drag]",
+      multiDrag: isMulti,
+      selectedClass,
+      swap,
+      swapClass,
+      group,
+      sort: this.ctx.sort !== false,
+      onStart: (evt) => {
+        const globalSignals = this.runtime?.globalSignals() as any;
+        if (globalSignals) {
+          globalSignals["drag:start"] = {
+            element: evt.item,
+            originalEvent: evt.originalEvent,
+            fromIndex: evt.oldIndex,
+          };
+        }
+      },
+      onEnd: (evt) => {
+        this.finalToIndex = evt.newIndex;
+
+        const globalSignals = this.runtime?.globalSignals() as any;
+        if (globalSignals) {
+          globalSignals["drag:end"] = {
+            element: evt.item,
+            originalEvent: evt.originalEvent,
+            cancelled: false,
+          };
+        }
+
+        const fromContainer = evt.from;
+        const toContainer = evt.to;
+        const fromExpr = fromContainer.getAttribute("data-teleport:drop");
+        const toExpr = toContainer.getAttribute("data-teleport:drop");
+
+        if (!fromExpr || !this.runtime) return;
+
+        const oldIndex = evt.oldIndex;
+        const newIndex = evt.newIndex;
+        const isMultiDrag = isMulti && evt.items && evt.items.length > 0;
+
+        // Perform reactive list mutations wrapped inside `flip`
+        const childrenToAnimate = Array.from(toContainer.children) as HTMLElement[];
+        const flipFn = (this.runtime.sprites as any)?.$animate?.flip || flip;
+
+        // Setup MultiDrag unfolding transition starting layout
+        if (isMultiDrag && evt.items.length > 1) {
+          const dragRect = evt.item.getBoundingClientRect();
+          evt.items.forEach((item: HTMLElement) => {
+            if (item !== evt.item) {
+              const r = item.getBoundingClientRect();
+              const dx = dragRect.left - r.left;
+              const dy = dragRect.top - r.top;
+              item.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+            }
+          });
+        }
+
+        if (toContainer !== fromContainer && toExpr) {
+          // Cross-container drag
+          const targetList = this.runtime.evaluate(toContainer, toExpr) as any[];
+          const sourceList = this.runtime.evaluate(fromContainer, fromExpr) as any[];
+          if (Array.isArray(targetList) && Array.isArray(sourceList)) {
+            const isClone = (group?.pull === 'clone') || (toContainer.getAttribute("data-teleport-mode") === "clone");
+
+            let itemsToInsert: any[] = [];
+            let indicesToRemove: number[] = [];
+
+            if (isMultiDrag) {
+              const sortedIndices = (evt.oldIndicies || []).slice().sort((a: any, b: any) => b.index - a.index);
+              itemsToInsert = (evt.oldIndicies || []).map((x: any) => {
+                const item = sourceList[x.index];
+                return isClone ? { ...item } : item;
+              });
+              if (!isClone) {
+                indicesToRemove = sortedIndices.map((x: any) => x.index);
+              }
+            } else {
+              const item = sourceList[oldIndex];
+              itemsToInsert = [isClone ? { ...item } : item];
+              if (!isClone) {
+                indicesToRemove = [oldIndex];
+              }
+            }
+
+            flipFn(childrenToAnimate, () => {
+              this.ctx.updateList((src) => {
+                if (!isClone) {
+                  for (const idx of indicesToRemove) {
+                    src.splice(idx, 1);
+                  }
+                }
+                targetList.splice(newIndex, 0, ...itemsToInsert);
+              });
+            }, { duration: this.ctx.animationDuration ?? 150 });
+          }
+        } else {
+          // Intra-container drag
+          const sourceList = this.runtime.evaluate(fromContainer, fromExpr) as any[];
+          if (Array.isArray(sourceList)) {
+            flipFn(childrenToAnimate, () => {
+              this.ctx.updateList((list) => {
+                if (swap) {
+                  if (isMultiDrag) {
+                    const oldInd = evt.oldIndicies || [];
+                    const newInd = evt.newIndicies || [];
+                    for (let i = 0; i < oldInd.length; i++) {
+                      const oIdx = oldInd[i].index;
+                      const nIdx = newInd[i].index;
+                      if (oIdx !== -1 && nIdx !== -1) {
+                        const temp = list[nIdx];
+                        list[nIdx] = list[oIdx];
+                        list[oIdx] = temp;
+                      }
+                    }
+                  } else {
+                    const temp = list[newIndex];
+                    list[newIndex] = list[oldIndex];
+                    list[oldIndex] = temp;
+                  }
+                } else {
+                  if (isMultiDrag) {
+                    let adjIndex = newIndex;
+                    const sortedOld = (evt.oldIndicies || []).slice().sort((a: any, b: any) => b.index - a.index);
+                    const itemsToInsert = (evt.oldIndicies || []).map((x: any) => sourceList[x.index]);
+                    for (const x of sortedOld) {
+                      list.splice(x.index, 1);
+                      if (x.index < newIndex) {
+                        adjIndex--;
+                      }
+                    }
+                    list.splice(adjIndex, 0, ...itemsToInsert);
+                  } else {
+                    const [moved] = list.splice(oldIndex, 1);
+                    list.splice(newIndex, 0, moved);
+                  }
+                }
+              });
+            }, { duration: this.ctx.animationDuration ?? 150 });
+          }
+        }
+      }
+    });
+  }
+
+  public startDrag() {}
+  public updateDrag() {}
+  public endDrag() {}
+  public getFinalToIndex(): number {
+    return this.finalToIndex;
+  }
+}
+
+export function buildReorderContext<T>(
   container: HTMLElement,
   listExpr: string,
   runtime: RuntimeContext,
-  options?: {
-    direction?: "vertical" | "horizontal" | "grid";
-    ghostClass?: string;
-    dragClass?: string;
-    group?: string | { name: string; pull?: "clone" | boolean; put?: boolean; revertClone?: boolean };
-    sort?: boolean;
-    swap?: boolean;
-    swapClass?: string;
-    fallbackOnBody?: boolean;
-    swapThreshold?: number;
-    animationDuration?: number;
-    edgeScrollThreshold?: number;
-    autoScrollSpeed?: number;
-    onReorder?: (list: T[], oldIndex: number, newIndex: number) => void;
-    onAutoScroll?: (delta: { x: number; y: number }) => void | Promise<boolean>;
-  },
+  options?: any
 ): DragReorderContext<T> {
   const getList = (): T[] => {
     try {
@@ -1115,7 +909,7 @@ function buildReorderContext<T>(
     ghostClass: options?.ghostClass,
     dragClass: options?.dragClass,
     group: options?.group,
-    sort: options?.sort !== false, // default true
+    sort: options?.sort !== false,
     swap: options?.swap,
     swapClass: options?.swapClass,
     fallbackOnBody: options?.fallbackOnBody,
@@ -1124,359 +918,55 @@ function buildReorderContext<T>(
     autoScrollSpeed: options?.autoScrollSpeed ?? 15,
     animationDuration: options?.animationDuration ?? 150,
     onReorder: options?.onReorder,
-    onAutoScroll: options?.onAutoScroll,
   };
 }
 
-/**
- * Calculate the index of an element among its draggable siblings.
- * Uses DOM traversal (like SortableJS `index()`), not array indexOf.
- * Ensures identity-based tracking survives DOM mutations.
- */
-function calculateDraggableIndex(
-  element: HTMLElement,
-  sourceDropZone: HTMLElement | null,
-): number {
-  let index = 0;
-  let sibling = element.previousElementSibling;
-
-  while (sibling) {
-    if (sibling.nodeName.toUpperCase() !== "TEMPLATE") {
-      const hasDataDrag = sibling.hasAttribute("data-drag");
-      const el = sibling as HTMLElement;
-      const isDraggable = el.hasAttribute("data-drag");
-      const style = getComputedStyle(sibling);
-      const isHidden = style.display === "none";
-      const isTemplate = sibling.hasAttribute("data-ux-template");
-      const siblingDropZone = sibling.closest("[data-teleport\\:drop]") as
-        | HTMLElement
-        | null;
-      const correctZone = sourceDropZone
-        ? siblingDropZone === sourceDropZone
-        : !siblingDropZone;
-
-      if (
-        hasDataDrag && isDraggable && !isHidden && !isTemplate && correctZone
-      ) {
-        index++;
-      }
-    }
-    sibling = sibling.previousElementSibling;
-  }
-
-  return index;
-}
-
-export { buildReorderContext, DragReorderEngine };
-
+// ---------------------------------------------------------------------------
+// Nexus-UX Directive Bindings
+// ---------------------------------------------------------------------------
 export const dragAttribute: AttributeModule = {
   name: "drag",
   attribute: "drag",
   handle: (element: HTMLElement, _value: string, runtime: RuntimeContext) => {
-    // Bug 7: Canvas-mode nodes use pointer events, not HTML5 DnD.
-    // data-drag on canvas children is just a marker for the SpatialCanvasEngine.
     const canvasContainer = element.closest('[data-nexus-spatial-canvas]');
     if (canvasContainer) return;
 
-    // Bug 3: Guard against re-initialization from attribute mutations
-    // (e.g. data-bind-draggable toggling triggers MutationObserver re-processing)
     if ((element as any).__nexusDragBound) return (element as any).__nexusDragCleanup;
     (element as any).__nexusDragBound = true;
 
-    // Remove HTML5 drag
-    element.removeAttribute("draggable");
-    if (element.style.userSelect !== "none") {
-      element.style.userSelect = "none";
-    }
-    element.style.touchAction = "none";
+    const container = element.parentElement;
+    if (!container) return;
 
-    let reorderEngine: DragReorderEngine<any> | null = null;
-    let sourceDropZone: HTMLElement | null = null;
-    let startEvent: PointerEvent | null = null;
-    let dragInitiated = false;
+    let cleanupEffect: (() => void) | undefined = undefined;
 
-    const detectReorder = (zone: HTMLElement | null): boolean => {
-      if (!zone) return false;
-      return zone.hasAttribute("data-drag-reorder") ||
-        element.hasAttribute("data-drag-reorder") ||
-        zone.hasAttribute("data-nexus-spatial-sortable") ||
-        element.hasAttribute("data-nexus-spatial-sortable") ||
-        zone.getAttribute("data-spatial") === "sortable" ||
-        element.getAttribute("data-spatial") === "sortable" ||
-        zone.getAttribute("data-teleport-mode") === "swap";
-    };
-
-    const startDragSequence = (e: PointerEvent) => {
-      try {
-        if ((globalThis as any)._dragState) {
-          if ((globalThis as any)._nexusDebugDrag) {
-            console.warn("[drag] startDragSequence ignored: drag already in progress");
-          }
-          return;
+    // Use runtime elementBoundEffect for automatic cleanup
+    const [_, stopEffect] = runtime.elementBoundEffect(container, () => {
+      if (!(container as any).__sortable) {
+        try {
+          const listExpr = container.getAttribute("data-teleport:drop") || "";
+          const ctx = buildReorderContext(container, listExpr, runtime);
+          const engine = new DragReorderEngine(ctx, runtime);
+          (container as any).__sortable = engine;
+        } catch (err) {
+          runtime.reportError(err instanceof Error ? err : new Error(String(err)), container, "drag-init");
         }
+      }
+    });
 
-        const sourceContainer = element.parentElement;
-        if (!sourceContainer) return;
-
-        sourceDropZone = element.closest("[data-teleport\\:drop]") as HTMLElement | null;
-        let sourceList: any[] | null = null;
-
-        if (sourceDropZone) {
-          const moveExpr = sourceDropZone.getAttribute("data-teleport:drop");
-          if (moveExpr) {
-            try {
-              const result = runtime.evaluate(sourceDropZone, moveExpr);
-              if (Array.isArray(result)) sourceList = result;
-            } catch (err) {
-              console.warn("[drag] Failed to evaluate source list:", err);
-            }
-          }
+    cleanupEffect = () => {
+      stopEffect();
+      const remaining = Array.from(container.children).filter(c => c !== element && c.hasAttribute("data-drag"));
+      if (remaining.length === 0) {
+        const engine = (container as any).__sortable;
+        if (engine && engine.sortable) {
+          engine.sortable.destroy();
         }
-
-        const siblingContainer = sourceDropZone || sourceContainer;
-        const initialIndex = calculateDraggableIndex(element, sourceDropZone);
-
-        const isMulti = siblingContainer.getAttribute("data-drag-multi") === "true" || element.getAttribute("data-drag-multi") === "true";
-        const selectedClass = siblingContainer.getAttribute("data-drag-selected-class") || element.getAttribute("data-drag-selected-class") || "sortable-selected";
-
-        let dragElements = [element];
-        let fromIndices = [initialIndex];
-        let dragItems = [sourceList?.[initialIndex]];
-
-        if (isMulti && element.classList.contains(selectedClass)) {
-          dragElements = Array.from(siblingContainer.children).filter(c => c.classList.contains(selectedClass)) as HTMLElement[];
-          fromIndices = dragElements.map(el => calculateDraggableIndex(el, sourceDropZone));
-          
-          const paired = dragElements.map((el, i) => ({ el, idx: fromIndices[i], item: sourceList?.[fromIndices[i]] }));
-          paired.sort((a,b) => a.idx - b.idx);
-          
-          dragElements = paired.map(p => p.el);
-          fromIndices = paired.map(p => p.idx);
-          dragItems = paired.map(p => p.item);
-        }
-
-        const dragState: Record<string, unknown> = {
-          fromIndex: initialIndex,
-          fromIndices,
-          dragItems,
-          dragElements,
-          sourceContainer: siblingContainer,
-          element,
-          sourceList,
-        };
-        (globalThis as any)._dragState = dragState;
-
-        const globalSignals = runtime.globalSignals() as any;
-
-        if ((globalThis as any)._nexusDebugDrag) {
-          console.log("[drag] Drag started via PointerEvent", {
-            element: element.tagName,
-            fromIndex: initialIndex,
-          });
-        }
-
-        if (detectReorder(sourceDropZone) && Array.isArray(sourceList)) {
-          if (!sourceDropZone) return;
-          const listExpr = sourceDropZone.getAttribute("data-teleport:drop")!;
-          const dragDirection = sourceDropZone.getAttribute("data-drag-direction") || element.getAttribute("data-drag-direction") || "vertical";
-          const direction = dragDirection as "vertical" | "horizontal" | "grid" | undefined;
-          const ghostClass = sourceDropZone.getAttribute("data-drag-ghost-class") || element.getAttribute("data-drag-ghost-class") || "sortable-ghost";
-          const dragClass = sourceDropZone.getAttribute("data-drag-class") || element.getAttribute("data-drag-class") || "sortable-drag";
-          const animDuration = parseInt(sourceDropZone.getAttribute("data-drag-animation") || "150", 10);
-
-          const groupName = sourceDropZone.getAttribute("data-drag-group");
-          const clone = sourceDropZone.getAttribute("data-drag-clone") === "true" || sourceDropZone.getAttribute("data-teleport-mode") === "clone";
-          const put = sourceDropZone.getAttribute("data-drag-put") !== "false";
-          const sort = sourceDropZone.getAttribute("data-drag-sort") !== "false";
-          const swap = sourceDropZone.getAttribute("data-drag-swap") === "true" || sourceDropZone.getAttribute("data-teleport-mode") === "swap";
-          const swapClass = sourceDropZone.getAttribute("data-drag-swap-class") || undefined;
-          const fallbackOnBody = sourceDropZone.getAttribute("data-drag-fallback-on-body") !== "false";
-          const swapThresholdAttr = sourceDropZone.getAttribute("data-drag-swap-threshold");
-          const swapThreshold = swapThresholdAttr ? parseFloat(swapThresholdAttr) : undefined;
-          const revertClone = sourceDropZone.getAttribute("data-drag-revert-clone") === "true";
-
-          let groupConfig = undefined;
-          if (groupName) {
-            groupConfig = {
-              name: groupName,
-              pull: (clone ? "clone" : true) as "clone" | boolean,
-              put: put,
-              revertClone: revertClone
-            };
-          }
-
-          const ctx = buildReorderContext(sourceDropZone, listExpr, runtime, {
-            direction,
-            ghostClass,
-            dragClass,
-            animationDuration: animDuration,
-            group: groupConfig,
-            sort,
-            swap,
-            swapClass,
-            fallbackOnBody,
-            swapThreshold,
-            onAutoScroll: async (delta) => {
-              if (sourceDropZone) {
-                const scrollParent = getScrollParent(sourceDropZone);
-                scrollParent.scrollBy({ left: delta.x, top: delta.y });
-                return true;
-              }
-              return false;
-            },
-            onReorder: (list, oldIdx, newIdx) => {
-              globalSignals["drag:reorder"] = { list, oldIndex: oldIdx, newIndex: newIdx };
-            },
-          });
-
-          reorderEngine = new DragReorderEngine(ctx, runtime);
-          dragState.reorderEngine = reorderEngine;
-          reorderEngine.startDrag({ element, sourceList, fromIndex: initialIndex }, e);
-        }
-
-        globalSignals["drag:start"] = {
-          element,
-          originalEvent: e,
-          fromIndex: initialIndex,
-          sourceList,
-        };
-
-        const chosenClass = sourceContainer.getAttribute("data-drag-chosen-class") || element.getAttribute("data-drag-chosen-class") || "sortable-chosen";
-        element.classList.add(chosenClass);
-
-        requestAnimationFrame(() => {
-          element.classList.add("dragging");
-        });
-      } catch (err) {
-        runtime.reportError(err instanceof Error ? err : new Error(String(err)), element, "drag-start");
+        delete (container as any).__sortable;
       }
     };
 
-    const endDragSequence = (e: PointerEvent) => {
-      if (reorderEngine) {
-        reorderEngine.endDrag(e);
-        reorderEngine = null;
-      }
-
-      const sourceContainer = element.parentElement || sourceDropZone;
-      const chosenClass = sourceContainer?.getAttribute("data-drag-chosen-class") || element.getAttribute("data-drag-chosen-class") || "sortable-chosen";
-      element.classList.remove("dragging");
-      element.classList.remove(chosenClass);
-
-      const globalSignals = runtime.globalSignals() as any;
-      globalSignals["drag:end"] = {
-        element,
-        originalEvent: e,
-        cancelled: false,
-      };
-
-      (globalThis as any)._dragState = null;
-    };
-
-    const onPointerDown = (e: PointerEvent) => {
-      if (e.button !== 0) return;
-      if ((globalThis as any)._dragState) return;
-
-      const sourceContainer = element.parentElement;
-      if (!sourceContainer) return;
-      // ZCZS: Gate on draggable="false" before drag (data-bind-draggable support)
-      if (element.getAttribute("draggable") === "false") {
-        const target = e.target as HTMLElement;
-        const isInput = target.tagName === "INPUT" || target.tagName === "SELECT" || target.tagName === "TEXTAREA" || (target as any).button !== undefined || target.closest("button");
-        if (!isInput) {
-          e.preventDefault();
-        }
-        return;
-      }
-
-      const target = e.target as HTMLElement;
-      const handleSelector = sourceContainer.getAttribute("data-drag-handle") || element.getAttribute("data-drag-handle");
-      if (handleSelector && !target.closest(handleSelector)) return;
-
-      const filterSelector = sourceContainer.getAttribute("data-drag-filter") || element.getAttribute("data-drag-filter");
-      if (filterSelector) {
-        const fs = filterSelector.trim();
-        if (!fs) return;
-        if (target.closest(fs)) return;
-      }
-
-      // Prevent default text selection during pointer interaction
-      e.preventDefault();
-      e.stopPropagation();
-
-      startEvent = e;
-      dragInitiated = false;
-      document.addEventListener("pointermove", onPointerMove);
-      document.addEventListener("pointerup", onPointerUp);
-      document.addEventListener("pointercancel", onPointerUp);
-      
-      (element as any).__nexusLastPointerTarget = target;
-    };
-
-    const onPointerMove = (e: PointerEvent) => {
-      if (!startEvent) return;
-      if ((globalThis as any)._dragState && !dragInitiated) {
-        onPointerUp(e);
-        return;
-      }
-
-      if (!dragInitiated) {
-        const dx = e.clientX - startEvent.clientX;
-        const dy = e.clientY - startEvent.clientY;
-        if (Math.sqrt(dx * dx + dy * dy) > 3) {
-          dragInitiated = true;
-          startDragSequence(startEvent);
-        } else {
-          return;
-        }
-      }
-
-      if (dragInitiated && reorderEngine) {
-         reorderEngine.updateDrag(e.clientX, e.clientY, e);
-         const globalSignals = runtime.globalSignals() as any;
-         
-         if ((globalThis as any)._dragState) {
-            (globalThis as any)._dragState.toIndex = reorderEngine.getFinalToIndex();
-            (globalThis as any)._dragState.targetContainer = sourceDropZone;
-         }
-         
-         globalSignals["drag:move"] = {
-            element,
-            x: e.clientX,
-            y: e.clientY,
-            originalEvent: e,
-         };
-      }
-    };
-
-    const onPointerUp = (e: PointerEvent) => {
-      document.removeEventListener("pointermove", onPointerMove);
-      document.removeEventListener("pointerup", onPointerUp);
-      document.removeEventListener("pointercancel", onPointerUp);
-
-      if (dragInitiated) endDragSequence(e);
-      startEvent = null;
-      dragInitiated = false;
-    };
-
-    const onDragStart = (e: Event) => {
-      e.preventDefault();
-    };
-
-    element.addEventListener("pointerdown", onPointerDown);
-    element.addEventListener("dragstart", onDragStart);
-
-    const cleanup = () => {
-      element.removeEventListener('pointerdown', onPointerDown);
-      element.removeEventListener('dragstart', onDragStart);
-      document.removeEventListener("pointermove", onPointerMove);
-      document.removeEventListener("pointerup", onPointerUp);
-      document.removeEventListener("pointercancel", onPointerUp);
-      (element as any).__nexusDragBound = false;
-      (element as any).__nexusDragCleanup = undefined;
-    };
-    (element as any).__nexusDragCleanup = cleanup;
-    return cleanup;
+    (element as any).__nexusDragCleanup = cleanupEffect;
+    return cleanupEffect;
   },
 };
 
