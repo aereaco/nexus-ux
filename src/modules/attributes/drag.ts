@@ -268,7 +268,7 @@ class DragReorderEngine<T> {
       const direction = this._detectDirection(currentZone);
       const vertical = direction === "vertical";
       const side1 = vertical ? 'top' : 'left';
-      this.targetMoveDistance = Math.abs(this.targetBeforeFirstSwap - target.getBoundingClientRect()[side1]);
+      this.targetMoveDistance = Math.abs(this.targetBeforeFirstSwap - this.getElementRect(target)[side1]);
     }
 
     if ((globalThis as any)._nexusDebugDrag) {
@@ -297,7 +297,7 @@ class DragReorderEngine<T> {
      }
 
      const direction = this.ctx.direction || 'vertical';
-     const rect = target.getBoundingClientRect();
+     const rect = this.getElementRect(target);
      let isAfter = false;
      
      if (direction === 'horizontal') {
@@ -547,8 +547,8 @@ class DragReorderEngine<T> {
 
     const direction = this._detectDirection(dropZone);
     const vertical = direction === "vertical";
-    const targetRect = target.getBoundingClientRect();
-    const dragRect = this.placeholderEl!.getBoundingClientRect();
+    const targetRect = this.getElementRect(target);
+    const dragRect = this.getElementRect(this.placeholderEl!);
 
     const differentLevel = this.placeholderEl!.parentNode !== dropZone;
     const differentRowCol = !this._dragElInRowColumn(dragRect, targetRect, vertical);
@@ -622,7 +622,7 @@ class DragReorderEngine<T> {
         if (
           target instanceof HTMLElement && this.isValidDraggableChild(target)
         ) {
-          const rect = target.getBoundingClientRect();
+          const rect = this.getElementRect(target);
           if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
             const zone = target.closest("[data-teleport\\:drop]") as HTMLElement;
             return { target, zone };
@@ -688,8 +688,8 @@ class DragReorderEngine<T> {
 
     const children = this.getDraggableChildren(container);
     if (children.length >= 2) {
-      const rect1 = children[0].getBoundingClientRect();
-      const rect2 = children[1].getBoundingClientRect();
+      const rect1 = this.getElementRect(children[0]);
+      const rect2 = this.getElementRect(children[1]);
       return Math.abs(rect1.top - rect2.top) < 4 ? "horizontal" : "vertical";
     }
     return "vertical";
@@ -906,6 +906,13 @@ class DragReorderEngine<T> {
     }
   }
 
+  private getElementRect(el: HTMLElement): DOMRect {
+    if ((el as any)._isAnimating && (el as any)._toRect) {
+      return (el as any)._toRect;
+    }
+    return el.getBoundingClientRect();
+  }
+
   /**
    * Capture bounding rects of all children before a DOM mutation.
    * Ported from SortableJS AnimationStateManager.captureAnimationState.
@@ -930,6 +937,11 @@ class DragReorderEngine<T> {
       if (child === this.ghostEl || child.style.display === 'none') continue;
       child.style.transition = '';
       child.style.transform = '';
+      (child as any)._isAnimating = false;
+      (child as any)._toRect = null;
+      if ((child as any)._animTimeout) {
+        clearTimeout((child as any)._animTimeout);
+      }
     }
 
     // Force repaint after clearing transforms to ensure accurate layout measurement
@@ -950,6 +962,10 @@ class DragReorderEngine<T> {
       
       if (dx === 0 && dy === 0) continue;
 
+      // Store destination rect for stable checks during animation
+      (child as any)._toRect = toRect;
+      (child as any)._isAnimating = true;
+
       // Jump to old position instantly
       child.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
       toAnimate.push(child);
@@ -967,9 +983,15 @@ class DragReorderEngine<T> {
         const cleanup = () => {
           el.style.transition = '';
           el.style.transform = '';
+          (el as any)._isAnimating = false;
+          (el as any)._toRect = null;
         };
         el.addEventListener('transitionend', cleanup, { once: true });
-        setTimeout(cleanup, duration + 50); // fallback if transitionend doesn't fire
+        
+        if ((el as any)._animTimeout) {
+          clearTimeout((el as any)._animTimeout);
+        }
+        (el as any)._animTimeout = setTimeout(cleanup, duration + 50); // fallback if transitionend doesn't fire
       }
     }
   }
