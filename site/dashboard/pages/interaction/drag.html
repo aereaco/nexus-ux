@@ -65,10 +65,11 @@
                 { id: 'S3', n: 'Doc B.1', sub: [] }
             ]}
         ],
-        swapList: [{id: 'W1', n: 'Alpha'}, {id: 'W2', n: 'Beta'}, {id: 'W3', n: 'Gamma'}],
+        swapList: [{id: 'W1', n: 'Alpha'}, {id: 'W2', n: 'Beta'}, {id: 'W3', n: 'Gamma'}, {id: 'W4', n: 'Delta'}],
         ghostList: [{id: 'GH1', n: 'Ghost 1'}, {id: 'GH2', n: 'Ghost 2'}, {id: 'GH3', n: 'Ghost 3'}],
         horzList: [{id: 'D1', n: 'H1'}, {id: 'D2', n: 'H2'}, {id: 'D3', n: 'H3'}, {id: 'D4', n: 'H4'}],
         scrollList: [{id: 'SC1', n: 'Scroll 1'}, {id: 'SC2', n: 'Scroll 2'}, {id: 'SC3', n: 'Scroll 3'}, {id: 'SC4', n: 'Scroll 4'}, {id: 'SC5', n: 'Scroll 5'}, {id: 'SC6', n: 'Scroll 6'}, {id: 'SC7', n: 'Scroll 7'}, {id: 'SC8', n: 'Scroll 8'}],
+        horzScrollList: [{id: 'HS1', n: 'HS 1'}, {id: 'HS2', n: 'HS 2'}, {id: 'HS3', n: 'HS 3'}, {id: 'HS4', n: 'HS 4'}, {id: 'HS5', n: 'HS 5'}, {id: 'HS6', n: 'HS 6'}, {id: 'HS7', n: 'HS 7'}, {id: 'HS8', n: 'HS 8'}],
         sortToggleList: [{id: 'T1', n: 'Toggle 1'}, {id: 'T2', n: 'Toggle 2'}, {id: 'T3', n: 'Toggle 3'}],
         thresholdList: [{id: 'TV1', n: 'V1'}, {id: 'TV2', n: 'V2'}, {id: 'TV3', n: 'V3'}],
         thresholdHorzList: [{id: 'TH1', n: 'H1'}, {id: 'TH2', n: 'H2'}, {id: 'TH3', n: 'H3'}],
@@ -254,16 +255,38 @@
             </div>
 
             <!-- 10. Auto-Scroll -->
-            <div class="card bg-base-200 shadow-xl border border-base-content/5">
+            <div class="card bg-base-200 shadow-xl border border-base-content/5 lg:col-span-2">
                 <div class="card-body p-6">
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         10. Auto-Scroll <span class="badge badge-outline badge-sm">Constrained</span>
                     </div>
-                    <div class="max-h-[220px] overflow-y-auto p-4 bg-base-300 rounded-box border border-base-content/10 shadow-inner">
-                        <div class="flex flex-col gap-2 min-h-[50px]" data-teleport:drop="scrollList" data-drag-reorder>
-                            <div data-for="item in scrollList" data-drag class="flex items-center gap-4 p-3 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-200 transition-colors item text-sm">
-                                <iconify-icon icon="material-symbols-light:format-list-bulleted" class="text-base-content/50"></iconify-icon>
-                                <span data-bind="item.n" class="font-medium"></span>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Vertical Auto-Scroll -->
+                        <div>
+                            <div class="text-[0.65rem] opacity-40 mb-2 font-bold tracking-wider">VERTICAL AUTO-SCROLL</div>
+                            <div class="max-h-[200px] overflow-y-auto p-4 bg-base-300 rounded-box border border-base-content/10 shadow-inner">
+                                <div class="flex flex-col gap-2 min-h-[50px]" data-teleport:drop="scrollList" data-drag-reorder>
+                                    <div data-for="item in scrollList" data-drag class="flex items-center gap-4 p-3 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-200 transition-colors item text-sm">
+                                        <iconify-icon icon="material-symbols-light:format-list-bulleted" class="text-base-content/50"></iconify-icon>
+                                        <span data-bind="item.n" class="font-medium"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Horizontal Auto-Scroll -->
+                        <div>
+                            <div class="text-[0.65rem] opacity-40 mb-2 font-bold tracking-wider">HORIZONTAL AUTO-SCROLL</div>
+                            <div class="p-4 bg-base-300 rounded-box border border-base-content/10 shadow-inner">
+                                <div class="flex flex-row gap-2 min-h-[50px] overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-base-content/10" 
+                                     data-teleport:drop="horzScrollList" 
+                                     data-drag-reorder 
+                                     data-drag-direction="horizontal">
+                                    <div data-for="item in horzScrollList" data-drag class="min-w-[100px] flex items-center justify-center gap-2 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item shrink-0">
+                                        <iconify-icon icon="material-symbols-light:arrow-range" class="text-info text-xl"></iconify-icon>
+                                        <span data-bind="item.n" class="font-medium text-xs"></span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
