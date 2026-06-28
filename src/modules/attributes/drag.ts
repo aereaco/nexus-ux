@@ -409,7 +409,8 @@ export class Sortable {
         Sortable.ghost = null;
       }
 
-      const finalIndex = Array.from(this.el.children)
+      // Compute finalIndex relative to the actual dropped target container!
+      const finalIndex = Array.from(this.dragEl.parentElement!.children)
         .filter(c => c.nodeName.toUpperCase() !== 'TEMPLATE')
         .indexOf(this.dragEl);
 
@@ -800,16 +801,17 @@ export class DragReorderEngine<T> {
 
             if (isMultiDrag) {
               const sortedIndices = (evt.oldIndicies || []).slice().sort((a: any, b: any) => b.index - a.index);
-              itemsToInsert = (evt.oldIndicies || []).map((x: any) => {
+              const sortedOldAsc = (evt.oldIndicies || []).slice().sort((a: any, b: any) => a.index - b.index);
+              itemsToInsert = sortedOldAsc.map((x: any) => {
                 const item = sourceList[x.index];
-                return isClone ? { ...item } : item;
+                return isClone ? { ...item, id: `${item.id}-clone-${Date.now()}-${Math.random().toString(36).substr(2, 5)}` } : item;
               });
               if (!isClone) {
                 indicesToRemove = sortedIndices.map((x: any) => x.index);
               }
             } else {
               const item = sourceList[oldIndex];
-              itemsToInsert = [isClone ? { ...item } : item];
+              itemsToInsert = [isClone ? { ...item, id: `${item.id}-clone-${Date.now()}-${Math.random().toString(36).substr(2, 5)}` } : item];
               if (!isClone) {
                 indicesToRemove = [oldIndex];
               }
@@ -853,9 +855,10 @@ export class DragReorderEngine<T> {
                 } else {
                   if (isMultiDrag) {
                     let adjIndex = newIndex;
-                    const sortedOld = (evt.oldIndicies || []).slice().sort((a: any, b: any) => b.index - a.index);
-                    const itemsToInsert = (evt.oldIndicies || []).map((x: any) => sourceList[x.index]);
-                    for (const x of sortedOld) {
+                    const sortedOldDesc = (evt.oldIndicies || []).slice().sort((a: any, b: any) => b.index - a.index);
+                    const sortedOldAsc = (evt.oldIndicies || []).slice().sort((a: any, b: any) => a.index - b.index);
+                    const itemsToInsert = sortedOldAsc.map((x: any) => sourceList[x.index]);
+                    for (const x of sortedOldDesc) {
                       list.splice(x.index, 1);
                       if (x.index < newIndex) {
                         adjIndex--;
@@ -941,6 +944,12 @@ export const dragAttribute: AttributeModule = {
 
     // Use runtime elementBoundEffect for automatic cleanup
     const [_, stopEffect] = runtime.elementBoundEffect(container, () => {
+      const swapThresholdAttr = container.getAttribute("data-drag-swap-threshold");
+      const engine = (container as any).__sortable;
+      if (engine && engine.sortable && swapThresholdAttr) {
+        engine.sortable.options.swapThreshold = parseFloat(swapThresholdAttr);
+      }
+      
       if (!(container as any).__sortable) {
         try {
           const listExpr = container.getAttribute("data-teleport:drop") || "";
