@@ -76,6 +76,7 @@ export class Sortable {
   private _pointerDownBound: (e: PointerEvent) => void;
   private _pointerMoveBound: (e: PointerEvent) => void;
   private _pointerUpBound: (e: PointerEvent) => void;
+  private _touchStartBound: (e: TouchEvent) => void;
 
   private dragEl: HTMLElement | null = null;
   private parentEl: HTMLElement | null = null;
@@ -117,11 +118,30 @@ export class Sortable {
     this._pointerMoveBound = this._onPointerMove.bind(this);
     this._pointerUpBound = this._onPointerUp.bind(this);
 
+    this._touchStartBound = (e: TouchEvent) => {
+      const target = e.target as HTMLElement;
+      const dragEl = target.closest(this.options.draggable!) as HTMLElement | null;
+      if (dragEl && this.el.contains(dragEl)) {
+        const closestContainer = dragEl.closest('[data-teleport\\:drop]');
+        if (closestContainer !== this.el) return;
+        if (dragEl.getAttribute('draggable') === 'false') return;
+        if (this.options.handle && !target.closest(this.options.handle)) return;
+        if (this.options.filter && target.closest(this.options.filter)) return;
+
+        const tagName = target.tagName.toUpperCase();
+        if (['INPUT', 'SELECT', 'TEXTAREA', 'BUTTON'].includes(tagName)) return;
+
+        e.preventDefault();
+      }
+    };
+
     this.el.addEventListener('pointerdown', this._pointerDownBound);
+    this.el.addEventListener('touchstart', this._touchStartBound, { passive: false });
   }
 
   public destroy() {
     this.el.removeEventListener('pointerdown', this._pointerDownBound);
+    this.el.removeEventListener('touchstart', this._touchStartBound);
     this._cleanupDragListeners();
   }
 
