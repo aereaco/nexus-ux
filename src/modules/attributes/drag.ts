@@ -160,23 +160,6 @@ export class Sortable {
     this.tapEvt = e;
     this.dragStarted = false;
 
-    // MultiDrag selection toggle (tap handler)
-    if (this.options.multiDrag) {
-      const idx = this.multiDragElements.indexOf(dragEl);
-      if (idx !== -1) {
-        if (e.ctrlKey || e.metaKey || dragEl.classList.contains(this.options.selectedClass!)) {
-          // De-select on click if already selected
-          dragEl.classList.remove(this.options.selectedClass!);
-          this.multiDragElements.splice(idx, 1);
-        }
-      } else {
-        if (e.ctrlKey || e.metaKey || !dragEl.classList.contains(this.options.selectedClass!)) {
-          dragEl.classList.add(this.options.selectedClass!);
-          this.multiDragElements.push(dragEl);
-        }
-      }
-    }
-
     document.addEventListener('pointermove', this._pointerMoveBound);
     document.addEventListener('pointerup', this._pointerUpBound);
     document.addEventListener('pointercancel', this._pointerUpBound);
@@ -221,6 +204,21 @@ export class Sortable {
         this.originalIndices.set(child, idx);
       }
     });
+
+    // Populate MultiDrag items list if multiDrag is active
+    if (this.options.multiDrag) {
+      // If the clicked element is already selected, gather all selected elements in the container
+      if (this.dragEl!.classList.contains(this.options.selectedClass!)) {
+        this.multiDragElements = Array.from(this.el.children).filter(c => 
+          c.classList.contains(this.options.selectedClass!)
+        ) as HTMLElement[];
+      } else {
+        // If not selected, clear other selections and select it
+        Array.from(this.el.children).forEach(c => c.classList.remove(this.options.selectedClass!));
+        this.dragEl!.classList.add(this.options.selectedClass!);
+        this.multiDragElements = [this.dragEl!];
+      }
+    }
 
     // Handle Clone
     const pull = typeof this.options.group === 'object' && this.options.group.pull === 'clone';
@@ -385,51 +383,71 @@ export class Sortable {
   private _onPointerUp(e: PointerEvent) {
     this._cleanupDragListeners();
 
-    if (this.dragStarted && this.dragEl) {
-      // Remove classes
-      this.dragEl.classList.remove(this.options.chosenClass!);
-      this.dragEl.classList.remove(this.options.dragClass!);
+    if (this.dragEl) {
+      if (this.dragStarted) {
+        // Remove classes
+        this.dragEl.classList.remove(this.options.chosenClass!);
+        this.dragEl.classList.remove(this.options.dragClass!);
 
-      // Restore MultiDrag elements visibility
-      if (this.options.multiDrag && this.multiDragElements.length > 0) {
-        this.multiDragElements.forEach(el => {
-          el.style.display = '';
-        });
-      }
+        // Restore MultiDrag elements visibility
+        if (this.options.multiDrag && this.multiDragElements.length > 0) {
+          this.multiDragElements.forEach(el => {
+            el.style.display = '';
+          });
+        }
 
-      // Remove clone
-      if (Sortable.clone) {
-        Sortable.clone.parentNode?.removeChild(Sortable.clone);
-        Sortable.clone = null;
-      }
+        // Remove clone
+        if (Sortable.clone) {
+          Sortable.clone.parentNode?.removeChild(Sortable.clone);
+          Sortable.clone = null;
+        }
 
-      // Remove ghost
-      if (Sortable.ghost) {
-        Sortable.ghost.parentNode?.removeChild(Sortable.ghost);
-        Sortable.ghost = null;
-      }
+        // Remove ghost
+        if (Sortable.ghost) {
+          Sortable.ghost.parentNode?.removeChild(Sortable.ghost);
+          Sortable.ghost = null;
+        }
 
-      // Compute finalIndex relative to the actual dropped target container!
-      const finalIndex = Array.from(this.dragEl.parentElement!.children)
-        .filter(c => c.nodeName.toUpperCase() !== 'TEMPLATE')
-        .indexOf(this.dragEl);
+        // Compute finalIndex relative to the actual dropped target container!
+        const finalIndex = Array.from(this.dragEl.parentElement!.children)
+          .filter(c => c.nodeName.toUpperCase() !== 'TEMPLATE')
+          .indexOf(this.dragEl);
 
-      const oldIndex = this.originalIndices.get(this.dragEl);
+        const oldIndex = this.originalIndices.get(this.dragEl);
 
-      if (this.options.onEnd) {
-        this.options.onEnd({
-          item: this.dragEl,
-          from: this.parentEl,
-          to: this.dragEl.parentElement,
-          oldIndex,
-          newIndex: finalIndex,
-          originalEvent: e,
-          items: [...this.multiDragElements],
-          oldIndicies: this.multiDragElements.map(el => ({
-            multiDragElement: el,
-            index: this.originalIndices.get(el) ?? -1,
-          })),
-        });
+        if (this.options.onEnd) {
+          this.options.onEnd({
+            item: this.dragEl,
+            from: this.parentEl,
+            to: this.dragEl.parentElement,
+            oldIndex,
+            newIndex: finalIndex,
+            originalEvent: e,
+            items: [...this.multiDragElements],
+            oldIndicies: this.multiDragElements.map(el => ({
+              multiDragElement: el,
+              index: this.originalIndices.get(el) ?? -1,
+            })),
+          });
+        }
+
+        // De-select MultiDrag items on drop
+        if (this.options.multiDrag) {
+          this.multiDragElements.forEach(el => el.classList.remove(this.options.selectedClass!));
+          this.multiDragElements = [];
+        }
+      } else {
+        // A simple tap/click occurred without dragging: toggle selection!
+        if (this.options.multiDrag) {
+          const idx = this.multiDragElements.indexOf(this.dragEl);
+          if (idx !== -1) {
+            this.dragEl.classList.remove(this.options.selectedClass!);
+            this.multiDragElements.splice(idx, 1);
+          } else {
+            this.dragEl.classList.add(this.options.selectedClass!);
+            this.multiDragElements.push(this.dragEl);
+          }
+        }
       }
     }
 
@@ -703,7 +721,9 @@ export class DragReorderEngine<T> {
     let group: any = undefined;
     if (groupAttr) {
       group = { name: groupAttr };
-      const pull = container.getAttribute("data-teleport-mode") === "clone" || container.getAttribute("data-drag-clone") === "true" ? "clone" : true;
+      // Parse custom data-drag-pull and data-drag-put configuration
+      const pullAttr = container.getAttribute("data-drag-pull");
+      const pull = pullAttr !== "false" ? (container.getAttribute("data-teleport-mode") === "clone" || container.getAttribute("data-drag-clone") === "true" ? "clone" : true) : false;
       const put = container.getAttribute("data-drag-put") !== "false";
       const revertClone = container.getAttribute("data-drag-revert-clone") === "true";
       group.pull = pull;
@@ -944,10 +964,15 @@ export const dragAttribute: AttributeModule = {
 
     // Use runtime elementBoundEffect for automatic cleanup
     const [_, stopEffect] = runtime.elementBoundEffect(container, () => {
-      const swapThresholdAttr = container.getAttribute("data-drag-swap-threshold");
+      const threshExpr = container.getAttribute("data-bind-data-drag-swap-threshold") || 
+                         container.getAttribute("data-bind:data-drag-swap-threshold");
+      
       const engine = (container as any).__sortable;
-      if (engine && engine.sortable && swapThresholdAttr) {
-        engine.sortable.options.swapThreshold = parseFloat(swapThresholdAttr);
+      if (engine && engine.sortable && threshExpr) {
+        const val = runtime.evaluate(container, threshExpr);
+        if (val !== undefined && val !== null) {
+          engine.sortable.options.swapThreshold = Number(val);
+        }
       }
       
       if (!(container as any).__sortable) {
@@ -956,6 +981,14 @@ export const dragAttribute: AttributeModule = {
           const ctx = buildReorderContext(container, listExpr, runtime);
           const engine = new DragReorderEngine(ctx, runtime);
           (container as any).__sortable = engine;
+
+          // Cleanup engine ONLY when container itself leaves DOM
+          runtime.onEffectCleanup(() => {
+            if (engine.sortable) {
+              engine.sortable.destroy();
+            }
+            delete (container as any).__sortable;
+          });
         } catch (err) {
           runtime.reportError(err instanceof Error ? err : new Error(String(err)), container, "drag-init");
         }
@@ -964,14 +997,6 @@ export const dragAttribute: AttributeModule = {
 
     cleanupEffect = () => {
       stopEffect();
-      const remaining = Array.from(container.children).filter(c => c !== element && c.hasAttribute("data-drag"));
-      if (remaining.length === 0) {
-        const engine = (container as any).__sortable;
-        if (engine && engine.sortable) {
-          engine.sortable.destroy();
-        }
-        delete (container as any).__sortable;
-      }
     };
 
     (element as any).__nexusDragCleanup = cleanupEffect;
