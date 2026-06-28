@@ -264,7 +264,7 @@
                         <!-- Vertical Auto-Scroll -->
                         <div>
                             <div class="text-[0.65rem] opacity-40 mb-2 font-bold tracking-wider">VERTICAL AUTO-SCROLL</div>
-                            <div class="max-h-[160px] overflow-y-auto p-4 bg-base-300 rounded-box border border-base-content/10 shadow-inner">
+                            <div class="max-h-[260px] overflow-y-auto p-4 bg-base-300 rounded-box border border-base-content/10 shadow-inner">
                                 <div class="flex flex-col gap-2 min-h-[50px]" data-teleport:drop="scrollList" data-drag-reorder>
                                     <div data-for="item in scrollList" data-drag class="flex items-center gap-4 p-3 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-200 transition-colors item text-sm">
                                         <iconify-icon icon="material-symbols-light:format-list-bulleted" class="text-base-content/50"></iconify-icon>
@@ -282,7 +282,7 @@
                                      data-teleport:drop="horzScrollList" 
                                      data-drag-reorder 
                                      data-drag-direction="horizontal">
-                                    <div data-for="item in horzScrollList" data-drag class="min-w-[100px] flex items-center justify-center gap-2 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item shrink-0">
+                                    <div data-for="item in horzScrollList" data-drag class="w-[100px] h-[100px] flex flex-col items-center justify-center gap-2 p-4 bg-base-100 rounded-box border border-base-content/5 cursor-grab hover:bg-base-300 transition-colors item shrink-0">
                                         <iconify-icon icon="material-symbols-light:arrow-range" class="text-info text-xl"></iconify-icon>
                                         <span data-bind="item.n" class="font-medium text-xs"></span>
                                     </div>

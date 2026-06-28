@@ -4,17 +4,17 @@ import { flip } from "../sprites/animate.ts";
 
 // Helper to find scrollable parent container
 function getScrollParent(el: HTMLElement): HTMLElement {
-  let parent = el.parentElement;
-  while (parent) {
-    const style = getComputedStyle(parent);
+  let current: HTMLElement | null = el;
+  while (current) {
+    const style = getComputedStyle(current);
     const overflowY = style.overflowY;
     const overflowX = style.overflowX;
     const isScrollableY = overflowY === 'auto' || overflowY === 'scroll';
     const isScrollableX = overflowX === 'auto' || overflowX === 'scroll';
     if (isScrollableY || isScrollableX) {
-      return parent;
+      return current;
     }
-    parent = parent.parentElement;
+    current = current.parentElement;
   }
   return document.documentElement;
 }
