@@ -52,7 +52,7 @@
         handleList: [{id: 'H1', n: 'Handle Item 1'}, {id: 'H2', n: 'Handle Item 2'}, {id: 'H3', n: 'Handle Item 3'}],
         filterList: [{id: 'F1', n: 'Draggable 1', filtered: false}, {id: 'F2', n: 'Locked', filtered: true}, {id: 'F3', n: 'Draggable 2', filtered: false}, {id: 'F4', n: 'Locked Too', filtered: true}],
         multiList: [{id: 'M1', n: 'Multi 1', selected: false}, {id: 'M2', n: 'Multi 2', selected: false}, {id: 'M3', n: 'Multi 3', selected: false}, {id: 'M4', n: 'Multi 4', selected: false}],
-        gridList: [{id: 'G1', n: '1'}, {id: 'G2', n: '2'}, {id: 'G3', n: '3'}, {id: 'G4', n: '4'}, {id: 'G5', n: '5'}, {id: 'G6', n: '6'}],
+        gridList: [{id: 'G1', n: '1'}, {id: 'G2', n: '2'}, {id: 'G3', n: '3'}, {id: 'G4', n: '4'}, {id: 'G5', n: '5'}, {id: 'G6', n: '6'}, {id: 'G7', n: '7'}, {id: 'G8', n: '8'}, {id: 'G9', n: '9'}, {id: 'G10', n: '10'}],
         nestedList: [
             { id: 'N1', n: 'Folder A', sub: [
                 { id: 'S1', n: 'Sub-Folder A.1', sub: [] },
@@ -72,7 +72,8 @@
         sortToggleList: [{id: 'T1', n: 'Toggle 1'}, {id: 'T2', n: 'Toggle 2'}, {id: 'T3', n: 'Toggle 3'}],
         thresholdList: [{id: 'TV1', n: 'V1'}, {id: 'TV2', n: 'V2'}, {id: 'TV3', n: 'V3'}],
         thresholdHorzList: [{id: 'TH1', n: 'H1'}, {id: 'TH2', n: 'H2'}, {id: 'TH3', n: 'H3'}],
-        thresholdVal: 0.5,
+        verticalThresholdVal: 0.5,
+        horizontalThresholdVal: 0.5,
         isExpanded: false,
         disabledSorting: false
     }">
@@ -314,56 +315,59 @@
                 </div>
             </div>
 
-             <!-- 14. Swap Thresholds -->
-             <div class="card bg-base-200 shadow-xl border border-base-content/5 lg:col-span-2">
-                 <div class="card-body p-6">
-                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
-                         14. Swap Thresholds <span class="badge badge-primary badge-outline badge-sm" data-bind="'Value: ' + thresholdVal.toFixed(2)"></span>
-                     </div>
-                     <div class="flex flex-col gap-6">
-                         <div class="flex items-center gap-4">
-                             <span class="text-xs opacity-60">Threshold:</span>
-                             <input type="range" min="0" max="1" step="0.05" data-bind-value="thresholdVal" class="range range-xs range-primary flex-1">
-                         </div>
-                         
-                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                             <!-- Vertical Threshold List -->
-                             <div>
-                                 <div class="text-[0.65rem] opacity-40 mb-2 font-bold tracking-wider">VERTICAL SWAP THRESHOLD</div>
-                                 <div class="flex flex-col gap-2 min-h-[50px] p-4 bg-base-300 rounded-box" 
-                                      data-teleport:drop="thresholdList" 
-                                      data-drag-reorder 
-                                      data-bind-data-drag-swap-threshold="thresholdVal">
-                                     <div data-for="item in thresholdList" data-drag class="relative overflow-hidden flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item">
-                                         <!-- Visual vertical threshold overlay centered vertically -->
-                                         <div class="absolute inset-x-0 bg-primary/20 pointer-events-none" 
-                                              data-bind-style="{ height: (thresholdVal * 100) + '%', top: ((1 - thresholdVal) * 50) + '%' }"></div>
-                                         <iconify-icon icon="material-symbols-light:drag-indicator" class="text-base-content/30 z-10"></iconify-icon>
-                                         <span data-bind="item.n" class="z-10 text-sm font-semibold"></span>
-                                     </div>
-                                 </div>
-                             </div>
- 
-                             <!-- Horizontal Threshold List -->
-                             <div>
-                                 <div class="text-[0.65rem] opacity-40 mb-2 font-bold tracking-wider">HORIZONTAL SWAP THRESHOLD</div>
-                                 <div class="flex flex-row gap-2 min-h-[50px] p-4 bg-base-300 rounded-box" 
-                                      data-teleport:drop="thresholdHorzList" 
-                                      data-drag-reorder 
-                                      data-drag-direction="horizontal"
-                                      data-bind-data-drag-swap-threshold="thresholdVal">
-                                     <div data-for="item in thresholdHorzList" data-drag class="relative overflow-hidden flex items-center justify-center p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item flex-1 min-w-[80px]">
-                                         <!-- Visual horizontal threshold overlay centered horizontally -->
-                                         <div class="absolute inset-y-0 bg-primary/20 pointer-events-none" 
-                                              data-bind-style="{ width: (thresholdVal * 100) + '%', left: ((1 - thresholdVal) * 50) + '%' }"></div>
-                                         <span data-bind="item.n" class="z-10 text-xs font-bold"></span>
-                                     </div>
-                                 </div>
-                             </div>
-                         </div>
-                     </div>
-                 </div>
-             </div>
+              <!-- 14. Swap Thresholds -->
+              <div class="card bg-base-200 shadow-xl border border-base-content/5 lg:col-span-2">
+                  <div class="card-body p-6">
+                      <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
+                          14. Swap Thresholds <span class="badge badge-primary badge-outline badge-sm" data-bind="'V: ' + verticalThresholdVal.toFixed(2) + ' / H: ' + horizontalThresholdVal.toFixed(2)"></span>
+                      </div>
+                      <div class="flex flex-col gap-6">
+                          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                              <!-- Vertical Threshold List -->
+                              <div>
+                                  <div class="text-[0.65rem] opacity-40 mb-2 font-bold tracking-wider">VERTICAL SWAP THRESHOLD</div>
+                                  <div class="flex items-center gap-4 mb-4">
+                                      <span class="text-xs opacity-60">V-Threshold:</span>
+                                      <input type="range" min="0" max="1" step="0.05" data-bind-value="verticalThresholdVal" class="range range-xs range-primary flex-1">
+                                  </div>
+                                  <div class="flex flex-col gap-2 min-h-[50px] p-4 bg-base-300 rounded-box" 
+                                       data-teleport:drop="thresholdList" 
+                                       data-drag-reorder 
+                                       data-bind-data-drag-swap-threshold="verticalThresholdVal">
+                                      <div data-for="item in thresholdList" data-drag class="relative overflow-hidden flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item font-semibold text-sm">
+                                          <!-- Visual vertical threshold overlay centered vertically -->
+                                          <div class="absolute inset-x-0 bg-primary/20 pointer-events-none" 
+                                               data-bind-style="{ height: (verticalThresholdVal * 100) + '%', top: ((1 - verticalThresholdVal) * 50) + '%' }"></div>
+                                          <iconify-icon icon="material-symbols-light:drag-indicator" class="text-base-content/30 z-10"></iconify-icon>
+                                          <span data-bind="item.n" class="z-10"></span>
+                                      </div>
+                                  </div>
+                              </div>
+  
+                              <!-- Horizontal Threshold List -->
+                              <div>
+                                  <div class="text-[0.65rem] opacity-40 mb-2 font-bold tracking-wider">HORIZONTAL SWAP THRESHOLD</div>
+                                  <div class="flex items-center gap-4 mb-4">
+                                      <span class="text-xs opacity-60">H-Threshold:</span>
+                                      <input type="range" min="0" max="1" step="0.05" data-bind-value="horizontalThresholdVal" class="range range-xs range-primary flex-1">
+                                  </div>
+                                  <div class="flex flex-row gap-2 min-h-[50px] p-4 bg-base-300 rounded-box" 
+                                       data-teleport:drop="thresholdHorzList" 
+                                       data-drag-reorder 
+                                       data-drag-direction="horizontal"
+                                       data-bind-data-drag-swap-threshold="horizontalThresholdVal">
+                                      <div data-for="item in thresholdHorzList" data-drag class="relative overflow-hidden flex items-center justify-center p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item flex-1 min-w-[80px]">
+                                          <!-- Visual horizontal threshold overlay centered horizontally -->
+                                          <div class="absolute inset-y-0 bg-primary/20 pointer-events-none" 
+                                               data-bind-style="{ width: (horizontalThresholdVal * 100) + '%', left: ((1 - horizontalThresholdVal) * 50) + '%' }"></div>
+                                          <span data-bind="item.n" class="z-10 text-xs font-bold"></span>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
 
         </div>
 
