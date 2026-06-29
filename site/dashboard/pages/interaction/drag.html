@@ -53,7 +53,9 @@
 
             <!-- Phantom slot when empty -->
             <template data-if="!item.sub || !item.sub.length">
-                <div data-drag draggable="false" class="h-[50px] border border-dashed border-base-content/10 rounded-box flex items-center justify-center text-xs opacity-30 select-none">Empty Folder</div>
+                <div data-drag draggable="false"
+                    class="h-12 border border-dashed border-base-content/10 rounded-box flex items-center justify-center text-xs opacity-30 select-none">
+                    Empty Folder</div>
             </template>
         </div>
     </template>
