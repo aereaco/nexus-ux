@@ -24,10 +24,6 @@
         [data-drag-container] {
             min-height: 50px !important;
         }
-
-        [data-drag-container="nestedList"] {
-            min-height: 100px !important;
-        }
     </style>
 </head>
 
@@ -51,8 +47,6 @@
                 data-component="{ path: '#tree-node', lazy: true }">
              </div>
 
-             <!-- Phantom slot when empty -->
-             <div data-if="!item.sub || !item.sub.length" data-drag draggable="false" class="h-[50px] border border-dashed border-base-content/10 rounded-box flex items-center justify-center text-xs opacity-30 select-none">Empty Folder</div>
         </div>
     </template>
 
