@@ -857,6 +857,50 @@ export class DragReorderEngine<T> {
               }
             }
 
+            // --- CLONE DOM RESTORATION START ---
+            if (isClone) {
+              // 1. Remove the clone placeholder element created by Sortable inside fromContainer
+              if (Sortable.clone && Sortable.clone.parentNode) {
+                Sortable.clone.parentNode.removeChild(Sortable.clone);
+                Sortable.clone = null;
+              }
+
+              // 2. Put the original dragged elements back into fromContainer at their original indices
+              if (isMultiDrag) {
+                const sortedOldAsc = (evt.oldIndicies || []).slice().sort((a: any, b: any) => a.index - b.index);
+                sortedOldAsc.forEach((x: any) => {
+                  const el = x.multiDragElement;
+                  const sib = fromContainer.children[x.index];
+                  if (sib) {
+                    fromContainer.insertBefore(el, sib);
+                  } else {
+                    fromContainer.appendChild(el);
+                  }
+                });
+              } else {
+                const sib = fromContainer.children[oldIndex];
+                if (sib) {
+                  fromContainer.insertBefore(evt.item, sib);
+                } else {
+                  fromContainer.appendChild(evt.item);
+                }
+              }
+
+              // 3. Remove the dragged elements from the target toContainer DOM (since they will be reactively re-created)
+              if (isMultiDrag) {
+                evt.items.forEach((item: HTMLElement) => {
+                  if (item.parentNode === toContainer) {
+                    toContainer.removeChild(item);
+                  }
+                });
+              } else {
+                if (evt.item.parentNode === toContainer) {
+                  toContainer.removeChild(evt.item);
+                }
+              }
+            }
+            // --- CLONE DOM RESTORATION END ---
+
             flipFn(childrenToAnimate, () => {
               this.ctx.updateList((src) => {
                 if (!isClone) {
