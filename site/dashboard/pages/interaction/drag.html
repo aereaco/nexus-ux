@@ -21,8 +21,14 @@
         [data-drag-container] {
             min-height: 50px !important;
         }
-        [data-drag-container="nestedList"] {
-            min-height: 100px !important;
+        .nested-dropzone {
+            border: 2px dashed rgba(255, 255, 255, 0.1) !important;
+            background: rgba(255, 255, 255, 0.02) !important;
+            transition: all 0.2s ease;
+        }
+        .nested-dropzone:hover, .nested-dropzone.sortable-dragover {
+            border-color: #570df8 !important;
+            background: rgba(87, 13, 248, 0.08) !important;
         }
     </style>
 </head>

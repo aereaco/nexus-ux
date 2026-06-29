@@ -489,6 +489,10 @@ export class Sortable {
 
     // 1. Check if hovering over a container first
     const container = el.closest('[data-drag-container]') as HTMLElement | null;
+    if (container) {
+      console.log("[Drag] Element under cursor:", el, "Container:", container, "sortable:", (container as any).__sortable);
+    }
+
     if (container && (container as any).__sortable) {
       const children = Array.from(container.children).filter(c => 
         c.nodeName.toUpperCase() !== 'TEMPLATE' && 
@@ -1064,10 +1068,12 @@ export const dragAttribute: AttributeModule = {
 
           // Cleanup engine ONLY when container itself leaves DOM
           runtime.onEffectCleanup(() => {
-            if (engine.sortable) {
-              engine.sortable.destroy();
+            if (!container.isConnected) {
+              if (engine.sortable) {
+                engine.sortable.destroy();
+              }
+              delete (container as any).__sortable;
             }
-            delete (container as any).__sortable;
           });
         } catch (err) {
           runtime.reportError(err instanceof Error ? err : new Error(String(err)), container, "drag-init");
