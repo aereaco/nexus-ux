@@ -1077,6 +1077,8 @@ export const dragAttribute: AttributeModule = {
 
     cleanupEffect = () => {
       stopEffect();
+      delete (element as any).__nexusDragBound;
+      delete (element as any).__nexusDragCleanup;
     };
 
     (element as any).__nexusDragCleanup = cleanupEffect;
