@@ -229,7 +229,7 @@ export class Sortable {
     if (this.options.multiDrag) {
       // If the clicked element is already selected, gather all selected elements in the container
       if (this.dragEl!.classList.contains(this.options.selectedClass!)) {
-        this.multiDragElements = Array.from(this.el.children).filter(c => 
+        this.multiDragElements = Array.from(this.el.children).filter(c =>
           c.classList.contains(this.options.selectedClass!)
         ) as HTMLElement[];
       } else {
@@ -318,9 +318,9 @@ export class Sortable {
       if (this.dragEl.parentElement !== target) {
         const srcBefore = this._captureRects(this.dragEl.parentElement!);
         const destBefore = this._captureRects(target);
-        
+
         target.appendChild(this.dragEl);
-        
+
         this._animateShift(this.dragEl.parentElement!, srcBefore);
         this._animateShift(target, destBefore);
       }
@@ -494,16 +494,16 @@ export class Sortable {
     }
 
     if (container && (container as any).__sortable) {
-      const children = Array.from(container.children).filter(c => 
-        c.nodeName.toUpperCase() !== 'TEMPLATE' && 
-        c !== this.dragEl && 
+      const children = Array.from(container.children).filter(c =>
+        c.nodeName.toUpperCase() !== 'TEMPLATE' &&
+        c !== this.dragEl &&
         c !== Sortable.ghost &&
         !(c as HTMLElement).classList.contains('sortable-ghost')
       ) as HTMLElement[];
 
       // If the container is empty, it takes priority as the drop target!
       if (children.length === 0) {
-        return container; 
+        return container;
       }
     }
 
@@ -513,9 +513,9 @@ export class Sortable {
 
     // 3. Fallback to container's last child if container is populated
     if (container && (container as any).__sortable) {
-      const children = Array.from(container.children).filter(c => 
-        c.nodeName.toUpperCase() !== 'TEMPLATE' && 
-        c !== this.dragEl && 
+      const children = Array.from(container.children).filter(c =>
+        c.nodeName.toUpperCase() !== 'TEMPLATE' &&
+        c !== this.dragEl &&
         c !== Sortable.ghost &&
         !(c as HTMLElement).classList.contains('sortable-ghost')
       ) as HTMLElement[];
@@ -683,10 +683,10 @@ export class Sortable {
     const fromGroup = this.options.group;
     const toGroup = toSortable.options.group;
     if (!fromGroup || !toGroup) return false;
-    
+
     const fromName = typeof fromGroup === 'object' ? fromGroup.name : fromGroup;
     const toName = typeof toGroup === 'object' ? toGroup.name : toGroup;
-    
+
     if (fromName && toName && fromName === toName) {
       const fromPull = typeof fromGroup === 'object' && fromGroup.pull !== undefined ? fromGroup.pull : true;
       const toPut = typeof toGroup === 'object' && toGroup.put !== undefined ? toGroup.put : true;
@@ -721,7 +721,7 @@ export class Sortable {
         child.offsetHeight; // force repaint
         child.style.transition = `transform ${this.options.animation}ms ease-out`;
         child.style.transform = 'translate3d(0, 0, 0)';
-        
+
         const clean = () => {
           child.style.transition = '';
           child.style.transform = '';
@@ -768,12 +768,12 @@ export class DragReorderEngine<T> {
 
     const directionAttr = container.getAttribute("data-drag-direction");
     const direction = directionAttr === "grid" ? undefined : (directionAttr as "vertical" | "horizontal" | undefined);
-    
+
     // Auto-enable invertSwap and 0.65 threshold for nested group
     const isNested = groupAttr === "nested";
     const swapThresholdAttr = container.getAttribute("data-drag-swap-threshold");
     const swapThreshold = swapThresholdAttr ? parseFloat(swapThresholdAttr) : (isNested ? 0.65 : 1);
-    
+
     const invertSwapAttr = container.getAttribute("data-drag-invert-swap");
     const invertSwap = invertSwapAttr === "true" || isNested;
 
@@ -981,9 +981,9 @@ export class DragReorderEngine<T> {
     });
   }
 
-  public startDrag() {}
-  public updateDrag() {}
-  public endDrag() {}
+  public startDrag() { }
+  public updateDrag() { }
+  public endDrag() { }
   public getFinalToIndex(): number {
     return this.finalToIndex;
   }
@@ -1048,9 +1048,9 @@ export const dragAttribute: AttributeModule = {
 
     // Use runtime elementBoundEffect for automatic cleanup
     const [_, stopEffect] = runtime.elementBoundEffect(container, () => {
-      const threshExpr = container.getAttribute("data-bind-data-drag-swap-threshold") || 
-                         container.getAttribute("data-bind:data-drag-swap-threshold");
-      
+      const threshExpr = container.getAttribute("data-bind-data-drag-swap-threshold") ||
+        container.getAttribute("data-bind:data-drag-swap-threshold");
+
       const engine = (container as any).__sortable;
       if (engine && engine.sortable && threshExpr) {
         const val = runtime.evaluate(container, threshExpr);
@@ -1058,7 +1058,7 @@ export const dragAttribute: AttributeModule = {
           engine.sortable.options.swapThreshold = Number(val);
         }
       }
-      
+
       if (!(container as any).__sortable) {
         try {
           const listExpr = container.getAttribute("data-drag-container") || container.getAttribute("data-teleport:drop") || "";
@@ -1068,12 +1068,10 @@ export const dragAttribute: AttributeModule = {
 
           // Cleanup engine ONLY when container itself leaves DOM
           runtime.onEffectCleanup(() => {
-            if (!container.isConnected) {
-              if (engine.sortable) {
-                engine.sortable.destroy();
-              }
-              delete (container as any).__sortable;
+            if (engine.sortable) {
+              engine.sortable.destroy();
             }
+            delete (container as any).__sortable;
           });
         } catch (err) {
           runtime.reportError(err instanceof Error ? err : new Error(String(err)), container, "drag-init");
