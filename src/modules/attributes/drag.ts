@@ -1,6 +1,7 @@
 import { AttributeModule } from "../../engine/modules.ts";
 import { RuntimeContext } from "../../engine/composition.ts";
 import { flip } from "../sprites/animate.ts";
+import { getDataStack } from "../../engine/scope.ts";
 
 // Helper to find scrollable parent container
 function getScrollParent(el: HTMLElement): HTMLElement {
@@ -94,6 +95,7 @@ export class Sortable {
   private originalIndices = new Map<HTMLElement, number>();
 
   private scrollParent: HTMLElement | null = null;
+  private _lastActiveItemScope: any = null;
   private scrollParentBounds: DOMRect | null = null;
 
   constructor(el: HTMLElement, options: SortableOptions) {
@@ -292,13 +294,22 @@ export class Sortable {
 
     // Find closest container target
     const target = this._findTargetUnderCursor(e.clientX, e.clientY);
-    if (!target || target === this.dragEl) return;
+    if (!target || target === this.dragEl) {
+      this._clearDragOverState();
+      return;
+    }
 
     // Circular containment prevention
-    if (this.dragEl.contains(target)) return;
+    if (this.dragEl.contains(target)) {
+      this._clearDragOverState();
+      return;
+    }
 
     const targetParent = target.hasAttribute('data-drag-container') ? target : target.closest('[data-drag-container]') as HTMLElement | null;
-    if (!targetParent) return;
+    if (!targetParent) {
+      this._clearDragOverState();
+      return;
+    }
 
     let targetSortable: Sortable | null = null;
     const reorderEngine = (targetParent as any).__sortable;
@@ -309,9 +320,12 @@ export class Sortable {
     const isSameContainer = targetParent === this.el;
     if (!isSameContainer) {
       if (!targetSortable || !this._canPullPut(targetSortable)) {
+        this._clearDragOverState();
         return; // Pull/Put not allowed between groups
       }
     }
+
+    this._updateDragOverState(targetParent);
 
     if (target.hasAttribute('data-drag-container')) {
       // Dragged over an empty container: append directly!
@@ -471,6 +485,8 @@ export class Sortable {
       }
     }
 
+    this._clearDragOverState();
+
     Sortable.active = null;
     this.dragEl = null;
     this.tapEvt = null;
@@ -481,6 +497,26 @@ export class Sortable {
     document.removeEventListener('pointermove', this._pointerMoveBound);
     document.removeEventListener('pointerup', this._pointerUpBound);
     document.removeEventListener('pointercancel', this._pointerUpBound);
+  }
+
+  private _clearDragOverState() {
+    if (this._lastActiveItemScope && this._lastActiveItemScope.item) {
+      (this._lastActiveItemScope.item as any).isDragOver = false;
+      this._lastActiveItemScope = null;
+    }
+  }
+
+  private _updateDragOverState(targetParent: HTMLElement) {
+    const stack = getDataStack(targetParent);
+    const targetItemScope = stack.find(s => s && 'item' in s && s.item && typeof s.item === 'object') as any;
+    
+    if (this._lastActiveItemScope !== targetItemScope) {
+      this._clearDragOverState();
+      this._lastActiveItemScope = targetItemScope || null;
+      if (targetItemScope && targetItemScope.item) {
+        (targetItemScope.item as any).isDragOver = true;
+      }
+    }
   }
 
   private _findTargetUnderCursor(clientX: number, clientY: number): HTMLElement | null {
