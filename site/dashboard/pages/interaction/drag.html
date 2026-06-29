@@ -31,8 +31,7 @@
         
         <!-- Nested Container -->
         <div class="flex flex-col gap-2 min-h-[50px] p-4 bg-base-300/50 rounded-box border border-dashed border-base-content/10 ml-6 nested-dropzone" 
-             data-bind-data-teleport-drop="item.sub" 
-             data-drag-reorder 
+             data-drag-container="item.sub" 
              data-drag-group="nested"
              data-drag-fallback-on-body="true"
              data-drag-swap-threshold="0.65">
@@ -93,7 +92,7 @@
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         01. Simple <span class="badge badge-outline badge-sm">SortableJS Parity</span>
                     </div>
-                    <div class="flex flex-col gap-2 min-h-[50px]" data-teleport:drop="simpleList" data-drag-reorder data-spatial="sortable" data-drag-class="!opacity-100 !shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] scale-105 cursor-grabbing z-[9999]" data-drag-ghost-class="opacity-40 bg-base-200 border-2 border-dashed border-base-content/20">
+                    <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="simpleList" data-spatial="sortable" data-drag-class="!opacity-100 !shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] scale-105 cursor-grabbing z-[9999]" data-drag-ghost-class="opacity-40 bg-base-200 border-2 border-dashed border-base-content/20">
                         <div data-for="item in simpleList" data-drag class="flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item">
                             <iconify-icon icon="material-symbols-light:drag-indicator" class="text-base-content/30"></iconify-icon>
                             <span data-bind="item.n" class="font-medium"></span>
@@ -109,13 +108,13 @@
                         02. Shared <span class="badge badge-outline badge-sm">Cross-Container</span>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box" data-teleport:drop="list1" data-drag-reorder data-drag-group="shared">
+                        <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box" data-drag-container="list1" data-drag-group="shared">
                             <div data-for="item in list1" data-drag class="flex items-center gap-2 p-3 bg-base-100 rounded-box cursor-grab hover:bg-base-200 text-sm item">
                                 <iconify-icon icon="material-symbols-light:folder" class="text-primary"></iconify-icon>
                                 <span data-bind="item.n"></span>
                             </div>
                         </div>
-                        <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box" data-teleport:drop="list2" data-drag-reorder data-drag-group="shared">
+                        <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box" data-drag-container="list2" data-drag-group="shared">
                             <div data-for="item in list2" data-drag class="flex items-center gap-2 p-3 bg-base-100 rounded-box cursor-grab hover:bg-base-200 text-sm item">
                                 <iconify-icon icon="material-symbols-light:folder" class="text-secondary"></iconify-icon>
                                 <span data-bind="item.n"></span>
@@ -134,7 +133,7 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <div class="text-[0.65rem] opacity-40 mb-2 font-bold tracking-wider">SOURCE</div>
-                            <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box border border-dashed border-base-content/20" data-teleport:drop="cloneSource" data-teleport-mode="clone" data-drag-reorder data-drag-group="clone" data-drag-put="false">
+                            <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box border border-dashed border-base-content/20" data-drag-container="cloneSource" data-drag-clone data-drag-group="clone" data-drag-put="false">
                                 <div data-for="item in cloneSource" data-drag class="flex items-center gap-2 p-3 bg-base-100 rounded-box cursor-grab hover:bg-base-200 text-sm item">
                                     <iconify-icon icon="material-symbols-light:file-copy" class="text-accent"></iconify-icon>
                                     <span data-bind="item.n"></span>
@@ -143,7 +142,7 @@
                         </div>
                         <div>
                             <div class="text-[0.65rem] opacity-40 mb-2 font-bold tracking-wider">TARGET</div>
-                            <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box" data-teleport:drop="cloneTarget" data-drag-reorder data-drag-group="clone" data-drag-pull="false">
+                            <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box" data-drag-container="cloneTarget" data-drag-group="clone" data-drag-pull="false">
                                 <div data-for="item in cloneTarget" data-drag class="flex items-center gap-2 p-3 bg-base-100 rounded-box cursor-grab hover:bg-base-200 text-sm item">
                                     <iconify-icon icon="material-symbols-light:file-copy" class="text-success"></iconify-icon>
                                     <span data-bind="item.n"></span>
@@ -161,7 +160,7 @@
                         04. Sorting <span class="badge badge-error badge-outline badge-sm" data-bind="disabledSorting ? 'DISABLED' : 'ENABLED'" data-bind-class="disabledSorting ? 'badge badge-error badge-outline badge-sm' : 'badge badge-success badge-outline badge-sm'"></span>
                     </div>
                     <button data-on-click="disabledSorting = !disabledSorting" class="btn btn-sm btn-outline mb-4">Toggle State</button>
-                    <div class="flex flex-col gap-2 min-h-[50px]" data-teleport:drop="sortToggleList" data-drag-reorder data-spatial="sortable">
+                    <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="sortToggleList" data-spatial="sortable">
                         <div data-for="item in sortToggleList" data-drag data-bind-draggable="!disabledSorting" class="flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item">
                             <iconify-icon icon="material-symbols-light:drag-indicator" class="text-base-content/30"></iconify-icon>
                             <span data-bind="item.n"></span>
@@ -176,7 +175,7 @@
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         05. Handles <span class="badge badge-outline badge-sm">data-drag-handle</span>
                     </div>
-                    <div class="flex flex-col gap-2 min-h-[50px]" data-teleport:drop="handleList" data-drag-reorder data-drag-handle=".handle">
+                    <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="handleList" data-drag-handle=".handle">
                         <div data-for="item in handleList" class="flex items-center gap-4 p-4 bg-base-100 rounded-box border border-base-content/5 hover:bg-base-300 transition-colors item" data-drag>
                             <div class="handle cursor-grab bg-base-300 hover:bg-primary/20 p-2 rounded flex items-center justify-center transition-colors">
                                 <iconify-icon icon="material-symbols-light:drag-indicator" class="text-xl"></iconify-icon>
@@ -193,7 +192,7 @@
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         06. Filter <span class="badge badge-outline badge-sm">Selective Drag</span>
                     </div>
-                    <div class="flex flex-col gap-2 min-h-[50px]" data-teleport:drop="filterList" data-drag-reorder data-drag-filter=".filtered">
+                    <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="filterList" data-drag-filter=".filtered">
                         <div data-for="item in filterList" data-drag 
                              data-bind-class="item.filtered ? 'flex items-center gap-4 p-4 bg-base-100/30 rounded-box border border-base-content/5 item opacity-30 cursor-not-allowed filtered' : 'flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item'">
                             <iconify-icon icon="material-symbols-light:drag-indicator" class="text-base-content/30" data-bind-class="item.filtered ? 'hidden' : 'text-base-content/30'"></iconify-icon>
@@ -210,7 +209,7 @@
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         07. MultiDrag <span class="badge badge-outline badge-sm">Batch Select</span>
                     </div>
-                    <div class="flex flex-col gap-2 min-h-[50px]" data-teleport:drop="multiList" data-drag-multi="true" data-drag-reorder>
+                    <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="multiList" data-drag-multi="true">
                         <div data-for="item in multiList" data-drag 
                              data-bind-class="item.selected ? 'flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 transition-colors item sortable-selected' : 'flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item'">
                             <input type="checkbox" data-bind-checked="item.selected" class="checkbox checkbox-primary checkbox-sm">
@@ -226,7 +225,7 @@
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         08. Grid Layout <span class="badge badge-outline badge-sm">Spatial Hit-Test</span>
                     </div>
-                    <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 min-h-[50px]" data-teleport:drop="gridList" data-drag-reorder data-spatial="sortable" data-drag-direction="grid">
+                    <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 min-h-[50px]" data-drag-container="gridList" data-spatial="sortable" data-drag-direction="grid">
                         <div data-for="item in gridList" data-drag class="aspect-square bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors flex items-center justify-center item">
                             <span class="text-2xl font-black text-primary/80" data-bind="item.n"></span>
                         </div>
@@ -241,8 +240,7 @@
                         09. Nested <span class="badge badge-outline badge-sm">Infinite Recursive Hierarchy</span>
                     </div>
                     <div class="flex flex-col gap-2 min-h-[100px] p-4 bg-base-300 rounded-box border border-base-content/10" 
-                          data-teleport:drop="nestedList" 
-                          data-drag-reorder 
+                          data-drag-container="nestedList" 
                           data-drag-group="nested"
                           data-drag-fallback-on-body="true"
                           data-drag-swap-threshold="0.65">
@@ -265,7 +263,7 @@
                         <div>
                             <div class="text-[0.65rem] opacity-40 mb-2 font-bold tracking-wider">VERTICAL AUTO-SCROLL</div>
                             <div class="max-h-[260px] overflow-y-auto p-4 bg-base-300 rounded-box border border-base-content/10 shadow-inner">
-                                <div class="flex flex-col gap-2 min-h-[50px]" data-teleport:drop="scrollList" data-drag-reorder>
+                                <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="scrollList">
                                     <div data-for="item in scrollList" data-drag class="flex items-center gap-4 p-3 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-200 transition-colors item text-sm">
                                         <iconify-icon icon="material-symbols-light:format-list-bulleted" class="text-base-content/50"></iconify-icon>
                                         <span data-bind="item.n" class="font-medium"></span>
@@ -279,8 +277,7 @@
                             <div class="text-[0.65rem] opacity-40 mb-2 font-bold tracking-wider">HORIZONTAL AUTO-SCROLL</div>
                             <div class="p-4 bg-base-300 rounded-box border border-base-content/10 shadow-inner">
                                 <div class="flex flex-row gap-2 min-h-[50px] overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-base-content/10" 
-                                     data-teleport:drop="horzScrollList" 
-                                     data-drag-reorder 
+                                     data-drag-container="horzScrollList" 
                                      data-drag-direction="horizontal">
                                     <div data-for="item in horzScrollList" data-drag class="w-[100px] h-[100px] flex flex-col items-center justify-center gap-2 p-4 bg-base-100 rounded-box border border-base-content/5 cursor-grab hover:bg-base-300 transition-colors item shrink-0">
                                         <iconify-icon icon="material-symbols-light:arrow-range" class="text-info text-xl"></iconify-icon>
@@ -299,7 +296,7 @@
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         11. Ghost Styling <span class="badge badge-outline badge-sm">CSS Feedback</span>
                     </div>
-                    <div class="flex flex-col gap-2 min-h-[50px]" data-teleport:drop="ghostList" data-drag-reorder data-drag-ghost-class="ghost-custom text-white">
+                    <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="ghostList" data-drag-ghost-class="ghost-custom text-white">
                         <div data-for="item in ghostList" data-drag class="flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item">
                             <iconify-icon icon="material-symbols-light:palette" class="text-secondary text-xl"></iconify-icon>
                             <span data-bind="item.n" class="font-medium"></span>
@@ -314,7 +311,7 @@
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         12. Direction <span class="badge badge-outline badge-sm">Horizontal</span>
                     </div>
-                    <div class="flex flex-row gap-4 min-h-[60px] overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-base-content/10" data-teleport:drop="horzList" data-drag-reorder data-spatial="sortable" data-drag-direction="horizontal">
+                    <div class="flex flex-row gap-4 min-h-[60px] overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-base-content/10" data-drag-container="horzList" data-spatial="sortable" data-drag-direction="horizontal">
                         <div data-for="item in horzList" data-drag class="min-w-[120px] flex items-center justify-center gap-2 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item shrink-0">
                             <iconify-icon icon="material-symbols-light:arrow-range" class="text-info text-xl"></iconify-icon>
                             <span data-bind="item.n" class="font-medium"></span>
@@ -329,7 +326,7 @@
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         13. Swap <span class="badge badge-outline badge-sm">Index Exchange</span>
                     </div>
-                    <div class="flex flex-col gap-2 min-h-[50px]" data-teleport:drop="swapList" data-teleport-mode="swap">
+                    <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="swapList" data-drag-swap>
                         <div data-for="item in swapList" data-drag class="flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item">
                             <iconify-icon icon="material-symbols-light:swap-calls" class="text-warning text-xl"></iconify-icon>
                             <span data-bind="item.n" class="font-medium"></span>
@@ -354,8 +351,7 @@
                                       <input type="range" min="0" max="1" step="0.05" data-bind-value="verticalThresholdVal" class="range range-xs range-primary flex-1">
                                   </div>
                                   <div class="flex flex-col gap-2 min-h-[50px] p-4 bg-base-300 rounded-box" 
-                                       data-teleport:drop="thresholdList" 
-                                       data-drag-reorder 
+                                       data-drag-container="thresholdList" 
                                        data-bind-data-drag-swap-threshold="verticalThresholdVal">
                                       <div data-for="item in thresholdList" data-drag class="relative overflow-hidden flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item font-semibold text-sm">
                                           <!-- Visual vertical threshold overlay centered vertically -->
@@ -375,8 +371,7 @@
                                       <input type="range" min="0" max="1" step="0.05" data-bind-value="horizontalThresholdVal" class="range range-xs range-primary flex-1">
                                   </div>
                                   <div class="flex flex-row gap-2 min-h-[50px] p-4 bg-base-300 rounded-box" 
-                                       data-teleport:drop="thresholdHorzList" 
-                                       data-drag-reorder 
+                                       data-drag-container="thresholdHorzList" 
                                        data-drag-direction="horizontal"
                                        data-bind-data-drag-swap-threshold="horizontalThresholdVal">
                                       <div data-for="item in thresholdHorzList" data-drag class="relative overflow-hidden flex items-center justify-center p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item flex-1 min-w-[80px]">

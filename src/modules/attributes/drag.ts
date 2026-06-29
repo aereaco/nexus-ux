@@ -122,7 +122,7 @@ export class Sortable {
       const target = e.target as HTMLElement;
       const dragEl = target.closest(this.options.draggable!) as HTMLElement | null;
       if (dragEl && this.el.contains(dragEl)) {
-        const closestContainer = dragEl.closest('[data-teleport\\:drop]');
+        const closestContainer = dragEl.closest('[data-drag-container]');
         if (closestContainer !== this.el) return;
         if (dragEl.getAttribute('draggable') === 'false') return;
         if (this.options.handle && !target.closest(this.options.handle)) return;
@@ -154,7 +154,7 @@ export class Sortable {
     if (!dragEl || !this.el.contains(dragEl)) return;
 
     // Bubbling Gating: ensure the closest Sortable container is this.el
-    const closestSortableContainer = dragEl.closest('[data-teleport\\:drop]');
+    const closestSortableContainer = dragEl.closest('[data-drag-container]');
     if (closestSortableContainer !== this.el) {
       return; // Let the nested Sortable handle it!
     }
@@ -297,7 +297,7 @@ export class Sortable {
     // Circular containment prevention
     if (this.dragEl.contains(target)) return;
 
-    const targetParent = target.hasAttribute('data-teleport:drop') ? target : target.closest('[data-teleport\\:drop]') as HTMLElement | null;
+    const targetParent = target.hasAttribute('data-drag-container') ? target : target.closest('[data-drag-container]') as HTMLElement | null;
     if (!targetParent) return;
 
     let targetSortable: Sortable | null = null;
@@ -313,7 +313,7 @@ export class Sortable {
       }
     }
 
-    if (target.hasAttribute('data-teleport:drop')) {
+    if (target.hasAttribute('data-drag-container')) {
       // Dragged over an empty container: append directly!
       if (this.dragEl.parentElement !== target) {
         const srcBefore = this._captureRects(this.dragEl.parentElement!);
@@ -487,12 +487,9 @@ export class Sortable {
     const el = document.elementFromPoint(clientX, clientY) as HTMLElement | null;
     if (!el) return null;
 
-    const dragItem = el.closest(this.options.draggable!) as HTMLElement | null;
-    if (dragItem) return dragItem;
-
-    const container = el.closest('[data-teleport\\:drop]') as HTMLElement | null;
+    // 1. Check if hovering over a container first
+    const container = el.closest('[data-drag-container]') as HTMLElement | null;
     if (container && (container as any).__sortable) {
-      // Check if container has visible children (excluding ghost and the current drag element)
       const children = Array.from(container.children).filter(c => 
         c.nodeName.toUpperCase() !== 'TEMPLATE' && 
         c !== this.dragEl && 
@@ -500,11 +497,25 @@ export class Sortable {
         !(c as HTMLElement).classList.contains('sortable-ghost')
       ) as HTMLElement[];
 
+      // If the container is empty, it takes priority as the drop target!
       if (children.length === 0) {
-        return container; // Empty container target
+        return container; 
       }
+    }
 
-      // If container has children, return the last child so we can insert after/before it
+    // 2. Fallback to closest item if container is not empty
+    const dragItem = el.closest(this.options.draggable!) as HTMLElement | null;
+    if (dragItem) return dragItem;
+
+    // 3. Fallback to container's last child if container is populated
+    if (container && (container as any).__sortable) {
+      const children = Array.from(container.children).filter(c => 
+        c.nodeName.toUpperCase() !== 'TEMPLATE' && 
+        c !== this.dragEl && 
+        c !== Sortable.ghost &&
+        !(c as HTMLElement).classList.contains('sortable-ghost')
+      ) as HTMLElement[];
+
       return children[children.length - 1];
     }
     return null;
@@ -734,7 +745,7 @@ export class DragReorderEngine<T> {
     const container = this.ctx.container;
     const isMulti = container.getAttribute("data-drag-multi") === "true";
     const selectedClass = container.getAttribute("data-drag-selected-class") || "sortable-selected";
-    const swap = container.getAttribute("data-teleport-mode") === "swap" || container.getAttribute("data-drag-swap") === "true";
+    const swap = container.hasAttribute("data-drag-swap") || container.getAttribute("data-drag-swap") === "true";
     const swapClass = container.getAttribute("data-drag-swap-class") || "sortable-swap-highlight";
 
     const groupAttr = container.getAttribute("data-drag-group");
@@ -743,7 +754,7 @@ export class DragReorderEngine<T> {
       group = { name: groupAttr };
       // Parse custom data-drag-pull and data-drag-put configuration
       const pullAttr = container.getAttribute("data-drag-pull");
-      const pull = pullAttr !== "false" ? (container.getAttribute("data-teleport-mode") === "clone" || container.getAttribute("data-drag-clone") === "true" ? "clone" : true) : false;
+      const pull = pullAttr !== "false" ? (container.hasAttribute("data-drag-clone") || container.getAttribute("data-drag-clone") === "true" ? "clone" : true) : false;
       const put = container.getAttribute("data-drag-put") !== "false";
       const revertClone = container.getAttribute("data-drag-revert-clone") === "true";
       group.pull = pull;
@@ -803,8 +814,8 @@ export class DragReorderEngine<T> {
 
         const fromContainer = evt.from;
         const toContainer = evt.to;
-        const fromExpr = fromContainer.getAttribute("data-teleport:drop");
-        const toExpr = toContainer.getAttribute("data-teleport:drop");
+        const fromExpr = fromContainer.getAttribute("data-drag-container") || fromContainer.getAttribute("data-teleport:drop");
+        const toExpr = toContainer.getAttribute("data-drag-container") || toContainer.getAttribute("data-teleport:drop");
 
         if (!fromExpr || !this.runtime) return;
 
@@ -834,7 +845,7 @@ export class DragReorderEngine<T> {
           const targetList = this.runtime.evaluate(toContainer, toExpr) as any[];
           const sourceList = this.runtime.evaluate(fromContainer, fromExpr) as any[];
           if (Array.isArray(targetList) && Array.isArray(sourceList)) {
-            const isClone = (group?.pull === 'clone') || (toContainer.getAttribute("data-teleport-mode") === "clone");
+            const isClone = (group?.pull === 'clone') || (toContainer.hasAttribute("data-drag-clone") || toContainer.getAttribute("data-drag-clone") === "true");
 
             let itemsToInsert: any[] = [];
             let indicesToRemove: number[] = [];
@@ -1025,7 +1036,8 @@ export const dragAttribute: AttributeModule = {
     if ((element as any).__nexusDragBound) return (element as any).__nexusDragCleanup;
     (element as any).__nexusDragBound = true;
 
-    const container = element.parentElement;
+    const isContainer = element.hasAttribute('data-drag-container') || element.hasAttribute('data-teleport:drop');
+    const container = isContainer ? element : element.parentElement;
     if (!container) return;
 
     let cleanupEffect: (() => void) | undefined = undefined;
@@ -1045,7 +1057,7 @@ export const dragAttribute: AttributeModule = {
       
       if (!(container as any).__sortable) {
         try {
-          const listExpr = container.getAttribute("data-teleport:drop") || "";
+          const listExpr = container.getAttribute("data-drag-container") || container.getAttribute("data-teleport:drop") || "";
           const ctx = buildReorderContext(container, listExpr, runtime);
           const engine = new DragReorderEngine(ctx, runtime);
           (container as any).__sortable = engine;
