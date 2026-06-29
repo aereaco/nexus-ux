@@ -901,16 +901,20 @@ export class DragReorderEngine<T> {
             }
             // --- CLONE DOM RESTORATION END ---
 
-            flipFn(childrenToAnimate, () => {
+            if (isClone) {
               this.ctx.updateList((src) => {
-                if (!isClone) {
+                targetList.splice(newIndex, 0, ...itemsToInsert);
+              });
+            } else {
+              flipFn(childrenToAnimate, () => {
+                this.ctx.updateList((src) => {
                   for (const idx of indicesToRemove) {
                     src.splice(idx, 1);
                   }
-                }
-                targetList.splice(newIndex, 0, ...itemsToInsert);
-              });
-            }, { duration: this.ctx.animationDuration ?? 150 });
+                  targetList.splice(newIndex, 0, ...itemsToInsert);
+                });
+              }, { duration: this.ctx.animationDuration ?? 150 });
+            }
           }
         } else {
           // Intra-container drag
