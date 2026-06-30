@@ -224,12 +224,14 @@ export class Sortable {
       this._lastSourceItemScope = stack.find(s => s && 'item' in s && s.item && typeof s.item === 'object') as any;
     }
 
-    // Capture starting indices
+    // Capture starting indices of draggable elements only
     this.originalIndices.clear();
-    Array.from(this.el.children).forEach((child: any, idx) => {
-      if (child.nodeName.toUpperCase() !== 'TEMPLATE') {
-        child.sortableIndex = idx;
-        this.originalIndices.set(child, idx);
+    let draggableIdx = 0;
+    Array.from(this.el.children).forEach((child: any) => {
+      if (child.matches(this.options.draggable!)) {
+        child.sortableIndex = draggableIdx;
+        this.originalIndices.set(child, draggableIdx);
+        draggableIdx++;
       }
     });
 
@@ -238,7 +240,7 @@ export class Sortable {
       // If the clicked element is already selected, gather all selected elements in the container
       if (this.dragEl!.classList.contains(this.options.selectedClass!)) {
         this.multiDragElements = Array.from(this.el.children).filter(c =>
-          c.classList.contains(this.options.selectedClass!)
+          (c as HTMLElement).matches(this.options.draggable!) && c.classList.contains(this.options.selectedClass!)
         ) as HTMLElement[];
       } else {
         // Clear other selections in data model and select this one
@@ -469,9 +471,9 @@ export class Sortable {
           Sortable.ghost = null;
         }
 
-        // Compute finalIndex relative to the actual dropped target container!
+        // Compute finalIndex relative to the actual dropped target container, excluding templates/selected elements
         const finalIndex = Array.from(this.dragEl.parentElement!.children)
-          .filter(c => c.nodeName.toUpperCase() !== 'TEMPLATE' && (c === this.dragEl || !this.multiDragElements.includes(c as HTMLElement)))
+          .filter(c => (c as HTMLElement).matches(this.options.draggable!) && (c === this.dragEl || !this.multiDragElements.includes(c as HTMLElement)))
           .indexOf(this.dragEl);
 
         const oldIndex = this.originalIndices.get(this.dragEl);
