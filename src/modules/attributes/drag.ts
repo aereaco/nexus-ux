@@ -471,7 +471,7 @@ export class Sortable {
 
         // Compute finalIndex relative to the actual dropped target container!
         const finalIndex = Array.from(this.dragEl.parentElement!.children)
-          .filter(c => c.nodeName.toUpperCase() !== 'TEMPLATE')
+          .filter(c => c.nodeName.toUpperCase() !== 'TEMPLATE' && (c === this.dragEl || !this.multiDragElements.includes(c as HTMLElement)))
           .indexOf(this.dragEl);
 
         const oldIndex = this.originalIndices.get(this.dragEl);
