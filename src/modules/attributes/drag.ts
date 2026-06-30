@@ -195,7 +195,8 @@ export class Sortable {
     const dy = e.clientY - this.tapEvt.clientY;
 
     if (!this.dragStarted) {
-      if (Math.sqrt(dx * dx + dy * dy) > 3) {
+      const threshold = e.pointerType === 'touch' ? 15 : 3;
+      if (Math.sqrt(dx * dx + dy * dy) > threshold) {
         this._startDrag(e);
       }
       return;
@@ -224,11 +225,11 @@ export class Sortable {
       this._lastSourceItemScope = stack.find(s => s && 'item' in s && s.item && typeof s.item === 'object') as any;
     }
 
-    // Capture starting indices of draggable elements only
+    // Capture starting indices of draggable elements only (excluding templates and placeholders)
     this.originalIndices.clear();
     let draggableIdx = 0;
     Array.from(this.el.children).forEach((child: any) => {
-      if (child.matches(this.options.draggable!)) {
+      if (child.matches(this.options.draggable!) && child.getAttribute('draggable') !== 'false' && !child.hasAttribute('data-ux-template')) {
         child.sortableIndex = draggableIdx;
         this.originalIndices.set(child, draggableIdx);
         draggableIdx++;
@@ -471,9 +472,9 @@ export class Sortable {
           Sortable.ghost = null;
         }
 
-        // Compute finalIndex relative to the actual dropped target container, excluding templates/selected elements
+        // Compute finalIndex relative to the actual dropped target container, excluding templates/selected elements/placeholders
         const finalIndex = Array.from(this.dragEl.parentElement!.children)
-          .filter(c => (c as HTMLElement).matches(this.options.draggable!) && (c === this.dragEl || !this.multiDragElements.includes(c as HTMLElement)))
+          .filter(c => (c as HTMLElement).matches(this.options.draggable!) && (c as HTMLElement).getAttribute('draggable') !== 'false' && !(c as HTMLElement).hasAttribute('data-ux-template') && (c === this.dragEl || !this.multiDragElements.includes(c as HTMLElement)))
           .indexOf(this.dragEl);
 
         const oldIndex = this.originalIndices.get(this.dragEl);
