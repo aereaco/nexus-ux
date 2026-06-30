@@ -19,36 +19,9 @@
 </head>
 
 <body class="bg-base-300 text-base-content min-h-screen p-8 font-sans antialiased">
-    <!-- Recursive Nesting Template -->
-    <template id="tree-node">
-        <div class="flex items-center gap-2 mb-2 cursor-grab">
-            <iconify-icon
-                data-bind-icon="item.sub && item.sub.length > 0 ? 'material-symbols-light:folder-open' : 'material-symbols-light:draft'"
-                data-bind-class="item.sub && item.sub.length > 0 ? 'text-accent text-xl' : 'text-base-content/50'"></iconify-icon>
-            <span class="font-bold text-sm" data-bind="item.n"></span>
-        </div>
 
-        <!-- Nested Container -->
-        <div class="flex flex-col gap-2 p-4 bg-base-300/50 rounded-box border border-dashed border-base-content/10 ml-6 nested-dropzone"
-            style="min-height: 50px;" data-drag-container="item.sub" data-drag-group="nested"
-            data-drag-fallback-on-body="true" data-drag-swap-threshold="0.65">
 
-            <div data-for="item in item.sub" data-drag
-                class="flex flex-col p-4 bg-base-100 rounded-box border border-base-content/5 item mb-2"
-                data-component="{ path: '#tree-node', lazy: true }">
-            </div>
-
-            <!-- Phantom slot when empty -->
-            <template
-                data-if="(!item.sub || !item.sub.length || item.isDraggedOut) && !item.isDraggedIn">
-                <div data-drag draggable="false"
-                    class="border border-dashed border-base-content/10 rounded-box flex items-center justify-center text-xs opacity-30 select-none">
-                    Empty Folder</div>
-            </template>
-        </div>
-    </template>
-
-    <div class="max-w-[1400px] mx-auto" data-var="{
+    <div class="max-w-[1400px] mx-auto" data-signal="{
         simpleList: [{id: 'S1', n: 'Item 1'}, {id: 'S2', n: 'Item 2'}, {id: 'S3', n: 'Item 3'}],
         list1: [{id: 'A1', n: 'Item 1'}, {id: 'A2', n: 'Item 2'}, {id: 'A3', n: 'Item 3'}],
         list2: [{id: 'B1', n: 'Item 4'}, {id: 'B2', n: 'Item 5'}],
@@ -59,15 +32,15 @@
         multiList: [{id: 'M1', n: 'Multi 1', selected: false}, {id: 'M2', n: 'Multi 2', selected: false}, {id: 'M3', n: 'Multi 3', selected: false}, {id: 'M4', n: 'Multi 4', selected: false}],
         gridList: [{id: 'G1', n: '1'}, {id: 'G2', n: '2'}, {id: 'G3', n: '3'}, {id: 'G4', n: '4'}, {id: 'G5', n: '5'}, {id: 'G6', n: '6'}, {id: 'G7', n: '7'}, {id: 'G8', n: '8'}, {id: 'G9', n: '9'}, {id: 'G10', n: '10'}],
         nestedList: [
-            { id: 'N1', n: 'Folder A', sub: [
-                { id: 'S1', n: 'Sub-Folder A.1', sub: [] },
-                { id: 'S2', n: 'Sub-Folder A.2', sub: [
-                    { id: 'G1', n: 'Doc A.2.1', sub: [] },
-                    { id: 'G2', n: 'Doc A.2.2', sub: [] }
+            { id: 'N1', n: 'Object A', sub: [
+                { id: 'S1', n: 'Object A.1', sub: [] },
+                { id: 'S2', n: 'Object A.2', sub: [
+                    { id: 'G1', n: 'Object A.2.1', sub: [] },
+                    { id: 'G2', n: 'Object A.2.2', sub: [] }
                 ]}
             ]},
-            { id: 'N2', n: 'Folder B', sub: [
-                { id: 'S3', n: 'Doc B.1', sub: [] }
+            { id: 'N2', n: 'Object B', sub: [
+                { id: 'S3', n: 'Object B.1', sub: [] }
             ]}
         ],
         swapList: [{id: 'W1', n: 'Alpha'}, {id: 'W2', n: 'Beta'}, {id: 'W3', n: 'Gamma'}, {id: 'W4', n: 'Delta'}],
@@ -287,12 +260,42 @@
                         data-drag-swap-threshold="0.65">
 
                         <div data-for="item in nestedList" data-drag
-                            class="flex flex-col p-4 bg-base-100 rounded-box border border-base-content/5 item mb-2"
+                            class="flex flex-col p-2 bg-base-100 rounded-box border border-base-content/5 mb-2"
                             data-component="{ path: '#tree-node' }">
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Recursive Nesting Template -->
+            <template id="tree-node">
+                <div class="flex items-center gap-2 mb-2 cursor-grab">
+                    <iconify-icon
+                        data-bind-icon="item.sub && item.sub.length > 0 ? 'material-symbols-light:folder-open' : 'material-symbols-light:draft'"
+                        data-bind-class="item.sub && item.sub.length > 0 ? 'text-accent text-xl' : 'text-base-content/50'"></iconify-icon>
+                    <span class="font-bold text-sm" data-bind="item.n"></span>
+                </div>
+
+                <!-- Nested Container -->
+                <div class="flex flex-col gap-2 p-2 bg-base-300/50 rounded-box border border-dashed border-base-content/10 nested-dropzone"
+                    data-drag-container="item.sub" data-drag-group="nested">
+
+                    <div data-for="item in item.sub" data-drag
+                        class="flex flex-col p-2 bg-base-100 rounded-box border border-base-content/5"
+                        data-component="{ path: '#tree-node', lazy: true }">
+                    </div>
+
+                    <!-- Phantom slot when empty -->
+                    <template data-if="!item.sub || !item.sub.length || item.isDraggedOut">
+                        <div data-drag draggable="false"
+                            class="border border-dashed border-base-content/10 rounded-box flex items-center justify-center text-xs opacity-30 select-none min-h-5">
+                            <iconify-icon icon="material-symbols-light:block-outline"
+                                class="text-base-content/30 text-xl pe-2"></iconify-icon>
+                            Empty Container
+                        </div>
+                    </template>
+                </div>
+            </template>
 
             <!-- 10. Auto-Scroll -->
             <div class="card bg-base-200 shadow-xl border border-base-content/5">

@@ -241,9 +241,14 @@ export class Sortable {
           c.classList.contains(this.options.selectedClass!)
         ) as HTMLElement[];
       } else {
-        // If not selected, clear other selections and select it
-        Array.from(this.el.children).forEach(c => c.classList.remove(this.options.selectedClass!));
-        this.dragEl!.classList.add(this.options.selectedClass!);
+        // Clear other selections in data model and select this one
+        Array.from(this.el.children).forEach((c: any) => {
+          const stack = getDataStack(c);
+          const scope = stack.find(s => s && 'item' in s && s.item && typeof s.item === 'object') as any;
+          if (scope && scope.item) {
+            scope.item.selected = (c === this.dragEl);
+          }
+        });
         this.multiDragElements = [this.dragEl!];
       }
     }
@@ -489,19 +494,22 @@ export class Sortable {
 
         // De-select MultiDrag items on drop
         if (this.options.multiDrag) {
-          this.multiDragElements.forEach(el => el.classList.remove(this.options.selectedClass!));
+          this.multiDragElements.forEach((el: any) => {
+            const stack = getDataStack(el);
+            const scope = stack.find(s => s && 'item' in s && s.item && typeof s.item === 'object') as any;
+            if (scope && scope.item) {
+              scope.item.selected = false;
+            }
+          });
           this.multiDragElements = [];
         }
       } else {
         // A simple tap/click occurred without dragging: toggle selection!
         if (this.options.multiDrag) {
-          const idx = this.multiDragElements.indexOf(this.dragEl);
-          if (idx !== -1) {
-            this.dragEl.classList.remove(this.options.selectedClass!);
-            this.multiDragElements.splice(idx, 1);
-          } else {
-            this.dragEl.classList.add(this.options.selectedClass!);
-            this.multiDragElements.push(this.dragEl);
+          const stack = getDataStack(this.dragEl);
+          const scope = stack.find(s => s && 'item' in s && s.item && typeof s.item === 'object') as any;
+          if (scope && scope.item) {
+            scope.item.selected = !scope.item.selected;
           }
         }
       }
