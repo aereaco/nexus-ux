@@ -347,7 +347,7 @@ export class Sortable {
       }
     }
 
-    this._updateDragOverState(targetParent);
+    this._updateDragOverState(targetParent, e);
 
     if (target.hasAttribute('data-drag-container')) {
       // Dragged over an empty container: append directly!
@@ -528,21 +528,29 @@ export class Sortable {
 
   private _clearDragOverState() {
     if (this._lastActiveItemScope && this._lastActiveItemScope.item) {
-      (this._lastActiveItemScope.item as any).isDraggedIn = false;
+      (this._lastActiveItemScope.item as any).isDragOver = false;
       this._lastActiveItemScope = null;
     }
   }
 
-  private _updateDragOverState(targetParent: HTMLElement) {
+  private _updateDragOverState(targetParent: HTMLElement, e: PointerEvent) {
     const stack = getDataStack(targetParent);
     const targetItemScope = stack.find(s => s && 'item' in s && s.item && typeof s.item === 'object') as any;
     
     if (this._lastActiveItemScope !== targetItemScope) {
       this._clearDragOverState();
       this._lastActiveItemScope = targetItemScope || null;
-      if (targetItemScope && targetItemScope.item) {
-        (targetItemScope.item as any).isDraggedIn = true;
-      }
+    }
+
+    if (targetItemScope && targetItemScope.item) {
+      const rect = targetParent.getBoundingClientRect();
+      const isInside = (
+        e.clientX >= rect.left &&
+        e.clientX <= rect.right &&
+        e.clientY >= rect.top &&
+        e.clientY <= rect.bottom
+      );
+      (targetItemScope.item as any).isDragOver = isInside;
     }
   }
 
