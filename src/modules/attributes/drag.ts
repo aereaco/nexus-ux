@@ -1036,17 +1036,13 @@ export class DragReorderEngine<T> {
                   }
                 } else {
                   if (isMultiDrag) {
-                    let adjIndex = newIndex;
                     const sortedOldDesc = (evt.oldIndicies || []).slice().sort((a: any, b: any) => b.index - a.index);
                     const sortedOldAsc = (evt.oldIndicies || []).slice().sort((a: any, b: any) => a.index - b.index);
                     const itemsToInsert = sortedOldAsc.map((x: any) => sourceList[x.index]);
                     for (const x of sortedOldDesc) {
                       list.splice(x.index, 1);
-                      if (x.index < newIndex) {
-                        adjIndex--;
-                      }
                     }
-                    list.splice(adjIndex, 0, ...itemsToInsert);
+                    list.splice(newIndex, 0, ...itemsToInsert);
                   } else {
                     const [moved] = list.splice(oldIndex, 1);
                     list.splice(newIndex, 0, moved);
