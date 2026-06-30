@@ -476,6 +476,17 @@ export class Sortable {
 
         const oldIndex = this.originalIndices.get(this.dragEl);
 
+        // De-select MultiDrag items in the data model before triggering list mutations
+        if (this.options.multiDrag) {
+          this.multiDragElements.forEach((el: any) => {
+            const stack = getDataStack(el);
+            const scope = stack.find(s => s && 'item' in s && s.item && typeof s.item === 'object') as any;
+            if (scope && scope.item) {
+              scope.item.selected = false;
+            }
+          });
+        }
+
         if (this.options.onEnd) {
           this.options.onEnd({
             item: this.dragEl,
@@ -492,15 +503,7 @@ export class Sortable {
           });
         }
 
-        // De-select MultiDrag items on drop
         if (this.options.multiDrag) {
-          this.multiDragElements.forEach((el: any) => {
-            const stack = getDataStack(el);
-            const scope = stack.find(s => s && 'item' in s && s.item && typeof s.item === 'object') as any;
-            if (scope && scope.item) {
-              scope.item.selected = false;
-            }
-          });
           this.multiDragElements = [];
         }
       } else {
