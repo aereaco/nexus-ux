@@ -528,7 +528,7 @@ export class Sortable {
 
   private _clearDragOverState() {
     if (this._lastActiveItemScope && this._lastActiveItemScope.item) {
-      (this._lastActiveItemScope.item as any).isDragOver = false;
+      (this._lastActiveItemScope.item as any).isDraggedIn = false;
       this._lastActiveItemScope = null;
     }
   }
@@ -541,7 +541,7 @@ export class Sortable {
       this._clearDragOverState();
       this._lastActiveItemScope = targetItemScope || null;
       if (targetItemScope && targetItemScope.item) {
-        (targetItemScope.item as any).isDragOver = true;
+        (targetItemScope.item as any).isDraggedIn = true;
       }
     }
   }
