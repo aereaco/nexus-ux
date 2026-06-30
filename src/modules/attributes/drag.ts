@@ -96,6 +96,7 @@ export class Sortable {
 
   private scrollParent: HTMLElement | null = null;
   private _lastActiveItemScope: any = null;
+  private _lastSourceItemScope: any = null;
   private scrollParentBounds: DOMRect | null = null;
 
   constructor(el: HTMLElement, options: SortableOptions) {
@@ -218,6 +219,11 @@ export class Sortable {
     this.parentEl = this.dragEl!.parentElement;
     this.nextEl = this.dragEl!.nextElementSibling as HTMLElement | null;
 
+    if (this.parentEl) {
+      const stack = getDataStack(this.parentEl);
+      this._lastSourceItemScope = stack.find(s => s && 'item' in s && s.item && typeof s.item === 'object') as any;
+    }
+
     // Capture starting indices
     this.originalIndices.clear();
     Array.from(this.el.children).forEach((child: any, idx) => {
@@ -291,6 +297,22 @@ export class Sortable {
 
   private _onDragOver(e: PointerEvent) {
     if (!this.dragEl) return;
+
+    // Boundary detection for source container empty placeholder
+    if (this.parentEl && this._lastSourceItemScope && this._lastSourceItemScope.item) {
+      if (this.dragEl.parentElement !== this.parentEl) {
+        (this._lastSourceItemScope.item as any).isDraggedOut = true;
+      } else {
+        const rect = this.parentEl.getBoundingClientRect();
+        const isOutside = (
+          e.clientX < rect.left ||
+          e.clientX > rect.right ||
+          e.clientY < rect.top ||
+          e.clientY > rect.bottom
+        );
+        (this._lastSourceItemScope.item as any).isDraggedOut = isOutside;
+      }
+    }
 
     // Find closest container target
     const target = this._findTargetUnderCursor(e.clientX, e.clientY);
@@ -486,6 +508,11 @@ export class Sortable {
     }
 
     this._clearDragOverState();
+
+    if (this._lastSourceItemScope && this._lastSourceItemScope.item) {
+      (this._lastSourceItemScope.item as any).isDraggedOut = false;
+      this._lastSourceItemScope = null;
+    }
 
     Sortable.active = null;
     this.dragEl = null;
