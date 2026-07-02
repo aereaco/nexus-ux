@@ -387,50 +387,19 @@ export async function compileStyleLayerPrimitives(targetModulePath: string): Pro
     preflightCss = await res.text();
   }
 
-  // ── B. PACKED_THEME — Nexus-UX framework design tokens (source of truth lives here) ──
-  const themeCss = `:root{` +
-    `--font-sans:ui-sans-serif,system-ui,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji';` +
-    `--font-serif:ui-serif,Georgia,Cambria,'Times New Roman',Times,serif;` +
-    `--font-mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;` +
-    `--color-transparent:transparent;--color-current:currentColor;--color-white:#fff;--color-black:#000;` +
-    `--color-slate-50:oklch(98.4% 0.003 247.858);--color-slate-100:oklch(96.8% 0.007 247.858);` +
-    `--color-slate-200:oklch(92.9% 0.013 255.508);--color-slate-300:oklch(88.1% 0.021 259.75);` +
-    `--color-slate-400:oklch(82.3% 0.031 259.75);--color-slate-500:oklch(70.7% 0.022 261.325);` +
-    `--color-slate-600:oklch(52.6% 0.03 264.767);--color-slate-700:oklch(43.9% 0.027 268.808);` +
-    `--color-slate-800:oklch(37% 0.025 268.808);--color-slate-900:oklch(31.3% 0.02 268.808);` +
-    `--color-slate-950:oklch(21.3% 0.014 268.808);` +
-    `--color-gray-500:oklch(70.7% 0.022 261.325);--color-zinc-500:oklch(70.7% 0.022 261.325);` +
-    `--color-neutral-500:oklch(70.7% 0.022 261.325);--color-stone-500:oklch(70.7% 0.022 261.325);` +
-    `--color-red-500:oklch(63.7% 0.237 25.331);--color-orange-500:oklch(70.5% 0.213 47.604);` +
-    `--color-amber-500:oklch(76.9% 0.188 70.08);--color-yellow-500:oklch(85.2% 0.199 91.936);` +
-    `--color-lime-500:oklch(86.8% 0.189 124.166);--color-green-500:oklch(72.7% 0.192 149.33);` +
-    `--color-emerald-500:oklch(69.6% 0.17 162.48);--color-teal-500:oklch(66.1% 0.125 182.018);` +
-    `--color-cyan-500:oklch(71.5% 0.143 215.221);--color-sky-500:oklch(71.4% 0.142 232.661);` +
-    `--color-blue-500:oklch(62.3% 0.214 259.815);--color-indigo-500:oklch(58.5% 0.233 277.117);` +
-    `--color-violet-500:oklch(60.6% 0.25 293.628);--color-purple-500:oklch(62.7% 0.265 303.9);` +
-    `--color-fuchsia-500:oklch(66.7% 0.295 322.15);--color-pink-500:oklch(69.7% 0.274 342.55);` +
-    `--color-rose-500:oklch(65.6% 0.241 354.308);` +
-    `--spacing:0.25rem;--breakpoint-sm:40rem;--breakpoint-md:48rem;--breakpoint-lg:64rem;` +
-    `--breakpoint-xl:80rem;--breakpoint-2xl:96rem;` +
-    `--radius-xs:0.125rem;--radius-sm:0.25rem;--radius-md:0.375rem;--radius-lg:0.5rem;` +
-    `--radius-xl:0.75rem;--radius-2xl:1rem;--radius-3xl:1.5rem;--radius-full:9999px;` +
-    `--text-xs:0.75rem;--text-xs--line-height:1rem;--text-sm:0.875rem;--text-sm--line-height:1.25rem;` +
-    `--text-base:1rem;--text-base--line-height:1.5rem;--text-lg:1.125rem;--text-lg--line-height:1.75rem;` +
-    `--text-xl:1.25rem;--text-xl--line-height:1.75rem;--text-2xl:1.5rem;--text-2xl--line-height:2rem;` +
-    `--text-3xl:1.875rem;--text-3xl--line-height:2.25rem;--text-4xl:2.25rem;--text-4xl--line-height:2.5rem;` +
-    `--text-5xl:3rem;--text-5xl--line-height:1;--text-6xl:3.75rem;--text-6xl--line-height:1;` +
-    `--text-7xl:4.5rem;--text-7xl--line-height:1;--text-8xl:6rem;--text-8xl--line-height:1;` +
-    `--text-9xl:8rem;--text-9xl--line-height:1;` +
-    `--tracking-tighter:-0.05em;--tracking-tight:-0.025em;--tracking-normal:0em;` +
-    `--tracking-wide:0.025em;--tracking-wider:0.05em;--tracking-widest:0.1em;` +
-    `--blur-sm:4px;--blur-md:8px;--blur-lg:12px;--blur-xl:16px;--blur-2xl:24px;--blur-3xl:40px;` +
-    `--shadow-sm:0 1px 3px 0 rgb(0 0 0/0.1),0 1px 2px -1px rgb(0 0 0/0.1);` +
-    `--shadow-md:0 4px 6px -1px rgb(0 0 0/0.1),0 2px 4px -2px rgb(0 0 0/0.1);` +
-    `--shadow-lg:0 10px 15px -3px rgb(0 0 0/0.1),0 4px 6px -4px rgb(0 0 0/0.1);` +
-    `--shadow-xl:0 20px 25px -5px rgb(0 0 0/0.1),0 8px 10px -6px rgb(0 0 0/0.1);` +
-    `--shadow-2xl:0 25px 50px -12px rgb(0 0 0/0.25);` +
-    `--shadow-inner:inset 0 2px 4px 0 rgb(0 0 0/0.05);` +
-    `--default-font-family:var(--font-sans);--default-mono-font-family:var(--font-mono)}`;
+  // ── B. PACKED_THEME — official Tailwind v4 default theme tokens, fetched from CDN ──
+  let themeCss = "";
+  if (args["local-tailwind"]) {
+    const localPath = _joinPath(args["local-tailwind"], "packages", "tailwindcss", "theme.css");
+    console.log(`   ⚡ Reading local Tailwind theme from: ${localPath}`);
+    themeCss = await Deno.readTextFile(localPath);
+  } else {
+    const themeUrl = "https://cdn.jsdelivr.net/npm/tailwindcss@4/theme.css";
+    console.log(`   ⚡ Fetching Tailwind v4 theme from jsDelivr CDN...`);
+    const res = await fetch(themeUrl);
+    if (!res.ok) throw new Error(`CDN fetch failed (${res.status}): ${res.statusText}`);
+    themeCss = await res.text();
+  }
 
   // ── C. PACKED_COMPONENTS — Nexus sortable/drag-drop component overrides ──
   const componentsCss =
