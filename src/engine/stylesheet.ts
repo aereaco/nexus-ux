@@ -1087,6 +1087,31 @@ class StyleSheetManager {
     return () => this.removeSheet(sheetId);
   }
 
+  /**
+   * Adopt external/third-party CSS verbatim — bypasses processAtRules so that
+   * @layer, @property, and other modern at-rules from libraries like DaisyUI
+   * are not stripped or mangled.
+   */
+  async adoptRawCSS(cssText: string, id?: string): Promise<() => void> {
+    const sheetId = id || `_auto_${this._nextId++}`;
+    const existing = this._adoptedSheets.get(sheetId);
+    if (existing) {
+      await existing.replace(cssText);
+      return () => this.removeSheet(sheetId);
+    }
+
+    if (typeof CSSStyleSheet === 'undefined') return () => {};
+
+    const sheet = new CSSStyleSheet();
+    await sheet.replace(cssText);
+    this._adoptedSheets.set(sheetId, sheet);
+
+    if ('document' in globalThis) {
+      document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+    }
+    return () => this.removeSheet(sheetId);
+  }
+
   processAtRules(css: string): string {
     let result = css;
     const themeRegex = /@theme\s*(?:default|inline|reference)?\s*\{([\s\S]*?)\}/g;

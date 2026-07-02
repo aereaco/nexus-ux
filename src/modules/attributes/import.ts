@@ -158,16 +158,18 @@ async function importLink(
     const href = attrs.href as string;
     if (!href) continue;
 
-    // ZCZS Mandate: Constructable Stylesheets via StyleSheetManager
+    // ZCZS Mandate: Constructable Stylesheets via StyleSheetManager.
+    // Use adoptRawCSS so that third-party @layer/@property rules are not stripped.
     if (attrs.rel === 'stylesheet' || !attrs.rel) {
       const cssText = await resolveContent(href);
       if (cssText) {
-        const cleanup = await stylesheet.adoptCSS(cssText, `import-${id}-${href}`);
+        const cleanup = await stylesheet.adoptRawCSS(cssText, `import-${id}-${href}`);
         cleanupFns.push(cleanup);
-        runtime.log(`Nexus Import [${id}]: CSS adopted (ZCZS): ${href}`);
+        runtime.log(`Nexus Import [${id}]: CSS adopted (raw): ${href}`);
         continue;
       }
     }
+
 
     // Fallback: Legacy link tag with load waiting
     await new Promise<void>((resolve) => {
