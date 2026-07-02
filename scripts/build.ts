@@ -346,49 +346,115 @@ export async function compileStyleLayerPrimitives(targetModulePath: string): Pro
     default: { "local-tailwind": "" }
   });
 
-  let rawCssContent = "";
+  // ── Helper: compact raw CSS into an opaque minifier-safe string literal ──
+  function pack(css: string): string {
+    return css
+      .replace(/\/\*[\s\S]*?\*\//g, "")  // strip comments
+      .replace(/\s+/g, " ")               // collapse whitespace
+      .replace(/;\s*/g, ";")
+      .replace(/,\s*/g, ",")
+      .replace(/\{\s*/g, "{")
+      .replace(/\s*\}\s*/g, "}")
+      .replace(/"/g, '\\"')               // escape double quotes for string literal
+      .trim();
+  }
 
+  // ── Helper: write a packed constant back into the source file ──
+  async function inject(src: string, constName: string, content: string): Promise<string> {
+    const regex = new RegExp(`(const|export const) ${constName}\\s*=\\s*"[\\s\\S]*?";`);
+    const packed = pack(content);
+    if (regex.test(src)) {
+      const updated = src.replace(regex, (_m, kw) => `${kw} ${constName} = "${packed}";`);
+      console.log(`   ✓ ${constName} injected (${packed.length} chars).`);
+      return updated;
+    } else {
+      console.warn(`   ⚠ ${constName} placeholder not found in stylesheet.ts — skipping.`);
+      return src;
+    }
+  }
+
+  // ── A. PACKED_PREFLIGHT — fetched from official Tailwind v4 CDN ──
+  let preflightCss = "";
   if (args["local-tailwind"]) {
-    // Local Tailwind v4 monorepo: packages/tailwindcss/preflight.css
-    const targetedFilePath = _joinPath(args["local-tailwind"], "packages", "tailwindcss", "preflight.css");
-    console.log(`   ⚡ Reading local Tailwind preflight from: ${targetedFilePath}`);
-    try {
-      rawCssContent = await Deno.readTextFile(targetedFilePath);
-    } catch (err) {
-      throw new Error(`Failed to read local preflight at ${targetedFilePath}: ${(err as Error).message}`);
-    }
+    const localPath = _joinPath(args["local-tailwind"], "packages", "tailwindcss", "preflight.css");
+    console.log(`   ⚡ Reading local Tailwind preflight from: ${localPath}`);
+    preflightCss = await Deno.readTextFile(localPath);
   } else {
-    // tailwindcss@4/preflight.css — verified 200 on jsDelivr
-    const cdnEndpoint = "https://cdn.jsdelivr.net/npm/tailwindcss@4/preflight.css";
+    const cdnUrl = "https://cdn.jsdelivr.net/npm/tailwindcss@4/preflight.css";
     console.log(`   ⚡ Fetching Tailwind v4 preflight from jsDelivr CDN...`);
-    const response = await fetch(cdnEndpoint);
-    if (!response.ok) {
-      throw new Error(`CDN fetch failed (${response.status}): ${response.statusText} — ${cdnEndpoint}`);
-    }
-    rawCssContent = await response.text();
+    const res = await fetch(cdnUrl);
+    if (!res.ok) throw new Error(`CDN fetch failed (${res.status}): ${res.statusText}`);
+    preflightCss = await res.text();
   }
 
-  // tailwindcss@4/preflight.css is already pure preflight CSS — no layer extraction needed.
-  // Compact: strip comments, collapse whitespace, normalize separator spacing.
-  const packed = rawCssContent
-    .replace(/\/\*[\s\S]*?\*\//g, "")  // strip comments
-    .replace(/\s+/g, " ")               // collapse whitespace
-    .replace(/;\s*/g, ";")
-    .replace(/,\s*/g, ",")
-    .replace(/\{\s*/g, "{")
-    .replace(/\s*\}\s*/g, "}")
-    .replace(/"/g, '\\"')               // escape double quotes for string literal
-    .trim();
+  // ── B. PACKED_THEME — Nexus-UX framework design tokens (source of truth lives here) ──
+  const themeCss = `:root{` +
+    `--font-sans:ui-sans-serif,system-ui,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji';` +
+    `--font-serif:ui-serif,Georgia,Cambria,'Times New Roman',Times,serif;` +
+    `--font-mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;` +
+    `--color-transparent:transparent;--color-current:currentColor;--color-white:#fff;--color-black:#000;` +
+    `--color-slate-50:oklch(98.4% 0.003 247.858);--color-slate-100:oklch(96.8% 0.007 247.858);` +
+    `--color-slate-200:oklch(92.9% 0.013 255.508);--color-slate-300:oklch(88.1% 0.021 259.75);` +
+    `--color-slate-400:oklch(82.3% 0.031 259.75);--color-slate-500:oklch(70.7% 0.022 261.325);` +
+    `--color-slate-600:oklch(52.6% 0.03 264.767);--color-slate-700:oklch(43.9% 0.027 268.808);` +
+    `--color-slate-800:oklch(37% 0.025 268.808);--color-slate-900:oklch(31.3% 0.02 268.808);` +
+    `--color-slate-950:oklch(21.3% 0.014 268.808);` +
+    `--color-gray-500:oklch(70.7% 0.022 261.325);--color-zinc-500:oklch(70.7% 0.022 261.325);` +
+    `--color-neutral-500:oklch(70.7% 0.022 261.325);--color-stone-500:oklch(70.7% 0.022 261.325);` +
+    `--color-red-500:oklch(63.7% 0.237 25.331);--color-orange-500:oklch(70.5% 0.213 47.604);` +
+    `--color-amber-500:oklch(76.9% 0.188 70.08);--color-yellow-500:oklch(85.2% 0.199 91.936);` +
+    `--color-lime-500:oklch(86.8% 0.189 124.166);--color-green-500:oklch(72.7% 0.192 149.33);` +
+    `--color-emerald-500:oklch(69.6% 0.17 162.48);--color-teal-500:oklch(66.1% 0.125 182.018);` +
+    `--color-cyan-500:oklch(71.5% 0.143 215.221);--color-sky-500:oklch(71.4% 0.142 232.661);` +
+    `--color-blue-500:oklch(62.3% 0.214 259.815);--color-indigo-500:oklch(58.5% 0.233 277.117);` +
+    `--color-violet-500:oklch(60.6% 0.25 293.628);--color-purple-500:oklch(62.7% 0.265 303.9);` +
+    `--color-fuchsia-500:oklch(66.7% 0.295 322.15);--color-pink-500:oklch(69.7% 0.274 342.55);` +
+    `--color-rose-500:oklch(65.6% 0.241 354.308);` +
+    `--spacing:0.25rem;--breakpoint-sm:40rem;--breakpoint-md:48rem;--breakpoint-lg:64rem;` +
+    `--breakpoint-xl:80rem;--breakpoint-2xl:96rem;` +
+    `--radius-xs:0.125rem;--radius-sm:0.25rem;--radius-md:0.375rem;--radius-lg:0.5rem;` +
+    `--radius-xl:0.75rem;--radius-2xl:1rem;--radius-3xl:1.5rem;--radius-full:9999px;` +
+    `--text-xs:0.75rem;--text-xs--line-height:1rem;--text-sm:0.875rem;--text-sm--line-height:1.25rem;` +
+    `--text-base:1rem;--text-base--line-height:1.5rem;--text-lg:1.125rem;--text-lg--line-height:1.75rem;` +
+    `--text-xl:1.25rem;--text-xl--line-height:1.75rem;--text-2xl:1.5rem;--text-2xl--line-height:2rem;` +
+    `--text-3xl:1.875rem;--text-3xl--line-height:2.25rem;--text-4xl:2.25rem;--text-4xl--line-height:2.5rem;` +
+    `--text-5xl:3rem;--text-5xl--line-height:1;--text-6xl:3.75rem;--text-6xl--line-height:1;` +
+    `--text-7xl:4.5rem;--text-7xl--line-height:1;--text-8xl:6rem;--text-8xl--line-height:1;` +
+    `--text-9xl:8rem;--text-9xl--line-height:1;` +
+    `--tracking-tighter:-0.05em;--tracking-tight:-0.025em;--tracking-normal:0em;` +
+    `--tracking-wide:0.025em;--tracking-wider:0.05em;--tracking-widest:0.1em;` +
+    `--blur-sm:4px;--blur-md:8px;--blur-lg:12px;--blur-xl:16px;--blur-2xl:24px;--blur-3xl:40px;` +
+    `--shadow-sm:0 1px 3px 0 rgb(0 0 0/0.1),0 1px 2px -1px rgb(0 0 0/0.1);` +
+    `--shadow-md:0 4px 6px -1px rgb(0 0 0/0.1),0 2px 4px -2px rgb(0 0 0/0.1);` +
+    `--shadow-lg:0 10px 15px -3px rgb(0 0 0/0.1),0 4px 6px -4px rgb(0 0 0/0.1);` +
+    `--shadow-xl:0 20px 25px -5px rgb(0 0 0/0.1),0 8px 10px -6px rgb(0 0 0/0.1);` +
+    `--shadow-2xl:0 25px 50px -12px rgb(0 0 0/0.25);` +
+    `--shadow-inner:inset 0 2px 4px 0 rgb(0 0 0/0.05);` +
+    `--default-font-family:var(--font-sans);--default-mono-font-family:var(--font-mono)}`;
 
-  const sourceText = await Deno.readTextFile(targetModulePath);
-  // Matches both the empty placeholder and any previously injected content
-  const constantRegex   = /const PACKED_PREFLIGHT\s*=\s*"[\s\S]*?";/;
-  const replacementLine = `const PACKED_PREFLIGHT = "${packed}";`;
+  // ── C. PACKED_COMPONENTS — Nexus sortable/drag-drop component overrides ──
+  const componentsCss =
+    `.sortable-chosen{background-color:var(--color-neutral-800,#27272a)!important;box-shadow:inset 0 0 0 2px var(--color-primary,#3b82f6)!important}` +
+    `.sortable-drag{opacity:1!important;box-shadow:0 25px 50px -12px rgba(0,0,0,.25)!important;transform:scale(1.05)!important;cursor:grabbing!important;z-index:9999!important}` +
+    `.sortable-ghost{opacity:.4!important;background-color:var(--color-neutral-900,#18181b)!important;border:2px dashed var(--color-neutral-700,#3f3f46)!important}` +
+    `.sortable-selected{box-shadow:inset 0 0 0 2px var(--color-accent,var(--color-secondary,#ec4899))!important}` +
+    `.sortable-swap-highlight{background-color:color-mix(in srgb,var(--color-warning,#eab308) 20%,transparent)!important;box-shadow:inset 0 0 0 2px var(--color-warning,#eab308)!important}` +
+    `.drop-target-before{background:linear-gradient(to bottom,color-mix(in srgb,var(--color-primary,#3b82f6) 30%,transparent) 0%,transparent 20%)!important;box-shadow:inset 0 2px 0 0 var(--color-primary,#3b82f6)!important}` +
+    `.drop-target-after{background:linear-gradient(to top,color-mix(in srgb,var(--color-primary,#3b82f6) 30%,transparent) 0%,transparent 20%)!important;box-shadow:inset 0 -2px 0 0 var(--color-primary,#3b82f6)!important}`;
 
-  if (constantRegex.test(sourceText)) {
-    await Deno.writeTextFile(targetModulePath, sourceText.replace(constantRegex, replacementLine));
-    console.log(`   ✓ PACKED_PREFLIGHT injected (${packed.length} chars) into stylesheet.ts.`);
-  } else {
-    console.warn("   ⚠ PACKED_PREFLIGHT constant not found in stylesheet.ts — skipping injection.");
-  }
+  // ── D. PACKED_KEYFRAMES — Framework animation keyframes ──
+  const keyframesCss =
+    `@keyframes spin{to{transform:rotate(360deg)}}` +
+    `@keyframes ping{75%,100%{transform:scale(2);opacity:0}}` +
+    `@keyframes pulse{50%{opacity:.5}}` +
+    `@keyframes bounce{0%,100%{transform:translateY(-25%);animation-timing-function:cubic-bezier(.8,0,1,1)}50%{transform:none;animation-timing-function:cubic-bezier(0,0,.2,1)}}`;
+
+  // ── Inject all four constants in a single file read/write pass ──
+  let src = await Deno.readTextFile(targetModulePath);
+  src = await inject(src, "PACKED_PREFLIGHT", preflightCss);
+  src = await inject(src, "PACKED_THEME", themeCss);
+  src = await inject(src, "PACKED_COMPONENTS", componentsCss);
+  src = await inject(src, "PACKED_KEYFRAMES", keyframesCss);
+  await Deno.writeTextFile(targetModulePath, src);
+  console.log(`   ✅ All style layer primitives injected into stylesheet.ts.`);
 }

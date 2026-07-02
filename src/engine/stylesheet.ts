@@ -3,196 +3,33 @@ import { effect as _effect } from './reactivity.ts';
 import { RuntimeContext } from './composition.ts';
 
 // ============================================================================
-// 1. THEME CONSTANTS 
+// 1. AOT-INJECTED STYLE LAYER CONSTANTS
 // ============================================================================
-export const THEME_CSS = `:root {
-  --font-sans: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  --font-serif: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+// All four constants below are EMPTY PLACEHOLDERS in source.
+// The build script (scripts/build.ts compileStyleLayerPrimitives) is the sole
+// authority that writes CSS content into them at ahead-of-time build phase.
+// The minifier treats the resulting opaque string blobs as unmangleable literals
+// but can fully mangle all surrounding JavaScript execution logic.
 
-  --color-transparent: transparent;
-  --color-current: currentColor;
-  --color-white: #fff;
-  --color-black: #000;
+/** Base browser resets — Tailwind v4 preflight, fetched from jsDelivr CDN at build time. */
+const PACKED_PREFLIGHT = "*,::after,::before,::backdrop,::file-selector-button {box-sizing: border-box;margin: 0;padding: 0;border: 0 solid;}html,:host {line-height: 1.5;-webkit-text-size-adjust: 100%;tab-size: 4;font-family: --theme( --default-font-family,ui-sans-serif,system-ui,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji' );font-feature-settings: --theme(--default-font-feature-settings,normal);font-variation-settings: --theme(--default-font-variation-settings,normal);-webkit-tap-highlight-color: transparent;}hr {height: 0;color: inherit;border-top-width: 1px;}abbr:where([title]) {-webkit-text-decoration: underline dotted;text-decoration: underline dotted;}h1,h2,h3,h4,h5,h6 {font-size: inherit;font-weight: inherit;}a {color: inherit;-webkit-text-decoration: inherit;text-decoration: inherit;}b,strong {font-weight: bolder;}code,kbd,samp,pre {font-family: --theme( --default-mono-font-family,ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace );font-feature-settings: --theme(--default-mono-font-feature-settings,normal);font-variation-settings: --theme(--default-mono-font-variation-settings,normal);font-size: 1em;}small {font-size: 80%;}sub,sup {font-size: 75%;line-height: 0;position: relative;vertical-align: baseline;}sub {bottom: -0.25em;}sup {top: -0.5em;}table {text-indent: 0;border-color: inherit;border-collapse: collapse;}:-moz-focusring {outline: auto;}progress {vertical-align: baseline;}summary {display: list-item;}ol,ul,menu {list-style: none;}img,svg,video,canvas,audio,iframe,embed,object {display: block;vertical-align: middle;}img,video {max-width: 100%;height: auto;}button,input,select,optgroup,textarea,::file-selector-button {font: inherit;font-feature-settings: inherit;font-variation-settings: inherit;letter-spacing: inherit;color: inherit;border-radius: 0;background-color: transparent;opacity: 1;}:where(select:is([multiple],[size])) optgroup {font-weight: bolder;}:where(select:is([multiple],[size])) optgroup option {padding-inline-start: 20px;}::file-selector-button {margin-inline-end: 4px;}::placeholder {opacity: 1;}@supports (not (-webkit-appearance: -apple-pay-button)) or (contain-intrinsic-size: 1px) {::placeholder {color: color-mix(in oklab,currentcolor 50%,transparent);}}textarea {resize: vertical;}::-webkit-search-decoration {-webkit-appearance: none;}::-webkit-date-and-time-value {min-height: 1lh;text-align: inherit;}::-webkit-datetime-edit {display: inline-flex;}::-webkit-datetime-edit-fields-wrapper {padding: 0;}::-webkit-datetime-edit,::-webkit-datetime-edit-year-field,::-webkit-datetime-edit-month-field,::-webkit-datetime-edit-day-field,::-webkit-datetime-edit-hour-field,::-webkit-datetime-edit-minute-field,::-webkit-datetime-edit-second-field,::-webkit-datetime-edit-millisecond-field,::-webkit-datetime-edit-meridiem-field {padding-block: 0;}::-webkit-calendar-picker-indicator {line-height: 1;}:-moz-ui-invalid {box-shadow: none;}button,input:where([type='button'],[type='reset'],[type='submit']),::file-selector-button {appearance: button;}::-webkit-inner-spin-button,::-webkit-outer-spin-button {height: auto;}[hidden]:where(:not([hidden='until-found'])) {display: none !important;}";
 
-  --color-slate-50: oklch(98.4% 0.003 247.858);
-  --color-slate-100: oklch(96.8% 0.007 247.858);
-  --color-slate-200: oklch(92.9% 0.013 255.508);
-  --color-slate-300: oklch(88.1% 0.021 259.75);
-  --color-slate-400: oklch(82.3% 0.031 259.75);
-  --color-slate-500: oklch(70.7% 0.022 261.325);
-  --color-slate-600: oklch(52.6% 0.03 264.767);
-  --color-slate-700: oklch(43.9% 0.027 268.808);
-  --color-slate-800: oklch(37% 0.025 268.808);
-  --color-slate-900: oklch(31.3% 0.02 268.808);
-  --color-slate-950: oklch(21.3% 0.014 268.808);
+/** Nexus-UX framework design tokens: colors, spacing, typography, shadows, radii. */
+export const PACKED_THEME = ":root{--font-sans:ui-sans-serif,system-ui,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji';--font-serif:ui-serif,Georgia,Cambria,'Times New Roman',Times,serif;--font-mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;--color-transparent:transparent;--color-current:currentColor;--color-white:#fff;--color-black:#000;--color-slate-50:oklch(98.4% 0.003 247.858);--color-slate-100:oklch(96.8% 0.007 247.858);--color-slate-200:oklch(92.9% 0.013 255.508);--color-slate-300:oklch(88.1% 0.021 259.75);--color-slate-400:oklch(82.3% 0.031 259.75);--color-slate-500:oklch(70.7% 0.022 261.325);--color-slate-600:oklch(52.6% 0.03 264.767);--color-slate-700:oklch(43.9% 0.027 268.808);--color-slate-800:oklch(37% 0.025 268.808);--color-slate-900:oklch(31.3% 0.02 268.808);--color-slate-950:oklch(21.3% 0.014 268.808);--color-gray-500:oklch(70.7% 0.022 261.325);--color-zinc-500:oklch(70.7% 0.022 261.325);--color-neutral-500:oklch(70.7% 0.022 261.325);--color-stone-500:oklch(70.7% 0.022 261.325);--color-red-500:oklch(63.7% 0.237 25.331);--color-orange-500:oklch(70.5% 0.213 47.604);--color-amber-500:oklch(76.9% 0.188 70.08);--color-yellow-500:oklch(85.2% 0.199 91.936);--color-lime-500:oklch(86.8% 0.189 124.166);--color-green-500:oklch(72.7% 0.192 149.33);--color-emerald-500:oklch(69.6% 0.17 162.48);--color-teal-500:oklch(66.1% 0.125 182.018);--color-cyan-500:oklch(71.5% 0.143 215.221);--color-sky-500:oklch(71.4% 0.142 232.661);--color-blue-500:oklch(62.3% 0.214 259.815);--color-indigo-500:oklch(58.5% 0.233 277.117);--color-violet-500:oklch(60.6% 0.25 293.628);--color-purple-500:oklch(62.7% 0.265 303.9);--color-fuchsia-500:oklch(66.7% 0.295 322.15);--color-pink-500:oklch(69.7% 0.274 342.55);--color-rose-500:oklch(65.6% 0.241 354.308);--spacing:0.25rem;--breakpoint-sm:40rem;--breakpoint-md:48rem;--breakpoint-lg:64rem;--breakpoint-xl:80rem;--breakpoint-2xl:96rem;--radius-xs:0.125rem;--radius-sm:0.25rem;--radius-md:0.375rem;--radius-lg:0.5rem;--radius-xl:0.75rem;--radius-2xl:1rem;--radius-3xl:1.5rem;--radius-full:9999px;--text-xs:0.75rem;--text-xs--line-height:1rem;--text-sm:0.875rem;--text-sm--line-height:1.25rem;--text-base:1rem;--text-base--line-height:1.5rem;--text-lg:1.125rem;--text-lg--line-height:1.75rem;--text-xl:1.25rem;--text-xl--line-height:1.75rem;--text-2xl:1.5rem;--text-2xl--line-height:2rem;--text-3xl:1.875rem;--text-3xl--line-height:2.25rem;--text-4xl:2.25rem;--text-4xl--line-height:2.5rem;--text-5xl:3rem;--text-5xl--line-height:1;--text-6xl:3.75rem;--text-6xl--line-height:1;--text-7xl:4.5rem;--text-7xl--line-height:1;--text-8xl:6rem;--text-8xl--line-height:1;--text-9xl:8rem;--text-9xl--line-height:1;--tracking-tighter:-0.05em;--tracking-tight:-0.025em;--tracking-normal:0em;--tracking-wide:0.025em;--tracking-wider:0.05em;--tracking-widest:0.1em;--blur-sm:4px;--blur-md:8px;--blur-lg:12px;--blur-xl:16px;--blur-2xl:24px;--blur-3xl:40px;--shadow-sm:0 1px 3px 0 rgb(0 0 0/0.1),0 1px 2px -1px rgb(0 0 0/0.1);--shadow-md:0 4px 6px -1px rgb(0 0 0/0.1),0 2px 4px -2px rgb(0 0 0/0.1);--shadow-lg:0 10px 15px -3px rgb(0 0 0/0.1),0 4px 6px -4px rgb(0 0 0/0.1);--shadow-xl:0 20px 25px -5px rgb(0 0 0/0.1),0 8px 10px -6px rgb(0 0 0/0.1);--shadow-2xl:0 25px 50px -12px rgb(0 0 0/0.25);--shadow-inner:inset 0 2px 4px 0 rgb(0 0 0/0.05);--default-font-family:var(--font-sans);--default-mono-font-family:var(--font-mono)}";
 
-  --color-gray-500: oklch(70.7% 0.022 261.325);
-  --color-zinc-500: oklch(70.7% 0.022 261.325);
-  --color-neutral-500: oklch(70.7% 0.022 261.325);
-  --color-stone-500: oklch(70.7% 0.022 261.325);
+/** Nexus-UX component overrides: sortable/drag-drop class definitions. */
+export const PACKED_COMPONENTS = ".sortable-chosen{background-color:var(--color-neutral-800,#27272a)!important;box-shadow:inset 0 0 0 2px var(--color-primary,#3b82f6)!important}.sortable-drag{opacity:1!important;box-shadow:0 25px 50px -12px rgba(0,0,0,.25)!important;transform:scale(1.05)!important;cursor:grabbing!important;z-index:9999!important}.sortable-ghost{opacity:.4!important;background-color:var(--color-neutral-900,#18181b)!important;border:2px dashed var(--color-neutral-700,#3f3f46)!important}.sortable-selected{box-shadow:inset 0 0 0 2px var(--color-accent,var(--color-secondary,#ec4899))!important}.sortable-swap-highlight{background-color:color-mix(in srgb,var(--color-warning,#eab308) 20%,transparent)!important;box-shadow:inset 0 0 0 2px var(--color-warning,#eab308)!important}.drop-target-before{background:linear-gradient(to bottom,color-mix(in srgb,var(--color-primary,#3b82f6) 30%,transparent) 0%,transparent 20%)!important;box-shadow:inset 0 2px 0 0 var(--color-primary,#3b82f6)!important}.drop-target-after{background:linear-gradient(to top,color-mix(in srgb,var(--color-primary,#3b82f6) 30%,transparent) 0%,transparent 20%)!important;box-shadow:inset 0 -2px 0 0 var(--color-primary,#3b82f6)!important}";
 
-  --color-red-500: oklch(63.7% 0.237 25.331);
-  --color-orange-500: oklch(70.5% 0.213 47.604);
-  --color-amber-500: oklch(76.9% 0.188 70.08);
-  --color-yellow-500: oklch(85.2% 0.199 91.936);
-  --color-lime-500: oklch(86.8% 0.189 124.166);
-  --color-green-500: oklch(72.7% 0.192 149.33);
-  --color-emerald-500: oklch(69.6% 0.17 162.48);
-  --color-teal-500: oklch(66.1% 0.125 182.018);
-  --color-cyan-500: oklch(71.5% 0.143 215.221);
-  --color-sky-500: oklch(71.4% 0.142 232.661);
-  --color-blue-500: oklch(62.3% 0.214 259.815);
-  --color-indigo-500: oklch(58.5% 0.233 277.117);
-  --color-violet-500: oklch(60.6% 0.25 293.628);
-  --color-purple-500: oklch(62.7% 0.265 303.9);
-  --color-fuchsia-500: oklch(66.7% 0.295 322.15);
-  --color-pink-500: oklch(69.7% 0.274 342.55);
-  --color-rose-500: oklch(65.6% 0.241 354.308);
+/** Framework animation keyframes: spin, ping, pulse, bounce. */
+const PACKED_KEYFRAMES = "@keyframes spin{to{transform:rotate(360deg)}}@keyframes ping{75%,100%{transform:scale(2);opacity:0}}@keyframes pulse{50%{opacity:.5}}@keyframes bounce{0%,100%{transform:translateY(-25%);animation-timing-function:cubic-bezier(.8,0,1,1)}50%{transform:none;animation-timing-function:cubic-bezier(0,0,.2,1)}}";
 
-  --spacing: 0.25rem;
-  --breakpoint-sm: 40rem;
-  --breakpoint-md: 48rem;
-  --breakpoint-lg: 64rem;
-  --breakpoint-xl: 80rem;
-  --breakpoint-2xl: 96rem;
-
-  --radius-xs: 0.125rem;
-  --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
-  --radius-2xl: 1rem;
-  --radius-3xl: 1.5rem;
-  --radius-full: 9999px;
-
-  --text-xs: 0.75rem;
-  --text-xs--line-height: 1rem;
-  --text-sm: 0.875rem;
-  --text-sm--line-height: 1.25rem;
-  --text-base: 1rem;
-  --text-base--line-height: 1.5rem;
-  --text-lg: 1.125rem;
-  --text-lg--line-height: 1.75rem;
-  --text-xl: 1.25rem;
-  --text-xl--line-height: 1.75rem;
-  --text-2xl: 1.5rem;
-  --text-2xl--line-height: 2rem;
-  --text-3xl: 1.875rem;
-  --text-3xl--line-height: 2.25rem;
-  --text-4xl: 2.25rem;
-  --text-4xl--line-height: 2.5rem;
-  --text-5xl: 3rem;
-  --text-5xl--line-height: 1;
-  --text-6xl: 3.75rem;
-  --text-6xl--line-height: 1;
-  --text-7xl: 4.5rem;
-  --text-7xl--line-height: 1;
-  --text-8xl: 6rem;
-  --text-8xl--line-height: 1;
-  --text-9xl: 8rem;
-  --text-9xl--line-height: 1;
-
-  --tracking-tighter: -0.05em;
-  --tracking-tight: -0.025em;
-  --tracking-normal: 0em;
-  --tracking-wide: 0.025em;
-  --tracking-wider: 0.05em;
-  --tracking-widest: 0.1em;
-
-  --blur-sm: 4px;
-  --blur-md: 8px;
-  --blur-lg: 12px;
-  --blur-xl: 16px;
-  --blur-2xl: 24px;
-  --blur-3xl: 40px;
-
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
-
-  --default-font-family: var(--font-sans);
-  --default-mono-font-family: var(--font-mono);
-}
-`;
+// Legacy aliases kept for external consumers — routed to packed constants.
+/** @deprecated Use PACKED_THEME instead */
+export const THEME_CSS = PACKED_THEME;
+/** @deprecated Use PACKED_COMPONENTS instead */
+export const PREFLIGHT_CSS = PACKED_COMPONENTS;
 
 
-export const PREFLIGHT_CSS = `
-@layer properties, theme, base, components, utilities;
-
-@layer base {
-  *, ::after, ::before, ::backdrop, ::file-selector-button {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    border: 0 solid;
-  }
-  html, :host {
-    line-height: 1.5;
-    -webkit-text-size-adjust: 100%;
-    tab-size: 4;
-    font-family: var(--default-font-family, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji');
-    -webkit-tap-highlight-color: transparent;
-  }
-  ol, ul, menu { list-style: none; }
-  img, svg, video, canvas, audio, iframe, embed, object { display: block; vertical-align: middle; }
-  img, video { max-width: 100%; height: auto; }
-}
-
-@layer components {
-  /* Nexus Drag & Drop Core Styles */
-  .sortable-chosen {
-    background-color: var(--color-neutral-800, #27272a) !important;
-    box-shadow: inset 0 0 0 2px var(--color-primary, #3b82f6) !important;
-  }
-
-  .sortable-drag {
-    opacity: 1 !important;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
-    transform: scale(1.05) !important;
-    cursor: grabbing !important;
-    z-index: 9999 !important;
-  }
-
-  .sortable-ghost {
-    opacity: 0.4 !important;
-    background-color: var(--color-neutral-900, #18181b) !important;
-    border: 2px dashed var(--color-neutral-700, #3f3f46) !important;
-  }
-
-  .sortable-selected {
-    box-shadow: inset 0 0 0 2px var(--color-accent, var(--color-secondary, #ec4899)) !important;
-  }
-
-  .sortable-swap-highlight {
-    background-color: color-mix(in srgb, var(--color-warning, #eab308) 20%, transparent) !important;
-    box-shadow: inset 0 0 0 2px var(--color-warning, #eab308) !important;
-  }
-  
-  .drop-target-before {
-    background: linear-gradient(to bottom, color-mix(in srgb, var(--color-primary, #3b82f6) 30%, transparent) 0%, transparent 20%) !important;
-    box-shadow: inset 0 2px 0 0 var(--color-primary, #3b82f6) !important;
-  }
-
-  .drop-target-after {
-    background: linear-gradient(to top, color-mix(in srgb, var(--color-primary, #3b82f6) 30%, transparent) 0%, transparent 20%) !important;
-    box-shadow: inset 0 -2px 0 0 var(--color-primary, #3b82f6) !important;
-  }
-}
-`;
-
-const KEYFRAMES_CSS = `
-@keyframes spin { to { transform: rotate(360deg); } }
-@keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
-@keyframes pulse { 50% { opacity: 0.5; } }
-@keyframes bounce {
-  0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
-  50% { transform: none; animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
-}
-`;
 
 
 
@@ -624,9 +461,9 @@ function K(nodes: ASTNode[]): ASTNode {
 }
 
 // Helper: register a batch of static name→declarations
-function statics(ds: DesignSystem, entries: [string, [string, string][]][]) {
+function statics(ds: DesignSystem, entries: [string, [string, string, boolean?][]][]) {
   for (const [name, decls] of entries) {
-    ds.static(name, () => decls.map(([p, v]) => d(p, v)));
+    ds.static(name, () => decls.map(([p, v, imp]) => d(p, v, imp)));
   }
 }
 
@@ -1734,15 +1571,27 @@ class StyleSheetManager {
 
     if (this._preflightEmitted) return;
     
-    // 1. Base Framework Styles (Preflight)
-    this.adoptCSSSync(PREFLIGHT_CSS, 'nexus-preflight');
-    
-    // 2. Framework Keyframes (Animations)
-    this.adoptCSSSync(KEYFRAMES_CSS, 'nexus-keyframes');
+    // 1. Base browser resets (Tailwind v4 preflight — AOT injected from jsDelivr CDN)
+    if (PACKED_PREFLIGHT.length > 0) {
+      this.adoptCSSSync(PACKED_PREFLIGHT, 'nexus-preflight');
+    }
 
-    // 3. Theme Orchestration
+    // 2. Framework component overrides (sortable/drag-drop classes)
+    if (PACKED_COMPONENTS.length > 0) {
+      this.adoptCSSSync(PACKED_COMPONENTS, 'nexus-components');
+    }
+
+    // 3. Animation keyframes
+    if (PACKED_KEYFRAMES.length > 0) {
+      this.adoptCSSSync(PACKED_KEYFRAMES, 'nexus-keyframes');
+    }
+
+    // 4. Theme design tokens + runtime compositing
     const compositingCSS = registerCompositingProperties();
-    this.adoptCSSSync(THEME_CSS + '\n' + compositingCSS, 'nexus-theme');
+    const themeBlock = PACKED_THEME.length > 0 ? PACKED_THEME + compositingCSS : compositingCSS;
+    if (themeBlock.length > 0) {
+      this.adoptCSSSync(themeBlock, 'nexus-theme');
+    }
 
     this._preflightEmitted = true;
 
@@ -2062,7 +1911,6 @@ let _staticLookupMap = new Map<string, string>();
  * Automatically overwritten by compileStyleLayerPrimitives() in scripts/build.ts at AOT time.
  * Holds clean modern browser resets sourced from Tailwind v4 base layer.
  */
-const PACKED_PREFLIGHT = "*,::after,::before,::backdrop,::file-selector-button {box-sizing: border-box;margin: 0;padding: 0;border: 0 solid;}html,:host {line-height: 1.5;-webkit-text-size-adjust: 100%;tab-size: 4;font-family: --theme( --default-font-family,ui-sans-serif,system-ui,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji' );font-feature-settings: --theme(--default-font-feature-settings,normal);font-variation-settings: --theme(--default-font-variation-settings,normal);-webkit-tap-highlight-color: transparent;}hr {height: 0;color: inherit;border-top-width: 1px;}abbr:where([title]) {-webkit-text-decoration: underline dotted;text-decoration: underline dotted;}h1,h2,h3,h4,h5,h6 {font-size: inherit;font-weight: inherit;}a {color: inherit;-webkit-text-decoration: inherit;text-decoration: inherit;}b,strong {font-weight: bolder;}code,kbd,samp,pre {font-family: --theme( --default-mono-font-family,ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace );font-feature-settings: --theme(--default-mono-font-feature-settings,normal);font-variation-settings: --theme(--default-mono-font-variation-settings,normal);font-size: 1em;}small {font-size: 80%;}sub,sup {font-size: 75%;line-height: 0;position: relative;vertical-align: baseline;}sub {bottom: -0.25em;}sup {top: -0.5em;}table {text-indent: 0;border-color: inherit;border-collapse: collapse;}:-moz-focusring {outline: auto;}progress {vertical-align: baseline;}summary {display: list-item;}ol,ul,menu {list-style: none;}img,svg,video,canvas,audio,iframe,embed,object {display: block;vertical-align: middle;}img,video {max-width: 100%;height: auto;}button,input,select,optgroup,textarea,::file-selector-button {font: inherit;font-feature-settings: inherit;font-variation-settings: inherit;letter-spacing: inherit;color: inherit;border-radius: 0;background-color: transparent;opacity: 1;}:where(select:is([multiple],[size])) optgroup {font-weight: bolder;}:where(select:is([multiple],[size])) optgroup option {padding-inline-start: 20px;}::file-selector-button {margin-inline-end: 4px;}::placeholder {opacity: 1;}@supports (not (-webkit-appearance: -apple-pay-button)) or (contain-intrinsic-size: 1px) {::placeholder {color: color-mix(in oklab,currentcolor 50%,transparent);}}textarea {resize: vertical;}::-webkit-search-decoration {-webkit-appearance: none;}::-webkit-date-and-time-value {min-height: 1lh;text-align: inherit;}::-webkit-datetime-edit {display: inline-flex;}::-webkit-datetime-edit-fields-wrapper {padding: 0;}::-webkit-datetime-edit,::-webkit-datetime-edit-year-field,::-webkit-datetime-edit-month-field,::-webkit-datetime-edit-day-field,::-webkit-datetime-edit-hour-field,::-webkit-datetime-edit-minute-field,::-webkit-datetime-edit-second-field,::-webkit-datetime-edit-millisecond-field,::-webkit-datetime-edit-meridiem-field {padding-block: 0;}::-webkit-calendar-picker-indicator {line-height: 1;}:-moz-ui-invalid {box-shadow: none;}button,input:where([type='button'],[type='reset'],[type='submit']),::file-selector-button {appearance: button;}::-webkit-inner-spin-button,::-webkit-outer-spin-button {height: auto;}[hidden]:where(:not([hidden='until-found'])) {display: none !important;}";
 
 
 /**
