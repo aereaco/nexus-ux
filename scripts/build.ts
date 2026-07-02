@@ -140,12 +140,11 @@ async function buildBundle(options: BuildOptions = {}) {
     const configPath = path.resolve(cwd, "deno.json");
     const manifestPath = path.resolve(cwd, "src", "manifest.ts");
     const manifestJsonPath = path.resolve(cwd, "dist", "manifest.json");
-    const stylesheetPath = path.resolve(cwd, "src", "engine", "stylesheet.ts");
 
-    // AOT Preflight Injection — runs before esbuild so PACKED_PREFLIGHT
-    // is up-to-date from the Tailwind v4 CDN before the bundle is compiled.
-    console.log("\n🎨 Running AOT preflight injection...");
-    await compileStyleLayerPrimitives(stylesheetPath);
+    // AOT Style Layer Fetch — runs before manifest.ts is written so the packed
+    // CSS constants land in the auto-generated file, not in stylesheet.ts.
+    console.log("\n🎨 Running AOT style layer fetch...");
+    const packedStyleLayers = await fetchStyleLayerPrimitives();
 
     let analysisResult: any = null;
     
@@ -245,6 +244,13 @@ async function buildBundle(options: BuildOptions = {}) {
       manifestLines.push("export const autoObservers: any[] = [];");
     }
 
+    // Append AOT-fetched CSS constants as generated exports in manifest.ts.
+    // stylesheet.ts imports these by name — zero raw CSS lives in source.
+    manifestLines.push(`export const PACKED_PREFLIGHT = "${packedStyleLayers.preflight}";`);
+    manifestLines.push(`export const PACKED_THEME = "${packedStyleLayers.theme}";`);
+    manifestLines.push(`export const PACKED_COMPONENTS = "${packedStyleLayers.components}";`);
+    manifestLines.push(`export const PACKED_KEYFRAMES = "${packedStyleLayers.keyframes}";`);
+
     await Deno.writeTextFile(manifestPath, manifestLines.join("\n"));
     console.log("Generated manifest:", manifestPath);
 
@@ -326,82 +332,75 @@ export { buildBundle, batchBuild };
 
 
 // ============================================================================
-// AOT STYLE LAYER PRIMITIVES — Preflight Ingestion Pipeline
+// AOT STYLE LAYER PRIMITIVES — Preflight Fetch Pipeline
 // ============================================================================
 
-
-
 /**
- * Lane A: AOT Preflight Ingestion
- * Fetches the official Tailwind v4 preflight CSS from jsDelivr CDN or a local
- * monorepo checkout, strips comments and whitespace, and overwrites the
- * PACKED_PREFLIGHT placeholder constant inside src/engine/stylesheet.ts.
+ * fetchStyleLayerPrimitives
  *
- * Usage: deno task build                                (CDN fetch)
- *        deno task build --local-tailwind=/path/to/tw  (local monorepo checkout)
+ * Fetches the official Tailwind v4 preflight and theme CSS from jsDelivr CDN
+ * (or a local monorepo checkout via --local-tailwind flag), strips all
+ * comments and whitespace, and returns the four packed string payloads.
+ *
+ * These strings are written into manifest.ts as generated exports so that
+ * stylesheet.ts holds zero raw CSS in source — only an import reference.
+ * The minifier can therefore fully mangle all surrounding JS execution logic.
+ *
+ * Usage: deno task build                                (CDN)
+ *        deno task build --local-tailwind=/path/to/tw  (local monorepo)
  */
-export async function compileStyleLayerPrimitives(targetModulePath: string): Promise<void> {
+export async function fetchStyleLayerPrimitives(): Promise<{
+  preflight: string;
+  theme: string;
+  components: string;
+  keyframes: string;
+}> {
   const args = _parseArgs(Deno.args, {
     string: ["local-tailwind"],
     default: { "local-tailwind": "" }
   });
 
-  // ── Helper: compact raw CSS into an opaque minifier-safe string literal ──
+  const localRoot = args["local-tailwind"];
+
+  /** Compact raw CSS into a minifier-safe escaped single-line string. */
   function pack(css: string): string {
     return css
-      .replace(/\/\*[\s\S]*?\*\//g, "")  // strip comments
-      .replace(/\s+/g, " ")               // collapse whitespace
+      .replace(/\/\*[\s\S]*?\*\//g, "")  // strip block comments
+      .replace(/\s+/g, " ")               // collapse all whitespace
       .replace(/;\s*/g, ";")
       .replace(/,\s*/g, ",")
       .replace(/\{\s*/g, "{")
       .replace(/\s*\}\s*/g, "}")
-      .replace(/"/g, '\\"')               // escape double quotes for string literal
+      .replace(/"/g, '\\"')               // escape interior double-quotes
       .trim();
   }
 
-  // ── Helper: write a packed constant back into the source file ──
-  async function inject(src: string, constName: string, content: string): Promise<string> {
-    const regex = new RegExp(`(const|export const) ${constName}\\s*=\\s*"[\\s\\S]*?";`);
-    const packed = pack(content);
-    if (regex.test(src)) {
-      const updated = src.replace(regex, (_m, kw) => `${kw} ${constName} = "${packed}";`);
-      console.log(`   ✓ ${constName} injected (${packed.length} chars).`);
-      return updated;
-    } else {
-      console.warn(`   ⚠ ${constName} placeholder not found in stylesheet.ts — skipping.`);
-      return src;
-    }
+  /** Read a CSS file from the local Tailwind monorepo. */
+  async function readLocal(relPath: string): Promise<string> {
+    const fullPath = _joinPath(localRoot, relPath);
+    console.log(`   ⚡ Reading local: ${fullPath}`);
+    return Deno.readTextFile(fullPath);
   }
 
-  // ── A. PACKED_PREFLIGHT — fetched from official Tailwind v4 CDN ──
-  let preflightCss = "";
-  if (args["local-tailwind"]) {
-    const localPath = _joinPath(args["local-tailwind"], "packages", "tailwindcss", "preflight.css");
-    console.log(`   ⚡ Reading local Tailwind preflight from: ${localPath}`);
-    preflightCss = await Deno.readTextFile(localPath);
-  } else {
-    const cdnUrl = "https://cdn.jsdelivr.net/npm/tailwindcss@4/preflight.css";
-    console.log(`   ⚡ Fetching Tailwind v4 preflight from jsDelivr CDN...`);
-    const res = await fetch(cdnUrl);
-    if (!res.ok) throw new Error(`CDN fetch failed (${res.status}): ${res.statusText}`);
-    preflightCss = await res.text();
+  /** Fetch a CSS file from jsDelivr CDN — throws on non-200, no fallback. */
+  async function fetchCdn(url: string): Promise<string> {
+    console.log(`   ⚡ Fetching: ${url}`);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`CDN fetch failed (${res.status} ${res.statusText}): ${url}`);
+    return res.text();
   }
 
-  // ── B. PACKED_THEME — official Tailwind v4 default theme tokens, fetched from CDN ──
-  let themeCss = "";
-  if (args["local-tailwind"]) {
-    const localPath = _joinPath(args["local-tailwind"], "packages", "tailwindcss", "theme.css");
-    console.log(`   ⚡ Reading local Tailwind theme from: ${localPath}`);
-    themeCss = await Deno.readTextFile(localPath);
-  } else {
-    const themeUrl = "https://cdn.jsdelivr.net/npm/tailwindcss@4/theme.css";
-    console.log(`   ⚡ Fetching Tailwind v4 theme from jsDelivr CDN...`);
-    const res = await fetch(themeUrl);
-    if (!res.ok) throw new Error(`CDN fetch failed (${res.status}): ${res.statusText}`);
-    themeCss = await res.text();
-  }
+  // ── A. PACKED_PREFLIGHT — Tailwind v4 base resets ──
+  const preflightRaw = localRoot
+    ? await readLocal("packages/tailwindcss/preflight.css")
+    : await fetchCdn("https://cdn.jsdelivr.net/npm/tailwindcss@4/preflight.css");
 
-  // ── C. PACKED_COMPONENTS — Nexus sortable/drag-drop component overrides ──
+  // ── B. PACKED_THEME — Tailwind v4 default design tokens ──
+  const themeRaw = localRoot
+    ? await readLocal("packages/tailwindcss/theme.css")
+    : await fetchCdn("https://cdn.jsdelivr.net/npm/tailwindcss@4/theme.css");
+
+  // ── C. PACKED_COMPONENTS — Nexus-UX sortable/drag-drop class overrides ──
   const componentsCss =
     `.sortable-chosen{background-color:var(--color-neutral-800,#27272a)!important;box-shadow:inset 0 0 0 2px var(--color-primary,#3b82f6)!important}` +
     `.sortable-drag{opacity:1!important;box-shadow:0 25px 50px -12px rgba(0,0,0,.25)!important;transform:scale(1.05)!important;cursor:grabbing!important;z-index:9999!important}` +
@@ -418,12 +417,21 @@ export async function compileStyleLayerPrimitives(targetModulePath: string): Pro
     `@keyframes pulse{50%{opacity:.5}}` +
     `@keyframes bounce{0%,100%{transform:translateY(-25%);animation-timing-function:cubic-bezier(.8,0,1,1)}50%{transform:none;animation-timing-function:cubic-bezier(0,0,.2,1)}}`;
 
-  // ── Inject all four constants in a single file read/write pass ──
-  let src = await Deno.readTextFile(targetModulePath);
-  src = await inject(src, "PACKED_PREFLIGHT", preflightCss);
-  src = await inject(src, "PACKED_THEME", themeCss);
-  src = await inject(src, "PACKED_COMPONENTS", componentsCss);
-  src = await inject(src, "PACKED_KEYFRAMES", keyframesCss);
-  await Deno.writeTextFile(targetModulePath, src);
-  console.log(`   ✅ All style layer primitives injected into stylesheet.ts.`);
+  const result = {
+    preflight: pack(preflightRaw),
+    theme: pack(themeRaw),
+    components: pack(componentsCss),
+    keyframes: pack(keyframesCss),
+  };
+
+  console.log(`   ✓ PACKED_PREFLIGHT  (${result.preflight.length} chars)`);
+  console.log(`   ✓ PACKED_THEME      (${result.theme.length} chars)`);
+  console.log(`   ✓ PACKED_COMPONENTS (${result.components.length} chars)`);
+  console.log(`   ✓ PACKED_KEYFRAMES  (${result.keyframes.length} chars)`);
+  console.log(`   ✅ Style layer primitives ready — emitting into manifest.ts.`);
+
+  return result;
 }
+
+// Deprecated: kept for backward-compat. Use fetchStyleLayerPrimitives() instead.
+export const compileStyleLayerPrimitives = fetchStyleLayerPrimitives;
