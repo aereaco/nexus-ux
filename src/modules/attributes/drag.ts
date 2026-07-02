@@ -473,11 +473,28 @@ export class Sortable {
         }
 
         // Compute finalIndex relative to the actual dropped target container, excluding templates/selected elements/placeholders
-        const finalIndex = Array.from(this.dragEl.parentElement!.children)
-          .filter(c => (c as HTMLElement).matches(this.options.draggable!) && (c as HTMLElement).getAttribute('draggable') !== 'false' && !(c as HTMLElement).hasAttribute('data-ux-template') && (c === this.dragEl || !this.multiDragElements.includes(c as HTMLElement)))
-          .indexOf(this.dragEl);
+        let finalIndex = 0;
+        const children = Array.from(this.dragEl.parentElement!.children);
+        for (let i = 0; i < children.length; i++) {
+          const child = children[i];
+          if (child === this.dragEl) break;
+          if (child.nodeName.toUpperCase() === 'TEMPLATE') continue;
+          if (child.getAttribute('draggable') === 'false') continue;
+          if (child.matches(this.options.draggable!)) {
+            finalIndex++;
+          }
+        }
 
         const oldIndex = this.originalIndices.get(this.dragEl);
+
+        console.log('[DEBUG-DRAG]', {
+          dragEl: this.dragEl.textContent?.trim(),
+          multiDragElements: this.multiDragElements.map(el => el.textContent?.trim()),
+          originalIndices: Array.from(this.originalIndices.entries()).map(([k, v]) => `${k.textContent?.trim()}: ${v}`),
+          finalIndex,
+          oldIndex,
+          domChildren: Array.from(this.dragEl.parentElement!.children).map(c => `${c.textContent?.trim()} (template: ${c.hasAttribute('data-ux-template')}, draggable: ${c.getAttribute('draggable')})`)
+        });
 
         // De-select MultiDrag items in the data model before triggering list mutations
         if (this.options.multiDrag) {
