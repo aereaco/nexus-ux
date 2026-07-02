@@ -2034,3 +2034,469 @@ export function populateStandardVariants(ds: DesignSystem) {
 
 export const stylesheet = new StyleSheetManager();
 
+
+
+// ============================================================================
+// 6. PACKED HYBRID JIT SUBSYSTEM
+// ============================================================================
+// Additions only — the DesignSystem compiler, StyleSheetManager, and all
+// populateStandardUtilities() registrations above are completely untouched.
+
+// Two-Tier Isolated Constructable StyleSheets
+// preflightSheet: sealed once at boot via replaceSync() — never mutated again.
+// jitSheet: live mutable layer for all runtime insertRule() / deleteRule() passes.
+export const preflightSheet = new CSSStyleSheet();
+export const jitSheet = new CSSStyleSheet();
+
+if (typeof document !== 'undefined') {
+  document.adoptedStyleSheets = [...document.adoptedStyleSheets, preflightSheet, jitSheet];
+}
+
+// Internal state
+const _ruleCache = new Set<string>();
+let _isJitEngineBooted = false;
+let _staticLookupMap = new Map<string, string>();
+
+/**
+ * 1. Packed Preflight Payload Placeholder
+ * Automatically overwritten by compileStyleLayerPrimitives() in scripts/build.ts at AOT time.
+ * Holds clean modern browser resets sourced from Tailwind v4 base layer.
+ */
+const PACKED_PREFLIGHT = "*,::before,::after{box-sizing:border-box;margin:0;padding:0;border:0 solid;}html,:host{line-height:1.5;-webkit-text-size-adjust:100%;tab-size:4;}ol,ul,menu{list-style:none;}img,svg,video,canvas,audio,iframe,embed,object{display:block;vertical-align:middle;}img,video{max-width:100%;height:auto;}";
+
+/**
+ * 2. Algorithmic Packed Utility Dictionary String
+ * Non-calculable static keyword classes compressed into a single opaque string.
+ * Uses '§' as the key/value delimiter to safely bypass interior CSS colon characters.
+ * Uses '|' as the entry separator.
+ * Format: "className§property:value|className§property:value"
+ */
+const PACKED_STATIC_DICTIONARY =
+  "flex§display:flex" +
+  "|inline-flex§display:inline-flex" +
+  "|grid§display:grid" +
+  "|inline-grid§display:inline-grid" +
+  "|block§display:block" +
+  "|inline-block§display:inline-block" +
+  "|inline§display:inline" +
+  "|hidden§display:none" +
+  "|contents§display:contents" +
+  "|flow-root§display:flow-root" +
+  "|list-item§display:list-item" +
+  "|table§display:table" +
+  "|table-caption§display:table-caption" +
+  "|table-cell§display:table-cell" +
+  "|table-column§display:table-column" +
+  "|table-row§display:table-row" +
+  "|static§position:static" +
+  "|fixed§position:fixed" +
+  "|absolute§position:absolute" +
+  "|relative§position:relative" +
+  "|sticky§position:sticky" +
+  "|visible§visibility:visible" +
+  "|invisible§visibility:hidden" +
+  "|collapse§visibility:collapse" +
+  "|isolate§isolation:isolate" +
+  "|isolation-auto§isolation:auto" +
+  "|flex-row§flex-direction:row" +
+  "|flex-row-reverse§flex-direction:row-reverse" +
+  "|flex-col§flex-direction:column" +
+  "|flex-col-reverse§flex-direction:column-reverse" +
+  "|flex-wrap§flex-wrap:wrap" +
+  "|flex-nowrap§flex-wrap:nowrap" +
+  "|flex-wrap-reverse§flex-wrap:wrap-reverse" +
+  "|flex-auto§flex:auto" +
+  "|flex-initial§flex:0 auto" +
+  "|flex-none§flex:none" +
+  "|grow§flex-grow:1" +
+  "|shrink§flex-shrink:1" +
+  "|items-start§align-items:flex-start" +
+  "|items-end§align-items:flex-end" +
+  "|items-center§align-items:center" +
+  "|items-baseline§align-items:baseline" +
+  "|items-stretch§align-items:stretch" +
+  "|justify-start§justify-content:flex-start" +
+  "|justify-end§justify-content:flex-end" +
+  "|justify-center§justify-content:center" +
+  "|justify-between§justify-content:space-between" +
+  "|justify-around§justify-content:space-around" +
+  "|justify-evenly§justify-content:space-evenly" +
+  "|justify-stretch§justify-content:stretch" +
+  "|content-start§align-content:flex-start" +
+  "|content-end§align-content:flex-end" +
+  "|content-center§align-content:center" +
+  "|content-between§align-content:space-between" +
+  "|content-around§align-content:space-around" +
+  "|content-evenly§align-content:space-evenly" +
+  "|content-stretch§align-content:stretch" +
+  "|self-auto§align-self:auto" +
+  "|self-start§align-self:flex-start" +
+  "|self-end§align-self:flex-end" +
+  "|self-center§align-self:center" +
+  "|self-stretch§align-self:stretch" +
+  "|self-baseline§align-self:baseline" +
+  "|float-start§float:inline-start" +
+  "|float-end§float:inline-end" +
+  "|float-left§float:left" +
+  "|float-right§float:right" +
+  "|float-none§float:none" +
+  "|clear-start§clear:inline-start" +
+  "|clear-end§clear:inline-end" +
+  "|clear-left§clear:left" +
+  "|clear-right§clear:right" +
+  "|clear-both§clear:both" +
+  "|clear-none§clear:none" +
+  "|overflow-auto§overflow:auto" +
+  "|overflow-hidden§overflow:hidden" +
+  "|overflow-clip§overflow:clip" +
+  "|overflow-visible§overflow:visible" +
+  "|overflow-scroll§overflow:scroll" +
+  "|overflow-x-auto§overflow-x:auto" +
+  "|overflow-x-hidden§overflow-x:hidden" +
+  "|overflow-x-scroll§overflow-x:scroll" +
+  "|overflow-y-auto§overflow-y:auto" +
+  "|overflow-y-hidden§overflow-y:hidden" +
+  "|overflow-y-scroll§overflow-y:scroll" +
+  "|truncate§overflow:hidden" +
+  "|whitespace-normal§white-space:normal" +
+  "|whitespace-nowrap§white-space:nowrap" +
+  "|whitespace-pre§white-space:pre" +
+  "|whitespace-pre-line§white-space:pre-line" +
+  "|whitespace-pre-wrap§white-space:pre-wrap" +
+  "|whitespace-break-spaces§white-space:break-spaces" +
+  "|break-normal§overflow-wrap:normal" +
+  "|break-words§overflow-wrap:break-word" +
+  "|break-all§word-break:break-all" +
+  "|break-keep§word-break:keep-all" +
+  "|antialiased§-webkit-font-smoothing:antialiased" +
+  "|subpixel-antialiased§-webkit-font-smoothing:auto" +
+  "|italic§font-style:italic" +
+  "|not-italic§font-style:normal" +
+  "|normal-nums§font-variant-numeric:normal" +
+  "|uppercase§text-transform:uppercase" +
+  "|lowercase§text-transform:lowercase" +
+  "|capitalize§text-transform:capitalize" +
+  "|normal-case§text-transform:none" +
+  "|underline§text-decoration-line:underline" +
+  "|overline§text-decoration-line:overline" +
+  "|line-through§text-decoration-line:line-through" +
+  "|no-underline§text-decoration-line:none" +
+  "|text-left§text-align:left" +
+  "|text-center§text-align:center" +
+  "|text-right§text-align:right" +
+  "|text-justify§text-align:justify" +
+  "|text-start§text-align:start" +
+  "|text-end§text-align:end" +
+  "|align-baseline§vertical-align:baseline" +
+  "|align-top§vertical-align:top" +
+  "|align-middle§vertical-align:middle" +
+  "|align-bottom§vertical-align:bottom" +
+  "|align-text-top§vertical-align:text-top" +
+  "|align-text-bottom§vertical-align:text-bottom" +
+  "|align-sub§vertical-align:sub" +
+  "|align-super§vertical-align:super" +
+  "|bg-fixed§background-attachment:fixed" +
+  "|bg-local§background-attachment:local" +
+  "|bg-scroll§background-attachment:scroll" +
+  "|bg-clip-border§background-clip:border-box" +
+  "|bg-clip-padding§background-clip:padding-box" +
+  "|bg-clip-content§background-clip:content-box" +
+  "|bg-clip-text§background-clip:text" +
+  "|bg-repeat§background-repeat:repeat" +
+  "|bg-no-repeat§background-repeat:no-repeat" +
+  "|bg-repeat-x§background-repeat:repeat-x" +
+  "|bg-repeat-y§background-repeat:repeat-y" +
+  "|bg-repeat-round§background-repeat:round" +
+  "|bg-repeat-space§background-repeat:space" +
+  "|bg-none§background-image:none" +
+  "|border-solid§border-style:solid" +
+  "|border-dashed§border-style:dashed" +
+  "|border-dotted§border-style:dotted" +
+  "|border-double§border-style:double" +
+  "|border-hidden§border-style:hidden" +
+  "|border-none§border-style:none" +
+  "|divide-solid§border-style:solid" +
+  "|divide-dashed§border-style:dashed" +
+  "|divide-dotted§border-style:dotted" +
+  "|divide-double§border-style:double" +
+  "|divide-none§border-style:none" +
+  "|outline-none§outline:2px solid transparent" +
+  "|outline-dashed§outline-style:dashed" +
+  "|outline-dotted§outline-style:dotted" +
+  "|outline-double§outline-style:double" +
+  "|outline-solid§outline-style:solid" +
+  "|pointer-events-none§pointer-events:none" +
+  "|pointer-events-auto§pointer-events:auto" +
+  "|cursor-auto§cursor:auto" +
+  "|cursor-default§cursor:default" +
+  "|cursor-pointer§cursor:pointer" +
+  "|cursor-wait§cursor:wait" +
+  "|cursor-text§cursor:text" +
+  "|cursor-move§cursor:move" +
+  "|cursor-help§cursor:help" +
+  "|cursor-not-allowed§cursor:not-allowed" +
+  "|cursor-none§cursor:none" +
+  "|cursor-grab§cursor:grab" +
+  "|cursor-grabbing§cursor:grabbing" +
+  "|select-none§user-select:none" +
+  "|select-text§user-select:text" +
+  "|select-all§user-select:all" +
+  "|select-auto§user-select:auto" +
+  "|resize-none§resize:none" +
+  "|resize§resize:both" +
+  "|resize-y§resize:vertical" +
+  "|resize-x§resize:horizontal" +
+  "|appearance-none§appearance:none" +
+  "|appearance-auto§appearance:auto" +
+  "|will-change-auto§will-change:auto" +
+  "|will-change-scroll§will-change:scroll-position" +
+  "|will-change-contents§will-change:contents" +
+  "|will-change-transform§will-change:transform" +
+  "|object-contain§object-fit:contain" +
+  "|object-cover§object-fit:cover" +
+  "|object-fill§object-fit:fill" +
+  "|object-none§object-fit:none" +
+  "|object-scale-down§object-fit:scale-down" +
+  "|list-none§list-style-type:none" +
+  "|list-disc§list-style-type:disc" +
+  "|list-decimal§list-style-type:decimal" +
+  "|sr-only§position:absolute" +
+  "|not-sr-only§position:static" +
+  "|touch-auto§touch-action:auto" +
+  "|touch-none§touch-action:none" +
+  "|touch-pan-x§touch-action:pan-x" +
+  "|touch-pan-y§touch-action:pan-y" +
+  "|touch-manipulation§touch-action:manipulation";
+
+/**
+ * Framework Initialization Bootstrap Hook
+ * Call once at framework startup before the MutationObserver activates.
+ * Idempotency-gated — safe to call multiple times (e.g. under hot-reload).
+ */
+export function initializeJitEngine(): void {
+  if (_isJitEngineBooted) return;
+  _isJitEngineBooted = true;
+
+  // A. Seal preflight base resets into the isolated preflightSheet via replaceSync.
+  //    This sheet is never mutated again after this point.
+  preflightSheet.replaceSync(PACKED_PREFLIGHT);
+
+  // B. Procedural spacing scale generation.
+  //    Provisions --spacing-1 through --spacing-64 matching Tailwind v4 constraints.
+  let spacingBlock = ':root { --spacing: 0.25rem; ';
+  for (let i = 1; i <= 64; i++) {
+    spacingBlock += `--spacing-${i}: calc(var(--spacing) * ${i});`;
+  }
+  spacingBlock += ' }';
+  jitSheet.insertRule(spacingBlock, jitSheet.cssRules.length);
+
+  // C. Hydrate static keyword map from the packed dictionary string.
+  //    Splits on '|' for entries, '§' for key/value — never splits on ':'.
+  const entries = PACKED_STATIC_DICTIONARY.split('|');
+  for (let i = 0; i < entries.length; i++) {
+    const delimIdx = entries[i].indexOf('§');
+    if (delimIdx !== -1) {
+      _staticLookupMap.set(entries[i].slice(0, delimIdx), entries[i].slice(delimIdx + 1));
+    }
+  }
+}
+
+/**
+ * Core JIT Token Evaluator — Dual-Lane Processing
+ *
+ * Lane 1 (Procedural Mapper): Numeric, fractional, and directional utilities.
+ *   Matches patterns like w-4, h-1/2, p-8, m-auto, gap-6 and computes CSS math.
+ *   Zero dictionary lookup overhead.
+ *
+ * Lane 2 (Dictionary Unpacker): Non-calculable keyword classes.
+ *   Performs an O(1) Map lookup into the hydrated _staticLookupMap.
+ *
+ * Variant prefixes (sm:, hover:, dark:, group-hover:) are stripped before
+ * lane matching and re-applied as a CSS selector/media-query wrapper.
+ *
+ * Results are deduplicated via _ruleCache and injected into jitSheet.
+ */
+export function parseAndInjectToken(element: HTMLElement, rawToken: string): void {
+  // Strip variant chain and isolate the utility token
+  const colonParts = rawToken.split(':');
+  const utilityToken = colonParts[colonParts.length - 1];
+  const variants = colonParts.slice(0, -1);
+
+  const safeClassName = rawToken.replace(/[:/[\].]/g, '_');
+
+  // Deduplicate: class already compiled and injected
+  if (_ruleCache.has(safeClassName)) {
+    if (!element.classList.contains(safeClassName)) element.classList.add(safeClassName);
+    return;
+  }
+
+  let cssValue = '';
+  let cssProperty = '';
+
+  // ── LANE 1: Procedural Variable Mapper ────────────────────────────────────
+  // Handles: w-4, h-1/2, p-8, m-auto, gap-6, mt-2, px-4, py-3, etc.
+  const proceduralMatch = utilityToken.match(
+    /^(w|h|m|mt|mr|mb|ml|mx|my|p|pt|pr|pb|pl|px|py|gap|gap-x|gap-y|inset|top|right|bottom|left|min-w|max-w|min-h|max-h|basis|size)-(.+)$/
+  );
+
+  if (proceduralMatch) {
+    const [, prefix, rawVal] = proceduralMatch;
+    const propertyMap: Record<string, string> = {
+      w: 'width', h: 'height',
+      m: 'margin', mt: 'margin-top', mr: 'margin-right', mb: 'margin-bottom', ml: 'margin-left',
+      mx: 'margin-inline', my: 'margin-block',
+      p: 'padding', pt: 'padding-top', pr: 'padding-right', pb: 'padding-bottom', pl: 'padding-left',
+      px: 'padding-inline', py: 'padding-block',
+      gap: 'gap', 'gap-x': 'column-gap', 'gap-y': 'row-gap',
+      inset: 'inset', top: 'top', right: 'right', bottom: 'bottom', left: 'left',
+      'min-w': 'min-width', 'max-w': 'max-width',
+      'min-h': 'min-height', 'max-h': 'max-height',
+      basis: 'flex-basis', size: 'width'
+    };
+    cssProperty = propertyMap[prefix] || '';
+
+    if (cssProperty) {
+      if (rawVal === 'auto') {
+        cssValue = 'auto';
+      } else if (rawVal === 'full') {
+        cssValue = '100%';
+      } else if (rawVal === 'screen') {
+        cssValue = prefix === 'w' || prefix === 'min-w' || prefix === 'max-w' ? '100vw' : '100vh';
+      } else if (rawVal === 'px') {
+        cssValue = '1px';
+      } else if (rawVal === 'fit') {
+        cssValue = 'fit-content';
+      } else if (rawVal.includes('/')) {
+        // Fractional: w-1/2 → 50%, w-3/4 → 75%
+        const [num, den] = rawVal.split('/').map(Number);
+        if (!isNaN(num) && !isNaN(den) && den !== 0) {
+          cssValue = `${(num / den) * 100}%`;
+        }
+      } else if (!isNaN(Number(rawVal))) {
+        cssValue = `calc(var(--spacing) * ${rawVal})`;
+      }
+
+      // If prefix 'size', also set height
+      if (prefix === 'size' && cssValue) {
+        const doubleRule = `.${safeClassName}{width:${cssValue};height:${cssValue};}`;
+        _injectVariantWrapped(safeClassName, doubleRule, variants);
+        _ruleCache.add(safeClassName);
+        element.classList.add(safeClassName);
+        return;
+      }
+    }
+  }
+
+  // ── LANE 2: Dictionary Unpacker ────────────────────────────────────────────
+  if (!cssValue && _staticLookupMap.has(utilityToken)) {
+    const declaration = _staticLookupMap.get(utilityToken)!;
+    const colonIdx = declaration.indexOf(':');
+    cssProperty = declaration.slice(0, colonIdx);
+    cssValue = declaration.slice(colonIdx + 1);
+  }
+
+  if (cssProperty && cssValue) {
+    const rule = `.${safeClassName}{${cssProperty}:${cssValue};}`;
+    _injectVariantWrapped(safeClassName, rule, variants);
+    _ruleCache.add(safeClassName);
+    element.classList.add(safeClassName);
+  }
+}
+
+/**
+ * Wraps a compiled CSS rule string with variant media-query / pseudo-selector context
+ * and inserts it into the mutable jitSheet layer.
+ */
+function _injectVariantWrapped(safeClassName: string, baseRule: string, variants: string[]): void {
+  if (variants.length === 0) {
+    jitSheet.insertRule(baseRule, jitSheet.cssRules.length);
+    return;
+  }
+
+  const breakpointMap: Record<string, string> = {
+    sm: '40rem', md: '48rem', lg: '64rem', xl: '80rem', '2xl': '96rem'
+  };
+
+  let wrappedRule = baseRule;
+
+  // Apply variants in reverse order (innermost first)
+  for (let i = variants.length - 1; i >= 0; i--) {
+    const v = variants[i];
+    if (breakpointMap[v]) {
+      wrappedRule = `@media (min-width: ${breakpointMap[v]}) { ${wrappedRule} }`;
+    } else if (v === 'dark') {
+      wrappedRule = `@media (prefers-color-scheme: dark) { ${wrappedRule} }`;
+    } else if (v === 'print') {
+      wrappedRule = `@media print { ${wrappedRule} }`;
+    } else if (v === 'hover') {
+      wrappedRule = wrappedRule.replace(`.${safeClassName}`, `.${safeClassName}:hover`);
+    } else if (v === 'focus') {
+      wrappedRule = wrappedRule.replace(`.${safeClassName}`, `.${safeClassName}:focus`);
+    } else if (v === 'active') {
+      wrappedRule = wrappedRule.replace(`.${safeClassName}`, `.${safeClassName}:active`);
+    } else if (v === 'disabled') {
+      wrappedRule = wrappedRule.replace(`.${safeClassName}`, `.${safeClassName}:disabled`);
+    } else if (v === 'focus-within') {
+      wrappedRule = wrappedRule.replace(`.${safeClassName}`, `.${safeClassName}:focus-within`);
+    } else if (v === 'focus-visible') {
+      wrappedRule = wrappedRule.replace(`.${safeClassName}`, `.${safeClassName}:focus-visible`);
+    } else if (v.startsWith('group-')) {
+      const sub = v.slice(6);
+      wrappedRule = wrappedRule.replace(`.${safeClassName}`, `.group:${sub} .${safeClassName}`);
+    } else if (v.startsWith('peer-')) {
+      const sub = v.slice(5);
+      wrappedRule = wrappedRule.replace(`.${safeClassName}`, `.peer:${sub} ~ .${safeClassName}`);
+    }
+  }
+
+  try {
+    jitSheet.insertRule(wrappedRule, jitSheet.cssRules.length);
+  } catch (_e) {
+    // Non-critical — fallback for complex media+pseudo combos unsupported by insertRule
+  }
+}
+
+/**
+ * High-Performance Reactive Signal Binding (ZCZS Layer)
+ * Subscribes a CSS property on an element to a reactive signal via runtime.effect().
+ * On every signal tick, performs a targeted deleteRule + insertRule on jitSheet
+ * to update the atomic rule in-place with zero layout jitter.
+ */
+export function adoptSignalBinding(
+  element: HTMLElement,
+  utilityPrefix: string,
+  signalBindingKey: string,
+  runtime: RuntimeContext
+): void {
+  const propertyTranslation: Record<string, string> = {
+    w: 'width', h: 'height', p: 'padding', m: 'margin', gap: 'gap'
+  };
+  const cssTargetProperty = propertyTranslation[utilityPrefix];
+  if (!cssTargetProperty) return;
+
+  const atomicClassName = `nx-zczs-${utilityPrefix}-${signalBindingKey.replace(/[^a-zA-Z0-9]/g, '_')}`;
+
+  runtime.effect(() => {
+    const derivedValue = runtime.evaluate(element, signalBindingKey);
+    const dynamicRule = `.${atomicClassName}{${cssTargetProperty}:calc(var(--spacing) * ${derivedValue});}`;
+
+    const ruleSelector = `.${atomicClassName}`;
+    let matchedIndex = -1;
+
+    for (let i = 0; i < jitSheet.cssRules.length; i++) {
+      const rule = jitSheet.cssRules[i] as CSSStyleRule;
+      if (rule.selectorText === ruleSelector) {
+        matchedIndex = i;
+        break;
+      }
+    }
+
+    if (matchedIndex === -1) {
+      jitSheet.insertRule(dynamicRule, jitSheet.cssRules.length);
+      element.classList.add(atomicClassName);
+    } else {
+      jitSheet.deleteRule(matchedIndex);
+      jitSheet.insertRule(dynamicRule, matchedIndex);
+    }
+  });
+}

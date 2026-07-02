@@ -315,3 +315,82 @@ if (args.includes("--batch")) {
 }
 
 export { buildBundle, batchBuild };
+
+
+// ============================================================================
+// AOT STYLE LAYER PRIMITIVES — Preflight Ingestion Pipeline
+// ============================================================================
+
+import { join as _joinPath, fromFileUrl as _fromFileUrl, dirname as _dirnameUtil } from "https://deno.land/std@0.224.0/path/mod.ts";
+import { parseArgs as _parseArgs } from "https://deno.land/std@0.224.0/cli/parse_args.ts";
+
+/**
+ * Lane A: AOT Preflight Ingestion
+ * Fetches the Tailwind v4 base layer CSS from esm.sh CDN or a local checkout,
+ * strips comments and whitespace, and overwrites the PACKED_PREFLIGHT constant
+ * inside src/engine/stylesheet.ts in-place.
+ *
+ * Usage: deno task build                         (CDN fetch)
+ *        deno task build --local-tailwind=/path  (local checkout)
+ */
+export async function compileStyleLayerPrimitives(targetModulePath: string): Promise<void> {
+  const args = _parseArgs(Deno.args, {
+    string: ["local-tailwind"],
+    default: { "local-tailwind": "" }
+  });
+
+  let rawCssContent = "";
+
+  if (args["local-tailwind"]) {
+    const targetedFilePath = _joinPath(args["local-tailwind"], "dist", "index.css");
+    console.log(`   ⚡ Resolving local Tailwind primitives from: ${targetedFilePath}`);
+    try {
+      rawCssContent = await Deno.readTextFile(targetedFilePath);
+    } catch (err) {
+      throw new Error(`Failed to read local style path ${targetedFilePath}: ${(err as Error).message}`);
+    }
+  } else {
+    const remoteCdnEndpoint = "https://esm.sh/@tailwindcss/browser/dist/index.css";
+    console.log(`   ⚡ Streaming Tailwind v4 primitives from CDN...`);
+    const networkPayload = await fetch(remoteCdnEndpoint);
+    if (!networkPayload.ok) {
+      throw new Error(`CDN fetch failed: ${networkPayload.statusText}`);
+    }
+    rawCssContent = await networkPayload.text();
+  }
+
+  // Isolate the @layer base block — that's the preflight we want
+  const layerStartMarker = "/* @layer base */";
+  const layerEndMarker   = "/* @layer theme */";
+  let targetedBaseRules  = rawCssContent;
+
+  if (rawCssContent.includes(layerStartMarker)) {
+    const sectionSplits = rawCssContent.split(layerStartMarker);
+    if (sectionSplits[1]) {
+      targetedBaseRules = sectionSplits[1].split(layerEndMarker)[0] || rawCssContent;
+    }
+  }
+
+  // Compact: strip comments, collapse whitespace, trim separator spacing
+  const packed = targetedBaseRules
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\s+/g, " ")
+    .replace(/;\s*/g, ";")
+    .replace(/,\s*/g, ",")
+    .replace(/\{\s*/g, "{")
+    .replace(/\s*\}\s*/g, "}")
+    .replace(/"/g, '\\"')
+    .trim();
+
+  let sourceText = await Deno.readTextFile(targetModulePath);
+  const constantRegex     = /const PACKED_PREFLIGHT\s*=\s*["'][\s\S]*?["'];/;
+  const replacementLine   = `const PACKED_PREFLIGHT = "${packed}";`;
+
+  if (constantRegex.test(sourceText)) {
+    sourceText = sourceText.replace(constantRegex, replacementLine);
+    await Deno.writeTextFile(targetModulePath, sourceText);
+    console.log("   ✓ PACKED_PREFLIGHT updated in stylesheet.ts.");
+  } else {
+    console.warn("   ⚠ PACKED_PREFLIGHT constant not found in stylesheet.ts — skipping injection.");
+  }
+}
