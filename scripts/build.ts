@@ -211,10 +211,10 @@ async function buildBundle(options: BuildOptions = {}) {
     let modWhitelist: string[] | undefined;
 
     if (appDir && analysisResult) {
-      attrWhitelist = Array.from(analysisResult.attributeDirectives).filter(a => availableAttrs.includes(a)) as string[];
-      spriteWhitelist = Array.from(analysisResult.spriteNames)
-        .filter(s => !AUTO_INJECTED_SPRITES.includes(s) && !MIRROR_PROVIDED_SPRITES.includes(s) && availableSprites.includes(s)) as string[];
-      modWhitelist = Array.from(analysisResult.modifiers).filter(m => availableModifiers.includes(m)) as string[];
+      attrWhitelist = (Array.from(analysisResult.attributeDirectives) as string[]).filter(a => availableAttrs.includes(a));
+      spriteWhitelist = (Array.from(analysisResult.spriteNames) as string[])
+        .filter(s => !AUTO_INJECTED_SPRITES.includes(s) && !MIRROR_PROVIDED_SPRITES.includes(s) && availableSprites.includes(s));
+      modWhitelist = (Array.from(analysisResult.modifiers) as string[]).filter(m => availableModifiers.includes(m));
     }
 
     await generateRegistry("modules/attributes", "autoAttributes", "attributes", attrWhitelist);
