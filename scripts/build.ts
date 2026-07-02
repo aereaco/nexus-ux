@@ -4,6 +4,8 @@ import * as path from "std/path";
 import { minify as swcMinify } from "@swc/core";
 import { compress } from "brotli";
 import { walk } from "https://deno.land/std@0.212.0/fs/walk.ts";
+import { join as _joinPath } from "https://deno.land/std@0.224.0/path/mod.ts";
+import { parseArgs as _parseArgs } from "https://deno.land/std@0.224.0/cli/parse_args.ts";
 
 const AUTO_INJECTED_SPRITES = ["el", "id", "global", "dispatch", "nextTick"];
 const MIRROR_PROVIDED_SPRITES = ["fetch", "http", "download", "clipboard", "cache", "notification", "payment", "ws"];
@@ -138,6 +140,12 @@ async function buildBundle(options: BuildOptions = {}) {
     const configPath = path.resolve(cwd, "deno.json");
     const manifestPath = path.resolve(cwd, "src", "manifest.ts");
     const manifestJsonPath = path.resolve(cwd, "dist", "manifest.json");
+    const stylesheetPath = path.resolve(cwd, "src", "engine", "stylesheet.ts");
+
+    // AOT Preflight Injection — runs before esbuild so PACKED_PREFLIGHT
+    // is up-to-date from the Tailwind v4 CDN before the bundle is compiled.
+    console.log("\n🎨 Running AOT preflight injection...");
+    await compileStyleLayerPrimitives(stylesheetPath);
 
     let analysisResult: any = null;
     
@@ -321,8 +329,7 @@ export { buildBundle, batchBuild };
 // AOT STYLE LAYER PRIMITIVES — Preflight Ingestion Pipeline
 // ============================================================================
 
-import { join as _joinPath, fromFileUrl as _fromFileUrl, dirname as _dirnameUtil } from "https://deno.land/std@0.224.0/path/mod.ts";
-import { parseArgs as _parseArgs } from "https://deno.land/std@0.224.0/cli/parse_args.ts";
+
 
 /**
  * Lane A: AOT Preflight Ingestion
