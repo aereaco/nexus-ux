@@ -141,9 +141,10 @@ async function buildBundle(options: BuildOptions = {}) {
     const manifestPath = path.resolve(cwd, "src", "manifest.ts");
     const manifestJsonPath = path.resolve(cwd, "dist", "manifest.json");
 
-    // AOT Style Layer Fetch — runs before manifest.ts is written so the packed
-    // CSS constants land in the auto-generated file, not in stylesheet.ts.
-    console.log("\n🎨 Running AOT style layer fetch...");
+    // AOT Style Layer Fetch — only generates framework-specific constants
+    // (PACKED_COMPONENTS, PACKED_KEYFRAMES). Preflight and theme are fetched
+    // at runtime from CDN so they don't inflate the bundle.
+    console.log("\n🎨 Generating AOT style layer constants...");
     const packedStyleLayers = await fetchStyleLayerPrimitives();
 
     let analysisResult: any = null;
@@ -244,10 +245,9 @@ async function buildBundle(options: BuildOptions = {}) {
       manifestLines.push("export const autoObservers: any[] = [];");
     }
 
-    // Append AOT-fetched CSS constants as generated exports in manifest.ts.
-    // stylesheet.ts imports these by name — zero raw CSS lives in source.
-    manifestLines.push(`export const PACKED_PREFLIGHT = "${packedStyleLayers.preflight}";`);
-    manifestLines.push(`export const PACKED_THEME = "${packedStyleLayers.theme}";`);
+    // Only PACKED_COMPONENTS and PACKED_KEYFRAMES go into the bundle.
+    // PACKED_PREFLIGHT and PACKED_THEME are fetched at runtime from CDN to
+    // avoid embedding ~22KB of Tailwind CSS strings in the bundle.
     manifestLines.push(`export const PACKED_COMPONENTS = "${packedStyleLayers.components}";`);
     manifestLines.push(`export const PACKED_KEYFRAMES = "${packedStyleLayers.keyframes}";`);
 
@@ -350,57 +350,23 @@ export { buildBundle, batchBuild };
  *        deno task build --local-tailwind=/path/to/tw  (local monorepo)
  */
 export async function fetchStyleLayerPrimitives(): Promise<{
-  preflight: string;
-  theme: string;
   components: string;
   keyframes: string;
 }> {
-  const args = _parseArgs(Deno.args, {
-    string: ["local-tailwind"],
-    default: { "local-tailwind": "" }
-  });
-
-  const localRoot = args["local-tailwind"];
-
   /** Compact raw CSS into a minifier-safe escaped single-line string. */
   function pack(css: string): string {
     return css
-      .replace(/\/\*[\s\S]*?\*\//g, "")  // strip block comments
-      .replace(/\s+/g, " ")               // collapse all whitespace
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\s+/g, " ")
       .replace(/;\s*/g, ";")
       .replace(/,\s*/g, ",")
       .replace(/\{\s*/g, "{")
       .replace(/\s*\}\s*/g, "}")
-      .replace(/"/g, '\\"')               // escape interior double-quotes
+      .replace(/"/g, '\\"')
       .trim();
   }
 
-  /** Read a CSS file from the local Tailwind monorepo. */
-  async function readLocal(relPath: string): Promise<string> {
-    const fullPath = _joinPath(localRoot, relPath);
-    console.log(`   ⚡ Reading local: ${fullPath}`);
-    return Deno.readTextFile(fullPath);
-  }
-
-  /** Fetch a CSS file from jsDelivr CDN — throws on non-200, no fallback. */
-  async function fetchCdn(url: string): Promise<string> {
-    console.log(`   ⚡ Fetching: ${url}`);
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`CDN fetch failed (${res.status} ${res.statusText}): ${url}`);
-    return res.text();
-  }
-
-  // ── A. PACKED_PREFLIGHT — Tailwind v4 base resets ──
-  const preflightRaw = localRoot
-    ? await readLocal("packages/tailwindcss/preflight.css")
-    : await fetchCdn("https://cdn.jsdelivr.net/npm/tailwindcss@4/preflight.css");
-
-  // ── B. PACKED_THEME — Tailwind v4 default design tokens ──
-  const themeRaw = localRoot
-    ? await readLocal("packages/tailwindcss/theme.css")
-    : await fetchCdn("https://cdn.jsdelivr.net/npm/tailwindcss@4/theme.css");
-
-  // ── C. PACKED_COMPONENTS — Nexus-UX sortable/drag-drop class overrides ──
+  // ── PACKED_COMPONENTS — Nexus-UX sortable/drag-drop class overrides ──
   const componentsCss =
     `.sortable-chosen{background-color:var(--color-neutral-800,#27272a)!important;box-shadow:inset 0 0 0 2px var(--color-primary,#3b82f6)!important}` +
     `.sortable-drag{opacity:1!important;box-shadow:0 25px 50px -12px rgba(0,0,0,.25)!important;transform:scale(1.05)!important;cursor:grabbing!important;z-index:9999!important}` +
@@ -410,7 +376,7 @@ export async function fetchStyleLayerPrimitives(): Promise<{
     `.drop-target-before{background:linear-gradient(to bottom,color-mix(in srgb,var(--color-primary,#3b82f6) 30%,transparent) 0%,transparent 20%)!important;box-shadow:inset 0 2px 0 0 var(--color-primary,#3b82f6)!important}` +
     `.drop-target-after{background:linear-gradient(to top,color-mix(in srgb,var(--color-primary,#3b82f6) 30%,transparent) 0%,transparent 20%)!important;box-shadow:inset 0 -2px 0 0 var(--color-primary,#3b82f6)!important}`;
 
-  // ── D. PACKED_KEYFRAMES — Framework animation keyframes ──
+  // ── PACKED_KEYFRAMES — Framework animation keyframes ──
   const keyframesCss =
     `@keyframes spin{to{transform:rotate(360deg)}}` +
     `@keyframes ping{75%,100%{transform:scale(2);opacity:0}}` +
@@ -418,17 +384,13 @@ export async function fetchStyleLayerPrimitives(): Promise<{
     `@keyframes bounce{0%,100%{transform:translateY(-25%);animation-timing-function:cubic-bezier(.8,0,1,1)}50%{transform:none;animation-timing-function:cubic-bezier(0,0,.2,1)}}`;
 
   const result = {
-    preflight: pack(preflightRaw),
-    theme: pack(themeRaw),
     components: pack(componentsCss),
     keyframes: pack(keyframesCss),
   };
 
-  console.log(`   ✓ PACKED_PREFLIGHT  (${result.preflight.length} chars)`);
-  console.log(`   ✓ PACKED_THEME      (${result.theme.length} chars)`);
   console.log(`   ✓ PACKED_COMPONENTS (${result.components.length} chars)`);
   console.log(`   ✓ PACKED_KEYFRAMES  (${result.keyframes.length} chars)`);
-  console.log(`   ✅ Style layer primitives ready — emitting into manifest.ts.`);
+  console.log(`   ✅ Style layer constants ready — emitting into manifest.ts.`);
 
   return result;
 }
