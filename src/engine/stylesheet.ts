@@ -1056,9 +1056,6 @@ class StyleSheetManager {
 
 export const designSystem = new DesignSystem();
 
-populateStandardUtilities(designSystem);
-populateStandardVariants(designSystem);
-
 
 export function populateStandardVariants(ds: DesignSystem) {
   // ═══════════════════════════════════════════════════════
@@ -1120,10 +1117,10 @@ export const stylesheet = new StyleSheetManager();
 // Two-Tier Isolated Constructable StyleSheets
 // preflightSheet: sealed once at boot via replaceSync() — never mutated again.
 // jitSheet: live mutable layer for all runtime insertRule() / deleteRule() passes.
-export const preflightSheet = new CSSStyleSheet();
-export const jitSheet = new CSSStyleSheet();
+export const preflightSheet = typeof CSSStyleSheet !== 'undefined' ? new CSSStyleSheet() : { replaceSync() {} } as any;
+export const jitSheet = typeof CSSStyleSheet !== 'undefined' ? new CSSStyleSheet() : { insertRule() {}, deleteRule() {}, cssRules: [] } as any;
 
-if (typeof document !== 'undefined') {
+if (typeof document !== 'undefined' && typeof CSSStyleSheet !== 'undefined') {
   document.adoptedStyleSheets = [...document.adoptedStyleSheets, preflightSheet, jitSheet];
 }
 
@@ -1575,3 +1572,8 @@ export function adoptSignalBinding(
     }
   });
 }
+
+// ── Bootstrapping JIT engine registries after all declarations (Section 6) are bound ──
+populateStandardUtilities(designSystem);
+populateStandardVariants(designSystem);
+
