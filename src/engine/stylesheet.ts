@@ -461,7 +461,7 @@ function resolveColor(val: string | ValueNode | undefined, modifier?: ValueNode 
   
   let color = v.startsWith('#') || v.includes('var(') || v.includes('(') || v.startsWith('[')
     ? v
-    : `var(--color-${v})`;
+    : (v.startsWith('--') ? `var(${v})` : `var(--color-${v})`);
     
   if (modifier) {
     const opacity = /^\d+$/.test(modifier.value) ? `${modifier.value}%` : modifier.value;
@@ -848,18 +848,19 @@ class StyleSheetManager {
   }
 
   adoptCSSSync(cssText: string, id?: string): () => void {
+    const processedCSS = this.processAtRules(cssText);
     const sheetId = id || `_auto_${this._nextId++}`;
     const existing = this._adoptedSheets.get(sheetId);
     
     if (existing) {
-      existing.replaceSync(cssText);
+      existing.replaceSync(processedCSS);
       return () => this.removeSheet(sheetId);
     }
 
     if (typeof CSSStyleSheet === 'undefined') return () => {};
 
     const sheet = new CSSStyleSheet();
-    sheet.replaceSync(cssText);
+    sheet.replaceSync(processedCSS);
     this._adoptedSheets.set(sheetId, sheet);
     
     if ('document' in globalThis) {
@@ -1227,37 +1228,15 @@ export function initializeJitEngine(): void {
 if (typeof document !== 'undefined' && typeof CSSStyleSheet !== 'undefined') {
   document.adoptedStyleSheets = [...document.adoptedStyleSheets, preflightSheet, jitSheet];
 
-  // Fetch preflights and theme CSS dynamically at runtime from jsDelivr CDN
-  Promise.all([
-    fetch('https://cdn.jsdelivr.net/npm/tailwindcss@4/preflight.css').then(r => r.text()),
-    fetch('https://cdn.jsdelivr.net/npm/tailwindcss@4/theme.css').then(r => r.text())
-  ]).then(([preflightCss, themeCss]) => {
-    // Process theme variable declarations to dynamically populate the DesignSystem colors
-    stylesheet.processAtRules(themeCss);
-    
-    // Clear knownClasses cache so we can compile any previously failed/unresolved color classes
-    stylesheet.clearCache();
+  // Synchronously adopt packed preflight and theme CSS at browser boot
+  if (PACKED_PREFLIGHT) {
+    preflightSheet.replaceSync(PACKED_PREFLIGHT);
+  }
+  if (PACKED_THEME) {
+    stylesheet.adoptCSSSync(PACKED_THEME, 'nexus-theme');
+  }
 
-    // Seal preflight, theme, and custom compositing properties into preflightSheet
-    const compositingCSS = registerCompositingProperties();
-    preflightSheet.replaceSync(preflightCss + '\n' + themeCss + '\n' + compositingCSS);
-
-    // Rescan DOM to JIT compile any class names that depend on dynamic colors
-    const all = document.querySelectorAll('*');
-    all.forEach(el => {
-      if (el instanceof HTMLElement) {
-        el.classList.forEach(cls => stylesheet.adoptClass(cls, el));
-      }
-    });
-  }).catch(err => {
-    console.warn('Failed to load Tailwind preflight/theme from CDN, falling back to offline content:', err);
-    if (PACKED_PREFLIGHT || PACKED_THEME) {
-      if (PACKED_PREFLIGHT) {
-        preflightSheet.replaceSync(PACKED_PREFLIGHT);
-      }
-      if (PACKED_THEME) {
-        stylesheet.adoptCSSSync(PACKED_THEME, 'nexus-theme');
-      }
-    }
-  });
+  // Adopt custom compositing properties
+  const compositingCSS = registerCompositingProperties();
+  stylesheet.adoptCSSSync(compositingCSS, 'nexus-compositing');
 }

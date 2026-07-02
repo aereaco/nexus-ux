@@ -393,12 +393,12 @@ export async function fetchStyleLayerPrimitives(): Promise<{
   // ── A. PACKED_PREFLIGHT — Tailwind v4 base resets ──
   const preflightRaw = localRoot
     ? await readLocal("packages/tailwindcss/preflight.css")
-    : "";
+    : await fetchCdn("https://cdn.jsdelivr.net/npm/tailwindcss@4/preflight.css");
 
   // ── B. PACKED_THEME — Tailwind v4 default design tokens ──
   const themeRaw = localRoot
     ? await readLocal("packages/tailwindcss/theme.css")
-    : "";
+    : await fetchCdn("https://cdn.jsdelivr.net/npm/tailwindcss@4/theme.css");
 
   // ── C. PACKED_COMPONENTS — Nexus-UX sortable/drag-drop class overrides ──
   const componentsCss =
