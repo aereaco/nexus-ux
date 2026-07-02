@@ -1227,18 +1227,95 @@ export function initializeJitEngine(): void {
   }
 }
 
+/**
+ * Strip Tailwind v4 `--theme(--token, fallback)` build-time function calls so
+ * the CSS is valid for browsers. Replaces with the fallback value (or 'initial'
+ * when no fallback is provided).
+ */
+function normalizePreflight(css: string): string {
+  return css
+    // --theme( --token, fallback-value ) → fallback-value
+    .replace(/--theme\(\s*--[\w-]+\s*,\s*([^)]+?)\s*\)/g, (_, fb) => fb.trim())
+    // --theme( --token ) with no fallback → initial
+    .replace(/--theme\(\s*--[\w-]+\s*\)/g, 'initial');
+}
+
+/**
+ * Hoist all `@keyframes` blocks out of wherever they appear (e.g. inside a
+ * converted `:root {}` block) and append them at the end, since `@keyframes`
+ * is not valid inside `:root`.
+ */
+function hoistKeyframes(css: string): string {
+  const keyframes: string[] = [];
+  let result = '';
+  let i = 0;
+  while (i < css.length) {
+    const nextKf = css.indexOf('@keyframes', i);
+    if (nextKf === -1) { result += css.slice(i); break; }
+    result += css.slice(i, nextKf);
+    const openBrace = css.indexOf('{', nextKf);
+    if (openBrace === -1) { result += css.slice(nextKf); break; }
+    let depth = 1, j = openBrace + 1;
+    while (j < css.length && depth > 0) {
+      if (css[j] === '{') depth++;
+      else if (css[j] === '}') depth--;
+      j++;
+    }
+    keyframes.push(css.slice(nextKf, j));
+    i = j;
+  }
+  if (keyframes.length) result += '\n' + keyframes.join('\n');
+  return result;
+}
+
+/**
+ * Convert Tailwind v4 `@theme default { ... }` blocks to plain `:root { ... }`
+ * that browsers understand. Also hoists `@keyframes` out of the `:root` scope
+ * and strips any remaining `--theme()` references.
+ */
+function normalizeTheme(css: string): string {
+  // Convert @theme variants to :root
+  let result = css.replace(/@theme\b[^{]*/g, ':root ');
+  // Strip --theme() references inside the converted variables
+  result = normalizePreflight(result);
+  // Hoist @keyframes that ended up inside :root
+  result = hoistKeyframes(result);
+  // Drop empty :root blocks (e.g. from @theme inline reference)
+  result = result.replace(/:root\s*\{\s*\}/g, '');
+  return result.trim();
+}
+
 if (typeof document !== 'undefined' && typeof CSSStyleSheet !== 'undefined') {
+  // Adopt the constructed sheets immediately (they start empty — content follows async).
   document.adoptedStyleSheets = [...document.adoptedStyleSheets, preflightSheet, jitSheet];
 
-  // Synchronously adopt packed preflight and theme CSS at browser boot
-  if (PACKED_PREFLIGHT) {
-    preflightSheet.replaceSync(PACKED_PREFLIGHT);
-  }
-  if (PACKED_THEME) {
-    stylesheet.adoptCSSSync(PACKED_THEME, 'nexus-theme');
-  }
-
-  // Adopt custom compositing properties
+  // Adopt custom compositing properties synchronously (no external dependency).
   const compositingCSS = registerCompositingProperties();
   stylesheet.adoptCSSSync(compositingCSS, 'nexus-compositing');
+
+  // Async-fetch preflight + theme from CDN and adopt via constructed stylesheets.
+  // Falls back to AOT-packed strings if the network is unavailable.
+  (async () => {
+    try {
+      const [preflightText, themeText] = await Promise.all([
+        fetch('https://cdn.jsdelivr.net/npm/tailwindcss@4/preflight.css').then(r => {
+          if (!r.ok) throw new Error(`preflight ${r.status}`);
+          return r.text();
+        }),
+        fetch('https://cdn.jsdelivr.net/npm/tailwindcss@4/theme.css').then(r => {
+          if (!r.ok) throw new Error(`theme ${r.status}`);
+          return r.text();
+        }),
+      ]);
+      // replace() is the async counterpart to replaceSync() on an already-adopted sheet.
+      await preflightSheet.replace(normalizePreflight(preflightText));
+      stylesheet.adoptCSSSync(normalizeTheme(themeText), 'nexus-theme');
+    } catch (_fetchErr) {
+      // Network unavailable — fall back to AOT-packed strings, normalizing on the fly.
+      try {
+        if (PACKED_PREFLIGHT) await preflightSheet.replace(normalizePreflight(PACKED_PREFLIGHT));
+      } catch (_) {}
+      if (PACKED_THEME) stylesheet.adoptCSSSync(normalizeTheme(PACKED_THEME), 'nexus-theme');
+    }
+  })();
 }
