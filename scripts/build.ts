@@ -141,14 +141,15 @@ async function buildBundle(options: BuildOptions = {}) {
     const manifestPath = path.resolve(cwd, "src", "manifest.ts");
     const manifestJsonPath = path.resolve(cwd, "dist", "manifest.json");
 
+    let analysisResult: any = null;
+    let packedThemeCss = "";
+
     // AOT Style Layer Fetch — only generates framework-specific constants
     // (PACKED_COMPONENTS, PACKED_KEYFRAMES). Preflight and theme are fetched
     // at runtime from CDN so they don't inflate the bundle.
     console.log("\n🎨 Generating AOT style layer constants...");
     const packedStyleLayers = await fetchStyleLayerPrimitives();
 
-    let analysisResult: any = null;
-    
     if (appDir) {
       console.log(`\n🔍 Analyzing app: ${appDir}`);
       analysisResult = await analyzeAppFiles(appDir);
@@ -157,7 +158,58 @@ async function buildBundle(options: BuildOptions = {}) {
       console.log(`   Modifiers: ${Array.from(analysisResult.modifiers).join(", ")}`);
       console.log(`   Auto-injected sprites: ${analysisResult.autoInjectedSprites.join(", ") || "none"}`);
       console.log(`   Mirror-provided sprites: ${analysisResult.mirrorProvidedSprites.join(", ") || "none"}`);
+
+      // Compile Tailwind classes at build-time using the official compiler
+      console.log("⚡ Compiling AOT Tailwind stylesheet...");
+      try {
+        const baseDir = "/home/aerea/development/tailwindcss/packages/tailwindcss";
+        const indexCss = await Deno.readTextFile(`${baseDir}/index.css`);
+        const preflightCss = await Deno.readTextFile(`${baseDir}/preflight.css`);
+        const themeCss = await Deno.readTextFile(`${baseDir}/theme.css`);
+        const utilitiesCss = await Deno.readTextFile(`${baseDir}/utilities.css`);
+
+        // Dynamically import compile from tailwindcss npm package
+        const { compile } = await import("tailwindcss");
+        const compiler = await compile('@import "tailwindcss";', {
+          base: '/',
+          async loadStylesheet(id) {
+            if (id === 'tailwindcss' || id === 'tailwindcss/index.css') {
+              return { path: 'tailwindcss/index.css', base: '/', content: indexCss };
+            }
+            if (id === './theme.css' || id === 'tailwindcss/theme.css') {
+              return { path: 'tailwindcss/theme.css', base: '/', content: themeCss };
+            }
+            if (id === './preflight.css' || id === 'tailwindcss/preflight.css') {
+              return { path: 'tailwindcss/preflight.css', base: '/', content: preflightCss };
+            }
+            if (id === './utilities.css' || id === 'tailwindcss/utilities.css') {
+              return { path: 'tailwindcss/utilities.css', base: '/', content: utilitiesCss };
+            }
+            throw new Error(`Not found: ${id}`);
+          }
+        });
+
+        const classes = Array.from(analysisResult.tailwindClasses) as string[];
+        const validClasses = classes.filter(cls => !cls.includes("{") && !cls.includes("$") && !cls.includes(":") && !cls.includes("[") && !cls.includes("]"));
+        const extraClasses = ["sortable-chosen", "sortable-drag", "sortable-ghost", "sortable-selected", "sortable-swap-highlight", "drop-target-before", "drop-target-after"];
+
+        packedThemeCss = compiler.build([...validClasses, ...extraClasses]);
+        // Minify compiled CSS
+        packedThemeCss = packedThemeCss
+          .replace(/\/\*[\s\S]*?\*\//g, "")
+          .replace(/\s+/g, " ")
+          .replace(/;\s*/g, ";")
+          .replace(/,\s*/g, ",")
+          .replace(/\{\s*/g, "{")
+          .replace(/\s*\}\s*/g, "}")
+          .replace(/"/g, '\\"')
+          .trim();
+        console.log(`   ✓ PACKED_THEME_CSS generated (${packedThemeCss.length} chars)`);
+      } catch (err) {
+        console.error("Failed to compile AOT Tailwind stylesheet:", err);
+      }
     }
+
 
     const manifestLines = ["// AUTO-GENERATED", "import type { AttributeModule } from './engine/modules.ts';"];
     let counter = 0;
@@ -250,6 +302,8 @@ async function buildBundle(options: BuildOptions = {}) {
     // avoid embedding ~22KB of Tailwind CSS strings in the bundle.
     manifestLines.push(`export const PACKED_COMPONENTS = "${packedStyleLayers.components}";`);
     manifestLines.push(`export const PACKED_KEYFRAMES = "${packedStyleLayers.keyframes}";`);
+    manifestLines.push(`export const PACKED_THEME_CSS = "${packedThemeCss}";`);
+
 
     await Deno.writeTextFile(manifestPath, manifestLines.join("\n"));
     console.log("Generated manifest:", manifestPath);
