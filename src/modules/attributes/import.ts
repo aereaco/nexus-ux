@@ -2,7 +2,7 @@ import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { reportError } from '../../engine/debug.ts';
 import { readIDB } from '../../engine/utils/idb.ts';
-import { stylesheet } from '../../engine/stylesheet.ts';
+import { stylesheet } from './stylesheet.ts';
 
 /**
  * Lightweight IndexedDB read helper for idb:// URIs.
@@ -44,6 +44,7 @@ const assetCache = new Map<string, string>();
 
 interface ImportPayload {
   link?: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>;
+  adopt?: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>;
   script?: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>;
   style?: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>;
   theme?: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>; 
@@ -132,6 +133,13 @@ function applyAttributes(el: HTMLElement | HTMLLinkElement | HTMLScriptElement |
 
 // ─── Import Handlers ───────────────────────────────────────────
 
+/**
+ * link: — Creates a real <link rel="stylesheet"> DOM tag.
+ * The stylesheet is visible in document.styleSheets, making it compatible
+ * with third-party tools such as @tailwindcss/browser, browser DevTools, etc.
+ * Awaits the onload event so subsequent imports (e.g. Tailwind script) are
+ * guaranteed to run only after the stylesheet is fully parsed.
+ */
 async function importLink(
   id: string,
   payload: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>,
@@ -140,50 +148,67 @@ async function importLink(
   el: HTMLElement
 ): Promise<void> {
   const items = Array.isArray(payload) ? payload : [payload];
-  
+
   for (const item of items) {
     let attrs: Record<string, string | boolean | number>;
     if (typeof item === 'string') {
-      // Try to parse inline attributes first (e.g., "href='...' rel='stylesheet'")
       const parsed = parseInlineAttrs(item);
-      if (parsed.href) {
-        attrs = parsed;
-      } else {
-        attrs = { href: item, rel: 'stylesheet' };
-      }
+      attrs = parsed.href ? parsed : { href: item, rel: 'stylesheet' };
     } else {
       attrs = item as Record<string, string | boolean | number>;
     }
-    
+
     const href = attrs.href as string;
     if (!href) continue;
 
-    // ZCZS Mandate: Constructable Stylesheets via StyleSheetManager.
-    // Use adoptRawCSS so that third-party @layer/@property rules are not stripped.
-    if (attrs.rel === 'stylesheet' || !attrs.rel) {
-      const cssText = await resolveContent(href);
-      if (cssText) {
-        const cleanup = await stylesheet.adoptRawCSS(cssText, `import-${id}-${href}`);
-        cleanupFns.push(cleanup);
-        runtime.log(`Nexus Import [${id}]: CSS adopted (raw): ${href}`);
-        continue;
-      }
-    }
+    if (!attrs.rel) attrs = { ...attrs, rel: 'stylesheet' };
 
-
-    // Fallback: Legacy link tag with load waiting
     await new Promise<void>((resolve) => {
-        const link = document.createElement('link');
-        applyAttributes(link, attrs);
-        link.href = href;
-        link.onload = () => resolve();
-        link.onerror = () => {
-            reportError(new Error(`Nexus Import: Failed to load ${href}`), el);
-            resolve();
-        };
-        document.head.appendChild(link);
-        cleanupFns.push(() => link.remove());
+      const link = document.createElement('link');
+      applyAttributes(link, attrs);
+      link.href = href;
+      link.onload = () => resolve();
+      link.onerror = () => {
+        reportError(new Error(`Nexus Import: Failed to load ${href}`), el);
+        resolve();
+      };
+      document.head.appendChild(link);
+      cleanupFns.push(() => link.remove());
+      runtime.log(`Nexus Import [${id}]: Link tag injected: ${href}`);
     });
+  }
+}
+
+/**
+ * adopt: — Fetches CSS content and adopts it as a constructable CSSStyleSheet.
+ * The sheet lives in document.adoptedStyleSheets (ZCZS-native, Nexus-scoped).
+ * It is NOT visible in document.styleSheets — use link: when third-party
+ * stylesheet scanners (e.g. @tailwindcss/browser) need to read it.
+ */
+async function importAdopt(
+  id: string,
+  payload: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>,
+  cleanupFns: Array<() => void>,
+  runtime: RuntimeContext,
+  _el: HTMLElement
+): Promise<void> {
+  const items = Array.isArray(payload) ? payload : [payload];
+
+  for (const item of items) {
+    let href: string;
+    if (typeof item === 'string') {
+      href = item;
+    } else {
+      href = (item as Record<string, string | boolean | number>).href as string;
+    }
+    if (!href) continue;
+
+    const cssText = await resolveContent(href);
+    if (!cssText) continue;
+
+    const cleanup = await stylesheet.adoptRawCSS(cssText, `import-adopt-${id}-${href}`);
+    cleanupFns.push(cleanup);
+    runtime.log(`Nexus Import [${id}]: CSS adopted (constructable): ${href}`);
   }
 }
 
@@ -387,11 +412,16 @@ const importModule: AttributeModule = {
         try {
           const itemTasks = [];
           
-          // Links
+          // link: — real <link> DOM tags, visible to document.styleSheets
           if (item.link) {
               itemTasks.push(importLink(id, item.link, iterationCleanupFns, runtime, el));
           }
-          
+
+          // adopt: — constructable CSSStyleSheet (ZCZS-native, Nexus-scoped)
+          if (item.adopt) {
+              itemTasks.push(importAdopt(id, item.adopt, iterationCleanupFns, runtime, el));
+          }
+
           // Scripts
           if (item.script) {
               itemTasks.push(importScript(id, item.script, iterationCleanupFns, runtime, el));
