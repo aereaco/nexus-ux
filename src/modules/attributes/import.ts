@@ -5,6 +5,44 @@ import { readIDB } from '../../engine/utils/idb.ts';
 import { stylesheet } from './stylesheet.ts';
 
 /**
+ * DaisyUI → Tailwind v4 theme token bridge.
+ *
+ * @tailwindcss/browser@4 compiles utilities (hover:bg-primary, bg-base-300/30, etc.)
+ * from @theme declarations. DaisyUI v5's CDN CSS ships base color classes directly
+ * but not hover variants or opacity modifiers. This bridge registers DaisyUI's CSS
+ * custom properties as Tailwind theme tokens so the compiler can generate all variants.
+ *
+ * The values are CSS variable references, NOT hardcoded colors — DaisyUI's runtime
+ * CSS variables supply the actual values, so theming (data-theme switching) works.
+ *
+ * This constant is the single source of truth shared by both:
+ *   - initPlayCompiler() in stylesheet.ts (Nexus-UX JIT path)
+ *   - importScript() in import.ts (official Play CDN path via data-import)
+ */
+export const DAISYUI_TAILWIND_BRIDGE = `@theme {
+  --color-base-100: var(--color-base-100);
+  --color-base-200: var(--color-base-200);
+  --color-base-300: var(--color-base-300);
+  --color-base-content: var(--color-base-content);
+  --color-primary: var(--color-primary);
+  --color-primary-content: var(--color-primary-content);
+  --color-secondary: var(--color-secondary);
+  --color-secondary-content: var(--color-secondary-content);
+  --color-accent: var(--color-accent);
+  --color-accent-content: var(--color-accent-content);
+  --color-neutral: var(--color-neutral);
+  --color-neutral-content: var(--color-neutral-content);
+  --color-success: var(--color-success);
+  --color-success-content: var(--color-success-content);
+  --color-info: var(--color-info);
+  --color-info-content: var(--color-info-content);
+  --color-warning: var(--color-warning);
+  --color-warning-content: var(--color-warning-content);
+  --color-error: var(--color-error);
+  --color-error-content: var(--color-error-content);
+}`;
+
+/**
  * Lightweight IndexedDB read helper for idb:// URIs.
  * Replaces the previous VFS dependency.
  */
@@ -241,6 +279,20 @@ async function importScript(
             finalSrc = url;
             cleanupFns.push(() => URL.revokeObjectURL(url));
         }
+    }
+
+    // Auto-inject the DaisyUI → Tailwind v4 theme bridge when loading @tailwindcss/browser.
+    // This makes hover variants (hover:bg-primary), opacity modifiers (bg-base-100/30), and
+    // other Tailwind-generated utilities with DaisyUI color names work correctly — without
+    // the user needing to write any @theme declarations in their HTML.
+    if (src.includes('tailwindcss/browser') && !document.querySelector('style[data-nexus-tailwind-bridge]')) {
+        const bridgeStyle = document.createElement('style');
+        bridgeStyle.setAttribute('type', 'text/tailwindcss');
+        bridgeStyle.setAttribute('data-nexus-tailwind-bridge', '');
+        bridgeStyle.textContent = DAISYUI_TAILWIND_BRIDGE;
+        document.head.appendChild(bridgeStyle);
+        cleanupFns.push(() => bridgeStyle.remove());
+        runtime.log(`Nexus Import [${id}]: DaisyUI→Tailwind theme bridge injected`);
     }
 
     await new Promise<void>((resolve) => {
