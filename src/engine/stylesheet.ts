@@ -738,8 +738,19 @@ export function populateStandardUtilities(ds: DesignSystem): void {
   ds.functional("text", (c) => {
     if (!c.value) return;
     const v = c.value.value;
-    if (_textScale.has(v) || /^\d/.test(v)) {
-      return [d("font-size", `var(--text-${v})`), d("line-height", `var(--text-${v}--line-height, 1.5)`)];
+    const isArbitrary = v.startsWith('[') && v.endsWith(']');
+    const innerVal = isArbitrary ? v.slice(1, -1) : v;
+
+    const isSize = _textScale.has(innerVal) || 
+                   /^\d/.test(innerVal) || 
+                   /^[0-9.]+(px|rem|em|%|vh|vw|pt|pc|in|cm|mm|ex|ch|lh|rlh|vi|vb|vmin|vmax)/.test(innerVal);
+
+    if (isSize) {
+      const sizeVal = isArbitrary ? innerVal.replace(/_/g, ' ') : `var(--text-${v})`;
+      if (isArbitrary) {
+        return [d("font-size", sizeVal)];
+      }
+      return [d("font-size", sizeVal), d("line-height", `var(--text-${v}--line-height, 1.5)`)];
     }
     return [d("color", resolveColor(c.value, c.modifier))];
   });
@@ -750,7 +761,13 @@ export function populateStandardUtilities(ds: DesignSystem): void {
   ds.functional("font", (c) => { if (!c.value) return; const v = c.value.value; if (["sans", "serif", "mono"].includes(v)) return; return [d("font-weight", _fw[v] || v)]; });
   const _lhMap: Record<string, string> = { none: "1", tight: "1.25", snug: "1.375", normal: "1.5", relaxed: "1.625", loose: "2" };
   ds.functional("leading", (c) => { if (!c.value) return; return [d("line-height", _lhMap[c.value.value] || resolveSpacing(c.value.value))]; });
-  ds.functional("tracking", (c) => { if (!c.value) return; const v = c.value.value; return [d("letter-spacing", v.includes("var(") ? v : `var(--tracking-${v}, ${v})`)]; });
+  ds.functional("tracking", (c) => {
+    if (!c.value) return;
+    const v = c.value.value;
+    const isArbitrary = v.startsWith('[') && v.endsWith(']');
+    const val = isArbitrary ? v.slice(1, -1).replace(/_/g, ' ') : `var(--tracking-${v}, ${v})`;
+    return [d("letter-spacing", val)];
+  });
   ds.functional("indent", (c) => { if (!c.value) return; return [d("text-indent", resolveSpacing(c.value.value, c.negative))]; });
 
   // Borders
@@ -760,7 +777,9 @@ export function populateStandardUtilities(ds: DesignSystem): void {
     "border-b": ["border-bottom-width"], "border-l": ["border-left-width"],
   } as Record<string, string[]>)) {
     ds.functional(root, (c) => {
-      if (!c.value) return;
+      if (!c.value) {
+        return [...props.map(p => d(p, "1px")), d("border-style", "solid")];
+      }
       const v = c.value.value;
       if (c.value.kind === "color" || v.startsWith("#") || ["transparent", "current", "inherit"].includes(v)) {
         return props.map(p => d(p.replace("-width", "-color"), resolveColor(c.value, c.modifier)));
@@ -780,7 +799,13 @@ export function populateStandardUtilities(ds: DesignSystem): void {
   for (const [root, props] of Object.entries(_rad)) {
     ds.static(root + "-none", () => props.map(p => d(p, "0")));
     ds.static(root + "-full", () => props.map(p => d(p, "calc(infinity * 1px)")));
-    ds.functional(root, (c) => { if (!c.value) return; const v = c.value.value; return props.map(p => d(p, v.includes("var(") ? v : `var(--radius-${v}, ${v})`)); });
+    ds.functional(root, (c) => {
+      if (!c.value) {
+        return props.map(p => d(p, "var(--radius-md)"));
+      }
+      const v = c.value.value;
+      return props.map(p => d(p, v.includes("var(") ? v : `var(--radius-${v}, ${v})`));
+    });
   }
 
   // Opacity
@@ -822,8 +847,64 @@ export function populateStandardUtilities(ds: DesignSystem): void {
     return [d("animation", v.startsWith("[") ? v.slice(1, -1).replace(/_/g, " ") : `var(--animate-${v})`)];
   });
 
-  // Z / Flex / Grid / Scroll / Misc
-  ds.functional("z", (c) => { if (!c.value) return; const v = c.value.value; return v === "auto" ? [d("z-index", "auto")] : [d("z-index", c.negative ? `calc(${v} * -1)` : v)]; });
+  // Z / Flex / Grid / Scroll / Transforms / Gradients / Misc
+  ds.functional("z", (c) => {
+    if (!c.value) return;
+    const rawVal = c.value.value;
+    const v = rawVal.startsWith('[') && rawVal.endsWith(']') ? rawVal.slice(1, -1) : rawVal;
+    return v === "auto" ? [d("z-index", "auto")] : [d("z-index", c.negative ? `calc(${v} * -1)` : v)];
+  });
+
+  // Scale (Transforms)
+  ds.functional("scale", (c) => {
+    if (!c.value) return;
+    const v = c.value.value;
+    const isArbitrary = v.startsWith('[') && v.endsWith(']');
+    const val = isArbitrary ? v.slice(1, -1).replace(/_/g, ' ') : v;
+    
+    const num = Number(val);
+    const finalVal = !isNaN(num) ? `${num}%` : val;
+    const signedVal = c.negative ? `calc(${finalVal} * -1)` : finalVal;
+
+    return [
+      d("--tw-scale-x", signedVal),
+      d("--tw-scale-y", signedVal),
+      d("--tw-scale-z", signedVal),
+      d("scale", "var(--tw-scale-x) var(--tw-scale-y)"),
+    ];
+  });
+
+  // Legacy bg-gradient support
+  const _gradDirMap: Record<string, string> = {
+    "to-t": "to top",
+    "to-tr": "to top right",
+    "to-r": "to right",
+    "to-br": "to bottom right",
+    "to-b": "to bottom",
+    "to-bl": "to bottom left",
+    "to-l": "to left",
+    "to-tl": "to top left",
+  };
+  ds.functional("bg-gradient", (c) => {
+    if (!c.value) return;
+    const v = c.value.value;
+    const dir = _gradDirMap[v] || (v.startsWith('[') && v.endsWith(']') ? v.slice(1, -1).replace(/_/g, ' ') : v);
+    return [
+      d("--tw-gradient-position", dir),
+      d("background-image", "linear-gradient(var(--tw-gradient-stops))")
+    ];
+  });
+
+  // Gradient stops
+  ds.functional("to", (c) => {
+    if (!c.value) return;
+    const color = resolveColor(c.value, c.modifier);
+    return [
+      d("--tw-gradient-to", color),
+      d("--tw-gradient-stops", "var(--tw-gradient-via-stops, var(--tw-gradient-position, to right), var(--tw-gradient-from, #0000) var(--tw-gradient-from-position, 0%), var(--tw-gradient-to) var(--tw-gradient-to-position, 100%))")
+    ];
+  });
+
   ds.functional("flex", (c) => {
     if (!c.value) return;
     const v = c.value.value;
@@ -863,7 +944,14 @@ export function populateStandardUtilities(ds: DesignSystem): void {
     return [d("--tw-outline-width", resolveSpacing(v)), d("outline", "var(--tw-outline-style, solid) var(--tw-outline-width, 1px) var(--tw-outline-color, currentColor)")];
   });
   ds.functional("bg-linear", (c) => { if (c.value?.kind === "named") return [{ kind: "declaration", property: "background-image", value: `linear-gradient(${c.value.value}, var(--tw-gradient-stops))` }]; });
-  ds.functional("from", (c) => { if (c.value?.kind === "named") { const color = resolveColor(c.value, c.modifier); return [{ kind: "declaration", property: "--tw-gradient-from", value: color }, { kind: "declaration", property: "--tw-gradient-stops", value: "var(--tw-gradient-from), var(--tw-gradient-to, transparent)" }]; } });
+  ds.functional("from", (c) => {
+    if (!c.value) return;
+    const color = resolveColor(c.value, c.modifier);
+    return [
+      d("--tw-gradient-from", color),
+      d("--tw-gradient-stops", "var(--tw-gradient-via-stops, var(--tw-gradient-position, to right), var(--tw-gradient-from) var(--tw-gradient-from-position, 0%), var(--tw-gradient-to, #0000) var(--tw-gradient-to-position, 100%))")
+    ];
+  });
 }
 
 // ============================================================================
