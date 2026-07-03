@@ -2,7 +2,6 @@
 import { effect as _effect } from '../../engine/reactivity.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { AttributeModule } from '../../engine/modules.ts';
-import { DAISYUI_TAILWIND_BRIDGE } from './import.ts';
 
 // ============================================================================
 // 1. AOT-INJECTED STYLE LAYER CONSTANTS
@@ -98,6 +97,47 @@ export const jitSheet: any = new NexusStyleSheet();
 
 // deno-lint-ignore-file no-explicit-any
 
+/**
+ * Discovers CSS custom color properties from the document's computed styles.
+ * Works with ANY CSS library that uses --color-* custom properties (DaisyUI,
+ * Bootstrap, Shoelace, custom design systems, etc.).
+ *
+ * Called after stylesheets have been applied to the document. Uses
+ * getComputedStyle enumeration which exposes all applied custom properties
+ * in modern browsers without requiring same-origin stylesheet access.
+ */
+export function discoverColorTokens(): Set<string> {
+  const tokens = new Set<string>();
+  try {
+    const style = window.getComputedStyle(document.documentElement);
+    for (let i = 0; i < style.length; i++) {
+      const prop = style[i];
+      if (prop.startsWith('--color-')) {
+        tokens.add(prop.slice(8)); // strip '--color-' prefix
+      }
+    }
+  } catch {
+    // getComputedStyle unavailable (SSR / test env) — return empty
+  }
+  return tokens;
+}
+
+/**
+ * Builds a Tailwind v4 @theme block from a set of discovered color token names.
+ *
+ * Maps each --color-X to var(--color-X) so Tailwind generates all utility
+ * variants (hover:bg-X, text-X/50, border-X, ring-X, etc.) while keeping
+ * actual color values fully dynamic — the CSS library's runtime variables
+ * supply the values, enabling data-theme switching to work correctly.
+ */
+export function buildTailwindThemeBridge(tokens: Set<string>): string {
+  if (tokens.size === 0) return '';
+  const decls = Array.from(tokens)
+    .map(name => `  --color-${name}: var(--color-${name});`)
+    .join('\n');
+  return `@theme {\n${decls}\n}`;
+}
+
 let tailwindCompiler: any = null;
 let compiledClassesSet = new Set<string>();
 const pendingClasses: { className: string; el?: HTMLElement; runtime?: RuntimeContext }[] = [];
@@ -120,10 +160,20 @@ async function initPlayCompiler() {
     ]);
 
     const { compile } = await import("tailwindcss");
+
+    // Discover CSS color tokens from currently-applied stylesheets.
+    // Called AFTER await import("tailwindcss") — loading the Tailwind Wasm
+    // module is the slowest async step, giving linked stylesheets maximum
+    // time to load and apply. Library-agnostic: reads any --color-* property.
+    const colorTokens = discoverColorTokens();
+    const themeBridge = buildTailwindThemeBridge(colorTokens);
+    if (colorTokens.size > 0) {
+      console.log(`✅ Tailwind JIT: discovered ${colorTokens.size} color tokens from loaded stylesheets.`);
+    }
+
     tailwindCompiler = await compile(`
 @import "tailwindcss";
-
-${DAISYUI_TAILWIND_BRIDGE}
+${themeBridge}
 `, {
       base: '/',
       async loadStylesheet(id) {
