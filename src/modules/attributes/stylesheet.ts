@@ -159,7 +159,7 @@ async function initPlayCompiler() {
       fetch('https://cdn.jsdelivr.net/npm/tailwindcss@4/utilities.css').then(r => r.text()),
     ]);
 
-    const { compile } = await import("tailwindcss");
+    const { compile } = await import("https://cdn.jsdelivr.net/npm/tailwindcss@4/+esm");
 
     // Discover CSS color tokens from currently-applied stylesheets.
     // Called AFTER await import("tailwindcss") — loading the Tailwind Wasm

@@ -63,11 +63,23 @@ function analyzeFile(content: string): {
     spriteNames.add(match[1]);
   }
 
-  const classRegex = /class\s*=\s*["']([^"']+)["']/g;
+  const classRegex = /(?:class|data-drag-class|data-drag-ghost-class)\s*=\s*["']([^"']+)["']/g;
   while ((match = classRegex.exec(content)) !== null) {
     for (const cls of match[1].split(/\s+/)) {
-      if (cls && !cls.startsWith("{") && !cls.includes(":")) {
-        tailwindClasses.add(cls);
+      let cleaned = cls.trim();
+      if (cleaned.startsWith('!')) cleaned = cleaned.slice(1);
+      if (
+        cleaned &&
+        !cleaned.includes("{") &&
+        !cleaned.includes("}") &&
+        !cleaned.includes("$") &&
+        !cleaned.includes("?") &&
+        !cleaned.includes("<") &&
+        !cleaned.includes(">") &&
+        !cleaned.includes("&") &&
+        !cleaned.includes("=")
+      ) {
+        tailwindClasses.add(cleaned);
       }
     }
   }
@@ -170,7 +182,23 @@ async function buildBundle(options: BuildOptions = {}) {
 
         // Dynamically import compile from tailwindcss npm package
         const { compile } = await import("tailwindcss");
-        const compiler = await compile('@import "tailwindcss";', {
+         const compiler = await compile(`
+@import "tailwindcss";
+
+@theme {
+  --color-base-100: var(--color-base-100);
+  --color-base-200: var(--color-base-200);
+  --color-base-300: var(--color-base-300);
+  --color-base-content: var(--color-base-content);
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-accent: var(--color-accent);
+  --color-success: var(--color-success);
+  --color-info: var(--color-info);
+  --color-warning: var(--color-warning);
+  --color-error: var(--color-error);
+}
+`, {
           base: '/',
           async loadStylesheet(id) {
             if (id === 'tailwindcss' || id === 'tailwindcss/index.css') {
@@ -190,7 +218,16 @@ async function buildBundle(options: BuildOptions = {}) {
         });
 
         const classes = Array.from(analysisResult.tailwindClasses) as string[];
-        const validClasses = classes.filter(cls => !cls.includes("{") && !cls.includes("$") && !cls.includes(":") && !cls.includes("[") && !cls.includes("]"));
+        const validClasses = classes.filter(cls => {
+          return !cls.includes("{") &&
+                 !cls.includes("}") &&
+                 !cls.includes("$") &&
+                 !cls.includes("?") &&
+                 !cls.includes("<") &&
+                 !cls.includes(">") &&
+                 !cls.includes("&") &&
+                 !cls.includes("=");
+        });
         const extraClasses = ["sortable-chosen", "sortable-drag", "sortable-ghost", "sortable-selected", "sortable-swap-highlight", "drop-target-before", "drop-target-after"];
 
         packedThemeCss = compiler.build([...validClasses, ...extraClasses]);
@@ -321,6 +358,10 @@ async function buildBundle(options: BuildOptions = {}) {
       target: "es2022",
       legalComments: "none",
       minify,
+      external: [
+        "tailwindcss",
+        "https://cdn.jsdelivr.net/npm/tailwindcss@4/+esm"
+      ],
     };
 
     console.log("Starting esbuild...");
