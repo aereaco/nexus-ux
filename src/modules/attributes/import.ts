@@ -407,41 +407,49 @@ const importModule: AttributeModule = {
       const iterationCleanupFns: Array<() => void> = [];
       activeCleanup = () => iterationCleanupFns.forEach(fn => fn());
 
-      const importTasks = ids.map(async id => {
-        const item = config[id];
-        try {
-          const itemTasks = [];
-          
-          // link: — real <link> DOM tags, visible to document.styleSheets
-          if (item.link) {
-              itemTasks.push(importLink(id, item.link, iterationCleanupFns, runtime, el));
-          }
+      // Process packages sequentially in declaration order.
+      // This is intentional: users declare dependencies first (e.g. DaisyUI before Tailwind)
+      // and each package must be fully loaded before the next one starts.
+      // Parallel loading would cause race conditions where scripts (e.g. @tailwindcss/browser)
+      // initialize before stylesheet dependencies (e.g. DaisyUI) are available in document.styleSheets.
+      const runImports = async () => {
+        for (const id of ids) {
+          const item = config[id];
+          try {
+            const itemTasks = [];
 
-          // adopt: — constructable CSSStyleSheet (ZCZS-native, Nexus-scoped)
-          if (item.adopt) {
-              itemTasks.push(importAdopt(id, item.adopt, iterationCleanupFns, runtime, el));
-          }
+            // link: — real <link> DOM tags, visible to document.styleSheets
+            if (item.link) {
+                itemTasks.push(importLink(id, item.link, iterationCleanupFns, runtime, el));
+            }
 
-          // Scripts
-          if (item.script) {
-              itemTasks.push(importScript(id, item.script, iterationCleanupFns, runtime, el));
+            // adopt: — constructable CSSStyleSheet (ZCZS-native, Nexus-scoped)
+            if (item.adopt) {
+                itemTasks.push(importAdopt(id, item.adopt, iterationCleanupFns, runtime, el));
+            }
+
+            // Scripts
+            if (item.script) {
+                itemTasks.push(importScript(id, item.script, iterationCleanupFns, runtime, el));
+            }
+
+            // Styles / Themes (Unified)
+            const stylePayload = item.style || item.theme;
+            if (stylePayload) {
+                itemTasks.push(importStyle(id, stylePayload, iterationCleanupFns, runtime, el));
+            }
+
+            // Patterns & Components (Legacy/Existing)
+            if (item.pattern) itemTasks.push(importPattern(id, item.pattern, el, item, iterationCleanupFns, runtime));
+            if (item.component) itemTasks.push(importComponent(id, item.component, iterationCleanupFns, runtime));
+
+            // Resources within a single package still load in parallel (link + adopt + style together)
+            await Promise.all(itemTasks);
+          } catch (e) {
+            reportError(new Error(`Nexus Import [${id}]: Error ${e}`), el);
           }
-          
-          // Styles / Themes (Unified)
-          const stylePayload = item.style || item.theme;
-          if (stylePayload) {
-              itemTasks.push(importStyle(id, stylePayload, iterationCleanupFns, runtime, el));
-          }
-          
-          // Patterns & Components (Legacy/Existing)
-          if (item.pattern) itemTasks.push(importPattern(id, item.pattern, el, item, iterationCleanupFns, runtime));
-          if (item.component) itemTasks.push(importComponent(id, item.component, iterationCleanupFns, runtime));
-          
-          await Promise.all(itemTasks);
-        } catch (e) {
-          reportError(new Error(`Nexus Import [${id}]: Error ${e}`), el);
         }
-      });
+      };
 
       const finalize = () => {
         el.classList.remove('nexus-loading');
@@ -451,7 +459,7 @@ const importModule: AttributeModule = {
         runtime.log(`Nexus Import: Assets synchronized.`);
       };
 
-      Promise.all(importTasks).then(finalize);
+      runImports().then(finalize);
     });
 
     return () => {

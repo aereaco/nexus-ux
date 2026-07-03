@@ -22,14 +22,16 @@ import * as mod_18 from './modules/attributes/var.ts';
 import * as mod_19 from './modules/attributes/style.ts';
 import * as mod_20 from './modules/attributes/theme.ts';
 import * as mod_21 from './modules/attributes/progress.ts';
-import * as mod_22 from './modules/attributes/teleport.ts';
-import * as mod_23 from './modules/attributes/show.ts';
-import * as mod_24 from './modules/attributes/route.ts';
-import * as mod_25 from './modules/attributes/class.ts';
-import * as mod_26 from './modules/attributes/debug.ts';
-import * as mod_27 from './modules/attributes/html.ts';
-import * as mod_28 from './modules/attributes/signal.ts';
-import * as mod_29 from './modules/attributes/raf.ts';
+import * as mod_22 from './modules/attributes/stylesheet.ts';
+import * as mod_23 from './modules/attributes/teleport.ts';
+import * as mod_24 from './modules/attributes/build.ts';
+import * as mod_25 from './modules/attributes/show.ts';
+import * as mod_26 from './modules/attributes/route.ts';
+import * as mod_27 from './modules/attributes/class.ts';
+import * as mod_28 from './modules/attributes/debug.ts';
+import * as mod_29 from './modules/attributes/html.ts';
+import * as mod_30 from './modules/attributes/signal.ts';
+import * as mod_31 from './modules/attributes/raf.ts';
 export const autoAttributes: any[] = [  { name: 'mask', module: mod_0 },
   { name: 'drag', module: mod_1 },
   { name: 'markdown', module: mod_2 },
@@ -52,42 +54,80 @@ export const autoAttributes: any[] = [  { name: 'mask', module: mod_0 },
   { name: 'style', module: mod_19 },
   { name: 'theme', module: mod_20 },
   { name: 'progress', module: mod_21 },
-  { name: 'teleport', module: mod_22 },
-  { name: 'show', module: mod_23 },
-  { name: 'route', module: mod_24 },
-  { name: 'class', module: mod_25 },
-  { name: 'debug', module: mod_26 },
-  { name: 'html', module: mod_27 },
-  { name: 'signal', module: mod_28 },
-  { name: 'raf', module: mod_29 }];
-import * as mod_30 from './modules/sprites/animate.ts';
-import * as mod_31 from './modules/sprites/spatial.ts';
-import * as mod_32 from './modules/sprites/sql.ts';
-import * as mod_33 from './modules/sprites/svg.ts';
-export const autoSprites: any[] = [  { name: 'animate', module: mod_30 },
-  { name: 'spatial', module: mod_31 },
-  { name: 'sql', module: mod_32 },
-  { name: 'svg', module: mod_33 }];
-import * as mod_34 from './modules/scopes/container.ts';
-import * as mod_35 from './modules/scopes/view.ts';
-import * as mod_36 from './modules/scopes/media.ts';
-import * as mod_37 from './modules/scopes/auth.ts';
-import * as mod_38 from './modules/scopes/os.ts';
-import * as mod_39 from './modules/scopes/native.ts';
-export const autoScopes: any[] = [  { name: 'container', module: mod_34 },
-  { name: 'view', module: mod_35 },
-  { name: 'media', module: mod_36 },
-  { name: 'auth', module: mod_37 },
-  { name: 'os', module: mod_38 },
-  { name: 'native', module: mod_39 }];
-import * as mod_40 from './modules/modifiers/drag.ts';
-import * as mod_41 from './modules/modifiers/zoom.ts';
-import * as mod_42 from './modules/modifiers/prevent.ts';
-export const autoModifiers: any[] = [  { name: 'drag', module: mod_40 },
-  { name: 'zoom', module: mod_41 },
-  { name: 'prevent', module: mod_42 }];
+  { name: 'stylesheet', module: mod_22 },
+  { name: 'teleport', module: mod_23 },
+  { name: 'build', module: mod_24 },
+  { name: 'show', module: mod_25 },
+  { name: 'route', module: mod_26 },
+  { name: 'class', module: mod_27 },
+  { name: 'debug', module: mod_28 },
+  { name: 'html', module: mod_29 },
+  { name: 'signal', module: mod_30 },
+  { name: 'raf', module: mod_31 }];
+import * as mod_32 from './modules/sprites/mask.ts';
+import * as mod_33 from './modules/sprites/animate.ts';
+import * as mod_34 from './modules/sprites/spatial.ts';
+import * as mod_35 from './modules/sprites/gql.ts';
+import * as mod_36 from './modules/sprites/mcp.ts';
+import * as mod_37 from './modules/sprites/periodicSync.ts';
+import * as mod_38 from './modules/sprites/flow.ts';
+import * as mod_39 from './modules/sprites/bgSync.ts';
+import * as mod_40 from './modules/sprites/bgFetch.ts';
+import * as mod_41 from './modules/sprites/push.ts';
+import * as mod_42 from './modules/sprites/selector.ts';
+import * as mod_43 from './modules/sprites/predictive.ts';
+import * as mod_44 from './modules/sprites/sql.ts';
+import * as mod_45 from './modules/sprites/sw.ts';
+import * as mod_46 from './modules/sprites/svg.ts';
+export const autoSprites: any[] = [  { name: 'mask', module: mod_32 },
+  { name: 'animate', module: mod_33 },
+  { name: 'spatial', module: mod_34 },
+  { name: 'gql', module: mod_35 },
+  { name: 'mcp', module: mod_36 },
+  { name: 'periodicSync', module: mod_37 },
+  { name: 'flow', module: mod_38 },
+  { name: 'bgSync', module: mod_39 },
+  { name: 'bgFetch', module: mod_40 },
+  { name: 'push', module: mod_41 },
+  { name: 'selector', module: mod_42 },
+  { name: 'predictive', module: mod_43 },
+  { name: 'sql', module: mod_44 },
+  { name: 'sw', module: mod_45 },
+  { name: 'svg', module: mod_46 }];
+import * as mod_47 from './modules/scopes/container.ts';
+import * as mod_48 from './modules/scopes/view.ts';
+import * as mod_49 from './modules/scopes/media.ts';
+import * as mod_50 from './modules/scopes/auth.ts';
+import * as mod_51 from './modules/scopes/os.ts';
+import * as mod_52 from './modules/scopes/native.ts';
+export const autoScopes: any[] = [  { name: 'container', module: mod_47 },
+  { name: 'view', module: mod_48 },
+  { name: 'media', module: mod_49 },
+  { name: 'auth', module: mod_50 },
+  { name: 'os', module: mod_51 },
+  { name: 'native', module: mod_52 }];
+import * as mod_53 from './modules/modifiers/drag.ts';
+import * as mod_54 from './modules/modifiers/zoom.ts';
+import * as mod_55 from './modules/modifiers/stop.ts';
+import * as mod_56 from './modules/modifiers/keys.ts';
+import * as mod_57 from './modules/modifiers/self.ts';
+import * as mod_58 from './modules/modifiers/prevent.ts';
+import * as mod_59 from './modules/modifiers/throttle.ts';
+import * as mod_60 from './modules/modifiers/once.ts';
+import * as mod_61 from './modules/modifiers/debounce.ts';
+import * as mod_62 from './modules/modifiers/morph.ts';
+export const autoModifiers: any[] = [  { name: 'drag', module: mod_53 },
+  { name: 'zoom', module: mod_54 },
+  { name: 'stop', module: mod_55 },
+  { name: 'keys', module: mod_56 },
+  { name: 'self', module: mod_57 },
+  { name: 'prevent', module: mod_58 },
+  { name: 'throttle', module: mod_59 },
+  { name: 'once', module: mod_60 },
+  { name: 'debounce', module: mod_61 },
+  { name: 'morph', module: mod_62 }];
 import * as mod_mutation from './engine/mutation.ts';
 export const autoObservers: any[] = [{ name: 'mutation', module: mod_mutation }];
 export const PACKED_COMPONENTS = ".sortable-chosen{background-color:var(--color-neutral-800,#27272a)!important;box-shadow:inset 0 0 0 2px var(--color-primary,#3b82f6)!important}.sortable-drag{opacity:1!important;box-shadow:0 25px 50px -12px rgba(0,0,0,.25)!important;transform:scale(1.05)!important;cursor:grabbing!important;z-index:9999!important}.sortable-ghost{opacity:.4!important;background-color:var(--color-neutral-900,#18181b)!important;border:2px dashed var(--color-neutral-700,#3f3f46)!important}.sortable-selected{box-shadow:inset 0 0 0 2px var(--color-accent,var(--color-secondary,#ec4899))!important}.sortable-swap-highlight{background-color:color-mix(in srgb,var(--color-warning,#eab308) 20%,transparent)!important;box-shadow:inset 0 0 0 2px var(--color-warning,#eab308)!important}.drop-target-before{background:linear-gradient(to bottom,color-mix(in srgb,var(--color-primary,#3b82f6) 30%,transparent) 0%,transparent 20%)!important;box-shadow:inset 0 2px 0 0 var(--color-primary,#3b82f6)!important}.drop-target-after{background:linear-gradient(to top,color-mix(in srgb,var(--color-primary,#3b82f6) 30%,transparent) 0%,transparent 20%)!important;box-shadow:inset 0 -2px 0 0 var(--color-primary,#3b82f6)!important}";
 export const PACKED_KEYFRAMES = "@keyframes spin{to{transform:rotate(360deg)}}@keyframes ping{75%,100%{transform:scale(2);opacity:0}}@keyframes pulse{50%{opacity:.5}}@keyframes bounce{0%,100%{transform:translateY(-25%);animation-timing-function:cubic-bezier(.8,0,1,1)}50%{transform:none;animation-timing-function:cubic-bezier(0,0,.2,1)}}";
-export const PACKED_THEME_CSS = "@layer properties;@layer theme,base,components,utilities;@layer theme {:root,:host {--font-sans: ui-sans-serif,system-ui,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji';--font-mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;--color-slate-400: oklch(70.4% 0.04 256.788);--color-slate-700: oklch(37.2% 0.044 257.287);--color-gray-800: oklch(27.8% 0.033 256.848);--color-black: #000;--color-white: #fff;--spacing: 0.25rem;--container-md: 28rem;--container-3xl: 48rem;--container-5xl: 64rem;--text-xs: 0.75rem;--text-xs--line-height: calc(1 / 0.75);--text-sm: 0.875rem;--text-sm--line-height: calc(1.25 / 0.875);--text-xl: 1.25rem;--text-xl--line-height: calc(1.75 / 1.25);--text-2xl: 1.5rem;--text-2xl--line-height: calc(2 / 1.5);--text-4xl: 2.25rem;--text-4xl--line-height: calc(2.5 / 2.25);--text-5xl: 3rem;--text-5xl--line-height: 1;--font-weight-medium: 500;--font-weight-semibold: 600;--font-weight-bold: 700;--font-weight-black: 900;--tracking-tighter: -0.05em;--tracking-wider: 0.05em;--tracking-widest: 0.1em;--leading-relaxed: 1.625;--radius-lg: 0.5rem;--radius-xl: 0.75rem;--radius-2xl: 1rem;--default-transition-duration: 150ms;--default-transition-timing-function: cubic-bezier(0.4,0,0.2,1);--default-font-family: var(--font-sans);--default-mono-font-family: var(--font-mono);}}@layer base {*,::after,::before,::backdrop,::file-selector-button {box-sizing: border-box;margin: 0;padding: 0;border: 0 solid;}html,:host {line-height: 1.5;-webkit-text-size-adjust: 100%;tab-size: 4;font-family: var(--default-font-family,ui-sans-serif,system-ui,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji');font-feature-settings: var(--default-font-feature-settings,normal);font-variation-settings: var(--default-font-variation-settings,normal);-webkit-tap-highlight-color: transparent;}hr {height: 0;color: inherit;border-top-width: 1px;}abbr:where([title]) {-webkit-text-decoration: underline dotted;text-decoration: underline dotted;}h1,h2,h3,h4,h5,h6 {font-size: inherit;font-weight: inherit;}a {color: inherit;-webkit-text-decoration: inherit;text-decoration: inherit;}b,strong {font-weight: bolder;}code,kbd,samp,pre {font-family: var(--default-mono-font-family,ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace);font-feature-settings: var(--default-mono-font-feature-settings,normal);font-variation-settings: var(--default-mono-font-variation-settings,normal);font-size: 1em;}small {font-size: 80%;}sub,sup {font-size: 75%;line-height: 0;position: relative;vertical-align: baseline;}sub {bottom: -0.25em;}sup {top: -0.5em;}table {text-indent: 0;border-color: inherit;border-collapse: collapse;}:-moz-focusring {outline: auto;}progress {vertical-align: baseline;}summary {display: list-item;}ol,ul,menu {list-style: none;}img,svg,video,canvas,audio,iframe,embed,object {display: block;vertical-align: middle;}img,video {max-width: 100%;height: auto;}button,input,select,optgroup,textarea,::file-selector-button {font: inherit;font-feature-settings: inherit;font-variation-settings: inherit;letter-spacing: inherit;color: inherit;border-radius: 0;background-color: transparent;opacity: 1;}:where(select:is([multiple],[size])) optgroup {font-weight: bolder;}:where(select:is([multiple],[size])) optgroup option {padding-inline-start: 20px;}::file-selector-button {margin-inline-end: 4px;}::placeholder {opacity: 1;}@supports (not (-webkit-appearance: -apple-pay-button)) or (contain-intrinsic-size: 1px) {::placeholder {color: currentcolor;@supports (color: color-mix(in lab,red,red)) {color: color-mix(in oklab,currentcolor 50%,transparent);}}}textarea {resize: vertical;}::-webkit-search-decoration {-webkit-appearance: none;}::-webkit-date-and-time-value {min-height: 1lh;text-align: inherit;}::-webkit-datetime-edit {display: inline-flex;}::-webkit-datetime-edit-fields-wrapper {padding: 0;}::-webkit-datetime-edit,::-webkit-datetime-edit-year-field,::-webkit-datetime-edit-month-field,::-webkit-datetime-edit-day-field,::-webkit-datetime-edit-hour-field,::-webkit-datetime-edit-minute-field,::-webkit-datetime-edit-second-field,::-webkit-datetime-edit-millisecond-field,::-webkit-datetime-edit-meridiem-field {padding-block: 0;}::-webkit-calendar-picker-indicator {line-height: 1;}:-moz-ui-invalid {box-shadow: none;}button,input:where([type='button'],[type='reset'],[type='submit']),::file-selector-button {appearance: button;}::-webkit-inner-spin-button,::-webkit-outer-spin-button {height: auto;}[hidden]:where(:not([hidden='until-found'])) {display: none !important;}}@layer utilities {.pointer-events-none {pointer-events: none;}.absolute {position: absolute;}.fixed {position: fixed;}.relative {position: relative;}.inset-0 {inset: calc(var(--spacing) * 0);}.inset-x-0 {inset-inline: calc(var(--spacing) * 0);}.inset-y-0 {inset-block: calc(var(--spacing) * 0);}.end-6 {inset-inline-end: calc(var(--spacing) * 6);}.top-1\/2 {top: calc(1 / 2 * 100%);}.-right-1 {right: calc(var(--spacing) * -1);}.bottom-6 {bottom: calc(var(--spacing) * 6);}.z-10 {z-index: 10;}.mx-4 {margin-inline: calc(var(--spacing) * 4);}.mx-auto {margin-inline: auto;}.my-0 {margin-block: calc(var(--spacing) * 0);}.me-2 {margin-inline-end: calc(var(--spacing) * 2);}.mt-1 {margin-top: calc(var(--spacing) * 1);}.mt-4 {margin-top: calc(var(--spacing) * 4);}.mt-8 {margin-top: calc(var(--spacing) * 8);}.mt-20 {margin-top: calc(var(--spacing) * 20);}.mb-1 {margin-bottom: calc(var(--spacing) * 1);}.mb-2 {margin-bottom: calc(var(--spacing) * 2);}.mb-3 {margin-bottom: calc(var(--spacing) * 3);}.mb-4 {margin-bottom: calc(var(--spacing) * 4);}.mb-6 {margin-bottom: calc(var(--spacing) * 6);}.mb-8 {margin-bottom: calc(var(--spacing) * 8);}.mb-12 {margin-bottom: calc(var(--spacing) * 12);}.ml-auto {margin-left: auto;}.flex {display: flex;}.grid {display: grid;}.aspect-square {aspect-ratio: 1 / 1;}.h-2 {height: calc(var(--spacing) * 2);}.h-3\.5 {height: calc(var(--spacing) * 3.5);}.h-4 {height: calc(var(--spacing) * 4);}.h-6 {height: calc(var(--spacing) * 6);}.h-auto {height: auto;}.h-full {height: 100%;}.min-h-0 {min-height: calc(var(--spacing) * 0);}.min-h-5 {min-height: calc(var(--spacing) * 5);}.min-h-screen {min-height: 100vh;}.w-2 {width: calc(var(--spacing) * 2);}.w-3\.5 {width: calc(var(--spacing) * 3.5);}.w-4 {width: calc(var(--spacing) * 4);}.w-6 {width: calc(var(--spacing) * 6);}.w-32 {width: calc(var(--spacing) * 32);}.w-48 {width: calc(var(--spacing) * 48);}.w-56 {width: calc(var(--spacing) * 56);}.w-full {width: 100%;}.max-w-3xl {max-width: var(--container-3xl);}.max-w-5xl {max-width: var(--container-5xl);}.max-w-md {max-width: var(--container-md);}.flex-1 {flex: 1;}.shrink-0 {flex-shrink: 0;}.-translate-y-1\/2 {--tw-translate-y: calc(calc(1 / 2 * 100%) * -1);translate: var(--tw-translate-x) var(--tw-translate-y);}.scale-105 {--tw-scale-x: 105%;--tw-scale-y: 105%;--tw-scale-z: 105%;scale: var(--tw-scale-x) var(--tw-scale-y);}.cursor-grab {cursor: grab;}.cursor-grabbing {cursor: grabbing;}.cursor-move {cursor: move;}.grid-cols-1 {grid-template-columns: repeat(1,minmax(0,1fr));}.grid-cols-2 {grid-template-columns: repeat(2,minmax(0,1fr));}.grid-cols-3 {grid-template-columns: repeat(3,minmax(0,1fr));}.flex-col {flex-direction: column;}.flex-row {flex-direction: row;}.items-center {align-items: center;}.justify-between {justify-content: space-between;}.justify-center {justify-content: center;}.justify-end {justify-content: flex-end;}.gap-0\.5 {gap: calc(var(--spacing) * 0.5);}.gap-1\.5 {gap: calc(var(--spacing) * 1.5);}.gap-2 {gap: calc(var(--spacing) * 2);}.gap-3 {gap: calc(var(--spacing) * 3);}.gap-4 {gap: calc(var(--spacing) * 4);}.gap-6 {gap: calc(var(--spacing) * 6);}.gap-8 {gap: calc(var(--spacing) * 8);}.space-y-2 {:where(& > :not(:last-child)) {--tw-space-y-reverse: 0;margin-block-start: calc(calc(var(--spacing) * 2) * var(--tw-space-y-reverse));margin-block-end: calc(calc(var(--spacing) * 2) * calc(1 - var(--tw-space-y-reverse)));}}.space-y-6 {:where(& > :not(:last-child)) {--tw-space-y-reverse: 0;margin-block-start: calc(calc(var(--spacing) * 6) * var(--tw-space-y-reverse));margin-block-end: calc(calc(var(--spacing) * 6) * calc(1 - var(--tw-space-y-reverse)));}}.space-y-12 {:where(& > :not(:last-child)) {--tw-space-y-reverse: 0;margin-block-start: calc(calc(var(--spacing) * 12) * var(--tw-space-y-reverse));margin-block-end: calc(calc(var(--spacing) * 12) * calc(1 - var(--tw-space-y-reverse)));}}.truncate {overflow: hidden;text-overflow: ellipsis;white-space: nowrap;}.overflow-hidden {overflow: hidden;}.overflow-visible {overflow: visible;}.overflow-x-auto {overflow-x: auto;}.overflow-y-auto {overflow-y: auto;}.rounded {border-radius: 0.25rem;}.rounded-full {border-radius: calc(infinity * 1px);}.rounded-lg {border-radius: var(--radius-lg);}.rounded-xl {border-radius: var(--radius-xl);}.rounded-r-2xl {border-top-right-radius: var(--radius-2xl);border-bottom-right-radius: var(--radius-2xl);}.border {border-style: var(--tw-border-style);border-width: 1px;}.border-2 {border-style: var(--tw-border-style);border-width: 2px;}.border-t {border-top-style: var(--tw-border-style);border-top-width: 1px;}.border-b {border-bottom-style: var(--tw-border-style);border-bottom-width: 1px;}.border-l-8 {border-left-style: var(--tw-border-style);border-left-width: 8px;}.border-dashed {--tw-border-style: dashed;border-style: dashed;}.border-slate-700 {border-color: var(--color-slate-700);}.border-white\/5 {border-color: color-mix(in srgb,#fff 5%,transparent);@supports (color: color-mix(in lab,red,red)) {border-color: color-mix(in oklab,var(--color-white) 5%,transparent);}}.bg-black\/50 {background-color: color-mix(in srgb,#000 50%,transparent);@supports (color: color-mix(in lab,red,red)) {background-color: color-mix(in oklab,var(--color-black) 50%,transparent);}}.bg-gray-800 {background-color: var(--color-gray-800);}.bg-gradient-to-r {--tw-gradient-position: to right in oklab;background-image: linear-gradient(var(--tw-gradient-stops));}.bg-clip-text {background-clip: text;}.p-0 {padding: calc(var(--spacing) * 0);}.p-1 {padding: calc(var(--spacing) * 1);}.p-2 {padding: calc(var(--spacing) * 2);}.p-3 {padding: calc(var(--spacing) * 3);}.p-4 {padding: calc(var(--spacing) * 4);}.p-6 {padding: calc(var(--spacing) * 6);}.p-8 {padding: calc(var(--spacing) * 8);}.px-6 {padding-inline: calc(var(--spacing) * 6);}.py-2 {padding-block: calc(var(--spacing) * 2);}.py-3 {padding-block: calc(var(--spacing) * 3);}.py-8 {padding-block: calc(var(--spacing) * 8);}.pe-1 {padding-inline-end: calc(var(--spacing) * 1);}.pe-2 {padding-inline-end: calc(var(--spacing) * 2);}.pb-0 {padding-bottom: calc(var(--spacing) * 0);}.pb-1 {padding-bottom: calc(var(--spacing) * 1);}.pb-2 {padding-bottom: calc(var(--spacing) * 2);}.pb-4 {padding-bottom: calc(var(--spacing) * 4);}.pb-6 {padding-bottom: calc(var(--spacing) * 6);}.text-center {text-align: center;}.font-mono {font-family: var(--font-mono);}.font-sans {font-family: var(--font-sans);}.text-2xl {font-size: var(--text-2xl);line-height: var(--tw-leading,var(--text-2xl--line-height));}.text-4xl {font-size: var(--text-4xl);line-height: var(--tw-leading,var(--text-4xl--line-height));}.text-5xl {font-size: var(--text-5xl);line-height: var(--tw-leading,var(--text-5xl--line-height));}.text-sm {font-size: var(--text-sm);line-height: var(--tw-leading,var(--text-sm--line-height));}.text-xl {font-size: var(--text-xl);line-height: var(--tw-leading,var(--text-xl--line-height));}.text-xs {font-size: var(--text-xs);line-height: var(--tw-leading,var(--text-xs--line-height));}.leading-relaxed {--tw-leading: var(--leading-relaxed);line-height: var(--leading-relaxed);}.font-black {--tw-font-weight: var(--font-weight-black);font-weight: var(--font-weight-black);}.font-bold {--tw-font-weight: var(--font-weight-bold);font-weight: var(--font-weight-bold);}.font-medium {--tw-font-weight: var(--font-weight-medium);font-weight: var(--font-weight-medium);}.font-semibold {--tw-font-weight: var(--font-weight-semibold);font-weight: var(--font-weight-semibold);}.tracking-tighter {--tw-tracking: var(--tracking-tighter);letter-spacing: var(--tracking-tighter);}.tracking-wider {--tw-tracking: var(--tracking-wider);letter-spacing: var(--tracking-wider);}.tracking-widest {--tw-tracking: var(--tracking-widest);letter-spacing: var(--tracking-widest);}.text-slate-400 {color: var(--color-slate-400);}.text-transparent {color: transparent;}.text-white {color: var(--color-white);}.uppercase {text-transform: uppercase;}.italic {font-style: italic;}.antialiased {-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;}.\!opacity-100 {opacity: 100% !important;}.opacity-0 {opacity: 0%;}.opacity-20 {opacity: 20%;}.opacity-30 {opacity: 30%;}.opacity-40 {opacity: 40%;}.opacity-50 {opacity: 50%;}.opacity-60 {opacity: 60%;}.opacity-70 {opacity: 70%;}.opacity-80 {opacity: 80%;}.shadow-2xl {--tw-shadow: 0 25px 50px -12px var(--tw-shadow-color,rgb(0 0 0 / 0.25));box-shadow: var(--tw-inset-shadow),var(--tw-inset-ring-shadow),var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow);}.shadow-inner {--tw-shadow: inset 0 2px 4px 0 var(--tw-shadow-color,rgb(0 0 0 / 0.05));box-shadow: var(--tw-inset-shadow),var(--tw-inset-ring-shadow),var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow);}.shadow-lg {--tw-shadow: 0 10px 15px -3px var(--tw-shadow-color,rgb(0 0 0 / 0.1)),0 4px 6px -4px var(--tw-shadow-color,rgb(0 0 0 / 0.1));box-shadow: var(--tw-inset-shadow),var(--tw-inset-ring-shadow),var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow);}.shadow-xl {--tw-shadow: 0 20px 25px -5px var(--tw-shadow-color,rgb(0 0 0 / 0.1)),0 8px 10px -6px var(--tw-shadow-color,rgb(0 0 0 / 0.1));box-shadow: var(--tw-inset-shadow),var(--tw-inset-ring-shadow),var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow);}.transition-colors {transition-property: color,background-color,border-color,outline-color,text-decoration-color,fill,stroke,--tw-gradient-from,--tw-gradient-via,--tw-gradient-to;transition-timing-function: var(--tw-ease,var(--default-transition-timing-function));transition-duration: var(--tw-duration,var(--default-transition-duration));}.transition-opacity {transition-property: opacity;transition-timing-function: var(--tw-ease,var(--default-transition-timing-function));transition-duration: var(--tw-duration,var(--default-transition-duration));}.select-none {-webkit-user-select: none;user-select: none;}}@property --tw-translate-x {syntax: \"*\";inherits: false;initial-value: 0;}@property --tw-translate-y {syntax: \"*\";inherits: false;initial-value: 0;}@property --tw-translate-z {syntax: \"*\";inherits: false;initial-value: 0;}@property --tw-scale-x {syntax: \"*\";inherits: false;initial-value: 1;}@property --tw-scale-y {syntax: \"*\";inherits: false;initial-value: 1;}@property --tw-scale-z {syntax: \"*\";inherits: false;initial-value: 1;}@property --tw-space-y-reverse {syntax: \"*\";inherits: false;initial-value: 0;}@property --tw-border-style {syntax: \"*\";inherits: false;initial-value: solid;}@property --tw-leading {syntax: \"*\";inherits: false;}@property --tw-font-weight {syntax: \"*\";inherits: false;}@property --tw-tracking {syntax: \"*\";inherits: false;}@property --tw-shadow {syntax: \"*\";inherits: false;initial-value: 0 0 #0000;}@property --tw-shadow-color {syntax: \"*\";inherits: false;}@property --tw-shadow-alpha {syntax: \"<percentage>\";inherits: false;initial-value: 100%;}@property --tw-inset-shadow {syntax: \"*\";inherits: false;initial-value: 0 0 #0000;}@property --tw-inset-shadow-color {syntax: \"*\";inherits: false;}@property --tw-inset-shadow-alpha {syntax: \"<percentage>\";inherits: false;initial-value: 100%;}@property --tw-ring-color {syntax: \"*\";inherits: false;}@property --tw-ring-shadow {syntax: \"*\";inherits: false;initial-value: 0 0 #0000;}@property --tw-inset-ring-color {syntax: \"*\";inherits: false;}@property --tw-inset-ring-shadow {syntax: \"*\";inherits: false;initial-value: 0 0 #0000;}@property --tw-ring-inset {syntax: \"*\";inherits: false;}@property --tw-ring-offset-width {syntax: \"<length>\";inherits: false;initial-value: 0px;}@property --tw-ring-offset-color {syntax: \"*\";inherits: false;initial-value: #fff;}@property --tw-ring-offset-shadow {syntax: \"*\";inherits: false;initial-value: 0 0 #0000;}@layer properties {@supports ((-webkit-hyphens: none) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color:rgb(from red r g b)))) {*,::before,::after,::backdrop {--tw-translate-x: 0;--tw-translate-y: 0;--tw-translate-z: 0;--tw-scale-x: 1;--tw-scale-y: 1;--tw-scale-z: 1;--tw-space-y-reverse: 0;--tw-border-style: solid;--tw-leading: initial;--tw-font-weight: initial;--tw-tracking: initial;--tw-shadow: 0 0 #0000;--tw-shadow-color: initial;--tw-shadow-alpha: 100%;--tw-inset-shadow: 0 0 #0000;--tw-inset-shadow-color: initial;--tw-inset-shadow-alpha: 100%;--tw-ring-color: initial;--tw-ring-shadow: 0 0 #0000;--tw-inset-ring-color: initial;--tw-inset-ring-shadow: 0 0 #0000;--tw-ring-inset: initial;--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-offset-shadow: 0 0 #0000;}}}";
+export const PACKED_THEME_CSS = "";
