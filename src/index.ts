@@ -3,7 +3,7 @@ import { registerScopeProvider } from './engine/scope.ts';
 import { ROOT_SELECTOR } from './engine/consts.ts';
 import { topology } from './engine/topology.ts';
 import { initSelfHeal, getBeaconHistory } from './engine/agent.ts';
-import { stylesheet } from './engine/stylesheet.ts';
+import { stylesheet, discoverColorTokens, buildTailwindThemeBridge } from './modules/attributes/stylesheet.ts';
 
 // Core Directives (Explicitly imported for priority ordering)
 import importModule from './modules/attributes/import.ts';
@@ -54,11 +54,6 @@ export class UX {
   private coordinator: ModuleCoordinator;
 
   constructor() {
-    // 1. ZENITH-PRIORITY: Emit Tailwind v4 tokens IMMEDIATELY
-    if (typeof document !== 'undefined') {
-      stylesheet.emitPreflightAndTheme();
-    }
-
     this.coordinator = new ModuleCoordinator();
 
     // --- Inline Scope Provider registrations for deleted utility sprites ---
@@ -224,6 +219,30 @@ if (isWorker) {
   };
 } else if (typeof document !== 'undefined') {
   topology.start();
+
+  // Detect a statically-loaded @tailwindcss/browser CDN (not via data-import).
+  // When Nexus-UX loads as a deferred type="module" script, all static stylesheets
+  // and the render-blocking Tailwind CDN script have already executed. Injecting a
+  // <style type="text/tailwindcss"> at this point triggers Tailwind's own
+  // MutationObserver (observes document.documentElement with subtree:true) to fire
+  // a full recompile, picking up any @theme declarations we add.
+  //
+  // This covers the case where @tailwindcss/browser is loaded via <script> in HTML
+  // rather than via data-import (which handles its own bridge injection in importScript).
+  if (
+    !document.querySelector('style[data-nexus-tailwind-bridge]') &&
+    document.querySelector('script[src*="tailwindcss/browser"]')
+  ) {
+    const tokens = discoverColorTokens();
+    const bridge = buildTailwindThemeBridge(tokens);
+    if (bridge) {
+      const bridgeStyle = document.createElement('style');
+      bridgeStyle.setAttribute('type', 'text/tailwindcss');
+      bridgeStyle.setAttribute('data-nexus-tailwind-bridge', '');
+      bridgeStyle.textContent = bridge;
+      document.head.appendChild(bridgeStyle);
+    }
+  }
 }
 
 if (typeof window !== 'undefined' && Nexus) {
