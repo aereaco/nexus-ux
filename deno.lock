@@ -4,8 +4,6 @@
     "npm:@msgpack/msgpack@^3.0.0-beta2": "3.1.3",
     "npm:@swc/core@1.15.24": "1.15.24",
     "npm:@tailwindcss/browser@4": "4.3.2",
-    "npm:@vue/reactivity@*": "3.5.22",
-    "npm:@vue/reactivity@^3.4.15": "3.5.22",
     "npm:http-server@*": "14.1.1",
     "npm:idiomorph@*": "0.3.0",
     "npm:idiomorph@0.3": "0.3.0",
@@ -192,15 +190,6 @@
       "dependencies": [
         "@types/node"
       ]
-    },
-    "@vue/reactivity@3.5.22": {
-      "integrity": "sha512-f2Wux4v/Z2pqc9+4SmgZC1p73Z53fyD90NFWXiX9AKVnVBEvLFOWCEgJD3GdGnlxPZt01PSlfmLqbLYzY/Fw4A==",
-      "dependencies": [
-        "@vue/shared"
-      ]
-    },
-    "@vue/shared@3.5.22": {
-      "integrity": "sha512-F4yc6palwq3TT0u+FYf0Ns4Tfl9GRFURDN2gWG7L1ecIaS/4fCIuFOjMTnCyjsu/OK6vaDKLCrGAa+KvvH+h4w=="
     },
     "agent-base@7.1.4": {
       "integrity": "sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ=="
@@ -1875,7 +1864,6 @@
       "jsr:@std/encoding-brotli@~0.225.2",
       "npm:@msgpack/msgpack@^3.0.0-beta2",
       "npm:@swc/core@1.15.24",
-      "npm:@vue/reactivity@^3.4.15",
       "npm:idiomorph@0.3",
       "npm:jsdom@24.0.0",
       "npm:tailwindcss@4"

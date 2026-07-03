@@ -5,7 +5,6 @@
     "serve": "deno run -A https://deno.land/std@0.212.0/http/file_server.ts --reload"
   },
     "imports": {
-      "@vue/reactivity": "npm:@vue/reactivity@^3.4.15",
       "idiomorph": "npm:idiomorph@^0.3.0",
       "@msgpack/msgpack": "npm:@msgpack/msgpack@^3.0.0-beta2",
       "tailwindcss": "npm:tailwindcss@^4",

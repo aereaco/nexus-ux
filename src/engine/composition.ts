@@ -12,27 +12,27 @@ export interface InitContext {
 
 export interface RuntimeContext {
   // Reactivity (Vue)
-  effect: typeof import('@vue/reactivity').effect;
-  stop: typeof import('@vue/reactivity').stop;
-  reactive: typeof import('@vue/reactivity').reactive;
-  toRaw: typeof import('@vue/reactivity').toRaw;
-  isReactive: typeof import('@vue/reactivity').isReactive;
-  isReadonly: typeof import('@vue/reactivity').isReadonly;
-  isProxy: typeof import('@vue/reactivity').isProxy;
-  readonly: typeof import('@vue/reactivity').readonly;
-  shallowReactive: typeof import('@vue/reactivity').shallowReactive;
-  shallowReadonly: typeof import('@vue/reactivity').shallowReadonly;
-  customRef: typeof import('@vue/reactivity').customRef;
-  triggerRef: typeof import('@vue/reactivity').triggerRef;
-  unref: typeof import('@vue/reactivity').unref;
-  ref: typeof import('@vue/reactivity').ref;
-  shallowRef: typeof import('@vue/reactivity').shallowRef;
-  isRef: typeof import('@vue/reactivity').isRef;
-  toRefs: typeof import('@vue/reactivity').toRefs;
-  toRef: typeof import('@vue/reactivity').toRef;
-  computed: typeof import('@vue/reactivity').computed;
-  watch: typeof import('@vue/reactivity').watch;
-  onEffectCleanup: typeof import('@vue/reactivity').onEffectCleanup;
+  effect: typeof import('./reactivity.ts').effect;
+  stop: typeof import('./reactivity.ts').stop;
+  reactive: typeof import('./reactivity.ts').reactive;
+  toRaw: typeof import('./reactivity.ts').toRaw;
+  isReactive: typeof import('./reactivity.ts').isReactive;
+  isReadonly: typeof import('./reactivity.ts').isReadonly;
+  isProxy: typeof import('./reactivity.ts').isProxy;
+  readonly: typeof import('./reactivity.ts').readonly;
+  shallowReactive: typeof import('./reactivity.ts').shallowReactive;
+  shallowReadonly: typeof import('./reactivity.ts').shallowReadonly;
+  customRef: typeof import('./reactivity.ts').customRef;
+  triggerRef: typeof import('./reactivity.ts').triggerRef;
+  unref: typeof import('./reactivity.ts').unref;
+  ref: typeof import('./reactivity.ts').ref;
+  shallowRef: typeof import('./reactivity.ts').shallowRef;
+  isRef: typeof import('./reactivity.ts').isRef;
+  toRefs: typeof import('./reactivity.ts').toRefs;
+  toRef: typeof import('./reactivity.ts').toRef;
+  computed: typeof import('./reactivity.ts').computed;
+  watch: typeof import('./reactivity.ts').watch;
+  onEffectCleanup: typeof import('./reactivity.ts').onEffectCleanup;
   elementBoundEffect: (el: HTMLElement, effect: () => void) => [() => void, () => void];
 
   // Expression Evaluator & Parser

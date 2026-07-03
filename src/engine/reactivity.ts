@@ -1,32 +1,4 @@
 /// <reference path="./composition.ts" />
-import {
-  effect,
-  stop,
-  reactive,
-  toRaw,
-  isReactive,
-  isReadonly,
-  isProxy,
-  readonly,
-  shallowReactive,
-  shallowReadonly,
-  shallowRef,
-  customRef,
-  triggerRef,
-  unref,
-  ref,
-  isRef,
-  toRefs,
-  toRef,
-  computed,
-  watch,
-  onEffectCleanup,
-  ReactiveEffectOptions,
-  ReactiveEffectRunner,
-  Ref,
-  ComputedRef
-} from '@vue/reactivity';
-
 import { CLEANUP_FUNCTIONS_KEY, EFFECT_RUNNERS_KEY, RUN_EFFECT_RUNNERS_KEY, DATA_STACK_KEY, MARKER_KEY } from './consts.ts';
 import { reportError } from './debug.ts';
 import { scheduler } from './scheduler.ts';
@@ -34,27 +6,14 @@ import { scheduler } from './scheduler.ts';
 // =============================================================================
 // ZCZS: Zero-Copy Zero-Serialization Infrastructure (Embedded)
 // =============================================================================
-
-/** Detect SharedArrayBuffer support (Cross-Origin Isolation required) */
 export const ZCZS_SUPPORTED = typeof SharedArrayBuffer !== 'undefined';
 
-/**
- * Binary Signal Heap for Zero-Copy Zero-Serialization
- * §5.2: Comprehensive typed array backing for all signal types
- * 
- * Memory layout:
- * - Float64Array: numbers (8 bytes each)
- * - Int32Array: integers, timestamps (4 bytes each)  
- * - Uint8Array: booleans, flags (1 byte each)
- * - String pool: interned strings for deduplication
- * - Object references: stored in Maps with identity tracking
- */
 class SignalHeap {
   private _floatHeap: Float64Array;
   private _intHeap: Int32Array;
   private _boolHeap: Uint8Array;
   private _stringHeap: Map<string, string>;
-  private _stringPool: Map<string, number>; // String interning
+  private _stringPool: Map<string, number>;
   private _objectHeap: Map<string, unknown>;
   private _arrayHeap: Map<string, unknown[]>;
   private _indexMap: Map<string, number>;
@@ -64,7 +23,6 @@ class SignalHeap {
 
   constructor(size: number = 1024, shared: boolean = false) {
     this._shared = shared && ZCZS_SUPPORTED;
-    
     if (this._shared) {
       const sab = new SharedArrayBuffer(size * 8);
       this._floatHeap = new Float64Array(sab);
@@ -75,7 +33,6 @@ class SignalHeap {
       this._intHeap = new Int32Array(size);
       this._boolHeap = new Uint8Array(size);
     }
-    
     this._stringHeap = new Map();
     this._stringPool = new Map();
     this._objectHeap = new Map();
@@ -84,12 +41,8 @@ class SignalHeap {
     this._typeMap = new Map();
   }
 
-  /**
-   * Allocate a slot and track the type for a key
-   */
   private _allocateSlot(key: string, type: 'float' | 'int' | 'bool' | 'string' | 'object' | 'array'): number {
     if (this._indexMap.has(key)) {
-      // Update type if key already exists
       this._typeMap.set(key, type);
       return this._indexMap.get(key)!;
     }
@@ -99,15 +52,9 @@ class SignalHeap {
     return index;
   }
 
-  /**
-   * Detect the type of a value and allocate accordingly
-   */
   allocateForValue(key: string, value: unknown): number {
     if (typeof value === 'number') {
-      // Check if integer or float
-      if (Number.isInteger(value)) {
-        return this.allocateInt(key);
-      }
+      if (Number.isInteger(value)) return this.allocateInt(key);
       return this.allocateNumeric(key);
     } else if (typeof value === 'boolean') {
       return this.allocateBoolean(key);
@@ -118,44 +65,20 @@ class SignalHeap {
     } else if (typeof value === 'object' && value !== null) {
       return this.allocateObject(key);
     }
-    // Default - treat as object reference
     return this.allocateObject(key);
   }
 
-  allocateNumeric(key: string): number {
-    return this._allocateSlot(key, 'float');
-  }
+  allocateNumeric(key: string): number { return this._allocateSlot(key, 'float'); }
+  allocateInt(key: string): number { return this._allocateSlot(key, 'int'); }
+  allocateBoolean(key: string): number { return this._allocateSlot(key, 'bool'); }
+  allocateString(key: string): number { return this._allocateSlot(key, 'string'); }
+  allocateObject(key: string): number { return this._allocateSlot(key, 'object'); }
+  allocateArray(key: string): number { return this._allocateSlot(key, 'array'); }
 
-  allocateInt(key: string): number {
-    return this._allocateSlot(key, 'int');
-  }
-
-  allocateBoolean(key: string): number {
-    return this._allocateSlot(key, 'bool');
-  }
-
-  allocateString(key: string): number {
-    return this._allocateSlot(key, 'string');
-  }
-
-  allocateObject(key: string): number {
-    return this._allocateSlot(key, 'object');
-  }
-
-  allocateArray(key: string): number {
-    return this._allocateSlot(key, 'array');
-  }
-
-  /**
-   * Set a value - automatically detects type and stores appropriately
-   */
   set(key: string, value: unknown): void {
     if (typeof value === 'number') {
-      if (Number.isInteger(value)) {
-        this.setInt(key, value);
-      } else {
-        this.setNumeric(key, value);
-      }
+      if (Number.isInteger(value)) this.setInt(key, value);
+      else this.setNumeric(key, value);
     } else if (typeof value === 'boolean') {
       this.setBoolean(key, value);
     } else if (typeof value === 'string') {
@@ -167,9 +90,6 @@ class SignalHeap {
     }
   }
 
-  /**
-   * Get a value - automatically retrieves from correct heap based on type
-   */
   get(key: string): unknown {
     const type = this._typeMap.get(key);
     switch (type) {
@@ -187,71 +107,46 @@ class SignalHeap {
     const index = this.allocateNumeric(key);
     this._floatHeap[index] = value;
   }
-
   getNumeric(key: string): number | undefined {
     const index = this._indexMap.get(key);
     return index !== undefined ? this._floatHeap[index] : undefined;
   }
-
   setInt(key: string, value: number): void {
     const index = this.allocateInt(key);
     this._intHeap[index] = value;
   }
-
   getInt(key: string): number | undefined {
     const index = this._indexMap.get(key);
     return index !== undefined ? this._intHeap[index] : undefined;
   }
-
   setBoolean(key: string, value: boolean): void {
     const index = this.allocateBoolean(key);
     this._boolHeap[index] = value ? 1 : 0;
   }
-
   getBoolean(key: string): boolean | undefined {
     const index = this._indexMap.get(key);
     return index !== undefined ? this._boolHeap[index] === 1 : undefined;
   }
-
   setString(key: string, value: string): void {
     this._allocateSlot(key, 'string');
-    // String interning for deduplication
     if (!this._stringPool.has(value)) {
       this._stringPool.set(value, this._stringPool.size);
     }
     this._stringHeap.set(key, value);
   }
-
-  getString(key: string): string | undefined { 
-    return this._stringHeap.get(key); 
-  }
-
+  getString(key: string): string | undefined { return this._stringHeap.get(key); }
   setObject(key: string, value: unknown): void {
     this._allocateSlot(key, 'object');
     this._objectHeap.set(key, value);
   }
-
-  getObject(key: string): unknown | undefined { 
-    return this._objectHeap.get(key); 
-  }
-
+  getObject(key: string): unknown | undefined { return this._objectHeap.get(key); }
   setArray(key: string, value: unknown[]): void {
     this._allocateSlot(key, 'array');
     this._arrayHeap.set(key, value);
   }
-
-  getArray(key: string): unknown[] | undefined { 
-    return this._arrayHeap.get(key); 
-  }
-
-  has(key: string): boolean { 
-    return this._indexMap.has(key); 
-  }
-
-  getType(key: string): string | undefined {
-    return this._typeMap.get(key);
-  }
-
+  getArray(key: string): unknown[] | undefined { return this._arrayHeap.get(key); }
+  has(key: string): boolean { return this._indexMap.has(key); }
+  getType(key: string): string | undefined { return this._typeMap.get(key); }
   delete(key: string): void {
     this._indexMap.delete(key);
     this._typeMap.delete(key);
@@ -259,29 +154,21 @@ class SignalHeap {
     this._objectHeap.delete(key);
     this._arrayHeap.delete(key);
   }
-
-  /**
-   * Attach a SharedArrayBuffer for cross-thread communication (Tier 1+)
-   */
   attachSharedBuffer(sab: SharedArrayBuffer): void {
-    if (this._shared) return; // Already using shared buffer
-    
+    if (this._shared) return;
     this._shared = true;
     this._floatHeap = new Float64Array(sab);
     this._intHeap = new Int32Array(sab, this._floatHeap.length * 8);
     this._boolHeap = new Uint8Array(sab, (this._floatHeap.length * 8) + (this._intHeap.length * 4));
-    
     console.log('[SignalHeap] Attached SharedArrayBuffer');
   }
 }
 
-/** Global Signal Heap - singleton */
 export const heap = new SignalHeap();
 
 // =============================================================================
-// Rust-inspired Ownership & Borrow Semantics (Embedded)
+// Ownership & Borrow Tracker
 // =============================================================================
-
 const OWNERSHIP_KEY = Symbol.for('nexus.ownership');
 const BORROW_KEY = Symbol.for('nexus.borrow');
 
@@ -290,9 +177,8 @@ export interface Ownership {
   refCount: number;
   acquiredAt: number;
 }
-
 export interface Borrow {
-  borrower : object;
+  borrower: object;
   type: 'immutable' | 'mutable';
   borrowedAt: number;
 }
@@ -306,19 +192,15 @@ class OwnershipTracker {
     this._ownerships.set(value, ownership);
     (value as any)[OWNERSHIP_KEY] = ownership;
   }
-
   release(value: object, ownerId: string): void {
     const ownership = this._ownerships.get(value);
     if (!ownership || ownership.ownerId !== ownerId) return;
     ownership.refCount--;
     if (ownership.refCount <= 0) {
-      // WeakMap handles deletion from its internal table automatically
-      // when the key is no longer reachable, but we can explicitly delete it too.
       this._ownerships.delete(value);
       delete (value as any)[OWNERSHIP_KEY];
     }
   }
-
   borrowImmutable(value: object, borrower: object): boolean {
     const borrows = this._borrows.get(value) || [];
     if (borrows.some(b => b.type === 'mutable')) return false;
@@ -327,7 +209,6 @@ class OwnershipTracker {
     (value as any)[BORROW_KEY] = borrows[borrows.length - 1];
     return true;
   }
-
   borrowMutable(value: object, borrower: object): boolean {
     const borrows = this._borrows.get(value);
     if (borrows && borrows.length > 0) return false;
@@ -336,7 +217,6 @@ class OwnershipTracker {
     (value as any)[BORROW_KEY] = borrow;
     return true;
   }
-
   returnBorrow(value: object, borrower: object): void {
     const borrows = this._borrows.get(value);
     if (!borrows) return;
@@ -347,7 +227,6 @@ class OwnershipTracker {
       delete (value as any)[BORROW_KEY];
     }
   }
-
   validateBorrow(value: object, type: 'immutable' | 'mutable'): void {
     const borrows = this._borrows.get(value);
     if (type === 'mutable' && borrows && borrows.length > 0) {
@@ -357,260 +236,432 @@ class OwnershipTracker {
       throw new Error(`Immutable borrow denied for ${type}: mutable borrow exists`);
     }
   }
-
-  getBorrowers(value: object): Borrow[] {
-    return this._borrows.get(value) || [];
-  }
+  getBorrowers(value: object): Borrow[] { return this._borrows.get(value) || []; }
 }
 
-/** Global Ownership Tracker - singleton */
 export const ownership = new OwnershipTracker();
 
-/**
- * Unified Signal - ZCZS woven into Vue's customRef
- * 
- * This is NOT a context switch between ZCZS and Vue reactivity.
- * Instead, it weaves typed arrays directly INTO Vue's reactivity system:
- * - Numeric/boolean values use typed arrays (ZCZS zero-copy)
- * - Object/array values use Vue's reactive proxies (deep reactivity)
- * - Borrow semantics are integrated into get/set (Rust-inspired)
- * 
- * @param initialValue - The initial state object
- * @param key - Optional key for heap allocation
- * @param typeHints - Optional map of key -> type for pre-allocation (from expression parsing)
- */
-export function unifiedRef<T extends Record<string, unknown>>(
-  initialValue: T,
-  key?: string,
-  typeHints?: Record<string, 'number' | 'boolean' | 'string' | 'object'>
-): ReturnType<typeof customRef<T>> {
-  const heapKey = key || `unified_${Math.random().toString(36).slice(2)}`;
-  
-  // Pre-allocate heap slots for numeric/boolean values
-  // Use typeHints if provided (from expression parsing), otherwise infer from initialValue
-  if (typeHints) {
-    // Type hints provided - use them for precise pre-allocation
-    Object.entries(typeHints).forEach(([k, type]) => {
-      const fullKey = `${heapKey}.${k}`;
-      if (type === 'number') heap.allocateNumeric(fullKey);
-      else if (type === 'boolean') heap.allocateBoolean(fullKey);
-      else if (type === 'string') heap.setString(fullKey, '');
-    });
-  } else {
-    // No type hints - infer from initialValue (backward compatible)
-    Object.entries(initialValue).forEach(([k, v]) => {
-      const fullKey = `${heapKey}.${k}`;
-      if (typeof v === 'number') heap.allocateNumeric(fullKey);
-      else if (typeof v === 'boolean') heap.allocateBoolean(fullKey);
+// =============================================================================
+// Native Proxy-based Reactivity Core
+// =============================================================================
+export interface ActiveEffect {
+  run(): void;
+  stop(): void;
+  deps: Set<Set<ActiveEffect>>;
+  scheduler?: () => void;
+}
+
+export type ReactiveEffectRunner<T = any> = (() => T) & { effect: ActiveEffect };
+
+export interface ReactiveEffectOptions {
+  lazy?: boolean;
+  scheduler?: (...args: any[]) => any;
+}
+
+export interface Ref<T = any> { value: T; }
+export interface ComputedRef<T = any> extends Ref<T> { readonly value: T; }
+
+const ITERATE_KEY = Symbol('iterate');
+const targetMap = new WeakMap<object, Map<string | symbol, Set<ActiveEffect>>>();
+let activeEffect: ActiveEffect | null = null;
+
+export function track(target: object, key: string | symbol) {
+  if (!activeEffect) return;
+  let depsMap = targetMap.get(target);
+  if (!depsMap) {
+    depsMap = new Map();
+    targetMap.set(target, depsMap);
+  }
+  let dep = depsMap.get(key);
+  if (!dep) {
+    dep = new Set();
+    depsMap.set(key, dep);
+  }
+  if (!dep.has(activeEffect)) {
+    dep.add(activeEffect);
+    activeEffect.deps.add(dep);
+  }
+}
+
+export function trigger(target: object, key: string | symbol) {
+  const depsMap = targetMap.get(target);
+  if (!depsMap) return;
+
+  const effectsToRun = new Set<ActiveEffect>();
+  const addEffects = (effects?: Set<ActiveEffect>) => {
+    if (effects) {
+      for (const eff of effects) {
+        if (eff !== activeEffect) effectsToRun.add(eff);
+      }
+    }
+  };
+
+  addEffects(depsMap.get(key));
+
+  if (Array.isArray(target)) {
+    if (key === 'length') {
+      depsMap.forEach((effects, k) => {
+        if (k === 'length' || (typeof k === 'string' && Number(k) >= (target as any).length)) {
+          addEffects(effects);
+        }
+      });
+    } else if (typeof key === 'string' && !isNaN(Number(key))) {
+      addEffects(depsMap.get('length'));
+      addEffects(depsMap.get(ITERATE_KEY));
+    }
+  }
+
+  for (const eff of effectsToRun) {
+    if (eff.scheduler) eff.scheduler();
+    else eff.run();
+  }
+}
+
+const reactiveMap = new WeakMap<object, any>();
+const rawMap = new WeakMap<object, any>();
+
+export function isReactive(value: unknown): boolean { return rawMap.has(value as object); }
+export function isProxy(value: unknown): boolean { return isReactive(value); }
+export function isReadonly(_value: unknown): boolean { return false; }
+export function toRaw<T>(observed: T): T {
+  const raw = (observed as any)?.__v_raw;
+  return raw ? toRaw(raw) : observed;
+}
+
+export function reactive<T extends object>(target: T): T {
+  if (!target || typeof target !== 'object') return target;
+  if (rawMap.has(target)) return target;
+
+  let proxy = reactiveMap.get(target);
+  if (proxy) return proxy;
+
+  proxy = new Proxy(target, {
+    get(t, key, receiver) {
+      if (key === '__v_raw') return t;
+      if (key === '__v_isReactive') return true;
+      track(t, key);
+      const res = Reflect.get(t, key, receiver);
+      if (res && typeof res === 'object') {
+        return reactive(res);
+      }
+      return res;
+    },
+    set(t, key, value, receiver) {
+      const oldVal = Reflect.get(t, key, receiver);
+      const oldLength = Array.isArray(t) ? t.length : 0;
+      const rawVal = toRaw(value);
+      const success = Reflect.set(t, key, rawVal, receiver);
+
+      if (success) {
+        const newVal = Reflect.get(t, key, receiver);
+        const isNewKey = !Object.prototype.hasOwnProperty.call(t, key);
+        if (oldVal !== newVal || (Array.isArray(t) && t.length !== oldLength)) {
+          trigger(t, key);
+          if (isNewKey) trigger(t, ITERATE_KEY);
+        }
+      }
+      return success;
+    },
+    deleteProperty(t, key) {
+      const hasKey = Object.prototype.hasOwnProperty.call(t, key);
+      const success = Reflect.deleteProperty(t, key);
+      if (success && hasKey) {
+        trigger(t, key);
+        trigger(t, ITERATE_KEY);
+      }
+      return success;
+    },
+    has(t, key) {
+      track(t, key);
+      return Reflect.has(t, key);
+    },
+    ownKeys(t) {
+      track(t, Array.isArray(t) ? 'length' : ITERATE_KEY);
+      return Reflect.ownKeys(t);
+    }
+  });
+
+  reactiveMap.set(target, proxy);
+  rawMap.set(proxy, target);
+  return proxy;
+}
+
+export function shallowReactive<T extends object>(target: T): T { return reactive(target); }
+export function readonly<T extends object>(target: T): T { return reactive(target); }
+export function shallowReadonly<T extends object>(target: T): T { return reactive(target); }
+
+export function effect<T = any>(fn: () => T, options?: ReactiveEffectOptions): ReactiveEffectRunner {
+  const effectRunner: ActiveEffect = {
+    deps: new Set(),
+    scheduler: options?.scheduler,
+    run() {
+      if (!this.deps) return;
+      cleanupEffect(this);
+      const lastActiveEffect = activeEffect;
+      activeEffect = this;
+      try {
+        return fn();
+      } finally {
+        activeEffect = lastActiveEffect;
+      }
+    },
+    stop() {
+      cleanupEffect(this);
+      this.deps.clear();
+      (this as any).deps = null;
+    }
+  };
+
+  if (!options?.lazy) {
+    effectRunner.run();
+  }
+
+  const runner = effectRunner.run.bind(effectRunner) as any;
+  runner.effect = effectRunner;
+  return runner;
+}
+
+function cleanupEffect(eff: ActiveEffect) {
+  for (const dep of eff.deps) {
+    dep.delete(eff);
+  }
+  eff.deps.clear();
+}
+
+export function stop(runner: any) {
+  const eff = runner?.effect || runner;
+  if (eff && typeof eff.stop === 'function') {
+    eff.stop();
+  }
+}
+
+class RefImpl<T> {
+  private _value: T;
+  private _rawValue: T;
+  public readonly __v_isRef = true;
+
+  constructor(value: T, shallow = false) {
+    this._rawValue = shallow ? value : toRaw(value);
+    this._value = shallow ? value : (typeof value === 'object' && value !== null ? reactive(value as any) : value);
+  }
+
+  get value() {
+    track(this, 'value');
+    return this._value;
+  }
+
+  set value(newValue) {
+    newValue = toRaw(newValue);
+    if (newValue !== this._rawValue) {
+      this._rawValue = newValue;
+      this._value = typeof newValue === 'object' && newValue !== null ? reactive(newValue as any) : newValue;
+      trigger(this, 'value');
+    }
+  }
+}
+
+export function ref<T>(value?: T): Ref<T> { return new RefImpl(value) as any; }
+export function isRef(value: any): value is Ref { return !!(value && value.__v_isRef === true); }
+export function shallowRef<T>(value?: T): Ref<T> { return new RefImpl(value, true) as any; }
+export function triggerRef(r: any) { trigger(r, 'value'); }
+export function unref<T>(r: T | Ref<T>): T { return isRef(r) ? (r.value as any) : r; }
+
+export function customRef<T>(factory: (track: () => void, trigger: () => void) => { get: () => T; set: (value: T) => void }): Ref<T> {
+  const { get, set } = factory(
+    () => track(refObj, 'value'),
+    () => trigger(refObj, 'value')
+  );
+  const refObj = {
+    __v_isRef: true,
+    get value() { return get(); },
+    set value(v) { set(v); }
+  };
+  return refObj as any;
+}
+
+class ComputedRefImpl<T> {
+  private _value!: T;
+  private _dirty = true;
+  private _runner: any;
+  public readonly __v_isRef = true;
+  public readonly __v_isReadonly = true;
+
+  constructor(getter: () => T) {
+    this._runner = effect(getter, {
+      lazy: true,
+      scheduler: () => {
+        if (!this._dirty) {
+          this._dirty = true;
+          trigger(this, 'value');
+        }
+      }
     });
   }
-  
-  // Wrap initialValue in Vue's deep reactivity proxy
-  let state = reactive(initialValue);
-  
-  // Acquire ownership (Rust-inspired)
-  const ownerId = heapKey;
-  ownership.acquire(state, ownerId);
-  
-  return customRef<T>((track, trigger) => ({
-    get() {
-      track();
-      ownership.validateBorrow(state, 'immutable');
-      return state as T;
-    },
-    set(newValue) {
-      ownership.validateBorrow(state, 'mutable');
-      
-      if (newValue && typeof newValue === 'object') {
-        Object.entries(newValue).forEach(([k, v]) => {
-          const fullKey = `${heapKey}.${k}`;
-          heap.set(fullKey, v);
-          // Sync properties to the reactive state
-          (state as any)[k] = v;
-        });
-      } else {
-        // If non-object value is set, we must replace the whole state
-        // (This happens during two-way binding to simple signals)
-        state = newValue as any;
-      }
-      
-      trigger();
+
+  get value() {
+    track(this, 'value');
+    if (this._dirty) {
+      this._value = this._runner();
+      this._dirty = false;
     }
-  }));
+    return this._value;
+  }
 }
 
-/**
- * Unified Computed - ZCZS woven into Vue computed
- */
-export function unifiedComputed<T>(
-  getter: () => T,
-  key?: string
-): ComputedRef<T> {
-  const heapKey = key || `computed_${Math.random().toString(36).slice(2)}`;
-  
-  return computed<any>(() => {
-    const value = getter();
-    
-    // Track all value types in heap (ZCZS)
-    // Use heap.set() which auto-detects type
-    heap.set(heapKey, value);
-    
-    return value;
+export function computed<T>(getter: () => T): ComputedRef<T> { return new ComputedRefImpl(getter) as any; }
+
+export function watch(source: any, cb: any, options?: any) {
+  let getter: () => any;
+  if (isRef(source)) getter = () => source.value;
+  else if (isReactive(source)) getter = () => traverse(source);
+  else if (typeof source === 'function') getter = source;
+  else if (Array.isArray(source)) {
+    getter = () => source.map(s => isRef(s) ? s.value : (isReactive(s) ? traverse(s) : s));
+  } else getter = () => {};
+
+  let oldValue: any;
+  const job = () => {
+    const newValue = runner();
+    if (cb) {
+      cb(newValue, oldValue);
+      oldValue = newValue;
+    }
+  };
+
+  const runner = effect(getter, {
+    lazy: true,
+    scheduler: () => {
+      if (options?.scheduler) options.scheduler(job);
+      else job();
+    }
   });
+
+  if (options?.immediate) job();
+  else oldValue = runner();
+
+  return () => { stop(runner); };
 }
 
-export {
-  reactive,
-  effect,
-  stop,
-  toRaw,
-  isReactive,
-  isReadonly,
-  isProxy,
-  readonly,
-  shallowReactive,
-  shallowReadonly,
-  customRef,
-  triggerRef,
-  unref,
-  ref,
-  isRef,
-  toRefs,
-  toRef,
-  shallowRef,
-  computed,
-  watch,
-  onEffectCleanup,
-  type ReactiveEffectRunner,
-  type Ref
-};
-
-export interface NexusEnhancedElement extends HTMLElement {
-  [EFFECT_RUNNERS_KEY]?: Set<ReactiveEffectRunner<void>>;
-  [RUN_EFFECT_RUNNERS_KEY]?: () => void;
-  [CLEANUP_FUNCTIONS_KEY]?: Map<string, () => void>;
-  [DATA_STACK_KEY]?: Record<string, unknown>[];
-  [MARKER_KEY]?: number;
+function traverse(value: any, seen = new Set<any>()): any {
+  if (typeof value !== 'object' || value === null || seen.has(value)) return value;
+  seen.add(value);
+  if (isRef(value)) traverse(value.value, seen);
+  else if (Array.isArray(value)) {
+    for (let i = 0; i < value.length; i++) traverse(value[i], seen);
+  } else {
+    for (const key of Object.keys(value)) traverse(value[key], seen);
+  }
+  return value;
 }
 
-/**
- * Value-Pooling Reactive Core implementation.
- * Eliminates GC pressure by reusing effect records and tracker objects.
- */
+class ObjectRefImpl<T extends object, K extends keyof T> {
+  public readonly __v_isRef = true;
+  constructor(private _object: T, private _key: K, private _defaultValue?: T[K]) {}
+  get value() {
+    const val = this._object[this._key];
+    return val === undefined ? this._defaultValue! : val;
+  }
+  set value(newVal) { this._object[this._key] = newVal; }
+}
+
+export function toRef<T extends object, K extends keyof T>(object: T, key: K, defaultValue?: T[K]): Ref<T[K]> {
+  const val = object[key];
+  return isRef(val) ? val : (new ObjectRefImpl(object, key, defaultValue) as any);
+}
+
+export function toRefs<T extends object>(object: T): { [K in keyof T]: Ref<T[K]> } {
+  const ret: any = Array.isArray(object) ? new Array(object.length) : {};
+  for (const key in object) ret[key] = toRef(object, key);
+  return ret;
+}
+
+export function onEffectCleanup(fn: () => void) {
+  if (activeEffect) {
+    let cleanupFns = (activeEffect as any).cleanupFns;
+    if (!cleanupFns) {
+      cleanupFns = [];
+      (activeEffect as any).cleanupFns = cleanupFns;
+      const originalRun = activeEffect.run;
+      activeEffect.run = function() {
+        for (const cleanup of cleanupFns) {
+          try { cleanup(); } catch {}
+        }
+        cleanupFns.length = 0;
+        return originalRun.apply(this, arguments as any);
+      };
+    }
+    cleanupFns.push(fn);
+  }
+}
 
 let effectIdCounter = 0;
 
-
-/**
- * Creates a reactive effect that is automatically stopped when the associated HTMLElement is removed from the DOM.
- */
 export function elementBoundEffect(
   el: HTMLElement,
   effectCallback: () => void,
   options?: ReactiveEffectOptions
 ): [ReactiveEffectRunner<void>, () => void] {
-
-  // Track which promises are currently pending for this specific effect to avoid multiple finally() listeners
-  // which can lead to infinite microtask loops on settled promises from cache.
   const pendingPromises = new WeakSet<Promise<any>>();
   let pendingCount = 0;
-  // Per-effect error classification: transient (hydration timing) vs persistent (developer bug)
   let consecutiveFailures = 0;
   let lastErrorMessage = '';
 
-  // Wrap the callback to catch Suspense Promises and classify standard errors
   const suspenseWrappedCallback = () => {
     try {
       effectCallback();
-      // Success resets the failure counter
       consecutiveFailures = 0;
       lastErrorMessage = '';
     } catch (err) {
       if (err instanceof Promise) {
-        // Deep Suspense Proxy tripped. Suspend this specific effect and resume when resolved.
-        if (pendingPromises.has(err)) return; // Already waiting for this one
-
+        if (pendingPromises.has(err)) return;
         if ((window as any)._nexusDebug) console.debug(`[Nexus Suspense] <${el.tagName}> suspended pending network resolution.`);
-        
         pendingCount++;
         pendingPromises.add(err);
         err.finally(() => {
           pendingCount--;
           pendingPromises.delete(err);
           if ((window as any)._nexusDebug) console.debug(`[Nexus Suspense] <${el.tagName}> resumed.`);
-          
           if (runner) {
-            // Re-entry guard to break potential microtask infinite loops
-            // if a promise settles instantly or triggers immediate re-throw.
             let reEntryCount = 0;
             const MAX_REENTRY = 10;
-
             const safeRun = () => {
-              if (pendingCount > 0) return; // Wait for the new pending promise
+              if (pendingCount > 0) return;
               if (reEntryCount++ > MAX_REENTRY) {
                 console.warn(`[Nexus Loop Guard] Stopped runaway effect on <${el.tagName}> after ${MAX_REENTRY} re-entries.`);
                 return;
               }
               runner();
             };
-
             queueMicrotask(safeRun);
           }
         });
       } else {
-        // Standard error — classify as transient or persistent
         const msg = err instanceof Error ? err.message : String(err);
-
-        if (msg === lastErrorMessage) {
-          consecutiveFailures++;
-        } else {
+        if (msg === lastErrorMessage) consecutiveFailures++;
+        else {
           consecutiveFailures = 1;
           lastErrorMessage = msg;
         }
 
         if (consecutiveFailures >= 3) {
-          // PERSISTENT: Developer error. Report with full diagnostics,
-          // then quarantine THIS runner only. Sibling effects survive via isolation.
-          console.error(
-            `[Nexus Diagnostic] Persistent error on <${el.tagName}> (${consecutiveFailures}x):`,
-            err
-          );
-          reportError(
-            err instanceof Error ? err : new Error(msg),
-            el,
-            `Persistent failure (${consecutiveFailures}x) — effect quarantined`
-          );
-          // Surgically stop only this runner. The RUN_EFFECT_RUNNERS_KEY
-          // isolation loop ensures sibling runners on this element continue.
+          console.error(`[Nexus Diagnostic] Persistent error on <${el.tagName}> (${consecutiveFailures}x):`, err);
+          reportError(err instanceof Error ? err : new Error(msg), el, `Persistent failure (${consecutiveFailures}x) — effect quarantined`);
           stop(runner);
           const enhanced = el as NexusEnhancedElement;
           enhanced[EFFECT_RUNNERS_KEY]?.delete(runner);
         } else {
-          // TRANSIENT: Likely hydration timing or DOM mid-mutation. 
-          // Log at debug level, allow the effect to survive for the next pulse.
           if ((globalThis as any).Nexus?.coordinator?.runtimeContext?.isDevMode) {
-            console.debug(
-              `[Nexus Transient] <${el.tagName}> effect attempt ${consecutiveFailures}/3:`,
-              msg
-            );
+            console.debug(`[Nexus Transient] <${el.tagName}> effect attempt ${consecutiveFailures}/3:`, msg);
           }
         }
-        // CRITICAL: Never re-throw. The isolation boundary catches here so
-        // Vue's effect() doesn't deactivate, and the RUN_EFFECT_RUNNERS_KEY
-        // loop continues to sibling runners.
       }
     }
   };
 
   let runner: ReactiveEffectRunner<void>;
   try {
-    // Spec 5.4: All effects MUST run via the unified scheduler.
-    // This provides microtask yielding, stall detection, and loop guards.
     const schedulerOptions: ReactiveEffectOptions = {
-      scheduler: () => {
-        // runner will be assigned by the time this is called in a microtask
-        scheduler.enqueueEvaluate(runner);
-      },
+      scheduler: () => { scheduler.enqueueEvaluate(runner); },
       ...options
     };
     runner = effect(suspenseWrappedCallback, schedulerOptions);
@@ -620,38 +671,22 @@ export function elementBoundEffect(
   }
 
   const enhancedEl = el as NexusEnhancedElement;
-
   if (!enhancedEl[EFFECT_RUNNERS_KEY]) {
     enhancedEl[EFFECT_RUNNERS_KEY] = new Set();
-    
-    // Expose for developer tooling and console debugging
     if (!(enhancedEl as any).nexus) (enhancedEl as any).nexus = {};
     (enhancedEl as any).nexus.effectRunners = enhancedEl[EFFECT_RUNNERS_KEY];
   }
   enhancedEl[EFFECT_RUNNERS_KEY].add(runner);
 
   if (!enhancedEl[RUN_EFFECT_RUNNERS_KEY]) {
-    // Per-runner isolation: each runner is individually try-caught so a failure
-    // in one directive (e.g. data-bind) never kills sibling directives (e.g. data-for)
-    // on the same element. The reactive graph becomes a fault-tolerant mesh.
     enhancedEl[RUN_EFFECT_RUNNERS_KEY] = () => {
       if (!enhancedEl[EFFECT_RUNNERS_KEY]) return;
       for (const r of enhancedEl[EFFECT_RUNNERS_KEY]) {
         try {
           r();
         } catch (err) {
-          // Isolate: this runner failed, but all other runners on this
-          // element continue. Report the failure with full element context.
-          console.error(
-            `[Nexus Isolation] Effect failed on <${enhancedEl.tagName}>, ` +
-            `isolated from ${enhancedEl[EFFECT_RUNNERS_KEY]!.size - 1} sibling effects:`,
-            err
-          );
-          reportError(
-            err instanceof Error ? err : new Error(String(err)),
-            enhancedEl,
-            'Isolated effect failure'
-          );
+          console.error(`[Nexus Isolation] Effect failed on <${enhancedEl.tagName}>, isolated from ${enhancedEl[EFFECT_RUNNERS_KEY]!.size - 1} sibling effects:`, err);
+          reportError(err instanceof Error ? err : new Error(String(err)), enhancedEl, 'Isolated effect failure');
         }
       }
     };
@@ -672,9 +707,74 @@ export function elementBoundEffect(
   if (!enhancedEl[CLEANUP_FUNCTIONS_KEY]) {
     enhancedEl[CLEANUP_FUNCTIONS_KEY] = new Map();
   }
-  // Use monotonic counter to avoid key collision after cleanup+re-add cycles.
   const cleanupKey = `effect-${effectIdCounter++}`;
   enhancedEl[CLEANUP_FUNCTIONS_KEY].set(cleanupKey, cleanup);
 
   return [runner, cleanup];
+}
+
+// ZCZS woven unifiedRef implementation
+export function unifiedRef<T extends Record<string, unknown>>(
+  initialValue: T,
+  key?: string,
+  typeHints?: Record<string, 'number' | 'boolean' | 'string' | 'object'>
+): ReturnType<typeof customRef<T>> {
+  const heapKey = key || `unified_${Math.random().toString(36).slice(2)}`;
+  if (typeHints) {
+    Object.entries(typeHints).forEach(([k, type]) => {
+      const fullKey = `${heapKey}.${k}`;
+      if (type === 'number') heap.allocateNumeric(fullKey);
+      else if (type === 'boolean') heap.allocateBoolean(fullKey);
+      else if (type === 'string') heap.setString(fullKey, '');
+    });
+  } else {
+    Object.entries(initialValue).forEach(([k, v]) => {
+      const fullKey = `${heapKey}.${k}`;
+      if (typeof v === 'number') heap.allocateNumeric(fullKey);
+      else if (typeof v === 'boolean') heap.allocateBoolean(fullKey);
+    });
+  }
+
+  let state = reactive(initialValue);
+  const ownerId = heapKey;
+  ownership.acquire(state, ownerId);
+
+  return customRef<T>((track, trigger) => ({
+    get() {
+      track();
+      ownership.validateBorrow(state, 'immutable');
+      return state as T;
+    },
+    set(newValue) {
+      ownership.validateBorrow(state, 'mutable');
+      if (newValue && typeof newValue === 'object') {
+        Object.entries(newValue).forEach(([k, v]) => {
+          const fullKey = `${heapKey}.${k}`;
+          heap.set(fullKey, v);
+          (state as any)[k] = v;
+        });
+      } else {
+        state = newValue as any;
+      }
+      trigger();
+    }
+  }));
+}
+
+// ZCZS woven unifiedComputed implementation
+export function unifiedComputed<T>(getter: () => T, key?: string): ComputedRef<T> {
+  const heapKey = key || `computed_${Math.random().toString(36).slice(2)}`;
+  return computed<any>(() => {
+    const value = getter();
+    heap.set(heapKey, value);
+    return value;
+  });
+}
+
+export interface NexusEnhancedElement extends HTMLElement {
+  [EFFECT_RUNNERS_KEY]?: Set<ReactiveEffectRunner<void>>;
+  [RUN_EFFECT_RUNNERS_KEY]?: () => void;
+  [CLEANUP_FUNCTIONS_KEY]?: Map<string, () => void>;
+  [DATA_STACK_KEY]?: Record<string, unknown>[];
+  [MARKER_KEY]?: number;
 }

@@ -1,8 +1,7 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { addScopeToNode, parseGhostKeys, createScopeProxy } from '../../engine/scope.ts';
-import { unifiedRef } from '../../engine/reactivity.ts';
-import { Ref } from '@vue/reactivity';
+import { unifiedRef, Ref } from '../../engine/reactivity.ts';
 import { deepEqual } from '../../engine/reconciler.ts';
 
 const signalModule: AttributeModule = {
