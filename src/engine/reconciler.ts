@@ -2,7 +2,7 @@
 import { Idiomorph } from 'idiomorph/dist/idiomorph.esm.js';
 import { DATA_PRESERVE_ATTR, CLEANUP_FUNCTIONS_KEY, MARKER_KEY } from './consts.ts';
 import { NexusEnhancedElement } from './reactivity.ts';
-import { stylesheet } from './stylesheet.ts';
+import { stylesheet } from '../modules/attributes/stylesheet.ts';
 
 // Configure Idiomorph defaults
 const defaults = {

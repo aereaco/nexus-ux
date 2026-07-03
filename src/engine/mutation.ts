@@ -21,6 +21,17 @@ const mutationObserverModule: ObserverModule = {
         const addedThisBatch = new Set<HTMLElement>();
         const now = performance.now();
 
+        // Pre-pass: collect all added nodes in this batch of mutations first
+        for (const mutation of mutationsList) {
+          if (mutation.type === 'childList') {
+            mutation.addedNodes.forEach(node => {
+              if (node instanceof HTMLElement) {
+                addedThisBatch.add(node);
+              }
+            });
+          }
+        }
+
         // Purge stale moved node entries (>2 frames old ≈ 32ms)
         for (const [node, ts] of movedNodeTimers) {
           if (now - ts > 32) {
@@ -35,7 +46,6 @@ const mutationObserverModule: ObserverModule = {
               if (mutation.addedNodes.length > 0) {
                 mutation.addedNodes.forEach(node => {
                   if (node instanceof HTMLElement) {
-                    addedThisBatch.add(node);
                     const enhancedTarget = node as NexusEnhancedElement;
                     if (enhancedTarget[MARKER_KEY]) return;
                     context.processElement(node as HTMLElement);
@@ -45,7 +55,7 @@ const mutationObserverModule: ObserverModule = {
 
               mutation.removedNodes.forEach(node => {
                 if (node instanceof HTMLElement) {
-                  if (node.isConnected || movedNodes.has(node)) return;
+                  if (node.isConnected || addedThisBatch.has(node) || movedNodes.has(node)) return;
 
                   const enhancedTarget = node as NexusEnhancedElement;
                   if (enhancedTarget[CLEANUP_FUNCTIONS_KEY]) {

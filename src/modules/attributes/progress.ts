@@ -1,7 +1,7 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { reportError } from '../../engine/debug.ts';
-import { stylesheet } from '../../engine/stylesheet.ts';
+import { stylesheet } from './stylesheet.ts';
 
 /**
  * data-progress="{ type: 'bar', location: 'top', color: 'primary', value: '$progress' }"

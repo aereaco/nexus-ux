@@ -25,7 +25,7 @@ import { MARKER_KEY } from './consts.ts';
 import { NexusEnhancedElement } from './reactivity.ts';
 import { attachObserver, registerObserver, disposeObservers } from './observers.ts';
 import { topology, TierLevel } from './topology.ts';
-import { stylesheet } from './stylesheet.ts';
+import { stylesheet } from '../modules/attributes/stylesheet.ts';
 import { MCPClient } from './mcp.ts';
 
 /**

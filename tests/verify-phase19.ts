@@ -1,5 +1,5 @@
 import { ModuleCoordinator } from './src/engine/modules.ts';
-import { stylesheet } from './src/engine/stylesheet.ts';
+import { stylesheet } from './src/modules/attributes/stylesheet.ts';
 
 /**
  * Phase 19 Verification Suite
@@ -57,7 +57,7 @@ async function runVerification() {
   });
 
   const proxy = createSuspenseProxy(mockApiPromise, coordinator.runtimeContext);
-  
+
   // Wait for resolution
   await mockApiPromise;
   console.log("Envelope Diving (proxy.user.name):", (proxy as any).user.name); // Should be 'Nexus'

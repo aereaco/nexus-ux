@@ -2,7 +2,7 @@ import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { reportError } from '../../engine/debug.ts';
 import { writeIDB } from '../../engine/utils/idb.ts';
-import { stylesheet } from '../../engine/stylesheet.ts';
+import { stylesheet } from './stylesheet.ts';
 
 /**
  * Lightweight IndexedDB write helper for build output.

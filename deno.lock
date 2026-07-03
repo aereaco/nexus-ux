@@ -1237,6 +1237,8 @@
     "https://deno.land/x/deno_dom/deno-dom-wasm.ts": "https://deno.land/x/deno_dom@v0.1.56/deno-dom-wasm.ts"
   },
   "remote": {
+    "https://cdn.jsdelivr.net/npm/tailwindcss@4.0.0-beta.8/+esm": "d39d7f581b27ad106dbc7dd287e04c32ed85c737cc67cec6622438bdf29cdf73",
+    "https://cdn.jsdelivr.net/npm/tailwindcss@4/+esm": "593b8e30370fb0aae1026f906b44f4b830c0aa60728da7f50048e874e9552bfc",
     "https://deno.land/std@0.140.0/_util/assert.ts": "e94f2eb37cebd7f199952e242c77654e43333c1ac4c5c700e929ea3aa5489f74",
     "https://deno.land/std@0.140.0/_util/os.ts": "3b4c6e27febd119d36a416d7a97bd3b0251b77c88942c8f16ee5953ea13e2e49",
     "https://deno.land/std@0.140.0/bytes/bytes_list.ts": "67eb118e0b7891d2f389dad4add35856f4ad5faab46318ff99653456c23b025d",
@@ -1861,7 +1863,12 @@
     "https://deno.land/x/zipjs@v2.7.29/lib/core/zip-reader.js": "c918875362d7e46fc690cea0b3f81e50a0ec0b6e20f6ae35e5982de73ae45449",
     "https://deno.land/x/zipjs@v2.7.29/lib/core/zip-writer.js": "b78c099828ec3134983c259adc4d6118fbfda7f033a7e95de8176a470e9a5a54",
     "https://deno.land/x/zipjs@v2.7.29/lib/z-worker-inline.js": "a38bbe15eb011daee291b8243c3101b197aa91dcd786f1c04251bd1dda5c33e7",
-    "https://deno.land/x/zipjs@v2.7.29/lib/zip-fs.js": "a733360302f5fbec9cc01543cb9fcfe7bae3f35a50d0006626ce42fe8183b63f"
+    "https://deno.land/x/zipjs@v2.7.29/lib/zip-fs.js": "a733360302f5fbec9cc01543cb9fcfe7bae3f35a50d0006626ce42fe8183b63f",
+    "https://esm.sh/tailwindcss@4.0.0-beta.8": "ba1b248369734f2c4debbd1a57eda37d765593fcb5a734d541e2ed0fda638317",
+    "https://esm.sh/tailwindcss@4.0.0-beta.8/denonext/dist/chunk-2GIWH5DA.mjs": "22996eb63a860725b7f834cf85aa61359768f2e4edcf1fd0ad4738038da44b38",
+    "https://esm.sh/tailwindcss@4.0.0-beta.8/denonext/dist/chunk-AZANAYY2.mjs": "707e8f90e5617e8893c3c7f429c89211917f00d50b0ad1dd1eea63a93538f22c",
+    "https://esm.sh/tailwindcss@4.0.0-beta.8/denonext/dist/chunk-XNK5LQL5.mjs": "fe6d2557fc579202523cdbfcd41d7c936987597ed714986cf15a390269036f50",
+    "https://esm.sh/tailwindcss@4.0.0-beta.8/denonext/tailwindcss.mjs": "19cc0e8d5c6b6b08ccd050b79b12ac77ec18d1a6791d421fd0f8c56591465a30"
   },
   "workspace": {
     "dependencies": [
