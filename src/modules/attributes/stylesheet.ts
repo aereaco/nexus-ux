@@ -255,7 +255,17 @@ class StyleSheetManager {
     if (el && el.closest && el.closest('[data-ignore\\:style]')) return;
     if (this._knownClasses.has(className)) return;
 
-    // Boundary scope check: element must be inside a data-stylesheet container
+    // Support dynamic data signals binding (e.g., w-$width, bg-$myColor).
+    // These are processed globally across the document regardless of data-stylesheet boundary,
+    // as signals only set element CSS variables and do not need Tailwind JIT compilation.
+    const hasSignalMatch = className.match(/^[a-z]+-\$([a-zA-Z_$][\w$]*)$/);
+    if (hasSignalMatch && el && runtime) {
+      this.adoptSignalBinding(el, hasSignalMatch[1], runtime);
+      this._knownClasses.add(className);
+      return;
+    }
+
+    // Boundary scope check: element must be inside a data-stylesheet container for JIT compilation
     if (el && !el.closest('[data-stylesheet]')) {
       return;
     }
@@ -291,12 +301,6 @@ class StyleSheetManager {
       const compiledCSS = tailwindCompiler.build(Array.from(compiledClassesSet));
       jitSheet.replaceSync(compiledCSS);
       this._knownClasses.add(className);
-
-      // Support dynamic data signals binding
-      const hasSignalMatch = className.match(/^[a-z]+-\$([a-zA-Z_$][\w$]*)$/);
-      if (hasSignalMatch && el && runtime) {
-        this.adoptSignalBinding(el, hasSignalMatch[1], runtime);
-      }
     } catch (err) {
       console.debug(`Nexus-UX JIT compile check: "${className}":`, err);
     }
