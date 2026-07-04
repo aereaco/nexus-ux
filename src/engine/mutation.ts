@@ -8,6 +8,17 @@ import { CLEANUP_FUNCTIONS_KEY, RUN_EFFECT_RUNNERS_KEY, MARKER_KEY } from './con
 const movedNodes = new WeakSet<HTMLElement>();
 const movedNodeTimers = new Map<HTMLElement, number>();
 
+function isExternalOverlay(node: HTMLElement): boolean {
+  let current: HTMLElement | null = node;
+  while (current) {
+    if (current.id && (current.id.includes('preact-') || current.id.includes('jetski') || current.id.includes('webpack-') || current.id.includes('chrome-extension'))) {
+      return true;
+    }
+    current = current.parentElement;
+  }
+  return false;
+}
+
 const mutationObserverModule: ObserverModule = {
   name: 'mutationObserver',
   observerType: 'MutationObserver',
@@ -26,6 +37,7 @@ const mutationObserverModule: ObserverModule = {
           if (mutation.type === 'childList') {
             mutation.addedNodes.forEach(node => {
               if (node instanceof HTMLElement) {
+                if (isExternalOverlay(node)) return;
                 addedThisBatch.add(node);
               }
             });
@@ -46,6 +58,7 @@ const mutationObserverModule: ObserverModule = {
               if (mutation.addedNodes.length > 0) {
                 mutation.addedNodes.forEach(node => {
                   if (node instanceof HTMLElement) {
+                    if (isExternalOverlay(node)) return;
                     const enhancedTarget = node as NexusEnhancedElement;
                     if (enhancedTarget[MARKER_KEY]) return;
                     context.processElement(node as HTMLElement);
@@ -55,6 +68,7 @@ const mutationObserverModule: ObserverModule = {
 
               mutation.removedNodes.forEach(node => {
                 if (node instanceof HTMLElement) {
+                  if (isExternalOverlay(node)) return;
                   if (node.isConnected || addedThisBatch.has(node) || movedNodes.has(node)) return;
 
                   const enhancedTarget = node as NexusEnhancedElement;

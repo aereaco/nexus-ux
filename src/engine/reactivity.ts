@@ -661,7 +661,7 @@ export function elementBoundEffect(
   let runner: ReactiveEffectRunner<void>;
   try {
     const schedulerOptions: ReactiveEffectOptions = {
-      scheduler: () => { scheduler.enqueueEvaluate(runner); },
+      scheduler: () => { scheduler.enqueueEvaluate(() => runner && runner()); },
       ...options
     };
     runner = effect(suspenseWrappedCallback, schedulerOptions);

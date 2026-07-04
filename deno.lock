@@ -5,8 +5,6 @@
     "npm:@swc/core@1.15.24": "1.15.24",
     "npm:@tailwindcss/browser@4": "4.3.2",
     "npm:http-server@*": "14.1.1",
-    "npm:idiomorph@*": "0.3.0",
-    "npm:idiomorph@0.3": "0.3.0",
     "npm:jsdom@*": "24.0.0",
     "npm:jsdom@24.0.0": "24.0.0",
     "npm:npm@*": "11.18.0",
@@ -642,9 +640,6 @@
       "dependencies": [
         "safer-buffer"
       ]
-    },
-    "idiomorph@0.3.0": {
-      "integrity": "sha512-UhV1Ey5xCxIwR9B+OgIjQa+1Jx99XQ1vQHUsKBU1RpQzCx1u+b+N6SOXgf5mEJDqemUI/ffccu6+71l2mJUsRA=="
     },
     "ieee754@1.2.1": {
       "integrity": "sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA=="
@@ -1864,7 +1859,6 @@
       "jsr:@std/encoding-brotli@~0.225.2",
       "npm:@msgpack/msgpack@^3.0.0-beta2",
       "npm:@swc/core@1.15.24",
-      "npm:idiomorph@0.3",
       "npm:jsdom@24.0.0",
       "npm:tailwindcss@4"
     ]

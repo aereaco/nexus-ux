@@ -142,6 +142,105 @@ let tailwindCompiler: any = null;
 let compiledClassesSet = new Set<string>();
 const pendingClasses: { className: string; el?: HTMLElement; runtime?: RuntimeContext }[] = [];
 
+function hashString(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return String(hash);
+}
+
+async function fetchWithCache(url: string, timeoutMs = 3000): Promise<string> {
+  const cacheKey = `nexus-cache:${url}`;
+  let cached: string | null = null;
+  
+  if (typeof localStorage !== 'undefined') {
+    try {
+      cached = localStorage.getItem(cacheKey);
+    } catch (_) {}
+  }
+
+  if (cached) {
+    const cachedVal = cached;
+    console.log(`[Nexus Cache] INSTANT HIT: Loading ${url} from localStorage cache.`);
+    setTimeout(async () => {
+      try {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeoutMs);
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(id);
+        if (!res.ok) return;
+        const freshText = await res.text();
+        if (hashString(cachedVal) !== hashString(freshText)) {
+          console.log(`[Nexus Cache] UPDATE DETECTED: CDN changed for ${url}. Caching for next load.`);
+          if (typeof localStorage !== 'undefined') {
+            try {
+              localStorage.setItem(cacheKey, freshText);
+            } catch (_) {}
+          }
+        } else {
+          console.log(`[Nexus Cache] VERIFIED: Cache matches CDN for ${url}.`);
+        }
+      } catch (err) {
+        console.warn(`[Nexus Cache] Background CDN hash check failed for ${url}:`, err);
+      }
+    }, 5000);
+    return cachedVal;
+  }
+
+  console.log(`[Nexus Cache] CACHE MISS: Fetching local/CDN resource for ${url}.`);
+  let localUrl = '';
+  if (url.includes('tailwindcss@4/')) {
+    const file = url.split('tailwindcss@4/')[1];
+    localUrl = `/node_modules/tailwindcss/${file}`;
+  }
+
+  const doFetch = async (targetUrl: string): Promise<string> => {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(targetUrl, { signal: controller.signal });
+      clearTimeout(id);
+      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+      return await res.text();
+    } catch (err) {
+      clearTimeout(id);
+      throw err;
+    }
+  };
+
+  if (localUrl) {
+    try {
+      console.log(`[Nexus Cache] Trying local relative fallback path: ${localUrl}`);
+      const text = await doFetch(localUrl);
+      console.log(`[Nexus Cache] SUCCESS: Loaded local resource for ${url} from ${localUrl}`);
+      if (typeof localStorage !== 'undefined') {
+        try {
+          localStorage.setItem(cacheKey, text);
+        } catch (_) {}
+      }
+      return text;
+    } catch (_) {
+      console.log(`[Nexus Cache] Local relative fallback failed for ${url}. Falling back to CDN.`);
+    }
+  }
+
+  try {
+    const text = await doFetch(url);
+    console.log(`[Nexus Cache] SUCCESS: Loaded resource from CDN for ${url}`);
+    if (typeof localStorage !== 'undefined') {
+      try {
+        localStorage.setItem(cacheKey, text);
+      } catch (_) {}
+    }
+    return text;
+  } catch (err) {
+    console.error(`[Nexus Cache] Failed CDN fetch for ${url}:`, err);
+    throw err;
+  }
+}
+
 async function initPlayCompiler() {
   if (tailwindCompiler) return;
 
@@ -152,14 +251,18 @@ async function initPlayCompiler() {
     preflightSheet.replaceSync('@import url("https://cdn.jsdelivr.net/npm/tailwindcss@4/index.css");');
 
     // Fetch the raw files for JIT compiler database initialization
-    const [indexCss, themeCss, preflightCss, utilitiesCss] = await Promise.all([
-      fetch('https://cdn.jsdelivr.net/npm/tailwindcss@4/index.css').then(r => r.text()),
-      fetch('https://cdn.jsdelivr.net/npm/tailwindcss@4/theme.css').then(r => r.text()),
-      fetch('https://cdn.jsdelivr.net/npm/tailwindcss@4/preflight.css').then(r => r.text()),
-      fetch('https://cdn.jsdelivr.net/npm/tailwindcss@4/utilities.css').then(r => r.text()),
+    const [indexCss, themeCss, preflightCss, utilitiesCss, compilerJs] = await Promise.all([
+      fetchWithCache('https://cdn.jsdelivr.net/npm/tailwindcss@4/index.css'),
+      fetchWithCache('https://cdn.jsdelivr.net/npm/tailwindcss@4/theme.css'),
+      fetchWithCache('https://cdn.jsdelivr.net/npm/tailwindcss@4/preflight.css'),
+      fetchWithCache('https://cdn.jsdelivr.net/npm/tailwindcss@4/utilities.css'),
+      fetchWithCache('https://cdn.jsdelivr.net/npm/tailwindcss@4/+esm'),
     ]);
 
-    const { compile } = await import("https://cdn.jsdelivr.net/npm/tailwindcss@4/+esm");
+    const blob = new Blob([compilerJs], { type: 'text/javascript' });
+    const blobUrl = URL.createObjectURL(blob);
+    const { compile } = await import(blobUrl);
+    URL.revokeObjectURL(blobUrl);
 
     // Discover CSS color tokens from currently-applied stylesheets.
     // Called AFTER await import("tailwindcss") — loading the Tailwind Wasm
@@ -176,7 +279,7 @@ async function initPlayCompiler() {
 ${themeBridge}
 `, {
       base: '/',
-      async loadStylesheet(id) {
+      async loadStylesheet(id: string) {
         if (id === 'tailwindcss' || id === 'tailwindcss/index.css') {
           return { path: 'tailwindcss/index.css', base: '/', content: indexCss };
         }

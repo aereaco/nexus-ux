@@ -357,7 +357,7 @@ async function buildBundle(options: BuildOptions = {}) {
       globalName: "UX",
       target: "es2022",
       legalComments: "none",
-      minify,
+      minify: false,
       external: [
         "tailwindcss",
         "https://cdn.jsdelivr.net/npm/tailwindcss@4/+esm"
@@ -376,8 +376,14 @@ async function buildBundle(options: BuildOptions = {}) {
       const code = await Deno.readTextFile(outFile);
       const result = await swcMinify(code, {
         compress: { passes: 3, unused: true, dead_code: true, drop_console: true },
-        mangle: { toplevel: true, reserved: ["UX"] }
-      });
+        mangle: { 
+          toplevel: true, 
+          reserved: ["UX"],
+          properties: {
+            regex: "^__v_|^_\\w+"
+          }
+        }
+      } as any);
       const minified = result.code || code;
       await Deno.writeTextFile(minFile, minified);
       console.log(`Minified: ${minFile} (${(minified.length / 1024).toFixed(2)} KB)`);

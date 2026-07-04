@@ -148,8 +148,7 @@ async function importLink(
   el: HTMLElement
 ): Promise<void> {
   const items = Array.isArray(payload) ? payload : [payload];
-
-  for (const item of items) {
+  const tasks = items.map(async (item) => {
     let attrs: Record<string, string | boolean | number>;
     if (typeof item === 'string') {
       const parsed = parseInlineAttrs(item);
@@ -159,7 +158,7 @@ async function importLink(
     }
 
     const href = attrs.href as string;
-    if (!href) continue;
+    if (!href) return;
 
     if (!attrs.rel) attrs = { ...attrs, rel: 'stylesheet' };
 
@@ -176,7 +175,8 @@ async function importLink(
       cleanupFns.push(() => link.remove());
       runtime.log(`Nexus Import [${id}]: Link tag injected: ${href}`);
     });
-  }
+  });
+  await Promise.all(tasks);
 }
 
 /**
@@ -193,23 +193,23 @@ async function importAdopt(
   _el: HTMLElement
 ): Promise<void> {
   const items = Array.isArray(payload) ? payload : [payload];
-
-  for (const item of items) {
+  const tasks = items.map(async (item) => {
     let href: string;
     if (typeof item === 'string') {
       href = item;
     } else {
       href = (item as Record<string, string | boolean | number>).href as string;
     }
-    if (!href) continue;
+    if (!href) return;
 
     const cssText = await resolveContent(href);
-    if (!cssText) continue;
+    if (!cssText) return;
 
     const cleanup = await stylesheet.adoptRawCSS(cssText, `import-adopt-${id}-${href}`);
     cleanupFns.push(cleanup);
     runtime.log(`Nexus Import [${id}]: CSS adopted (constructable): ${href}`);
-  }
+  });
+  await Promise.all(tasks);
 }
 
 async function importScript(
@@ -220,8 +220,7 @@ async function importScript(
   el: HTMLElement
 ): Promise<void> {
   const items = Array.isArray(payload) ? payload : [payload];
-  
-  for (const item of items) {
+  const tasks = items.map(async (item) => {
     let attrs: Record<string, string | boolean | number> = typeof item === 'string' ? { src: item } : (item as Record<string, string | boolean | number>);
     if (typeof item === 'string' && !attrs.src) {
         attrs = parseInlineAttrs(item);
@@ -229,7 +228,7 @@ async function importScript(
     }
     
     const src = attrs.src as string;
-    if (!src) continue;
+    if (!src) return;
 
     // Handle VFS/IDB for scripts
     let finalSrc = src;
@@ -245,10 +244,6 @@ async function importScript(
 
     // When loading @tailwindcss/browser, auto-inject a Tailwind @theme bridge
     // built from CSS custom color properties discovered in currently-applied stylesheets.
-    // This enables hover variants, opacity modifiers, and other Tailwind-generated
-    // utilities for colors defined by any CSS library (not just DaisyUI).
-    // The sequential package loading guarantee ensures linked stylesheets are
-    // fully applied before this importScript call runs.
     if (src.includes('tailwindcss/browser') && !document.querySelector('style[data-nexus-tailwind-bridge]')) {
         const tokens = discoverColorTokens();
         const bridge = buildTailwindThemeBridge(tokens);
@@ -276,7 +271,8 @@ async function importScript(
         cleanupFns.push(() => script.remove());
         runtime.log(`Nexus Import [${id}]: Script injected: ${src}`);
     });
-  }
+  });
+  await Promise.all(tasks);
 }
 
 async function importStyle(
@@ -287,28 +283,28 @@ async function importStyle(
   el: HTMLElement
 ): Promise<void> {
   const items = Array.isArray(payload) ? payload : [payload];
-  
-  for (const item of items) {
+  const tasks = items.map(async (item) => {
     const attrs: Record<string, string | boolean | number> = typeof item === 'string' ? { content: item } : item;
     const content = (attrs.content as string) || (typeof item === 'string' ? item : '');
     
-    if (!content && !attrs.href) continue;
+    if (!content && !attrs.href) return;
 
     // If it's a link-like theme, delegate to importLink
     if (attrs.href) {
         await importLink(id, attrs as Record<string, string | boolean | number>, cleanupFns, runtime, el);
-        continue;
+        return;
     }
 
     // Resolve content if it's a VFS URI
     const cssText = isVFSUri(content) ? await resolveContent(content) : content;
-    if (!cssText) continue;
+    if (!cssText) return;
 
     // ZCZS Mandate: Constructable Stylesheets via StyleSheetManager
     const cleanup = await stylesheet.adoptCSS(cssText, `import-style-${id}`);
     cleanupFns.push(cleanup);
     runtime.log(`Nexus Import [${id}]: Style adopted (ZCZS)`);
-  }
+  });
+  await Promise.all(tasks);
 }
 
 async function importPattern(
@@ -433,7 +429,7 @@ const importModule: AttributeModule = {
       // Parallel loading would cause race conditions where scripts (e.g. @tailwindcss/browser)
       // initialize before stylesheet dependencies (e.g. DaisyUI) are available in document.styleSheets.
       const runImports = async () => {
-        for (const id of ids) {
+        const tasks = ids.map(async (id) => {
           const item = config[id];
           try {
             const itemTasks = [];
@@ -463,12 +459,12 @@ const importModule: AttributeModule = {
             if (item.pattern) itemTasks.push(importPattern(id, item.pattern, el, item, iterationCleanupFns, runtime));
             if (item.component) itemTasks.push(importComponent(id, item.component, iterationCleanupFns, runtime));
 
-            // Resources within a single package still load in parallel (link + adopt + style together)
             await Promise.all(itemTasks);
           } catch (e) {
             reportError(new Error(`Nexus Import [${id}]: Error ${e}`), el);
           }
-        }
+        });
+        await Promise.all(tasks);
       };
 
       const finalize = () => {
