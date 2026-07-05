@@ -471,12 +471,11 @@ export class SelfHealAgent {
     if (!this.config.enabled) return;
 
     const emitBeacon = () => {
-      if (this.config.emitToConsole) {
-        console.warn(`[Nexus Resolution Beacon] ${type.toUpperCase()} Failure: "${identifier}"`, {
+        const errMsg = (context as any)?.error ? ` (Error: ${(context as any).error})` : '';
+        console.warn(`[Nexus Resolution Beacon] ${type.toUpperCase()} Failure: "${identifier}"${errMsg}`, {
           context,
           timestamp: new Date().toISOString()
         });
-      }
 
       if (this.config.emitToPlatform && this.config.platformEndpoint) {
         // Emit a specialized light-weight beacon for resolution failures

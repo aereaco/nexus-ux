@@ -3,12 +3,13 @@ import { RuntimeContext } from '../../engine/composition.ts';
 import { addScopeToNode, parseGhostKeys, createScopeProxy } from '../../engine/scope.ts';
 import { unifiedRef, Ref } from '../../engine/reactivity.ts';
 import { deepEqual } from '../../engine/reconciler.ts';
+import { ParsedAttribute } from '../../engine/attributeParser.ts';
 
 const signalModule: AttributeModule = {
   name: 'signal',
   attribute: 'signal',
   metadata: { after: ['ingest'] },
-  handle: (el: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void => {
+  handle: (el: HTMLElement, value: string, runtime: RuntimeContext, parsedAttr?: ParsedAttribute): (() => void) | void => {
     runtime.log(`[Nexus Signal] Handling signal on <${el.tagName}> with value:`, value.substring(0, 50) + '...');
     // 1. Determine Expression & Context
     // If value is empty and it's a script tag, use textContent
@@ -19,8 +20,8 @@ const signalModule: AttributeModule = {
 
     if (!expression.trim()) return;
 
-    // 2. Parse Attribute to check for modifiers (via runtime.parseAttribute)
-    const parsed = runtime.parseAttribute(el.getAttributeNames().find(n => n.includes('signal')) || 'data-signal', runtime, el);
+    // 2. Parse Attribute to check for modifiers (use passed parsedAttr or fallback)
+    const parsed = parsedAttr || runtime.parseAttribute('data-signal', runtime, el);
     const isGlobal = parsed?.argument === 'global' || 
                      parsed?.modifiers.includes('global') || 
                      el.hasAttribute('data-ux-init');

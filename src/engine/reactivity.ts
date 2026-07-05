@@ -347,15 +347,17 @@ export function reactive<T extends object>(target: T): T {
       return res;
     },
     set(t, key, value, receiver) {
+      if (t !== toRaw(receiver)) {
+        return Reflect.set(t, key, value, receiver);
+      }
       const oldVal = Reflect.get(t, key, receiver);
       const oldLength = Array.isArray(t) ? t.length : 0;
       const rawVal = toRaw(value);
-      const success = Reflect.set(t, key, rawVal, receiver);
+      const success = Reflect.set(t, key, rawVal);
 
       if (success) {
-        const newVal = Reflect.get(t, key, receiver);
         const isNewKey = !Object.prototype.hasOwnProperty.call(t, key);
-        if (oldVal !== newVal || (Array.isArray(t) && t.length !== oldLength)) {
+        if (oldVal !== rawVal || (Array.isArray(t) && t.length !== oldLength)) {
           trigger(t, key);
           if (isNewKey) trigger(t, ITERATE_KEY);
         }
@@ -659,9 +661,10 @@ export function elementBoundEffect(
   };
 
   let runner: ReactiveEffectRunner<void>;
+  const stableJob = () => { if (runner) runner(); };
   try {
     const schedulerOptions: ReactiveEffectOptions = {
-      scheduler: () => { scheduler.enqueueEvaluate(() => runner && runner()); },
+      scheduler: () => { scheduler.enqueueEvaluate(stableJob); },
       ...options
     };
     runner = effect(suspenseWrappedCallback, schedulerOptions);

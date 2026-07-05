@@ -1,4 +1,4 @@
-import { shallowRef, type Ref } from './reactivity.ts';
+import { shallowRef, type Ref, heap, customRef, toRaw } from './reactivity.ts';
 import type { RuntimeContext } from './composition.ts';
 import { CLEANUP_FUNCTIONS_KEY } from './consts.ts';
 
@@ -70,6 +70,68 @@ function attachListenerIfNeeded(prop: string) {
  * Reuses existing mirrorCache + attachListenerIfNeeded pattern.
  * Creates a reactive shallow proxy for any global object (window, navigator, localStorage, etc.)
  */
+function createHeapBackedRef<T>(
+  target: any,
+  prop: string,
+  heapKey: string,
+  globalSignals: Record<string, unknown>,
+  scheduler: RuntimeContext['scheduler']
+): Ref<T> {
+  if (!heap.has(heapKey)) {
+    let initial = undefined;
+    try {
+      initial = target[prop];
+    } catch {
+      // Ignore initial read failure
+    }
+    
+    // Dynamic JSON Reader: Recognize JSON strings dynamically
+    if (typeof initial === 'string') {
+      const trimmed = initial.trim();
+      if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || 
+          (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+        try {
+          initial = JSON.parse(trimmed);
+        } catch {
+          // Keep raw string
+        }
+      }
+    }
+    heap.set(heapKey, initial);
+  }
+
+  return customRef((track, trigger) => ({
+    get() {
+      track();
+      return heap.get(heapKey) as T;
+    },
+    set(newValue) {
+      heap.set(heapKey, newValue);
+      
+      // Dynamic Coercion Writer: Detect if host API coerces object to string
+      try {
+        if (newValue && typeof newValue === 'object') {
+          // Try raw write first
+          Reflect.set(target, prop, newValue);
+          
+          // Verify if coerced
+          const stored = target[prop];
+          if (typeof stored === 'string' && (stored === '[object Object]' || stored === '')) {
+            // Coerced! Overwrite with JSON-serialized string
+            Reflect.set(target, prop, JSON.stringify(toRaw(newValue)));
+          }
+        } else {
+          Reflect.set(target, prop, newValue);
+        }
+      } catch (e) {
+        console.warn(`[Nexus Mirror] Dynamic write failed for ${prop}:`, e);
+      }
+      
+      trigger();
+    }
+  }));
+}
+
 function getObjectMirror(
   target: any,
   name: string,
@@ -77,12 +139,17 @@ function getObjectMirror(
   scheduler: RuntimeContext['scheduler']
 ): any {
   const localCache = new Map<string, Ref<any>>();
+  const isStorage = name === 'localStorage' || name === 'sessionStorage';
   
   return new Proxy(target, {
     get(t, prop: string | symbol) {
       if (typeof prop === 'string') {
+        const heapKey = `${name}.${prop}`;
         if (!localCache.has(prop)) {
-          localCache.set(prop, shallowRef((t as any)[prop]));
+          localCache.set(
+            prop,
+            createHeapBackedRef(t, prop, heapKey, globalSignals, scheduler)
+          );
         }
         
         const value = localCache.get(prop)!.value;
@@ -97,12 +164,19 @@ function getObjectMirror(
       }
       return Reflect.get(t, prop);
     },
-    set(t, prop, value) {
-      const success = Reflect.set(t, prop, value);
-      if (success && localCache.has(prop as string)) {
-        localCache.get(prop as string)!.value = value;
+    set(t, prop, value, receiver) {
+      if (typeof prop === 'string') {
+        const heapKey = `${name}.${prop}`;
+        if (!localCache.has(prop)) {
+          localCache.set(
+            prop,
+            createHeapBackedRef(t, prop, heapKey, globalSignals, scheduler)
+          );
+        }
+        localCache.get(prop)!.value = value;
+        return true;
       }
-      return success;
+      return Reflect.set(t, prop, value, receiver);
     }
   });
 }

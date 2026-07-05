@@ -387,6 +387,22 @@ async function importComponent(
 
 // ─── Module Definition ──────────────────────────────────────────
 
+// Synchronously inject a global FOUC preflight stylesheet for any [data-import] elements
+if (typeof document !== 'undefined') {
+  const style = document.createElement('style');
+  style.setAttribute('data-nexus-fouc', '');
+  style.textContent = `
+    [data-import]:not(.nexus-ready),
+    html.nexus-loading,
+    [data-nexus-loading] {
+      visibility: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 const importModule: AttributeModule = {
   name: 'import',
   attribute: 'import',

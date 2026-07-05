@@ -233,11 +233,17 @@ export function evaluateLater(
           
           if (val !== undefined) return val;
           
-          const nativeTarget = (globalThis as any)[realName];
-          if (nativeTarget !== undefined) {
-            const wrapped = generateDynamicMirror(realName, nativeTarget, runtime, el as HTMLElement);
-            (globalSignals as any)[key] = wrapped;
-            return wrapped;
+          try {
+            const nativeTarget = (globalThis as any)[realName];
+            if (nativeTarget !== undefined) {
+              const wrapped = generateDynamicMirror(realName, nativeTarget, runtime, el as HTMLElement);
+              (globalSignals as any)[key] = wrapped;
+              return wrapped;
+            }
+          } catch (e) {
+            if (runtime.isDevMode) {
+              console.warn(`[Nexus Evaluator] Blocked or failed to get native target for ${realName}:`, e);
+            }
           }
           return undefined;
         }

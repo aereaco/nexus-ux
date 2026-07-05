@@ -173,6 +173,7 @@ export class UX {
     this.init();
 
     if (typeof document !== 'undefined') {
+      document.documentElement.classList.add('nexus-ready');
       document.dispatchEvent(new CustomEvent('nexus-ready', { bubbles: true }));
     }
   }

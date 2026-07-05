@@ -27,9 +27,11 @@ const themeModule: AttributeModule = {
     }
 
     let initialMode = rawConfig.default || 'auto';
-    // If we're on the document element, give localStorage priority if exists
+    let stored: string | null = null;
     if (el === document.documentElement && typeof localStorage !== 'undefined') {
-        const stored = localStorage.getItem('ux_themeMode');
+        try {
+            stored = localStorage.getItem('ux_themeMode');
+        } catch (_) {}
         // Only accept the stored mode if it actually exists in the provided config
         if (stored && rawConfig.modes && rawConfig.modes[stored]) {
             initialMode = stored;
@@ -88,14 +90,18 @@ const themeModule: AttributeModule = {
             const newMode = themeState.modes[nextIdx] || 'auto';
             themeState.mode = newMode;
             if (el === document.documentElement && typeof localStorage !== 'undefined') {
-               localStorage.setItem('ux_themeMode', newMode);
+               try {
+                   localStorage.setItem('ux_themeMode', newMode);
+               } catch (_) {}
             }
         },
         $setTheme: (m: string) => {
             if (themeState.modes.includes(m)) {
                 themeState.mode = m;
                 if (el === document.documentElement && typeof localStorage !== 'undefined') {
-                   localStorage.setItem('ux_themeMode', m);
+                   try {
+                       localStorage.setItem('ux_themeMode', m);
+                   } catch (_) {}
                 }
             }
         },

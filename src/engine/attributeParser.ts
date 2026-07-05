@@ -53,12 +53,32 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
 
   // State machine: 0=DIRECTIVE, 1=ARGUMENT, 2=MODIFIER
   let state = 0;
+  let rest = rawName;
+
+  const hyphenated = ['ux-theme', 'on-raf'].find(h => 
+    rawName === h || rawName.startsWith(h + '-') || rawName.startsWith(h + ':') || rawName.startsWith(h + '.')
+  );
+
+  if (hyphenated) {
+    directive = hyphenated;
+    rest = rawName.slice(hyphenated.length);
+    if (rest.length > 0) {
+      if (rest.startsWith('-')) {
+        state = 1;
+        rest = rest.slice(1);
+      } else if (rest.startsWith(':') || rest.startsWith('.')) {
+        state = 2;
+        rest = rest.slice(1);
+      }
+    }
+  }
+
   let currentTokenStart = 0;
-  const len = rawName.length;
+  const len = rest.length;
 
   for (let i = 0; i <= len; i++) {
     const isEnd = i === len;
-    const char = isEnd ? '' : rawName[i];
+    const char = isEnd ? '' : rest[i];
 
     // `:` ALWAYS transitions to MODIFIER state (per §2.1)
     // `-` transitions from DIRECTIVE to ARGUMENT state
@@ -69,7 +89,7 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
 
     if (isDelim || isEnd) {
       if (i > currentTokenStart) {
-        const token = rawName.slice(currentTokenStart, i);
+        const token = rest.slice(currentTokenStart, i);
         if (state === 0) {
           directive = token;
         } else if (state === 1) {
