@@ -421,7 +421,7 @@ export function morphDOM(from: Element, to: Element | string, options: Record<st
 /**
  * Tracks classes added by Nexus to avoid clobbering manually set classes.
  */
-const nexusClassMap = new WeakMap<Element, Set<string>>();
+export const nexusClassMap = new WeakMap<Element, Set<string>>();
 
 /**
  * Reconciles an element's class list against a reactive value.
@@ -477,7 +477,7 @@ export function reconcileClass(el: HTMLElement, value: unknown): void {
 /**
  * Tracks style properties added by Nexus.
  */
-const nexusStyleMap = new WeakMap<Element, Set<string>>();
+export const nexusStyleMap = new WeakMap<Element, Set<string>>();
 
 /**
  * Reconciles an element's inline styles against a reactive object.

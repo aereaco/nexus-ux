@@ -3,6 +3,26 @@ import { RuntimeContext } from '../../engine/composition.ts';
 import { initError } from '../../engine/debug.ts';
 import { addScopeToNode } from '../../engine/scope.ts';
 import { CLEANUP_FUNCTIONS_KEY } from '../../engine/consts.ts';
+import { nexusClassMap, nexusStyleMap } from '../../engine/reconciler.ts';
+
+// Helper to copy dynamic class and style metadata recursively during cloning
+function copyNexusMetadata(src: HTMLElement, dest: HTMLElement) {
+  const srcClasses = nexusClassMap.get(src);
+  if (srcClasses) {
+    nexusClassMap.set(dest, new Set(srcClasses));
+  }
+  const srcStyles = nexusStyleMap.get(src);
+  if (srcStyles) {
+    nexusStyleMap.set(dest, new Set(srcStyles));
+  }
+  const srcChildren = Array.from(src.children) as HTMLElement[];
+  const destChildren = Array.from(dest.children) as HTMLElement[];
+  for (let i = 0; i < srcChildren.length; i++) {
+    if (srcChildren[i] && destChildren[i]) {
+      copyNexusMetadata(srcChildren[i], destChildren[i]);
+    }
+  }
+}
 
 const forModule: AttributeModule = {
   name: 'for',
@@ -90,6 +110,18 @@ const forModule: AttributeModule = {
             const clone = isTemplate 
               ? (blueprint as DocumentFragment).cloneNode(true) 
               : (blueprint as HTMLElement).cloneNode(true);
+            
+            if (!isTemplate) {
+              copyNexusMetadata(blueprint as HTMLElement, clone as HTMLElement);
+            } else {
+              const srcChildren = Array.from(blueprint.childNodes).filter(n => n instanceof HTMLElement) as HTMLElement[];
+              const destChildren = Array.from(clone.childNodes).filter(n => n instanceof HTMLElement) as HTMLElement[];
+              for (let i = 0; i < srcChildren.length; i++) {
+                if (srcChildren[i] && destChildren[i]) {
+                  copyNexusMetadata(srcChildren[i], destChildren[i]);
+                }
+              }
+            }
             
             nodes = isTemplate 
               ? Array.from((clone as DocumentFragment).childNodes)
