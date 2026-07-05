@@ -43,7 +43,7 @@
             const list = todos;
             if (f === 'active')    return list.filter(t => !t.completed);
             if (f === 'completed') return list.filter(t =>  t.completed);
-            return list;
+            return [...list];
         },
         remaining: () => todos.filter(t => !t.completed).length
     }">
