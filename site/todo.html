@@ -16,7 +16,7 @@
       }" data-ux-theme="{
         default: 'auto',
         modes: {
-            auto:  { icon: 'material-symbols-light:routine-outline' },
+            auto:  { icon: 'material-symbols-light:brightness-auto' },
             light: { icon: 'material-symbols-light:light-mode-outline', theme: 'fantasy' },
             dark:  { icon: 'material-symbols-light:dark-mode-outline', theme: 'synthwave' }
         }
@@ -37,7 +37,7 @@
             setTimeout(() => progress = 100, 300);
             setTimeout(() => progress = 0, 800);
         }
-    }" data-signal:global="{ progress: 0 }" data-effect="if (!hydrated && _indexedDB.todos !== undefined) { todos = _indexedDB.todos; hydrated = true; }" data-computed="{
+    }" data-signal:global="{ progress: 0 }" data-effect="if (!hydrated && _indexedDB.todos !== undefined) { todos.splice(0, todos.length, ..._indexedDB.todos); hydrated = true; }" data-computed="{
         filteredTodos: () => {
             const f = filter;
             const list = todos;
@@ -52,6 +52,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexus-UX • Advanced Todo</title>
+    <link rel="icon" type="image/svg+xml" href="/site/_assets/images/emblem.svg">
 
     <script type="module" src="/dist/nexus-ux.js"></script>
 
@@ -336,10 +337,11 @@
                     it</button>
                 <button class="btn btn-error btn-sm text-white px-6 shadow-md" data-on-click="
                         if (showConfirmDelete) {
-                            todos = todos.filter(t => t.id !== activeTodo.id);
+                            const idx = todos.findIndex(t => t.id === activeTodo.id);
+                            if (idx !== -1) todos.splice(idx, 1);
                             activeTodo = null;
                         } else {
-                            todos = todos.filter(t => !t.completed);
+                            todos.splice(0, todos.length, ...todos.filter(t => !t.completed));
                         }
                         $saveTodos(todos);
                         showConfirmDelete = false;
