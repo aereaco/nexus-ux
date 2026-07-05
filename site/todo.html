@@ -21,14 +21,8 @@
             dark:  { icon: 'material-symbols-light:dark-mode-outline', theme: 'synthwave' }
         }
     }" data-signal="{
-        todos: (() => {
-            try {
-                const stored = localStorage.getItem('todos');
-                return stored ? JSON.parse(stored) : [];
-            } catch (_) {
-                return [];
-            }
-        })(),
+        todos: [],
+        hydrated: false,
         newTodo: '',
         filter: 'all',
         layout: 'list',
@@ -39,11 +33,11 @@
         editTempText: '',
         $saveTodos: (t) => {
             progress = 20;
-            _localStorage.todos = t;
+            _indexedDB.todos = t;
             setTimeout(() => progress = 100, 300);
             setTimeout(() => progress = 0, 800);
         }
-    }" data-signal:global="{ progress: 0 }" data-computed="{
+    }" data-signal:global="{ progress: 0 }" data-effect="if (!hydrated && _indexedDB.todos !== undefined) { todos = _indexedDB.todos; hydrated = true; }" data-computed="{
         filteredTodos: () => {
             const f = filter;
             const list = todos;

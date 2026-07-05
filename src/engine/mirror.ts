@@ -67,8 +67,13 @@ function attachListenerIfNeeded(prop: string) {
 }
 
 /**
- * Reuses existing mirrorCache + attachListenerIfNeeded pattern.
- * Creates a reactive shallow proxy for any global object (window, navigator, localStorage, etc.)
+ * Tier 1 — Direct property access.
+ * Creates a reactive heap-backed ref for any API whose properties are readable/writable
+ * via standard property access (window, localStorage, sessionStorage, navigator, etc.).
+ *
+ * Structural detection: APIs implementing the Storage interface (getItem + setItem)
+ * are string-coercing by spec — objects are always JSON-serialized before writing.
+ * All other APIs receive the raw value via Reflect.set.
  */
 function createHeapBackedRef<T>(
   target: any,
@@ -77,6 +82,11 @@ function createHeapBackedRef<T>(
   globalSignals: Record<string, unknown>,
   scheduler: RuntimeContext['scheduler']
 ): Ref<T> {
+  // Structural: APIs with getItem+setItem follow the Storage interface (string-coercing).
+  // No name checks — any API with this shape gets the same serialization treatment.
+  const isStringCoercingAPI = typeof target?.getItem === 'function' &&
+                               typeof target?.setItem === 'function';
+
   if (!heap.has(heapKey)) {
     let initial = undefined;
     try {
@@ -108,17 +118,15 @@ function createHeapBackedRef<T>(
     set(newValue) {
       heap.set(heapKey, newValue);
       
-      // Dynamic Coercion Writer: Detect if host API coerces object to string
       try {
         if (newValue && typeof newValue === 'object') {
-          // Try raw write first
-          Reflect.set(target, prop, newValue);
-          
-          // Verify if coerced
-          const stored = target[prop];
-          if (typeof stored === 'string' && (stored === '[object Object]' || stored === '')) {
-            // Coerced! Overwrite with JSON-serialized string
+          if (isStringCoercingAPI) {
+            // String-only Storage APIs: always JSON-serialize — avoids the [object Object] coercion
+            // trap for both plain objects and arrays.
             Reflect.set(target, prop, JSON.stringify(toRaw(newValue)));
+          } else {
+            // Non-coercing APIs: write the raw value directly
+            Reflect.set(target, prop, newValue);
           }
         } else {
           Reflect.set(target, prop, newValue);
@@ -132,6 +140,157 @@ function createHeapBackedRef<T>(
   }));
 }
 
+// ─── Three-Tier Capability Detection ───────────────────────────────────────────
+//
+// Protocol is detected once per mirror target by inspecting the structural
+// signature of the API object. No name checks are performed anywhere.
+//
+// Tier 1 — Direct:      standard property access (window, localStorage, navigator…)
+// Tier 2 — Async KV:    .get(key)/.set(key, val) async protocol (Map-like APIs)
+// Tier 3 — DB Factory:  .open()/.deleteDatabase() factory protocol (IDBFactory-like APIs)
+
+/** Cached IDB connections keyed by factory instance (WeakMap avoids leaks). */
+const idbConnectionCache = new WeakMap<object, Promise<IDBDatabase>>();
+
+/**
+ * Detects the access protocol of a mirror target from its structural signature.
+ * Purely capability-based — no API name checks.
+ */
+function detectAccessProtocol(target: any): 'direct' | 'async-kv' | 'db-factory' {
+  // Tier 3: has open() + deleteDatabase() — structural IDBFactory-like signature
+  if (typeof target?.open === 'function' && typeof target?.deleteDatabase === 'function') {
+    return 'db-factory';
+  }
+  // Tier 2: has get() + set() but NOT getItem (which marks synchronous Storage — Tier 1)
+  if (typeof target?.get === 'function' && typeof target?.set === 'function' &&
+      typeof target?.getItem !== 'function') {
+    return 'async-kv';
+  }
+  // Tier 1: direct property access
+  return 'direct';
+}
+
+/**
+ * Opens (or reuses) a factory connection and ensures the 'kv' object store exists.
+ * The database is named by location.origin (environment-derived, zero hardcoding).
+ * All mirrors sharing the same factory instance share one connection.
+ */
+function openFactoryConnection(factory: object): Promise<IDBDatabase> {
+  const cached = idbConnectionCache.get(factory);
+  if (cached) return cached;
+
+  const dbName = typeof location !== 'undefined' ? location.origin : 'nexus-ux';
+  const promise = new Promise<IDBDatabase>((resolve, reject) => {
+    const req = (factory as any).open(dbName, 1);
+    req.onupgradeneeded = (e: any) => {
+      const db: IDBDatabase = e.target.result;
+      if (!db.objectStoreNames.contains('kv')) {
+        db.createObjectStore('kv');
+      }
+    };
+    req.onsuccess = (e: any) => resolve(e.target.result);
+    req.onerror = (e: any) => {
+      idbConnectionCache.delete(factory); // allow retry on failure
+      reject(e.target.error);
+    };
+  });
+
+  idbConnectionCache.set(factory, promise);
+  return promise;
+}
+
+/**
+ * Tier 3 — Database factory ref.
+ * Heap is the source of truth; IDB is the persistence backend.
+ * Writes update the heap synchronously (UI never waits), then persist to IDB async.
+ * The kvKey is namespaced as `mirrorName:prop` so all factory mirrors coexist
+ * in a single 'kv' object store without version collisions.
+ */
+function createDBFactoryRef<T>(
+  factory: object,
+  mirrorName: string,
+  prop: string,
+  heapKey: string,
+  scheduler: RuntimeContext['scheduler']
+): Ref<T> {
+  const kvKey = `${mirrorName}:${prop}`;
+  if (!heap.has(heapKey)) heap.set(heapKey, undefined);
+
+  let _trigger: (() => void) | null = null;
+
+  // Async hydration: fire-and-forget read, triggers reactive update on resolve
+  openFactoryConnection(factory)
+    .then(db => new Promise<any>((resolve, reject) => {
+      const req = db.transaction('kv', 'readonly').objectStore('kv').get(kvKey);
+      req.onsuccess = (e: any) => resolve(e.target.result);
+      req.onerror = (e: any) => reject(e.target.error);
+    }))
+    .then(value => {
+      if (value !== undefined && heap.get(heapKey) === undefined) {
+        heap.set(heapKey, value);
+        _trigger?.();
+      }
+    })
+    .catch(e => console.warn(`[Nexus Mirror] DB factory read failed for ${kvKey}:`, e));
+
+  return customRef<T>((track, trigger) => {
+    _trigger = trigger; // captured synchronously before any async resolves
+    return {
+      get() { track(); return heap.get(heapKey) as T; },
+      set(newValue) {
+        heap.set(heapKey, newValue);
+        // Async write — heap is already updated, UI reactive immediately
+        openFactoryConnection(factory)
+          .then(db => new Promise<void>((resolve, reject) => {
+            const req = db.transaction('kv', 'readwrite').objectStore('kv').put(toRaw(newValue), kvKey);
+            req.onsuccess = () => resolve();
+            req.onerror = (e: any) => reject(e.target.error);
+          }))
+          .catch(e => console.warn(`[Nexus Mirror] DB factory write failed for ${kvKey}:`, e));
+        trigger();
+      }
+    };
+  });
+}
+
+/**
+ * Tier 2 — Async key-value ref.
+ * For APIs exposing .get(key)/.set(key, value) (Map-like, Cache-like, custom async stores).
+ * Same heap-first pattern: writes are synchronous to heap, async to the backing store.
+ */
+function createAsyncKVRef<T>(
+  target: any,
+  prop: string,
+  heapKey: string,
+  scheduler: RuntimeContext['scheduler']
+): Ref<T> {
+  if (!heap.has(heapKey)) heap.set(heapKey, undefined);
+
+  let _trigger: (() => void) | null = null;
+
+  Promise.resolve(target.get(prop))
+    .then(value => {
+      if (value !== undefined && heap.get(heapKey) === undefined) {
+        heap.set(heapKey, value);
+        _trigger?.();
+      }
+    })
+    .catch(e => console.warn(`[Nexus Mirror] Async KV read failed for ${prop}:`, e));
+
+  return customRef<T>((track, trigger) => {
+    _trigger = trigger;
+    return {
+      get() { track(); return heap.get(heapKey) as T; },
+      set(newValue) {
+        heap.set(heapKey, newValue);
+        Promise.resolve(target.set(prop, toRaw(newValue)))
+          .catch(e => console.warn(`[Nexus Mirror] Async KV write failed for ${prop}:`, e));
+        trigger();
+      }
+    };
+  });
+}
+
 function getObjectMirror(
   target: any,
   name: string,
@@ -139,44 +298,44 @@ function getObjectMirror(
   scheduler: RuntimeContext['scheduler']
 ): any {
   const localCache = new Map<string, Ref<any>>();
-  const isStorage = name === 'localStorage' || name === 'sessionStorage';
-  
+  const protocol = detectAccessProtocol(target);
+
+  function getOrCreateRef(prop: string): Ref<any> {
+    if (localCache.has(prop)) return localCache.get(prop)!;
+    const heapKey = `${name}.${prop}`;
+    let ref: Ref<any>;
+    switch (protocol) {
+      case 'db-factory':
+        ref = createDBFactoryRef(target, name, prop, heapKey, scheduler);
+        break;
+      case 'async-kv':
+        ref = createAsyncKVRef(target, prop, heapKey, scheduler);
+        break;
+      default:
+        ref = createHeapBackedRef(target, prop, heapKey, globalSignals, scheduler);
+    }
+    localCache.set(prop, ref);
+    return ref;
+  }
+
   return new Proxy(target, {
     get(t, prop: string | symbol) {
       if (typeof prop === 'string') {
-        const heapKey = `${name}.${prop}`;
-        if (!localCache.has(prop)) {
-          localCache.set(
-            prop,
-            createHeapBackedRef(t, prop, heapKey, globalSignals, scheduler)
-          );
-        }
-        
-        const value = localCache.get(prop)!.value;
-        if (typeof value === 'function') {
-          return value.bind(t);
-        }
-        
+        const value = getOrCreateRef(prop).value;
+        if (typeof value === 'function') return value.bind(t);
         if (value && typeof value === 'object' && !Array.isArray(value)) {
-          return getObjectMirror(value, `${name}_${String(prop)}`, globalSignals, scheduler);
+          return getObjectMirror(value, `${name}_${prop}`, globalSignals, scheduler);
         }
         return value;
       }
       return Reflect.get(t, prop);
     },
-    set(t, prop, value, receiver) {
+    set(_t, prop, value, _receiver) {
       if (typeof prop === 'string') {
-        const heapKey = `${name}.${prop}`;
-        if (!localCache.has(prop)) {
-          localCache.set(
-            prop,
-            createHeapBackedRef(t, prop, heapKey, globalSignals, scheduler)
-          );
-        }
-        localCache.get(prop)!.value = value;
+        getOrCreateRef(prop).value = value;
         return true;
       }
-      return Reflect.set(t, prop, value, receiver);
+      return Reflect.set(_t, prop, value, _receiver);
     }
   });
 }

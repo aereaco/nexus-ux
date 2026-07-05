@@ -447,7 +447,7 @@ export function reconcileClass(el: HTMLElement, value: unknown): void {
         } else {
           isMatch = !!cond;
         }
-        if (isMatch) toAdd.add(cls);
+        if (isMatch) cls.split(/\s+/).filter(Boolean).forEach(c => toAdd.add(c));
       });
     }
   };
