@@ -72,7 +72,7 @@
 
     <!-- Top Progress Bar (DaisyUI native progress) -->
     <progress class="progress progress-primary fixed top-0 left-0 w-full z-[9999] pointer-events-none h-1 rounded-none"
-        data-show="#progress > 0 || isEditing" data-attr:value="isEditing ? null : #progress" max="100"></progress>
+        data-show="progress > 0 || isEditing" data-attr:value="isEditing ? null : progress" max="100"></progress>
 
     <!-- PWA Installation Widget -->
     <div data-if="$pwa && !$pwa.isInstalled && $pwa.deferredPrompt"
