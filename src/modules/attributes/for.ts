@@ -75,9 +75,7 @@ const forModule: AttributeModule = {
         const items = runtime.evaluate(el, itemsExpr) as unknown as unknown[];
         if (!Array.isArray(items)) return;
         
-        if ((window as any)._nexusDebugFor) {
-            console.log(`[for.ts] Effect running for ${itemsExpr}. Items:`, JSON.stringify(items));
-        }
+        console.log(`[for.ts] Effect running for ${itemsExpr}. Items:`, JSON.stringify(items));
 
         const currentKeys = new Set();
         const nextNodes: Node[] = [];
@@ -142,6 +140,7 @@ const forModule: AttributeModule = {
         // Remove old nodes
         for (const [key, nodes] of mountedMap.entries()) {
           if (!currentKeys.has(key)) {
+            console.log(`[for.ts] Key ${key} is no longer in currentKeys. Disposing nodes:`, nodes);
             disposeNodes(nodes);
             mountedMap.delete(key);
           }

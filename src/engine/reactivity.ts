@@ -409,8 +409,10 @@ export function effect<T = any>(fn: () => T, options?: ReactiveEffectOptions): R
     },
     stop() {
       cleanupEffect(this);
-      this.deps.clear();
-      (this as any).deps = null;
+      if (this.deps) {
+        this.deps.clear();
+        (this as any).deps = null;
+      }
     }
   };
 
@@ -424,6 +426,7 @@ export function effect<T = any>(fn: () => T, options?: ReactiveEffectOptions): R
 }
 
 function cleanupEffect(eff: ActiveEffect) {
+  if (!eff.deps) return;
   for (const dep of eff.deps) {
     dep.delete(eff);
   }
