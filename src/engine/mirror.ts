@@ -226,8 +226,8 @@ function createDBFactoryRef<T>(
       req.onerror = (e: any) => reject(e.target.error);
     }))
     .then(value => {
-      if (value !== undefined && heap.get(heapKey) === undefined) {
-        heap.set(heapKey, value);
+      if (heap.get(heapKey) === undefined) {
+        heap.set(heapKey, value !== undefined ? value : null);
         _trigger?.();
       }
     })
@@ -270,8 +270,8 @@ function createAsyncKVRef<T>(
 
   Promise.resolve(target.get(prop))
     .then(value => {
-      if (value !== undefined && heap.get(heapKey) === undefined) {
-        heap.set(heapKey, value);
+      if (heap.get(heapKey) === undefined) {
+        heap.set(heapKey, value !== undefined ? value : null);
         _trigger?.();
       }
     })
