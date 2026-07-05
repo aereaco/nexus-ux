@@ -37,10 +37,11 @@
             setTimeout(() => progress = 100, 300);
             setTimeout(() => progress = 0, 800);
         }
-    }" data-signal:global="{ progress: 0 }" data-effect="if (!hydrated) { if (_indexedDB.todos !== undefined) { todos.splice(0, todos.length, ...(_indexedDB.todos || [])); hydrated = true; } } else { const _track = todos.map(t => `${t.id}:${t.completed}`).join(','); _indexedDB.todos = todos; }" data-computed="{
+    }" data-signal:global="{ progress: 0 }" data-effect="if (!hydrated) { if (_indexedDB.todos !== undefined) { todos.splice(0, todos.length, ...(_indexedDB.todos || [])); if (_indexedDB.layout !== undefined) { layout = _indexedDB.layout || 'list'; } hydrated = true; } } else { const _track = todos.map(t => `${t.id}:${t.completed}`).join(','); _indexedDB.todos = todos; _indexedDB.layout = layout; }" data-computed="{
         filteredTodos: () => {
             const f = filter;
             const list = todos;
+            console.log('[filteredTodos computed] Getter running. filter:', f, 'todos length:', list.length, 'todos:', JSON.stringify(list));
             if (f === 'active')    return list.filter(t => !t.completed);
             if (f === 'completed') return list.filter(t =>  t.completed);
             return [...list];
@@ -88,7 +89,7 @@
         <button
             class="btn btn-circle btn-lg shadow-lg bg-base-100 border border-base-300 hover:scale-110 active:scale-95 transition-all"
             data-on-click="$switchTheme()">
-            <iconify-icon data-attr:icon="$themeIcon" class="text-2xl transition-all duration-300"></iconify-icon>
+            <iconify-icon data-bind-icon="$themeIcon" class="text-2xl transition-all duration-300"></iconify-icon>
         </button>
     </div>
 
@@ -336,9 +337,13 @@
                     data-on-click="showConfirmDelete = false; showConfirmClear = false; activeTodo = null">No, Keep
                     it</button>
                 <button class="btn btn-error btn-sm text-white px-6 shadow-md" data-on-click="
+                        console.log('Confirm action clicked. showConfirmDelete:', showConfirmDelete, 'activeTodo:', activeTodo);
                         if (showConfirmDelete) {
-                            const idx = todos.findIndex(t => t.id === activeTodo.id);
-                            if (idx !== -1) todos.splice(idx, 1);
+                            if (activeTodo) {
+                                const idx = todos.findIndex(t => t.id === activeTodo.id);
+                                console.log('Found delete index:', idx);
+                                if (idx !== -1) todos.splice(idx, 1);
+                            }
                             activeTodo = null;
                         } else {
                             todos.splice(0, todos.length, ...todos.filter(t => !t.completed));
