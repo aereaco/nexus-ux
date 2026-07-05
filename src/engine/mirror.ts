@@ -486,9 +486,17 @@ function attachAutoCleanup(instance: any, element: HTMLElement) {
     }
   };
 
-  const existing: (() => void)[] = (element as any)[CLEANUP_FUNCTIONS_KEY] || [];
-  existing.push(disconnect);
-  (element as any)[CLEANUP_FUNCTIONS_KEY] = existing;
+  const enhanced = element as any;
+  if (!enhanced[CLEANUP_FUNCTIONS_KEY]) {
+    enhanced[CLEANUP_FUNCTIONS_KEY] = new Map();
+  }
+  const cleanupMap = enhanced[CLEANUP_FUNCTIONS_KEY];
+  if (cleanupMap instanceof Map) {
+    const key = `disconnect-${Math.random().toString(36).slice(2)}`;
+    cleanupMap.set(key, disconnect);
+  } else if (Array.isArray(cleanupMap)) {
+    cleanupMap.push(disconnect);
+  }
 }
 
 /**

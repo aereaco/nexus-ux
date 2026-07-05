@@ -2,6 +2,7 @@ import { AttributeModule } from "../../engine/modules.ts";
 import { RuntimeContext } from "../../engine/composition.ts";
 import { flip } from "../sprites/animate.ts";
 import { getDataStack } from "../../engine/scope.ts";
+import { CLEANUP_FUNCTIONS_KEY } from "../../engine/consts.ts";
 
 // Helper to find scrollable parent container
 function getScrollParent(el: HTMLElement): HTMLElement {
@@ -1165,12 +1166,22 @@ export const dragAttribute: AttributeModule = {
           (container as any).__sortable = engine;
 
           // Cleanup engine ONLY when container itself leaves DOM
-          runtime.onEffectCleanup(() => {
+          const enhancedContainer = container as any;
+          if (!enhancedContainer[CLEANUP_FUNCTIONS_KEY]) {
+            enhancedContainer[CLEANUP_FUNCTIONS_KEY] = new Map();
+          }
+          const containerCleanups = enhancedContainer[CLEANUP_FUNCTIONS_KEY];
+          const cleanupFn = () => {
             if (engine.sortable) {
               engine.sortable.destroy();
             }
             delete (container as any).__sortable;
-          });
+          };
+          if (containerCleanups instanceof Map) {
+            containerCleanups.set("sortable-cleanup", cleanupFn);
+          } else if (Array.isArray(containerCleanups)) {
+            containerCleanups.push(cleanupFn);
+          }
         } catch (err) {
           runtime.reportError(err instanceof Error ? err : new Error(String(err)), container, "drag-init");
         }
