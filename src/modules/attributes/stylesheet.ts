@@ -69,7 +69,15 @@ export class NexusStyleSheet extends (typeof CSSStyleSheet !== 'undefined' ? CSS
     const hasImports = /@import\s+(?:url\()?['"]([^'"]+)['"]\)?\s*;/g.test(cssText);
 
     if (typeof super.replaceSync === 'function') {
-      super.replaceSync(cssText);
+      try {
+        super.replaceSync(cssText);
+      } catch (err) {
+        // If it throws because of @import (unsupported synchronously by spec),
+        // let the background fetch resolver handle loading it asynchronously.
+        if (!hasImports) {
+          throw err;
+        }
+      }
     }
 
     if (hasImports) {
