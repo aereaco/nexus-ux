@@ -25,7 +25,7 @@
         hydrated: false,
         newTodo: '',
         filter: 'all',
-        layout: 'list',
+        layout: _localStorage.layout || 'list',
         activeTodo: null,
         isEditing: false,
         showConfirmDelete: false,
@@ -37,7 +37,7 @@
             setTimeout(() => progress = 100, 300);
             setTimeout(() => progress = 0, 800);
         }
-    }" data-signal:global="{ progress: 0 }" data-effect="if (!hydrated) { if (_indexedDB.todos !== undefined && _indexedDB.layout !== undefined) { todos.splice(0, todos.length, ...(_indexedDB.todos || [])); layout = _indexedDB.layout || 'list'; hydrated = true; } } else { const _track = todos.map(t => `${t.id}:${t.completed}`).join(','); _indexedDB.todos = todos; _indexedDB.layout = layout; }" data-computed="{
+    }" data-signal:global="{ progress: 0 }" data-effect="if (!hydrated) { if (_indexedDB.todos !== undefined) { todos.splice(0, todos.length, ...(_indexedDB.todos || [])); hydrated = true; } } else { const _track = todos.map(t => `${t.id}:${t.completed}`).join(','); _indexedDB.todos = todos; } _localStorage.layout = layout;" data-computed="{
         filteredTodos: () => {
             const f = filter;
             const list = todos;
