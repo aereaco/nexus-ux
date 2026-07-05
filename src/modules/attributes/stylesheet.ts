@@ -48,7 +48,7 @@ async function resolveImports(cssText: string, baseUrl?: string): Promise<string
   return resolved;
 }
 
-export class NexusStyleSheet extends (typeof CSSStyleSheet !== 'undefined' ? CSSStyleSheet : class {}) {
+export class NexusStyleSheet extends (typeof CSSStyleSheet !== 'undefined' ? CSSStyleSheet : class { }) {
   private _rawCSSText = '';
 
   constructor() {
@@ -72,8 +72,8 @@ export class NexusStyleSheet extends (typeof CSSStyleSheet !== 'undefined' ? CSS
       try {
         super.replaceSync(cssText);
       } catch (err) {
-        // If it throws because of @import (unsupported synchronously by spec),
-        // let the background fetch resolver handle loading it asynchronously.
+        // @import rules are not allowed in replaceSync per spec (construct-stylesheets).
+        // Silently swallow this if we have imports — the background resolver will inline them.
         if (!hasImports) {
           throw err;
         }
@@ -162,11 +162,11 @@ function hashString(str: string): string {
 async function fetchWithCache(url: string, timeoutMs = 3000): Promise<string> {
   const cacheKey = `nexus-cache:${url}`;
   let cached: string | null = null;
-  
+
   if (typeof localStorage !== 'undefined') {
     try {
       cached = localStorage.getItem(cacheKey);
-    } catch (_) {}
+    } catch (_) { }
   }
 
   if (cached) {
@@ -185,7 +185,7 @@ async function fetchWithCache(url: string, timeoutMs = 3000): Promise<string> {
           if (typeof localStorage !== 'undefined') {
             try {
               localStorage.setItem(cacheKey, freshText);
-            } catch (_) {}
+            } catch (_) { }
           }
         } else {
           console.log(`[Nexus Cache] VERIFIED: Cache matches CDN for ${url}.`);
@@ -226,7 +226,7 @@ async function fetchWithCache(url: string, timeoutMs = 3000): Promise<string> {
       if (typeof localStorage !== 'undefined') {
         try {
           localStorage.setItem(cacheKey, text);
-        } catch (_) {}
+        } catch (_) { }
       }
       return text;
     } catch (_) {
@@ -240,7 +240,7 @@ async function fetchWithCache(url: string, timeoutMs = 3000): Promise<string> {
     if (typeof localStorage !== 'undefined') {
       try {
         localStorage.setItem(cacheKey, text);
-      } catch (_) {}
+      } catch (_) { }
     }
     return text;
   } catch (err) {
@@ -254,7 +254,7 @@ async function initPlayCompiler() {
 
   try {
     console.log("🚀 Initializing Tailwind Play JIT compiler...");
-    
+
     // Adopt the index.css sheet using our custom NexusStyleSheet `@import` resolver
     preflightSheet.replaceSync('@import url("https://cdn.jsdelivr.net/npm/tailwindcss@4/index.css");');
 
@@ -407,7 +407,7 @@ class StyleSheetManager {
       ) {
         return;
       }
-      
+
       compiledClassesSet.add(className);
       const compiledCSS = tailwindCompiler.build(Array.from(compiledClassesSet));
       jitSheet.replaceSync(compiledCSS);
@@ -419,17 +419,17 @@ class StyleSheetManager {
 
   adoptSignalBinding(el: HTMLElement, signalName: string, runtime: RuntimeContext) {
     if (!el.hasAttribute('data-class')) {
-       const currentBindings = (el as HTMLElement & { _signalBindings?: string[] })._signalBindings || [];
-       if (!currentBindings.includes(signalName)) {
-           currentBindings.push(signalName);
-           (el as HTMLElement & { _signalBindings?: string[] })._signalBindings = currentBindings;
-           
-           const varName = signalName.replace(/[#.]/g, '-');
-           runtime.effect(() => {
-              const val = runtime.evaluate(el, signalName);
-              el.style.setProperty(`--nx-${varName}`, String(val !== undefined ? val : ''));
-           });
-       }
+      const currentBindings = (el as HTMLElement & { _signalBindings?: string[] })._signalBindings || [];
+      if (!currentBindings.includes(signalName)) {
+        currentBindings.push(signalName);
+        (el as HTMLElement & { _signalBindings?: string[] })._signalBindings = currentBindings;
+
+        const varName = signalName.replace(/[#.]/g, '-');
+        runtime.effect(() => {
+          const val = runtime.evaluate(el, signalName);
+          el.style.setProperty(`--nx-${varName}`, String(val !== undefined ? val : ''));
+        });
+      }
     }
   }
 
@@ -439,7 +439,7 @@ class StyleSheetManager {
     try {
       sheet.insertRule(cssText, sheet.cssRules.length);
       this._knownClasses.add(className);
-    } catch (_e) {}
+    } catch (_e) { }
   }
 
   collectRules(): string {
@@ -448,14 +448,14 @@ class StyleSheetManager {
       const rules: string[] = [];
       try {
         for (const rule of sheet.cssRules) rules.push(rule.cssText);
-      } catch (_e) {}
+      } catch (_e) { }
       if (rules.length) sheets.push(rules.join('\n'));
     });
 
     const rules: string[] = [];
     try {
       for (const rule of (jitSheet as any).cssRules) rules.push(rule.cssText);
-    } catch (_e) {}
+    } catch (_e) { }
     if (rules.length) sheets.push(rules.join('\n'));
     return sheets.join('\n\n');
   }
@@ -464,18 +464,18 @@ class StyleSheetManager {
     const processedCSS = this.processAtRules(cssText);
     const sheetId = id || `_auto_${this._nextId++}`;
     const existing = this._adoptedSheets.get(sheetId);
-    
+
     if (existing) {
       existing.replaceSync(processedCSS);
       return () => this.removeSheet(sheetId, root);
     }
 
-    if (typeof CSSStyleSheet === 'undefined') return () => {};
+    if (typeof CSSStyleSheet === 'undefined') return () => { };
 
     const sheet = new CSSStyleSheet();
     sheet.replaceSync(processedCSS);
     this._adoptedSheets.set(sheetId, sheet);
-    
+
     if (root && 'adoptedStyleSheets' in root) {
       root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
     }
@@ -491,12 +491,12 @@ class StyleSheetManager {
       return () => this.removeSheet(sheetId, root);
     }
 
-    if (typeof CSSStyleSheet === 'undefined') return () => {};
+    if (typeof CSSStyleSheet === 'undefined') return () => { };
 
     const sheet = new CSSStyleSheet();
     await sheet.replace(processedCSS);
     this._adoptedSheets.set(sheetId, sheet);
-    
+
     if (root && 'adoptedStyleSheets' in root) {
       root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
     }
@@ -511,7 +511,7 @@ class StyleSheetManager {
       return () => this.removeSheet(sheetId, root);
     }
 
-    if (typeof CSSStyleSheet === 'undefined') return () => {};
+    if (typeof CSSStyleSheet === 'undefined') return () => { };
 
     const sheet = new CSSStyleSheet();
     await sheet.replace(cssText);
@@ -573,7 +573,7 @@ const stylesheetModule: AttributeModule = {
   handle(el: HTMLElement, _expression: string, runtime: RuntimeContext): (() => void) | void {
     // A. Locate closest shadow root or document
     const root = el.getRootNode() as Document | ShadowRoot;
-    
+
     // B. Adopt preflight and jit sheets onto the scope's root
     if (root && 'adoptedStyleSheets' in root) {
       const sheetsList = Array.from(root.adoptedStyleSheets);
@@ -585,7 +585,7 @@ const stylesheetModule: AttributeModule = {
     // C. Scan and compile classes inside the subtree
     stylesheet.emitPreflightAndTheme(el);
 
-    return () => {};
+    return () => { };
   }
 };
 

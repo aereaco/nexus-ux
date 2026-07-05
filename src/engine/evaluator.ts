@@ -137,7 +137,7 @@ function checkBalanced(expr: string): { type: string, expected: string, position
 function validateExpression(expression: string, el: Element | Text | Comment): UXDiagnostic | null {
   const trimmed = expression.trim();
   let attrName = '';
-  
+
   if (el instanceof Element) {
     for (const attr of Array.from(el.attributes)) {
       if (attr.value === expression) {
@@ -153,8 +153,8 @@ function validateExpression(expression: string, el: Element | Text | Comment): U
       return {
         severity: 'error',
         message: `Invalid data-for syntax: "${trimmed}". Expected "item in items".`,
-        suggestion: trimmed.includes(' of ') 
-          ? `Replace 'of' with 'in': "${trimmed.replace(' of ', ' in ')}"` 
+        suggestion: trimmed.includes(' of ')
+          ? `Replace 'of' with 'in': "${trimmed.replace(' of ', ' in ')}"`
           : `Use pattern: "(item, index) in list"`,
         element: el as Element,
         expression: trimmed
@@ -212,10 +212,10 @@ export function evaluateLater(
         if (hasScopeProvider(key)) return true;
         const globalSignals = runtime.globalSignals();
         const globalActions = runtime.globalActions();
-        
+
         // ZCZS: Live Scope Resolution — always fetches current context
         const dataStack = getDataStack(el as HTMLElement);
-        
+
         return (key in target) || (key in globalSignals) || (key in globalActions) || dataStack.some(data => key in data);
       }
       return false;
@@ -226,13 +226,13 @@ export function evaluateLater(
         // 1. Mirror Proxy (`_` prefix) - Dynamic mirror generation for any browser API
         if (key.startsWith('_')) {
           if (key === '_' || key === '_window') return MirrorProxy;
-          
+
           const realName = key.slice(1);
           const globalSignals = runtime.globalSignals();
           let val = (globalSignals as any)[key];
-          
+
           if (val !== undefined) return val;
-          
+
           try {
             const nativeTarget = (globalThis as any)[realName];
             if (nativeTarget !== undefined) {
@@ -272,7 +272,7 @@ export function evaluateLater(
         // 5. Global Actions
         const globalActions = runtime.globalActions();
         if (key in globalActions) {
-           return (globalActions as any)[key];
+          return (globalActions as any)[key];
         }
       }
       return undefined;
@@ -293,7 +293,7 @@ export function evaluateLater(
             return true;
           }
         }
-        
+
         // Fallback: If not found in stack, auto-create in the closest reactive local scope
         // or global signals to ensure "virtual" signals can be established on-the-fly.
         if (dataStack.length > 0) {
@@ -319,7 +319,7 @@ export function evaluateLater(
   // IMPORTANT — CSP: this requires `unsafe-eval` in Content-Security-Policy.
   // This is the same trade-off as Alpine.js. A CSP-compatible build would
   // pre-compile expressions at build time (not implemented yet).
-  
+
   const diagnostic = validateExpression(expression, el);
   if (diagnostic) {
     syntaxError(
@@ -342,10 +342,8 @@ export function evaluateLater(
     func = new Function('scope', `with (scope) { return (${processedExpression}) }`);
   } catch (e) {
     if (e instanceof SyntaxError) {
-      // Log syntax error before attempting statement fallback
-      console.warn(`[Nexus Syntax] Expression failed to compile as value: "${processedExpression}"`);
       try {
-        // Fallback to statement block
+        // Fallback to statement block (e.g. if/for expressions used in data-effect)
         func = new Function('scope', `with (scope) { ${processedExpression} }`);
       } catch (e2) {
         if (e2 instanceof SyntaxError) {
@@ -407,9 +405,9 @@ export function evaluateLater(
           // Agentic Resolution Beacon: Delegate console warnings to the SelfHeal agent
           // to suppress transient resolution noise during initial DOM hydration.
           try {
-            getSelfHealAgent().reportResolutionFailure('expression', expression, { 
-              error: e.message, 
-              node: el 
+            getSelfHealAgent().reportResolutionFailure('expression', expression, {
+              error: e.message,
+              node: el
             });
           } catch (_err) { /* ignore during boot */ }
         }

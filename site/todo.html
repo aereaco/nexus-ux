@@ -39,7 +39,7 @@
         editTempText: '',
         $saveTodos: (t) => {
             progress = 20;
-            _localStorage.todos = toRaw(t);
+            _localStorage.todos = t;
             setTimeout(() => progress = 100, 300);
             setTimeout(() => progress = 0, 800);
         }
@@ -59,7 +59,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexus-UX • Advanced Todo</title>
 
-    <script type="module" src="/dist/nexus-ux.js?v=cb1"></script>
+    <script type="module" src="/dist/nexus-ux.js"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -67,12 +67,12 @@
 
 </head>
 
-<body class="min-h-screen flex flex-col items-center justify-start py-12 px-4 transition-colors duration-500 bg-gradient-to-br from-base-300 via-base-100 to-base-200">
+<body
+    class="min-h-screen flex flex-col items-center justify-start py-12 px-4 transition-colors duration-500 bg-gradient-to-br from-base-300 via-base-100 to-base-200">
 
+    <!-- Top Progress Bar (DaisyUI native progress) -->
     <progress class="progress progress-primary fixed top-0 left-0 w-full z-[9999] pointer-events-none h-1 rounded-none"
-        data-show="progress > 0 || isEditing"
-        data-attr:value="isEditing ? null : progress"
-        max="100"></progress>
+        data-show="#progress > 0 || isEditing" data-attr:value="isEditing ? null : #progress" max="100"></progress>
 
     <!-- PWA Installation Widget -->
     <div data-if="$pwa && !$pwa.isInstalled && $pwa.deferredPrompt"
@@ -90,14 +90,15 @@
 
     <!-- Theme Switcher -->
     <div class="fixed top-6 right-6 z-50">
-        <button class="btn btn-circle btn-lg shadow-lg bg-base-100 border border-base-300 hover:scale-110 active:scale-95 transition-all"
+        <button
+            class="btn btn-circle btn-lg shadow-lg bg-base-100 border border-base-300 hover:scale-110 active:scale-95 transition-all"
             data-on-click="$switchTheme()">
             <iconify-icon data-attr:icon="$themeIcon" class="text-2xl transition-all duration-300"></iconify-icon>
         </button>
     </div>
 
-    <!-- Main Card -->
-    <div class="card w-full max-w-2xl bg-base-100/90 backdrop-blur-md shadow-2xl border border-base-300 transition-all duration-500 overflow-hidden"
+    <!-- Main Card (data-test-plugin: demonstrates Nexus-UX's 3rd-party plugin API) -->
+    <div class="card w-full max-w-2xl bg-base-100/90 backdrop-blur-md shadow-2xl border border-base-300 transition-all duration-500 overflow-visible relative"
         data-test-plugin="yay!">
         <div class="card-body gap-8 p-6 sm:p-8">
 
@@ -142,7 +143,7 @@
                             $saveTodos(todos);
                         }
                     ">
-                <button class="btn btn-primary absolute top-2 right-2 px-6 shadow-md" data-on-click="
+                <button class="btn btn-primary absolute top-1/2 -translate-y-1/2 right-2 px-6 shadow-md" data-on-click="
                         if (newTodo.trim()) {
                             todos.push({ id: Date.now(), text: newTodo.trim(), completed: false });
                             newTodo = '';
@@ -167,13 +168,11 @@
             </div>
 
             <!-- Todo List Container -->
-            <div class="min-h-[300px] transition-all duration-300 w-full"
-                data-class="{
+            <div class="min-h-[300px] transition-all duration-300 w-full" data-class="{
                     'grid grid-cols-2 gap-4': layout === 'grid',
                     'flex flex-col gap-3': layout === 'list',
                     'flex flex-col gap-1.5': layout === 'compact'
-                }"
-                data-drag-container="todos" data-spatial="sortable"
+                }" data-drag-container="todos" data-spatial="sortable"
                 data-drag-class="!opacity-100 !shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] scale-105 cursor-grabbing z-[9999]"
                 data-drag-ghost-class="opacity-40 bg-base-200 border-2 border-dashed border-base-content/20">
 
@@ -195,29 +194,24 @@
                         'p-5 flex-col items-center justify-center text-center h-40 bg-base-200': layout === 'grid',
                         'p-4 items-center gap-4 bg-base-200 hover:shadow-md': layout === 'list',
                         'p-2.5 items-center gap-3 text-sm bg-base-200/60 hover:bg-base-200/80': layout === 'compact'
-                    }"
-                    data-on-click="activeTodo = todo; isEditing = false">
+                    }" data-on-click="activeTodo = todo; isEditing = false">
 
                     <!-- Left area -->
-                    <div class="flex-1 flex min-w-0"
-                        data-class="{
+                    <div class="flex-1 flex min-w-0" data-class="{
                             'flex-col items-center w-full': layout === 'grid',
                             'gap-4': layout !== 'grid'
                         }">
 
                         <!-- Checkbox -->
-                        <div data-on-click:stop=""
-                            data-class="{ 'absolute top-4 left-4': layout === 'grid' }">
+                        <div data-on-click:stop="" data-class="{ 'absolute top-4 left-4': layout === 'grid' }">
                             <input type="checkbox"
                                 class="checkbox checkbox-primary transition-all hover:scale-110 active:scale-125"
                                 data-class="{ 'checkbox-lg': layout !== 'compact', 'checkbox-sm': layout === 'compact' }"
-                                data-bind-checked="todo.completed"
-                                data-on-change="$saveTodos(todos)">
+                                data-bind-checked="todo.completed" data-on-change="$saveTodos(todos)">
                         </div>
 
                         <!-- Text -->
-                        <span class="font-medium leading-tight select-none text-base-content"
-                            data-bind="todo.text"
+                        <span class="font-medium leading-tight select-none text-base-content" data-bind="todo.text"
                             data-class="{
                                 'text-lg': layout === 'list',
                                 'line-clamp-3 w-full px-4 mt-2': layout === 'grid',
@@ -228,13 +222,11 @@
 
                     <!-- Delete Button -->
                     <div class="flex items-center gap-1 transition-opacity opacity-0 group-hover:opacity-100"
-                        data-on-click:stop=""
-                        data-class="{ 'absolute top-4 right-4': layout === 'grid' }">
+                        data-on-click:stop="" data-class="{ 'absolute top-4 right-4': layout === 'grid' }">
                         <button
                             class="btn btn-circle btn-ghost text-error/40 hover:text-error hover:bg-error/10 transition-all"
                             data-class="{ 'btn-sm': layout !== 'compact', 'btn-xs': layout === 'compact' }"
-                            title="Delete Task"
-                            data-on-click="activeTodo = todo; showConfirmDelete = true">
+                            title="Delete Task" data-on-click="activeTodo = todo; showConfirmDelete = true">
                             <iconify-icon icon="material-symbols-light:delete-outline"
                                 data-class="{ 'text-xl': layout !== 'compact', 'text-base': layout === 'compact' }"></iconify-icon>
                         </button>
@@ -264,7 +256,8 @@
 
     <!-- Task View/Edit Modal -->
     <div class="modal" data-class="{ 'modal-open': activeTodo && !showConfirmDelete }">
-        <div class="modal-box bg-base-100 shadow-2xl border border-primary/20 p-0 overflow-hidden flex flex-col max-w-lg">
+        <div
+            class="modal-box bg-base-100 shadow-2xl border border-primary/20 p-0 overflow-hidden flex flex-col max-w-lg">
 
             <!-- Modal Header -->
             <div class="flex items-center justify-between p-4 border-b border-base-200">
@@ -345,7 +338,8 @@
             </p>
             <div class="flex justify-end gap-3 mt-4">
                 <button class="btn btn-ghost btn-sm"
-                    data-on-click="showConfirmDelete = false; showConfirmClear = false; activeTodo = null">No, Keep it</button>
+                    data-on-click="showConfirmDelete = false; showConfirmClear = false; activeTodo = null">No, Keep
+                    it</button>
                 <button class="btn btn-error btn-sm text-white px-6 shadow-md" data-on-click="
                         if (showConfirmDelete) {
                             todos = todos.filter(t => t.id !== activeTodo.id);
