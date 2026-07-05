@@ -40,7 +40,6 @@ const computedModule: AttributeModule = {
       const [_runner, effectCleanup] = runtime.elementBoundEffect(el, () => {
         const computedDefs = runtime.evaluate(el, value || '{}');
         if (typeof computedDefs === 'object' && computedDefs !== null) {
-          const newState = runtime.reactive<Record<string, unknown>>({ ...stateRef.value });
           Object.entries(computedDefs).forEach(([propName, getter]) => {
             if (typeof getter !== 'function') return;
 
@@ -55,21 +54,17 @@ const computedModule: AttributeModule = {
             }, propName);
 
             if (isGlobal || !addCleanup) {
-              runtime.setGlobalSignal(propName, computedVal.value);
-              const stop = runtime.watch(computedVal, val => runtime.setGlobalSignal(propName, val));
+              const stop = runtime.watch(computedVal, (val: any) => {
+                runtime.setGlobalSignal(propName, val);
+              }, { immediate: true });
               computedCleanup.push(stop);
             } else {
-              // ZCZS is already woven into unifiedComputed/unifiedRef
-              // No context switch needed - numeric values use typed arrays internally
-              newState[propName] = computedVal.value;
-              const stop = runtime.watch(computedVal, val => { 
-                newState[propName] = val; 
-              });
+              const stop = runtime.watch(computedVal, (val: any) => { 
+                stateRef.value[propName] = val; 
+              }, { immediate: true });
               computedCleanup.push(stop);
             }
           });
-          // Use unifiedRef's set - handles ZCZS internally
-          stateRef.value = newState;
         }
       });
       computedCleanup.push(effectCleanup);
@@ -110,15 +105,15 @@ const computedModule: AttributeModule = {
           });
 
           if (isGlobal || !addCleanup) {
-              runtime.setGlobalSignal(propName, computedVal.value);
-              const stop = runtime.watch(computedVal, val => runtime.setGlobalSignal(propName, val));
+              const stop = runtime.watch(computedVal, (val: any) => {
+                runtime.setGlobalSignal(propName, val);
+              }, { immediate: true });
               computedCleanup.push(stop);
           } else {
-              const newState = runtime.reactive<Record<string, unknown>>({ ...attrStateRef.value });
-              newState[propName] = computedVal.value;
-              const stop = runtime.watch(computedVal, val => { newState[propName] = val; });
+              const stop = runtime.watch(computedVal, (val: any) => { 
+                attrStateRef.value[propName] = val; 
+              }, { immediate: true });
               computedCleanup.push(stop);
-              attrStateRef.value = newState;
           }
         });
         computedCleanup.push(effectCleanup);
