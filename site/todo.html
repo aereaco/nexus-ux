@@ -37,7 +37,7 @@
             setTimeout(() => progress = 100, 300);
             setTimeout(() => progress = 0, 800);
         }
-    }" data-signal:global="{ progress: 0 }" data-effect="if (!hydrated) { if (_indexedDB.todos !== undefined) { todos.splice(0, todos.length, ...(_indexedDB.todos || [])); hydrated = true; } } else { const _track = todos.map(t => `${t.id}:${t.completed}`).join(','); _indexedDB.todos = todos; }" data-computed="{
+    }" data-signal:global="{ progress: 0 }" data-effect="if (!hydrated) { if (_indexedDB.todos !== undefined) { todos.splice(0, todos.length, ...(_indexedDB.todos || [])); hydrated = true; } } else { const _track = todos.map(t => `${t.id}:${t.completed}`).join(','); _indexedDB.todos = todos; } _localStorage.layout = layout;" data-computed="{
         filteredTodos: () => {
             const f = filter;
             const list = todos;
@@ -104,20 +104,20 @@
 
                 <!-- Layout Toggles -->
                 <div class="join bg-base-200 p-1 rounded-box shadow-inner">
-                    <button class="join-item btn btn-xs btn-ghost gap-1" data-on-click="_localStorage.layout = 'list'"
+                    <button class="join-item btn btn-xs btn-ghost gap-1" data-on-click="layout = 'list'"
                         data-class="{ 'btn-active': layout === 'list' }">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path d="M4 6h16M4 12h16M4 18h16" stroke-width="2" stroke-linecap="round" />
                         </svg> List
                     </button>
-                    <button class="join-item btn btn-xs btn-ghost gap-1" data-on-click="_localStorage.layout = 'grid'"
+                    <button class="join-item btn btn-xs btn-ghost gap-1" data-on-click="layout = 'grid'"
                         data-class="{ 'btn-active': layout === 'grid' }">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path d="M4 4h7v7H4V4zm9 0h7v7h-7V4zM4 13h7v7H4v-7zm9 0h7v7h-7v-7z" stroke-width="2"
                                 stroke-linecap="round" />
                         </svg> Grid
                     </button>
-                    <button class="join-item btn btn-xs btn-ghost gap-1" data-on-click="_localStorage.layout = 'compact'"
+                    <button class="join-item btn btn-xs btn-ghost gap-1" data-on-click="layout = 'compact'"
                         data-class="{ 'btn-active': layout === 'compact' }">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path d="M4 8h16M4 16h16" stroke-width="2" stroke-linecap="round" />
