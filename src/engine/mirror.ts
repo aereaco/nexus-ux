@@ -90,7 +90,7 @@ function createHeapBackedRef<T>(
   if (!heap.has(heapKey)) {
     let initial = undefined;
     try {
-      initial = target[prop];
+      initial = isStringCoercingAPI ? target.getItem(prop) : target[prop];
     } catch {
       // Ignore initial read failure
     }
@@ -119,17 +119,17 @@ function createHeapBackedRef<T>(
       heap.set(heapKey, newValue);
       
       try {
-        if (newValue && typeof newValue === 'object') {
-          if (isStringCoercingAPI) {
-            // String-only Storage APIs: always JSON-serialize — avoids the [object Object] coercion
-            // trap for both plain objects and arrays.
-            Reflect.set(target, prop, JSON.stringify(toRaw(newValue)));
+        if (isStringCoercingAPI) {
+          const strValue = (newValue && typeof newValue === 'object')
+            ? JSON.stringify(toRaw(newValue))
+            : String(newValue);
+          target.setItem(prop, strValue);
+        } else {
+          if (newValue && typeof newValue === 'object') {
+            Reflect.set(target, prop, newValue);
           } else {
-            // Non-coercing APIs: write the raw value directly
             Reflect.set(target, prop, newValue);
           }
-        } else {
-          Reflect.set(target, prop, newValue);
         }
       } catch (e) {
         console.warn(`[Nexus Mirror] Dynamic write failed for ${prop}:`, e);
