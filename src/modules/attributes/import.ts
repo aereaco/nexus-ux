@@ -160,8 +160,17 @@ async function importLink(
     const href = attrs.href as string;
     if (!href) return;
 
-    if (!attrs.rel) attrs = { ...attrs, rel: 'stylesheet' };
+    if (attrs.rel === 'stylesheet' || !attrs.rel) {
+      const cssText = await resolveContent(href);
+      if (cssText) {
+        const cleanup = await stylesheet.adoptRawCSS(cssText, `import-${id}-${href}`);
+        cleanupFns.push(cleanup);
+        runtime.log(`Nexus Import [${id}]: CSS adopted (raw): ${href}`);
+        return;
+      }
+    }
 
+    // Fallback: Legacy link tag with load waiting
     await new Promise<void>((resolve) => {
       const link = document.createElement('link');
       applyAttributes(link, attrs);
