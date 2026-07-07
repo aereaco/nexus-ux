@@ -19,16 +19,58 @@ export { PACKED_COMPONENTS };
 // 2. CUSTOM NESTED @IMPORT INTERPRETER FOR CONSTRUCTABLE STYLESHEETS
 // ============================================================================
 
+const atRuleCache = new Map<string, boolean>();
+
+function isAtRuleSupported(name: string): boolean {
+  if (atRuleCache.has(name)) {
+    return atRuleCache.get(name)!;
+  }
+  if (typeof document === 'undefined') return false;
+
+  const testDoc = document.implementation.createHTMLDocument('');
+  const styleEl = testDoc.createElement('style');
+  styleEl.textContent = `@${name} {}`;
+  testDoc.head.appendChild(styleEl);
+
+  const rules = styleEl.sheet?.cssRules;
+  if (!rules || rules.length === 0) {
+    atRuleCache.set(name, false);
+    return false;
+  }
+
+  const rule = rules[0];
+  if (typeof (globalThis as any).CSSUnknownRule !== 'undefined' && rule instanceof (globalThis as any).CSSUnknownRule) {
+    atRuleCache.set(name, false);
+    return false;
+  }
+
+  atRuleCache.set(name, true);
+  return true;
+}
+
 async function resolveImports(cssText: string, baseUrl?: string, onUpdate?: () => void): Promise<string> {
   const defaultBase = typeof window !== 'undefined' ? window.location.href : 'http://localhost';
   const currentBase = baseUrl || defaultBase;
 
   if (typeof document === 'undefined') return cssText;
 
+  // Phase 1: Mask unsupported custom at-rules dynamically
+  const customAtRuleRegex = /@([a-zA-Z0-9_-]+)\b[^{]*/g;
+  const preservedHeaders: string[] = [];
+
+  const preprocessedCss = cssText.replace(customAtRuleRegex, (match, name) => {
+    if (isAtRuleSupported(name)) {
+      return match;
+    }
+    const index = preservedHeaders.length;
+    preservedHeaders.push(match.trim());
+    return `.-nexus-mask-${index}`;
+  });
+
   // Let the browser natively parse the CSS in a detached HTML document
   const parserDoc = document.implementation.createHTMLDocument('');
   const styleEl = parserDoc.createElement('style');
-  styleEl.textContent = cssText;
+  styleEl.textContent = preprocessedCss;
   parserDoc.head.appendChild(styleEl);
 
   const sheet = styleEl.sheet;
@@ -64,7 +106,15 @@ async function resolveImports(cssText: string, baseUrl?: string, onUpdate?: () =
         resolvedRules.push(rule.cssText); // keep statement as fallback
       }
     } else {
-      resolvedRules.push(rule.cssText);
+      let ruleText = rule.cssText;
+      if (typeof CSSStyleRule !== 'undefined' && rule instanceof CSSStyleRule) {
+        // Unmask custom at-rules back to original headers during rule recovery
+        ruleText = ruleText.replace(/\.-nexus-mask-(\d+)\b/g, (match, indexStr) => {
+          const index = parseInt(indexStr, 10);
+          return preservedHeaders[index] || match;
+        });
+      }
+      resolvedRules.push(ruleText);
     }
   }
 
