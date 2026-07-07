@@ -15,10 +15,6 @@ import {
 export const PREFLIGHT_CSS = PACKED_COMPONENTS;
 export { PACKED_COMPONENTS };
 
-// ============================================================================
-// 2. CUSTOM NESTED @IMPORT INTERPRETER FOR CONSTRUCTABLE STYLESHEETS
-// ============================================================================
-
 async function loadStylesheet(id: string, base: string) {
   if (id === 'tailwindcss' || id === 'tailwindcss/index.css') {
     return { path: 'tailwindcss/index.css', base: '/', content: cachedIndexCss };
@@ -43,6 +39,40 @@ async function loadStylesheet(id: string, base: string) {
   }
 }
 
+async function resolveImports(cssText: string, baseUrl?: string): Promise<string> {
+  if (typeof document === 'undefined') return cssText;
+
+  const parserDoc = document.implementation.createHTMLDocument('');
+  const styleEl = parserDoc.createElement('style');
+  styleEl.textContent = cssText;
+  parserDoc.head.appendChild(styleEl);
+
+  const sheet = styleEl.sheet;
+  if (!sheet) return cssText;
+
+  const rules = Array.from(sheet.cssRules);
+  const resolvedRules: string[] = [];
+
+  for (const rule of rules) {
+    if (typeof CSSImportRule !== 'undefined' && rule instanceof CSSImportRule) {
+      const url = rule.href;
+      try {
+        const absoluteUrl = new URL(url, baseUrl || window.location.href).href;
+        const content = await fetchWithCache(absoluteUrl, 3000);
+        const nestedResolved = await resolveImports(content, absoluteUrl);
+        resolvedRules.push(nestedResolved);
+      } catch (err) {
+        console.warn(`[NexusStyleSheet] Failed to resolve import "${url}":`, err);
+        resolvedRules.push(rule.cssText);
+      }
+    } else {
+      resolvedRules.push(rule.cssText);
+    }
+  }
+
+  return resolvedRules.join('\n');
+}
+
 export class NexusStyleSheet extends (typeof CSSStyleSheet !== 'undefined' ? CSSStyleSheet : class { }) {
   private _rawCSSText = '';
 
@@ -61,7 +91,11 @@ export class NexusStyleSheet extends (typeof CSSStyleSheet !== 'undefined' ? CSS
     const hasImports = /@import/i.test(cssText);
     if (!hasImports) {
       let compiled = cssText;
-      if (compileFn) {
+      const needsJit = /@import\s+['"]tailwindcss['"]|@import\s+url\(['"]tailwindcss/i.test(cssText) ||
+                        /@theme\b/i.test(cssText) ||
+                        /@utility\b/i.test(cssText) ||
+                        /@plugin\b/i.test(cssText);
+      if (needsJit && compileFn) {
         try {
           const compiler = compileFn(cssText, { base: '/' });
           compiled = compiler.build([]);
@@ -79,23 +113,36 @@ export class NexusStyleSheet extends (typeof CSSStyleSheet !== 'undefined' ? CSS
   }
 
   private async resolve(cssText: string): Promise<void> {
-    if (!compileFn && initPlayCompilerPromise) {
-      await initPlayCompilerPromise;
-    }
+    const needsJit = /@import\s+['"]tailwindcss['"]|@import\s+url\(['"]tailwindcss/i.test(cssText) ||
+                      /@theme\b/i.test(cssText) ||
+                      /@utility\b/i.test(cssText) ||
+                      /@plugin\b/i.test(cssText);
 
     let compiled = cssText;
-    if (compileFn) {
+    if (needsJit) {
+      if (!compileFn && initPlayCompilerPromise) {
+        await initPlayCompilerPromise;
+      }
+      if (compileFn) {
+        try {
+          const compiler = await compileFn(cssText, {
+            base: window.location.href,
+            loadStylesheet,
+            async loadModule() {
+              throw new Error('Plugins not supported');
+            }
+          });
+          compiled = compiler.build([]);
+        } catch (err) {
+          console.error('[NexusStyleSheet] Compiler resolution failed:', err);
+        }
+      }
+    } else {
+      // Standard CSS stylesheet: resolve imports via CSSOM to preserve all classes
       try {
-        const compiler = await compileFn(cssText, {
-          base: window.location.href,
-          loadStylesheet,
-          async loadModule() {
-            throw new Error('Plugins not supported');
-          }
-        });
-        compiled = compiler.build([]);
+        compiled = await resolveImports(cssText);
       } catch (err) {
-        console.error('[NexusStyleSheet] Compiler resolution failed:', err);
+        console.error('[NexusStyleSheet] CSSOM resolution failed:', err);
       }
     }
 
