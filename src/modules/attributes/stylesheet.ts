@@ -39,16 +39,47 @@ async function loadStylesheet(id: string, base: string) {
   }
 }
 
+function ensureJitEnginePromise(): Promise<void> {
+  if (!initPlayCompilerPromise) {
+    initPlayCompilerPromise = initPlayCompiler();
+  }
+  return initPlayCompilerPromise;
+}
+
 async function resolveImports(cssText: string, baseUrl?: string): Promise<string> {
-  if (typeof document === 'undefined') return cssText;
+  const needsJit = /tailwindcss/i.test(cssText) ||
+                    /@theme\b/i.test(cssText) ||
+                    /@utility\b/i.test(cssText) ||
+                    /@plugin\b/i.test(cssText);
+
+  let compiled = cssText;
+  if (needsJit) {
+    await ensureJitEnginePromise();
+    if (compileFn) {
+      try {
+        const compiler = await compileFn(cssText, {
+          base: baseUrl || window.location.href,
+          loadStylesheet,
+          async loadModule() {
+            throw new Error('Plugins not supported');
+          }
+        });
+        compiled = compiler.build([]);
+      } catch (err) {
+        console.error('[NexusStyleSheet] Compiler resolution failed:', err);
+      }
+    }
+  }
+
+  if (typeof document === 'undefined') return compiled;
 
   const parserDoc = document.implementation.createHTMLDocument('');
   const styleEl = parserDoc.createElement('style');
-  styleEl.textContent = cssText;
+  styleEl.textContent = compiled;
   parserDoc.head.appendChild(styleEl);
 
   const sheet = styleEl.sheet;
-  if (!sheet) return cssText;
+  if (!sheet) return compiled;
 
   const rules = Array.from(sheet.cssRules);
   const resolvedRules: string[] = [];
@@ -82,72 +113,45 @@ export class NexusStyleSheet extends (typeof CSSStyleSheet !== 'undefined' ? CSS
 
   async replace(cssText: string): Promise<CSSStyleSheet> {
     this._rawCSSText = cssText;
-    await this.resolve(cssText);
+    const resolved = await resolveImports(cssText);
+    if (typeof super.replace === 'function') {
+      return await super.replace(resolved);
+    }
     return this as any;
   }
 
   replaceSync(cssText: string): void {
     this._rawCSSText = cssText;
     const hasImports = /@import/i.test(cssText);
-    if (!hasImports) {
-      let compiled = cssText;
-      const needsJit = /tailwindcss/i.test(cssText) ||
-                        /@theme\b/i.test(cssText) ||
-                        /@utility\b/i.test(cssText) ||
-                        /@plugin\b/i.test(cssText);
-      if (needsJit && compileFn) {
-        try {
-          const compiler = compileFn(cssText, { base: '/' });
-          compiled = compiler.build([]);
-        } catch (_) {}
-      }
-      if (typeof super.replaceSync === 'function') {
+    if (typeof super.replaceSync === 'function') {
+      if (!hasImports) {
+        let compiled = cssText;
+        const needsJit = /tailwindcss/i.test(cssText) ||
+                          /@theme\b/i.test(cssText) ||
+                          /@utility\b/i.test(cssText) ||
+                          /@plugin\b/i.test(cssText);
+        if (needsJit && compileFn) {
+          try {
+            const compiler = compileFn(cssText, { base: '/' });
+            compiled = compiler.build([]);
+          } catch (_) {}
+        }
         super.replaceSync(compiled);
-      }
-    } else {
-      if (typeof super.replaceSync === 'function') {
+      } else {
         super.replaceSync('');
       }
-      this.resolve(cssText).catch(err => console.error(err));
     }
-  }
 
-  private async resolve(cssText: string): Promise<void> {
-    const needsJit = /tailwindcss/i.test(cssText) ||
-                      /@theme\b/i.test(cssText) ||
-                      /@utility\b/i.test(cssText) ||
-                      /@plugin\b/i.test(cssText);
-
-    let compiled = cssText;
-    if (needsJit) {
-      if (!compileFn && initPlayCompilerPromise) {
-        await initPlayCompilerPromise;
-      }
-      if (compileFn) {
-        try {
-          const compiler = await compileFn(cssText, {
-            base: window.location.href,
-            loadStylesheet,
-            async loadModule() {
-              throw new Error('Plugins not supported');
-            }
+    if (hasImports) {
+      resolveImports(cssText).then(resolved => {
+        if (typeof super.replace === 'function') {
+          super.replace(resolved).catch((err: any) => {
+            console.error('[NexusStyleSheet] Dynamic replace of resolved imports failed:', err);
           });
-          compiled = compiler.build([]);
-        } catch (err) {
-          console.error('[NexusStyleSheet] Compiler resolution failed:', err);
         }
-      }
-    } else {
-      // Standard CSS stylesheet: resolve imports via CSSOM to preserve all classes
-      try {
-        compiled = await resolveImports(cssText);
-      } catch (err) {
-        console.error('[NexusStyleSheet] CSSOM resolution failed:', err);
-      }
-    }
-
-    if (typeof super.replace === 'function') {
-      await super.replace(compiled);
+      }).catch((err: any) => {
+        console.error('[NexusStyleSheet] Failed to resolve imports in background:', err);
+      });
     }
   }
 }
@@ -737,8 +741,8 @@ export function initializeJitEngine(): void {
     // Production Mode: Adopt pre-compiled AOT stylesheet directly
     stylesheet.adoptCSSSync(PACKED_THEME_CSS, 'nexus-theme');
   } else {
-    // Play Mode: Initialize official JIT compiler dynamically
-    initPlayCompilerPromise = initPlayCompiler();
+    // Play Mode: Initialize official JIT compiler dynamically on-demand
+    ensureJitEnginePromise();
   }
 }
 
