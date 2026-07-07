@@ -132,12 +132,66 @@ export class NexusStyleSheet extends (typeof CSSStyleSheet !== 'undefined' ? CSS
     this._rawCSSText = cssText;
     const resolved = await resolveImports(cssText, undefined, async () => {
       const freshResolved = await resolveImports(this._rawCSSText);
+      let compiled = freshResolved;
+      if (compileFn) {
+        try {
+          const compiler = await compileFn(freshResolved, {
+            base: '/',
+            async loadStylesheet(id: string) {
+              if (id === 'tailwindcss' || id === 'tailwindcss/index.css') {
+                return { path: 'tailwindcss/index.css', base: '/', content: cachedIndexCss };
+              }
+              if (id === './theme.css' || id === 'tailwindcss/theme.css') {
+                return { path: 'tailwindcss/theme.css', base: '/', content: cachedThemeCss };
+              }
+              if (id === './preflight.css' || id === 'tailwindcss/preflight.css') {
+                return { path: 'tailwindcss/preflight.css', base: '/', content: cachedPreflightCss };
+              }
+              if (id === './utilities.css' || id === 'tailwindcss/utilities.css') {
+                return { path: 'tailwindcss/utilities.css', base: '/', content: cachedUtilitiesCss };
+              }
+              return { path: id, base: '/', content: '' };
+            }
+          });
+          compiled = compiler.build([]);
+        } catch (err) {
+          console.error('[NexusStyleSheet] Tailwind compilation failed:', err);
+        }
+      }
       if (typeof super.replace === 'function') {
-        await super.replace(freshResolved);
+        await super.replace(compiled);
       }
     });
+
+    let compiled = resolved;
+    if (compileFn) {
+      try {
+        const compiler = await compileFn(resolved, {
+          base: '/',
+          async loadStylesheet(id: string) {
+            if (id === 'tailwindcss' || id === 'tailwindcss/index.css') {
+              return { path: 'tailwindcss/index.css', base: '/', content: cachedIndexCss };
+            }
+            if (id === './theme.css' || id === 'tailwindcss/theme.css') {
+              return { path: 'tailwindcss/theme.css', base: '/', content: cachedThemeCss };
+            }
+            if (id === './preflight.css' || id === 'tailwindcss/preflight.css') {
+              return { path: 'tailwindcss/preflight.css', base: '/', content: cachedPreflightCss };
+            }
+            if (id === './utilities.css' || id === 'tailwindcss/utilities.css') {
+              return { path: 'tailwindcss/utilities.css', base: '/', content: cachedUtilitiesCss };
+            }
+            return { path: id, base: '/', content: '' };
+          }
+        });
+        compiled = compiler.build([]);
+      } catch (err) {
+        console.error('[NexusStyleSheet] Tailwind compilation failed:', err);
+      }
+    }
+
     if (typeof super.replace === 'function') {
-      return await super.replace(resolved);
+      return await super.replace(compiled);
     }
     return this as any;
   }
@@ -158,16 +212,67 @@ export class NexusStyleSheet extends (typeof CSSStyleSheet !== 'undefined' ? CSS
       }
     }
 
-    if (hasImports) {
-      // Asynchronously fetch and inline imports in the background
+    if (hasImports || compileFn) {
       resolveImports(cssText, undefined, async () => {
         const freshResolved = await resolveImports(this._rawCSSText);
-        if (typeof super.replace === 'function') {
-          super.replace(freshResolved).catch((err: any) => console.error(err));
+        let compiled = freshResolved;
+        if (compileFn) {
+          try {
+            const compiler = await compileFn(freshResolved, {
+              base: '/',
+              async loadStylesheet(id: string) {
+                if (id === 'tailwindcss' || id === 'tailwindcss/index.css') {
+                  return { path: 'tailwindcss/index.css', base: '/', content: cachedIndexCss };
+                }
+                if (id === './theme.css' || id === 'tailwindcss/theme.css') {
+                  return { path: 'tailwindcss/theme.css', base: '/', content: cachedThemeCss };
+                }
+                if (id === './preflight.css' || id === 'tailwindcss/preflight.css') {
+                  return { path: 'tailwindcss/preflight.css', base: '/', content: cachedPreflightCss };
+                }
+                if (id === './utilities.css' || id === 'tailwindcss/utilities.css') {
+                  return { path: 'tailwindcss/utilities.css', base: '/', content: cachedUtilitiesCss };
+                }
+                return { path: id, base: '/', content: '' };
+              }
+            });
+            compiled = compiler.build([]);
+          } catch (err) {
+            console.error('[NexusStyleSheet] Tailwind compilation failed:', err);
+          }
         }
-      }).then(resolved => {
         if (typeof super.replace === 'function') {
-          super.replace(resolved).catch((err: any) => {
+          super.replace(compiled).catch((err: any) => console.error(err));
+        }
+      }).then(async resolved => {
+        let compiled = resolved;
+        if (compileFn) {
+          try {
+            const compiler = await compileFn(resolved, {
+              base: '/',
+              async loadStylesheet(id: string) {
+                if (id === 'tailwindcss' || id === 'tailwindcss/index.css') {
+                  return { path: 'tailwindcss/index.css', base: '/', content: cachedIndexCss };
+                }
+                if (id === './theme.css' || id === 'tailwindcss/theme.css') {
+                  return { path: 'tailwindcss/theme.css', base: '/', content: cachedThemeCss };
+                }
+                if (id === './preflight.css' || id === 'tailwindcss/preflight.css') {
+                  return { path: 'tailwindcss/preflight.css', base: '/', content: cachedPreflightCss };
+                }
+                if (id === './utilities.css' || id === 'tailwindcss/utilities.css') {
+                  return { path: 'tailwindcss/utilities.css', base: '/', content: cachedUtilitiesCss };
+                }
+                return { path: id, base: '/', content: '' };
+              }
+            });
+            compiled = compiler.build([]);
+          } catch (err) {
+            console.error('[NexusStyleSheet] Tailwind compilation failed:', err);
+          }
+        }
+        if (typeof super.replace === 'function') {
+          super.replace(compiled).catch((err: any) => {
             console.error('[NexusStyleSheet] Dynamic replace of resolved imports failed:', err);
           });
         }
@@ -230,6 +335,11 @@ export function buildTailwindThemeBridge(tokens: Set<string>): string {
 }
 
 let tailwindCompiler: any = null;
+let compileFn: any = null;
+let cachedIndexCss = '';
+let cachedThemeCss = '';
+let cachedPreflightCss = '';
+let cachedUtilitiesCss = '';
 let compiledClassesSet = new Set<string>();
 const pendingClasses: { className: string; el?: HTMLElement; runtime?: RuntimeContext }[] = [];
 
@@ -354,6 +464,11 @@ async function initPlayCompiler() {
     const blob = new Blob([compilerJs], { type: 'text/javascript' });
     const blobUrl = URL.createObjectURL(blob);
     const { compile } = await import(blobUrl);
+    compileFn = compile;
+    cachedIndexCss = indexCss;
+    cachedThemeCss = themeCss;
+    cachedPreflightCss = preflightCss;
+    cachedUtilitiesCss = utilitiesCss;
     URL.revokeObjectURL(blobUrl);
 
     // Discover CSS color tokens from currently-applied stylesheets.
