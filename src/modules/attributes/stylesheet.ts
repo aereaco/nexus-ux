@@ -493,9 +493,17 @@ class StyleSheetManager {
     // Support dynamic data signals binding (e.g., w-$width, bg-$myColor).
     // These are processed globally across the document regardless of data-stylesheet boundary,
     // as signals only set element CSS variables and do not need Tailwind JIT compilation.
-    const hasSignalMatch = className.match(/^[a-z]+-\$([a-zA-Z_$][\w$]*)$/);
+    const hasSignalMatch = className.match(/^([a-z]+)-\$([a-zA-Z_$][\w$]*)$/);
     if (hasSignalMatch && el && runtime) {
-      this.adoptSignalBinding(el, hasSignalMatch[1], runtime);
+      const [, prefix, signalName] = hasSignalMatch;
+      const varName = `--nx-${signalName.replace(/[#.]/g, '-')}`;
+      
+      this.adoptSignalBinding(el, signalName, runtime);
+
+      const rewrittenClass = `${prefix}-[var(${varName})]`;
+      if (!el.classList.contains(rewrittenClass)) {
+        el.classList.add(rewrittenClass);
+      }
       this._knownClasses.add(className);
       return;
     }
