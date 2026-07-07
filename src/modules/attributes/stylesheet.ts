@@ -19,110 +19,9 @@ export { PACKED_COMPONENTS };
 // 2. CUSTOM NESTED @IMPORT INTERPRETER FOR CONSTRUCTABLE STYLESHEETS
 // ============================================================================
 
-const atRuleCache = new Map<string, boolean>();
-
-function isAtRuleSupported(name: string): boolean {
-  if (atRuleCache.has(name)) {
-    return atRuleCache.get(name)!;
-  }
-  if (typeof document === 'undefined') return false;
-
-  const testDoc = document.implementation.createHTMLDocument('');
-  const styleEl = testDoc.createElement('style');
-  styleEl.textContent = `@${name} {}`;
-  testDoc.head.appendChild(styleEl);
-
-  const rules = styleEl.sheet?.cssRules;
-  if (!rules || rules.length === 0) {
-    atRuleCache.set(name, false);
-    return false;
-  }
-
-  const rule = rules[0];
-  if (typeof (globalThis as any).CSSUnknownRule !== 'undefined' && rule instanceof (globalThis as any).CSSUnknownRule) {
-    atRuleCache.set(name, false);
-    return false;
-  }
-
-  atRuleCache.set(name, true);
-  return true;
-}
-
-async function resolveImports(cssText: string, baseUrl?: string, onUpdate?: () => void): Promise<string> {
-  const defaultBase = typeof window !== 'undefined' ? window.location.href : 'http://localhost';
-  const currentBase = baseUrl || defaultBase;
-
-  if (typeof document === 'undefined') return cssText;
-
-  // Phase 1: Mask unsupported custom at-rules dynamically
-  const customAtRuleRegex = /@([a-zA-Z0-9_-]+)\b[^{]*/g;
-  const preservedHeaders: string[] = [];
-
-  const preprocessedCss = cssText.replace(customAtRuleRegex, (match, name) => {
-    if (isAtRuleSupported(name)) {
-      return match;
-    }
-    const index = preservedHeaders.length;
-    preservedHeaders.push(match.trim());
-    return `.-nexus-mask-${index}`;
-  });
-
-  // Let the browser natively parse the CSS in a detached HTML document
-  const parserDoc = document.implementation.createHTMLDocument('');
-  const styleEl = parserDoc.createElement('style');
-  styleEl.textContent = preprocessedCss;
-  parserDoc.head.appendChild(styleEl);
-
-  const sheet = styleEl.sheet;
-  if (!sheet) return cssText;
-
-  const rules = Array.from(sheet.cssRules);
-  const resolvedRules: string[] = [];
-
-  for (const rule of rules) {
-    if (typeof CSSImportRule !== 'undefined' && rule instanceof CSSImportRule) {
-      const url = rule.href;
-      try {
-        const absoluteUrl = new URL(url, currentBase).href;
-        const content = await fetchWithCache(absoluteUrl, 3000, () => {
-          if (onUpdate) onUpdate();
-        });
-
-        let nestedResolved = await resolveImports(content, absoluteUrl, onUpdate);
-
-        // Natively wrap resolved content in media query if specified
-        if (rule.media && rule.media.mediaText && rule.media.mediaText !== 'all') {
-          nestedResolved = `@media ${rule.media.mediaText} {\n${nestedResolved}\n}`;
-        }
-
-        // Natively wrap resolved content in layer block if specified
-        if (rule.layerName) {
-          nestedResolved = `@layer ${rule.layerName} {\n${nestedResolved}\n}`;
-        }
-
-        resolvedRules.push(nestedResolved);
-      } catch (err) {
-        console.warn(`[NexusStyleSheet] Failed to resolve import "${url}" relative to "${currentBase}":`, err);
-        resolvedRules.push(rule.cssText); // keep statement as fallback
-      }
-    } else {
-      let ruleText = rule.cssText;
-      if (typeof CSSStyleRule !== 'undefined' && rule instanceof CSSStyleRule) {
-        // Unmask custom at-rules back to original headers during rule recovery
-        ruleText = ruleText.replace(/\.-nexus-mask-(\d+)\b/g, (match, indexStr) => {
-          const index = parseInt(indexStr, 10);
-          return preservedHeaders[index] || match;
-        });
-      }
-      resolvedRules.push(ruleText);
-    }
-  }
-
-  return resolvedRules.join('\n');
-}
-
 export class NexusStyleSheet extends (typeof CSSStyleSheet !== 'undefined' ? CSSStyleSheet : class { }) {
   private _rawCSSText = '';
+  public importedSheets: NexusStyleSheet[] = [];
 
   constructor() {
     super();
@@ -130,43 +29,37 @@ export class NexusStyleSheet extends (typeof CSSStyleSheet !== 'undefined' ? CSS
 
   async replace(cssText: string): Promise<CSSStyleSheet> {
     this._rawCSSText = cssText;
-    const resolved = await resolveImports(cssText, undefined, async () => {
-      const freshResolved = await resolveImports(this._rawCSSText);
-      let compiled = freshResolved;
+    await this.resolve(cssText);
+    return this as any;
+  }
+
+  replaceSync(cssText: string): void {
+    this._rawCSSText = cssText;
+    const hasImports = /@import/i.test(cssText);
+    if (!hasImports) {
+      let compiled = cssText;
       if (compileFn) {
         try {
-          const compiler = await compileFn(freshResolved, {
-            base: '/',
-            async loadStylesheet(id: string) {
-              if (id === 'tailwindcss' || id === 'tailwindcss/index.css') {
-                return { path: 'tailwindcss/index.css', base: '/', content: cachedIndexCss };
-              }
-              if (id === './theme.css' || id === 'tailwindcss/theme.css') {
-                return { path: 'tailwindcss/theme.css', base: '/', content: cachedThemeCss };
-              }
-              if (id === './preflight.css' || id === 'tailwindcss/preflight.css') {
-                return { path: 'tailwindcss/preflight.css', base: '/', content: cachedPreflightCss };
-              }
-              if (id === './utilities.css' || id === 'tailwindcss/utilities.css') {
-                return { path: 'tailwindcss/utilities.css', base: '/', content: cachedUtilitiesCss };
-              }
-              return { path: id, base: '/', content: '' };
-            }
-          });
+          const compiler = compileFn(cssText, { base: '/' });
           compiled = compiler.build([]);
-        } catch (err) {
-          console.error('[NexusStyleSheet] Tailwind compilation failed:', err);
-        }
+        } catch (_) {}
       }
-      if (typeof super.replace === 'function') {
-        await super.replace(compiled);
+      if (typeof super.replaceSync === 'function') {
+        super.replaceSync(compiled);
       }
-    });
+    } else {
+      if (typeof super.replaceSync === 'function') {
+        super.replaceSync('');
+      }
+      this.resolve(cssText).catch(err => console.error(err));
+    }
+  }
 
-    let compiled = resolved;
+  private async resolve(cssText: string): Promise<void> {
+    let compiled = cssText;
     if (compileFn) {
       try {
-        const compiler = await compileFn(resolved, {
+        const compiler = await compileFn(cssText, {
           base: '/',
           async loadStylesheet(id: string) {
             if (id === 'tailwindcss' || id === 'tailwindcss/index.css') {
@@ -186,99 +79,64 @@ export class NexusStyleSheet extends (typeof CSSStyleSheet !== 'undefined' ? CSS
         });
         compiled = compiler.build([]);
       } catch (err) {
-        console.error('[NexusStyleSheet] Tailwind compilation failed:', err);
+        console.error('[NexusStyleSheet] JIT compilation failed:', err);
       }
     }
 
-    if (typeof super.replace === 'function') {
-      return await super.replace(compiled);
+    if (typeof document === 'undefined') {
+      if (typeof super.replace === 'function') {
+        await super.replace(compiled);
+      }
+      return;
     }
-    return this as any;
-  }
 
-  replaceSync(cssText: string): void {
-    this._rawCSSText = cssText;
-    const hasImports = /@import/i.test(cssText);
+    const parserDoc = document.implementation.createHTMLDocument('');
+    const styleEl = parserDoc.createElement('style');
+    styleEl.textContent = compiled;
+    parserDoc.head.appendChild(styleEl);
 
-    if (typeof super.replaceSync === 'function') {
-      if (!hasImports) {
+    const sheet = styleEl.sheet;
+    if (!sheet) {
+      if (typeof super.replace === 'function') {
+        await super.replace(compiled);
+      }
+      return;
+    }
+
+    const rules = Array.from(sheet.cssRules);
+    const subSheets: NexusStyleSheet[] = [];
+    const cleanRules: string[] = [];
+
+    for (const rule of rules) {
+      if (typeof CSSImportRule !== 'undefined' && rule instanceof CSSImportRule) {
+        const url = rule.href;
+        if (url === 'tailwindcss' || url.includes('tailwindcss@4') || url.includes('tailwindcss/')) {
+          cleanRules.push(rule.cssText);
+          continue;
+        }
         try {
-          super.replaceSync(cssText);
+          const absoluteUrl = new URL(url, window.location.href).href;
+          const content = await fetchWithCache(absoluteUrl, 3000);
+          const subSheet = new NexusStyleSheet();
+          await subSheet.replace(content);
+          subSheets.push(subSheet);
         } catch (err) {
-          throw err;
+          console.warn(`[NexusStyleSheet] Failed to resolve sub-sheet for "${url}":`, err);
+          cleanRules.push(rule.cssText);
         }
       } else {
-        super.replaceSync('');
+        cleanRules.push(rule.cssText);
       }
     }
 
-    if (hasImports || compileFn) {
-      resolveImports(cssText, undefined, async () => {
-        const freshResolved = await resolveImports(this._rawCSSText);
-        let compiled = freshResolved;
-        if (compileFn) {
-          try {
-            const compiler = await compileFn(freshResolved, {
-              base: '/',
-              async loadStylesheet(id: string) {
-                if (id === 'tailwindcss' || id === 'tailwindcss/index.css') {
-                  return { path: 'tailwindcss/index.css', base: '/', content: cachedIndexCss };
-                }
-                if (id === './theme.css' || id === 'tailwindcss/theme.css') {
-                  return { path: 'tailwindcss/theme.css', base: '/', content: cachedThemeCss };
-                }
-                if (id === './preflight.css' || id === 'tailwindcss/preflight.css') {
-                  return { path: 'tailwindcss/preflight.css', base: '/', content: cachedPreflightCss };
-                }
-                if (id === './utilities.css' || id === 'tailwindcss/utilities.css') {
-                  return { path: 'tailwindcss/utilities.css', base: '/', content: cachedUtilitiesCss };
-                }
-                return { path: id, base: '/', content: '' };
-              }
-            });
-            compiled = compiler.build([]);
-          } catch (err) {
-            console.error('[NexusStyleSheet] Tailwind compilation failed:', err);
-          }
-        }
-        if (typeof super.replace === 'function') {
-          super.replace(compiled).catch((err: any) => console.error(err));
-        }
-      }).then(async resolved => {
-        let compiled = resolved;
-        if (compileFn) {
-          try {
-            const compiler = await compileFn(resolved, {
-              base: '/',
-              async loadStylesheet(id: string) {
-                if (id === 'tailwindcss' || id === 'tailwindcss/index.css') {
-                  return { path: 'tailwindcss/index.css', base: '/', content: cachedIndexCss };
-                }
-                if (id === './theme.css' || id === 'tailwindcss/theme.css') {
-                  return { path: 'tailwindcss/theme.css', base: '/', content: cachedThemeCss };
-                }
-                if (id === './preflight.css' || id === 'tailwindcss/preflight.css') {
-                  return { path: 'tailwindcss/preflight.css', base: '/', content: cachedPreflightCss };
-                }
-                if (id === './utilities.css' || id === 'tailwindcss/utilities.css') {
-                  return { path: 'tailwindcss/utilities.css', base: '/', content: cachedUtilitiesCss };
-                }
-                return { path: id, base: '/', content: '' };
-              }
-            });
-            compiled = compiler.build([]);
-          } catch (err) {
-            console.error('[NexusStyleSheet] Tailwind compilation failed:', err);
-          }
-        }
-        if (typeof super.replace === 'function') {
-          super.replace(compiled).catch((err: any) => {
-            console.error('[NexusStyleSheet] Dynamic replace of resolved imports failed:', err);
-          });
-        }
-      }).catch((err: any) => {
-        console.error('[NexusStyleSheet] Failed to resolve imports in background:', err);
-      });
+    this.importedSheets = subSheets;
+
+    if (typeof super.replace === 'function') {
+      await super.replace(cleanRules.join('\n'));
+    }
+
+    if (typeof stylesheet !== 'undefined') {
+      stylesheet.updateAllRoots();
     }
   }
 }
@@ -523,9 +381,54 @@ class StyleSheetManager {
   private _knownClasses: Set<string> = new Set();
   private _nextId = 0;
   private _preflightEmitted = false;
+  private _rootSheets: Map<Document | ShadowRoot, Set<string>> = new Map();
 
   private _getJitSheet(): CSSStyleSheet {
     return jitSheet as any;
+  }
+
+  private _getAdoptedList(sheet: any): any[] {
+    const list: any[] = [];
+    if (sheet && sheet.importedSheets) {
+      for (const sub of sheet.importedSheets) {
+        list.push(...this._getAdoptedList(sub));
+      }
+    }
+    if (sheet) {
+      list.push(sheet);
+    }
+    return list;
+  }
+
+  public registerStylesheetRoot(root: Document | ShadowRoot) {
+    if (!root || !('adoptedStyleSheets' in root)) return;
+    if (!this._rootSheets.has(root)) {
+      this._rootSheets.set(root, new Set());
+    }
+    this.updateRootStyleSheets(root);
+  }
+
+  public updateRootStyleSheets(root: Document | ShadowRoot) {
+    if (!root || !('adoptedStyleSheets' in root)) return;
+    const activeIds = this._rootSheets.get(root) || new Set<string>();
+
+    const list: any[] = [];
+    for (const id of activeIds) {
+      const sheet = this._adoptedSheets.get(id);
+      if (sheet) {
+        list.push(...this._getAdoptedList(sheet));
+      }
+    }
+
+    // Append preflightSheet's flattened list and jitSheet
+    const finalSheets = [...list, ...this._getAdoptedList(preflightSheet), jitSheet];
+    root.adoptedStyleSheets = finalSheets;
+  }
+
+  public updateAllRoots() {
+    for (const root of this._rootSheets.keys()) {
+      this.updateRootStyleSheets(root);
+    }
   }
 
   clearCache(): void {
@@ -671,13 +574,18 @@ class StyleSheetManager {
 
     if (typeof CSSStyleSheet === 'undefined') return () => { };
 
-    const sheet = new CSSStyleSheet();
+    const sheet = new NexusStyleSheet();
     sheet.replaceSync(processedCSS);
     this._adoptedSheets.set(sheetId, sheet);
 
-    if (root && 'adoptedStyleSheets' in root) {
-      root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
+    let activeIds = this._rootSheets.get(root);
+    if (!activeIds) {
+      activeIds = new Set<string>();
+      this._rootSheets.set(root, activeIds);
     }
+    activeIds.add(sheetId);
+    this.updateRootStyleSheets(root);
+
     return () => this.removeSheet(sheetId, root);
   }
 
@@ -696,9 +604,14 @@ class StyleSheetManager {
     await sheet.replace(processedCSS);
     this._adoptedSheets.set(sheetId, sheet as any);
 
-    if (root && 'adoptedStyleSheets' in root) {
-      root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet as any];
+    let activeIds = this._rootSheets.get(root);
+    if (!activeIds) {
+      activeIds = new Set<string>();
+      this._rootSheets.set(root, activeIds);
     }
+    activeIds.add(sheetId);
+    this.updateRootStyleSheets(root);
+
     return () => this.removeSheet(sheetId, root);
   }
 
@@ -716,9 +629,14 @@ class StyleSheetManager {
     await sheet.replace(cssText);
     this._adoptedSheets.set(sheetId, sheet as any);
 
-    if (root && 'adoptedStyleSheets' in root) {
-      root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet as any];
+    let activeIds = this._rootSheets.get(root);
+    if (!activeIds) {
+      activeIds = new Set<string>();
+      this._rootSheets.set(root, activeIds);
     }
+    activeIds.add(sheetId);
+    this.updateRootStyleSheets(root);
+
     return () => this.removeSheet(sheetId, root);
   }
 
@@ -729,14 +647,21 @@ class StyleSheetManager {
   removeSheet(id: string, root: Document | ShadowRoot = document): void {
     const sheet = this._adoptedSheets.get(id);
     if (!sheet) return;
-    if (root && 'adoptedStyleSheets' in root) {
-      root.adoptedStyleSheets = root.adoptedStyleSheets.filter(s => s !== sheet);
+
+    const activeIds = this._rootSheets.get(root);
+    if (activeIds) {
+      activeIds.delete(id);
     }
+    this.updateRootStyleSheets(root);
     this._adoptedSheets.delete(id);
   }
 
   dispose(): void {
-    this._adoptedSheets.forEach((_sheet, id) => this.removeSheet(id));
+    this._adoptedSheets.forEach((_sheet, id) => {
+      for (const root of this._rootSheets.keys()) {
+        this.removeSheet(id, root);
+      }
+    });
     this._adoptedSheets.clear();
     this._knownClasses.clear();
     this._nextId = 0;
@@ -773,13 +698,8 @@ const stylesheetModule: AttributeModule = {
     // A. Locate closest shadow root or document
     const root = el.getRootNode() as Document | ShadowRoot;
 
-    // B. Adopt preflight and jit sheets onto the scope's root
-    if (root && 'adoptedStyleSheets' in root) {
-      const sheetsList = Array.from(root.adoptedStyleSheets);
-      if (!sheetsList.includes(preflightSheet)) {
-        root.adoptedStyleSheets = [...sheetsList, preflightSheet, jitSheet];
-      }
-    }
+    // B. Register stylesheet root to adopt preflight and jit sheets dynamically
+    stylesheet.registerStylesheetRoot(root);
 
     // C. Scan and compile classes inside the subtree
     stylesheet.emitPreflightAndTheme(el);
