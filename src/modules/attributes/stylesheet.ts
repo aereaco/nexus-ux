@@ -19,7 +19,7 @@ export { PACKED_COMPONENTS };
 // 2. CUSTOM NESTED @IMPORT INTERPRETER FOR CONSTRUCTABLE STYLESHEETS
 // ============================================================================
 
-async function resolveImports(cssText: string, baseUrl?: string): Promise<string> {
+async function resolveImports(cssText: string, baseUrl?: string, onUpdate?: () => void): Promise<string> {
   const importRegex = /@import\s+(?:url\()?['"]([^'"]+)['"]\)?\s*;/g;
   let resolved = cssText;
   let match;
@@ -33,13 +33,12 @@ async function resolveImports(cssText: string, baseUrl?: string): Promise<string
     try {
       // Resolve relative import paths against the parent stylesheet's URL
       const absoluteUrl = new URL(url, currentBase).href;
-      const content = await fetch(absoluteUrl).then(r => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.text();
+      const content = await fetchWithCache(absoluteUrl, 3000, () => {
+        if (onUpdate) onUpdate();
       });
 
       // Recursively resolve imports within the fetched content
-      const nestedResolved = await resolveImports(content, absoluteUrl);
+      const nestedResolved = await resolveImports(content, absoluteUrl, onUpdate);
       resolved = resolved.replace(importStatement, nestedResolved);
     } catch (err) {
       console.warn(`[NexusStyleSheet] Failed to resolve import "${url}" relative to "${currentBase}":`, err);
@@ -57,7 +56,12 @@ export class NexusStyleSheet extends (typeof CSSStyleSheet !== 'undefined' ? CSS
 
   async replace(cssText: string): Promise<CSSStyleSheet> {
     this._rawCSSText = cssText;
-    const resolved = await resolveImports(cssText);
+    const resolved = await resolveImports(cssText, undefined, async () => {
+      const freshResolved = await resolveImports(this._rawCSSText);
+      if (typeof super.replace === 'function') {
+        await super.replace(freshResolved);
+      }
+    });
     if (typeof super.replace === 'function') {
       return await super.replace(resolved);
     }
@@ -82,7 +86,12 @@ export class NexusStyleSheet extends (typeof CSSStyleSheet !== 'undefined' ? CSS
 
     if (hasImports) {
       // Asynchronously fetch and inline imports in the background
-      resolveImports(cssText).then(resolved => {
+      resolveImports(cssText, undefined, async () => {
+        const freshResolved = await resolveImports(this._rawCSSText);
+        if (typeof super.replace === 'function') {
+          super.replace(freshResolved).catch((err: any) => console.error(err));
+        }
+      }).then(resolved => {
         if (typeof super.replace === 'function') {
           super.replace(resolved).catch((err: any) => {
             console.error('[NexusStyleSheet] Dynamic replace of resolved imports failed:', err);
@@ -159,7 +168,7 @@ function hashString(str: string): string {
   return String(hash);
 }
 
-async function fetchWithCache(url: string, timeoutMs = 3000): Promise<string> {
+async function fetchWithCache(url: string, timeoutMs = 3000, onUpdate?: (fresh: string) => void): Promise<string> {
   const cacheKey = `nexus-cache:${url}`;
   let cached: string | null = null;
 
@@ -187,6 +196,7 @@ async function fetchWithCache(url: string, timeoutMs = 3000): Promise<string> {
               localStorage.setItem(cacheKey, freshText);
             } catch (_) { }
           }
+          if (onUpdate) onUpdate(freshText);
         } else {
           console.log(`[Nexus Cache] VERIFIED: Cache matches CDN for ${url}.`);
         }
@@ -320,7 +330,7 @@ ${themeBridge}
 // 4. STYLESHEET MANAGER (DOM Injection)
 // ============================================================================
 class StyleSheetManager {
-  private _adoptedSheets: Map<string, CSSStyleSheet> = new Map();
+  private _adoptedSheets: Map<string, any> = new Map();
   private _knownClasses: Set<string> = new Set();
   private _nextId = 0;
   private _preflightEmitted = false;
@@ -493,12 +503,12 @@ class StyleSheetManager {
 
     if (typeof CSSStyleSheet === 'undefined') return () => { };
 
-    const sheet = new CSSStyleSheet();
+    const sheet = new NexusStyleSheet();
     await sheet.replace(processedCSS);
-    this._adoptedSheets.set(sheetId, sheet);
+    this._adoptedSheets.set(sheetId, sheet as any);
 
     if (root && 'adoptedStyleSheets' in root) {
-      root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
+      root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet as any];
     }
     return () => this.removeSheet(sheetId, root);
   }
@@ -513,12 +523,12 @@ class StyleSheetManager {
 
     if (typeof CSSStyleSheet === 'undefined') return () => { };
 
-    const sheet = new CSSStyleSheet();
+    const sheet = new NexusStyleSheet();
     await sheet.replace(cssText);
-    this._adoptedSheets.set(sheetId, sheet);
+    this._adoptedSheets.set(sheetId, sheet as any);
 
     if (root && 'adoptedStyleSheets' in root) {
-      root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
+      root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet as any];
     }
     return () => this.removeSheet(sheetId, root);
   }
