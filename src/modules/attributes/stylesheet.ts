@@ -402,6 +402,8 @@ class StyleSheetManager {
   private _nextId = 0;
   private _preflightEmitted = false;
   private _rootSheets: Map<Document | ShadowRoot, Set<string>> = new Map();
+  private _newClassesToCompile: Set<string> = new Set();
+  private _rebuildScheduled = false;
 
   private _getJitSheet(): CSSStyleSheet {
     return jitSheet as any;
@@ -515,27 +517,51 @@ class StyleSheetManager {
       return;
     }
 
-    try {
+    this._knownClasses.add(className);
+    this._newClassesToCompile.add(className);
+    this.scheduleRebuild();
+  }
+
+  scheduleRebuild(): void {
+    if (this._rebuildScheduled) return;
+    this._rebuildScheduled = true;
+    queueMicrotask(() => {
+      this._rebuildScheduled = false;
+      this.rebuild();
+    });
+  }
+
+  rebuild(): void {
+    if (!tailwindCompiler) return;
+    if (this._newClassesToCompile.size === 0) return;
+
+    const validNewClasses: string[] = [];
+    for (const c of this._newClassesToCompile) {
       // Filter out binding expressions, template parameters, or operator tokens
       if (
-        className.includes("{") ||
-        className.includes("}") ||
-        className.includes("$") ||
-        className.includes("?") ||
-        className.includes("<") ||
-        className.includes(">") ||
-        className.includes("&") ||
-        className.includes("=")
+        c.includes("{") ||
+        c.includes("}") ||
+        c.includes("$") ||
+        c.includes("?") ||
+        c.includes("<") ||
+        c.includes(">") ||
+        c.includes("&") ||
+        c.includes("=")
       ) {
-        return;
+        continue;
       }
+      validNewClasses.push(c);
+    }
+    this._newClassesToCompile.clear();
 
-      compiledClassesSet.add(className);
-      const compiledCSS = tailwindCompiler.build(Array.from(compiledClassesSet));
-      jitSheet.replaceSync(compiledCSS);
-      this._knownClasses.add(className);
-    } catch (err) {
-      console.debug(`Nexus-UX JIT compile check: "${className}":`, err);
+    if (validNewClasses.length > 0) {
+      try {
+        validNewClasses.forEach(c => compiledClassesSet.add(c));
+        const compiledCSS = tailwindCompiler.build(Array.from(compiledClassesSet));
+        jitSheet.replaceSync(compiledCSS);
+      } catch (err) {
+        console.debug(`Nexus JIT compiler build failed:`, err);
+      }
     }
   }
 
