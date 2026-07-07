@@ -371,6 +371,14 @@ ${themeBridge}
 
     console.log("✅ Tailwind Play JIT compiler ready.");
 
+    // Load preflight CSS immediately into jitSheet
+    try {
+      const initialCSS = tailwindCompiler.build([]);
+      jitSheet.replaceSync(initialCSS);
+    } catch (err) {
+      console.error("[Nexus JIT] Failed to compile initial preflight:", err);
+    }
+
     // Process any classes collected during startup
     while (pendingClasses.length > 0) {
       const { className, el, runtime } = pendingClasses.shift()!;
