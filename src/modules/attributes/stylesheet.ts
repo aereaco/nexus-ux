@@ -91,7 +91,7 @@ export class NexusStyleSheet extends (typeof CSSStyleSheet !== 'undefined' ? CSS
     const hasImports = /@import/i.test(cssText);
     if (!hasImports) {
       let compiled = cssText;
-      const needsJit = /@import\s+['"]tailwindcss['"]|@import\s+url\(['"]tailwindcss/i.test(cssText) ||
+      const needsJit = /tailwindcss/i.test(cssText) ||
                         /@theme\b/i.test(cssText) ||
                         /@utility\b/i.test(cssText) ||
                         /@plugin\b/i.test(cssText);
@@ -113,7 +113,7 @@ export class NexusStyleSheet extends (typeof CSSStyleSheet !== 'undefined' ? CSS
   }
 
   private async resolve(cssText: string): Promise<void> {
-    const needsJit = /@import\s+['"]tailwindcss['"]|@import\s+url\(['"]tailwindcss/i.test(cssText) ||
+    const needsJit = /tailwindcss/i.test(cssText) ||
                       /@theme\b/i.test(cssText) ||
                       /@utility\b/i.test(cssText) ||
                       /@plugin\b/i.test(cssText);
