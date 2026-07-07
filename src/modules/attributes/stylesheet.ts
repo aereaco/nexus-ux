@@ -19,9 +19,32 @@ export { PACKED_COMPONENTS };
 // 2. CUSTOM NESTED @IMPORT INTERPRETER FOR CONSTRUCTABLE STYLESHEETS
 // ============================================================================
 
+async function loadStylesheet(id: string, base: string) {
+  if (id === 'tailwindcss' || id === 'tailwindcss/index.css') {
+    return { path: 'tailwindcss/index.css', base: '/', content: cachedIndexCss };
+  }
+  if (id === './theme.css' || id === 'tailwindcss/theme.css') {
+    return { path: 'tailwindcss/theme.css', base: '/', content: cachedThemeCss };
+  }
+  if (id === './preflight.css' || id === 'tailwindcss/preflight.css') {
+    return { path: 'tailwindcss/preflight.css', base: '/', content: cachedPreflightCss };
+  }
+  if (id === './utilities.css' || id === 'tailwindcss/utilities.css') {
+    return { path: 'tailwindcss/utilities.css', base: '/', content: cachedUtilitiesCss };
+  }
+
+  try {
+    const absoluteUrl = new URL(id, base).href;
+    const content = await fetchWithCache(absoluteUrl, 3000);
+    return { path: absoluteUrl, base: absoluteUrl, content };
+  } catch (err) {
+    console.warn(`[Nexus JIT] Failed to load imported stylesheet "${id}" relative to "${base}":`, err);
+    return { path: id, base, content: '' };
+  }
+}
+
 export class NexusStyleSheet extends (typeof CSSStyleSheet !== 'undefined' ? CSSStyleSheet : class { }) {
   private _rawCSSText = '';
-  public importedSheets: NexusStyleSheet[] = [];
 
   constructor() {
     super();
@@ -38,11 +61,7 @@ export class NexusStyleSheet extends (typeof CSSStyleSheet !== 'undefined' ? CSS
     const hasImports = /@import/i.test(cssText);
     if (!hasImports) {
       let compiled = cssText;
-      const needsJit = /@import\s+['"]tailwindcss['"]|@import\s+url\(['"]tailwindcss/i.test(cssText) ||
-                        /@theme\b/i.test(cssText) ||
-                        /@utility\b/i.test(cssText) ||
-                        /@plugin\b/i.test(cssText);
-      if (needsJit && compileFn) {
+      if (compileFn) {
         try {
           const compiler = compileFn(cssText, { base: '/' });
           compiled = compiler.build([]);
@@ -60,91 +79,28 @@ export class NexusStyleSheet extends (typeof CSSStyleSheet !== 'undefined' ? CSS
   }
 
   private async resolve(cssText: string): Promise<void> {
+    if (!compileFn && initPlayCompilerPromise) {
+      await initPlayCompilerPromise;
+    }
+
     let compiled = cssText;
-    const needsJit = /@import\s+['"]tailwindcss['"]|@import\s+url\(['"]tailwindcss/i.test(cssText) ||
-                      /@theme\b/i.test(cssText) ||
-                      /@utility\b/i.test(cssText) ||
-                      /@plugin\b/i.test(cssText);
-    if (needsJit && compileFn) {
+    if (compileFn) {
       try {
         const compiler = await compileFn(cssText, {
-          base: '/',
-          async loadStylesheet(id: string) {
-            if (id === 'tailwindcss' || id === 'tailwindcss/index.css') {
-              return { path: 'tailwindcss/index.css', base: '/', content: cachedIndexCss };
-            }
-            if (id === './theme.css' || id === 'tailwindcss/theme.css') {
-              return { path: 'tailwindcss/theme.css', base: '/', content: cachedThemeCss };
-            }
-            if (id === './preflight.css' || id === 'tailwindcss/preflight.css') {
-              return { path: 'tailwindcss/preflight.css', base: '/', content: cachedPreflightCss };
-            }
-            if (id === './utilities.css' || id === 'tailwindcss/utilities.css') {
-              return { path: 'tailwindcss/utilities.css', base: '/', content: cachedUtilitiesCss };
-            }
-            return { path: id, base: '/', content: '' };
+          base: window.location.href,
+          loadStylesheet,
+          async loadModule() {
+            throw new Error('Plugins not supported');
           }
         });
         compiled = compiler.build([]);
       } catch (err) {
-        console.error('[NexusStyleSheet] JIT compilation failed:', err);
+        console.error('[NexusStyleSheet] Compiler resolution failed:', err);
       }
     }
-
-    if (typeof document === 'undefined') {
-      if (typeof super.replace === 'function') {
-        await super.replace(compiled);
-      }
-      return;
-    }
-
-    const parserDoc = document.implementation.createHTMLDocument('');
-    const styleEl = parserDoc.createElement('style');
-    styleEl.textContent = compiled;
-    parserDoc.head.appendChild(styleEl);
-
-    const sheet = styleEl.sheet;
-    if (!sheet) {
-      if (typeof super.replace === 'function') {
-        await super.replace(compiled);
-      }
-      return;
-    }
-
-    const rules = Array.from(sheet.cssRules);
-    const subSheets: NexusStyleSheet[] = [];
-    const cleanRules: string[] = [];
-
-    for (const rule of rules) {
-      if (typeof CSSImportRule !== 'undefined' && rule instanceof CSSImportRule) {
-        const url = rule.href;
-        if (url === 'tailwindcss' || url.includes('tailwindcss@4') || url.includes('tailwindcss/')) {
-          cleanRules.push(rule.cssText);
-          continue;
-        }
-        try {
-          const absoluteUrl = new URL(url, window.location.href).href;
-          const content = await fetchWithCache(absoluteUrl, 3000);
-          const subSheet = new NexusStyleSheet();
-          await subSheet.replace(content);
-          subSheets.push(subSheet);
-        } catch (err) {
-          console.warn(`[NexusStyleSheet] Failed to resolve sub-sheet for "${url}":`, err);
-          cleanRules.push(rule.cssText);
-        }
-      } else {
-        cleanRules.push(rule.cssText);
-      }
-    }
-
-    this.importedSheets = subSheets;
 
     if (typeof super.replace === 'function') {
-      await super.replace(cleanRules.join('\n'));
-    }
-
-    if (typeof stylesheet !== 'undefined') {
-      stylesheet.updateAllRoots();
+      await super.replace(compiled);
     }
   }
 }
@@ -202,6 +158,7 @@ export function buildTailwindThemeBridge(tokens: Set<string>): string {
 
 let tailwindCompiler: any = null;
 let compileFn: any = null;
+let initPlayCompilerPromise: Promise<void> | null = null;
 let cachedIndexCss = '';
 let cachedThemeCss = '';
 let cachedPreflightCss = '';
@@ -700,7 +657,7 @@ export function initializeJitEngine(): void {
     stylesheet.adoptCSSSync(PACKED_THEME_CSS, 'nexus-theme');
   } else {
     // Play Mode: Initialize official JIT compiler dynamically
-    initPlayCompiler();
+    initPlayCompilerPromise = initPlayCompiler();
   }
 }
 
