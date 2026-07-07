@@ -205,8 +205,8 @@ internally:
 ```javascript
 // ...but Nexus-UX parses them once into reactive values:
 // count → number (0) — stored in binary signal heap (Float64Array)
-// items → array (['a','b']) — stored as @vue/reactivity proxy
-// user  → object ({ name: 'Ada' }) — stored as @vue/reactivity proxy
+// items → array (['a','b']) — stored as custom reactive Proxy
+// user  → object ({ name: 'Ada' }) — stored as custom reactive Proxy
 ```
 
 > [!IMPORTANT]
@@ -415,16 +415,6 @@ fluidity.
 Directly sync state to CSS Custom Properties. Essential for DaisyUI integration.
 
 - **Pattern**: `<div class="radial-progress" data-var-value="percent"></div>`
-
-#### 2.2.5. "Data Progress" for Site-wide Loading
-
-- **Linear Determinate**:
-  `<html data-progress="{ type: 'bar', location: 'top', color: 'primary', value: 'progress' }">`
-- **Linear Indeterminate (Sweeping Mode)**: Evaluate to a boolean `true` for
-  continuous animation.
-  `<html data-progress="{ type: 'bar', location: 'top', color: 'primary', value: 'isLoading === true' }">`
-- **Spinner**:
-  `<div data-progress="{ type: 'spinner', size: '20px', value: 'isBusy' }"></div>`
 
 #### 2.2.6. "Data Import" 2.0 — Reactive Grouped Namespaces
 
@@ -894,12 +884,20 @@ that need units (width, height, padding, margin, etc.).
 
 ### 5.2. `data-class` — Dynamic CSS Classes
 
-**Syntax**: `data-class="{ className: booleanExpression, ... }"` or
-`data-class="['cls1', ... ]"`
+**Syntax**: `data-class="{ 'className': booleanExpression, ... }"`
 
-**Purpose**: Toggle CSS classes based on object or array conditions.
-Suffix-based binding (e.g. `data-class-active`) is deprecated in favor of the
-unified reconciliation engine.
+**Purpose**: Reactively toggle one or more CSS classes based on boolean conditions.
+The value must be a **JavaScript object literal** where each key is a class name
+(quoted string) and each value is a boolean expression.
+
+> [!IMPORTANT]
+> **Only the object-map form is supported.** The dash-suffix variant
+> (`data-class-{name}`) is parsed differently by the attribute grammar — the
+> class name becomes the directive *argument*, which works for simple
+> alphanumeric names but **breaks** for any class containing `:` (Tailwind
+> variants like `hover:`, `focus:`), `/` (opacity modifiers like `bg-base-200/60`),
+> or `[` (arbitrary values like `h-[140px]`). The object-map form handles all of
+> these correctly because the keys are JavaScript strings, not HTML attribute names.
 
 **Examples**:
 
@@ -907,51 +905,67 @@ unified reconciliation engine.
 <!-- Single class toggle -->
 <div data-signal="{ active: false }">
   <button
-    data-class-active="active"
+    data-class="{ 'active': active }"
     data-on-click="active = !active"
   >
     Toggle
   </button>
 </div>
 
-<!-- Multiple conditional classes -->
+<!-- Multiple exclusive state classes -->
 <div data-signal="{ status: 'warning' }">
   <div
-    data-class-success="status === 'success'"
-    data-class-warning="status === 'warning'"
-    data-class-error="status === 'error'"
+    class="alert"
+    data-class="{
+      'alert-success': status === 'success',
+      'alert-warning': status === 'warning',
+      'alert-error':   status === 'error'
+    }"
   >
-    Status: {status}
+    Status indicator
   </div>
 </div>
 
-<!-- Combine with static classes -->
-<button
-  class="btn"
-  data-class-btn-primary="!loading"
-  data-class-btn-disabled="loading"
->
-  {loading ? 'Loading...' : 'Submit'}
-</button>
+<!-- Works with ALL Tailwind class forms -->
+<div data-signal="{ compact: false, hasError: false }">
+  <input
+    class="input"
+    data-class="{
+      'input-sm': compact,
+      'input-lg': !compact,
+      'border-red-500 focus:border-red-600 bg-red-50': hasError,
+      'border-slate-300 focus:border-blue-500': !hasError,
+      'opacity-50': compact && hasError
+    }"
+  >
+</div>
+
+<!-- Layout branch pattern: exclusive conditions group cleanly -->
+<div
+  data-class="{
+    'grid grid-cols-2 gap-4': layout === 'grid',
+    'flex flex-col gap-3':    layout === 'list',
+    'flex flex-col gap-1.5':  layout === 'compact'
+  }"
+></div>
 ```
 
-**CSS**:
+**Multiple `data-class` attributes on one element**: Each `data-class` attribute
+is processed independently, so you can split unrelated class groups across
+multiple attributes:
 
-```css
-.active {
-  background-color: green;
-  color: white;
-}
-.success {
-  color: green;
-}
-.warning {
-  color: orange;
-}
-.error {
-  color: red;
-}
+```html
+<!-- Layout classes and state classes as separate concerns -->
+<div
+  data-class="{ 'grid grid-cols-2': isGrid, 'flex flex-col': !isGrid }"
+  data-class="{ 'opacity-50 pointer-events-none': disabled }"
+></div>
 ```
+
+> [!NOTE]
+> When using Tailwind with Nexus-UX, classes referenced in `data-class` are
+> automatically detected by the JIT engine and compiled in-memory — no build
+> step required.
 
 ### 5.3. Native Tailwind JIT (Oxide Parity)
 
@@ -1208,7 +1222,7 @@ Nexus-UX provides two complementary namespaces for imperative operations:
 | `$ws(url)` | `_WebSocket(url)` | Replace `$ws(...)` → `_WebSocket(...)` |
 | `$download(filename, content, mime)` | `_download(filename, content, mime)` | Utility function, same name |
 | `$store(name, initial)` | `#name` via global signals | Use `data-signal-global` and `#storeName` |
-| `$watch(expr, cb)` | `watch(() => expr, cb)` | Use Vue's `watch()` directly in `data-effect` |
+| `$watch(expr, cb)` | `watch(() => expr, cb)` | Use reactivity engine's `watch()` directly in `data-effect` |
 
 > **Note**: Legacy sprite wrappers are **removed** from the codebase as of the
 > mirror-auto-wrap refactor. The native `_` mirrors provide identical functionality
@@ -2082,19 +2096,19 @@ supports declarative tracking of it today.
   <!-- Tab headers -->
   <div class="tab-headers">
     <button
-      data-class-active="activeTab === 'profile'"
+      data-class="{ 'active': activeTab === 'profile' }"
       data-on-click="activeTab = 'profile'"
     >
       Profile
     </button>
     <button
-      data-class-active="activeTab === 'settings'"
+      data-class="{ 'active': activeTab === 'settings' }"
       data-on-click="activeTab = 'settings'"
     >
       Settings
     </button>
     <button
-      data-class-active="activeTab === 'billing'"
+      data-class="{ 'active': activeTab === 'billing' }"
       data-on-click="activeTab = 'billing'"
     >
       Billing
@@ -2668,9 +2682,11 @@ power of Nexus-UX's unified architecture.
   >
     <div
       class="alert"
-      data-class-alert-info="status === 'loading'"
-      data-class-alert-warning="status === 'processing'"
-      data-class-alert-success="status === 'complete'"
+      data-class="{
+        'alert-info':    status === 'loading',
+        'alert-warning': status === 'processing',
+        'alert-success': status === 'complete'
+      }"
     >
       <span
         data-text="

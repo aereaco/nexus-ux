@@ -247,7 +247,7 @@ Total: 1-5ms (10-100x faster)
 | **Philosophy**    | "Tailwind for JS" | Hypermedia Power | State -> VDOM -> UI  | **Omni-State (DOM-as-State)** |
 | **Communication** | Store/Events      | Server-Bound     | Prop Drilling/Stores | **Unified Selector $(...)**   |
 | **State Tree**    | Proxy-based       | None (DOM-only)  | JS Object Tree       | **DOM State Graph**           |
-| **Hypermedia**    | Morph Plugin      | Native/Idiomorph | None (Manual JSON)   | **Native :morph mod**         |
+| **Hypermedia**    | Morph Plugin      | Native/Reconciler| None (Manual JSON)   | **Native :morph mod**         |
 | **AI Readiness**  | Moderate          | High             | Reactive Logic       | **Highest (Beacons)**         |
 
 - **vs. Alpine.js**: Nexus provides **stability at scale**. While Alpine becomes
@@ -791,7 +791,7 @@ This creates a serialization boundary between the DOM and the reactive engine.
   parsed once during initialization and never re-serialized during reactive
   updates.
 - **Tier B — The Binary Signal Heap (Zero-Copy)**: Actual signal **values** live
-  in JavaScript's reactive proxy system (via `@vue/reactivity`) or, for numeric
+  in JavaScript's custom proxy-based reactivity system (via `src/engine/reactivity.ts`) or, for numeric
   signals, directly in typed arrays (`Float64Array` / `Int32Array`) backed by
   `SharedArrayBuffer`. This enables **zero-serialization state updates** — no
   `JSON.stringify()`, no `JSON.parse()`, no string conversion during the
@@ -868,7 +868,6 @@ directive catalog:
 - **`data-effect`**: Side-effects — runs arbitrary logic in response to signal changes without touching the DOM.
 - **`data-import`**: Asset Import — asynchronously loads and manages third-party scripts and stylesheets with ZCZS-optimized constructable stylesheets.
 - **`data-markdown`**: Markdown Rendering — zero-dependency markdown-to-HTML transpilation directly in the browser.
-- **`data-progress`**: Progress Indicators — customizable bars and spinners for tracking loading states.
 - **`data-pwa`**: PWA Orchestration — manages Service Worker registration, manifest integration, and offline state via `$pwa`.
 - **`data-mask`**: Visual Masking — applies SVG masks and CSS mask-image dynamically.
 
@@ -1053,7 +1052,7 @@ The **Unified Selector $(...)** is the structural bridge of Nexus-UX.
 ### 4.5. Hydration-Free Persistence (The Hybrid Handshake)
 
 Persistence is managed through the dual-mode handshake between server-driven
-**Idiomorph** swaps and the reactive engine.
+**custom reconciler** swaps and the reactive engine.
 
 - **The Structural Shield (`data-preserve`)**: A directive-level mandate for
   **Node Identity**. This tells the engine: "This physical element is a
@@ -1171,7 +1170,7 @@ Signal Index Map:
 ```
 
 **Object/array signals** (e.g., `{ user: { name: 'Ada' } }`) remain in
-`@vue/reactivity` proxies, as structured data requires proxy trapping for deep
+custom proxy-based reactivity (via `src/engine/reactivity.ts`) proxies, as structured data requires proxy trapping for deep
 reactivity.
 
 **Key invariant**: At no point in the reactive update cycle is data serialized
