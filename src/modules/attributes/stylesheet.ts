@@ -20,31 +20,55 @@ export { PACKED_COMPONENTS };
 // ============================================================================
 
 async function resolveImports(cssText: string, baseUrl?: string, onUpdate?: () => void): Promise<string> {
-  const importRegex = /@import\s+(?:url\()?['"]([^'"]+)['"]\)?\s*;/g;
-  let resolved = cssText;
-  let match;
-
   const defaultBase = typeof window !== 'undefined' ? window.location.href : 'http://localhost';
   const currentBase = baseUrl || defaultBase;
 
-  while ((match = importRegex.exec(cssText)) !== null) {
-    const importStatement = match[0];
-    const url = match[1];
-    try {
-      // Resolve relative import paths against the parent stylesheet's URL
-      const absoluteUrl = new URL(url, currentBase).href;
-      const content = await fetchWithCache(absoluteUrl, 3000, () => {
-        if (onUpdate) onUpdate();
-      });
+  if (typeof document === 'undefined') return cssText;
 
-      // Recursively resolve imports within the fetched content
-      const nestedResolved = await resolveImports(content, absoluteUrl, onUpdate);
-      resolved = resolved.replace(importStatement, nestedResolved);
-    } catch (err) {
-      console.warn(`[NexusStyleSheet] Failed to resolve import "${url}" relative to "${currentBase}":`, err);
+  // Let the browser natively parse the CSS in a detached HTML document
+  const parserDoc = document.implementation.createHTMLDocument('');
+  const styleEl = parserDoc.createElement('style');
+  styleEl.textContent = cssText;
+  parserDoc.head.appendChild(styleEl);
+
+  const sheet = styleEl.sheet;
+  if (!sheet) return cssText;
+
+  const rules = Array.from(sheet.cssRules);
+  const resolvedRules: string[] = [];
+
+  for (const rule of rules) {
+    if (typeof CSSImportRule !== 'undefined' && rule instanceof CSSImportRule) {
+      const url = rule.href;
+      try {
+        const absoluteUrl = new URL(url, currentBase).href;
+        const content = await fetchWithCache(absoluteUrl, 3000, () => {
+          if (onUpdate) onUpdate();
+        });
+
+        let nestedResolved = await resolveImports(content, absoluteUrl, onUpdate);
+
+        // Natively wrap resolved content in media query if specified
+        if (rule.media && rule.media.mediaText && rule.media.mediaText !== 'all') {
+          nestedResolved = `@media ${rule.media.mediaText} {\n${nestedResolved}\n}`;
+        }
+
+        // Natively wrap resolved content in layer block if specified
+        if (rule.layerName) {
+          nestedResolved = `@layer ${rule.layerName} {\n${nestedResolved}\n}`;
+        }
+
+        resolvedRules.push(nestedResolved);
+      } catch (err) {
+        console.warn(`[NexusStyleSheet] Failed to resolve import "${url}" relative to "${currentBase}":`, err);
+        resolvedRules.push(rule.cssText); // keep statement as fallback
+      }
+    } else {
+      resolvedRules.push(rule.cssText);
     }
   }
-  return resolved;
+
+  return resolvedRules.join('\n');
 }
 
 export class NexusStyleSheet extends (typeof CSSStyleSheet !== 'undefined' ? CSSStyleSheet : class { }) {
@@ -70,17 +94,17 @@ export class NexusStyleSheet extends (typeof CSSStyleSheet !== 'undefined' ? CSS
 
   replaceSync(cssText: string): void {
     this._rawCSSText = cssText;
-    const hasImports = /@import\s+(?:url\()?['"]([^'"]+)['"]\)?\s*;/g.test(cssText);
+    const hasImports = /@import/i.test(cssText);
 
     if (typeof super.replaceSync === 'function') {
-      try {
-        super.replaceSync(cssText);
-      } catch (err) {
-        // @import rules are not allowed in replaceSync per spec (construct-stylesheets).
-        // Silently swallow this if we have imports — the background resolver will inline them.
-        if (!hasImports) {
+      if (!hasImports) {
+        try {
+          super.replaceSync(cssText);
+        } catch (err) {
           throw err;
         }
+      } else {
+        super.replaceSync('');
       }
     }
 
