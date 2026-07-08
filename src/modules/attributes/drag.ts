@@ -473,12 +473,16 @@ export class Sortable {
           Sortable.ghost = null;
         }
 
-        // Compute finalIndex relative to the actual dropped target container, excluding templates/selected elements/placeholders
+        // Compute finalIndex relative to the actual dropped target container.
+        // Hidden MultiDrag group members (display:none) are excluded: they stay
+        // in the DOM at their original slots during drag but are removed from the
+        // signal list before insertion, so counting them would offset newIndex.
         let finalIndex = 0;
         const children = Array.from(this.dragEl.parentElement!.children);
         for (let i = 0; i < children.length; i++) {
           const child = children[i];
           if (child === this.dragEl) break;
+          if ((child as HTMLElement).style.display === 'none') continue;
           if (child.nodeName.toUpperCase() === 'TEMPLATE') continue;
           if (child.hasAttribute('data-ux-template')) continue;
           if (child.getAttribute('draggable') === 'false') continue;
