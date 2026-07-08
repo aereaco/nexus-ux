@@ -2,7 +2,7 @@ import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { reportError } from '../../engine/debug.ts';
 import { readIDB } from '../../engine/utils/idb.ts';
-import { stylesheet, discoverColorTokens, buildTailwindThemeBridge } from './stylesheet.ts';
+import { stylesheet, discoverColorTokens, buildTailwindThemeBridge, markExternalStylesSettled } from './stylesheet.ts';
 
 /**
  * Lightweight IndexedDB read helper for idb:// URIs.
@@ -498,6 +498,9 @@ const importModule: AttributeModule = {
         el.removeAttribute('data-nexus-loading');
         el.setAttribute('data-nexus-ready', '');
         runtime.log(`Nexus Import: Assets synchronized.`);
+        // External stylesheets are now adopted + applied — let the Tailwind JIT
+        // rebuild its theme bridge so utilities for their color tokens exist.
+        markExternalStylesSettled();
       };
 
       runImports().then(finalize);

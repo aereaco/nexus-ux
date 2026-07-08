@@ -1,4 +1,7 @@
-// Consolidated Tailwind v4 Scoped JIT Engine with Custom @import Resolution
+// Consolidated Tailwind v4 Scoped JIT Engine + Native @import Resolution
+// Two strictly separated pipelines (never blended):
+//   Pipeline A — Tailwind utility compilation (jitSheet). JIT-only, lazy, scoped.
+//   Pipeline B — External/standard CSS (NexusStyleSheet). CSSOM @import resolver, never JIT.
 import { effect as _effect } from '../../engine/reactivity.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { AttributeModule } from '../../engine/modules.ts';
@@ -16,32 +19,77 @@ export const PREFLIGHT_CSS = PACKED_COMPONENTS;
 export { PACKED_COMPONENTS };
 
 // ============================================================================
-// 2. CUSTOM NESTED @IMPORT INTERPRETER FOR CONSTRUCTABLE STYLESHEETS
+// 2. PIPELINE B — NATIVE @import RESOLUTION FOR CONSTRUCTABLE STYLESHEETS
 // ============================================================================
 
+/**
+ * Resolves `@import` rules so they can be loaded into constructable stylesheets
+ * (which reject `@import` per spec).
+ *
+ * Discovery uses the browser's native CSSOM parser (to natively handle every
+ * `@import` syntax variation, media queries, and layers), but inlining is done
+ * on the ORIGINAL raw CSS string via targeted replacement. This means custom
+ * at-rules (`@theme`, `@utility`, `@plugin`, …) are never parsed, stripped, or
+ * rewritten — only standard `@import` statements are inlined.
+ */
 async function resolveImports(cssText: string, baseUrl?: string, onUpdate?: () => void): Promise<string> {
-  const importRegex = /@import\s+(?:url\()?['"]([^'"]+)['"]\)?\s*;/g;
-  let resolved = cssText;
-  let match;
-
   const defaultBase = typeof window !== 'undefined' ? window.location.href : 'http://localhost';
   const currentBase = baseUrl || defaultBase;
 
-  while ((match = importRegex.exec(cssText)) !== null) {
-    const importStatement = match[0];
-    const url = match[1];
+  const imports: { href: string; media: string; layer: string }[] = [];
+
+  // --- Native CSSOM discovery ---
+  if (typeof document !== 'undefined') {
     try {
-      // Resolve relative import paths against the parent stylesheet's URL
-      const absoluteUrl = new URL(url, currentBase).href;
+      const parserDoc = document.implementation.createHTMLDocument('');
+      const styleEl = parserDoc.createElement('style');
+      styleEl.textContent = cssText;
+      parserDoc.head.appendChild(styleEl);
+      const sheet = styleEl.sheet;
+      if (sheet) {
+        for (const rule of sheet.cssRules) {
+          if (rule instanceof CSSImportRule) {
+            imports.push({
+              href: rule.href,
+              media: rule.media ? rule.media.mediaText : '',
+              layer: (rule as unknown as { layerName?: string }).layerName || '',
+            });
+          }
+        }
+      }
+    } catch {
+      // Parsing failed — the regex fallback below will pick up imports.
+    }
+  }
+
+  // --- Regex fallback / supplement (catches anything CSSOM dropped) ---
+  const importRegex = /@import\s+(?:url\()?['"]([^'"]+)['"]\)?\s*[^;]*;/g;
+  let m: RegExpExecArray | null;
+  while ((m = importRegex.exec(cssText)) !== null) {
+    const href = m[1];
+    if (!imports.some((i) => href.endsWith(i.href) || i.href.endsWith(href))) {
+      imports.push({ href, media: '', layer: '' });
+    }
+  }
+
+  let resolved = cssText;
+  for (const imp of imports) {
+    try {
+      const absoluteUrl = new URL(imp.href, currentBase).href;
       const content = await fetchWithCache(absoluteUrl, 3000, () => {
         if (onUpdate) onUpdate();
       });
-
-      // Recursively resolve imports within the fetched content
       const nestedResolved = await resolveImports(content, absoluteUrl, onUpdate);
-      resolved = resolved.replace(importStatement, nestedResolved);
+
+      let wrapper = nestedResolved;
+      if (imp.media) wrapper = `@media ${imp.media} { ${nestedResolved} }`;
+      else if (imp.layer) wrapper = `@layer ${imp.layer} { ${nestedResolved} }`;
+
+      const escaped = imp.href.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const targetRegex = new RegExp(`@import\\s+(?:url\\()?['"]?${escaped}['"]?\\)?[^;]*;`, 'g');
+      resolved = resolved.replace(targetRegex, wrapper);
     } catch (err) {
-      console.warn(`[NexusStyleSheet] Failed to resolve import "${url}" relative to "${currentBase}":`, err);
+      console.warn(`[NexusStyleSheet] Failed to resolve import "${imp.href}" relative to "${currentBase}":`, err);
     }
   }
   return resolved;
@@ -56,70 +104,67 @@ export class NexusStyleSheet extends (typeof CSSStyleSheet !== 'undefined' ? CSS
 
   async replace(cssText: string): Promise<CSSStyleSheet> {
     this._rawCSSText = cssText;
-    const resolved = await resolveImports(cssText, undefined, async () => {
-      const freshResolved = await resolveImports(this._rawCSSText);
-      if (typeof super.replace === 'function') {
-        await super.replace(freshResolved);
-      }
-    });
     if (typeof super.replace === 'function') {
+      const resolved = await resolveImports(cssText, undefined, async () => {
+        const freshResolved = await resolveImports(this._rawCSSText);
+        if (typeof super.replace === 'function') {
+          await super.replace(freshResolved);
+        }
+      });
       return await super.replace(resolved);
     }
-    return this as any;
+    return this as unknown as CSSStyleSheet;
   }
 
   replaceSync(cssText: string): void {
     this._rawCSSText = cssText;
-    const hasImports = /@import\s+(?:url\()?['"]([^'"]+)['"]\)?\s*;/g.test(cssText);
+    const hasImports = /@import\s+(?:url\()?['"]([^'"]+)['"]\)?\s*[^;]*;/g.test(cssText);
 
     if (typeof super.replaceSync === 'function') {
       try {
         super.replaceSync(cssText);
-      } catch (err) {
+      } catch {
         // @import rules are not allowed in replaceSync per spec (construct-stylesheets).
-        // Silently swallow this if we have imports — the background resolver will inline them.
-        if (!hasImports) {
-          throw err;
-        }
+        // Swallow: the background resolver below inlines them instead.
+        if (!hasImports) throw err;
       }
     }
 
     if (hasImports) {
-      // Asynchronously fetch and inline imports in the background
       resolveImports(cssText, undefined, async () => {
         const freshResolved = await resolveImports(this._rawCSSText);
         if (typeof super.replace === 'function') {
-          super.replace(freshResolved).catch((err: any) => console.error(err));
+          super.replace(freshResolved).catch((err: unknown) => console.error(err));
         }
-      }).then(resolved => {
+      }).then((resolved) => {
         if (typeof super.replace === 'function') {
-          super.replace(resolved).catch((err: any) => {
+          super.replace(resolved).catch((err: unknown) => {
             console.error('[NexusStyleSheet] Dynamic replace of resolved imports failed:', err);
           });
         }
-      }).catch((err: any) => {
+      }).catch((err: unknown) => {
         console.error('[NexusStyleSheet] Failed to resolve imports in background:', err);
       });
     }
   }
 }
 
-// Two-Tier Scoped Constructable StyleSheets
-export const preflightSheet: any = new NexusStyleSheet();
-export const jitSheet: any = new NexusStyleSheet();
+// Pipeline A output sheet — a plain constructable stylesheet (no @import, so the
+// resolver overhead is unnecessary here).
+export const jitSheet: CSSStyleSheet = (typeof CSSStyleSheet !== 'undefined')
+  ? new CSSStyleSheet()
+  : ({} as CSSStyleSheet);
 
 // ============================================================================
-// 3. CORE COMPILER BRIDGE
+// 3. COLOR TOKEN DISCOVERY + THEME BRIDGE
 // ============================================================================
-
-// deno-lint-ignore-file no-explicit-any
 
 /**
  * Discovers CSS custom color properties from the document's computed styles.
  * Works with ANY CSS library that uses --color-* custom properties (DaisyUI,
  * Bootstrap, Shoelace, custom design systems, etc.).
  *
- * Called after stylesheets have been applied to the document. Uses
+ * Called AFTER external stylesheets have been applied to the document. Uses
  * getComputedStyle enumeration which exposes all applied custom properties
  * in modern browsers without requiring same-origin stylesheet access.
  */
@@ -150,23 +195,121 @@ export function discoverColorTokens(): Set<string> {
 export function buildTailwindThemeBridge(tokens: Set<string>): string {
   if (tokens.size === 0) return '';
   const decls = Array.from(tokens)
-    .map(name => `  --color-${name}: var(--color-${name});`)
+    .map((name) => `  --color-${name}: var(--color-${name});`)
     .join('\n');
   return `@theme {\n${decls}\n}`;
 }
 
-let tailwindCompiler: any = null;
-let compiledClassesSet = new Set<string>();
+// ============================================================================
+// 4. PIPELINE A — TAILWIND JIT COMPILER (lazy, scoped, re-bridged on import)
+// ============================================================================
+
+let compileFn: ((css: string, opts: unknown) => Promise<{ build: (classes: string[]) => string }>) | null = null;
+let coreCss: { indexCss: string; themeCss: string; preflightCss: string; utilitiesCss: string } | null = null;
+let tailwindCompiler: { build: (classes: string[]) => string } | null = null;
+let compilerReadyPromise: Promise<void> | null = null;
+let externalStylesSettled = false;
+let _rebuildingBridge = false;
+
+const compiledClassesSet = new Set<string>();
 const pendingClasses: { className: string; el?: HTMLElement; runtime?: RuntimeContext }[] = [];
 
-function hashString(str: string): string {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash << 5) - hash + str.charCodeAt(i);
-    hash |= 0;
+function coreLoadStylesheet(id: string): { path: string; base: string; content: string } {
+  if (!coreCss) return { path: id, base: '/', content: '' };
+  if (id === 'tailwindcss' || id === 'tailwindcss/index.css') {
+    return { path: 'tailwindcss/index.css', base: '/', content: coreCss.indexCss };
   }
-  return String(hash);
+  if (id === './theme.css' || id === 'tailwindcss/theme.css') {
+    return { path: 'tailwindcss/theme.css', base: '/', content: coreCss.themeCss };
+  }
+  if (id === './preflight.css' || id === 'tailwindcss/preflight.css') {
+    return { path: 'tailwindcss/preflight.css', base: '/', content: coreCss.preflightCss };
+  }
+  if (id === './utilities.css' || id === 'tailwindcss/utilities.css') {
+    return { path: 'tailwindcss/utilities.css', base: '/', content: coreCss.utilitiesCss };
+  }
+  return { path: id, base: '/', content: '' };
 }
+
+/**
+ * Lazily loads the Tailwind v4 compiler + core CSS the first time it is needed
+ * (i.e. when a [data-stylesheet] element is first processed). Mirrors the
+ * official Play CDN `loadStylesheet` — only the four bundled virtual core files
+ * are resolved; external @import / plugins are NOT supported by the browser build.
+ */
+async function ensureCompiler(): Promise<void> {
+  if (compilerReadyPromise) return compilerReadyPromise;
+
+  compilerReadyPromise = (async () => {
+    const [indexCss, themeCss, preflightCss, utilitiesCss, compilerJs] = await Promise.all([
+      fetchWithCache('https://cdn.jsdelivr.net/npm/tailwindcss@4/index.css'),
+      fetchWithCache('https://cdn.jsdelivr.net/npm/tailwindcss@4/theme.css'),
+      fetchWithCache('https://cdn.jsdelivr.net/npm/tailwindcss@4/preflight.css'),
+      fetchWithCache('https://cdn.jsdelivr.net/npm/tailwindcss@4/utilities.css'),
+      fetchWithCache('https://cdn.jsdelivr.net/npm/tailwindcss@4/+esm'),
+    ]);
+
+    coreCss = { indexCss, themeCss, preflightCss, utilitiesCss };
+
+    const blob = new Blob([compilerJs], { type: 'text/javascript' });
+    const blobUrl = URL.createObjectURL(blob);
+    const mod = await import(blobUrl);
+    URL.revokeObjectURL(blobUrl);
+
+    compileFn = mod.compile;
+
+    tailwindCompiler = await compileFn(`@import "tailwindcss";`, {
+      base: '/',
+      loadStylesheet: coreLoadStylesheet,
+    });
+
+    // Build the theme bridge from currently-applied (external) stylesheets and
+    // adopt the initial preflight + discovered theme variables.
+    await refreshThemeBridge();
+
+    // Process any classes collected before the compiler finished loading.
+    while (pendingClasses.length > 0) {
+      const { className, el, runtime } = pendingClasses.shift()!;
+      stylesheet.adoptClass(className, el, runtime);
+    }
+  })().catch((err: unknown) => {
+    compilerReadyPromise = null;
+    console.error('[Nexus] Tailwind JIT init failed:', err);
+    throw err;
+  });
+
+  return compilerReadyPromise;
+}
+
+/**
+ * Rebuilds the Tailwind compiler with a freshly-discovered theme bridge so that
+ * utilities for externally-defined color tokens (e.g. DaisyUI's --color-*) are
+ * generated. Called once after external stylesheets settle, and again whenever
+ * new external stylesheets are adopted.
+ */
+async function refreshThemeBridge(): Promise<void> {
+  if (!tailwindCompiler || !compileFn || !coreCss) return;
+  if (_rebuildingBridge) return;
+  _rebuildingBridge = true;
+  try {
+    const tokens = discoverColorTokens();
+    const bridge = buildTailwindThemeBridge(tokens);
+    tailwindCompiler = await compileFn(`@import "tailwindcss";\n${bridge}`, {
+      base: '/',
+      loadStylesheet: coreLoadStylesheet,
+    });
+    const compiledCSS = tailwindCompiler.build(Array.from(compiledClassesSet));
+    jitSheet.replaceSync(compiledCSS);
+  } catch (err) {
+    console.error('[Nexus] Theme bridge refresh failed:', err);
+  } finally {
+    _rebuildingBridge = false;
+  }
+}
+
+// ============================================================================
+// 5. CACHE-AND-FETCH HELPER
+// ============================================================================
 
 async function fetchWithCache(url: string, timeoutMs = 3000, onUpdate?: (fresh: string) => void): Promise<string> {
   const cacheKey = `nexus-cache:${url}`;
@@ -175,7 +318,9 @@ async function fetchWithCache(url: string, timeoutMs = 3000, onUpdate?: (fresh: 
   if (typeof localStorage !== 'undefined') {
     try {
       cached = localStorage.getItem(cacheKey);
-    } catch (_) { }
+    } catch {
+      // ignore
+    }
   }
 
   if (cached) {
@@ -194,7 +339,9 @@ async function fetchWithCache(url: string, timeoutMs = 3000, onUpdate?: (fresh: 
           if (typeof localStorage !== 'undefined') {
             try {
               localStorage.setItem(cacheKey, freshText);
-            } catch (_) { }
+            } catch {
+              // ignore
+            }
           }
           if (onUpdate) onUpdate(freshText);
         } else {
@@ -236,10 +383,12 @@ async function fetchWithCache(url: string, timeoutMs = 3000, onUpdate?: (fresh: 
       if (typeof localStorage !== 'undefined') {
         try {
           localStorage.setItem(cacheKey, text);
-        } catch (_) { }
+        } catch {
+          // ignore
+        }
       }
       return text;
-    } catch (_) {
+    } catch {
       console.log(`[Nexus Cache] Local relative fallback failed for ${url}. Falling back to CDN.`);
     }
   }
@@ -250,7 +399,9 @@ async function fetchWithCache(url: string, timeoutMs = 3000, onUpdate?: (fresh: 
     if (typeof localStorage !== 'undefined') {
       try {
         localStorage.setItem(cacheKey, text);
-      } catch (_) { }
+      } catch {
+        // ignore
+      }
     }
     return text;
   } catch (err) {
@@ -259,84 +410,26 @@ async function fetchWithCache(url: string, timeoutMs = 3000, onUpdate?: (fresh: 
   }
 }
 
-async function initPlayCompiler() {
-  if (tailwindCompiler) return;
-
-  try {
-    console.log("🚀 Initializing Tailwind Play JIT compiler...");
-
-    // Adopt the index.css sheet using our custom NexusStyleSheet `@import` resolver
-    preflightSheet.replaceSync('@import url("https://cdn.jsdelivr.net/npm/tailwindcss@4/index.css");');
-
-    // Fetch the raw files for JIT compiler database initialization
-    const [indexCss, themeCss, preflightCss, utilitiesCss, compilerJs] = await Promise.all([
-      fetchWithCache('https://cdn.jsdelivr.net/npm/tailwindcss@4/index.css'),
-      fetchWithCache('https://cdn.jsdelivr.net/npm/tailwindcss@4/theme.css'),
-      fetchWithCache('https://cdn.jsdelivr.net/npm/tailwindcss@4/preflight.css'),
-      fetchWithCache('https://cdn.jsdelivr.net/npm/tailwindcss@4/utilities.css'),
-      fetchWithCache('https://cdn.jsdelivr.net/npm/tailwindcss@4/+esm'),
-    ]);
-
-    const blob = new Blob([compilerJs], { type: 'text/javascript' });
-    const blobUrl = URL.createObjectURL(blob);
-    const { compile } = await import(blobUrl);
-    URL.revokeObjectURL(blobUrl);
-
-    // Discover CSS color tokens from currently-applied stylesheets.
-    // Called AFTER await import("tailwindcss") — loading the Tailwind Wasm
-    // module is the slowest async step, giving linked stylesheets maximum
-    // time to load and apply. Library-agnostic: reads any --color-* property.
-    const colorTokens = discoverColorTokens();
-    const themeBridge = buildTailwindThemeBridge(colorTokens);
-    if (colorTokens.size > 0) {
-      console.log(`✅ Tailwind JIT: discovered ${colorTokens.size} color tokens from loaded stylesheets.`);
-    }
-
-    tailwindCompiler = await compile(`
-@import "tailwindcss";
-${themeBridge}
-`, {
-      base: '/',
-      async loadStylesheet(id: string) {
-        if (id === 'tailwindcss' || id === 'tailwindcss/index.css') {
-          return { path: 'tailwindcss/index.css', base: '/', content: indexCss };
-        }
-        if (id === './theme.css' || id === 'tailwindcss/theme.css') {
-          return { path: 'tailwindcss/theme.css', base: '/', content: themeCss };
-        }
-        if (id === './preflight.css' || id === 'tailwindcss/preflight.css') {
-          return { path: 'tailwindcss/preflight.css', base: '/', content: preflightCss };
-        }
-        if (id === './utilities.css' || id === 'tailwindcss/utilities.css') {
-          return { path: 'tailwindcss/utilities.css', base: '/', content: utilitiesCss };
-        }
-        return { path: id, base: '/', content: '' };
-      }
-    });
-
-    console.log("✅ Tailwind Play JIT compiler ready.");
-
-    // Process any classes collected during startup
-    while (pendingClasses.length > 0) {
-      const { className, el, runtime } = pendingClasses.shift()!;
-      stylesheet.adoptClass(className, el, runtime);
-    }
-  } catch (err) {
-    console.error("Failed to initialize Tailwind Play JIT compiler:", err);
+function hashString(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
   }
+  return String(hash);
 }
 
 // ============================================================================
-// 4. STYLESHEET MANAGER (DOM Injection)
+// 6. STYLESHEET MANAGER
 // ============================================================================
 class StyleSheetManager {
-  private _adoptedSheets: Map<string, any> = new Map();
+  private _adoptedSheets: Map<string, CSSStyleSheet> = new Map();
   private _knownClasses: Set<string> = new Set();
   private _nextId = 0;
   private _preflightEmitted = false;
 
   private _getJitSheet(): CSSStyleSheet {
-    return jitSheet as any;
+    return jitSheet;
   }
 
   clearCache(): void {
@@ -361,11 +454,11 @@ class StyleSheetManager {
 
     // Passive scan of classes within the target root element (if provided)
     if (rootEl) {
-      rootEl.classList.forEach(cls => this.adoptClass(cls, rootEl));
+      rootEl.classList.forEach((cls) => this.adoptClass(cls, rootEl));
       const all = rootEl.querySelectorAll('*');
-      all.forEach(el => {
+      all.forEach((el) => {
         if (el instanceof HTMLElement) {
-          el.classList.forEach(cls => this.adoptClass(cls, el));
+          el.classList.forEach((cls) => this.adoptClass(cls, el));
         }
       });
     }
@@ -377,8 +470,8 @@ class StyleSheetManager {
     if (this._knownClasses.has(className)) return;
 
     // Support dynamic data signals binding (e.g., w-$width, bg-$myColor).
-    // These are processed globally across the document regardless of data-stylesheet boundary,
-    // as signals only set element CSS variables and do not need Tailwind JIT compilation.
+    // These are processed globally and only set element CSS variables — they do
+    // not need Tailwind JIT compilation.
     const hasSignalMatch = className.match(/^[a-z]+-\$([a-zA-Z_$][\w$]*)$/);
     if (hasSignalMatch && el && runtime) {
       this.adoptSignalBinding(el, hasSignalMatch[1], runtime);
@@ -386,7 +479,8 @@ class StyleSheetManager {
       return;
     }
 
-    // Boundary scope check: element must be inside a data-stylesheet container for JIT compilation
+    // Boundary scope check: element must be inside a data-stylesheet container
+    // for JIT compilation.
     if (el && !el.closest('[data-stylesheet]')) {
       return;
     }
@@ -397,23 +491,24 @@ class StyleSheetManager {
       return;
     }
 
-    // Play Mode: JIT compiling
+    // Play Mode: JIT compiling (lazy)
     if (!tailwindCompiler) {
       pendingClasses.push({ className, el, runtime });
+      ensureCompiler().catch((err: unknown) => console.error('[Nexus] JIT init failed:', err));
       return;
     }
 
     try {
       // Filter out binding expressions, template parameters, or operator tokens
       if (
-        className.includes("{") ||
-        className.includes("}") ||
-        className.includes("$") ||
-        className.includes("?") ||
-        className.includes("<") ||
-        className.includes(">") ||
-        className.includes("&") ||
-        className.includes("=")
+        className.includes('{') ||
+        className.includes('}') ||
+        className.includes('$') ||
+        className.includes('?') ||
+        className.includes('<') ||
+        className.includes('>') ||
+        className.includes('&') ||
+        className.includes('=')
       ) {
         return;
       }
@@ -449,7 +544,9 @@ class StyleSheetManager {
     try {
       sheet.insertRule(cssText, sheet.cssRules.length);
       this._knownClasses.add(className);
-    } catch (_e) { }
+    } catch {
+      // ignore
+    }
   }
 
   collectRules(): string {
@@ -458,14 +555,18 @@ class StyleSheetManager {
       const rules: string[] = [];
       try {
         for (const rule of sheet.cssRules) rules.push(rule.cssText);
-      } catch (_e) { }
+      } catch {
+        // ignore
+      }
       if (rules.length) sheets.push(rules.join('\n'));
     });
 
     const rules: string[] = [];
     try {
-      for (const rule of (jitSheet as any).cssRules) rules.push(rule.cssText);
-    } catch (_e) { }
+      for (const rule of jitSheet.cssRules) rules.push(rule.cssText);
+    } catch {
+      // ignore
+    }
     if (rules.length) sheets.push(rules.join('\n'));
     return sheets.join('\n\n');
   }
@@ -505,10 +606,10 @@ class StyleSheetManager {
 
     const sheet = new NexusStyleSheet();
     await sheet.replace(processedCSS);
-    this._adoptedSheets.set(sheetId, sheet as any);
+    this._adoptedSheets.set(sheetId, sheet as unknown as CSSStyleSheet);
 
     if (root && 'adoptedStyleSheets' in root) {
-      root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet as any];
+      root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet as unknown as CSSStyleSheet];
     }
     return () => this.removeSheet(sheetId, root);
   }
@@ -525,10 +626,10 @@ class StyleSheetManager {
 
     const sheet = new NexusStyleSheet();
     await sheet.replace(cssText);
-    this._adoptedSheets.set(sheetId, sheet as any);
+    this._adoptedSheets.set(sheetId, sheet as unknown as CSSStyleSheet);
 
     if (root && 'adoptedStyleSheets' in root) {
-      root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet as any];
+      root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet as unknown as CSSStyleSheet];
     }
     return () => this.removeSheet(sheetId, root);
   }
@@ -541,7 +642,7 @@ class StyleSheetManager {
     const sheet = this._adoptedSheets.get(id);
     if (!sheet) return;
     if (root && 'adoptedStyleSheets' in root) {
-      root.adoptedStyleSheets = root.adoptedStyleSheets.filter(s => s !== sheet);
+      root.adoptedStyleSheets = root.adoptedStyleSheets.filter((s) => s !== sheet);
     }
     this._adoptedSheets.delete(id);
   }
@@ -557,7 +658,7 @@ class StyleSheetManager {
 export const stylesheet = new StyleSheetManager();
 
 // ============================================================================
-// 5. DUAL MODE JIT COMPILER INITIALIZATION
+// 7. JIT ENGINE INITIALIZATION (lazy — only when [data-stylesheet] is invoked)
 // ============================================================================
 let _isJitEngineBooted = false;
 
@@ -569,26 +670,39 @@ export function initializeJitEngine(): void {
     // Production Mode: Adopt pre-compiled AOT stylesheet directly
     stylesheet.adoptCSSSync(PACKED_THEME_CSS, 'nexus-theme');
   } else {
-    // Play Mode: Initialize official JIT compiler dynamically
-    initPlayCompiler();
+    // Play Mode: Initialize official JIT compiler lazily
+    ensureCompiler().catch((err: unknown) => console.error('[Nexus] JIT init failed:', err));
+  }
+}
+
+/**
+ * Notifies the stylesheet manager that all external (data-import) stylesheets
+ * have been adopted and applied to the document. This triggers a theme-bridge
+ * rebuild so Tailwind utilities for externally-defined color tokens (e.g.
+ * DaisyUI's --color-*) are generated. Idempotent.
+ */
+export function markExternalStylesSettled(): void {
+  externalStylesSettled = true;
+  if (compilerReadyPromise) {
+    refreshThemeBridge().catch((err: unknown) => console.error('[Nexus] bridge refresh failed:', err));
   }
 }
 
 // ============================================================================
-// 6. ATTRIBUTE MODULE DIRECTIVE EXPORT (data-stylesheet)
+// 8. ATTRIBUTE MODULE DIRECTIVE EXPORT (data-stylesheet)
 // ============================================================================
 const stylesheetModule: AttributeModule = {
   name: 'stylesheet',
   attribute: 'stylesheet',
-  handle(el: HTMLElement, _expression: string, runtime: RuntimeContext): (() => void) | void {
+  handle(el: HTMLElement, _expression: string, _runtime: RuntimeContext): (() => void) | void {
     // A. Locate closest shadow root or document
     const root = el.getRootNode() as Document | ShadowRoot;
 
-    // B. Adopt preflight and jit sheets onto the scope's root
+    // B. Adopt the JIT sheet onto the scope's root (reactive, ZCZS reference).
     if (root && 'adoptedStyleSheets' in root) {
       const sheetsList = Array.from(root.adoptedStyleSheets);
-      if (!sheetsList.includes(preflightSheet)) {
-        root.adoptedStyleSheets = [...sheetsList, preflightSheet, jitSheet];
+      if (!sheetsList.includes(jitSheet)) {
+        root.adoptedStyleSheets = [...sheetsList, jitSheet];
       }
     }
 
@@ -596,7 +710,7 @@ const stylesheetModule: AttributeModule = {
     stylesheet.emitPreflightAndTheme(el);
 
     return () => { };
-  }
+  },
 };
 
 export default stylesheetModule;
