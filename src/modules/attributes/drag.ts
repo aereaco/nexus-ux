@@ -454,12 +454,16 @@ export class Sortable {
         this.dragEl.classList.remove(this.options.chosenClass!);
         this.dragEl.classList.remove(this.options.dragClass!);
 
-        // Restore MultiDrag elements visibility
+        // Restore MultiDrag elements visibility on drop. The non-primary selected
+        // items were set to display:none during drag; ensure the WHOLE selection
+        // (including the dragged item) is visible again so the re-rendered list
+        // never ends up with a hidden member.
         if (this.options.multiDrag && this.multiDragElements.length > 0) {
           this.multiDragElements.forEach(el => {
             el.style.display = '';
           });
         }
+        if (this.dragEl) this.dragEl.style.display = '';
 
         // Remove clone
         if (Sortable.clone) {
@@ -519,6 +523,23 @@ export class Sortable {
             })),
           });
         }
+
+        // Safety net: after the reactive re-render settles, force any draggable
+        // child still hidden (e.g. a node reused/repositioned by the reconciler)
+        // back to visible so no selection member disappears on drop.
+        const clearHidden = (root: HTMLElement | null) => {
+          if (!root) return;
+          Array.from(root.children).forEach((c) => {
+            const el = c as HTMLElement;
+            if (typeof el.matches === 'function' && el.matches(this.options.draggable!) && el.style.display === 'none') {
+              el.style.display = '';
+            }
+          });
+        };
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          clearHidden(this.parentEl);
+          clearHidden(this.dragEl?.parentElement ?? null);
+        }));
 
         if (this.options.multiDrag) {
           this.multiDragElements = [];
