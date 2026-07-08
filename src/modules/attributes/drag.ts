@@ -480,6 +480,7 @@ export class Sortable {
           const child = children[i];
           if (child === this.dragEl) break;
           if (child.nodeName.toUpperCase() === 'TEMPLATE') continue;
+          if (child.hasAttribute('data-ux-template')) continue;
           if (child.getAttribute('draggable') === 'false') continue;
           if (child.matches(this.options.draggable!)) {
             finalIndex++;
@@ -487,15 +488,6 @@ export class Sortable {
         }
 
         const oldIndex = this.originalIndices.get(this.dragEl);
-
-        console.log('[DEBUG-DRAG]', {
-          dragEl: this.dragEl.textContent?.trim(),
-          multiDragElements: this.multiDragElements.map(el => el.textContent?.trim()),
-          originalIndices: Array.from(this.originalIndices.entries()).map(([k, v]) => `${k.textContent?.trim()}: ${v}`),
-          finalIndex,
-          oldIndex,
-          domChildren: Array.from(this.dragEl.parentElement!.children).map(c => `${c.textContent?.trim()} (template: ${c.hasAttribute('data-ux-template')}, draggable: ${c.getAttribute('draggable')})`)
-        });
 
         // De-select MultiDrag items in the data model before triggering list mutations
         if (this.options.multiDrag) {
@@ -590,42 +582,39 @@ export class Sortable {
     const el = document.elementFromPoint(clientX, clientY) as HTMLElement | null;
     if (!el) return null;
 
-    // 1. Check if hovering over a container first
+    // Resolve the drop container under the cursor (handles cross-container drags).
     const container = el.closest('[data-drag-container]') as HTMLElement | null;
-    if (container) {
-      console.log("[Drag] Element under cursor:", el, "Container:", container, "sortable:", (container as any).__sortable);
-    }
+    if (!container || !(container as any).__sortable) return null;
 
-    if (container && (container as any).__sortable) {
-      const children = Array.from(container.children).filter(c =>
-        c.nodeName.toUpperCase() !== 'TEMPLATE' &&
-        c !== this.dragEl &&
-        c !== Sortable.ghost &&
-        !(c as HTMLElement).classList.contains('sortable-ghost')
-      ) as HTMLElement[];
+    const children = Array.from(container.children).filter(c =>
+      c.nodeName.toUpperCase() !== 'TEMPLATE' &&
+      c !== this.dragEl &&
+      c !== Sortable.ghost &&
+      (c as HTMLElement).style.display !== 'none' &&
+      !c.hasAttribute('data-ux-template') &&
+      !(c as HTMLElement).classList.contains('sortable-ghost')
+    ) as HTMLElement[];
 
-      // If the container is empty, it takes priority as the drop target!
-      if (children.length === 0) {
-        return container;
+    // Empty container takes priority as the drop target.
+    if (children.length === 0) return container;
+
+    // Euclidean distance to each eligible child's center handles flex/grid gaps
+    // and hidden MultiDrag selections robustly.
+    let closest: HTMLElement | null = null;
+    let minDistance = Infinity;
+    for (const child of children) {
+      const rect = child.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const dx = clientX - centerX;
+      const dy = clientY - centerY;
+      const dist = dx * dx + dy * dy;
+      if (dist < minDistance) {
+        minDistance = dist;
+        closest = child;
       }
     }
-
-    // 2. Fallback to closest item if container is not empty
-    const dragItem = el.closest(this.options.draggable!) as HTMLElement | null;
-    if (dragItem) return dragItem;
-
-    // 3. Fallback to container's last child if container is populated
-    if (container && (container as any).__sortable) {
-      const children = Array.from(container.children).filter(c =>
-        c.nodeName.toUpperCase() !== 'TEMPLATE' &&
-        c !== this.dragEl &&
-        c !== Sortable.ghost &&
-        !(c as HTMLElement).classList.contains('sortable-ghost')
-      ) as HTMLElement[];
-
-      return children[children.length - 1];
-    }
-    return null;
+    return closest;
   }
 
   private _detectDirection(container: HTMLElement): 'vertical' | 'horizontal' {
