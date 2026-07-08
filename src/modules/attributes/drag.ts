@@ -477,16 +477,17 @@ export class Sortable {
           Sortable.ghost = null;
         }
 
-        // Compute finalIndex relative to the actual dropped target container.
-        // Hidden MultiDrag group members (display:none) are excluded: they stay
-        // in the DOM at their original slots during drag but are removed from the
-        // signal list before insertion, so counting them would offset newIndex.
+        // Compute finalIndex relative to the dropped target container, mirroring
+        // SortableJS MultiDrag's `index(dragEl, ':not(.selectedClass)')`: count only
+        // NON-selected draggable siblings before dragEl. Folded (selected) members are
+        // still in the DOM (hidden) during drag, so excluding them by class — not by
+        // visibility — yields the correct group insertion slot.
         let finalIndex = 0;
         const children = Array.from(this.dragEl.parentElement!.children);
         for (let i = 0; i < children.length; i++) {
           const child = children[i];
           if (child === this.dragEl) break;
-          if ((child as HTMLElement).style.display === 'none') continue;
+          if ((child as HTMLElement).classList.contains(this.options.selectedClass!)) continue;
           if (child.nodeName.toUpperCase() === 'TEMPLATE') continue;
           if (child.hasAttribute('data-ux-template')) continue;
           if (child.getAttribute('draggable') === 'false') continue;
@@ -523,23 +524,6 @@ export class Sortable {
             })),
           });
         }
-
-        // Safety net: after the reactive re-render settles, force any draggable
-        // child still hidden (e.g. a node reused/repositioned by the reconciler)
-        // back to visible so no selection member disappears on drop.
-        const clearHidden = (root: HTMLElement | null) => {
-          if (!root) return;
-          Array.from(root.children).forEach((c) => {
-            const el = c as HTMLElement;
-            if (typeof el.matches === 'function' && el.matches(this.options.draggable!) && el.style.display === 'none') {
-              el.style.display = '';
-            }
-          });
-        };
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-          clearHidden(this.parentEl);
-          clearHidden(this.dragEl?.parentElement ?? null);
-        }));
 
         if (this.options.multiDrag) {
           this.multiDragElements = [];
