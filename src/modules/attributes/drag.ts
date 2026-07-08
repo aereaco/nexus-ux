@@ -177,6 +177,15 @@ export class Sortable {
       }
     }
 
+    // Interactive controls (checkbox, button, etc.) own their own events.
+    // Skipping here lets a checkbox drive MultiDrag selection through its
+    // two-way binding instead of double-toggling with the engine's tap-select
+    // (and prevents preventDefault from suppressing the native control).
+    const targetTag = target.tagName.toUpperCase();
+    if (['INPUT', 'SELECT', 'TEXTAREA', 'BUTTON'].includes(targetTag)) {
+      return;
+    }
+
     e.preventDefault();
     e.stopPropagation();
 
