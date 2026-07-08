@@ -4,6 +4,8 @@ dist/
 *.log
 .gemini/
 .env
+.agent/
+.kilo/
 .kilocode/
 .vscode/
 .system_generated/
