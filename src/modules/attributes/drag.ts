@@ -507,16 +507,12 @@ export class Sortable {
 
         const oldIndex = this.originalIndices.get(this.dragEl);
 
-        // De-select MultiDrag items in the data model before triggering list mutations
-        if (this.options.multiDrag) {
-          this.multiDragElements.forEach((el: any) => {
-            const stack = getDataStack(el);
-            const scope = stack.find(s => s && 'item' in s && s.item && typeof s.item === 'object') as any;
-            if (scope && scope.item) {
-              scope.item.selected = false;
-            }
-          });
-        }
+        // NOTE: SortableJS MultiDrag KEEPS the selection after a drop (items
+        // remain selected so the group can be re-dragged). We intentionally do
+        // NOT clear `item.selected` here — doing so fires a concurrent reactive
+        // re-render that races with the list-mutation re-render while the folded
+        // (display:none) items are still in the DOM, which scrambles the
+        // data-for reconciler output. Selection is only cleared on a plain tap.
 
         if (this.options.onEnd) {
           this.options.onEnd({
@@ -941,18 +937,14 @@ export class DragReorderEngine<T> {
         const childrenToAnimate = Array.from(toContainer.children) as HTMLElement[];
         const flipFn = (this.runtime.sprites as any)?.$animate?.flip || flip;
 
-        // Setup MultiDrag unfolding transition starting layout
-        if (isMultiDrag && evt.items.length > 1) {
-          const dragRect = evt.item.getBoundingClientRect();
-          evt.items.forEach((item: HTMLElement) => {
-            if (item !== evt.item) {
-              const r = item.getBoundingClientRect();
-              const dx = dragRect.left - r.left;
-              const dy = dragRect.top - r.top;
-              item.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
-            }
-          });
-        }
+        // NOTE: Previously a manual "unfold" transform was applied here that
+        // translated each non-primary selected element on top of the dragEl as
+        // the start of an animation, relying on `flip`'s transitionend cleanup
+        // to revert it. When that cleanup did not fire the folded items stayed
+        // translated on top of the primary item (overlap + empty gap). `flip`
+        // already animates every child from its old layout slot to its new one,
+        // so the manual overlap is both redundant and the source of the bug.
+        // We let `flip` own the motion entirely.
 
         if (toContainer !== fromContainer && toExpr) {
           // Cross-container drag

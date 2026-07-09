@@ -222,12 +222,13 @@
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         07. MultiDrag <span class="badge badge-outline badge-sm">Batch Select</span>
                     </div>
+                    <p class="text-xs opacity-60 mb-4">Click items to select several, then drag them as one group.</p>
                     <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="multiList"
                         data-drag-multi="true">
                         <div data-for="item in multiList" data-drag
                             data-bind-class="item.selected ? 'flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 transition-colors item sortable-selected' : 'flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item'">
                             <input type="checkbox" data-bind-checked="item.selected"
-                                class="checkbox checkbox-primary checkbox-sm">
+                                class="checkbox checkbox-primary pointer-events-auto" />
                             <span data-bind="item.n" class="font-medium"></span>
                         </div>
                     </div>
