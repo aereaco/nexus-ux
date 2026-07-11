@@ -17,6 +17,41 @@
     <title>Nexus-UX | Drag and Drop Engine</title>
     <link rel="icon" type="image/svg+xml" href="/site/_assets/images/emblem.svg">
     <script type="module" src="/dist/nexus-ux.js"></script>
+    <style>
+      .nested-dropzone:not(:has([data-drag]:not([data-for]))) {
+        min-height: 2.75rem;
+        position: relative;
+      }
+
+      .nested-dropzone:not(:has([data-drag]:not([data-for])))::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border: 2px dashed rgba(var(--bc) / 0.15);
+        border-radius: 0.5rem;
+        pointer-events: none;
+      }
+
+      .nested-dropzone:not(:has([data-drag]:not([data-for])))::after {
+        content: 'Empty Container';
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        font-size: 0.75rem;
+        opacity: 0.3;
+        pointer-events: none;
+        color: var(--bc);
+      }
+
+      .nested-dropzone.nexus-dropzone-docked {
+        outline: 2px solid var(--fallback-p, oklch(var(--p)));
+        outline-offset: 2px;
+        border-radius: 0.5rem;
+      }
+    </style>
 </head>
 
 <body class="bg-base-300 text-base-content min-h-screen p-8 font-sans antialiased">
@@ -286,16 +321,6 @@
                         class="flex flex-col p-2 bg-base-100 rounded-box border border-base-content/5"
                         data-component="{ path: '#tree-node', lazy: true }">
                     </div>
-
-                    <!-- Phantom slot when empty -->
-                    <template data-if="!item.sub || !item.sub.length || item.isDraggedOut">
-                        <div data-drag draggable="false"
-                            class="border border-dashed border-base-content/10 rounded-box flex items-center justify-center text-xs opacity-30 select-none min-h-5">
-                            <iconify-icon icon="material-symbols-light:block-outline"
-                                class="text-base-content/30 text-xl pe-2"></iconify-icon>
-                            Empty Container
-                        </div>
-                    </template>
                 </div>
             </template>
 

@@ -98,6 +98,7 @@ export class Sortable {
   private scrollParent: HTMLElement | null = null;
   private _lastActiveItemScope: any = null;
   private _lastSourceItemScope: any = null;
+  private _dockedContainer: HTMLElement | null = null;
   private scrollParentBounds: DOMRect | null = null;
 
   constructor(el: HTMLElement, options: SortableOptions) {
@@ -360,7 +361,9 @@ export class Sortable {
     const isSameContainer = targetParent === this.el;
     if (!isSameContainer) {
       if (!targetSortable || !this._canPullPut(targetSortable)) {
-        this._clearDragOverState();
+    this._clearDocked();
+
+    this._clearDragOverState();
         return; // Pull/Put not allowed between groups
       }
     }
@@ -378,6 +381,8 @@ export class Sortable {
         this._animateShift(this.dragEl.parentElement!, srcBefore);
         this._animateShift(target, destBefore);
       }
+
+      this._updateDocked();
       return;
     }
 
@@ -445,6 +450,8 @@ export class Sortable {
       if (!isSameContainer) {
         this._animateShift(targetParent, destBefore);
       }
+
+      this._updateDocked();
 
       // Recalculate targetMoveDistance
       if (this.targetBeforeFirstSwap !== undefined && !this.isCircumstantialInvert) {
@@ -562,6 +569,27 @@ export class Sortable {
     document.removeEventListener('pointermove', this._pointerMoveBound);
     document.removeEventListener('pointerup', this._pointerUpBound);
     document.removeEventListener('pointercancel', this._pointerUpBound);
+  }
+
+  private _clearDocked() {
+    if (this._dockedContainer) {
+      this._dockedContainer.classList.remove("nexus-dropzone-docked");
+      this._dockedContainer = null;
+    }
+  }
+
+  private _updateDocked() {
+    if (!this.dragEl) return;
+    const container = this.dragEl.closest("[data-drag-container]") as HTMLElement | null;
+    if (container !== this._dockedContainer) {
+      if (this._dockedContainer) {
+        this._dockedContainer.classList.remove("nexus-dropzone-docked");
+      }
+      if (container) {
+        container.classList.add("nexus-dropzone-docked");
+      }
+      this._dockedContainer = container;
+    }
   }
 
   private _clearDragOverState() {
