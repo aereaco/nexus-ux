@@ -17,41 +17,6 @@
     <title>Nexus-UX | Drag and Drop Engine</title>
     <link rel="icon" type="image/svg+xml" href="/site/_assets/images/emblem.svg">
     <script type="module" src="/dist/nexus-ux.js"></script>
-    <style>
-      .nested-dropzone:not(:has([data-drag]:not([data-for]))) {
-        min-height: 2.75rem;
-        position: relative;
-      }
-
-      .nested-dropzone:not(:has([data-drag]:not([data-for])))::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        border: 2px dashed rgba(var(--bc) / 0.15);
-        border-radius: 0.5rem;
-        pointer-events: none;
-      }
-
-      .nested-dropzone:not(:has([data-drag]:not([data-for])))::after {
-        content: 'Empty Container';
-        position: absolute;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        font-size: 0.75rem;
-        opacity: 0.3;
-        pointer-events: none;
-        color: var(--bc);
-      }
-
-      .nested-dropzone.nexus-dropzone-docked {
-        outline: 2px solid var(--fallback-p, oklch(var(--p)));
-        outline-offset: 2px;
-        border-radius: 0.5rem;
-      }
-    </style>
 </head>
 
 <body class="bg-base-300 text-base-content min-h-screen p-8 font-sans antialiased">
@@ -91,7 +56,12 @@
         horizontalThresholdVal: 0.5,
         isExpanded: false,
         disabledSorting: false
-    }">
+    }" data-stylesheet="
+      .nested-dropzone[data-dropzone-state='empty']{min-height:2.75rem;position:relative}
+      .nested-dropzone[data-dropzone-state='empty']::before{content:'';position:absolute;inset:0;border:2px dashed rgba(var(--bc)/0.15);border-radius:0.5rem;pointer-events:none}
+      .nested-dropzone[data-dropzone-state='empty']::after{content:'Empty Container';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:0.5rem;font-size:0.75rem;opacity:0.3;pointer-events:none;color:var(--bc)}
+      .nested-dropzone[data-dropzone-state='docked']{outline:2px solid var(--fallback-p,oklch(var(--p)));outline-offset:2px;border-radius:0.5rem}
+    ">
         <header class="mb-12 text-center">
             <h1
                 class="text-5xl font-black bg-gradient-to-r from-base-content to-base-content/50 bg-clip-text text-transparent mb-2">

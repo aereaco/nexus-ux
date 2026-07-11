@@ -694,11 +694,16 @@ export function markExternalStylesSettled(): void {
 const stylesheetModule: AttributeModule = {
   name: 'stylesheet',
   attribute: 'stylesheet',
-  handle(el: HTMLElement, _expression: string, _runtime: RuntimeContext): (() => void) | void {
-    // A. Locate closest shadow root or document
+  handle(el: HTMLElement, expression: string, _runtime: RuntimeContext): (() => void) | void {
+    const cleanupFns: (() => void)[] = [];
+
+    if (expression && expression.trim()) {
+      const css = expression.trim();
+      cleanupFns.push(stylesheet.adoptCSSSync(css, undefined, el));
+    }
+
     const root = el.getRootNode() as Document | ShadowRoot;
 
-    // B. Adopt the JIT sheet onto the scope's root (reactive, ZCZS reference).
     if (root && 'adoptedStyleSheets' in root) {
       const sheetsList = Array.from(root.adoptedStyleSheets);
       if (!sheetsList.includes(jitSheet)) {
@@ -706,10 +711,11 @@ const stylesheetModule: AttributeModule = {
       }
     }
 
-    // C. Scan and compile classes inside the subtree
-    stylesheet.emitPreflightAndTheme(el);
+    cleanupFns.push(() => {
+      stylesheet.emitPreflightAndTheme(el);
+    });
 
-    return () => { };
+    return () => cleanupFns.forEach(fn => fn());
   },
 };
 

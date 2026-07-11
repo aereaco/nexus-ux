@@ -383,6 +383,7 @@ export class Sortable {
       }
 
       this._updateDocked();
+      this._updateEmptyState(target);
       return;
     }
 
@@ -452,6 +453,7 @@ export class Sortable {
       }
 
       this._updateDocked();
+      this._updateEmptyState(targetParent);
 
       // Recalculate targetMoveDistance
       if (this.targetBeforeFirstSwap !== undefined && !this.isCircumstantialInvert) {
@@ -573,7 +575,7 @@ export class Sortable {
 
   private _clearDocked() {
     if (this._dockedContainer) {
-      this._dockedContainer.classList.remove("nexus-dropzone-docked");
+      this._dockedContainer.removeAttribute('data-dropzone-state');
       this._dockedContainer = null;
     }
   }
@@ -583,12 +585,21 @@ export class Sortable {
     const container = this.dragEl.closest("[data-drag-container]") as HTMLElement | null;
     if (container !== this._dockedContainer) {
       if (this._dockedContainer) {
-        this._dockedContainer.classList.remove("nexus-dropzone-docked");
+        this._dockedContainer.removeAttribute('data-dropzone-state');
       }
       if (container) {
-        container.classList.add("nexus-dropzone-docked");
+        container.setAttribute('data-dropzone-state', 'docked');
       }
       this._dockedContainer = container;
+    }
+  }
+
+  private _updateEmptyState(container: HTMLElement) {
+    const hasRealChildren = container.querySelector(':scope > [data-drag]:not([data-for])') != null;
+    if (hasRealChildren) {
+      container.removeAttribute('data-dropzone-state');
+    } else {
+      container.setAttribute('data-dropzone-state', 'empty');
     }
   }
 
