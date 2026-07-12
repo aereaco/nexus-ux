@@ -2,7 +2,7 @@ import { AttributeModule } from "../../engine/modules.ts";
 import { RuntimeContext } from "../../engine/composition.ts";
 import { flip } from "../sprites/animate.ts";
 import { getDataStack } from "../../engine/scope.ts";
-import { CLEANUP_FUNCTIONS_KEY } from "../../engine/consts.ts";
+import { CLEANUP_FUNCTIONS_KEY, MARKER_KEY, DATA_STACK_KEY } from "../../engine/consts.ts";
 
 // Helper to find scrollable parent container
 function getScrollParent(el: HTMLElement): HTMLElement {
@@ -41,7 +41,7 @@ export interface DragReorderContext<T> {
   onAutoScroll?: (delta: { x: number; y: number }) => void | Promise<boolean>;
 }
 
-export interface SortableOptions {
+export interface DraggableOptions {
   animation?: number;
   ghostClass?: string;
   dragClass?: string;
@@ -60,20 +60,21 @@ export interface SortableOptions {
   swapClass?: string;
   group?: string | { name: string; pull?: 'clone' | boolean; put?: boolean; revertClone?: boolean };
   sort?: boolean;
+  ghostOpacity?: number;
   onStart?: (evt: any) => void;
   onEnd?: (evt: any) => void;
 }
 
 // ---------------------------------------------------------------------------
-// Pure TypeScript Sortable Engine
+// Pure TypeScript Draggable Engine
 // ---------------------------------------------------------------------------
-export class Sortable {
-  static active: Sortable | null = null;
+export class Draggable {
+  static active: Draggable | null = null;
   static ghost: HTMLElement | null = null;
   static clone: HTMLElement | null = null;
 
   public el: HTMLElement;
-  public options: SortableOptions;
+  public options: DraggableOptions;
 
   private _pointerDownBound: (e: PointerEvent) => void;
   private _pointerMoveBound: (e: PointerEvent) => void;
@@ -101,15 +102,18 @@ export class Sortable {
   private _dockedContainer: HTMLElement | null = null;
   private scrollParentBounds: DOMRect | null = null;
 
-  constructor(el: HTMLElement, options: SortableOptions) {
+  private _runtime?: RuntimeContext;
+
+  constructor(el: HTMLElement, options: DraggableOptions, runtime?: RuntimeContext) {
     this.el = el;
+    this._runtime = runtime;
     this.options = {
       animation: 150,
-      ghostClass: 'sortable-ghost',
-      dragClass: 'sortable-drag',
-      chosenClass: 'sortable-chosen',
-      selectedClass: 'sortable-selected',
-      swapClass: 'sortable-swap-highlight',
+      ghostClass: 'draggable-ghost',
+      dragClass: 'draggable-drag',
+      chosenClass: 'draggable-chosen',
+      selectedClass: 'draggable-selected',
+      swapClass: 'draggable-swap-highlight',
       fallbackOnBody: true,
       swapThreshold: 1,
       invertedSwapThreshold: 1,
@@ -152,16 +156,16 @@ export class Sortable {
 
   private _onPointerDown(e: PointerEvent) {
     if (e.button !== 0) return; // Only left click
-    if (Sortable.active) return;
+    if (Draggable.active) return;
 
     const target = e.target as HTMLElement;
     const dragEl = target.closest(this.options.draggable!) as HTMLElement | null;
     if (!dragEl || !this.el.contains(dragEl)) return;
 
-    // Bubbling Gating: ensure the closest Sortable container is this.el
-    const closestSortableContainer = dragEl.closest('[data-drag-container]');
-    if (closestSortableContainer !== this.el) {
-      return; // Let the nested Sortable handle it!
+    // Bubbling Gating: ensure the closest Draggable container is this.el
+    const closestDraggableContainer = dragEl.closest('[data-drag-container]');
+    if (closestDraggableContainer !== this.el) {
+      return; // Let the nested Draggable handle it!
     }
 
     if (dragEl.getAttribute('draggable') === 'false') {
@@ -214,8 +218,8 @@ export class Sortable {
     }
 
     // Move ghost
-    if (Sortable.ghost) {
-      Sortable.ghost.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+    if (Draggable.ghost) {
+      Draggable.ghost.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
     }
 
     // Autoscroll
@@ -227,7 +231,7 @@ export class Sortable {
 
   private _startDrag(e: PointerEvent) {
     this.dragStarted = true;
-    Sortable.active = this;
+    Draggable.active = this;
     this.parentEl = this.dragEl!.parentElement;
     this.nextEl = this.dragEl!.nextElementSibling as HTMLElement | null;
 
@@ -241,7 +245,7 @@ export class Sortable {
     let draggableIdx = 0;
     Array.from(this.el.children).forEach((child: any) => {
       if (child.matches(this.options.draggable!) && child.getAttribute('draggable') !== 'false' && !child.hasAttribute('data-ux-template')) {
-        child.sortableIndex = draggableIdx;
+        child.draggableIndex = draggableIdx;
         this.originalIndices.set(child, draggableIdx);
         draggableIdx++;
       }
@@ -270,23 +274,28 @@ export class Sortable {
     // Handle Clone
     const pull = typeof this.options.group === 'object' && this.options.group.pull === 'clone';
     if (pull) {
-      Sortable.clone = this.dragEl!.cloneNode(true) as HTMLElement;
-      this.dragEl!.parentNode!.insertBefore(Sortable.clone, this.dragEl!);
+      Draggable.clone = this.dragEl!.cloneNode(true) as HTMLElement;
+      this.dragEl!.parentNode!.insertBefore(Draggable.clone, this.dragEl!);
     }
 
     // Create ghost
     const rect = this.dragEl!.getBoundingClientRect();
-    Sortable.ghost = this.dragEl!.cloneNode(true) as HTMLElement;
-    Sortable.ghost.style.position = 'fixed';
-    Sortable.ghost.style.top = `${rect.top}px`;
-    Sortable.ghost.style.left = `${rect.left}px`;
-    Sortable.ghost.style.width = `${rect.width}px`;
-    Sortable.ghost.style.height = `${rect.height}px`;
-    Sortable.ghost.style.opacity = '0.8';
-    Sortable.ghost.style.pointerEvents = 'none';
-    Sortable.ghost.style.zIndex = '100000';
-    Sortable.ghost.classList.add(this.options.ghostClass!);
-    document.body.appendChild(Sortable.ghost);
+    Draggable.ghost = this.dragEl!.cloneNode(true) as HTMLElement;
+    Draggable.ghost.style.position = 'fixed';
+    Draggable.ghost.style.top = `${rect.top}px`;
+    Draggable.ghost.style.left = `${rect.left}px`;
+    Draggable.ghost.style.width = `${rect.width}px`;
+    Draggable.ghost.style.height = `${rect.height}px`;
+    Draggable.ghost.style.maskImage = 'linear-gradient(to bottom right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)';
+    Draggable.ghost.style.webkitMaskImage = 'linear-gradient(to bottom right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)';
+    Draggable.ghost.style.pointerEvents = 'none';
+    Draggable.ghost.style.zIndex = '100000';
+    Draggable.ghost.classList.add(this.options.ghostClass!);
+    const originalMarker = (this.dragEl as any)[MARKER_KEY];
+    if (originalMarker) (Draggable.ghost as any)[MARKER_KEY] = originalMarker;
+    const originalStack = getDataStack(this.dragEl!);
+    if (originalStack.length) (Draggable.ghost as any)[DATA_STACK_KEY] = originalStack;
+    document.body.appendChild(Draggable.ghost);
 
     // Add chosen class
     this.dragEl!.classList.add(this.options.chosenClass!);
@@ -352,15 +361,15 @@ export class Sortable {
       return;
     }
 
-    let targetSortable: Sortable | null = null;
-    const reorderEngine = (targetParent as any).__sortable;
-    if (reorderEngine && reorderEngine.sortable) {
-      targetSortable = reorderEngine.sortable;
+    let targetDraggable: Draggable | null = null;
+    const reorderEngine = (targetParent as any).__draggable;
+    if (reorderEngine && reorderEngine.draggable) {
+      targetDraggable = reorderEngine.draggable;
     }
 
     const isSameContainer = targetParent === this.el;
     if (!isSameContainer) {
-      if (!targetSortable || !this._canPullPut(targetSortable)) {
+      if (!targetDraggable || !this._canPullPut(targetDraggable)) {
     this._clearDocked();
 
     this._clearDragOverState();
@@ -383,7 +392,6 @@ export class Sortable {
       }
 
       this._updateDocked();
-      this._updateEmptyState(target);
       return;
     }
 
@@ -420,7 +428,7 @@ export class Sortable {
         do {
           dragIndex -= direction;
           sibling = this.dragEl.parentElement!.children[dragIndex] as HTMLElement | null;
-        } while (sibling && (getComputedStyle(sibling).display === 'none' || sibling === Sortable.ghost));
+        } while (sibling && (getComputedStyle(sibling).display === 'none' || sibling === Draggable.ghost));
       }
       if (sibling === target) {
         return;
@@ -453,7 +461,6 @@ export class Sortable {
       }
 
       this._updateDocked();
-      this._updateEmptyState(targetParent);
 
       // Recalculate targetMoveDistance
       if (this.targetBeforeFirstSwap !== undefined && !this.isCircumstantialInvert) {
@@ -484,19 +491,19 @@ export class Sortable {
         if (this.dragEl) this.dragEl.style.display = '';
 
         // Remove clone
-        if (Sortable.clone) {
-          Sortable.clone.parentNode?.removeChild(Sortable.clone);
-          Sortable.clone = null;
+        if (Draggable.clone) {
+          Draggable.clone.parentNode?.removeChild(Draggable.clone);
+          Draggable.clone = null;
         }
 
         // Remove ghost
-        if (Sortable.ghost) {
-          Sortable.ghost.parentNode?.removeChild(Sortable.ghost);
-          Sortable.ghost = null;
+        if (Draggable.ghost) {
+          Draggable.ghost.parentNode?.removeChild(Draggable.ghost);
+          Draggable.ghost = null;
         }
 
         // Compute finalIndex relative to the dropped target container, mirroring
-        // SortableJS MultiDrag's `index(dragEl, ':not(.selectedClass)')`: count only
+        // DraggableJS MultiDrag's `index(dragEl, ':not(.selectedClass)')`: count only
         // NON-selected draggable siblings before dragEl. Folded (selected) members are
         // still in the DOM (hidden) during drag, so excluding them by class — not by
         // visibility — yields the correct group insertion slot.
@@ -516,7 +523,7 @@ export class Sortable {
 
         const oldIndex = this.originalIndices.get(this.dragEl);
 
-        // NOTE: SortableJS MultiDrag KEEPS the selection after a drop (items
+        // NOTE: DraggableJS MultiDrag KEEPS the selection after a drop (items
         // remain selected so the group can be re-dragged). We intentionally do
         // NOT clear `item.selected` here — doing so fires a concurrent reactive
         // re-render that races with the list-mutation re-render while the folded
@@ -561,10 +568,18 @@ export class Sortable {
       this._lastSourceItemScope = null;
     }
 
-    Sortable.active = null;
+    this._clearDocked();
+
+    if (this.el) {
+      this.el.querySelectorAll('[data-drag-container]').forEach(el => {
+      });
+    }
+
+    Draggable.active = null;
     this.dragEl = null;
     this.tapEvt = null;
     this.dragStarted = false;
+    this._clearDocked();
   }
 
   private _cleanupDragListeners() {
@@ -591,15 +606,6 @@ export class Sortable {
         container.setAttribute('data-dropzone-state', 'docked');
       }
       this._dockedContainer = container;
-    }
-  }
-
-  private _updateEmptyState(container: HTMLElement) {
-    const hasRealChildren = container.querySelector(':scope > [data-drag]:not([data-for])') != null;
-    if (hasRealChildren) {
-      container.removeAttribute('data-dropzone-state');
-    } else {
-      container.setAttribute('data-dropzone-state', 'empty');
     }
   }
 
@@ -637,15 +643,15 @@ export class Sortable {
 
     // Resolve the drop container under the cursor (handles cross-container drags).
     const container = el.closest('[data-drag-container]') as HTMLElement | null;
-    if (!container || !(container as any).__sortable) return null;
+    if (!container || !(container as any).__draggable) return null;
 
     const children = Array.from(container.children).filter(c =>
       c.nodeName.toUpperCase() !== 'TEMPLATE' &&
       c !== this.dragEl &&
-      c !== Sortable.ghost &&
+      c !== Draggable.ghost &&
       (c as HTMLElement).style.display !== 'none' &&
       !c.hasAttribute('data-ux-template') &&
-      !(c as HTMLElement).classList.contains('sortable-ghost')
+      !(c as HTMLElement).classList.contains('draggable-ghost')
     ) as HTMLElement[];
 
     // Empty container takes priority as the drop target.
@@ -824,9 +830,9 @@ export class Sortable {
     }
   }
 
-  private _canPullPut(toSortable: Sortable): boolean {
+  private _canPullPut(toDraggable: Draggable): boolean {
     const fromGroup = this.options.group;
-    const toGroup = toSortable.options.group;
+    const toGroup = toDraggable.options.group;
     if (!fromGroup || !toGroup) return false;
 
     const fromName = typeof fromGroup === 'object' ? fromGroup.name : fromGroup;
@@ -881,7 +887,7 @@ export class Sortable {
 // Nexus-UX Compatibility Wrappers
 // ---------------------------------------------------------------------------
 export class DragReorderEngine<T> {
-  public sortable: Sortable | null = null;
+  public draggable: Draggable | null = null;
   private finalToIndex = -1;
 
   constructor(private ctx: DragReorderContext<T>, private runtime?: RuntimeContext) {
@@ -893,9 +899,9 @@ export class DragReorderEngine<T> {
   private init() {
     const container = this.ctx.container;
     const isMulti = container.getAttribute("data-drag-multi") === "true";
-    const selectedClass = container.getAttribute("data-drag-selected-class") || "sortable-selected";
+    const selectedClass = container.getAttribute("data-drag-selected-class") || "draggable-selected";
     const swap = container.hasAttribute("data-drag-swap") || container.getAttribute("data-drag-swap") === "true";
-    const swapClass = container.getAttribute("data-drag-swap-class") || "sortable-swap-highlight";
+    const swapClass = container.getAttribute("data-drag-swap-class") || "draggable-swap-highlight";
 
     const groupAttr = container.getAttribute("data-drag-group");
     let group: any = undefined;
@@ -922,10 +928,11 @@ export class DragReorderEngine<T> {
     const invertSwapAttr = container.getAttribute("data-drag-invert-swap");
     const invertSwap = invertSwapAttr === "true" || isNested;
 
-    this.sortable = new Sortable(container, {
+    this.draggable = new Draggable(container, {
       animation: this.ctx.animationDuration ?? 150,
-      ghostClass: this.ctx.ghostClass ?? "sortable-ghost",
-      dragClass: this.ctx.dragClass ?? "sortable-drag",
+      ghostClass: this.ctx.ghostClass ?? "draggable-ghost",
+      dragClass: this.ctx.dragClass ?? "draggable-drag",
+      ghostOpacity: this.ctx.ghostOpacity ?? 0.4,
       fallbackOnBody: this.ctx.fallbackOnBody !== false,
       swapThreshold,
       invertSwap,
@@ -947,6 +954,11 @@ export class DragReorderEngine<T> {
             originalEvent: evt.originalEvent,
             fromIndex: evt.oldIndex,
           };
+        }
+
+        const fromContainer = evt.from;
+        if (this.runtime && fromContainer) {
+          this.updateEmptyState(fromContainer);
         }
       },
       onEnd: (evt) => {
@@ -983,6 +995,7 @@ export class DragReorderEngine<T> {
         // translated on top of the primary item (overlap + empty gap). `flip`
         // already animates every child from its old layout slot to its new one,
         // so the manual overlap is both redundant and the source of the bug.
+
         // We let `flip` own the motion entirely.
 
         if (toContainer !== fromContainer && toExpr) {
@@ -1015,10 +1028,10 @@ export class DragReorderEngine<T> {
 
             // --- CLONE DOM RESTORATION START ---
             if (isClone) {
-              // 1. Remove the clone placeholder element created by Sortable inside fromContainer
-              if (Sortable.clone && Sortable.clone.parentNode) {
-                Sortable.clone.parentNode.removeChild(Sortable.clone);
-                Sortable.clone = null;
+              // 1. Remove the clone placeholder element created by Draggable inside fromContainer
+              if (Draggable.clone && Draggable.clone.parentNode) {
+                Draggable.clone.parentNode.removeChild(Draggable.clone);
+                Draggable.clone = null;
               }
 
               // 2. Put the original dragged elements back into fromContainer at their original indices
@@ -1041,17 +1054,16 @@ export class DragReorderEngine<T> {
                   fromContainer.appendChild(evt.item);
                 }
               }
-
-              // 3. Remove the dragged elements from the target toContainer DOM (since they will be reactively re-created)
+            } else {
               if (isMultiDrag) {
                 evt.items.forEach((item: HTMLElement) => {
-                  if (item.parentNode === toContainer) {
-                    toContainer.removeChild(item);
+                  if (item.parentNode === fromContainer) {
+                    fromContainer.removeChild(item);
                   }
                 });
               } else {
-                if (evt.item.parentNode === toContainer) {
-                  toContainer.removeChild(evt.item);
+                if (evt.item.parentNode === fromContainer) {
+                  fromContainer.removeChild(evt.item);
                 }
               }
             }
@@ -1063,13 +1075,18 @@ export class DragReorderEngine<T> {
               });
             } else {
               flipFn(childrenToAnimate, () => {
-                this.ctx.updateList((src) => {
+                this.ctx.updateList((list) => {
                   for (const idx of indicesToRemove) {
-                    src.splice(idx, 1);
+                    list.splice(idx, 1);
                   }
                   targetList.splice(newIndex, 0, ...itemsToInsert);
                 });
               }, { duration: this.ctx.animationDuration ?? 150 });
+            }
+
+            if (this.runtime) {
+              this.updateEmptyState(fromContainer);
+              this.updateEmptyState(toContainer);
             }
           }
         } else {
@@ -1112,10 +1129,24 @@ export class DragReorderEngine<T> {
                 }
               });
             }, { duration: this.ctx.animationDuration ?? 150 });
+
+            if (this.runtime) {
+              this.updateEmptyState(fromContainer);
+            }
           }
         }
       }
     });
+    (this.draggable as any)._runtime = this.runtime;
+  }
+
+  public updateEmptyState(container: HTMLElement) {
+    const stack = getDataStack(container);
+    if (stack.length > 0) {
+      const scope = stack[0];
+      const hasChildren = container.querySelector(':scope > [data-drag]:not([data-for])') != null;
+      scope.dragEmpty = !hasChildren;
+    }
   }
 
   public startDrag() { }
@@ -1151,6 +1182,7 @@ export function buildReorderContext<T>(
     direction: options?.direction,
     ghostClass: options?.ghostClass,
     dragClass: options?.dragClass,
+    ghostOpacity: options?.ghostOpacity,
     group: options?.group,
     sort: options?.sort !== false,
     swap: options?.swap,
@@ -1188,20 +1220,24 @@ export const dragAttribute: AttributeModule = {
       const threshExpr = container.getAttribute("data-bind-data-drag-swap-threshold") ||
         container.getAttribute("data-bind:data-drag-swap-threshold");
 
-      const engine = (container as any).__sortable;
-      if (engine && engine.sortable && threshExpr) {
+      const engine = (container as any).__draggable;
+      if (engine && engine.draggable && threshExpr) {
         const val = runtime.evaluate(container, threshExpr);
         if (val !== undefined && val !== null) {
-          engine.sortable.options.swapThreshold = Number(val);
+          engine.draggable.options.swapThreshold = Number(val);
         }
       }
 
-      if (!(container as any).__sortable) {
+      if (!(container as any).__draggable) {
         try {
           const listExpr = container.getAttribute("data-drag-container") || container.getAttribute("data-teleport:drop") || "";
-          const ctx = buildReorderContext(container, listExpr, runtime);
+          const ghostOpacityAttr = container.getAttribute("data-drag-ghost-opacity");
+          const ghostOpacity = ghostOpacityAttr ? parseFloat(ghostOpacityAttr) : undefined;
+          const ctx = buildReorderContext(container, listExpr, runtime, {
+            ghostOpacity
+          });
           const engine = new DragReorderEngine(ctx, runtime);
-          (container as any).__sortable = engine;
+          (container as any).__draggable = engine;
 
           // Cleanup engine ONLY when container itself leaves DOM
           const enhancedContainer = container as any;
@@ -1210,13 +1246,13 @@ export const dragAttribute: AttributeModule = {
           }
           const containerCleanups = enhancedContainer[CLEANUP_FUNCTIONS_KEY];
           const cleanupFn = () => {
-            if (engine.sortable) {
-              engine.sortable.destroy();
+            if (engine.draggable) {
+              engine.draggable.destroy();
             }
-            delete (container as any).__sortable;
+            delete (container as any).__draggable;
           };
           if (containerCleanups instanceof Map) {
-            containerCleanups.set("sortable-cleanup", cleanupFn);
+            containerCleanups.set("draggable-cleanup", cleanupFn);
           } else if (Array.isArray(containerCleanups)) {
             containerCleanups.push(cleanupFn);
           }

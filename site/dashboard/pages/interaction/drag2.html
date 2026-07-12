@@ -60,9 +60,8 @@
         isExpanded: false,
         disabledSorting: false
     }" data-stylesheet="
-      .nested-dropzone[data-dropzone-state='empty']{min-height:2.75rem;position:relative}
-      .nested-dropzone[data-dropzone-state='empty']::before{content:'';position:absolute;inset:0;border:2px dashed rgba(var(--bc)/0.15);border-radius:0.5rem;pointer-events:none}
-      .nested-dropzone[data-dropzone-state='empty']::after{content:'Empty Container';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:0.5rem;font-size:0.75rem;opacity:0.3;pointer-events:none;color:var(--bc)}
+      .nested-dropzone:not(:has([data-drag]:not([data-for]))){min-height:2.75rem;position:relative;border-style:dashed}
+      .nested-dropzone:not(:has([data-drag]:not([data-for])))::after{content:'Drop items here';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:0.75rem;opacity:0.3;pointer-events:none;color:var(--bc)}
       .nested-dropzone[data-dropzone-state='docked']{outline:2px solid var(--fallback-p,oklch(var(--p)));outline-offset:2px;border-radius:0.5rem}
     ">
         <header class="mb-12 text-center">
@@ -80,10 +79,10 @@
             <div class="card bg-base-200 shadow-xl border border-base-content/5">
                 <div class="card-body p-6">
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
-                        01. Simple <span class="badge badge-outline badge-sm">SortableJS Parity</span>
+                        01. Simple <span class="badge badge-outline badge-sm">DraggableJS Parity</span>
                     </div>
                     <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="simpleList"
-                        data-spatial="sortable"
+                        data-spatial="draggable"
                         data-drag-class="!opacity-100 !shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] scale-105 cursor-grabbing z-[9999]"
                         data-drag-ghost-class="opacity-40 bg-base-200 border-2 border-dashed border-base-content/20">
                         <div data-for="item in simpleList" data-drag
@@ -171,7 +170,7 @@
                     <button data-on-click="disabledSorting = !disabledSorting"
                         class="btn btn-sm btn-outline mb-4">Toggle State</button>
                     <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="sortToggleList"
-                        data-spatial="sortable">
+                        data-spatial="draggable">
                         <div data-for="item in sortToggleList" data-drag data-bind-draggable="!disabledSorting"
                             class="flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item">
                             <iconify-icon icon="material-symbols-light:drag-indicator"
@@ -233,7 +232,7 @@
                     <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="multiList"
                         data-drag-multi="true">
                         <div data-for="item in multiList" data-drag
-                            data-bind-class="item.selected ? 'flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 transition-colors item sortable-selected' : 'flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item'">
+                            data-bind-class="item.selected ? 'flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 transition-colors item draggable-selected' : 'flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item'">
                             <input type="checkbox" data-bind-checked="item.selected"
                                 class="checkbox checkbox-primary checkbox-sm">
                             <span data-bind="item.n" class="font-medium"></span>
@@ -249,7 +248,7 @@
                         08. Grid Layout <span class="badge badge-outline badge-sm">Spatial Hit-Test</span>
                     </div>
                     <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 min-h-[50px]"
-                        data-drag-container="gridList" data-spatial="sortable" data-drag-direction="grid">
+                        data-drag-container="gridList" data-spatial="draggable" data-drag-direction="grid">
                         <div data-for="item in gridList" data-drag
                             class="aspect-square bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors flex items-center justify-center item">
                             <span class="text-2xl font-black text-primary/80" data-bind="item.n"></span>
@@ -286,7 +285,7 @@
                 </div>
 
                 <!-- Nested Container -->
-                <div class="flex flex-col gap-2 p-2 bg-base-300/50 rounded-box border border-dashed border-base-content/10 nested-dropzone"
+                <div class="flex flex-col gap-2 p-2 bg-base-300/50 rounded-box border border-dashed border-base-content/10 nested-dropzone empty-dropzone"
                     data-drag-container="item.sub" data-drag-group="nested">
 
                     <div data-for="item in item.sub" data-drag
@@ -375,7 +374,7 @@
                         12. Direction <span class="badge badge-outline badge-sm">Horizontal</span>
                     </div>
                     <div class="flex flex-row gap-4 min-h-[60px] overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-base-content/10"
-                        data-drag-container="horzList" data-spatial="sortable" data-drag-direction="horizontal">
+                        data-drag-container="horzList" data-spatial="draggable" data-drag-direction="horizontal">
                         <div data-for="item in horzList" data-drag
                             class="min-w-[120px] flex items-center justify-center gap-2 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item shrink-0">
                             <iconify-icon icon="material-symbols-light:arrow-range"

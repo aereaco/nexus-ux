@@ -768,7 +768,7 @@ Nexus-UX implements **drag-and-drop** via a clean two-directive system that resp
 
 **Purpose**: Makes an element draggable. On `dragstart`, captures a ZCZS memory pointer to the source reactive array and stores it in `globalThis._dragState`. The drop target consumes this pointer to perform the actual mutation.
 
-**Example: Simple Sortable List**
+**Example: Simple Draggable List**
 ```html
 <div data-signal="{ items: ['A', 'B', 'C'] }">
   <ul data-teleport:drop="items">

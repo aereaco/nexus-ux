@@ -699,7 +699,7 @@ const stylesheetModule: AttributeModule = {
 
     if (expression && expression.trim()) {
       const css = expression.trim();
-      cleanupFns.push(stylesheet.adoptCSSSync(css, undefined, el));
+      cleanupFns.push(stylesheet.adoptCSSSync(css, undefined, document));
     }
 
     const root = el.getRootNode() as Document | ShadowRoot;

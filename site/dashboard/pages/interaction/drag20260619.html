@@ -128,7 +128,7 @@
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         01. Simple <span class="badge badge-outline badge-sm">SortableJS Parity</span>
                     </div>
-                    <div class="flex flex-col gap-2 min-h-[50px]" data-teleport:drop="simpleList" data-drag-reorder data-spatial="sortable" data-drag-class="!opacity-100 !shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] scale-105 cursor-grabbing z-[9999]" data-drag-ghost-class="opacity-40 bg-base-200 border-2 border-dashed border-base-content/20">
+                    <div class="flex flex-col gap-2 min-h-[50px]" data-teleport:drop="simpleList" data-drag-reorder data-spatial="draggable" data-drag-class="!opacity-100 !shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] scale-105 cursor-grabbing z-[9999]" data-drag-ghost-class="opacity-40 bg-base-200 border-2 border-dashed border-base-content/20">
                         <div data-for="item in simpleList" data-drag class="flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item">
                             <iconify-icon icon="material-symbols-light:drag-indicator" class="text-base-content/30"></iconify-icon>
                             <span data-bind="item.n" class="font-medium"></span>
@@ -196,7 +196,7 @@
                         04. Sorting <span class="badge badge-error badge-outline badge-sm" data-bind="disabledSorting ? 'DISABLED' : 'ENABLED'" data-bind-class="disabledSorting ? 'badge badge-error badge-outline badge-sm' : 'badge badge-success badge-outline badge-sm'"></span>
                     </div>
                     <button data-on-click="disabledSorting = !disabledSorting" class="btn btn-sm btn-outline mb-4">Toggle State</button>
-                    <div class="flex flex-col gap-2 min-h-[50px]" data-teleport:drop="sortToggleList" data-drag-reorder data-spatial="sortable">
+                    <div class="flex flex-col gap-2 min-h-[50px]" data-teleport:drop="sortToggleList" data-drag-reorder data-spatial="draggable">
                         <div data-for="item in sortToggleList" data-drag data-bind-draggable="!disabledSorting" class="flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item">
                             <iconify-icon icon="material-symbols-light:drag-indicator" class="text-base-content/30"></iconify-icon>
                             <span data-bind="item.n"></span>
@@ -261,7 +261,7 @@
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         08. Grid Layout <span class="badge badge-outline badge-sm">Spatial Hit-Test</span>
                     </div>
-                    <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 min-h-[50px]" data-teleport:drop="gridList" data-drag-reorder data-spatial="sortable" data-drag-direction="grid">
+                    <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 min-h-[50px]" data-teleport:drop="gridList" data-drag-reorder data-spatial="draggable" data-drag-direction="grid">
                         <div data-for="item in gridList" data-drag class="aspect-square bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors flex items-center justify-center item">
                             <span class="text-2xl font-black text-primary/80" data-bind="item.n"></span>
                         </div>
@@ -328,7 +328,7 @@
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         12. Direction <span class="badge badge-outline badge-sm">Horizontal</span>
                     </div>
-                    <div class="flex flex-row gap-4 min-h-[60px] overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-base-content/10" data-teleport:drop="horzList" data-drag-reorder data-spatial="sortable" data-drag-direction="horizontal">
+                    <div class="flex flex-row gap-4 min-h-[60px] overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-base-content/10" data-teleport:drop="horzList" data-drag-reorder data-spatial="draggable" data-drag-direction="horizontal">
                         <div data-for="item in horzList" data-drag class="min-w-[120px] flex items-center justify-center gap-2 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item shrink-0">
                             <iconify-icon icon="material-symbols-light:arrow-range" class="text-info text-xl"></iconify-icon>
                             <span data-bind="item.n" class="font-medium"></span>

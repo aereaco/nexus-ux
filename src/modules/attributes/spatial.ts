@@ -9,7 +9,7 @@ import { RuntimeContext } from "../../engine/composition.ts";
  * directly — it only marks containers for the correct engine mode.
  *
  * Engine selection via modifier value:
- * - `data-spatial="sortable"` → sets data-nexus-spatial-sortable marker
+ * - `data-spatial="draggable"` → sets data-nexus-spatial-draggable marker
  *   (DragReorderEngine in drag.ts activates when it sees this marker)
  * - `data-spatial="canvas"` → sets data-nexus-spatial-canvas marker
  *   (SpatialCanvasEngine activates via $spatial sprite)
@@ -21,9 +21,9 @@ export const spatialAttribute: AttributeModule = {
   handle: (el: HTMLElement, value: string, _runtime: RuntimeContext) => {
     const engine = value.trim().toLowerCase();
 
-    if (engine === "sortable") {
-      el.setAttribute("data-nexus-spatial-sortable", "true");
-      return () => el.removeAttribute("data-nexus-spatial-sortable");
+    if (engine === "draggable") {
+      el.setAttribute("data-nexus-spatial-draggable", "true");
+      return () => el.removeAttribute("data-nexus-spatial-draggable");
     } else if (engine === "canvas") {
       el.setAttribute("data-nexus-spatial-canvas", "true");
 
@@ -54,7 +54,7 @@ export const spatialAttribute: AttributeModule = {
     }
 
     return () => {
-      el.removeAttribute("data-nexus-spatial-sortable");
+      el.removeAttribute("data-nexus-spatial-draggable");
       el.removeAttribute("data-nexus-spatial-canvas");
       el.removeAttribute("data-nexus-spatial");
     };
