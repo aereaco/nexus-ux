@@ -17,6 +17,23 @@ export const viewScope = reactive({
 
 const cleanupFns: (() => void)[] = [];
 
+let viewRafScheduled = false;
+function scheduleViewUpdate(apply: () => void) {
+  if (viewRafScheduled) return;
+  viewRafScheduled = true;
+  if (typeof requestAnimationFrame === 'function') {
+    requestAnimationFrame(() => {
+      viewRafScheduled = false;
+      apply();
+    });
+  } else {
+    queueMicrotask(() => {
+      viewRafScheduled = false;
+      apply();
+    });
+  }
+}
+
 export function onGlobalInit() {
   // Update on resize and scroll
   if (typeof window !== 'undefined') {
@@ -30,11 +47,13 @@ export function onGlobalInit() {
       viewScope.devicePixelRatio = globalThis.devicePixelRatio;
     };
 
-    globalThis.addEventListener('resize', updateView);
-    globalThis.addEventListener('scroll', updateView);
+    const updateViewCoalesced = () => scheduleViewUpdate(updateView);
+
+    globalThis.addEventListener('resize', updateViewCoalesced);
+    globalThis.addEventListener('scroll', updateViewCoalesced);
     cleanupFns.push(
-      () => globalThis.removeEventListener('resize', updateView),
-      () => globalThis.removeEventListener('scroll', updateView)
+      () => globalThis.removeEventListener('resize', updateViewCoalesced),
+      () => globalThis.removeEventListener('scroll', updateViewCoalesced)
     );
   }
 

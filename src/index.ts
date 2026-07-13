@@ -4,6 +4,7 @@ import { ROOT_SELECTOR } from './engine/consts.ts';
 import { topology } from './engine/topology.ts';
 import { initSelfHeal, getBeaconHistory } from './engine/agent.ts';
 import { stylesheet, discoverColorTokens, buildTailwindThemeBridge } from './modules/attributes/stylesheet.ts';
+import { ensureScrollbarGutter } from './engine/scrollbarGutter.ts';
 
 // Core Directives (Explicitly imported for priority ordering)
 import importModule from './modules/attributes/import.ts';
@@ -169,6 +170,8 @@ export class UX {
       emitToConsole: this.coordinator.runtimeContext.isDevMode ?? false,
       emitToPlatform: false
     });
+
+    ensureScrollbarGutter();
 
     this.init();
 

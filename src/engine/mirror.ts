@@ -11,6 +11,38 @@ const mirrorCache = new Map<string, Ref<any>>();
 const activeListeners = new Set<string>();
 
 /**
+ * Layout-metric props that can oscillate during reflow (e.g. a scrollbar
+ * toggling on fractional DPR changes `innerWidth` by a real pixel). Their
+ * `update` is coalesced to one per animation frame so a burst of resize/scroll
+ * pulses from a reflow feedback loop cannot synchronously re-render every frame.
+ */
+const LAYOUT_METRIC_PROPS = new Set([
+  'innerWidth',
+  'innerHeight',
+  'outerWidth',
+  'outerHeight',
+  'screenX',
+  'screenY',
+  'scrollX',
+  'scrollY',
+  'devicePixelRatio'
+]);
+
+const rafDirtyProps = new Set<string>();
+let rafScheduled = false;
+
+function flushLayoutMetrics() {
+  rafScheduled = false;
+  const props = rafDirtyProps;
+  rafDirtyProps.clear();
+  for (const prop of props) {
+    if (mirrorCache.has(prop)) {
+      mirrorCache.get(prop)!.value = (globalThis.window as any)[prop];
+    }
+  }
+}
+
+/**
  * Lazily attach specific event listeners only when the DOM tracks a property
  * that mathematically requires them for synchronization.
  */
@@ -20,6 +52,17 @@ function attachListenerIfNeeded(prop: string) {
   const update = () => {
     if (mirrorCache.has(prop)) {
       mirrorCache.get(prop)!.value = (globalThis.window as any)[prop];
+    }
+  };
+
+  const updateCoalesced = () => {
+    rafDirtyProps.add(prop);
+    if (rafScheduled) return;
+    rafScheduled = true;
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(flushLayoutMetrics);
+    } else {
+      queueMicrotask(flushLayoutMetrics);
     }
   };
 
@@ -33,8 +76,8 @@ function attachListenerIfNeeded(prop: string) {
     case 'scrollX':
     case 'scrollY':
     case 'devicePixelRatio':
-      window.addEventListener('resize', update, { passive: true });
-      window.addEventListener('scroll', update, { passive: true });
+      window.addEventListener('resize', LAYOUT_METRIC_PROPS.has(prop) ? updateCoalesced : update, { passive: true });
+      window.addEventListener('scroll', LAYOUT_METRIC_PROPS.has(prop) ? updateCoalesced : update, { passive: true });
       activeListeners.add(prop);
       break;
     

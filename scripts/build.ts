@@ -459,9 +459,9 @@ export async function fetchStyleLayerPrimitives(): Promise<{
 
   // ── PACKED_COMPONENTS — Nexus-UX sortable/drag-drop class overrides ──
   const componentsCss =
-    `.draggable-chosen{background-color:var(--color-neutral-800,#27272a)!important;box-shadow:inset 0 0 0 2px var(--color-primary,#3b82f6)!important}` +
-    `.draggable-drag{opacity:1!important;box-shadow:0 25px 50px -12px rgba(0,0,0,.25)!important;transform:scale(1.05)!important;cursor:grabbing!important;z-index:9999!important}` +
-    `.draggable-ghost{opacity:.4!important;background-color:var(--color-neutral-900,#18181b)!important;border:2px dashed var(--color-neutral-700,#3f3f46)!important}` +
+    `.draggable-chosen{background-color:var(--color-base-300,#d4d4d8)!important;box-shadow:inset 0 0 0 2px var(--color-primary,#3b82f6)!important}` +
+    `.draggable-drag{opacity:1!important;background-color:var(--color-base-300,#d4d4d8)!important;box-shadow:0 25px 50px -12px rgba(0,0,0,.25)!important;transform:scale(1.05)!important;cursor:grabbing!important;z-index:9999!important}` +
+    `.draggable-ghost{opacity:1!important;background-color:var(--color-base-300,#d4d4d8)!important;border:2px solid var(--color-primary,#3b82f6)!important;box-shadow:0 25px 50px -12px rgba(0,0,0,.25)!important}` +
     `.draggable-selected{box-shadow:inset 0 0 0 2px var(--color-accent,var(--color-secondary,#ec4899))!important}` +
     `.draggable-swap-highlight{background-color:color-mix(in srgb,var(--color-warning,#eab308) 20%,transparent)!important;box-shadow:inset 0 0 0 2px var(--color-warning,#eab308)!important}` +
     `.drop-target-before{background:linear-gradient(to bottom,color-mix(in srgb,var(--color-primary,#3b82f6) 30%,transparent) 0%,transparent 20%)!important;box-shadow:inset 0 2px 0 0 var(--color-primary,#3b82f6)!important}` +

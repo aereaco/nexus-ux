@@ -54,12 +54,17 @@
         thresholdHorzList: [{id: 'TH1', n: 'H1'}, {id: 'TH2', n: 'H2'}, {id: 'TH3', n: 'H3'}],
         verticalThresholdVal: 0.5,
         horizontalThresholdVal: 0.5,
+        ghostR: 168,
+        ghostG: 85,
+        ghostB: 247,
+        ghostOpacity: 1,
         isExpanded: false,
         disabledSorting: false
     }" data-stylesheet="
       .nested-dropzone:not(:has([data-drag]:not([data-for]))){min-height:2.75rem;position:relative;border-style:dashed}
       .nested-dropzone:not(:has([data-drag]:not([data-for])))::after{content:'Drop items here';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:0.75rem;opacity:0.3;pointer-events:none;color:var(--bc)}
       .nested-dropzone[data-dropzone-state='docked']{outline:2px solid var(--fallback-p,oklch(var(--p)));outline-offset:2px;border-radius:0.5rem}
+      .ghost-demo.draggable-ghost{background-color:var(--ghost-color)!important;border-color:var(--ghost-color)!important}
     ">
         <header class="mb-12 text-center">
             <h1
@@ -83,7 +88,7 @@
                         data-drag-class="!opacity-100 !shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] scale-105 cursor-grabbing z-[9999]"
                         data-drag-ghost-class="opacity-40 bg-base-200 border-2 border-dashed border-base-content/20">
                         <div data-for="item in simpleList" data-drag
-                            class="flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item">
+                            class="flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item">
                             <iconify-icon icon="material-symbols-light:drag-indicator"
                                 class="text-base-content/30"></iconify-icon>
                             <span data-bind="item.n" class="font-medium"></span>
@@ -102,7 +107,7 @@
                         <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box"
                             data-drag-container="list1" data-drag-group="shared">
                             <div data-for="item in list1" data-drag
-                                class="flex items-center gap-2 p-3 bg-base-100 rounded-box cursor-grab hover:bg-base-200 text-sm item">
+                                class="flex items-center gap-2 p-3 bg-base-100 rounded-box cursor-grab hover:bg-base-300 active:bg-base-300 transition-colors text-sm item">
                                 <iconify-icon icon="material-symbols-light:folder" class="text-primary"></iconify-icon>
                                 <span data-bind="item.n"></span>
                             </div>
@@ -110,7 +115,7 @@
                         <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box"
                             data-drag-container="list2" data-drag-group="shared">
                             <div data-for="item in list2" data-drag
-                                class="flex items-center gap-2 p-3 bg-base-100 rounded-box cursor-grab hover:bg-base-200 text-sm item">
+                                class="flex items-center gap-2 p-3 bg-base-100 rounded-box cursor-grab hover:bg-base-300 active:bg-base-300 transition-colors text-sm item">
                                 <iconify-icon icon="material-symbols-light:folder"
                                     class="text-secondary"></iconify-icon>
                                 <span data-bind="item.n"></span>
@@ -133,7 +138,7 @@
                                 data-drag-container="cloneSource" data-drag-clone data-drag-group="clone"
                                 data-drag-put="false">
                                 <div data-for="item in cloneSource" data-drag
-                                    class="flex items-center gap-2 p-3 bg-base-100 rounded-box cursor-grab hover:bg-base-200 text-sm item">
+                                    class="flex items-center gap-2 p-3 bg-base-100 rounded-box cursor-grab hover:bg-base-300 active:bg-base-300 transition-colors text-sm item">
                                     <iconify-icon icon="material-symbols-light:file-copy"
                                         class="text-accent"></iconify-icon>
                                     <span data-bind="item.n"></span>
@@ -145,7 +150,7 @@
                             <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box"
                                 data-drag-container="cloneTarget" data-drag-group="clone" data-drag-pull="false">
                                 <div data-for="item in cloneTarget" data-drag
-                                    class="flex items-center gap-2 p-3 bg-base-100 rounded-box cursor-grab hover:bg-base-200 text-sm item">
+                                    class="flex items-center gap-2 p-3 bg-base-100 rounded-box cursor-grab hover:bg-base-300 active:bg-base-300 transition-colors text-sm item">
                                     <iconify-icon icon="material-symbols-light:file-copy"
                                         class="text-success"></iconify-icon>
                                     <span data-bind="item.n"></span>
@@ -169,7 +174,7 @@
                     <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="sortToggleList"
                         data-spatial="draggable">
                         <div data-for="item in sortToggleList" data-drag data-bind-draggable="!disabledSorting"
-                            class="flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item">
+                            class="flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item">
                             <iconify-icon icon="material-symbols-light:drag-indicator"
                                 class="text-base-content/30"></iconify-icon>
                             <span data-bind="item.n"></span>
@@ -187,7 +192,7 @@
                     <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="handleList"
                         data-drag-handle=".handle">
                         <div data-for="item in handleList"
-                            class="flex items-center gap-4 p-4 bg-base-100 rounded-box border border-base-content/5 hover:bg-base-300 transition-colors item"
+                            class="flex items-center gap-4 p-4 bg-base-100 rounded-box border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item"
                             data-drag>
                             <div
                                 class="handle cursor-grab bg-base-300 hover:bg-primary/20 p-2 rounded flex items-center justify-center transition-colors">
@@ -209,7 +214,7 @@
                     <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="filterList"
                         data-drag-filter=".filtered">
                         <div data-for="item in filterList" data-drag
-                            data-bind-class="item.filtered ? 'flex items-center gap-4 p-4 bg-base-100/30 rounded-box border border-base-content/5 item opacity-30 cursor-not-allowed filtered' : 'flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item'">
+                            data-bind-class="item.filtered ? 'flex items-center gap-4 p-4 bg-base-100/30 rounded-box border border-base-content/5 item opacity-30 cursor-not-allowed filtered' : 'flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item'">
                             <iconify-icon icon="material-symbols-light:drag-indicator" class="text-base-content/30"
                                 data-bind-class="item.filtered ? 'hidden' : 'text-base-content/30'"></iconify-icon>
                             <span data-bind="item.n" class="font-medium"></span>
@@ -230,7 +235,7 @@
                     <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="multiList"
                         data-drag-multi="true">
                         <div data-for="item in multiList" data-drag
-                            data-bind-class="item.selected ? 'flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 transition-colors item draggable-selected' : 'flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item'">
+                            data-bind-class="item.selected ? 'flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item draggable-selected' : 'flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item'">
                             <input type="checkbox" data-bind-checked="item.selected"
                                 class="checkbox checkbox-primary pointer-events-auto" />
                             <span data-bind="item.n" class="font-medium"></span>
@@ -248,7 +253,7 @@
                     <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 min-h-[50px]"
                         data-drag-container="gridList" data-spatial="draggable" data-drag-direction="grid">
                         <div data-for="item in gridList" data-drag
-                            class="aspect-square bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors flex items-center justify-center item">
+                            class="aspect-square bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors flex items-center justify-center item">
                             <span class="text-2xl font-black text-primary/80" data-bind="item.n"></span>
                         </div>
                     </div>
@@ -266,7 +271,7 @@
                         data-drag-swap-threshold="0.65">
 
                         <div data-for="item in nestedList" data-drag
-                            class="flex flex-col p-2 bg-base-100 rounded-box border border-base-content/5 mb-2"
+                            class="flex flex-col p-2 bg-base-100 rounded-box border border-base-content/5 hover:bg-base-300 active:bg-base-300 has-[[data-drag]:hover]:!bg-base-100 has-[[data-drag]:active]:!bg-base-100 transition-colors mb-2"
                             data-component="{ path: '#tree-node' }">
                         </div>
                     </div>
@@ -287,7 +292,7 @@
                     data-drag-container="item.sub" data-drag-group="nested">
 
                     <div data-for="item in item.sub" data-drag
-                        class="flex flex-col p-2 bg-base-100 rounded-box border border-base-content/5"
+                        class="flex flex-col p-2 bg-base-100 rounded-box border border-base-content/5 hover:bg-base-300 active:bg-base-300 has-[[data-drag]:hover]:!bg-base-100 has-[[data-drag]:active]:!bg-base-100 transition-colors"
                         data-component="{ path: '#tree-node', lazy: true }">
                     </div>
                 </div>
@@ -308,7 +313,7 @@
                                 class="max-h-[260px] overflow-y-auto p-4 bg-base-300 rounded-box border border-base-content/10 shadow-inner">
                                 <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="scrollList">
                                     <div data-for="item in scrollList" data-drag
-                                        class="flex items-center gap-4 p-3 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-200 transition-colors item text-sm">
+                                        class="flex items-center gap-4 p-3 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item text-sm">
                                         <iconify-icon icon="material-symbols-light:format-list-bulleted"
                                             class="text-base-content/50"></iconify-icon>
                                         <span data-bind="item.n" class="font-medium"></span>
@@ -325,7 +330,7 @@
                                 <div class="flex flex-row gap-2 min-h-[50px] overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-base-content/10"
                                     data-drag-container="horzScrollList" data-drag-direction="horizontal">
                                     <div data-for="item in horzScrollList" data-drag
-                                        class="w-[100px] h-[100px] flex flex-col items-center justify-center gap-2 p-4 bg-base-100 rounded-box border border-base-content/5 cursor-grab hover:bg-base-300 transition-colors item shrink-0">
+                                        class="w-[100px] h-[100px] flex flex-col items-center justify-center gap-2 p-4 bg-base-100 rounded-box border border-base-content/5 cursor-grab hover:bg-base-300 active:bg-base-300 transition-colors item shrink-0">
                                         <iconify-icon icon="material-symbols-light:arrow-range"
                                             class="text-info text-xl"></iconify-icon>
                                         <span data-bind="item.n" class="font-medium text-xs"></span>
@@ -343,10 +348,41 @@
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         11. Ghost Styling <span class="badge badge-outline badge-sm">CSS Feedback</span>
                     </div>
-                    <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="ghostList"
-                        data-drag-ghost-class="ghost-custom text-white">
-                        <div data-for="item in ghostList" data-drag
-                            class="flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item">
+                    <div class="flex flex-col gap-3 mb-4">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs opacity-60 w-8">R:</span>
+                            <input type="range" min="0" max="255" data-bind-value="ghostR"
+                                class="range range-xs range-error flex-1">
+                            <span class="text-xs opacity-60 w-8 text-right" data-bind="ghostR"></span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs opacity-60 w-8">G:</span>
+                            <input type="range" min="0" max="255" data-bind-value="ghostG"
+                                class="range range-xs range-success flex-1">
+                            <span class="text-xs opacity-60 w-8 text-right" data-bind="ghostG"></span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs opacity-60 w-8">B:</span>
+                            <input type="range" min="0" max="255" data-bind-value="ghostB"
+                                class="range range-xs range-info flex-1">
+                            <span class="text-xs opacity-60 w-8 text-right" data-bind="ghostB"></span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs opacity-60 w-8">A:</span>
+                            <input type="range" min="0" max="1" step="0.05" data-bind-value="ghostOpacity"
+                                class="range range-xs range-warning flex-1">
+                            <span class="text-xs opacity-60 w-8 text-right" data-bind="ghostOpacity"></span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs opacity-60">Preview:</span>
+                            <div class="w-10 h-10 rounded-box border border-base-content/20"
+                                data-bind-style="'background-color:rgba(' + ghostR + ',' + ghostG + ',' + ghostB + ',' + ghostOpacity + ')'"></div>
+                            <span class="text-xs opacity-60" data-bind="'rgba(' + ghostR + ',' + ghostG + ',' + ghostB + ',' + ghostOpacity + ')'"></span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="ghostList">
+                        <div data-for="item in ghostList" data-drag class="ghost-demo flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item"
+                            data-bind-style="'--ghost-color:rgba(' + ghostR + ',' + ghostG + ',' + ghostB + ',' + ghostOpacity + ')'">
                             <iconify-icon icon="material-symbols-light:palette"
                                 class="text-secondary text-xl"></iconify-icon>
                             <span data-bind="item.n" class="font-medium"></span>
@@ -364,7 +400,7 @@
                     <div class="flex flex-row gap-4 min-h-[60px] overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-base-content/10"
                         data-drag-container="horzList" data-spatial="draggable" data-drag-direction="horizontal">
                         <div data-for="item in horzList" data-drag
-                            class="min-w-[120px] flex items-center justify-center gap-2 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item shrink-0">
+                            class="min-w-[120px] flex items-center justify-center gap-2 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item shrink-0">
                             <iconify-icon icon="material-symbols-light:arrow-range"
                                 class="text-info text-xl"></iconify-icon>
                             <span data-bind="item.n" class="font-medium"></span>
@@ -381,7 +417,7 @@
                     </div>
                     <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="swapList" data-drag-swap>
                         <div data-for="item in swapList" data-drag
-                            class="flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item">
+                            class="flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item">
                             <iconify-icon icon="material-symbols-light:swap-calls"
                                 class="text-warning text-xl"></iconify-icon>
                             <span data-bind="item.n" class="font-medium"></span>
@@ -413,7 +449,7 @@
                                     data-drag-container="thresholdList"
                                     data-bind-data-drag-swap-threshold="verticalThresholdVal">
                                     <div data-for="item in thresholdList" data-drag
-                                        class="relative overflow-hidden flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item font-semibold text-sm">
+                                        class="relative overflow-hidden flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item font-semibold text-sm">
                                         <!-- Visual vertical threshold overlay centered vertically -->
                                         <div class="absolute inset-x-0 bg-primary/20 pointer-events-none"
                                             data-bind-style="{ height: (verticalThresholdVal * 100) + '%', top: ((1 - verticalThresholdVal) * 50) + '%' }">
@@ -439,7 +475,7 @@
                                     data-drag-container="thresholdHorzList" data-drag-direction="horizontal"
                                     data-bind-data-drag-swap-threshold="horizontalThresholdVal">
                                     <div data-for="item in thresholdHorzList" data-drag
-                                        class="relative overflow-hidden flex items-center justify-center p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 transition-colors item flex-1 min-w-[80px]">
+                                        class="relative overflow-hidden flex items-center justify-center p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item flex-1 min-w-[80px]">
                                         <!-- Visual horizontal threshold overlay centered horizontally -->
                                         <div class="absolute inset-y-0 bg-primary/20 pointer-events-none"
                                             data-bind-style="{ width: (horizontalThresholdVal * 100) + '%', left: ((1 - horizontalThresholdVal) * 50) + '%' }">

@@ -89,6 +89,9 @@ const bindModule: AttributeModule = {
             if (newValue === undefined) return;
           } else if (el instanceof HTMLSelectElement && el.multiple) {
             newValue = Array.from(el.selectedOptions).map(opt => opt.value);
+          } else if (el instanceof HTMLInputElement && (el.type === 'range' || el.type === 'number')) {
+            // Coerce numeric inputs so bound state stays a number, not a string.
+            newValue = el.value === '' ? '' : Number(el.value);
           } else if ('value' in el) {
             newValue = (el as any).value;
           }
@@ -173,6 +176,11 @@ const bindModule: AttributeModule = {
               newValue = el.checked;
             } else if (el instanceof HTMLInputElement && el.type === 'radio') {
               newValue = el.checked ? el.value : undefined;
+            } else if (el instanceof HTMLInputElement && (el.type === 'range' || el.type === 'number')) {
+              // Numeric inputs expose their value as a string; coerce so bound
+              // state stays a number (keeps .toFixed(), arithmetic, etc. working).
+              const raw = (e.target as HTMLInputElement).value;
+              newValue = raw === '' ? '' : Number(raw);
             } else {
               newValue = (e.target as HTMLInputElement).value;
             }

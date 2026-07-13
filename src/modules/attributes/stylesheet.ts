@@ -711,6 +711,12 @@ const stylesheetModule: AttributeModule = {
       }
     }
 
+    // Adopt the AOT component block (draggable-chosen/drag/ghost, swap highlights,
+    // drop-target guides) at boot. These are NOT Tailwind utilities and must be on
+    // the document from the start — the previous cleanup-only path never ran for
+    // persistent pages, so no drag feedback ever rendered. Idempotent.
+    stylesheet.emitPreflightAndTheme(el);
+
     cleanupFns.push(() => {
       stylesheet.emitPreflightAndTheme(el);
     });

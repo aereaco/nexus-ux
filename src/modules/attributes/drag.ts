@@ -90,6 +90,7 @@ export class Draggable {
   private isCircumstantialInvert = false;
   private targetMoveDistance = 0;
   private targetBeforeFirstSwap?: number;
+  private _swapHighlightTarget: HTMLElement | null = null;
 
   private tapEvt: PointerEvent | null = null;
   private dragStarted = false;
@@ -198,6 +199,12 @@ export class Draggable {
     this.tapEvt = e;
     this.dragStarted = false;
 
+    // Apply the chosen highlight immediately on press so touch/mouse/pen all get
+    // instant feedback before the drag threshold is crossed. This is engine-driven
+    // (not native :active, which preventDefault suppresses on touch). Removed in
+    // _onPointerUp for both the drag and plain-tap paths.
+    this.dragEl.classList.add(this.options.chosenClass!);
+
     document.addEventListener('pointermove', this._pointerMoveBound);
     document.addEventListener('pointerup', this._pointerUpBound);
     document.addEventListener('pointercancel', this._pointerUpBound);
@@ -206,6 +213,9 @@ export class Draggable {
   private _onPointerMove(e: PointerEvent) {
     if (!this.tapEvt || !this.dragEl) return;
 
+    // Cursor delta drives both the drag-start threshold and the ghost transform.
+    // Everything here is in CSS pixels (clientX/Y and getBoundingClientRect share
+    // that coordinate space), so OS/browser scaling needs no compensation.
     const dx = e.clientX - this.tapEvt.clientX;
     const dy = e.clientY - this.tapEvt.clientY;
 
@@ -409,6 +419,9 @@ export class Draggable {
       this.isCircumstantialInvert = (!differentRowCol && this.options.invertSwap) || differentLevel;
     }
 
+    // The swap-threshold is kept live by the reactive bridge in dragAttribute,
+    // which writes slider-bound values straight into this.options — so reading
+    // options here honors runtime threshold changes without a second code path.
     const direction = this._getSwapDirection(
       e,
       target,
@@ -421,6 +434,12 @@ export class Draggable {
     );
 
     if (direction !== 0) {
+      // Highlight the swap-eligible target so the live threshold band is
+      // visible during the drag and matches the demo's threshold overlay.
+      if (this.options.swap) {
+        this._setSwapHighlight(target);
+      }
+
       // Check if already beside target
       let sibling: HTMLElement | null = null;
       let dragIndex = Array.from(this.dragEl.parentElement!.children).indexOf(this.dragEl);
@@ -472,11 +491,15 @@ export class Draggable {
 
   private _onPointerUp(e: PointerEvent) {
     this._cleanupDragListeners();
+    this._clearSwapHighlight();
 
     if (this.dragEl) {
+      // Always clear the press highlight, whether this ended as a drag or a
+      // plain tap (chosenClass is applied on pointerdown). Safe no-op if absent.
+      this.dragEl.classList.remove(this.options.chosenClass!);
+
       if (this.dragStarted) {
         // Remove classes
-        this.dragEl.classList.remove(this.options.chosenClass!);
         this.dragEl.classList.remove(this.options.dragClass!);
 
         // Restore MultiDrag elements visibility on drop. The non-primary selected
@@ -614,6 +637,22 @@ export class Draggable {
       (this._lastActiveItemScope.item as any).isDragOver = false;
       this._lastActiveItemScope = null;
     }
+    this._clearSwapHighlight();
+  }
+
+  private _setSwapHighlight(target: HTMLElement) {
+    if (this._swapHighlightTarget && this._swapHighlightTarget !== target) {
+      this._swapHighlightTarget.classList.remove(this.options.swapClass!);
+    }
+    target.classList.add(this.options.swapClass!);
+    this._swapHighlightTarget = target;
+  }
+
+  private _clearSwapHighlight() {
+    if (this._swapHighlightTarget) {
+      this._swapHighlightTarget.classList.remove(this.options.swapClass!);
+      this._swapHighlightTarget = null;
+    }
   }
 
   private _updateDragOverState(targetParent: HTMLElement, e: PointerEvent) {
@@ -702,10 +741,20 @@ export class Draggable {
     const targetS2Opp = vertical ? targetRect.right : targetRect.bottom;
     const targetOppLength = vertical ? targetRect.width : targetRect.height;
 
+    // Sub-pixel tolerance. Under fractional OS/browser scaling (125/150/175%)
+    // getBoundingClientRect() returns values that diverge by a fraction of a
+    // pixel between siblings that are visually in the same row/column. Exact
+    // equality (as in SortableJS) then reports them as "different row/column",
+    // which upstream forces swapThreshold to 1 and makes the swap-threshold
+    // slider (including 0) do nothing whenever the OS/browser is scaled. A 1px
+    // tolerance keeps same-row/column detection correct regardless of scaling
+    // while still separating genuinely different grid rows/columns (which differ
+    // by a whole item length, far more than 1px).
+    const EPS = 1;
     return (
-      dragElS1Opp === targetS1Opp ||
-      dragElS2Opp === targetS2Opp ||
-      (dragElS1Opp + dragElOppLength / 2) === (targetS1Opp + targetOppLength / 2)
+      Math.abs(dragElS1Opp - targetS1Opp) < EPS ||
+      Math.abs(dragElS2Opp - targetS2Opp) < EPS ||
+      Math.abs((dragElS1Opp + dragElOppLength / 2) - (targetS1Opp + targetOppLength / 2)) < EPS
     );
   }
 
@@ -1138,6 +1187,7 @@ export class DragReorderEngine<T> {
       }
     });
     (this.draggable as any)._runtime = this.runtime;
+
   }
 
   public updateEmptyState(container: HTMLElement) {
@@ -1217,16 +1267,19 @@ export const dragAttribute: AttributeModule = {
 
     // Use runtime elementBoundEffect for automatic cleanup
     const [_, stopEffect] = runtime.elementBoundEffect(container, () => {
-      const threshExpr = container.getAttribute("data-bind-data-drag-swap-threshold") ||
-        container.getAttribute("data-bind:data-drag-swap-threshold");
+      // ─── Reactive Threshold Bridge ───
+      // Always evaluate any data-bind bound swap-threshold expressions here so
+      // their reactive dependencies (e.g. a slider-backed signal) are tracked on
+      // EVERY effect run — including the very first, before the engine exists.
+      // Evaluating unconditionally is what registers the dependency; skipping it
+      // when the engine is absent would mean the effect never re-runs on change.
+      const swapThreshExpr = container.getAttribute("data-bind-data-drag-swap-threshold")
+        || container.getAttribute("data-bind:data-drag-swap-threshold");
+      const swapThreshVal = swapThreshExpr ? runtime.evaluate(container, swapThreshExpr) : undefined;
 
-      const engine = (container as any).__draggable;
-      if (engine && engine.draggable && threshExpr) {
-        const val = runtime.evaluate(container, threshExpr);
-        if (val !== undefined && val !== null) {
-          engine.draggable.options.swapThreshold = Number(val);
-        }
-      }
+      const invertThreshExpr = container.getAttribute("data-bind-data-drag-invert-swap-threshold")
+        || container.getAttribute("data-bind:data-drag-invert-swap-threshold");
+      const invertThreshVal = invertThreshExpr ? runtime.evaluate(container, invertThreshExpr) : undefined;
 
       if (!(container as any).__draggable) {
         try {
@@ -1258,6 +1311,19 @@ export const dragAttribute: AttributeModule = {
           }
         } catch (err) {
           runtime.reportError(err instanceof Error ? err : new Error(String(err)), container, "drag-init");
+        }
+      }
+
+      // Push the freshly-evaluated threshold values into the live engine options.
+      // Runs after init so first-mount also applies, and on every reactive re-run
+      // so slider changes take effect mid-session without restarting the drag.
+      const engineNow = (container as any).__draggable as DragReorderEngine<unknown> | undefined;
+      if (engineNow && engineNow.draggable) {
+        if (swapThreshVal !== undefined && swapThreshVal !== null && swapThreshVal !== "") {
+          engineNow.draggable.options.swapThreshold = Number(swapThreshVal);
+        }
+        if (invertThreshVal !== undefined && invertThreshVal !== null && invertThreshVal !== "") {
+          engineNow.draggable.options.invertedSwapThreshold = Number(invertThreshVal);
         }
       }
     });
