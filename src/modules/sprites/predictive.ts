@@ -217,18 +217,17 @@ class PredictiveEngine {
   private debugTracker: any = null;
 
   // ZCZS: Quadtree for O(log n) spatial queries
-  public quadtree: Quadtree;
+  public quadtree!: Quadtree;
   private viewportWidth = 0;
   private viewportHeight = 0;
   private rebuildTimer: number | null = null;
   private fadeTimer: number | null = null;
 
   constructor() {
-    const w = typeof window !== "undefined" ? window.innerWidth : 0;
-    const h = typeof window !== "undefined" ? window.innerHeight : 0;
-    this.quadtree = new Quadtree({ x: 0, y: 0, width: w, height: h }, 20);
-    this.viewportWidth = w;
-    this.viewportHeight = h;
+    if (typeof window !== "undefined") {
+      this.viewportWidth = window.innerWidth;
+      this.viewportHeight = window.innerHeight;
+    }
     if (typeof document !== "undefined") {
       this.init();
     }
@@ -313,15 +312,23 @@ class PredictiveEngine {
         if (touch) this.track(touch.clientX, touch.clientY);
       };
       const onResize = () => {
-        // Rebuild quadtree on resize
         this.viewportWidth = window.innerWidth;
         this.viewportHeight = window.innerHeight;
         this.rebuildQuadtree();
+      };
+      const onScroll = () => {
+        if (this.rebuildTimer) clearTimeout(this.rebuildTimer);
+        this.rebuildTimer = setTimeout(
+          () => this.rebuildQuadtree(),
+          16,
+        ) as unknown as number;
       };
       globalThis.addEventListener("mousemove", onMouseMove);
       globalThis.addEventListener("touchstart", onTouchStart, {
         passive: true,
       });
+      globalThis.addEventListener("resize", onResize);
+      globalThis.addEventListener("scroll", onScroll, { passive: true });
       const onDomMutated = () => {
         if (this.rebuildTimer) clearTimeout(this.rebuildTimer);
         this.rebuildTimer = setTimeout(
@@ -335,6 +342,7 @@ class PredictiveEngine {
         () => globalThis.removeEventListener("mousemove", onMouseMove),
         () => globalThis.removeEventListener("touchstart", onTouchStart),
         () => globalThis.removeEventListener("resize", onResize),
+        () => globalThis.removeEventListener("scroll", onScroll),
         () => globalThis.removeEventListener("nexus:dom-mutated", onDomMutated),
         () => {
           if (this.rebuildTimer) clearTimeout(this.rebuildTimer);
@@ -418,20 +426,33 @@ class PredictiveEngine {
   private rebuildQuadtree() {
     if (typeof document === "undefined") return;
 
-    this.quadtree = new Quadtree({
-      x: 0,
-      y: 0,
-      width: this.viewportWidth,
-      height: this.viewportHeight,
-    }, 20);
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    this.viewportWidth = vw;
+    this.viewportHeight = vh;
+
+    const bufferX = vw * 0.15;
+    const bufferY = vh * 0.15;
+
+    this.quadtree = new Quadtree(
+      {
+        x: scrollX - bufferX,
+        y: scrollY - bufferY,
+        width: vw + bufferX * 2,
+        height: vh + bufferY * 2,
+      },
+      20,
+    );
 
     const selectors = this.getDynamicSelectors();
     const elements = document.querySelectorAll(selectors);
     elements.forEach((el) => {
       if (el instanceof HTMLElement) {
         const rect = el.getBoundingClientRect();
-        const centerX = rect.x + rect.width / 2;
-        const centerY = rect.y + rect.height / 2;
+        const centerX = rect.x + rect.width / 2 + scrollX;
+        const centerY = rect.y + rect.height / 2 + scrollY;
         this.quadtree.insert(el, centerX, centerY);
       }
     });
@@ -442,32 +463,33 @@ class PredictiveEngine {
    */
   public updateElement(el: HTMLElement) {
     const rect = el.getBoundingClientRect();
-    const centerX = rect.x + rect.width / 2;
-    const centerY = rect.y + rect.height / 2;
+    const centerX = rect.x + rect.width / 2 + window.scrollX;
+    const centerY = rect.y + rect.height / 2 + window.scrollY;
     this.quadtree.insert(el, centerX, centerY);
   }
 
   public track(x: number, y: number, z: number = 0) {
     const t = performance.now();
+    const pageX = x + window.scrollX;
+    const pageY = y + window.scrollY;
 
     if (this.lastPoint) {
       const dt = t - this.lastPoint.t;
       if (dt > 1) {
         this.velocity = {
-          x: (x - this.lastPoint.x) / dt,
-          y: (y - this.lastPoint.y) / dt,
+          x: (pageX - this.lastPoint.x) / dt,
+          y: (pageY - this.lastPoint.y) / dt,
           z: (z - this.lastPoint.z) / dt,
           t: 1,
         };
 
         if (this.debugTracker) this.debugTracker.line.style.opacity = "1";
 
-        // Schedule prediction update in Capture phase
-        scheduler.enqueueCapture(() => this.predict(x, y, z));
+        scheduler.enqueueCapture(() => this.predict(pageX, pageY, z));
       }
     }
 
-    this.lastPoint = { x, y, z, t };
+    this.lastPoint = { x: pageX, y: pageY, z, t };
 
     // Handle trajectory fade
     if (this.fadeTimer) clearTimeout(this.fadeTimer);
@@ -522,8 +544,8 @@ class PredictiveEngine {
 
         if (isInteractiveNode) {
           const rect = target.getBoundingClientRect();
-          const cx = rect.x + rect.width / 2;
-          const cy = rect.y + rect.height / 2;
+          const cx = rect.x + rect.width / 2 + window.scrollX;
+          const cy = rect.y + rect.height / 2 + window.scrollY;
           const d = Math.hypot(cx - px, cy - py);
           if (d < minD) {
             minD = d;
@@ -534,8 +556,10 @@ class PredictiveEngine {
     });
 
     if (this.debugTracker) {
-      this.debugTracker.svg.style.left = `${x}px`;
-      this.debugTracker.svg.style.top = `${y}px`;
+      const vpX = x - window.scrollX;
+      const vpY = y - window.scrollY;
+      this.debugTracker.svg.style.left = `${vpX}px`;
+      this.debugTracker.svg.style.top = `${vpY}px`;
 
       const speed = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
       const targetR = Math.min(80, Math.max(20, 20 + speed * 5));
