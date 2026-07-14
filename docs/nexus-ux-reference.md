@@ -1,6 +1,6 @@
 # Nexus-UX: The Exhaustive Technical Reference
 
-**The Practical Manual: From Syntax to Zenith**
+**The Practical Manual: From Syntax to Practice**
 
 > "Theory is knowing how it works. Practice is making it work. This document
 > bridges both."
@@ -30,13 +30,13 @@ on outcomes and practical implementation patterns. Built on the **Omni-State
 4. [Chapter 3: Control Flow & Rendering](#chapter-3-control-flow--rendering)
 5. [Chapter 4: Events & Behavioral Pipelines](#chapter-4-events--behavioral-pipelines)
 6. [Chapter 5: Styling, Classes & Dynamic Theming](#chapter-5-styling-classes--dynamic-theming)
-7. [Chapter 6: Advanced Orchestration (Refs, Effects, Custom)](#chapter-6-advanced-orchestration-refs-effects-custom)
+7. [Chapter 6: Advanced Orchestration (Effects, Custom)](#chapter-6-advanced-orchestration-effects-custom)
 8. [Chapter 7: Sprites ($) & Data Integration](#chapter-7-sprites--data-integration)
    8.5 [Chapter 7.5: Environment Mirrors (_)](#chapter-75-environment-mirrors-)
 9. [Chapter 8: Advanced Patterns & Real-World](#chapter-8-advanced-patterns--real-world)
 10. [Chapter 9: Routing & Navigation](#chapter-9-routing--navigation)
 11. [Chapter 10: Component System](#chapter-10-component-system)
-12. [Chapter 11: Zenith-Class Orchestration Gallery](#chapter-11-zenith-class-orchestration-gallery)
+12. [Chapter 11: Advanced Orchestration Gallery](#chapter-11-advanced-orchestration-gallery)
 13. [Chapter 12: Developer Experience & Performance](#chapter-12-developer-experience--performance)
 14. [Chapter 13: Deployment](#chapter-13-deployment)
 15. [Chapter 14: Premium Assets & Themes](#chapter-14-premium-assets--themes)
@@ -189,7 +189,6 @@ const el = document.querySelector("div");
 el.dataset.signal; // "{ count: 0 }"
 el.dataset.onClick; // "count++"
 el.dataset.bindValue; // corresponds to data-bind-value
-el.dataset.onSignalChange; // corresponds to data-on-signal-change
 ```
 
 #### 1.5.3. Data Type Handling
@@ -295,7 +294,7 @@ Nexus-UX supports **Signal Inheritance** for theme-level logic. Signals prefixed
 with `--` automatically cascade to all descendants.
 
 - **Source**: `<div data-signal="{ --theme: 'dark' }">`
-- **Target**: `<span data-text="--theme"></span>` (Accesses inherited value).
+- **Target**: `<span data-bind="--theme"></span>` (Accesses inherited value).
 
 #### 2.1.3. Practical Data Patterns
 
@@ -378,7 +377,7 @@ changes.
 
 | **`data-bind`** | **Auto-Detect** | **The Unified Binding Engine**.
 Auto-detects target property (text, value, checked) based on element type.
-Absorbs legacy `data-text` and `data-model`. | | **`data-html`** | **HTML
+Absorbs legacy `data-bind` and `data-model`. | | **`data-html`** | **HTML
 Content** | Sets `innerHTML`. **CAUTION**: Use only for trusted content. | |
 **`data-var-[name]`** | **Variable Sync** | **CSS Custom Property Bridge**.
 Direct synchronization of state to CSS variables (`--[name]`). | |
@@ -693,7 +692,6 @@ Modifiers composed with `data-on-[event]` to alter the native event behavior.
 | **`data-on-load`**          | Element entry to DOM.          | Fetching initial data, initializing 3rd party libs. |
 | **`data-on-raf`**           | Every `requestAnimationFrame`. | Zero-allocation animations, canvas updates.         |
 | **`data-on-intersect`**     | Viewport entry/exit.           | Infinite scroll beacons, spatial triggers.          |
-| **`data-on-signal-change`** | On specific signal mutate.     | Side-effects: saving to localStorage, logging.      |
 
 ### 4.4. High-Performance Timing
 
@@ -1020,7 +1018,7 @@ logic.
 - **Taming DaisyUI Progress**:
   ```html
   <div class="radial-progress" data-var-value="percent" role="progressbar">
-    <span data-text="percent + '%'"></span>
+    <span data-bind="percent + '%'"></span>
   </div>
   ```
 - **Dynamic Theming**:
@@ -1079,49 +1077,9 @@ logic overhead. Used heavily alongside `data-ux-theme` for building native
 
 ---
 
-## Chapter 6: Advanced Orchestration (Refs, Effects, Custom)
+## Chapter 6: Advanced Orchestration (Effects, Custom)
 
-### 6.1. `data-ref` — Element References
-
-**Syntax**: `data-ref="refName"`
-
-**Purpose**: Create a reference to a DOM element for programmatic access.
-
-**Examples**:
-
-```html
-<!-- Focus an input -->
-<div>
-<input type="text" data-ref="emailInput">
-<button data-on-click="$refs.emailInput.focus()">
-  Focus Email Input
-</button>
-</div>
-
-<!-- Scroll to element -->
-<div>
-<div style="height: 2000px"></div>
-<div data-ref="section2">
-  <h2>Section 2</h2>
-</div>
-<button data-on-click="$refs.section2.scrollIntoView({ behavior: 'smooth' })">
-  Scroll to Section 2
-</button>
-</div>
-
-<!-- Get element dimensions -->
-<div>
-<div data-ref="box" style="width: 200px; height: 100px; background: blue">
-</div>
-<button data-on-click="alert('Width: ' + $refs.box.offsetWidth)">
-  Get Width
-</button>
-</div>
-````
-
-**Access**: All refs are available via `$refs.refName` within the scope.
-
-### 6.2. `data-effect` — Side Effects
+### 6.1. `data-effect` — Side Effects
 
 **Syntax**: `data-effect="expression"`
 
@@ -1156,11 +1114,7 @@ logic overhead. Used heavily alongside `data-ux-theme` for building native
 
 <!-- Auto-scroll chat to bottom -->
 <div data-signal="{ messages: $sql('LIVE SELECT * FROM message') }">
-  <div class="message-container" data-ref="container">
-    <div data-for="msg in messages">{msg.text}</div>
-  </div>
-  <div data-effect="$refs.container.scrollTop = $refs.container.scrollHeight">
-  </div>
+  <div data-for="msg in messages">{msg.text}</div>
 </div>
 ```
 
@@ -1227,7 +1181,7 @@ Nexus-UX provides two complementary namespaces for imperative operations:
 > **Note**: Legacy sprite wrappers are **removed** from the codebase as of the
 > mirror-auto-wrap refactor. The native `_` mirrors provide identical functionality
 > with zero wrapper maintenance overhead. All remaining sprites (`$sql`, `$gql`,
-> `$router`, `$refs`, `$animate`, `$selector`, `$device`, `$fs`, etc.) are
+> `$router`, `$animate`, `$selector`, etc.) are
 > **retained** as they provide unique value beyond native browser APIs.
 
 ---
@@ -1407,37 +1361,7 @@ loading state:
 </div>
 ```
 
-### 7.5. Filesystem (`$fs`)
-
-**Purpose**: Runtime capability for accessing the sandboxed filesystem (provided
-by Nexus-IO).
-
-**Methods**:
-
-- `read(path)`: Returns Promise<string>
-- `write(path, content)`: Returns Promise<void>
-- `list(path)`: Returns Promise<string[]>
-
-```html
-<button data-on-click="$fs.write('log.txt', 'Clicked at ' + new Date())">
-  Log Click
-</button>
-```
-
-### 7.6. Device Capabilities (`$device`)
-
-**Purpose**: Runtime capability for hardware interaction (provided by Nexus-IO).
-
-**Capabilities**: `$device.battery`, `$device.location`, `$device.camera`
-
-```html
-<div
-  data-effect="
-  $device.location.getCurrentPosition().then(pos => console.log(pos.coords))
-"
->
-</div>
-```
+### 7.7. WebSocket (`$ws`) — DEPRECATED
 
 ### 7.7. WebSocket (`$ws`) — DEPRECATED
 
@@ -1453,13 +1377,13 @@ by Nexus-IO).
 <!-- DEPRECATED -->
 <div data-signal="{ socket: null, messages: [] }">
   <button data-on-click="socket = $ws('wss://chat.example.com')">Connect</button>
-  <p data-text="socket?.state"></p>
+  <p data-bind="socket?.state"></p>
 </div>
 
 <!-- ✅ RECOMMENDED (identical API surface) -->
 <div data-signal="{ socket: null, messages: [] }">
   <button data-on-click="socket = _WebSocket('wss://chat.example.com')">Connect</button>
-  <p data-text="socket?.state"></p>
+  <p data-bind="socket?.state"></p>
 </div>
 ```
 
@@ -1506,8 +1430,8 @@ endpoint.
   data-signal="{ userId: 'user:1', profile: null }"
   data-on-load="profile = (await $gql('query(id: ID!) { user(id: id) { name avatar bio } }', { id: userId })).data.user"
 >
-  <h2 data-text="profile?.name"></h2>
-  <p data-text="profile?.bio"></p>
+  <h2 data-bind="profile?.name"></h2>
+  <p data-bind="profile?.bio"></p>
 </div>
 ```
 
@@ -1565,16 +1489,16 @@ Schedules execution after the current reactive flush completes and the DOM has
 updated.
 
 ```html
-<!-- Wait for DOM to update, then scroll -->
+<!-- Wait for DOM to update, then log -->
 <button
-  data-on-click="messages = [...messages, msg]; $nextTick(() => $refs.container.scrollTop = $refs.container.scrollHeight)"
+  data-on-click="messages = [...messages, msg]; $nextTick(() => console.log('DOM updated, messages count:', messages.length))"
 >
   Send
 </button>
 
 <!-- Promise form -->
 <button
-  data-on-click="count++; await $nextTick(); console.log('DOM updated, count is now:', $refs.counter.textContent)"
+  data-on-click="count++; await $nextTick(); console.log('DOM updated, count is now:', count)"
 >
   Increment
 </button>
@@ -1753,7 +1677,7 @@ Service Worker lifecycle management — a value-add integration over the raw
 
 ```html
 <div data-on-load="sw.register('/sw.js')">
-  <span data-text="'SW: ' + sw.status"></span>
+  <span data-bind="'SW: ' + sw.status"></span>
   <button data-show="sw.updateAvailable" data-on-click="sw.skipWaiting()">
     Update Available — Reload
   </button>
@@ -1854,7 +1778,7 @@ accessible without specialized syntax.
 
 ```html
 <!-- Read: responsive layout info tracked lazily on native 'resize' -->
-<p data-text="'Viewport: ' + _window.innerWidth + 'x' + _window.innerHeight">
+<p data-bind="'Viewport: ' + _window.innerWidth + 'x' + _window.innerHeight">
 </p>
 
 <!-- Read: scroll-linked animation wrapped securely around native scroll properties -->
@@ -1899,7 +1823,7 @@ Values do not sync across tabs and are cleared when the tab closes.
   data-on-load="draft = _sessionStorage['editor:draft'] || ''"
 >
   <textarea
-    data-model="draft"
+    data-bind="draft"
     data-on-input="_sessionStorage['editor:draft'] = draft"
   >
   </textarea>
@@ -1917,7 +1841,7 @@ supports declarative tracking of it today.
 
 ```html
 <!-- Experimental or custom properties exposed by plugins / host OS -->
-<div data-text="_experimentalAPI.status"></div>
+<div data-bind="_experimentalAPI.status"></div>
 ```
 
 ---
@@ -2024,28 +1948,22 @@ supports declarative tracking of it today.
 ### 8.3. Infinite Scroll
 
 ```html
-<div data-signal="{ page: 1 }">
-  <div data-signal="{ users: [] }">
-    <div data-signal="{ loading: false }">
-      <div
-        data-ref="container"
-        data-on-scroll="
-      if ($refs.container.scrollTop + $refs.container.clientHeight >= $refs.container.scrollHeight - 100 && !loading) {
-        loading = true;
-        $sql('SELECT * FROM user LIMIT 20 START page * 20', { page: page }).then(newUsers => {
-          users = users.concat(newUsers);
-          page++;
-          loading = false;
-        });
-      }
+<div data-signal="{ page: 1, users: [], loading: false }">
+  <div data-for="user in users">{user.name}</div>
+  <button
+    data-on-click="
+      loading = true;
+      $sql('SELECT * FROM user LIMIT 20 START page * 20', { page: page }).then(newUsers => {
+        users = users.concat(newUsers);
+        page++;
+        loading = false;
+      });
     "
-        style="height: 500px; overflow-y: auto"
-      >
-        <div data-for="user in users">{user.name}</div>
-        <p data-if="loading">Loading more...</p>
-      </div>
-    </div>
-  </div>
+    data-bind-disabled="loading"
+  >
+    <span data-if="loading">Loading...</span>
+    <span data-if="!loading">Load More</span>
+  </button>
 </div>
 ```
 
@@ -2149,12 +2067,11 @@ For lists with 10,000+ items, render only visible items:
     return allItems.slice(start, end).map((item, i) => ({ ...item, index: start + i }));
   })() }"
         >
-          <div
-            data-ref="container"
-            data-on-scroll="scrollTop = $refs.container.scrollTop"
-            data-style-height="containerHeight + 'px'"
-            style="overflow-y: auto; position: relative"
-          >
+            <div
+              data-on-scroll="scrollTop = $el.scrollTop"
+              data-style-height="containerHeight + 'px'"
+              style="overflow-y: auto; position: relative"
+            >
             <!-- Spacer for scroll height -->
             <div data-style-height="(allItems.length * itemHeight) + 'px'">
             </div>
@@ -2288,7 +2205,7 @@ attributes, converting them to client-side navigations. Links with
 
 #### 9.1.4. Programmatic Navigation
 
-The `$router` sprite provides imperative navigation:
+The `$router` signal provides imperative navigation:
 
 ```html
 <button data-on-click="$router.navigate('/dashboard')">Go to Dashboard</button>
@@ -2644,7 +2561,7 @@ Router params are automatically injected into the component's props, so within
 
 ---
 
-## Chapter 11: Zenith-Class Orchestration Gallery
+## Chapter 11: Advanced Orchestration Gallery
 
 This chapter showcases advanced, real-world patterns that demonstrate the full
 power of Nexus-UX's unified architecture.
@@ -2665,7 +2582,7 @@ power of Nexus-UX's unified architecture.
     data-var-thickness="4px"
     role="progressbar"
   >
-    <span data-text="progress + '%'"></span>
+    <span data-bind="progress + '%'"></span>
   </div>
 </div>
 ```
@@ -2689,7 +2606,7 @@ power of Nexus-UX's unified architecture.
       }"
     >
       <span
-        data-text="
+        data-bind="
         status === 'loading' ? '⏳ Loading data...' :
         status === 'processing' ? '⚙️ Processing...' :
         '✅ Complete!'
@@ -2700,7 +2617,7 @@ power of Nexus-UX's unified architecture.
 </div>
 ```
 
-### 11.2. Zenith-Class Showcases
+### 11.2. Advanced Showcases
 
 #### 11.2.1. Infinite Logic Virtualization with Proximity Dashboard
 
@@ -2715,14 +2632,14 @@ power of Nexus-UX's unified architecture.
       data-style-border-left-color="sensor.status === 'ok' ? 'green' : 'red'"
       data-on-intersect:once="$sql('UPDATE sensor SET last_viewed = time::now() WHERE id = sensor.id')"
     >
-      <h3 data-text="sensor.name"></h3>
-      <p>Value: <span data-text="sensor.value"></span></p>
+      <h3 data-bind="sensor.name"></h3>
+      <p>Value: <span data-bind="sensor.value"></span></p>
       <div
         class="radial-progress"
         data-var-value="sensor.healthPercent"
         role="progressbar"
       >
-        <span data-text="sensor.healthPercent + '%'"></span>
+        <span data-bind="sensor.healthPercent + '%'"></span>
       </div>
     </div>
   </div>
@@ -2738,13 +2655,13 @@ numeric `border-left-width`), `data-on-intersect` (lazy hydration), `data-var`
 ```html
 <div data-signal-global="appAuth">
   <!-- Public View -->
-  <section data-text="'Welcome, ' + (#appAuth.user?.name || 'Guest')"></section>
+  <section data-bind="'Welcome, ' + (#appAuth.user?.name || 'Guest')"></section>
 
   <!-- User-Tier View -->
   <section data-if="#appAuth.role === 'user' || #appAuth.role === 'admin'">
     <h2>Dashboard</h2>
     <div data-signal="{ myDocs: $sql('SELECT * FROM document WHERE owner = auth.id') }">
-      <div data-for="doc in myDocs" data-text="doc.title"></div>
+      <div data-for="doc in myDocs" data-bind="doc.title"></div>
     </div>
   </section>
 
@@ -2754,8 +2671,8 @@ numeric `border-left-width`), `data-on-intersect` (lazy hydration), `data-var`
     <div data-signal="{ allUsers: $sql('LIVE SELECT * FROM user') }">
       <table>
         <tr data-for="u in allUsers" data-key="u.id">
-          <td data-text="u.name"></td>
-          <td data-text="u.email"></td>
+          <td data-bind="u.name"></td>
+          <td data-bind="u.email"></td>
           <td>
             <button data-on-click:confirm('Are you sure?')="$sql('DELETE user WHERE id = u.id')">Delete</button>
           </td>
@@ -2945,8 +2862,8 @@ nexus publish my-app --all-platforms
 
 This reference guide covered:
 
-- ✅ All 9 core directives (`data-signal`, `data-bind`, `data-if`, `data-for`,
-  `data-on`, `data-style`, `data-class`, `data-ref`, `data-effect`)
+- ✅ All 8 core directives (`data-signal`, `data-bind`, `data-if`, `data-for`,
+  `data-on`, `data-style`, `data-class`, `data-effect`)
 - ✅ NEG Grammar fundamentals (token set, selectors, scope rules, pipelines)
 - ✅ SurrealDB integration (`$sql()`, LIVE queries, parameterized queries)
 - ✅ Advanced patterns (forms, pagination, modals, tabs, infinite scroll)
@@ -2956,7 +2873,7 @@ This reference guide covered:
   isolation)
 - ✅ Performance optimization (virtual scrolling, debouncing, memoization)
 - ✅ Automatic unit appending & Zero-Allocation engineering
-- ✅ Zenith-class orchestration showcases
+- ✅ Advanced orchestration showcases
 - ✅ Testing & debugging strategies
 - ✅ Universal deployment
 
@@ -3014,10 +2931,7 @@ preference, system settings, and UI library tokens.
 **Example**:
 
 ```html
-<body
-  data-theme="ux_theme"
-  data-theme-options="{ dark: 'synthwave', light: 'retro', auto: true }"
->
+<body data-theme="ux_theme">
   <button
     data-switcher="ux_theme"
     data-switcher-options="{
@@ -3276,7 +3190,48 @@ This works whether or not `data-debug` is present — the sanitizing engine and 
 
 ---
 
-**Nexus-UX Technical Reference v2026.02.14 (Zenith Release)**\
+## Appendix: Running Changes (Intentional Divergences)
+
+This section documents intentional divergences between the original Nexus-UX
+documentation and the current implementation. These are deliberate architectural
+decisions, not bugs.
+
+### RC-1: Legacy Sprite Elimination
+
+All legacy browser-API sprites (`$fetch`, `$clipboard`, `$cache`, `$notification`,
+`$payment`, `$ws`, `$download`, `$http`, `$get`, `$post`, `$put`, `$patch`,
+`$delete`, `$store`, `$watch`, `$device`, `$fs`) have been **removed** from the
+codebase. Native `_` mirror proxies provide identical functionality.
+
+### RC-2: `data-text` and `data-model` Absorption
+
+Both directives have been **absorbed** into `data-bind`. The bind module
+auto-detects the target property based on element type.
+
+### RC-3: `data-ref` Removal
+
+`data-ref` and `$refs` have been **removed**. No replacement is currently
+provided.
+
+### RC-4: `$router` as Signal
+
+`$router` is a **reactive signal** created by `data-router`, not a sprite module.
+
+### RC-5: Missing Attribute Documentation
+
+The following attribute modules exist in the codebase but were missing or
+under-documented in earlier versions of this reference:
+`data-spatial`, `data-flow`, `data-preserve`, `data-raf`, `data-build`,
+`data-teleport`, `data-assert`, `data-markdown`, `data-mask`.
+
+### RC-6: Build System
+
+Production builds use esbuild + SWC minification + Brotli-11 compression, with
+AOT Tailwind compilation generating `PACKED_THEME_CSS` at build time.
+
+---
+
+**Nexus-UX Technical Reference v2026.02.14**\
 **Maintained by**: Aerea Co.\
 **See Also**:
 [nexus-ux-spec.md](nexus-ux-spec.md),

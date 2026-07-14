@@ -560,8 +560,7 @@ context. Each sprite is a single-purpose function, invoked via the `$` prefix.
 | Sprite                           | Description                                                                                                               | Practical Example                                                                    |
 | :------------------------------- | :------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------- |
 | **`$el`**                        | Element — reference to the current element the expression is evaluated on.                                                | `data-on-focus="$el.classList.add('ring')"`                                          |
-| **`$refs`**                      | Element Refs — object of all `data-ref`-named elements in scope.                                                          | `data-on-click="$refs.emailInput.focus()"`                                           |
-| **`$nextTick([callback])`**      | Next Tick — schedules `callback` after the current reactive flush completes. Returns a `Promise` if no callback provided. | `data-on-click="count++; await $nextTick(); console.log($refs.counter.textContent)"` |
+| **`$nextTick([callback])`**      | Next Tick — schedules `callback` after the current reactive flush completes. Returns a `Promise` if no callback provided. | `data-on-click="count++; await $nextTick(); console.log($el.textContent)"` |
 | **`$dispatch(event, [detail])`** | Dispatch — dispatches a `CustomEvent` on the current element. Bubbles by default.                                         | `data-on-click="$dispatch('item-selected', { id: itemId })"`                         |
 
 #### 2.5.4. State Sprites — DEPRECATED
@@ -770,7 +769,6 @@ camelCase:
 | `data-bind-value`       | `el.dataset.bindValue`      | Attribute binding  |
 | `data-style`            | `el.dataset.style`          | Style binding      |
 | `data-class`            | `el.dataset.class`          | Class binding      |
-| `data-on-signal-change` | `el.dataset.onSignalChange` | Signal watcher     |
 
 > [!IMPORTANT]
 > **Implementation Detail**: Nexus-UX scans the DOM for `data-*` attributes
@@ -861,8 +859,7 @@ directive catalog:
 #### 3.6.1. Core Directives
 
 - **`data-signal`**: Reactive State Declaration — defines reactive signals on an element, forming the source of truth for UI state.
-- **`data-bind`**: Two-Way Binding — synchronizes element properties (value, checked, etc.) with signals automatically.
-- **`data-text`**: Text Content — sets `innerText` reactively.
+- **`data-bind`**: Two-Way Binding — synchronizes element properties (`value`, `checked`, `textContent`, etc.) with signals automatically. Absorbs legacy `data-text` and `data-model` behavior.
 - **`data-html`**: HTML Content — sets `innerHTML` for trusted content.
 - **`data-computed`**: Derived Signals — creates cached, read-only computed values derived from other signals.
 - **`data-effect`**: Side-effects — runs arbitrary logic in response to signal changes without touching the DOM.
@@ -879,19 +876,14 @@ directive catalog:
   reconciliation.
 - **`data-key`**: Keyed Reconciliation — provides a unique identity for
   `data-for` items to optimize DOM reuse.
-- **`data-sort`**: List Ordering — triggers keyed positional DOM reconciliation
-  based on dynamic criteria.
 
 #### 3.6.3. Advanced Interoperability & Themes
 
 - **`data-theme`**: Theme Management — manages light/dark mode and custom
   thematic tokens.
-- **`data-theme-options`**: Theme Configuration — provides mapping for theme
-  identifiers.
-- **`data-switcher`**: Theme Switcher — provides a high-performance theme toggle
-  component.
-- **`data-switcher-options`**: Switcher Configuration — defines modes and icons
-  for the switcher.
+- **`data-switcher`**: State Iteration — provides a high-performance state toggle
+  component (e.g., Theme Toggle). Companion attribute `data-switcher-options`
+  defines the cycle array.
 
 #### 3.6.4. Event & Interaction Directives
 
@@ -899,7 +891,6 @@ directive catalog:
 - **`data-on-load`**: Lifecycle Hook — runs code when the element enters the DOM.
 - **`data-on-raf`**: Animation Frame Hook — runs code on every `requestAnimationFrame` tick with `$time` and `$delta`.
 - **`data-on-intersect`**: Visibility Hook — fires when the element enters/exits the viewport.
-- **`data-on-signal-change`**: Signal Watcher — reacts to specific signal changes.
 - **`data-drag`**: Drag Source — makes an element draggable, emitting a ZCZS memory pointer for drop targets to consume via `data-teleport:drop`.
 
 #### 3.6.5. Spatial, Flow & Rendering Directives
@@ -943,7 +934,10 @@ directive catalog:
   placing `data-route="/path/:param"` on an element. The route is automatically
   added to `$router.routes` and removed when the element is destroyed. Supports
   parameterized paths (`:id`), optional parameters (`:id?`), and wildcards
-  (`*`).
+  (`*`). Companion attributes (`data-route-name`, `data-route-redirect`,
+  `data-route-layout`, `data-route-meta`, `data-route-before-enter`,
+  `data-route-after-enter`, `data-route-before-leave`, `data-route-after-leave`)
+  are parsed by the same module.
 
 #### 3.6.9. Route Configuration Attributes
 
@@ -1501,42 +1495,97 @@ resolution, and DOM node identification, optimized for zero garbage collection.
 
 ```
 nexus-ux/
-├── 📂 engine/              # Core logic & advanced systems
-│   ├── orchestrator.ts     # Main-thread event management
-│   ├── logic.worker.ts     # Background NEG execution
-│   ├── heap.ts             # Binary signal memory
-│   ├── predictive.ts       # 4D Ghost Tesseract
-│   ├── locking.ts          # Atomic Layout Authority
-│   └── agent.ts            # Self-heal & crash beacons
-├── 📂 attributes/          # data-* Directive definitions
-│   ├── signal.ts
-│   ├── computed.ts
-│   ├── text.ts
-│   ├── style.ts
-│   ├── if.ts
-│   └── for.ts
-├── 📂 sprites/             # $ Logic commands
-│   ├── dom.ts
-│   ├── net.ts
-│   ├── data.ts             # Structured data pipeline
-│   └── sync.ts
-├── 📂 mirrors/             # _ Environment reflectors
-│   ├── window.ts
-│   ├── os.ts
-│   └── native.ts           # Nexus-IO runtime bridge
-├── 📂 modifiers/           # : Behavioral pipeline anchors
-│   ├── debounce.ts
-│   ├── auth.ts
-│   ├── morph.ts
-│   └── indicator.ts
-├── 📂 scopes/              # @ Logical Scope Rules
-│   ├── media.ts            # Viewport boundaries
-│   ├── auth.ts             # Permission boundaries
-│   ├── os.ts               # Platform boundaries
-│   └── view.ts             # Transition boundaries
-├── 📂 docs/                # Specification & Syntax Guide
-├── 📂 builds/              # Compiled production bundles
-└── 📂 scripts/             # Internal dev & build utilities
+├── src/
+│   ├── index.ts              # Entry point — UX class, inline utilities
+│   ├── manifest.ts           # AUTO-GENERATED module registry
+│   ├── engine/               # Core runtime (reactivity, scheduler, observers, mirrors)
+│   │   ├── modules.ts        # ModuleCoordinator registration & lifecycle
+│   │   ├── mutation.ts       # Framework MutationObserver
+│   │   ├── observers.ts      # Centralized observer registry
+│   │   ├── mirror.ts         # Unified JIT proxy cache for _ mirrors
+│   │   ├── reactivity.ts     # Vue-based reactivity + ZCZS SignalHeap
+│   │   ├── scope.ts          # Data stack & scope proxy creation
+│   │   ├── reconciler.ts     # Idiomorph-based DOM morphing
+│   │   ├── evaluator.ts      # NEG expression evaluation
+│   │   ├── scheduler.ts      # Reactive flush scheduling
+│   │   ├── topology.ts       # Adaptive thread topology
+│   │   ├── agent.ts          # Self-heal & crash beacons
+│   │   └── ...
+│   ├── modules/
+│   │   ├── attributes/       # data-* directive handlers (31 modules)
+│   │   │   ├── signal.ts
+│   │   │   ├── bind.ts
+│   │   │   ├── if.ts
+│   │   │   ├── for.ts
+│   │   │   ├── style.ts
+│   │   │   ├── class.ts
+│   │   │   ├── on.ts
+│   │   │   ├── import.ts
+│   │   │   ├── theme.ts
+│   │   │   ├── switcher.ts
+│   │   │   ├── effect.ts
+│   │   │   ├── show.ts
+│   │   │   ├── html.ts
+│   │   │   ├── computed.ts
+│   │   │   ├── raf.ts
+│   │   │   ├── markdown.ts
+│   │   │   ├── preserve.ts
+│   │   │   ├── assert.ts
+│   │   │   ├── component.ts
+│   │   │   ├── pwa.ts
+│   │   │   ├── build.ts
+│   │   │   ├── router.ts
+│   │   │   ├── route.ts
+│   │   │   ├── drag.ts
+│   │   │   ├── teleport.ts
+│   │   │   ├── flow.ts
+│   │   │   ├── spatial.ts
+│   │   │   ├── mask.ts
+│   │   │   ├── debug.ts
+│   │   │   └── var.ts
+│   │   ├── sprites/          # $ sprite implementations (15 modules)
+│   │   │   ├── sql.ts
+│   │   │   ├── gql.ts
+│   │   │   ├── animate.ts
+│   │   │   ├── selector.ts
+│   │   │   ├── predictive.ts
+│   │   │   ├── spatial.ts
+│   │   │   ├── flow.ts
+│   │   │   ├── svg.ts
+│   │   │   ├── sw.ts
+│   │   │   ├── push.ts
+│   │   │   ├── bgFetch.ts
+│   │   │   ├── bgSync.ts
+│   │   │   ├── periodicSync.ts
+│   │   │   ├── mcp.ts
+│   │   │   └── mask.ts
+│   │   ├── modifiers/        # : Pipeline modifiers (10 modules)
+│   │   │   ├── debounce.ts
+│   │   │   ├── throttle.ts
+│   │   │   ├── once.ts
+│   │   │   ├── prevent.ts
+│   │   │   ├── stop.ts
+│   │   │   ├── keys.ts
+│   │   │   ├── self.ts
+│   │   │   ├── morph.ts
+│   │   │   ├── drag.ts
+│   │   │   └── zoom.ts
+│   │   ├── scopes/           # @ Logical Scope Rules (6 modules)
+│   │   │   ├── media.ts
+│   │   │   ├── container.ts
+│   │   │   ├── auth.ts
+│   │   │   ├── os.ts
+│   │   │   ├── view.ts
+│   │   │   └── native.ts
+│   │   └── listeners/        # Global event listeners (4 modules)
+│   │       ├── bfcache.ts
+│   │       ├── history.ts
+│   │       ├── linkRewriter.ts
+│   │       └── executeScript.ts
+│   └── lib/                  # Utilities
+├── docs/                     # Specification & reference
+├── scripts/                  # Build & dev utilities
+└── dist/                     # Compiled production bundles
 ```
 
 ### 7.3. Hello World Module Implementations
@@ -1566,7 +1615,7 @@ const helloAction: ActionPlugin = {
     hello: (name: string) => `Hello ${name}!`,
   },
 };
-// Usage: <div data-text="greet.hello('Nexus')"></div>
+// Usage: <div data-bind="greet.hello('Nexus')"></div>
 ```
 
 #### 7.3.3 Listener Module
@@ -1948,7 +1997,7 @@ PostgreSQL database).
   data-signal="{ messages: $sql('LIVE SELECT * FROM message WHERE room = roomId ORDER BY timestamp DESC LIMIT 50') }"
 >
   <!-- Message list -->
-  <div class="messages" data-ref="messageContainer">
+  <div class="messages" data-effect="$el.scrollTop = $el.scrollHeight">
     <div class="message" data-for="msg in messages">
       <strong>{msg.author.name}:</strong>
       <p>{msg.text}</p>
@@ -1968,10 +2017,6 @@ PostgreSQL database).
   </div>
 
   <!-- Auto-scroll to bottom when new message arrives -->
-  <div
-    data-effect="$refs.messageContainer.scrollTop = $refs.messageContainer.scrollHeight"
-  >
-  </div>
 </div>
 ```
 
@@ -2107,7 +2152,103 @@ capabilities, active issues, and ongoing evolution.
   standardizing declarative HTML capabilities, mathematically maximizing
   performance thresholds without external JavaScript dependencies.
 
+## Appendix: Running Changes (Intentional Divergences)
+
+This section documents intentional divergences between the original Nexus-UX
+specification and the current implementation. These are not bugs — they are
+deliberate architectural decisions made during implementation.
+
+### RC-1: Legacy Sprite Elimination
+
+**Original spec**: Retained `$fetch`, `$clipboard`, `$cache`, `$notification`,
+`$payment`, `$ws`, `$download`, `$http`, `$get`, `$post`, `$put`, `$patch`,
+`$delete`, `$store`, `$watch`, `$device`, `$fs` as framework sprite modules.
+
+**Current implementation**: All legacy browser-API sprites have been **removed**
+from the codebase. Native `_` mirror proxies (`_fetch`, `_clipboard`,
+`_caches`, `_Notification`, `_PaymentRequest`, `_WebSocket`, `_download`,
+`_http`) provide identical functionality with zero wrapper maintenance overhead.
+Framework-only sprites (`$sql`, `$gql`, `$router`, `$animate`, `$selector`,
+`$pwa`, `$sw`, `$push`, `$bgFetch`, `$bgSync`, `$periodicSync`) are retained.
+
+**Rationale**: The mirror-auto-wrap refactor eliminated 12+ redundant sprite
+modules, reducing bundle size and maintenance burden while preserving full API
+parity through lazy JIT proxy generation.
+
+### RC-2: `data-text` and `data-model` Absorption
+
+**Original spec**: `data-text` and `data-model` were standalone directives.
+
+**Current implementation**: Both have been **absorbed** into `data-bind`. The
+bind module auto-detects the target property based on element type, making
+separate `data-text` and `data-model` modules unnecessary.
+
+**Rationale**: Reduces directive surface area and eliminates redundant parsing
+paths. `data-bind="expression"` now handles text content, form values, and
+custom properties uniformly.
+
+### RC-3: `data-ref` Removal
+
+**Original spec**: `data-ref` provided DOM element references via `$refs`.
+
+**Current implementation**: `data-ref` and `$refs` have been **removed**. No
+replacement is currently provided; direct DOM access should be handled via
+signals or `$el` where appropriate.
+
+**Rationale**: The ref system added complexity without sufficient value. Most
+ref use cases can be addressed through signals or scoped `$el` access.
+
+### RC-4: `$router` as Signal, Not Sprite
+
+**Original spec**: `$router` was documented as a sprite.
+
+**Current implementation**: `$router` is a **reactive signal** created by the
+`data-router` attribute module, not a sprite module.
+
+**Rationale**: Routing state is inherently reactive and scoped to the DOM tree
+where `data-router` is declared. Treating it as a signal rather than a global
+sprite aligns with the framework's reactive ownership model.
+
+### RC-5: Build System Modernization
+
+**Original spec**: Described a simpler build pipeline.
+
+**Current implementation**: The build system now uses:
+- **esbuild** for bundling (IIFE format, ES2022 target)
+- **SWC** for two-pass minification (`--minify` or `--app` flags)
+- **Brotli-11** compression for production bundles
+- **AOT Tailwind compilation** via official `tailwindcss` npm compiler
+- **Auto-generated manifest** with tree-shaking support
+
+**Rationale**: Performance and bundle size optimization. The AOT Tailwind
+pipeline generates `PACKED_THEME_CSS` at build time, while preflight CSS is
+fetched at runtime from CDN to avoid embedding ~22KB of static CSS.
+
+### RC-6: Reactivity Engine Replacement
+
+**Original spec**: Used `@vue/reactivity` package.
+
+**Current implementation**: Custom **Proxy-based reactivity engine** in
+`src/engine/reactivity.ts` with ZCZS integration.
+
+**Rationale**: Eliminates external dependency, provides full control over
+track/trigger behavior, and enables zero-serialization reactive updates.
+
+### RC-7: Module Count Discrepancies
+
+**Original docs**: Referenced 26 attribute modules, legacy folder structures,
+and non-existent modules (`text.ts`, `data.ts`, `net.ts`, `dom.ts`, `sync.ts`,
+`mirrors/`, `builds/`).
+
+**Current implementation**: 31 attribute modules, 15 sprite modules, 6 scope
+modules, 10 modifier modules, 1 observer module. All auto-discovered and
+registered via `scripts/build.ts` generating `src/manifest.ts`.
+
+**Rationale**: Organic growth of the framework exceeded original documentation.
+The auto-generated manifest ensures the docs can be validated against the actual
+codebase.
+
 ---
 
-**Nexus-UX Technical Spec v2026.02.14 (Zenith Release)** _Unified Architecture
+**Nexus-UX Technical Spec v2026.02.14** _Unified Architecture
 for the Post-AI Web._

@@ -38,7 +38,7 @@ export async function flip(
   // 2. Last: Execute the change
   await changeCallback();
   
-  // Wait for Zenith reactive DOM cycle to settle completely before capturing final positions
+  // Wait for the reactive DOM cycle to settle completely before capturing final positions
   // We double-tick to ensure both the microtask (reactivity) and paint (layout) have occurred.
   await new Promise(requestAnimationFrame);
   await new Promise(requestAnimationFrame);

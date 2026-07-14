@@ -3,7 +3,7 @@
 **Signal-Driven Universal Reactivity. High-Fidelity Tailwind JIT. Omni-State
 (DOM-as-State) Framework.**
 
-Nexus-UX is a "Zenith-Class" reactive framework designed for developers who
+Nexus-UX is a reactive framework designed for developers who
 demand absolute performance, granular control, and a **zero-build** experience.
 It collapses the traditional frontend stack by treating the DOM as a queryable,
 reactive state graph while achieving **100% functional parity with Tailwind v4**.
@@ -100,7 +100,7 @@ Nexus-UX utilizes a deterministic, token-based grammar for high-baud efficiency.
 | `data-signal`   | **State**          | Initializes reactive signals. Supports **Signal Auto-Promotion** on-the-fly.    |
 | `data-class`    | **Hardened JIT**   | Reconciles Tailwind v4 utilities against reactive state with 0ms latency.       |
 | `data-bind`     | **Binding**        | High-performance bidirectional binding to inputs and state.                     |
-| `data-text`     | **Painting**       | Injects reactive expressions into `textContent`.                                |
+| `data-bind`     | **Painting**       | Two-way binding for element properties and text content.                                |
 | `data-on`       | **Behavior**       | Standard and **Native Event Mapping** (`hover`, `click:debounce.200ms`).        |
 | `data-on-hover` | **Orchestration**  | Maps native mouseenter/mouseleave to a local `hovered` signal.                  |
 | `data-import`   | **Asset Registry** | Asynchronously adopts links, scripts, and components into the Unified Registry. |
@@ -170,11 +170,11 @@ No transpilant, no bundler, no delay.
       <h1
         class="text-6xl font-black bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent mb-4"
       >
-        Nexus Zenith
+        Nexus-UX
       </h1>
 
       <p class="text-neutral-400 mb-8">
-        Counter: <span class="font-mono text-blue-400" data-text="count"
+        Counter: <span class="font-mono text-blue-400" data-bind="count"
         >0</span>
       </p>
 
@@ -203,7 +203,7 @@ No transpilant, no bundler, no delay.
         class="bg-[#auth.theme.primary] p-4 rounded mt-4"
         data-show="#auth.loggedIn"
       >
-        Welcome back, <span data-text="#auth.user.name">User</span>
+        Welcome back, <span data-bind="#auth.user.name">User</span>
       </div>
     </main>
   </body>
@@ -343,13 +343,16 @@ All Environment APIs are provided via environment mirrors (`_` prefix) and work 
 src/
 ├── index.ts              # Entry point — UX class, inline utilities
 ├── manifest.ts           # AUTO-GENERATED module registry
-├── engine/               # Core runtime (ZCZS, scheduler, topology)
+├── engine/               # Core runtime (reactivity, scheduler, observers, mirrors)
 ├── modules/
-│   ├── attributes/       # data-* directive handlers (bind, on, if, etc.)
-│   ├── sprites/          # $ sprite implementations (animate, sql, svg, ...)
-│   ├── modifiers/        # Pipeline modifiers (debounce, throttle, prevent, ...)
-│   └── scopes/           # Context rules (@media, @os, @auth, ...)
-└── lib/                  # Utilities (drag-reorder, etc.)
+│   ├── attributes/       # data-* directive handlers (31 modules)
+│   ├── sprites/          # $ sprite implementations (15 modules)
+│   ├── modifiers/        # : Pipeline modifiers (10 modules)
+│   ├── scopes/           # @ Logical Scope Rules (6 modules)
+│   └── listeners/        # Global event listeners (4 modules)
+├── docs/                 # Specification & reference
+├── scripts/              # Build & dev utilities
+└── dist/                 # Compiled production bundles
 ```
 
 **Zero-maintenance**: New modules are auto-discovered and registered via the

@@ -6,7 +6,7 @@ import { stylesheet } from '../modules/attributes/stylesheet.ts';
 const noOp = () => true;
 const defaults = {
   morphStyle: 'innerHTML',
-  ignoreActiveValue: true, // Zenith-Class: Never clobber what the user is currently typing
+    ignoreActiveValue: true, // Never clobber what the user is currently typing
   callbacks: {
     beforeNodeAdded: noOp,
     afterNodeAdded: noOp,
