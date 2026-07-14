@@ -220,7 +220,7 @@ export class Draggable {
     const dy = e.clientY - this.tapEvt.clientY;
 
     if (!this.dragStarted) {
-      const threshold = e.pointerType === 'touch' ? 15 : 3;
+      const threshold = e.pointerType === 'touch' ? 8 : 3;
       if (Math.sqrt(dx * dx + dy * dy) > threshold) {
         this._startDrag(e);
       }
