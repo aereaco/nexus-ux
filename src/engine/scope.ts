@@ -22,8 +22,19 @@ export function getDataStack(element: HTMLElement | Text | Comment | Element): R
     return [];
   }
 
-  // Handle DocumentFragment or ShadowRoot (end of climb for detached trees)
-  if (parent instanceof DocumentFragment || (typeof ShadowRoot !== 'undefined' && parent instanceof ShadowRoot)) {
+  // Handle ShadowRoot boundary: if the shadow root carries a seeded scope
+  // (from data-component implicit inherit or explicit data-scope), honor it so
+  // that data-bind inside the shadow tree resolves against the seeded scope.
+  if (typeof ShadowRoot !== 'undefined' && parent instanceof ShadowRoot) {
+    const shadow = parent as unknown as NexusEnhancedElement;
+    if (shadow[DATA_STACK_KEY]) {
+      return shadow[DATA_STACK_KEY]!;
+    }
+    return [];
+  }
+
+  // Handle DocumentFragment (end of climb for detached trees)
+  if (parent instanceof DocumentFragment) {
     return [];
   }
 

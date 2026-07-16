@@ -1,7 +1,8 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { addScopeToNode } from '../../engine/scope.ts';
-import { COMPONENT_CONTEXT_KEY } from '../../engine/consts.ts';
+import { addScopeToNode, getDataStack } from '../../engine/scope.ts';
+import { COMPONENT_CONTEXT_KEY, DATA_STACK_KEY } from '../../engine/consts.ts';
+import type { NexusEnhancedElement } from '../../engine/reactivity.ts';
 import { initError } from '../../engine/debug.ts';
 
 export interface ComponentConfig {
@@ -9,6 +10,61 @@ export interface ComponentConfig {
   lazy?: boolean;
   shadowrootmode?: 'open' | 'closed';
   fallback?: string;
+}
+
+/**
+ * Builds a single reactive-ish object that reads/writes through the host's
+ * merged data stack (most-local scope wins), then layers the component ctx on
+ * top. This is the "implicit inherit" scope seeded onto a shadow root so that
+ * data-bind inside the shadow tree behaves exactly like light DOM.
+ *
+ * Reads walk the host stack front-to-back (nearest scope first); writes target
+ * the nearest scope that already owns the key, otherwise the component ctx.
+ */
+function createInheritedShadowScope(
+  host: HTMLElement,
+  ctx: ComponentContext
+): Record<string, unknown> {
+  return new Proxy(ctx, {
+    has(target, key) {
+      if (key in target) return true;
+      return getDataStack(host).some((scope) => key in scope);
+    },
+    get(target, key) {
+      if (key in target) return Reflect.get(target, key);
+      const stack = getDataStack(host);
+      for (const scope of stack) {
+        if (key in scope) return scope[key as string];
+      }
+      return undefined;
+    },
+    set(target, key, value) {
+      const stack = getDataStack(host);
+      for (const scope of stack) {
+        if (key in scope) {
+          scope[key as string] = value;
+          return true;
+        }
+      }
+      return Reflect.set(target, key, value);
+    },
+    ownKeys(target) {
+      const keys = new Set<string | symbol>(Reflect.ownKeys(target));
+      for (const scope of getDataStack(host)) {
+        for (const k of Object.keys(scope)) keys.add(k);
+      }
+      return Array.from(keys);
+    },
+    getOwnPropertyDescriptor(target, key) {
+      if (key in target) return Reflect.getOwnPropertyDescriptor(target, key);
+      for (const scope of getDataStack(host)) {
+        if (key in scope) {
+          return { configurable: true, enumerable: true, writable: true, value: scope[key as string] };
+        }
+      }
+      return undefined;
+    }
+  });
 }
 
 export interface ComponentContext {
@@ -89,8 +145,39 @@ const componentModule: AttributeModule = {
 
             if (config.shadowrootmode) {
               if (!el.shadowRoot) el.attachShadow({ mode: config.shadowrootmode });
-              runtime.morphDOM(el.shadowRoot! as unknown as HTMLElement, html);
-              runtime.processElement(el.shadowRoot! as unknown as HTMLElement);
+              const shadow = el.shadowRoot!;
+
+              // --- Seed the shadow root's scope ---------------------------------
+              // Explicit opt-in: data-scope="{ ... }" evaluated in the HOST's
+              // parent scope; its result becomes the shadow scope (layered over
+              // the component ctx). This is the encapsulation boundary.
+              // Implicit (default): a proxy over the host's merged data stack so
+              // data-bind inside the shadow "just works" like light DOM.
+              const scopeExpr = el.getAttribute('data-scope');
+              let shadowScope: Record<string, unknown>;
+              if (scopeExpr && scopeExpr.trim()) {
+                const declared = runtime.evaluate(el, scopeExpr);
+                const declaredObj =
+                  declared && typeof declared === 'object'
+                    ? (declared as Record<string, unknown>)
+                    : {};
+                // Component ctx stays available; declared keys are the crossing set.
+                shadowScope = Object.assign(Object.create(null), ctx, declaredObj);
+              } else {
+                shadowScope = createInheritedShadowScope(el, ctx);
+              }
+              (shadow as unknown as NexusEnhancedElement)[DATA_STACK_KEY] = [shadowScope];
+
+              runtime.morphDOM(shadow as unknown as HTMLElement, html);
+              // Process the shadow tree by walking its top-level element children.
+              // A ShadowRoot itself has no hasAttribute(), so it cannot be passed
+              // to processElement directly; its children inherit the seeded scope
+              // via getDataStack's ShadowRoot boundary handling.
+              Array.from(shadow.children).forEach((child) => {
+                if (child instanceof HTMLElement || child instanceof SVGElement) {
+                  runtime.processElement(child as unknown as HTMLElement);
+                }
+              });
             } else {
               runtime.morphDOM(el, html);
               runtime.processElement(el);

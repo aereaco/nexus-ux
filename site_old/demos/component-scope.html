@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-ux-init>
+<head>
+  <meta charset="UTF-8" />
+  <title>Component Shadow Scope Test</title>
+  <script src="/dist/nexus-ux.js" defer></script>
+</head>
+<body>
+  <main data-signal="{ count: 3, label: 'from-host', secret: 'do-not-leak' }">
+  <h1>Component Shadow Scope</h1>
+
+  <button data-on-click="count++">host count++ (<span data-bind="count"></span>)</button>
+
+  <!-- IMPLICIT: shadow inherits host merged stack automatically -->
+  <h2>Implicit inherit (shadow)</h2>
+  <div id="implicit"
+       data-component="{ path: '#tpl-implicit', shadowrootmode: 'open' }"></div>
+
+  <!-- EXPLICIT: only declared keys cross the boundary -->
+  <h2>Explicit data-scope (shadow)</h2>
+  <div id="explicit"
+       data-component="{ path: '#tpl-explicit', shadowrootmode: 'open' }"
+       data-scope="{ crossed: label, doubled: count * 2 }"></div>
+  </main>
+
+  <template id="tpl-implicit">
+    <div>
+      <p>implicit count: <span id="i-count" data-bind="count"></span></p>
+      <p>implicit label: <span id="i-label" data-bind="label"></span></p>
+      <button data-on-click="count++">shadow count++</button>
+    </div>
+  </template>
+
+  <template id="tpl-explicit">
+    <div>
+      <p>crossed label: <span id="e-crossed" data-bind="crossed"></span></p>
+      <p>doubled count: <span id="e-doubled" data-bind="doubled"></span></p>
+      <p>secret leaked?: <span id="e-secret" data-bind="typeof secret === 'undefined' ? 'NO' : secret"></span></p>
+    </div>
+  </template>
+</body>
+</html>
