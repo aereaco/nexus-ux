@@ -188,7 +188,17 @@ export class UX {
     this.init();
 
     if (typeof document !== 'undefined') {
-      document.documentElement.classList.add('nexus-ready');
+      const html = document.documentElement;
+      // FOUC gate at boot: if the page declares external stylesheets via
+      // [data-import], hide the document immediately (the preflight rule
+      // `html.nexus-loading` matches) until those assets are adopted and the
+      // [data-import] module releases the gate in its finalize(). Pages without
+      // a [data-import] gate have nothing to wait for, so unhide immediately.
+      if (document.querySelector('[data-import]')) {
+        html.classList.add('nexus-loading');
+      } else {
+        html.classList.add('nexus-ready');
+      }
       document.dispatchEvent(new CustomEvent('nexus-ready', { bubbles: true }));
     }
   }

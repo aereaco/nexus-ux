@@ -401,9 +401,13 @@ if (typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.setAttribute('data-nexus-fouc', '');
   style.textContent = `
-    [data-import]:not(.nexus-ready),
+    /* FOUC guard: keep the document hidden until Nexus-UX has adopted the
+       external stylesheets declared via [data-import]. The gate is released
+       (nexus-ready / nexus-loading removed) only after imports resolve. */
     html.nexus-loading,
-    [data-nexus-loading] {
+    [data-nexus-loading],
+    [data-import]:not(.nexus-ready),
+    body[data-nexus-fouc-pending] {
       visibility: hidden !important;
       opacity: 0 !important;
       pointer-events: none !important;
@@ -436,14 +440,35 @@ const importModule: AttributeModule = {
         activeCleanup = null;
       }
 
-      if (!config || typeof config !== 'object') return;
+      // Unhide the FOUC gate. The `nexus-ready` class is added here (and ONLY
+      // here), so the document stays hidden (via the [data-import]:not(.nexus-ready)
+      // FOUC rule) until external stylesheets are adopted. Always invoked — even
+      // for empty/invalid configs — so the gate never strands the page hidden.
+      const finalize = () => {
+        el.classList.remove('nexus-loading');
+        el.classList.add('nexus-ready');
+        el.removeAttribute('data-nexus-loading');
+        el.setAttribute('data-nexus-ready', '');
+        runtime.log(`Nexus Import: Assets synchronized.`);
+        // External stylesheets are now adopted + applied — let the Tailwind JIT
+        // rebuild its theme bridge so utilities for their color tokens exist.
+        markExternalStylesSettled();
+      };
 
-      const ids = Object.keys(config);
-      if (ids.length === 0) return;
-
-      // Loading state
+      // Loading state — gate the FOUC-unhide until imports resolve.
       el.classList.add('nexus-loading');
       el.setAttribute('data-nexus-loading', '');
+
+      if (!config || typeof config !== 'object') {
+        finalize();
+        return;
+      }
+
+      const ids = Object.keys(config);
+      if (ids.length === 0) {
+        finalize();
+        return;
+      }
 
       const iterationCleanupFns: Array<() => void> = [];
       activeCleanup = () => iterationCleanupFns.forEach(fn => fn());
@@ -490,17 +515,6 @@ const importModule: AttributeModule = {
           }
         });
         await Promise.all(tasks);
-      };
-
-      const finalize = () => {
-        el.classList.remove('nexus-loading');
-        el.classList.add('nexus-ready');
-        el.removeAttribute('data-nexus-loading');
-        el.setAttribute('data-nexus-ready', '');
-        runtime.log(`Nexus Import: Assets synchronized.`);
-        // External stylesheets are now adopted + applied — let the Tailwind JIT
-        // rebuild its theme bridge so utilities for their color tokens exist.
-        markExternalStylesSettled();
       };
 
       runImports().then(finalize);

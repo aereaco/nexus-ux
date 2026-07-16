@@ -17,18 +17,20 @@
       <div class="px-4">Navbar Title</div>
       </div>
       <div class="navbar-end">
+        
+        <!-- Search Button -->
+        <button class="btn btn-ghost btn-circle">
+          <iconify-icon icon="material-symbols-light:search" style="font-size: 24px"></iconify-icon>
+        </button>
 
         <!-- Theme Switcher -->
         <button
             class="btn btn-ghost btn-circle shadow-lg bg-base-100 border border-base-300 hover:scale-110 active:scale-95 transition-all"
             data-on-click="$switchTheme()">
             <iconify-icon data-bind-icon="$themeIcon" class="text-2xl transition-all duration-300"></iconify-icon>
-        </button>      
-        
-        <button class="btn btn-ghost btn-circle">
-          <iconify-icon icon="material-symbols-light:search" style="font-size: 24px"></iconify-icon>
         </button>
-
+        
+        <!-- Notification Button -->
         <button class="btn btn-ghost btn-circle">
           <div class="indicator">
             <iconify-icon icon="material-symbols-light:notifications" style="font-size: 24px"></iconify-icon>
@@ -114,7 +116,7 @@
 
         <ul class="menu w-full grow">
           <!-- List item -->
-          <li>
+          <li class="transition-transform duration-300 hover:scale-105 hover:aura hover:aura-glow">
             <button>
               <!-- Home icon -->
               <iconify-icon icon="material-symbols-light:home-outline" style="font-size: 24px"></iconify-icon>
@@ -123,7 +125,7 @@
           </li>
 
           <!-- List item -->
-          <li>
+          <li class="transition-transform duration-300 hover:scale-105">
             <button>
               <!-- Settings icon -->
               <iconify-icon icon="material-symbols-light:settings-outline" style="font-size: 24px"></iconify-icon>

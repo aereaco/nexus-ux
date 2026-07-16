@@ -14,74 +14,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus-UX | Drag and Drop Engine</title>
-    <link rel="icon" type="image/svg+xml" href="/site/_assets/images/emblem.svg">
+    <!-- Synchronous FOUC guard: hide the document before first paint, before the
+         deferred module script runs and the engine applies its own gate. Releases
+         only once the engine adds .nexus-ready. Mirrors site/index.html behavior. -->
+    <style>html:not(.nexus-ready){visibility:hidden;opacity:0}</style>
+    <title>Drag and Drop Engine | Nexus-UX</title>
+    <link rel="icon" type="image/svg+xml" href="../_assets/images/emblem.svg">
+    <style>
+      /* FOUC guard: fade content in only after the window load event fires.
+         Mirrors site/index.html. */
+      main.nx-main {
+        opacity: 0;
+        transition: opacity 0.5s ease-in;
+      }
+      main.nx-main.nexus-ready {
+        opacity: 1;
+      }
+    </style>
     <script type="module" src="/dist/nexus-ux.js"></script>
 </head>
 
-<body class="bg-gradient-to-br from-base-200 via-base-100 to-base-300 text-base-content min-h-screen p-8 font-sans antialiased">
+<body class="bg-gradient-to-br from-base-200 via-base-100 to-base-300 text-base-content min-h-screen p-8 font-sans antialiased" data-signal="{ appReady: false }" data-on-load.window="appReady = true">
 
 
-    <div class="max-w-[1400px] mx-auto" data-signal="{
-        simpleList: [{id: 'S1', n: 'Item 1'}, {id: 'S2', n: 'Item 2'}, {id: 'S3', n: 'Item 3'}],
-        list1: [{id: 'A1', n: 'Item 1'}, {id: 'A2', n: 'Item 2'}, {id: 'A3', n: 'Item 3'}],
-        list2: [{id: 'B1', n: 'Item 4'}, {id: 'B2', n: 'Item 5'}],
-        cloneSource: [{id: 'C1', n: 'Source 1'}, {id: 'C2', n: 'Source 2'}],
-        cloneTarget: [],
-        handleList: [{id: 'H1', n: 'Handle Item 1'}, {id: 'H2', n: 'Handle Item 2'}, {id: 'H3', n: 'Handle Item 3'}],
-        filterList: [{id: 'F1', n: 'Draggable 1', filtered: false}, {id: 'F2', n: 'Locked', filtered: true}, {id: 'F3', n: 'Draggable 2', filtered: false}, {id: 'F4', n: 'Locked Too', filtered: true}],
-        multiList: [{id: 'M1', n: 'Multi 1', selected: false}, {id: 'M2', n: 'Multi 2', selected: false}, {id: 'M3', n: 'Multi 3', selected: false}, {id: 'M4', n: 'Multi 4', selected: false}, {id: 'M5', n: 'Multi 5', selected: false}],
-        gridList: [{id: 'G1', n: '1'}, {id: 'G2', n: '2'}, {id: 'G3', n: '3'}, {id: 'G4', n: '4'}, {id: 'G5', n: '5'}, {id: 'G6', n: '6'}, {id: 'G7', n: '7'}, {id: 'G8', n: '8'}, {id: 'G9', n: '9'}, {id: 'G10', n: '10'}],
-        nestedList: [
-            { id: 'N1', n: 'Object A', sub: [
-                { id: 'S1', n: 'Object A.1', sub: [] },
-                { id: 'S2', n: 'Object A.2', sub: [
-                    { id: 'G1', n: 'Object A.2.1', sub: [] },
-                    { id: 'G2', n: 'Object A.2.2', sub: [] }
-                ]}
-            ]},
-            { id: 'N2', n: 'Object B', sub: [
-                { id: 'S3', n: 'Object B.1', sub: [] }
-            ]}
-        ],
-        swapList: [{id: 'W1', n: 'Alpha'}, {id: 'W2', n: 'Beta'}, {id: 'W3', n: 'Gamma'}, {id: 'W4', n: 'Delta'}],
-        ghostList: [{id: 'GH1', n: 'Ghost 1'}, {id: 'GH2', n: 'Ghost 2'}, {id: 'GH3', n: 'Ghost 3'}],
-        horzList: [{id: 'D1', n: 'H1'}, {id: 'D2', n: 'H2'}, {id: 'D3', n: 'H3'}, {id: 'D4', n: 'H4'}],
-        horzListLarge: [{id: 'L1', n: 'Large 1'}, {id: 'L2', n: 'Large 2'}, {id: 'L3', n: 'Large 3'}],
-        horzListSquare: [
-            {id: 'SQ1', color: 'rgba(68, 68, 68, 0.7)'},
-            {id: 'SQ2', color: 'rgba(14, 165, 233, 0.7)'},
-            {id: 'SQ3', color: 'rgba(34, 197, 94, 0.7)'},
-            {id: 'SQ4', color: 'rgba(234, 179, 8, 0.7)'},
-            {id: 'SQ5', color: 'rgba(239, 68, 68, 0.7)'},
-            {id: 'SQ6', color: 'rgba(217, 70, 239, 0.7)'}
-        ],
-        scrollList: [{id: 'SC1', n: 'Scroll 1'}, {id: 'SC2', n: 'Scroll 2'}, {id: 'SC3', n: 'Scroll 3'}, {id: 'SC4', n: 'Scroll 4'}, {id: 'SC5', n: 'Scroll 5'}, {id: 'SC6', n: 'Scroll 6'}, {id: 'SC7', n: 'Scroll 7'}, {id: 'SC8', n: 'Scroll 8'}],
-        horzScrollList: [{id: 'HS1', n: 'HS 1'}, {id: 'HS2', n: 'HS 2'}, {id: 'HS3', n: 'HS 3'}, {id: 'HS4', n: 'HS 4'}, {id: 'HS5', n: 'HS 5'}, {id: 'HS6', n: 'HS 6'}, {id: 'HS7', n: 'HS 7'}, {id: 'HS8', n: 'HS 8'}],
-        sortToggleList: [{id: 'T1', n: 'Toggle 1'}, {id: 'T2', n: 'Toggle 2'}, {id: 'T3', n: 'Toggle 3'}],
-        thresholdList: [{id: 'TV1', n: 'V1'}, {id: 'TV2', n: 'V2'}, {id: 'TV3', n: 'V3'}],
-        thresholdHorzList: [{id: 'TH1', n: 'H1'}, {id: 'TH2', n: 'H2'}, {id: 'TH3', n: 'H3'}],
-        verticalThresholdVal: 0.5,
-        horizontalThresholdVal: 0.5,
-        ghostR: 168,
-        ghostG: 85,
-        ghostB: 247,
-        ghostOpacity: 1,
-        isExpanded: false,
-        disabledSorting: false
-    }" data-stylesheet="
-      .nested-dropzone:not(:has([data-drag]:not([data-for]))){min-height:2.75rem;position:relative;border-style:dashed}
-      .nested-dropzone:not(:has([data-drag]:not([data-for])))::after{content:'Drop items here';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:0.75rem;opacity:0.3;pointer-events:none;color:var(--bc)}
-      .nested-dropzone[data-dropzone-state='docked']{outline:2px solid var(--fallback-p,oklch(var(--p)));outline-offset:2px;border-radius:0.5rem}
-      .ghost-demo.draggable-ghost{background-color:var(--ghost-color)!important;border-color:var(--ghost-color)!important}
-    ">
+    <main class="nx-main" data-class="{ 'nexus-ready': appReady }">
+    <div class="max-w-[1400px] mx-auto" >
         <header class="mb-12 text-center">
             <h1
                 class="text-5xl font-black bg-gradient-to-r from-base-content to-base-content/50 bg-clip-text text-transparent mb-2">
-                Nexus-UX | Drag
+                Nexus-UX | Drag and Drop
             </h1>
-            <p class="uppercase tracking-[0.4em] text-xs opacity-40 font-bold">Industry Standard Functional Parity Lab —
-                14/14 Tests</p>
+            
         </header>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -92,11 +55,12 @@
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         01. Simple <span class="badge badge-outline badge-sm">DraggableJS Parity</span>
                     </div>
-                    <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="simpleList"
+                    <div class="flex flex-col gap-2 min-h-[50px]" data-signal="{ simpleList: [{id: 'S1', n: 'Item 1'}, {id: 'S2', n: 'Item 2'}, {id: 'S3', n: 'Item 3'}] }"
+                        data-drag-container="simpleList"
                         data-drag-class="!opacity-100 !shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] scale-105 cursor-grabbing z-[9999]"
                         data-drag-ghost-class="opacity-40 bg-base-200 border-2 border-dashed border-base-content/20">
                         <div data-for="item in simpleList" data-drag
-                            class="flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item">
+                            class="hover:scale-105 flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item">
                             <iconify-icon icon="material-symbols-light:drag-indicator"
                                 class="text-base-content/30"></iconify-icon>
                             <span data-bind="item.n" class="font-medium"></span>
@@ -111,7 +75,7 @@
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         02. Shared <span class="badge badge-outline badge-sm">Cross-Container</span>
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-2 gap-4" data-signal="{ list1: [{id: 'A1', n: 'Item 1'}, {id: 'A2', n: 'Item 2'}, {id: 'A3', n: 'Item 3'}], list2: [{id: 'B1', n: 'Item 4'}, {id: 'B2', n: 'Item 5'}] }">
                         <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box"
                             data-drag-container="list1" data-drag-group="shared">
                             <div data-for="item in list1" data-drag
@@ -139,7 +103,7 @@
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         03. Cloning <span class="badge badge-outline badge-sm">teleport-mode=clone</span>
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-2 gap-4" data-signal="{ cloneSource: [{id: 'C1', n: 'Source 1'}, {id: 'C2', n: 'Source 2'}], cloneTarget: [] }">
                         <div>
                             <div class="text-[0.65rem] opacity-40 mb-2 font-bold tracking-wider">SOURCE</div>
                             <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box border border-dashed border-base-content/20"
@@ -171,7 +135,7 @@
 
             <!-- 04. Disabled Sorting -->
             <div class="card bg-base-200 shadow-xl border border-base-content/5">
-                <div class="card-body p-6">
+                <div class="card-body p-6" data-signal="{ sortToggleList: [{id: 'T1', n: 'Toggle 1'}, {id: 'T2', n: 'Toggle 2'}, {id: 'T3', n: 'Toggle 3'}], disabledSorting: false }">
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         04. Sorting <span class="badge badge-error badge-outline badge-sm"
                             data-bind="disabledSorting ? 'DISABLED' : 'ENABLED'"
@@ -179,7 +143,8 @@
                     </div>
                     <button data-on-click="disabledSorting = !disabledSorting"
                         class="btn btn-sm btn-outline mb-4">Toggle State</button>
-                    <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="sortToggleList">
+                    <div class="flex flex-col gap-2 min-h-[50px]"
+                        data-drag-container="sortToggleList">
                         <div data-for="item in sortToggleList" data-drag data-bind-draggable="!disabledSorting"
                             class="flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item">
                             <iconify-icon icon="material-symbols-light:drag-indicator"
@@ -196,7 +161,8 @@
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         05. Handles <span class="badge badge-outline badge-sm">data-drag-handle</span>
                     </div>
-                    <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="handleList"
+                    <div class="flex flex-col gap-2 min-h-[50px]" data-signal="{ handleList: [{id: 'H1', n: 'Handle Item 1'}, {id: 'H2', n: 'Handle Item 2'}, {id: 'H3', n: 'Handle Item 3'}] }"
+                        data-drag-container="handleList"
                         data-drag-handle=".handle">
                         <div data-for="item in handleList"
                             class="flex items-center gap-4 p-4 bg-base-100 rounded-box border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item"
@@ -218,7 +184,8 @@
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         06. Filter <span class="badge badge-outline badge-sm">Selective Drag</span>
                     </div>
-                    <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="filterList"
+                    <div class="flex flex-col gap-2 min-h-[50px]" data-signal="{ filterList: [{id: 'F1', n: 'Draggable 1', filtered: false}, {id: 'F2', n: 'Locked', filtered: true}, {id: 'F3', n: 'Draggable 2', filtered: false}, {id: 'F4', n: 'Locked Too', filtered: true}] }"
+                        data-drag-container="filterList"
                         data-drag-filter=".filtered">
                         <div data-for="item in filterList" data-drag
                             data-bind-class="item.filtered ? 'flex items-center gap-4 p-4 bg-base-100/30 rounded-box border border-base-content/5 item opacity-30 cursor-not-allowed filtered' : 'flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item'">
@@ -239,7 +206,8 @@
                         07. MultiDrag <span class="badge badge-outline badge-sm">Batch Select</span>
                     </div>
                     <p class="text-xs opacity-60 mb-4">Click items to select several, then drag them as one group.</p>
-                    <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="multiList"
+                    <div class="flex flex-col gap-2 min-h-[50px]" data-signal="{ multiList: [{id: 'M1', n: 'Multi 1', selected: false}, {id: 'M2', n: 'Multi 2', selected: false}, {id: 'M3', n: 'Multi 3', selected: false}, {id: 'M4', n: 'Multi 4', selected: false}, {id: 'M5', n: 'Multi 5', selected: false}] }"
+                        data-drag-container="multiList"
                         data-drag-multi="true">
                         <div data-for="item in multiList" data-drag
                             data-bind-class="item.selected ? 'flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item draggable-selected' : 'flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item'">
@@ -258,6 +226,7 @@
                         08. Grid Layout <span class="badge badge-outline badge-sm">Spatial Hit-Test</span>
                     </div>
                     <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 min-h-[50px]"
+                        data-signal="{ gridList: [{id: 'G1', n: '1'}, {id: 'G2', n: '2'}, {id: 'G3', n: '3'}, {id: 'G4', n: '4'}, {id: 'G5', n: '5'}, {id: 'G6', n: '6'}, {id: 'G7', n: '7'}, {id: 'G8', n: '8'}, {id: 'G9', n: '9'}, {id: 'G10', n: '10'}] }"
                         data-drag-container="gridList" data-drag-direction="grid">
                         <div data-for="item in gridList" data-drag
                             class="aspect-square bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors flex items-center justify-center item">
@@ -268,12 +237,29 @@
             </div>
 
             <!-- 09. Nested -->
-            <div class="card bg-base-200 shadow-xl border border-base-content/5 lg:col-span-2">
+            <div class="card bg-base-200 shadow-xl border border-base-content/5 lg:col-span-2"
+                 data-stylesheet="
+                    .nested-dropzone:not(:has([data-drag]:not([data-for]))){min-height:2.75rem;position:relative;border-style:dashed}
+                    .nested-dropzone:not(:has([data-drag]:not([data-for])))::after{content:'Drop items here';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:0.75rem;opacity:0.3;pointer-events:none;color:var(--bc)}
+                    .nested-dropzone[data-dropzone-state='docked']{outline:2px solid var(--fallback-p,oklch(var(--p)));outline-offset:2px;border-radius:0.5rem}
+            ">
                 <div class="card-body p-6">
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         09. Nested <span class="badge badge-outline badge-sm">Infinite Recursive Hierarchy</span>
                     </div>
                     <div class="flex flex-col gap-2 min-h-[100px] p-4 bg-base-300 rounded-box border border-base-content/10"
+                        data-signal="{ nestedList: [
+                            { id: 'N1', n: 'Object A', sub: [
+                                { id: 'S1', n: 'Object A.1', sub: [] },
+                                { id: 'S2', n: 'Object A.2', sub: [
+                                    { id: 'G1', n: 'Object A.2.1', sub: [] },
+                                    { id: 'G2', n: 'Object A.2.2', sub: [] }
+                                ]}
+                            ]},
+                            { id: 'N2', n: 'Object B', sub: [
+                                { id: 'S3', n: 'Object B.1', sub: [] }
+                            ]}
+                        ] }"
                         data-drag-container="nestedList" data-drag-group="nested" data-drag-fallback-on-body="true"
                         data-drag-swap-threshold="0.65">
 
@@ -318,7 +304,8 @@
                             </div>
                             <div
                                 class="max-h-[260px] overflow-y-auto p-4 bg-base-300 rounded-box border border-base-content/10 shadow-inner">
-                                <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="scrollList">
+                                <div class="flex flex-col gap-2 min-h-[50px]" data-signal="{ scrollList: [{id: 'SC1', n: 'Scroll 1'}, {id: 'SC2', n: 'Scroll 2'}, {id: 'SC3', n: 'Scroll 3'}, {id: 'SC4', n: 'Scroll 4'}, {id: 'SC5', n: 'Scroll 5'}, {id: 'SC6', n: 'Scroll 6'}, {id: 'SC7', n: 'Scroll 7'}, {id: 'SC8', n: 'Scroll 8'}] }"
+                                    data-drag-container="scrollList">
                                     <div data-for="item in scrollList" data-drag
                                         class="flex items-center gap-4 p-3 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item text-sm">
                                         <iconify-icon icon="material-symbols-light:format-list-bulleted"
@@ -335,6 +322,7 @@
                             </div>
                             <div class="p-4 bg-base-300 rounded-box border border-base-content/10 shadow-inner">
                                 <div class="flex flex-row gap-2 min-h-[50px] overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-base-content/10"
+                                    data-signal="{ horzScrollList: [{id: 'HS1', n: 'HS 1'}, {id: 'HS2', n: 'HS 2'}, {id: 'HS3', n: 'HS 3'}, {id: 'HS4', n: 'HS 4'}, {id: 'HS5', n: 'HS 5'}, {id: 'HS6', n: 'HS 6'}, {id: 'HS7', n: 'HS 7'}, {id: 'HS8', n: 'HS 8'}] }"
                                     data-drag-container="horzScrollList" data-drag-direction="horizontal">
                                     <div data-for="item in horzScrollList" data-drag
                                         class="w-[100px] h-[100px] flex flex-col items-center justify-center gap-2 p-4 bg-base-100 rounded-box border border-base-content/5 cursor-grab hover:bg-base-300 active:bg-base-300 transition-colors item shrink-0">
@@ -350,8 +338,9 @@
             </div>
 
             <!-- 11. Ghost Styling -->
-            <div class="card bg-base-200 shadow-xl border border-base-content/5">
-                <div class="card-body p-6">
+            <div class="card bg-base-200 shadow-xl border border-base-content/5"
+                 data-stylesheet=".ghost-demo.draggable-ghost{background-color:var(--ghost-color)!important;border-color:var(--ghost-color)!important}">
+                <div class="card-body p-6" data-signal="{ ghostR: 168, ghostG: 85, ghostB: 247, ghostOpacity: 1, ghostList: [{id: 'GH1', n: 'Ghost 1'}, {id: 'GH2', n: 'Ghost 2'}, {id: 'GH3', n: 'Ghost 3'}] }">
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         11. Ghost Styling <span class="badge badge-outline badge-sm">CSS Feedback</span>
                     </div>
@@ -401,7 +390,14 @@
 
             <!-- 12. Direction (Horizontal) -->
             <div class="card bg-base-200 shadow-xl border border-base-content/5 lg:col-span-2">
-                <div class="card-body p-6">
+                <div class="card-body p-6" data-signal="{ horzList: [{id: 'D1', n: 'H1'}, {id: 'D2', n: 'H2'}, {id: 'D3', n: 'H3'}, {id: 'D4', n: 'H4'}], horzListLarge: [{id: 'L1', n: 'Large 1'}, {id: 'L2', n: 'Large 2'}, {id: 'L3', n: 'Large 3'}], horzListSquare: [
+            {id: 'SQ1', color: 'rgba(68, 68, 68, 0.7)'},
+            {id: 'SQ2', color: 'rgba(14, 165, 233, 0.7)'},
+            {id: 'SQ3', color: 'rgba(34, 197, 94, 0.7)'},
+            {id: 'SQ4', color: 'rgba(234, 179, 8, 0.7)'},
+            {id: 'SQ5', color: 'rgba(239, 68, 68, 0.7)'},
+            {id: 'SQ6', color: 'rgba(217, 70, 239, 0.7)'}
+        ] }">
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         12. Direction <span class="badge badge-outline badge-sm">Horizontal</span>
                     </div>
@@ -441,7 +437,8 @@
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         13. Swap <span class="badge badge-outline badge-sm">Index Exchange</span>
                     </div>
-                    <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="swapList" data-drag-swap>
+                    <div class="flex flex-col gap-2 min-h-[50px]" data-signal="{ swapList: [{id: 'W1', n: 'Alpha'}, {id: 'W2', n: 'Beta'}, {id: 'W3', n: 'Gamma'}, {id: 'W4', n: 'Delta'}] }"
+                        data-drag-container="swapList" data-drag-swap>
                         <div data-for="item in swapList" data-drag
                             class="flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item">
                             <iconify-icon icon="material-symbols-light:swap-calls"
@@ -454,7 +451,7 @@
 
             <!-- 14. Swap Thresholds -->
             <div class="card bg-base-200 shadow-xl border border-base-content/5 lg:col-span-2">
-                <div class="card-body p-6">
+                <div class="card-body p-6" data-signal="{ thresholdList: [{id: 'TV1', n: 'V1'}, {id: 'TV2', n: 'V2'}, {id: 'TV3', n: 'V3'}], thresholdHorzList: [{id: 'TH1', n: 'H1'}, {id: 'TH2', n: 'H2'}, {id: 'TH3', n: 'H3'}], verticalThresholdVal: 0.5, horizontalThresholdVal: 0.5 }">
                     <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
                         14. Swap Thresholds <span class="badge badge-primary badge-outline badge-sm"
                             data-bind="'V: ' + verticalThresholdVal.toFixed(2) + ' / H: ' + horizontalThresholdVal.toFixed(2)"></span>
@@ -522,6 +519,7 @@
             Nexus-UX | Drag Engine | Verification Suite v3.0 | 14/14
         </footer>
     </div>
+    </main>
 </body>
 
 </html>

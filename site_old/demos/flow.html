@@ -10,7 +10,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Synchronous FOUC guard: hide the document before first paint, before the
+         deferred module script runs and the engine applies its own gate. Releases
+         only once the engine adds .nexus-ready. Mirrors site/index.html behavior. -->
+    <style>html:not(.nexus-ready){visibility:hidden;opacity:0}</style>
     <title>Spatial Canvas Drag - Nexus-UX</title>
+    <link rel="icon" type="image/svg+xml" href="../_assets/images/emblem.svg">
+    <style>
+      /* FOUC guard: fade content in only after the window load event fires.
+         Mirrors site/index.html. */
+      main.nx-main {
+        opacity: 0;
+        transition: opacity 0.5s ease-in;
+      }
+      main.nx-main.nexus-ready {
+        opacity: 1;
+      }
+    </style>
     <script type="module" src="/dist/nexus-ux.js"></script>
 </head>
 <body data-var="{
@@ -38,7 +54,8 @@
     ],
     modal: { type: '', nodeId: '', draft: '' },
     viewport: { x: 0, y: 0, zoom: 1 }
-}" class="h-screen overflow-hidden flex flex-col font-sans bg-base-300 text-base-content">
+}" class="h-screen overflow-hidden flex flex-col font-sans bg-gradient-to-br from-base-200 via-base-100 to-base-300 text-base-content">
+    <main class="nx-main flex-1 flex flex-col" data-signal="{ appReady: false }" data-on-load.window="appReady = true" data-class="{ 'nexus-ready': appReady }">
     <header class="navbar bg-base-200/80 backdrop-blur border-b border-base-content/10 px-6 py-3">
         <h1 class="text-xl font-bold flex-1">Nexus-UX xyFlow Spatial Canvas</h1>
         <div class="flex gap-4 text-sm opacity-60">
@@ -199,5 +216,6 @@
         </div>
         <form method="dialog" class="modal-backdrop"><button>close</button></form>
     </dialog>
+    </main>
 </body>
 </html>
