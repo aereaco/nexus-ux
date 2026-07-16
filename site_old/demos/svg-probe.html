@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" data-ux-init>
+<head>
+    <meta charset="UTF-8">
+    <title>svg probe</title>
+    <script type="module" src="/dist/nexus-ux.js"></script>
+</head>
+<body data-var="{ edges: [{a:'1',b:'2'}] }" style="margin:0">
+    <div id="node-1" style="position:absolute;left:10px;top:10px;width:80px;height:40px;background:red"></div>
+    <div id="node-2" style="position:absolute;left:200px;top:10px;width:80px;height:40px;background:green"></div>
+    <svg style="position:absolute;inset:0;overflow:visible">
+        <path data-for="edge in edges"
+              data-bind-d="$svg.connect($(`#node-${edge.a}`), $(`#node-${edge.b}`)).d"
+              fill="none" stroke="currentColor" stroke-width="2"></path>
+    </svg>
+</body>
+</html>

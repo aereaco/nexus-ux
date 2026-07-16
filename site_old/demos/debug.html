@@ -10,7 +10,7 @@
     </style>
 </head>
 <body class="p-8">
-    <div data-var="{ list: [{t: 'A'}, {t: 'B'}], nodes: [{id: 1, x: 50, y: 50, t: 'N1'}, {id: 2, x: 200, y: 200, t: 'N2'}] }">
+    <div data-var="{ list: [{t: 'A'}, {t: 'B'}], nodes: [{id: 1, x: 50, y: 50, t: 'N1'}, {id: 2, x: 200, y: 200, t: 'N2'}], edges: [] }">
         
         <h2>Sortable</h2>
         <div data-for="item in list" class="p-2 bg-gray-800 mb-1" data-drag>
@@ -23,7 +23,7 @@
                 <div data-for="node in nodes" 
                      data-bind-id="`node-${node.id}`"
                      class="box"
-                     data-node="node">
+                     data-flow-node="node">
                     <span data-bind="node.t"></span>
                 </div>
             </div>

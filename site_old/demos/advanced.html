@@ -94,7 +94,7 @@
                         <!-- SVG Overlay for reactive connections -->
                         <svg class="absolute inset-0 pointer-events-none w-full h-full overflow-visible">
                             <path data-for="edge in edges" 
-                                  data-bind-d="$svg.connect($(`#node-${edge.a}`), $(`#node-${edge.b}`)).d"
+                                  data-bind-d="$flow.connect($(`#node-${edge.a}`), $(`#node-${edge.b}`)).d"
                                   fill="none" stroke="currentColor" stroke-width="2" class="text-primary opacity-50"></path>
                         </svg>
 
@@ -102,10 +102,10 @@
                         <div data-for="node in nodes" 
                              data-bind-id="`node-${node.id}`"
                              class="flow-node card bg-primary text-primary-content p-4 shadow-lg w-32"
-                             data-node="node">
+                              data-flow-node="node">
                              <span class="font-bold text-center" data-bind="node.t"></span>
                              <!-- Handle visualization -->
-                             <div class="absolute -right-1 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-accent" data-handle="'source'"></div>
+                              <div class="absolute -right-1 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-accent" data-flow-handle="'source'"></div>
                         </div>
                     </div>
                 </div>

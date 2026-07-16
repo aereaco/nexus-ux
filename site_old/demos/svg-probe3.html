@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" data-ux-init>
+<head>
+    <meta charset="UTF-8">
+    <title>svg probe3</title>
+    <script type="module" src="/dist/nexus-ux.js"></script>
+</head>
+<body data-var="{ edges: [{a:'1',b:'2'}], nodes:[{id:'1',label:'A'},{id:'2',label:'B'}] }" style="margin:0">
+    <script>window.__svgDebug = true;</script>
+    <div data-flow="nodes" data-flow-grid="20" style="position:relative;width:400px;height:200px">
+        <div class="nexus-flow-content w-full h-full">
+            <svg data-flow-edges="edges" style="position:absolute;inset:0;overflow:visible">
+                <path data-for="edge in edges"
+                      data-effect="const a = document.getElementById(('node-' + edge.a)); const b = document.getElementById(('node-' + edge.b)); if (a && b) { const ra = a.getBoundingClientRect(); const rb = b.getBoundingClientRect(); const x1 = ra.left + ra.width/2, y1 = ra.top + ra.height/2, x2 = rb.left + rb.width/2, y2 = rb.top + rb.height/2; const dx = Math.abs(x1-x2)/2; this.setAttribute('d', `M ${x1} ${y1} C ${x1+dx} ${y1}, ${x2-dx} ${y2}, ${x2} ${y2}`); }"
+                      fill="none" stroke="currentColor" stroke-width="2"></path>
+            </svg>
+            <div data-for="node in nodes"
+                 class="absolute top-0 left-0 w-[160px]">
+                <div class="card" id="node-${node.id}" data-bind-id="`node-${node.id}`" data-flow-node="node" style="touch-action:none">
+                    <span data-bind="node.label"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

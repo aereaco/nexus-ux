@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-ux-init data-debug data-stylesheet data-theme="dark"
-      data-import="{ 
+<html lang="en" data-ux-init data-debug data-stylesheet data-theme="dark" data-import="{ 
         'DaisyUI': { 
           link: [
             { href: 'https://cdn.jsdelivr.net/npm/daisyui@5' },
@@ -10,24 +9,12 @@
         'Iconify': { 
           script: { src: 'https://cdn.jsdelivr.net/npm/iconify-icon@3.0.0/dist/iconify-icon.min.js' }
         }
-      }" data-signal="{ appReady: false }"
-      
-      data-ux-theme="{
-        default: 'auto',
-        modes: {
-            auto:  { icon: 'material-symbols-light:light-mode-auto-outline' },
-            light: { icon: 'material-symbols-light:light-mode-outline', theme: 'fantasy' },
-            dark:  { icon: 'material-symbols-light:dark-mode-outline', theme: 'dracula' }
-        }
-      }"
-      >
-      
+      }" data-signal="{ appReady: false }">
 
 <head>
   <meta charset="UTF-8">
   <title>Nexus-UX</title>
   <script type="module" src="../dist/nexus-ux.min.js"></script>
-  <link rel="icon" type="image/svg+xml" href="_assets/images/emblem.svg">
   <style>
     /* Progress Bar */
     .nexus-progress-mount {
@@ -71,8 +58,8 @@
     }
   </style>
 </head>
-              
-<body class="bg-gradient-to-br from-base-200 via-base-100 to-base-300 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
+
+<body class="bg-base-200 min-h-screen font-sans antialiased text-base-content" data-on-load.window="appReady = true">
   <div class="nexus-progress-mount" data-class="{ 'hidden': appReady }">
     <progress class="progress progress-primary w-full"></progress>
   </div>
@@ -80,7 +67,6 @@
   <main class="nx-main" data-class="{ 'nexus-ready': appReady }">
     <div data-component="'_components/layout.html'"></div>
   </main>
-
 </body>
 
 </html>
