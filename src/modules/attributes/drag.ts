@@ -1253,9 +1253,6 @@ export const dragAttribute: AttributeModule = {
   name: "drag",
   attribute: "drag",
   handle: (element: HTMLElement, _value: string, runtime: RuntimeContext) => {
-    const canvasContainer = element.closest('[data-nexus-spatial-canvas]');
-    if (canvasContainer) return;
-
     if ((element as any).__nexusDragBound) return (element as any).__nexusDragCleanup;
     (element as any).__nexusDragBound = true;
 

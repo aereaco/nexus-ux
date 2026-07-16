@@ -13,7 +13,7 @@ import * as reconciler from './reconciler.ts';
 import { readonly } from './reactivity.ts';
 import { morphDOM } from './reconciler.ts'; 
 import { fetchUtilities } from './fetch.ts'; 
-import { getDataStack } from './scope.ts';
+import { getDataStack, registerScopeProvider } from './scope.ts';
 import { evaluate } from './evaluator.ts'; 
 import { parseAttribute, ParsedAttribute } from './attributeParser.ts'; 
 import { scheduler } from './scheduler.ts';
@@ -373,11 +373,12 @@ export class ModuleCoordinator {
     const sprites = module.sprites(this.runtimeContext);
     
     // ZCZS: Populate the sprites namespace for direct engine access
-    if (module.key) {
-      this.runtimeContext.sprites[module.key] = sprites;
-    } else {
-      this.runtimeContext.sprites[`$${name}`] = sprites;
-    }
+    const spriteKey = module.key || `$${name}`;
+    this.runtimeContext.sprites[spriteKey] = sprites;
+
+    // Expose the whole sprite object (e.g. $svg, $flow) as a live expression
+    // scope provider so bindings like data-bind-d="$svg.connect(...)" resolve.
+    registerScopeProvider(spriteKey, () => sprites);
 
     Object.entries(sprites).forEach(([spriteName, handler]) => {
       this.registerActionModule(spriteName, {
@@ -536,9 +537,12 @@ export class ModuleCoordinator {
     }
 
     // 5. Recursive Walk (Passing current Isolation state)
+    // Both HTMLElement and SVGElement subtrees are fully processed so that
+    // declarative directives (data-for, data-bind-*, data-flow-edges, ...) work
+    // inside <svg> just as they do in HTML.
     Array.from(element.children).forEach(child => {
-      if (child instanceof HTMLElement) {
-        this.processElement(child, forceReWalk, currentIsolation);
+      if (child instanceof HTMLElement || child instanceof SVGElement) {
+        this.processElement(child as unknown as HTMLElement, forceReWalk, currentIsolation);
       } else if (child instanceof Element && child.classList && child.classList.length > 0) {
         if (currentIsolation !== 'style') {
           child.classList.forEach(cls => stylesheet.adoptClass(cls, child as unknown as HTMLElement, this.runtimeContext));

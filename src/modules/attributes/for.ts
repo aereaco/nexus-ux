@@ -5,8 +5,13 @@ import { addScopeToNode } from '../../engine/scope.ts';
 import { CLEANUP_FUNCTIONS_KEY } from '../../engine/consts.ts';
 import { nexusClassMap, nexusStyleMap } from '../../engine/reconciler.ts';
 
+// SVGs (paths, etc.) are SVGElement, not HTMLElement — both must be treated
+// as cloneable/scopable flow nodes.
+type ForNode = HTMLElement | SVGElement;
+const isFlowNode = (n: Node): n is ForNode => n instanceof HTMLElement || n instanceof SVGElement;
+
 // Helper to copy dynamic class and style metadata recursively during cloning
-function copyNexusMetadata(src: HTMLElement, dest: HTMLElement) {
+function copyNexusMetadata(src: ForNode, dest: ForNode) {
   const srcClasses = nexusClassMap.get(src);
   if (srcClasses) {
     nexusClassMap.set(dest, new Set(srcClasses));
@@ -75,7 +80,7 @@ const forModule: AttributeModule = {
 
     const disposeNodes = (nodes: Node[]) => {
       nodes.forEach(n => {
-        if (n instanceof HTMLElement) {
+        if (n instanceof HTMLElement || n instanceof SVGElement) {
           const enhanced = n as any;
           const elRemovals = enhanced[CLEANUP_FUNCTIONS_KEY];
           if (elRemovals) {
@@ -95,7 +100,6 @@ const forModule: AttributeModule = {
         const items = runtime.evaluate(el, itemsExpr) as unknown as unknown[];
         if (!Array.isArray(items)) return;
         
-        console.log(`[for.ts] Effect running for ${itemsExpr}. Items:`, JSON.stringify(items));
 
         const currentKeys = new Set();
         const nextNodes: Node[] = [];
@@ -124,11 +128,11 @@ const forModule: AttributeModule = {
             }
             
             nodes = isTemplate 
-              ? Array.from((clone as DocumentFragment).childNodes)
-              : [clone as HTMLElement];
+              ? Array.from((clone as DocumentFragment).childNodes).filter(isFlowNode) as ForNode[]
+              : [clone as ForNode];
 
             nodes.forEach(n => {
-              if (n instanceof HTMLElement) {
+              if (isFlowNode(n)) {
                 const scope: Record<string, any> = { [itemKey]: item };
                 if (indexKey) scope[indexKey] = index;
                 // ZCZS: Use shallowReactive to preserve the original reactive proxy
@@ -149,7 +153,7 @@ const forModule: AttributeModule = {
           } else {
             // Update Existing Scope
             nodes.forEach(n => {
-              if (n instanceof HTMLElement) {
+              if (isFlowNode(n)) {
                 const enhanced = n as any;
                 const stack = enhanced[Symbol.for('__data_stack__')] || enhanced['__data_stack__'];
                 if (stack && stack.length > 0) {
@@ -172,7 +176,6 @@ const forModule: AttributeModule = {
         // Remove old nodes
         for (const [key, nodes] of mountedMap.entries()) {
           if (!currentKeys.has(key)) {
-            console.log(`[for.ts] Key ${key} is no longer in currentKeys. Disposing nodes:`, nodes);
             disposeNodes(nodes);
             mountedMap.delete(key);
           }

@@ -29,8 +29,8 @@ export class AnimationEngine {
       const { duration = 300, easing = 'cubic-bezier(0.2, 0, 0, 1)', useVT = true } = options;
 
       // 1. Capture "Before" state (Surgical tracking instead of Document-wide)
-      const trackedElements = Array.from(root.querySelectorAll('[data-spatial], [data-drag]')) as HTMLElement[];
-      if (root.hasAttribute('data-spatial') || root.hasAttribute('data-drag')) trackedElements.push(root);
+      const trackedElements = Array.from(root.querySelectorAll('[data-flow], [data-drag]')) as HTMLElement[];
+      if (root.hasAttribute('data-flow') || root.hasAttribute('data-drag')) trackedElements.push(root);
 
       trackedElements.forEach(el => this.initialRects.set(el, el.getBoundingClientRect()));
 

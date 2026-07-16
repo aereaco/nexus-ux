@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dracula" data-debug data-stylesheet data-import="{ 
+        'DaisyUI': { 
+          link: [
+            { href: 'https://cdn.jsdelivr.net/npm/daisyui@5' },
+            { href: 'https://cdn.jsdelivr.net/npm/daisyui@5/themes.css' }
+          ] 
+        } 
+      }" data-ux-init>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spatial Canvas Drag - Nexus-UX</title>
+    <script type="module" src="/dist/nexus-ux.js"></script>
+</head>
+<body data-var="{
+    nodes: [
+        { id: '1', label: 'Start',     position: { x: 120, y: 40  }, handles: [{ type: 'source', side: 'right' }] },
+        { id: '2', label: 'Ingest',    position: { x: 400, y: 40  }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
+        { id: '3', label: 'Validate',  position: { x: 680, y: 40  }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
+        { id: '4', label: 'Transform', position: { x: 120, y: 260 }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
+        { id: '5', label: 'Enrich',    position: { x: 400, y: 260 }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
+        { id: '6', label: 'Route',     position: { x: 680, y: 260 }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
+        { id: '7', label: 'Store',     position: { x: 120, y: 480 }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
+        { id: '8', label: 'Notify',    position: { x: 400, y: 480 }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
+        { id: '9', label: 'Complete',  position: { x: 680, y: 480 }, handles: [{ type: 'target', side: 'left' }] }
+    ],
+    edges: [
+        { source: '1', target: '2' },
+        { source: '2', target: '3' },
+        { source: '3', target: '6' },
+        { source: '6', target: '5' },
+        { source: '5', target: '4' },
+        { source: '4', target: '7' },
+        { source: '7', target: '8' },
+        { source: '8', target: '9' },
+        { source: '5', target: '8' }
+    ],
+    modal: { type: '', nodeId: '', draft: '' },
+    viewport: { x: 0, y: 0, zoom: 1 }
+}" class="h-screen overflow-hidden flex flex-col font-sans bg-base-300 text-base-content">
+    <header class="navbar bg-base-200/80 backdrop-blur border-b border-base-content/10 px-6 py-3">
+        <h1 class="text-xl font-bold flex-1">Nexus-UX xyFlow Spatial Canvas</h1>
+        <div class="flex gap-4 text-sm opacity-60">
+            <span>Engine: <strong>data-flow</strong></span>
+            <span>Nodes: <strong data-bind="nodes.length"></strong></span>
+        </div>
+    </header>
+
+    <div class="flex-1 relative overflow-hidden bg-base-300 shadow-inner cursor-grab"
+         data-flow="viewport"
+         data-flow-grid="20"
+         style="background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 20px 20px;">
+
+          <div class="nexus-flow-content w-full h-full">
+           <!-- Edges live inside the transformed viewport, so their flow-space
+                paths scale and pan together with the nodes. Rendered first so
+                node cards paint above the connector lines. -->
+           <svg data-flow-edges="edges" class="nexus-flow-edges absolute inset-0 overflow-visible pointer-events-none text-primary">
+               <path data-for="edge in edges"
+                     data-effect="viewport.tick; const na = nodes.find(n => n.id === edge.source); const nb = nodes.find(n => n.id === edge.target); const dep = (na && na.position.x + na.position.y) + (nb && nb.position.x + nb.position.y); $el.setAttribute('d', $flow.edge('node-' + edge.source, 'node-' + edge.target, { type: 'bezier' }))"
+                     fill="none" stroke="currentColor" stroke-width="2" class="opacity-60"></path>
+           </svg>
+
+           <div data-for="node in nodes"
+                data-bind-id="`node-${node.id}`"
+                class="absolute top-0 left-0 w-[160px]"
+                data-flow-node="node">
+                <div class="card bg-base-100 shadow-md border border-base-content/10 w-full rounded-box cursor-grab hover:shadow-xl hover:scale-[1.05] hover:border-primary/40 transition-transform group"
+                     style="touch-action: none;">
+                    <div class="h-1.5 w-full bg-primary rounded-t-box"></div>
+                    <div class="p-3">
+                        <div class="flex items-center justify-between mb-1">
+                            <div class="text-xs font-bold text-primary opacity-80">#<span data-bind="node.id"></span></div>
+                            <div class="flex items-center gap-1">
+                                <!-- Edit -->
+                                <button data-flow-nodrag
+                                        data-on-click="modal.type='edit'; modal.nodeId=node.id; modal.draft=node.label; document.getElementById('flow-modal-edit').showModal()"
+                                        class="btn btn-ghost btn-xs btn-square opacity-40 hover:opacity-100 hover:text-primary"
+                                        title="Edit node">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                </button>
+                                <!-- Delete -->
+                                <button data-flow-nodrag
+                                        data-on-click="modal.type='delete'; modal.nodeId=node.id; modal.draft=node.label; document.getElementById('flow-modal-delete').showModal()"
+                                        class="btn btn-ghost btn-xs btn-square opacity-40 hover:opacity-100 hover:text-error"
+                                        title="Delete node">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="text-sm font-semibold mb-2" data-bind="node.label"></div>
+                        <div class="flex items-center gap-1 text-xs text-base-content/50">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                            <span data-bind="node.position.x"></span>, <span data-bind="node.position.y"></span>
+                         </div>
+                    </div>
+                    <div data-for="handle in node.handles"
+                         data-flow-handle="handle.type"
+                         data-bind-class="handle.side === 'left'
+                            ? 'absolute w-3 h-3 rounded-full bg-primary border-2 border-base-100 cursor-crosshair hover:scale-125 transition-transform z-20 left-0 -translate-x-1/2 top-1/2 -translate-y-1/2'
+                            : 'absolute w-3 h-3 rounded-full bg-primary border-2 border-base-100 cursor-crosshair hover:scale-125 transition-transform z-20 right-0 translate-x-1/2 top-1/2 -translate-y-1/2'"></div>
+                </div>
+            </div>
+           </div>
+
+
+          <div class="card bg-base-200/90 border border-base-content/10 shadow-xl w-72 absolute bottom-6 left-6 max-h-[60vh] overflow-hidden flex flex-col">
+             <div class="card-body p-4 overflow-y-auto">
+                 <h2 class="card-title text-xs font-bold tracking-widest opacity-50">REACTIVE STORE</h2>
+                 <div class="divider my-2"></div>
+                 <div data-for="node in nodes" class="flex items-center justify-between text-xs py-1.5 border-b border-base-content/5 last:border-0">
+                     <div class="flex items-center gap-2">
+                         <div class="w-2 h-2 rounded-full bg-primary"></div>
+                         <span class="font-semibold">#<span data-bind="node.id"></span></span>
+                         <span class="opacity-70"><span data-bind="node.label"></span></span>
+                     </div>
+                     <div class="text-[10px] opacity-50 font-mono">
+                         (<span data-bind="node.position.x"></span>, <span data-bind="node.position.y"></span>)
+                     </div>
+                 </div>
+             </div>
+         </div>
+
+    <div class="absolute bottom-6 right-6 flex gap-3">
+        <button data-on-click="nodes.push({ 
+            id: String(nodes.length + 1), 
+            label: 'New Node ' + (nodes.length + 1), 
+            position: { 
+                x: Math.round((Math.random() * 400 + 300) / 20) * 20, 
+                y: Math.round((Math.random() * 300 + 50) / 20) * 20 
+            },
+            handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }]
+        })" class="btn btn-primary btn-sm gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+            Add Node
+        </button>
+        <button data-on-click="nodes.splice(0, nodes.length); edges.splice(0, edges.length)" class="btn btn-outline btn-sm">Clear</button>
+    </div>
+    </div>
+
+    <!-- Delete confirmation modal -->
+    <dialog id="flow-modal-delete" class="modal">
+        <div class="modal-box">
+            <h3 class="text-lg font-bold flex items-center gap-2 text-error">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                Delete Node
+            </h3>
+            <p class="py-4">
+                Delete node <strong>#<span data-bind="modal.nodeId"></span></strong>
+                &ldquo;<span data-bind="modal.draft"></span>&rdquo; and all of its connected edges?
+                This cannot be undone.
+            </p>
+            <div class="modal-action">
+                <form method="dialog">
+                    <button class="btn btn-ghost">Cancel</button>
+                </form>
+                <button class="btn btn-error"
+                        data-on-click="
+                            const id = modal.nodeId;
+                            for (let i = edges.length - 1; i >= 0; i--) { if (edges[i].source === id || edges[i].target === id) edges.splice(i, 1); }
+                            const ni = nodes.findIndex(n => n.id === id);
+                            if (ni >= 0) nodes.splice(ni, 1);
+                            document.getElementById('flow-modal-delete').close();
+                        ">
+                    Delete
+                </button>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+
+    <!-- Edit modal -->
+    <dialog id="flow-modal-edit" class="modal">
+        <div class="modal-box">
+            <h3 class="text-lg font-bold flex items-center gap-2 text-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                Edit Node #<span data-bind="modal.nodeId"></span>
+            </h3>
+            <div class="py-4">
+                <label class="label"><span class="label-text text-xs opacity-60">Label</span></label>
+                <input type="text" data-bind-value="modal.draft"
+                       class="input input-bordered w-full"
+                       placeholder="Node label" />
+            </div>
+            <div class="modal-action">
+                <form method="dialog">
+                    <button class="btn btn-ghost">Cancel</button>
+                </form>
+                <button class="btn btn-primary"
+                        data-on-click="
+                            const n = nodes.find(n => n.id === modal.nodeId);
+                            if (n) n.label = modal.draft;
+                            document.getElementById('flow-modal-edit').close();
+                        ">
+                    Save
+                </button>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+</body>
+</html>

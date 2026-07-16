@@ -87,11 +87,23 @@ export class UX {
     this.coordinator.registerAttributeModule('switcher', switcherModule);
     this.coordinator.registerAttributeModule('ux-theme', themeModule);
 
-    // Auto-Register all discovered attribute modules
+    // Auto-Register all discovered attribute modules.
+    // A single namespace file may colocate multiple directives (e.g. flow.ts
+    // exports data-flow, data-flow-node, data-flow-handle, data-flow-edges),
+    // so register every export that is an AttributeModule, not just the first.
     autoAttributes.forEach(({ name, module }) => {
-      const attrMod = module.default || Object.values(module)[0];
-      if (attrMod) {
-        this.coordinator.registerAttributeModule(attrMod.attribute || name, attrMod as any);
+      let registeredAny = false;
+      for (const maybe of Object.values(module)) {
+        if (maybe && typeof maybe === 'object' && 'attribute' in maybe && typeof (maybe as any).handle === 'function') {
+          this.coordinator.registerAttributeModule((maybe as any).attribute || name, maybe as any);
+          registeredAny = true;
+        }
+      }
+      if (!registeredAny) {
+        const attrMod = module.default || Object.values(module)[0];
+        if (attrMod) {
+          this.coordinator.registerAttributeModule(attrMod.attribute || name, attrMod as any);
+        }
       }
     });
 
