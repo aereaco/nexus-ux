@@ -216,17 +216,15 @@
 
       <!-- Dynamic Page Tabs -->
       <template data-for="tab in tabs" data-key="tab.id">
-        <label class="tab" data-class="{ 'hidden': !pageTabs }">
-          <input type="radio" name="my_tabs_4" :value="tab.id"
-                 data-bind-checked="tab.checked"
-                 data-on-change="tabs.forEach(t => t.checked = (t.id === tab.id))" />
+        <div role="tab" class="tab flex items-center gap-2" data-class="{ 'hidden': !pageTabs, 'tab-active': tab.checked }"
+             data-on-click="tabs.forEach(t => t.checked = (t.id === tab.id))">
           <iconify-icon data-bind-icon="tab.icon" class="text-lg"></iconify-icon>
           <span data-bind="tab.title"></span>
           <button class="btn btn-ghost btn-xs btn-circle ms-2" aria-label="Close tab" title="Close tab"
                   data-on-click:stop="const wasActive = tab.checked; tabs = tabs.filter(t => t.id !== tab.id); if (wasActive && tabs[0]) tabs[0].checked = true;">
             <iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
           </button>
-        </label>
+        </div>
         <div class="tab-content p-6 h-dvh" data-show="tab.checked" data-component="tab.content"></div>
       </template>
 
