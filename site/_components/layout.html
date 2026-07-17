@@ -1,4 +1,16 @@
-<div class="drawer lg:drawer-open" data-signal="{ collapsed: true, hovered: false, isMobile: _window.innerWidth < 1024, searchOpen: false, searchQuery: '' }">
+<div class="drawer lg:drawer-open" data-signal="{
+    collapsed: true,
+    hovered: false,
+    isMobile: _window.innerWidth < 1024,
+    searchOpen: false,
+    searchQuery: '',
+    activeSidebarTab: 1,
+    pageTabs: true,
+    rtl: false,
+    zoom: 1
+  }"
+  data-bind-dir="rtl ? 'rtl' : 'ltr'"
+  data-bind-style="{ fontSize: zoom + 'rem' }">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content">
     <!-- Drawer Header -->
@@ -119,7 +131,7 @@
       <div class="flex-1 justify-end flex gap-2">
         
         <!-- Search Button -->
-        <button class="btn btn-ghost btn-circle" aria-label="Open search" title="Search" data-on-click="searchQuery = ''; searchOpen = true">
+        <button class="btn btn-ghost btn-circle hover:scale-102" aria-label="Open search" title="Search" data-on-click="searchQuery = ''; searchOpen = true">
           <iconify-icon icon="material-symbols-light:search" style="font-size: 24px"></iconify-icon>
         </button>
 
@@ -177,6 +189,53 @@
         <a href="https://github.com/aereaco/nexus-ux" aria-label="GitHub" title="GitHub" rel="noopener noreferrer" target="_blank" class="btn btn-ghost group btn-lg gap-1 px-2"><svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-linejoin="round" stroke-linecap="round" stroke-width="1.5" fill="none" stroke="currentColor"><path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5"></path></g></svg> <!--[0--><span class="text-[0.625rem] font-normal font-mono tabular-nums max-sm:hidden">41k</span><!--]--></a>
       </div>
     </nav>
+
+    <!-- name of each tab group should be unique -->
+<div class="tabs tabs-box tabs-border rounded-none"
+  data-signal="{
+    tabs: [{
+      id: 'home',
+      title: 'Home',
+      icon: 'material-symbols-light:home-outline',
+      content: '_components/tab-home.html',
+      checked: true
+    }, {
+      id: 'settings',
+      title: 'Settings',
+      icon: 'material-symbols-light:settings-outline',
+      content: '_components/tab-settings.html',
+      checked: false
+    }, {
+      id: 'profile',
+      title: 'Profile',
+      icon: 'material-symbols-light:person-outline',
+      content: '_components/tab-profile.html',
+      checked: false
+    }] }"
+>
+
+  <!-- Dynamic Page Tabs -->
+  <template data-for="tab in tabs" data-key="tab.id">
+    <label class="tab" data-class="{ 'hidden': !pageTabs }">
+      <input type="radio" name="my_tabs_4" :value="tab.id"
+             data-bind-checked="tab.checked"
+             data-on-change="tabs = tabs.map(t => ({ ...t, checked: t.id === tab.id }))" />
+      <iconify-icon data-bind-icon="tab.icon" class="text-lg"></iconify-icon>
+      <span data-bind="tab.title"></span>
+      <button class="btn btn-ghost btn-xs btn-circle ms-2" aria-label="Close tab" title="Close tab"
+              data-on-click="const wasActive = tab.checked; tabs = tabs.filter(t => t.id !== tab.id); if (wasActive) { const first = tabs[0]; if (first) first.checked = true; }">
+        <iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
+      </button>
+    </label>
+    <div class="tab-content p-6" data-show="tab.checked" data-component="tab.content"></div>
+  </template>
+
+
+  <button class="btn btn-circle"
+          data-on-click="const n = tabs.length + 1; const id = 'tab' + n; tabs = [...tabs.map(t => ({ ...t, checked: false })), { id, title: 'Tab ' + n, icon: 'material-symbols-light:article-outline', content: '_components/tab-generic.html', checked: true }]">
+    <iconify-icon icon="material-symbols-light:add" style="font-size: 24px"></iconify-icon>
+  </button>
+</div>
     <!-- Dynamic Router Outlet / Component Insertion -->
     <div data-if="dashboardComponent" class="w-full h-full relative" data-component="dashboardComponent"></div>
 
@@ -256,9 +315,9 @@
         </div>
         
 
-        <ul class="menu w-full grow">
+        <ul class="menu w-full grow" data-show="activeSidebarTab === 1">
           <!-- List item -->
-          <li class="transition-transform duration-300 hover:scale-105 hover:aura hover:aura-glow">
+          <li class="transition-transform duration-300 hover:scale-102 hover:aura hover:aura-glow">
             <button>
               <!-- Home icon -->
               <iconify-icon icon="material-symbols-light:home-outline" style="font-size: 24px"></iconify-icon>
@@ -267,7 +326,7 @@
           </li>
 
           <!-- List item -->
-          <li class="transition-transform duration-300 hover:scale-105">
+          <li class="transition-transform duration-300 hover:scale-102">
             <button>
               <!-- Settings icon -->
               <iconify-icon icon="material-symbols-light:settings-outline" style="font-size: 24px"></iconify-icon>
@@ -276,6 +335,89 @@
           </li>
         </ul>
 
+        <!-- ================= Panel Preferences (tab 3) ================= -->
+        <div class="grow w-full overflow-x-hidden overflow-y-auto" data-show="activeSidebarTab === 3 && (!collapsed || hovered || isMobile)">
+          <div class="p-6">
+            <div class="mb-6 whitespace-nowrap">
+              <h1 class="text-lg font-bold">Panel Preferences</h1>
+            </div>
+            <div class="flex flex-col">
+
+              <!-- Theme Chooser: mode (Light/Dark/System) + DaisyUI theme grid -->
+              <div class="flex justify-between items-center pb-4">
+                <span data-bind="'Mode: ' + ($theme.mode.charAt(0).toUpperCase() + $theme.mode.slice(1))"></span>
+                <button class="btn btn-ghost btn-circle" aria-label="Switch theme mode" data-on-click="$switchTheme()">
+                  <iconify-icon data-bind-icon="$themeIcon" class="text-2xl transition-all duration-300"></iconify-icon>
+                </button>
+              </div>
+
+              <div class="join join-vertical w-full pb-1">
+                <template data-for="m in $theme.modes" data-key="m">
+                  <button
+                    type="button"
+                    class="btn join-item justify-start capitalize"
+                    data-class="{ 'btn-primary': $theme.mode === m, 'btn-ghost': $theme.mode !== m }"
+                    data-on-click="$setTheme(m)"
+                    data-bind="m"></button>
+                </template>
+              </div>
+
+              <!-- Active mapped DaisyUI theme (driven by mode via data-ux-theme) -->
+              <div class="flex items-center justify-between rounded-btn bg-base-100 px-4 py-2">
+                <span class="text-sm" data-bind="'Applied theme: ' + $activeTheme"></span>
+                <span class="flex shrink-0 gap-1">
+                  <span class="bg-primary rounded-badge w-2"></span>
+                  <span class="bg-secondary rounded-badge w-2"></span>
+                  <span class="bg-accent rounded-badge w-2"></span>
+                  <span class="bg-neutral rounded-badge w-2"></span>
+                </span>
+              </div>
+
+              <div class="divider"></div>
+
+              <!-- Text Flow Direction (LTR / RTL) -->
+              <div class="flex flex-nowrap items-center">
+                <span class="label-text grow">Text Flow Direction</span>
+                <label class="grid cursor-pointer place-items-center">
+                  <input type="checkbox" class="toggle toggle-primary" data-bind-checked="rtl" />
+                </label>
+              </div>
+
+              <div class="divider"></div>
+
+              <!-- Theme Zoom -->
+              <div>
+                <div class="label-text pb-3">Theme Zoom</div>
+                <input
+                  type="range"
+                  class="range range-primary"
+                  min="0.5"
+                  max="2"
+                  step="0.1"
+                  data-bind-value="zoom" />
+                <div class="flex justify-between mt-2">
+                  <span class="text-xs">0.5</span>
+                  <div class="flex justify-center bg-neutral text-neutral-content rounded w-14 py-1">
+                    <span class="font-semibold text-sm" data-bind="zoom + 'x'"></span>
+                  </div>
+                  <span class="text-xs">2.0</span>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+
+              <!-- Page Tabs toggle -->
+              <div class="form-control">
+                <label class="label cursor-pointer">
+                  <span class="label-text">Page Tabs</span>
+                  <input type="checkbox" class="toggle toggle-secondary" data-bind-checked="pageTabs" />
+                </label>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
         <template data-if="collapsed && !hovered && !isMobile">
           <div class="dock">
             <iconify-icon icon="material-symbols-light:left-panel-open-outline" style="font-size: 24px"></iconify-icon>
@@ -283,15 +425,15 @@
         </template>
         <template data-if="!collapsed || hovered || isMobile">
           <div class="dock">
-          <button class="tooltip tooltip-top" data-tip="Guide">
+          <button class="tooltip tooltip-top" data-tip="Menu" data-class="{ 'dock-active': activeSidebarTab === 1 }" data-on-click="activeSidebarTab = 1">
             <iconify-icon icon="material-symbols-light:list" style="font-size: 24px"></iconify-icon>
           </button>
 
-          <button class="tooltip tooltip-top" data-tip="Favorites">
+          <button class="tooltip tooltip-top" data-tip="Favorites" data-class="{ 'dock-active': activeSidebarTab === 2 }" data-on-click="activeSidebarTab = 2">
             <iconify-icon icon="material-symbols-light:star-outline" style="font-size: 24px"></iconify-icon>
           </button>
           
-          <button class="tooltip tooltip-top" data-tip="Settings">
+          <button class="tooltip tooltip-top" data-tip="Preferences" data-class="{ 'dock-active': activeSidebarTab === 3 }" data-on-click="activeSidebarTab = 3">
             <iconify-icon icon="material-symbols-light:tune" style="font-size: 24px"></iconify-icon>
           </button>
         </div>

@@ -85,7 +85,9 @@ const bindModule: AttributeModule = {
           if (el instanceof HTMLInputElement && el.type === 'checkbox') {
             newValue = el.checked;
           } else if (el instanceof HTMLInputElement && el.type === 'radio') {
-            newValue = el.checked ? el.value : undefined;
+            // For data-bind-checked the bound state is the boolean checked flag;
+            // for data-bind-value it is the radio's value.
+            newValue = target === 'checked' ? el.checked : (el.checked ? el.value : undefined);
             if (newValue === undefined) return;
           } else if (el instanceof HTMLSelectElement && el.multiple) {
             newValue = Array.from(el.selectedOptions).map(opt => opt.value);
@@ -130,13 +132,19 @@ const bindModule: AttributeModule = {
           const result = runtime.evaluate(el, attr.value);
           const attrValue = result !== undefined && result !== null ? String(result) : '';
 
-           if (target === 'value' || target === 'checked') {
-             if (el instanceof HTMLInputElement && el.type === 'checkbox') {
-               if (el.checked !== Boolean(result)) el.checked = Boolean(result);
-             } else if (el instanceof HTMLInputElement && el.type === 'radio') {
-               const shouldCheck = (el.value === attrValue);
-               if (el.checked !== shouldCheck) el.checked = shouldCheck;
-             } else if ('value' in el) {
+             if (target === 'value' || target === 'checked') {
+              if (el instanceof HTMLInputElement && el.type === 'checkbox') {
+                if (el.checked !== Boolean(result)) el.checked = Boolean(result);
+              } else if (el instanceof HTMLInputElement && el.type === 'radio') {
+                if (target === 'checked') {
+                  // data-bind-checked reflects the boolean checked state.
+                  if (el.checked !== Boolean(result)) el.checked = Boolean(result);
+                } else {
+                  // :value on a radio sets the element's value (mirrors Alpine's
+                  // :value). The checked state is owned by data-bind-checked.
+                  if (el.value !== attrValue) el.value = attrValue;
+                }
+              } else if ('value' in el) {
                if ((el as HTMLInputElement).value !== attrValue) (el as HTMLInputElement).value = attrValue;
              }
            } else if (target === 'text') {
