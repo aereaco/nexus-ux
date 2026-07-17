@@ -191,54 +191,52 @@
     </nav>
 
     <!-- name of each tab group should be unique -->
-<div class="tabs tabs-box tabs-border rounded-none"
-  data-signal="{
-    tabs: [{
-      id: 'home',
-      title: 'Home',
-      icon: 'material-symbols-light:home-outline',
-      content: '_components/tab-home.html',
-      checked: true
-    }, {
-      id: 'settings',
-      title: 'Settings',
-      icon: 'material-symbols-light:settings-outline',
-      content: '_components/tab-settings.html',
-      checked: false
-    }, {
-      id: 'profile',
-      title: 'Profile',
-      icon: 'material-symbols-light:person-outline',
-      content: '_components/tab-profile.html',
-      checked: false
-    }] }"
->
+    <div class="tabs tabs-border rounded-none"
+      data-signal="{
+        tabs: [{
+          id: 'home',
+          title: 'Home',
+          icon: 'material-symbols-light:home-outline',
+          content: '_pages/home.html',
+          checked: true
+        }, {
+          id: 'settings',
+          title: 'Settings',
+          icon: 'material-symbols-light:settings-outline',
+          content: '_pages/settings.html',
+          checked: false
+        }, {
+          id: 'profile',
+          title: 'Profile',
+          icon: 'material-symbols-light:person-outline',
+          content: '_pages/profile.html',
+          checked: false
+        }] }"
+    >
 
-  <!-- Dynamic Page Tabs -->
-  <template data-for="tab in tabs" data-key="tab.id">
-    <label class="tab" data-class="{ 'hidden': !pageTabs }">
-      <input type="radio" name="my_tabs_4" :value="tab.id"
-             data-bind-checked="tab.checked"
-             data-on-change="tabs = tabs.map(t => ({ ...t, checked: t.id === tab.id }))" />
-      <iconify-icon data-bind-icon="tab.icon" class="text-lg"></iconify-icon>
-      <span data-bind="tab.title"></span>
-      <button class="btn btn-ghost btn-xs btn-circle ms-2" aria-label="Close tab" title="Close tab"
-              data-on-click="const wasActive = tab.checked; tabs = tabs.filter(t => t.id !== tab.id); if (wasActive) { const first = tabs[0]; if (first) first.checked = true; }">
-        <iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
+      <!-- Dynamic Page Tabs -->
+      <template data-for="tab in tabs" data-key="tab.id">
+        <label class="tab" data-class="{ 'hidden': !pageTabs }">
+          <input type="radio" name="my_tabs_4" :value="tab.id"
+                 data-bind-checked="tab.checked"
+                 data-on-change="tabs.forEach(t => t.checked = (t.id === tab.id))" />
+          <iconify-icon data-bind-icon="tab.icon" class="text-lg"></iconify-icon>
+          <span data-bind="tab.title"></span>
+          <button class="btn btn-ghost btn-xs btn-circle ms-2" aria-label="Close tab" title="Close tab"
+                  data-on-click="const wasActive = tab.checked; tabs = tabs.filter(t => t.id !== tab.id); if (wasActive) { const first = tabs[0]; if (first) first.checked = true; }"><iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
+          </button>
+        </label>
+        <div class="tab-content p-6 h-dvh" data-show="tab.checked" data-component="tab.content"></div>
+      </template>
+
+
+      <button class="btn btn-circle"
+              data-class="{ 'hidden': !pageTabs }"
+              data-on-click="const n = tabs.length + 1; tabs.forEach(t => t.checked = false); tabs.push({ id: 'tab' + n, title: 'Tab ' + n, icon: 'material-symbols-light:article-outline', content: '_components/tab-generic.html', checked: true })">
+        <iconify-icon icon="material-symbols-light:add" style="font-size: 24px"></iconify-icon>
       </button>
-    </label>
-    <div class="tab-content p-6" data-show="tab.checked" data-component="tab.content"></div>
-  </template>
-
-
-  <button class="btn btn-circle"
-          data-on-click="const n = tabs.length + 1; const id = 'tab' + n; tabs = [...tabs.map(t => ({ ...t, checked: false })), { id, title: 'Tab ' + n, icon: 'material-symbols-light:article-outline', content: '_components/tab-generic.html', checked: true }]">
-    <iconify-icon icon="material-symbols-light:add" style="font-size: 24px"></iconify-icon>
-  </button>
-</div>
-    <!-- Dynamic Router Outlet / Component Insertion -->
-    <div data-if="dashboardComponent" class="w-full h-full relative" data-component="dashboardComponent"></div>
-
+    </div>
+    
     <!-- Default Diagnostic Content (fallback if no route component provided) -->
     <div data-if="!dashboardComponent">
       <div class="p-4 text-2xl font-bold">Nexus-UX Engine Layout Shell</div>
