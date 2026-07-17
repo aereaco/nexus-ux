@@ -1,4 +1,4 @@
-<div class="drawer lg:drawer-open" data-signal="{ collapsed: true, hovered: false, isMobile: _window.innerWidth < 1024 }">
+<div class="drawer lg:drawer-open" data-signal="{ collapsed: true, hovered: false, isMobile: _window.innerWidth < 1024, searchOpen: false, searchQuery: '' }">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content">
     <!-- Drawer Header -->
@@ -16,7 +16,7 @@
       </div>
       
       </div>
-      <div class="navbar-center flex-1 flex">
+      <div class="navbar-center flex-1 flex justify-left">
     <div class="megamenu max-md:megamenu-vertical megamenu-wide  w-full flex justify-center" id="my-megamenu-4" popover>
       <span class="megamenu-active"></span>
       <button popovertarget="d1">One</button>
@@ -119,7 +119,7 @@
       <div class="flex-1 justify-end flex gap-2">
         
         <!-- Search Button -->
-        <button class="btn btn-ghost btn-circle">
+        <button class="btn btn-ghost btn-circle" aria-label="Open search" title="Search" data-on-click="searchQuery = ''; searchOpen = true">
           <iconify-icon icon="material-symbols-light:search" style="font-size: 24px"></iconify-icon>
         </button>
 
@@ -187,6 +187,48 @@
       <p class="pb-4 ps-4 text-secondary" data-bind="'Windows Size < 1024 (Mobile Match): ' + isMobile"></p>
       <p class="pb-4 ps-4 text-info" data-bind="'Sidebar Collapsed: ' + collapsed"></p>
       <p class="pb-4 ps-4 text-success" data-bind="'Sidebar Hovered: ' + hovered"></p>
+    </div>
+
+    <!-- Search Modal (triggered by the navbar search button) -->
+    <div class="modal modal-top sm:modal-middle" role="dialog" aria-label="Search" data-class="{ 'modal-open': searchOpen }">
+      <div class="modal-box bg-base-100 shadow-2xl border border-base-300 p-0 overflow-hidden flex flex-col max-w-2xl">
+        <!-- Search Input Row -->
+        <div class="flex items-center gap-3 px-4 py-3 border-b border-base-200">
+          <iconify-icon icon="material-symbols-light:search" class="text-2xl opacity-60"></iconify-icon>
+          <input
+            type="text"
+            class="input input-ghost w-full text-lg focus:outline-none border-0 focus:border-0 px-0"
+            placeholder="Search Nexus-UX…"
+            data-bind-value="searchQuery"
+            data-effect="if (searchOpen && $el) { $el.focus(); }"
+            data-on-keydown:escape="searchOpen = false" />
+          <kbd class="kbd kbd-sm opacity-60 max-sm:hidden">Esc</kbd>
+          <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close search" data-on-click="searchOpen = false">
+            <iconify-icon icon="material-symbols-light:close" class="text-lg"></iconify-icon>
+          </button>
+        </div>
+
+        <!-- Results Area -->
+        <div class="p-2 max-h-[50vh] overflow-y-auto">
+          <!-- Empty state (no query yet) -->
+          <div data-show="!searchQuery.trim()" class="px-4 py-10 text-center text-base-content/50">
+            <iconify-icon icon="material-symbols-light:search" class="text-4xl opacity-40"></iconify-icon>
+            <p class="mt-2 text-sm">Start typing to search…</p>
+          </div>
+
+          <!-- Query echo / placeholder result list -->
+          <ul data-show="searchQuery.trim()" class="menu w-full">
+            <li class="menu-title" data-bind="'Results for &quot;' + searchQuery + '&quot;'"></li>
+            <li>
+              <a data-on-click="searchOpen = false">
+                <iconify-icon icon="material-symbols-light:description-outline" class="text-xl"></iconify-icon>
+                <span data-bind="searchQuery"></span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="modal-backdrop bg-black/60 backdrop-blur-sm" data-on-click="searchOpen = false"></div>
     </div>
   </div>
 
