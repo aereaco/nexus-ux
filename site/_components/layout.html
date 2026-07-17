@@ -223,7 +223,8 @@
           <iconify-icon data-bind-icon="tab.icon" class="text-lg"></iconify-icon>
           <span data-bind="tab.title"></span>
           <button class="btn btn-ghost btn-xs btn-circle ms-2" aria-label="Close tab" title="Close tab"
-                  data-on-click="const wasActive = tab.checked; tabs = tabs.filter(t => t.id !== tab.id); if (wasActive) { const first = tabs[0]; if (first) first.checked = true; }"><iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
+                  data-on-click:stop="const wasActive = tab.checked; tabs = tabs.filter(t => t.id !== tab.id); if (wasActive && tabs[0]) tabs[0].checked = true;">
+            <iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
           </button>
         </label>
         <div class="tab-content p-6 h-dvh" data-show="tab.checked" data-component="tab.content"></div>
