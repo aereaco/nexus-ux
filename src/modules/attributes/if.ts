@@ -1,6 +1,40 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { initError } from '../../engine/debug.ts';
+import { CLEANUP_FUNCTIONS_KEY, MARKER_KEY } from '../../engine/consts.ts';
+
+interface NexusIfElement extends HTMLElement {
+  [CLEANUP_FUNCTIONS_KEY]?: Map<string, () => void> | Array<() => void>;
+  [MARKER_KEY]?: unknown;
+}
+
+/**
+ * Recursively tear down an element subtree: invoke every element's registered
+ * cleanup functions (effects, listeners, nested directives) and clear the
+ * engine's processed-marker so the node can be cleanly re-hydrated later.
+ *
+ * The engine stores cleanups in a Map (see modules.ts); older code paths may
+ * use an array. Both are iterated via `forEach`, whose callback receives the
+ * cleanup function as its first argument in either case.
+ */
+function teardownTree(node: Node): void {
+  if (!(node instanceof HTMLElement)) return;
+  // Depth-first: dispose descendants before the node itself.
+  const children = Array.from(node.childNodes);
+  for (const child of children) teardownTree(child);
+
+  const enhanced = node as NexusIfElement;
+  const removals = enhanced[CLEANUP_FUNCTIONS_KEY];
+  if (removals) {
+    (removals as Map<string, () => void>).forEach((c: () => void) => {
+      try { c(); } catch { /* best-effort teardown */ }
+    });
+    delete enhanced[CLEANUP_FUNCTIONS_KEY];
+  }
+  // Clear the processed marker so processElement() will re-walk this node if it
+  // is ever mounted again.
+  delete enhanced[MARKER_KEY];
+}
 
 const ifModule: AttributeModule = {
   name: 'if',
@@ -9,68 +43,82 @@ const ifModule: AttributeModule = {
     const parent = el.parentNode;
     if (!parent || parent instanceof DocumentFragment) return;
 
-    // 1. Placeholder & Anchor
-    const placeholder = document.createComment(` if: ${value} `);
-    const anchor = document.createTextNode('');
+    // Anchor marks the insertion point; mounted clones are inserted before it.
+    const anchor = document.createComment(` if: ${value} `);
     parent.insertBefore(anchor, el);
 
     const isTemplate = el instanceof HTMLTemplateElement;
-    const blueprint = isTemplate ? (el as HTMLTemplateElement).content : null;
 
-    let currentNodes: Node[] = isTemplate ? [] : [el];
-    let isMounted = !isTemplate;
+    // Blueprint strategy (mirrors data-for): the original element stays in the
+    // DOM as an inert, hidden blueprint and is NEVER removed. This is critical
+    // because the controller effect below is bound to `el` via
+    // elementBoundEffect — keeping `el` connected prevents the MutationObserver
+    // from tearing that effect down. Each time the condition becomes true we
+    // clone the blueprint and fully process the clone; each time it becomes
+    // false we dispose the clone's subtree (effects, listeners, nested
+    // directives) and remove it.
+    //
+    // Because the clone is (re)processed on every show and disposed on every
+    // hide, nested directives (data-component, data-bind, data-for, even another
+    // data-if) re-initialise correctly when an element is toggled back into
+    // view — the behaviour a developer expects.
+    const blueprint: DocumentFragment | HTMLElement = isTemplate
+      ? (el as HTMLTemplateElement).content
+      : el;
 
-    // CLEANUP SYMBOL for child disposal
-    const CLEANUP_SYMBOL = Symbol.for('__cleanup_functions__');
-    interface NexusElement extends HTMLElement { [CLEANUP_SYMBOL]?: (() => void)[] }
+    if (!isTemplate) {
+      el.style.display = 'none';
+      // Prevent the coordinator/observer from descending into the blueprint and
+      // processing it as live content (same guard data-for uses).
+      el.setAttribute('data-ux-template', 'true');
+    }
+
+    let currentNodes: Node[] = [];
+    let isMounted = false;
 
     const disposeNodes = (nodes: Node[]) => {
       nodes.forEach(n => {
-        if (n instanceof HTMLElement) {
-          const enhanced = n as NexusElement;
-          const elRemovals = enhanced[CLEANUP_SYMBOL];
-          if (elRemovals) {
-            elRemovals.forEach(c => c());
-            delete enhanced[CLEANUP_SYMBOL];
-          }
-        }
+        teardownTree(n);
         n.parentNode?.removeChild(n);
+      });
+    };
+
+    const mount = () => {
+      const clone = blueprint.cloneNode(true);
+
+      // For the non-template blueprint the clone is itself an element carrying
+      // `data-if` (and our hiding attributes). Strip them so the clone renders
+      // normally and does not recursively re-register this directive.
+      if (clone instanceof HTMLElement) {
+        clone.removeAttribute('data-if');
+        clone.removeAttribute('data-ux-template');
+        clone.style.removeProperty('display');
+        currentNodes = [clone];
+      } else {
+        currentNodes = Array.from((clone as DocumentFragment).childNodes);
+      }
+
+      currentNodes.forEach(n => {
+        anchor.parentNode?.insertBefore(n, anchor);
+        if (n instanceof HTMLElement) runtime.processElement(n);
       });
     };
 
     try {
       const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
-        // Resolve condition relative to el (or placeholder if detached)
-        const target = el.isConnected ? el : (placeholder.isConnected ? placeholder : anchor);
-        const condition = Boolean(runtime.evaluate(target, value));
+        // `el` is hidden (display:none) but connected; evaluating against it
+        // resolves the correct data scope.
+        const condition = Boolean(runtime.evaluate(el, value));
 
         if (condition) {
           if (!isMounted) {
-            if (isTemplate && blueprint) {
-              const clone = blueprint.cloneNode(true);
-              currentNodes = Array.from(clone.childNodes);
-              currentNodes.forEach(n => {
-                anchor.parentNode?.insertBefore(n, anchor);
-                if (n instanceof HTMLElement) runtime.processElement(n);
-              });
-            } else {
-              if (placeholder.parentNode) {
-                placeholder.replaceWith(el);
-              } else {
-                anchor.parentNode?.insertBefore(el, anchor);
-              }
-              currentNodes = [el];
-            }
+            mount();
             isMounted = true;
           }
         } else {
           if (isMounted) {
-            if (isTemplate) {
-              disposeNodes(currentNodes);
-              currentNodes = [];
-            } else {
-              el.replaceWith(placeholder);
-            }
+            disposeNodes(currentNodes);
+            currentNodes = [];
             isMounted = false;
           }
         }
@@ -78,10 +126,8 @@ const ifModule: AttributeModule = {
 
       return () => {
         cleanup();
-        if (isTemplate) {
-          disposeNodes(currentNodes);
-        }
-        if (placeholder.parentNode) placeholder.remove();
+        disposeNodes(currentNodes);
+        currentNodes = [];
         if (anchor.parentNode) anchor.remove();
       };
     } catch (e) {

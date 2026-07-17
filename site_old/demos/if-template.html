@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-ux-init>
+<head>
+  <meta charset="UTF-8" />
+  <title>template data-if test</title>
+  <script src="/dist/nexus-ux.js"></script>
+</head>
+<body>
+  <main data-signal="{ show: false, count: 0 }" style="padding:2rem;font-family:sans-serif;">
+    <button id="toggle" data-on-click="show = !show">toggle</button>
+    <button id="inc" data-on-click="count++">inc</button>
+    <template data-if="show">
+      <div id="tpl-content" style="border:2px solid blue;padding:1rem;">
+        template count: <strong data-bind="count"></strong>
+      </div>
+    </template>
+    <div id="end">end</div>
+  </main>
+</body>
+</html>

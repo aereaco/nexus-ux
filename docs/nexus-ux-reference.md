@@ -2174,6 +2174,8 @@ Once initialized, the `$router` signal contains the full navigation state:
 | `$router.previous`       | `object`         | Previous route's `path` and `meta`              |
 | `$router.layout`         | `string \| null` | Current layout component URL                    |
 | `$router.route`          | `string \| null` | Current route component URL                     |
+| `$router.outlet`         | `string \| null` | Effective outlet URL: `layout` if set, else `route`. Bind one static outlet to this |
+| `$router.name`           | `string \| null` | Matched route name (for `navigateByName`)       |
 | `$router.meta`           | `object`         | Route metadata                                  |
 | `$router.scrollPosition` | `object`         | `{ x, y }` scroll coordinates                   |
 | `$router.routes`         | `array`          | Registered route definitions                    |
@@ -2184,9 +2186,9 @@ Once initialized, the `$router` signal contains the full navigation state:
 
 | Mode                   | Behavior                                                                                   |
 | :--------------------- | :----------------------------------------------------------------------------------------- |
-| **`signal`**           | Only matches routes registered via `data-route` elements                                   |
+| **`signal`** (default) | Only matches routes registered via `data-route` elements; unmatched paths fall through to 404 |
 | **`static`**           | Resolves routes by fetching HTML files from the filesystem (e.g., `/about` → `about.html`) |
-| **`hybrid`** (default) | Tries signal routes first, falls back to filesystem resolution                             |
+| **`hybrid`**           | Tries signal routes first, falls back to filesystem resolution, then 404                    |
 
 #### 9.1.3. Automatic Link Interception
 
@@ -2558,6 +2560,36 @@ dynamic component outlet:
 
 Router params are automatically injected into the component's props, so within
 `/pages/user.html` rendered by route `/user/:id`, `props.id` is available.
+
+#### 10.9.1. Layouts (nested outlets)
+
+When routes declare a `data-route-layout`, bind a **single** outlet to
+`$router.outlet` (which resolves to the layout when present, else the route). The
+layout template contains its own inner `$router.route` outlet where the page
+renders:
+
+```html
+<main data-router="{ mode: 'hybrid', default: '/home' }">
+  <div data-route="/home"
+       data-route-layout="/layouts/main.html"
+       data-component="/pages/home.html"></div>
+
+  <!-- Single outlet: renders the layout (with its nested route outlet), or the
+       route component directly when a route has no layout. -->
+  <main data-component="$router.outlet"></main>
+</main>
+```
+
+```html
+<!-- /layouts/main.html -->
+<div class="shell">
+  <nav>…</nav>
+  <main data-component="$router.route"></main> <!-- inner page outlet -->
+</div>
+```
+
+> Prefer `data-show` over `data-if` for a `$router.loading` indicator: `data-if`
+> on a non-`<template>` element can fail to re-hide during rapid route toggles.
 
 ---
 

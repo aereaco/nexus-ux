@@ -3,7 +3,7 @@
   <div class="drawer-content">
     <!-- Drawer Header -->
     <nav class="navbar w-full bg-base-300">
-      <div class="navbar-start">
+      <div class="flex-1">
         <label for="my-drawer-4" aria-label="open sidebar" class="btn btn-circle btn-ghost lg:hidden">
         <!-- Sidebar toggle icon -->
         <iconify-icon icon="material-symbols-light:menu" style="font-size: 24px"></iconify-icon>
@@ -14,9 +14,109 @@
           <iconify-icon icon="material-symbols-light:double-arrow" style="font-size: 24px"></iconify-icon>
         </button>
       </div>
-      <div class="px-4">Navbar Title</div>
+      
       </div>
-      <div class="navbar-end">
+      <div class="navbar-center flex-1 flex">
+    <div class="megamenu max-md:megamenu-vertical megamenu-wide  w-full flex justify-center" id="my-megamenu-4" popover>
+      <span class="megamenu-active"></span>
+      <button popovertarget="d1">One</button>
+      <div id="d1" popover>
+        <div class="flex max-sm:flex-col items-start">
+          <ul class="menu w-full md:menu-horizontal">
+            <li>
+              <a>Enterprise</a>
+              <ul>
+                <li><a>CRM software</a></li>
+                <li><a>Marketing management</a></li>
+                <li><a>Security</a></li>
+                <li><a>Consulting</a></li>
+              </ul>
+            </li>
+            <li>
+              <a>Company</a>
+              <ul>
+                <li><a>About us</a></li>
+                <li><a>Contact us</a></li>
+                <li><a>Privacy policy</a></li>
+                <li><a>Press kit</a></li>
+              </ul>
+            </li>
+          </ul>
+          <img src="https://img.daisyui.com/images/stock/photo-1559181567-c3190ca9959b.webp" class="md:max-w-sm max-md:hidden" alt="Tailwind CSS megamenu">
+        </div>
+      </div>
+      <button popovertarget="d2">Two</button>
+      <div id="d2" popover>
+        <div class="flex max-sm:flex-col items-start">
+          <ul class="menu w-full md:menu-horizontal">
+            <li>
+              <a>Enterprise</a>
+              <ul>
+                <li><a>CRM software</a></li>
+                <li><a>Marketing management</a></li>
+                <li><a>Security</a></li>
+                <li><a>Consulting</a></li>
+                <li><a>Privacy policy</a></li>
+                <li><a>Press kit</a></li>
+              </ul>
+            </li>
+            <li>
+              <a>Products</a>
+              <ul>
+                <li><a>UI Kit</a></li>
+                <li><a>WordPress themes</a></li>
+                <li><a>WordPress plugins</a></li>
+                <li><a>Color picker app</a></li>
+                <li><a>About us</a></li>
+                <li><a>Contact us</a></li>
+              </ul>
+            </li>
+          </ul>
+          <img src="https://img.daisyui.com/images/stock/photo-1572635148818-ef6fd45eb394.webp" class="md:max-w-sm max-md:hidden" alt="Tailwind CSS megamenu component">
+        </div>
+      </div>
+      <button popovertarget="d3">Three</button>
+      <div id="d3" popover>
+        <div class="flex max-sm:flex-col items-start">
+          <ul class="menu w-full md:menu-horizontal">
+            <li>
+              <a>Solutions</a>
+              <ul>
+                <li><a>Design</a></li>
+                <li><a>Development</a></li>
+                <li><a>Hosting</a></li>
+                <li><a>Domain register</a></li>
+              </ul>
+            </li>
+            <li>
+              <a>Products</a>
+              <ul>
+                <li><a>UI Kit</a></li>
+                <li>
+                  <a>Open source</a>
+                  <ul>
+                    <li><a>Auth management system</a></li>
+                    <li><a>VScode theme</a></li>
+                    <li><a>Color picker app</a></li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <a>Company</a>
+              <ul>
+                <li><a>About us</a></li>
+                <li><a>Contact us</a></li>
+                <li><a>Privacy policy</a></li>
+                <li><a>Press kit</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+      <div class="flex-1 justify-end flex gap-2">
         
         <!-- Search Button -->
         <button class="btn btn-ghost btn-circle">

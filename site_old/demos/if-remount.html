@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-ux-init>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>data-if remount test</title>
+  <script src="/dist/nexus-ux.js"></script>
+</head>
+<body>
+  <main data-signal="{ show: false, count: 0, name: 'Ada' }" style="padding:2rem; font-family:sans-serif;">
+    <h1>data-if remount reactivity test</h1>
+
+    <div style="display:flex; gap:.5rem; margin-bottom:1rem;">
+      <button id="toggle" data-on-click="show = !show">Toggle (show = <span data-bind="show"></span>)</button>
+      <button id="inc" data-on-click="count++">count++ (<span data-bind="count"></span>)</button>
+      <button id="rename" data-on-click="name = name === 'Ada' ? 'Grace' : 'Ada'">rename</button>
+    </div>
+
+    <!-- Element under test: nested bindings must stay reactive across toggles -->
+    <div id="conditional" data-if="show" style="border:2px solid green; padding:1rem;">
+      <p>I am conditionally shown.</p>
+      <p>Live count binding: <strong id="live-count" data-bind="count"></strong></p>
+      <p>Live name binding: <strong id="live-name" data-bind="name"></strong></p>
+    </div>
+
+    <div id="status" style="margin-top:1rem; color:#555;">status ready</div>
+  </main>
+</body>
+</html>

@@ -88,6 +88,12 @@ const componentModule: AttributeModule = {
   attribute: 'component',
   handle: (el: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void => {
     try {
+      // A `data-route` element's `data-component` is a route DECLARATION consumed
+      // by the router (published to `$router.route`), not an inline render. Skip
+      // it here to avoid double-rendering; the outlet element
+      // (`<main data-component="$router.route">`, which has no data-route) renders.
+      if (el.hasAttribute('data-route')) return;
+
       // Initialize Context
       const componentState = runtime.reactive({
         isConnected: false,

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-ux-init>
+<head>
+  <meta charset="UTF-8" />
+  <title>Router Capabilities Test</title>
+  <script src="/dist/nexus-ux.js" defer></script>
+</head>
+<body>
+  <main data-router data-signal="{ hooklog: '' }">
+    <h1>Router Test</h1>
+
+    <!-- Live router state readouts for assertions -->
+    <p>path: <span id="r-path" data-bind="$router.path"></span></p>
+    <p>param id: <span id="r-param" data-bind="$router.params.id || ''"></span></p>
+    <p>wildcard: <span id="r-wild" data-bind="$router.params.wildcard || ''"></span></p>
+    <p>error: <span id="r-error" data-bind="$router.error ? $router.error.type : ''"></span></p>
+    <p>hook log: <span id="r-log" data-bind="hooklog"></span></p>
+
+    <nav>
+      <a id="lnk-home" href="/">home</a> |
+      <a id="lnk-user" href="/user/42">user 42</a> |
+      <a id="lnk-files" href="/files/a/b/c.txt">files wildcard</a> |
+      <a id="lnk-guarded" href="/guarded">guarded (abort)</a> |
+      <a id="lnk-old" href="/old">old (redirect route)</a> |
+      <a id="lnk-hookredir" href="/hookredirect">hook redirect</a> |
+      <a id="lnk-missing" href="/does-not-exist">missing (404)</a>
+    </nav>
+
+    <!-- Route views -->
+    <section data-route="/">
+      <h2 id="view-home">Home View</h2>
+    </section>
+
+    <section data-route="/user/:id">
+      <h2 id="view-user">User View</h2>
+    </section>
+
+    <section data-route="/files/*">
+      <h2 id="view-files">Files View</h2>
+    </section>
+
+    <!-- beforeEnter returns false => navigation aborts, view never shows -->
+    <section data-route="/guarded"
+             data-route-before-enter="(hooklog = 'guard-ran'), false">
+      <h2 id="view-guarded">Guarded View</h2>
+    </section>
+
+    <!-- declarative redirect route -->
+    <section data-route="/old" data-route-redirect="/user/99">
+      <h2 id="view-old">Old View (should never show)</h2>
+    </section>
+
+    <!-- hook returns a string => redirect -->
+    <section data-route="/hookredirect"
+             data-route-before-enter="'/user/7'">
+      <h2 id="view-hookredirect">Hook Redirect View (should never show)</h2>
+    </section>
+
+    <!-- afterEnter hook writes to log -->
+    <section data-route="/404.html"
+             data-route-after-enter="hooklog = 'on-404'">
+      <h2 id="view-404">404 View</h2>
+    </section>
+  </main>
+</body>
+</html>

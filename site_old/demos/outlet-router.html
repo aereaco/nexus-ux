@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-ux-init>
+<head>
+  <meta charset="UTF-8" />
+  <title>Router Outlet + Layout Test</title>
+  <script src="/dist/nexus-ux.js" defer></script>
+</head>
+<body>
+  <!-- hybrid mode + default route to /home -->
+  <main data-router="{ mode: 'hybrid', default: '/home' }"
+        data-signal="{ auth: { user: null } }">
+    <h1>Router Outlet Test</h1>
+
+    <!-- Live state readouts -->
+    <p>path: <span id="r-path" data-bind="$router.path"></span></p>
+    <p>route url: <span id="r-route" data-bind="$router.route || ''"></span></p>
+    <p>layout url: <span id="r-layout" data-bind="$router.layout || ''"></span></p>
+    <p>mode: <span id="r-mode" data-bind="$router.mode"></span></p>
+    <p>name: <span id="r-name" data-bind="$router.name || ''"></span></p>
+    <p>meta title: <span id="r-meta" data-bind="$router.meta && $router.meta.title ? $router.meta.title : ''"></span></p>
+    <p>previous: <span id="r-prev" data-bind="$router.previous ? $router.previous.path : ''"></span></p>
+    <p>loading: <span id="r-loading" data-bind="$router.loading ? 'true' : 'false'"></span></p>
+    <p>home active: <span id="r-active-home" data-bind="$router.isActive('/home') ? 'yes' : 'no'"></span></p>
+    <p>user active: <span id="r-active-user" data-bind="$router.isActive('/user') ? 'yes' : 'no'"></span></p>
+
+    <nav>
+      <a id="lnk-home" href="/home"
+         data-class="{ 'is-active': $router.isActive('/home') }">home</a> |
+      <a id="lnk-user" href="/user/42?tab=profile"
+         data-class="{ 'is-active': $router.isActive('/user') }">user 42</a> |
+      <a id="lnk-about" href="/about">about (hybrid static)</a> |
+      <button id="btn-named"
+              data-on-click="$router.navigateByName('user', { id: 7 }, { tab: 'named' })">
+        go user #7 (named)
+      </button> |
+      <button id="btn-query"
+              data-on-click="$router.navigate('/user/9?' + $router.buildQuery({ tab: 'built', x: 1 }))">
+        user #9 (buildQuery)
+      </button>
+    </nav>
+
+    <!-- Route DECLARATIONS (outlet model): data-component is metadata for the
+         router; these elements do NOT render inline. -->
+    <div data-route="/home"
+         data-route-name="home"
+         data-route-layout="/site_old/demos/layouts/main.html"
+         data-route-meta="{ title: 'Home' }"
+         data-component="/site_old/demos/pages/home.html"></div>
+
+    <div data-route="/user/:id"
+         data-route-name="user"
+         data-route-layout="/site_old/demos/layouts/main.html"
+         data-route-meta="{ title: 'User Profile' }"
+         data-component="/site_old/demos/pages/user.html"></div>
+
+    <!-- Single static outlet bound to $router.outlet (layout if present, else
+         route). No data-if switching. The layout template itself contains an
+         inner `<main data-component="$router.route">` outlet for the page. -->
+    <main id="app-outlet" data-component="$router.outlet"></main>
+
+    <div id="loading" data-show="$router.loading">Loading…</div>
+  </main>
+</body>
+</html>
