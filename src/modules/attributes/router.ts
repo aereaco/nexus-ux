@@ -571,7 +571,7 @@ export const routerAttributeModule: AttributeModule = {
       });
 
       // 2. Register Global Signal
-      runtime.setGlobalSignal('$router', state);
+      runtime.setGlobalSignal('#router', state);
 
       // --- Per-tab history: active tab is owned by the layout's global signal.
       // The router reads/writes `activeTabId` there so the tab bar + panels
