@@ -256,6 +256,7 @@ async function buildBundle(options: BuildOptions = {}) {
       scopes: [],
       modifiers: [],
       observers: [],
+      listeners: [],
       // Include analysis data for app-specific builds
       ...(appDir && analysisResult ? {
         analysis: {
