@@ -742,16 +742,19 @@ export const routerAttributeModule: AttributeModule = {
         }
 
         // No signal match: try filesystem resolution in static/hybrid modes,
-        // else fall back to 404.
+        // else fall back to 404. Shadow paths resolve the same way (the router's
+        // internal fetch can reach them); they are simply excluded from the
+        // public manifest so the client has no discoverable URL.
         let staticComponent: string | null = null;
         if (!matched) {
-          const alreadyOn404 = path === '/404.html' || url.pathname === applyBase('/404.html');
+          const notFoundPath = state.config.notFound ?? '/404.html';
+          const alreadyOn404 = path === notFoundPath || url.pathname === applyBase(notFoundPath);
           if (!alreadyOn404 && (mode === 'static' || mode === 'hybrid')) {
             staticComponent = resolveStaticComponent(path);
           } else if (!alreadyOn404) {
-            // signal-only mode with no match => 404.
+            // signal-only mode (or already on 404) with no match => 404.
             state.error = { type: '404', message: 'Page not found', path };
-            state.navigate('/404.html', { replace: true });
+            state.navigate(notFoundPath, { replace: true });
             return;
           }
         }
