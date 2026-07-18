@@ -573,6 +573,8 @@ export const routerAttributeModule: AttributeModule = {
 
       // 2. Register Global Signal
       runtime.setGlobalSignal('#router', state);
+      (globalThis as any).__routerAfterSet = (globalThis as any)._NEXUS_RUNTIME?.globalSignals?.()['#router'] ? 'present' : 'absent';
+      (globalThis as any).__routerStateKeys = Object.keys(state);
 
       // --- Per-tab history: active tab is owned by the layout's global signal.
       // The router reads/writes `activeTabId` there so the tab bar + panels
