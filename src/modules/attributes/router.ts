@@ -502,6 +502,7 @@ export const routerAttributeModule: AttributeModule = {
           routeList.push(route);
           state.routes = routeList.slice();
           queueMicrotask(() => {
+            buildManifest();
             updateRoute(globalThis.location.href);
           });
         },
