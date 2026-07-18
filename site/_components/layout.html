@@ -226,7 +226,7 @@
                class="flex items-center shrink-0 px-2 cursor-pointer hover:'border-primary' transition-colors"
                data-drag
                data-bind-aria-selected="activeTabId === tab.id"
-               data-class="{ 'hidden': !pageTabs, 'tab-active border-b border-primary': activeTabId === tab.id }"
+               data-class="{ 'hidden': !pageTabs, 'tab-active border-b border-primary text-primary': activeTabId === tab.id }"
                data-on-click="activeTabId = tab.id">
             <iconify-icon icon="material-symbols-light:drag-indicator" class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
             <iconify-icon data-bind-icon="tab.icon" class="text-lg px-2"></iconify-icon>
