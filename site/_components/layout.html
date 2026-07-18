@@ -328,6 +328,10 @@
       <!-- Close context menu on any outside click / scroll / escape -->
       <div data-effect="if (ctxMenu) { const close = () => { ctxMenu = null; }; window.addEventListener('click', close, { once: true }); window.addEventListener('scroll', close, { once: true }); window.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') ctxMenu = null; }); }"></div>
 
+      <!-- Track recently visited routes into the `recent` signal (deduped, capped).
+           Watches router.path so it updates on every navigation. -->
+      <div data-effect="(() => { const p = router.path; if (!p) return; const labels = { '/': 'Home', '/settings': 'Settings', '/profile': 'Profile', '/_internal/admin-console': 'Internal Console' }; const title = labels[p] || (p === '/404.html' ? 'Not Found' : p.replace(/^\//, '').replace(/-/g, ' ')); const entry = { path: p, title }; const next = [entry, ...recent.filter(r => r.path !== p)].slice(0, 5); recent = next; })()"></div>
+
     <!-- Default Diagnostic Content (fallback if no route component provided) -->
     <div data-if="!dashboardComponent">
       <div class="p-4 text-2xl font-bold">Nexus-UX Engine Layout Shell</div>
