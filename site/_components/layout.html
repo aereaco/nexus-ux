@@ -251,12 +251,10 @@
           </button>
       </div>
 
-      <!-- CONTENT PANEL: bound to the ACTIVE TAB's own content component. This
-           lets route tabs (router drives router.route) and component tabs (the
-           new-tab launchpad, link tabs) share one outlet. A sync effect below
-           keeps the active tab's content in step with router.route for route
-           tabs, so sidebar/router navigation still updates the visible panel. -->
-      <div class="p-6" data-on-contextmenu:stop="
+       <!-- CONTENT PANEL: bound directly to the ACTIVE TAB's own content
+            component. No router sync, no effects — the tab's content is the
+            source of truth and is set by whoever opens/navigates the tab. -->
+       <div class="p-6" data-on-contextmenu:stop="
             const e = $event;
             const a = e.target.closest('a');
             if (a && a.origin === location.origin && !a.hasAttribute('download') && (!a.target || a.target === '_self')) {
