@@ -30,8 +30,11 @@
         }] }">
     <!-- Declarative routes (signal model). Shadow/internal routes resolve &
          render through the router but are excluded from #router.manifest so the
-         client has no discoverable URL. -->
-    <div data-route="/home" data-route-name="home" data-component="_pages/home.html" data-route-shadow></div>
+         client has no discoverable URL. The active route's component URL is
+         published to #router.route; the content panel binds to it declaratively. -->
+    <div data-route="/" data-route-name="home" data-component="_pages/home.html" data-route-shadow></div>
+    <div data-route="/settings" data-route-name="settings" data-component="_pages/settings.html"></div>
+    <div data-route="/profile" data-route-name="profile" data-component="_pages/profile.html"></div>
     <div data-route="/_internal/admin-console" data-route-name="admin" data-component="_pages/_internal/admin-console.html" data-route-shadow></div>
 
     <!-- Drawer Header -->
