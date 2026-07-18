@@ -96,6 +96,9 @@ const signalModule: AttributeModule = {
               }
               
               if (changed) {
+                if (key === 'tabs' && (window as any).__nexusTabTrace) {
+                  console.log('[TABTRACE] writing tabs via signal effect. changed=', changed, 'curValLen=', Array.isArray(curVal)?curVal.length:'n/a', 'lastValLen=', Array.isArray(lastVal)?lastVal.length:'n/a', 'deepEqualGate=', (typeof curVal==='object'&&curVal!==null)?!deepEqual(curVal,lastVal):'n/a');
+                }
                 globals[key] = curVal;
                 lastEvaluatedState![key] = curVal;
               }
