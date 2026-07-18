@@ -907,6 +907,7 @@ export const routerAttributeModule: AttributeModule = {
         document.removeEventListener(popStateEvent, onPopState);
       };
     } catch (e) {
+      (globalThis as any).__re = (e instanceof Error ? e.message : String(e)) + ' @ ' + ((e as any).stack ? (e as any).stack.split('\n')[1] || '' : '');
       reportError(e instanceof Error ? e : new Error(String(e)), el);
     }
   },
