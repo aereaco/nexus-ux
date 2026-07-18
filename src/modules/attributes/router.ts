@@ -303,6 +303,69 @@ export const routerAttributeModule: AttributeModule = {
         return resolved.pathname + resolved.search + resolved.hash;
       };
 
+      // Glob → RegExp (supports `*` and `**`; `**` matches across slashes).
+      const globToRegex = (glob: string): RegExp => {
+        let pattern = glob
+          .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
+          .replace(/\*\*\/?/g, '::globstar::')
+          .replace(/\*/g, '[^/]*')
+          .replace(/::globstar::/g, '.*');
+        return new RegExp(`^${pattern}$`);
+      };
+
+      // Test whether a path is shadow/internal per the config's `shadow` glob(s).
+      const shadowMatch = (path: string): boolean => {
+        const shadows = state.config.shadow;
+        if (!shadows) return false;
+        const globs = Array.isArray(shadows) ? shadows : [shadows];
+        return globs.some((g) => globToRegex(g).test(path));
+      };
+
+      // Build the resolved manifest: declared data-route entries + optional static
+      // manifest file + dynamic scan. Internal (shadow) routes are tagged and kept
+      // out of the *public* array.
+      const buildManifest = async () => {
+        const entries: RouteRecord[] = routeList.slice();
+
+        const manifestUrl = state.config.manifest;
+        if (manifestUrl) {
+          try {
+            let raw: string;
+            if (runtime.fetch) {
+              raw = (await runtime.fetch.request(applyBase(manifestUrl), { responseType: 'text' }, el)) as string;
+            } else {
+              raw = await (await fetch(applyBase(manifestUrl))).text();
+            }
+            const parsed = JSON.parse(raw);
+            const list = Array.isArray(parsed) ? parsed : (parsed.routes ?? []);
+            for (const entry of list) {
+              if (!entry || typeof entry.path !== 'string') continue;
+              const meta = pathToRegex(entry.path);
+              const rec: RouteRecord = {
+                path: entry.path,
+                element: document.documentElement,
+                name: entry.name,
+                redirect: entry.redirect,
+                layout: entry.layout,
+                component: entry.component,
+                meta: entry.meta,
+                internal: entry.internal === true || shadowMatch(entry.path),
+                source: 'manifest',
+                ...meta,
+              } as RouteRecord;
+              (rec as any).matcher = meta.regex;
+              entries.push(rec);
+            }
+          } catch (e) {
+            reportError(new Error(`router: failed to load manifest "${manifestUrl}": ${e}`), el);
+          }
+        }
+
+        // Public manifest = non-internal entries (what the app advertises).
+        state.manifest = entries.filter((r) => !r.internal).slice();
+        state.routes = entries.slice();
+      };
+
       // Raw (non-reactive) route registry. RegExp matchers must never enter the
       // reactive graph, or `path.match(proxiedRegExp)` throws
       // "RegExp.prototype.hasIndices getter called on non-RegExp object".
