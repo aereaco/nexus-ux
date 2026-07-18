@@ -29,7 +29,7 @@
           originIcon: 'material-symbols-light:home-outline'
         }] }"
     data-effect="
-      const router = $router;
+      const router = #router;
       const id = activeTabId;
       const tabIdx = tabs.findIndex(t => t.id === id);
       const tab = tabIdx > -1 ? tabs[tabIdx] : null;
@@ -53,7 +53,7 @@
       }
     ">
     <!-- Declarative routes (signal model). Shadow/internal routes resolve &
-         render through the router but are excluded from $router.manifest so the
+         render through the router but are excluded from #router.manifest so the
          client has no discoverable URL. -->
     <div data-route="/home" data-route-name="home" data-component="_pages/home.html" data-route-shadow></div>
     <div data-route="/_internal/admin-console" data-route-name="admin" data-component="_pages/_internal/admin-console.html" data-route-shadow></div>
