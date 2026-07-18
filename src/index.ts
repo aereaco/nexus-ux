@@ -18,7 +18,8 @@ import {
   autoAttributes,
   autoSprites,
   autoModifiers,
-  autoObservers 
+  autoObservers,
+  autoListeners
 } from './manifest.ts';
 
 import { resolveSelector } from './modules/sprites/selector.ts';
