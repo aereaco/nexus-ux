@@ -70,7 +70,6 @@ const signalModule: AttributeModule = {
 
       if (typeof newState === 'object' && newState !== null) {
         if (!lastEvaluatedState) {
-          if ((window as any).__sigTrace) console.log('[SIG] FIRST-RUN global on', (el.className||'').slice(0,30), 'tabs=', JSON.stringify((newState as any).tabs)?.length);
           // First run: populate all
           lastEvaluatedState = { ...(newState as Record<string, unknown>) };
           if (isGlobal) {
@@ -90,14 +89,13 @@ const signalModule: AttributeModule = {
             Object.keys(currentEval).forEach(key => {
               const curVal = currentEval[key];
               const lastVal = lastEvaluatedState![key];
-
+              
               let changed = curVal !== lastVal;
               if (changed && typeof curVal === 'object' && curVal !== null) {
                  changed = !deepEqual(curVal, lastVal);
               }
-
+              
               if (changed) {
-                if ((window as any).__sigTrace && key === 'tabs') console.log('[SIG] CHANGED-WRITE tabs', (Array.isArray(lastVal)?lastVal.length:'?'), '->', (Array.isArray(curVal)?curVal.length:'?'), 'on', (el.className||'').slice(0,30));
                 globals[key] = curVal;
                 lastEvaluatedState![key] = curVal;
               }
