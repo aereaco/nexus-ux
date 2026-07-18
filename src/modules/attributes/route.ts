@@ -20,6 +20,8 @@ import { reportError } from '../../engine/debug.ts';
  *   data-route-before-leave
  *   data-route-after-leave
  *   data-route-handler
+ *   data-route-shadow   (boolean — mark route as shadow/internal; resolved & rendered
+ *                        by the router but excluded from the public $router.manifest)
  *   data-component      (route's component URL, published to $router.route)
  *
  * Hook expressions receive `$to` (RouteInfo of the target route), `$from`
