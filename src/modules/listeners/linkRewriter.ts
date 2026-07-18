@@ -19,7 +19,6 @@ const linkRewriterModule: ListenerModule = {
   name: 'linkRewriter',
   event: 'click',
   listen: (el: HTMLElement, context: RuntimeContext) => {
-    const hasNavigationApi = 'navigation' in globalThis;
     // Capture the app base at listener init (initial document URL). Relative
     // links must resolve against this stable base, NOT the live virtual URL
     // (which the SPA mutates), otherwise repeated navigations double the path
