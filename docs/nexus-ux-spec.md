@@ -583,7 +583,7 @@ See [§7.11](#711-state-sprites--deprecated) in the reference for detailed examp
 
 | Sprite                              | Description                                                                                           | Practical Example                                |
 | :---------------------------------- | :---------------------------------------------------------------------------------------------------- | :----------------------------------------------- |
-| **`$router.navigate(url, [opts])`** | Navigate — programmatic client-side navigation. Supports `{ replace: true }` for history replacement. | `data-on-click="$router.navigate('/dashboard')"` |
+| **`#router.navigate(url, [opts])`** | Navigate — programmatic client-side navigation. Supports `{ replace: true }` for history replacement. | `data-on-click="#router.navigate('/dashboard')"` |
 
 #### 2.5.6. Runtime Sprites (Nexus-IO Provided)
 
@@ -923,7 +923,7 @@ directive catalog:
 #### 3.6.8. Routing & Navigation Directives
 
 - **`data-router`**: Router Initialization — declares the application's router
-  on the `<html>` element. Creates the `$router` signal with full navigation
+  on the `<html>` element. Creates the `#router` signal with full navigation
   state (`path`, `params`, `query`, `hash`, `loading`, `error`, `previous`,
   `layout`, `route`, `meta`, `scrollPosition`, `routes`, `mode`). Supports three
   routing modes: `signal` (programmatic route definitions), `static`
@@ -932,19 +932,19 @@ directive catalog:
   navigation and manages History API (`pushState`/`replaceState`/`popstate`).
 
   The routing **strategy** is declared declaratively as an object on `data-router`
-  and exposed reactively as `$router.config`:
+  and exposed reactively as `#router.config`:
   `{ mode, default, basePath, manifest, dynamic, shadow, notFound }`. The strategy
   is signal-driven — changing it re-resolves routes without tearing down the DOM.
 - **`data-route`**: Route Definition — declaratively registers a route by
   placing `data-route="/path/:param"` on an element. The route is automatically
-  added to `$router.routes` and removed when the element is destroyed. Supports
+  added to `#router.routes` and removed when the element is destroyed. Supports
   parameterized paths (`:id`), optional parameters (`:id?`), and wildcards
   (`*`). Companion attributes (`data-route-name`, `data-route-redirect`,
   `data-route-layout`, `data-route-meta`, `data-route-before-enter`,
   `data-route-after-enter`, `data-route-before-leave`, `data-route-after-leave`,
   `data-route-shadow`) are parsed by the same module. `data-route-shadow` (boolean)
   marks the route as **internal**: it resolves and renders through the router but
-  is excluded from the public `$router.manifest` so the client has no discoverable
+  is excluded from the public `#router.manifest` so the client has no discoverable
   URL.
 
 #### 3.6.9. Route Configuration Attributes
@@ -2176,8 +2176,9 @@ deliberate architectural decisions made during implementation.
 from the codebase. Native `_` mirror proxies (`_fetch`, `_clipboard`,
 `_caches`, `_Notification`, `_PaymentRequest`, `_WebSocket`, `_download`,
 `_http`) provide identical functionality with zero wrapper maintenance overhead.
-Framework-only sprites (`$sql`, `$gql`, `$router`, `$animate`, `$selector`,
+Framework-only sprites (`$sql`, `$gql`, `$animate`, `$selector`,
 `$pwa`, `$sw`, `$push`, `$bgFetch`, `$bgSync`, `$periodicSync`) are retained.
+The router (`#router`) is a global signal, not a sprite.
 
 **Rationale**: The mirror-auto-wrap refactor eliminated 12+ redundant sprite
 modules, reducing bundle size and maintenance burden while preserving full API
@@ -2206,11 +2207,11 @@ signals or `$el` where appropriate.
 **Rationale**: The ref system added complexity without sufficient value. Most
 ref use cases can be addressed through signals or scoped `$el` access.
 
-### RC-4: `$router` as Signal, Not Sprite
+### RC-4: `#router` as Signal, Not Sprite
 
-**Original spec**: `$router` was documented as a sprite.
+**Original spec**: `#router` was documented as a sprite.
 
-**Current implementation**: `$router` is a **reactive signal** created by the
+**Current implementation**: `#router` is a **reactive signal** created by the
 `data-router` attribute module, not a sprite module.
 
 **Rationale**: Routing state is inherently reactive and scoped to the DOM tree
