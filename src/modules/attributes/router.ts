@@ -259,25 +259,70 @@ export const routerAttributeModule: AttributeModule = {
         currentRoute: null,
         routes: [],
 
-        navigate(url: string, opts?: { replace?: boolean }) {
+        // Per-tab history bookkeeping (native history is the single store).
+        activeTabId: null,
+        tabPaths: {} as Record<string, string>,
+        tabMeta: {} as Record<string, { title?: string; icon?: string }>,
+
+        navigate(url: string, opts?: { replace?: boolean; tabId?: string; title?: string; icon?: string }) {
           if (url.startsWith('http') || url.startsWith('//')) {
             globalThis.location.href = url;
             return;
           }
 
           const target = applyBase(url);
+          const tabId = opts?.tabId ?? state.activeTabId ?? null;
+
+          // Track this tab's current path + metadata so switching the active
+          // tab (or back/forward) re-renders the correct outlet.
+          if (tabId) {
+            state.tabPaths[tabId] = stripBase(target);
+            if (opts?.title !== undefined || opts?.icon !== undefined) {
+              state.tabMeta[tabId] = {
+                ...(state.tabMeta[tabId] || {}),
+                ...(opts?.title !== undefined ? { title: opts.title } : {}),
+                ...(opts?.icon !== undefined ? { icon: opts.icon } : {}),
+              };
+            }
+          }
 
           if ('navigation' in globalThis) {
             (globalThis as any).navigation.navigate(target, {
               history: opts?.replace ? 'replace' : 'push',
-              state: { scrollY: globalThis.scrollY },
+              state: { tabId, scrollY: globalThis.scrollY, title: opts?.title, icon: opts?.icon },
             });
           } else {
-            const histState = { scrollY: globalThis.scrollY };
+            const histState = { tabId, scrollY: globalThis.scrollY, title: opts?.title, icon: opts?.icon };
             if (opts?.replace) globalThis.history.replaceState(histState, '', target);
             else globalThis.history.pushState(histState, '', target);
             updateRoute(target);
           }
+        },
+
+        // Back/forward for a tab. Drives the native history; the popstate /
+        // navigation handler resolves which tab the destination belongs to and
+        // switches the active tab if it lands on another tab's entry.
+        back(_opts?: { tabId?: string }) {
+          if ('navigation' in globalThis) (globalThis as any).navigation.back();
+          else globalThis.history.back();
+        },
+        forward(_opts?: { tabId?: string }) {
+          if ('navigation' in globalThis) (globalThis as any).navigation.forward();
+          else globalThis.history.forward();
+        },
+        canBack(_tabId?: string) {
+          if ('navigation' in globalThis) {
+            const nav = (globalThis as any).navigation;
+            return nav && typeof nav.canGoBack === 'function' ? nav.canGoBack : true;
+          }
+          return globalThis.history.length > 1;
+        },
+        canForward(_tabId?: string) {
+          if ('navigation' in globalThis) {
+            const nav = (globalThis as any).navigation;
+            return nav && typeof nav.canGoForward === 'function' ? nav.canGoForward : true;
+          }
+          return globalThis.history.length > 1;
         },
 
         navigateByName(name, params = {}, query, opts) {
