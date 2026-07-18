@@ -32,16 +32,16 @@
       const id = activeTabId;
       const tab = tabs.find(t => t.id === id);
       if (!router || !tab) return;
-      // Keep the active tab reference in sync for the panel + menus.
+      // Keep the active tab reference in sync for the panel + menus (mutate in
+      // place so the reference stays valid after content changes).
       if (activeTab !== tab) activeTab = tab;
       // Touch router.tabPaths so this effect re-runs on navigation/back-forward.
       const navPath = router.tabPaths && router.tabPaths[id];
-      // Mirror a real navigated page (.html) into the active tab's content so
-      // the panel swaps in place and history is preserved. The root path '/'
-      // and the 404 fallback are ignored so the home tab keeps its origin page.
+      // When a real page (.html) was navigated into this tab (not the root '/'
+      // or the 404 fallback), render + persist it so the panel swaps in place
+      // and history/back-forward is preserved.
       if (navPath && navPath.endsWith('.html') && navPath !== '/404.html' && navPath !== tab.content) {
-        const idx = tabs.findIndex(t => t.id === id);
-        if (idx > -1) { const next = tabs.slice(); next[idx] = { ...tab, content: navPath }; tabs = next; }
+        tab.content = navPath;
       }
     ">
     <!-- Drawer Header -->
