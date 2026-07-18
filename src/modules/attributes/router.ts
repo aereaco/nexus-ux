@@ -333,6 +333,10 @@ export const routerAttributeModule: AttributeModule = {
         currentRoute: null,
         routes: [],
 
+        // Declarative strategy snapshot + resolved manifest.
+        config: routerConfig,
+        manifest: [],
+
         // Per-tab history bookkeeping (native history is the single store).
         activeTabId: null,
         tabPaths: {} as Record<string, string>,
