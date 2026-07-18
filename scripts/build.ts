@@ -318,6 +318,7 @@ async function buildBundle(options: BuildOptions = {}) {
     await generateRegistry("modules/sprites", "autoSprites", "sprites", spriteWhitelist);
     await generateRegistry("modules/scopes", "autoScopes", "scopes", undefined);
     await generateRegistry("modules/modifiers", "autoModifiers", "modifiers", modWhitelist);
+    await generateRegistry("modules/listeners", "autoListeners", "listeners", undefined);
 
     // Mutation observer
     const mutationPath = path.resolve(cwd, "src", "engine", "mutation.ts");
