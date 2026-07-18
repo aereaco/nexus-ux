@@ -397,6 +397,25 @@ export const routerAttributeModule: AttributeModule = {
       // 2. Register Global Signal
       runtime.setGlobalSignal('$router', state);
 
+      // --- Per-tab history: active tab is owned by the layout's global signal.
+      // The router reads/writes `activeTabId` there so the tab bar + panels
+      // (which bind `activeTabId`) and the router's outlet stay in sync.
+      const globals = runtime.globalSignals() as Record<string, unknown>;
+      const getActiveTabId = (): string | null =>
+        (typeof globals.activeTabId === 'string' && globals.activeTabId) || null;
+      const setActiveTabId = (id: string) => {
+        runtime.setGlobalSignal('activeTabId', id);
+      };
+
+      // When the layout switches the active tab, re-render the outlet for it.
+      // (globalSignals() is a reactive object, so watch() fires on change.)
+      runtime.watch(
+        () => globals.activeTabId,
+        () => {
+          try { state.renderActiveTab(); } catch (_e) { /* noop */ }
+        },
+      );
+
       // Track previous route for leave hooks.
       let previousInfo: RouteInfo | null = null;
       let navToken = 0;
