@@ -22,7 +22,7 @@
     <ul class="menu w-full rounded-box bg-base-100/50" data-show="favorites && favorites.length > 0">
       <template data-for="fav in favorites" data-key="fav.url">
         <li>
-          <a data-bind:href="fav.url" data-bind:title="fav.title" data-bind-icon="fav.icon || 'material-symbols-light:article-outline'">
+          <a data-bind-href="fav.url" data-bind-title="fav.title">
             <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:article-outline'" style="font-size: 20px"></iconify-icon>
             <span data-bind="fav.title"></span>
           </a>
@@ -43,7 +43,7 @@
     <ul class="menu w-full rounded-box bg-base-100/50" data-show="recent && recent.length > 0">
       <template data-for="item in recent" data-key="item.path">
         <li>
-          <a data-bind:href="item.path" data-bind:title="item.title">
+          <a data-bind-href="item.path" data-bind-title="item.title">
             <iconify-icon icon="material-symbols-light:article-outline" style="font-size: 20px"></iconify-icon>
             <span data-bind="item.title"></span>
           </a>
