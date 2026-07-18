@@ -12,7 +12,7 @@
   data-bind-dir="rtl ? 'rtl' : 'ltr'"
   data-bind-style="{ fontSize: zoom + 'rem' }">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
-  <div class="drawer-content" data-router="{ mode: 'hybrid' }" data-signal:global="{
+  <div class="drawer-content" data-router="{ mode: 'hybrid' }"     data-signal:global="{
         activeTabId: 'home',
         activeTab: null,
         outletContent: '_pages/home.html',
@@ -27,31 +27,7 @@
           originUrl: '/_pages/home.html',
           originTitle: 'Home',
           originIcon: 'material-symbols-light:home-outline'
-        }] }"
-    data-effect="
-      const router = #router;
-      const id = activeTabId;
-      const tabIdx = tabs.findIndex(t => t.id === id);
-      const tab = tabIdx > -1 ? tabs[tabIdx] : null;
-      if (!router || !tab) return;
-      // Keep the active tab reference in sync for the panel + menus.
-      if (activeTab !== tab) activeTab = tab;
-      // Touch router.tabPaths so this effect re-runs on navigation/back-forward.
-      const navPath = router.tabPaths && router.tabPaths[id];
-      // A real page (.html) was navigated into this tab (not the root '/' or the
-      // 404 fallback): persist it on the tab AND drive the flat outletContent
-      // signal that the panel binds to (reliable primitive reactivity).
-      if (navPath && navPath.endsWith('.html') && navPath !== '/404.html' && navPath !== tab.content) {
-        const next = tabs.slice();
-        next[tabIdx] = { ...tab, content: navPath };
-        tabs = next;
-        activeTab = next[tabIdx];
-        outletContent = navPath;
-      } else if (outletContent !== tab.content) {
-        // Keep the flat outlet signal on the active tab's stored content.
-        outletContent = tab.content;
-      }
-    ">
+        }] }">
     <!-- Declarative routes (signal model). Shadow/internal routes resolve &
          render through the router but are excluded from #router.manifest so the
          client has no discoverable URL. -->
