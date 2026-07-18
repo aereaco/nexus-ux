@@ -226,6 +226,7 @@ export const routerAttributeModule: AttributeModule = {
   name: 'router-attribute',
   attribute: 'router',
   handle: (el: HTMLElement, initConfig: string, runtime: RuntimeContext) => {
+    (globalThis as any).__routerInitCount = ((globalThis as any).__routerInitCount || 0) + 1;
     try {
       runtime.debug('Initializing data-router on', el);
 
