@@ -1,51 +1,62 @@
 import { chromium } from 'playwright';
 const URL = 'http://127.0.0.1:8081/site/index.html';
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-// REAL (headed) browser on DISPLAY=:0 — not headless.
 const browser = await chromium.launch({ headless: false, channel: 'chrome' });
 const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
 const logs = [];
 page.on('console', m => logs.push(`[${m.type()}] ${m.text()}`));
-page.on('pageerror', e => logs.push(`[pageerror] ${e.message}`));
+page.on('pageerror', e => logs.push(`[PAGEERROR] ${e.message}`));
 await page.goto(URL, { waitUntil: 'networkidle' });
-await sleep(1000);
+await sleep(1500);
 
-const rt = () => page.evaluate(() => {
-  const g = window._NEXUS_RUNTIME.globalSignals();
-  return { activeTabId: g.activeTabId, tabs: (g.tabs||[]).map(t=>t.id), hovered: g.hovered, collapsed: g.collapsed };
-});
-const domTabs = () => page.evaluate(() => [...document.querySelectorAll('[role="tab"]')].map(t=>t.textContent.trim().slice(0,30)));
+console.log('=== PAGE ERRORS / CONSOLE (first 30) ===');
+console.log(logs.slice(0,30).join('\n') || '(none)');
 
-console.log('INITIAL signals:', JSON.stringify(await rt()), 'dom:', JSON.stringify(await domTabs()));
-
-// Create 3 tabs via real signals set
+// Add tabs so we have something visible
 await page.evaluate(() => {
   const g = window._NEXUS_RUNTIME.globalSignals();
-  for (let i=0;i<3;i++){ g.tabSeq = g.tabSeq+1; const id='tab-'+g.tabSeq; g.tabs.push({id,title:'Tab'+i,icon:'material-symbols-light:article-outline',content:'_components/tab-new.html'}); g.activeTabId=id; }
+  for (let i = 0; i < 3; i++) { g.tabSeq=(g.tabSeq||0)+1; const id='tab-'+g.tabSeq; g.tabs=[...g.tabs,{id,title:'Tab'+i,icon:'x',content:'_components/tab-new.html'}]; g.activeTabId=id; }
 });
-await sleep(500);
-console.log('AFTER ADD 3 tabs signals:', JSON.stringify(await rt()), 'dom:', JSON.stringify(await domTabs()));
+await sleep(600);
 
+// Screenshot BEFORE
+await page.screenshot({ path: '/tmp/kilo/before.png', fullPage: false });
+
+// Capture structural state before
+const before = await page.evaluate(() => {
+  const bar = document.querySelector('[role="tablist"]');
+  const panel = document.querySelector('[role="tabpanel"]');
+  return {
+    tabHeaders: bar ? [...bar.children].filter(c=>!c.hasAttribute('data-ux-template')).length : -1,
+    panelHtmlLen: panel ? panel.innerHTML.length : -1,
+    panelText: panel ? panel.innerText.slice(0, 60).replace(/\n/g,' ') : 'EMPTY',
+  };
+});
+console.log('\nBEFORE hover:', JSON.stringify(before));
+
+// Hover the sidebar
 const sidebar = page.locator('.drawer-side');
 const box = await sidebar.boundingBox();
-async function hoverIn() { await page.mouse.move(box.x + box.width/2, box.y + 120); await sleep(500); }
-async function hoverOut() { await page.mouse.move(3,3); await sleep(500); }
+await page.mouse.move(box.x + box.width/2, box.y + 120);
+await sleep(800);
 
-console.log('\n=== REAL BROWSER HOVER CYCLES (4 tabs open) ===');
-for (let i=0;i<8;i++){
-  await hoverIn();  const sIn = await rt();  const dIn = await domTabs();
-  await hoverOut(); const sOut = await rt(); const dOut = await domTabs();
-  const dropped = sIn.tabs.length !== 4 || sOut.tabs.length !== 4;
-  console.log(`cycle ${i+1}: IN tabs=${JSON.stringify(sIn.tabs)} dom=${JSON.stringify(dIn)} | OUT tabs=${JSON.stringify(sOut.tabs)} dom=${JSON.stringify(dOut)} ${dropped?'<<< TAB DROP!':''}`);
-}
+// Screenshot AFTER
+await page.screenshot({ path: '/tmp/kilo/after.png', fullPage: false });
 
-// Navigate + hover
-console.log('\n=== REAL BROWSER NAVIGATE + HOVER ===');
-for (const p of ['/settings','/profile','/']){
-  await page.evaluate((pp)=>{ const g=window._NEXUS_RUNTIME.globalSignals(); if(g.router?.navigate) g.router.navigate(pp,{tabId:g.activeTabId}); }, p);
-  await hoverIn(); await hoverOut();
-}
-console.log('after nav+hover signals:', JSON.stringify(await rt()), 'dom:', JSON.stringify(await domTabs()));
+const after = await page.evaluate(() => {
+  const bar = document.querySelector('[role="tablist"]');
+  const panel = document.querySelector('[role="tabpanel"]');
+  return {
+    tabHeaders: bar ? [...bar.children].filter(c=>!c.hasAttribute('data-ux-template')).length : -1,
+    panelHtmlLen: panel ? panel.innerHTML.length : -1,
+    panelText: panel ? panel.innerText.slice(0, 60).replace(/\n/g,' ') : 'EMPTY',
+  };
+});
+console.log('AFTER hover: ', JSON.stringify(after));
 
-console.log('\nLOGS:', logs.join('\n') || '(none)');
+// Did ANY error happen during hover?
+console.log('\n=== console/errors AFTER hover ===');
+console.log(logs.slice(30).join('\n') || '(none new)');
+
 await browser.close();
+console.log('\nScreenshots saved: /tmp/kilo/before.png /tmp/kilo/after.png');
