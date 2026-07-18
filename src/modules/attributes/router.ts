@@ -635,6 +635,11 @@ export const routerAttributeModule: AttributeModule = {
         // inner `$router.route` outlet), else render the route component directly.
         state.outlet = state.layout ?? state.route;
 
+        // Per-tab: remember the resolved path for the active tab so switching
+        // back to it (or a back/forward that lands here) re-renders correctly.
+        const _at = getActiveTabId();
+        if (_at) state.tabPaths[_at] = path;
+
         if (matched || staticComponent) {
           commitVisibility(matched); // section model (no-op visually for outlet-only)
           state.error = null;
