@@ -1,2 +1,54 @@
-<div class="p-2 text-lg font-semibold">New Tab</div>
-<p class="text-base-content/70">Dynamically added tab content rendered via <code>data-component</code>.</p>
+<div class="mx-auto flex max-w-3xl flex-col gap-8 p-6">
+  <div>
+    <h1 class="text-2xl font-bold">New Tab</h1>
+    <p class="text-base-content/70">Start somewhere, or jump back to where you left off.</p>
+  </div>
+
+  <!-- Quick home link -->
+  <a class="btn btn-primary w-fit" href="/" data-tab-title="Home" data-tab-icon="material-symbols-light:home-outline">
+    <iconify-icon icon="material-symbols-light:home-outline" style="font-size: 20px"></iconify-icon>
+    Go to Home
+  </a>
+
+  <!-- Favorites -->
+  <section>
+    <h2 class="mb-2 flex items-center gap-2 text-lg font-semibold">
+      <iconify-icon icon="material-symbols-light:star-outline" style="font-size: 22px"></iconify-icon>
+      Favorites
+    </h2>
+    <div data-if="favorites && favorites.length === 0" class="text-sm text-base-content/50">
+      No favorites yet. Right-click a tab or link and choose <span class="font-medium">Save to Favorites</span>.
+    </div>
+    <ul class="menu w-full rounded-box bg-base-100/50" data-show="favorites && favorites.length > 0">
+      <template data-for="fav in favorites" data-key="fav.url">
+        <li>
+          <a href="{{ fav.url }}" data-tab-title="{{ fav.title }}" data-tab-icon="{{ fav.icon }}">
+            <iconify-icon icon="{{ fav.icon || 'material-symbols-light:article-outline' }}" style="font-size: 20px"></iconify-icon>
+            <span data-bind="fav.title"></span>
+          </a>
+        </li>
+      </template>
+    </ul>
+  </section>
+
+  <!-- Recently visited -->
+  <section>
+    <h2 class="mb-2 flex items-center gap-2 text-lg font-semibold">
+      <iconify-icon icon="material-symbols-light:history" style="font-size: 22px"></iconify-icon>
+      Recently Visited
+    </h2>
+    <div data-if="recent && recent.length === 0" class="text-sm text-base-content/50">
+      Pages you visit will show up here.
+    </div>
+    <ul class="menu w-full rounded-box bg-base-100/50" data-show="recent && recent.length > 0">
+      <template data-for="item in recent" data-key="item.path">
+        <li>
+          <a href="{{ item.path }}" data-tab-title="{{ item.title }}">
+            <iconify-icon icon="material-symbols-light:article-outline" style="font-size: 20px"></iconify-icon>
+            <span data-bind="item.title"></span>
+          </a>
+        </li>
+      </template>
+    </ul>
+  </section>
+</div>
