@@ -7,7 +7,7 @@ import { reportError } from '../../engine/debug.ts';
  * data-route: Declaratively registers a route.
  * Usage: <div data-route="/user/:id">...</div>
  *
- * The route is automatically added to $router.routes and removed when the element
+ * The route is automatically added to #router.routes and removed when the element
  * is destroyed. Matching/rendering is handled by data-router.
  *
  * Config attributes (all optional):
@@ -21,8 +21,8 @@ import { reportError } from '../../engine/debug.ts';
  *   data-route-after-leave
  *   data-route-handler
  *   data-route-shadow   (boolean — mark route as shadow/internal; resolved & rendered
- *                        by the router but excluded from the public $router.manifest)
- *   data-component      (route's component URL, published to $router.route)
+ *                        by the router but excluded from the public #router.manifest)
+ *   data-component      (route's component URL, published to #router.route)
  *
  * Hook expressions receive `$to` (RouteInfo of the target route), `$from`
  * (RouteInfo of the previous route, or null), and `ctx` (a guard context with
@@ -35,6 +35,7 @@ export const routeAttributeModule: AttributeModule = {
   name: 'route-attribute',
   attribute: 'route', // maps to data-route
   handle: (el: HTMLElement, routePath: string, runtime: RuntimeContext, parsed?: ParsedAttribute) => {
+    (globalThis as any).__routeInitCount = ((globalThis as any).__routeInitCount || 0) + 1;
     try {
       // The directive matcher also routes suffixed attributes (data-route-redirect,
       // data-route-before-enter, ...) to this handler with the SUFFIX as the
