@@ -222,10 +222,10 @@
       >
         <template data-for="tab in tabs" data-key="tab.id">
           <div role="tab" tabindex="0"
-               class="flex items-center px-2 cursor-pointer border-transparent hover:'border-primary' transition-colors"
+               class="flex items-center px-2 cursor-pointer hover:'border-primary' transition-colors"
                data-drag
                data-bind-aria-selected="activeTabId === tab.id"
-               data-class="{ 'hidden': !pageTabs, 'tab-active, border-primary': activeTabId === tab.id }"
+               data-class="{ 'hidden': !pageTabs, 'tab-active border-b border-primary': activeTabId === tab.id }"
                data-on-click="activeTabId = tab.id">
             <iconify-icon icon="material-symbols-light:drag-indicator" class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
             <iconify-icon data-bind-icon="tab.icon" class="text-lg px-2"></iconify-icon>
