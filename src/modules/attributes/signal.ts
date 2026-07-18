@@ -96,7 +96,6 @@ const signalModule: AttributeModule = {
               }
               
               if (changed) {
-                if ((window as any).__nexusTabTrace && key === 'tabs') console.log('[SIGCHANGED] tabs overwritten len', Array.isArray(lastVal)?lastVal.length:'?', '->', Array.isArray(curVal)?curVal.length:'?');
                 globals[key] = curVal;
                 lastEvaluatedState![key] = curVal;
               }
