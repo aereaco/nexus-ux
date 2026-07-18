@@ -14,23 +14,16 @@
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content" data-router="hybrid" data-signal:global="{
         activeTabId: 'home',
-        pinned: ['home'],
+        pinned: [],
         tabSeq: 0,
         tabs: [{
           id: 'home',
           title: 'Home',
           icon: 'material-symbols-light:home-outline',
-          content: '_pages/home.html'
-        }, {
-          id: 'settings',
-          title: 'Settings',
-          icon: 'material-symbols-light:settings-outline',
-          content: '_pages/settings.html'
-        }, {
-          id: 'profile',
-          title: 'Profile',
-          icon: 'material-symbols-light:person-outline',
-          content: '_pages/profile.html'
+          content: '_pages/home.html',
+          originUrl: '/_pages/home.html',
+          originTitle: 'Home',
+          originIcon: 'material-symbols-light:home-outline'
         }] }"
     data-effect="
       const router = $router;
