@@ -20,6 +20,11 @@ const linkRewriterModule: ListenerModule = {
   event: 'click',
   listen: (el: HTMLElement, context: RuntimeContext) => {
     const hasNavigationApi = 'navigation' in globalThis;
+    // Capture the app base at listener init (initial document URL). Relative
+    // links must resolve against this stable base, NOT the live virtual URL
+    // (which the SPA mutates), otherwise repeated navigations double the path
+    // (e.g. /_pages/_pages/...).
+    const appBase = globalThis.location.href;
 
     const handler = (event: Event) => {
       try {
@@ -39,7 +44,16 @@ const linkRewriterModule: ListenerModule = {
         if (anchor.target && anchor.target !== '_self') return;
         if (anchor.hasAttribute('download') || anchor.hasAttribute('data-ignore')) return;
 
-        const path = anchor.pathname + anchor.search + anchor.hash;
+        // Resolve the raw href against the stable app base so the router gets a
+        // correct, non-doubled path regardless of the current virtual URL.
+        const rawHref = anchor.getAttribute('href') || '';
+        let resolved: URL;
+        try {
+          resolved = new URL(rawHref, appBase);
+        } catch {
+          resolved = new URL(globalThis.location.origin + rawHref);
+        }
+        const path = resolved.pathname + anchor.search + anchor.hash;
 
         // Notify observers of an SPA navigation intent.
         anchor.dispatchEvent(
