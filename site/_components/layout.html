@@ -252,6 +252,17 @@
           </div>
         </template>
 
+          <button class="btn btn-ghost btn-circle btn-sm shrink-0" aria-label="Back" title="Back"
+                  data-class="{ 'hidden': !pageTabs, 'opacity-40 pointer-events-none': !$router.canBack() }"
+                  data-on-click="$router.back()">
+            <iconify-icon icon="material-symbols-light:arrow-back" style="font-size: 20px"></iconify-icon>
+          </button>
+          <button class="btn btn-ghost btn-circle btn-sm shrink-0" aria-label="Forward" title="Forward"
+                  data-class="{ 'hidden': !pageTabs, 'opacity-40 pointer-events-none': !$router.canForward() }"
+                  data-on-click="$router.forward()">
+            <iconify-icon icon="material-symbols-light:arrow-forward" style="font-size: 20px"></iconify-icon>
+          </button>
+
           <button class="btn btn-circle shrink-0"
                   data-class="{ 'hidden': !pageTabs }"
                   data-on-click="tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; tabs.push({ id, title: 'Tab ' + tabSeq, icon: 'material-symbols-light:article-outline', content: '_components/tab-generic.html' }); activeTabId = id;">
