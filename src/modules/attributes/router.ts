@@ -675,6 +675,15 @@ export const routerAttributeModule: AttributeModule = {
         const url = new URL(e.destination.url);
         if (url.origin !== globalThis.location.origin) return;
 
+        // Per-tab history: the destination entry carries its owning tabId. If it
+        // belongs to a different (non-active) tab, switch the active tab to it
+        // (real-browser interleaving of tab timelines in one history).
+        const destState = e.destination?.state;
+        const destTab = destState && typeof destState.tabId === 'string' ? destState.tabId : null;
+        if (destTab && destTab !== getActiveTabId()) {
+          setActiveTabId(destTab);
+        }
+
         e.intercept({
           async handler() {
             await updateRoute(url.href);
@@ -687,7 +696,13 @@ export const routerAttributeModule: AttributeModule = {
       }
 
       // Fallback: react to browser back/forward when Navigation API is absent.
-      const onPopState = () => {
+      const onPopState = (event?: any) => {
+        // Per-tab: resolve the owning tab from the history entry state.
+        const st = event && event.state;
+        const tab = st && typeof st.tabId === 'string' ? st.tabId : null;
+        if (tab && tab !== getActiveTabId()) {
+          setActiveTabId(tab);
+        }
         updateRoute(globalThis.location.href);
       };
       const popStateEvent = `${CUSTOM_EVENT_PREFIX}popstate`;
