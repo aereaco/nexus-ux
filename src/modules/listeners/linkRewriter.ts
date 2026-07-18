@@ -43,16 +43,17 @@ const linkRewriterModule: ListenerModule = {
         if (anchor.target && anchor.target !== '_self') return;
         if (anchor.hasAttribute('download') || anchor.hasAttribute('data-ignore')) return;
 
-        // Resolve the raw href against the stable app base so the router gets a
-        // correct, non-doubled path regardless of the current virtual URL.
+        // Pass the raw (app-relative) href to the router. The router's applyBase
+        // prepends the basePath, so we must NOT pre-resolve against the live URL
+        // (that would double segments as the SPA virtual URL changes). We still
+        // validate same-origin using the appBase-resolved absolute form.
         const rawHref = anchor.getAttribute('href') || '';
-        let resolved: URL;
+        let sameOrigin = true;
         try {
-          resolved = new URL(rawHref, appBase);
-        } catch {
-          resolved = new URL(globalThis.location.origin + rawHref);
-        }
-        const path = resolved.pathname + anchor.search + anchor.hash;
+          sameOrigin = new URL(rawHref, appBase).origin === globalThis.location.origin;
+        } catch { /* relative hrefs are same-origin */ }
+        if (!sameOrigin) return;
+        const path = rawHref + anchor.search + anchor.hash;
 
         // Notify observers of an SPA navigation intent.
         anchor.dispatchEvent(
