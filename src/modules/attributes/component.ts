@@ -130,6 +130,10 @@ const componentModule: AttributeModule = {
 
         if (!config.path || config.path === 'none') return;
 
+        if ((window as any).__compTrace) console.log('[COMP] effect run path=', config.path, 'last=', __lastPath);
+        if (config.path === __lastPath) { if ((window as any).__compTrace) console.log('[COMP] SKIP reload (path unchanged)'); return; }
+        __lastPath = config.path;
+
         const load = async () => {
           componentState.isLoading = true;
           componentState.hasError = false;
