@@ -83,6 +83,11 @@ interface RouteRecord {
   matcher?: RegExp;
   keys?: string[];
   hasWildcard?: boolean;
+  // Shadow/internal route: resolved & rendered by the router, excluded from the
+  // public `$router.manifest` so the client has no discoverable URL.
+  internal?: boolean;
+  // Provenance tag for manifest entries ('declared' | 'manifest' | 'dynamic').
+  source?: string;
 }
 
 type RouterMode = 'signal' | 'static' | 'hybrid';
