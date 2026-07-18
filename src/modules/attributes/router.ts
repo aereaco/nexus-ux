@@ -35,6 +35,23 @@ import { CUSTOM_EVENT_PREFIX } from '../../engine/consts.ts';
  *  - Wildcard `*` captured into params.wildcard.
  *  - Helpers: navigateByName(name, params?, query?), isActive(path, exact?),
  *    buildQuery(obj).
+ *
+ * Declarative routing strategy (config object on data-router):
+ *  - `mode`, `default`, `basePath` — as above.
+ *  - `manifest` — URL of a static auto-route manifest (JSON array of route
+ *    descriptors). Merged into `$router.manifest` at boot.
+ *  - `dynamic` — when true, the router also folds runtime-discovered routes into
+ *    `$router.manifest` (e.g. a sibling `manifest.json` produced by the server/build).
+ *  - `shadow` — glob(s) marking internal routes (e.g. `'/_internal/**'`). Shadow
+ *    routes resolve/ render through the router's internal fetch but are excluded
+ *    from the public `$router.manifest` so the client has no discoverable URL.
+ *  - `notFound` — override the 404 component path.
+ *
+ * Intuitive API surface:
+ *  - `$router.config` — reactive snapshot of the strategy object.
+ *  - `$router.manifest` — resolved route manifest (declared + manifest + dynamic).
+ *  - `$router.match(path?)` — RouteInfo the router *would* match for a path.
+ *  - `$router.go(target, opts?)` — navigate by name or path (the friendly entrypoint).
  */
 
 export interface RouteInfo {
