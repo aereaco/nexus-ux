@@ -249,17 +249,17 @@
           </button>
       </div>
 
-      <!-- CONTENT PANEL: the active tab's content, rendered by the layout.
-           Internal links flow through the router (linkRewriter -> #router.navigate)
-           which stamps per-tab history; the global effect mirrors the active tab's
-           navigated path back into `content` so back/forward swaps the panel. -->
+      <!-- CONTENT PANEL: bound declaratively to the router's active route
+           component (#router.route). Navigation through the router (sidebar
+           links via linkRewriter -> #router.navigate, or #router.go) updates
+           #router.route, and data-component re-renders this outlet reactively. -->
       <div class="p-6" data-on-contextmenu:stop="
             const e = $event;
             const a = e.target.closest('a');
             if (a && a.origin === location.origin && !a.hasAttribute('download') && (!a.target || a.target === '_self')) {
               ctxMenu = { type: 'link', url: a.getAttribute('href'), title: a.textContent.trim(), icon: a.getAttribute('data-tab-icon') || '', x: e.clientX, y: e.clientY };
             }">
-        <div role="tabpanel" class="h-dvh" data-component="outletContent"></div>
+        <div role="tabpanel" class="h-dvh" data-component="#router.route"></div>
       </div>
 
       <!-- CONTEXT MENU (tab + link actions) -->
