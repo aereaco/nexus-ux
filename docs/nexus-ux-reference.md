@@ -2248,6 +2248,18 @@ The `$router` signal provides imperative navigation:
 </button>
 ```
 
+The intuitive entrypoint is `$router.go(target, opts?)` — it accepts a **route
+name** (resolved via `navigateByName`) or a **path** (resolved via `navigate`):
+
+```html
+<button data-on-click="$router.go('dashboard')">Go to Dashboard (by name)</button>
+<button data-on-click="$router.go('/dashboard')">Go to Dashboard (by path)</button>
+```
+
+`$router.match(path?)` returns the `RouteInfo` the router *would* match for a
+path (default: the current path) **without** navigating — handy for guards and
+preview UI.
+
 ### 9.2. `data-route` — Route Definition
 
 Define routes declaratively by placing `data-route` on elements. Routes are
