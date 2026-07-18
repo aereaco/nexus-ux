@@ -92,8 +92,24 @@ export interface RouterState {
   currentRoute: RouteRecord | null;
   routes: RouteRecord[];
 
+  // --- Per-tab history (woven into the native browser history) ---
+  // Each tab owns its own back/forward timeline. The native browser history is
+  // the single store; every entry is stamped with `tabId` (+title/icon/scroll)
+  // so back/forward can resolve which tab an entry belongs to.
+  activeTabId: string | null;
+  // Last resolved path per tab (so switching the active tab re-renders it).
+  tabPaths: Record<string, string>;
+  // Last title/icon per tab (synced from link attrs or fetched page metadata).
+  tabMeta: Record<string, { title?: string; icon?: string }>;
+  // Move the active tab's history back/forward. Falls through to the native
+  // history; the popstate/navigation handler resolves the owning tab.
+  back(opts?: { tabId?: string }): void;
+  forward(opts?: { tabId?: string }): void;
+  canBack(tabId?: string): boolean;
+  canForward(tabId?: string): boolean;
+
   // Methods
-  navigate(url: string, opts?: { replace?: boolean }): void;
+  navigate(url: string, opts?: { replace?: boolean; tabId?: string; title?: string; icon?: string }): void;
   navigateByName(
     name: string,
     params?: Record<string, string | number>,
