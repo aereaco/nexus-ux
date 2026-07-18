@@ -64,10 +64,9 @@ const linkRewriterModule: ListenerModule = {
           }),
         );
 
-        // With the Navigation API present, let the router intercept natively.
-        if (hasNavigationApi) return;
-
-        // Otherwise, drive the router (basePath-aware) or fall back to pushState.
+        // Always intercept: prevent the browser from resolving the raw relative
+        // href against the current *virtual* URL (which would double the path),
+        // and drive the router ourselves with the appBase-resolved `path`.
         event.preventDefault();
 
         const signals = context.globalSignals();
