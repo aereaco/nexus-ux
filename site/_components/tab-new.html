@@ -4,9 +4,9 @@
     <p class="text-base-content/70">Start somewhere, or jump back to where you left off.</p>
   </div>
 
-  <!-- Quick home link -->
+  <!-- Quick home link: navigate the active (this launchpad) tab via the router -->
   <a class="btn btn-primary w-fit" href="/" data-tab-title="Home" data-tab-icon="material-symbols-light:home-outline"
-     data-on-click="const h = $event.currentTarget.getAttribute('href'); const comp = h === '/' ? '_pages/home.html' : '_pages' + h + '.html'; const i = tabs.findIndex(t => t.id === activeTabId); if (i > -1) { const nt = tabs.slice(); nt[i] = { ...nt[i], content: comp }; tabs = nt; }">
+     data-on-click:stop="#router.navigate($evt.target.closest('a').getAttribute('href'), { tabId: activeTabId })">
     <iconify-icon icon="material-symbols-light:home-outline" style="font-size: 20px"></iconify-icon>
     Go to Home
   </a>
@@ -24,7 +24,7 @@
       <template data-for="fav in favorites" data-key="fav.url">
         <li>
           <a data-bind-href="fav.url" data-bind-title="fav.title"
-             data-on-click="const h = $event.currentTarget.getAttribute('href'); const comp = h === '/' ? '_pages/home.html' : '_pages' + h + '.html'; const i = tabs.findIndex(t => t.id === activeTabId); if (i > -1) { const nt = tabs.slice(); nt[i] = { ...nt[i], content: comp }; tabs = nt; }">
+             data-on-click:stop="#router.navigate($evt.target.closest('a').getAttribute('href'), { tabId: activeTabId })">
             <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:article-outline'" style="font-size: 20px"></iconify-icon>
             <span data-bind="fav.title"></span>
           </a>
@@ -46,7 +46,7 @@
       <template data-for="item in recent" data-key="item.path">
         <li>
           <a data-bind-href="item.path" data-bind-title="item.title"
-             data-on-click="const h = $event.currentTarget.getAttribute('href'); const comp = h === '/' ? '_pages/home.html' : '_pages' + h + '.html'; const i = tabs.findIndex(t => t.id === activeTabId); if (i > -1) { const nt = tabs.slice(); nt[i] = { ...nt[i], content: comp }; tabs = nt; }">
+             data-on-click:stop="#router.navigate($evt.target.closest('a').getAttribute('href'), { tabId: activeTabId })">
             <iconify-icon icon="material-symbols-light:article-outline" style="font-size: 20px"></iconify-icon>
             <span data-bind="item.title"></span>
           </a>
