@@ -371,6 +371,27 @@ export const routerAttributeModule: AttributeModule = {
           matchMeta.delete(route);
           state.routes = routeList.slice();
         },
+
+        // Render the active tab's stored path through the outlet. Used when the
+        // active tab switches (layout click) or a tab is first opened.
+        renderActiveTab() {
+          const id = getActiveTabId();
+          if (!id) return;
+          let path = state.tabPaths[id];
+          if (!path) {
+            // Seed from current location on first paint.
+            path = stripBase(globalThis.location.pathname) || '/';
+            state.tabPaths[id] = path;
+          }
+          updateRoute(globalThis.location.origin + applyBase(path));
+        },
+
+        // Switch the active tab (also updates the layout's global signal so the
+        // tab bar + panels react).
+        setActiveTab(id: string) {
+          setActiveTabId(id);
+          state.renderActiveTab();
+        },
       });
 
       // 2. Register Global Signal
