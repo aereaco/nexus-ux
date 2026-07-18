@@ -12,7 +12,7 @@ import { CUSTOM_EVENT_PREFIX } from '../../engine/consts.ts';
  * `ux-navigate` custom event for observers.
  *
  * When the Navigation API is absent, it routes the click through
- * `$router.navigate()` (which applies basePath and drives updateRoute), falling
+ * `#router.navigate()` (which applies basePath and drives updateRoute), falling
  * back to a raw pushState only if no router is present.
  */
 const linkRewriterModule: ListenerModule = {
