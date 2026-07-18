@@ -220,7 +220,7 @@
           <div role="tab" tabindex="0"
                class="flex items-center gap-2 cursor-pointer"
                data-drag
-               aria-selected="{ 'true': activeTabId === tab.id, 'false': activeTabId !== tab.id }"
+               data-bind-aria-selected="activeTabId === tab.id"
                data-class="{ 'hidden': !pageTabs, 'tab-active': activeTabId === tab.id }"
                data-on-click="activeTabId = tab.id">
             <iconify-icon icon="material-symbols-light:drag-indicator" class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
