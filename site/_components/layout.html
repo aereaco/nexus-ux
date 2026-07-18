@@ -19,6 +19,8 @@
         pinned: [],
         tabSeq: 0,
         ctxMenu: null,
+        favorites: (() => { try { return JSON.parse(localStorage.getItem('nexus-favorites') || '[]'); } catch { return []; } })(),
+        recent: [],
         tabs: [{
           id: 'home',
           title: 'Home',
