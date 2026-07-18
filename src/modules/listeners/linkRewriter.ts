@@ -71,7 +71,7 @@ const linkRewriterModule: ListenerModule = {
 
         const signals = context.globalSignals();
         // deno-lint-ignore no-explicit-any
-        const router = signals['#router'] as any;
+        const router = signals['router'] as any;
         if (router && typeof router.navigate === 'function') {
           router.navigate(path);
         } else {
