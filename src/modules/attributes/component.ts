@@ -130,8 +130,11 @@ const componentModule: AttributeModule = {
 
         if (!config.path || config.path === 'none') return;
 
-        if ((window as any).__compTrace) console.log('[COMP] effect run path=', config.path, 'last=', __lastPath);
-        if (config.path === __lastPath) { if ((window as any).__compTrace) console.log('[COMP] SKIP reload (path unchanged)'); return; }
+        // Memoize by resolved path: only re-fetch/remorph when the target
+        // actually changes. A re-run caused by an unrelated signal (e.g. hover)
+        // must NOT tear down and rebuild the component, or panel state (input
+        // focus, scroll, form values) is lost on every unrelated update.
+        if (config.path === __lastPath) return;
         __lastPath = config.path;
 
         const load = async () => {
