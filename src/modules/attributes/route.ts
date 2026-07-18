@@ -35,7 +35,6 @@ export const routeAttributeModule: AttributeModule = {
   name: 'route-attribute',
   attribute: 'route', // maps to data-route
   handle: (el: HTMLElement, routePath: string, runtime: RuntimeContext, parsed?: ParsedAttribute) => {
-    (globalThis as any).__routeInitCount = ((globalThis as any).__routeInitCount || 0) + 1;
     try {
       // The directive matcher also routes suffixed attributes (data-route-redirect,
       // data-route-before-enter, ...) to this handler with the SUFFIX as the
