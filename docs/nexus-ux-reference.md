@@ -2348,6 +2348,32 @@ The router automatically saves and restores scroll positions during navigation:
 - **Hash navigation**: Scrolls to the element matching the hash `#id`
 - **New navigation**: Scrolls to top
 
+### 9.3.1. Shadow Internal Routing
+
+A **shadow route** is a route the application can render but does *not* advertise
+to the client. Mark any `data-route` with `data-route-shadow` (or match the
+config's `shadow` glob) and the router will:
+
+- Resolve and render the route's `data-component` through its internal fetch
+  (so the page renders normally), but
+- **exclude it from `$router.manifest`**, so the public route list has no
+  discoverable URL, and
+- treat matching paths as internal in the `manifest` file merge as well.
+
+This lets a site browse internal files (admin consoles, drafts, system panels)
+while keeping them out of the client-facing manifest. Shadow resolution is
+**router-only** — no server-side enforcement is applied; the underlying file is
+still fetchable by the router's component loader.
+
+```html
+<!-- Declared shadow route: renders, but absent from $router.manifest -->
+<div data-route="/_internal/admin"
+     data-component="/_pages/_internal/admin.html"
+     data-route-shadow></div>
+
+<button data-on-click="$router.go('admin')">Open Internal Console</button>
+```
+
 ### 9.4. Complete Routing Example
 
 ```html
