@@ -15,7 +15,7 @@ await page.evaluate(() => {
   let backing = g.tabs;
   Object.defineProperty(g, 'tabs', {
     get(){ return backing; },
-    set(v){ console.log('[TABSSET] global tabs overwritten from len', Array.isArray(backing)?backing.length:'?', 'to len', Array.isArray(v)?v.length:'?', 'stack:', new Error().stack.split('\n').slice(1,4).join(' | ')); backing = v; }
+    set(v){ console.log('[TABSSET] global tabs overwritten from len', Array.isArray(backing)?backing.length:'?', 'to len', Array.isArray(v)?v.length:'?', '\\nFULLSTACK:', new Error().stack); backing = v; }
   });
 });
 await sleep(1000);
