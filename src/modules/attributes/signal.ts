@@ -77,12 +77,8 @@ const signalModule: AttributeModule = {
             if (isGlobal) {
               const globals = runtime.globalSignals() as Record<string, unknown>;
               Object.keys(newState as object).forEach(key => {
-                const initVal = (newState as Record<string, unknown>)[key];
                 if (!(key in globals)) {
-                  globals[key] = initVal;
-                  if ((window as any).__sigTrace) console.log('[SIG] INIT-IF-ABSENT set', key, 'on', (el.className || '').slice(0, 30));
-                } else if ((window as any).__sigTrace) {
-                  console.log('[SIG] INIT-IF-ABSENT skip (exists)', key, 'on', (el.className || '').slice(0, 30));
+                  globals[key] = (newState as Record<string, unknown>)[key];
                 }
                 seeded[key] = globals[key];
               });
