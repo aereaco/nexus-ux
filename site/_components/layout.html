@@ -333,6 +333,12 @@
            Watches router.path so it updates on every navigation. -->
       <div data-effect="(() => { const p = router.path; if (!p) return; const labels = { '/': 'Home', '/settings': 'Settings', '/profile': 'Profile', '/_internal/admin-console': 'Internal Console' }; const title = labels[p] || (p === '/404.html' ? 'Not Found' : p.replace(/^\//, '').replace(/-/g, ' ')); const entry = { path: p, title }; const next = [entry, ...recent.filter(r => r.path !== p)].slice(0, 5); recent = next; })()"></div>
 
+      <!-- Keep the active tab's content in step with the router's resolved
+           component for route-based navigation (sidebar links, router.go).
+           Component tabs (e.g. the new-tab launchpad) keep their own content
+           until the user navigates somewhere. -->
+      <div data-effect="(() => { const r = router.route; if (!r) return; const idx = tabs.findIndex(t => t.id === activeTabId); if (idx > -1 && tabs[idx].content !== r) { const nt = tabs.slice(); nt[idx] = { ...nt[idx], content: r }; tabs = nt; } })()"></div>
+
     <!-- Default Diagnostic Content (fallback if no route component provided) -->
     <div data-if="!dashboardComponent">
       <div class="p-4 text-2xl font-bold">Nexus-UX Engine Layout Shell</div>
