@@ -65,6 +65,8 @@ export const routeAttributeModule: AttributeModule = {
       const beforeLeaveExpr = el.getAttribute('data-route-before-leave');
       const afterLeaveExpr = el.getAttribute('data-route-after-leave');
       const handlerExpr = el.getAttribute('data-route-handler');
+      const shadowAttr = el.getAttribute('data-route-shadow');
+      const internal = shadowAttr === '' || shadowAttr === 'true' || shadowAttr === 'shadow';
 
       let meta: unknown = {};
       if (metaStr) {
