@@ -70,7 +70,6 @@ const signalModule: AttributeModule = {
 
       if (typeof newState === 'object' && newState !== null) {
         if (!lastEvaluatedState) {
-          if ((window as any).__nexusTabTrace) console.log('[SIGINIT-FIRST] populate, tabsLiteralLen=', Array.isArray((newState as any).tabs)? (newState as any).tabs.length : 'n/a', 'on', el.className?.slice(0,30));
           // First run: populate all
           lastEvaluatedState = { ...(newState as Record<string, unknown>) };
           if (isGlobal) {
