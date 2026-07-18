@@ -16,14 +16,14 @@
       <iconify-icon icon="material-symbols-light:star-outline" style="font-size: 22px"></iconify-icon>
       Favorites
     </h2>
-    <div data-if="favorites && favorites.length === 0" class="text-sm text-base-content/50">
+    <div data-if="!favorites || favorites.length === 0" class="text-sm text-base-content/50">
       No favorites yet. Right-click a tab or link and choose <span class="font-medium">Save to Favorites</span>.
     </div>
     <ul class="menu w-full rounded-box bg-base-100/50" data-show="favorites && favorites.length > 0">
       <template data-for="fav in favorites" data-key="fav.url">
         <li>
-          <a href="{{ fav.url }}" data-tab-title="{{ fav.title }}" data-tab-icon="{{ fav.icon }}">
-            <iconify-icon icon="{{ fav.icon || 'material-symbols-light:article-outline' }}" style="font-size: 20px"></iconify-icon>
+          <a data-bind:href="fav.url" data-bind:title="fav.title" data-bind-icon="fav.icon || 'material-symbols-light:article-outline'">
+            <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:article-outline'" style="font-size: 20px"></iconify-icon>
             <span data-bind="fav.title"></span>
           </a>
         </li>
@@ -37,13 +37,13 @@
       <iconify-icon icon="material-symbols-light:history" style="font-size: 22px"></iconify-icon>
       Recently Visited
     </h2>
-    <div data-if="recent && recent.length === 0" class="text-sm text-base-content/50">
+    <div data-if="!recent || recent.length === 0" class="text-sm text-base-content/50">
       Pages you visit will show up here.
     </div>
     <ul class="menu w-full rounded-box bg-base-100/50" data-show="recent && recent.length > 0">
       <template data-for="item in recent" data-key="item.path">
         <li>
-          <a href="{{ item.path }}" data-tab-title="{{ item.title }}">
+          <a data-bind:href="item.path" data-bind:title="item.title">
             <iconify-icon icon="material-symbols-light:article-outline" style="font-size: 20px"></iconify-icon>
             <span data-bind="item.title"></span>
           </a>
