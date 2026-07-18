@@ -191,49 +191,63 @@
     </nav>
 
     <!-- name of each tab group should be unique -->
-    <div class="tabs tabs-border rounded-none"
-      data-signal="{
-        tabs: [{
-          id: 'home',
-          title: 'Home',
-          icon: 'material-symbols-light:home-outline',
-          content: '_pages/home.html',
-          checked: true
-        }, {
-          id: 'settings',
-          title: 'Settings',
-          icon: 'material-symbols-light:settings-outline',
-          content: '_pages/settings.html',
-          checked: false
-        }, {
-          id: 'profile',
-          title: 'Profile',
-          icon: 'material-symbols-light:person-outline',
-          content: '_pages/profile.html',
-          checked: false
-        }] }"
-    >
+    <!-- UI-state wrapper: owns activeTabId + pinned (list of ids). The tabs signal below stays data-only. -->
+    <div data-signal="{ activeTabId: 'home', pinned: ['home'] }">
+      <div class="tabs tabs-border rounded-none flex-nowrap overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-base-content/10"
+        role="tablist" aria-orientation="horizontal"
+        data-signal="{
+          tabs: [{
+            id: 'home',
+            title: 'Home',
+            icon: 'material-symbols-light:home-outline',
+            content: '_pages/home.html'
+          }, {
+            id: 'settings',
+            title: 'Settings',
+            icon: 'material-symbols-light:settings-outline',
+            content: '_pages/settings.html'
+          }, {
+            id: 'profile',
+            title: 'Profile',
+            icon: 'material-symbols-light:person-outline',
+            content: '_pages/profile.html'
+          }] }"
+        data-drag-container="tabs" data-drag-group="tabs" data-drag-direction="horizontal" data-drag-handle=".drag-handle" data-drag-swap-threshold="0.55"
+      >
 
-      <!-- Dynamic Page Tabs -->
-      <template data-for="tab in tabs" data-key="tab.id">
-        <div role="tab" class="flex items-center gap-2" data-class="{ 'hidden': !pageTabs, 'tab-active': tab.checked }"
-             data-on-click="tabs.forEach(t => t.checked = (t.id === tab.id))">
-          <iconify-icon data-bind-icon="tab.icon" class="text-lg"></iconify-icon>
-          <span data-bind="tab.title"></span>
-          <button class="btn btn-ghost btn-xs btn-circle ms-2" aria-label="Close tab" title="Close tab"
-                  data-on-click:stop="const wasActive = tab.checked; tabs = tabs.filter(t => t.id !== tab.id); if (wasActive && tabs[0]) tabs[0].checked = true;">
-            <iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
-          </button>
-        </div>
-        <div class="tab-content p-6 h-dvh" data-show="tab.checked" data-component="tab.content"></div>
-      </template>
+        <!-- Dynamic Page Tabs -->
+        <template data-for="tab in tabs" data-key="tab.id">
+          <div role="tab" tabindex="0"
+               class="flex items-center gap-2 cursor-pointer"
+               data-drag
+               aria-selected="{ 'true': activeTabId === tab.id, 'false': activeTabId !== tab.id }"
+               data-class="{ 'hidden': !pageTabs, 'tab-active': activeTabId === tab.id }"
+               data-on-click="activeTabId = tab.id">
+            <iconify-icon icon="material-symbols-light:drag-indicator" class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
+            <iconify-icon data-bind-icon="tab.icon" class="text-lg"></iconify-icon>
+            <span data-bind="tab.title"></span>
+            <button class="btn btn-ghost btn-xs btn-circle ms-2" aria-label="Close tab" title="Close tab"
+                    data-class="{ 'hidden': pinned.includes(tab.id) }"
+                    data-on-click:stop="const wasActive = activeTabId === tab.id; tabs = tabs.filter(t => t.id !== tab.id); if (wasActive) activeTabId = tabs[0]?.id;">
+              <iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
+            </button>
+          </div>
+        </template>
 
 
-      <button class="btn btn-circle"
-              data-class="{ 'hidden': !pageTabs }"
-              data-on-click="const n = tabs.length + 1; tabs.forEach(t => t.checked = false); tabs.push({ id: 'tab' + n, title: 'Tab ' + n, icon: 'material-symbols-light:article-outline', content: '_components/tab-generic.html', checked: true })">
-        <iconify-icon icon="material-symbols-light:add" style="font-size: 24px"></iconify-icon>
-      </button>
+        <button class="btn btn-circle shrink-0"
+                data-class="{ 'hidden': !pageTabs }"
+                data-on-click="const n = tabs.length + 1; const id = 'tab' + n; tabs.push({ id, title: 'Tab ' + n, icon: 'material-symbols-light:article-outline', content: '_components/tab-generic.html' }); activeTabId = id;">
+          <iconify-icon icon="material-symbols-light:add" style="font-size: 24px"></iconify-icon>
+        </button>
+      </div>
+
+      <!-- CONTENT PANELS (separate from the tab bar) -->
+      <div class="p-6">
+        <template data-for="tab in tabs" data-key="tab.id">
+          <div role="tabpanel" class="h-dvh" data-show="activeTabId === tab.id" data-component="tab.content"></div>
+        </template>
+      </div>
     </div>
     
     <!-- Default Diagnostic Content (fallback if no route component provided) -->
