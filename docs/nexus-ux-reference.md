@@ -2194,6 +2194,34 @@ Once initialized, the `$router` signal contains the full navigation state:
 | **`static`**           | Resolves routes by fetching HTML files from the filesystem (e.g., `/about` → `about.html`) |
 | **`hybrid`**           | Tries signal routes first, falls back to filesystem resolution, then 404                    |
 
+#### 9.1.3. Declarative Routing Strategy
+
+The routing strategy is declared as an object on `data-router` and exposed
+reactively as `$router.config`. Changing any key re-resolves routes without
+tearing down the DOM.
+
+```html
+<html data-router="{
+  mode: 'hybrid',
+  default: '/home',
+  basePath: '/site/',
+  manifest: '/routes.json',   // static auto-route manifest (JSON array)
+  dynamic: true,              // fold runtime-discovered routes into $router.manifest
+  shadow: '/_internal/**',    // glob(s): shadow/internal routes
+  notFound: '/404.html'       // override 404 component
+}">
+```
+
+| Key           | Type               | Description                                                                 |
+| :------------ | :----------------- | :-------------------------------------------------------------------------- |
+| `mode`        | `string`           | `signal` \| `static` \| `hybrid` (see table above).                        |
+| `default`     | `string \| null`   | Path the base `/` redirects to.                                            |
+| `basePath`    | `string`           | Base path prepended to outgoing / stripped from incoming navigations.      |
+| `manifest`    | `string`           | URL of a static auto-route manifest (JSON array of route descriptors).     |
+| `dynamic`     | `boolean`          | When true, fold runtime-discovered routes into `$router.manifest`.         |
+| `shadow`      | `string \| string[]` | Glob(s) marking internal routes (e.g. `'/_internal/**'`).                 |
+| `notFound`    | `string`           | Override the 404 component path (default `/404.html`).                     |
+
 #### 9.1.3. Automatic Link Interception
 
 The router automatically intercepts clicks on `<a>` tags with same-origin `href`
