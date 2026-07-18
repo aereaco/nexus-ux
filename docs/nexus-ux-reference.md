@@ -2181,6 +2181,10 @@ Once initialized, the `$router` signal contains the full navigation state:
 | `$router.routes`         | `array`          | Registered route definitions                    |
 | `$router.mode`           | `string`         | `'signal'`, `'static'`, or `'hybrid'`           |
 | `$router.basePath`       | `string`         | Auto-detected or manually configured base path  |
+| `$router.config`        | `object`         | Reactive routing strategy (`mode`, `default`, `basePath`, `manifest`, `dynamic`, `shadow`, `notFound`) |
+| `$router.manifest`       | `array`          | Resolved public route manifest (declared + manifest file + dynamic); shadow routes excluded |
+| `$router.match(path?)`   | `function`       | Returns the `RouteInfo` the router *would* match for a path (no navigation) |
+| `$router.go(target, opts?)` | `function`   | Intuitive navigate: by route name (→ `navigateByName`) or path (→ `navigate`) |
 
 #### 9.1.2. Routing Modes
 
