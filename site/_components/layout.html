@@ -29,9 +29,9 @@
           originIcon: 'material-symbols-light:home-outline'
         }] }">
     <!-- Declarative routes (signal model). Shadow/internal routes resolve &
-         render through the router but are excluded from #router.manifest so the
+         render through the router but are excluded from router.manifest so the
          client has no discoverable URL. The active route's component URL is
-         published to #router.route; the content panel binds to it declaratively. -->
+         published to router.route; the content panel binds to it declaratively. -->
     <div data-route="/" data-route-name="home" data-component="_pages/home.html" data-route-shadow></div>
     <div data-route="/settings" data-route-name="settings" data-component="_pages/settings.html"></div>
     <div data-route="/profile" data-route-name="profile" data-component="_pages/profile.html"></div>
@@ -250,16 +250,16 @@
       </div>
 
       <!-- CONTENT PANEL: bound declaratively to the router's active route
-           component (#router.route). Navigation through the router (sidebar
-           links via linkRewriter -> #router.navigate, or #router.go) updates
-           #router.route, and data-component re-renders this outlet reactively. -->
+           component (router.route). Navigation through the router (sidebar
+           links via linkRewriter -> router.navigate, or router.go) updates
+           router.route, and data-component re-renders this outlet reactively. -->
       <div class="p-6" data-on-contextmenu:stop="
             const e = $event;
             const a = e.target.closest('a');
             if (a && a.origin === location.origin && !a.hasAttribute('download') && (!a.target || a.target === '_self')) {
               ctxMenu = { type: 'link', url: a.getAttribute('href'), title: a.textContent.trim(), icon: a.getAttribute('data-tab-icon') || '', x: e.clientX, y: e.clientY };
             }">
-        <div role="tabpanel" class="h-dvh" data-component="#router.route"></div>
+        <div role="tabpanel" class="h-dvh" data-component="router.route"></div>
       </div>
 
       <!-- CONTEXT MENU (tab + link actions) -->
@@ -405,7 +405,7 @@
         <ul class="menu w-full grow" data-show="activeSidebarTab === 1">
           <!-- List item -->
           <li class="transition-transform duration-300 hover:scale-102 hover:aura hover:aura-glow">
-            <a href="_pages/home.html" data-tab-title="Home" data-tab-icon="material-symbols-light:home-outline">
+            <a href="/" data-tab-title="Home" data-tab-icon="material-symbols-light:home-outline">
               <!-- Home icon -->
               <iconify-icon icon="material-symbols-light:home-outline" style="font-size: 24px"></iconify-icon>
               <span data-class="{ 'hidden': collapsed && !hovered && !isMobile }">Homepage</span>
@@ -414,7 +414,7 @@
 
           <!-- List item -->
           <li class="transition-transform duration-300 hover:scale-102">
-            <a href="_pages/settings.html" data-tab-title="Settings" data-tab-icon="material-symbols-light:settings-outline">
+            <a href="/settings" data-tab-title="Settings" data-tab-icon="material-symbols-light:settings-outline">
               <!-- Settings icon -->
               <iconify-icon icon="material-symbols-light:settings-outline" style="font-size: 24px"></iconify-icon>
               <span data-class="{ 'hidden': collapsed && !hovered && !isMobile }">Settings</span>
@@ -423,7 +423,7 @@
 
           <!-- List item -->
           <li class="transition-transform duration-300 hover:scale-102">
-            <a href="_pages/profile.html" data-tab-title="Profile" data-tab-icon="material-symbols-light:person-outline">
+            <a href="/profile" data-tab-title="Profile" data-tab-icon="material-symbols-light:person-outline">
               <!-- Profile icon -->
               <iconify-icon icon="material-symbols-light:person-outline" style="font-size: 24px"></iconify-icon>
               <span data-class="{ 'hidden': collapsed && !hovered && !isMobile }">Profile</span>
