@@ -113,6 +113,16 @@ export interface RouterState {
   scrollPosition: { x: number; y: number };
   currentRoute: RouteRecord | null;
   routes: RouteRecord[];
+  // Reactive snapshot of the declarative routing strategy (mode/default/manifest/
+  // dynamic/shadow/notFound/basePath). Changes re-trigger a soft re-resolution.
+  config: RouterConfig;
+  // Resolved route manifest: declared data-route entries + manifest file + dynamic
+  // scan, merged. Public entries (non-internal) are what the app advertises.
+  manifest: RouteRecord[];
+  // Match a path and return the RouteInfo the router would use (no navigation).
+  match(path?: string): RouteInfo | null;
+  // Intuitive navigate: by route name (→ navigateByName) or path (→ navigate).
+  go(target: string, opts?: { replace?: boolean; tabId?: string; title?: string; icon?: string }): void;
 
   // --- Per-tab history (woven into the native browser history) ---
   // Each tab owns its own back/forward timeline. The native browser history is
