@@ -229,7 +229,7 @@
                data-on-click="activeTabId = tab.id">
             <iconify-icon icon="material-symbols-light:drag-indicator" class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
             <iconify-icon data-bind-icon="tab.icon" class="text-lg"></iconify-icon>
-            <div class="pe-4" data-bind="tab.title"></div>
+            <div class="pe-4 ps-8" data-bind="tab.title"></div>
             <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close tab" title="Close tab"
                     data-class="{ 'hidden': pinned.includes(tab.id) }"
                     data-on-click:stop="const wasActive = activeTabId === tab.id; tabs = tabs.filter(t => t.id !== tab.id); if (wasActive) activeTabId = tabs[0]?.id;">
