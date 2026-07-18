@@ -178,6 +178,14 @@ export class UX {
       }
     });
 
+    // Auto-Register Listener Modules
+    autoListeners.forEach(({ name, module }: { name: string; module: any }) => {
+      const listenerMod = module.default || Object.values(module)[0];
+      if (listenerMod) {
+        this.coordinator.registerListenerModule(listenerMod.name || name, listenerMod);
+      }
+    });
+
     initSelfHeal(this.coordinator.runtimeContext, {
       enabled: true,
       emitToConsole: this.coordinator.runtimeContext.isDevMode ?? false,
