@@ -511,6 +511,40 @@ export const routerAttributeModule: AttributeModule = {
           if (idx > -1) routeList.splice(idx, 1);
           matchMeta.delete(route);
           state.routes = routeList.slice();
+          queueMicrotask(() => buildManifest());
+        },
+
+        // Intuitive navigate: resolve a name via the manifest, else treat the
+        // target as a path. This is the friendly entrypoint for app code.
+        go(target: string, opts?: { replace?: boolean; tabId?: string; title?: string; icon?: string }) {
+          if (!target) return;
+          const named = routeList.find((r) => r.name === target);
+          if (named) {
+            state.navigateByName(target, {}, undefined, { replace: opts?.replace });
+            return;
+          }
+          state.navigate(target, opts);
+        },
+
+        // Match a path (default: current) and return the RouteInfo the router
+        // would use — without navigating. Useful for guards/preview UI.
+        match(path?: string): RouteInfo | null {
+          const p = path ? stripBase(path) : state.path;
+          for (const route of routeList) {
+            const meta = matchMeta.get(route);
+            if (!meta) continue;
+            const m = p.match(meta.regex);
+            if (m) {
+              const params: Record<string, string> = {};
+              meta.keys.forEach((key: string, i: number) => { params[key] = m[i + 1] || ''; });
+              if (meta.hasWildcard) params.wildcard = m[meta.keys.length + 1] || '';
+              return buildInfo(route, p, params, state.query, state.hash);
+            }
+          }
+          if (mode === 'static' || mode === 'hybrid') {
+            return buildInfo(null, p, {}, state.query, state.hash);
+          }
+          return null;
         },
 
         // Render the active tab's stored path through the outlet. Used when the
