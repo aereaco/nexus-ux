@@ -111,6 +111,7 @@ const componentModule: AttributeModule = {
       el[COMPONENT_CONTEXT_KEY] = ctx;
       addScopeToNode(el, ctx);
 
+      let __lastPath: string | undefined;
       runtime.effect(() => {
         let config: ComponentConfig;
         // Parse config
