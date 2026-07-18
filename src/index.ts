@@ -177,10 +177,6 @@ export class UX {
       }
     });
 
-    // Auto-Register Listener Modules (SPA link interception + history bridge)
-    this.coordinator.registerListenerModule(linkRewriterModule.name, linkRewriterModule);
-    this.coordinator.registerListenerModule(historyModule.name, historyModule);
-
     initSelfHeal(this.coordinator.runtimeContext, {
       enabled: true,
       emitToConsole: this.coordinator.runtimeContext.isDevMode ?? false,
