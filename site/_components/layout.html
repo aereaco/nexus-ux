@@ -251,17 +251,18 @@
           </button>
       </div>
 
-      <!-- CONTENT PANEL: bound declaratively to the router's active route
-           component (router.route). Navigation through the router (sidebar
-           links via linkRewriter -> router.navigate, or router.go) updates
-           router.route, and data-component re-renders this outlet reactively. -->
+      <!-- CONTENT PANEL: bound to the ACTIVE TAB's own content component. This
+           lets route tabs (router drives router.route) and component tabs (the
+           new-tab launchpad, link tabs) share one outlet. A sync effect below
+           keeps the active tab's content in step with router.route for route
+           tabs, so sidebar/router navigation still updates the visible panel. -->
       <div class="p-6" data-on-contextmenu:stop="
             const e = $event;
             const a = e.target.closest('a');
             if (a && a.origin === location.origin && !a.hasAttribute('download') && (!a.target || a.target === '_self')) {
               ctxMenu = { type: 'link', url: a.getAttribute('href'), title: a.textContent.trim(), icon: a.getAttribute('data-tab-icon') || '', x: e.clientX, y: e.clientY };
             }">
-        <div role="tabpanel" class="h-dvh" data-component="router.route"></div>
+        <div role="tabpanel" class="h-dvh" data-component="(tabs.find(t => t.id === activeTabId) || {}).content || router.route"></div>
       </div>
 
       <!-- CONTEXT MENU (tab + link actions) -->
