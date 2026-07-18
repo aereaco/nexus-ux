@@ -31,6 +31,9 @@
       const id = activeTabId;
       const tab = tabs.find(t => t.id === id);
       if (!router || !tab) return;
+      // Touch router.outlet/path so this effect re-runs after updateRoute
+      // commits (it would otherwise clobber the outlet with '/index.html').
+      const _outlet = router.outlet; const _path = router.path;
       // A navigation or back/forward moved this tab's URL: render and persist
       // the loaded page (so history swaps the panel content in place).
       const navPath = router.tabPaths && router.tabPaths[id];
@@ -39,7 +42,7 @@
         const idx = tabs.findIndex(t => t.id === id);
         if (idx > -1) { const next = tabs.slice(); next[idx] = { ...tab, content: navPath }; tabs = next; }
       } else if (router.outlet !== tab.content) {
-        // Seed/keep the outlet on the active tab's stored content.
+        // Seed/keep the outlet on the active tab's stored content (home page).
         router.outlet = tab.content;
       }
     ">
