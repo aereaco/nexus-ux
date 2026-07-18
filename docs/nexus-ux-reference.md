@@ -2315,8 +2315,9 @@ is removed.
 | `data-route-layout`       | Layout component URL                                            | `"/layouts/main.html"`            |
 | `data-route-before-enter` | Navigation guard (return `false` to cancel, string to redirect) | Async function string             |
 | `data-route-after-enter`  | Post-navigation hook                                            | Async function string             |
-| `data-route-before-leave` | Exit guard (return `false` to cancel, string to redirect)       | Async function string             |
-| `data-route-after-leave`  | Post-exit hook                                                  | Async function string             |
+| `data-route-before-leave` | Exit guard (return `false` to cancel, string to redirect)      | Async function string             |
+| `data-route-after-leave`  | Post-exit hook                                                 | Async function string             |
+| `data-route-shadow`       | Mark route as internal/shadow (excluded from `$router.manifest`) | `""` or `"true"` or `"shadow"`  |
 
 #### 9.2.3. Navigation Guards Example
 
