@@ -69,19 +69,30 @@ const signalModule: AttributeModule = {
       }
 
       if (typeof newState === 'object' && newState !== null) {
-        if (!lastEvaluatedState) {
-          // First run: populate all
-          lastEvaluatedState = { ...(newState as Record<string, unknown>) };
-          if (isGlobal) {
-            const globals = runtime.globalSignals() as Record<string, unknown>;
-            Object.keys(newState as object).forEach(key => {
-              globals[key] = (newState as Record<string, unknown>)[key];
-            });
-            stateRef.value = globals;
+          if (!lastEvaluatedState) {
+            // First run: seed globals. For GLOBAL signals, live state is
+            // authoritative — only initialize keys that do not already exist.
+            // Re-running (fresh closure) must never clobber existing global state.
+            const seeded = {} as Record<string, unknown>;
+            if (isGlobal) {
+              const globals = runtime.globalSignals() as Record<string, unknown>;
+              Object.keys(newState as object).forEach(key => {
+                const initVal = (newState as Record<string, unknown>)[key];
+                if (!(key in globals)) {
+                  globals[key] = initVal;
+                  if ((window as any).__sigTrace) console.log('[SIG] INIT-IF-ABSENT set', key, 'on', (el.className || '').slice(0, 30));
+                } else if ((window as any).__sigTrace) {
+                  console.log('[SIG] INIT-IF-ABSENT skip (exists)', key, 'on', (el.className || '').slice(0, 30));
+                }
+                seeded[key] = globals[key];
+              });
+              lastEvaluatedState = seeded;
+              stateRef.value = globals;
+            } else {
+              lastEvaluatedState = { ...(newState as Record<string, unknown>) };
+              stateRef.value = newState as Record<string, unknown>;
+            }
           } else {
-            stateRef.value = newState as Record<string, unknown>;
-          }
-        } else {
           // Subsequent run: only sync keys that CHANGED from the last EVALUATED state
           const currentEval = newState as Record<string, unknown>;
           if (isGlobal) {
