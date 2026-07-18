@@ -259,13 +259,13 @@
           </button>
       </div>
 
-      <!-- CONTENT PANELS (sibling of the bar, same scope) -->
+      <!-- CONTENT PANEL: a single active outlet driven by the router. The
+           global effect on `drawer-content` keeps `$router.outlet` synced to
+           the active tab's `content`; internal links re-render in place via
+           per-tab history (linkRewriter -> $router.navigate). -->
       <div class="p-6">
-        <template data-for="tab in tabs" data-key="tab.id">
-          <div role="tabpanel" class="h-dvh" data-show="activeTabId === tab.id" data-component="tab.content"></div>
-        </template>
+        <div role="tabpanel" class="h-dvh" data-component="$router.outlet"></div>
       </div>
-    </div>
     
     <!-- Default Diagnostic Content (fallback if no route component provided) -->
     <div data-if="!dashboardComponent">
