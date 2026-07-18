@@ -21,10 +21,6 @@ import {
   autoObservers 
 } from './manifest.ts';
 
-// Listener Modules (link interception + history bridging for SPA navigation)
-import linkRewriterModule from './modules/listeners/linkRewriter.ts';
-import historyModule from './modules/listeners/history.ts';
-
 import { resolveSelector } from './modules/sprites/selector.ts';
 import { animate } from './modules/sprites/animate.ts';
 import { fetchModule } from './engine/fetch.ts';
