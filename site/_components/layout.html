@@ -304,7 +304,7 @@
             <span>Close other tabs</span>
           </button>
           <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-                  data-on-click:stop="const t = tabs.find(x => x.id === ctxMenu.tabId); if (t) { const favs = JSON.parse(localStorage.getItem('nexus-favorites') || '[]'); favs.push({ title: t.title, url: t.content, icon: t.icon }); localStorage.setItem('nexus-favorites', JSON.stringify(favs)); } ctxMenu = null;">
+                  data-on-click:stop="const t = tabs.find(x => x.id === ctxMenu.tabId); if (t) { const entry = { title: t.title, url: t.content, icon: t.icon }; const favs = JSON.parse(localStorage.getItem('nexus-favorites') || '[]'); favs.push(entry); localStorage.setItem('nexus-favorites', JSON.stringify(favs)); favorites = favs; } ctxMenu = null;">
             <iconify-icon icon="material-symbols-light:star-outline" class="text-lg"></iconify-icon>
             <span>Save to Favorites</span>
           </button>
