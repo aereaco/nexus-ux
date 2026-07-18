@@ -234,6 +234,18 @@ export const routerAttributeModule: AttributeModule = {
         return basePath + path;
       };
 
+      // Normalize a (possibly browser-resolved, doubled) URL against the stable
+      // app base so repeated SPA navigations don't accumulate path segments.
+      const normalizeHref = (href: string): string => {
+        let resolved: URL;
+        try {
+          resolved = new URL(href, appBase);
+        } catch {
+          return href;
+        }
+        return resolved.pathname + resolved.search + resolved.hash;
+      };
+
       // Raw (non-reactive) route registry. RegExp matchers must never enter the
       // reactive graph, or `path.match(proxiedRegExp)` throws
       // "RegExp.prototype.hasIndices getter called on non-RegExp object".
