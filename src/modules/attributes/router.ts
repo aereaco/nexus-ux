@@ -271,7 +271,7 @@ export const routerAttributeModule: AttributeModule = {
           }
 
           const target = applyBase(url);
-          const tabId = opts?.tabId ?? state.activeTabId ?? null;
+          const tabId = opts?.tabId ?? getActiveTabId() ?? state.activeTabId ?? null;
 
           // Track this tab's current path + metadata so switching the active
           // tab (or back/forward) re-renders the correct outlet.
