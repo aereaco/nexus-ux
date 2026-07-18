@@ -183,6 +183,11 @@ export const routerAttributeModule: AttributeModule = {
     try {
       runtime.debug('Initializing data-router on', el);
 
+      // Stable app base captured at init. SPA navigations mutate location.pathname,
+      // so relative links would otherwise resolve against the virtual URL and
+      // double the path (e.g. /_pages/_pages/...). Resolve against this instead.
+      const appBase = globalThis.location.href;
+
       // Parse optional config object: data-router="{ mode: 'hybrid', default: '/home' }"
       let cfg: { mode?: RouterMode; default?: string } = {};
       if (initConfig && initConfig.trim()) {
