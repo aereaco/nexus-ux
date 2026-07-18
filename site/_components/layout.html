@@ -32,6 +32,8 @@
       const id = activeTabId;
       const tab = tabs.find(t => t.id === id);
       if (!router || !tab) return;
+      // Keep the active tab reference in sync for the panel + menus.
+      if (activeTab !== tab) activeTab = tab;
       // Touch router.tabPaths so this effect re-runs on navigation/back-forward.
       const navPath = router.tabPaths && router.tabPaths[id];
       // Mirror a real navigated page (.html) into the active tab's content so
