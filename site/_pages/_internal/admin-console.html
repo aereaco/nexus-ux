@@ -1,0 +1,17 @@
+<div class="max-w-2xl mx-auto">
+  <div class="flex items-center gap-2 mb-4">
+    <iconify-icon icon="material-symbols-light:shield-lock" class="text-3xl text-primary"></iconify-icon>
+    <h1 class="text-2xl font-bold">Internal Admin Console</h1>
+  </div>
+  <p class="text-base-content/70">
+    This page lives under <code>_pages/_internal/</code> and is registered as a
+    <strong>shadow route</strong> (<code>data-route-shadow</code>). The router
+    resolves and renders it, but it is excluded from <code>$router.manifest</code>,
+    so the client has no discoverable public URL.
+  </p>
+  <div class="alert alert-info mt-4">
+    <iconify-icon icon="material-symbols-light:info" class="text-xl"></iconify-icon>
+    <span>Open the console and inspect <code>$router.manifest</code> — this route is absent.</span>
+  </div>
+  <button class="btn btn-primary mt-6" data-on-click="$router.go('home')">Back to Home</button>
+</div>
