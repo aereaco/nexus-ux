@@ -11,6 +11,7 @@ const signalModule: AttributeModule = {
   metadata: { after: ['ingest'] },
   handle: (el: HTMLElement, value: string, runtime: RuntimeContext, parsedAttr?: ParsedAttribute): (() => void) | void => {
     runtime.log(`[Nexus Signal] Handling signal on <${el.tagName}> with value:`, value.substring(0, 50) + '...');
+    if ((el as any).__nexusSigInitTrace) console.log('[SIGINIT] signal handle re-run on', el.tagName, el.className?.slice(0,40));
     // 1. Determine Expression & Context
     // If value is empty and it's a script tag, use textContent
     let expression = value;
