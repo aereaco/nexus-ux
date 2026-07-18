@@ -12,7 +12,42 @@
   data-bind-dir="rtl ? 'rtl' : 'ltr'"
   data-bind-style="{ fontSize: zoom + 'rem' }">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
-  <div class="drawer-content">
+  <div class="drawer-content" data-router="hybrid" data-signal:global="{
+        activeTabId: 'home',
+        pinned: ['home'],
+        tabSeq: 0,
+        tabs: [{
+          id: 'home',
+          title: 'Home',
+          icon: 'material-symbols-light:home-outline',
+          content: '_pages/home.html'
+        }, {
+          id: 'settings',
+          title: 'Settings',
+          icon: 'material-symbols-light:settings-outline',
+          content: '_pages/settings.html'
+        }, {
+          id: 'profile',
+          title: 'Profile',
+          icon: 'material-symbols-light:person-outline',
+          content: '_pages/profile.html'
+        }] }"
+    data-effect="
+      const router = $router;
+      const id = activeTabId;
+      const tab = tabs.find(t => t.id === id);
+      if (router && tab) {
+        // Seed/keep the outlet on the active tab's content.
+        if (router.outlet !== tab.content) router.outlet = tab.content;
+        // When the active tab's URL moves (navigation or back/forward),
+        // mirror the loaded page back into the tab so history swaps content.
+        const cur = router.tabPaths && router.tabPaths[id];
+        if (cur && cur !== tab.content) {
+          const idx = tabs.findIndex(t => t.id === id);
+          if (idx > -1) { const next = tabs.slice(); next[idx] = { ...tab, content: cur }; tabs = next; }
+        }
+      }
+    ">
     <!-- Drawer Header -->
     <nav class="navbar w-full bg-base-300">
       <div class="flex-1">
