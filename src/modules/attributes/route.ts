@@ -44,7 +44,7 @@ export const routeAttributeModule: AttributeModule = {
 
       const globalSignals = runtime.globalSignals();
       // deno-lint-ignore no-explicit-any
-      const router = globalSignals['#router'] as any;
+      const router = globalSignals['router'] as any;
 
       if (!router || !router.addRoute) {
         reportError(
