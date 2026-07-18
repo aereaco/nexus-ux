@@ -71,6 +71,7 @@ const signalModule: AttributeModule = {
 
       if (typeof newState === 'object' && newState !== null) {
         if (!lastEvaluatedState) {
+          if ((el as any).__nexusSigInitTrace) console.log('[SIGINIT] FIRST-RUN populate on', el.tagName, el.className?.slice(0,40), 'tabsLen=', Array.isArray((newState as any).tabs)? (newState as any).tabs.length : 'n/a');
           // First run: populate all
           lastEvaluatedState = { ...(newState as Record<string, unknown>) };
           if (isGlobal) {
