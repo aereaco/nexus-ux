@@ -92,6 +92,20 @@ interface RouteRecord {
 
 type RouterMode = 'signal' | 'static' | 'hybrid';
 
+export interface RouterConfig {
+  mode: RouterMode;
+  default: string | null;
+  basePath: string;
+  // URL of a static auto-route manifest (JSON array of route descriptors).
+  manifest?: string;
+  // When true, fold runtime-discovered routes into $router.manifest.
+  dynamic?: boolean;
+  // Glob(s) marking internal/shadow routes (e.g. '/_internal/**').
+  shadow?: string | string[];
+  // Override the 404 component path.
+  notFound?: string;
+}
+
 export interface RouterState {
   path: string;
   params: Record<string, string>;
