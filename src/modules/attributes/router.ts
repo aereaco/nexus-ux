@@ -252,6 +252,17 @@ export const routerAttributeModule: AttributeModule = {
       const mode: RouterMode = cfg.mode === 'static' || cfg.mode === 'hybrid' ? cfg.mode : 'signal';
       const defaultPath = typeof cfg.default === 'string' && cfg.default ? cfg.default : null;
 
+      // Declarative routing strategy — reactive snapshot exposed as $router.config.
+      const routerConfig: RouterConfig = {
+        mode,
+        default: defaultPath,
+        basePath,
+        manifest: typeof cfg.manifest === 'string' && cfg.manifest ? cfg.manifest : undefined,
+        dynamic: cfg.dynamic === true,
+        shadow: cfg.shadow ?? undefined,
+        notFound: typeof cfg.notFound === 'string' && cfg.notFound ? cfg.notFound : undefined,
+      };
+
       // The specific document file the app was served from (e.g. "router.html").
       // Only this exact file collapses to "/" so SPA paths like "/404.html"
       // are not clobbered by the html-normalization rule.
