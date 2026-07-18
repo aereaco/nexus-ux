@@ -113,6 +113,8 @@ export const routeAttributeModule: AttributeModule = {
         layout,
         component,
         meta,
+        internal,
+        source: 'declared',
         beforeEnter: makeHook(beforeEnterExpr),
         afterEnter: makeHook(afterEnterExpr),
         beforeLeave: makeHook(beforeLeaveExpr),
