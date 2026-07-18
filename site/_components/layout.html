@@ -38,17 +38,26 @@
       if (activeTab !== tab) activeTab = tab;
       // Touch router.tabPaths so this effect re-runs on navigation/back-forward.
       const navPath = router.tabPaths && router.tabPaths[id];
-      // When a real page (.html) was navigated into this tab (not the root '/'
-      // or the 404 fallback), render + persist it so the panel swaps in place
-      // and history/back-forward is preserved. Reassign the array so the panel
-      // binding (derived from tabs) re-renders.
+      // A real page (.html) was navigated into this tab (not the root '/' or the
+      // 404 fallback): persist it on the tab AND drive the flat outletContent
+      // signal that the panel binds to (reliable primitive reactivity).
       if (navPath && navPath.endsWith('.html') && navPath !== '/404.html' && navPath !== tab.content) {
         const next = tabs.slice();
         next[tabIdx] = { ...tab, content: navPath };
         tabs = next;
         activeTab = next[tabIdx];
+        outletContent = navPath;
+      } else if (outletContent !== tab.content) {
+        // Keep the flat outlet signal on the active tab's stored content.
+        outletContent = tab.content;
       }
     ">
+    <!-- Declarative routes (signal model). Shadow/internal routes resolve &
+         render through the router but are excluded from $router.manifest so the
+         client has no discoverable URL. -->
+    <div data-route="/home" data-route-name="home" data-component="_pages/home.html" data-route-shadow></div>
+    <div data-route="/_internal/admin-console" data-route-name="admin" data-component="_pages/_internal/admin-console.html" data-route-shadow></div>
+
     <!-- Drawer Header -->
     <nav class="navbar w-full bg-base-300">
       <div class="flex-1">
@@ -271,7 +280,7 @@
             if (a && a.origin === location.origin && !a.hasAttribute('download') && (!a.target || a.target === '_self')) {
               ctxMenu = { type: 'link', url: a.getAttribute('href'), title: a.textContent.trim(), icon: a.getAttribute('data-tab-icon') || '', x: e.clientX, y: e.clientY };
             }">
-        <div role="tabpanel" class="h-dvh" data-component="(tabs.find(t => t.id === activeTabId) || {}).content"></div>
+        <div role="tabpanel" class="h-dvh" data-component="outletContent"></div>
       </div>
 
       <!-- CONTEXT MENU (tab + link actions) -->
