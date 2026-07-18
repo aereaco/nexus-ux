@@ -239,11 +239,11 @@
           </div>
         </template>
 
-        <button class="btn btn-circle shrink-0"
-                data-class="{ 'hidden': !pageTabs }"
-                data-on-click="const n = tabs.length + 1; const id = 'tab' + n; tabs.push({ id, title: 'Tab ' + n, icon: 'material-symbols-light:article-outline', content: '_components/tab-generic.html' }); activeTabId = id;">
-          <iconify-icon icon="material-symbols-light:add" style="font-size: 24px"></iconify-icon>
-        </button>
+          <button class="btn btn-circle shrink-0"
+                  data-class="{ 'hidden': !pageTabs }"
+                  data-on-click="tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; tabs.push({ id, title: 'Tab ' + tabSeq, icon: 'material-symbols-light:article-outline', content: '_components/tab-generic.html' }); activeTabId = id;">
+            <iconify-icon icon="material-symbols-light:add" style="font-size: 24px"></iconify-icon>
+          </button>
       </div>
 
       <!-- CONTENT PANELS (sibling of the bar, same scope) -->
