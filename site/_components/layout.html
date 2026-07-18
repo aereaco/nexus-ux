@@ -30,18 +30,22 @@
     data-effect="
       const router = $router;
       const id = activeTabId;
-      const tab = tabs.find(t => t.id === id);
+      const tabIdx = tabs.findIndex(t => t.id === id);
+      const tab = tabIdx > -1 ? tabs[tabIdx] : null;
       if (!router || !tab) return;
-      // Keep the active tab reference in sync for the panel + menus (mutate in
-      // place so the reference stays valid after content changes).
+      // Keep the active tab reference in sync for the panel + menus.
       if (activeTab !== tab) activeTab = tab;
       // Touch router.tabPaths so this effect re-runs on navigation/back-forward.
       const navPath = router.tabPaths && router.tabPaths[id];
       // When a real page (.html) was navigated into this tab (not the root '/'
       // or the 404 fallback), render + persist it so the panel swaps in place
-      // and history/back-forward is preserved.
+      // and history/back-forward is preserved. Reassign the array so the panel
+      // binding (derived from tabs) re-renders.
       if (navPath && navPath.endsWith('.html') && navPath !== '/404.html' && navPath !== tab.content) {
-        tab.content = navPath;
+        const next = tabs.slice();
+        next[tabIdx] = { ...tab, content: navPath };
+        tabs = next;
+        activeTab = next[tabIdx];
       }
     ">
     <!-- Drawer Header -->
