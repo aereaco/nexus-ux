@@ -318,7 +318,7 @@
             <span>Open in new tab</span>
           </button>
           <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-                  data-on-click:stop="const u = ctxMenu.url; if (u) { const favs = JSON.parse(localStorage.getItem('nexus-favorites') || '[]'); favs.push({ title: ctxMenu.title || u, url: u, icon: ctxMenu.icon || '' }); localStorage.setItem('nexus-favorites', JSON.stringify(favs)); } ctxMenu = null;">
+                  data-on-click:stop="const u = ctxMenu.url; if (u) { const entry = { title: ctxMenu.title || u, url: u, icon: ctxMenu.icon || '' }; const favs = JSON.parse(localStorage.getItem('nexus-favorites') || '[]'); favs.push(entry); localStorage.setItem('nexus-favorites', JSON.stringify(favs)); favorites = favs; } ctxMenu = null;">
             <iconify-icon icon="material-symbols-light:star-outline" class="text-lg"></iconify-icon>
             <span>Save to Favorites</span>
           </button>
