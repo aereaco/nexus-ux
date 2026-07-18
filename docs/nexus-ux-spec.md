@@ -930,14 +930,22 @@ directive catalog:
   (filesystem-based HTML resolution), and `hybrid` (signal-first with filesystem
   fallback). Automatically intercepts `<a>` tag clicks for client-side
   navigation and manages History API (`pushState`/`replaceState`/`popstate`).
+
+  The routing **strategy** is declared declaratively as an object on `data-router`
+  and exposed reactively as `$router.config`:
+  `{ mode, default, basePath, manifest, dynamic, shadow, notFound }`. The strategy
+  is signal-driven — changing it re-resolves routes without tearing down the DOM.
 - **`data-route`**: Route Definition — declaratively registers a route by
   placing `data-route="/path/:param"` on an element. The route is automatically
   added to `$router.routes` and removed when the element is destroyed. Supports
   parameterized paths (`:id`), optional parameters (`:id?`), and wildcards
   (`*`). Companion attributes (`data-route-name`, `data-route-redirect`,
   `data-route-layout`, `data-route-meta`, `data-route-before-enter`,
-  `data-route-after-enter`, `data-route-before-leave`, `data-route-after-leave`)
-  are parsed by the same module.
+  `data-route-after-enter`, `data-route-before-leave`, `data-route-after-leave`,
+  `data-route-shadow`) are parsed by the same module. `data-route-shadow` (boolean)
+  marks the route as **internal**: it resolves and renders through the router but
+  is excluded from the public `$router.manifest` so the client has no discoverable
+  URL.
 
 #### 3.6.9. Route Configuration Attributes
 
