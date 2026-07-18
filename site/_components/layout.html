@@ -259,10 +259,79 @@
            global effect on `drawer-content` keeps `$router.outlet` synced to
            the active tab's `content`; internal links re-render in place via
            per-tab history (linkRewriter -> $router.navigate). -->
-      <div class="p-6">
+      <div class="p-6" data-on-contextmenu:stop="
+            const e = $event;
+            const a = e.target.closest('a');
+            if (a && a.origin === location.origin && !a.hasAttribute('download') && (!a.target || a.target === '_self')) {
+              ctxMenu = { type: 'link', url: a.getAttribute('href'), title: a.textContent.trim(), icon: a.getAttribute('data-tab-icon') || '', x: e.clientX, y: e.clientY };
+            }">
         <div role="tabpanel" class="h-dvh" data-component="$router.outlet"></div>
       </div>
-    
+
+      <!-- CONTEXT MENU (tab + link actions) -->
+      <div data-show="ctxMenu"
+           class="fixed z-50 min-w-48 rounded-box bg-base-100 shadow-2xl border border-base-300 py-1 text-sm"
+           data-bind-style="{ left: (ctxMenu && ctxMenu.x) + 'px', top: (ctxMenu && ctxMenu.y) + 'px' }"
+           data-on-click="ctxMenu = null"
+           data-on-contextmenu:stop="ctxMenu = null">
+        <!-- TAB actions -->
+        <template data-if="ctxMenu && ctxMenu.type === 'tab'">
+          <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
+                  data-on-click:stop="const id = ctxMenu.tabId; const idx = tabs.findIndex(t => t.id === id); const t = tabs[idx]; if (idx > -1) { const np = pinned.includes(id) ? pinned.filter(p => p !== id) : [...pinned, id]; pinned = np; if (!pinned.includes(id) && t.originUrl) { tabs[idx] = { ...t, content: t.originUrl, title: t.originTitle, icon: t.originIcon }; } } ctxMenu = null;">
+            <iconify-icon data-bind-icon="(pinned.includes(ctxMenu.tabId) ? 'material-symbols-light:push-pin-outline' : 'material-symbols-light:push-pin')" class="text-lg"></iconify-icon>
+            <span data-bind="pinned.includes(ctxMenu.tabId) ? 'Unpin' : 'Pin'"></span>
+          </button>
+          <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
+                  data-on-click:stop="const src = tabs.find(t => t.id === ctxMenu.tabId); const id = 'tab-' + (++tabSeq); const nc = (src && src.content) || '_components/tab-generic.html'; tabs = [...tabs, { id, title: (src && src.title) || 'Tab', icon: (src && src.icon) || 'material-symbols-light:article-outline', content: nc }]; activeTabId = id; ctxMenu = null;">
+            <iconify-icon icon="material-symbols-light:add" class="text-lg"></iconify-icon>
+            <span>Open in new tab</span>
+          </button>
+          <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
+                  data-class="{ 'hidden': pinned.includes(ctxMenu.tabId) }"
+                  data-on-click:stop="const id = ctxMenu.tabId; const wasActive = activeTabId === id; tabs = tabs.filter(t => t.id !== id); pinned = pinned.filter(p => p !== id); if (wasActive) activeTabId = tabs[0]?.id; ctxMenu = null;">
+            <iconify-icon icon="material-symbols-light:close" class="text-lg"></iconify-icon>
+            <span>Close tab</span>
+          </button>
+          <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
+                  data-on-click:stop="const id = ctxMenu.tabId; const idx = tabs.findIndex(t => t.id === id); tabs = tabs.filter((t, i) => i <= idx || pinned.includes(t.id)); if (!tabs.find(t => t.id === activeTabId)) activeTabId = tabs[0]?.id; ctxMenu = null;">
+            <iconify-icon icon="material-symbols-light:chevron-left" class="text-lg"></iconify-icon>
+            <span>Close tabs to the left</span>
+          </button>
+          <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
+                  data-on-click:stop="const id = ctxMenu.tabId; const idx = tabs.findIndex(t => t.id === id); tabs = tabs.filter((t, i) => i >= idx || pinned.includes(t.id)); if (!tabs.find(t => t.id === activeTabId)) activeTabId = tabs[0]?.id; ctxMenu = null;">
+            <iconify-icon icon="material-symbols-light:chevron-right" class="text-lg"></iconify-icon>
+            <span>Close tabs to the right</span>
+          </button>
+          <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
+                  data-on-click:stop="tabs = tabs.filter(t => pinned.includes(t.id)); if (!tabs.find(t => t.id === activeTabId)) activeTabId = tabs[0]?.id; ctxMenu = null;">
+            <iconify-icon icon="material-symbols-light:clear-all" class="text-lg"></iconify-icon>
+            <span>Close other tabs</span>
+          </button>
+          <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
+                  data-on-click:stop="const t = tabs.find(x => x.id === ctxMenu.tabId); if (t) { const favs = JSON.parse(localStorage.getItem('nexus-favorites') || '[]'); favs.push({ title: t.title, url: t.content, icon: t.icon }); localStorage.setItem('nexus-favorites', JSON.stringify(favs)); } ctxMenu = null;">
+            <iconify-icon icon="material-symbols-light:star-outline" class="text-lg"></iconify-icon>
+            <span>Save to Favorites</span>
+          </button>
+        </template>
+
+        <!-- LINK actions -->
+        <template data-if="ctxMenu && ctxMenu.type === 'link'">
+          <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
+                  data-on-click:stop="const u = ctxMenu.url; const id = 'tab-' + (++tabSeq); tabs = [...tabs, { id, title: ctxMenu.title || 'Tab', icon: ctxMenu.icon || 'material-symbols-light:article-outline', content: u }]; activeTabId = id; ctxMenu = null;">
+            <iconify-icon icon="material-symbols-light:add" class="text-lg"></iconify-icon>
+            <span>Open in new tab</span>
+          </button>
+          <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
+                  data-on-click:stop="const u = ctxMenu.url; if (u) { const favs = JSON.parse(localStorage.getItem('nexus-favorites') || '[]'); favs.push({ title: ctxMenu.title || u, url: u, icon: ctxMenu.icon || '' }); localStorage.setItem('nexus-favorites', JSON.stringify(favs)); } ctxMenu = null;">
+            <iconify-icon icon="material-symbols-light:star-outline" class="text-lg"></ionify-icon>
+            <span>Save to Favorites</span>
+          </button>
+        </template>
+      </div>
+
+      <!-- Close context menu on any outside click / scroll / escape -->
+      <div data-effect="if (ctxMenu) { const close = () => { ctxMenu = null; }; window.addEventListener('click', close, { once: true }); window.addEventListener('scroll', close, { once: true }); window.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') ctxMenu = null; }); }"></div>
+
     <!-- Default Diagnostic Content (fallback if no route component provided) -->
     <div data-if="!dashboardComponent">
       <div class="p-4 text-2xl font-bold">Nexus-UX Engine Layout Shell</div>
