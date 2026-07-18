@@ -226,7 +226,6 @@ export const routerAttributeModule: AttributeModule = {
   name: 'router-attribute',
   attribute: 'router',
   handle: (el: HTMLElement, initConfig: string, runtime: RuntimeContext) => {
-    console.log('[ROUTER-INIT] handle invoked on', el.tagName, el.className, 'config=', initConfig);
     try {
       runtime.debug('Initializing data-router on', el);
 
