@@ -5,18 +5,18 @@ import { CUSTOM_EVENT_PREFIX } from '../../engine/consts.ts';
 
 /**
  * data-router: The Core Router
- * Initializes the $router signal and manages navigation.
+ * Initializes the #router signal and manages navigation.
  *
  * Rendering paradigms (both supported simultaneously):
  *  1. Section model  — <element data-route="/x"> with children. The matched
  *     element is shown and the rest hidden via reconcileStyle(display).
  *  2. Outlet model   — <element data-route="/x" data-component="/pages/x.html">.
- *     The matched route's component URL is published to `$router.route`, and its
- *     `data-route-layout` URL to `$router.layout`. A dynamic outlet such as
- *     `<main data-component="$router.route">` renders the component reactively
+ *     The matched route's component URL is published to `#router.route`, and its
+ *     `data-route-layout` URL to `#router.layout`. A dynamic outlet such as
+ *     `<main data-component="#router.route">` renders the component reactively
  *     (data-component re-runs its effect when the signal changes). Layouts are
- *     composed the same way: `<div data-component="$router.layout">` shell with a
- *     nested `<main data-component="$router.route">` outlet.
+ *     composed the same way: `<div data-component="#router.layout">` shell with a
+ *     nested `<main data-component="#router.route">` outlet.
  *
  * Capabilities:
  *  - Native Navigation API interception (with History fallback).
@@ -26,7 +26,7 @@ import { CUSTOM_EVENT_PREFIX } from '../../engine/consts.ts';
  *  - route.redirect: declarative redirect to another path.
  *  - Routing modes: 'signal' (default) | 'static' | 'hybrid'. In static/hybrid,
  *    an unmatched path resolves to a filesystem component (`/path` -> `/path.html`)
- *    published to `$router.route`, before falling back to 404.
+ *    published to `#router.route`, before falling back to 404.
  *  - `default` route: `data-router="{ default: '/home' }"` redirects the base path.
  *  - 404 fallback to /404.html when nothing matches/resolves.
  *  - basePath auto-detection with `data-router.base-path` override; stripped from
@@ -39,19 +39,19 @@ import { CUSTOM_EVENT_PREFIX } from '../../engine/consts.ts';
  * Declarative routing strategy (config object on data-router):
  *  - `mode`, `default`, `basePath` — as above.
  *  - `manifest` — URL of a static auto-route manifest (JSON array of route
- *    descriptors). Merged into `$router.manifest` at boot.
+ *    descriptors). Merged into `#router.manifest` at boot.
  *  - `dynamic` — when true, the router also folds runtime-discovered routes into
- *    `$router.manifest` (e.g. a sibling `manifest.json` produced by the server/build).
+ *    `#router.manifest` (e.g. a sibling `manifest.json` produced by the server/build).
  *  - `shadow` — glob(s) marking internal routes (e.g. `'/_internal/**'`). Shadow
  *    routes resolve/ render through the router's internal fetch but are excluded
- *    from the public `$router.manifest` so the client has no discoverable URL.
+ *    from the public `#router.manifest` so the client has no discoverable URL.
  *  - `notFound` — override the 404 component path.
  *
  * Intuitive API surface:
- *  - `$router.config` — reactive snapshot of the strategy object.
- *  - `$router.manifest` — resolved route manifest (declared + manifest + dynamic).
- *  - `$router.match(path?)` — RouteInfo the router *would* match for a path.
- *  - `$router.go(target, opts?)` — navigate by name or path (the friendly entrypoint).
+ *  - `#router.config` — reactive snapshot of the strategy object.
+ *  - `#router.manifest` — resolved route manifest (declared + manifest + dynamic).
+ *  - `#router.match(path?)` — RouteInfo the router *would* match for a path.
+ *  - `#router.go(target, opts?)` — navigate by name or path (the friendly entrypoint).
  */
 
 export interface RouteInfo {
@@ -84,7 +84,7 @@ interface RouteRecord {
   keys?: string[];
   hasWildcard?: boolean;
   // Shadow/internal route: resolved & rendered by the router, excluded from the
-  // public `$router.manifest` so the client has no discoverable URL.
+  // public `#router.manifest` so the client has no discoverable URL.
   internal?: boolean;
   // Provenance tag for manifest entries ('declared' | 'manifest' | 'dynamic').
   source?: string;
@@ -98,7 +98,7 @@ export interface RouterConfig {
   basePath: string;
   // URL of a static auto-route manifest (JSON array of route descriptors).
   manifest?: string;
-  // When true, fold runtime-discovered routes into $router.manifest.
+  // When true, fold runtime-discovered routes into #router.manifest.
   dynamic?: boolean;
   // Glob(s) marking internal/shadow routes (e.g. '/_internal/**').
   shadow?: string | string[];
@@ -119,7 +119,7 @@ export interface RouterState {
   route: string | null;
   layout: string | null;
   // The effective outlet URL: layout when present, else route. Bind a single
-  // static outlet to this: `<main data-component="$router.outlet">`.
+  // static outlet to this: `<main data-component="#router.outlet">`.
   outlet: string | null;
   meta: unknown;
   name: string | null;
@@ -226,6 +226,7 @@ export const routerAttributeModule: AttributeModule = {
   name: 'router-attribute',
   attribute: 'router',
   handle: (el: HTMLElement, initConfig: string, runtime: RuntimeContext) => {
+    console.log('[ROUTER-INIT] handle invoked on', el.tagName, el.className, 'config=', initConfig);
     try {
       runtime.debug('Initializing data-router on', el);
 
@@ -252,7 +253,7 @@ export const routerAttributeModule: AttributeModule = {
       const mode: RouterMode = cfg.mode === 'static' || cfg.mode === 'hybrid' ? cfg.mode : 'signal';
       const defaultPath = typeof cfg.default === 'string' && cfg.default ? cfg.default : null;
 
-      // Declarative routing strategy — reactive snapshot exposed as $router.config.
+      // Declarative routing strategy — reactive snapshot exposed as #router.config.
       const routerConfig: RouterConfig = {
         mode,
         default: defaultPath,
@@ -790,7 +791,7 @@ export const routerAttributeModule: AttributeModule = {
         // Final guard before committing any state.
         if (token !== navToken) { state.loading = false; return; }
 
-        // Remember the outgoing route for `$router.previous`.
+        // Remember the outgoing route for `#router.previous`.
         const outgoingPrevious = fromRoute
           ? { path: state.path, meta: fromRoute.meta }
           : (previousInfo ? { path: previousInfo.path, meta: previousInfo.meta } : null);
@@ -811,7 +812,7 @@ export const routerAttributeModule: AttributeModule = {
         state.route = matched?.component ?? staticComponent ?? null;
         state.layout = matched?.layout ?? null;
         // Single effective outlet: prefer the layout (which contains its own
-        // inner `$router.route` outlet), else render the route component directly.
+        // inner `#router.route` outlet), else render the route component directly.
         state.outlet = state.layout ?? state.route;
 
         // Per-tab: remember the resolved path for the active tab so switching
