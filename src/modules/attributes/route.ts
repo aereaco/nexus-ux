@@ -48,7 +48,7 @@ export const routeAttributeModule: AttributeModule = {
 
       if (!router || !router.addRoute) {
         reportError(
-          new Error('data-route used but $router not found. Ensure data-router is present.'),
+          new Error('data-route used but #router not found. Ensure data-router is present.'),
           el,
         );
         return;
