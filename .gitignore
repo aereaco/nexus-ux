@@ -10,3 +10,4 @@ dist/
 .vscode/
 .system_generated/
 .kilocodemodes
+.playwright/
