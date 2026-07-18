@@ -689,7 +689,7 @@ export const routerAttributeModule: AttributeModule = {
           return;
         }
 
-        const url = new URL(e.destination.url);
+        const url = new URL(globalThis.location.origin + normalizeHref(e.destination.url));
         if (url.origin !== globalThis.location.origin) return;
 
         // Per-tab history: the destination entry carries its owning tabId. If it
