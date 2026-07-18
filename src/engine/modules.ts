@@ -315,6 +315,25 @@ export class ModuleCoordinator {
       if (!enhanced[CLEANUP_FUNCTIONS_KEY]) enhanced[CLEANUP_FUNCTIONS_KEY] = new Map();
       enhanced[CLEANUP_FUNCTIONS_KEY]!.set('__rootMutationObserver__', cleanup);
     }
+
+    // Auto-attach listener modules to root for global event interception
+    // (e.g. SPA link rewriting, history bridging).
+    this.listenerModules.forEach((module, name) => {
+      try {
+        const cleanupFn = module.listen(rootElement, this.runtimeContext);
+        if (typeof cleanupFn === 'function') {
+          const enhanced = rootElement as NexusEnhancedElement;
+          if (!enhanced[CLEANUP_FUNCTIONS_KEY]) enhanced[CLEANUP_FUNCTIONS_KEY] = new Map();
+          enhanced[CLEANUP_FUNCTIONS_KEY]!.set(`__listener_${name}__`, cleanupFn);
+        }
+      } catch (e) {
+        this.runtimeContext.reportError(
+          e instanceof Error ? e : new Error(String(e)),
+          undefined,
+          `Failed to start listener module: ${name}`
+        );
+      }
+    });
   }
 
   public registerModifierModule(name: string, module: ModifierModule): void {
