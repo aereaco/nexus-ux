@@ -216,7 +216,7 @@
 
       <!-- Dynamic Page Tabs -->
       <template data-for="tab in tabs" data-key="tab.id">
-        <div role="tab" class="tab flex items-center gap-2" data-class="{ 'hidden': !pageTabs, 'tab-active': tab.checked }"
+        <div role="tab" class="flex items-center gap-2" data-class="{ 'hidden': !pageTabs, 'tab-active': tab.checked }"
              data-on-click="tabs.forEach(t => t.checked = (t.id === tab.id))">
           <iconify-icon data-bind-icon="tab.icon" class="text-lg"></iconify-icon>
           <span data-bind="tab.title"></span>
