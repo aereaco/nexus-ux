@@ -892,6 +892,7 @@ export const routerAttributeModule: AttributeModule = {
       document.addEventListener(popStateEvent, onPopState);
 
       queueMicrotask(() => {
+        buildManifest();
         updateRoute(globalThis.location.href);
       });
 
