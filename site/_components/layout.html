@@ -222,7 +222,7 @@
       >
         <template data-for="tab in tabs" data-key="tab.id">
           <div role="tab" tabindex="0"
-               class="flex items-center px-2 cursor-pointer border-b border-transparent hover:border-primary"
+               class="flex items-center px-2 cursor-pointer border-b border-transparent hover:border-primary transition-colors"
                data-drag
                data-bind-aria-selected="activeTabId === tab.id"
                data-class="{ 'hidden': !pageTabs, 'tab-active, border-primary': activeTabId === tab.id }"
