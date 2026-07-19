@@ -278,6 +278,22 @@ export const routerAttributeModule: AttributeModule = {
         : autoDetectBasePath();
 
       // Declarative routing strategy — reactive snapshot exposed as #router.config.
+      // The `_pages` folder path is NOT hardcoded: `pagesDir` (default '_pages')
+      // drives every filesystem resolution below.
+      const pagesDir = typeof cfg.pagesDir === 'string' && cfg.pagesDir
+        ? cfg.pagesDir.replace(/\/+$/, '')
+        : '_pages';
+
+      // Resolve a bare page name against `pagesDir`; pass-through absolute URLs.
+      const resolvePagesPath = (ref: string | undefined, fallback: string): string => {
+        const raw = ref && ref.trim() ? ref.trim() : fallback;
+        if (raw.startsWith('/') || raw.startsWith('http')) return raw;
+        return `${pagesDir}/${raw.replace(/^\/+/, '')}`;
+      };
+
+      const notFoundPage = resolvePagesPath(cfg.notFound, '404.html');
+      const errorPage = resolvePagesPath(cfg.error, 'error.html');
+
       const routerConfig: RouterConfig = {
         mode,
         default: defaultPath,
@@ -285,7 +301,9 @@ export const routerAttributeModule: AttributeModule = {
         manifest: typeof cfg.manifest === 'string' && cfg.manifest ? cfg.manifest : undefined,
         dynamic: cfg.dynamic === true,
         shadow: cfg.shadow ?? undefined,
-        notFound: typeof cfg.notFound === 'string' && cfg.notFound ? cfg.notFound : undefined,
+        pagesDir,
+        notFound: notFoundPage,
+        error: errorPage,
       };
 
       // Strip basePath from an incoming absolute pathname, keeping a leading slash.
