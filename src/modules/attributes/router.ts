@@ -1111,10 +1111,8 @@ export const routerAttributeModule: AttributeModule = {
             commitVisibility(null);
             state.route = staticComponent;
             state.outlet = staticComponent;
-            // Paint-first panel signal (panel binds to `outletContent`).
-            if (state.tabPaths[getActiveTabId() ?? ''] !== 'custom-component') {
-              runtime.setGlobalSignal('outletContent', staticComponent);
-            }
+            // The panel derives its component from the active tab's own
+            // `content`, so no `outletContent` write is needed here.
           } else {
             state.navigate(errorPage, { replace: true });
           }
