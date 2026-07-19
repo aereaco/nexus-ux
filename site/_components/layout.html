@@ -263,7 +263,13 @@
             if (a && a.origin === location.origin && !a.hasAttribute('download') && (!a.target || a.target === '_self')) {
               ctxMenu = { type: 'link', url: a.getAttribute('href'), title: a.textContent.trim(), icon: a.getAttribute('data-tab-icon') || '', x: e.clientX, y: e.clientY };
             }">
-        <div role="tabpanel" class="h-dvh" data-component="(tabs.find(t => t.id === activeTabId) || {}).content || null"></div>
+        <!-- Panel outlet: for route tabs bind directly to the router's
+             synchronous #router.route (commited immediately on navigation /
+             tab-switch via updateRoute / renderActiveTab), so the panel updates
+             with no async round-trip through the tabs array. Custom-component
+             tabs (launchpad, link tabs) keep their own .content, since the
+             router leaves router.route null for them. -->
+        <div role="tabpanel" class="h-dvh" data-component="(() => { const t = (tabs.find(x => x.id === activeTabId) || {}); const c = t.content; if (c && c.startsWith('_components/')) return c; return (#router.route || c || null); })()"></div>
       </div>
 
       <!-- CONTEXT MENU (tab + link actions) -->
