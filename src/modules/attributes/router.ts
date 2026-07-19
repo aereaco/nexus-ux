@@ -550,8 +550,10 @@ export const routerAttributeModule: AttributeModule = {
           return null;
         },
 
-        // Render the active tab's stored path through the outlet. Used when the
-        // active tab switches (layout click) or a tab is first opened.
+        // Render the active tab's stored path through the outlet. Tab switching
+        // uses a direct synchronous state commit — it skips ALL lifecycle hooks
+        // (beforeLeave, beforeEnter, handler, afterEnter) to avoid cascading
+        // re-renders and clobbering.
         renderActiveTab() {
           const id = getActiveTabId();
           if (!id) return;
@@ -563,22 +565,67 @@ export const routerAttributeModule: AttributeModule = {
           }
 
           if (path === 'custom-component') {
+            // Component-based tab (e.g. new-tab launchpad): clear routing state.
             state.route = null;
             state.layout = null;
             state.outlet = null;
-
-            // Keep browser URL but sync the tabId
+            // Keep browser URL, just sync the tabId in history.
             const url = globalThis.location.pathname + globalThis.location.search + globalThis.location.hash;
             globalThis.history.replaceState({ tabId: id, scrollY: globalThis.scrollY }, '', url);
             return;
           }
 
-          // Switch tab path: update browser address bar using replaceState to keep it in sync!
-          const target = applyBase(path);
-          const meta = state.tabMeta[id] || {};
-          globalThis.history.replaceState({ tabId: id, scrollY: globalThis.scrollY, title: meta.title, icon: meta.icon }, '', target);
+          // --- Synchronous state commit for tab switch ---
+          // Parse path/query/hash from the stored tab path.
+          const fakeUrl = new URL(applyBase(path), globalThis.location.origin);
+          const switchPath = path;
+          const query: Record<string, string> = {};
+          fakeUrl.searchParams.forEach((val, key) => (query[key] = val));
 
-          updateRoute(globalThis.location.origin + target);
+          // Match a route record synchronously.
+          let matched: RouteRecord | null = null;
+          const params: Record<string, string> = {};
+          for (const route of routeList) {
+            const meta = matchMeta.get(route);
+            if (!meta) continue;
+            const m = switchPath.match(meta.regex);
+            if (m) {
+              matched = route;
+              meta.keys.forEach((key: string, i: number) => { params[key] = m[i + 1] || ''; });
+              if (meta.hasWildcard) params.wildcard = m[meta.keys.length + 1] || '';
+              break;
+            }
+          }
+
+          // Resolve static component for hybrid/static modes if no signal match.
+          let staticComponent: string | null = null;
+          if (!matched && (mode === 'static' || mode === 'hybrid')) {
+            staticComponent = resolveStaticComponent(switchPath);
+          }
+
+          // Commit display state directly — no hooks, no loading flag.
+          state.path = switchPath;
+          state.hash = fakeUrl.hash;
+          state.query = query;
+          state.params = params;
+          state.currentRoute = matched;
+          state.meta = matched?.meta ?? {};
+          state.name = matched?.name ?? null;
+          state.route = matched?.component ?? staticComponent ?? null;
+          state.layout = matched?.layout ?? null;
+          state.outlet = state.layout ?? state.route;
+          state.error = null;
+
+          commitVisibility(matched);
+
+          // Update browser address bar to reflect the active tab's path.
+          const target = applyBase(switchPath);
+          const meta = state.tabMeta[id] || {};
+          globalThis.history.replaceState(
+            { tabId: id, scrollY: globalThis.scrollY, title: meta.title, icon: meta.icon },
+            '',
+            target,
+          );
         },
 
         // Switch the active tab (also updates the layout's global signal so the
@@ -606,9 +653,12 @@ export const routerAttributeModule: AttributeModule = {
 
       // When the layout switches the active tab, re-render the outlet for it.
       // (globalSignals() is a reactive object, so watch() fires on change.)
+      // Guard against re-entrant calls (e.g. commitTabSwitch writing activeTabId).
+      let tabSwitching = false;
       runtime.watch(
         () => globals.activeTabId,
         () => {
+          if (tabSwitching) return;
           try { state.renderActiveTab(); } catch (_e) { /* noop */ }
         },
       );
