@@ -263,7 +263,12 @@
             if (a && a.origin === location.origin && !a.hasAttribute('download') && (!a.target || a.target === '_self')) {
               ctxMenu = { type: 'link', url: a.getAttribute('href'), title: a.textContent.trim(), icon: a.getAttribute('data-tab-icon') || '', x: e.clientX, y: e.clientY };
             }">
-        <div role="tabpanel" class="h-dvh" data-component="(tabs.find(t => t.id === activeTabId) || {}).content || null"></div>
+        <!-- Panel outlet: bound to the dedicated reactive `outletContent`
+             global. The router sets this synchronously on every navigation
+             and tab-switch (paint-first), and component/launchpad tabs
+             set it directly when they open — so the panel updates on the
+             same tick as the click with no async round-trip. -->
+        <div role="tabpanel" class="h-dvh" data-component="outletContent || null"></div>
       </div>
 
       <!-- CONTEXT MENU (tab + link actions) -->
