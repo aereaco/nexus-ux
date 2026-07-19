@@ -880,13 +880,22 @@ export const routerAttributeModule: AttributeModule = {
       // Resolve a filesystem component URL for static/hybrid modes.
       // The `_pages` folder is NOT hardcoded — it comes from `config.pagesDir`
       // (default '_pages'), so `/profile` -> `_pages/profile.html`, `/` -> index.
-      const resolveStaticComponent = (path: string): string => {
-        const dir = (state.config.pagesDir || '').replace(/^\/+|\/+$/g, '');
-        const rel = (path === '/' || path === '') ? '/index.html' : path.replace(/\/$/, '');
-        const withExt = rel.endsWith('.html') ? rel : rel + '.html';
-        const full = dir ? `/${dir}${withExt}` : withExt;
-        return applyBase(full);
-      };
+        const resolveStaticComponent = (path: string): string => {
+          const dir = (state.config.pagesDir || '').replace(/^\/+|\/+$/g, '');
+          const rel = (path === '/' || path === '') ? '/index.html' : path.replace(/\/$/, '');
+          const withExt = rel.endsWith('.html') ? rel : rel + '.html';
+          const full = dir ? `/${dir}${withExt}` : withExt;
+          return applyBase(full);
+        };
+
+        // Mirror the resolved outlet into the bare `outlet` global signal, the
+        // single source of truth the content panel binds to. Written
+        // synchronously for every navigation (normal route + error page), so
+        // the panel is always in lockstep with the tab header.
+        const publishOutlet = (url: string | null) => {
+          state.outlet = url;
+          runtime.setGlobalSignal('outlet', url);
+        };
 
       // 3. Update Logic (async to support awaited hooks)
       const updateRoute = async (fullPath: string) => {
