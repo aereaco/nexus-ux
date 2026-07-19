@@ -409,41 +409,23 @@ function git(args: string[], cwd = Deno.cwd()): { ok: boolean; out: string; err:
   return { ok: r.success, out, err };
 }
 
-async function gitPush(opts: { commit?: boolean; message?: string; remote?: string; branch?: string }) {
+async function gitPush(opts: { remote?: string; branch?: string }) {
   const remote = opts.remote ?? "origin";
   const branch = opts.branch ?? (git(["rev-parse", "--abbrev-ref", "HEAD"]).out || "main");
 
-  const status = git(["status", "--porcelain=v1", "-z"]).out;
-  if (!status) {
-    console.log("ℹ️  Working tree clean — nothing to commit.");
-    return;
-  }
-
-  const paths = status.split("\0")
-    .filter((e) => e.length > 0)
-    .map((e) => e.slice(3))
-    .filter((p) => !p.startsWith(".git/") && p !== ".git");
-
-  if (paths.length === 0) {
-    console.log("ℹ️  No trackable changes — nothing to commit.");
-    return;
-  }
-
-  if (opts.commit !== false) {
-    git(["add", ...paths]);
-    const message = opts.message ?? `build: auto-commit (${paths.length} files)`;
-    const res = git(["commit", "-m", message]);
-    if (!res.ok) {
-      console.error("❌ Commit failed:", res.out);
-      Deno.exit(1);
-    }
-    console.log(`✓ Committed ${paths.length} file(s): ${message}`);
-  }
-
+  // Only push commits that already exist locally (the dev server's
+  // auto-commit does the committing). Pushing is a no-op if the branch
+  // is already in sync with the remote.
   console.log(`🚀 Pushing ${branch} → ${remote}...`);
   const push = git(["push", remote, branch]);
   if (!push.ok) {
-    console.error("❌ Push failed:", push.out);
+    const msg = push.err || push.out;
+    // "Everything up-to-date" is not an error — treat it as success.
+    if (/everything up[- ]to[- ]date/i.test(msg)) {
+      console.log("ℹ️  Already up to date with remote.");
+      return;
+    }
+    console.error("❌ Push failed:", msg);
     Deno.exit(1);
   }
   console.log("✓ Pushed to remote.");
