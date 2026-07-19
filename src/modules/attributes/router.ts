@@ -856,18 +856,44 @@ export const routerAttributeModule: AttributeModule = {
         }
 
         // No signal match: try filesystem resolution in static/hybrid modes,
-        // else fall back to 404. Shadow paths resolve the same way (the router's
-        // internal fetch can reach them); they are simply excluded from the
-        // public manifest so the client has no discoverable URL.
+        // else fall back to the declaratively configured error pages. Shadow
+        // paths resolve the same way (the router's internal fetch can reach
+        // them); they are simply excluded from the public manifest so the
+        // client has no discoverable URL.
         let staticComponent: string | null = null;
+        const notFoundPath = state.config.notFound ?? resolvePagesPath(undefined, '404.html');
+        const errorPath = state.config.error ?? resolvePagesPath(undefined, 'error.html');
+        const alreadyOnError = path === notFoundPath
+          || path === errorPath
+          || url.pathname === applyBase(notFoundPath)
+          || url.pathname === applyBase(errorPath);
+
         if (!matched) {
-          const notFoundPath = state.config.notFound ?? '/404.html';
-          const alreadyOn404 = path === notFoundPath || url.pathname === applyBase(notFoundPath);
-          if (!alreadyOn404 && (mode === 'static' || mode === 'hybrid')) {
-            staticComponent = resolveStaticComponent(path);
-          } else if (!alreadyOn404) {
-            // signal-only mode (or already on 404) with no match => 404.
+          if (!alreadyOnError && (mode === 'static' || mode === 'hybrid')) {
+            // Try to resolve a real page under `pagesDir` for this clean path.
+            const candidate = resolveStaticComponent(path);
+            // Only treat it as found if the path actually maps to a known page:
+            // a clean route like /profile resolves to _pages/profile.html which is
+            // a declared data-route target; unknown clean paths fall through to 404.
+            const known = routeList.some((r) => {
+              if (r.component && r.component.endsWith(candidate.replace(/^\/+/, ''))) return true;
+              return false;
+            });
+            if (known) {
+              staticComponent = candidate;
+            } else if (path === '/' || path === '') {
+              staticComponent = resolveStaticComponent('/');
+            } else {
+              // Unknown clean path -> render the 404 page.
+              state.error = { type: '404', message: 'Page not found', path };
+              state.errorCode = null;
+              state.navigate(notFoundPath, { replace: true });
+              return;
+            }
+          } else if (!alreadyOnError) {
+            // signal-only mode (or already on an error page) with no match => 404.
             state.error = { type: '404', message: 'Page not found', path };
+            state.errorCode = null;
             state.navigate(notFoundPath, { replace: true });
             return;
           }
