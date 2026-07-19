@@ -105,11 +105,9 @@ export interface RouterConfig {
   // Declarative directory that clean routes resolve into (no hardcoded path).
   // e.g. '_pages' => '/profile' -> '_pages/profile.html'. Defaults to '_pages'.
   pagesDir?: string;
-  // Component rendered when no route/file matches (the 404 page).
-  // Resolved relative to `pagesDir` when it is a bare name.
-  notFound?: string;
-  // Generic error page rendered for server/HTTP error codes (500/502/503/504…).
-  // A single page reads `#router.errorCode` to present the right message.
+  // Single error-handling page for ALL errors (404 + 5xx…). The page
+  // reads `#router.errorCode` ('404' for not-found, '500'/'502'/… for
+  // HTTP errors) to present the right message. No separate 404 page.
   // Resolved relative to `pagesDir` when it is a bare name.
   error?: string;
 }
