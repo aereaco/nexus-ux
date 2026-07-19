@@ -659,6 +659,20 @@ export const predictiveModule: SpriteModule = {
     // Inject the engine instance into context so other sprites can use its quadtree
     (context as any).predictive = predictive;
 
+    // Bridge the predictive frustum to the router's fetch pre-warming: any
+    // route link the cursor is projected to hit gets its component HTML
+    // fetched ahead of the click via `router.prewarm`. Both are global
+    // signals, so no module coupling is introduced here.
+    const wire = () => {
+      const router = (context as any).globalSignals?.()?.router
+        ?? (context as any).runtime?.globalSignals?.()?.router;
+      if (router?.prewarm) predictive.setPrewarm((ref: string) => router.prewarm(ref));
+    };
+    // router registers its global signal during its own attribute init; try
+    // now and again on the next tick in case ordering differs.
+    wire();
+    scheduler.enqueueCapture(wire);
+
     return {
       getVelocity: () => predictive.getVelocity(),
       updateElement: (el: HTMLElement) => predictive.updateElement(el),
