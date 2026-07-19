@@ -998,6 +998,18 @@ export const routerAttributeModule: AttributeModule = {
         // back to it (or a back/forward that lands here) re-renders correctly.
         const _at = getActiveTabId();
         if (_at) {
+          // Guard custom-component tabs (e.g. a freshly opened new-tab
+          // launchpad). A concurrent/delayed updateRoute — including the boot
+          // microtask — resolves the browser URL and would otherwise clobber
+          // the launchpad's content with `_pages/home.html`. Leave such tabs
+          // alone so their `custom-component` content persists.
+          const tabs = (globals.tabs as any[]) || [];
+          const atIdx = tabs.findIndex((t: any) => t.id === _at);
+          if (atIdx >= 0 && tabs[atIdx].content === 'custom-component') {
+            // Still record the resolved path so back/forward to this tab is
+            // correct, but do NOT overwrite its custom content.
+            state.tabPaths[_at] = path;
+          } else {
           state.tabPaths[_at] = path;
           const nextRoute = matched?.component ?? staticComponent ?? null;
           const tabs = (globals.tabs as any[]) || [];
