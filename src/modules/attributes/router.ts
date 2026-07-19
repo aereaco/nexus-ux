@@ -557,22 +557,28 @@ export const routerAttributeModule: AttributeModule = {
           if (!id) return;
           let path = state.tabPaths[id];
           if (!path) {
-            // If this is a component-based tab (content starts with _components/),
-            // do NOT seed its path to the current location, and do not trigger a route.
-            const tabs = (globals.tabs as any[]) || [];
-            const tab = tabs.find((t: any) => t.id === id);
-            if (tab && tab.content && tab.content.startsWith('_components/')) {
-              state.route = null;
-              state.layout = null;
-              state.outlet = null;
-              return;
-            }
-
             // Seed from current location on first paint.
             path = stripBase(globalThis.location.pathname) || '/';
             state.tabPaths[id] = path;
           }
-          updateRoute(globalThis.location.origin + applyBase(path));
+
+          if (path === 'custom-component') {
+            state.route = null;
+            state.layout = null;
+            state.outlet = null;
+
+            // Keep browser URL but sync the tabId
+            const url = globalThis.location.pathname + globalThis.location.search + globalThis.location.hash;
+            globalThis.history.replaceState({ tabId: id, scrollY: globalThis.scrollY }, '', url);
+            return;
+          }
+
+          // Switch tab path: update browser address bar using replaceState to keep it in sync!
+          const target = applyBase(path);
+          const meta = state.tabMeta[id] || {};
+          globalThis.history.replaceState({ tabId: id, scrollY: globalThis.scrollY, title: meta.title, icon: meta.icon }, '', target);
+
+          updateRoute(globalThis.location.origin + target);
         },
 
         // Switch the active tab (also updates the layout's global signal so the
