@@ -402,10 +402,11 @@ async function batchBuild(configs: BuildOptions[]) {
 
 // ── Git commit + push helpers ──────────────────────────────────────────────
 
-function git(args: string[], cwd = Deno.cwd()): { ok: boolean; out: string } {
+function git(args: string[], cwd = Deno.cwd()): { ok: boolean; out: string; err: string } {
   const r = new Deno.Command("git", { args, cwd }).outputSync();
   const out = new TextDecoder().decode(r.stdout).trim();
-  return { ok: r.success, out };
+  const err = new TextDecoder().decode(r.stderr).trim();
+  return { ok: r.success, out, err };
 }
 
 async function gitPush(opts: { commit?: boolean; message?: string; remote?: string; branch?: string }) {
