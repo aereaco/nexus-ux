@@ -451,13 +451,11 @@ if (args.includes("--batch")) {
 
   await buildBundle({ outputName, appDir, excludeModules: excludes, gitRef, minify });
 
-  // ── Commit + push (opt-in) ──
+  // ── Push local commits to remote (the dev server auto-commits) ──
   if (args.includes("--push")) {
-    const noCommit = args.includes("--no-commit");
-    const message = args.find(a => a.startsWith("--message="))?.split("=")[1];
     const remote = args.find(a => a.startsWith("--remote="))?.split("=")[1];
     const branch = args.find(a => a.startsWith("--branch="))?.split("=")[1];
-    await gitPush({ commit: !noCommit, message, remote, branch });
+    await gitPush({ remote, branch });
   }
 }
 
