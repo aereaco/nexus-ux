@@ -217,6 +217,9 @@ class PredictiveEngine {
   private debugTracker: any = null;
   // Hook the router registers to pre-warm a hovered route link's component.
   private prewarmHook: ((ref: string) => void) | null = null;
+  // Dedup: track refs already fired this rebuild cycle so the cache isn't
+  // spammed on every mousemove frame. Cleared when the quadtree rebuilds.
+  private prewarmFired: Set<string> = new Set();
 
   // ZCZS: Quadtree for O(log n) spatial queries
   public quadtree!: Quadtree;
@@ -468,6 +471,8 @@ class PredictiveEngine {
         this.quadtree.insert(el, centerX, centerY);
       }
     });
+    // Reset the per-cycle dedup set so newly-visited targets get a fresh prewarm.
+    this.prewarmFired.clear();
   }
 
   /**
@@ -562,12 +567,14 @@ class PredictiveEngine {
           if (d < minD) {
             minD = d;
             snappedTarget = { cx, cy };
-            // Pre-warm a route link's destination: the cursor is projecting
-            // onto this href, so fetch its component ahead of the click.
-            if (this.prewarmHook && target instanceof HTMLAnchorElement && target.href) {
-              const href = target.getAttribute('href') || target.href;
-              if (href && !href.startsWith('#') && !href.startsWith('http')) {
-                this.prewarmHook(href);
+            // Pre-warm any navigation target the cursor is projecting toward.
+            // Covers: <a href>, data-on-* with router.navigate/go calls,
+            // and an explicit data-prefetch hint for dynamic targets.
+            if (this.prewarmHook) {
+              const ref = extractNavTarget(target);
+              if (ref && !this.prewarmFired.has(ref)) {
+                this.prewarmFired.add(ref);
+                this.prewarmHook(ref);
               }
             }
           }
