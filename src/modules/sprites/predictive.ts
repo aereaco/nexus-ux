@@ -562,6 +562,14 @@ class PredictiveEngine {
           if (d < minD) {
             minD = d;
             snappedTarget = { cx, cy };
+            // Pre-warm a route link's destination: the cursor is projecting
+            // onto this href, so fetch its component ahead of the click.
+            if (this.prewarmHook && target instanceof HTMLAnchorElement && target.href) {
+              const href = target.getAttribute('href') || target.href;
+              if (href && !href.startsWith('#') && !href.startsWith('http')) {
+                this.prewarmHook(href);
+              }
+            }
           }
         }
       }
