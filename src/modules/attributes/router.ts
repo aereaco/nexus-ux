@@ -138,7 +138,7 @@ export interface RouterState {
   currentRoute: RouteRecord | null;
   routes: RouteRecord[];
   // Reactive snapshot of the declarative routing strategy (mode/default/manifest/
-  // dynamic/shadow/notFound/basePath). Changes re-trigger a soft re-resolution.
+  // dynamic/shadow/error/basePath). Changes re-trigger a soft re-resolution.
   config: RouterConfig;
   // Resolved route manifest: declared data-route entries + manifest file + dynamic
   // scan, merged. Public entries (non-internal) are what the app advertises.
