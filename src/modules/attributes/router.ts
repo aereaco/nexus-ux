@@ -841,6 +841,10 @@ export const routerAttributeModule: AttributeModule = {
           !url.hash &&
           initialFile &&
           initialFile !== '404.html' &&
+          // Only collapse when the served document is an actual HTML file
+          // (e.g. /router.html). A clean route like /profile must NOT be
+          // collapsed to "/", or deep links lose their path.
+          /\.html?$/i.test(initialFile) &&
           path === '/' + initialFile
         ) {
           // Collapse only the served document file (e.g. /router.html) to "/".
