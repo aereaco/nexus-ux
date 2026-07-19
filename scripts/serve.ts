@@ -81,10 +81,10 @@ function broadcastReload() {
   }
 }
 
-// The document base. ROOT is always the /site directory (see resolveServeRoot),
-// so the app's _components/, _pages/, _assets/ and dist/ are served directly
-// under /. A single <base href="/"> keeps every relative fetch resolving to
-// the right place whether the process was launched from the repo or /site/.
+// The document base. App subpaths are rewritten to /site but the address bar
+// stays at /, so a single <base href="/"> keeps every relative fetch
+// (_components/, _pages/, _assets/, dist/) resolving correctly whether the
+// process was launched from the repo or from /site.
 const BASE_HREF = "/";
 
 // Stamp the served document's <base href> to match the active root so the
