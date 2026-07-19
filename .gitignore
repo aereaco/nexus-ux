@@ -9,5 +9,5 @@ node_modules/
 .vscode/
 .system_generated/
 .kilocodemodes
-.playwright
+.playwright/
 dist/*.br
