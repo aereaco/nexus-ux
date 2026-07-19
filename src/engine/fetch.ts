@@ -86,15 +86,23 @@ export const fetchUtilities: FetchUtilities = {
     })();
 
     fetchCache.set(cacheKey, promise);
-    
-    // Keep in cache until settlement + grace period to satisfy Suspense re-runs
-    promise.finally(() => {
-      if (fetchCacheTimers.has(cacheKey)) clearTimeout(fetchCacheTimers.get(cacheKey));
-      fetchCacheTimers.set(cacheKey, setTimeout(() => {
-        fetchCache.delete(cacheKey);
-        fetchCacheTimers.delete(cacheKey);
-      }, 2000) as unknown as number);
-    });
+
+    // Cache lifetime: keep SUCCESFUL text responses for the whole session
+    // so re-navigating to an already-seen page is instant (no network
+    // round-trip) — matching how the tab chrome updates. Only failed
+    // fetches are re-tried after a short grace period, so a transient
+    // error recovers. Errors are evicted on settlement+grace; successes
+    // stay cached (they are cheap strings and make routing feel instant).
+    promise.then(
+      () => { /* success: retain in cache for the session */ },
+      () => {
+        if (fetchCacheTimers.has(cacheKey)) clearTimeout(fetchCacheTimers.get(cacheKey));
+        fetchCacheTimers.set(cacheKey, setTimeout(() => {
+          fetchCache.delete(cacheKey);
+          fetchCacheTimers.delete(cacheKey);
+        }, 2000) as unknown as number);
+      },
+    );
 
     return promise;
   },
