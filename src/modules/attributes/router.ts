@@ -230,6 +230,17 @@ function fillPath(pattern: string, params: Record<string, string | number>): str
 
 // Detect a base path from the current location when not explicitly configured.
 function autoDetectBasePath(): string {
+  // Honor an explicit <base href> when present — it is the authoritative
+  // base for relative URLs and survives SPA deep links (the shell is served
+  // at any clean path, so the location pathname is a ROUTE, not a file).
+  const baseEl = document.querySelector('base[href]') as HTMLBaseElement | null;
+  if (baseEl && baseEl.href) {
+    try {
+      const u = new URL(baseEl.href, globalThis.location.href);
+      const p = u.pathname;
+      return p.endsWith('/') ? p : p + '/';
+    } catch { /* fall through */ }
+  }
   const pathname = globalThis.location.pathname;
   const lastSlash = pathname.lastIndexOf('/');
   const lastSeg = pathname.substring(lastSlash + 1);
