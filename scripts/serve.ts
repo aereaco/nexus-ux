@@ -31,25 +31,31 @@ function resolveRoot(): string {
   return Deno.cwd();
 }
 
-// The directory we actually serve documents from. The app lives under /site/,
-// so if the server is launched from the REPO root we transparently serve the
-// /site/ subdirectory as the document root. This keeps relative <base href="./">
-// resolving to _components/, _pages/ and _assets/ correctly no matter where the
-// process starts, and means a clean URL like / renders the shell.
-function resolveServeRoot(raw: string): string {
-  const r = raw.replace(/\\/g, "/").replace(/\/$/, "");
-  if (r.endsWith("/site")) return raw;
-  // Repo root (or anywhere NOT already /site): serve the bundled /site dir.
-  const candidate = r + "/site";
-  try {
-    if (Deno.statSync(candidate).isDirectory) return candidate;
-  } catch { /* not present — serve raw */ }
-  return raw;
+// ROOT is the real filesystem root we serve from. The app shell + components
+// live under site/, while the built bundle lives at repo-root dist/. We therefore
+// always serve from the REPO root and rewrite app subpaths (/, _components,
+// _pages, _assets) to their /site/ location. This keeps a relative <base href="./">
+// resolving correctly AND keeps dist/ reachable, no matter whether the process
+// was launched from the repo or from /site.
+const ROOT = resolveRoot();
+// Whether the served app lives under a /site subdirectory of ROOT.
+const SITE_PREFIX = (() => {
+  const r = ROOT.replace(/\\/g, "/").replace(/\/$/, "");
+  return r.endsWith("/site") ? "" : "/site";
+})();
+
+// Map an incoming request pathname to the on-disk path. App assets under
+// _components/_pages/_assets and the shell "/" live under /site; everything
+// else (e.g. repo-root dist/) is served from ROOT as-is.
+function mapAppPath(pathname: string): string {
+  if (SITE_PREFIX === "") return pathname;
+  if (pathname === "/" || pathname === "") return SITE_PREFIX + "/index.html";
+  if (/^\/(_components|_pages|_assets)\//.test(pathname)) return SITE_PREFIX + pathname;
+  return pathname;
 }
 
-const ROOT = resolveServeRoot(resolveRoot());
-// ROOT is always the /site directory (resolved above), so the shell is /index.html.
-const SHELL = "/index.html";
+// SPA entry point (relative to the served ROOT).
+const SHELL = SITE_PREFIX + "/index.html";
 
 function isIgnored(path: string): boolean {
   let p = path.replace(/\\/g, "/").replace(/^\.\//, "");
@@ -119,15 +125,21 @@ async function handler(req: Request): Promise<Response> {
     return response;
   }
 
-  const res = await serveDir(req, { fsRoot: ROOT, showIndex: true });
+  // Rewrite app subpaths (/, _components, _pages, _assets) to their /site
+  // location while leaving repo-root paths (dist/) untouched.
+  const mapped = mapAppPath(url.pathname);
+  const req2 = mapped === url.pathname
+    ? req
+    : new Request(new URL(mapped, url.origin), req);
+
+  const res = await serveDir(req2, { fsRoot: ROOT, showIndex: true });
 
   // SPA history-API fallback: a clean route (e.g. /profile) requested directly
   // from the address bar has no matching file on disk, so serveDir 404s. The
   // client router (data-router, hybrid mode) reads location.pathname on boot and
   // renders the matching route — but only if the shell is actually delivered.
-  // Fall back to the SPA entry point (relative to the served ROOT) for
-  // extension-less paths that 404, while leaving genuine missing assets
-  // (files with extensions) to 404 as usual.
+  // Fall back to the SPA entry point for extension-less paths that 404, while
+  // leaving genuine missing assets (files with extensions) to 404 as usual.
   if (res.status === 404 && !url.pathname.includes(".")) {
     const shell = await serveDir(new Request(new URL(SHELL, url.origin)), { fsRoot: ROOT });
     shell.headers.set("Cross-Origin-Opener-Policy", "same-origin");
