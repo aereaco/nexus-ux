@@ -710,15 +710,14 @@ export const routerAttributeModule: AttributeModule = {
             state.errorCode = null;
             return;
           }
-          const c = String(code);
-          state.error = { type: c === '404' ? '404' : 'http', code: c, message: `Error ${c}` };
-          state.errorCode = c;
-          // Address bar shows the clean /error route; the panel still
-          // renders the configured error COMPONENT (_pages/error.html).
-          const clean = '/error';
-          const onErr = globalThis.location.pathname === applyBase(clean);
+          // Publish the code so the single dynamic /error page can present
+          // 404/500/502/… copy via #router.errorCode. The address bar
+          // just shows the clean /error route — a normal route like any
+          // other, so no _pages/ path is ever leaked.
+          state.errorCode = String(code);
+          const onErr = globalThis.location.pathname === applyBase('/error');
           if (!onErr) {
-            state.navigate(clean, { replace: true });
+            state.navigate('/error', { replace: true });
           }
         },
 
@@ -962,17 +961,15 @@ export const routerAttributeModule: AttributeModule = {
         // them); they are simply excluded from the public manifest so the
         // client has no discoverable URL.
         let staticComponent: string | null = null;
-        // Single error-handling page (404 + 5xx). `error` config names the
-        // COMPONENT (e.g. _pages/error.html) the panel renders. The
-        // ADDRESS BAR instead shows the clean `/error` route — the same
-        // clean-URL convention every other route uses — so users never
-        // see a leaked `_pages/` path. The declared `/error` route maps
-        // the clean path back to the component below.
+        // Single dynamic error page (404 + 5xx alike). It is a NORMAL
+        // route (/error -> _pages/error.html) so any unresolved path
+        // routes to it exactly like any other route — the address bar
+        // shows the clean /error URL and the page reads #router.errorCode
+        // to present 404/500/… copy. No leaked _pages/ path, no special
+        // 404 branch in the bar.
         const errorPage = state.config.error ?? resolvePagesPath(undefined, 'error.html');
         const cleanErrorPath = '/error';
-        const alreadyOnError = path === errorPage
-          || path === cleanErrorPath
-          || url.pathname === applyBase(errorPage)
+        const alreadyOnError = path === cleanErrorPath
           || url.pathname === applyBase(cleanErrorPath);
 
         if (!matched) {
@@ -981,7 +978,7 @@ export const routerAttributeModule: AttributeModule = {
             const candidate = resolveStaticComponent(path);
             // Only treat it as found if the path actually maps to a known page:
             // a clean route like /profile resolves to _pages/profile.html which is
-            // a declared data-route target; unknown clean paths fall through to 404.
+            // a declared data-route target; unknown clean paths fall through to /error.
             const known = routeList.some((r) => {
               if (r.component && r.component.endsWith(candidate.replace(/^\/+/, ''))) return true;
               return false;
@@ -991,16 +988,12 @@ export const routerAttributeModule: AttributeModule = {
             } else if (path === '/' || path === '') {
               staticComponent = resolveStaticComponent('/');
             } else {
-              // Unknown clean path -> render the 404 page at the clean /error route.
-              state.error = { type: '404', message: 'Page not found', path };
-              state.errorCode = null;
-              state.errorCode = '404';
+              // Unknown clean path -> route to the dynamic error page.
               state.navigate(cleanErrorPath, { replace: true });
               return;
             }
           } else if (!alreadyOnError) {
-            // signal-only mode (or already on an error page) with no match => 404.
-            state.errorCode = '404';
+            // signal-only mode (or already on an error page) with no match => /error.
             state.navigate(cleanErrorPath, { replace: true });
             return;
           }
@@ -1023,8 +1016,13 @@ export const routerAttributeModule: AttributeModule = {
         state.layout = matched?.layout ?? null;
         publishOutlet(state.layout ?? state.route);
         state.path = path;
-        state.error = null;
-        state.errorCode = null;
+        // Clear transient error state on any NORMAL route, but preserve
+        // it when the matched route IS the error page (it reads
+        // #router.errorCode to present 404/500/… copy).
+        if (path !== cleanErrorPath && url.pathname !== applyBase(cleanErrorPath)) {
+          state.error = null;
+          state.errorCode = null;
+        }
 
         state.loading = true;
 
@@ -1149,32 +1147,20 @@ export const routerAttributeModule: AttributeModule = {
 
           previousInfo = toInfo;
         } else {
-          // Nothing resolved for this path. If we are NOT already on a declared
-          // error page, route to the appropriate one. A known server error code
-          // takes the generic `error` page (which reads #router.errorCode to
-          // present 500/502/503/504…); otherwise the 404 page.
-          const onErrorPage = path === errorPage
-            || path === cleanErrorPath
-            || url.pathname === applyBase(errorPage)
-            || url.pathname === applyBase(cleanErrorPath);
-
+          // Nothing resolved. This is only reached when already sitting on the
+          // /error route (it IS a declared route, so it matches via `matched`
+          // on arrival). Render its component directly so state.route + the
+          // outlet/tab-sync effect can display it; the page switches copy
+          // by #router.errorCode. Never re-navigate (would recurse).
           state.loading = false;
-          // `errorCode` is '404' for not-found, or the HTTP code (500/502/…)
-          // for server errors — a single page handles both via #router.errorCode.
-          state.error = { type: state.errorCode ?? '404', message: 'Page not found', path };
-
-          // When already on the error page, render its component directly (rather
-          // than recursing) so `state.route` reflects it and the outlet / tab
-          // sync effect can display it. The page itself switches copy by code.
+          const onErrorPage = path === cleanErrorPath
+            || url.pathname === applyBase(cleanErrorPath);
           if (onErrorPage) {
             staticComponent = errorPage;
             commitVisibility(null);
             state.route = staticComponent;
             publishOutlet(staticComponent);
-          } else {
-            state.navigate(errorPage, { replace: true });
           }
-
         }
       };
 
