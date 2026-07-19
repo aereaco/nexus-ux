@@ -281,7 +281,7 @@
              have their content synced from router.route via the data-effect
              above; custom-component tabs (launchpad, link tabs) carry their
              own content URL. No secondary signal needed. -->
-        <div role="tabpanel" class="h-dvh" data-component="tabs.find(t => t.id === activeTabId)?.content || null"></div>
+        <div role="tabpanel" class="h-dvh" data-component="(tabs.find(t => t.id === activeTabId) || { content: '_components/tab-new.html' }).content"></div>
       </div>
 
       <!-- CONTEXT MENU (tab + link actions) -->
