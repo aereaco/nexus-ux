@@ -215,6 +215,8 @@ class PredictiveEngine {
   private predictiveNodes: Set<HTMLElement> = new Set();
   private cleanupFns: (() => void)[] = [];
   private debugTracker: any = null;
+  // Hook the router registers to pre-warm a hovered route link's component.
+  private prewarmHook: ((ref: string) => void) | null = null;
 
   // ZCZS: Quadtree for O(log n) spatial queries
   public quadtree!: Quadtree;
