@@ -121,6 +121,10 @@ export interface RouterState {
   hash: string;
   loading: boolean;
   error: unknown;
+  // Active HTTP/server error code driving the generic error page (500/502/…).
+  // Null for normal routing; the `error` config page reads this to render
+  // the correct message instead of a per-code page per status.
+  errorCode: string | null;
   basePath: string;
   mode: RouterMode;
   // Outlet-driving signals (component URLs) + metadata.
