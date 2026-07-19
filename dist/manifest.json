@@ -1,0 +1,79 @@
+{
+  "attributes": [
+    "mask",
+    "drag",
+    "markdown",
+    "preserve",
+    "bind",
+    "computed",
+    "on",
+    "assert",
+    "switcher",
+    "import",
+    "if",
+    "effect",
+    "component",
+    "flow",
+    "for",
+    "router",
+    "pwa",
+    "var",
+    "style",
+    "theme",
+    "stylesheet",
+    "teleport",
+    "build",
+    "show",
+    "route",
+    "class",
+    "debug",
+    "html",
+    "signal",
+    "raf"
+  ],
+  "sprites": [
+    "mask",
+    "animate",
+    "gql",
+    "mcp",
+    "periodicSync",
+    "flow",
+    "bgSync",
+    "bgFetch",
+    "push",
+    "selector",
+    "predictive",
+    "sql",
+    "sw",
+    "svg"
+  ],
+  "scopes": [
+    "container",
+    "view",
+    "media",
+    "auth",
+    "os",
+    "native"
+  ],
+  "modifiers": [
+    "drag",
+    "zoom",
+    "stop",
+    "keys",
+    "self",
+    "prevent",
+    "throttle",
+    "once",
+    "debounce",
+    "morph"
+  ],
+  "observers": [
+    "mutation"
+  ],
+  "listeners": [
+    "executeScript",
+    "linkRewriter",
+    "bfcache",
+    "history"
+  ]
+}

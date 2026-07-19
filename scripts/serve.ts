@@ -2,6 +2,7 @@ import { serveDir } from "https://deno.land/std@0.212.0/http/file_server.ts";
 
 const AUTO = Deno.args.includes("--autocommit");
 const WATCH = Deno.args.includes("--watch");
+const BUILD = Deno.args.includes("--build") || AUTO;
 const ENABLED = AUTO || WATCH;
 
 const PORT = 8081;
@@ -80,6 +81,27 @@ function gitOut(args: string[]): string {
   }
 }
 
+// A change to the framework source (or its build inputs) requires a fresh
+// bundle so the served `dist/` stays in lockstep with `src/`.
+function needsBuild(paths: string[]): boolean {
+  const cwd = Deno.cwd().replace(/\\/g, "/").replace(/\/$/, "");
+  return paths.some((p) => {
+    let f = p.replace(/\\/g, "/").replace(/^\.\//, "");
+    if (f.startsWith(cwd + "/")) f = f.slice(cwd.length + 1);
+    return f.startsWith("src/") || f === "deno.json" || f === "scripts/build.ts";
+  });
+}
+
+// Rebuild the minified payload so src/ edits are reflected in dist/.
+function runBuild() {
+  if (!BUILD) return;
+  try {
+    new Deno.Command("deno", { args: ["task", "build", "--minify"] }).outputSync();
+  } catch (e) {
+    console.error("[serve] build failed:", e);
+  }
+}
+
 // Infer a short, human-readable category for the change from the file path and
 // a peek at the staged diff hunks (offline / deterministic — no external calls).
 function classify(file: string, diff: string): string {
@@ -107,7 +129,13 @@ function classify(file: string, diff: string): string {
 function gitCommit(paths: string[]) {
   const staged = paths.filter((p) => !p.includes("/.git/") && !p.endsWith("/.git") && p !== ".git");
   if (staged.length === 0) return;
-  const add = new Deno.Command("git", { args: ["add", ...staged] });
+
+  // Rebuild the bundle when source changed, then fold dist/ into this commit
+  // so the artifact never drifts from the source that produced it.
+  if (needsBuild(staged)) runBuild();
+  const toCommit = BUILD && needsBuild(staged) ? [...staged, "dist/"] : staged;
+
+  const add = new Deno.Command("git", { args: ["add", ...toCommit] });
   add.outputSync();
 
   // Inspect the staged diff to infer a useful message.
@@ -166,7 +194,7 @@ function startWatcher() {
 
 if (ENABLED) {
   startWatcher();
-  console.log(`[serve] watch mode on | autocommit=${AUTO} reload=${WATCH}`);
+  console.log(`[serve] watch mode on | autocommit=${AUTO} reload=${WATCH} build=${BUILD}`);
 }
 
 Deno.serve({ port: PORT }, handler);

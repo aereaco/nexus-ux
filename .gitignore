@@ -1,5 +1,4 @@
 node_modules/
-dist/
 .DS_Store
 *.log
 .gemini/
@@ -11,3 +10,4 @@ dist/
 .system_generated/
 .kilocodemodes
 .playwright/
+dist/*.br
