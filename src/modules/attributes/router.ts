@@ -307,7 +307,7 @@ export const routerAttributeModule: AttributeModule = {
         return `${pagesDir}/${raw.replace(/^\/+/, '')}`;
       };
 
-      const notFoundPage = resolvePagesPath(cfg.notFound, '404.html');
+      // Single error-handling page for 404 + 5xx. No separate 404 page.
       const errorPage = resolvePagesPath(cfg.error, 'error.html');
 
       const routerConfig: RouterConfig = {
@@ -318,7 +318,6 @@ export const routerAttributeModule: AttributeModule = {
         dynamic: cfg.dynamic === true,
         shadow: cfg.shadow ?? undefined,
         pagesDir,
-        notFound: notFoundPage,
         error: errorPage,
       };
 
