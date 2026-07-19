@@ -933,9 +933,8 @@ export const routerAttributeModule: AttributeModule = {
             }
           } else if (!alreadyOnError) {
             // signal-only mode (or already on an error page) with no match => 404.
-            state.error = { type: '404', message: 'Page not found', path };
-            state.errorCode = null;
-            state.navigate(notFoundPath, { replace: true });
+            state.errorCode = '404';
+            state.navigate(errorPage, { replace: true });
             return;
           }
         }
