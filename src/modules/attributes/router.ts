@@ -1116,21 +1116,9 @@ export const routerAttributeModule: AttributeModule = {
             commitVisibility(null);
             state.route = staticComponent;
             state.outlet = staticComponent;
-            const _at = getActiveTabId();
-            if (_at) {
-              state.tabPaths[_at] = staticComponent;
-              const tabs = (globals.tabs as any[]) || [];
-              const idx = tabs.findIndex((t: any) => t.id === _at);
-              if (idx >= 0) {
-                const cur = tabs[idx].content;
-                const nextTitle = state.errorCode ? 'Error ' + state.errorCode : 'Error';
-                const nextIcon = 'material-symbols-light:article-outline';
-                if (cur !== staticComponent || tabs[idx].title !== nextTitle || tabs[idx].icon !== nextIcon) {
-                  const nt = tabs.slice();
-                  nt[idx] = { ...nt[idx], content: staticComponent, title: nextTitle, icon: nextIcon };
-                  runtime.setGlobalSignal('tabs', nt);
-                }
-              }
+            // Paint-first panel signal (panel binds to `outletContent`).
+            if (state.tabPaths[getActiveTabId() ?? ''] !== 'custom-component') {
+              runtime.setGlobalSignal('outletContent', staticComponent);
             }
           } else {
             state.navigate(errorPage, { replace: true });
