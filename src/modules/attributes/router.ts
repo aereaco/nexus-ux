@@ -174,8 +174,12 @@ export interface RouterState {
     query?: Record<string, unknown>,
     opts?: { replace?: boolean },
   ): void;
-  isActive(path: string, exact?: boolean): boolean;
-  buildQuery(obj: Record<string, unknown>): string;
+   isActive(path: string, exact?: boolean): boolean;
+   buildQuery(obj: Record<string, unknown>): string;
+   // Surface a server/HTTP error (e.g. 500/502/503/504) and render the
+   // generic `error` page. Pass the code to present the right message; omit to
+   // clear and return to normal routing. The `error` page reads `#router.errorCode`.
+   setError(code?: string | number | null): void;
   addRoute(route: RouteRecord): void;
   removeRoute(route: RouteRecord): void;
   renderActiveTab(): void;
