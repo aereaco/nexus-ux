@@ -903,12 +903,10 @@ export const routerAttributeModule: AttributeModule = {
         // them); they are simply excluded from the public manifest so the
         // client has no discoverable URL.
         let staticComponent: string | null = null;
-        const notFoundPath = state.config.notFound ?? resolvePagesPath(undefined, '404.html');
-        const errorPath = state.config.error ?? resolvePagesPath(undefined, 'error.html');
-        const alreadyOnError = path === notFoundPath
-          || path === errorPath
-          || url.pathname === applyBase(notFoundPath)
-          || url.pathname === applyBase(errorPath);
+        // Single error-handling page (404 + 5xx) declared via `error`.
+        const errorPage = state.config.error ?? resolvePagesPath(undefined, 'error.html');
+        const alreadyOnError = path === errorPage
+          || url.pathname === applyBase(errorPage);
 
         if (!matched) {
           if (!alreadyOnError && (mode === 'static' || mode === 'hybrid')) {
