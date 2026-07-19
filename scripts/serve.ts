@@ -217,4 +217,8 @@ if (ENABLED) {
   console.log(`[serve] watch mode on | autocommit=${AUTO} reload=${WATCH} build=${BUILD}`);
 }
 
+// Capture any working-tree changes that predate this process (typically edits to
+// serve.ts itself made just before a restart) before the server begins serving.
+commitPendingStartup();
+
 Deno.serve({ port: PORT }, handler);
