@@ -1005,9 +1005,13 @@ export const routerAttributeModule: AttributeModule = {
           // alone so their `custom-component` content persists.
           const tabs = (globals.tabs as any[]) || [];
           const atIdx = tabs.findIndex((t: any) => t.id === _at);
-          if (atIdx >= 0 && tabs[atIdx].content === 'custom-component') {
-            // Still record the resolved path so back/forward to this tab is
-            // correct, but do NOT overwrite its custom content.
+          // A tab whose stored path is the 'custom-component' sentinel (e.g. a
+          // freshly opened new-tab launchpad) must NOT have its content swapped
+          // by a concurrent/delayed updateRoute (including the boot microtask,
+          // which resolves the browser URL and would inject the previous tab's
+          // route). Leave its `content` untouched; only record the resolved path
+          // so back/forward to this tab stays correct.
+          if (atIdx >= 0 && state.tabPaths[_at] === 'custom-component') {
             state.tabPaths[_at] = path;
           } else {
           state.tabPaths[_at] = path;
