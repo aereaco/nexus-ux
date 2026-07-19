@@ -945,11 +945,12 @@ export const routerAttributeModule: AttributeModule = {
 
         // --- Synchronous outlet commit (paint-first) ---
         // Publish the resolved outlet signals IMMEDIATELY so the content panel
-        // (bound to #router.route) updates with no await gap. Lifecycle hooks
-        // below only govern navigation control (abort / redirect); in the common
-        // case they are absent, so the old code needlessly deferred the paint by
-        // three microtask yields, producing a visible "delay" on routing to the
-        // active tab. A hook that redirects/aborts simply re-navigates away.
+        // (bound to the dedicated `outletContent` global) updates on the same
+        // tick as navigation — no await gap, no cascading `tabs` rewrite.
+        // Lifecycle hooks below only govern navigation control (abort / redirect);
+        // in the common case they are absent, so the old code needlessly
+        // deferred the paint by three microtask yields. A hook that
+        // redirects/aborts simply re-navigates away.
         const resolvedComponent = matched?.component ?? staticComponent ?? null;
         state.route = resolvedComponent;
         state.layout = matched?.layout ?? null;
@@ -958,22 +959,16 @@ export const routerAttributeModule: AttributeModule = {
         state.error = null;
         state.errorCode = null;
 
-        // --- Paint-first tabs mirror (synchronous) ---
-        // Mirror the resolved component into the ACTIVE route tab's `tabs[].content`
-        // NOW (before the async hooks) so the panel — which binds to
-        // `tabs[].content` — paints on the same tick as navigation instead of
-        // waiting for the post-hook `tabs` write (the perceptible "delay").
-        // Custom-component tabs (launchpad) are left untouched: their content is
-        // driven by the tab itself, not by routing.
+        // Paint-first panel signal. Custom-component tabs (launchpad) drive their
+        // own `outletContent` when they open and are left untouched here, so a
+        // concurrent/delayed updateRoute can't clobber them. Otherwise mirror
+        // the resolved component into `outletContent` right now.
         const _paintAt = getActiveTabId();
-        if (_paintAt && state.tabPaths[_paintAt] !== 'custom-component') {
+        if (!(_paintAt && state.tabPaths[_paintAt] === 'custom-component')) {
           const _tabs = (globals.tabs as any[]) || [];
-          const _idx = _tabs.findIndex((t: any) => t.id === _paintAt);
-          if (_idx >= 0 && resolvedComponent && _tabs[_idx].content !== resolvedComponent) {
-            const _nt = _tabs.slice();
-            _nt[_idx] = { ..._nt[_idx], content: resolvedComponent };
-            runtime.setGlobalSignal('tabs', _nt);
-          }
+          const _ti = _tabs.findIndex((t: any) => t.id === _paintAt);
+          const _custom = _ti >= 0 && _tabs[_ti]?.content?.startsWith?.('_components/');
+          runtime.setGlobalSignal('outletContent', _custom ? _tabs[_ti].content : resolvedComponent);
         }
 
         state.loading = true;
