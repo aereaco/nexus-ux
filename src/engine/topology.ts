@@ -256,6 +256,7 @@ class EngineTopology {
     console.log(`[Nexus Topology] Scaling UP from Tier ${this.currentTier} to Tier ${newTier}`);
     
     this.lagHistory = []; // Reset lag history to start fresh under the new tier
+    this.lastScaleTime = performance.now(); // start cooldown; transient worker lag ignored
     this.currentTier = newTier;
     await this.initializeTier();
     
