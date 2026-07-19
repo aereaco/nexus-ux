@@ -1012,7 +1012,7 @@ export const routerAttributeModule: AttributeModule = {
         const resolvedComponent = matched?.component ?? staticComponent ?? null;
         state.route = resolvedComponent;
         state.layout = matched?.layout ?? null;
-        state.outlet = state.layout ?? state.route;
+        publishOutlet(state.layout ?? state.route);
         state.path = path;
         state.error = null;
         state.errorCode = null;
