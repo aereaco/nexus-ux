@@ -45,7 +45,7 @@ import { CUSTOM_EVENT_PREFIX } from '../../engine/consts.ts';
  *  - `shadow` — glob(s) marking internal routes (e.g. `'/_internal/**'`). Shadow
  *    routes resolve/ render through the router's internal fetch but are excluded
  *    from the public `#router.manifest` so the client has no discoverable URL.
- *  - `notFound` — override the 404 component path.
+ *  - `error` — override the single error-handling component path.
  *
  * Intuitive API surface:
  *  - `#router.config` — reactive snapshot of the strategy object.
