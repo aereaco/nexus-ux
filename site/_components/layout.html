@@ -334,10 +334,13 @@
       <div data-effect="(() => { const p = router.path; if (!p || p === '/index.html') return; const labels = { '/': 'Home', '/settings': 'Settings', '/profile': 'Profile', '/_internal/admin-console': 'Internal Console' }; const title = labels[p] || (p === '/404.html' ? 'Not Found' : p.replace(/^\//, '').replace(/-/g, ' ')); const entry = { path: p, title }; const next = [entry, ...recent.filter(r => r.path !== p && r.path !== '/index.html')].slice(0, 5); recent = next; })()"></div>
 
       <!-- Keep route-based tabs in step with the router's resolved component
-           (sidebar links, router.go) and update dynamic tab metadata. -->
+           (sidebar links, router.go) and update dynamic tab metadata.
+           Guard: skip if this tab is a launchpad (custom-component) so the
+           previous router.route cannot clobber a freshly opened new tab. -->
       <div data-effect="(() => {
         const r = router.route;
         if (!r) return;
+        if (router.tabPaths && router.tabPaths[activeTabId] === 'custom-component') return;
         const idx = tabs.findIndex(t => t.id === activeTabId);
         if (idx < 0) return;
         const cur = tabs[idx].content;
