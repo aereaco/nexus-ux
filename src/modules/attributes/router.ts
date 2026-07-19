@@ -713,7 +713,6 @@ export const routerAttributeModule: AttributeModule = {
       // Stored under the bare key `router`; expressions reference it via `#router`
       // (the evaluator rewrites `#name` -> `__global.name`, stripping the `#`).
       runtime.setGlobalSignal('router', state);
-      (globalThis as any).__nxRouter = state; // TEMP debug
 
       // --- Per-tab history: active tab is owned by the layout's global signal.
       // The router reads/writes `activeTabId` there so the tab bar + panels
