@@ -9,3 +9,6 @@ cycle 4: IN tabs=["home"] dom=["Home","Tab0","Tab1","Tab2"] | OUT tabs=["home"] 
 cycle 5: IN tabs=["home"] dom=["Home","Tab0","Tab1","Tab2"] | OUT tabs=["home"] dom=["Home","Tab0","Tab1","Tab2"] <<< TAB DROP!
 cycle 6: IN tabs=["home"] dom=["Home","Tab0","Tab1","Tab2"] | OUT tabs=["home"] dom=["Home","Tab0","Tab1","Tab2"] <<< TAB DROP!
 cycle 7: IN tabs=["home"] dom=["Home","Tab0","Tab1","Tab2"] | OUT tabs=["home"] dom=["Home","Tab0","Tab1","Tab2"] <<< TAB DROP!
+cycle 8: IN tabs=["home"] dom=["Home","Tab0","Tab1","Tab2"] | OUT tabs=["home"] dom=["Home","Tab0","Tab1","Tab2"] <<< TAB DROP!
+
+=== NAVIGATE + HOVER ===
