@@ -237,7 +237,10 @@ function autoDetectBasePath(): string {
     // Location points to a file (e.g. /app/index.html) -> base is the directory.
     return pathname.substring(0, lastSlash + 1);
   }
-  return pathname.endsWith('/') ? pathname : pathname + '/';
+  // A clean route (e.g. /profile) is NOT a base directory — the SPA shell
+  // is served at "/", so the base stays root. Otherwise deep links would
+  // double the route segment into every outgoing navigation/asset URL.
+  return '/';
 }
 
 export const routerAttributeModule: AttributeModule = {
