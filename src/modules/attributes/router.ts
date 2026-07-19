@@ -182,6 +182,11 @@ export interface RouterState {
   removeRoute(route: RouteRecord): void;
   renderActiveTab(): void;
   setActiveTab(id: string): void;
+  // Pre-warm a component's HTML into the (sticky) fetch cache so the panel
+  // swap is instant when the user arrives. Driven by the predictive engine's
+  // projected interaction frustum: a hovered route link's destination is
+  // fetched ahead of the click. Pass an href, a name, or a component URL.
+  prewarm(ref: string): void;
 }
 
 // Convert path pattern to regex (supports :param, :param?, and trailing wildcard *)
