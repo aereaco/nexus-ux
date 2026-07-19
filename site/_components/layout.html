@@ -262,12 +262,13 @@
             if (a && a.origin === location.origin && !a.hasAttribute('download') && (!a.target || a.target === '_self')) {
               ctxMenu = { type: 'link', url: a.getAttribute('href'), title: a.textContent.trim(), icon: a.getAttribute('data-tab-icon') || '', x: e.clientX, y: e.clientY };
             }">
-        <!-- Panel outlet: derived directly from the ACTIVE TAB's own
-             `content` field (the same `tabs[]` object that supplies the
-             tab header's title/icon). Both the header and the body now read
-             the SAME source of truth, so they always update on the same
-             tick — no parallel `outletContent` signal to keep in sync. -->
-        <div role="tabpanel" class="h-dvh" data-component="(tabs.find(t => t.id === activeTabId) || {}).content || null"></div>
+        <!-- Panel outlet: bound to the router's resolved `outlet` signal
+             (`#router.outlet`), the single source of truth the router sets
+             synchronously for every navigation — normal routes AND the error
+             page. The tab header (title/icon) stays on `tabs[]`, which the
+             router keeps in lockstep; the body reads the component URL the
+             router already computed. -->
+        <div role="tabpanel" class="h-dvh" data-component="#router.outlet || null"></div>
       </div>
 
       <!-- CONTEXT MENU (tab + link actions) -->
