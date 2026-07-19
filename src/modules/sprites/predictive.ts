@@ -354,6 +354,16 @@ class PredictiveEngine {
   }
 
   /** Tear down all listeners. */
+  /**
+   * Register a pre-warm callback (wired by the router sprite). Called with
+   * the resolved href of a route link the cursor is projected to hit, so the
+   * destination's component HTML can be fetched into the cache before the
+   * click lands — turning the predictive frustum into fetch pre-warming.
+   */
+  public setPrewarm(fn: (ref: string) => void) {
+    this.prewarmHook = fn;
+  }
+
   public dispose() {
     this.cleanupFns.forEach((fn) => fn());
     this.quadtree.clear();
