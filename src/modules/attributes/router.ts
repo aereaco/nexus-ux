@@ -1237,6 +1237,14 @@ export const routerAttributeModule: AttributeModule = {
       queueMicrotask(() => {
         buildManifest();
         updateRoute(globalThis.location.href);
+        // Predictive pre-warm: ahead-of-click cache of every declared route's
+        // component HTML. The first (cold) navigation is then as instant as a
+        // revisit, because the sticky fetch cache already holds the file.
+        for (const r of routeList) {
+          if (r.component) state.prewarm(r.component);
+        }
+        // Also warm the error page so any failure renders immediately.
+        state.prewarm(state.config.error ?? resolvePagesPath(undefined, 'error.html'));
       });
 
       return () => {
