@@ -166,6 +166,8 @@ export interface RouterState {
   buildQuery(obj: Record<string, unknown>): string;
   addRoute(route: RouteRecord): void;
   removeRoute(route: RouteRecord): void;
+  renderActiveTab(): void;
+  setActiveTab(id: string): void;
 }
 
 // Convert path pattern to regex (supports :param, :param?, and trailing wildcard *)
