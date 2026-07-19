@@ -888,13 +888,12 @@ export const routerAttributeModule: AttributeModule = {
           return applyBase(full);
         };
 
-        // Mirror the resolved outlet into the bare `outlet` global signal, the
-        // single source of truth the content panel binds to. Written
-        // synchronously for every navigation (normal route + error page), so
-        // the panel is always in lockstep with the tab header.
+        // Publish the resolved component URL into state.outlet. The content
+        // panel binds to tabs[].content (driven by the layout's data-effect
+        // sync), so this is the router-internal state used by renderActiveTab
+        // and any outlet-model consumer (`data-component="#router.outlet"`).
         const publishOutlet = (url: string | null) => {
           state.outlet = url;
-          runtime.setGlobalSignal('outletContent', url);
         };
 
       // 3. Update Logic (async to support awaited hooks)
