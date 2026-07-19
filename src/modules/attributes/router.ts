@@ -1012,7 +1012,6 @@ export const routerAttributeModule: AttributeModule = {
           } else {
           state.tabPaths[_at] = path;
           const nextRoute = matched?.component ?? staticComponent ?? null;
-          const tabs = (globals.tabs as any[]) || [];
           const idx = tabs.findIndex((t: any) => t.id === _at);
           if (idx >= 0 && nextRoute) {
             const cur = tabs[idx].content;
@@ -1024,6 +1023,7 @@ export const routerAttributeModule: AttributeModule = {
               nt[idx] = { ...nt[idx], content: nextRoute, title: nextTitle, icon: nextIcon };
               runtime.setGlobalSignal('tabs', nt);
             }
+          }
           }
         }
 
