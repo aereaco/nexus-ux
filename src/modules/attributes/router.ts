@@ -962,6 +962,7 @@ export const routerAttributeModule: AttributeModule = {
         if (matched || staticComponent) {
           commitVisibility(matched); // section model (no-op visually for outlet-only)
           state.error = null;
+          state.errorCode = null;
           state.loading = false;
 
           restoreScroll(url.hash);
@@ -978,10 +979,28 @@ export const routerAttributeModule: AttributeModule = {
 
           previousInfo = toInfo;
         } else {
-          // Already on /404.html but no /404.html route registered: surface error.
+          // Nothing resolved for this path. If we are NOT already on a declared
+          // error page, route to the appropriate one. A known server error code
+          // takes the generic `error` page (which reads #router.errorCode to
+          // present 500/502/503/504…); otherwise the 404 page.
+          const onErrorPage =
+            path === notFoundPath ||
+            path === errorPath ||
+            url.pathname === applyBase(notFoundPath) ||
+            url.pathname === applyBase(errorPath);
+
           state.loading = false;
           state.error = { type: '404', message: 'Page not found', path };
           commitVisibility(null);
+
+          if (!onErrorPage) {
+            if (state.errorCode) {
+              state.navigate(errorPath, { replace: true });
+            } else {
+              state.navigate(notFoundPath, { replace: true });
+            }
+          }
+          // Already on the error/404 page: leave it rendered with the error set.
         }
       };
 
