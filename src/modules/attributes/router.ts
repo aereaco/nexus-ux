@@ -673,6 +673,26 @@ export const routerAttributeModule: AttributeModule = {
           setActiveTabId(id);
           state.renderActiveTab();
         },
+
+        // Surface a server/HTTP error and render the generic `error` page.
+        // A numeric/string code (500/502/503/504…) is published to
+        // `#router.errorCode` so a single error page can present the right
+        // message. Omit or pass null to clear the error and resume routing.
+        setError(code?: string | number | null) {
+          if (code === undefined || code === null || code === '') {
+            state.error = null;
+            state.errorCode = null;
+            return;
+          }
+          const c = String(code);
+          state.error = { type: 'http', code: c, message: `Error ${c}` };
+          state.errorCode = c;
+          const errPath = state.config.error ?? resolvePagesPath(undefined, 'error.html');
+          const onErr = globalThis.location.pathname === applyBase(errPath);
+          if (!onErr) {
+            state.navigate(errPath, { replace: true });
+          }
+        },
       });
 
       // 2. Register Global Signal
