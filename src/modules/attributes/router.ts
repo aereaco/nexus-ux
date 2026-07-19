@@ -615,6 +615,10 @@ export const routerAttributeModule: AttributeModule = {
             state.route = null;
             state.layout = null;
             state.outlet = null;
+            // The panel binds to `outletContent`; reflect this tab's own
+            // component (set when it opened) so the launchpad shows.
+            const _ct = (globals.tabs as any[])?.find((t: any) => t.id === id);
+            if (_ct?.content) runtime.setGlobalSignal('outletContent', _ct.content);
             // Keep browser URL, just sync the tabId in history.
             const url = globalThis.location.pathname + globalThis.location.search + globalThis.location.hash;
             suppressNavIntercept = true;
