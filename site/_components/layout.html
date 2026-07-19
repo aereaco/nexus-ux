@@ -284,7 +284,7 @@
             <span data-bind="pinned.includes(ctxMenu.tabId) ? 'Unpin' : 'Pin'"></span>
           </button>
           <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-                  data-on-click:stop="const src = tabs.find(t => t.id === ctxMenu.tabId); const id = 'tab-' + (++tabSeq); const nc = (src && src.content) || '_components/tab-generic.html'; if (nc.startsWith('_components/')) { router.tabPaths[id] = 'custom-component'; } else { router.tabPaths[id] = router.tabPaths[ctxMenu.tabId]; } tabs = [...tabs, { id, title: (src && src.title) || 'Tab', icon: (src && src.icon) || 'material-symbols-light:article-outline', content: nc }]; activeTabId = id; outletContent = nc; ctxMenu = null;">
+                  data-on-click:stop="const src = tabs.find(t => t.id === ctxMenu.tabId); const id = 'tab-' + (++tabSeq); const nc = (src && src.content) || '_components/tab-generic.html'; if (nc.startsWith('_components/')) { router.tabPaths[id] = 'custom-component'; } else { router.tabPaths[id] = router.tabPaths[ctxMenu.tabId]; } tabs = [...tabs, { id, title: (src && src.title) || 'Tab', icon: (src && src.icon) || 'material-symbols-light:article-outline', content: nc }]; activeTabId = id; ctxMenu = null;">
             <iconify-icon icon="material-symbols-light:add" class="text-lg"></iconify-icon>
             <span>Open in new tab</span>
           </button>
