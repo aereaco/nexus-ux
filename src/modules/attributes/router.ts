@@ -673,11 +673,11 @@ export const routerAttributeModule: AttributeModule = {
           state.name = matched?.name ?? null;
           state.route = matched?.component ?? staticComponent ?? null;
           state.layout = matched?.layout ?? null;
-          state.outlet = state.layout ?? state.route;
+          publishOutlet(state.layout ?? state.route);
           state.error = null;
 
-          // The panel derives its component from the active tab's own `content`
-          // field (same source as the tab header), so no `outletContent` write.
+          // The panel derives its component from the dedicated `outlet` global
+          // (kept in lockstep via publishOutlet), so no other write is needed.
 
           commitVisibility(matched);
 
