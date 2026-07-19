@@ -16,7 +16,6 @@
 
         activeTabId: 'home',
         activeTab: null,
-        outletContent: '_pages/home.html',
         pinned: [],
         tabSeq: 0,
         ctxMenu: null,
@@ -39,6 +38,20 @@
     <div data-route="/settings" data-route-name="settings" data-component="_pages/settings.html"></div>
     <div data-route="/profile" data-route-name="profile" data-component="_pages/profile.html"></div>
     <div data-route="/_internal/admin-console" data-route-name="admin" data-component="_pages/_internal/admin-console.html" data-route-shadow></div>
+
+    <!-- Reactive sync: when the router resolves a route, update the active
+         route-tab's content field so the panel (which reads tabs[].content)
+         stays in step with sidebar and address-bar navigation. Skips
+         custom-component tabs (launchpad / link tabs) so they are never
+         overwritten by the router's resolved route. -->
+    <div data-effect="
+      const rt = router.route;
+      const rid = activeTabId;
+      if (!rt || !rid) return;
+      if (router.tabPaths[rid] === 'custom-component') return;
+      const idx = tabs.findIndex(t => t.id === rid);
+      if (idx > -1 && tabs[idx].content !== rt) tabs[idx].content = rt;
+    " style="display:none" aria-hidden="true"></div>
 
     <!-- Drawer Header -->
     <nav class="navbar w-full bg-base-300">
@@ -247,7 +260,7 @@
 
           <button class="btn btn-circle shrink-0"
                   data-class="{ 'hidden': !pageTabs }"
-                  data-on-click="tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs.push({ id, title: 'New Tab', icon: 'material-symbols-light:article-outline', content: '_components/tab-new.html' }); activeTabId = id; outletContent = '_components/tab-new.html';">
+                  data-on-click="tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs.push({ id, title: 'New Tab', icon: 'material-symbols-light:article-outline', content: '_components/tab-new.html' }); activeTabId = id;">
             <iconify-icon icon="material-symbols-light:add" style="font-size: 24px"></iconify-icon>
           </button>
       </div>
@@ -263,11 +276,12 @@
             if (a && a.origin === location.origin && !a.hasAttribute('download') && (!a.target || a.target === '_self')) {
               ctxMenu = { type: 'link', url: a.getAttribute('href'), title: a.textContent.trim(), icon: a.getAttribute('data-tab-icon') || '', x: e.clientX, y: e.clientY };
             }">
-        <!-- Panel outlet: bound to the dedicated `outlet` global signal, the
-             single source of truth the router sets synchronously for EVERY
-             navigation — normal routes AND the error page — so the body is
-             always in lockstep with the header (which reads `tabs[]`). -->
-        <div role="tabpanel" class="h-dvh" data-component="outletContent || null"></div>
+        <!-- Panel outlet: bound to the active tab's own content field.
+             This is the single source of truth for the panel — route tabs
+             have their content synced from router.route via the data-effect
+             above; custom-component tabs (launchpad, link tabs) carry their
+             own content URL. No secondary signal needed. -->
+        <div role="tabpanel" class="h-dvh" data-component="tabs.find(t => t.id === activeTabId)?.content || null"></div>
       </div>
 
       <!-- CONTEXT MENU (tab + link actions) -->
