@@ -12,3 +12,527 @@ cycle 7: IN tabs=["home"] dom=["Home","Tab0","Tab1","Tab2"] | OUT tabs=["home"] 
 cycle 8: IN tabs=["home"] dom=["Home","Tab0","Tab1","Tab2"] | OUT tabs=["home"] dom=["Home","Tab0","Tab1","Tab2"] <<< TAB DROP!
 
 === NAVIGATE + HOVER ===
+after nav+hover signals: {"activeTabId":"tab-3","tabs":["home"]}
+after nav+hover dom: ["Home","Tab0","Tab1","Tab2"]
+
+LOGS: [debug] [Nexus Debug] [Coordinator] Processing <HTML> (Isolation: none) JSHandle@node
+[log] [Nexus] Nexus Import [Iconify]: Script injected: https://cdn.jsdelivr.net/npm/iconify-icon@3.0.0/dist/iconify-icon.min.js
+[log] [Nexus Scope] Added scope to <HTML>. New stack depth: 1
+[log] [Nexus] [Nexus Signal] Handling signal on <HTML> with value: { appReady: false }...
+[log] [Nexus Cache] CACHE MISS: Fetching local/CDN resource for https://cdn.jsdelivr.net/npm/tailwindcss@4/index.css.
+[log] [Nexus Cache] Trying local relative fallback path: /node_modules/tailwindcss/index.css
+[log] [Nexus Cache] CACHE MISS: Fetching local/CDN resource for https://cdn.jsdelivr.net/npm/tailwindcss@4/theme.css.
+[log] [Nexus Cache] Trying local relative fallback path: /node_modules/tailwindcss/theme.css
+[log] [Nexus Cache] CACHE MISS: Fetching local/CDN resource for https://cdn.jsdelivr.net/npm/tailwindcss@4/preflight.css.
+[log] [Nexus Cache] Trying local relative fallback path: /node_modules/tailwindcss/preflight.css
+[log] [Nexus Cache] CACHE MISS: Fetching local/CDN resource for https://cdn.jsdelivr.net/npm/tailwindcss@4/utilities.css.
+[log] [Nexus Cache] Trying local relative fallback path: /node_modules/tailwindcss/utilities.css
+[log] [Nexus Cache] CACHE MISS: Fetching local/CDN resource for https://cdn.jsdelivr.net/npm/tailwindcss@4/+esm.
+[log] [Nexus Cache] Trying local relative fallback path: /node_modules/tailwindcss/+esm
+[startGroup] [Nexus Debug] Element: JSHandle@node
+[log] Value: 
+[log] Data Stack: [Object]
+[log] Global Signals: Proxy(Object)
+[endGroup] console.groupEnd
+[debug] [Nexus Debug] [Coordinator] Processing <HEAD> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <META> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <TITLE> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BASE> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SCRIPT> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LINK> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <STYLE> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <STYLE> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SCRIPT> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BODY> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <PROGRESS> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <MAIN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[log] [Nexus Scope] Added scope to <DIV>. New stack depth: 2
+[debug] [Nexus Debug] [Coordinator] Processing <SCRIPT> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <svg> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <circle> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <line> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <line> (Isolation: none) JSHandle@node
+[log] [Nexus Topology] Boot: Detected 8 cores, SAB: true, NexusIO: false
+[log] [Nexus Topology] Selected Tier: 3 (Quad-Thread (Sovereign))
+[log] [SignalHeap] Attached SharedArrayBuffer
+[log] [Nexus Topology] SharedArrayBuffer initialized
+[log] [Nexus Topology] Spawned 3 worker(s) for Tier 3
+[startGroup] [Nexus Debug] Element: JSHandle@node
+[log] Value: 
+[log] Data Stack: [Object]
+[log] Global Signals: Proxy(Object)
+[endGroup] console.groupEnd
+[error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[log] [Nexus Cache] Local relative fallback failed for https://cdn.jsdelivr.net/npm/tailwindcss@4/+esm. Falling back to CDN.
+[log] [Nexus Cache] SUCCESS: Loaded local resource for https://cdn.jsdelivr.net/npm/tailwindcss@4/index.css from /node_modules/tailwindcss/index.css
+[log] [Nexus Cache] SUCCESS: Loaded local resource for https://cdn.jsdelivr.net/npm/tailwindcss@4/theme.css from /node_modules/tailwindcss/theme.css
+[log] [Nexus Cache] SUCCESS: Loaded local resource for https://cdn.jsdelivr.net/npm/tailwindcss@4/preflight.css from /node_modules/tailwindcss/preflight.css
+[log] [Nexus Cache] SUCCESS: Loaded local resource for https://cdn.jsdelivr.net/npm/tailwindcss@4/utilities.css from /node_modules/tailwindcss/utilities.css
+[log] [Component] Template loaded for <DIV>, length: 35930
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[log] [Nexus] [Nexus Signal] Handling signal on <DIV> with value: {
+    collapsed: true,
+    hovered: false,
+    isM...
+[log] [Nexus Scope] Added scope to <DIV>. New stack depth: 3
+[debug] [Nexus Debug] [Coordinator] Processing <INPUT> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[log] [Nexus] [Nexus Signal] Handling signal on <DIV> with value: {
+        activeTabId: 'home',
+        activeTab: ...
+[debug] [Nexus Debug] Initializing data-router on JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] addRoute called with path: /
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] addRoute called with path: /settings
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] addRoute called with path: /profile
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] addRoute called with path: /_internal/admin-console
+[debug] [Nexus Debug] [Coordinator] Processing <NAV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LABEL> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <UL> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <UL> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <UL> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <IMG> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <UL> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <UL> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <UL> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <IMG> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <UL> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <UL> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <UL> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <UL> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <UL> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <svg> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <path> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <svg> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <path> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <UL> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <svg> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <g> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <path> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <TEMPLATE> (Isolation: none) JSHandle@node
+[log] [Nexus Scope] Added scope to <DIV>. New stack depth: 4
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[log] [Nexus Scope] Added scope to <DIV>. New stack depth: 4
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <TEMPLATE> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <TEMPLATE> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <INPUT> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <KBD> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <P> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <UL> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LABEL> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <svg> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <use> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <TEMPLATE> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <UL> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <H1> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <TEMPLATE> (Isolation: none) JSHandle@node
+[log] [Nexus Scope] Added scope to <BUTTON>. New stack depth: 4
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[log] [Nexus Scope] Added scope to <BUTTON>. New stack depth: 4
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[log] [Nexus Scope] Added scope to <BUTTON>. New stack depth: 4
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LABEL> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <INPUT> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <INPUT> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <LABEL> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <INPUT> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <TEMPLATE> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <TEMPLATE> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] Matched route: / via path /
+[debug] [Nexus Debug] Matched route: / via path /
+[debug] [Nexus Debug] Matched route: / via path /
+[debug] [Nexus Debug] Matched route: / via path /
+[debug] [Nexus Debug] Matched route: / via path /
+[error] Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE.NotSameOriginAfterDefaultedToSameOriginByCoep
+[log] [Nexus Cache] SUCCESS: Loaded resource from CDN for https://cdn.jsdelivr.net/npm/tailwindcss@4/+esm
+[log] [Component] Template loaded for <DIV>, length: 651
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <P> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <CODE> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[log] [Nexus] Nexus Import [DaisyUI]: CSS adopted (raw): https://cdn.jsdelivr.net/npm/daisyui@5/themes.css
+[log] [Nexus] Nexus Import [DaisyUI]: CSS adopted (raw): https://cdn.jsdelivr.net/npm/daisyui@5
+[error] Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE.NotSameOriginAfterDefaultedToSameOriginByCoep
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[log] [Nexus] Nexus Import: Assets synchronized.
+[debug] [Nexus Debug] Matched route: / via path /
+[debug] [Nexus Debug] Matched route: / via path /
+[debug] [Nexus Debug] Matched route: / via path /
+[log] [Nexus Scope] Added scope to <DIV>. New stack depth: 4
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[log] [Nexus Scope] Added scope to <DIV>. New stack depth: 4
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[log] [Nexus Scope] Added scope to <DIV>. New stack depth: 4
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[log] [Component] Template loaded for <DIV>, length: 651
+[log] [Component] Template loaded for <DIV>, length: 3168
+[debug] [Nexus Debug] [Coordinator] Processing <H1> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <P> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SECTION> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <H2> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <UL> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <TEMPLATE> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SECTION> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <H2> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <UL> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <TEMPLATE> (Isolation: none) JSHandle@node
+[log] [Nexus Scope] Added scope to <LI>. New stack depth: 5
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] Matched route: / via path /
+[debug] [Nexus Debug] Matched route: / via path /
+[debug] [Nexus Debug] Matched route: / via path /
+[debug] [Nexus Debug] Matched route: / via path /
+[debug] [Nexus Debug] Matched route: / via path /
+[debug] [Nexus Debug] Matched route: / via path /
+[debug] [Nexus Debug] Matched route: / via path /
+[debug] [Nexus Debug] Matched route: / via path /
+[debug] [Nexus Debug] Matched route: /settings via path /settings
+[log] [Nexus Scope] Added scope to <LI>. New stack depth: 5
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[log] [Component] Template loaded for <DIV>, length: 335
+[debug] [Nexus Debug] [Coordinator] Processing <P> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <CODE> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] Matched route: /settings via path /settings
+[debug] [Nexus Debug] Matched route: /profile via path /profile
+[log] [Nexus Scope] Added scope to <LI>. New stack depth: 1
+[debug] [Nexus Debug] [Coordinator] Processing <LI> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <ICONIFY-ICON> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <SPAN> (Isolation: none) JSHandle@node
+[log] [Component] Template loaded for <DIV>, length: 333
+[debug] [Nexus Debug] Matched route: / via path /
+[log] [Component] Template loaded for <DIV>, length: 651
+[debug] [Nexus Debug] [Coordinator] Processing <DIV> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <A> (Isolation: none) JSHandle@node
+[debug] [Nexus Debug] [Coordinator] Processing <BUTTON> (Isolation: none) JSHandle@node
