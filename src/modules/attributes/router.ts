@@ -894,7 +894,7 @@ export const routerAttributeModule: AttributeModule = {
         // the panel is always in lockstep with the tab header.
         const publishOutlet = (url: string | null) => {
           state.outlet = url;
-          runtime.setGlobalSignal('outlet', url);
+          runtime.setGlobalSignal('outletContent', url);
         };
 
       // 3. Update Logic (async to support awaited hooks)
