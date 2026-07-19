@@ -227,8 +227,18 @@ class EngineTopology {
       // Calculate average lag
       const avgLag = this.lagHistory.reduce((a, b) => a + b, 0) / this.lagHistory.length;
 
-      // Scale up if lag exceeds threshold
-      if (avgLag > this.LAG_THRESHOLD && this.currentTier < 3) {
+      // Ignore lag measurements that fall within the transition cooldown window.
+      // Spawning/terminating workers causes a transient frame lag that is NOT a
+      // real load signal — without this guard it instantly trips scale-up and
+      // produces a permanent scale-down -> lag -> scale-up oscillation.
+      const now = performance.now();
+      if (now - this.lastScaleTime < this.SCALE_COOLDOWN_MS) {
+        return;
+      }
+
+      // Scale up only when we have enough accumulated history (so a single
+      // transient spike or the post-scale cooldown can't force a scale-up).
+      if (avgLag > this.LAG_THRESHOLD && this.currentTier < 3 && this.lagHistory.length >= this.MIN_SAMPLES_FOR_SCALE_UP) {
         this.scaleUp();
       }
       // Scale down if lag is consistently low
