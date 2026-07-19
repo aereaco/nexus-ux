@@ -955,12 +955,12 @@ export const routerAttributeModule: AttributeModule = {
 
         // --- Synchronous outlet commit (paint-first) ---
         // Publish the resolved outlet signals IMMEDIATELY so the content panel
-        // (bound to the dedicated `outletContent` global) updates on the same
-        // tick as navigation — no await gap, no cascading `tabs` rewrite.
-        // Lifecycle hooks below only govern navigation control (abort / redirect);
-        // in the common case they are absent, so the old code needlessly
-        // deferred the paint by three microtask yields. A hook that
-        // redirects/aborts simply re-navigates away.
+        // stays in lockstep with the tab header. The panel derives its
+        // component from the active tab's own `content` field (the same
+        // `tabs[]` object that supplies the header's title/icon), so no
+        // parallel `outletContent` signal is written here — the header and
+        // body read the SAME source and update on the same tick. Lifecycle
+        // hooks below only govern navigation control (abort / redirect).
         const resolvedComponent = matched?.component ?? staticComponent ?? null;
         state.route = resolvedComponent;
         state.layout = matched?.layout ?? null;
@@ -968,18 +968,6 @@ export const routerAttributeModule: AttributeModule = {
         state.path = path;
         state.error = null;
         state.errorCode = null;
-
-        // Paint-first panel signal. Custom-component tabs (launchpad) drive their
-        // own `outletContent` when they open and are left untouched here, so a
-        // concurrent/delayed updateRoute can't clobber them. Otherwise mirror
-        // the resolved component into `outletContent` right now.
-        const _paintAt = getActiveTabId();
-        if (!(_paintAt && state.tabPaths[_paintAt] === 'custom-component')) {
-          const _tabs = (globals.tabs as any[]) || [];
-          const _ti = _tabs.findIndex((t: any) => t.id === _paintAt);
-          const _custom = _ti >= 0 && _tabs[_ti]?.content?.startsWith?.('_components/');
-          runtime.setGlobalSignal('outletContent', _custom ? _tabs[_ti].content : resolvedComponent);
-        }
 
         state.loading = true;
 
