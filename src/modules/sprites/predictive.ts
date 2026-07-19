@@ -209,6 +209,47 @@ class Quadtree {
   }
 }
 
+/**
+ * Resolve a prewarmable navigation reference from any interactive element.
+ *
+ * Priority order:
+ *  1. `data-prefetch` — explicit opt-in hint for dynamic/computed targets.
+ *  2. `<a href>` — native anchor (same-origin, non-hash, non-absolute).
+ *  3. `data-on-*` — scans Nexus-UX event attributes for literal router calls:
+ *       router.navigate('/path'), router.go('/path'),
+ *       #router.navigate('/path'), #router.go('/path'),
+ *       navigate('/path')        (bare call inside a handler scope)
+ *
+ * Returns `null` when no navigable ref can be statically extracted.
+ * Intentionally skips external URLs (http/https//) and hash-only anchors.
+ */
+const NAV_CALL_RE =
+  /(?:#?router\.(?:navigate|go)|(?<!\w)navigate)\s*\(\s*['"`]([^'"`]+)['"`]/;
+
+function extractNavTarget(el: Element): string | null {
+  // 1. Explicit prefetch hint
+  const hint = el.getAttribute('data-prefetch');
+  if (hint && hint.trim()) return hint.trim();
+
+  // 2. Anchor href (same-origin, non-hash, non-absolute)
+  if (el instanceof HTMLAnchorElement) {
+    const href = el.getAttribute('href') || '';
+    if (href && !href.startsWith('#') && !href.startsWith('http') && !href.startsWith('//')) {
+      return href;
+    }
+    return null;
+  }
+
+  // 3. data-on-* attributes: extract literal path from router call
+  for (const attr of Array.from(el.attributes)) {
+    if (!attr.name.startsWith('data-on-')) continue;
+    const m = attr.value.match(NAV_CALL_RE);
+    if (m && m[1]) return m[1];
+  }
+
+  return null;
+}
+
 class PredictiveEngine {
   private lastPoint: Point | null = null;
   private velocity = { x: 0, y: 0, z: 0, t: 0 };
