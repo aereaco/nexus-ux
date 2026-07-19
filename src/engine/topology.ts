@@ -65,8 +65,11 @@ class EngineTopology {
   private readonly LAG_SAMPLE_SIZE = 60;
   private readonly LAG_THRESHOLD = 0.4; // 40% of frame budget
   private readonly FRAME_BUDGET = 16.67; // 60fps = 16.67ms per frame
+  private readonly SCALE_COOLDOWN_MS = 5000; // ignore lag spikes within 5s of a tier change
+  private readonly MIN_SAMPLES_FOR_SCALE_UP = 5; // require history before scaling up
   private autoScaleEnabled = true;
   private monitoringInterval: number | null = null;
+  private lastScaleTime = 0;
 
   constructor() {
     // Boot is now explicitly started by the framework entrypoint
