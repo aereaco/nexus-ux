@@ -69,14 +69,74 @@ async function handler(req: Request): Promise<Response> {
 }
 
 // ---- Git auto-commit ----
+
+// Run git and return combined stdout; empty string on failure.
+function gitOut(args: string[]): string {
+  try {
+    const r = new Deno.Command("git", { args }).outputSync();
+    return new TextDecoder().decode(r.stdout).trim();
+  } catch {
+    return "";
+  }
+}
+
+// Infer a short, human-readable category for the change from the file path and
+// a peek at the staged diff hunks (offline / deterministic — no external calls).
+function classify(file: string, diff: string): string {
+  const f = file.toLowerCase();
+  if (diff.includes("suppressNavIntercept") || diff.includes("navigate") || diff.includes("tabPaths") || diff.includes("history.")) {
+    return "routing";
+  }
+  if (f.endsWith("signal.ts") || diff.includes("cloneValue") || diff.includes("lastEvaluatedState") || diff.includes("reactive")) {
+    return "reactivity";
+  }
+  if (f.endsWith("layout.html") || f.endsWith("index.html") || f.includes("/_components/")) {
+    return "layout/UI";
+  }
+  if (f.endsWith("component.ts") || f.endsWith("if.ts") || f.endsWith("for.ts")) {
+    return "directive";
+  }
+  if (f.includes("listener") || f.endsWith("linkRewriter.ts")) {
+    return "listener";
+  }
+  if (f.endsWith(".md")) return "docs";
+  if (f.endsWith(".css") || f.endsWith(".js") || f.endsWith(".ts")) return "code";
+  return "misc";
+}
+
 function gitCommit(paths: string[]) {
   const staged = paths.filter((p) => !p.includes("/.git/") && !p.endsWith("/.git") && p !== ".git");
   if (staged.length === 0) return;
   const add = new Deno.Command("git", { args: ["add", ...staged] });
   add.outputSync();
-  const msg = staged.length === 1
-    ? `${basename(staged[0])}: auto-snapshot`
-    : `${staged.map(basename).join(", ")}: auto-snapshot (${staged.length} files)`;
+
+  // Inspect the staged diff to infer a useful message.
+  const diffAll = gitOut(["diff", "--staged", "--stat", ...staged]);
+  const cats = new Set<string>();
+  const detail: string[] = [];
+  for (const f of staged) {
+    const d = gitOut(["diff", "--staged", f]);
+    const cat = classify(f, d);
+    cats.add(cat);
+    const adds = (d.match(/^\+(?!\+\+)/gm) ?? []).length;
+    const dels = (d.match(/^-(?!--)/gm) ?? []).length;
+    detail.push(`- ${basename(f)} (${cat}: +${adds}/-${dels})`);
+  }
+
+  // Subject: category-prefixed snapshot when homogeneous, else "auto-snapshot".
+  let subject: string;
+  if (staged.length === 1) {
+    const f = staged[0];
+    subject = `${basename(f)}: ${[...cats][0]} auto-snapshot`;
+  } else if (cats.size === 1) {
+    subject = `chore(${[...cats][0]}): auto-snapshot (${staged.length} files)`;
+  } else {
+    subject = `auto-snapshot (${staged.length} files: ${[...cats].join(", ")})`;
+  }
+
+  const body = detail.join("\n");
+  const msg = body ? `${subject}\n\n${body}` : subject;
+
   const commit = new Deno.Command("git", { args: ["commit", "-m", msg] });
   commit.outputSync();
 }
