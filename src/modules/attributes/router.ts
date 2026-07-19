@@ -1111,8 +1111,18 @@ export const routerAttributeModule: AttributeModule = {
             commitVisibility(null);
             state.route = staticComponent;
             state.outlet = staticComponent;
-            // The panel derives its component from the active tab's own
-            // `content`, so no `outletContent` write is needed here.
+            // Keep the active tab's `content` (and header) in lockstep with the
+            // panel so the error page renders and the tab shows its copy. This is
+            // the single source of truth the panel now derives from.
+            const _at = getActiveTabId();
+            const _tabs = (globals.tabs as any[]) || [];
+            const _idx = _at ? _tabs.findIndex((t: any) => t.id === _at) : -1;
+            if (_idx >= 0 && _tabs[_idx].content !== staticComponent) {
+              const _nt = _tabs.slice();
+              const _code = state.errorCode ? String(state.errorCode) : '404';
+              _nt[_idx] = { ..._nt[_idx], content: staticComponent, title: 'Error ' + _code, icon: 'material-symbols-light:error-outline' };
+              runtime.setGlobalSignal('tabs', _nt);
+            }
           } else {
             state.navigate(errorPage, { replace: true });
           }
