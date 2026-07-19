@@ -130,10 +130,14 @@ function gitCommit(paths: string[]) {
   const staged = paths.filter((p) => !p.includes("/.git/") && !p.endsWith("/.git") && p !== ".git");
   if (staged.length === 0) return;
 
-  // Rebuild the bundle when source changed, then fold dist/ into this commit
-  // so the artifact never drifts from the source that produced it.
+  // Rebuild the bundle when source changed, then fold the regenerated bundle
+  // into this commit so the artifact never drifts from the source that
+  // produced it. Only the compiled outputs are tracked (the .br brotli variant
+  // stays ignored as a build-of-a-build artifact).
   if (needsBuild(staged)) runBuild();
-  const toCommit = BUILD && needsBuild(staged) ? [...staged, "dist/"] : staged;
+  const toCommit = BUILD && needsBuild(staged)
+    ? [...staged, "dist/nexus-ux.js", "dist/nexus-ux.min.js", "dist/manifest.json"]
+    : staged;
 
   const add = new Deno.Command("git", { args: ["add", ...toCommit] });
   add.outputSync();
