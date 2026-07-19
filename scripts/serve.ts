@@ -60,6 +60,23 @@ async function handler(req: Request): Promise<Response> {
   }
 
   const res = await serveDir(req, { fsRoot: ".", showIndex: true });
+
+  // SPA history-API fallback: a clean route (e.g. /profile) requested directly
+  // from the address bar has no matching file on disk, so serveDir 404s. The
+  // client router (data-router, hybrid mode) reads location.pathname on boot and
+  // renders the matching route — but only if the shell is actually delivered.
+  // Fall back to the SPA entry point for extension-less paths that 404, while
+  // leaving genuine missing assets (files with extensions) to 404 as usual.
+  if (res.status === 404 && !url.pathname.includes(".")) {
+    const shell = await serveDir(new Request(new URL("/site/index.html", url.origin)), { fsRoot: "." });
+    shell.headers.set("Cross-Origin-Opener-Policy", "same-origin");
+    shell.headers.set("Cross-Origin-Embedder-Policy", "require-corp");
+    if (WATCH && req.headers.get("accept")?.includes("text/html")) {
+      return injectReload(shell);
+    }
+    return shell;
+  }
+
   res.headers.set("Cross-Origin-Opener-Policy", "same-origin");
   res.headers.set("Cross-Origin-Embedder-Policy", "require-corp");
 
