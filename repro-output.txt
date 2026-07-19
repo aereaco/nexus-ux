@@ -1,0 +1,4 @@
+AFTER ADD 3 tabs signals: {"activeTabId":"tab-3","tabs":["home"]}
+AFTER ADD 3 tabs dom: ["Home","Tab0","Tab1","Tab2"]
+
+=== HOVER COLLAPSE/EXPAND CYCLES (3 tabs open) ===
