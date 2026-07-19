@@ -26,13 +26,14 @@
 <head>
   <meta charset="UTF-8">
   <title>Nexus-UX</title>
-  <!-- Pin the document base to /site/ so SPA (pushState) navigations don't
-       re-base relative component fetches and double the path (e.g.
-       /site/_internal/_pages/...). The router's autoDetectBasePath resolves
-       the same /site/ base. -->
+  <!-- Relative base so the SAME document works whether the server is rooted
+       at the repo (/site/ is a subdir) or directly at /site/. A relative
+       base keeps _components/, _pages/ and _assets/ fetches resolving
+       against wherever index.html is actually served from. The router's
+       autoDetectBasePath reads this. -->
   <base href="/">
-  <script type="module" src="/dist/nexus-ux.js"></script>
-  <link rel="icon" type="image/svg+xml" href="_assets/images/emblem.svg">
+  <script type="module" src="./dist/nexus-ux.js"></script>
+  <link rel="icon" type="image/svg+xml" href="./_assets/images/emblem.svg">
   <style>
     /* Progress Bar */
     .nexus-progress-mount {
