@@ -410,7 +410,7 @@ function git(args: string[], cwd = Deno.cwd()): { ok: boolean; out: string } {
 
 async function gitPush(opts: { commit?: boolean; message?: string; remote?: string; branch?: string }) {
   const remote = opts.remote ?? "origin";
-  const branch = opts.branch ?? git(["rev-parse", "--abbrev-ref", "HEAD"]).out || "main";
+  const branch = opts.branch ?? (git(["rev-parse", "--abbrev-ref", "HEAD"]).out || "main");
 
   const status = git(["status", "--porcelain=v1", "-z"]).out;
   if (!status) {
