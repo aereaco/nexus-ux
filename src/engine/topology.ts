@@ -140,6 +140,8 @@ class EngineTopology {
     // Start lag monitoring for auto-scaling
     if (this.autoScaleEnabled && this.currentTier > 0) {
       this.startMonitoring();
+    } else {
+      this.stopMonitoring();
     }
   }
 
@@ -195,6 +197,13 @@ class EngineTopology {
     }, 1000) as unknown as number;
   }
 
+  private stopMonitoring() {
+    if (this.monitoringInterval) {
+      clearInterval(this.monitoringInterval);
+      this.monitoringInterval = null;
+    }
+  }
+
   /**
    * Measure frame lag and trigger scale up/down
    */
@@ -233,6 +242,7 @@ class EngineTopology {
     const newTier = (this.currentTier + 1) as TierLevel;
     console.log(`[Nexus Topology] Scaling UP from Tier ${this.currentTier} to Tier ${newTier}`);
     
+    this.lagHistory = []; // Reset lag history to start fresh under the new tier
     this.currentTier = newTier;
     await this.initializeTier();
     
@@ -253,6 +263,7 @@ class EngineTopology {
     
     console.log(`[Nexus Topology] Scaling DOWN from Tier ${this.currentTier} to Tier ${newTier}`);
     
+    this.lagHistory = []; // Reset lag history to start fresh under the new tier
     this.currentTier = newTier;
     await this.initializeTier();
 
