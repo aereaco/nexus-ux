@@ -1024,31 +1024,25 @@ export const routerAttributeModule: AttributeModule = {
           // error page, route to the appropriate one. A known server error code
           // takes the generic `error` page (which reads #router.errorCode to
           // present 500/502/503/504…); otherwise the 404 page.
-          const onErrorPage =
-            path === notFoundPath ||
-            path === errorPath ||
-            url.pathname === applyBase(notFoundPath) ||
-            url.pathname === applyBase(errorPath);
+          const onErrorPage = path === errorPage || url.pathname === applyBase(errorPage);
 
           state.loading = false;
-          state.error = { type: state.errorCode ? 'http' : '404', message: 'Page not found', path };
+          // `errorCode` is '404' for not-found, or the HTTP code (500/502/…)
+          // for server errors — a single page handles both via #router.errorCode.
+          state.error = { type: state.errorCode ?? '404', message: 'Page not found', path };
 
-          // When already on a declared error page, render its component directly
-          // (rather than recursing) so `state.route` reflects it and the
-          // outlet / tab-sync effect can display it. The 404 page is used
-          // for unknown routes; a set error code uses the generic `error`
-          // page (which reads #router.errorCode for 500/502/503/504…).
+          // When already on the error page, render its component directly (rather
+          // than recursing) so `state.route` reflects it and the outlet / tab
+          // sync effect can display it. The page itself switches copy by code.
           if (onErrorPage) {
-            staticComponent = state.errorCode ? errorPath : notFoundPath;
+            staticComponent = errorPage;
             commitVisibility(null);
             state.route = staticComponent;
             state.outlet = staticComponent;
             const _at = getActiveTabId();
             if (_at) state.tabPaths[_at] = staticComponent;
-          } else if (state.errorCode) {
-            state.navigate(errorPath, { replace: true });
           } else {
-            state.navigate(notFoundPath, { replace: true });
+            state.navigate(errorPage, { replace: true });
           }
         }
       };
