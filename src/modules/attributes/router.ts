@@ -1025,17 +1025,25 @@ export const routerAttributeModule: AttributeModule = {
             url.pathname === applyBase(errorPath);
 
           state.loading = false;
-          state.error = { type: '404', message: 'Page not found', path };
-          commitVisibility(null);
+          state.error = { type: state.errorCode ? 'http' : '404', message: 'Page not found', path };
 
-          if (!onErrorPage) {
-            if (state.errorCode) {
-              state.navigate(errorPath, { replace: true });
-            } else {
-              state.navigate(notFoundPath, { replace: true });
-            }
+          // When already on a declared error page, render its component directly
+          // (rather than recursing) so `state.route` reflects it and the
+          // outlet / tab-sync effect can display it. The 404 page is used
+          // for unknown routes; a set error code uses the generic `error`
+          // page (which reads #router.errorCode for 500/502/503/504…).
+          if (onErrorPage) {
+            staticComponent = state.errorCode ? errorPath : notFoundPath;
+            commitVisibility(null);
+            state.route = staticComponent;
+            state.outlet = staticComponent;
+            const _at = getActiveTabId();
+            if (_at) state.tabPaths[_at] = staticComponent;
+          } else if (state.errorCode) {
+            state.navigate(errorPath, { replace: true });
+          } else {
+            state.navigate(notFoundPath, { replace: true });
           }
-          // Already on the error/404 page: leave it rendered with the error set.
         }
       };
 
