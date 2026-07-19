@@ -400,6 +400,54 @@ async function batchBuild(configs: BuildOptions[]) {
   }
 }
 
+// ── Git commit + push helpers ──────────────────────────────────────────────
+
+function git(args: string[], cwd = Deno.cwd()): { ok: boolean; out: string } {
+  const r = new Deno.Command("git", { args, cwd }).outputSync();
+  const out = new TextDecoder().decode(r.stdout).trim();
+  return { ok: r.success, out };
+}
+
+async function gitPush(opts: { commit?: boolean; message?: string; remote?: string; branch?: string }) {
+  const remote = opts.remote ?? "origin";
+  const branch = opts.branch ?? git(["rev-parse", "--abbrev-ref", "HEAD"]).out || "main";
+
+  const status = git(["status", "--porcelain=v1", "-z"]).out;
+  if (!status) {
+    console.log("ℹ️  Working tree clean — nothing to commit.");
+    return;
+  }
+
+  const paths = status.split("\0")
+    .filter((e) => e.length > 0)
+    .map((e) => e.slice(3))
+    .filter((p) => !p.startsWith(".git/") && p !== ".git");
+
+  if (paths.length === 0) {
+    console.log("ℹ️  No trackable changes — nothing to commit.");
+    return;
+  }
+
+  if (opts.commit !== false) {
+    git(["add", ...paths]);
+    const message = opts.message ?? `build: auto-commit (${paths.length} files)`;
+    const res = git(["commit", "-m", message]);
+    if (!res.ok) {
+      console.error("❌ Commit failed:", res.out);
+      Deno.exit(1);
+    }
+    console.log(`✓ Committed ${paths.length} file(s): ${message}`);
+  }
+
+  console.log(`🚀 Pushing ${branch} → ${remote}...`);
+  const push = git(["push", remote, branch]);
+  if (!push.ok) {
+    console.error("❌ Push failed:", push.out);
+    Deno.exit(1);
+  }
+  console.log("✓ Pushed to remote.");
+}
+
 // CLI
 const args = Deno.args;
 if (args.includes("--batch")) {
@@ -419,9 +467,18 @@ if (args.includes("--batch")) {
   const minify = args.includes("--minify") || args.includes("--app");
 
   await buildBundle({ outputName, appDir, excludeModules: excludes, gitRef, minify });
+
+  // ── Commit + push (opt-in) ──
+  if (args.includes("--push")) {
+    const noCommit = args.includes("--no-commit");
+    const message = args.find(a => a.startsWith("--message="))?.split("=")[1];
+    const remote = args.find(a => a.startsWith("--remote="))?.split("=")[1];
+    const branch = args.find(a => a.startsWith("--branch="))?.split("=")[1];
+    await gitPush({ commit: !noCommit, message, remote, branch });
+  }
 }
 
-export { buildBundle, batchBuild };
+export { buildBundle, batchBuild, gitPush };
 
 
 // ============================================================================
