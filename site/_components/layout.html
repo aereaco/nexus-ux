@@ -430,33 +430,16 @@
         </div>
         
 
-        <ul class="menu w-full grow" data-show="activeSidebarTab === 1">
-          <!-- List item -->
-          <li class="transition-transform duration-300 hover:scale-102 hover:aura hover:aura-glow">
-            <a href="/" data-tab-title="Home" data-tab-icon="material-symbols-light:home-outline">
-              <!-- Home icon -->
-              <iconify-icon icon="material-symbols-light:home-outline" style="font-size: 24px"></iconify-icon>
-              <span data-class="{ 'hidden': collapsed && !hovered && !isMobile }">Homepage</span>
-            </a>
-          </li>
-
-          <!-- List item -->
-          <li class="transition-transform duration-300 hover:scale-102">
-            <a href="/settings" data-tab-title="Settings" data-tab-icon="material-symbols-light:settings-outline">
-              <!-- Settings icon -->
-              <iconify-icon icon="material-symbols-light:settings-outline" style="font-size: 24px"></iconify-icon>
-              <span data-class="{ 'hidden': collapsed && !hovered && !isMobile }">Settings</span>
-            </a>
-          </li>
-
-          <!-- List item -->
-          <li class="transition-transform duration-300 hover:scale-102">
-            <a href="/profile" data-tab-title="Profile" data-tab-icon="material-symbols-light:person-outline">
-              <!-- Profile icon -->
-              <iconify-icon icon="material-symbols-light:person-outline" style="font-size: 24px"></iconify-icon>
-              <span data-class="{ 'hidden': collapsed && !hovered && !isMobile }">Profile</span>
-            </a>
-          </li>
+        <ul class="menu w-full grow" data-show="activeSidebarTab === 1"
+            data-drag-container="sidebarItems" data-drag-direction="vertical" data-drag-swap-threshold="0.55">
+          <template data-for="item in sidebarItems" data-key="item.href">
+            <li class="transition-transform duration-300 hover:scale-102" data-drag>
+              <a href="{ item.href }" data-tab-title="{ item.tabTitle }" data-tab-icon="{ item.tabIcon }">
+                <iconify-icon icon="{ item.icon }" style="font-size: 24px"></iconify-icon>
+                <span data-class="{ 'hidden': collapsed && !hovered && !isMobile }" data-bind="item.title"></span>
+              </a>
+            </li>
+          </template>
         </ul>
 
         <!-- ================= Panel Preferences (tab 3) ================= -->
