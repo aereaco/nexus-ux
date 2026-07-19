@@ -1,74 +1,51 @@
-# Issue: Hovering the collapsed sidebar removes/destroys DOM nodes (tabs + panel)
+# Resolved: Hovering sidebar wiped newly-added tabs (global `tabs` signal clobbered)
 
-## Reported by
-User (on-screen observation in their real browser), with four screenshots as evidence:
-`/home/aerea/development/01-load.png`
-`/home/aerea/development/02-after-tabs.png`
-`/home/aerea/development/03-hovering-sidebar.png`
-`/home/aerea/development/04-after-hover.png`
+## STATUS: RESOLVED — fix applied in source (`8ff53fb`, `1cfab3a`), verified working by user.
 
-## Symptom (user's words)
-When the sidebar is collapsed and the user hovers it (mouse enters the thin
-left strip), DOM nodes get removed/destroyed. Specifically the user observes
-the **tabs and/or the active tab panel disappearing or resetting**, as if the
-tab list (`tabs` signal) is being reset and the panel is being re-mounted or
-torn down.
+## The issue (user, on-screen)
+1. Load `http://127.0.0.1:8081/site/index.html` → one `Home` tab, sidebar collapsed.
+2. Click `+` in the tab bar (`.btn.btn-circle.shrink-0`) to add tabs.
+3. Hover the sidebar → expands (`data-on-mouseenter="hovered = true"`).
+4. On hover-end/collapse, **all newly-added tabs vanished and the view reset to
+   `Home`** — the global `tabs` signal was wiped to its initial 1-element literal.
 
-## Reproduction steps (as performed)
-1. Open `http://127.0.0.1:8081/site/index.html` (dev server, `scripts/serve.ts`, `--watch --autocommit`).
-2. Page loads with a single `Home` tab and a collapsed sidebar.
-3. Click the new-tab button (`.btn.btn-circle.shrink-0`) 2–3 times to add tabs.
-4. Move the real mouse pointer over the collapsed sidebar strip (left edge).
-5. Observe which nodes vanish.
+This is a **state reset**, not a `data-if` DOM tear-down. `src/modules/attributes/if.ts`
+only mounts/disposes its OWN dock clones (layout.html L530/L535) and cannot touch
+the tab bar — the culprit is the global-signal effect in `signal.ts`.
 
-## Screenshots (user-asserted evidence — NOT yet machine-verified by assistant)
-- `01-load.png` — initial load, collapsed sidebar, one `Home` tab.
-- `02-after-tabs.png` — after adding 2–3 tabs; tabs + panel present.
-- `03-hovering-sidebar.png` — while hovering the sidebar; user reports nodes removed.
-- `04-after-hover.png` — after the hover ends; user reports state not recovered.
+## Root cause (from git diff `b7ab463 → 8ff53fb`)
+`data-signal:global` kept `lastEvaluatedState` with a *shallow* reference to the
+`tabs` array. `tabs.push()` (clicking `+`) mutated that snapshot in place. When the
+sidebar hover toggled a `data-if` and re-ran the global effect, the freshly
+evaluated `tabs` literal (length 1) was compared against the mutated snapshot
+(length N) → "changed" → framework overwrote global `tabs` with the 1-element
+literal, deleting the user's tabs.
 
-## Assistant's conflicting observation (must be reconciled)
-Using the same real-mouse sequence via the MCP `browser_*` tools against the
-served `dist/`, the live DOM snapshots showed:
-- Tabs remain (even increased: Home + multiple "New Tab").
-- The `tabpanel` ("Welcome / data-component") stays present.
-- The sidebar correctly EXPANDS on hover (branding + Homepage/Settings/Profile
-  + Menu/Favorites/Preferences appear) and collapses again after.
-- No tab reset, no panel removal, no node loss was observed in the DOM.
+## The fix (committed; do NOT re-implement)
+- `src/modules/attributes/signal.ts` (`8ff53fb`):
+  - `cloneValue()` deep-clone helper (L8–20) so `lastEvaluatedState` is isolated
+    from global mutations.
+  - init-if-absent guard (L91–99): globals seeded only for keys that do not already
+    exist; a re-run never clobbers live state.
+- `src/modules/attributes/component.ts` (`1cfab3a`): memoize `data-component` by
+  resolved path (`if (config.path === __lastPath) return;`) so an unrelated hover
+  does not remorph the panel.
 
-This contradicts the user's screenshot-based report. Possible causes to rule in/out:
-- Stale `dist/nexus-ux.js` served to the user's browser (server sends `etag`/
-  `last-modified` but NO `Cache-Control: no-cache`; soft refresh may serve a
-  cached bundle). **Hard refresh (Ctrl/Cmd+Shift+R) suspected factor.**
-- The user reproduces via a different interaction path/state not yet hit
-  (e.g., toggling via `toggle sidebar` button first, or a specific pointer
-  position that triggers `data-on-mouseenter="hovered = true"` differently).
-- A genuine framework bug that only manifests under real pointer events /
-  timing that the automated tool's `hover()` does not replicate exactly.
+## Build/deploy note (learned from `serve.ts`)
+- `scripts/serve.ts` has **no build step** — it only serves static files;
+  `--autocommit` only commits. Source edits reach the browser ONLY after an
+  explicit `deno task build --minify`. (HTML-only `site/` changes need no rebuild.)
+- The fix went live via the other agent's `deno task build --minify` run.
 
-## Relevant source (per prior investigation)
-- `src/modules/attributes/signal.ts` — global signal init-if-absent fix applied
-  (committed) to stop tabs resetting to initial on re-run.
-- `src/modules/attributes/component.ts` — `data-component` path-memoization guard
-  applied (committed) to stop remorph on unrelated signal changes.
-- `src/modules/attributes/if.ts` — `data-if` clone/dispose; legitimate source of
-  sidebar icon removals on hover (`collapsed && !hovered`).
-- `site/_components/layout.html` — hover handlers `data-on-mouseenter="hovered = true"`
-  / `data-on-mouseleave="hovered = false"` (~L398–401); dock `data-if` branches at
-  (~L530 / ~L535); `data-effect` at ~L330/334/340.
+## Validation (user-performed, passed)
+Hard-refresh → add tabs via `+` → hover sidebar (expand) → move away (collapse) →
+tabs REMAIN; view does not reset to Home. Repeated hover cycles: stable.
 
-## Key open questions
-1. Which exact nodes does the user see disappear (tabs, panel, sidebar items)?
-2. Is the user's browser running the CURRENT `dist/` (hard-refreshed) or a cached one?
-3. Does the bug require the `toggle sidebar` button to be used first, or only raw hover?
-4. Can a second-opinion agent (with image-input capability) confirm what the 4 PNGs show?
+## Rejected theories (do not pursue)
+- Missing `</template>` at layout.html L535 — FALSE; both `data-if` templates at
+  L530/L535 are properly closed (confirmed in current file + git history).
+- `if.ts` removing the tab bar — FALSE; `data-if` only toggles its own dock clones.
 
-## Validation plan for next agent
-- Independently open the 4 PNGs and describe what each shows, especially any
-  missing tabs/panel in 03 and 04.
-- Reproduce in a real browser: load, add tabs, hover sidebar; capture before/after
-  DOM + screenshots; state definitively whether nodes are removed.
-- If reproducible: isolate the directive(s) responsible (signal reset, data-if
-  dispose, data-component remount, or re-navigation) and propose a fix.
-- If NOT reproducible on a hard-refreshed current bundle: confirm stale-cache
-  hypothesis and recommend adding `Cache-Control: no-cache` to the dev server.
+## Notes
+- Standalone repro scripts landed as `repro-*.mjs` (gitignored `.playwright/`).
+- No further code change required. Nothing pending.
