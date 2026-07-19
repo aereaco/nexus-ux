@@ -5,6 +5,20 @@ import { unifiedRef, Ref } from '../../engine/reactivity.ts';
 import { deepEqual } from '../../engine/reconciler.ts';
 import { ParsedAttribute } from '../../engine/attributeParser.ts';
 
+function cloneValue(val: unknown): unknown {
+  if (Array.isArray(val)) {
+    return val.map(cloneValue);
+  }
+  if (val !== null && typeof val === 'object') {
+    const res: Record<string, unknown> = {};
+    for (const key of Object.keys(val)) {
+      res[key] = cloneValue((val as Record<string, unknown>)[key]);
+    }
+    return res;
+  }
+  return val;
+}
+
 const signalModule: AttributeModule = {
   name: 'signal',
   attribute: 'signal',
@@ -80,12 +94,12 @@ const signalModule: AttributeModule = {
                 if (!(key in globals)) {
                   globals[key] = (newState as Record<string, unknown>)[key];
                 }
-                seeded[key] = globals[key];
+                seeded[key] = cloneValue(globals[key]);
               });
               lastEvaluatedState = seeded;
               stateRef.value = globals;
             } else {
-              lastEvaluatedState = { ...(newState as Record<string, unknown>) };
+              lastEvaluatedState = cloneValue(newState) as Record<string, unknown>;
               stateRef.value = newState as Record<string, unknown>;
             }
           } else {
@@ -104,7 +118,7 @@ const signalModule: AttributeModule = {
               
               if (changed) {
                 globals[key] = curVal;
-                lastEvaluatedState![key] = curVal;
+                lastEvaluatedState![key] = cloneValue(curVal);
               }
             });
           } else {
@@ -120,7 +134,7 @@ const signalModule: AttributeModule = {
               
               if (changed) {
                 value[key] = curVal;
-                lastEvaluatedState![key] = curVal;
+                lastEvaluatedState![key] = cloneValue(curVal);
               }
             });
           }
