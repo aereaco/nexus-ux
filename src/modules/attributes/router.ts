@@ -301,10 +301,13 @@ export const routerAttributeModule: AttributeModule = {
         : '_pages';
 
       // Resolve a bare page name against `pagesDir`; pass-through absolute URLs.
+      // Relative refs are returned with a leading slash so they compare equal to
+      // `path` (which is always slash-led after stripBase) and to the
+      // base-applied URL used in the `alreadyOnError` / `onErrorPage` checks.
       const resolvePagesPath = (ref: string | undefined, fallback: string): string => {
         const raw = ref && ref.trim() ? ref.trim() : fallback;
         if (raw.startsWith('/') || raw.startsWith('http')) return raw;
-        return `${pagesDir}/${raw.replace(/^\/+/, '')}`;
+        return `/${pagesDir}/${raw.replace(/^\/+/, '')}`;
       };
 
       // Single error-handling page for 404 + 5xx. No separate 404 page.
