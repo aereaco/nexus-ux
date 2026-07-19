@@ -664,6 +664,9 @@ export const routerAttributeModule: AttributeModule = {
           state.outlet = state.layout ?? state.route;
           state.error = null;
 
+          // Paint-first panel signal (panel binds to `outletContent`).
+          runtime.setGlobalSignal('outletContent', state.outlet);
+
           commitVisibility(matched);
 
           // Update browser address bar to reflect the active tab's path.
