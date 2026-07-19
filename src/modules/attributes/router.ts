@@ -997,7 +997,23 @@ export const routerAttributeModule: AttributeModule = {
         // Per-tab: remember the resolved path for the active tab so switching
         // back to it (or a back/forward that lands here) re-renders correctly.
         const _at = getActiveTabId();
-        if (_at) state.tabPaths[_at] = path;
+        if (_at) {
+          state.tabPaths[_at] = path;
+          const nextRoute = matched?.component ?? staticComponent ?? null;
+          const tabs = (globals.tabs as any[]) || [];
+          const idx = tabs.findIndex((t: any) => t.id === _at);
+          if (idx >= 0 && nextRoute) {
+            const cur = tabs[idx].content;
+            const meta = state.tabMeta[_at] || {};
+            const nextTitle = meta.title || (nextRoute === '_pages/home.html' ? 'Home' : (nextRoute === '_pages/settings.html' ? 'Settings' : (nextRoute === '_pages/profile.html' ? 'Profile' : (nextRoute === errorPage ? (state.errorCode ? 'Error ' + state.errorCode : 'Error') : 'Tab'))));
+            const nextIcon = meta.icon || (nextRoute === '_pages/home.html' ? 'material-symbols-light:home-outline' : (nextRoute === '_pages/settings.html' ? 'material-symbols-light:settings-outline' : (nextRoute === '_pages/profile.html' ? 'material-symbols-light:person-outline' : 'material-symbols-light:article-outline')));
+            if (cur !== nextRoute || tabs[idx].title !== nextTitle || tabs[idx].icon !== nextIcon) {
+              const nt = tabs.slice();
+              nt[idx] = { ...nt[idx], content: nextRoute, title: nextTitle, icon: nextIcon };
+              runtime.setGlobalSignal('tabs', nt);
+            }
+          }
+        }
 
         if (matched || staticComponent) {
           commitVisibility(matched); // section model (no-op visually for outlet-only)
@@ -1006,6 +1022,22 @@ export const routerAttributeModule: AttributeModule = {
           state.loading = false;
 
           restoreScroll(url.hash);
+
+          // Update recent path list directly (excluding error page and internal tools).
+          if (path && path !== '/index.html' && path !== errorPage && !path.startsWith('/_internal/')) {
+            const recent = (globals.recent as any[]) || [];
+            const labels: Record<string, string> = {
+              '/': 'Home',
+              '/settings': 'Settings',
+              '/profile': 'Profile',
+              '/_internal/admin-console': 'Internal Console'
+            };
+            const title = labels[path] || path.replace(/^\//, '').replace(/-/g, ' ');
+            const entry = { path, title };
+            const next = [entry, ...recent.filter((r: any) => r.path !== path && r.path !== '/index.html')].slice(0, 5);
+            runtime.setGlobalSignal('recent', next);
+          }
+
 
           // afterEnter / afterLeave.
           if (matched) {
@@ -1039,10 +1071,25 @@ export const routerAttributeModule: AttributeModule = {
             state.route = staticComponent;
             state.outlet = staticComponent;
             const _at = getActiveTabId();
-            if (_at) state.tabPaths[_at] = staticComponent;
+            if (_at) {
+              state.tabPaths[_at] = staticComponent;
+              const tabs = (globals.tabs as any[]) || [];
+              const idx = tabs.findIndex((t: any) => t.id === _at);
+              if (idx >= 0) {
+                const cur = tabs[idx].content;
+                const nextTitle = state.errorCode ? 'Error ' + state.errorCode : 'Error';
+                const nextIcon = 'material-symbols-light:article-outline';
+                if (cur !== staticComponent || tabs[idx].title !== nextTitle || tabs[idx].icon !== nextIcon) {
+                  const nt = tabs.slice();
+                  nt[idx] = { ...nt[idx], content: staticComponent, title: nextTitle, icon: nextIcon };
+                  runtime.setGlobalSignal('tabs', nt);
+                }
+              }
+            }
           } else {
             state.navigate(errorPage, { replace: true });
           }
+
         }
       };
 
