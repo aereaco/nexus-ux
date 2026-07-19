@@ -1065,7 +1065,7 @@ export const routerAttributeModule: AttributeModule = {
         state.layout = matched?.layout ?? null;
         // Single effective outlet: prefer the layout (which contains its own
         // inner `#router.route` outlet), else render the route component directly.
-        state.outlet = state.layout ?? state.route;
+        publishOutlet(state.layout ?? state.route);
 
         // Per-tab: remember the resolved path for the active tab so switching
         // back to it (or a back/forward that lands here) re-renders correctly.
