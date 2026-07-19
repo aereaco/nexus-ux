@@ -927,7 +927,8 @@ export const routerAttributeModule: AttributeModule = {
               // Unknown clean path -> render the 404 page.
               state.error = { type: '404', message: 'Page not found', path };
               state.errorCode = null;
-              state.navigate(notFoundPath, { replace: true });
+              state.errorCode = '404';
+              state.navigate(errorPage, { replace: true });
               return;
             }
           } else if (!alreadyOnError) {
