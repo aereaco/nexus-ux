@@ -332,7 +332,7 @@
 
       <!-- Track recently visited routes into the `recent` signal (deduped, capped).
            Watches router.path so it updates on every navigation. -->
-      <div data-effect="(() => { const p = router.path; if (!p || p === '/index.html') return; const labels = { '/': 'Home', '/settings': 'Settings', '/profile': 'Profile', '/_internal/admin-console': 'Internal Console', '/404.html': 'Not Found', '/error.html': (router.errorCode ? 'Error ' + router.errorCode : 'Error') }; const title = labels[p] || p.replace(/^\//, '').replace(/-/g, ' '); const entry = { path: p, title }; const next = [entry, ...recent.filter(r => r.path !== p && r.path !== '/index.html')].slice(0, 5); recent = next; })()"></div>
+      <div data-effect="(() => { const p = router.path; if (!p || p === '/index.html') return; const labels = { '/': 'Home', '/settings': 'Settings', '/profile': 'Profile', '/_internal/admin-console': 'Internal Console', '/error.html': (router.errorCode ? 'Error ' + router.errorCode : 'Error') }; const title = labels[p] || p.replace(/^\//, '').replace(/-/g, ' '); const entry = { path: p, title }; const next = [entry, ...recent.filter(r => r.path !== p && r.path !== '/index.html')].slice(0, 5); recent = next; })()"></div>
 
       <!-- Keep route-based tabs in step with the router's resolved component
            (sidebar links, router.go) and update dynamic tab metadata.
