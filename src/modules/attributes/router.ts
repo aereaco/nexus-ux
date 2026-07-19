@@ -622,7 +622,7 @@ export const routerAttributeModule: AttributeModule = {
             // Component-based tab (e.g. new-tab launchpad): clear routing state.
             state.route = null;
             state.layout = null;
-            state.outlet = null;
+            publishOutlet(null);
             // The panel now derives its component from the active tab's own
             // `content` field (same source as the tab header), so no parallel
             // `outletContent` signal is needed here.
