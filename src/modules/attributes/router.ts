@@ -555,6 +555,17 @@ export const routerAttributeModule: AttributeModule = {
           if (!id) return;
           let path = state.tabPaths[id];
           if (!path) {
+            // If this is a component-based tab (content starts with _components/),
+            // do NOT seed its path to the current location, and do not trigger a route.
+            const tabs = (globals.tabs as any[]) || [];
+            const tab = tabs.find((t: any) => t.id === id);
+            if (tab && tab.content && tab.content.startsWith('_components/')) {
+              state.route = null;
+              state.layout = null;
+              state.outlet = null;
+              return;
+            }
+
             // Seed from current location on first paint.
             path = stripBase(globalThis.location.pathname) || '/';
             state.tabPaths[id] = path;
@@ -864,6 +875,15 @@ export const routerAttributeModule: AttributeModule = {
         if (destTab && destTab !== getActiveTabId()) {
           setActiveTabId(destTab);
         }
+        if (destTab && destState) {
+          if (destState.title !== undefined || destState.icon !== undefined) {
+            state.tabMeta[destTab] = {
+              ...(state.tabMeta[destTab] || {}),
+              ...(destState.title !== undefined ? { title: destState.title } : {}),
+              ...(destState.icon !== undefined ? { icon: destState.icon } : {}),
+            };
+          }
+        }
 
         e.intercept({
           async handler() {
@@ -883,6 +903,15 @@ export const routerAttributeModule: AttributeModule = {
         const tab = st && typeof st.tabId === 'string' ? st.tabId : null;
         if (tab && tab !== getActiveTabId()) {
           setActiveTabId(tab);
+        }
+        if (tab && st) {
+          if (st.title !== undefined || st.icon !== undefined) {
+            state.tabMeta[tab] = {
+              ...(state.tabMeta[tab] || {}),
+              ...(st.title !== undefined ? { title: st.title } : {}),
+              ...(st.icon !== undefined ? { icon: st.icon } : {}),
+            };
+          }
         }
         updateRoute(globalThis.location.href);
       };
