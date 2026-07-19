@@ -958,6 +958,24 @@ export const routerAttributeModule: AttributeModule = {
         state.error = null;
         state.errorCode = null;
 
+        // --- Paint-first tabs mirror (synchronous) ---
+        // Mirror the resolved component into the ACTIVE route tab's `tabs[].content`
+        // NOW (before the async hooks) so the panel — which binds to
+        // `tabs[].content` — paints on the same tick as navigation instead of
+        // waiting for the post-hook `tabs` write (the perceptible "delay").
+        // Custom-component tabs (launchpad) are left untouched: their content is
+        // driven by the tab itself, not by routing.
+        const _paintAt = getActiveTabId();
+        if (_paintAt && state.tabPaths[_paintAt] !== 'custom-component') {
+          const _tabs = (globals.tabs as any[]) || [];
+          const _idx = _tabs.findIndex((t: any) => t.id === _paintAt);
+          if (_idx >= 0 && resolvedComponent && _tabs[_idx].content !== resolvedComponent) {
+            const _nt = _tabs.slice();
+            _nt[_idx] = { ..._nt[_idx], content: resolvedComponent };
+            runtime.setGlobalSignal('tabs', _nt);
+          }
+        }
+
         state.loading = true;
 
         // beforeLeave (current route).
