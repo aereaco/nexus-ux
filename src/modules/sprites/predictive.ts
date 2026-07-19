@@ -664,12 +664,12 @@ export const predictiveModule: SpriteModule = {
     // fetched ahead of the click via `router.prewarm`. Both are global
     // signals, so no module coupling is introduced here.
     const wire = () => {
-      const router = (context as any).globalSignals?.()?.router
-        ?? (context as any).runtime?.globalSignals?.()?.router;
+      const globals = (context as any).globalSignals?.();
+      const router = globals?.router;
       if (router?.prewarm) predictive.setPrewarm((ref: string) => router.prewarm(ref));
     };
     // router registers its global signal during its own attribute init; try
-    // now and again on the next tick in case ordering differs.
+    // now and again on the next tick in case init ordering differs.
     wire();
     scheduler.enqueueCapture(wire);
 
