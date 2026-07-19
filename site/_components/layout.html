@@ -320,7 +320,7 @@
         <!-- LINK actions -->
         <template data-if="ctxMenu && ctxMenu.type === 'link'">
           <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-                  data-on-click:stop="const u = ctxMenu.url; const id = 'tab-' + (++tabSeq); router.tabPaths[id] = u; tabs = [...tabs, { id, title: ctxMenu.title || 'Tab', icon: ctxMenu.icon || 'material-symbols-light:article-outline', content: u }]; activeTabId = id; ctxMenu = null;">
+                  data-on-click:stop="const u = ctxMenu.url; const id = 'tab-' + (++tabSeq); router.tabPaths[id] = u; tabs = [...tabs, { id, title: ctxMenu.title || 'Tab', icon: ctxMenu.icon || 'material-symbols-light:article-outline', content: u }]; activeTabId = id; outletContent = u; ctxMenu = null;">
             <iconify-icon icon="material-symbols-light:add" class="text-lg"></iconify-icon>
             <span>Open in new tab</span>
           </button>
