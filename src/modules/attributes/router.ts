@@ -102,8 +102,16 @@ export interface RouterConfig {
   dynamic?: boolean;
   // Glob(s) marking internal/shadow routes (e.g. '/_internal/**').
   shadow?: string | string[];
-  // Override the 404 component path.
+  // Declarative directory that clean routes resolve into (no hardcoded path).
+  // e.g. '_pages' => '/profile' -> '_pages/profile.html'. Defaults to '_pages'.
+  pagesDir?: string;
+  // Component rendered when no route/file matches (the 404 page).
+  // Resolved relative to `pagesDir` when it is a bare name.
   notFound?: string;
+  // Generic error page rendered for server/HTTP error codes (500/502/503/504…).
+  // A single page reads `#router.errorCode` to present the right message.
+  // Resolved relative to `pagesDir` when it is a bare name.
+  error?: string;
 }
 
 export interface RouterState {
