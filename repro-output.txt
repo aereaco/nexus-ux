@@ -3,3 +3,4 @@ AFTER ADD 3 tabs dom: ["Home","Tab0","Tab1","Tab2"]
 
 === HOVER COLLAPSE/EXPAND CYCLES (3 tabs open) ===
 cycle 1: IN tabs=["home"] dom=["Home","Tab0","Tab1","Tab2"] | OUT tabs=["home"] dom=["Home","Tab0","Tab1","Tab2"] <<< TAB DROP!
+cycle 2: IN tabs=["home"] dom=["Home","Tab0","Tab1","Tab2"] | OUT tabs=["home"] dom=["Home","Tab0","Tab1","Tab2"] <<< TAB DROP!
