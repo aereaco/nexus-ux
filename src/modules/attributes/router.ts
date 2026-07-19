@@ -416,6 +416,7 @@ export const routerAttributeModule: AttributeModule = {
         hash: globalThis.location.hash,
         loading: false,
         error: null,
+        errorCode: null,
         basePath,
         mode,
         route: null,
