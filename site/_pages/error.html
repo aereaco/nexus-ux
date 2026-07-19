@@ -1,0 +1,18 @@
+<!-- Generic server-error page. A single page handles all known HTTP/server
+     errors (500/502/503/504…) by reading the reactive `#router.errorCode`
+     signal. The router publishes the code via `setError(code)`, so there is
+     no need for one page per status. `pagesDir` (declared in data-router)
+     is the only path this lives under — nothing hardcoded. -->
+<div class="flex flex-col items-center justify-center min-h-dvh gap-4 text-center p-8"
+     data-signal="{ __code: (#router.errorCode || '500'), status: (#router.errorCode || '500') }">
+  <iconify-icon data-bind-icon="status === '503' ? 'material-symbols-light:hourglass-top-outline' : (status === '504' ? 'material-symbols-light:timer-outline' : (status === '502' ? 'material-symbols-light:swap-horizontal-outline' : 'material-symbols-light:cloud-off-outline'))"
+                  class="text-6xl text-error"></iconify-icon>
+  <h1 class="text-3xl font-bold" data-bind="status"></h1>
+  <p class="text-base-content/70 max-w-md"
+     data-bind="status === '500' ? 'Something went wrong on our end. Please try again.' :
+                (status === '502' ? 'Bad gateway — the server received an invalid response.' :
+                (status === '503' ? 'Service temporarily unavailable. Please try again shortly.' :
+                (status === '504' ? 'Gateway timeout — the server took too long to respond.' :
+                'An unexpected error occurred.')))"></p>
+  <a href="/" class="btn btn-primary" data-tab-title="Home" data-tab-icon="material-symbols-light:home-outline">Back to Home</a>
+</div>
