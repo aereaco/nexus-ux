@@ -71,6 +71,22 @@ async function handler(req: Request): Promise<Response> {
 
 // ---- Git auto-commit ----
 
+// Files changed between the previous run and this restart (e.g. an edit to
+// scripts/serve.ts made just before the server was restarted) won't be seen by
+// the live watcher — the old process was killed before its debounce flushed and
+// the new one starts with the file already modified. Commit any pre-existing
+// working-tree changes at startup so nothing is ever stranded.
+function commitPendingStartup() {
+  if (!AUTO) return;
+  const out = gitOut(["status", "--porcelain=v1", "-z"]);
+  if (!out) return;
+  const paths = out.split("\0")
+    .filter((e) => e.length > 0)
+    .map((e) => e.slice(3)) // drop "XY " status prefix
+    .filter((p) => !isIgnored(p));
+  if (paths.length > 0) gitCommit(paths);
+}
+
 // Run git and return combined stdout; empty string on failure.
 function gitOut(args: string[]): string {
   try {
