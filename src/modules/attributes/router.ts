@@ -943,6 +943,21 @@ export const routerAttributeModule: AttributeModule = {
         const fromRoute = state.currentRoute;
         const fromInfo = previousInfo;
 
+        // --- Synchronous outlet commit (paint-first) ---
+        // Publish the resolved outlet signals IMMEDIATELY so the content panel
+        // (bound to #router.route) updates with no await gap. Lifecycle hooks
+        // below only govern navigation control (abort / redirect); in the common
+        // case they are absent, so the old code needlessly deferred the paint by
+        // three microtask yields, producing a visible "delay" on routing to the
+        // active tab. A hook that redirects/aborts simply re-navigates away.
+        const resolvedComponent = matched?.component ?? staticComponent ?? null;
+        state.route = resolvedComponent;
+        state.layout = matched?.layout ?? null;
+        state.outlet = state.layout ?? state.route;
+        state.path = path;
+        state.error = null;
+        state.errorCode = null;
+
         state.loading = true;
 
         // beforeLeave (current route).
@@ -975,8 +990,7 @@ export const routerAttributeModule: AttributeModule = {
           ? { path: state.path, meta: fromRoute.meta }
           : (previousInfo ? { path: previousInfo.path, meta: previousInfo.meta } : null);
 
-        // Commit state.
-        state.path = path;
+        // Commit remaining state.
         state.hash = url.hash;
         state.query = query;
         state.params = params;
