@@ -671,8 +671,8 @@ export const routerAttributeModule: AttributeModule = {
           state.outlet = state.layout ?? state.route;
           state.error = null;
 
-          // Paint-first panel signal (panel binds to `outletContent`).
-          runtime.setGlobalSignal('outletContent', state.outlet);
+          // The panel derives its component from the active tab's own `content`
+          // field (same source as the tab header), so no `outletContent` write.
 
           commitVisibility(matched);
 
