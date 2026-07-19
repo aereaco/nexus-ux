@@ -696,7 +696,7 @@ export const routerAttributeModule: AttributeModule = {
             return;
           }
           const c = String(code);
-          state.error = { type: 'http', code: c, message: `Error ${c}` };
+          state.error = { type: c === '404' ? '404' : 'http', code: c, message: `Error ${c}` };
           state.errorCode = c;
           const errPath = state.config.error ?? resolvePagesPath(undefined, 'error.html');
           const onErr = globalThis.location.pathname === applyBase(errPath);
