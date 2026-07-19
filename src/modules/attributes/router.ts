@@ -1158,7 +1158,7 @@ export const routerAttributeModule: AttributeModule = {
             staticComponent = errorPage;
             commitVisibility(null);
             state.route = staticComponent;
-            state.outlet = staticComponent;
+            publishOutlet(staticComponent);
           } else {
             state.navigate(errorPage, { replace: true });
           }
