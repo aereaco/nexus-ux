@@ -719,6 +719,40 @@ export const routerAttributeModule: AttributeModule = {
             state.navigate(errPath, { replace: true });
           }
         },
+
+        // Map an href / name / component URL to its component file URL and
+        // fire a (de-duplicated, sticky-cached) fetch so the panel swap is
+        // instant on arrival. Driven by the predictive engine for hover-intent
+        // pre-warming, and at boot for the known route surface.
+        prewarm(ref: string) {
+          if (!ref) return;
+          // 1) Already a component URL?
+          let url: string | null = null;
+          if (ref.startsWith('_') || ref.startsWith('/_')) {
+            url = applyBase(ref.replace(/^\/+/, ''));
+          } else {
+            // 2) Named route?
+            const named = routeList.find((r) => r.name === ref);
+            if (named?.component) {
+              url = applyBase(named.component.replace(/^\/+/, ''));
+            } else {
+              // 3) Resolve as a clean path under pagesDir (same as navigation).
+              try {
+                const resolved = resolveStaticComponent(stripBase(ref));
+                // Only warm if it actually maps to a declared route component.
+                const maps = routeList.some((r) =>
+                  r.component && r.component.endsWith(resolved.replace(/^\/+/, '')),
+                );
+                if (maps) url = resolved;
+              } catch { /* noop */ }
+            }
+          }
+          if (!url) return;
+          // Fire into the sticky fetch cache; dedup is handled by fetchCache key.
+          try {
+            runtime.fetch.request(url, { responseType: 'text' }, el);
+          } catch { /* noop */ }
+        },
       });
 
       // 2. Register Global Signal
