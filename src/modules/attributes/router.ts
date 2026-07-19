@@ -571,7 +571,9 @@ export const routerAttributeModule: AttributeModule = {
             state.outlet = null;
             // Keep browser URL, just sync the tabId in history.
             const url = globalThis.location.pathname + globalThis.location.search + globalThis.location.hash;
+            suppressNavIntercept = true;
             globalThis.history.replaceState({ tabId: id, scrollY: globalThis.scrollY }, '', url);
+            suppressNavIntercept = false;
             return;
           }
 
@@ -621,11 +623,13 @@ export const routerAttributeModule: AttributeModule = {
           // Update browser address bar to reflect the active tab's path.
           const target = applyBase(switchPath);
           const meta = state.tabMeta[id] || {};
+          suppressNavIntercept = true;
           globalThis.history.replaceState(
             { tabId: id, scrollY: globalThis.scrollY, title: meta.title, icon: meta.icon },
             '',
             target,
           );
+          suppressNavIntercept = false;
         },
 
         // Switch the active tab (also updates the layout's global signal so the
@@ -662,6 +666,14 @@ export const routerAttributeModule: AttributeModule = {
           try { state.renderActiveTab(); } catch (_e) { /* noop */ }
         },
       );
+
+      // Suppress the Navigation API `navigate` intercept while WE drive history
+      // via replaceState (tab switch / launchpad activation). Without this, our
+      // internal replaceState would be re-intercepted and run updateRoute(),
+      // which overwrites the new/active tab's tabPaths sentinel (e.g.
+      // 'custom-component') with the previous page's path — clobbering the
+      // freshly opened new-tab launchpad with the prior tab's content.
+      let suppressNavIntercept = false;
 
       // Track previous route for leave hooks.
       let previousInfo: RouteInfo | null = null;
@@ -918,6 +930,7 @@ export const routerAttributeModule: AttributeModule = {
 
       // 4. Native Navigation Interception
       const onNavigate = (e: any) => {
+        if (suppressNavIntercept) return;
         if (!e.canIntercept || e.hashChange || e.downloadRequest !== null) {
           return;
         }
