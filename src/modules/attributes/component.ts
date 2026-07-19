@@ -194,6 +194,13 @@ const componentModule: AttributeModule = {
               });
             } else {
               runtime.morphDOM(el, html);
+              // Walk the freshly injected children so their directives
+              // (data-signal / data-bind / nested components) are evaluated.
+              Array.from(el.children).forEach((child) => {
+                if (child instanceof HTMLElement || child instanceof SVGElement) {
+                  runtime.processElement(child as unknown as HTMLElement);
+                }
+              });
               runtime.processElement(el);
             }
 
