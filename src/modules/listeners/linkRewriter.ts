@@ -69,11 +69,13 @@ const linkRewriterModule: ListenerModule = {
         // and drive the router ourselves with the appBase-resolved `path`.
         event.preventDefault();
 
+        const title = anchor.getAttribute('data-tab-title') || undefined;
+        const icon = anchor.getAttribute('data-tab-icon') || undefined;
         const signals = context.globalSignals();
         // deno-lint-ignore no-explicit-any
         const router = signals['router'] as any;
         if (router && typeof router.navigate === 'function') {
-          router.navigate(path);
+          router.navigate(path, { title, icon });
         } else {
           globalThis.history.pushState({ scrollY: globalThis.scrollY }, '', path);
           document.dispatchEvent(
