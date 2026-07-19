@@ -3,7 +3,8 @@
     "build": "deno run -A scripts/build.ts",
     "test": "deno test -A src/",
     "serve": "deno run -A https://deno.land/std@0.212.0/http/file_server.ts --reload",
-    "serve:dev": "deno run -A scripts/serve.ts --watch --autocommit"
+    "serve:dev": "deno run -A scripts/serve.ts --watch --autocommit",
+    "build:push": "deno run -A scripts/build.ts --minify --push"
   },
     "imports": {
       "@msgpack/msgpack": "npm:@msgpack/msgpack@^3.0.0-beta2",
