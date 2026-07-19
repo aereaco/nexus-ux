@@ -21,6 +21,11 @@
         ctxMenu: null,
         favorites: (() => { try { return JSON.parse(localStorage.getItem('nexus-favorites') || '[]'); } catch { return []; } })(),
         recent: [],
+        sidebarItems: [
+          { href: '/', title: 'Homepage', icon: 'material-symbols-light:home-outline', tabTitle: 'Home', tabIcon: 'material-symbols-light:home-outline' },
+          { href: '/settings', title: 'Settings', icon: 'material-symbols-light:settings-outline', tabTitle: 'Settings', tabIcon: 'material-symbols-light:settings-outline' },
+          { href: '/profile', title: 'Profile', icon: 'material-symbols-light:person-outline', tabTitle: 'Profile', tabIcon: 'material-symbols-light:person-outline' }
+        ],
         tabs: [{
           id: 'home',
           title: 'Home',
