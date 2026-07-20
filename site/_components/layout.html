@@ -298,12 +298,13 @@
                       { title: 'Long text 3', href: '/long-text-3' },
                       { title: 'Long text 4', href: '/long-text-4' },
                       { title: 'Long text 5', href: '/long-text-5' }
-                    ]
+                    ],
+                    hovered: false
                   }"
                   class="block h-10 bg-primary px-4 leading-10 transition-colors hover:text-gray-900 dark:bg-gray-700 dark:hover:text-white"
                 >
                   
-                  <div class="breadcrumbs max-w-xs text-sm">
+                  <div class="breadcrumbs max-w-xs text-sm" data-class="'hidden': !hovered">
                     <ul>
                       <li  data-for="crumb in breadcrumbs" data-key="crumb.href"><a data-bind-href="crumb.href" data-bind="crumb.title"></a></li>
                     </ul>
