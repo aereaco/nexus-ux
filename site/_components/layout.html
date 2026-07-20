@@ -275,6 +275,61 @@
         </div>
       </div>
 
+      <!-- Floating Side Hover Expanding Tab | Breadcrumbs & Page Tabs Toggle -->
+      <div class="absolute right-0 top-12 z-10"
+            data-signal="{
+              breadcrumbs: [
+                { title: 'Home', href: '/' },
+                { title: 'Long text 2', href: '/long-text-2' },
+                { title: 'Long text 3', href: '/long-text-3' },
+                { title: 'Long text 4', href: '/long-text-4' },
+                { title: 'Long text 5', href: '/long-text-5' }
+              ],
+              hovered: false
+            }"
+            data-on-mouseenter="hovered = true"
+            data-on-mouseleave="hovered = false">
+          <nav aria-label="Breadcrumb">
+            <ol
+              class="flex overflow-hidden rounded-ss-lg rounded-es-lg border border-base-100 bg-white text-sm text-gray-700  dark:bg-gray-800 dark:text-gray-200"
+            >
+              <li>
+                <div                  
+                  class="block h-10 leading-10 transition-colors bg-secondary text-secondary-content"
+                > 
+                  <iconify-icon icon="material-symbols-light:bookmark-outline" class="btn btn-sm btn-ghost" data-class="{ 'hidden': hovered }" style="font-size: 20px"></iconify-icon>
+                  <div class="breadcrumbs max-w-xs text-sm font-semibold px-4" data-class="{'hidden': !hovered}">
+                    <ul>
+                      <li  data-for="crumb in breadcrumbs" data-key="crumb.href"><a data-bind-href="crumb.href" data-bind="crumb.title"></a></li>
+                    </ul>
+                  </div>
+                </div>
+              </li>
+              <li class="relative flex items-center">
+                <span
+                  class="absolute inset-y-0 -start-px h-10 w-4 bg-secondary [clip-path:_polygon(0_0,_0%_100%,_100%_50%)] rtl:rotate-180"
+                >
+                </span>
+
+                <div
+                  class="block h-10 pr-4 pl-6 leading-10 transition-colors bg-base-300 text-secondary"
+                  data-class="{ 'hidden': !hovered }"
+                >
+                  <div class="tooltip z-100" data-tip="Toggle page tabs">
+                    <button class="btn btn-ghost" title="Toggle page tabs"
+                            data-class="{ 'btn-active': pageTabs }"
+                            data-on-click="pageTabs = !pageTabs"
+                            data-on-mouseenter="pageTabToggleHovered = true"
+                            data-on-mouseleave="pageTabToggleHovered = false">
+                      <iconify-icon icon="material-symbols-light:tab" style="font-size: 20px"></iconify-icon>
+                    </button>
+                  </div>
+                </div>
+              </li>
+            </ol>
+          </nav>
+      </div>
+
       <!-- CONTENT PANEL: bound to the ACTIVE TAB's own content component. This
            lets route tabs (router drives router.route) and component tabs (the
            new-tab launchpad, link tabs) share one outlet. A sync effect below
@@ -287,60 +342,6 @@
               ctxMenu = { type: 'link', url: a.getAttribute('href'), title: a.textContent.trim(), icon: a.getAttribute('data-tab-icon') || '', x: e.clientX, y: e.clientY };
             }">
 
-        <!-- Floating Side Hover Expanding Tab | Breadcrumbs & Page Tabs Toggle -->
-        <div class="absolute right-0 top-12 z-10"
-             data-signal="{
-                breadcrumbs: [
-                  { title: 'Home', href: '/' },
-                  { title: 'Long text 2', href: '/long-text-2' },
-                  { title: 'Long text 3', href: '/long-text-3' },
-                  { title: 'Long text 4', href: '/long-text-4' },
-                  { title: 'Long text 5', href: '/long-text-5' }
-                ],
-                hovered: false
-              }"
-              data-on-mouseenter="hovered = true"
-              data-on-mouseleave="hovered = false">
-            <nav aria-label="Breadcrumb">
-              <ol
-                class="flex overflow-hidden rounded-ss-lg rounded-es-lg border border-base-100 bg-white text-sm text-gray-700  dark:bg-gray-800 dark:text-gray-200"
-              >
-                <li>
-                  <div                  
-                    class="block h-10 leading-10 transition-colors bg-secondary text-secondary-content"
-                  > 
-                    <iconify-icon icon="material-symbols-light:bookmark-outline" class="btn btn-sm btn-ghost" data-class="{ 'hidden': hovered }" style="font-size: 20px"></iconify-icon>
-                    <div class="breadcrumbs max-w-xs text-sm font-semibold px-4" data-class="{'hidden': !hovered}">
-                      <ul>
-                        <li  data-for="crumb in breadcrumbs" data-key="crumb.href"><a data-bind-href="crumb.href" data-bind="crumb.title"></a></li>
-                      </ul>
-                    </div>
-                  </div>
-                </li>
-                <li class="relative flex items-center">
-                  <span
-                    class="absolute inset-y-0 -start-px h-10 w-4 bg-secondary [clip-path:_polygon(0_0,_0%_100%,_100%_50%)] rtl:rotate-180"
-                  >
-                  </span>
-
-                  <div
-                    class="block h-10 pr-4 pl-6 leading-10 transition-colors bg-base-300 text-secondary"
-                    data-class="{ 'hidden': !hovered }"
-                  >
-                    <div class="tooltip z-100" data-tip="Toggle page tabs">
-                      <button class="btn btn-ghost" title="Toggle page tabs"
-                              data-class="{ 'btn-active': pageTabs }"
-                              data-on-click="pageTabs = !pageTabs"
-                              data-on-mouseenter="pageTabToggleHovered = true"
-                              data-on-mouseleave="pageTabToggleHovered = false">
-                        <iconify-icon icon="material-symbols-light:tab" style="font-size: 20px"></iconify-icon>
-                      </button>
-                    </div>
-                  </div>
-                </li>
-              </ol>
-            </nav>
-        </div>
 
         <!-- Panel outlet: bound to the active tab's own content field.
              This is the single source of truth for the panel — route tabs
