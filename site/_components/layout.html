@@ -241,8 +241,8 @@
          (data-signal:global), so the bar and panels share one scope. -->
 
       <!-- TAB BAR -->
-      <div data-signal:global="{tabToggleHovered: false }" data-class="{'hidden': !pageTabs, 'aura aura-dual': tabToggleHovered }">
-        <div class="card" data-class="{'bg-base-300': tabToggleHovered }">
+      <div data-signal:global="{pageTabToggleHovered: false }" data-class="{'hidden': !pageTabs, 'aura aura-dual': pageTabToggleHovered }">
+        <div class="card" data-class="{'bg-base-300': pageTabToggleHovered }">
           <div class="flex flex-nowrap bg-base-300/20 rounded-none overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-base-content/10"
             role="tablist" aria-orientation="horizontal"
             data-drag-container="tabs" data-drag-group="tabs" data-drag-direction="horizontal" data-drag-swap-threshold="0.55"
@@ -331,8 +331,8 @@
                       <button class="btn btn-ghost" title="Toggle page tabs"
                               data-class="{ 'btn-active': pageTabs }"
                               data-on-click="pageTabs = !pageTabs"
-                              data-on-mouseenter="tabToggleHovered = true"
-                              data-on-mouseleave="tabToggleHovered = false">
+                              data-on-mouseenter="pageTabToggleHovered = true"
+                              data-on-mouseleave="pageTabToggleHovered = false">
                         <iconify-icon icon="material-symbols-light:tab" style="font-size: 20px"></iconify-icon>
                       </button>
                     </div>
