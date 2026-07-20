@@ -45,7 +45,7 @@
       <template data-for="item in recent" data-key="item.path">
         <li>
           <a data-bind-href="item.path" data-bind-title="item.title"
-             data-on-click="const h = $event.currentTarget.getAttribute('href'); const comp = h === '/' ? '_pages/home.html' : '_pages' + h + '.html'; const i = tabs.findIndex(t => t.id === activeTabId); if (i > -1) { const nt = tabs.slice(); nt[i] = { ...nt[i], content: comp }; tabs = nt; }">
+             data-bind-data-tab-title="item.title" data-bind-data-tab-icon="'material-symbols-light:article-outline'">
             <iconify-icon icon="material-symbols-light:article-outline" style="font-size: 20px"></iconify-icon>
             <span data-bind="item.title"></span>
           </a>
