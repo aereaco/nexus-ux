@@ -276,7 +276,7 @@
            new-tab launchpad, link tabs) share one outlet. A sync effect below
            keeps the active tab's content in step with router.route for route
            tabs, so sidebar/router navigation still updates the visible panel. -->
-      <div class="p-6 absolute" data-on-contextmenu:stop="
+      <div class="p-6" data-on-contextmenu:stop="
             const e = $event;
             const a = e.target.closest('a');
             if (a && a.origin === location.origin && !a.hasAttribute('download') && (!a.target || a.target === '_self')) {
@@ -284,7 +284,7 @@
             }">
 
         <!-- Floating Right Side Hover ExpandingTab | Breadcrumbs & Page Tabs Toggle -->
-        <div class="relative right-0 top-30 z-10 flex items-center gap-2 p-2">
+        <div class="absolute right-0 top-30 z-10 flex items-center gap-2 p-2">
           <div class="flex items-center gap-2">
             <button class="btn btn-sm btn-ghost" aria-label="Toggle page tabs" title="Toggle page tabs"
                     data-class="{ 'btn-active': pageTabs }"
