@@ -284,9 +284,6 @@
             }">
 
         <!-- Floating Side Hover Expanding Tab | Breadcrumbs & Page Tabs Toggle -->
-         <div class="tooltip" data-tip="hello">
-  <button class="btn">Hover me</button>
-</div>
         <div class="absolute right-0 top-12 z-10"
              data-signal="{
                 breadcrumbs: [
@@ -326,7 +323,7 @@
                     class="block h-10 pr-4 pl-6 leading-10 transition-colors bg-base-300 text-secondary"
                     data-class="{ 'hidden': !hovered }"
                   >
-                    <div class="tooltip" data-tip="Toggle page tabs">
+                    <div class="tooltip z-100" data-tip="Toggle page tabs">
                       <button class="btn btn-ghost" title="Toggle page tabs"
                               data-class="{ 'btn-active': pageTabs }"
                               data-on-click="pageTabs = !pageTabs">
