@@ -241,7 +241,7 @@
          (data-signal:global), so the bar and panels share one scope. -->
 
       <!-- TAB BAR -->
-      <div class="aura">
+      <div class="aura" data-class="{'hidden': !pageTabs }">
       <div class="flex flex-nowrap bg-base-300/20 rounded-none overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-base-content/10"
         role="tablist" aria-orientation="horizontal"
         data-drag-container="tabs" data-drag-group="tabs" data-drag-direction="horizontal" data-drag-swap-threshold="0.55"
@@ -251,7 +251,7 @@
                class="flex items-center shrink-0 px-2 cursor-pointer hover:'border-primary' transition-colors"
                data-drag
                data-bind-aria-selected="activeTabId === tab.id"
-               data-class="{ 'hidden': !pageTabs, 'tab-active border-b border-primary text-primary': activeTabId === tab.id }"
+               data-class="{'tab-active border-b border-primary text-primary': activeTabId === tab.id }"
                data-on-click="activeTabId = tab.id"
                data-on-contextmenu:stop="const e = $event; ctxMenu = { type: 'tab', tabId: tab.id, x: e.clientX, y: e.clientY };">
             <iconify-icon icon="material-symbols-light:drag-indicator" class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
