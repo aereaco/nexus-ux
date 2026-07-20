@@ -13,5 +13,5 @@
     <iconify-icon icon="material-symbols-light:info" class="text-xl"></iconify-icon>
     <span>Open the console and inspect <code>#router.manifest</code> — this route is absent.</span>
   </div>
-  <button class="btn btn-primary mt-6" data-on-click="const h = $event.currentTarget.getAttribute('href'); const comp = h === '/' ? '_pages/home.html' : '_pages' + h + '.html'; const i = tabs.findIndex(t =&gt; t.id === activeTabId); if (i &gt; -1) { const nt = tabs.slice(); nt[i] = { ...nt[i], content: comp }; tabs = nt; }">Back to Home</button>
+  <a class="btn btn-primary mt-6" href="/" data-tab-title="Home" data-tab-icon="material-symbols-light:home-outline">Back to Home</a>
 </div>
