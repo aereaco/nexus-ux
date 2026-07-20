@@ -283,23 +283,14 @@
               ctxMenu = { type: 'link', url: a.getAttribute('href'), title: a.textContent.trim(), icon: a.getAttribute('data-tab-icon') || '', x: e.clientX, y: e.clientY };
             }">
 
-        <!-- End Floating Side Tab | Breadcrumbs & Page Tabs Toggle -->
-        <div class="flex justify-between items-center mb-4">
-          <div class="flex items-center gap-2">
-            <div class="text-sm breadcrumbs">
-              <ul>
-                <li><a href="/" data-on-click="router.navigate('/')">Home</a></li>
-                <li><span data-bind="tabs.find(t => t.id === activeTabId)?.title || ''"></span></li>
-              </ul>
-            </div>
-          </div>
-          <div class="flex items-center gap-2">
-            <button class="btn btn-sm btn-ghost" aria-label="Toggle page tabs" title="Toggle page tabs"
-                    data-class="{ 'btn-active': pageTabs }"
-                    data-on-click="pageTabs = !pageTabs">
-              <iconify-icon icon="material-symbols-light:tab" style="font-size: 20px"></iconify-icon>
-            </button>
-          </div>
+        <!-- Floating Right Side Tab | Breadcrumbs & Page Tabs Toggle -->
+        <div class="fixed right-4 top-1/2 z-40 flex -translate-y-1/2 flex-col items-center gap-2">
+          <button class="btn btn-circle btn-ghost btn-lg shadow-lg bg-base-100 border border-base-300 hover:scale-110 active:scale-95 transition-all" data-tip="Page Tabs" data-on-click="pageTabs = !pageTabs">
+            <iconify-icon icon="material-symbols-light:tab" class="text-xl"></iconify-icon>
+          </button>
+          <button class="btn btn-circle btn-ghost btn-lg shadow-lg bg-base-100 border border-base-300 hover:scale-110 active:scale-95 transition-all" data-tip="Breadcrumbs" data-on-click="$router.push('/_internal/admin-console')">
+            <iconify-icon icon="material-symbols-light:home-outline" class="text-xl"></iconify-icon>
+          </button>
         </div>
 
         <!-- Panel outlet: bound to the active tab's own content field.
