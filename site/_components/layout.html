@@ -294,7 +294,9 @@
                   { title: 'Long text 5', href: '/long-text-5' }
                 ],
                 hovered: false
-              }">
+              }"
+              data-on-mouseenter="hovered = true"
+              data-on-mouseleave="hovered = false">
             <nav aria-label="Breadcrumb">
             <ol
               class="flex overflow-hidden rounded border border-base-100 bg-white text-sm text-gray-700  dark:bg-gray-800 dark:text-gray-200"
@@ -302,8 +304,6 @@
               <li>
                 <div                  
                   class="block h-10 px-4 leading-10 transition-colors bg-secondary text-secondary-content"
-                  data-on-mouseenter="hovered = true"
-                  data-on-mouseleave="hovered = false"
                 > 
                   <iconify-icon icon="material-symbols-light:bookmark" class="btn btn-sm btn-ghost" data-class="{ 'hidden': hovered }" style="font-size: 20px"></iconify-icon>
                   <div class="breadcrumbs max-w-xs text-sm" data-class="{'hidden': !hovered}">
