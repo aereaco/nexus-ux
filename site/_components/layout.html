@@ -434,7 +434,7 @@
             data-drag-container="sidebarItems" data-drag-direction="vertical" data-drag-swap-threshold="0.55">
           <template data-for="item in sidebarItems" data-key="item.href">
             <li class="transition-transform duration-300 hover:scale-102" data-drag>
-              <a href="{ item.href }" data-tab-title="{ item.tabTitle }" data-tab-icon="{ item.tabIcon }">
+              <a data-bind-href="item.href" data-bind:data-tab-title="item.tabTitle" data-bind:data-tab-icon="item.tabIcon">
                 <iconify-icon data-bind-icon="item.icon" style="font-size: 24px"></iconify-icon>
                 <span data-class="{ 'hidden': collapsed && !hovered && !isMobile }" data-bind="item.title"></span>
               </a>
