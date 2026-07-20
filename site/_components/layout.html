@@ -241,10 +241,11 @@
          (data-signal:global), so the bar and panels share one scope. -->
 
       <!-- TAB BAR -->
-      <div class="aura flex flex-nowrap bg-base-300/20 rounded-none overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-base-content/10"
+      <div class="flex flex-nowrap bg-base-300/20 rounded-none overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-base-content/10"
         role="tablist" aria-orientation="horizontal"
         data-drag-container="tabs" data-drag-group="tabs" data-drag-direction="horizontal" data-drag-swap-threshold="0.55"
       >
+        <div class="aura">
         <template data-for="tab in tabs" data-key="tab.id">
           <div role="tab" tabindex="0"
                class="flex items-center shrink-0 px-2 cursor-pointer hover:'border-primary' transition-colors"
@@ -263,6 +264,7 @@
             </button>
           </div>
         </template>
+        </div>
 
           <button class="btn btn-circle shrink-0"
                   data-class="{ 'hidden': !pageTabs }"
