@@ -300,13 +300,14 @@
               class="flex overflow-hidden rounded border border-base-100 bg-white text-sm text-gray-700  dark:bg-gray-800 dark:text-gray-200"
             >
               <li>
-                <div
-                  
+                <div                  
                   class="block h-10 bg-primary px-4 leading-10 transition-colors hover:text-gray-900 dark:bg-gray-700 dark:hover:text-white"
                   data-on-mouseenter="hovered = true"
                   data-on-mouseleave="hovered = false"
                 >
-                  
+                  <button class="btn btn-sm btn-ghost" aria-label="Toggle page tabs" title="Toggle page tabs" data-class="{ 'hidden': hovered }">
+                    <iconify-icon icon="material-symbols-light:bookmark" style="font-size: 20px"></iconify-icon>
+                  </button>
                   <div class="breadcrumbs max-w-xs text-sm" data-class="{'hidden': !hovered}">
                     <ul>
                       <li  data-for="crumb in breadcrumbs" data-key="crumb.href"><a data-bind-href="crumb.href" data-bind="crumb.title"></a></li>
@@ -324,10 +325,10 @@
                   class="block h-10 pr-4 pl-6 leading-10 transition-colors text-secondary hover:text-gray-900 dark:hover:text-white"
                 >
                   <button class="btn btn-sm btn-ghost" aria-label="Toggle page tabs" title="Toggle page tabs"
-                    data-class="{ 'btn-active': pageTabs }"
-                    data-on-click="pageTabs = !pageTabs">
-                  <iconify-icon icon="material-symbols-light:tab" style="font-size: 20px"></iconify-icon>
-                </button>
+                          data-class="{ 'btn-active': pageTabs }"
+                          data-on-click="pageTabs = !pageTabs">
+                    <iconify-icon icon="material-symbols-light:tab" style="font-size: 20px"></iconify-icon>
+                  </button>
                 </div>
               </li>
             </ol>
