@@ -291,21 +291,25 @@
             >
               <li>
                 <div
+                  data-signal="{
+                    breadcrumbs: [
+                      { title: 'Home', href: '/' },
+                      { title: 'Long text 2', href: '/long-text-2' },
+                      { title: 'Long text 3', href: '/long-text-3' },
+                      { title: 'Long text 4', href: '/long-text-4' },
+                      { title: 'Long text 5', href: '/long-text-5' }
+                    ]
+                  }"
                   class="block h-10 bg-primary px-4 leading-10 transition-colors hover:text-gray-900 dark:bg-gray-700 dark:hover:text-white"
                 >
                   
                   <div class="breadcrumbs max-w-xs text-sm">
-                    <ul>
-                      <li>Home</li>
-                      <li>Long text 2</li>
-                      <li>Long text 3</li>
-                      <li>Long text 4</li>
-                      <li>Long text 5</li>
+                    <ul data-for="crumb in breadcrumbs" data-key="crumb.href">
+                      <li><a href="{crumb.href}">{crumb.title}</a></li>
                     </ul>
                   </div>
                 </div>
               </li>
-
               <li class="relative flex items-center">
                 <span
                   class="absolute inset-y-0 -start-px h-10 w-4 bg-primary [clip-path:_polygon(0_0,_0%_100%,_100%_50%)] rtl:rotate-180 dark:bg-gray-700"
