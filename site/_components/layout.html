@@ -298,40 +298,40 @@
               data-on-mouseenter="hovered = true"
               data-on-mouseleave="hovered = false">
             <nav aria-label="Breadcrumb">
-            <ol
-              class="flex overflow-hidden rounded border border-base-100 bg-white text-sm text-gray-700  dark:bg-gray-800 dark:text-gray-200"
-            >
-              <li>
-                <div                  
-                  class="block h-10 px-4 leading-10 transition-colors bg-secondary text-secondary-content"
-                > 
-                  <iconify-icon icon="material-symbols-light:bookmark" class="btn btn-sm btn-ghost" data-class="{ 'hidden': hovered }" style="font-size: 20px"></iconify-icon>
-                  <div class="breadcrumbs max-w-xs text-sm" data-class="{'hidden': !hovered}">
-                    <ul>
-                      <li  data-for="crumb in breadcrumbs" data-key="crumb.href"><a data-bind-href="crumb.href" data-bind="crumb.title"></a></li>
-                    </ul>
+              <ol
+                class="flex overflow-hidden rounded border border-base-100 bg-white text-sm text-gray-700  dark:bg-gray-800 dark:text-gray-200"
+              >
+                <li>
+                  <div                  
+                    class="block h-12 px-2 leading-10 transition-colors bg-secondary text-secondary-content"
+                  > 
+                    <iconify-icon icon="material-symbols-light:bookmark" class="btn btn-sm btn-ghost" data-class="{ 'hidden': hovered }" style="font-size: 20px"></iconify-icon>
+                    <div class="breadcrumbs max-w-xs text-sm" data-class="{'hidden': !hovered}">
+                      <ul>
+                        <li  data-for="crumb in breadcrumbs" data-key="crumb.href"><a data-bind-href="crumb.href" data-bind="crumb.title"></a></li>
+                      </ul>
+                    </div>
                   </div>
-                </div>
-              </li>
-              <li class="relative flex items-center">
-                <span
-                  class="absolute inset-y-0 -start-px h-10 w-4 bg-secondary [clip-path:_polygon(0_0,_0%_100%,_100%_50%)] rtl:rotate-180"
-                >
-                </span>
+                </li>
+                <li class="relative flex items-center">
+                  <span
+                    class="absolute inset-y-0 -start-px h-10 w-4 bg-secondary [clip-path:_polygon(0_0,_0%_100%,_100%_50%)] rtl:rotate-180"
+                  >
+                  </span>
 
-                <div
-                  class="block h-10 pr-4 pl-6 leading-10 transition-colors text-secondary"
-                  data-class="{ 'hidden': !hovered }"
-                >
-                  <button class="btn btn-sm btn-ghost" aria-label="Toggle page tabs" title="Toggle page tabs"
-                          data-class="{ 'btn-active': pageTabs }"
-                          data-on-click="pageTabs = !pageTabs">
-                    <iconify-icon icon="material-symbols-light:tab" style="font-size: 20px"></iconify-icon>
-                  </button>
-                </div>
-              </li>
-            </ol>
-          </nav>
+                  <div
+                    class="block h-10 pr-4 pl-6 leading-10 transition-colors text-secondary"
+                    data-class="{ 'hidden': !hovered }"
+                  >
+                    <button class="btn btn-sm btn-ghost" aria-label="Toggle page tabs" title="Toggle page tabs"
+                            data-class="{ 'btn-active': pageTabs }"
+                            data-on-click="pageTabs = !pageTabs">
+                      <iconify-icon icon="material-symbols-light:tab" style="font-size: 20px"></iconify-icon>
+                    </button>
+                  </div>
+                </li>
+              </ol>
+            </nav>
         </div>
 
         <!-- Panel outlet: bound to the active tab's own content field.
