@@ -330,7 +330,9 @@
                     <div class="tooltip z-100" data-tip="Toggle page tabs">
                       <button class="btn btn-ghost" title="Toggle page tabs"
                               data-class="{ 'btn-active': pageTabs }"
-                              data-on-click="pageTabs = !pageTabs">
+                              data-on-click="pageTabs = !pageTabs"
+                              data-on-mouseenter="tabToggleHovered = true"
+                              data-on-mouseleave="tabToggleHovered = false">
                         <iconify-icon icon="material-symbols-light:tab" style="font-size: 20px"></iconify-icon>
                       </button>
                     </div>
