@@ -286,11 +286,7 @@
         <!-- Floating Right Side Hover ExpandingTab | Breadcrumbs & Page Tabs Toggle -->
         <div class="absolute right-0 top-15 z-10 flex items-center gap-2 p-2">
           <div class="flex items-center gap-2">
-            <button class="btn btn-sm btn-ghost" aria-label="Toggle page tabs" title="Toggle page tabs"
-                    data-class="{ 'btn-active': pageTabs }"
-                    data-on-click="pageTabs = !pageTabs">
-              <iconify-icon icon="material-symbols-light:tab" style="font-size: 20px"></iconify-icon>
-            </button>
+            
             <button class="btn btn-sm btn-ghost" aria-label="Toggle breadcrumbs" title="Toggle breadcrumbs"
                     data-class="{ 'btn-active': breadcrumbs }"
                     data-on-click="breadcrumbs = !breadcrumbs">
@@ -298,33 +294,37 @@
             </button>
           </div>
           <nav aria-label="Breadcrumb">
-  <ol
-    class="flex overflow-hidden rounded border border-gray-300 bg-white text-sm text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
-  >
-    <li>
-      <a
-        href="#"
-        class="block h-10 bg-primary px-4 leading-10 transition-colors hover:text-gray-900 dark:bg-gray-700 dark:hover:text-white"
-      >
-        Home
-      </a>
-    </li>
+            <ol
+              class="flex overflow-hidden rounded border border-gray-300 bg-white text-sm text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+            >
+              <li>
+                <a
+                  href="#"
+                  class="block h-10 bg-primary px-4 leading-10 transition-colors hover:text-gray-900 dark:bg-gray-700 dark:hover:text-white"
+                >
+                  Home
+                </a>
+              </li>
 
-    <li class="relative flex items-center">
-      <span
-        class="absolute inset-y-0 -start-px h-10 w-4 bg-primary [clip-path:_polygon(0_0,_0%_100%,_100%_50%)] rtl:rotate-180 dark:bg-gray-700"
-      >
-      </span>
+              <li class="relative flex items-center">
+                <span
+                  class="absolute inset-y-0 -start-px h-10 w-4 bg-primary [clip-path:_polygon(0_0,_0%_100%,_100%_50%)] rtl:rotate-180 dark:bg-gray-700"
+                >
+                </span>
 
-      <a
-        href="#"
-        class="block h-10 pr-4 pl-6 leading-10 transition-colors hover:text-gray-900 dark:hover:text-white"
-      >
-        Category
-      </a>
-    </li>
-  </ol>
-</nav>
+                <a
+                  href="#"
+                  class="block h-10 pr-4 pl-6 leading-10 transition-colors hover:text-gray-900 dark:hover:text-white"
+                >
+                  <button class="btn btn-sm btn-ghost" aria-label="Toggle page tabs" title="Toggle page tabs"
+                    data-class="{ 'btn-active': pageTabs }"
+                    data-on-click="pageTabs = !pageTabs">
+                  <iconify-icon icon="material-symbols-light:tab" style="font-size: 20px"></iconify-icon>
+                </button>
+                </a>
+              </li>
+            </ol>
+          </nav>
         </div>
 
         <!-- Panel outlet: bound to the active tab's own content field.
