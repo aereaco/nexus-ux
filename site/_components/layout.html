@@ -282,6 +282,26 @@
             if (a && a.origin === location.origin && !a.hasAttribute('download') && (!a.target || a.target === '_self')) {
               ctxMenu = { type: 'link', url: a.getAttribute('href'), title: a.textContent.trim(), icon: a.getAttribute('data-tab-icon') || '', x: e.clientX, y: e.clientY };
             }">
+
+        <!-- End Floating Side Tab | Breadcrumbs & Page Tabs Toggle -->
+        <div class="flex justify-between items-center mb-4">
+          <div class="flex items-center gap-2">
+            <div class="text-sm breadcrumbs">
+              <ul>
+                <li><a href="/" data-on-click="router.navigate('/')">Home</a></li>
+                <li><span data-bind="tabs.find(t => t.id === activeTabId)?.title || ''"></span></li>
+              </ul>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="btn btn-sm btn-ghost" aria-label="Toggle page tabs" title="Toggle page tabs"
+                    data-class="{ 'btn-active': pageTabs }"
+                    data-on-click="pageTabs = !pageTabs">
+              <iconify-icon icon="material-symbols-light:tab" style="font-size: 20px"></iconify-icon>
+            </button>
+          </div>
+        </div>
+
         <!-- Panel outlet: bound to the active tab's own content field.
              This is the single source of truth for the panel — route tabs
              have their content synced from router.route via the data-effect
