@@ -284,23 +284,24 @@
             }">
 
         <!-- Floating Right Side Hover Expanding Tab | Breadcrumbs & Page Tabs Toggle -->
-        <div class="absolute right-0 top-15 z-10 flex items-center gap-2 p-2">
+        <div class="absolute right-0 top-15 z-10 flex items-center gap-2 p-2"
+             data-signal="{
+                breadcrumbs: [
+                  { title: 'Home', href: '/' },
+                  { title: 'Long text 2', href: '/long-text-2' },
+                  { title: 'Long text 3', href: '/long-text-3' },
+                  { title: 'Long text 4', href: '/long-text-4' },
+                  { title: 'Long text 5', href: '/long-text-5' }
+                ],
+                hovered: false
+              }">
             <nav aria-label="Breadcrumb">
             <ol
               class="flex overflow-hidden rounded border border-base-100 bg-white text-sm text-gray-700  dark:bg-gray-800 dark:text-gray-200"
             >
               <li>
                 <div
-                  data-signal="{
-                    breadcrumbs: [
-                      { title: 'Home', href: '/' },
-                      { title: 'Long text 2', href: '/long-text-2' },
-                      { title: 'Long text 3', href: '/long-text-3' },
-                      { title: 'Long text 4', href: '/long-text-4' },
-                      { title: 'Long text 5', href: '/long-text-5' }
-                    ],
-                    hovered: false
-                  }"
+                  
                   class="block h-10 bg-primary px-4 leading-10 transition-colors hover:text-gray-900 dark:bg-gray-700 dark:hover:text-white"
                   data-on-mouseenter="hovered = true"
                   data-on-mouseleave="hovered = false"
