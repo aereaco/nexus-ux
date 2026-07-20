@@ -323,7 +323,10 @@
                     class="block h-10 pr-4 pl-6 leading-10 transition-colors bg-base-300 text-secondary"
                     data-class="{ 'hidden': !hovered }"
                   >
-                    <div class="tooltip" data-tip="Toggle page tabs">
+                    <div class="tooltip">
+                      <div class="tooltip-content">
+                        <div class="animate-bounce text-orange-400 -rotate-10 text-2xl font-black">Toggle Page Tabs</div>
+                      </div>
                       <button class="btn btn-ghost" aria-label="Toggle page tabs" title="Toggle page tabs"
                               data-class="{ 'btn-active': pageTabs }"
                               data-on-click="pageTabs = !pageTabs">
