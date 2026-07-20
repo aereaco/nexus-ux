@@ -242,35 +242,38 @@
 
       <!-- TAB BAR -->
       <div class="aura" data-class="{'hidden': !pageTabs }">
-      <div class="card flex flex-nowrap bg-base-300 rounded-none overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-base-content/10"
-        role="tablist" aria-orientation="horizontal"
-        data-drag-container="tabs" data-drag-group="tabs" data-drag-direction="horizontal" data-drag-swap-threshold="0.55"
-      >
-        <template data-for="tab in tabs" data-key="tab.id">
-          <div role="tab" tabindex="0"
-               class="flex items-center shrink-0 px-2 cursor-pointer hover:'border-primary' transition-colors"
-               data-drag
-               data-bind-aria-selected="activeTabId === tab.id"
-               data-class="{'tab-active border-b border-primary text-primary': activeTabId === tab.id }"
-               data-on-click="activeTabId = tab.id"
-               data-on-contextmenu:stop="const e = $event; ctxMenu = { type: 'tab', tabId: tab.id, x: e.clientX, y: e.clientY };">
-            <iconify-icon icon="material-symbols-light:drag-indicator" class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
-            <iconify-icon data-bind-icon="tab.icon" class="text-lg px-2"></iconify-icon>
-            <span class="pe-4 whitespace-nowrap" data-bind="tab.title"></span>
-            <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close tab" title="Close tab"
-                    data-class="{ 'hidden': pinned.includes(tab.id) }"
-                    data-on-click:stop="const wasActive = activeTabId === tab.id; tabs = tabs.filter(t => t.id !== tab.id); if (wasActive) activeTabId = tabs[0]?.id;">
-              <iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
-            </button>
-          </div>
-        </template>
+        <div class="card bg-base-300">
+          <div class="flex flex-nowrap bg-base-300/20 rounded-none overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-base-content/10"
+            role="tablist" aria-orientation="horizontal"
+            data-drag-container="tabs" data-drag-group="tabs" data-drag-direction="horizontal" data-drag-swap-threshold="0.55"
+          >
+            <template data-for="tab in tabs" data-key="tab.id">
+              <div role="tab" tabindex="0"
+                  class="flex items-center shrink-0 px-2 cursor-pointer hover:'border-primary' transition-colors"
+                  data-drag
+                  data-bind-aria-selected="activeTabId === tab.id"
+                  data-class="{'tab-active border-b border-primary text-primary': activeTabId === tab.id }"
+                  data-on-click="activeTabId = tab.id"
+                  data-on-contextmenu:stop="const e = $event; ctxMenu = { type: 'tab', tabId: tab.id, x: e.clientX, y: e.clientY };">
+                <iconify-icon icon="material-symbols-light:drag-indicator" class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
+                <iconify-icon data-bind-icon="tab.icon" class="text-lg px-2"></iconify-icon>
+                <span class="pe-4 whitespace-nowrap" data-bind="tab.title"></span>
+                <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close tab" title="Close tab"
+                        data-class="{ 'hidden': pinned.includes(tab.id) }"
+                        data-on-click:stop="const wasActive = activeTabId === tab.id; tabs = tabs.filter(t => t.id !== tab.id); if (wasActive) activeTabId = tabs[0]?.id;">
+                  <iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
+                </button>
+              </div>
+            </template>
 
-          <button class="btn btn-circle shrink-0"
-                  data-class="{ 'hidden': !pageTabs }"
-                  data-on-click="tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs.push({ id, title: 'New Tab', icon: 'material-symbols-light:article-outline', content: '_components/tab-new.html' }); activeTabId = id;">
-            <iconify-icon icon="material-symbols-light:add" style="font-size: 24px"></iconify-icon>
-          </button>
-      </div></div>
+              <button class="btn btn-circle shrink-0"
+                      data-class="{ 'hidden': !pageTabs }"
+                      data-on-click="tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs.push({ id, title: 'New Tab', icon: 'material-symbols-light:article-outline', content: '_components/tab-new.html' }); activeTabId = id;">
+                <iconify-icon icon="material-symbols-light:add" style="font-size: 24px"></iconify-icon>
+              </button>
+          </div>
+        </div>
+      </div>
 
       <!-- CONTENT PANEL: bound to the ACTIVE TAB's own content component. This
            lets route tabs (router drives router.route) and component tabs (the
