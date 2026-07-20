@@ -5,8 +5,7 @@
   </div>
 
   <!-- Quick home link -->
-  <a class="btn btn-primary w-fit" href="/" data-tab-title="Home" data-tab-icon="material-symbols-light:home-outline"
-     data-on-click="const h = $event.currentTarget.getAttribute('href'); const comp = h === '/' ? '_pages/home.html' : '_pages' + h + '.html'; const i = tabs.findIndex(t => t.id === activeTabId); if (i > -1) { const nt = tabs.slice(); nt[i] = { ...nt[i], content: comp }; tabs = nt; }">
+  <a class="btn btn-primary w-fit" href="/" data-tab-title="Home" data-tab-icon="material-symbols-light:home-outline">
     <iconify-icon icon="material-symbols-light:home-outline" style="font-size: 20px"></iconify-icon>
     Go to Home
   </a>
