@@ -285,15 +285,7 @@
 
         <!-- Floating Right Side Hover Expanding Tab | Breadcrumbs & Page Tabs Toggle -->
         <div class="absolute right-0 top-15 z-10 flex items-center gap-2 p-2">
-          <div class="flex items-center gap-2">
-            
-            <button class="btn btn-sm btn-ghost" aria-label="Toggle breadcrumbs" title="Toggle breadcrumbs"
-                    data-class="{ 'btn-active': breadcrumbs }"
-                    data-on-click="breadcrumbs = !breadcrumbs">
-              <iconify-icon icon="material-symbols-light:space-dashboard-outline" style="font-size: 20px"></iconify-icon>
-            </button>
-          </div>
-          <nav aria-label="Breadcrumb">
+            <nav aria-label="Breadcrumb">
             <ol
               class="flex overflow-hidden rounded border border-base-100 bg-white text-sm text-gray-700  dark:bg-gray-800 dark:text-gray-200"
             >
@@ -301,6 +293,11 @@
                 <div
                   class="block h-10 bg-primary px-4 leading-10 transition-colors hover:text-gray-900 dark:bg-gray-700 dark:hover:text-white"
                 >
+                  <button class="btn btn-sm btn-ghost" aria-label="Toggle breadcrumbs" title="Toggle breadcrumbs"
+                    data-class="{ 'btn-active': breadcrumbs }"
+                    data-on-click="breadcrumbs = !breadcrumbs">
+                    <iconify-icon icon="material-symbols-light:space-dashboard-outline" style="font-size: 20px"></iconify-icon>
+                  </button>
                   <div class="breadcrumbs max-w-xs text-sm">
                     <ul>
                       <li>Home</li>
