@@ -246,6 +246,7 @@
         data-drag-container="tabs" data-drag-group="tabs" data-drag-direction="horizontal" data-drag-swap-threshold="0.55"
       >
         <template data-for="tab in tabs" data-key="tab.id">
+          <div class="aura">
           <div role="tab" tabindex="0"
                class="flex items-center shrink-0 px-2 cursor-pointer hover:'border-primary' transition-colors"
                data-drag
@@ -262,6 +263,7 @@
               <iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
             </button>
           </div>
+        </div>
         </template>
 
           <button class="btn btn-circle shrink-0"
