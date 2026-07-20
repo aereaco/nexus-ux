@@ -254,14 +254,16 @@
                data-on-click="activeTabId = tab.id"
                data-on-contextmenu:stop="const e = $event; ctxMenu = { type: 'tab', tabId: tab.id, x: e.clientX, y: e.clientY };">
             <div class="aura">
-            <iconify-icon icon="material-symbols-light:drag-indicator" class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
-            <iconify-icon data-bind-icon="tab.icon" class="text-lg px-2"></iconify-icon>
-            <span class="pe-4 whitespace-nowrap" data-bind="tab.title"></span>
-            <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close tab" title="Close tab"
-                    data-class="{ 'hidden': pinned.includes(tab.id) }"
-                    data-on-click:stop="const wasActive = activeTabId === tab.id; tabs = tabs.filter(t => t.id !== tab.id); if (wasActive) activeTabId = tabs[0]?.id;">
-              <iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
-            </button>
+              <div class="card">
+                <iconify-icon icon="material-symbols-light:drag-indicator" class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
+                <iconify-icon data-bind-icon="tab.icon" class="text-lg px-2"></iconify-icon>
+                <span class="pe-4 whitespace-nowrap" data-bind="tab.title"></span>
+                <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close tab" title="Close tab"
+                        data-class="{ 'hidden': pinned.includes(tab.id) }"
+                        data-on-click:stop="const wasActive = activeTabId === tab.id; tabs = tabs.filter(t => t.id !== tab.id); if (wasActive) activeTabId = tabs[0]?.id;">
+                  <iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
+                </button>
+              </div>
             </div>
           </div>
         </template>
