@@ -305,9 +305,7 @@
                   data-on-mouseenter="hovered = true"
                   data-on-mouseleave="hovered = false"
                 >
-                  <button class="btn btn-sm btn-ghost" aria-label="Toggle page tabs" title="Toggle page tabs" data-class="{ 'hidden': hovered }">
-                    <iconify-icon icon="material-symbols-light:bookmark" style="font-size: 20px"></iconify-icon>
-                  </button>
+                  <iconify-icon icon="material-symbols-light:bookmark" data-class="{ 'hidden': hovered }" style="font-size: 20px"></iconify-icon>
                   <div class="breadcrumbs max-w-xs text-sm" data-class="{'hidden': !hovered}">
                     <ul>
                       <li  data-for="crumb in breadcrumbs" data-key="crumb.href"><a data-bind-href="crumb.href" data-bind="crumb.title"></a></li>
