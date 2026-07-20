@@ -23,7 +23,7 @@
       <template data-for="fav in favorites" data-key="fav.url">
         <li>
           <a data-bind-href="fav.url" data-bind-title="fav.title"
-             data-on-click="const h = $event.currentTarget.getAttribute('href'); const comp = h === '/' ? '_pages/home.html' : '_pages' + h + '.html'; const i = tabs.findIndex(t => t.id === activeTabId); if (i > -1) { const nt = tabs.slice(); nt[i] = { ...nt[i], content: comp }; tabs = nt; }">
+             data-bind-data-tab-title="fav.title" data-bind-data-tab-icon="fav.icon || 'material-symbols-light:article-outline'">
             <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:article-outline'" style="font-size: 20px"></iconify-icon>
             <span data-bind="fav.title"></span>
           </a>
