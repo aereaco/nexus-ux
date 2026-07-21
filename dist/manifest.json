@@ -59,6 +59,7 @@
     "drag",
     "zoom",
     "stop",
+    "delay",
     "keys",
     "self",
     "prevent",
