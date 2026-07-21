@@ -319,8 +319,8 @@
                     <button class="btn btn-ghost" title="Toggle page tabs"
                             data-class="{ 'btn-active': pageTabs }"
                             data-on-click="pageTabs = !pageTabs"
-                            data-on-mouseenter:delay-10000ms="pageTabToggleHovered = true"
-                            data-on-mouseleave="pageTabToggleHovered = false">
+                            data-on-mouseenter="myTimer = setTimeout(() => {pageTabToggleHovered = true}, 5000)"
+                            data-on-mouseleave="clearTimeout(myTimer);pageTabToggleHovered = false">
                       <iconify-icon icon="material-symbols-light:tab" style="font-size: 20px"></iconify-icon>
                     </button>
                   </div>
