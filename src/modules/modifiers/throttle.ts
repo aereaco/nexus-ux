@@ -20,6 +20,7 @@ export const throttleModifier: ModifierModule = {
 
     if (typeof payload === 'function') {
       return (e: Event) => {
+        const wait = resolveThrottle(runtime, el, arg);
         const now = performance.now();
         if (now - last > wait) {
           last = now;
@@ -29,6 +30,7 @@ export const throttleModifier: ModifierModule = {
     }
 
     return (...args: any[]) => {
+      const wait = resolveThrottle(runtime, el, arg);
       const now = performance.now();
       if (now - last > wait) {
         last = now;

@@ -20,6 +20,7 @@ export const debounceModifier: ModifierModule = {
 
     if (typeof payload === 'function') {
       return (e: Event) => {
+        const wait = resolveDebounce(runtime, el, arg);
         clearTimeout(timeout);
         timeout = setTimeout(() => payload(e), wait);
       };
@@ -27,6 +28,7 @@ export const debounceModifier: ModifierModule = {
 
     return (...args: any[]) => {
       return new Promise((resolve) => {
+        const wait = resolveDebounce(runtime, el, arg);
         clearTimeout(timeout);
         timeout = setTimeout(() => {
           resolve(typeof payload === 'function' ? payload(...args) : payload);
