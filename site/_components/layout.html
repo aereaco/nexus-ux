@@ -472,8 +472,8 @@
     <div class="flex min-h-full flex-col items-start bg-base-100" data-class="{ 'lg:w-16': collapsed, 'w-[20vw]': !collapsed, 'w-[75vw]': isMobile }">
       <!-- Sidebar content here -->
       <div class="flex flex-col h-dvh w-full transition-all" data-class="{ 'lg:w-[20vw]': !collapsed || hovered, 'w-[75vw]': isMobile, 'bg-base-100/70': !collapsed || hovered || isMobile, 'backdrop-blur-sm': !collapsed || hovered || isMobile }"
-      data-on-mouseenter="hovered = true"
-      data-on-mouseleave="hovered = false"
+      data-on-mouseenter="clearTimeout(myTimer);hovered = true"
+      data-on-mouseleave="myTimer = setTimeout(() => {hovered = false}, 500)"
       data-on-touchstart="hovered = true"
       >
         <div class="navbar">
