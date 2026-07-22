@@ -8,7 +8,6 @@
   },
     "imports": {
       "@msgpack/msgpack": "npm:@msgpack/msgpack@^3.0.0-beta2",
-      "tailwindcss": "npm:tailwindcss@^4",
       "esbuild": "https://deno.land/x/esbuild@v0.20.0/mod.js",
       "esbuild-deno-loader": "https://deno.land/x/esbuild_deno_loader@0.9.0/mod.ts",
       "brotli": "https://deno.land/x/brotli@v0.1.4/mod.ts",
