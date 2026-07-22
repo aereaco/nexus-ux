@@ -288,9 +288,11 @@ function startWatcher() {
   const buffer = new Set<string>();
   let timer: number | undefined;
 
+  console.log("[serve] watcher started");
   const flush = () => {
     timer = undefined;
     const paths = [...buffer].filter((p) => !isIgnored(p));
+    console.log("[serve] flush paths=", paths.length, paths.slice(0, 5));
     buffer.clear();
     if (paths.length === 0) return;
     if (AUTO) gitCommit(paths);
@@ -299,10 +301,12 @@ function startWatcher() {
 
   (async () => {
     for await (const event of watcher) {
+      console.log("[serve] watcher event kind=", event.kind, "paths=", event.paths.length);
       for (const p of event.paths) buffer.add(p);
       if (timer !== undefined) clearTimeout(timer);
       timer = setTimeout(flush, DEBOUNCE_MS);
     }
+    console.log("[serve] watcher loop exited");
   })();
 }
 
