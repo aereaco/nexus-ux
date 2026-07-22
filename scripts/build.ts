@@ -7,6 +7,33 @@ import { walk } from "https://deno.land/std@0.212.0/fs/walk.ts";
 import { join as _joinPath } from "https://deno.land/std@0.224.0/path/mod.ts";
 import { parseArgs as _parseArgs } from "https://deno.land/std@0.224.0/cli/parse_args.ts";
 
+// esbuild-deno-loader has a Windows path bug: it produces backslash paths
+// like "\Users\verno\..." instead of "C:\Users\verno\..." or file:// URLs.
+// This pre-resolve plugin fixes them before esbuild processes them.
+function fixWindowsPathsPlugin(): esbuild.Plugin {
+  return {
+    name: "fix-windows-paths",
+    setup(build) {
+      build.onResolve({ filter: /.*/ }, (args) => {
+        if (!args.path.includes("\\")) return undefined;
+        const fixed = args.path.replace(/\\/g, "/");
+        let url: string;
+        if (fixed.startsWith("/") && fixed.length > 2 && fixed[2] === ":") {
+          url = "file:///" + fixed;
+        } else if (fixed.startsWith("//")) {
+          url = "file:" + fixed;
+        } else {
+          url = fixed;
+        }
+        return {
+          path: url,
+          namespace: args.namespace,
+        };
+      });
+    },
+  };
+}
+
 const AUTO_INJECTED_SPRITES = ["el", "id", "global", "dispatch", "nextTick"];
 const MIRROR_PROVIDED_SPRITES = ["fetch", "http", "download", "clipboard", "cache", "notification", "payment", "ws"];
 
@@ -152,6 +179,8 @@ async function buildBundle(options: BuildOptions = {}) {
     const configPath = path.resolve(cwd, "deno.json");
     const manifestPath = path.resolve(cwd, "src", "manifest.ts");
     const manifestJsonPath = path.resolve(cwd, "dist", "manifest.json");
+
+    const entryPointUrl = new URL(entryPoint).href;
 
     let analysisResult: any = null;
     let packedThemeCss = "";
@@ -351,8 +380,8 @@ async function buildBundle(options: BuildOptions = {}) {
     console.log("Generated JSON manifest:", manifestJsonPath);
 
     const esbuildOptions: esbuild.BuildOptions = {
-      plugins: [...denoPlugins({ configPath })],
-      entryPoints: [entryPoint],
+      plugins: [fixWindowsPathsPlugin(), ...denoPlugins({ configPath })],
+      entryPoints: [entryPointUrl],
       outfile: outFile,
       bundle: true,
       format: "iife",
