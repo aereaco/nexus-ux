@@ -101,8 +101,10 @@ const RELOAD_CLIENT = `<script>(function(){var p=location.protocol==='https:'?'w
 
 async function injectReload(res: Response): Promise<Response> {
   const type = res.headers.get("content-type") ?? "";
+  console.log("[serve] injectReload contentType=", type, "watch=", WATCH, "hasBody=", (await res.clone().text()).length > 0);
   if (!type.includes("text/html")) return res;
   const body = await res.text();
+  console.log("[serve] injectReload bodyLen=", body.length, "hasCloseBody=", body.includes("</body>"), "hasReload=", body.includes("/__reload"));
   if (body.includes("/__reload")) return res; // already injected
   const next = body.replace("</body>", `${RELOAD_CLIENT}</body>`);
   return new Response(next, {
