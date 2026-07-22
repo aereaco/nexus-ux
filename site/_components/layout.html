@@ -287,8 +287,10 @@
               ],
               hovered: false
             }"
-            data-on-mouseenter="hovered = true"
-            data-on-mouseleave="hovered = false">
+            data-on-mouseenter="if (typeof hoverTimer !== 'undefined') {clearTimeout(hoverTimer)};hovered = true"
+            data-on-mouseleave="hoverTimer = setTimeout(() => {hovered = false}, 500)"
+            data-on-touchstart="hovered = true"
+            >
           <nav aria-label="Breadcrumb">
             <ol
               class="flex overflow-hidden rounded-ss-lg rounded-es-lg border border-base-100 bg-white text-sm text-gray-700  dark:bg-gray-800 dark:text-gray-200"
@@ -319,8 +321,8 @@
                     <button class="btn btn-ghost btn-xl"
                             data-class="{ 'btn-active': pageTabs }"
                             data-on-click="pageTabs = !pageTabs"
-                            data-on-mouseenter="myTimer = setTimeout(() => {pageTabToggleHovered = true}, 3000)"
-                            data-on-mouseleave="clearTimeout(myTimer);pageTabToggleHovered = false">
+                            data-on-mouseenter="hoverTimer = setTimeout(() => {pageTabToggleHovered = true}, 3000)"
+                            data-on-mouseleave="clearTimeout(hoverTimer);pageTabToggleHovered = false">
                       <iconify-icon icon="material-symbols-light:tab-group-outline" class="text-2xl"></iconify-icon>
                     </button>
                   </div>
@@ -472,8 +474,8 @@
     <div class="flex min-h-full flex-col items-start bg-base-100" data-class="{ 'lg:w-16': collapsed, 'w-[20vw]': !collapsed, 'w-[75vw]': isMobile }">
       <!-- Sidebar content here -->
       <div class="flex flex-col h-dvh w-full transition-all" data-class="{ 'lg:w-[20vw]': !collapsed || hovered, 'w-[75vw]': isMobile, 'bg-base-100/70': !collapsed || hovered || isMobile, 'backdrop-blur-sm': !collapsed || hovered || isMobile }"
-      data-on-mouseenter="if (typeof myTimer !== 'undefined') {clearTimeout(myTimer)};hovered = true"
-      data-on-mouseleave="myTimer = setTimeout(() => {hovered = false}, 500)"
+      data-on-mouseenter="if (typeof hoverTimer !== 'undefined') {clearTimeout(hoverTimer)};hovered = true"
+      data-on-mouseleave="hoverTimer = setTimeout(() => {hovered = false}, 500)"
       data-on-touchstart="hovered = true"
       >
         <div class="navbar">
