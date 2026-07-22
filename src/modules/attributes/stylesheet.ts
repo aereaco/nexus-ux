@@ -484,12 +484,6 @@ class StyleSheetManager {
       return;
     }
 
-    if (PACKED_THEME_CSS.length > 0) {
-      // Production Mode: Pre-compiled
-      this._knownClasses.add(className);
-      return;
-    }
-
     // Play Mode: JIT compiling (lazy)
     if (!tailwindCompiler) {
       pendingClasses.push({ className, el, runtime });
