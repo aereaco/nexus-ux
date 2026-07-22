@@ -12,7 +12,6 @@ import { AttributeModule } from '../../engine/modules.ts';
 import {
   PACKED_COMPONENTS,
   PACKED_KEYFRAMES,
-  PACKED_THEME_CSS,
 } from '../../manifest.ts';
 
 export const PREFLIGHT_CSS = PACKED_COMPONENTS;
