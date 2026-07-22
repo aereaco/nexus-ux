@@ -659,13 +659,9 @@ export function initializeJitEngine(): void {
   if (_isJitEngineBooted) return;
   _isJitEngineBooted = true;
 
-  if (PACKED_THEME_CSS.length > 0) {
-    // Production Mode: Adopt pre-compiled AOT stylesheet directly
-    stylesheet.adoptCSSSync(PACKED_THEME_CSS, 'nexus-theme');
-  } else {
-    // Play Mode: Initialize official JIT compiler lazily
-    ensureCompiler().catch((err: unknown) => console.error('[Nexus] JIT init failed:', err));
-  }
+  // Play Mode: Initialize official JIT compiler lazily
+  // Theme/preflight CSS is fetched from CDN at runtime; no AOT stylesheet is bundled.
+  ensureCompiler().catch((err: unknown) => console.error('[Nexus] JIT init failed:', err));
 }
 
 /**
