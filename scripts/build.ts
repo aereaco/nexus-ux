@@ -290,11 +290,10 @@ async function buildBundle(options: BuildOptions = {}) {
     }
 
     // Only PACKED_COMPONENTS and PACKED_KEYFRAMES go into the bundle.
-    // PACKED_PREFLIGHT and PACKED_THEME are fetched at runtime from CDN to
-    // avoid embedding ~22KB of Tailwind CSS strings in the bundle.
+    // Only PACKED_COMPONENTS and PACKED_KEYFRAMES go into the bundle.
+    // Theme/preflight CSS is fetched at runtime from CDN.
     manifestLines.push(`export const PACKED_COMPONENTS = "${packedStyleLayers.components}";`);
     manifestLines.push(`export const PACKED_KEYFRAMES = "${packedStyleLayers.keyframes}";`);
-    manifestLines.push(`export const PACKED_THEME_CSS = "${packedThemeCss}";`);
 
 
     await Deno.writeTextFile(manifestPath, manifestLines.join("\n"));
