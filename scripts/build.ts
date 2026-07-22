@@ -183,11 +183,10 @@ async function buildBundle(options: BuildOptions = {}) {
     const entryPointUrl = new URL(entryPoint).href;
 
     let analysisResult: any = null;
-    let packedThemeCss = "";
 
-    // AOT Style Layer Fetch — only generates framework-specific constants
-    // (PACKED_COMPONENTS, PACKED_KEYFRAMES). Preflight and theme are fetched
-    // at runtime from CDN so they don't inflate the bundle.
+    // AOT Style Layer Fetch — generates framework-specific constants
+    // (PACKED_COMPONENTS, PACKED_KEYFRAMES). Theme/preflight CSS is
+    // fetched at runtime from CDN so it never inflates the bundle.
     console.log("\n🎨 Generating AOT style layer constants...");
     const packedStyleLayers = await fetchStyleLayerPrimitives();
 
@@ -197,85 +196,10 @@ async function buildBundle(options: BuildOptions = {}) {
       console.log(`   Attributes: ${Array.from(analysisResult.attributeDirectives).join(", ")}`);
       console.log(`   Sprites: ${Array.from(analysisResult.spriteNames).join(", ")}`);
       console.log(`   Modifiers: ${Array.from(analysisResult.modifiers).join(", ")}`);
+      console.log(`   Tailwind class count: ${analysisResult.tailwindClasses.size}`);
       console.log(`   Auto-injected sprites: ${analysisResult.autoInjectedSprites.join(", ") || "none"}`);
       console.log(`   Mirror-provided sprites: ${analysisResult.mirrorProvidedSprites.join(", ") || "none"}`);
-
-      // Compile Tailwind classes at build-time using the official compiler
-      console.log("⚡ Compiling AOT Tailwind stylesheet...");
-      try {
-        const baseDir = "/home/aerea/development/tailwindcss/packages/tailwindcss";
-        const indexCss = await Deno.readTextFile(`${baseDir}/index.css`);
-        const preflightCss = await Deno.readTextFile(`${baseDir}/preflight.css`);
-        const themeCss = await Deno.readTextFile(`${baseDir}/theme.css`);
-        const utilitiesCss = await Deno.readTextFile(`${baseDir}/utilities.css`);
-
-        // Dynamically import compile from tailwindcss npm package
-        const { compile } = await import("tailwindcss");
-        const compiler = await compile(`
-@import "tailwindcss";
-
-@theme {
-  --color-base-100: var(--color-base-100);
-  --color-base-200: var(--color-base-200);
-  --color-base-300: var(--color-base-300);
-  --color-base-content: var(--color-base-content);
-  --color-primary: var(--color-primary);
-  --color-secondary: var(--color-secondary);
-  --color-accent: var(--color-accent);
-  --color-success: var(--color-success);
-  --color-info: var(--color-info);
-  --color-warning: var(--color-warning);
-  --color-error: var(--color-error);
-}
-`, {
-          base: '/',
-          async loadStylesheet(id) {
-            if (id === 'tailwindcss' || id === 'tailwindcss/index.css') {
-              return { path: 'tailwindcss/index.css', base: '/', content: indexCss };
-            }
-            if (id === './theme.css' || id === 'tailwindcss/theme.css') {
-              return { path: 'tailwindcss/theme.css', base: '/', content: themeCss };
-            }
-            if (id === './preflight.css' || id === 'tailwindcss/preflight.css') {
-              return { path: 'tailwindcss/preflight.css', base: '/', content: preflightCss };
-            }
-            if (id === './utilities.css' || id === 'tailwindcss/utilities.css') {
-              return { path: 'tailwindcss/utilities.css', base: '/', content: utilitiesCss };
-            }
-            throw new Error(`Not found: ${id}`);
-          }
-        });
-
-        const classes = Array.from(analysisResult.tailwindClasses) as string[];
-        const validClasses = classes.filter(cls => {
-          return !cls.includes("{") &&
-            !cls.includes("}") &&
-            !cls.includes("$") &&
-            !cls.includes("?") &&
-            !cls.includes("<") &&
-            !cls.includes(">") &&
-            !cls.includes("&") &&
-            !cls.includes("=");
-        });
-        const extraClasses = ["draggable-chosen", "draggable-drag", "draggable-ghost", "draggable-selected", "draggable-swap-highlight", "drop-target-before", "drop-target-after"];
-
-        packedThemeCss = compiler.build([...validClasses, ...extraClasses]);
-        // Minify compiled CSS
-        packedThemeCss = packedThemeCss
-          .replace(/\/\*[\s\S]*?\*\//g, "")
-          .replace(/\s+/g, " ")
-          .replace(/;\s*/g, ";")
-          .replace(/,\s*/g, ",")
-          .replace(/\{\s*/g, "{")
-          .replace(/\s*\}\s*/g, "}")
-          .replace(/"/g, '\\"')
-          .trim();
-        console.log(`   ✓ PACKED_THEME_CSS generated (${packedThemeCss.length} chars)`);
-      } catch (err) {
-        console.error("Failed to compile AOT Tailwind stylesheet:", err);
-      }
     }
-
 
     const manifestLines = ["// AUTO-GENERATED", "import type { AttributeModule } from './engine/modules.ts';"];
     let counter = 0;
