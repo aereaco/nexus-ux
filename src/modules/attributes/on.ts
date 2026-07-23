@@ -3,36 +3,6 @@ import { RuntimeContext } from '../../engine/composition.ts';
 import { initError } from '../../engine/debug.ts';
 import { matchAttributes } from '../../engine/attributeParser.ts';
 
-// Deterministic Registry for Zero-GC Event Delegation
-// Structure: Map<EventName, Map<nxId, EventListener[]>>
-const globalListeners = new Map<string, Map<number, EventListener[]>>();
-let listenerIdCounter = 0;
-const NEXUS_ID = Symbol.for('_nx_id');
-
-// Events that do not bubble and must be attached directly
-const NON_BUBBLING_EVENTS = new Set(['focus', 'blur', 'mouseenter', 'mouseleave', 'scroll', 'load', 'error']);
-
-function getGlobalHandler(eventName: string) {
-  return (e: Event) => {
-    const flatMap = globalListeners.get(eventName);
-    if (!flatMap) return;
-    
-    // Trace the composed path from the target up to the document
-    const path = e.composedPath();
-    for (const target of path) {
-      if (e.cancelBubble) break;
-      
-      const nxId = (target as any)[NEXUS_ID];
-      if (nxId && flatMap.has(nxId)) {
-        if (document.documentElement.hasAttribute('data-debug')) {
-          console.log(`[Nexus Event] Triggering "${eventName}" for nxId: ${nxId} on <${(target as HTMLElement).tagName}>`);
-        }
-        flatMap.get(nxId)!.forEach(fn => fn(e));
-      }
-    }
-  };
-}
-
 const onModule: AttributeModule = {
   name: 'on',
   attribute: 'on',
@@ -48,7 +18,6 @@ const onModule: AttributeModule = {
       const modifiers = parsed.modifiers;
 
       try {
-        // The Base Handler
         let handler: EventListener = (e: Event) => {
           const detail = (e as CustomEvent).detail;
           const extras = {
@@ -59,99 +28,38 @@ const onModule: AttributeModule = {
           return runtime.evaluate(el, value, extras);
         };
 
-        // Apply Modifiers
         let target: EventTarget = el;
         let options: AddEventListenerOptions | boolean = false;
 
         modifiers.forEach((mod: string) => {
-          let modName = mod;
-          let modArg = '';
-          const dashIdx = mod.indexOf('-');
-          
-          if (dashIdx !== -1) {
-            modName = mod.substring(0, dashIdx);
-            modArg = mod.substring(dashIdx + 1);
-          }
+          const [modName, modArg] = mod.includes('-') ? mod.split('-', 1) : [mod, ''];
+          const fullArg = mod.includes('-') ? mod.slice(mod.indexOf('-') + 1) : '';
 
-          if (modName === 'window') target = window;
-          else if (modName === 'document') target = document;
-          else if (modName === 'passive') options = { passive: true };
-          else if (modName === 'capture') options = true;
-          else {
-            const modifierModule = runtime.getModifier(modName);
-            if (modifierModule) {
-              handler = modifierModule.handle(handler, el, modArg, runtime) as EventListener;
+          switch (modName) {
+            case 'window':
+              target = window;
+              break;
+            case 'document':
+              target = document;
+              break;
+            case 'passive':
+              options = { passive: true };
+              break;
+            case 'capture':
+              options = true;
+              break;
+            default: {
+              const modifierModule = runtime.getModifier(modName);
+              if (modifierModule) {
+                handler = modifierModule.handle(handler, el, fullArg, runtime) as EventListener;
+              }
+              break;
             }
           }
         });
 
-        const forceDirect = target === window || target === document || NON_BUBBLING_EVENTS.has(eventName) || options !== false;
-
-        if (eventName === 'hover') {
-          // Interactive Orchestration: maps to native mouseenter/mouseleave pair
-          const enterHandler = (e: Event) => {
-            const extras = { $evt: e, $newValue: true, hovered: true };
-            return runtime.evaluate(el, value, extras);
-          };
-          const leaveHandler = (e: Event) => {
-            const extras = { $evt: e, $newValue: false, hovered: false };
-            return runtime.evaluate(el, value, extras);
-          };
-
-          el.addEventListener('mouseenter', enterHandler);
-          el.addEventListener('mouseleave', leaveHandler);
-          cleanupFns.push(() => {
-            el.removeEventListener('mouseenter', enterHandler);
-            el.removeEventListener('mouseleave', leaveHandler);
-          });
-          return;
-        }
-
-        if (forceDirect) {
-          // Direct Attachment
-          target.addEventListener(eventName, handler as EventListener, options);
-          cleanupFns.push(() => target.removeEventListener(eventName, handler as EventListener, options));
-
-          // Late Event Ignition: If event already happened, trigger it now for initialization safety.
-          if (target === window && eventName === 'load' && document.readyState === 'complete') {
-             queueMicrotask(() => (handler as EventListener)(new Event('load')));
-          } else if (target === document && eventName === 'DOMContentLoaded' && (document.readyState === 'interactive' || document.readyState === 'complete')) {
-             queueMicrotask(() => (handler as EventListener)(new Event('DOMContentLoaded')));
-          }
-        } else {
-          // GC-Free Global Delegation
-          if (!globalListeners.has(eventName)) {
-            globalListeners.set(eventName, new Map());
-            document.addEventListener(eventName, getGlobalHandler(eventName), { capture: false });
-          }
-
-          const flatMap = globalListeners.get(eventName)!;
-          
-          // Assign deterministic ID if missing
-          if (!(target as unknown as Record<symbol, number>)[NEXUS_ID]) {
-            (target as unknown as Record<symbol, number>)[NEXUS_ID] = ++listenerIdCounter;
-          }
-          const nxId = (target as unknown as Record<symbol, number>)[NEXUS_ID];
-
-          let elementHandlers = flatMap.get(nxId);
-          if (!elementHandlers) {
-            elementHandlers = [];
-            flatMap.set(nxId, elementHandlers);
-          }
-          elementHandlers.push(handler);
-
-          // Deterministic Cleanup (Bypasses GC Tracing)
-          cleanupFns.push(() => {
-            const currentHandlers = flatMap.get(nxId);
-            if (currentHandlers) {
-              const idx = currentHandlers.indexOf(handler);
-              if (idx > -1) currentHandlers.splice(idx, 1);
-              if (currentHandlers.length === 0) {
-                 flatMap.delete(nxId); // O(1) Instant memory release
-              }
-            }
-          });
-        }
+        target.addEventListener(eventName, handler as EventListener, options);
+        cleanupFns.push(() => target.removeEventListener(eventName, handler as EventListener, options));
 
       } catch (e) {
         initError('on', `Failed to attach listener ${eventName}: ${e instanceof Error ? e.message : String(e)}`, el, value);
