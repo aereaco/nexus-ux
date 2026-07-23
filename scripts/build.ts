@@ -302,6 +302,17 @@ async function buildBundle(options: BuildOptions = {}) {
     await Deno.writeTextFile(manifestJsonPath, JSON.stringify(manifestJsonData, null, 2));
     console.log("Generated JSON manifest:", manifestJsonPath);
 
+    const manifestContent = await Deno.readTextFile(manifestPath);
+    const indexContent = await Deno.readTextFile(path.resolve(cwd, "src", "index.ts"));
+    const indexWithoutManifestImport = indexContent.replace(
+      /import\s+\{\s*autoAttributes\s*,\s*autoSprites\s*,\s*autoModifiers\s*,\s*autoObservers\s*,\s*autoListeners\s*\}\s*from\s*['"]\.\/manifest\.ts['"];?\s*\n?/,
+      ""
+    );
+    const bundledEntry = manifestContent + "\n" + indexWithoutManifestImport;
+    const bundledEntryPath = path.resolve(cwd, "src", "index.bundle.ts");
+    await Deno.writeTextFile(bundledEntryPath, bundledEntry);
+    const entryPointUrl = new URL(bundledEntryPath).href;
+
     const esbuildOptions: esbuild.BuildOptions = {
       plugins: [fixWindowsPathsPlugin(), ...denoPlugins({ configPath })],
       entryPoints: [entryPointUrl],
@@ -315,7 +326,11 @@ async function buildBundle(options: BuildOptions = {}) {
     };
 
     console.log("Starting esbuild...");
-    await esbuild.build(esbuildOptions);
+    try {
+      await esbuild.build(esbuildOptions);
+    } finally {
+      try { await Deno.remove(bundledEntryPath); } catch {}
+    }
     console.log(`Build complete: ${outFile}`);
 
     if (minify) {
