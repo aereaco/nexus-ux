@@ -31,30 +31,27 @@ const onModule: AttributeModule = {
         let target: EventTarget = el;
         let options: AddEventListenerOptions | boolean = false;
 
-        modifiers.forEach((mod: string) => {
-          const [modName, modArg] = mod.includes('-') ? mod.split('-', 1) : [mod, ''];
-          const fullArg = mod.includes('-') ? mod.slice(mod.indexOf('-') + 1) : '';
+        const targetModifiers = new Set(['window', 'document']);
+        const optionModifiers = new Set(['passive', 'capture']);
 
-          switch (modName) {
-            case 'window':
-              target = window;
-              break;
-            case 'document':
-              target = document;
-              break;
-            case 'passive':
-              options = { passive: true };
-              break;
-            case 'capture':
-              options = true;
-              break;
-            default: {
-              const modifierModule = runtime.getModifier(modName);
-              if (modifierModule) {
-                handler = modifierModule.handle(handler, el, fullArg, runtime) as EventListener;
-              }
-              break;
-            }
+        modifiers.forEach((mod: string) => {
+          const [modName, fullArg] = mod.includes('-') ? [mod.slice(0, mod.indexOf('-')), mod.slice(mod.indexOf('-') + 1)] : [mod, ''];
+
+          if (targetModifiers.has(modName)) {
+            if (modName === 'window') target = window;
+            if (modName === 'document') target = document;
+            return;
+          }
+
+          if (optionModifiers.has(modName)) {
+            if (modName === 'passive') options = { passive: true };
+            if (modName === 'capture') options = true;
+            return;
+          }
+
+          const modifierModule = runtime.getModifier(modName);
+          if (modifierModule) {
+            handler = modifierModule.handle(handler, el, fullArg, runtime) as EventListener;
           }
         });
 
