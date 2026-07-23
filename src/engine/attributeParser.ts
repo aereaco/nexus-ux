@@ -64,7 +64,7 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
       if (rest.startsWith('-')) {
         state = 1;
         rest = rest.slice(1);
-      } else if (rest.startsWith(':') || rest.startsWith('.')) {
+      } else if (rest.startsWith(':')) {
         state = 2;
         rest = rest.slice(1);
       }
