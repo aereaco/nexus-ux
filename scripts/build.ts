@@ -174,13 +174,10 @@ async function buildBundle(options: BuildOptions = {}) {
     await Deno.mkdir("./dist", { recursive: true });
 
     const cwd = Deno.cwd();
-    const entryPoint = path.resolve(cwd, "src", "index.ts");
     const outFile = path.resolve(cwd, "dist", `${outputName}.js`);
     const configPath = path.resolve(cwd, "deno.json");
     const manifestPath = path.resolve(cwd, "src", "manifest.ts");
     const manifestJsonPath = path.resolve(cwd, "dist", "manifest.json");
-
-    const entryPointUrl = new URL(entryPoint).href;
 
     let analysisResult: any = null;
 
