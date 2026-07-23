@@ -187,7 +187,7 @@ export class UX {
     this.coordinator.registerUtilityModule('fetch', fetchModule);
 
     // Auto-Register Observer Modules
-    autoObservers.forEach(({ name, module }: { name: string; module: any }) => {
+    observers.forEach(({ name, module }: { name: string; module: any }) => {
       const obsMod = module.default || Object.values(module)[0];
       if (obsMod) {
         this.coordinator.registerObserverModule(obsMod.name || name, obsMod);
@@ -195,7 +195,7 @@ export class UX {
     });
 
     // Auto-Register Listener Modules
-    autoListeners.forEach(({ name, module }: { name: string; module: any }) => {
+    listeners.forEach(({ name, module }: { name: string; module: any }) => {
       const listenerMod = module.default || Object.values(module)[0];
       if (listenerMod) {
         this.coordinator.registerListenerModule(listenerMod.name || name, listenerMod);
