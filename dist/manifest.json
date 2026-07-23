@@ -58,6 +58,7 @@
   "modifiers": [
     "debounce",
     "delay",
+    "document",
     "drag",
     "keys",
     "morph",
