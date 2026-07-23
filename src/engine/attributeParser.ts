@@ -80,7 +80,6 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
 
     // `:` ALWAYS transitions to MODIFIER state (per §2.1)
     // `-` transitions from DIRECTIVE to ARGUMENT state
-    // `.` transitions to MODIFIER state
     const isModifierDelim = char === MODIFIER_DELIMITER;
     const isArgDelim = char === '-';
     const isDelim = isModifierDelim || isArgDelim;
