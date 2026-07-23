@@ -102,7 +102,7 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
 
       if (isDelim) {
         if (isModifierDelim) {
-          // `:` and `.` ALWAYS move to modifier state regardless of current state
+          // `:` ALWAYS moves to modifier state regardless of current state
           state = 2;
         } else if (isArgDelim && state === 0) {
           // `-` after directive introduces the argument
