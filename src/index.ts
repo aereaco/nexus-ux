@@ -14,15 +14,6 @@ import switcherModule from './modules/attributes/switcher.ts';
 import themeModule from './modules/attributes/theme.ts';
 
 // Auto-Discovered Modules
-// Inline manifest injected by build.ts as __NX_MANIFEST__.
-// Fallback to manifest.ts for backward compatibility.
-declare const __NX_MANIFEST__: {
-  attributes: { name: string; module: any }[];
-  sprites: { name: string; module: any }[];
-  modifiers: { name: string; module: any }[];
-  observers: { name: string; module: any }[];
-  listeners: { name: string; module: any }[];
-};
 import { 
   autoAttributes,
   autoSprites,
