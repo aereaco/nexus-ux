@@ -10,8 +10,7 @@
     "npm:npm@*": "11.18.0",
     "npm:playwright@*": "1.59.1",
     "npm:puppeteer@*": "22.4.0",
-    "npm:puppeteer@22.4.0": "22.4.0",
-    "npm:tailwindcss@4": "4.2.4"
+    "npm:puppeteer@22.4.0": "22.4.0"
   },
   "npm": {
     "@asamuzakjp/css-color@3.2.0_@csstools+css-parser-algorithms@3.0.5__@csstools+css-tokenizer@3.0.4_@csstools+css-tokenizer@3.0.4": {
@@ -1033,9 +1032,6 @@
     "symbol-tree@3.2.4": {
       "integrity": "sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw=="
     },
-    "tailwindcss@4.2.4": {
-      "integrity": "sha512-HhKppgO81FQof5m6TEnuBWCZGgfRAWbaeOaGT00KOy/Pf/j6oUihdvBpA7ltCeAvZpFhW3j0PTclkxsd4IXYDA=="
-    },
     "tar-fs@3.0.5": {
       "integrity": "sha512-JOgGAmZyMgbqpLwct7ZV8VzkEB6pxXFBVErLtb+XCOqzc6w1xiWKI9GVd6bwk68EX7eJ4DWmfXVmq8K2ziZTGg==",
       "dependencies": [
@@ -1859,8 +1855,7 @@
       "jsr:@std/encoding-brotli@~0.225.2",
       "npm:@msgpack/msgpack@^3.0.0-beta2",
       "npm:@swc/core@1.15.24",
-      "npm:jsdom@24.0.0",
-      "npm:tailwindcss@4"
+      "npm:jsdom@24.0.0"
     ]
   }
 }
