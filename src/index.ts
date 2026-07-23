@@ -13,14 +13,7 @@ import computedModule from './modules/attributes/computed.ts';
 import switcherModule from './modules/attributes/switcher.ts';
 import themeModule from './modules/attributes/theme.ts';
 
-// Auto-Discovered Modules
-import { 
-  autoAttributes,
-  autoSprites,
-  autoModifiers,
-  autoObservers,
-  autoListeners
-} from './manifest.ts';
+// Auto-Discovered Modules (inlined by build.ts from generated manifest.ts)
 
 import { resolveSelector } from './modules/sprites/selector.ts';
 import { animate } from './modules/sprites/animate.ts';
