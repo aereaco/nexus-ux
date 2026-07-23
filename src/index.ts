@@ -88,18 +88,11 @@ export class UX {
     this.coordinator.registerAttributeModule('switcher', switcherModule);
     this.coordinator.registerAttributeModule('ux-theme', themeModule);
 
-    // Auto-Register all discovered modules from inline or imported manifest.
-    const manifest = typeof __NX_MANIFEST__ !== 'undefined' ? __NX_MANIFEST__ : null;
-    const attributes = manifest?.attributes || autoAttributes;
-    const sprites = manifest?.sprites || autoSprites;
-    const modifiers = manifest?.modifiers || autoModifiers;
-    const observers = manifest?.observers || autoObservers;
-    const listeners = manifest?.listeners || autoListeners;
-
+    // Auto-Register all discovered attribute modules.
     // A single namespace file may colocate multiple directives (e.g. flow.ts
     // exports data-flow, data-flow-node, data-flow-handle, data-flow-edges),
     // so register every export that is an AttributeModule, not just the first.
-    attributes.forEach(({ name, module }: { name: string; module: any }) => {
+    autoAttributes.forEach(({ name, module }) => {
       let registeredAny = false;
       for (const maybe of Object.values(module)) {
         if (maybe && typeof maybe === 'object' && 'attribute' in maybe && typeof (maybe as any).handle === 'function') {
@@ -116,7 +109,7 @@ export class UX {
     });
 
     // Auto-Register Sprites (Action Modules)
-    sprites.forEach(({ name, module }: { name: string; module: any }) => {
+    autoSprites.forEach(({ name, module }) => {
       const spriteMod = module.default || Object.values(module).find((m: any) => m && typeof m.sprites === 'function');
       
       if (spriteMod && typeof spriteMod.sprites === 'function') {
@@ -149,7 +142,7 @@ export class UX {
     });
 
     // Auto-Register Modifiers
-    modifiers.forEach(({ module }: { module: any }) => {
+    autoModifiers.forEach(({ module }) => {
       let exportsObj = module.default || module;
       
       if (exportsObj && exportsObj.name && typeof exportsObj.handle === 'function') {
