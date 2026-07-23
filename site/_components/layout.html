@@ -285,7 +285,7 @@
                 { title: 'Long text 4', href: '/long-text-4' },
                 { title: 'Long text 5', href: '/long-text-5' }
               ],
-              hovered: false
+              hovered: false, lastTouchTime: 0
             }"
             data-on-mouseenter="if (typeof hoverTimer !== 'undefined') {clearTimeout(hoverTimer)};hovered = true"
             data-on-mouseleave="hoverTimer = setTimeout(() => {hovered = false}, 750)"
