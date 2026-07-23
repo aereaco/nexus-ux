@@ -19,7 +19,6 @@ export interface ParsedAttribute {
  * - `-` separates directive from argument
  * - `:` ALWAYS introduces modifiers (Pipeline Anchors)
  * - `.` also introduces modifiers (alternative syntax)
- * 
  * Examples:
  *   data-on-click:once       → { directive: "on", argument: "click", modifiers: ["once"] }
  *   data-teleport:drop       → { directive: "teleport", modifiers: ["drop"] }
