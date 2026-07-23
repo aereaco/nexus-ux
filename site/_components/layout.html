@@ -287,7 +287,7 @@
               ],
               hovered: false
             }"
- 
+            data-on-mouseleave="hoverTimer = setTimeout(() => {hovered = false}, 750)"
             data-on-touchstart:prevent="if (typeof hoverTimer !== 'undefined') {clearTimeout(hoverTimer)};hoverTimer = setTimeout(() => {hovered = true}, 700)"
             >
           <nav aria-label="Breadcrumb">
