@@ -302,6 +302,8 @@ async function buildBundle(options: BuildOptions = {}) {
     await Deno.writeTextFile(manifestJsonPath, JSON.stringify(manifestJsonData, null, 2));
     console.log("Generated JSON manifest:", manifestJsonPath);
 
+    const manifestBanner = `const __NX_MANIFEST__ = ${JSON.stringify(manifestJsonData)};`;
+
     const esbuildOptions: esbuild.BuildOptions = {
       plugins: [fixWindowsPathsPlugin(), ...denoPlugins({ configPath })],
       entryPoints: [entryPointUrl],
@@ -312,6 +314,7 @@ async function buildBundle(options: BuildOptions = {}) {
       target: "es2022",
       legalComments: "none",
       minify,
+      banner: { js: manifestBanner },
     };
 
     console.log("Starting esbuild...");
