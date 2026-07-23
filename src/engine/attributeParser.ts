@@ -54,7 +54,7 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
   let rest = rawName;
 
   const hyphenated = ['ux-theme', 'on-raf', 'flow-node', 'flow-handle', 'flow-edges', 'flow-grid'].find(h =>
-    rawName === h || rawName.startsWith(h + '-') || rawName.startsWith(h + ':') || rawName.startsWith(h + '.')
+    rawName === h || rawName.startsWith(h + '-') || rawName.startsWith(h + ':')
   );
 
   if (hyphenated) {
