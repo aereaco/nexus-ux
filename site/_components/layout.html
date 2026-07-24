@@ -360,13 +360,11 @@
                 { title: 'Long text 5', href: '/long-text-5' }
               ],
               hovered: false
-            }"
-      data-on-mouseenter="hovered = true"
-      data-on-mouseleave="hovered = false">
+            }" data-on-mouseenter="hovered = true" data-on-mouseleave="hovered = false">
       <nav aria-label="Breadcrumb"
         class="flex items-center overflow-hidden rounded-ss-lg rounded-es-lg border border-base-100 bg-white text-sm text-gray-700 dark:bg-gray-800 dark:text-gray-200 transition-[max-width,width] duration-300 ease-in-out whitespace-nowrap shadow-sm"
-        data-class="{ 'max-w-md w-auto shadow-2xl': hovered, 'max-w-12 w-12': !hovered }">
-        
+        data-class="{ 'max-w-md w-md shadow-2xl': hovered, 'max-w-12 w-12': !hovered }">
+
         <!-- Anchored Header / Icon (Always present, never destroyed) -->
         <div class="flex items-center h-10 px-3 shrink-0 bg-secondary text-secondary-content cursor-pointer">
           <iconify-icon icon="material-symbols-light:bookmark-outline" class="text-2xl"></iconify-icon>
