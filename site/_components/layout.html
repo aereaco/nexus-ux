@@ -11,7 +11,8 @@
     zoom: 1,
     openThemeOptions: false,
     themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset']
-  }" data-class="{ 'md:grid-cols-[20rem_1fr]': !collapsed, 'md:grid-cols-[5rem_1fr]': collapsed }" data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: zoom + 'rem' }">
+  }" data-class="{ 'md:grid-cols-[20rem_1fr]': !collapsed, 'md:grid-cols-[5rem_1fr]': collapsed }"
+  data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: zoom + 'rem' }">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content" data-router="{ mode: 'hybrid', pagesDir: '_pages', error: 'error.html' }"
     data-signal:global="{
@@ -66,7 +67,8 @@
     <!-- Drawer Header -->
     <nav class="navbar w-full bg-base-300">
       <div class="flex-1">
-        <button class="btn btn-circle btn-ghost md:hidden" data-on-click="sidebarOpen = !sidebarOpen" aria-label="open sidebar">
+        <button class="btn btn-circle btn-ghost md:hidden" data-on-click="sidebarOpen = !sidebarOpen"
+          aria-label="open sidebar">
           <!-- Sidebar toggle icon -->
           <iconify-icon icon="material-symbols-light:menu" style="font-size: 24px"></iconify-icon>
         </button>
@@ -533,11 +535,12 @@
     </div>
   </div>
 
-  <div class="fixed inset-0 z-40 bg-black/50 transition-opacity duration-200" data-show="sidebarOpen" data-on-click="sidebarOpen = false; activeSidebarTab = 1"></div>
-  <aside class="dashboard-sidebar z-50 flex flex-col h-dvh bg-base-100/90 backdrop-blur-md transition-[width] duration-300 overflow-x-hidden"
+  <div class="fixed inset-0 z-40 bg-black/50 transition-opacity duration-200" data-show="sidebarOpen"
+    data-on-click="sidebarOpen = false; activeSidebarTab = 1"></div>
+  <aside
+    class="dashboard-sidebar z-50 flex flex-col h-dvh bg-base-100/90 backdrop-blur-md transition-[width] duration-300 overflow-x-hidden"
     data-class="{ 'open fixed inset-y-0 start-0 w-80 shadow-2xl': sidebarOpen, 'hovered fixed inset-y-0 start-0 w-80 shadow-2xl': hovered && !sidebarOpen, 'md:w-80': !collapsed, 'w-0 md:w-20': collapsed && !hovered && !sidebarOpen }"
-    data-on-mouseenter="if (collapsed && !sidebarOpen) hovered = true"
-    data-on-mouseleave="hovered = false"
+    data-on-mouseenter="if (collapsed && !sidebarOpen) hovered = true" data-on-mouseleave="hovered = false"
     data-effect="if (collapsed && !hovered && !sidebarOpen) { activeSidebarTab = 1; }">
     <div class="flex flex-col h-full w-full">
       <div class="navbar flex justify-between pe-4">
@@ -546,10 +549,12 @@
             <svg class="w-10 h-10 scale-[0.8] emblem" data-class="{ 'hidden': !collapsed && !hovered && !sidebarOpen }">
               <use href="_assets/images/emblem.svg"></use>
             </svg>
-            <span class="logo font-bold" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen, 'block': !collapsed || hovered || sidebarOpen }">Nexus-UX</span>
+            <span class="logo font-bold"
+              data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen, 'block': !collapsed || hovered || sidebarOpen }">Nexus-UX</span>
           </a>
         </div>
-        <button class="btn btn-ghost btn-circle close" data-class="{ 'hidden': !sidebarOpen, 'block': sidebarOpen }" data-on-click="sidebarOpen = false; activeSidebarTab = 1" aria-label="close sidebar">
+        <button class="btn btn-ghost btn-circle close" data-class="{ 'hidden': !sidebarOpen, 'block': sidebarOpen }"
+          data-on-click="sidebarOpen = false; activeSidebarTab = 1" aria-label="close sidebar">
           <iconify-icon icon="material-symbols-light:close" style="font-size: 24px"></iconify-icon>
         </button>
       </div>
@@ -559,7 +564,8 @@
         <template data-for="item in sidebarItems" data-key="item.href">
           <li class="transition-transform duration-300 hover:scale-102" data-drag>
             <a data-bind-href="item.href" data-bind-data-tab-title="item.tabTitle"
-              data-bind-data-tab-icon="item.tabIcon" data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }">
+              data-bind-data-tab-icon="item.tabIcon"
+              data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }">
               <iconify-icon data-bind-icon="item.icon" style="font-size: 24px"></iconify-icon>
               <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
             </a>
@@ -567,147 +573,166 @@
         </template>
       </ul>
 
-        <!-- ================= Panel Favorites (tab 2) ================= -->
-        <div class="grow w-full overflow-x-hidden overflow-y-auto"
-          data-show="activeSidebarTab === 2 && (!collapsed || hovered || sidebarOpen)">
-          <div class="p-6">
-            <div class="mb-6 whitespace-nowrap">
-              <h1 class="text-lg font-bold">Favorites</h1>
-            </div>
-            <ul class="menu w-full" data-show="favorites && favorites.length > 0">
-              <template data-for="fav in favorites" data-key="fav">
-                <li>
-                  <a data-bind-href="fav">
-                    <iconify-icon icon="material-symbols-light:star" class="text-warning text-xl"></iconify-icon>
-                    <span data-bind="fav"></span>
-                  </a>
-                </li>
-              </template>
-            </ul>
-            <div data-show="!favorites || favorites.length === 0">
-              <p class="text-sm opacity-60">No favorites pinned yet.</p>
-            </div>
+      <!-- ================= Panel Favorites (tab 2) ================= -->
+      <div class="grow w-full overflow-x-hidden overflow-y-auto"
+        data-show="activeSidebarTab === 2 && (!collapsed || hovered || sidebarOpen)">
+        <div class="p-6">
+          <div class="mb-6 whitespace-nowrap">
+            <h1 class="text-lg font-bold">Favorites</h1>
+          </div>
+          <ul class="menu w-full" data-show="favorites && favorites.length > 0">
+            <template data-for="fav in favorites" data-key="fav">
+              <li>
+                <a data-bind-href="fav">
+                  <iconify-icon icon="material-symbols-light:star" class="text-warning text-xl"></iconify-icon>
+                  <span data-bind="fav"></span>
+                </a>
+              </li>
+            </template>
+          </ul>
+          <div data-show="!favorites || favorites.length === 0">
+            <p class="text-sm opacity-60">No favorites pinned yet.</p>
           </div>
         </div>
+      </div>
 
-        <!-- ================= Panel Preferences (tab 3) ================= -->
-        <div class="grow w-full overflow-x-hidden overflow-y-auto"
-          data-show="activeSidebarTab === 3 && (!collapsed || hovered || sidebarOpen)">
-          <div class="p-6">
-            <div class="mb-6 whitespace-nowrap">
-              <h1 class="text-lg font-bold">Panel Preferences</h1>
+      <!-- ================= Panel Preferences (tab 3) ================= -->
+      <div class="grow w-full overflow-x-hidden overflow-y-auto"
+        data-show="activeSidebarTab === 3 && (!collapsed || hovered || sidebarOpen)">
+        <div class="p-6">
+          <div class="mb-6 whitespace-nowrap">
+            <h1 class="text-lg font-bold">Panel Preferences</h1>
+          </div>
+          <div class="flex flex-col">
+
+            <!-- Theme Chooser Header: Mode status text + mode cycle button -->
+            <div class="flex justify-between items-center pb-3">
+              <span class="text-sm font-medium"
+                data-bind="(!$theme.isSystem ? 'Set ' + ($theme.mode.charAt(0).toUpperCase() + $theme.mode.slice(1)) + ' Theme:' : 'System Theme Selected')"></span>
+              <button type="button" class="btn btn-ghost btn-circle size-10" aria-label="Switch theme mode"
+                data-on-click="$switchTheme()">
+                <iconify-icon data-bind-icon="$themeIcon" class="text-xl transition-all duration-300"></iconify-icon>
+              </button>
             </div>
-            <div class="flex flex-col">
 
-              <!-- Theme Chooser Header: Mode status text + mode cycle button -->
-              <div class="flex justify-between items-center pb-3">
-                <span class="text-sm font-medium" data-bind="(!$theme.isSystem ? 'Set ' + ($theme.mode.charAt(0).toUpperCase() + $theme.mode.slice(1)) + ' Theme:' : 'System Theme Selected')"></span>
-                <button type="button" class="btn btn-ghost btn-circle size-10" aria-label="Switch theme mode" data-on-click="$switchTheme()">
-                  <iconify-icon data-bind-icon="$themeIcon" class="text-xl transition-all duration-300"></iconify-icon>
-                </button>
-              </div>
+            <!-- Theme Chooser Dropdown Trigger & Options List -->
+            <div title="Change Theme" class="dropdown w-full relative">
+              <button type="button" tabindex="0"
+                class="btn btn-block bg-base-100 justify-between font-sans px-4 py-3 h-auto min-h-12 border border-base-content/10 shadow-sm"
+                data-bind-disabled="$theme.isSystem" data-on-click="openThemeOptions = !openThemeOptions">
+                <span class="flex items-center gap-2 grow text-start">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"
+                    class="invisible h-3 w-3 shrink-0">
+                    <path d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z"></path>
+                  </svg>
+                  <span class="capitalize text-sm font-semibold" data-bind="$theme.current"></span>
+                </span>
+                <span class="flex h-full shrink-0 items-center gap-1">
+                  <span class="bg-primary rounded-badge w-2 h-4"></span>
+                  <span class="bg-secondary rounded-badge w-2 h-4"></span>
+                  <span class="bg-accent rounded-badge w-2 h-4"></span>
+                  <span class="bg-neutral rounded-badge w-2 h-4"></span>
+                  <iconify-icon icon="material-symbols-light:keyboard-arrow-down"
+                    class="text-xl ms-1 transition-transform duration-200"
+                    data-class="{ 'rotate-180': openThemeOptions }"></iconify-icon>
+                </span>
+              </button>
 
-              <!-- Theme Chooser Dropdown Trigger & Options List -->
-              <div title="Change Theme" class="dropdown w-full relative">
-                <button type="button" tabindex="0" class="btn btn-block bg-base-100 justify-between font-sans px-4 py-3 h-auto min-h-12 border border-base-content/10 shadow-sm" data-bind-disabled="$theme.isSystem" data-on-click="openThemeOptions = !openThemeOptions">
-                  <span class="flex items-center gap-2 grow text-start">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="invisible h-3 w-3 shrink-0"><path d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z"></path></svg>
-                    <span class="capitalize text-sm font-semibold" data-bind="$theme.current"></span>
-                  </span>
-                  <span class="flex h-full shrink-0 items-center gap-1">
-                    <span class="bg-primary rounded-badge w-2 h-4"></span>
-                    <span class="bg-secondary rounded-badge w-2 h-4"></span>
-                    <span class="bg-accent rounded-badge w-2 h-4"></span>
-                    <span class="bg-neutral rounded-badge w-2 h-4"></span>
-                    <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-xl ms-1 transition-transform duration-200" data-class="{ 'rotate-180': openThemeOptions }"></iconify-icon>
-                  </span>
-                </button>
-
-                <!-- Dropdown Content Menu (porting theme-options.tmpl mechanics) -->
-                <template data-if="openThemeOptions">
-                  <div class="dropdown-content bg-base-200 text-base-content rounded-box absolute top-full start-0 mt-2 h-60 max-h-[calc(100vh-10rem)] w-full overflow-y-auto border border-base-content/10 shadow-2xl z-[200] p-2 space-y-2">
-                    <template data-for="t in themes" data-key="t">
-                      <label class="outline-base-content text-start outline-offset-4 theme-controller cursor-pointer block" data-class="{ '[&_svg]:visible': $theme.current === t }">
-                        <input type="radio" name="theme-radios" class="radio theme-controller hidden" data-bind-value="t" data-on-click="openThemeOptions = false" data-on-change="$setTheme(t)" />
-                        <span class="bg-base-100 rounded-btn text-base-content block w-full cursor-pointer font-sans" data-bind-data-theme="t">
-                          <span class="grid grid-cols-5 grid-rows-3">
-                            <span class="col-span-5 row-span-3 row-start-1 flex items-center gap-2 px-4 py-3">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="invisible h-3 w-3 shrink-0"><path d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z"></path></svg>
-                              <span class="flex-grow text-sm capitalize" data-bind="t"></span>
-                              <span class="flex h-full shrink-0 flex-wrap gap-1">
-                                <span class="bg-primary rounded-badge w-2 h-4"></span>
-                                <span class="bg-secondary rounded-badge w-2 h-4"></span>
-                                <span class="bg-accent rounded-badge w-2 h-4"></span>
-                                <span class="bg-neutral rounded-badge w-2 h-4"></span>
-                              </span>
+              <!-- Dropdown Content Menu (porting theme-options.tmpl mechanics) -->
+              <div data-show="openThemeOptions">
+                <div
+                  class="dropdown-content bg-base-200 text-base-content rounded-box absolute top-full start-0 mt-2 h-60 max-h-[calc(100vh-10rem)] w-full overflow-y-auto border border-base-content/10 shadow-2xl z-[200] p-2 space-y-2">
+                  <template data-for="t in themes" data-key="t">
+                    <label
+                      class="outline-base-content text-start outline-offset-4 theme-controller cursor-pointer block"
+                      data-class="{ '[&_svg]:visible': $theme.current === t }">
+                      <input type="radio" name="theme-radios" class="radio theme-controller hidden" data-bind-value="t"
+                        data-on-click="openThemeOptions = false" data-on-change="$setTheme(t)" />
+                      <span class="bg-base-100 rounded-btn text-base-content block w-full cursor-pointer font-sans"
+                        data-bind-data-theme="t">
+                        <span class="grid grid-cols-5 grid-rows-3">
+                          <span class="col-span-5 row-span-3 row-start-1 flex items-center gap-2 px-4 py-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                              fill="currentColor" class="invisible h-3 w-3 shrink-0">
+                              <path d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z"></path>
+                            </svg>
+                            <span class="flex-grow text-sm capitalize" data-bind="t"></span>
+                            <span class="flex h-full shrink-0 flex-wrap gap-1">
+                              <span class="bg-primary rounded-badge w-2 h-4"></span>
+                              <span class="bg-secondary rounded-badge w-2 h-4"></span>
+                              <span class="bg-accent rounded-badge w-2 h-4"></span>
+                              <span class="bg-neutral rounded-badge w-2 h-4"></span>
                             </span>
                           </span>
                         </span>
-                      </label>
-                    </template>
-                  </div>
-                </template>
-              </div>
-
-              <div class="divider"></div>
-
-              <!-- Text Flow Direction (LTR / RTL) -->
-              <div class="flex flex-nowrap items-center">
-                <span class="label-text grow">Text Flow Direction</span>
-                <label class="grid cursor-pointer place-items-center">
-                  <input type="checkbox" class="toggle toggle-primary" data-bind-checked="rtl" />
-                </label>
-              </div>
-
-              <div class="divider"></div>
-
-              <!-- Theme Zoom -->
-              <div>
-                <div class="label-text pb-3">Theme Zoom</div>
-                <input type="range" class="range range-primary" min="0.5" max="2" step="0.1" data-bind-value="zoom" />
-                <div class="flex justify-between mt-2">
-                  <span class="text-xs">0.5</span>
-                  <div class="flex justify-center bg-neutral text-neutral-content rounded w-14 py-1">
-                    <span class="font-semibold text-sm" data-bind="zoom + 'x'"></span>
-                  </div>
-                  <span class="text-xs">2.0</span>
+                      </span>
+                    </label>
+                  </template>
                 </div>
               </div>
-
-              <div class="divider"></div>
-
-              <!-- Page Tabs toggle -->
-              <div class="form-control">
-                <label class="label cursor-pointer">
-                  <span class="label-text">Page Tabs</span>
-                  <input type="checkbox" class="toggle toggle-secondary" data-bind-checked="pageTabs" />
-                </label>
-              </div>
-
             </div>
+
+            <div class="divider"></div>
+
+            <!-- Text Flow Direction (LTR / RTL) -->
+            <div class="flex flex-nowrap items-center">
+              <span class="label-text grow">Text Flow Direction</span>
+              <label class="grid cursor-pointer place-items-center">
+                <input type="checkbox" class="toggle toggle-primary" data-bind-checked="rtl" />
+              </label>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Theme Zoom -->
+            <div>
+              <div class="label-text pb-3">Theme Zoom</div>
+              <input type="range" class="range range-primary" min="0.5" max="2" step="0.1" data-bind-value="zoom" />
+              <div class="flex justify-between mt-2">
+                <span class="text-xs">0.5</span>
+                <div class="flex justify-center bg-neutral text-neutral-content rounded w-14 py-1">
+                  <span class="font-semibold text-sm" data-bind="zoom + 'x'"></span>
+                </div>
+                <span class="text-xs">2.0</span>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Page Tabs toggle -->
+            <div class="form-control">
+              <label class="label cursor-pointer">
+                <span class="label-text">Page Tabs</span>
+                <input type="checkbox" class="toggle toggle-secondary" data-bind-checked="pageTabs" />
+              </label>
+            </div>
+
           </div>
         </div>
+      </div>
 
-        <div class="dock" data-class="{ 'flex': (collapsed || isMobile) && !hovered && !sidebarOpen, 'hidden': sidebarOpen || hovered || (!collapsed && !isMobile) }">
-          <iconify-icon icon="material-symbols-light:left-panel-open-outline" style="font-size: 24px"></iconify-icon>
-        </div>
-        <div class="dock" data-class="{ 'flex': sidebarOpen || hovered || (!collapsed && !isMobile), 'hidden': (collapsed || isMobile) && !hovered && !sidebarOpen }">
-          <button class="tooltip tooltip-top" data-tip="Menu" data-class="{ 'dock-active': activeSidebarTab === 1 }"
-            data-on-click="activeSidebarTab = 1">
-            <iconify-icon icon="material-symbols-light:list" style="font-size: 24px"></iconify-icon>
-          </button>
+      <div class="dock"
+        data-class="{ 'flex': (collapsed || isMobile) && !hovered && !sidebarOpen, 'hidden': sidebarOpen || hovered || (!collapsed && !isMobile) }">
+        <iconify-icon icon="material-symbols-light:left-panel-open-outline" style="font-size: 24px"></iconify-icon>
+      </div>
+      <div class="dock"
+        data-class="{ 'flex': sidebarOpen || hovered || (!collapsed && !isMobile), 'hidden': (collapsed || isMobile) && !hovered && !sidebarOpen }">
+        <button class="tooltip tooltip-top" data-tip="Menu" data-class="{ 'dock-active': activeSidebarTab === 1 }"
+          data-on-click="activeSidebarTab = 1">
+          <iconify-icon icon="material-symbols-light:list" style="font-size: 24px"></iconify-icon>
+        </button>
 
-          <button class="tooltip tooltip-top" data-tip="Favorites"
-            data-class="{ 'dock-active': activeSidebarTab === 2 }" data-on-click="activeSidebarTab = 2">
-            <iconify-icon icon="material-symbols-light:star-outline" style="font-size: 24px"></iconify-icon>
-          </button>
+        <button class="tooltip tooltip-top" data-tip="Favorites" data-class="{ 'dock-active': activeSidebarTab === 2 }"
+          data-on-click="activeSidebarTab = 2">
+          <iconify-icon icon="material-symbols-light:star-outline" style="font-size: 24px"></iconify-icon>
+        </button>
 
-          <button class="tooltip tooltip-top" data-tip="Preferences"
-            data-class="{ 'dock-active': activeSidebarTab === 3 }" data-on-click="activeSidebarTab = 3">
-            <iconify-icon icon="material-symbols-light:tune" style="font-size: 24px"></iconify-icon>
-          </button>
-        </div>
+        <button class="tooltip tooltip-top" data-tip="Preferences"
+          data-class="{ 'dock-active': activeSidebarTab === 3 }" data-on-click="activeSidebarTab = 3">
+          <iconify-icon icon="material-symbols-light:tune" style="font-size: 24px"></iconify-icon>
+        </button>
       </div>
     </div>
-  </div>
+</div>
+</div>
 </div>
