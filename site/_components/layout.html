@@ -564,9 +564,32 @@
         </template>
       </ul>
 
+        <!-- ================= Panel Favorites (tab 2) ================= -->
+        <div class="grow w-full overflow-x-hidden overflow-y-auto"
+          data-show="activeSidebarTab === 2 && (!collapsed || hovered || sidebarOpen)">
+          <div class="p-6">
+            <div class="mb-6 whitespace-nowrap">
+              <h1 class="text-lg font-bold">Favorites</h1>
+            </div>
+            <ul class="menu w-full" data-show="favorites && favorites.length > 0">
+              <template data-for="fav in favorites" data-key="fav">
+                <li>
+                  <a data-bind-href="fav">
+                    <iconify-icon icon="material-symbols-light:star" class="text-warning text-xl"></iconify-icon>
+                    <span data-bind="fav"></span>
+                  </a>
+                </li>
+              </template>
+            </ul>
+            <div data-show="!favorites || favorites.length === 0">
+              <p class="text-sm opacity-60">No favorites pinned yet.</p>
+            </div>
+          </div>
+        </div>
+
         <!-- ================= Panel Preferences (tab 3) ================= -->
         <div class="grow w-full overflow-x-hidden overflow-y-auto"
-          data-show="activeSidebarTab === 3 && (!collapsed || hovered || isMobile)">
+          data-show="activeSidebarTab === 3 && (!collapsed || hovered || sidebarOpen)">
           <div class="p-6">
             <div class="mb-6 whitespace-nowrap">
               <h1 class="text-lg font-bold">Panel Preferences</h1>
