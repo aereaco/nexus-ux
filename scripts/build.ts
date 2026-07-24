@@ -400,13 +400,6 @@ async function buildBundle(options: BuildOptions = {}) {
     console.log("Starting esbuild...");
     await esbuild.build(esbuildOptions);
     console.log(`Build complete: ${outFile}`);
-  }
-}
-
-// ── Git commit + push helpers ──────────────────────────────────────────────
-
-function git(args: string[], cwd = Deno.cwd()): { ok: boolean; out: string; err: string } {
-  const r = new Deno.Command("git", { args, cwd }).outputSync();
   const out = new TextDecoder().decode(r.stdout).trim();
   const err = new TextDecoder().decode(r.stderr).trim();
   return { ok: r.success, out, err };
