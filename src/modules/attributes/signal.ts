@@ -1,3 +1,34 @@
+/**
+ * Nexus-UX Signal Directive Module
+ *
+ * Handles `data-signal` for reactive state initialization on DOM elements.
+ * Creates a reactive scope proxy bound to the element's data stack.
+ *
+ * Behavior:
+ *   - Empty value on <script>: Uses textContent as expression
+ *   - Object literal: Creates reactive proxy scope with ghost key parsing
+ *   - String expression: Evaluates and binds result to element scope
+ *   - `data-signal:global`: Binds to global signal namespace (# prefix)
+ *
+ * ZCZS Guarantees:
+ *   - Zero-copy: Reactive proxy wraps existing object; no cloning for
+ *     normal property access.
+ *   - Zero-serialization: Scope objects are shared by reference.
+ *   - Deep clone only on `:deep` modifier to prevent mutation leaks.
+ *
+ * Coordination:
+ *   - scope.ts provides addScopeToNode, parseGhostKeys, createScopeProxy
+ *   - reactivity.ts provides unifiedRef for reactive object creation
+ *   - reconciler.ts provides deepEqual for change detection
+ *   - evaluator.ts handles expression evaluation and global signals
+ *
+ * Nexus-UX Innovations Preserved:
+ *   - Ghost key parsing for typed reactive properties
+ *   - Element-bound reactive scope with automatic cleanup
+ *   - Global signal binding via data-signal:global
+ *   - Deep clone option for mutable external state
+ */
+
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { addScopeToNode, parseGhostKeys, createScopeProxy } from '../../engine/scope.ts';
@@ -38,7 +69,7 @@ const signalModule: AttributeModule = {
     const parsed = parsedAttr || runtime.parseAttribute('data-signal', runtime, el);
     const isGlobal = parsed?.argument === 'global' || 
                      parsed?.modifiers.includes('global') || 
-                     el.hasAttribute('data-ux-init');
+                     el.hasAttribute('data-init');
 
     // 2.5 Parse Ghost Keys for pre-allocation
     const { ghostKeys, typeHints } = parseGhostKeys(expression);
