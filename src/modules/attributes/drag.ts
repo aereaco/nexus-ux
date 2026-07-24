@@ -689,7 +689,7 @@ export class Draggable {
       c !== this.dragEl &&
       c !== Draggable.ghost &&
       (c as HTMLElement).style.display !== 'none' &&
-      !c.hasAttribute('data-template') &&
+      !(c as any)[IS_TEMPLATE_KEY] &&
       !(c as HTMLElement).classList.contains('draggable-ghost')
     ) as HTMLElement[];
 
