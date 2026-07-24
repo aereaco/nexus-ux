@@ -69,6 +69,7 @@ export const CLEANUP_FUNCTIONS_KEY = Symbol.for('__cleanup_functions__');
 export const EFFECT_RUNNERS_KEY = Symbol.for('__effect_runners__');
 export const RUN_EFFECT_RUNNERS_KEY = Symbol.for('__run_effect_runners__');
 export const MARKER_KEY = Symbol.for('__nexus_marker__');
+export const IS_TEMPLATE_KEY = Symbol.for('__nexus_is_template__');
 
 // 5. Default Values
 export const DEFAULT_DEBOUNCE_TIME = 250; // ms
