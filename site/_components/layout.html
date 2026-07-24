@@ -532,10 +532,9 @@
 
   <div class="fixed inset-0 z-40 bg-black/50 transition-opacity duration-200" data-show="sidebarOpen" data-on-click="sidebarOpen = false"></div>
   <aside class="dashboard-sidebar z-50 flex flex-col h-dvh bg-base-100/90 backdrop-blur-md transition-[width] duration-300 overflow-x-hidden"
-    data-class="{ 'open fixed inset-y-0 start-0 w-80 shadow-2xl': isMobile && sidebarOpen, 'hovered fixed inset-y-0 start-0 w-80 shadow-2xl': !isMobile && hovered && !sidebarOpen, 'w-80': !collapsed && !isMobile, 'w-0': isMobile && !sidebarOpen, 'md:w-20': !isMobile && collapsed && !hovered }"
+    data-class="{ 'open fixed inset-y-0 start-0 w-80 shadow-2xl': sidebarOpen, 'hovered fixed inset-y-0 start-0 w-80 shadow-2xl': hovered && !sidebarOpen, 'w-80': !collapsed, 'w-0 md:w-20': collapsed && !hovered && !sidebarOpen }"
     data-on-mouseenter="if (collapsed && !sidebarOpen) hovered = true"
-    data-on-mouseleave="hovered = false"
-    data-effect="if (collapsed && !hovered && !sidebarOpen) { activeSidebarTab = 1; }">
+    data-on-mouseleave="hovered = false">
     <div class="flex flex-col h-full w-full">
       <div class="navbar flex justify-between pe-4">
         <div class="flex flex-1 items-center">
@@ -566,7 +565,7 @@
 
         <!-- ================= Panel Preferences (tab 3) ================= -->
         <div class="grow w-full overflow-x-hidden overflow-y-auto"
-          data-show="activeSidebarTab === 3 && (!collapsed || hovered || sidebarOpen)">
+          data-show="activeSidebarTab === 3 && (!collapsed || hovered || isMobile)">
           <div class="p-6">
             <div class="mb-6 whitespace-nowrap">
               <h1 class="text-lg font-bold">Panel Preferences</h1>
