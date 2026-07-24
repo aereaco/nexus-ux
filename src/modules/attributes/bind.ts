@@ -182,39 +182,36 @@ const bindModule: AttributeModule = {
 
       cleanupFns.push(cleanup);
 
-        // Two-Way Binding Setup (Input Listener)
-        if (target === 'value' || target === 'checked') {
-          const isLazy = el.hasAttribute('data-bind:lazy') || el.hasAttribute('data-bind.lazy');
-          const eventName = isLazy ? 'change' : (
-            el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')
-            || el instanceof HTMLSelectElement ? 'change' : 'input'
-          );
+      // Two-Way Binding Setup (Input Listener)
+      if (target === 'value' || target === 'checked') {
+        const isLazy = el.hasAttribute('data-bind:lazy');
+        const eventName = isLazy ? 'change' : (
+          el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')
+          || el instanceof HTMLSelectElement ? 'change' : 'input'
+        );
 
-          const inputHandler = (e: Event) => {
-            let newValue: unknown;
-            if (el instanceof HTMLInputElement && el.type === 'checkbox') {
-              newValue = el.checked;
-            } else if (el instanceof HTMLInputElement && el.type === 'radio') {
-              newValue = el.checked ? el.value : undefined;
-            } else if (el instanceof HTMLInputElement && (el.type === 'range' || el.type === 'number')) {
-              // Numeric inputs expose their value as a string; coerce so bound
-              // state stays a number (keeps .toFixed(), arithmetic, etc. working).
-              const raw = (e.target as HTMLInputElement).value;
-              newValue = raw === '' ? '' : Number(raw);
-            } else {
-              newValue = (e.target as HTMLInputElement).value;
-            }
-            runtime.evaluate(el, `${attr.value} = $newValue`, { $newValue: newValue });
-          };
+        const inputHandler = (e: Event) => {
+          let newValue: unknown;
+          if (el instanceof HTMLInputElement && el.type === 'checkbox') {
+            newValue = el.checked;
+          } else if (el instanceof HTMLInputElement && el.type === 'radio') {
+            newValue = el.checked ? el.value : undefined;
+          } else if (el instanceof HTMLInputElement && (el.type === 'range' || el.type === 'number')) {
+            const raw = (e.target as HTMLInputElement).value;
+            newValue = raw === '' ? '' : Number(raw);
+          } else {
+            newValue = (e.target as HTMLInputElement).value;
+          }
+          runtime.evaluate(el, `${value} = $newValue`, { $newValue: newValue });
+        };
 
-          el.addEventListener(eventName, inputHandler);
-          cleanupFns.push(() => el.removeEventListener(eventName, inputHandler));
-        }
-
-      } catch (e) {
-        initError('bind', `Failed to bind ${target}: ${e instanceof Error ? e.message : String(e)}`, el, value);
+        el.addEventListener(eventName, inputHandler);
+        cleanupFns.push(() => el.removeEventListener(eventName, inputHandler));
       }
-    });
+
+    } catch (e) {
+      initError('bind', `Failed to bind ${target}: ${e instanceof Error ? e.message : String(e)}`, el, value);
+    }
 
     return () => cleanupFns.forEach(fn => fn());
   }
