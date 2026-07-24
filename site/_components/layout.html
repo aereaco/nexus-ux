@@ -23,6 +23,7 @@
         ctxMenu: null,
         favorites: (() => { try { return JSON.parse(localStorage.getItem('nexus-favorites') || '[]'); } catch { return []; } })(),
         recent: [],
+        themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset'],
         sidebarItems: [
           { href: '/', title: 'Homepage', icon: 'material-symbols-light:home-outline', tabTitle: 'Home', tabIcon: 'material-symbols-light:home-outline' },
           { href: '/profile', title: 'Profile', icon: 'material-symbols-light:person-outline', tabTitle: 'Profile', tabIcon: 'material-symbols-light:person-outline' },
