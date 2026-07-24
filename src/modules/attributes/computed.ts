@@ -73,17 +73,10 @@ const computedModule: AttributeModule = {
               }
             }, propName);
 
-            if (isGlobal || !addCleanup) {
-              const stop = runtime.watch(computedVal, (val: any) => {
-                runtime.setGlobalSignal(propName, val);
-              }, { immediate: true });
-              computedCleanup.push(stop);
-            } else {
-              const stop = runtime.watch(computedVal, (val: any) => { 
-                stateRef.value[propName] = val; 
-              }, { immediate: true });
-              computedCleanup.push(stop);
-            }
+            const stop = runtime.watch(computedVal, (val: any) => { 
+              stateRef.value[propName] = val; 
+            }, { immediate: true });
+            computedCleanup.push(stop);
           });
         }
       });
