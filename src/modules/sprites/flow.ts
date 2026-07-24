@@ -30,6 +30,7 @@
 import { SpriteModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { reactive } from '../../engine/reactivity.ts';
+import { IS_TEMPLATE_KEY } from '../../engine/consts.ts';
 
 /**
  * $flow Sprite.
