@@ -400,9 +400,6 @@ export async function fetchStyleLayerPrimitives(): Promise<{
   console.log(`   ✅ Style layer constants ready — emitting into manifest.ts.`);
 
   return result;
-} ready — emitting into manifest.ts.`);
-
-  return result;
 }
 
 // Deprecated: kept for backward-compat. Use fetchStyleLayerPrimitives() instead.
