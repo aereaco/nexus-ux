@@ -29,7 +29,7 @@ const onModule: AttributeModule = {
       let target: EventTarget = el;
       let options: AddEventListenerOptions | boolean = false;
 
-      const targetModifiers = new Set(['window', 'document']);
+      const targetModifiers = new Set(['window', 'document', 'outside']);
       const optionModifiers = new Set(['passive', 'capture']);
 
       modifiers.forEach((mod: string) => {
@@ -37,7 +37,7 @@ const onModule: AttributeModule = {
 
         if (targetModifiers.has(modName)) {
           if (modName === 'window') target = window;
-          if (modName === 'document') target = document;
+          if (modName === 'document' || modName === 'outside') target = document;
           return;
         }
 
