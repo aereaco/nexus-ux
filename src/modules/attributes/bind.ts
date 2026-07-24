@@ -35,25 +35,21 @@ import { matchAttributes } from '../../engine/attributeParser.ts';
 const bindModule: AttributeModule = {
   name: 'bind',
   attribute: 'bind',
-  handle: (el: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void => {
+  handle: (el: HTMLElement, value: string, runtime: RuntimeContext, parsedAttr?: ParsedAttribute): (() => void) | void => {
     if (!value) return;
 
-    const cleanupFns: (() => void)[] = [];
+    const parsed = parsedAttr || runtime.parseAttribute('data-bind', runtime, el);
+    const target = parsed?.argument;
 
-    // ─── Auto-Detect Mode (data-bind="expr" without sub-directive) ───
-    // When data-bind has no argument (no data-bind-* or data-bind:* variants),
-    // auto-detect the property based on element type — absorbs data-model behavior.
-    const allBindAttrs = matchAttributes(el, 'bind', value);
-    const hasSubDirective = allBindAttrs.some(a => a.name !== 'data-bind');
-
-    if (!hasSubDirective && el.hasAttribute('data-bind') && el.getAttribute('data-bind') === value) {
+    // ─── Auto-Detect Mode (data-bind="expr" without sub-directive argument) ───
+    if (!target) {
+      const cleanupFns: (() => void)[] = [];
       try {
         // 1. Reactive Effect: State → DOM
         const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
           const result = runtime.evaluate(el, value);
 
           // ─── Direct Heap/Object Mapping ───
-          // If the result is a non-null object (not array), treat as mass property assignment.
           if (result && typeof result === 'object' && !Array.isArray(result)) {
             Object.entries(result).forEach(([param, val]) => {
               if (param in el) {
@@ -81,12 +77,6 @@ const bindModule: AttributeModule = {
             }
           } else if (el instanceof HTMLSelectElement) {
             const targetValue = result !== undefined && result !== null ? String(result) : '';
-
-            // Sync select value with available options.
-            // When data-for populates <option> children, the framework observer's
-            // childList mutation pulse triggers RUN_EFFECT_RUNNERS_KEY on this element,
-            // which re-runs this effect and calls the sync logic below.
-            // No scoped MutationObserver needed — ownership tracking handles it.
             const options = Array.from(el.options);
             const found = options.some(opt => opt.value === targetValue);
             if (found || targetValue === '') {
@@ -114,20 +104,16 @@ const bindModule: AttributeModule = {
           if (el instanceof HTMLInputElement && el.type === 'checkbox') {
             newValue = el.checked;
           } else if (el instanceof HTMLInputElement && el.type === 'radio') {
-            // For data-bind-checked the bound state is the boolean checked flag;
-            // for data-bind-value it is the radio's value.
-            newValue = target === 'checked' ? el.checked : (el.checked ? el.value : undefined);
+            newValue = el.checked ? el.value : undefined;
             if (newValue === undefined) return;
           } else if (el instanceof HTMLSelectElement && el.multiple) {
             newValue = Array.from(el.selectedOptions).map(opt => opt.value);
           } else if (el instanceof HTMLInputElement && (el.type === 'range' || el.type === 'number')) {
-            // Coerce numeric inputs so bound state stays a number, not a string.
             newValue = el.value === '' ? '' : Number(el.value);
           } else if ('value' in el) {
             newValue = (el as any).value;
           }
 
-          // ─── Smart Assignment ───
           const current = runtime.evaluate(el, value);
           if (current && typeof current === 'object' && 'value' in (current as Record<string, unknown>)) {
             runtime.evaluate(el, `${value}.value = $newValue`, { $newValue: newValue });
@@ -146,65 +132,55 @@ const bindModule: AttributeModule = {
       return () => cleanupFns.forEach(fn => fn());
     }
 
-    // ─── Sub-Directive Mode (data-bind-value, data-bind:href, etc.) ───
-    const attrs = allBindAttrs.filter(a => a.name !== 'data-bind');
+    // ─── Sub-Directive Mode (data-bind-value, data-bind-dir, data-bind-style, etc.) ───
+    if (target === 'lazy') return;
+    const cleanupFns: (() => void)[] = [];
 
-    attrs.forEach(attr => {
-      const parsed = runtime.parseAttribute(attr.name, runtime, el);
-      if (!parsed || !parsed.argument) return;
+    try {
+      const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
+        const result = runtime.evaluate(el, value);
+        const attrValue = result !== undefined && result !== null ? String(result) : '';
 
-      const target = parsed.argument;
-      if (target === 'lazy') return;
+        if (target === 'value' || target === 'checked') {
+          if (el instanceof HTMLInputElement && el.type === 'checkbox') {
+            if (el.checked !== Boolean(result)) el.checked = Boolean(result);
+          } else if (el instanceof HTMLInputElement && el.type === 'radio') {
+            if (target === 'checked') {
+              if (el.checked !== Boolean(result)) el.checked = Boolean(result);
+            } else {
+              if (el.value !== attrValue) el.value = attrValue;
+            }
+          } else if ('value' in el) {
+            if ((el as HTMLInputElement).value !== attrValue) (el as HTMLInputElement).value = attrValue;
+          }
+        } else if (target === 'text') {
+          if (el.textContent !== attrValue) el.textContent = attrValue;
+        } else if (target === 'html') {
+          if (el.innerHTML !== attrValue) el.innerHTML = attrValue;
+        } else if (target === 'style') {
+          runtime.reconcileStyle(el, result);
+        } else if (target === 'draggable') {
+          const newVal = result ? 'true' : 'false';
+          if (el.getAttribute('draggable') !== newVal) {
+            el.setAttribute('draggable', newVal);
+          }
+        } else if (target === 'dir') {
+          if (el.getAttribute('dir') !== attrValue) {
+            el.setAttribute('dir', attrValue);
+          }
+          if (document.documentElement.getAttribute('dir') !== attrValue) {
+            document.documentElement.setAttribute('dir', attrValue);
+          }
+        } else {
+          if (result === false || result === null || result === undefined) {
+            if (el.hasAttribute(target)) el.removeAttribute(target);
+          } else {
+            if (el.getAttribute(target) !== attrValue) el.setAttribute(target, attrValue);
+          }
+        }
+      });
 
-      try {
-        const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
-          const result = runtime.evaluate(el, attr.value);
-          const attrValue = result !== undefined && result !== null ? String(result) : '';
-
-             if (target === 'value' || target === 'checked') {
-              if (el instanceof HTMLInputElement && el.type === 'checkbox') {
-                if (el.checked !== Boolean(result)) el.checked = Boolean(result);
-              } else if (el instanceof HTMLInputElement && el.type === 'radio') {
-                if (target === 'checked') {
-                  // data-bind-checked reflects the boolean checked state.
-                  if (el.checked !== Boolean(result)) el.checked = Boolean(result);
-                } else {
-                  // :value on a radio sets the element's value (mirrors Alpine's
-                  // :value). The checked state is owned by data-bind-checked.
-                  if (el.value !== attrValue) el.value = attrValue;
-                }
-              } else if ('value' in el) {
-               if ((el as HTMLInputElement).value !== attrValue) (el as HTMLInputElement).value = attrValue;
-             }
-           } else if (target === 'text') {
-             if (el.textContent !== attrValue) el.textContent = attrValue;
-           } else if (target === 'html') {
-             if (el.innerHTML !== attrValue) el.innerHTML = attrValue;
-           } else if (target === 'style') {
-             runtime.reconcileStyle(el, result);
-           } else if (target === 'draggable') {
-             // draggable attribute must be explicitly "true" or "false"
-             const newVal = result ? 'true' : 'false';
-             if (el.getAttribute('draggable') !== newVal) {
-               el.setAttribute('draggable', newVal);
-             }
-           } else if (target === 'dir') {
-             if (el.getAttribute('dir') !== attrValue) {
-               el.setAttribute('dir', attrValue);
-             }
-             if (document.documentElement.getAttribute('dir') !== attrValue) {
-               document.documentElement.setAttribute('dir', attrValue);
-             }
-           } else {
-             if (result === false || result === null || result === undefined) {
-               if (el.hasAttribute(target)) el.removeAttribute(target);
-             } else {
-               if (el.getAttribute(target) !== attrValue) el.setAttribute(target, attrValue);
-             }
-           }
-        });
-
-        cleanupFns.push(cleanup);
+      cleanupFns.push(cleanup);
 
         // Two-Way Binding Setup (Input Listener)
         if (target === 'value' || target === 'checked') {
