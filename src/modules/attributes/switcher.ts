@@ -3,6 +3,8 @@ import { RuntimeContext } from '../../engine/composition.ts';
 import { initError } from '../../engine/debug.ts';
 import { addScopeToNode } from '../../engine/scope.ts';
 
+import { ParsedAttribute } from '../../engine/attributeParser.ts';
+
 /**
  * data-switcher="signal"
  * data-switcher-options="[...] array of objects with { id, ... }"
@@ -14,14 +16,9 @@ const switcherModule: AttributeModule = {
   metadata: {
     after: ['for', 'signal']
   },
-  handle: (el: HTMLElement, expression: string, runtime: RuntimeContext): (() => void) | void => {
-    // Multi-initialization guard: 
-    // The parser treats 'data-switcher-options' as directive='switcher', argument='options'.
-    // We only want to run the core logic for the primary 'data-switcher' attribute.
-    const attr = Array.from(el.attributes).find(a => a.value === expression && a.name.startsWith('data-switcher'));
-    if (attr && attr.name !== 'data-switcher') {
-      return; 
-    }
+  handle: (el: HTMLElement, expression: string, runtime: RuntimeContext, parsedAttr?: ParsedAttribute): (() => void) | void => {
+    // Return early if handling sub-directive data-switcher-options
+    if (parsedAttr?.argument) return;
 
     runtime.log(`Nexus Switcher [${expression}]: Initializing on`, el);
     const optionsAttr = el.getAttribute('data-switcher-options');
