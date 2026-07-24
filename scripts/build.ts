@@ -400,28 +400,6 @@ async function buildBundle(options: BuildOptions = {}) {
     console.log("Starting esbuild...");
     await esbuild.build(esbuildOptions);
     console.log(`Build complete: ${outFile}`);
-  // Only push commits that already exist locally (the dev server's
-  // auto-commit does the committing). Pushing is a no-op if the branch
-  // is already in sync with the remote.
-  console.log(`🚀 Pushing ${branch} → ${remote}...`);
-  const push = git(["push", remote, branch]);
-  if (!push.ok) {
-    const msg = push.err || push.out;
-    // "Everything up-to-date" is not an error — treat it as success.
-    if (/everything up[- ]to[- ]date/i.test(msg)) {
-      console.log("ℹ️  Already up to date with remote.");
-      return;
-    }
-    console.error("❌ Push failed:", msg);
-    Deno.exit(1);
-  }
-  console.log("✓ Pushed to remote.");
-}
-
-// CLI
-const args = Deno.args;
-if (args.includes("--batch")) {
-  const configFile = args.find(a => a.startsWith("--config="))?.split("=")[1];
   if (configFile) {
     const configData = JSON.parse(await Deno.readTextFile(configFile)) as { configs?: BuildOptions[] };
     await batchBuild(configData.configs || []);
