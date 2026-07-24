@@ -1,3 +1,38 @@
+/**
+ * Nexus-UX Module Orchestration Layer
+ *
+ * Defines the module type system and the central ModuleCoordinator that
+ * manages registration, lifecycle, and DOM processing for all framework
+ * modules.
+ *
+ * Module Types:
+ *   - AttributeModule: Handles data-* directives (data-bind, data-on, etc.)
+ *   - ActionModule: Imperative actions exposed to expression scope ($id, $nextTick)
+ *   - ModifierModule: Pipeline behavior modifiers (:once, :prevent, :debounce)
+ *   - SpriteModule: Reactive command sets ($animate, $svg, $flow)
+ *   - ScopeModule: Conditional boundaries (@media, @auth, @os)
+ *   - ListenerModule: Global event listeners (SPA routing, history)
+ *   - ObserverModule: Browser Observer API integrations (mutation, resize)
+ *   - UtilityModule: Global utilities (fetch, logging)
+ *   - MirrorModule: Reactive wrappers for browser APIs (_fetch, _clipboard)
+ *
+ * ZCZS Role:
+ *   - Zero-copy: Module references are stored by name in Maps; no
+ *     serialization or cloning occurs during registration.
+ *   - Zero-serialization: Handlers receive live DOM elements and runtime
+ *     context by reference.
+ *
+ * Coordination:
+ *   - build.ts generates manifest.ts with auto-discovered modules.
+ *   - index.ts imports manifest arrays and calls register*Module() for each.
+ *   - ModuleCoordinator owns all module Maps and directive ordering.
+ *
+ * Nexus-UX Innovations Preserved:
+ *   - Typed module registration with directive ordering (metadata.after/before)
+ *   - Modifier interceptPipeline for evaluation wrapping
+ *   - Sprite auto-injection into expression scope
+ *   - Mirror auto-injection with _ prefix
+ */
 import {
   RuntimeContext,
   InitContext
@@ -5,7 +40,8 @@ import {
 
 import {
   CLEANUP_FUNCTIONS_KEY,
-  ROOT_SELECTOR
+  ROOT_SELECTOR,
+  IS_TEMPLATE_KEY
 } from './consts.ts';
 
 import * as reactivity from './reactivity.ts'; 
@@ -444,13 +480,13 @@ export class ModuleCoordinator {
     // 1. Isolation Level Detection (Nested Overrides)
     let currentIsolation = isolationLevel;
     
-    if (element.hasAttribute('data-ignore:off')) {
+    if (element.hasAttribute('data-ignore-off')) {
       currentIsolation = 'none';
-    } else    if (element.hasAttribute('data-nexus-ignore')) {
+    } else if (element.hasAttribute('data-ignore')) {
       currentIsolation = 'total';
-    } else if (element.hasAttribute('data-ux-ignore')) {
+    } else if (element.hasAttribute('data-ignore-ux')) {
       currentIsolation = 'ux';
-    } else if (element.hasAttribute('data-style-ignore')) {
+    } else if (element.hasAttribute('data-ignore-style')) {
       currentIsolation = 'style';
     }
 
@@ -548,7 +584,7 @@ export class ModuleCoordinator {
       });
     }
 
-    if (element.hasAttribute('data-ux-template')) {
+    if ((element as any)[IS_TEMPLATE_KEY]) {
       // ZCZS: Do not traverse into templates during initialization or broad sweeps.
       // Template children are strictly managed and processed by the structural 
       // directives (data-for, data-if) when instantiated and scoped.
