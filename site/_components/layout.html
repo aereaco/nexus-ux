@@ -530,43 +530,38 @@
     </div>
   </div>
 
-  <div class="drawer-side" data-class="{ 'overflow-visible': hovered || !collapsed || isMobile }">
-    <label for="my-drawer-4" aria-label="close sidebar" class="drawer-overlay"></label>
-    <div class="flex min-h-full flex-col items-start bg-base-100"
-      data-class="{ 'lg:w-16': collapsed, 'w-100': !collapsed, 'w-[75vw]': isMobile }">
-      <!-- Sidebar content here -->
-      <div class="flex flex-col h-dvh w-full transition-all"
-        data-class="{ 'lg:w-100': !collapsed || hovered, 'w-[75vw]': isMobile, 'bg-base-100/70': !collapsed || hovered || isMobile, 'backdrop-blur-sm': !collapsed || hovered || isMobile }"
-        data-on-mouseenter="if (typeof hoverTimer !== 'undefined') {clearTimeout(hoverTimer)};hovered = true"
-        data-on-mouseleave="hoverTimer = setTimeout(() => {hovered = false}, 500)"
-        data-on-touchstart:prevent="hovered = true">
-        <div class="navbar">
-          <div class="flex flex-1">
-            <a class="btn btn-ghost text-xl ps-1">
-              <svg class="w-10 h-10 scale-[0.8]">
-                <use href="_assets/images/emblem.svg"></use>
-              </svg>
-              <template data-if="!collapsed || hovered || isMobile">
-                <span>Nexus-UX</span>
-              </template>
-            </a>
-          </div>
-
+  <div class="fixed inset-0 z-40 bg-black/50 transition-opacity duration-200" data-show="sidebarOpen" data-on-click="sidebarOpen = false"></div>
+  <aside class="dashboard-sidebar z-50 flex flex-col h-dvh bg-base-100/90 backdrop-blur-md transition-[width] duration-300 overflow-x-hidden"
+    data-class="{ 'open fixed inset-y-0 start-0 w-80 shadow-2xl': sidebarOpen, 'hovered fixed inset-y-0 start-0 w-80 shadow-2xl': hovered && !sidebarOpen, 'w-80': !collapsed, 'w-0 md:w-20': collapsed && !hovered && !sidebarOpen }"
+    data-on-mouseenter="if (collapsed && !sidebarOpen) hovered = true"
+    data-on-mouseleave="hovered = false">
+    <div class="flex flex-col h-full w-full">
+      <div class="navbar flex justify-between pe-4">
+        <div class="flex flex-1 items-center">
+          <a class="btn btn-ghost text-xl ps-1">
+            <svg class="w-10 h-10 scale-[0.8] emblem" data-class="{ 'hidden': !collapsed && !hovered && !sidebarOpen }">
+              <use href="_assets/images/emblem.svg"></use>
+            </svg>
+            <span class="logo font-bold" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen, 'block': !collapsed || hovered || sidebarOpen }">Nexus-UX</span>
+          </a>
         </div>
+        <button class="btn btn-ghost btn-circle close" data-class="{ 'hidden': !sidebarOpen, 'block': sidebarOpen }" data-on-click="sidebarOpen = false" aria-label="close sidebar">
+          <iconify-icon icon="material-symbols-light:close" style="font-size: 24px"></iconify-icon>
+        </button>
+      </div>
 
-
-        <ul class="menu w-full grow" data-show="activeSidebarTab === 1" data-drag-container="sidebarItems"
-          data-drag-direction="vertical" data-drag-swap-threshold="0.55">
-          <template data-for="item in sidebarItems" data-key="item.href">
-            <li class="transition-transform duration-300 hover:scale-102" data-drag>
-              <a data-bind-href="item.href" data-bind-data-tab-title="item.tabTitle"
-                data-bind-data-tab-icon="item.tabIcon">
-                <iconify-icon data-bind-icon="item.icon" style="font-size: 24px"></iconify-icon>
-                <span data-class="{ 'hidden': collapsed && !hovered && !isMobile }" data-bind="item.title"></span>
-              </a>
-            </li>
-          </template>
-        </ul>
+      <ul class="menu w-full grow" data-show="activeSidebarTab === 1" data-drag-container="sidebarItems"
+        data-drag-direction="vertical" data-drag-swap-threshold="0.55">
+        <template data-for="item in sidebarItems" data-key="item.href">
+          <li class="transition-transform duration-300 hover:scale-102" data-drag>
+            <a data-bind-href="item.href" data-bind-data-tab-title="item.tabTitle"
+              data-bind-data-tab-icon="item.tabIcon">
+              <iconify-icon data-bind-icon="item.icon" style="font-size: 24px"></iconify-icon>
+              <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
+            </a>
+          </li>
+        </template>
+      </ul>
 
         <!-- ================= Panel Preferences (tab 3) ================= -->
         <div class="grow w-full overflow-x-hidden overflow-y-auto"
