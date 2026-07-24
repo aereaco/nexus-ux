@@ -381,7 +381,9 @@ export async function fetchStyleLayerPrimitives(): Promise<{
     `.draggable-selected{box-shadow:inset 0 0 0 2px var(--color-accent,var(--color-secondary,#ec4899))}` +
     `.draggable-swap-highlight{background-color:color-mix(in srgb,var(--color-warning,#eab308) 20%,transparent);box-shadow:inset 0 0 0 2px var(--color-warning,#eab308)}` +
     `.drop-target-before{background:linear-gradient(to bottom,color-mix(in srgb,var(--color-primary,#3b82f6) 30%,transparent) 0%,transparent 20%);box-shadow:inset 0 2px 0 0 var(--color-primary,#3b82f6)}` +
-    `.drop-target-after{background:linear-gradient(to top,color-mix(in srgb,var(--color-primary,#3b82f6) 30%,transparent) 0%,transparent 20%);box-shadow:inset 0 -2px 0 0 var(--color-pri  // ── PACKED_KEYFRAMES — Framework animation keyframes ──
+    `.drop-target-after{background:linear-gradient(to top,color-mix(in srgb,var(--color-primary,#3b82f6) 30%,transparent) 0%,transparent 20%);box-shadow:inset 0 -2px 0 0 var(--color-primary,#3b82f6)}`;
+
+  // ── PACKED_KEYFRAMES — Framework animation keyframes ──
   const keyframesCss =
     `@keyframes spin{to{transform:rotate(360deg)}}` +
     `@keyframes ping{75%,100%{transform:scale(2);opacity:0}}` +
