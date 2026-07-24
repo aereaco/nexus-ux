@@ -14,15 +14,17 @@ const rafModule: AttributeModule = {
     let frame: number;
     let lastTime = performance.now();
 
+    // ZCZS: Pre-allocate static extras object to eliminate GC pressure in hot animation frame loop
+    const extras = { $time: 0, $delta: 0 };
+
     const loop = (time: number) => {
       const delta = time - lastTime;
       lastTime = time;
+      extras.$time = time;
+      extras.$delta = delta;
 
       try {
-        runtime.evaluate(el, expression, {
-          $time: time,
-          $delta: delta
-        });
+        runtime.evaluate(el, expression, extras);
       } catch (e) {
         reportError(new Error(`RAF error: ${e}`), el);
         return; // Stop on error?
