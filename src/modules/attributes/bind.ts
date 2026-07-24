@@ -1,3 +1,32 @@
+/**
+ * Nexus-UX Bind Directive Module
+ *
+ * Handles `data-bind` for two-way and one-way property binding between
+ * DOM elements and reactive state. Supports auto-detection, sub-directives,
+ * and mass property assignment.
+ *
+ * Binding Modes:
+ *   - Auto-detect: `data-bind="expr"` binds to element value/textContent
+ *   - Sub-directive: `data-bind-attr="expr"` binds to specific attribute
+ *   - Mass assign: `data-bind="obj"` assigns object properties to element
+ *
+ * ZCZS Guarantees:
+ *   - Zero-copy: Element properties are updated by reference.
+ *   - Zero-serialization: Reactive values flow directly to DOM; no cloning.
+ *
+ * Coordination:
+ *   - attributeParser.ts extracts directive/argument/modifiers
+ *   - evaluator.ts evaluates bound expressions
+ *   - reactivity.ts provides elementBoundEffect for reactive updates
+ *   - reconciler.ts provides deepEqual for change detection
+ *
+ * Nexus-UX Innovations Preserved:
+ *   - Auto-detect mode absorbs Alpine's data-model behavior
+ *   - Mass property assignment from object expressions
+ *   - Lazy binding via :lazy modifier for input/select/textarea
+ *   - Reactive effect cleanup on element removal
+ */
+
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { initError } from '../../engine/debug.ts';
@@ -74,7 +103,7 @@ const bindModule: AttributeModule = {
         cleanupFns.push(cleanup);
 
         // 2. Event Listener: DOM → State
-        const isLazy = el.hasAttribute('data-bind:lazy') || el.hasAttribute('data-bind.lazy');
+        const isLazy = el.hasAttribute('data-bind:lazy');
         const eventName = isLazy ? 'change' : (
           el instanceof HTMLSelectElement || (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio'))
           ? 'change' : 'input'
