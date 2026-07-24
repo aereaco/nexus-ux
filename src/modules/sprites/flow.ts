@@ -1,3 +1,32 @@
+/**
+ * Nexus-UX Flow Sprite `$flow`
+ *
+ * High-performance coordinate math and graph orchestration for node-link
+ * diagrams. Ported faithfully from xyflow (React/Svelte Flow) so edges use
+ * the same side-aware, curvature-based bezier geometry that gives the
+ * polished, directional look — while staying declarative and reactive.
+ *
+ * Capabilities:
+ *   - Bezier path generation with handle side awareness
+ *   - Viewport transform (pan/zoom) math
+ *   - Node positioning and edge routing
+ *   - Reactive graph state management
+ *
+ * ZCZS Guarantees:
+ *   - Zero-copy: Geometry calculations operate on plain objects.
+ *   - Zero-serialization: No intermediate serialization of graph state.
+ *
+ * Coordination:
+ *   - ModuleCoordinator registers via registerSpriteModule
+ *   - drag.ts integrates flow for drag-drop node positioning
+ *   - svg.ts integrates flow for SVG edge rendering
+ *
+ * Nexus-UX Innovation Preserved:
+ *   - Declarative graph state management
+ *   - Reactive node/edge binding
+ *   - xyflow-compatible bezier geometry
+ */
+
 import { SpriteModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { reactive } from '../../engine/reactivity.ts';
@@ -115,7 +144,7 @@ export const flowModule: SpriteModule = {
       // Exclude data-for template clones (hidden, not real geometry).
       const real = (sel: string) =>
         Array.from(node.querySelectorAll<HTMLElement>(sel))
-          .find(el => !el.hasAttribute('data-ux-template') && !el.hasAttribute('data-for')) || null;
+          .find(el => !el.hasAttribute('data-template') && !el.hasAttribute('data-for')) || null;
       return real(`[data-nexus-flow-handle="${role}"]`) || real('[data-nexus-flow-handle]');
     };
 
