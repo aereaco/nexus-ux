@@ -642,7 +642,7 @@
               <!-- Dropdown Content Menu (porting theme-options.tmpl mechanics) -->
               <div
                 class="dropdown-content bg-base-200 text-base-content rounded-box absolute top-full start-0 mt-2 h-60 max-h-[calc(100vh-10rem)] w-full overflow-y-auto border border-base-content/10 shadow-2xl z-[200] p-2 space-y-2"
-                data-class="{ 'hidden': !openThemeOptions }">
+                data-class="{ 'hidden': openThemeOptions }">
                 <template data-for="t in themes" data-key="t">
                   <label class="outline-base-content text-start outline-offset-4 theme-controller cursor-pointer block"
                     data-class="{ '[&_svg]:visible': $theme.current === t }">
