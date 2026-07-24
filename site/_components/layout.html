@@ -530,12 +530,12 @@
     </div>
   </div>
 
-  <div class="fixed inset-0 z-40 bg-black/50 transition-opacity duration-200" data-show="sidebarOpen" data-on-click="sidebarOpen = false"></div>
+  <div class="fixed inset-0 z-40 bg-black/50 transition-opacity duration-200" data-show="sidebarOpen" data-on-click="sidebarOpen = false; activeSidebarTab = 1"></div>
   <aside class="dashboard-sidebar z-50 flex flex-col h-dvh bg-base-100/90 backdrop-blur-md transition-[width] duration-300 overflow-x-hidden"
     data-class="{ 'open fixed inset-y-0 start-0 w-80 shadow-2xl': sidebarOpen, 'hovered fixed inset-y-0 start-0 w-80 shadow-2xl': hovered && !sidebarOpen, 'md:w-80': !collapsed, 'w-0 md:w-20': collapsed && !hovered && !sidebarOpen }"
     data-on-mouseenter="if (collapsed && !sidebarOpen) hovered = true"
     data-on-mouseleave="hovered = false"
-    data-effect="if (!sidebarOpen && !hovered && (collapsed || isMobile)) { activeSidebarTab = 1; }">
+    data-effect="if (!sidebarOpen && !hovered) { activeSidebarTab = 1; }">
     <div class="flex flex-col h-full w-full">
       <div class="navbar flex justify-between pe-4">
         <div class="flex flex-1 items-center">
@@ -546,7 +546,7 @@
             <span class="logo font-bold" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen, 'block': !collapsed || hovered || sidebarOpen }">Nexus-UX</span>
           </a>
         </div>
-        <button class="btn btn-ghost btn-circle close" data-class="{ 'hidden': !sidebarOpen, 'block': sidebarOpen }" data-on-click="sidebarOpen = false" aria-label="close sidebar">
+        <button class="btn btn-ghost btn-circle close" data-class="{ 'hidden': !sidebarOpen, 'block': sidebarOpen }" data-on-click="sidebarOpen = false; activeSidebarTab = 1" aria-label="close sidebar">
           <iconify-icon icon="material-symbols-light:close" style="font-size: 24px"></iconify-icon>
         </button>
       </div>
@@ -556,7 +556,7 @@
         <template data-for="item in sidebarItems" data-key="item.href">
           <li class="transition-transform duration-300 hover:scale-102" data-drag>
             <a data-bind-href="item.href" data-bind-data-tab-title="item.tabTitle"
-              data-bind-data-tab-icon="item.tabIcon">
+              data-bind-data-tab-icon="item.tabIcon" data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }">
               <iconify-icon data-bind-icon="item.icon" style="font-size: 24px"></iconify-icon>
               <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
             </a>
