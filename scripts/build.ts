@@ -248,64 +248,10 @@ async function buildBundle(options: BuildOptions = {}) {
             manifestJsonData[jsonKey].push(nameWithoutExt);
           }
         }
-      } catch { /* ignore */ }
-
-      manifestLines.push(`export const ${exportName}: any[] = [${arr.map(a => `  ${a}`).join(',\n')}];`);
-    let counter = 0;
-    const manifestJsonData: Record<string, any> = {
-      attributes: [],
-      sprites: [],
-      scopes: [],
-      modifiers: [],
-      observers: [],
-      listeners: [],
-      // Include analysis data for app-specific builds
-      ...(appDir && analysisResult ? {
-        analysis: {
-          attributeDirectives: Array.from(analysisResult.attributeDirectives),
-          spriteNames: Array.from(analysisResult.spriteNames),
-          modifiers: Array.from(analysisResult.modifiers),
-          tailwindClassCount: analysisResult.tailwindClasses.size,
-          autoInjectedSprites: analysisResult.autoInjectedSprites,
-          mirrorProvidedSprites: analysisResult.mirrorProvidedSprites,
-        }
-      } : {})
-    };
-
-    // Load available module names
-    const availableAttrs = await listModuleNames(path.resolve(cwd, "src", "modules", "attributes"));
-    const availableSprites = await listModuleNames(path.resolve(cwd, "src", "modules", "sprites"));
-    const availableModifiers = await listModuleNames(path.resolve(cwd, "src", "modules", "modifiers"));
-
-    async function generateRegistry(
-      dir: string,
-      exportName: string,
-      jsonKey: string,
-      whitelist: string[] | undefined
-    ) {
-      const arr: string[] = [];
-      try {
-        const fullPath = path.resolve(cwd, "src", dir);
-        for await (const entry of Deno.readDir(fullPath)) {
-          if (entry.isFile && entry.name.endsWith(".ts") && entry.name !== "index.ts") {
-            const nameWithoutExt = entry.name.replace(".ts", "");
-            // Apply whitelist filter if provided
-            if (whitelist && !whitelist.includes(nameWithoutExt)) {
-              console.log(`  [Tree-shaken] ${dir}/${entry.name}`);
-              continue;
-            }
-            const modName = `mod_${counter++}`;
-            manifestLines.push(`import * as ${modName} from './${dir}/${entry.name}';`);
-            arr.push(`{ name: '${nameWithoutExt}', module: ${modName} }`);
-            manifestJsonData[jsonKey].push(nameWithoutExt);
-          }
-        }
-      } catch { /* ignore */ }
-
-      manifestLines.push(`export const ${exportName}: any[] = [${arr.map(a => `  ${a}`).join(',\n')}];`);
+      } catch { /* ignore       manifestLines.push(`export const ${exportName}: any[] = [${arr.map(a => `  ${a}`).join(',\n')}];`);
     }
 
-    // Determine whitelists for app-specific builds
+    // Determine whitelists for app-specific buildsc builds
     let attrWhitelist: string[] | undefined;
     let spriteWhitelist: string[] | undefined;
     let modWhitelist: string[] | undefined;
