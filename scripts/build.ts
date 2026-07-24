@@ -400,6 +400,33 @@ async function buildBundle(options: BuildOptions = {}) {
     console.log("Starting esbuild...");
     await esbuild.build(esbuildOptions);
     console.log(`Build complete: ${outFile}`);
+
+    if (minify) {
+      const minFile = outFile.replace(".js", ".min.js");
+      const brFile = `${minFile}.br`;
+
+      console.log("Minifying with SWC...");
+      const code = await Deno.readTextFile(outFile);
+      const result = await swcMinify(code, {
+        compress: { passes: 3, unused: true, dead_code: true, drop_console: true },
+        mangle: { toplevel: true, reserved: ["UX"] }
+      });
+      const minified = result.code || code;
+      await Deno.writeTextFile(minFile, minified);
+      console.log(`Minified: ${minFile} (${(minified.length / 1024).toFixed(2)} KB)`);
+
+      const compressed = compress(new TextEncoder().encode(minified), 11);
+      await Deno.writeFile(brFile, compressed);
+      console.log(`Brotli compressed: ${brFile} (${(compressed.length / 1024).toFixed(2)} KB)`);
+    }
+
+  } catch (e) {
+    console.error("Build failed:", e);
+    throw e;
+  } finally {
+    esbuild.stop();
+  }
+}
 /**
  * fetchStyleLayerPrimitives
  *
