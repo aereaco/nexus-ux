@@ -614,12 +614,11 @@
               </button>
             </div>
 
-            <!-- Theme Chooser Dropdown Trigger & Options List -->
-            <div title="Change Theme" class="dropdown w-full relative" data-signal="{ openThemeOptions: false }"
-              data-class="{ 'dropdown-open': openThemeOptions }">
-              <button type="button" tabindex="0"
+            <!-- Theme Chooser Dropdown Trigger & Options List (DaisyUI Method 3: CSS Focus) -->
+            <div title="Change Theme" class="dropdown w-full relative">
+              <div tabindex="0" role="button"
                 class="btn btn-block bg-base-100 justify-between font-sans px-4 py-3 h-auto min-h-12 border border-base-content/10 shadow-sm"
-                data-bind-disabled="$theme.isSystem" data-on-click="openThemeOptions = !openThemeOptions">
+                data-bind-disabled="$theme.isSystem">
                 <span class="flex items-center gap-2 grow text-start">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"
                     class="invisible h-3 w-3 shrink-0">
@@ -632,21 +631,18 @@
                   <span class="bg-secondary rounded-badge w-2 h-4"></span>
                   <span class="bg-accent rounded-badge w-2 h-4"></span>
                   <span class="bg-neutral rounded-badge w-2 h-4"></span>
-                  <iconify-icon icon="material-symbols-light:keyboard-arrow-down"
-                    class="text-xl ms-1 transition-transform duration-200"
-                    data-class="{ 'rotate-180': openThemeOptions }"></iconify-icon>
+                  <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-xl ms-1"></iconify-icon>
                 </span>
-              </button>
+              </div>
 
-
-              <!-- Dropdown Content Menu (porting theme-options.tmpl mechanics) -->
-              <div
+              <!-- Dropdown Content Menu (DaisyUI Method 3 with tabindex="-1") -->
+              <div tabindex="-1"
                 class="dropdown-content bg-base-200 text-base-content rounded-box absolute top-full start-0 mt-2 h-60 max-h-[calc(100vh-10rem)] w-full overflow-y-auto border border-base-content/10 shadow-2xl z-[200] p-2 space-y-2">
                 <template data-for="t in themes" data-key="t">
                   <label class="outline-base-content text-start outline-offset-4 theme-controller cursor-pointer block"
                     data-class="{ '[&_svg]:visible': $theme.current === t }">
                     <input type="radio" name="theme-radios" class="radio theme-controller hidden" data-bind-value="t"
-                      data-on-click="openThemeOptions = false" data-on-change="$setTheme(t)" />
+                      data-on-change="$setTheme(t); $evt.target.ownerDocument.activeElement.blur()" />
                     <span class="bg-base-100 rounded-btn text-base-content block w-full cursor-pointer font-sans"
                       data-bind-data-theme="t">
                       <span class="grid grid-cols-5 grid-rows-3">
