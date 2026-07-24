@@ -609,7 +609,7 @@
               <span class="text-sm font-medium"
                 data-bind="(!$theme.isSystem ? 'Set ' + ($theme.mode.charAt(0).toUpperCase() + $theme.mode.slice(1)) + ' Theme:' : 'System Theme Selected')"></span>
               <button type="button" class="btn btn-ghost btn-circle size-10" aria-label="Switch Theme Mode"
-                title="Switch Theme Mode" data-on-click="$switchTheme()">
+                title="Switch Theme Mode" data-on-click="$switchTheme(); setTimeout(() => { const activeEl = document.querySelector('[data-active-option=true]'); activeEl?.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 50);">
                 <iconify-icon data-bind-icon="$themeIcon" class="text-xl transition-all duration-300"></iconify-icon>
               </button>
             </div>
