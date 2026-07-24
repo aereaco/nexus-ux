@@ -638,29 +638,25 @@
           </div>
         </div>
 
-        <template data-if="collapsed && !hovered && !isMobile">
-          <div class="dock">
-            <iconify-icon icon="material-symbols-light:left-panel-open-outline" style="font-size: 24px"></iconify-icon>
-          </div>
-        </template>
-        <template data-if="!collapsed || hovered || isMobile">
-          <div class="dock">
-            <button class="tooltip tooltip-top" data-tip="Menu" data-class="{ 'dock-active': activeSidebarTab === 1 }"
-              data-on-click="activeSidebarTab = 1">
-              <iconify-icon icon="material-symbols-light:list" style="font-size: 24px"></iconify-icon>
-            </button>
+        <div class="dock" data-class="{ 'flex': (collapsed || isMobile) && !hovered && !sidebarOpen, 'hidden': sidebarOpen || hovered || (!collapsed && !isMobile) }">
+          <iconify-icon icon="material-symbols-light:left-panel-open-outline" style="font-size: 24px"></iconify-icon>
+        </div>
+        <div class="dock" data-class="{ 'flex': sidebarOpen || hovered || (!collapsed && !isMobile), 'hidden': (collapsed || isMobile) && !hovered && !sidebarOpen }">
+          <button class="tooltip tooltip-top" data-tip="Menu" data-class="{ 'dock-active': activeSidebarTab === 1 }"
+            data-on-click="activeSidebarTab = 1">
+            <iconify-icon icon="material-symbols-light:list" style="font-size: 24px"></iconify-icon>
+          </button>
 
-            <button class="tooltip tooltip-top" data-tip="Favorites"
-              data-class="{ 'dock-active': activeSidebarTab === 2 }" data-on-click="activeSidebarTab = 2">
-              <iconify-icon icon="material-symbols-light:star-outline" style="font-size: 24px"></iconify-icon>
-            </button>
+          <button class="tooltip tooltip-top" data-tip="Favorites"
+            data-class="{ 'dock-active': activeSidebarTab === 2 }" data-on-click="activeSidebarTab = 2">
+            <iconify-icon icon="material-symbols-light:star-outline" style="font-size: 24px"></iconify-icon>
+          </button>
 
-            <button class="tooltip tooltip-top" data-tip="Preferences"
-              data-class="{ 'dock-active': activeSidebarTab === 3 }" data-on-click="activeSidebarTab = 3">
-              <iconify-icon icon="material-symbols-light:tune" style="font-size: 24px"></iconify-icon>
-            </button>
-          </div>
-        </template>
+          <button class="tooltip tooltip-top" data-tip="Preferences"
+            data-class="{ 'dock-active': activeSidebarTab === 3 }" data-on-click="activeSidebarTab = 3">
+            <iconify-icon icon="material-symbols-light:tune" style="font-size: 24px"></iconify-icon>
+          </button>
+        </div>
       </div>
     </div>
   </div>
