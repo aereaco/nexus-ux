@@ -364,21 +364,25 @@
       data-on-mouseenter="hovered = true"
       data-on-mouseleave="hovered = false">
       <nav aria-label="Breadcrumb"
-        class="flex overflow-hidden rounded-ss-lg rounded-es-lg border border-base-100 bg-white text-sm text-gray-700 dark:bg-gray-800 dark:text-gray-200 transition-[max-width,width] duration-300 ease-in-out whitespace-nowrap"
-        data-class="{ 'max-w-md': hovered, 'max-w-12': !hovered }">
+        class="flex items-center overflow-hidden rounded-ss-lg rounded-es-lg border border-base-100 bg-white text-sm text-gray-700 dark:bg-gray-800 dark:text-gray-200 transition-[max-width,width] duration-300 ease-in-out whitespace-nowrap shadow-sm"
+        data-class="{ 'max-w-md w-auto shadow-2xl': hovered, 'max-w-12 w-12': !hovered }">
         
-        <div class="flex items-center h-10 px-3 shrink-0 bg-secondary text-secondary-content">
-          <iconify-icon icon="material-symbols-light:bookmark-outline" class="text-2xl"
-            data-class="{ 'hidden': hovered }"></iconify-icon>
-          <div class="breadcrumbs text-sm font-semibold max-w-xs overflow-x-auto px-4"
-            data-class="{ 'hidden': !hovered }">
+        <!-- Anchored Header / Icon (Always present, never destroyed) -->
+        <div class="flex items-center h-10 px-3 shrink-0 bg-secondary text-secondary-content cursor-pointer">
+          <iconify-icon icon="material-symbols-light:bookmark-outline" class="text-2xl"></iconify-icon>
+          <!-- Breadcrumbs: Fades & Expands on hover -->
+          <div class="breadcrumbs text-sm font-semibold max-w-xs overflow-x-auto transition-opacity duration-300"
+            data-class="{ 'opacity-100 block px-4': hovered, 'opacity-0 hidden px-0': !hovered }">
             <ul>
               <li data-for="crumb in breadcrumbs" data-key="crumb.href"><a data-bind-href="crumb.href"
                   data-bind="crumb.title"></a></li>
             </ul>
           </div>
         </div>
-        <div class="relative flex items-center h-10 shrink-0" data-class="{ 'hidden': !hovered }">
+
+        <!-- Toggle End Dock: Fades & Expands on hover -->
+        <div class="relative flex items-center h-10 shrink-0 transition-opacity duration-300"
+          data-class="{ 'opacity-100 flex': hovered, 'opacity-0 hidden': !hovered }">
           <span
             class="absolute inset-y-0 -start-px h-10 w-4 bg-secondary [clip-path:_polygon(0_0,_0%_100%,_100%_50%)] rtl:rotate-180">
           </span>
