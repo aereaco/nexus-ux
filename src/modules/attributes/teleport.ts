@@ -1,7 +1,7 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { ParsedAttribute } from '../../engine/attributeParser.ts';
-import { DATA_STACK_KEY } from '../../engine/consts.ts';
+import { DATA_STACK_KEY, IS_TEMPLATE_KEY } from '../../engine/consts.ts';
 import { DragReorderEngine, buildReorderContext } from './drag.ts';
 
 /**
