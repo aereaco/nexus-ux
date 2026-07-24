@@ -368,15 +368,17 @@
         <ol
           class="flex overflow-hidden rounded-ss-lg rounded-es-lg border border-base-100 bg-white text-sm text-gray-700  dark:bg-gray-800 dark:text-gray-200">
           <li class="flex items-center">
-            <div class="flex items-center h-10 px-3 transition-all duration-300 ease-in-out bg-secondary text-secondary-content">
+            <div class="flex items-center h-10 px-3 bg-secondary text-secondary-content">
               <iconify-icon icon="material-symbols-light:bookmark-outline" class="text-2xl transition-opacity duration-300"
                 data-class="{ 'opacity-0 hidden': hovered, 'opacity-100 block': !hovered }"></iconify-icon>
-              <div class="breadcrumbs text-sm font-semibold transition-all duration-300 ease-in-out overflow-hidden"
-                data-class="{ 'max-w-xs opacity-100 px-4': hovered, 'max-w-0 opacity-0 px-0': !hovered }">
-                <ul>
-                  <li data-for="crumb in breadcrumbs" data-key="crumb.href"><a data-bind-href="crumb.href"
-                      data-bind="crumb.title"></a></li>
-                </ul>
+              <div class="transition-all duration-300 ease-in-out overflow-hidden"
+                data-class="{ 'max-w-xs opacity-100': hovered, 'max-w-0 opacity-0': !hovered }">
+                <div class="breadcrumbs text-sm font-semibold max-w-xs overflow-x-auto px-4">
+                  <ul>
+                    <li data-for="crumb in breadcrumbs" data-key="crumb.href"><a data-bind-href="crumb.href"
+                        data-bind="crumb.title"></a></li>
+                  </ul>
+                </div>
               </div>
             </div>
           </li>
