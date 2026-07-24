@@ -482,6 +482,61 @@ export async function fetchStyleLayerPrimitives(): Promise<{
 
   console.log(`   ✓ PACKED_COMPONENTS (${result.components.length} chars)`);
   console.log(`   ✓ PACKED_KEYFRAMES  (${result.keyframes.length} chars)`);
+/**
+ * fetchStyleLayerPrimitives
+ *
+ * Fetches the official Tailwind v4 preflight and theme CSS from jsDelivr CDN
+ * (or a local monorepo checkout via --local-tailwind flag), strips all
+ * comments and whitespace, and returns the four packed string payloads.
+ *
+ * These strings are written into manifest.ts as generated exports so that
+ * stylesheet.ts holds zero raw CSS in source — only an import reference.
+ * The minifier can therefore fully mangle all surrounding JS execution logic.
+ *
+ * Usage: deno task build                                (CDN)
+ *        deno task build --local-tailwind=/path/to/tw  (local monorepo)
+ */
+export async function fetchStyleLayerPrimitives(): Promise<{
+  components: string;
+  keyframes: string;
+}> {
+  /** Compact raw CSS into a minifier-safe escaped single-line string. */
+  function pack(css: string): string {
+    return css
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\s+/g, " ")
+      .replace(/;\s*/g, ";")
+      .replace(/,\s*/g, ",")
+      .replace(/\{\s*/g, "{")
+      .replace(/\s*\}\s*/g, "}")
+      .replace(/"/g, '\\"')
+      .trim();
+  }
+
+  // ── PACKED_COMPONENTS — Nexus-UX sortable/drag-drop class overrides ──
+  const componentsCss =
+    `.draggable-chosen{background-color:var(--color-base-300,#d4d4d8);box-shadow:inset 0 0 0 2px var(--color-primary,#3b82f6)}` +
+    `.draggable-drag{opacity:1;background-color:var(--color-base-300,#d4d4d8);box-shadow:0 25px 50px -12px rgba(0,0,0,.25);transform:scale(1.05);cursor:grabbing;z-index:9999}` +
+    `.draggable-ghost{opacity:1;background-color:var(--color-base-300,#d4d4d8);border:2px solid var(--color-primary,#3b82f6);box-shadow:0 25px 50px -12px rgba(0,0,0,.25)}` +
+    `.draggable-selected{box-shadow:inset 0 0 0 2px var(--color-accent,var(--color-secondary,#ec4899))}` +
+    `.draggable-swap-highlight{background-color:color-mix(in srgb,var(--color-warning,#eab308) 20%,transparent);box-shadow:inset 0 0 0 2px var(--color-warning,#eab308)}` +
+    `.drop-target-before{background:linear-gradient(to bottom,color-mix(in srgb,var(--color-primary,#3b82f6) 30%,transparent) 0%,transparent 20%);box-shadow:inset 0 2px 0 0 var(--color-primary,#3b82f6)}` +
+    `.drop-target-after{background:linear-gradient(to top,color-mix(in srgb,var(--color-primary,#3b82f6) 30%,transparent) 0%,transparent 20%);box-shadow:inset 0 -2px 0 0 var(--color-primary,#3b82f6)}`;
+
+  // ── PACKED_KEYFRAMES — Framework animation keyframes ──
+  const keyframesCss =
+    `@keyframes spin{to{transform:rotate(360deg)}}` +
+    `@keyframes ping{75%,100%{transform:scale(2);opacity:0}}` +
+    `@keyframes pulse{50%{opacity:.5}}` +
+    `@keyframes bounce{0%,100%{transform:translateY(-25%);animation-timing-function:cubic-bezier(.8,0,1,1)}50%{transform:none;animation-timing-function:cubic-bezier(0,0,.2,1)}}`;
+
+  const result = {
+    components: pack(componentsCss),
+    keyframes: pack(keyframesCss),
+  };
+
+  console.log(`   ✓ PACKED_COMPONENTS (${result.components.length} chars)`);
+  console.log(`   ✓ PACKED_KEYFRAMES  (${result.keyframes.length} chars)`);
   console.log(`   ✅ Style layer constants ready — emitting into manifest.ts.`);
 
   return result;
@@ -489,3 +544,66 @@ export async function fetchStyleLayerPrimitives(): Promise<{
 
 // Deprecated: kept for backward-compat. Use fetchStyleLayerPrimitives() instead.
 export const compileStyleLayerPrimitives = fetchStyleLayerPrimitives;
+
+async function batchBuild(configs: BuildOptions[]) {
+  for (const config of configs) {
+    console.log(`\n=== Building: ${config.outputName || 'default'} ===`);
+    await buildBundle(config);
+  }
+}
+
+// ── Git commit + push helpers ──────────────────────────────────────────────
+
+function git(args: string[], cwd = Deno.cwd()): { ok: boolean; out: string; err: string } {
+  const r = new Deno.Command("git", { args, cwd }).outputSync();
+  const out = new TextDecoder().decode(r.stdout).trim();
+  const err = new TextDecoder().decode(r.stderr).trim();
+  return { ok: r.success, out, err };
+}
+
+async function gitPush(opts: { remote?: string; branch?: string }) {
+  const remote = opts.remote ?? "origin";
+  const branch = opts.branch ?? (git(["rev-parse", "--abbrev-ref", "HEAD"]).out || "main");
+
+  console.log(`🚀 Pushing ${branch} → ${remote}...`);
+  const push = git(["push", remote, branch]);
+  if (!push.ok) {
+    const msg = push.err || push.out;
+    if (/everything up[- ]to[- ]date/i.test(msg)) {
+      console.log("ℹ️  Already up to date with remote.");
+      return;
+    }
+    console.error("❌ Push failed:", msg);
+    Deno.exit(1);
+  }
+  console.log("✓ Pushed to remote.");
+}
+
+// CLI
+const args = Deno.args;
+if (args.includes("--batch")) {
+  const configFile = args.find(a => a.startsWith("--config="))?.split("=")[1];
+  if (configFile) {
+    const configData = JSON.parse(await Deno.readTextFile(configFile)) as { configs?: BuildOptions[] };
+    await batchBuild(configData.configs || []);
+  } else {
+    console.error("Batch mode requires --config=file.json");
+    Deno.exit(1);
+  }
+} else {
+  const outputName = args.find(a => a.startsWith("--name="))?.split("=")[1];
+  const appDir = args.find(a => a.startsWith("--app="))?.split("=")[1];
+  const excludes = args.find(a => a.startsWith("--exclude="))?.split("=")[1]?.split(",") || [];
+  const gitRef = args.find(a => a.startsWith("--ref="))?.split("=")[1];
+  const minify = args.includes("--minify") || args.includes("--app");
+
+  await buildBundle({ outputName, appDir, excludeModules: excludes, gitRef, minify });
+
+  if (args.includes("--push")) {
+    const remote = args.find(a => a.startsWith("--remote="))?.split("=")[1];
+    const branch = args.find(a => a.startsWith("--branch="))?.split("=")[1];
+    await gitPush({ remote, branch });
+  }
+}
+
+export { buildBundle, batchBuild, gitPush };
