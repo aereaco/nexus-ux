@@ -91,7 +91,7 @@ export const teleportAttribute: AttributeModule = {
               if (child.hasAttribute('data-drag') &&
                   (child.getAttribute('draggable') === 'true') &&
                   getComputedStyle(child).display !== 'none' &&
-                  !child.hasAttribute('data-template') &&
+                  !(child as any)[IS_TEMPLATE_KEY] &&
                   child.closest('[data-teleport\\:drop]') === element) {
                 draggableChildren.push(child);
               }
