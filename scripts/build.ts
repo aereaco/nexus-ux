@@ -264,19 +264,6 @@ async function buildBundle(options: BuildOptions = {}) {
         .filter(s => !AUTO_INJECTED_SPRITES.includes(s) && !MIRROR_PROVIDED_SPRITES.includes(s) && availableSprites.includes(s));
       modWhitelist = (Array.from(analysisResult.modifiers) as string[]).filter(m => availableModifiers.includes(m));
     }
-
-    await generateRegistry("modules/attributes", "autoAttributes", "attributes", attrWhitelist);
-    await generateRegistry("modules/sprites", "autoSprites", "sprites", spriteWhitelist);
-    await generateRegistry("modules/scopes", "autoScopes", "scopes", undefined);
-    await generateRegistry("modules/modifiers", "autoModifiers", "modifiers", modWhitelist);
-    await generateRegistry("modules/listeners", "autoListeners", "listeners", undefined);
-
-    // Mutation observer
-    const mutationPath = path.resolve(cwd, "src", "engine", "mutation.ts");
-    try {
-      const stat = await Deno.stat(mutationPath);
-      if (stat.isFile && !excludeModules.includes("mutation")) {
-        manifestLines.push("import * as mod_mutation from './engine/mutation.ts';");
     let counter = 0;
     const manifestJsonData: Record<string, any> = {
       attributes: [],
