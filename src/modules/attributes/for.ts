@@ -1,3 +1,34 @@
+/**
+ * Nexus-UX For Directive Module
+ *
+ * Handles `data-for` for list rendering. Clones a template element for each
+ * item in an array, binds the item to the element's scope, and manages
+ * lifecycle cleanup when the array changes.
+ *
+ * Supported Syntax:
+ *   - `(item, index) in items` — tuple destructuring
+ *   - `item in items` — item only
+ *   - `item, i in items` — alternative tuple syntax
+ *
+ * ZCZS Guarantees:
+ *   - Zero-copy: Template nodes are cloned via cloneNode(true); original
+ *     template is never mutated.
+ *   - Zero-serialization: Scope objects are shared by reference across
+ *     cloned elements; no serialization.
+ *
+ * Coordination:
+ *   - scope.ts provides addScopeToNode for scoped element creation
+ *   - reconciler.ts provides nexusClassMap/nexusStyleMap for metadata
+ *   - reactivity.ts provides reactive wrappers for array tracking
+ *   - consts.ts provides CLEANUP_FUNCTIONS_KEY for lifecycle management
+ *
+ * Nexus-UX Innovations Preserved:
+ *   - Flow-aware cloning (SVG and HTML elements both supported)
+ *   - Nexus metadata preservation across clone boundaries
+ *   - Automatic cleanup on array mutation or element removal
+ *   - Ghost key support for typed item properties
+ */
+
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { initError } from '../../engine/debug.ts';
@@ -70,12 +101,12 @@ const forModule: AttributeModule = {
     if (!isTemplate) {
       el.style.display = 'none';
       // Mark as hidden template to avoid multiple processing if needed
-      el.setAttribute('data-ux-template', 'true');
+      el.setAttribute('data-template', 'true');
       // ZCZS: Do NOT strip attributes from the template blueprint.
       // The template is the shared memory source-of-truth — clones inherit
       // its full attribute surface via cloneNode(true). Index filters in
       // teleport.ts already exclude templates from drop-zone calculations
-      // via data-ux-template and display:none checks.
+      // via data-template and display:none checks.
     }
 
     const disposeNodes = (nodes: Node[]) => {
@@ -144,7 +175,7 @@ const forModule: AttributeModule = {
                 if (!isTemplate) {
                   n.style.display = '';
                   n.removeAttribute('data-for');
-                  n.removeAttribute('data-ux-template');
+                  n.removeAttribute('data-template');
                 }
                 runtime.processElement(n);
               }
