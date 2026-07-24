@@ -96,9 +96,8 @@ const ifModule: AttributeModule = {
 
     if (!isTemplate) {
       el.style.display = 'none';
-      // Prevent the coordinator/observer from descending into the blueprint and
-      // processing it as live content (same guard data-for uses).
-      el.setAttribute('data-template', 'true');
+      // Store template blueprint marker in JS memory on Symbol key (Alpine/Datastar pattern)
+      (el as any)[IS_TEMPLATE_KEY] = true;
     }
 
     let currentNodes: Node[] = [];
@@ -119,7 +118,7 @@ const ifModule: AttributeModule = {
       // normally and does not recursively re-register this directive.
       if (clone instanceof HTMLElement) {
         clone.removeAttribute('data-if');
-        clone.removeAttribute('data-template');
+        delete (clone as any)[IS_TEMPLATE_KEY];
         clone.style.removeProperty('display');
         currentNodes = [clone];
       } else {
