@@ -2,7 +2,7 @@ import { AttributeModule } from "../../engine/modules.ts";
 import { RuntimeContext } from "../../engine/composition.ts";
 import { flip } from "../sprites/animate.ts";
 import { getDataStack } from "../../engine/scope.ts";
-import { CLEANUP_FUNCTIONS_KEY, MARKER_KEY, DATA_STACK_KEY } from "../../engine/consts.ts";
+import { CLEANUP_FUNCTIONS_KEY, MARKER_KEY, DATA_STACK_KEY, IS_TEMPLATE_KEY } from "../../engine/consts.ts";
 
 // Helper to find scrollable parent container
 function getScrollParent(el: HTMLElement): HTMLElement {
@@ -254,7 +254,7 @@ export class Draggable {
     this.originalIndices.clear();
     let draggableIdx = 0;
     Array.from(this.el.children).forEach((child: any) => {
-      if (child.matches(this.options.draggable!) && child.getAttribute('draggable') !== 'false' && !child.hasAttribute('data-template')) {
+      if (child.matches(this.options.draggable!) && child.getAttribute('draggable') !== 'false' && !child[IS_TEMPLATE_KEY]) {
         child.draggableIndex = draggableIdx;
         this.originalIndices.set(child, draggableIdx);
         draggableIdx++;
