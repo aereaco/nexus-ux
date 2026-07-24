@@ -1,58 +1,80 @@
+/**
+ * Nexus-UX Native Theme Directive Module
+ *
+ * Handles `data-theme` for light/dark/system theme orchestration.
+ * Encapsulates mode state (0 = Light, 1 = Dark, 2 = System), DaisyUI theme mapping,
+ * matchMedia system preference detection, and localStorage persistence under the hood,
+ * while exposing clean, high-DX scope helpers ($theme, $themeIcon, $switchTheme, $setTheme).
+ *
+ * ZCZS Guarantees:
+ *   - Zero-copy: Theme state uses explicit runtime.ref primitive signals.
+ *   - Zero-serialization: DOM data-theme attribute is mutated directly.
+ */
+
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { addScopeToNode } from '../../engine/scope.ts';
 import { initError } from '../../engine/debug.ts';
 
-/**
- * data-ux-theme="{ default: 'auto', auto: {}, light: {}, dark: {} }"
- * Orchestrates light/dark/auto states, abstract media query listeners, and mapping UI themes.
- */
+const ALL_DAISYUI_THEMES = [
+  'light', 'dark', 'cupcake', 'bumblebee', 'emerald', 'corporate', 'synthwave', 'retro',
+  'cyberpunk', 'valentine', 'halloween', 'garden', 'forest', 'aqua', 'lofi', 'pastel',
+  'fantasy', 'wireframe', 'black', 'luxury', 'dracula', 'cmyk', 'autumn', 'business',
+  'acid', 'lemonade', 'night', 'coffee', 'winter', 'dim', 'nord', 'sunset'
+];
+
 const themeModule: AttributeModule = {
-  name: 'ux-theme',
-  attribute: 'ux-theme',
+  name: 'theme',
+  attribute: 'theme',
   metadata: {
     before: ['signal', 'switcher', 'class', 'style', 'attr', 'on', 'text', 'html']
   },
   handle: (el: HTMLElement, expression: string, runtime: RuntimeContext): (() => void) | void => {
-    let rawConfig: any;
-    try {
-      rawConfig = runtime.evaluate(el, expression);
-    } catch (e) {
-      console.error(`Nexus Theme: Failed to evaluate data-ux-theme expression`, e);
-      return;
+    let rawConfig: any = {};
+    if (expression && expression.trim()) {
+      try {
+        rawConfig = runtime.evaluate(el, expression);
+      } catch (_) {
+        if (expression.startsWith('{')) {
+           try { rawConfig = (new Function('return (' + expression + ')'))(); } catch (_) {}
+        } else {
+           rawConfig = { default: expression.trim() };
+        }
+      }
     }
 
     if (!rawConfig || typeof rawConfig !== 'object') {
-       rawConfig = { default: 'auto', auto: {}, light: {}, dark: {} };
+       rawConfig = { default: 'auto' };
     }
 
-    let initialMode = rawConfig.default || 'auto';
-    let stored: string | null = null;
-    if (el === document.documentElement && typeof localStorage !== 'undefined') {
+    let initialModeState = 2; // 0 = Light, 1 = Dark, 2 = System ('auto')
+    if (rawConfig.default === 'light' || rawConfig.default === 0) initialModeState = 0;
+    else if (rawConfig.default === 'dark' || rawConfig.default === 1) initialModeState = 1;
+
+    let savedLight = rawConfig.light?.theme || 'light';
+    let savedDark = rawConfig.dark?.theme || 'dark';
+
+    if (typeof localStorage !== 'undefined') {
         try {
-            stored = localStorage.getItem('ux_themeMode');
+            const savedState = localStorage.getItem('ux_theme_state');
+            if (savedState !== null) initialModeState = Number(savedState);
+
+            const l = localStorage.getItem('ux_theme_light');
+            if (l) savedLight = l;
+
+            const d = localStorage.getItem('ux_theme_dark');
+            if (d) savedDark = d;
         } catch (_) {}
-        // Only accept the stored mode if it actually exists in the provided config
-        if (stored && rawConfig.modes && rawConfig.modes[stored]) {
-            initialMode = stored;
-        }
     }
 
-    if (!rawConfig.modes || typeof rawConfig.modes !== 'object') {
-       rawConfig.modes = { auto: {}, light: {}, dark: {} };
-    }
-
-    const modes = Object.keys(rawConfig.modes);
-
-    const themeState = runtime.reactive({
-        mode: initialMode,
-        config: rawConfig.modes,
-        modes: modes
-    });
+    // Explicit primitive reactive signals to guarantee real-time computed invalidation
+    const modeState = runtime.ref(initialModeState);
+    const lightSelected = runtime.ref(savedLight);
+    const darkSelected = runtime.ref(savedDark);
+    const systemDark = runtime.ref(false);
 
     let mq: MediaQueryList | null = null;
     let listener: ((e: MediaQueryListEvent) => void) | null = null;
-    const systemDark = runtime.ref(false);
 
     if (typeof window !== 'undefined' && window.matchMedia) {
         mq = window.matchMedia('(prefers-color-scheme: dark)');
@@ -63,67 +85,81 @@ const themeModule: AttributeModule = {
         mq.addEventListener('change', listener);
     }
 
-    const activeMode = runtime.computed(() => {
-        let m = themeState.mode as string;
-        if (m === 'auto') {
-            m = systemDark.value ? 'dark' : 'light';
+    const currentTheme = runtime.computed(() => {
+        const s = modeState.value;
+        if (s === 2) {
+            return systemDark.value ? darkSelected.value : lightSelected.value;
         }
-        return m;
+        return s === 1 ? darkSelected.value : lightSelected.value;
     });
 
-    const activeUiTheme = runtime.computed(() => {
-        const m = activeMode.value;
-        const modeConfig = (themeState.config as any)[m];
-        return modeConfig?.theme || m;
+    const activeModeName = runtime.computed(() => {
+        const s = modeState.value;
+        if (s === 0) return 'light';
+        if (s === 1) return 'dark';
+        return 'system';
     });
 
     const themeIcon = runtime.computed(() => {
-        return (themeState.config as any)[themeState.mode as string]?.icon || '';
+        const s = modeState.value;
+        if (s === 0) return 'material-symbols-light:light-mode-outline';
+        if (s === 1) return 'material-symbols-light:dark-mode-outline';
+        return 'material-symbols-light:light-mode-auto-outline';
     });
 
+    const themeTypesComputed = runtime.computed(() => [
+        { type: 'light', title: 'Light', selected: lightSelected.value },
+        { type: 'dark', title: 'Dark', selected: darkSelected.value },
+        { type: 'system', title: 'System', selected: 'system' }
+    ]);
+
     const helpers = {
-        $theme: themeState,
+        $theme: {
+            get state() { return modeState.value; },
+            set state(v: number) { modeState.value = v; },
+            get current() { return currentTheme.value; },
+            get mode() { return activeModeName.value; },
+            get isSystem() { return modeState.value === 2; },
+            get themes() { return ALL_DAISYUI_THEMES; },
+            get types() { return themeTypesComputed.value; }
+        },
+        get $activeTheme() { return currentTheme.value; },
+        get $activeMode() { return activeModeName.value; },
+        get $themeIcon() { return themeIcon.value; },
         $switchTheme: () => {
-            const currentIdx = themeState.modes.indexOf(themeState.mode as string);
-            let nextIdx = currentIdx + 1;
-            if (nextIdx >= themeState.modes.length) nextIdx = 0;
-            const newMode = themeState.modes[nextIdx] || 'auto';
-            themeState.mode = newMode;
-            if (el === document.documentElement && typeof localStorage !== 'undefined') {
-               try {
-                   localStorage.setItem('ux_themeMode', newMode);
-               } catch (_) {}
+            modeState.value = (modeState.value + 1) % 3;
+            if (typeof localStorage !== 'undefined') {
+               try { localStorage.setItem('ux_theme_state', String(modeState.value)); } catch (_) {}
             }
         },
-        $setTheme: (m: string) => {
-            if (themeState.modes.includes(m)) {
-                themeState.mode = m;
-                if (el === document.documentElement && typeof localStorage !== 'undefined') {
-                   try {
-                       localStorage.setItem('ux_themeMode', m);
-                   } catch (_) {}
+        $setTheme: (t: string) => {
+            const isDark = modeState.value === 1 || (modeState.value === 2 && systemDark.value);
+            if (isDark) {
+                darkSelected.value = t;
+                if (typeof localStorage !== 'undefined') {
+                   try { localStorage.setItem('ux_theme_dark', t); } catch (_) {}
+                }
+            } else {
+                lightSelected.value = t;
+                if (typeof localStorage !== 'undefined') {
+                   try { localStorage.setItem('ux_theme_light', t); } catch (_) {}
                 }
             }
-        },
-        get $activeTheme() { return activeUiTheme.value; },
-        get $activeMode() { return activeMode.value; },
-        get $themeIcon() { return themeIcon.value; }
+        }
     };
 
     addScopeToNode(el, helpers);
 
     try {
         const [_runner, cleanupEffect] = runtime.elementBoundEffect(el, () => {
-            const themeToApply = activeUiTheme.value;
-            const modeValue = activeMode.value;
-            
-            if (themeToApply && themeToApply !== 'auto') {
+            const themeToApply = currentTheme.value;
+            const isDark = activeModeName.value === 'dark' || (activeModeName.value === 'system' && systemDark.value);
+
+            if (themeToApply) {
                 el.setAttribute('data-theme', themeToApply);
-            } else {
-                el.removeAttribute('data-theme');
             }
-            
-            if (modeValue === 'dark') {
+
+            if (isDark) {
                 el.classList.add('dark');
                 el.classList.remove('light');
             } else {
@@ -137,7 +173,7 @@ const themeModule: AttributeModule = {
             cleanupEffect();
         };
     } catch (e) {
-        initError('ux-theme', `Failed to bind theme: ${e instanceof Error ? e.message : String(e)}`, el, expression);
+        initError('theme', `Failed to bind theme: ${e instanceof Error ? e.message : String(e)}`, el, expression);
     }
   }
 };
