@@ -145,8 +145,8 @@ export const flowModule: SpriteModule = {
       // Exclude data-for template clones (hidden, not real geometry).
       const real = (sel: string) =>
         Array.from(node.querySelectorAll<HTMLElement>(sel))
-          .find(el => !el.hasAttribute('data-template') && !el.hasAttribute('data-for')) || null;
-      return real(`[data-nexus-flow-handle="${role}"]`) || real('[data-nexus-flow-handle]');
+          .find(el => !(el as any)[IS_TEMPLATE_KEY] && !el.hasAttribute('data-for')) || null;
+      return real(`[data-flow-handle="${role}"]`) || real('[data-flow-handle]');
     };
 
     const $flow = {
