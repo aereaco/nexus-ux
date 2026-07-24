@@ -106,14 +106,19 @@ legacy frameworks by utilizing direct token-to-function mapping.
 
 ### 1.1. Symbol Reference (The Token Set)
 
-| Symbol | Designation          | Technical Role                                                                             | Practical Example                                                 |
-| :----- | :------------------- | :----------------------------------------------------------------------------------------- | :---------------------------------------------------------------- |
-| `.`    | **Native Access**    | **Reactive Property Traversal**. Standard property access through the reactive proxy for JS/DOM access. | `<div data-bind="user.name"></div>`                               |
-| `#`    | **Global Signal**    | **Reactive Source**. Accesses user-defined Global Signals managed by the Binary Heap.      | `<div data-bind="#auth.user"></div>`                              |
-| `_`    | **Env Mirror**       | **API Snapshot**. Read-only access to reactive wrappers of Browser/OS APIs.                | `<div data-bind="_window.innerWidth"></div>`                      |
-| `:`    | **Modifier**         | **Pipeline Anchor**. Defines interceptors, wrappers, and pipeways for logical execution.   | `<button data-on-click:once="save()"></button>`                   |
-| `$`    | **Logic / Selector** | **Sprite / Command**. Framework-level tools (tools) and the Unified Selector engine.       | `<button data-on-click="$(^form).save()"></button>`               |
-| `@`    | **Scope Rule**       | **Boundary Rule**. Site-aware logic based on environment, OS, or security state.           | `<div data-bind="@media(min-width: 1024px) { 'Desktop' }"></div>` |
+| Symbol | Designation | Technical Role | Practical Example |
+| :--- | :--- | :--- | :--- |
+| **`-`** | **Intent / Argument** | **Directive Delimiter**. Separates directive name from its intent/argument (what it acts on). | `<div data-ignore-ux></div>`, `<div data-route-layout></div>` |
+| **`:`** | **Modifier** | **Pipeline Anchor**. Defines interceptors, wrappers, and execution behavior. | `<button data-on-click:once="save()"></button>` |
+| **`.`** | **Native Access** | **Reactive Property Traversal**. Standard property access through reactive proxy (*never* an attribute delimiter). | `<div data-bind="user.name"></div>` |
+| **`#`** | **Global Signal** | **Reactive Source**. Accesses user-defined Global Signals managed by the Shared Memory Heap. | `<div data-bind="#auth.user"></div>` |
+| **`_`** | **Env Mirror** | **API Snapshot**. Accesses reactive wrappers of Browser/OS native APIs. | `<div data-bind="_window.innerWidth"></div>` |
+| **`$`** | **Logic / Selector** | **Sprite / Command**. Framework tools and the Unified Selector engine for spatial queries. | `<button data-on-click="$(^form).save()"></button>` |
+| **`@`** | **Scope Rule** | **Boundary Rule**. Site-aware CSS-like scope boundaries, media, or container rules. | `<div data-bind="@media(min-width: 1024px) { 'Desktop' }"></div>` |
+| **`&`** | **Context Reference** | **Parent / Local Context**. References current execution context or parent scope. | `<div data-bind="&.parent.title"></div>` |
+| **`!`** | **Override / Force** | **Value Override**. Forces value or execution behavior, overriding defaults. | `<button data-bind="!disabled"></button>` |
+| **`::`** | **Pseudo Selector** | **DOM Pseudo Binding**. Target pseudo-elements or pseudo-classes. | `<div data-style="::before { content: '*' }"></div>` |
+| **`||`** | **Grid / Parallel** | **Parallel Execution**. Evaluates parallel or grid-based expressions. | `<div data-signal="|| expr1 || expr2"></div>` |
 
 ### 1.2. The Unified Reactive Selector $(path)
 
