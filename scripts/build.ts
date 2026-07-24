@@ -400,15 +400,6 @@ async function buildBundle(options: BuildOptions = {}) {
     console.log("Starting esbuild...");
     await esbuild.build(esbuildOptions);
     console.log(`Build complete: ${outFile}`);
-  const out = new TextDecoder().decode(r.stdout).trim();
-  const err = new TextDecoder().decode(r.stderr).trim();
-  return { ok: r.success, out, err };
-}
-
-async function gitPush(opts: { remote?: string; branch?: string }) {
-  const remote = opts.remote ?? "origin";
-  const branch = opts.branch ?? (git(["rev-parse", "--abbrev-ref", "HEAD"]).out || "main");
-
   // Only push commits that already exist locally (the dev server's
   // auto-commit does the committing). Pushing is a no-op if the branch
   // is already in sync with the remote.
