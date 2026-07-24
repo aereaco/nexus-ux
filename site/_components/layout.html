@@ -1,14 +1,15 @@
-<div class="drawer lg:drawer-open" data-signal="{
+<div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300 min-h-screen" data-signal="{
     collapsed: true,
     hovered: false,
-    isMobile: _window.innerWidth < 1024,
+    sidebarOpen: false,
+    isMobile: _window.innerWidth < 768,
     searchOpen: false,
     searchQuery: '',
     activeSidebarTab: 1,
     pageTabs: true,
     rtl: false,
     zoom: 1
-  }" data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: zoom + 'rem' }">
+  }" data-class="{ 'md:grid-cols-[20rem_1fr]': !collapsed, 'md:grid-cols-[5rem_1fr]': collapsed }" data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: zoom + 'rem' }">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content" data-router="{ mode: 'hybrid', pagesDir: '_pages', error: 'error.html' }"
     data-signal:global="{
@@ -62,13 +63,13 @@
     <!-- Drawer Header -->
     <nav class="navbar w-full bg-base-300">
       <div class="flex-1">
-        <label for="my-drawer-4" aria-label="open sidebar" class="btn btn-circle btn-ghost lg:hidden">
+        <button class="btn btn-circle btn-ghost md:hidden" data-on-click="sidebarOpen = !sidebarOpen" aria-label="open sidebar">
           <!-- Sidebar toggle icon -->
           <iconify-icon icon="material-symbols-light:menu" style="font-size: 24px"></iconify-icon>
-        </label>
+        </button>
         <div class="flex-none">
           <button data-on-click="collapsed = !collapsed" aria-label="toggle sidebar"
-            class="btn btn-circle btn-ghost hidden lg:block" data-class="{ 'scale-x-[-1]': !collapsed || hovered }">
+            class="btn btn-circle btn-ghost hidden md:flex" data-class="{ 'scale-x-[-1]': !collapsed || hovered }">
             <!-- Sidebar collapse icon -->
             <iconify-icon icon="material-symbols-light:double-arrow" style="font-size: 24px"></iconify-icon>
           </button>
