@@ -254,7 +254,7 @@ export class Draggable {
     this.originalIndices.clear();
     let draggableIdx = 0;
     Array.from(this.el.children).forEach((child: any) => {
-      if (child.matches(this.options.draggable!) && child.getAttribute('draggable') !== 'false' && !child.hasAttribute('data-ux-template')) {
+      if (child.matches(this.options.draggable!) && child.getAttribute('draggable') !== 'false' && !child.hasAttribute('data-template')) {
         child.draggableIndex = draggableIdx;
         this.originalIndices.set(child, draggableIdx);
         draggableIdx++;
@@ -537,7 +537,7 @@ export class Draggable {
           if (child === this.dragEl) break;
           if ((child as HTMLElement).classList.contains(this.options.selectedClass!)) continue;
           if (child.nodeName.toUpperCase() === 'TEMPLATE') continue;
-          if (child.hasAttribute('data-ux-template')) continue;
+          if (child.hasAttribute('data-template')) continue;
           if (child.getAttribute('draggable') === 'false') continue;
           if (child.matches(this.options.draggable!)) {
             finalIndex++;
