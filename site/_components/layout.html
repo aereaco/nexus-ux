@@ -359,11 +359,11 @@
                 { title: 'Long text 4', href: '/long-text-4' },
                 { title: 'Long text 5', href: '/long-text-5' }
               ],
-              hovered: false, lastTouchTime: 0
+              hovered: false
             }"
-      data-on-mouseenter="if (Date.now() - (lastTouchTime || 0) < 500) return; if (typeof hoverTimer !== 'undefined') {clearTimeout(hoverTimer)};hovered = true"
-      data-on-mouseleave="hoverTimer = setTimeout(() => {hovered = false}, 750)"
-      data-on-touchstart:prevent="lastTouchTime = Date.now(); if (typeof hoverTimer !== 'undefined') {clearTimeout(hoverTimer)};hoverTimer = setTimeout(() => {hovered = true}, 400)">
+      data-on-mouseenter="hovered = true"
+      data-on-mouseleave="hovered = false"
+      data-on-click:outside="hovered = false">
       <nav aria-label="Breadcrumb">
         <ol
           class="flex overflow-hidden rounded-ss-lg rounded-es-lg border border-base-100 bg-white text-sm text-gray-700  dark:bg-gray-800 dark:text-gray-200">
