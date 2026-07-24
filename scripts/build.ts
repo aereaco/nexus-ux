@@ -284,14 +284,97 @@ async function buildBundle(options: BuildOptions = {}) {
       }
     } catch {
       manifestLines.push("export const autoObservers: any[] = [];");
+    let counter = 0;
+    const manifestJsonData: Record<string, any> = {
+      attributes: [],
+      sprites: [],
+      scopes: [],
+      modifiers: [],
+      observers: [],
+      listeners: [],
+      // Include analysis data for app-specific builds
+      ...(appDir && analysisResult ? {
+        analysis: {
+          attributeDirectives: Array.from(analysisResult.attributeDirectives),
+          spriteNames: Array.from(analysisResult.spriteNames),
+          modifiers: Array.from(analysisResult.modifiers),
+          tailwindClassCount: analysisResult.tailwindClasses.size,
+          autoInjectedSprites: analysisResult.autoInjectedSprites,
+          mirrorProvidedSprites: analysisResult.mirrorProvidedSprites,
+        }
+      } : {})
+    };
+
+    // Load available module names
+    const availableAttrs = await listModuleNames(path.resolve(cwd, "src", "modules", "attributes"));
+    const availableSprites = await listModuleNames(path.resolve(cwd, "src", "modules", "sprites"));
+    const availableModifiers = await listModuleNames(path.resolve(cwd, "src", "modules", "modifiers"));
+
+    async function generateRegistry(
+      dir: string,
+      exportName: string,
+      jsonKey: string,
+      whitelist: string[] | undefined
+    ) {
+      const arr: string[] = [];
+      try {
+        const fullPath = path.resolve(cwd, "src", dir);
+        for await (const entry of Deno.readDir(fullPath)) {
+          if (entry.isFile && entry.name.endsWith(".ts") && entry.name !== "index.ts") {
+            const nameWithoutExt = entry.name.replace(".ts", "");
+            // Apply whitelist filter if provided
+            if (whitelist && !whitelist.includes(nameWithoutExt)) {
+              console.log(`  [Tree-shaken] ${dir}/${entry.name}`);
+              continue;
+            }
+            const modName = `mod_${counter++}`;
+            manifestLines.push(`import * as ${modName} from './${dir}/${entry.name}';`);
+            arr.push(`{ name: '${nameWithoutExt}', module: ${modName} }`);
+            manifestJsonData[jsonKey].push(nameWithoutExt);
+          }
+        }
+      } catch { /* ignore */ }
+
+      manifestLines.push(`export const ${exportName}: any[] = [${arr.map(a => `  ${a}`).join(',\n')}];`);
     }
 
-    // Only PACKED_COMPONENTS and PACKED_KEYFRAMES go into the bundle.
+    // Determine whitelists for app-specific builds
+    let attrWhitelist: string[] | undefined;
+    let spriteWhitelist: string[] | undefined;
+    let modWhitelist: string[] | undefined;
+
+    if (appDir && analysisResult) {
+      attrWhitelist = (Array.from(analysisResult.attributeDirectives) as string[]).filter(a => availableAttrs.includes(a));
+      spriteWhitelist = (Array.from(analysisResult.spriteNames) as string[])
+        .filter(s => !AUTO_INJECTED_SPRITES.includes(s) && !MIRROR_PROVIDED_SPRITES.includes(s) && availableSprites.includes(s));
+      modWhitelist = (Array.from(analysisResult.modifiers) as string[]).filter(m => availableModifiers.includes(m));
+    }
+
+    await generateRegistry("modules/attributes", "autoAttributes", "attributes", attrWhitelist);
+    await generateRegistry("modules/sprites", "autoSprites", "sprites", spriteWhitelist);
+    await generateRegistry("modules/scopes", "autoScopes", "scopes", undefined);
+    await generateRegistry("modules/modifiers", "autoModifiers", "modifiers", modWhitelist);
+    await generateRegistry("modules/listeners", "autoListeners", "listeners", undefined);
+
+    // Mutation observer
+    const mutationPath = path.resolve(cwd, "src", "engine", "mutation.ts");
+    try {
+      const stat = await Deno.stat(mutationPath);
+      if (stat.isFile && !excludeModules.includes("mutation")) {
+        manifestLines.push("import * as mod_mutation from './engine/mutation.ts';");
+        manifestLines.push("export const autoObservers: any[] = [{ name: 'mutation', module: mod_mutation }];");
+        manifestJsonData["observers"].push("mutation");
+      } else {
+        manifestLines.push("export const autoObservers: any[] = [];");
+      }
+    } catch {
+      manifestLines.push("export const autoObservers: any[] = [];");
+    }
+
     // Only PACKED_COMPONENTS and PACKED_KEYFRAMES go into the bundle.
     // Theme/preflight CSS is fetched at runtime from CDN.
     manifestLines.push(`export const PACKED_COMPONENTS = "${packedStyleLayers.components}";`);
     manifestLines.push(`export const PACKED_KEYFRAMES = "${packedStyleLayers.keyframes}";`);
-
 
     await Deno.writeTextFile(manifestPath, manifestLines.join("\n"));
     console.log("Generated manifest:", manifestPath);
@@ -299,16 +382,8 @@ async function buildBundle(options: BuildOptions = {}) {
     await Deno.writeTextFile(manifestJsonPath, JSON.stringify(manifestJsonData, null, 2));
     console.log("Generated JSON manifest:", manifestJsonPath);
 
-    const manifestContent = await Deno.readTextFile(manifestPath);
-    const indexContent = await Deno.readTextFile(path.resolve(cwd, "src", "index.ts"));
-    const indexWithoutManifestImport = indexContent.replace(
-      /import\s+\{\s*autoAttributes\s*,\s*autoSprites\s*,\s*autoModifiers\s*,\s*autoObservers\s*,\s*autoListeners\s*\}\s*from\s*['"]\.\/manifest\.ts['"];?\s*\n?/,
-      ""
-    );
-    const bundledEntry = manifestContent + "\n" + indexWithoutManifestImport;
-    const bundledEntryPath = path.resolve(cwd, "src", "index.bundle.ts");
-    await Deno.writeTextFile(bundledEntryPath, bundledEntry);
-    const entryPointUrl = new URL(bundledEntryPath).href;
+    const entryPointPath = path.resolve(cwd, "src", "index.ts");
+    const entryPointUrl = new URL(`file:///${entryPointPath.replace(/\\/g, "/")}`).href;
 
     const esbuildOptions: esbuild.BuildOptions = {
       plugins: [fixWindowsPathsPlugin(), ...denoPlugins({ configPath })],
@@ -323,36 +398,9 @@ async function buildBundle(options: BuildOptions = {}) {
     };
 
     console.log("Starting esbuild...");
-    try {
-      await esbuild.build(esbuildOptions);
-    } finally {
-      try { await Deno.remove(bundledEntryPath); } catch {}
-    }
+    await esbuild.build(esbuildOptions);
+
     console.log(`Build complete: ${outFile}`);
-
-    if (minify) {
-      const minFile = outFile.replace(".js", ".min.js");
-      const brFile = `${minFile}.br`;
-
-      console.log("Minifying with SWC...");
-      const code = await Deno.readTextFile(outFile);
-      const result = await swcMinify(code, {
-        compress: { passes: 3, unused: true, dead_code: true, drop_console: true },
-        mangle: { toplevel: true, reserved: ["UX"] }
-      });
-      const minified = result.code || code;
-      await Deno.writeTextFile(minFile, minified);
-      console.log(`Minified: ${minFile} (${(minified.length / 1024).toFixed(2)} KB)`);
-
-      const compressed = compress(new TextEncoder().encode(minified), 11);
-      await Deno.writeFile(brFile, compressed);
-      console.log(`Brotli compressed: ${brFile} (${(compressed.length / 1024).toFixed(2)} KB)`);
-    }
-
-  } catch (e) {
-    console.error("Build failed:", e);
-    throw e;
-  } finally {
     esbuild.stop();
   }
 }
