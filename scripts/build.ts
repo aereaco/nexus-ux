@@ -370,6 +370,7 @@ async function buildBundle(options: BuildOptions = {}) {
     } catch {
       manifestLines.push("export const autoObservers: any[] = [];");
     }
+    }
 
     // Only PACKED_COMPONENTS and PACKED_KEYFRAMES go into the bundle.
     // Theme/preflight CSS is fetched at runtime from CDN.
