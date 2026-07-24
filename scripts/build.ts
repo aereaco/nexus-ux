@@ -248,10 +248,12 @@ async function buildBundle(options: BuildOptions = {}) {
             manifestJsonData[jsonKey].push(nameWithoutExt);
           }
         }
-      } catch { /* ignore       manifestLines.push(`export const ${exportName}: any[] = [${arr.map(a => `  ${a}`).join(',\n')}];`);
+      } catch { /* ignore */ }
+
+      manifestLines.push(`export const ${exportName}: any[] = [${arr.map(a => `  ${a}`).join(',\n')}];`);
     }
 
-    // Determine whitelists for app-specific buildsc builds
+    // Determine whitelists for app-specific builds
     let attrWhitelist: string[] | undefined;
     let spriteWhitelist: string[] | undefined;
     let modWhitelist: string[] | undefined;
