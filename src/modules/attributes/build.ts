@@ -139,7 +139,7 @@ function buildStandaloneDocument(
     <script type="module" src="${nexusSrc}"><\/script>
 ${styles ? `    <style>\n${styles}\n    </style>` : ''}
 </head>
-<body data-ux-init>
+<body data-init>
 ${htmlContent}
 ${scripts ? `<script>\n${scripts}\n<\/script>` : ''}
 </body>

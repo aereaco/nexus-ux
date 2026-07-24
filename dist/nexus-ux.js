@@ -18,7 +18,7 @@ ${e?`    <style>
 ${e}
     </style>`:""}
 </head>
-<body data-ux-init>
+<body data-init>
 ${t}
 ${n?`<script>
 ${n}
