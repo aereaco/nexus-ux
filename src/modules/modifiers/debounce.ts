@@ -1,3 +1,28 @@
+/**
+ * Nexus-UX Debounce Modifier
+ *
+ * Delays handler execution until after a specified wait time has elapsed
+ * since the last invocation. Supports static and dynamic wait times.
+ *
+ * Argument Syntax:
+ *   - `:debounce` — uses DEFAULT_DEBOUNCE_TIME (250ms)
+ *   - `:debounce-500` — static 500ms delay
+ *   - `:debounce-#delay` — dynamic delay from signal/expression
+ *
+ * ZCZS Guarantees:
+ *   - Zero-copy: Timeout IDs are stored by reference; no cloning.
+ *   - Zero-serialization: Handler is wrapped in closure; no serialization.
+ *
+ * Coordination:
+ *   - on.ts applies this modifier during event listener construction
+ *   - consts.ts provides DEFAULT_DEBOUNCE_TIME
+ *   - ModuleCoordinator registers via registerModifierModule
+ *
+ * Nexus-UX Innovation Preserved:
+ *   - Dynamic wait time via expression evaluation
+ *   - Support for both event and non-event payloads
+ */
+
 import { ModifierModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { DEFAULT_DEBOUNCE_TIME } from '../../engine/consts.ts';

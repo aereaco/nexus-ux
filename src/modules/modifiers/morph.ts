@@ -1,3 +1,29 @@
+/**
+ * Nexus-UX Morph Modifier
+ *
+ * Pipeline modifier that automatically morphs the target element with the
+ * result of an expression evaluation. When the expression returns a string,
+ * it is treated as HTML and morphed into the target element.
+ *
+ * Argument Syntax:
+ *   - `:morph` — morph the bound element itself
+ *   - `:morph-selector` — morph the element matching the selector
+ *
+ * ZCZS Guarantees:
+ *   - Zero-copy: HTML string is passed directly to morphDOM; no parsing.
+ *   - Zero-serialization: Promise results are handled by reference.
+ *
+ * Coordination:
+ *   - reconciler.ts provides morphDOM for DOM updates
+ *   - sprites/selector.ts provides resolveSelector for target resolution
+ *   - ModuleCoordinator registers via registerModifierModule
+ *
+ * Nexus-UX Innovation Preserved:
+ *   - interceptPipeline for evaluation wrapping
+ *   - Promise-aware morphing for async expressions
+ *   - Selector-based target resolution
+ */
+
 import { ModifierModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { morphDOM } from '../../engine/reconciler.ts';

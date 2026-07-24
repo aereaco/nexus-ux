@@ -1,3 +1,30 @@
+/**
+ * Nexus-UX Keyboard Key Modifiers
+ *
+ * Factory and registry for keyboard-specific event modifiers. Each modifier
+ * gates the handler on a specific key or key combination.
+ *
+ * Supported Modifiers:
+ *   - enter, escape/esc, space, up, down, left, right, tab, delete
+ *   - ctrl, shift, alt (boolean key state modifiers)
+ *
+ * NEG Token Boundary:
+ *   These are behavior modifiers (`:`) not intent modifiers (`-`).
+ *   Used as: `data-on-keydown:enter:ctrl`
+ *
+ * ZCZS Guarantees:
+ *   - Zero-copy: KeyboardEvent is passed by reference; no cloning.
+ *   - Zero-serialization: Modifier state is a simple boolean check.
+ *
+ * Coordination:
+ *   - on.ts applies these modifiers during event listener construction
+ *   - ModuleCoordinator registers via registerModifierModule
+ *
+ * Nexus-UX Innovation Preserved:
+ *   - Declarative keyboard gating without manual keydown handling
+ *   - Composable key + modifier combinations
+ */
+
 import { ModifierModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 
