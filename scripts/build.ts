@@ -277,13 +277,6 @@ async function buildBundle(options: BuildOptions = {}) {
       const stat = await Deno.stat(mutationPath);
       if (stat.isFile && !excludeModules.includes("mutation")) {
         manifestLines.push("import * as mod_mutation from './engine/mutation.ts';");
-        manifestLines.push("export const autoObservers: any[] = [{ name: 'mutation', module: mod_mutation }];");
-        manifestJsonData["observers"].push("mutation");
-      } else {
-        manifestLines.push("export const autoObservers: any[] = [];");
-      }
-    } catch {
-      manifestLines.push("export const autoObservers: any[] = [];");
     let counter = 0;
     const manifestJsonData: Record<string, any> = {
       attributes: [],
@@ -369,7 +362,6 @@ async function buildBundle(options: BuildOptions = {}) {
       }
     } catch {
       manifestLines.push("export const autoObservers: any[] = [];");
-    }
     }
 
     // Only PACKED_COMPONENTS and PACKED_KEYFRAMES go into the bundle.
