@@ -19,9 +19,13 @@ export const maskModule: AttributeModule = {
     }
 
     let lastValue = el.value;
+    // Cache the mask template string at init time (Alpine x-mask pattern)
+    let template = (runtime.evaluate(el, value) as string) || value;
 
     const onInput = () => {
-      const template = runtime.evaluate(el, value) as string;
+      if (!template) {
+        template = (runtime.evaluate(el, value) as string) || value;
+      }
       if (!template) return;
 
       const cursor = el.selectionStart;
