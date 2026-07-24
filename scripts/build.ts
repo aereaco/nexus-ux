@@ -400,37 +400,6 @@ async function buildBundle(options: BuildOptions = {}) {
     console.log("Starting esbuild...");
     await esbuild.build(esbuildOptions);
     console.log(`Build complete: ${outFile}`);
-  if (configFile) {
-    const configData = JSON.parse(await Deno.readTextFile(configFile)) as { configs?: BuildOptions[] };
-    await batchBuild(configData.configs || []);
-  } else {
-    console.error("Batch mode requires --config=file.json");
-    Deno.exit(1);
-  }
-} else {
-  const outputName = args.find(a => a.startsWith("--name="))?.split("=")[1];
-  const appDir = args.find(a => a.startsWith("--app="))?.split("=")[1];
-  const excludes = args.find(a => a.startsWith("--exclude="))?.split("=")[1]?.split(",") || [];
-  const gitRef = args.find(a => a.startsWith("--ref="))?.split("=")[1];
-  const minify = args.includes("--minify") || args.includes("--app");
-
-  await buildBundle({ outputName, appDir, excludeModules: excludes, gitRef, minify });
-
-  // ── Push local commits to remote (the dev server auto-commits) ──
-  if (args.includes("--push")) {
-    const remote = args.find(a => a.startsWith("--remote="))?.split("=")[1];
-    const branch = args.find(a => a.startsWith("--branch="))?.split("=")[1];
-    await gitPush({ remote, branch });
-  }
-}
-
-export { buildBundle, batchBuild, gitPush };
-
-
-// ============================================================================
-// AOT STYLE LAYER PRIMITIVES — Preflight Fetch Pipeline
-// ============================================================================
-
 /**
  * fetchStyleLayerPrimitives
  *
