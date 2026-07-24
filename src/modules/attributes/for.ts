@@ -33,7 +33,7 @@ import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { initError } from '../../engine/debug.ts';
 import { addScopeToNode } from '../../engine/scope.ts';
-import { CLEANUP_FUNCTIONS_KEY } from '../../engine/consts.ts';
+import { CLEANUP_FUNCTIONS_KEY, IS_TEMPLATE_KEY } from '../../engine/consts.ts';
 import { nexusClassMap, nexusStyleMap } from '../../engine/reconciler.ts';
 
 // SVGs (paths, etc.) are SVGElement, not HTMLElement — both must be treated
@@ -100,13 +100,8 @@ const forModule: AttributeModule = {
  
     if (!isTemplate) {
       el.style.display = 'none';
-      // Mark as hidden template to avoid multiple processing if needed
-      el.setAttribute('data-template', 'true');
-      // ZCZS: Do NOT strip attributes from the template blueprint.
-      // The template is the shared memory source-of-truth — clones inherit
-      // its full attribute surface via cloneNode(true). Index filters in
-      // teleport.ts already exclude templates from drop-zone calculations
-      // via data-template and display:none checks.
+      // Mark as hidden template in JS memory via Symbol key (Alpine/Datastar pattern)
+      (el as any)[IS_TEMPLATE_KEY] = true;
     }
 
     const disposeNodes = (nodes: Node[]) => {
