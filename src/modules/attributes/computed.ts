@@ -1,3 +1,30 @@
+/**
+ * Nexus-UX Computed Directive Module
+ *
+ * Handles `data-computed` for reactive computed properties. Evaluates getter
+ * functions and publishes results as reactive signals. Supports ghost key
+ * pre-allocation for typed reactive properties.
+ *
+ * Usage Modes:
+ *   - `data-computed="{ prop: () => expr, ... }"` — object literal mode
+ *   - `data-computed-prop="expr"` — per-attribute computed properties
+ *
+ * ZCZS Guarantees:
+ *   - Zero-copy: Computed values are wrapped in refs by reference.
+ *   - Zero-serialization: Ghost keys pre-allocate typed heap slots.
+ *
+ * Coordination:
+ *   - scope.ts provides parseGhostKeys, createScopeProxy
+ *   - reactivity.ts provides unifiedRef, unifiedComputed
+ *   - debug.ts provides initError for failure reporting
+ *   - ModuleCoordinator registers via registerAttributeModule
+ *
+ * Nexus-UX Innovation Preserved:
+ *   - Ghost key parsing for typed reactive properties
+ *   - SignalHeap integration for zero-serialization computed values
+ *   - Global signal publishing for cross-element reactivity
+ */
+
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { addScopeToNode, parseGhostKeys, createScopeProxy } from '../../engine/scope.ts';
@@ -24,7 +51,7 @@ const computedModule: AttributeModule = {
     // Ownership is already acquired inside unifiedRef
     const scopeId = el.id || `computed_${Math.random().toString(36).slice(2)}`;
 
-    const isGlobal = el.hasAttribute('data-ux-init');
+    const isGlobal = el.hasAttribute('data-init');
 
     // Format 1: data-computed="{ prop: () => expr, ... }"
     if (el.hasAttribute('data-computed')) {
