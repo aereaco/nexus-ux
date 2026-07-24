@@ -188,6 +188,13 @@ const bindModule: AttributeModule = {
              if (el.getAttribute('draggable') !== newVal) {
                el.setAttribute('draggable', newVal);
              }
+           } else if (target === 'dir') {
+             if (el.getAttribute('dir') !== attrValue) {
+               el.setAttribute('dir', attrValue);
+             }
+             if (document.documentElement.getAttribute('dir') !== attrValue) {
+               document.documentElement.setAttribute('dir', attrValue);
+             }
            } else {
              if (result === false || result === null || result === undefined) {
                if (el.hasAttribute(target)) el.removeAttribute(target);
