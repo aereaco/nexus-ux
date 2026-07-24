@@ -170,7 +170,7 @@ const forModule: AttributeModule = {
                 if (!isTemplate) {
                   n.style.display = '';
                   n.removeAttribute('data-for');
-                  n.removeAttribute('data-template');
+                  delete (n as any)[IS_TEMPLATE_KEY];
                 }
                 runtime.processElement(n);
               }
