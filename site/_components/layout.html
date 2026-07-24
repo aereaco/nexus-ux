@@ -8,11 +8,10 @@
     pageTabs: true,
     rtl: false,
     zoom: 1
-  }"
-  data-bind-dir="rtl ? 'rtl' : 'ltr'"
-  data-bind-style="{ fontSize: zoom + 'rem' }">
+  }" data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: zoom + 'rem' }">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
-    <div class="drawer-content" data-router="{ mode: 'hybrid', pagesDir: '_pages', error: 'error.html' }"     data-signal:global="{
+  <div class="drawer-content" data-router="{ mode: 'hybrid', pagesDir: '_pages', error: 'error.html' }"
+    data-signal:global="{
 
         activeTabId: 'home',
         activeTab: null,
@@ -42,7 +41,8 @@
     <div data-route="/" data-route-name="home" data-component="_pages/home.html" data-route-shadow></div>
     <div data-route="/settings" data-route-name="settings" data-component="_pages/settings.html"></div>
     <div data-route="/profile" data-route-name="profile" data-component="_pages/profile.html"></div>
-    <div data-route="/_internal/admin-console" data-route-name="admin" data-component="_pages/_internal/admin-console.html" data-route-shadow></div>
+    <div data-route="/_internal/admin-console" data-route-name="admin"
+      data-component="_pages/_internal/admin-console.html" data-route-shadow></div>
     <div data-route="/error" data-route-name="error" data-component="_pages/error.html" data-route-shadow></div>
 
     <!-- Reactive sync: when the router resolves a route, update the active
@@ -63,131 +63,136 @@
     <nav class="navbar w-full bg-base-300">
       <div class="flex-1">
         <label for="my-drawer-4" aria-label="open sidebar" class="btn btn-circle btn-ghost lg:hidden">
-        <!-- Sidebar toggle icon -->
-        <iconify-icon icon="material-symbols-light:menu" style="font-size: 24px"></iconify-icon>
-      </label>
-      <div class="flex-none">
-        <button data-on-click="collapsed = !collapsed" aria-label="toggle sidebar" class="btn btn-circle btn-ghost hidden lg:block" data-class="{ 'scale-x-[-1]': !collapsed || hovered }">
-          <!-- Sidebar collapse icon -->
-          <iconify-icon icon="material-symbols-light:double-arrow" style="font-size: 24px"></iconify-icon>
-        </button>
-      </div>
-      
+          <!-- Sidebar toggle icon -->
+          <iconify-icon icon="material-symbols-light:menu" style="font-size: 24px"></iconify-icon>
+        </label>
+        <div class="flex-none">
+          <button data-on-click="collapsed = !collapsed" aria-label="toggle sidebar"
+            class="btn btn-circle btn-ghost hidden lg:block" data-class="{ 'scale-x-[-1]': !collapsed || hovered }">
+            <!-- Sidebar collapse icon -->
+            <iconify-icon icon="material-symbols-light:double-arrow" style="font-size: 24px"></iconify-icon>
+          </button>
+        </div>
+
       </div>
       <div class="navbar-center flex-1 flex justify-left">
-    <div class="megamenu max-md:megamenu-vertical megamenu-wide  w-full flex justify-center" id="my-megamenu-4" popover>
-      <span class="megamenu-active"></span>
-      <button popovertarget="d1">One</button>
-      <div id="d1" popover>
-        <div class="flex max-sm:flex-col items-start">
-          <ul class="menu w-full md:menu-horizontal">
-            <li>
-              <a>Enterprise</a>
-              <ul>
-                <li><a>CRM software</a></li>
-                <li><a>Marketing management</a></li>
-                <li><a>Security</a></li>
-                <li><a>Consulting</a></li>
-              </ul>
-            </li>
-            <li>
-              <a>Company</a>
-              <ul>
-                <li><a>About us</a></li>
-                <li><a>Contact us</a></li>
-                <li><a>Privacy policy</a></li>
-                <li><a>Press kit</a></li>
-              </ul>
-            </li>
-          </ul>
-          <img src="https://img.daisyui.com/images/stock/photo-1559181567-c3190ca9959b.webp" class="md:max-w-sm max-md:hidden" alt="Tailwind CSS megamenu">
-        </div>
-      </div>
-      <button popovertarget="d2">Two</button>
-      <div id="d2" popover>
-        <div class="flex max-sm:flex-col items-start">
-          <ul class="menu w-full md:menu-horizontal">
-            <li>
-              <a>Enterprise</a>
-              <ul>
-                <li><a>CRM software</a></li>
-                <li><a>Marketing management</a></li>
-                <li><a>Security</a></li>
-                <li><a>Consulting</a></li>
-                <li><a>Privacy policy</a></li>
-                <li><a>Press kit</a></li>
-              </ul>
-            </li>
-            <li>
-              <a>Products</a>
-              <ul>
-                <li><a>UI Kit</a></li>
-                <li><a>WordPress themes</a></li>
-                <li><a>WordPress plugins</a></li>
-                <li><a>Color picker app</a></li>
-                <li><a>About us</a></li>
-                <li><a>Contact us</a></li>
-              </ul>
-            </li>
-          </ul>
-          <img src="https://img.daisyui.com/images/stock/photo-1572635148818-ef6fd45eb394.webp" class="md:max-w-sm max-md:hidden" alt="Tailwind CSS megamenu component">
-        </div>
-      </div>
-      <button popovertarget="d3">Three</button>
-      <div id="d3" popover>
-        <div class="flex max-sm:flex-col items-start">
-          <ul class="menu w-full md:menu-horizontal">
-            <li>
-              <a>Solutions</a>
-              <ul>
-                <li><a>Design</a></li>
-                <li><a>Development</a></li>
-                <li><a>Hosting</a></li>
-                <li><a>Domain register</a></li>
-              </ul>
-            </li>
-            <li>
-              <a>Products</a>
-              <ul>
-                <li><a>UI Kit</a></li>
+        <div class="megamenu max-md:megamenu-vertical megamenu-wide  w-full flex justify-center" id="my-megamenu-4"
+          popover>
+          <span class="megamenu-active"></span>
+          <button popovertarget="d1">One</button>
+          <div id="d1" popover>
+            <div class="flex max-sm:flex-col items-start">
+              <ul class="menu w-full md:menu-horizontal">
                 <li>
-                  <a>Open source</a>
+                  <a>Enterprise</a>
                   <ul>
-                    <li><a>Auth management system</a></li>
-                    <li><a>VScode theme</a></li>
-                    <li><a>Color picker app</a></li>
+                    <li><a>CRM software</a></li>
+                    <li><a>Marketing management</a></li>
+                    <li><a>Security</a></li>
+                    <li><a>Consulting</a></li>
+                  </ul>
+                </li>
+                <li>
+                  <a>Company</a>
+                  <ul>
+                    <li><a>About us</a></li>
+                    <li><a>Contact us</a></li>
+                    <li><a>Privacy policy</a></li>
+                    <li><a>Press kit</a></li>
                   </ul>
                 </li>
               </ul>
-            </li>
-            <li>
-              <a>Company</a>
-              <ul>
-                <li><a>About us</a></li>
-                <li><a>Contact us</a></li>
-                <li><a>Privacy policy</a></li>
-                <li><a>Press kit</a></li>
+              <img src="https://img.daisyui.com/images/stock/photo-1559181567-c3190ca9959b.webp"
+                class="md:max-w-sm max-md:hidden" alt="Tailwind CSS megamenu">
+            </div>
+          </div>
+          <button popovertarget="d2">Two</button>
+          <div id="d2" popover>
+            <div class="flex max-sm:flex-col items-start">
+              <ul class="menu w-full md:menu-horizontal">
+                <li>
+                  <a>Enterprise</a>
+                  <ul>
+                    <li><a>CRM software</a></li>
+                    <li><a>Marketing management</a></li>
+                    <li><a>Security</a></li>
+                    <li><a>Consulting</a></li>
+                    <li><a>Privacy policy</a></li>
+                    <li><a>Press kit</a></li>
+                  </ul>
+                </li>
+                <li>
+                  <a>Products</a>
+                  <ul>
+                    <li><a>UI Kit</a></li>
+                    <li><a>WordPress themes</a></li>
+                    <li><a>WordPress plugins</a></li>
+                    <li><a>Color picker app</a></li>
+                    <li><a>About us</a></li>
+                    <li><a>Contact us</a></li>
+                  </ul>
+                </li>
               </ul>
-            </li>
-          </ul>
+              <img src="https://img.daisyui.com/images/stock/photo-1572635148818-ef6fd45eb394.webp"
+                class="md:max-w-sm max-md:hidden" alt="Tailwind CSS megamenu component">
+            </div>
+          </div>
+          <button popovertarget="d3">Three</button>
+          <div id="d3" popover>
+            <div class="flex max-sm:flex-col items-start">
+              <ul class="menu w-full md:menu-horizontal">
+                <li>
+                  <a>Solutions</a>
+                  <ul>
+                    <li><a>Design</a></li>
+                    <li><a>Development</a></li>
+                    <li><a>Hosting</a></li>
+                    <li><a>Domain register</a></li>
+                  </ul>
+                </li>
+                <li>
+                  <a>Products</a>
+                  <ul>
+                    <li><a>UI Kit</a></li>
+                    <li>
+                      <a>Open source</a>
+                      <ul>
+                        <li><a>Auth management system</a></li>
+                        <li><a>VScode theme</a></li>
+                        <li><a>Color picker app</a></li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+                <li>
+                  <a>Company</a>
+                  <ul>
+                    <li><a>About us</a></li>
+                    <li><a>Contact us</a></li>
+                    <li><a>Privacy policy</a></li>
+                    <li><a>Press kit</a></li>
+                  </ul>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
       <div class="flex-1 justify-end flex gap-2">
-        
+
         <!-- Search Button -->
-        <button class="btn btn-ghost btn-circle hover:scale-102" aria-label="Open search" title="Search" data-on-click="searchQuery = ''; searchOpen = true">
+        <button class="btn btn-ghost btn-circle hover:scale-102" aria-label="Open search" title="Search"
+          data-on-click="searchQuery = ''; searchOpen = true">
           <iconify-icon icon="material-symbols-light:search" style="font-size: 24px"></iconify-icon>
         </button>
 
         <!-- Theme Switcher -->
         <button
-            class="btn btn-ghost btn-circle shadow-lg bg-base-100 border border-base-300 hover:scale-110 active:scale-95 transition-all"
-            data-on-click="$switchTheme()">
-            <iconify-icon data-bind-icon="$themeIcon" class="text-2xl transition-all duration-300"></iconify-icon>
+          class="btn btn-ghost btn-circle shadow-lg bg-base-100 border border-base-300 hover:scale-110 active:scale-95 transition-all"
+          data-on-click="$switchTheme()">
+          <iconify-icon data-bind-icon="$themeIcon" class="text-2xl transition-all duration-300"></iconify-icon>
         </button>
-        
+
         <!-- Notification Button -->
         <button class="btn btn-ghost btn-circle">
           <div class="indicator">
@@ -198,41 +203,106 @@
 
         <!-- Language Switcher -->
         <div>
-          <button popovertarget="language-change" style="anchor-name:--language-change" class="btn btn-sm btn-ghost gap-1 px-1.5 text-[.5625rem] font-bold" aria-label="Language" title="Change Language">
-            <svg class="text-base-content/70 size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path stroke-linejoin="round" stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor" d="M12 21a9 9 0 1 0 0-18m0 18a9 9 0 1 1 0-18m0 18c2.761 0 3.941-5.163 3.941-9S14.761 3 12 3m0 18c-2.761 0-3.941-5.163-3.941-9S9.239 3 12 3M3.5 9h17m-17 6h17"></path></svg>
-            <svg class="mt-px hidden size-2 fill-current opacity-60 sm:inline-block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2048 2048"><path d="M1799 349l242 241-1017 1017L7 590l242-241 775 775 775-775z"></path></svg>
+          <button popovertarget="language-change" style="anchor-name:--language-change"
+            class="btn btn-sm btn-ghost gap-1 px-1.5 text-[.5625rem] font-bold" aria-label="Language"
+            title="Change Language">
+            <svg class="text-base-content/70 size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <path stroke-linejoin="round" stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor"
+                d="M12 21a9 9 0 1 0 0-18m0 18a9 9 0 1 1 0-18m0 18c2.761 0 3.941-5.163 3.941-9S14.761 3 12 3m0 18c-2.761 0-3.941-5.163-3.941-9S9.239 3 12 3M3.5 9h17m-17 6h17">
+              </path>
+            </svg>
+            <svg class="mt-px hidden size-2 fill-current opacity-60 sm:inline-block" xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 2048 2048">
+              <path d="M1799 349l242 241-1017 1017L7 590l242-241 775 775 775-775z"></path>
+            </svg>
           </button>
-          <div popover="" id="language-change" style="position-anchor:--language-change" class="dropdown dropdown-end bg-base-200 text-base-content rounded-box top-px mt-6 h-122 max-h-[calc(100vh-8.6rem)] w-56 overflow-y-auto shadow-2xl">
+          <div popover="" id="language-change" style="position-anchor:--language-change"
+            class="dropdown dropdown-end bg-base-200 text-base-content rounded-box top-px mt-6 h-122 max-h-[calc(100vh-8.6rem)] w-56 overflow-y-auto shadow-2xl">
             <ul class="menu menu-sm w-full"><!--[--><!--[0-->
-              <li><button class="menu-active"><!--[0--><span class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">EN</span><!--]--> <span class="font-[sans-serif]">English</span></button></li><!--]--><!--[0-->
-              <li><button><!--[0--><span class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">AR</span><!--]--> <span class="font-[sans-serif]">العربية</span></button></li><!--]--><!--[0-->
-              <li><button><!--[0--><span class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">BN</span><!--]--> <span class="font-[sans-serif]">বাংলা</span></button></li><!--]--><!--[0-->
-              <li><button><!--[0--><span class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">CA</span><!--]--> <span class="font-[sans-serif]">Català</span></button></li><!--]--><!--[0-->
-              <li><button><!--[0--><span class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">CS</span><!--]--> <span class="font-[sans-serif]">Čeština</span></button></li><!--]--><!--[0-->
-              <li><button><!--[0--><span class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">DE</span><!--]--> <span class="font-[sans-serif]">Deutsch</span></button></li><!--]--><!--[0-->
-              <li><button><!--[0--><span class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">ES</span><!--]--> <span class="font-[sans-serif]">Español</span></button></li><!--]--><!--[0-->
-              <li><button><!--[0--><span class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">FA</span><!--]--> <span class="font-[sans-serif]">فارسی</span></button></li><!--]--><!--[0-->
-              <li><button><!--[0--><span class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">FR</span><!--]--> <span class="font-[sans-serif]">Français</span></button></li><!--]--><!--[0-->
-              <li><button><!--[0--><span class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">HU</span><!--]--> <span class="font-[sans-serif]">Magyar</span></button></li><!--]--><!--[0-->
-              <li><button><!--[0--><span class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">ID</span><!--]--> <span class="font-[sans-serif]">Bahasa Indonesia</span></button></li><!--]--><!--[0-->
-              <li><button><!--[0--><span class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">IT</span><!--]--> <span class="font-[sans-serif]">Italiano</span></button></li><!--]--><!--[0-->
-              <li><button><!--[0--><span class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">JA</span><!--]--> <span class="font-[sans-serif]">日本語</span></button></li><!--]--><!--[0-->
-              <li><button><!--[0--><span class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">KO</span><!--]--> <span class="font-[sans-serif]">한국어</span></button></li><!--]--><!--[0-->
-              <li><button><!--[0--><span class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">MS</span><!--]--> <span class="font-[sans-serif]">Bahasa Melayu</span></button></li><!--]--><!--[0-->
-              <li><button><!--[0--><span class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">PL</span><!--]--> <span class="font-[sans-serif]">Polski</span></button></li><!--]--><!--[0-->
-              <li><button><!--[0--><span class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">PT</span><!--]--> <span class="font-[sans-serif]">Português</span></button></li><!--]--><!--[0-->
-              <li><button><!--[0--><span class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">RO</span><!--]--> <span class="font-[sans-serif]">Română</span></button></li><!--]--><!--[0-->
-              <li><button><!--[0--><span class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">RU</span><!--]--> <span class="font-[sans-serif]">Русский</span></button></li><!--]--><!--[0-->
-              <li><button><!--[0--><span class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">UK</span><!--]--> <span class="font-[sans-serif]">Українська</span></button></li><!--]--><!--[0-->
-              <li><button><!--[0--><span class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">VI</span><!--]--> <span class="font-[sans-serif]">Tiếng Việt</span></button></li><!--]--><!--[0-->
-              <li><button><!--[0--><span class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">ZH</span><!--]--> <span class="font-[sans-serif]">简体中文</span></button></li><!--]--><!--[0-->
-              <li><button><!--[0--><span class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">ZH</span><!--]--> <span class="font-[sans-serif]">繁體中文</span></button></li><!--]--><!--]-->
+              <li><button class="menu-active"><!--[0--><span
+                    class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">EN</span><!--]-->
+                  <span class="font-[sans-serif]">English</span></button></li><!--]--><!--[0-->
+              <li><button><!--[0--><span
+                    class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">AR</span><!--]-->
+                  <span class="font-[sans-serif]">العربية</span></button></li><!--]--><!--[0-->
+              <li><button><!--[0--><span
+                    class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">BN</span><!--]-->
+                  <span class="font-[sans-serif]">বাংলা</span></button></li><!--]--><!--[0-->
+              <li><button><!--[0--><span
+                    class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">CA</span><!--]-->
+                  <span class="font-[sans-serif]">Català</span></button></li><!--]--><!--[0-->
+              <li><button><!--[0--><span
+                    class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">CS</span><!--]-->
+                  <span class="font-[sans-serif]">Čeština</span></button></li><!--]--><!--[0-->
+              <li><button><!--[0--><span
+                    class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">DE</span><!--]-->
+                  <span class="font-[sans-serif]">Deutsch</span></button></li><!--]--><!--[0-->
+              <li><button><!--[0--><span
+                    class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">ES</span><!--]-->
+                  <span class="font-[sans-serif]">Español</span></button></li><!--]--><!--[0-->
+              <li><button><!--[0--><span
+                    class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">FA</span><!--]-->
+                  <span class="font-[sans-serif]">فارسی</span></button></li><!--]--><!--[0-->
+              <li><button><!--[0--><span
+                    class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">FR</span><!--]-->
+                  <span class="font-[sans-serif]">Français</span></button></li><!--]--><!--[0-->
+              <li><button><!--[0--><span
+                    class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">HU</span><!--]-->
+                  <span class="font-[sans-serif]">Magyar</span></button></li><!--]--><!--[0-->
+              <li><button><!--[0--><span
+                    class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">ID</span><!--]-->
+                  <span class="font-[sans-serif]">Bahasa Indonesia</span></button></li><!--]--><!--[0-->
+              <li><button><!--[0--><span
+                    class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">IT</span><!--]-->
+                  <span class="font-[sans-serif]">Italiano</span></button></li><!--]--><!--[0-->
+              <li><button><!--[0--><span
+                    class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">JA</span><!--]-->
+                  <span class="font-[sans-serif]">日本語</span></button></li><!--]--><!--[0-->
+              <li><button><!--[0--><span
+                    class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">KO</span><!--]-->
+                  <span class="font-[sans-serif]">한국어</span></button></li><!--]--><!--[0-->
+              <li><button><!--[0--><span
+                    class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">MS</span><!--]-->
+                  <span class="font-[sans-serif]">Bahasa Melayu</span></button></li><!--]--><!--[0-->
+              <li><button><!--[0--><span
+                    class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">PL</span><!--]-->
+                  <span class="font-[sans-serif]">Polski</span></button></li><!--]--><!--[0-->
+              <li><button><!--[0--><span
+                    class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">PT</span><!--]-->
+                  <span class="font-[sans-serif]">Português</span></button></li><!--]--><!--[0-->
+              <li><button><!--[0--><span
+                    class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">RO</span><!--]-->
+                  <span class="font-[sans-serif]">Română</span></button></li><!--]--><!--[0-->
+              <li><button><!--[0--><span
+                    class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">RU</span><!--]-->
+                  <span class="font-[sans-serif]">Русский</span></button></li><!--]--><!--[0-->
+              <li><button><!--[0--><span
+                    class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">UK</span><!--]-->
+                  <span class="font-[sans-serif]">Українська</span></button></li><!--]--><!--[0-->
+              <li><button><!--[0--><span
+                    class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">VI</span><!--]-->
+                  <span class="font-[sans-serif]">Tiếng Việt</span></button></li><!--]--><!--[0-->
+              <li><button><!--[0--><span
+                    class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">ZH</span><!--]-->
+                  <span class="font-[sans-serif]">简体中文</span></button></li><!--]--><!--[0-->
+              <li><button><!--[0--><span
+                    class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">ZH</span><!--]-->
+                  <span class="font-[sans-serif]">繁體中文</span></button></li><!--]--><!--]-->
             </ul>
           </div>
         </div>
 
         <!-- GitHub Link -->
-        <a href="https://github.com/aereaco/nexus-ux" aria-label="GitHub" title="GitHub" rel="noopener noreferrer" target="_blank" class="btn btn-ghost group btn-lg gap-1 px-2"><svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-linejoin="round" stroke-linecap="round" stroke-width="1.5" fill="none" stroke="currentColor"><path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5"></path></g></svg> <!--[0--><span class="text-[0.625rem] font-normal font-mono tabular-nums max-sm:hidden">41k</span><!--]--></a>
+        <a href="https://github.com/aereaco/nexus-ux" aria-label="GitHub" title="GitHub" rel="noopener noreferrer"
+          target="_blank" class="btn btn-ghost group btn-lg gap-1 px-2"><svg class="size-4"
+            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <g stroke-linejoin="round" stroke-linecap="round" stroke-width="1.5" fill="none" stroke="currentColor">
+              <path
+                d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5">
+              </path>
+            </g>
+          </svg> <!--[0--><span
+            class="text-[0.625rem] font-normal font-mono tabular-nums max-sm:hidden">41k</span><!--]--></a>
       </div>
     </nav>
 
@@ -240,44 +310,43 @@
     <!-- Tab state lives in the global signal declared on `drawer-content`
          (data-signal:global), so the bar and panels share one scope. -->
 
-      <!-- TAB BAR -->
-      <div data-signal:global="{pageTabToggleHovered: false }" data-class="{'hidden': !pageTabs, 'aura aura-dual text-secondary': pageTabToggleHovered }">
-        <div class="card pe-2" data-class="{'bg-base-200': pageTabToggleHovered }">
-          <div class="flex flex-nowrap bg-base-300/20 rounded-none overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-base-content/10"
-            role="tablist" aria-orientation="horizontal"
-            data-drag-container="tabs" data-drag-group="tabs" data-drag-direction="horizontal" data-drag-swap-threshold="0.55"
-          >
-            <template data-for="tab in tabs" data-key="tab.id">
-              <div role="tab" tabindex="0"
-                  class="flex items-center shrink-0 px-2 cursor-pointer hover:'border-primary' transition-colors"
-                  data-drag
-                  data-bind-aria-selected="activeTabId === tab.id"
-                  data-class="{'tab-active border-b border-primary text-primary': activeTabId === tab.id }"
-                  data-on-click="activeTabId = tab.id"
-                  data-on-contextmenu:stop="const e = $event; ctxMenu = { type: 'tab', tabId: tab.id, x: e.clientX, y: e.clientY };">
-                <iconify-icon icon="material-symbols-light:drag-indicator" class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
-                <iconify-icon data-bind-icon="tab.icon" class="text-lg px-2"></iconify-icon>
-                <span class="pe-4 whitespace-nowrap" data-bind="tab.title"></span>
-                <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close tab" title="Close tab"
-                        data-class="{ 'hidden': pinned.includes(tab.id) }"
-                        data-on-click:stop="const wasActive = activeTabId === tab.id; tabs = tabs.filter(t => t.id !== tab.id); if (wasActive) activeTabId = tabs[0]?.id;">
-                  <iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
-                </button>
-              </div>
-            </template>
-
-              <button class="btn btn-circle shrink-0"
-                      data-class="{ 'hidden': !pageTabs }"
-                      data-on-click="tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs.push({ id, title: 'New Tab', icon: 'material-symbols-light:article-outline', content: '_components/tab-new.html' }); activeTabId = id;">
-                <iconify-icon icon="material-symbols-light:add" style="font-size: 24px"></iconify-icon>
+    <!-- TAB BAR -->
+    <div data-signal:global="{pageTabToggleHovered: false }"
+      data-class="{'hidden': !pageTabs, 'aura aura-dual text-secondary': pageTabToggleHovered }">
+      <div class="card pe-2" data-class="{'bg-base-200': pageTabToggleHovered }">
+        <div
+          class="flex flex-nowrap bg-base-300/20 rounded-none overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-base-content/10"
+          role="tablist" aria-orientation="horizontal" data-drag-container="tabs" data-drag-group="tabs"
+          data-drag-direction="horizontal" data-drag-swap-threshold="0.55">
+          <template data-for="tab in tabs" data-key="tab.id">
+            <div role="tab" tabindex="0"
+              class="flex items-center shrink-0 px-2 cursor-pointer hover:'border-primary' transition-colors" data-drag
+              data-bind-aria-selected="activeTabId === tab.id"
+              data-class="{'tab-active border-b border-primary text-primary': activeTabId === tab.id }"
+              data-on-click="activeTabId = tab.id"
+              data-on-contextmenu:stop="const e = $event; ctxMenu = { type: 'tab', tabId: tab.id, x: e.clientX, y: e.clientY };">
+              <iconify-icon icon="material-symbols-light:drag-indicator"
+                class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
+              <iconify-icon data-bind-icon="tab.icon" class="text-lg px-2"></iconify-icon>
+              <span class="pe-4 whitespace-nowrap" data-bind="tab.title"></span>
+              <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close tab" title="Close tab"
+                data-class="{ 'hidden': pinned.includes(tab.id) }"
+                data-on-click:stop="const wasActive = activeTabId === tab.id; tabs = tabs.filter(t => t.id !== tab.id); if (wasActive) activeTabId = tabs[0]?.id;">
+                <iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
               </button>
-          </div>
+            </div>
+          </template>
+
+          <button class="btn btn-circle shrink-0" data-class="{ 'hidden': !pageTabs }"
+            data-on-click="tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs.push({ id, title: 'New Tab', icon: 'material-symbols-light:article-outline', content: '_components/tab-new.html' }); activeTabId = id;">
+            <iconify-icon icon="material-symbols-light:add" style="font-size: 24px"></iconify-icon>
+          </button>
         </div>
       </div>
+    </div>
 
-      <!-- Floating Side Hover Expanding Tab | Breadcrumbs & Page Tabs Toggle -->
-      <div class="absolute right-0 top-32 z-10"
-            data-signal="{
+    <!-- Floating Side Hover Expanding Tab | Breadcrumbs & Page Tabs Toggle -->
+    <div class="absolute end-0 top-32 z-10" data-signal="{
               breadcrumbs: [
                 { title: 'Home', href: '/' },
                 { title: 'Long text 2', href: '/long-text-2' },
@@ -287,57 +356,50 @@
               ],
               hovered: false, lastTouchTime: 0
             }"
-            data-on-mouseenter="if (Date.now() - (lastTouchTime || 0) < 500) return; if (typeof hoverTimer !== 'undefined') {clearTimeout(hoverTimer)};hovered = true"
-            data-on-mouseleave="hoverTimer = setTimeout(() => {hovered = false}, 750)"
-            data-on-touchstart:prevent="lastTouchTime = Date.now(); if (typeof hoverTimer !== 'undefined') {clearTimeout(hoverTimer)};hoverTimer = setTimeout(() => {hovered = true}, 400)"
-            >
-          <nav aria-label="Breadcrumb">
-            <ol
-              class="flex overflow-hidden rounded-ss-lg rounded-es-lg border border-base-100 bg-white text-sm text-gray-700  dark:bg-gray-800 dark:text-gray-200"
-            >
-              <li>
-                <div                  
-                  class="block h-10 leading-12 px-3 transition-colors bg-secondary text-secondary-content"
-                > 
-                  <iconify-icon icon="material-symbols-light:bookmark-outline" class="text-2xl" data-class="{ 'hidden': hovered }"></iconify-icon>
-                  <div class="breadcrumbs max-w-xs text-sm font-semibold px-4" data-class="{'hidden': !hovered}">
-                    <ul>
-                      <li  data-for="crumb in breadcrumbs" data-key="crumb.href"><a data-bind-href="crumb.href" data-bind="crumb.title"></a></li>
-                    </ul>
-                  </div>
-                </div>
-              </li>
-              <li class="relative flex items-center">
-                <span
-                  class="absolute inset-y-0 -start-px h-10 w-4 bg-secondary [clip-path:_polygon(0_0,_0%_100%,_100%_50%)] rtl:rotate-180"
-                >
-                </span>
+      data-on-mouseenter="if (Date.now() - (lastTouchTime || 0) < 500) return; if (typeof hoverTimer !== 'undefined') {clearTimeout(hoverTimer)};hovered = true"
+      data-on-mouseleave="hoverTimer = setTimeout(() => {hovered = false}, 750)"
+      data-on-touchstart:prevent="lastTouchTime = Date.now(); if (typeof hoverTimer !== 'undefined') {clearTimeout(hoverTimer)};hoverTimer = setTimeout(() => {hovered = true}, 400)">
+      <nav aria-label="Breadcrumb">
+        <ol
+          class="flex overflow-hidden rounded-ss-lg rounded-es-lg border border-base-100 bg-white text-sm text-gray-700  dark:bg-gray-800 dark:text-gray-200">
+          <li>
+            <div class="block h-10 leading-12 px-3 transition-colors bg-secondary text-secondary-content">
+              <iconify-icon icon="material-symbols-light:bookmark-outline" class="text-2xl"
+                data-class="{ 'hidden': hovered }"></iconify-icon>
+              <div class="breadcrumbs max-w-xs text-sm font-semibold px-4" data-class="{'hidden': !hovered}">
+                <ul>
+                  <li data-for="crumb in breadcrumbs" data-key="crumb.href"><a data-bind-href="crumb.href"
+                      data-bind="crumb.title"></a></li>
+                </ul>
+              </div>
+            </div>
+          </li>
+          <li class="relative flex items-center">
+            <span
+              class="absolute inset-y-0 -start-px h-10 w-4 bg-secondary [clip-path:_polygon(0_0,_0%_100%,_100%_50%)] rtl:rotate-180">
+            </span>
 
-                <div
-                  class="block h-10 pr-4 pl-6 leading-10 transition-colors bg-base-300 text-secondary"
-                  data-class="{ 'hidden': !hovered }"
-                >
-                  <div class="tooltip z-100" data-tip="Toggle page tabs">
-                    <button class="btn btn-xl"
-                            data-class="{ 'btn-active': pageTabs }"
-                            data-on-click="pageTabs = !pageTabs"
-                            data-on-mouseenter="hoverTimer = setTimeout(() => {pageTabToggleHovered = true}, 3000)"
-                            data-on-mouseleave="clearTimeout(hoverTimer);pageTabToggleHovered = false">
-                      <iconify-icon icon="material-symbols-light:tab-group-outline"></iconify-icon>
-                    </button>
-                  </div>
-                </div>
-              </li>
-            </ol>
-          </nav>
-      </div>
+            <div class="block h-10 pr-4 pl-6 leading-10 transition-colors bg-base-300 text-secondary"
+              data-class="{ 'hidden': !hovered }">
+              <div class="tooltip z-100" data-tip="Toggle page tabs">
+                <button class="btn btn-xl" data-class="{ 'btn-active': pageTabs }" data-on-click="pageTabs = !pageTabs"
+                  data-on-mouseenter="hoverTimer = setTimeout(() => {pageTabToggleHovered = true}, 3000)"
+                  data-on-mouseleave="clearTimeout(hoverTimer);pageTabToggleHovered = false">
+                  <iconify-icon icon="material-symbols-light:tab-group-outline"></iconify-icon>
+                </button>
+              </div>
+            </div>
+          </li>
+        </ol>
+      </nav>
+    </div>
 
-      <!-- CONTENT PANEL: bound to the ACTIVE TAB's own content component. This
+    <!-- CONTENT PANEL: bound to the ACTIVE TAB's own content component. This
            lets route tabs (router drives router.route) and component tabs (the
            new-tab launchpad, link tabs) share one outlet. A sync effect below
            keeps the active tab's content in step with router.route for route
            tabs, so sidebar/router navigation still updates the visible panel. -->
-      <div class="p-6 relative" data-on-contextmenu:stop="
+    <div class="p-6 relative" data-on-contextmenu:stop="
             const e = $event;
             const a = e.target.closest('a');
             if (a && a.origin === location.origin && !a.hasAttribute('download') && (!a.target || a.target === '_self')) {
@@ -345,77 +407,78 @@
             }">
 
 
-        <!-- Panel outlet: bound to the active tab's own content field.
+      <!-- Panel outlet: bound to the active tab's own content field.
              This is the single source of truth for the panel — route tabs
              have their content synced from router.route via the data-effect
              above; custom-component tabs (launchpad, link tabs) carry their
              own content URL. No secondary signal needed. -->
-        <div role="tabpanel" class="h-dvh" data-component="tabs.find(t => t.id === activeTabId)?.content || null"></div>
-      </div>
+      <div role="tabpanel" class="h-dvh" data-component="tabs.find(t => t.id === activeTabId)?.content || null"></div>
+    </div>
 
-      <!-- CONTEXT MENU (tab + link actions) -->
-      <div data-show="ctxMenu"
-           class="fixed z-50 min-w-48 rounded-box bg-base-100 shadow-2xl border border-base-300 py-1 text-sm"
-           data-bind-style="{ left: (ctxMenu && ctxMenu.x) + 'px', top: (ctxMenu && ctxMenu.y) + 'px' }"
-           data-on-click="ctxMenu = null"
-           data-on-contextmenu:stop="ctxMenu = null">
-        <!-- TAB actions -->
-        <template data-if="ctxMenu && ctxMenu.type === 'tab'">
-          <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-                  data-on-click:stop="const id = ctxMenu.tabId; const idx = tabs.findIndex(t => t.id === id); const t = tabs[idx]; if (idx > -1) { const np = pinned.includes(id) ? pinned.filter(p => p !== id) : [...pinned, id]; pinned = np; if (!pinned.includes(id) && t.originUrl) { tabs[idx] = { ...t, content: t.originUrl, title: t.originTitle, icon: t.originIcon }; } } ctxMenu = null;">
-            <iconify-icon data-bind-icon="(pinned.includes(ctxMenu.tabId) ? 'material-symbols-light:push-pin-outline' : 'material-symbols-light:push-pin')" class="text-lg"></iconify-icon>
-            <span data-bind="pinned.includes(ctxMenu.tabId) ? 'Unpin' : 'Pin'"></span>
-          </button>
-          <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-                  data-on-click:stop="const src = tabs.find(t => t.id === ctxMenu.tabId); const id = 'tab-' + (++tabSeq); const nc = (src && src.content) || '_components/tab-generic.html'; if (nc.startsWith('_components/')) { router.tabPaths[id] = 'custom-component'; } else { router.tabPaths[id] = router.tabPaths[ctxMenu.tabId]; } tabs = [...tabs, { id, title: (src && src.title) || 'Tab', icon: (src && src.icon) || 'material-symbols-light:article-outline', content: nc }]; activeTabId = id; ctxMenu = null;">
-            <iconify-icon icon="material-symbols-light:add" class="text-lg"></iconify-icon>
-            <span>Open in new tab</span>
-          </button>
-          <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-                  data-class="{ 'hidden': pinned.includes(ctxMenu.tabId) }"
-                  data-on-click:stop="const id = ctxMenu.tabId; const wasActive = activeTabId === id; tabs = tabs.filter(t => t.id !== id); pinned = pinned.filter(p => p !== id); if (wasActive) activeTabId = tabs[0]?.id; ctxMenu = null;">
-            <iconify-icon icon="material-symbols-light:close" class="text-lg"></iconify-icon>
-            <span>Close tab</span>
-          </button>
-          <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-                  data-on-click:stop="const id = ctxMenu.tabId; const idx = tabs.findIndex(t => t.id === id); tabs = tabs.filter((t, i) => i <= idx || pinned.includes(t.id)); if (!tabs.find(t => t.id === activeTabId)) activeTabId = tabs[0]?.id; ctxMenu = null;">
-            <iconify-icon icon="material-symbols-light:chevron-left" class="text-lg"></iconify-icon>
-            <span>Close tabs to the left</span>
-          </button>
-          <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-                  data-on-click:stop="const id = ctxMenu.tabId; const idx = tabs.findIndex(t => t.id === id); tabs = tabs.filter((t, i) => i >= idx || pinned.includes(t.id)); if (!tabs.find(t => t.id === activeTabId)) activeTabId = tabs[0]?.id; ctxMenu = null;">
-            <iconify-icon icon="material-symbols-light:chevron-right" class="text-lg"></iconify-icon>
-            <span>Close tabs to the right</span>
-          </button>
-          <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-                  data-on-click:stop="tabs = tabs.filter(t => pinned.includes(t.id)); if (!tabs.find(t => t.id === activeTabId)) activeTabId = tabs[0]?.id; ctxMenu = null;">
-            <iconify-icon icon="material-symbols-light:clear-all" class="text-lg"></iconify-icon>
-            <span>Close other tabs</span>
-          </button>
-          <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-                  data-on-click:stop="const t = tabs.find(x => x.id === ctxMenu.tabId); if (t) { const entry = { title: t.title, url: t.content, icon: t.icon }; const favs = JSON.parse(localStorage.getItem('nexus-favorites') || '[]'); favs.push(entry); localStorage.setItem('nexus-favorites', JSON.stringify(favs)); favorites = favs; } ctxMenu = null;">
-            <iconify-icon icon="material-symbols-light:star-outline" class="text-lg"></iconify-icon>
-            <span>Save to Favorites</span>
-          </button>
-        </template>
+    <!-- CONTEXT MENU (tab + link actions) -->
+    <div data-show="ctxMenu"
+      class="fixed z-50 min-w-48 rounded-box bg-base-100 shadow-2xl border border-base-300 py-1 text-sm"
+      data-bind-style="{ left: (ctxMenu && ctxMenu.x) + 'px', top: (ctxMenu && ctxMenu.y) + 'px' }"
+      data-on-click="ctxMenu = null" data-on-contextmenu:stop="ctxMenu = null">
+      <!-- TAB actions -->
+      <template data-if="ctxMenu && ctxMenu.type === 'tab'">
+        <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
+          data-on-click:stop="const id = ctxMenu.tabId; const idx = tabs.findIndex(t => t.id === id); const t = tabs[idx]; if (idx > -1) { const np = pinned.includes(id) ? pinned.filter(p => p !== id) : [...pinned, id]; pinned = np; if (!pinned.includes(id) && t.originUrl) { tabs[idx] = { ...t, content: t.originUrl, title: t.originTitle, icon: t.originIcon }; } } ctxMenu = null;">
+          <iconify-icon
+            data-bind-icon="(pinned.includes(ctxMenu.tabId) ? 'material-symbols-light:push-pin-outline' : 'material-symbols-light:push-pin')"
+            class="text-lg"></iconify-icon>
+          <span data-bind="pinned.includes(ctxMenu.tabId) ? 'Unpin' : 'Pin'"></span>
+        </button>
+        <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
+          data-on-click:stop="const src = tabs.find(t => t.id === ctxMenu.tabId); const id = 'tab-' + (++tabSeq); const nc = (src && src.content) || '_components/tab-generic.html'; if (nc.startsWith('_components/')) { router.tabPaths[id] = 'custom-component'; } else { router.tabPaths[id] = router.tabPaths[ctxMenu.tabId]; } tabs = [...tabs, { id, title: (src && src.title) || 'Tab', icon: (src && src.icon) || 'material-symbols-light:article-outline', content: nc }]; activeTabId = id; ctxMenu = null;">
+          <iconify-icon icon="material-symbols-light:add" class="text-lg"></iconify-icon>
+          <span>Open in new tab</span>
+        </button>
+        <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
+          data-class="{ 'hidden': pinned.includes(ctxMenu.tabId) }"
+          data-on-click:stop="const id = ctxMenu.tabId; const wasActive = activeTabId === id; tabs = tabs.filter(t => t.id !== id); pinned = pinned.filter(p => p !== id); if (wasActive) activeTabId = tabs[0]?.id; ctxMenu = null;">
+          <iconify-icon icon="material-symbols-light:close" class="text-lg"></iconify-icon>
+          <span>Close tab</span>
+        </button>
+        <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
+          data-on-click:stop="const id = ctxMenu.tabId; const idx = tabs.findIndex(t => t.id === id); tabs = tabs.filter((t, i) => i <= idx || pinned.includes(t.id)); if (!tabs.find(t => t.id === activeTabId)) activeTabId = tabs[0]?.id; ctxMenu = null;">
+          <iconify-icon icon="material-symbols-light:chevron-left" class="text-lg"></iconify-icon>
+          <span>Close tabs to the left</span>
+        </button>
+        <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
+          data-on-click:stop="const id = ctxMenu.tabId; const idx = tabs.findIndex(t => t.id === id); tabs = tabs.filter((t, i) => i >= idx || pinned.includes(t.id)); if (!tabs.find(t => t.id === activeTabId)) activeTabId = tabs[0]?.id; ctxMenu = null;">
+          <iconify-icon icon="material-symbols-light:chevron-right" class="text-lg"></iconify-icon>
+          <span>Close tabs to the right</span>
+        </button>
+        <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
+          data-on-click:stop="tabs = tabs.filter(t => pinned.includes(t.id)); if (!tabs.find(t => t.id === activeTabId)) activeTabId = tabs[0]?.id; ctxMenu = null;">
+          <iconify-icon icon="material-symbols-light:clear-all" class="text-lg"></iconify-icon>
+          <span>Close other tabs</span>
+        </button>
+        <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
+          data-on-click:stop="const t = tabs.find(x => x.id === ctxMenu.tabId); if (t) { const entry = { title: t.title, url: t.content, icon: t.icon }; const favs = JSON.parse(localStorage.getItem('nexus-favorites') || '[]'); favs.push(entry); localStorage.setItem('nexus-favorites', JSON.stringify(favs)); favorites = favs; } ctxMenu = null;">
+          <iconify-icon icon="material-symbols-light:star-outline" class="text-lg"></iconify-icon>
+          <span>Save to Favorites</span>
+        </button>
+      </template>
 
-        <!-- LINK actions -->
-        <template data-if="ctxMenu && ctxMenu.type === 'link'">
-          <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-                  data-on-click:stop="const u = ctxMenu.url; const id = 'tab-' + (++tabSeq); router.tabPaths[id] = u; tabs = [...tabs, { id, title: ctxMenu.title || 'Tab', icon: ctxMenu.icon || 'material-symbols-light:article-outline', content: u }]; activeTabId = id; ctxMenu = null;">
-            <iconify-icon icon="material-symbols-light:add" class="text-lg"></iconify-icon>
-            <span>Open in new tab</span>
-          </button>
-          <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-                  data-on-click:stop="const u = ctxMenu.url; if (u) { const entry = { title: ctxMenu.title || u, url: u, icon: ctxMenu.icon || '' }; const favs = JSON.parse(localStorage.getItem('nexus-favorites') || '[]'); favs.push(entry); localStorage.setItem('nexus-favorites', JSON.stringify(favs)); favorites = favs; } ctxMenu = null;">
-            <iconify-icon icon="material-symbols-light:star-outline" class="text-lg"></iconify-icon>
-            <span>Save to Favorites</span>
-          </button>
-        </template>
-      </div>
+      <!-- LINK actions -->
+      <template data-if="ctxMenu && ctxMenu.type === 'link'">
+        <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
+          data-on-click:stop="const u = ctxMenu.url; const id = 'tab-' + (++tabSeq); router.tabPaths[id] = u; tabs = [...tabs, { id, title: ctxMenu.title || 'Tab', icon: ctxMenu.icon || 'material-symbols-light:article-outline', content: u }]; activeTabId = id; ctxMenu = null;">
+          <iconify-icon icon="material-symbols-light:add" class="text-lg"></iconify-icon>
+          <span>Open in new tab</span>
+        </button>
+        <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
+          data-on-click:stop="const u = ctxMenu.url; if (u) { const entry = { title: ctxMenu.title || u, url: u, icon: ctxMenu.icon || '' }; const favs = JSON.parse(localStorage.getItem('nexus-favorites') || '[]'); favs.push(entry); localStorage.setItem('nexus-favorites', JSON.stringify(favs)); favorites = favs; } ctxMenu = null;">
+          <iconify-icon icon="material-symbols-light:star-outline" class="text-lg"></iconify-icon>
+          <span>Save to Favorites</span>
+        </button>
+      </template>
+    </div>
 
-      <!-- Declarative backdrop overlay to close context menu on click-away -->
-      <div data-show="ctxMenu" class="fixed inset-0 z-40 bg-transparent" data-on-click="ctxMenu = null"></div>
+    <!-- Declarative backdrop overlay to close context menu on click-away -->
+    <div data-show="ctxMenu" class="fixed inset-0 z-40 bg-transparent" data-on-click="ctxMenu = null"></div>
 
     <!-- Default Diagnostic Content (fallback if no route component provided) -->
     <div data-if="!dashboardComponent">
@@ -427,18 +490,15 @@
     </div>
 
     <!-- Search Modal (triggered by the navbar search button) -->
-    <div class="modal modal-top sm:modal-middle" role="dialog" aria-label="Search" data-class="{ 'modal-open': searchOpen }">
+    <div class="modal modal-top sm:modal-middle" role="dialog" aria-label="Search"
+      data-class="{ 'modal-open': searchOpen }">
       <div class="modal-box bg-base-100 shadow-2xl border border-base-300 p-0 overflow-hidden flex flex-col max-w-2xl">
         <!-- Search Input Row -->
         <div class="flex items-center gap-3 px-4 py-3 border-b border-base-200">
           <iconify-icon icon="material-symbols-light:search" class="text-2xl opacity-60"></iconify-icon>
-          <input
-            type="text"
-            class="input input-ghost w-full text-lg focus:outline-none border-0 focus:border-0 px-0"
-            placeholder="Search Nexus-UX…"
-            data-bind-value="searchQuery"
-            data-effect="if (searchOpen && $el) { $el.focus(); }"
-            data-on-keydown:escape="searchOpen = false" />
+          <input type="text" class="input input-ghost w-full text-lg focus:outline-none border-0 focus:border-0 px-0"
+            placeholder="Search Nexus-UX…" data-bind-value="searchQuery"
+            data-effect="if (searchOpen && $el) { $el.focus(); }" data-on-keydown:escape="searchOpen = false" />
           <kbd class="kbd kbd-sm opacity-60 max-sm:hidden">Esc</kbd>
           <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close search" data-on-click="searchOpen = false">
             <iconify-icon icon="material-symbols-light:close" class="text-lg"></iconify-icon>
@@ -471,13 +531,14 @@
 
   <div class="drawer-side" data-class="{ 'overflow-visible': hovered || !collapsed || isMobile }">
     <label for="my-drawer-4" aria-label="close sidebar" class="drawer-overlay"></label>
-    <div class="flex min-h-full flex-col items-start bg-base-100" data-class="{ 'lg:w-16': collapsed, 'w-100': !collapsed, 'w-[75vw]': isMobile }">
+    <div class="flex min-h-full flex-col items-start bg-base-100"
+      data-class="{ 'lg:w-16': collapsed, 'w-100': !collapsed, 'w-[75vw]': isMobile }">
       <!-- Sidebar content here -->
-      <div class="flex flex-col h-dvh w-full transition-all" data-class="{ 'lg:w-100': !collapsed || hovered, 'w-[75vw]': isMobile, 'bg-base-100/70': !collapsed || hovered || isMobile, 'backdrop-blur-sm': !collapsed || hovered || isMobile }"
-      data-on-mouseenter="if (typeof hoverTimer !== 'undefined') {clearTimeout(hoverTimer)};hovered = true"
-      data-on-mouseleave="hoverTimer = setTimeout(() => {hovered = false}, 500)"
-      data-on-touchstart:prevent="hovered = true"
-      >
+      <div class="flex flex-col h-dvh w-full transition-all"
+        data-class="{ 'lg:w-100': !collapsed || hovered, 'w-[75vw]': isMobile, 'bg-base-100/70': !collapsed || hovered || isMobile, 'backdrop-blur-sm': !collapsed || hovered || isMobile }"
+        data-on-mouseenter="if (typeof hoverTimer !== 'undefined') {clearTimeout(hoverTimer)};hovered = true"
+        data-on-mouseleave="hoverTimer = setTimeout(() => {hovered = false}, 500)"
+        data-on-touchstart:prevent="hovered = true">
         <div class="navbar">
           <div class="flex flex-1">
             <a class="btn btn-ghost text-xl ps-1">
@@ -489,15 +550,16 @@
               </template>
             </a>
           </div>
-         
-        </div>
-        
 
-        <ul class="menu w-full grow" data-show="activeSidebarTab === 1"
-            data-drag-container="sidebarItems" data-drag-direction="vertical" data-drag-swap-threshold="0.55">
+        </div>
+
+
+        <ul class="menu w-full grow" data-show="activeSidebarTab === 1" data-drag-container="sidebarItems"
+          data-drag-direction="vertical" data-drag-swap-threshold="0.55">
           <template data-for="item in sidebarItems" data-key="item.href">
             <li class="transition-transform duration-300 hover:scale-102" data-drag>
-              <a data-bind-href="item.href" data-bind-data-tab-title="item.tabTitle" data-bind-data-tab-icon="item.tabIcon">
+              <a data-bind-href="item.href" data-bind-data-tab-title="item.tabTitle"
+                data-bind-data-tab-icon="item.tabIcon">
                 <iconify-icon data-bind-icon="item.icon" style="font-size: 24px"></iconify-icon>
                 <span data-class="{ 'hidden': collapsed && !hovered && !isMobile }" data-bind="item.title"></span>
               </a>
@@ -506,7 +568,8 @@
         </ul>
 
         <!-- ================= Panel Preferences (tab 3) ================= -->
-        <div class="grow w-full overflow-x-hidden overflow-y-auto" data-show="activeSidebarTab === 3 && (!collapsed || hovered || isMobile)">
+        <div class="grow w-full overflow-x-hidden overflow-y-auto"
+          data-show="activeSidebarTab === 3 && (!collapsed || hovered || isMobile)">
           <div class="p-6">
             <div class="mb-6 whitespace-nowrap">
               <h1 class="text-lg font-bold">Panel Preferences</h1>
@@ -523,12 +586,9 @@
 
               <div class="join join-vertical w-full pb-1">
                 <template data-for="m in $theme.modes" data-key="m">
-                  <button
-                    type="button"
-                    class="btn join-item justify-start capitalize"
+                  <button type="button" class="btn join-item justify-start capitalize"
                     data-class="{ 'btn-primary': $theme.mode === m, 'btn-ghost': $theme.mode !== m }"
-                    data-on-click="$setTheme(m)"
-                    data-bind="m"></button>
+                    data-on-click="$setTheme(m)" data-bind="m"></button>
                 </template>
               </div>
 
@@ -558,13 +618,7 @@
               <!-- Theme Zoom -->
               <div>
                 <div class="label-text pb-3">Theme Zoom</div>
-                <input
-                  type="range"
-                  class="range range-primary"
-                  min="0.5"
-                  max="2"
-                  step="0.1"
-                  data-bind-value="zoom" />
+                <input type="range" class="range range-primary" min="0.5" max="2" step="0.1" data-bind-value="zoom" />
                 <div class="flex justify-between mt-2">
                   <span class="text-xs">0.5</span>
                   <div class="flex justify-center bg-neutral text-neutral-content rounded w-14 py-1">
@@ -595,19 +649,22 @@
         </template>
         <template data-if="!collapsed || hovered || isMobile">
           <div class="dock">
-          <button class="tooltip tooltip-top" data-tip="Menu" data-class="{ 'dock-active': activeSidebarTab === 1 }" data-on-click="activeSidebarTab = 1">
-            <iconify-icon icon="material-symbols-light:list" style="font-size: 24px"></iconify-icon>
-          </button>
+            <button class="tooltip tooltip-top" data-tip="Menu" data-class="{ 'dock-active': activeSidebarTab === 1 }"
+              data-on-click="activeSidebarTab = 1">
+              <iconify-icon icon="material-symbols-light:list" style="font-size: 24px"></iconify-icon>
+            </button>
 
-          <button class="tooltip tooltip-top" data-tip="Favorites" data-class="{ 'dock-active': activeSidebarTab === 2 }" data-on-click="activeSidebarTab = 2">
-            <iconify-icon icon="material-symbols-light:star-outline" style="font-size: 24px"></iconify-icon>
-          </button>
-          
-          <button class="tooltip tooltip-top" data-tip="Preferences" data-class="{ 'dock-active': activeSidebarTab === 3 }" data-on-click="activeSidebarTab = 3">
-            <iconify-icon icon="material-symbols-light:tune" style="font-size: 24px"></iconify-icon>
-          </button>
-        </div>
-      </template>
+            <button class="tooltip tooltip-top" data-tip="Favorites"
+              data-class="{ 'dock-active': activeSidebarTab === 2 }" data-on-click="activeSidebarTab = 2">
+              <iconify-icon icon="material-symbols-light:star-outline" style="font-size: 24px"></iconify-icon>
+            </button>
+
+            <button class="tooltip tooltip-top" data-tip="Preferences"
+              data-class="{ 'dock-active': activeSidebarTab === 3 }" data-on-click="activeSidebarTab = 3">
+              <iconify-icon icon="material-symbols-light:tune" style="font-size: 24px"></iconify-icon>
+            </button>
+          </div>
+        </template>
       </div>
     </div>
   </div>
