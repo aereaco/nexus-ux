@@ -1,20 +1,39 @@
 /**
- * Self-Heal Agent & Crash Beacons
- * 
- * Nexus-UX 1.0 is the first framework with a native AI-debugging interface.
- * 
- * This module provides:
- * - Crash Beacons: Binary snapshots of Signal Heap, Ghost Mirror, and call-stack on errors
- * - Agentic Restoration: AI-powered failure analysis and state recovery
- * - Zero-Copy Capture: Minimal overhead during error capture
- * 
- * @module agent
+ * Nexus-UX Self-Heal Agent & Crash Beacon System
+ *
+ * Native AI-debugging interface for the framework. Captures structured
+ * crash beacons containing SignalHeap snapshots, Ghost Mirror state, and
+ * call-stack frames when errors occur.
+ *
+ * Beacon Contents:
+ *   - SignalHeap snapshot: Typed heap state (float/int/bool/string/object/array)
+ *   - GhostMirror snapshot: Reactive mirror state for all tracked properties
+ *   - Call stack: Function/file/line frames at error point
+ *   - Navigator/Memory: Browser environment context
+ *
+ * ZCZS Guarantees:
+ *   - Zero-copy: Snapshots capture live heap arrays by reference where safe.
+ *   - Zero-serialization: Beacon data is plain objects; no JSON round-trip
+ *     during capture.
+ *
+ * Coordination:
+ *   - debug.ts delegates error capture to this module
+ *   - evaluator.ts wraps expression evaluation with beacon capture
+ *   - topology.ts provides current tier for beacon metadata
+ *   - reactivity.ts SignalHeap is the source of heap snapshots
+ *
+ * Nexus-UX Innovations Preserved:
+ *   - First framework with native AI-debugging interface
+ *   - SignalHeap binary snapshots for precise reactive state capture
+ *   - Ghost Mirror integration for DOM state reconstruction
+ *   - Beacon history with configurable retention
  */
 
 import { topology } from './topology.ts';
 import type { TierLevel, TierConfig } from './topology.ts';
 import type { RuntimeContext } from './composition.ts';
 import { heap } from './reactivity.ts';
+import { IS_TEMPLATE_KEY } from './consts.ts';
 
 // Beacon types for crash reporting
 export interface CrashBeacon {
@@ -503,7 +522,7 @@ export class SelfHealAgent {
       requestAnimationFrame(() => {
         // If the element is now a hidden template, it means it's managed by a structural
         // directive (like data-for) and should not be throwing independent warnings.
-        if (el.hasAttribute('data-ux-template')) return;
+        if ((el as any)[IS_TEMPLATE_KEY]) return;
         
         // If the element was detached, suppress the beacon.
         if (!el.isConnected) return;
