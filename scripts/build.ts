@@ -399,16 +399,7 @@ async function buildBundle(options: BuildOptions = {}) {
 
     console.log("Starting esbuild...");
     await esbuild.build(esbuildOptions);
-
     console.log(`Build complete: ${outFile}`);
-    esbuild.stop();
-  }
-}
-
-async function batchBuild(configs: BuildOptions[]) {
-  for (const config of configs) {
-    console.log(`\n=== Building: ${config.outputName || 'default'} ===`);
-    await buildBundle(config);
   }
 }
 
