@@ -392,67 +392,12 @@ export async function fetchStyleLayerPrimitives(): Promise<{
 
   const result = {
     components: pack(componentsCss),
-    keyframes: pack(keyframesCss),
-  };
-
-  console.log(`   ✓ PACKED_COMPONENTS (${result.components.length} chars)`);
-  console.log(`   ✓ PACKED_KEYFRAMES  (${result.keyframes.length} chars)`);
-/**
- * fetchStyleLayerPrimitives
- *
- * Fetches the official Tailwind v4 preflight and theme CSS from jsDelivr CDN
- * (or a local monorepo checkout via --local-tailwind flag), strips all
- * comments and whitespace, and returns the four packed string payloads.
- *
- * These strings are written into manifest.ts as generated exports so that
- * stylesheet.ts holds zero raw CSS in source — only an import reference.
- * The minifier can therefore fully mangle all surrounding JS execution logic.
- *
- * Usage: deno task build                                (CDN)
- *        deno task build --local-tailwind=/path/to/tw  (local monorepo)
- */
-export async function fetchStyleLayerPrimitives(): Promise<{
-  components: string;
-  keyframes: string;
-}> {
-  /** Compact raw CSS into a minifier-safe escaped single-line string. */
-  function pack(css: string): string {
-    return css
-      .replace(/\/\*[\s\S]*?\*\//g, "")
-      .replace(/\s+/g, " ")
-      .replace(/;\s*/g, ";")
-      .replace(/,\s*/g, ",")
-      .replace(/\{\s*/g, "{")
-      .replace(/\s*\}\s*/g, "}")
-      .replace(/"/g, '\\"')
-      .trim();
-  }
-
-  // ── PACKED_COMPONENTS — Nexus-UX sortable/drag-drop class overrides ──
-  const componentsCss =
-    `.draggable-chosen{background-color:var(--color-base-300,#d4d4d8);box-shadow:inset 0 0 0 2px var(--color-primary,#3b82f6)}` +
-    `.draggable-drag{opacity:1;background-color:var(--color-base-300,#d4d4d8);box-shadow:0 25px 50px -12px rgba(0,0,0,.25);transform:scale(1.05);cursor:grabbing;z-index:9999}` +
-    `.draggable-ghost{opacity:1;background-color:var(--color-base-300,#d4d4d8);border:2px solid var(--color-primary,#3b82f6);box-shadow:0 25px 50px -12px rgba(0,0,0,.25)}` +
-    `.draggable-selected{box-shadow:inset 0 0 0 2px var(--color-accent,var(--color-secondary,#ec4899))}` +
-    `.draggable-swap-highlight{background-color:color-mix(in srgb,var(--color-warning,#eab308) 20%,transparent);box-shadow:inset 0 0 0 2px var(--color-warning,#eab308)}` +
-    `.drop-target-before{background:linear-gradient(to bottom,color-mix(in srgb,var(--color-primary,#3b82f6) 30%,transparent) 0%,transparent 20%);box-shadow:inset 0 2px 0 0 var(--color-primary,#3b82f6)}` +
-    `.drop-target-after{background:linear-gradient(to top,color-mix(in srgb,var(--color-primary,#3b82f6) 30%,transparent) 0%,transparent 20%);box-shadow:inset 0 -2px 0 0 var(--color-primary,#3b82f6)}`;
-
-  // ── PACKED_KEYFRAMES — Framework animation keyframes ──
-  const keyframesCss =
-    `@keyframes spin{to{transform:rotate(360deg)}}` +
-    `@keyframes ping{75%,100%{transform:scale(2);opacity:0}}` +
-    `@keyframes pulse{50%{opacity:.5}}` +
-    `@keyframes bounce{0%,100%{transform:translateY(-25%);animation-timing-function:cubic-bezier(.8,0,1,1)}50%{transform:none;animation-timing-function:cubic-bezier(0,0,.2,1)}}`;
-
-  const result = {
-    components: pack(componentsCss),
-    keyframes: pack(keyframesCss),
-  };
-
-  console.log(`   ✓ PACKED_COMPONENTS (${result.components.length} chars)`);
+    keyframes:  console.log(`   ✓ PACKED_COMPONENTS (${result.components.length} chars)`);
   console.log(`   ✓ PACKED_KEYFRAMES  (${result.keyframes.length} chars)`);
   console.log(`   ✅ Style layer constants ready — emitting into manifest.ts.`);
+
+  return result;
+}ants ready — emitting into manifest.ts.`);
 
   return result;
 }
