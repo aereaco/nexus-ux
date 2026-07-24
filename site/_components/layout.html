@@ -351,7 +351,7 @@
     </div>
 
     <!-- Floating Side Hover Expanding Tab | Breadcrumbs & Page Tabs Toggle -->
-    <div class="absolute end-0 top-32 z-10" data-signal="{
+    <div class="absolute start-0 top-32 z-10" data-signal="{
               breadcrumbs: [
                 { title: 'Home', href: '/' },
                 { title: 'Long text 2', href: '/long-text-2' },
@@ -609,14 +609,14 @@
               <span class="text-sm font-medium"
                 data-bind="(!$theme.isSystem ? 'Set ' + ($theme.mode.charAt(0).toUpperCase() + $theme.mode.slice(1)) + ' Theme:' : 'System Theme Selected')"></span>
               <button type="button" class="btn btn-ghost btn-circle size-10" aria-label="Switch Theme Mode"
-                title="Switch Theme Mode" data-on-click="$switchTheme(); setTimeout(() => { const activeEl = document.querySelector('[data-active-option=true]'); activeEl?.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 50);">
+                title="Switch Theme Mode"
+                data-on-click="$switchTheme(); setTimeout(() => { const activeEl = document.querySelector('[data-active-option=true]'); activeEl?.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 50);">
                 <iconify-icon data-bind-icon="$themeIcon" class="text-xl transition-all duration-300"></iconify-icon>
               </button>
             </div>
 
             <!-- Theme Chooser Dropdown Trigger & Options List (DaisyUI 5: Native details/summary) -->
-            <details class="dropdown w-full relative"
-              data-on-click:outside="$(this).removeAttribute('open')"
+            <details class="dropdown w-full relative" data-on-click:outside="$(this).removeAttribute('open')"
               data-on-toggle="if ($evt.target.open) { setTimeout(() => { const activeEl = $evt.target.querySelector('[data-active-option=true]'); activeEl?.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 50); }">
               <summary
                 class="btn btn-block bg-base-100 justify-between font-sans px-4 py-3 h-auto min-h-12 border border-base-content/10 shadow-sm list-none cursor-pointer"
