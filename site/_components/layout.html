@@ -534,7 +534,8 @@
   <aside class="dashboard-sidebar z-50 flex flex-col h-dvh bg-base-100/90 backdrop-blur-md transition-[width] duration-300 overflow-x-hidden"
     data-class="{ 'open fixed inset-y-0 start-0 w-80 shadow-2xl': sidebarOpen, 'hovered fixed inset-y-0 start-0 w-80 shadow-2xl': hovered && !sidebarOpen, 'w-80': !collapsed, 'w-0 md:w-20': collapsed && !hovered && !sidebarOpen }"
     data-on-mouseenter="if (collapsed && !sidebarOpen) hovered = true"
-    data-on-mouseleave="hovered = false">
+    data-on-mouseleave="hovered = false"
+    data-effect="if (collapsed && !hovered && !sidebarOpen) { activeSidebarTab = 1; }">
     <div class="flex flex-col h-full w-full">
       <div class="navbar flex justify-between pe-4">
         <div class="flex flex-1 items-center">
