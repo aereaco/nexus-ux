@@ -9,7 +9,6 @@
     pageTabs: true,
     rtl: false,
     zoom: 1,
-    openThemeOptions: false,
     themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset']
   }" data-class="{ 'md:grid-cols-[20rem_1fr]': !collapsed, 'md:grid-cols-[5rem_1fr]': collapsed }"
   data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: zoom + 'rem' }">
@@ -616,7 +615,7 @@
             </div>
 
             <!-- Theme Chooser Dropdown Trigger & Options List -->
-            <div title="Change Theme" class="dropdown w-full relative"
+            <div title="Change Theme" class="dropdown w-full relative" data-signal="{ openThemeOptions: false }"
               data-class="{ 'dropdown-open': openThemeOptions }">
               <button type="button" tabindex="0"
                 class="btn btn-block bg-base-100 justify-between font-sans px-4 py-3 h-auto min-h-12 border border-base-content/10 shadow-sm"
