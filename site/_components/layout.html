@@ -624,23 +624,30 @@
                   </span>
                 </button>
 
-                <!-- Dropdown Content Menu -->
-                <div data-show="openThemeOptions" class="dropdown-content bg-base-200 text-base-content rounded-box absolute top-full start-0 mt-2 h-60 max-h-[calc(100vh-10rem)] w-full overflow-y-auto border border-base-content/10 shadow-2xl z-[200] p-2 space-y-1">
-                  <template data-for="t in $theme.themes" data-key="t">
-                    <button type="button" class="btn btn-ghost btn-block justify-between font-sans px-3 py-2 h-auto text-start rounded-btn border border-base-content/5" data-bind-data-theme="t" data-on-click="$setTheme(t); openThemeOptions = false">
-                      <span class="flex items-center gap-2 grow">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="h-3 w-3 shrink-0" data-class="{ 'visible text-primary': $theme.current === t, 'invisible': $theme.current !== t }"><path d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z"></path></svg>
-                        <span class="capitalize text-sm" data-bind="t"></span>
-                      </span>
-                      <span class="flex h-full shrink-0 items-center gap-1">
-                        <span class="bg-primary rounded-badge w-2 h-3"></span>
-                        <span class="bg-secondary rounded-badge w-2 h-3"></span>
-                        <span class="bg-accent rounded-badge w-2 h-3"></span>
-                        <span class="bg-neutral rounded-badge w-2 h-3"></span>
-                      </span>
-                    </button>
-                  </template>
-                </div>
+                <!-- Dropdown Content Menu (restoring commit 1529379 mechanics) -->
+                <template data-if="openThemeOptions">
+                  <div class="dropdown-content bg-base-200 text-base-content rounded-box absolute top-full start-0 mt-2 h-60 max-h-[calc(100vh-10rem)] w-full overflow-y-auto border border-base-content/10 shadow-2xl z-[200] p-2 space-y-2">
+                    <template data-for="t in themes" data-key="t">
+                      <label class="outline-base-content text-start outline-offset-4 theme-controller cursor-pointer block" data-class="{ '[&_svg]:visible': $theme.current === t }" data-on-click="$setTheme(t); openThemeOptions = false">
+                        <input type="radio" name="theme-radios" class="radio theme-controller hidden" data-bind-value="t" />
+                        <span class="bg-base-100 rounded-btn text-base-content block w-full cursor-pointer font-sans" data-bind-data-theme="t">
+                          <span class="grid grid-cols-5 grid-rows-3">
+                            <span class="col-span-5 row-span-3 row-start-1 flex items-center gap-2 px-4 py-3">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="invisible h-3 w-3 shrink-0"><path d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z"></path></svg>
+                              <span class="flex-grow text-sm capitalize" data-bind="t"></span>
+                              <span class="flex h-full shrink-0 flex-wrap gap-1">
+                                <span class="bg-primary rounded-badge w-2 h-4"></span>
+                                <span class="bg-secondary rounded-badge w-2 h-4"></span>
+                                <span class="bg-accent rounded-badge w-2 h-4"></span>
+                                <span class="bg-neutral rounded-badge w-2 h-4"></span>
+                              </span>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                    </template>
+                  </div>
+                </template>
               </div>
 
               <div class="divider"></div>
