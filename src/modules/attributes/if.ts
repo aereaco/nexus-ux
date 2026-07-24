@@ -1,3 +1,31 @@
+/**
+ * Nexus-UX If Directive Module
+ *
+ * Handles `data-if` for conditional element rendering. When the bound
+ * expression is truthy, the element is created/morphed into the DOM;
+ * when falsy, it is torn down and removed.
+ *
+ * Teardown:
+ *   Recursively invokes all registered cleanup functions (effects,
+ *   listeners, nested directives) before removing the element. This
+ *   prevents memory leaks and ghost effects.
+ *
+ * ZCZS Guarantees:
+ *   - Zero-copy: Template nodes are cloned; original is never mutated.
+ *   - Zero-serialization: Cleanup functions are invoked by reference.
+ *
+ * Coordination:
+ *   - scope.ts provides createScopeProxy for conditional scopes
+ *   - reconciler.ts provides morphDOM for element creation
+ *   - consts.ts provides CLEANUP_FUNCTIONS_KEY and MARKER_KEY
+ *   - reactivity.ts provides effect tracking for conditional bindings
+ *
+ * Nexus-UX Innovations Preserved:
+ *   - Recursive teardown with cleanup function invalidation
+ *   - Engine marker clearing for re-hydration
+ *   - Support for both Map and Array cleanup storage (legacy compat)
+ */
+
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { initError } from '../../engine/debug.ts';
@@ -70,7 +98,7 @@ const ifModule: AttributeModule = {
       el.style.display = 'none';
       // Prevent the coordinator/observer from descending into the blueprint and
       // processing it as live content (same guard data-for uses).
-      el.setAttribute('data-ux-template', 'true');
+      el.setAttribute('data-template', 'true');
     }
 
     let currentNodes: Node[] = [];
@@ -91,7 +119,7 @@ const ifModule: AttributeModule = {
       // normally and does not recursively re-register this directive.
       if (clone instanceof HTMLElement) {
         clone.removeAttribute('data-if');
-        clone.removeAttribute('data-ux-template');
+        clone.removeAttribute('data-template');
         clone.style.removeProperty('display');
         currentNodes = [clone];
       } else {
