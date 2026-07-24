@@ -537,7 +537,7 @@ export class Draggable {
           if (child === this.dragEl) break;
           if ((child as HTMLElement).classList.contains(this.options.selectedClass!)) continue;
           if (child.nodeName.toUpperCase() === 'TEMPLATE') continue;
-          if (child.hasAttribute('data-template')) continue;
+          if ((child as any)[IS_TEMPLATE_KEY]) continue;
           if (child.getAttribute('draggable') === 'false') continue;
           if (child.matches(this.options.draggable!)) {
             finalIndex++;
