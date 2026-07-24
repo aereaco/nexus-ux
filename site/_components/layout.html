@@ -328,7 +328,7 @@
               data-bind-aria-selected="activeTabId === tab.id"
               data-class="{'tab-active border-b border-primary text-primary': activeTabId === tab.id }"
               data-on-click="activeTabId = tab.id"
-              data-on-contextmenu:stop="const e = $event; ctxMenu = { type: 'tab', tabId: tab.id, x: e.clientX, y: e.clientY };">
+              data-on-contextmenu:stop="const e = $evt; ctxMenu = { type: 'tab', tabId: tab.id, x: e.clientX, y: e.clientY };">
               <iconify-icon icon="material-symbols-light:drag-indicator"
                 class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
               <iconify-icon data-bind-icon="tab.icon" class="text-lg px-2"></iconify-icon>
@@ -404,7 +404,7 @@
            keeps the active tab's content in step with router.route for route
            tabs, so sidebar/router navigation still updates the visible panel. -->
     <div class="p-6 relative" data-on-contextmenu:stop="
-            const e = $event;
+            const e = $evt;
             const a = e.target.closest('a');
             if (a && a.origin === location.origin && !a.hasAttribute('download') && (!a.target || a.target === '_self')) {
               ctxMenu = { type: 'link', url: a.getAttribute('href'), title: a.textContent.trim(), icon: a.getAttribute('data-tab-icon') || '', x: e.clientX, y: e.clientY };
@@ -601,7 +601,7 @@
 
               <!-- Theme Chooser Header: Mode status text + mode cycle button -->
               <div class="flex justify-between items-center pb-3">
-                <span class="text-sm font-medium" data-bind="($theme.mode !== 'auto' ? 'Set ' + ($theme.mode.charAt(0).toUpperCase() + $theme.mode.slice(1)) + ' Theme:' : 'System Theme Selected')"></span>
+                <span class="text-sm font-medium" data-bind="(!$theme.isSystem ? 'Set ' + ($theme.mode.charAt(0).toUpperCase() + $theme.mode.slice(1)) + ' Theme:' : 'System Theme Selected')"></span>
                 <button type="button" class="btn btn-ghost btn-circle size-10" aria-label="Switch theme mode" data-on-click="$switchTheme()">
                   <iconify-icon data-bind-icon="$themeIcon" class="text-xl transition-all duration-300"></iconify-icon>
                 </button>
@@ -609,10 +609,10 @@
 
               <!-- Theme Chooser Dropdown Trigger & Options List -->
               <div title="Change Theme" class="dropdown w-full relative">
-                <button type="button" tabindex="0" class="btn btn-block bg-base-100 justify-between font-sans px-4 py-3 h-auto min-h-12 border border-base-content/10 shadow-sm" data-bind-disabled="$theme.mode === 'auto'" data-on-click="openThemeOptions = !openThemeOptions">
+                <button type="button" tabindex="0" class="btn btn-block bg-base-100 justify-between font-sans px-4 py-3 h-auto min-h-12 border border-base-content/10 shadow-sm" data-bind-disabled="$theme.isSystem" data-on-click="openThemeOptions = !openThemeOptions">
                   <span class="flex items-center gap-2 grow text-start">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="invisible h-3 w-3 shrink-0"><path d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z"></path></svg>
-                    <span class="capitalize text-sm font-semibold" data-bind="$activeTheme"></span>
+                    <span class="capitalize text-sm font-semibold" data-bind="$theme.current"></span>
                   </span>
                   <span class="flex h-full shrink-0 items-center gap-1">
                     <span class="bg-primary rounded-badge w-2 h-4"></span>
@@ -623,21 +623,26 @@
                   </span>
                 </button>
 
-                <!-- Dropdown Content Menu -->
-                <div data-show="openThemeOptions" class="dropdown-content bg-base-200 text-base-content rounded-box absolute top-full start-0 mt-2 h-60 max-h-[calc(100vh-10rem)] w-full overflow-y-auto border border-base-content/10 shadow-2xl z-[200] p-2 space-y-1">
+                <!-- Dropdown Content Menu (porting theme-options.tmpl mechanics) -->
+                <div data-show="openThemeOptions" class="dropdown-content bg-base-200 text-base-content rounded-box absolute top-full start-0 mt-2 h-60 max-h-[calc(100vh-10rem)] w-full overflow-y-auto border border-base-content/10 shadow-2xl z-[200] p-2 space-y-2">
                   <template data-for="t in themes" data-key="t">
-                    <button type="button" class="btn btn-ghost btn-block justify-between font-sans px-3 py-2 h-auto text-start rounded-btn border border-base-content/5" data-bind-data-theme="t" data-on-click="$setTheme(t); openThemeOptions = false">
-                      <span class="flex items-center gap-2 grow">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="h-3 w-3 shrink-0" data-class="{ 'visible text-primary': $activeTheme === t, 'invisible': $activeTheme !== t }"><path d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z"></path></svg>
-                        <span class="capitalize text-sm" data-bind="t"></span>
+                    <label class="outline-base-content text-start outline-offset-4 theme-controller cursor-pointer block" data-class="{ '[&_svg]:visible': $theme.current === t }">
+                      <input type="radio" name="theme-radios" class="radio theme-controller hidden" data-bind-value="t" data-on-click="openThemeOptions = false" data-on-change="$setTheme(t)" />
+                      <span class="bg-base-100 rounded-btn text-base-content block w-full cursor-pointer font-sans" data-bind-data-theme="t">
+                        <span class="grid grid-cols-5 grid-rows-3">
+                          <span class="col-span-5 row-span-3 row-start-1 flex items-center gap-2 px-4 py-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="invisible h-3 w-3 shrink-0"><path d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z"></path></svg>
+                            <span class="flex-grow text-sm capitalize" data-bind="t"></span>
+                            <span class="flex h-full shrink-0 flex-wrap gap-1">
+                              <span class="bg-primary rounded-badge w-2 h-4"></span>
+                              <span class="bg-secondary rounded-badge w-2 h-4"></span>
+                              <span class="bg-accent rounded-badge w-2 h-4"></span>
+                              <span class="bg-neutral rounded-badge w-2 h-4"></span>
+                            </span>
+                          </span>
+                        </span>
                       </span>
-                      <span class="flex h-full shrink-0 items-center gap-1">
-                        <span class="bg-primary rounded-badge w-2 h-3"></span>
-                        <span class="bg-secondary rounded-badge w-2 h-3"></span>
-                        <span class="bg-accent rounded-badge w-2 h-3"></span>
-                        <span class="bg-neutral rounded-badge w-2 h-3"></span>
-                      </span>
-                    </button>
+                    </label>
                   </template>
                 </div>
               </div>
