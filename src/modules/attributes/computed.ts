@@ -51,18 +51,11 @@ const computedModule: AttributeModule = {
     // Ownership is already acquired inside unifiedRef
     const scopeId = el.id || `computed_${Math.random().toString(36).slice(2)}`;
 
-    const isGlobal = el.hasAttribute('data-init');
-
     // Format 1: data-computed="{ prop: () => expr, ... }"
     if (el.hasAttribute('data-computed')) {
       const scopeProxy = createScopeProxy(stateRef as any);
-      
-      let addCleanup: (() => void) | undefined;
-      // Scopes only needed if not global and we have an existing datastack context boundary
-      if (!isGlobal) {
-        addCleanup = addScopeToNode(el, scopeProxy);
-        computedCleanup.push(addCleanup);
-      }
+      const addCleanup = addScopeToNode(el, scopeProxy);
+      computedCleanup.push(addCleanup);
 
       const [_runner, effectCleanup] = runtime.elementBoundEffect(el, () => {
         const computedDefs = runtime.evaluate(el, value || '{}');
