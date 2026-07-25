@@ -36,6 +36,58 @@ import type { RuntimeContext } from './composition.ts';
 import { CLEANUP_FUNCTIONS_KEY } from './consts.ts';
 
 /**
+ * Storage Ref Registry for Live Same-Tab & Cross-Tab Reactivity
+ */
+const storageRefRegistry = new Map<string, Set<Ref<any>>>();
+
+export function registerStorageRef(key: string, ref: Ref<any>) {
+  let set = storageRefRegistry.get(key);
+  if (!set) {
+    set = new Set();
+    storageRefRegistry.set(key, set);
+  }
+  set.add(ref);
+}
+
+export function notifyStorageChange(key?: string) {
+  if (key) {
+    const set = storageRefRegistry.get(key);
+    if (set) set.forEach(r => triggerRef(r));
+  } else {
+    storageRefRegistry.forEach(set => set.forEach(r => triggerRef(r)));
+  }
+}
+
+// Global Same-Tab Storage Instrumentation (WHATWG spec suppresses storage event in same tab)
+if (typeof Storage !== 'undefined' && !(Storage.prototype as any).__nexus_patched) {
+  (Storage.prototype as any).__nexus_patched = true;
+  const origSet = Storage.prototype.setItem;
+  const origRemove = Storage.prototype.removeItem;
+  const origClear = Storage.prototype.clear;
+
+  Storage.prototype.setItem = function (key: string, value: string) {
+    origSet.call(this, key, value);
+    notifyStorageChange(key);
+  };
+
+  Storage.prototype.removeItem = function (key: string) {
+    origRemove.call(this, key);
+    notifyStorageChange(key);
+  };
+
+  Storage.prototype.clear = function () {
+    origClear.call(this);
+    notifyStorageChange();
+  };
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    notifyStorageChange(e.key ?? undefined);
+  });
+}
+
+/**
  * Unified Mirror Proxy Cache
  * Caches reactive references to window sub-properties lazily on-demand.
  * Memory allocated = strictly proportional to exact properties tracked by templates.
@@ -160,7 +212,7 @@ function createHeapBackedRef<T>(
 ): Ref<T> {
   const isStringCoercingAPI = typeof target?.getItem === 'function';
 
-  return customRef((track, _trigger) => ({
+  const ref = customRef((track, _trigger) => ({
     get() {
       track();
       let raw: any = undefined;
@@ -194,6 +246,12 @@ function createHeapBackedRef<T>(
       }
     }
   }));
+
+  if (isStringCoercingAPI) {
+    registerStorageRef(prop, ref);
+  }
+
+  return ref as any;
 }
 
 // ─── Three-Tier Capability Detection ───────────────────────────────────────────
