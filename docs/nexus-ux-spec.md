@@ -644,27 +644,36 @@ See [§7.11](#711-state-sprites--deprecated) in the reference for detailed examp
 
 ---
 
-### 2.6. Environment Mirrors (`_`) — The Unified JIT Proxy
+### 2.6. Reactive Mirrors (`_`) — The Live Web API Observer Engine
 
-Mirrors are **reactive wrappers** mapped directly to the `globalThis.window`
-object. They use the `_` prefix, triggering the framework's lazy JIT proxy
-engine that directly binds browser capabilities to visual state without
-requiring static module wrappers or framework updates for novel browser APIs.
+Reactive Mirrors are **live, push-based reactive viewports** mapped directly to native browser APIs (`globalThis.window`). They use the `_` prefix, triggering the framework's dynamic JIT proxy engine that directly binds browser capabilities to visual state without requiring static module wrappers or custom hooks.
 
-- **Lazy Reactivity Allocation (ZCZS)**: Memory for synchronization (like
-  `resize`, `storage`, or `hashchange` event listeners) is only allocated to the
-  runtime heap if an HTML template explicitly registers a read dependency on
-  that property. If your application never accesses `_localStorage`, no tracking
-  payload or system listener is booted.
+- **Lazy Reactivity Allocation (ZCZS)**: Memory for synchronization (like `resize`, `storage`, or `hashchange` event listeners) is only allocated to the runtime heap if an HTML template explicitly registers a read dependency on that property. If your application never accesses `_localStorage`, no tracking payload or system listener is booted.
+- **Push-Based Native Observation**: Native Web API getters (`localStorage.getItem()`) are static/pull-based and sample state only at invocation. Reactive Mirrors (`_localStorage.collapsed`) register fine-grained dependencies on read and **actively push state updates** to all watching signals, effects, and DOM elements whenever native Web APIs mutate.
+- **Pure Web API Action Pattern**:
+  ```html
+  <div data-signal="{
+        collapsed: _localStorage.collapsed ?? true,
+        pageTabs: _localStorage.pageTabs ?? true,
+        rtl: _localStorage.rtl ?? false,
+        zoom: _localStorage.zoom ?? 1
+      }">
+    <button data-on-click="localStorage.setItem('collapsed', !_localStorage.collapsed)"
+            data-class="{ 'scale-x-[-1]': !collapsed }">
+  </div>
+  ```
+  - **Signal Declaration:** Declaratively seed signals directly from mirror expressions with explicit nullish defaults (`??`).
+  - **Action Directives:** Execute native browser API calls directly (`localStorage.setItem(...)`) without duplicate manual signal mutations.
+  - **Template View Directives:** HTML elements observe short, clean signal names (`!collapsed`, `pageTabs`), keeping templates non-verbose.
 
-#### 2.6.1. Native Mirror Quick Reference
+#### 2.6.1. Native Reactive Mirror Quick Reference
 
 | Mirror / Namespace     | Type          | Read-Write?  | Description & Replacement Notes                                                                                             | Migration From           |
 | :--------------------- | :------------ | :----------- | :-------------------------------------------------------------------------------------------------------------------------- | :----------------------- |
-| **`_window`**          | `Window`      | ✅ yes       | Full reactive proxy to `window`. Arbitrary properties tracked lazily (e.g., `_window.innerWidth`).                          | —                        |
-| **`_localStorage`**    | `Storage`     | ✅ yes       | Reactive localStorage with cross-tab `storage` event sync.                                                                 | —                        |
-| **`_sessionStorage`**  | `Storage`     | ✅ yes       | Reactive sessionStorage (tab-scoped).                                                                                      | —                        |
-| **`_navigator`**       | `Navigator`   | ⚠️ read-only | Reactive online/offline, hardware concurrency, etc.                                                                        | —                        |
+| **`_window`**          | `Window`      | ⚠️ read-only | Reactive proxy to `window`. Arbitrary properties tracked lazily (e.g., `_window.innerWidth`).                              | —                        |
+| **`_localStorage`**    | `Storage`     | ⚠️ read-only | Reactive read-only viewport to `localStorage`. Mutate via native `localStorage.setItem()`.                               | —                        |
+| **`_sessionStorage`**  | `Storage`     | ⚠️ read-only | Reactive read-only viewport to `sessionStorage`. Mutate via native `sessionStorage.setItem()`.                            | —                        |
+| **`_navigator`**       | `Navigator`   | ⚠️ read-only | Reactive online/offline, hardware concurrency, media devices, etc.                                                         | —                        |
 | **`_screen`**          | `Screen`      | ⚠️ read-only | Reactive orientation/dimensions via JIT resize listener.                                                                   | —                        |
 | **`_fetch()`**         | `Function`    | ✅ yes       | Raw fetch with SuspenseProxy integration. **Replaces** `$fetch`.                                                           | `$fetch` → `_fetch()`    |
 | **`_http`**            | `Namespace`   | ✅ yes       | `{ get, post, put, patch, delete }` — auto-JSON helpers. **Replaces** `$http` family.                                     | `$get` → `_http.get()`   |
@@ -673,8 +682,8 @@ requiring static module wrappers or framework updates for novel browser APIs.
 | **`_Notification`**    | `Constructor` | ⚠️ ctor-only | `new _Notification(title, opts)`; static `.permission`, `.requestPermission()`. **Replaces** `$notification`.            | `$notification` → `_Notification` |
 | **`_PaymentRequest`**  | `Constructor` | ⚠️ ctor-only | `new _PaymentRequest(methods, details)`; `.canMakePayment()`. **Replaces** `$payment`.                                    | `$payment` → `_PaymentRequest` |
 | **`_WebSocket`**       | `Constructor` | ✅ yes       | Reactive WebSocket with singleton multiplexing + auto-cleanup. **Replaces** `$ws`.                                         | `$ws` → `_WebSocket()`   |
-| **`_download()**       | `Function`    | ✅ yes       | Utility function `_download(filename, content, mime)` — synchronous Blob URL generator. **Retained** (not a sprite).      | — (utility unchanged)    |
-| **`_IntersectionObserver`**  | `Constructor` | ✅ yes  | Bare `_IntersectionObserver(cb)` → global singleton; `new` → isolated instance with cleanup.                               | — (mirrors were always `_` prefixed) |
+| **`_download()`**      | `Function`    | ✅ yes       | Utility function `_download(filename, content, mime)` — synchronous Blob URL generator. **Retained** (not a sprite).      | — (utility unchanged)    |
+| **`_IntersectionObserver`**  | `Constructor` | ✅ yes  | Bare `_IntersectionObserver(cb)` → global singleton; `new` → isolated instance with cleanup.                               | —                        |
 | **`_ResizeObserver`**  | `Constructor` | ✅ yes       | Same pattern: bare = singleton; `new` = isolated.                                                                          | —                        |
 | **`_MutationObserver`**| `Constructor` | ✅ yes       | Used internally by framework mutation engine.                                                                              | —                        |
 | **`_PerformanceObserver`** | `Constructor` | ✅ yes  | Global performance entry observer.                                                                                          | —                        |
