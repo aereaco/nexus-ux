@@ -330,7 +330,7 @@
               data-bind-aria-selected="activeTabId === tab.id"
               data-class="{'tab-active border-b border-primary text-primary': activeTabId === tab.id }"
               data-on-click="activeTabId = tab.id"
-              data-on-contextmenu:stop="const e = $evt; ctxMenu = { type: 'tab', tabId: tab.id, x: e.clientX, y: e.clientY };">
+              data-on-hold:stop="const e = $evt; ctxMenu = { type: 'tab', tabId: tab.id, title: tab.title, content: tab.content, icon: tab.icon, x: e.clientX || e.touches?.[0]?.clientX || 100, y: e.clientY || e.touches?.[0]?.clientY || 100 };">
               <iconify-icon icon="material-symbols-light:drag-indicator"
                 class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
               <iconify-icon data-bind-icon="tab.icon" class="text-lg px-2"></iconify-icon>
