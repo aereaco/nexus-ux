@@ -289,6 +289,12 @@ export function evaluateLater(
           return runtime.unref(val);
         }
 
+        // 5. Global Actions
+        const globalActions = runtime.globalActions();
+        if (key in globalActions) {
+          return (globalActions as any)[key];
+        }
+
         // 6. GlobalThis Fallback
         if (key in globalThis) {
           const val = (globalThis as any)[key];
