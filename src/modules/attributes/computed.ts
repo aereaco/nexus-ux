@@ -37,6 +37,7 @@ const computedModule: AttributeModule = {
   metadata: { after: ['signal'] },
   handle: (el: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void => {
     const computedCleanup: (() => void)[] = [];
+    const isGlobal = el.hasAttribute('data-computed:global');
 
     // 0. Parse Ghost Keys for pre-allocation
     const { ghostKeys } = parseGhostKeys(value);
