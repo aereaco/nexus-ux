@@ -30,15 +30,37 @@ reactive state graph while achieving **100% functional parity with Tailwind v4**
 
 ---
 
-## 🎯 Mirror-Auto-Wrap Architecture (2026 Refactor)
+## 🎯 Reactive Mirrors Architecture (`_`)
 
-Nexus-UX now uses **native environment mirrors** (`_fetch`, `_clipboard`, `_cache`,
-etc.) instead of legacy sprite wrappers. All browser API sprites have been removed
-and replaced with first-class `_`-prefixed mirrors that provide:
+Nexus-UX uses **Reactive Mirrors** (`_localStorage`, `_window`, `_navigator`, `_location`, `_fetch`, `_clipboard`, `_caches`, etc.) as **live, push-based reactive viewports** over native browser APIs. 
 
-- **Deep reactivity** with automatic ownership tracking
-- **Zero wrapper maintenance** — direct browser API parity
-- **Automatic cleanup** on element disposal
+Unlike static native getters (`localStorage.getItem()`) that sample state only at invocation, **Reactive Mirrors** register fine-grained dependencies on read and **actively push state updates** to watching signals and DOM elements whenever native Web APIs mutate.
+
+### Standard Reactive Mirror Pattern
+
+```html
+<div class="grid grid-cols-[0rem_1fr]" data-signal="{
+      collapsed: _localStorage.collapsed ?? true,
+      pageTabs: _localStorage.pageTabs ?? true,
+      rtl: _localStorage.rtl ?? false,
+      zoom: _localStorage.zoom ?? 1
+    }" data-class="{ 'md:grid-cols-[5rem_1fr]': collapsed }">
+
+  <!-- Pure Web API Action Directive (Mutates native storage directly) -->
+  <button data-on-click="localStorage.setItem('collapsed', !_localStorage.collapsed)"
+          data-class="{ 'scale-x-[-1]': !collapsed }">
+    Toggle Sidebar
+  </button>
+</div>
+```
+
+- **Declarative Signal Seeding:** Initialize signals directly from mirror expressions with explicit nullish defaults (`??`).
+- **Pure Web API Actions:** Action handlers call native browser APIs directly (`localStorage.setItem(...)`). The mirror pushes updates to watching signals automatically—no manual signal mutations needed!
+- **Concise View Templates:** Elements observe short signal names (`!collapsed`, `pageTabs`), eliminating template code bloat.
+
+- **Live Push Reactivity:** Instant same-tab & cross-tab updates without polling or re-renders
+- **Zero-Copy Performance:** Proxies wrap native APIs by reference without cloning
+- **Automatic Cleanup:** Zero memory leaks on element disposal
 
 ### Auto-Injected Utilities (Inline)
 
