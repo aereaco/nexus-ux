@@ -325,13 +325,14 @@ async function buildBundle(options: BuildOptions = {}) {
       let minified = code;
       try {
         const result = await swcMinify(code, {
-          compress: { passes: 2, unused: true, dead_code: true },
-          mangle: { toplevel: false }
+          compress: { passes: 3, unused: true, dead_code: true, drop_console: true },
+          mangle: { toplevel: true, reserved: ["UX"] }
         });
         if (result && typeof result.code === 'string' && result.code.trim().length > 0) {
           minified = result.code;
         }
-      } catch {
+      } catch (err) {
+        console.warn("SWC minification warning, using esbuild fallback:", err);
         minified = code;
       }
       await Deno.writeTextFile(minFile, minified);
