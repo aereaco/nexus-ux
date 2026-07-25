@@ -155,63 +155,42 @@ function createHeapBackedRef<T>(
   target: any,
   prop: string,
   heapKey: string,
-  globalSignals: Record<string, unknown>,
-  scheduler: RuntimeContext['scheduler']
+  _globalSignals: Record<string, unknown>,
+  _scheduler: RuntimeContext['scheduler']
 ): Ref<T> {
-  // Structural: APIs with getItem+setItem follow the Storage interface (string-coercing).
-  // No name checks — any API with this shape gets the same serialization treatment.
-  const isStringCoercingAPI = typeof target?.getItem === 'function' &&
-    typeof target?.setItem === 'function';
+  const isStringCoercingAPI = typeof target?.getItem === 'function';
 
-  if (!heap.has(heapKey)) {
-    let initial = undefined;
-    try {
-      initial = isStringCoercingAPI ? target.getItem(prop) : target[prop];
-    } catch {
-      // Ignore initial read failure
-    }
-
-    // Dynamic JSON Reader: Recognize JSON strings dynamically
-    if (typeof initial === 'string') {
-      const trimmed = initial.trim();
-      if ((trimmed.startsWith('{') && trimmed.endsWith('}')) ||
-        (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
-        try {
-          initial = JSON.parse(trimmed);
-        } catch {
-          // Keep raw string
-        }
-      }
-    }
-    heap.set(heapKey, initial);
-  }
-
-  return customRef((track, trigger) => ({
+  return customRef((track, _trigger) => ({
     get() {
       track();
-      return heap.get(heapKey) as T;
-    },
-    set(newValue) {
-      heap.set(heapKey, newValue);
-
+      let raw: any = undefined;
       try {
-        if (isStringCoercingAPI) {
-          const strValue = (newValue && typeof newValue === 'object')
-            ? JSON.stringify(toRaw(newValue))
-            : String(newValue);
-          target.setItem(prop, strValue);
-        } else {
-          if (newValue && typeof newValue === 'object') {
-            Reflect.set(target, prop, newValue);
-          } else {
-            Reflect.set(target, prop, newValue);
-          }
-        }
-      } catch (e) {
-        console.warn(`[Nexus Mirror] Dynamic write failed for ${prop}:`, e);
+        raw = isStringCoercingAPI ? target.getItem(prop) : target[prop];
+      } catch {
+        raw = undefined;
       }
 
-      trigger();
+      if (typeof raw === 'string') {
+        const trimmed = raw.trim();
+        if (trimmed === 'true') return true as any;
+        if (trimmed === 'false') return false as any;
+        if (trimmed === 'null') return null as any;
+        if (trimmed !== '' && !isNaN(Number(trimmed))) return Number(trimmed) as any;
+        if ((trimmed.startsWith('{') && trimmed.endsWith('}')) ||
+            (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+          try {
+            return JSON.parse(trimmed);
+          } catch {
+            return raw;
+          }
+        }
+      }
+      return raw;
+    },
+    set(_newValue) {
+      if (typeof console !== 'undefined' && console.warn) {
+        console.warn(`[Nexus Mirror] _${heapKey} is a read-only reflective viewport. Mutate Web APIs directly (e.g. localStorage.setItem('${prop}', ...)).`);
+      }
     }
   }));
 }
