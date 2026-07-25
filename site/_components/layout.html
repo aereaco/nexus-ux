@@ -1,18 +1,17 @@
 <div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300 min-h-screen" data-signal="{
-    collapsed: true,
+    collapsed: (_localStorage.collapsed = _localStorage.collapsed ?? true),
     hovered: false,
     sidebarOpen: false,
     isMobile: _window.innerWidth < 768,
     searchOpen: false,
     searchQuery: '',
     activeSidebarTab: 1,
-    pageTabs: _localStorage.getItem('pageTabs') !== null ? _localStorage.getItem('pageTabs') === 'true' : true,
-    rtl: _localStorage.getItem('rtl') !== null ? _localStorage.getItem('rtl') === 'true' : false,
-    zoom: Number(_localStorage.getItem('zoom') || 1),
+    pageTabs: (_localStorage.pageTabs = _localStorage.pageTabs ?? true),
+    rtl: (_localStorage.rtl = _localStorage.rtl ?? false),
+    zoom: (_localStorage.zoom = Number(_localStorage.zoom ?? 1)),
     themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset']
-  }" data-class="{ 'md:grid-cols-[20rem_1fr]': !collapsed, 'md:grid-cols-[5rem_1fr]': collapsed }"
-  data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: zoom + 'rem' }"
-  data-effect="_localStorage.setItem('pageTabs', pageTabs); _localStorage.setItem('rtl', rtl); _localStorage.setItem('zoom', zoom); _localStorage.setItem('collapsed', collapsed)">
+  }" data-class="{ 'md:grid-cols-[20rem_1fr]': !_localStorage.collapsed, 'md:grid-cols-[5rem_1fr]': _localStorage.collapsed }"
+  data-bind-dir="_localStorage.rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: _localStorage.zoom + 'rem' }">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content" data-router="{ mode: 'hybrid', pagesDir: '_pages', error: 'error.html' }"
     data-signal:global="{
