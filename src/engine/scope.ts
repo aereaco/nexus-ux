@@ -102,8 +102,8 @@ export function addScopeToNode(element: Element, data: Record<string, unknown>, 
 /**
  * Checks if a node has an associated data stack.
  */
-export function hasScope(element: HTMLElement): boolean {
-  return !!(element as NexusEnhancedElement)[DATA_STACK_KEY];
+export function hasScope(element: Element): boolean {
+  return !!(element as any)[DATA_STACK_KEY];
 }
 
 // ---------------------------------------------------------------------------
