@@ -312,7 +312,7 @@ export const routerAttributeModule: AttributeModule = {
         pagesDir?: string;
         manifest?: string;
         dynamic?: boolean;
-        shadow?: unknown;
+        shadow?: string | string[];
         error?: string;
       } = {};
       if (initConfig && initConfig.trim()) {
@@ -476,7 +476,7 @@ export const routerAttributeModule: AttributeModule = {
 
       // 1. Create Reactive State
       // shallowReactive prevents deep proxying of HTMLElements held in routes.
-      const state = runtime.shallowReactive<RouterState>({
+      const state: RouterState = runtime.shallowReactive<RouterState>({
         path: stripBase(globalThis.location.pathname),
         params: {},
         query: {},
