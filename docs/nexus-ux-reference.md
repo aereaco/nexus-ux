@@ -1139,23 +1139,44 @@ event listeners), return a cleanup function:
 
 ---
 
-## Chapter 7: Sprites (`$`) & Environment Mirrors (`_`)
+## Chapter 7: Sprites (`$`) & Reactive Mirrors (`_`)
 
-Nexus-UX provides two complementary namespaces for imperative operations:
+Nexus-UX provides two complementary namespaces for imperative and reactive operations:
 
 - **Sprites (`$`)** — Framework-level commands and value-add integrations (SurrealDB,
   GraphQL, animation, selector engine, etc.). These remain as explicit sprite modules.
-- **Environment Mirrors (`_`)** — **Native browser API access** with full reactivity,
-  ownership tracking, and automatic cleanup. The `_` prefix triggers lazy JIT proxy
-  generation for *any* browser API without requiring framework wrapper modules.
+- **Reactive Mirrors (`_`)** — **Live, push-based native browser API viewports** with full fine-grained reactivity, ownership tracking, and zero-copy performance. The `_` prefix triggers lazy JIT proxy generation for *any* browser API without requiring framework wrapper modules or custom hooks.
 
 > **⚠️ Mirror-First Policy**: For all browser-native functionality, use `_` mirrors
 > instead of legacy sprite wrappers. Sprites like `$fetch`, `$clipboard`, `$cache`,
 > `$notification`, `$payment`, `$ws`, `$download`, `$http` are **deprecated**.
 > Direct native mirror equivalents are available as `_fetch`, `_clipboard`,
-> `_cache`, `_Notification`, `_PaymentRequest`, `_WebSocket`, `_download` (utility
-> function), `_http` (namespace). See [§2.6](#26-environment-mirrors-) and
-> [Chapter 7.5](#75-environment-mirrors-).
+> `_caches`, `_Notification`, `_PaymentRequest`, `_WebSocket`, `_download` (utility
+> function), `_http` (namespace). See [§2.6](#26-reactive-mirrors-) and
+> [Chapter 7.5](#75-reactive-mirrors-).
+
+### The Reactive Mirror Architecture Pattern
+
+```html
+<div class="grid grid-cols-[0rem_1fr]" data-signal="{
+      collapsed: _localStorage.collapsed ?? true,
+      pageTabs: _localStorage.pageTabs ?? true,
+      rtl: _localStorage.rtl ?? false,
+      zoom: _localStorage.zoom ?? 1
+    }" data-class="{ 'md:grid-cols-[5rem_1fr]': collapsed }"
+    data-bind-dir="rtl ? 'rtl' : 'ltr'">
+
+  <!-- Pure Web API Action Directive (Mutates native storage directly) -->
+  <button data-on-click="localStorage.setItem('collapsed', !_localStorage.collapsed)"
+          data-class="{ 'scale-x-[-1]': !collapsed }">
+    Toggle Sidebar
+  </button>
+</div>
+```
+
+- **1. Signal Declaration:** Declaratively seed signals directly from mirror expressions with explicit nullish defaults (`??`).
+- **2. Pure Web API Action Directives:** Action handlers call native browser APIs directly (`localStorage.setItem(...)`). The **Reactive Mirror** pushes updates to watching signals automatically—no duplicate manual signal mutations are needed!
+- **3. Concise Template View Directives:** HTML elements observe short, readable signal names (`!collapsed`, `pageTabs`, `rtl`), eliminating template code bloat.
 
 ### Quick Migration Reference
 
