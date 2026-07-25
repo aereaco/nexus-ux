@@ -321,6 +321,7 @@ async function buildBundle(options: BuildOptions = {}) {
       const brFile = `${minFile}.br`;
 
       console.log("Minifying with SWC...");
+      const code = await Deno.readTextFile(outFile);
       let minified = code;
       try {
         const result = await swcMinify(code, {
