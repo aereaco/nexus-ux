@@ -19,10 +19,10 @@
         activeTabId: 'home',
         activeTab: null,
         pinned: [],
-        tabSeq: 0,
         ctxMenu: null,
-        favorites: (() => { try { return JSON.parse(localStorage.getItem('nexus-favorites') || '[]'); } catch { return []; } })(),
-        recent: [],
+        favorites: _localStorage.favorites ?? [],
+        favForm: { title: '', href: '', icon: 'material-symbols-light:star-outline' },
+        pendingDeleteId: null,
         themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset'],
         sidebarItems: [
           { href: '/', title: 'Homepage', icon: 'material-symbols-light:home-outline', tabTitle: 'Home', tabIcon: 'material-symbols-light:home-outline' },
@@ -576,21 +576,30 @@
       <div class="grow w-full overflow-x-hidden overflow-y-auto"
         data-show="activeSidebarTab === 2 && (!collapsed || hovered || sidebarOpen)">
         <div class="p-6">
-          <div class="mb-6 whitespace-nowrap">
+          <div class="flex items-center justify-between mb-6">
             <h1 class="text-lg font-bold">Favorites</h1>
+            <button type="button" class="btn btn-ghost btn-xs btn-circle" title="Add Favorite"
+              data-on-click="favForm = { title: 'New Favorite', href: router.route || '/', icon: 'material-symbols-light:star-outline' }; $('#fav-modal').showModal();">
+              <iconify-icon icon="material-symbols-light:add" class="text-lg"></iconify-icon>
+            </button>
           </div>
-          <ul class="menu w-full" data-show="favorites && favorites.length > 0">
-            <template data-for="fav in favorites" data-key="fav">
-              <li>
-                <a data-bind-href="fav">
-                  <iconify-icon icon="material-symbols-light:star" class="text-warning text-xl"></iconify-icon>
-                  <span data-bind="fav"></span>
+          <ul class="menu w-full p-0 space-y-1" data-show="favorites && favorites.length > 0">
+            <template data-for="fav in favorites" data-key="fav.id || fav">
+              <li class="flex flex-row items-center justify-between group rounded-box hover:bg-base-200">
+                <a data-bind-href="fav.href || fav" class="grow flex items-center gap-3 py-2 px-3">
+                  <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:star'" class="text-warning text-xl shrink-0"></iconify-icon>
+                  <span class="truncate font-medium text-sm" data-bind="fav.title || fav"></span>
                 </a>
+                <button type="button" class="btn btn-ghost btn-xs btn-circle text-error opacity-0 group-hover:opacity-100 transition-opacity me-2" title="Remove Favorite"
+                  data-on-click:stop="pendingDeleteId = fav.id || fav; $('#fav-delete-modal').showModal();">
+                  <iconify-icon icon="material-symbols-light:delete-outline" class="text-base"></iconify-icon>
+                </button>
               </li>
             </template>
           </ul>
-          <div data-show="!favorites || favorites.length === 0">
-            <p class="text-sm opacity-60">No favorites pinned yet.</p>
+          <div data-show="!favorites || favorites.length === 0" class="text-center py-8">
+            <iconify-icon icon="material-symbols-light:star-outline" class="text-4xl opacity-30 mb-2"></iconify-icon>
+            <p class="text-sm opacity-60">No favorites saved yet.</p>
           </div>
         </div>
       </div>
