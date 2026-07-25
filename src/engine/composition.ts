@@ -92,7 +92,7 @@ export interface RuntimeContext {
   reconcileClass: (el: HTMLElement, value: unknown) => void;
   reconcileStyle: (el: HTMLElement, value: unknown) => void;
   adoptStyle: (el: HTMLElement) => void;
-  processElement: (element: Element) => void;
+  processElement: (element: any, forceReWalk?: boolean, isolationLevel?: "style" | "none" | "total" | "ux") => void;
 
   // State Management
   globalSignals: () => Record<string, unknown>;
