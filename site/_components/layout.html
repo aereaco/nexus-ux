@@ -19,6 +19,7 @@
         activeTabId: 'home',
         activeTab: null,
         pinned: [],
+        tabSeq: 0,
         ctxMenu: null,
         favorites: _localStorage.favorites ?? [],
         favForm: { title: '', href: '', icon: 'material-symbols-light:star-outline' },
@@ -389,7 +390,7 @@
           <div class="flex items-center h-10 pe-4 ps-6 bg-base-300 text-secondary">
             <div class="tooltip z-100" data-tip="Toggle page tabs">
               <button class="btn btn-xl" data-class="{ 'btn-active': pageTabs }"
-                data-on-click="localStorage.setItem('pageTabs', _localStorage.pageTabs === false ? 'true' : 'false')">
+                data-on-click="localStorage.setItem('pageTabs', !pageTabs)">
                 <iconify-icon icon="material-symbols-light:tab-group-outline"></iconify-icon>
               </button>
             </div>
