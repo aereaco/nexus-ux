@@ -703,11 +703,11 @@
       </div>
 
       <div class="dock"
-        data-class="{ 'flex': (collapsed || isMobile) && !hovered && !sidebarOpen, 'hidden': sidebarOpen || hovered || (!collapsed && !isMobile) }">
+        data-class="{ 'flex': (_localStorage.collapsed || isMobile) && !hovered && !sidebarOpen, 'hidden': sidebarOpen || hovered || (!_localStorage.collapsed && !isMobile) }">
         <iconify-icon icon="material-symbols-light:left-panel-open-outline" style="font-size: 24px"></iconify-icon>
       </div>
       <div class="dock"
-        data-class="{ 'flex': sidebarOpen || hovered || (!collapsed && !isMobile), 'hidden': (collapsed || isMobile) && !hovered && !sidebarOpen }">
+        data-class="{ 'flex': sidebarOpen || hovered || (!_localStorage.collapsed && !isMobile), 'hidden': (_localStorage.collapsed || isMobile) && !hovered && !sidebarOpen }">
         <button class="tooltip tooltip-top" data-tip="Menu" data-class="{ 'dock-active': activeSidebarTab === 1 }"
           data-on-click="activeSidebarTab = 1">
           <iconify-icon icon="material-symbols-light:list" style="font-size: 24px"></iconify-icon>
