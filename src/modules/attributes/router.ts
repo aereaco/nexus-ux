@@ -1,3 +1,39 @@
+/**
+ * Nexus-UX Router Directive Module
+ *
+ * Handles `data-router` for client-side routing. Initializes the #router
+ * signal, manages navigation, and supports section/outlet rendering models.
+ *
+ * Rendering Paradigms:
+ *   - Section model: `<element data-route="/x">` with children; matched
+ *     element shown via reconcileStyle(display)
+ *   - Outlet model: `<element data-component="#router.route">` renders
+ *     component reactively when signal changes
+ *
+ * Capabilities:
+ *   - Native Navigation API interception with History fallback
+ *   - Per-route lifecycle hooks: beforeLeave, beforeEnter, handler,
+ *     afterEnter, afterLeave (async-awaited; false aborts, string redirects)
+ *   - Declarative redirect via route.redirect
+ *   - Routing modes: 'signal' (default) | 'static' | 'hybrid'
+ *   - Default route: `data-router="{ default: '/home' }"`
+ *
+ * ZCZS Guarantees:
+ *   - Zero-copy: Route config is a plain object; no cloning.
+ *   - Zero-serialization: DOM updates via reconcileStyle/morphDOM by reference.
+ *
+ * Coordination:
+ *   - evaluator.ts resolves #router.route in expression scope
+ *   - component.ts renders outlet components reactively
+ *   - stylesheet.ts adopts route-specific styles
+ *   - ModuleCoordinator registers via registerAttributeModule
+ *
+ * Nexus-UX Innovations Preserved:
+ *   - Signal-based routing with reactive outlet binding
+ *   - Hybrid static/signal routing mode
+ *   - Lifecycle hook system with abort/redirect support
+ */
+
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { reportError } from '../../engine/debug.ts';
@@ -270,7 +306,15 @@ export const routerAttributeModule: AttributeModule = {
       const appBase = globalThis.location.href;
 
       // Parse optional config object: data-router="{ mode: 'hybrid', default: '/home' }"
-      let cfg: { mode?: RouterMode; default?: string } = {};
+      let cfg: {
+        mode?: RouterMode;
+        default?: string;
+        pagesDir?: string;
+        manifest?: string;
+        dynamic?: boolean;
+        shadow?: unknown;
+        error?: string;
+      } = {};
       if (initConfig && initConfig.trim()) {
         try {
           const evaluated = runtime.evaluate(el, initConfig);
