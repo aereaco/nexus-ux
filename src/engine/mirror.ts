@@ -1,3 +1,36 @@
+/**
+ * Nexus-UX Browser API Mirror System
+ *
+ * Generates reactive wrappers for native browser APIs on demand. When an
+ * expression references `_fetch()`, `_clipboard`, or any other `_`-prefixed
+ * identifier, this module creates a reactive Proxy that mirrors the native
+ * API and auto-tracks property changes.
+ *
+ * Mirror Cache:
+ *   Generated mirrors are cached in mirrorCache by property name. Memory
+ *   allocation is strictly proportional to the exact properties tracked by
+ *   templates -- no eager mirroring.
+ *
+ * Layout-Metric Coalescing:
+ *   Properties like innerWidth, scrollY, and devicePixelRatio are coalesced
+ *   to one update per animation frame to prevent reflow feedback loops from
+ *   causing synchronous re-renders.
+ *
+ * ZCZS Guarantees:
+ *   - Zero-copy: Mirrors wrap native objects by reference via Proxy.
+ *   - Zero-serialization: Reactive refs track native values directly.
+ *
+ * Coordination:
+ *   - evaluator.ts resolves `_` prefixed identifiers through this module.
+ *   - scope.ts registers mirror providers into the runtime context.
+ *   - ModuleCoordinator.registerMirrorModule() auto-injects mirrors.
+ *
+ * Nexus-UX Innovations Preserved:
+ *   - Dynamic mirror generation for any browser API (not pre-defined list)
+ *   - Reactive tracking of native property mutations
+ *   - Layout-metric coalescing for reflow stability
+ */
+
 import { shallowRef, type Ref, heap, customRef, toRaw } from './reactivity.ts';
 import type { RuntimeContext } from './composition.ts';
 import { CLEANUP_FUNCTIONS_KEY } from './consts.ts';
@@ -138,11 +171,19 @@ function createHeapBackedRef<T>(
       // Ignore initial read failure
     }
     
-    // Dynamic JSON Reader: Recognize JSON strings dynamically
+    // Dynamic JSON & Primitive Reader: Recognize storage primitives dynamically on boot
     if (typeof initial === 'string') {
       const trimmed = initial.trim();
-      if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || 
-          (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+      if (trimmed === 'true') {
+        initial = true;
+      } else if (trimmed === 'false') {
+        initial = false;
+      } else if (trimmed === 'null') {
+        initial = null;
+      } else if (trimmed !== '' && !isNaN(Number(trimmed))) {
+        initial = Number(trimmed);
+      } else if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || 
+                 (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
         try {
           initial = JSON.parse(trimmed);
         } catch {
@@ -364,6 +405,28 @@ function getObjectMirror(
   return new Proxy(target, {
     get(t, prop: string | symbol) {
       if (typeof prop === 'string') {
+        if (typeof target?.getItem === 'function' && typeof target?.setItem === 'function') {
+          if (prop === 'getItem') {
+            return (key: string) => getOrCreateRef(key).value;
+          }
+          if (prop === 'setItem') {
+            return (key: string, val: any) => { getOrCreateRef(key).value = val; };
+          }
+          if (prop === 'removeItem') {
+            return (key: string) => {
+              target.removeItem(key);
+              localCache.delete(key);
+              heap.delete(`${name}.${key}`);
+            };
+          }
+          if (prop === 'clear') {
+            return () => {
+              target.clear();
+              localCache.clear();
+            };
+          }
+        }
+
         const value = getOrCreateRef(prop).value;
         if (typeof value === 'function') return value.bind(t);
         if (value && typeof value === 'object' && !Array.isArray(value)) {
