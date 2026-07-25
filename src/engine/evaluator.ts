@@ -241,31 +241,20 @@ export function evaluateLater(
     has(target, key): boolean {
       if (key === Symbol.unscopables) return false;
       if (typeof key === 'string') {
-        if (key.startsWith('_')) return true;
-        if (hasScopeProvider(key)) return true;
-        const globalSignals = runtime.globalSignals();
-        const globalActions = runtime.globalActions();
-
-        // ZCZS: Live Scope Resolution — always fetches current context
-        const dataStack = getDataStack(el as HTMLElement);
-
-        return (key in target) || (key in globalSignals) || (key in globalActions) || dataStack.some(data => key in data);
+        return true; // Always route through proxy get to eliminate ReferenceError log floods
       }
       return false;
     },
     get(target, key): unknown {
       if (key === Symbol.unscopables) return undefined;
       if (typeof key === 'string') {
-        // 1. Mirror Proxy (`_` prefix) - Dynamic mirror generation for any browser API
+        // 1. Mirror Proxy (`_` prefix)
         if (key.startsWith('_')) {
           if (key === '_' || key === '_window') return MirrorProxy;
-
           const realName = key.slice(1);
           const globalSignals = runtime.globalSignals();
           let val = (globalSignals as any)[key];
-
           if (val !== undefined) return val;
-
           try {
             const nativeTarget = (globalThis as any)[realName];
             if (nativeTarget !== undefined) {
@@ -274,8 +263,6 @@ export function evaluateLater(
               return wrapped;
             }
           } catch (e) {
-            if (runtime.isDevMode) {
-              console.warn(`[Nexus Evaluator] Blocked or failed to get native target for ${realName}:`, e);
             }
           }
           return undefined;
