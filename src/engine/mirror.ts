@@ -195,10 +195,6 @@ function createHeapBackedRef<T>(
     }
   }));
 
-  if (isStringCoercingAPI) {
-    registerStorageRef(prop, ref);
-  }
-
   return ref as any;
 }
 
