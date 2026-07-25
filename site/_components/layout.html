@@ -331,7 +331,10 @@
               data-bind-aria-selected="activeTabId === tab.id"
               data-class="{'tab-active border-b border-primary text-primary': activeTabId === tab.id }"
               data-on-click="activeTabId = tab.id"
-              data-on-contextmenu:prevent="const e = $evt; ctxMenu = { type: 'tab', tabId: tab.id, title: tab.title, content: tab.content, icon: tab.icon, x: e.clientX, y: e.clientY };">
+              data-on-pointerdown="if ($evt.button === 2) { const e = $evt; window.__secHoldTimer = setTimeout(() => { ctxMenu = { type: 'tab', tabId: tab.id, title: tab.title, content: tab.content, icon: tab.icon, x: e.clientX, y: e.clientY }; window.__preventNativeCtx = true; }, 500); }"
+              data-on-pointerup="if (window.__secHoldTimer) { clearTimeout(window.__secHoldTimer); window.__secHoldTimer = null; }"
+              data-on-pointerleave="if (window.__secHoldTimer) { clearTimeout(window.__secHoldTimer); window.__secHoldTimer = null; }"
+              data-on-contextmenu="if (window.__preventNativeCtx) { $evt.preventDefault(); window.__preventNativeCtx = false; }">
               <iconify-icon icon="material-symbols-light:drag-indicator"
                 class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
               <iconify-icon data-bind-icon="tab.icon" class="text-lg px-2"></iconify-icon>
