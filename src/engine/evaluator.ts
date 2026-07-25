@@ -441,7 +441,6 @@ export function evaluateLater(
         receiver(result);
       }
     } catch (e) {
-      console.log('[DEBUG EVAL ERROR]', e);
       if (e instanceof Promise) throw e; // Rethrow for Suspense support
       if ((e instanceof TypeError && e.message.includes('Cannot read properties of')) || e instanceof ReferenceError) {
         if (runtime.isDevMode) {
