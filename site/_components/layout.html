@@ -589,10 +589,9 @@
             <a data-bind-href="item.href" data-bind-data-tab-title="item.tabTitle"
               data-bind-data-tab-icon="item.tabIcon"
               data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-              data-on-pointerdown="if ($evt.button === 2) { const e = $evt; window.__secHoldTimer = setTimeout(() => { ctxMenu = { type: 'sidebar', title: item.title, href: item.href, icon: item.icon, x: e.clientX, y: e.clientY }; window.__preventNativeCtx = true; }, 500); }"
-              data-on-pointerup="if (window.__secHoldTimer) { clearTimeout(window.__secHoldTimer); window.__secHoldTimer = null; }"
-              data-on-pointerleave="if (window.__secHoldTimer) { clearTimeout(window.__secHoldTimer); window.__secHoldTimer = null; }"
-              data-on-contextmenu="if (window.__preventNativeCtx) { $evt.preventDefault(); window.__preventNativeCtx = false; }">
+              data-on-pointerdown="$secHold($evt, { type: 'sidebar', title: item.title, href: item.href, icon: item.icon })"
+              data-on-pointerup="$secCancel()"
+              data-on-pointerleave="$secCancel()">
               <iconify-icon data-bind-icon="item.icon" style="font-size: 24px"></iconify-icon>
               <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
             </a>
