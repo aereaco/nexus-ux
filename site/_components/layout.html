@@ -1,18 +1,17 @@
 <div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300 min-h-screen" data-signal="{
-    collapsed: _localStorage.collapsed !== undefined ? _localStorage.collapsed : true,
+    collapsed: true,
     hovered: false,
     sidebarOpen: false,
     isMobile: _window.innerWidth < 768,
     searchOpen: false,
     searchQuery: '',
     activeSidebarTab: 1,
-    pageTabs: _localStorage.pageTabs !== undefined ? _localStorage.pageTabs : true,
-    rtl: _localStorage.rtl !== undefined ? _localStorage.rtl : false,
-    zoom: Number(_localStorage.zoom !== undefined ? _localStorage.zoom : 2),
+    pageTabs: true,
+    rtl: false,
+    zoom: 1,
     themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset']
   }" data-class="{ 'md:grid-cols-[20rem_1fr]': !collapsed, 'md:grid-cols-[5rem_1fr]': collapsed }"
-  data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: zoom + 'rem' }"
-  data-effect="_localStorage.pageTabs = pageTabs; _localStorage.rtl = rtl; _localStorage.zoom = zoom; _localStorage.collapsed = collapsed">
+  data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: zoom + 'rem' }">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content" data-router="{ mode: 'hybrid', pagesDir: '_pages', error: 'error.html' }"
     data-signal:global="{
