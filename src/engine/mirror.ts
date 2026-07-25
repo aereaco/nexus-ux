@@ -169,6 +169,7 @@ function createHeapBackedRef<T>(
       } catch {
         raw = undefined;
       }
+      if (raw === null) return undefined as any;
 
       if (typeof raw === 'string') {
         const trimmed = raw.trim();
