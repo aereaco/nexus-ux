@@ -564,7 +564,8 @@
           <li class="transition-transform duration-300 hover:scale-102" data-drag>
             <a data-bind-href="item.href" data-bind-data-tab-title="item.tabTitle"
               data-bind-data-tab-icon="item.tabIcon"
-              data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }">
+              data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
+              data-on-hold:stop="const e = $evt; ctxMenu = { type: 'sidebar', title: item.title, href: item.href, icon: item.icon, x: e.clientX || e.touches?.[0]?.clientX || 100, y: e.clientY || e.touches?.[0]?.clientY || 100 };">
               <iconify-icon data-bind-icon="item.icon" style="font-size: 24px"></iconify-icon>
               <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
             </a>
