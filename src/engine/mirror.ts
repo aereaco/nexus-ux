@@ -31,7 +31,7 @@
  *   - Layout-metric coalescing for reflow stability
  */
 
-import { shallowRef, type Ref, heap, customRef, toRaw } from './reactivity.ts';
+import { shallowRef, type Ref, heap, customRef, toRaw, triggerRef } from './reactivity.ts';
 import type { RuntimeContext } from './composition.ts';
 import { CLEANUP_FUNCTIONS_KEY } from './consts.ts';
 
