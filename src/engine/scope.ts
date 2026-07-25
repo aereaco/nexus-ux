@@ -74,7 +74,7 @@ export function getDataStack(element: HTMLElement | Text | Comment | Element): R
 
   // Climb up through Elements and SVGElements
   if (parent instanceof Element) {
-     return getDataStack(parent as any);
+    return getDataStack(parent as any);
   }
 
   return [];
@@ -83,15 +83,12 @@ export function getDataStack(element: HTMLElement | Text | Comment | Element): R
 /**
  * Adds a new data scope to a node's data stack.
  */
-export function addScopeToNode(element: Element, data: Record<string, unknown>, referenceNode?: Element): () => void {
-  const node = element as any;
+export function addScopeToNode(element: HTMLElement, data: Record<string, unknown>, referenceNode?: HTMLElement): () => void {
+  const node = element as NexusEnhancedElement;
   const parentStack = getDataStack(referenceNode || element);
   node[DATA_STACK_KEY] = [data, ...parentStack];
-  
-  if (typeof document !== 'undefined' && document.body && document.documentElement.hasAttribute('data-debug')) {
-    console.log(`[Nexus Scope] Added scope to <${element.tagName}>. New stack depth: ${node[DATA_STACK_KEY].length}`);
-  }
 
+  // Scope stack attached to node
   return () => {
     if (node[DATA_STACK_KEY]) {
       node[DATA_STACK_KEY] = node[DATA_STACK_KEY]!.filter((item: Record<string, unknown>) => item !== data);
@@ -102,8 +99,8 @@ export function addScopeToNode(element: Element, data: Record<string, unknown>, 
 /**
  * Checks if a node has an associated data stack.
  */
-export function hasScope(element: Element): boolean {
-  return !!(element as any)[DATA_STACK_KEY];
+export function hasScope(element: HTMLElement): boolean {
+  return !!(element as NexusEnhancedElement)[DATA_STACK_KEY];
 }
 
 // ---------------------------------------------------------------------------
@@ -153,9 +150,9 @@ export function resolveScopeProvider(key: string, el: Element | Text | Comment, 
  * Parses an object literal expression to identify "ghost keys" and infer their types.
  * Ghost keys are used for pre-allocating ZCZS heap slots.
  */
-export function parseGhostKeys(expression: string): { 
-  ghostKeys: string[]; 
-  typeHints: Record<string, 'number' | 'boolean' | 'string' | 'object'> 
+export function parseGhostKeys(expression: string): {
+  ghostKeys: string[];
+  typeHints: Record<string, 'number' | 'boolean' | 'string' | 'object'>
 } {
   const ghostKeys: string[] = [];
   const typeHints: Record<string, 'number' | 'boolean' | 'string' | 'object'> = {};
@@ -195,10 +192,10 @@ export function parseGhostKeys(expression: string): {
       const ch = trimmed[i];
 
       if (inString) {
-        if (ch === '\\') { 
-          value += ch + (trimmed[i + 1] || ''); 
-          i += 2; 
-          continue; 
+        if (ch === '\\') {
+          value += ch + (trimmed[i + 1] || '');
+          i += 2;
+          continue;
         }
         if (ch === inString) inString = null;
         value += ch; i++;
@@ -234,14 +231,14 @@ export function parseGhostKeys(expression: string): {
  * Creates a reactive proxy for a state object to be used as a scope.
  */
 export function createScopeProxy(
-  stateRef: { value: Record<string, unknown> }, 
+  stateRef: { value: Record<string, unknown> },
   onSet?: (key: string, value: unknown) => void,
   onTrigger?: () => void
 ): Record<string, unknown> {
   return new Proxy({}, {
     has(_, key) { return Reflect.has(stateRef.value, key); },
     get(_, key) { return Reflect.get(stateRef.value, key); },
-    set(_, key, value) { 
+    set(_, key, value) {
       const res = Reflect.set(stateRef.value, key, value);
       if (onSet) onSet(key as string, value);
       if (onTrigger) onTrigger();
