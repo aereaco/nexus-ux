@@ -28,6 +28,7 @@ export interface DragReorderContext<T> {
   direction?: "vertical" | "horizontal" | "grid";
   ghostClass?: string;
   dragClass?: string;
+  ghostOpacity?: number;
   group?: string | { name: string; pull?: "clone" | boolean; put?: boolean; revertClone?: boolean };
   sort?: boolean;
   swap?: boolean;
