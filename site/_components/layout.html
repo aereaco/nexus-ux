@@ -587,7 +587,8 @@
           <ul class="menu w-full p-0 space-y-1" data-show="favorites && favorites.length > 0">
             <template data-for="fav in favorites" data-key="fav.id || fav">
               <li class="flex flex-row items-center justify-between group rounded-box hover:bg-base-200">
-                <a data-bind-href="fav.href || fav" class="grow flex items-center gap-3 py-2 px-3">
+                <a data-bind-href="fav.href || fav" class="grow flex items-center gap-3 py-2 px-3"
+                  data-on-hold:stop="const e = $evt; ctxMenu = { type: 'favorite', fav: fav, x: e.clientX || e.touches?.[0]?.clientX || 100, y: e.clientY || e.touches?.[0]?.clientY || 100 };">
                   <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:star'" class="text-warning text-xl shrink-0"></iconify-icon>
                   <span class="truncate font-medium text-sm" data-bind="fav.title || fav"></span>
                 </a>
