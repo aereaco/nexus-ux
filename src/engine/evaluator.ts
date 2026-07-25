@@ -262,8 +262,8 @@ export function evaluateLater(
               (globalSignals as any)[key] = wrapped;
               return wrapped;
             }
-          } catch (e) {
-            }
+          } catch (_e) {
+            // Ignore
           }
           return undefined;
         }
