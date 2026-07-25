@@ -515,37 +515,41 @@ export class ModuleCoordinator {
       }[] = [];
 
       Array.from(element.attributes).forEach((attr, index) => {
-        const parsedAttr = this.runtimeContext.parseAttribute(attr.name, this.runtimeContext, element);
-        if (parsedAttr?.directive) {
-          const module = this.attributeModules.get(parsedAttr.directive);
-          if (module) {
-            handlersToExecute.push({
-              directiveName: parsedAttr.directive,
-              handle: () => {
-                let scopedRuntime = this.runtimeContext;
-                if (parsedAttr.modifiers && parsedAttr.modifiers.length > 0) {
-                  scopedRuntime = { ...this.runtimeContext };
-                  let currentEvaluate = scopedRuntime.evaluate;
-                  parsedAttr.modifiers.forEach((modFull: string) => {
-                    let modName = modFull;
-                    let modArg = '';
-                    const dashIdx = modFull.indexOf('-');
-                    if (dashIdx !== -1) {
-                      modName = modFull.substring(0, dashIdx);
-                      modArg = modFull.substring(dashIdx + 1);
-                    }
-                    const modModule = this.modifierModules.get(modName);
-                    if (modModule && typeof modModule.interceptPipeline === 'function') {
-                      currentEvaluate = modModule.interceptPipeline(currentEvaluate, element, modArg || parsedAttr.target || '', scopedRuntime);
-                    }
-                  });
-                  scopedRuntime.evaluate = currentEvaluate;
-                }
-                return module.handle(element, attr.value, scopedRuntime, parsedAttr);
-              },
-              originalIndex: index,
-            });
+        try {
+          const parsedAttr = this.runtimeContext.parseAttribute(attr.name, this.runtimeContext, element);
+          if (parsedAttr?.directive) {
+            const module = this.attributeModules.get(parsedAttr.directive);
+            if (module) {
+              handlersToExecute.push({
+                directiveName: parsedAttr.directive,
+                handle: () => {
+                  let scopedRuntime = this.runtimeContext;
+                  if (parsedAttr.modifiers && parsedAttr.modifiers.length > 0) {
+                    scopedRuntime = { ...this.runtimeContext };
+                    let currentEvaluate = scopedRuntime.evaluate;
+                    parsedAttr.modifiers.forEach((modFull: string) => {
+                      let modName = modFull;
+                      let modArg = '';
+                      const dashIdx = modFull.indexOf('-');
+                      if (dashIdx !== -1) {
+                        modName = modFull.substring(0, dashIdx);
+                        modArg = modFull.substring(dashIdx + 1);
+                      }
+                      const modModule = this.modifierModules.get(modName);
+                      if (modModule && typeof modModule.interceptPipeline === 'function') {
+                        currentEvaluate = modModule.interceptPipeline(currentEvaluate, element, modArg || parsedAttr.target || '', scopedRuntime);
+                      }
+                    });
+                    scopedRuntime.evaluate = currentEvaluate;
+                  }
+                  return module.handle(element, attr.value, scopedRuntime, parsedAttr);
+                },
+                originalIndex: index,
+              });
+            }
           }
+        } catch (err) {
+          logger.warn(`[Directive Isolation] Fault in attribute parse for '${attr.name}' on <${element.tagName}>:`, err);
         }
       });
 
@@ -574,12 +578,8 @@ export class ModuleCoordinator {
             }
             elRemovals.set(hashKey, cleanup);
           }
-        } catch (e) {
-          this.runtimeContext.reportError(
-            e instanceof Error ? e : new Error(String(e)), 
-            element, 
-            `Attribute compilation failed for: ${fullAttrName}`
-          );
+        } catch (err) {
+          logger.warn(`[Directive Isolation] Fault in execution of directive '${fullAttrName}' on <${element.tagName}>:`, err);
         }
       });
     }
