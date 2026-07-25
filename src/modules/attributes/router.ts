@@ -579,7 +579,7 @@ export const routerAttributeModule: AttributeModule = {
           state.navigate(target, opts);
         },
 
-        isActive(path: string, exact = false) {
+        isActive(path: string, exact = false): boolean {
           const current = state.path;
           if (exact) return current === path;
           if (path === '/') return current === '/';
