@@ -1,11 +1,23 @@
-# Nexus-UX Codebase Alignment Analysis
+# Nexus-UX Changelog & Codebase Alignment Analysis
 
-**Date**: 2026-03-11  
-**Analysis Target**: `nexus-ux/src` vs `nexus-ux-spec.md` + `nexus-ux-reference.md` + Workspace Directives
+**Latest Alignment Date**: 2026-07-25  
 
 ---
 
-## Executive Summary
+## Recent Major Release: 2026-07-25 — Reactive Mirrors Architecture & Build Optimization
+
+### 🌟 Highlights & Breakthroughs
+- **Standardized Nomenclature:** Adopted official framework terminology **Reactive Mirrors (`_`)** across codebase and docs.
+- **Reactive Mirror Architecture:**
+  - **Signal Declaration:** Declaratively seed signals directly from mirror expressions with explicit nullish defaults (`collapsed: _localStorage.collapsed ?? true`).
+  - **Pure Web API Actions:** Action handlers call native browser APIs directly (`localStorage.setItem('collapsed', !_localStorage.collapsed)`).
+  - **Push-Based Reactivity:** Reactive Mirrors actively push native Web API mutations to all watching signals and DOM elements in real-time.
+- **Prototype Cleanliness:** Removed `Storage.prototype` monkey-patching in `mirror.ts`, keeping native browser prototypes 100% clean.
+- **SWC Minifier & Brotli Optimization:** Optimized 3-pass SWC compilation and top-level mangling, shrinking minified payload to **193.98 KB** and **53.58 KB Brotli**.
+
+---
+
+## Executive Summary (2026-03-11 Baseline)
 
 The Nexus-UX codebase demonstrates **strong alignment** with the specification documents and **excellent compliance** with workspace directives. The core ZCZS (Zero-Copy Zero-Serialization) infrastructure is fully implemented, Rust-inspired borrowing patterns are embedded throughout, and the reactive orchestration follows singleton/dispatch/callback/cleanup patterns as mandated.
 
