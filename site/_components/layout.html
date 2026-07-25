@@ -566,7 +566,7 @@
             <a data-bind-href="item.href" data-bind-data-tab-title="item.tabTitle"
               data-bind-data-tab-icon="item.tabIcon"
               data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-              data-on-contextmenu:hold:stop="const e = $evt; ctxMenu = { type: 'sidebar', title: item.title, href: item.href, icon: item.icon, x: e.clientX, y: e.clientY };">
+              data-on-contextmenu:prevent="const e = $evt; ctxMenu = { type: 'sidebar', title: item.title, href: item.href, icon: item.icon, x: e.clientX, y: e.clientY };">
               <iconify-icon data-bind-icon="item.icon" style="font-size: 24px"></iconify-icon>
               <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
             </a>
