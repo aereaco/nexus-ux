@@ -16,7 +16,7 @@
       _localStorage.zoom = zoom;
       _localStorage.collapsed = collapsed
     " data-class="{ 'md:grid-cols-[20rem_1fr]': !collapsed, 'md:grid-cols-[5rem_1fr]': collapsed }"
-  data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: zoom + 'rem' }">
+  data-bind-dir="_localStorage.rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: zoom + 'rem' }">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content" data-router="{ mode: 'hybrid', pagesDir: '_pages', error: 'error.html' }"
     data-signal:global="{
