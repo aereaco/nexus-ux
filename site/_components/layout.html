@@ -314,7 +314,7 @@
 
     <!-- TAB BAR -->
     <div data-signal:global="{pageTabToggleHovered: false }"
-      data-class="{'hidden': !pageTabs, 'aura aura-dual text-secondary': pageTabToggleHovered }">
+      data-class="{'hidden': _localStorage.pageTabs === false, 'aura aura-dual text-secondary': pageTabToggleHovered }">
       <div class="card pe-2" data-class="{'bg-base-200': pageTabToggleHovered }">
         <div
           class="flex flex-nowrap bg-base-300/20 rounded-none overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-base-content/10"
@@ -339,7 +339,7 @@
             </div>
           </template>
 
-          <button class="btn btn-circle shrink-0" data-class="{ 'hidden': !pageTabs }"
+          <button class="btn btn-circle shrink-0" data-class="{ 'hidden': _localStorage.pageTabs === false }"
             data-on-click="tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs.push({ id, title: 'New Tab', icon: 'material-symbols-light:article-outline', content: '_components/tab-new.html' }); activeTabId = id;">
             <iconify-icon icon="material-symbols-light:add" style="font-size: 24px"></iconify-icon>
           </button>
@@ -384,7 +384,7 @@
           </span>
           <div class="flex items-center h-10 pe-4 ps-6 bg-base-300 text-secondary">
             <div class="tooltip z-100" data-tip="Toggle page tabs">
-              <button class="btn btn-xl" data-class="{ 'btn-active': pageTabs }" data-on-click="pageTabs = !pageTabs">
+              <button class="btn btn-xl" data-class="{ 'btn-active': _localStorage.pageTabs !== false }" data-on-click="localStorage.setItem('pageTabs', _localStorage.pageTabs === false ? 'true' : 'false')">
                 <iconify-icon icon="material-symbols-light:tab-group-outline"></iconify-icon>
               </button>
             </div>
