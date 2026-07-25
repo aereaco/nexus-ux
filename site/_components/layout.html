@@ -331,7 +331,7 @@
               data-bind-aria-selected="activeTabId === tab.id"
               data-class="{'tab-active border-b border-primary text-primary': activeTabId === tab.id }"
               data-on-click="activeTabId = tab.id"
-              data-on-contextmenu:stop="const e = $evt; ctxMenu = { type: 'tab', tabId: tab.id, title: tab.title, content: tab.content, icon: tab.icon, x: e.clientX, y: e.clientY };">
+              data-on-contextmenu:hold:stop="const e = $evt; ctxMenu = { type: 'tab', tabId: tab.id, title: tab.title, content: tab.content, icon: tab.icon, x: e.clientX, y: e.clientY };">
               <iconify-icon icon="material-symbols-light:drag-indicator"
                 class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
               <iconify-icon data-bind-icon="tab.icon" class="text-lg px-2"></iconify-icon>
@@ -566,7 +566,7 @@
             <a data-bind-href="item.href" data-bind-data-tab-title="item.tabTitle"
               data-bind-data-tab-icon="item.tabIcon"
               data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-              data-on-contextmenu:stop="const e = $evt; ctxMenu = { type: 'sidebar', title: item.title, href: item.href, icon: item.icon, x: e.clientX, y: e.clientY };">
+              data-on-contextmenu:hold:stop="const e = $evt; ctxMenu = { type: 'sidebar', title: item.title, href: item.href, icon: item.icon, x: e.clientX, y: e.clientY };">
               <iconify-icon data-bind-icon="item.icon" style="font-size: 24px"></iconify-icon>
               <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
             </a>
