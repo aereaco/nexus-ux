@@ -241,6 +241,9 @@ export function evaluateLater(
     has(target, key): boolean {
       if (key === Symbol.unscopables) return false;
       if (typeof key === 'string') {
+        if (key.startsWith('_')) return true;
+        if (hasScopeProvider(key)) return true;
+
         const getGlobals = () => typeof runtime?.globalSignals === 'function' ? runtime.globalSignals() : ((runtime as any)?.globalSignals || {});
         const getActions = () => typeof runtime?.globalActions === 'function' ? runtime.globalActions() : ((runtime as any)?.globalActions || {});
 
