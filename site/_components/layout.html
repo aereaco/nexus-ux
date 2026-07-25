@@ -686,7 +686,7 @@
             <div class="flex flex-nowrap items-center">
               <span class="label-text grow">Text Flow Direction</span>
               <label class="grid cursor-pointer place-items-center">
-                <input type="checkbox" class="toggle toggle-primary" data-bind-checked="_localStorage.rtl"
+                <input type="checkbox" class="toggle toggle-primary" data-bind-checked="rtl"
                   data-on-change="localStorage.setItem('rtl', $evt.target.checked)" />
               </label>
             </div>
@@ -697,12 +697,12 @@
             <div>
               <div class="label-text pb-3">Theme Zoom</div>
               <input type="range" class="range range-primary" min="0.5" max="2" step="0.1"
-                data-bind-value="_localStorage.zoom || 1"
+                data-bind-value="zoom"
                 data-on-input="localStorage.setItem('zoom', $evt.target.value)" />
               <div class="flex justify-between mt-2">
                 <span class="text-xs">0.5</span>
                 <div class="flex justify-center bg-neutral text-neutral-content rounded w-14 py-1">
-                  <span class="font-semibold text-sm" data-bind="(_localStorage.zoom || 1) + 'x'"></span>
+                  <span class="font-semibold text-sm" data-bind="(zoom || 1) + 'x'"></span>
                 </div>
                 <span class="text-xs">2.0</span>
               </div>
@@ -715,7 +715,7 @@
               <label class="label cursor-pointer">
                 <span class="label-text">Page Tabs</span>
                 <input type="checkbox" class="toggle toggle-secondary"
-                  data-bind-checked="_localStorage.pageTabs !== false"
+                  data-bind-checked="pageTabs"
                   data-on-change="localStorage.setItem('pageTabs', $evt.target.checked)" />
               </label>
             </div>
