@@ -30,7 +30,7 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { initError } from '../../engine/debug.ts';
-import { matchAttributes } from '../../engine/attributeParser.ts';
+import { ParsedAttribute, matchAttributes } from '../../engine/attributeParser.ts';
 
 const bindModule: AttributeModule = {
   name: 'bind',
