@@ -117,11 +117,20 @@ const bindModule: AttributeModule = {
               newValue = (el as any).value;
             }
 
-            const current = runtime.evaluate(el, value);
-            if (current && typeof current === 'object' && 'value' in (current as Record<string, unknown>)) {
-              runtime.evaluate(el, `${value}.value = $newValue`, { $newValue: newValue });
-            } else {
-              runtime.evaluate(el, `${value} = $newValue`, { $newValue: newValue });
+            const trimmedVal = value.trim();
+            const isValidLValue = /^[a-zA-Z_$][a-zA-Z0-9_$]*(\.[a-zA-Z_$][a-zA-Z0-9_$]*|\[[^\]]+\])*$/.test(trimmedVal);
+
+            if (isValidLValue) {
+              try {
+                const current = runtime.evaluate(el, value);
+                if (current && typeof current === 'object' && 'value' in (current as Record<string, unknown>)) {
+                  runtime.evaluate(el, `${value}.value = $newValue`, { $newValue: newValue });
+                } else {
+                  runtime.evaluate(el, `${value} = $newValue`, { $newValue: newValue });
+                }
+              } catch {
+                // Ignore non-assignable expression errors
+              }
             }
           };
 
