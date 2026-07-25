@@ -207,11 +207,7 @@ function createHeapBackedRef<T>(
           const strValue = (newValue && typeof newValue === 'object')
             ? JSON.stringify(toRaw(newValue))
             : String(newValue);
-          if (typeof Storage !== 'undefined' && target instanceof Storage) {
-            Storage.prototype.setItem.call(target, prop, strValue);
-          } else {
-            target.setItem(prop, strValue);
-          }
+          target.setItem(prop, strValue);
         } else {
           if (newValue && typeof newValue === 'object') {
             Reflect.set(target, prop, newValue);
