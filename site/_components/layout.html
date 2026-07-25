@@ -1,13 +1,11 @@
 <div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300 min-h-screen" data-signal="{
-      collapsed: _localStorage.collapsed !== undefined ? _localStorage.collapsed : false,
+      collapsed: _localStorage.collapsed === true || _localStorage.collapsed === 'true',
       hovered: false,
       sidebarOpen: false,
       isMobile: _window.innerWidth < 768,
       searchOpen: false,
       searchQuery: '',
       activeSidebarTab: 1,
-      pageTabs: true,
-      zoom: 1,
       themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset']
     }" data-class="{ 'md:grid-cols-[20rem_1fr]': !collapsed, 'md:grid-cols-[5rem_1fr]': collapsed }"
   data-bind-dir="_localStorage.rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: (_localStorage.zoom || 1) + 'rem' }">
@@ -71,7 +69,7 @@
           <iconify-icon icon="material-symbols-light:menu" style="font-size: 24px"></iconify-icon>
         </button>
         <div class="flex-none">
-          <button data-on-click="collapsed = !collapsed" aria-label="toggle sidebar"
+          <button data-on-click="collapsed = !collapsed; localStorage.setItem('collapsed', String(collapsed))" aria-label="toggle sidebar"
             class="btn btn-circle btn-ghost hidden md:flex" data-class="{ 'scale-x-[-1]': !collapsed || hovered }">
             <!-- Sidebar collapse icon -->
             <iconify-icon icon="material-symbols-light:double-arrow" style="font-size: 24px"></iconify-icon>
