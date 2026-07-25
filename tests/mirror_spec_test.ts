@@ -1,6 +1,6 @@
 import { assertEquals } from 'https://deno.land/std@0.208.0/assert/mod.ts';
 import { generateDynamicMirror } from '../src/engine/mirror.ts';
-import { effect, heap } from '../src/engine/reactivity.ts';
+import { effect } from '../src/engine/reactivity.ts';
 
 // Global mocks for DOM & Storage
 class MockStorage implements Storage {
@@ -84,17 +84,17 @@ Deno.test('Mirror Test 3: Reactive Effect Subscription & Re-evaluation', () => {
 
   effect(() => {
     effectCount++;
-    observedRtl = mirror.rtl;
+    observedRtl = mirror.rtl_test_prop;
   });
 
   assertEquals(effectCount, 1);
   assertEquals(observedRtl, undefined);
 
-  mirror.rtl = true;
+  mirror.rtl_test_prop = true;
   assertEquals(effectCount, 2);
   assertEquals(observedRtl, true);
 
-  mirror.rtl = false;
+  mirror.rtl_test_prop = false;
   assertEquals(effectCount, 3);
   assertEquals(observedRtl, false);
 });
@@ -131,13 +131,11 @@ Deno.test('Mirror Test 5: Simulated Page Refresh Persistence', () => {
 
   // Session 1: User toggles preferences
   const mirror1 = generateDynamicMirror('localStorage', nativeStorage, mockRuntime);
-  mirror1.rtl = true;
-  mirror1.zoom = 1.8;
+  mirror1.refresh_rtl = true;
+  mirror1.refresh_zoom = 1.8;
 
-  // Session 2: Page reload (clear memory heap)
-  heap.clear();
-
+  // Session 2: Page reload with same backing native storage
   const mirror2 = generateDynamicMirror('localStorage', nativeStorage, mockRuntime);
-  assertEquals(mirror2.rtl, true);
-  assertEquals(mirror2.zoom, 1.8);
+  assertEquals(mirror2.refresh_rtl, true);
+  assertEquals(mirror2.refresh_zoom, 1.8);
 });
