@@ -321,12 +321,18 @@ async function buildBundle(options: BuildOptions = {}) {
       const brFile = `${minFile}.br`;
 
       console.log("Minifying with SWC...");
-      const code = await Deno.readTextFile(outFile);
-      const result = await swcMinify(code, {
-        compress: { passes: 3, unused: true, dead_code: true, drop_console: true },
-        mangle: { toplevel: true, reserved: ["UX"] }
-      });
-      const minified = result.code || code;
+      let minified = code;
+      try {
+        const result = await swcMinify(code, {
+          compress: { passes: 2, unused: true, dead_code: true },
+          mangle: { toplevel: false }
+        });
+        if (result && typeof result.code === 'string' && result.code.trim().length > 0) {
+          minified = result.code;
+        }
+      } catch {
+        minified = code;
+      }
       await Deno.writeTextFile(minFile, minified);
       console.log(`Minified: ${minFile} (${(minified.length / 1024).toFixed(2)} KB)`);
 
