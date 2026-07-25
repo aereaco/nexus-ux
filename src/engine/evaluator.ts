@@ -1,3 +1,36 @@
+/**
+ * Nexus-UX Expression Evaluator
+ *
+ * Evaluates NEG (Nexus Expression Grammar) expressions within directive
+ * attributes and computed bindings. This is the runtime engine that turns
+ * strings like `#router.route` or `$event.preventDefault()` into live
+ * JavaScript execution.
+ *
+ * NEG Token Handling:
+ *   - `#global` → __global.global (bypasses local scope shadowing)
+ *   - `$expr` → passed through to Proxy scope (logic prefix)
+ *   - `@rule(...) { body }` → _scopes.rule(...) (scope rules)
+ *   - `_mirror()` → dynamic browser API mirror generation
+ *   - `&.parent` → context reference (resolved by scope chain)
+ *
+ * ZCZS Role:
+ *   - Zero-copy: Expressions are compiled once into Function instances.
+ *   - Zero-serialization: Scope Proxy wraps live objects by reference;
+ *     no cloning or serialization occurs during evaluation.
+ *
+ * Coordination:
+ *   - Parser (attributeParser.ts) extracts directive/argument/modifiers.
+ *   - Scope (scope.ts) provides data stack and scope providers.
+ *   - Mirror (mirror.ts) generates dynamic browser API wrappers.
+ *   - SelfHeal (agent.ts) captures evaluation errors as crash beacons.
+ *
+ * Nexus-UX Innovations Preserved:
+ *   - Dynamic `_` mirror generation for any browser API
+ *   - Live scope resolution via data stack + global signals + providers
+ *   - `with(scope)` evaluation for natural property access
+ *   - Loop guard preventing runaway recursive evaluation
+ */
+
 import { RuntimeContext } from './composition.ts';
 import { getSelfHealAgent } from './agent.ts';
 import { evaluationError, syntaxError } from './debug.ts';
@@ -208,10 +241,11 @@ export function evaluateLater(
     has(target, key): boolean {
       if (key === Symbol.unscopables) return false;
       if (typeof key === 'string') {
-        if (key.startsWith('_')) return true;
-        if (hasScopeProvider(key)) return true;
-        const globalSignals = runtime.globalSignals();
-        const globalActions = runtime.globalActions();
+        const getGlobals = () => typeof runtime?.globalSignals === 'function' ? runtime.globalSignals() : ((runtime as any)?.globalSignals || {});
+        const getActions = () => typeof runtime?.globalActions === 'function' ? runtime.globalActions() : ((runtime as any)?.globalActions || {});
+
+        const globalSignals = getGlobals();
+        const globalActions = getActions();
 
         // ZCZS: Live Scope Resolution — always fetches current context
         const dataStack = getDataStack(el as HTMLElement);
@@ -228,7 +262,8 @@ export function evaluateLater(
           if (key === '_' || key === '_window') return MirrorProxy;
 
           const realName = key.slice(1);
-          const globalSignals = runtime.globalSignals();
+          const getGlobals = () => typeof runtime?.globalSignals === 'function' ? runtime.globalSignals() : ((runtime as any)?.globalSignals || {});
+          const globalSignals = getGlobals();
           let val = (globalSignals as any)[key];
 
           if (val !== undefined) return val;
