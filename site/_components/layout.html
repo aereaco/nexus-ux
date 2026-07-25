@@ -1,8 +1,8 @@
 <div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300 min-h-screen" data-signal="{
-      collapsed: _localStorage.collapsed,
-      pageTabs: _localStorage.pageTabs !== false,
-      rtl: _localStorage.rtl,
-      zoom: _localStorage.zoom || 1,
+      collapsed: _localStorage.collapsed ?? false,
+      pageTabs: _localStorage.pageTabs ?? true,
+      rtl: _localStorage.rtl ?? false,
+      zoom: _localStorage.zoom ?? 1,
       hovered: false,
       sidebarOpen: false,
       isMobile: _window.innerWidth < 768,
