@@ -1,13 +1,16 @@
 <div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300 min-h-screen" data-signal="{
+      collapsed: _localStorage.collapsed !== undefined ? _localStorage.collapsed : false,
       hovered: false,
       sidebarOpen: false,
       isMobile: _window.innerWidth < 768,
       searchOpen: false,
       searchQuery: '',
       activeSidebarTab: 1,
+      pageTabs: true,
+      zoom: 1,
       themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset']
-    }" data-class="{ 'md:grid-cols-[20rem_1fr]': !_localStorage.collapsed, 'md:grid-cols-[5rem_1fr]': _localStorage.collapsed !== false }"
-  data-bind-dir="_localStorage.rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: (_localStorage.zoom || 1) + 'rem' }">
+    }" data-class="{ 'md:grid-cols-[20rem_1fr]': !collapsed, 'md:grid-cols-[5rem_1fr]': collapsed }"
+  data-bind-dir="_localStorage.rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: zoom + 'rem' }">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content" data-router="{ mode: 'hybrid', pagesDir: '_pages', error: 'error.html' }"
     data-signal:global="{
@@ -68,8 +71,8 @@
           <iconify-icon icon="material-symbols-light:menu" style="font-size: 24px"></iconify-icon>
         </button>
         <div class="flex-none">
-          <button data-on-click="_localStorage.collapsed = !_localStorage.collapsed" aria-label="toggle sidebar"
-            class="btn btn-circle btn-ghost hidden md:flex" data-class="{ 'scale-x-[-1]': !_localStorage.collapsed || hovered }">
+          <button data-on-click="collapsed = !collapsed" aria-label="toggle sidebar"
+            class="btn btn-circle btn-ghost hidden md:flex" data-class="{ 'scale-x-[-1]': !collapsed || hovered }">
             <!-- Sidebar collapse icon -->
             <iconify-icon icon="material-symbols-light:double-arrow" style="font-size: 24px"></iconify-icon>
           </button>
@@ -313,7 +316,7 @@
 
     <!-- TAB BAR -->
     <div data-signal:global="{pageTabToggleHovered: false }"
-      data-class="{'hidden': !_localStorage.pageTabs, 'aura aura-dual text-secondary': pageTabToggleHovered }">
+      data-class="{'hidden': !pageTabs, 'aura aura-dual text-secondary': pageTabToggleHovered }">
       <div class="card pe-2" data-class="{'bg-base-200': pageTabToggleHovered }">
         <div
           class="flex flex-nowrap bg-base-300/20 rounded-none overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-base-content/10"
@@ -338,7 +341,7 @@
             </div>
           </template>
 
-          <button class="btn btn-circle shrink-0" data-class="{ 'hidden': !_localStorage.pageTabs }"
+          <button class="btn btn-circle shrink-0" data-class="{ 'hidden': !pageTabs }"
             data-on-click="tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs.push({ id, title: 'New Tab', icon: 'material-symbols-light:article-outline', content: '_components/tab-new.html' }); activeTabId = id;">
             <iconify-icon icon="material-symbols-light:add" style="font-size: 24px"></iconify-icon>
           </button>
@@ -383,7 +386,7 @@
           </span>
           <div class="flex items-center h-10 pe-4 ps-6 bg-base-300 text-secondary">
             <div class="tooltip z-100" data-tip="Toggle page tabs">
-              <button class="btn btn-xl" data-class="{ 'btn-active': _localStorage.pageTabs }" data-on-click="_localStorage.pageTabs = !_localStorage.pageTabs">
+              <button class="btn btn-xl" data-class="{ 'btn-active': pageTabs }" data-on-click="pageTabs = !pageTabs">
                 <iconify-icon icon="material-symbols-light:tab-group-outline"></iconify-icon>
               </button>
             </div>
@@ -484,7 +487,7 @@
       <div class="p-4 text-2xl font-bold">Nexus-UX Engine Layout Shell</div>
       <p class="pb-4 ps-4 text-accent" data-bind="'Windows Size: ' + _window.innerWidth"></p>
       <p class="pb-4 ps-4 text-secondary" data-bind="'Windows Size < 1024 (Mobile Match): ' + isMobile"></p>
-      <p class="pb-4 ps-4 text-info" data-bind="'Sidebar Collapsed: ' + _localStorage.collapsed"></p>
+      <p class="pb-4 ps-4 text-info" data-bind="'Sidebar Collapsed: ' + collapsed"></p>
       <p class="pb-4 ps-4 text-success" data-bind="'Sidebar Hovered: ' + hovered"></p>
     </div>
 
@@ -532,18 +535,18 @@
     data-on-click="sidebarOpen = false; activeSidebarTab = 1"></div>
   <aside
     class="dashboard-sidebar z-50 flex flex-col h-dvh bg-base-100/90 backdrop-blur-md transition-[width] duration-300 overflow-x-hidden"
-    data-class="{ 'open fixed inset-y-0 start-0 w-80 shadow-2xl': sidebarOpen, 'hovered fixed inset-y-0 start-0 w-80 shadow-2xl': hovered && !sidebarOpen, 'md:w-80': !_localStorage.collapsed, 'w-0 md:w-20': _localStorage.collapsed && !hovered && !sidebarOpen }"
-    data-on-mouseenter="if (_localStorage.collapsed && !sidebarOpen) hovered = true" data-on-mouseleave="hovered = false"
-    data-effect="if (_localStorage.collapsed && !hovered && !sidebarOpen) { activeSidebarTab = 1; }">
+    data-class="{ 'open fixed inset-y-0 start-0 w-80 shadow-2xl': sidebarOpen, 'hovered fixed inset-y-0 start-0 w-80 shadow-2xl': hovered && !sidebarOpen, 'md:w-80': !collapsed, 'w-0 md:w-20': collapsed && !hovered && !sidebarOpen }"
+    data-on-mouseenter="if (collapsed && !sidebarOpen) hovered = true" data-on-mouseleave="hovered = false"
+    data-effect="if (collapsed && !hovered && !sidebarOpen) { activeSidebarTab = 1; }">
     <div class="flex flex-col h-full w-full">
       <div class="navbar flex justify-between pe-4">
         <div class="flex flex-1 items-center">
           <a class="btn btn-ghost text-xl ps-1">
-            <svg class="w-10 h-10 scale-[0.8] emblem" data-class="{ 'hidden': !_localStorage.collapsed && !hovered && !sidebarOpen }">
+            <svg class="w-10 h-10 scale-[0.8] emblem" data-class="{ 'hidden': !collapsed && !hovered && !sidebarOpen }">
               <use href="_assets/images/emblem.svg"></use>
             </svg>
             <span class="logo font-bold"
-              data-class="{ 'hidden': _localStorage.collapsed && !hovered && !sidebarOpen, 'block': !_localStorage.collapsed || hovered || sidebarOpen }">Nexus-UX</span>
+              data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen, 'block': !collapsed || hovered || sidebarOpen }">Nexus-UX</span>
           </a>
         </div>
         <button class="btn btn-ghost btn-circle close" data-class="{ 'hidden': !sidebarOpen, 'block': sidebarOpen }"
@@ -560,7 +563,7 @@
               data-bind-data-tab-icon="item.tabIcon"
               data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }">
               <iconify-icon data-bind-icon="item.icon" style="font-size: 24px"></iconify-icon>
-              <span data-class="{ 'hidden': _localStorage.collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
+              <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
             </a>
           </li>
         </template>
@@ -568,7 +571,7 @@
 
       <!-- ================= Panel Favorites (tab 2) ================= -->
       <div class="grow w-full overflow-x-hidden overflow-y-auto"
-        data-show="activeSidebarTab === 2 && (!_localStorage.collapsed || hovered || sidebarOpen)">
+        data-show="activeSidebarTab === 2 && (!collapsed || hovered || sidebarOpen)">
         <div class="p-6">
           <div class="mb-6 whitespace-nowrap">
             <h1 class="text-lg font-bold">Favorites</h1>
@@ -591,7 +594,7 @@
 
       <!-- ================= Panel Preferences (tab 3) ================= -->
       <div class="grow w-full overflow-x-hidden overflow-y-auto"
-        data-show="activeSidebarTab === 3 && (!_localStorage.collapsed || hovered || sidebarOpen)">
+        data-show="activeSidebarTab === 3 && (!collapsed || hovered || sidebarOpen)">
         <div class="p-6">
           <div class="mb-6 whitespace-nowrap">
             <h1 class="text-lg font-bold">Panel Preferences</h1>
@@ -669,7 +672,7 @@
             <div class="flex flex-nowrap items-center">
               <span class="label-text grow">Text Flow Direction</span>
               <label class="grid cursor-pointer place-items-center">
-                <input type="checkbox" class="toggle toggle-primary" data-bind-checked="rtl" data-on-change="_localStorage.rtl = rtl" />
+                <input type="checkbox" class="toggle toggle-primary" data-bind-checked="_localStorage.rtl" />
               </label>
             </div>
 
@@ -678,7 +681,7 @@
             <!-- Theme Zoom -->
             <div>
               <div class="label-text pb-3">Theme Zoom</div>
-              <input type="range" class="range range-primary" min="0.5" max="2" step="0.1" data-bind-value="zoom" data-on-input="_localStorage.zoom = zoom" />
+              <input type="range" class="range range-primary" min="0.5" max="2" step="0.1" data-bind-value="zoom" />
               <div class="flex justify-between mt-2">
                 <span class="text-xs">0.5</span>
                 <div class="flex justify-center bg-neutral text-neutral-content rounded w-14 py-1">
@@ -694,7 +697,7 @@
             <div class="form-control">
               <label class="label cursor-pointer">
                 <span class="label-text">Page Tabs</span>
-                <input type="checkbox" class="toggle toggle-secondary" data-bind-checked="pageTabs" data-on-change="_localStorage.pageTabs = pageTabs" />
+                <input type="checkbox" class="toggle toggle-secondary" data-bind-checked="pageTabs" />
               </label>
             </div>
 
@@ -703,11 +706,11 @@
       </div>
 
       <div class="dock"
-        data-class="{ 'flex': (_localStorage.collapsed || isMobile) && !hovered && !sidebarOpen, 'hidden': sidebarOpen || hovered || (!_localStorage.collapsed && !isMobile) }">
+        data-class="{ 'flex': (collapsed || isMobile) && !hovered && !sidebarOpen, 'hidden': sidebarOpen || hovered || (!collapsed && !isMobile) }">
         <iconify-icon icon="material-symbols-light:left-panel-open-outline" style="font-size: 24px"></iconify-icon>
       </div>
       <div class="dock"
-        data-class="{ 'flex': sidebarOpen || hovered || (!_localStorage.collapsed && !isMobile), 'hidden': (_localStorage.collapsed || isMobile) && !hovered && !sidebarOpen }">
+        data-class="{ 'flex': sidebarOpen || hovered || (!collapsed && !isMobile), 'hidden': (collapsed || isMobile) && !hovered && !sidebarOpen }">
         <button class="tooltip tooltip-top" data-tip="Menu" data-class="{ 'dock-active': activeSidebarTab === 1 }"
           data-on-click="activeSidebarTab = 1">
           <iconify-icon icon="material-symbols-light:list" style="font-size: 24px"></iconify-icon>

@@ -113,30 +113,30 @@ function attachListenerIfNeeded(prop: string) {
       window.addEventListener('scroll', LAYOUT_METRIC_PROPS.has(prop) ? updateCoalesced : update, { passive: true });
       activeListeners.add(prop);
       break;
-    
+
     case 'localStorage':
     case 'sessionStorage':
       window.addEventListener('storage', update);
       activeListeners.add(prop);
       break;
-      
+
     case 'location':
     case 'navigation':
-      if (typeof window !== 'undefined' && 'navigation' in window) {
+      if ('navigation' in window) {
         (window as any).navigation.addEventListener('currententrychange', update);
-      } else if (typeof window !== 'undefined') {
-        (window as any).addEventListener('popstate', update);
-        (window as any).addEventListener('hashchange', update);
+      } else {
+        window.addEventListener('popstate', update);
+        window.addEventListener('hashchange', update);
       }
       activeListeners.add(prop);
       break;
-      
+
     case 'navigator':
       window.addEventListener('online', update);
       window.addEventListener('offline', update);
       activeListeners.add(prop);
       break;
-      
+
     case 'matchMedia':
       break;
   }
@@ -161,7 +161,7 @@ function createHeapBackedRef<T>(
   // Structural: APIs with getItem+setItem follow the Storage interface (string-coercing).
   // No name checks — any API with this shape gets the same serialization treatment.
   const isStringCoercingAPI = typeof target?.getItem === 'function' &&
-                               typeof target?.setItem === 'function';
+    typeof target?.setItem === 'function';
 
   if (!heap.has(heapKey)) {
     let initial = undefined;
@@ -170,20 +170,12 @@ function createHeapBackedRef<T>(
     } catch {
       // Ignore initial read failure
     }
-    
-    // Dynamic JSON & Primitive Reader: Recognize storage primitives dynamically on boot
+
+    // Dynamic JSON Reader: Recognize JSON strings dynamically
     if (typeof initial === 'string') {
       const trimmed = initial.trim();
-      if (trimmed === 'true') {
-        initial = true;
-      } else if (trimmed === 'false') {
-        initial = false;
-      } else if (trimmed === 'null') {
-        initial = null;
-      } else if (trimmed !== '' && !isNaN(Number(trimmed))) {
-        initial = Number(trimmed);
-      } else if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || 
-                 (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+      if ((trimmed.startsWith('{') && trimmed.endsWith('}')) ||
+        (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
         try {
           initial = JSON.parse(trimmed);
         } catch {
@@ -201,7 +193,7 @@ function createHeapBackedRef<T>(
     },
     set(newValue) {
       heap.set(heapKey, newValue);
-      
+
       try {
         if (isStringCoercingAPI) {
           const strValue = (newValue && typeof newValue === 'object')
@@ -218,7 +210,7 @@ function createHeapBackedRef<T>(
       } catch (e) {
         console.warn(`[Nexus Mirror] Dynamic write failed for ${prop}:`, e);
       }
-      
+
       trigger();
     }
   }));
@@ -247,7 +239,7 @@ function detectAccessProtocol(target: any): 'direct' | 'async-kv' | 'db-factory'
   }
   // Tier 2: has get() + set() but NOT getItem (which marks synchronous Storage — Tier 1)
   if (typeof target?.get === 'function' && typeof target?.set === 'function' &&
-      typeof target?.getItem !== 'function') {
+    typeof target?.getItem !== 'function') {
     return 'async-kv';
   }
   // Tier 1: direct property access
@@ -405,28 +397,6 @@ function getObjectMirror(
   return new Proxy(target, {
     get(t, prop: string | symbol) {
       if (typeof prop === 'string') {
-        if (typeof target?.getItem === 'function' && typeof target?.setItem === 'function') {
-          if (prop === 'getItem') {
-            return (key: string) => getOrCreateRef(key).value;
-          }
-          if (prop === 'setItem') {
-            return (key: string, val: any) => { getOrCreateRef(key).value = val; };
-          }
-          if (prop === 'removeItem') {
-            return (key: string) => {
-              target.removeItem(key);
-              localCache.delete(key);
-              heap.delete(`${name}.${key}`);
-            };
-          }
-          if (prop === 'clear') {
-            return () => {
-              target.clear();
-              localCache.clear();
-            };
-          }
-        }
-
         const value = getOrCreateRef(prop).value;
         if (typeof value === 'function') return value.bind(t);
         if (value && typeof value === 'object' && !Array.isArray(value)) {
@@ -480,7 +450,7 @@ function registerToSingletonObserver(
     const isElementBased = isElementBasedObserver(name);
     const entryCallbacks = new Map<HTMLElement, Set<Function>>();
     let entryGlobalCallbacks: Set<Function> | undefined;
-    
+
     const observer = new RealCtor((entries: any[]) => {
       for (const obsEntry of entries) {
         // Element-based observers have per-target callbacks
@@ -492,7 +462,7 @@ function registerToSingletonObserver(
           }
         } else {
           // Global observer (PerformanceObserver) - all callbacks receive all entries
-          entryGlobalCallbacks?.forEach((cb: Function) => 
+          entryGlobalCallbacks?.forEach((cb: Function) =>
             scheduler.enqueueEffect(() => cb(entries))
           );
         }
@@ -500,7 +470,7 @@ function registerToSingletonObserver(
     });
     entry = { observer, callbacks: entryCallbacks, globalCallbacks: entryGlobalCallbacks };
     singletonRegistry.set(name, entry);
-    
+
     if (!isElementBased) {
       entry.globalCallbacks = new Set();
       // Global observers auto-start observing
@@ -555,13 +525,13 @@ function registerToStreamMultiplexer(name: string, urlOrName: string, callback: 
   if (!entry) {
     const RealCtor = (globalThis as any)[name];
     const stream = new RealCtor(urlOrName);
-    const newEntry: { stream: any; listeners: Set<Function>; ownerCount: number } = { 
-      stream, 
-      listeners: new Set<Function>(), 
-      ownerCount: 0 
+    const newEntry: { stream: any; listeners: Set<Function>; ownerCount: number } = {
+      stream,
+      listeners: new Set<Function>(),
+      ownerCount: 0
     };
     entry = newEntry;
-    
+
     stream.onmessage = (msg: any) => {
       entry!.listeners.forEach(cb => scheduler.enqueueEffect(() => cb(msg)));
     };
@@ -625,8 +595,8 @@ export function generateDynamicMirror(name: string, target: any, runtime: Runtim
       return getObjectMirror(instance, name, runtime.globalSignals(), scheduler);
     },
     apply(_ctor, _thisArg, args) {
-      if (name === 'IntersectionObserver' || name === 'ResizeObserver' || 
-          name === 'MutationObserver' || name === 'PerformanceObserver') {
+      if (name === 'IntersectionObserver' || name === 'ResizeObserver' ||
+        name === 'MutationObserver' || name === 'PerformanceObserver') {
         if (element) {
           return registerToSingletonObserver(name, args[0], scheduler, element);
         }
@@ -650,7 +620,7 @@ export const MirrorProxy = typeof window !== 'undefined' ? new Proxy(globalThis.
         mirrorCache.set(prop, shallowRef((target as any)[prop]));
         attachListenerIfNeeded(prop);
       }
-      
+
       const v = mirrorCache.get(prop)!.value;
       return typeof v === 'function' ? v.bind(target) : v;
     }

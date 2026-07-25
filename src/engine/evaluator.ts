@@ -243,12 +243,8 @@ export function evaluateLater(
       if (typeof key === 'string') {
         if (key.startsWith('_')) return true;
         if (hasScopeProvider(key)) return true;
-
-        const getGlobals = () => typeof runtime?.globalSignals === 'function' ? runtime.globalSignals() : ((runtime as any)?.globalSignals || {});
-        const getActions = () => typeof runtime?.globalActions === 'function' ? runtime.globalActions() : ((runtime as any)?.globalActions || {});
-
-        const globalSignals = getGlobals();
-        const globalActions = getActions();
+        const globalSignals = runtime.globalSignals();
+        const globalActions = runtime.globalActions();
 
         // ZCZS: Live Scope Resolution — always fetches current context
         const dataStack = getDataStack(el as HTMLElement);
@@ -265,8 +261,7 @@ export function evaluateLater(
           if (key === '_' || key === '_window') return MirrorProxy;
 
           const realName = key.slice(1);
-          const getGlobals = () => typeof runtime?.globalSignals === 'function' ? runtime.globalSignals() : ((runtime as any)?.globalSignals || {});
-          const globalSignals = getGlobals();
+          const globalSignals = runtime.globalSignals();
           let val = (globalSignals as any)[key];
 
           if (val !== undefined) return val;
@@ -301,17 +296,14 @@ export function evaluateLater(
         }
 
         // 4. Global Signals
-        const getGlobals = () => typeof runtime?.globalSignals === 'function' ? runtime.globalSignals() : ((runtime as any)?.globalSignals || {});
-        const getActions = () => typeof runtime?.globalActions === 'function' ? runtime.globalActions() : ((runtime as any)?.globalActions || {});
-
-        const globalSignals = getGlobals();
+        const globalSignals = runtime.globalSignals();
         if (key in globalSignals) {
           const val = (globalSignals as any)[key];
           return runtime.unref(val);
         }
 
         // 5. Global Actions
-        const globalActions = getActions();
+        const globalActions = runtime.globalActions();
         if (key in globalActions) {
           return (globalActions as any)[key];
         }
@@ -320,8 +312,7 @@ export function evaluateLater(
     },
     set(target, key, value): boolean {
       if (typeof key === 'string') {
-        const getGlobals = () => typeof runtime?.globalSignals === 'function' ? runtime.globalSignals() : ((runtime as any)?.globalSignals || {});
-        const globalSignals = getGlobals();
+        const globalSignals = runtime.globalSignals();
         if (key in globalSignals) {
           (globalSignals as any)[key] = value;
           return true;
