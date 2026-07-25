@@ -30,7 +30,7 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { initError } from '../../engine/debug.ts';
-import { ParsedAttribute, matchAttributes } from '../../engine/attributeParser.ts';
+import { matchAttributes } from '../../engine/attributeParser.ts';
 
 const bindModule: AttributeModule = {
   name: 'bind',
@@ -92,38 +92,42 @@ const bindModule: AttributeModule = {
         });
         cleanupFns.push(cleanup);
 
-        // 2. Event Listener: DOM → State
-        const isLazy = el.hasAttribute('data-bind:lazy');
-        const eventName = isLazy ? 'change' : (
-          el instanceof HTMLSelectElement || (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio'))
-          ? 'change' : 'input'
-        );
+        // 2. Event Listener: DOM → State (Form Inputs Only)
+        const isFormInput = el instanceof HTMLInputElement || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement || (el as HTMLElement).isContentEditable;
 
-        const inputHandler = (_e: Event) => {
-          let newValue: unknown;
-          if (el instanceof HTMLInputElement && el.type === 'checkbox') {
-            newValue = el.checked;
-          } else if (el instanceof HTMLInputElement && el.type === 'radio') {
-            newValue = el.checked ? el.value : undefined;
-            if (newValue === undefined) return;
-          } else if (el instanceof HTMLSelectElement && el.multiple) {
-            newValue = Array.from(el.selectedOptions).map(opt => opt.value);
-          } else if (el instanceof HTMLInputElement && (el.type === 'range' || el.type === 'number')) {
-            newValue = el.value === '' ? '' : Number(el.value);
-          } else if ('value' in el) {
-            newValue = (el as any).value;
-          }
+        if (isFormInput) {
+          const isLazy = el.hasAttribute('data-bind:lazy');
+          const eventName = isLazy ? 'change' : (
+            el instanceof HTMLSelectElement || (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio'))
+              ? 'change' : 'input'
+          );
 
-          const current = runtime.evaluate(el, value);
-          if (current && typeof current === 'object' && 'value' in (current as Record<string, unknown>)) {
-            runtime.evaluate(el, `${value}.value = $newValue`, { $newValue: newValue });
-          } else {
-            runtime.evaluate(el, `${value} = $newValue`, { $newValue: newValue });
-          }
-        };
+          const inputHandler = (_e: Event) => {
+            let newValue: unknown;
+            if (el instanceof HTMLInputElement && el.type === 'checkbox') {
+              newValue = el.checked;
+            } else if (el instanceof HTMLInputElement && el.type === 'radio') {
+              newValue = el.checked ? el.value : undefined;
+              if (newValue === undefined) return;
+            } else if (el instanceof HTMLSelectElement && el.multiple) {
+              newValue = Array.from(el.selectedOptions).map(opt => opt.value);
+            } else if (el instanceof HTMLInputElement && (el.type === 'range' || el.type === 'number')) {
+              newValue = el.value === '' ? '' : Number(el.value);
+            } else if ('value' in el) {
+              newValue = (el as any).value;
+            }
 
-        el.addEventListener(eventName, inputHandler);
-        cleanupFns.push(() => el.removeEventListener(eventName, inputHandler));
+            const current = runtime.evaluate(el, value);
+            if (current && typeof current === 'object' && 'value' in (current as Record<string, unknown>)) {
+              runtime.evaluate(el, `${value}.value = $newValue`, { $newValue: newValue });
+            } else {
+              runtime.evaluate(el, `${value} = $newValue`, { $newValue: newValue });
+            }
+          };
+
+          el.addEventListener(eventName, inputHandler);
+          cleanupFns.push(() => el.removeEventListener(eventName, inputHandler));
+        }
 
       } catch (e) {
         runtime.reportError(e instanceof Error ? e : new Error(String(e)), el, `Auto-bind failed: ${value}`);
@@ -187,7 +191,7 @@ const bindModule: AttributeModule = {
         const isLazy = el.hasAttribute('data-bind:lazy');
         const eventName = isLazy ? 'change' : (
           el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')
-          || el instanceof HTMLSelectElement ? 'change' : 'input'
+            || el instanceof HTMLSelectElement ? 'change' : 'input'
         );
 
         const inputHandler = (e: Event) => {
