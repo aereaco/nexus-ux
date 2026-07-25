@@ -1,3 +1,37 @@
+/**
+ * Nexus-UX Scope Resolution Engine
+ *
+ * Manages the data stack (scope chain) and scope providers for expression
+ * evaluation. Every HTMLElement can carry a stack of reactive scope objects,
+ * and scope providers inject additional namespaces (like $, $animate) into
+ * the evaluation context.
+ *
+ * Data Stack:
+ *   The data stack is an array of reactive objects attached to each element
+ * via DATA_STACK_KEY. The most local scope is at index 0. When evaluating
+ * an expression, the stack is walked from local to global to resolve
+ * property access.
+ *
+ * Scope Providers:
+ *   Named functions registered via registerScopeProvider() that inject
+ *   namespaces into the evaluation Proxy. Examples: '$' (selector),
+ *   '$animate' (animation), '$predictive' (quadtree predictive engine).
+ *
+ * ZCZS Role:
+ *   - Zero-copy: Scope objects are shared by reference; no cloning.
+ *   - Zero-serialization: The data stack is a live array of live objects.
+ *
+ * Coordination:
+ *   - evaluator.ts uses getDataStack() for live scope resolution.
+ *   - index.ts registers built-in scope providers ($, $animate).
+ *   - ModuleCoordinator uses addScopeToNode() for component scoping.
+ *
+ * Nexus-UX Innovations Preserved:
+ *   - Live scope resolution via Proxy with data stack precedence
+ *   - Scope provider injection for dynamic namespaces
+ *   - Shadow DOM boundary traversal for isolated contexts
+ */
+
 import { DATA_STACK_KEY } from './consts.ts';
 import { NexusEnhancedElement } from './reactivity.ts';
 
@@ -49,8 +83,8 @@ export function getDataStack(element: HTMLElement | Text | Comment | Element): R
 /**
  * Adds a new data scope to a node's data stack.
  */
-export function addScopeToNode(element: HTMLElement, data: Record<string, unknown>, referenceNode?: HTMLElement): () => void {
-  const node = element as NexusEnhancedElement;
+export function addScopeToNode(element: Element, data: Record<string, unknown>, referenceNode?: Element): () => void {
+  const node = element as any;
   const parentStack = getDataStack(referenceNode || element);
   node[DATA_STACK_KEY] = [data, ...parentStack];
   
