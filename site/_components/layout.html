@@ -754,7 +754,7 @@
       </div>
 
       <!-- Dynamic Context Menu Overlay -->
-      <div data-show="ctxMenu !== null"
+      <div id="ctx-menu-overlay" data-show="ctxMenu !== null"
         class="fixed z-[300] bg-base-100/95 backdrop-blur border border-base-content/10 rounded-box shadow-2xl p-1 min-w-56 text-sm"
         data-bind-style="{ left: (ctxMenu ? ctxMenu.x + 'px' : '0px'), top: (ctxMenu ? ctxMenu.y + 'px' : '0px') }"
         data-on-click:outside="ctxMenu = null"
