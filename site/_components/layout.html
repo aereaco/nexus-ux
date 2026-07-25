@@ -1,5 +1,5 @@
 <div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300 min-h-screen" data-signal="{
-      collapsed: _localStorage.collapsed ?? false,
+      collapsed: _localStorage.collapsed ?? true,
       pageTabs: _localStorage.pageTabs ?? true,
       rtl: _localStorage.rtl ?? false,
       zoom: _localStorage.zoom ?? 1,
@@ -72,8 +72,9 @@
           <iconify-icon icon="material-symbols-light:menu" style="font-size: 24px"></iconify-icon>
         </button>
         <div class="flex-none">
-          <button data-on-click="localStorage.setItem('collapsed', !_localStorage.collapsed)" aria-label="toggle sidebar"
-            class="btn btn-circle btn-ghost hidden md:flex" data-class="{ 'scale-x-[-1]': !collapsed || hovered }">
+          <button data-on-click="localStorage.setItem('collapsed', !_localStorage.collapsed)"
+            aria-label="toggle sidebar" class="btn btn-circle btn-ghost hidden md:flex"
+            data-class="{ 'scale-x-[-1]': !collapsed || hovered }">
             <!-- Sidebar collapse icon -->
             <iconify-icon icon="material-symbols-light:double-arrow" style="font-size: 24px"></iconify-icon>
           </button>
@@ -387,7 +388,8 @@
           </span>
           <div class="flex items-center h-10 pe-4 ps-6 bg-base-300 text-secondary">
             <div class="tooltip z-100" data-tip="Toggle page tabs">
-              <button class="btn btn-xl" data-class="{ 'btn-active': pageTabs }" data-on-click="localStorage.setItem('pageTabs', _localStorage.pageTabs === false ? 'true' : 'false')">
+              <button class="btn btn-xl" data-class="{ 'btn-active': pageTabs }"
+                data-on-click="localStorage.setItem('pageTabs', _localStorage.pageTabs === false ? 'true' : 'false')">
                 <iconify-icon icon="material-symbols-light:tab-group-outline"></iconify-icon>
               </button>
             </div>
@@ -673,7 +675,8 @@
             <div class="flex flex-nowrap items-center">
               <span class="label-text grow">Text Flow Direction</span>
               <label class="grid cursor-pointer place-items-center">
-                <input type="checkbox" class="toggle toggle-primary" data-bind-checked="_localStorage.rtl" data-on-change="localStorage.setItem('rtl', $evt.target.checked)" />
+                <input type="checkbox" class="toggle toggle-primary" data-bind-checked="_localStorage.rtl"
+                  data-on-change="localStorage.setItem('rtl', $evt.target.checked)" />
               </label>
             </div>
 
@@ -682,7 +685,9 @@
             <!-- Theme Zoom -->
             <div>
               <div class="label-text pb-3">Theme Zoom</div>
-              <input type="range" class="range range-primary" min="0.5" max="2" step="0.1" data-bind-value="_localStorage.zoom || 1" data-on-input="localStorage.setItem('zoom', $evt.target.value)" />
+              <input type="range" class="range range-primary" min="0.5" max="2" step="0.1"
+                data-bind-value="_localStorage.zoom || 1"
+                data-on-input="localStorage.setItem('zoom', $evt.target.value)" />
               <div class="flex justify-between mt-2">
                 <span class="text-xs">0.5</span>
                 <div class="flex justify-center bg-neutral text-neutral-content rounded w-14 py-1">
@@ -698,7 +703,9 @@
             <div class="form-control">
               <label class="label cursor-pointer">
                 <span class="label-text">Page Tabs</span>
-                <input type="checkbox" class="toggle toggle-secondary" data-bind-checked="_localStorage.pageTabs !== false" data-on-change="localStorage.setItem('pageTabs', $evt.target.checked)" />
+                <input type="checkbox" class="toggle toggle-secondary"
+                  data-bind-checked="_localStorage.pageTabs !== false"
+                  data-on-change="localStorage.setItem('pageTabs', $evt.target.checked)" />
               </label>
             </div>
 
