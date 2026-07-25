@@ -678,11 +678,11 @@
             <!-- Theme Zoom -->
             <div>
               <div class="label-text pb-3">Theme Zoom</div>
-              <input type="range" class="range range-primary" min="0.5" max="2" step="0.1" data-bind-value="zoom" />
+              <input type="range" class="range range-primary" min="0.5" max="2" step="0.1" data-bind-value="_localStorage.zoom" />
               <div class="flex justify-between mt-2">
                 <span class="text-xs">0.5</span>
                 <div class="flex justify-center bg-neutral text-neutral-content rounded w-14 py-1">
-                  <span class="font-semibold text-sm" data-bind="zoom + 'x'"></span>
+                  <span class="font-semibold text-sm" data-bind="(_localStorage.zoom || 1) + 'x'"></span>
                 </div>
                 <span class="text-xs">2.0</span>
               </div>
@@ -694,7 +694,7 @@
             <div class="form-control">
               <label class="label cursor-pointer">
                 <span class="label-text">Page Tabs</span>
-                <input type="checkbox" class="toggle toggle-secondary" data-bind-checked="pageTabs" />
+                <input type="checkbox" class="toggle toggle-secondary" data-bind-checked="_localStorage.pageTabs" />
               </label>
             </div>
 
