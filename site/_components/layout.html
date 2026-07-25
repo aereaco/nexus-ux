@@ -77,9 +77,12 @@
           <iconify-icon icon="material-symbols-light:menu" style="font-size: 24px"></iconify-icon>
         </button>
         <div class="flex-none">
-          <button data-on-click="collapsed = !collapsed" aria-label="toggle sidebar"
-            data-on-click="collapsed = !collapsed; _localStorage.collapsed = collapsed"
-            class="btn btn-circle btn-ghost hidden md:flex" data-class="{ 'scale-x-[-1]': !collapsed || hovered }">
+          <button data-on-click="collapsed = !collapsed" aria-label="toggle sidebar" data-effect="
+      _localStorage.pageTabs = pageTabs;
+      _localStorage.rtl = rtl;
+      _localStorage.zoom = zoom;
+      _localStorage.collapsed = collapsed
+    " class="btn btn-circle btn-ghost hidden md:flex" data-class="{ 'scale-x-[-1]': !collapsed || hovered }">
             <!-- Sidebar collapse icon -->
             <iconify-icon icon="material-symbols-light:double-arrow" style="font-size: 24px"></iconify-icon>
           </button>
