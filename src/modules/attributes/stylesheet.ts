@@ -153,7 +153,7 @@ export class NexusStyleSheet extends (typeof CSSStyleSheet !== 'undefined' ? CSS
     if (typeof super.replaceSync === 'function') {
       try {
         super.replaceSync(cssText);
-      } catch (err) {
+      } catch {
         // @import rules are not allowed in replaceSync per spec (construct-stylesheets).
         // Swallow: the background resolver below inlines them instead.
         if (!hasImports) throw err;
@@ -286,12 +286,12 @@ async function ensureCompiler(): Promise<void> {
     const mod = await import(blobUrl);
     URL.revokeObjectURL(blobUrl);
 
-    if (typeof compileFn === 'function') {
-      tailwindCompiler = await compileFn(`@import "tailwindcss";`, {
-        base: '/',
-        loadStylesheet: coreLoadStylesheet,
-      });
-    }
+    compileFn = mod.compile;
+
+    tailwindCompiler = await compileFn(`@import "tailwindcss";`, {
+      base: '/',
+      loadStylesheet: coreLoadStylesheet,
+    });
 
     // Build the theme bridge from currently-applied (external) stylesheets and
     // adopt the initial preflight + discovered theme variables.
@@ -348,6 +348,10 @@ async function fetchWithCache(url: string, timeoutMs = 3000, onUpdate?: (fresh: 
   if (typeof localStorage !== 'undefined') {
     try {
       cached = localStorage.getItem(cacheKey);
+      if (cached && (cached.trim().startsWith('<!DOCTYPE') || cached.trim().startsWith('<!doctype') || cached.trim().startsWith('<html'))) {
+        localStorage.removeItem(cacheKey);
+        cached = null;
+      }
     } catch {
       // ignore
     }
@@ -364,6 +368,7 @@ async function fetchWithCache(url: string, timeoutMs = 3000, onUpdate?: (fresh: 
         clearTimeout(id);
         if (!res.ok) return;
         const freshText = await res.text();
+        if (freshText.trim().startsWith('<!DOCTYPE') || freshText.trim().startsWith('<!doctype') || freshText.trim().startsWith('<html')) return;
         if (hashString(cachedVal) !== hashString(freshText)) {
           console.log(`[Nexus Cache] UPDATE DETECTED: CDN changed for ${url}. Caching for next load.`);
           if (typeof localStorage !== 'undefined') {
@@ -398,7 +403,11 @@ async function fetchWithCache(url: string, timeoutMs = 3000, onUpdate?: (fresh: 
       const res = await fetch(targetUrl, { signal: controller.signal });
       clearTimeout(id);
       if (!res.ok) throw new Error(`HTTP error ${res.status}`);
-      return await res.text();
+      const text = await res.text();
+      if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<!doctype') || text.trim().startsWith('<html')) {
+        throw new Error(`Received HTML fallback response for ${targetUrl}`);
+      }
+      return text;
     } catch (err) {
       clearTimeout(id);
       throw err;
