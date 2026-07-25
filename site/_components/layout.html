@@ -21,28 +21,9 @@
         pinned: [],
         tabSeq: 0,
         ctxMenu: null,
-        $secHold: (evt, dataObj) => {
-          if (evt.button !== 2) return;
-          const x = evt.clientX || evt.pageX || 100;
-          const y = evt.clientY || evt.pageY || 100;
-          if (window.__secTimer) clearTimeout(window.__secTimer);
-          window.__secTimer = setTimeout(() => {
-            ctxMenu = Object.assign({}, dataObj, { x, y });
-            const cancelNative = (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              window.removeEventListener('contextmenu', cancelNative, true);
-            };
-            window.addEventListener('contextmenu', cancelNative, true);
-          }, 500);
-        },
-        $secCancel: () => {
-          if (window.__secTimer) {
-            clearTimeout(window.__secTimer);
-            window.__secTimer = null;
-          }
-        },
         favorites: _localStorage.favorites ?? [],
+        favForm: { title: '', href: '', icon: 'material-symbols-light:star-outline' },
+        pendingDeleteId: null,
         favForm: { title: '', href: '', icon: 'material-symbols-light:star-outline' },
         pendingDeleteId: null,
         themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset'],
