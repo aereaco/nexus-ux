@@ -484,7 +484,7 @@
       <div class="p-4 text-2xl font-bold">Nexus-UX Engine Layout Shell</div>
       <p class="pb-4 ps-4 text-accent" data-bind="'Windows Size: ' + _window.innerWidth"></p>
       <p class="pb-4 ps-4 text-secondary" data-bind="'Windows Size < 1024 (Mobile Match): ' + isMobile"></p>
-      <p class="pb-4 ps-4 text-info" data-bind="'Sidebar Collapsed: ' + collapsed"></p>
+      <p class="pb-4 ps-4 text-info" data-bind="'Sidebar Collapsed: ' + _localStorage.collapsed"></p>
       <p class="pb-4 ps-4 text-success" data-bind="'Sidebar Hovered: ' + hovered"></p>
     </div>
 
@@ -532,18 +532,18 @@
     data-on-click="sidebarOpen = false; activeSidebarTab = 1"></div>
   <aside
     class="dashboard-sidebar z-50 flex flex-col h-dvh bg-base-100/90 backdrop-blur-md transition-[width] duration-300 overflow-x-hidden"
-    data-class="{ 'open fixed inset-y-0 start-0 w-80 shadow-2xl': sidebarOpen, 'hovered fixed inset-y-0 start-0 w-80 shadow-2xl': hovered && !sidebarOpen, 'md:w-80': !collapsed, 'w-0 md:w-20': collapsed && !hovered && !sidebarOpen }"
-    data-on-mouseenter="if (collapsed && !sidebarOpen) hovered = true" data-on-mouseleave="hovered = false"
-    data-effect="if (collapsed && !hovered && !sidebarOpen) { activeSidebarTab = 1; }">
+    data-class="{ 'open fixed inset-y-0 start-0 w-80 shadow-2xl': sidebarOpen, 'hovered fixed inset-y-0 start-0 w-80 shadow-2xl': hovered && !sidebarOpen, 'md:w-80': !_localStorage.collapsed, 'w-0 md:w-20': _localStorage.collapsed && !hovered && !sidebarOpen }"
+    data-on-mouseenter="if (_localStorage.collapsed && !sidebarOpen) hovered = true" data-on-mouseleave="hovered = false"
+    data-effect="if (_localStorage.collapsed && !hovered && !sidebarOpen) { activeSidebarTab = 1; }">
     <div class="flex flex-col h-full w-full">
       <div class="navbar flex justify-between pe-4">
         <div class="flex flex-1 items-center">
           <a class="btn btn-ghost text-xl ps-1">
-            <svg class="w-10 h-10 scale-[0.8] emblem" data-class="{ 'hidden': !collapsed && !hovered && !sidebarOpen }">
+            <svg class="w-10 h-10 scale-[0.8] emblem" data-class="{ 'hidden': !_localStorage.collapsed && !hovered && !sidebarOpen }">
               <use href="_assets/images/emblem.svg"></use>
             </svg>
             <span class="logo font-bold"
-              data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen, 'block': !collapsed || hovered || sidebarOpen }">Nexus-UX</span>
+              data-class="{ 'hidden': _localStorage.collapsed && !hovered && !sidebarOpen, 'block': !_localStorage.collapsed || hovered || sidebarOpen }">Nexus-UX</span>
           </a>
         </div>
         <button class="btn btn-ghost btn-circle close" data-class="{ 'hidden': !sidebarOpen, 'block': sidebarOpen }"
@@ -560,7 +560,7 @@
               data-bind-data-tab-icon="item.tabIcon"
               data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }">
               <iconify-icon data-bind-icon="item.icon" style="font-size: 24px"></iconify-icon>
-              <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
+              <span data-class="{ 'hidden': _localStorage.collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
             </a>
           </li>
         </template>
@@ -568,7 +568,7 @@
 
       <!-- ================= Panel Favorites (tab 2) ================= -->
       <div class="grow w-full overflow-x-hidden overflow-y-auto"
-        data-show="activeSidebarTab === 2 && (!collapsed || hovered || sidebarOpen)">
+        data-show="activeSidebarTab === 2 && (!_localStorage.collapsed || hovered || sidebarOpen)">
         <div class="p-6">
           <div class="mb-6 whitespace-nowrap">
             <h1 class="text-lg font-bold">Favorites</h1>
@@ -591,7 +591,7 @@
 
       <!-- ================= Panel Preferences (tab 3) ================= -->
       <div class="grow w-full overflow-x-hidden overflow-y-auto"
-        data-show="activeSidebarTab === 3 && (!collapsed || hovered || sidebarOpen)">
+        data-show="activeSidebarTab === 3 && (!_localStorage.collapsed || hovered || sidebarOpen)">
         <div class="p-6">
           <div class="mb-6 whitespace-nowrap">
             <h1 class="text-lg font-bold">Panel Preferences</h1>
@@ -703,11 +703,11 @@
       </div>
 
       <div class="dock"
-        data-class="{ 'flex': (collapsed || isMobile) && !hovered && !sidebarOpen, 'hidden': sidebarOpen || hovered || (!collapsed && !isMobile) }">
+        data-class="{ 'flex': (_localStorage.collapsed || isMobile) && !hovered && !sidebarOpen, 'hidden': sidebarOpen || hovered || (!_localStorage.collapsed && !isMobile) }">
         <iconify-icon icon="material-symbols-light:left-panel-open-outline" style="font-size: 24px"></iconify-icon>
       </div>
       <div class="dock"
-        data-class="{ 'flex': sidebarOpen || hovered || (!collapsed && !isMobile), 'hidden': (collapsed || isMobile) && !hovered && !sidebarOpen }">
+        data-class="{ 'flex': sidebarOpen || hovered || (!_localStorage.collapsed && !isMobile), 'hidden': (_localStorage.collapsed || isMobile) && !hovered && !sidebarOpen }">
         <button class="tooltip tooltip-top" data-tip="Menu" data-class="{ 'dock-active': activeSidebarTab === 1 }"
           data-on-click="activeSidebarTab = 1">
           <iconify-icon icon="material-symbols-light:list" style="font-size: 24px"></iconify-icon>
