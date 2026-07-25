@@ -298,14 +298,17 @@ export function evaluateLater(
         }
 
         // 4. Global Signals
-        const globalSignals = runtime.globalSignals();
+        const getGlobals = () => typeof runtime?.globalSignals === 'function' ? runtime.globalSignals() : ((runtime as any)?.globalSignals || {});
+        const getActions = () => typeof runtime?.globalActions === 'function' ? runtime.globalActions() : ((runtime as any)?.globalActions || {});
+
+        const globalSignals = getGlobals();
         if (key in globalSignals) {
           const val = (globalSignals as any)[key];
           return runtime.unref(val);
         }
 
         // 5. Global Actions
-        const globalActions = runtime.globalActions();
+        const globalActions = getActions();
         if (key in globalActions) {
           return (globalActions as any)[key];
         }
@@ -314,7 +317,8 @@ export function evaluateLater(
     },
     set(target, key, value): boolean {
       if (typeof key === 'string') {
-        const globalSignals = runtime.globalSignals();
+        const getGlobals = () => typeof runtime?.globalSignals === 'function' ? runtime.globalSignals() : ((runtime as any)?.globalSignals || {});
+        const globalSignals = getGlobals();
         if (key in globalSignals) {
           (globalSignals as any)[key] = value;
           return true;
