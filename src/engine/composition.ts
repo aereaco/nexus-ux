@@ -1,6 +1,39 @@
+/**
+ * Nexus-UX Runtime Composition
+ *
+ * Defines the core interfaces and contracts for the framework's reactive
+ * runtime. This module is the single source of truth for how modules
+ * register themselves, how the runtime context is shaped, and how the
+ * engine bootstraps its dependency graph.
+ *
+ * ZCZS Role:
+ *   - Zero-copy: Interfaces are structural; no runtime overhead.
+ *   - Zero-serialization: RuntimeContext is a plain object literal,
+ *     marshaled by reference only.
+ *
+ * Coordination:
+ *   - ModuleCoordinator consumes InitContext during registration.
+ *   - All engine modules (reactivity, evaluator, parser, reconciler)
+ *     are wired through RuntimeContext.
+ *   - Module interfaces from modules.ts are referenced here to avoid
+ *     circular dependencies.
+ *
+ * Nexus-UX Innovations Preserved:
+ *   - Reactive Proxy Signals (via reactivity.ts bindings)
+ *   - NEG Grammar (evaluator/parser contracts)
+ *   - ZCZS guarantees through plain-object runtime context
+ */
+
 import { ActionFunction, AttributeModule, ActionModule, ListenerModule, ObserverModule, UtilityModule } from './modules.ts';
 import { topology, TierLevel, TierConfig, TIER_CONFIGS } from './topology.ts';
 
+/**
+ * Initialization context provided to modules during registration.
+ *
+ * Modules receive this context to register their handlers with the
+ * coordinator. It is constructed once during ModuleCoordinator
+ * initialization and never mutated thereafter.
+ */
 export interface InitContext {
   registerAttributeModule: (name: string, module: AttributeModule) => void;
   registerActionModule: (name: string, module: ActionModule) => void;
@@ -10,6 +43,21 @@ export interface InitContext {
   runtime: RuntimeContext;
 }
 
+/**
+ * The central runtime context object passed to every directive handler,
+ * modifier, sprite, and evaluator call.
+ *
+ * This is the "god object" of Nexus-UX, deliberately so: it provides
+ * zero-copy access to every engine capability without function-call
+ * indirection. Every property is a direct reference to the underlying
+ * implementation.
+ *
+ * ZCZS Guarantee:
+ *   - This object is created once and shared by reference.
+ *   - No property is serialized or copied during normal operation.
+ *   - Module registration mutates maps owned by ModuleCoordinator,
+ *     not this object.
+ */
 export interface RuntimeContext {
   // Reactivity (Vue)
   effect: typeof import('./reactivity.ts').effect;
@@ -44,7 +92,7 @@ export interface RuntimeContext {
   reconcileClass: (el: HTMLElement, value: unknown) => void;
   reconcileStyle: (el: HTMLElement, value: unknown) => void;
   adoptStyle: (el: HTMLElement) => void;
-  processElement: (element: HTMLElement) => void;
+  processElement: (element: Element) => void;
 
   // State Management
   globalSignals: () => Record<string, unknown>;
