@@ -746,4 +746,99 @@
     </div>
 </div>
 </div>
+
+<!-- Dynamic Context Menu Overlay -->
+<div data-show="ctxMenu !== null"
+  class="fixed z-[300] bg-base-100/95 backdrop-blur border border-base-content/10 rounded-box shadow-2xl p-1 min-w-52 text-sm"
+  data-bind-style="{ left: (ctxMenu?.x || 0) + 'px', top: (ctxMenu?.y || 0) + 'px' }"
+  data-on-click:outside="ctxMenu = null"
+  data-on-keydown:escape="ctxMenu = null">
+  <ul class="menu menu-sm w-full p-0">
+    <li data-show="ctxMenu?.type === 'tab'">
+      <button type="button"
+        data-on-click="const tid = ctxMenu.tabId; pinned = pinned.includes(tid) ? pinned.filter(id => id !== tid) : [...pinned, tid]; ctxMenu = null;">
+        <iconify-icon data-bind-icon="pinned.includes(ctxMenu?.tabId) ? 'material-symbols-light:keep-off-outline' : 'material-symbols-light:keep-outline'" class="text-lg"></iconify-icon>
+        <span data-bind="pinned.includes(ctxMenu?.tabId) ? 'Unpin Tab' : 'Pin Tab'"></span>
+      </button>
+    </li>
+    <li data-show="ctxMenu?.type === 'tab'">
+      <button type="button"
+        data-on-click="const targetTab = tabs.find(t => t.id === ctxMenu.tabId); if (targetTab) { favForm = { title: targetTab.title || 'Tab Bookmark', href: targetTab.content || '/', icon: targetTab.icon || 'material-symbols-light:star-outline' }; $('#fav-modal').showModal(); } ctxMenu = null;">
+        <iconify-icon icon="material-symbols-light:star-outline" class="text-warning text-lg"></iconify-icon>
+        <span>Add to Favorites</span>
+      </button>
+    </li>
+    <li class="divider my-0" data-show="ctxMenu?.type === 'tab'"></li>
+    <li data-show="ctxMenu?.type === 'tab'">
+      <button type="button" class="text-error"
+        data-on-click="const tid = ctxMenu.tabId; const wasActive = activeTabId === tid; tabs = tabs.filter(t => t.id !== tid); if (wasActive) activeTabId = tabs[0]?.id; ctxMenu = null;">
+        <iconify-icon icon="material-symbols-light:close" class="text-lg"></iconify-icon>
+        <span>Close Tab</span>
+      </button>
+    </li>
+  </ul>
+</div>
+
+<!-- Add / Edit Favorite Modal -->
+<dialog id="fav-modal" class="modal modal-bottom sm:modal-middle" data-on-keydown:escape="$('#fav-modal').close()">
+  <div class="modal-box bg-base-100 border border-base-content/10 shadow-2xl">
+    <h3 class="font-bold text-lg flex items-center gap-2">
+      <iconify-icon icon="material-symbols-light:star-outline" class="text-warning text-2xl"></iconify-icon>
+      Add to Favorites
+    </h3>
+    <p class="py-2 text-sm opacity-70">Customize the title and icon for your bookmark.</p>
+    <div class="form-control w-full space-y-4 my-2">
+      <div>
+        <label class="label"><span class="label-text font-semibold">Title</span></label>
+        <input type="text" class="input input-bordered w-full" data-bind-value="favForm.title" data-on-input="favForm.title = $evt.target.value" placeholder="Title" />
+      </div>
+      <div>
+        <label class="label"><span class="label-text font-semibold">Destination URL / Page</span></label>
+        <input type="text" class="input input-bordered w-full" data-bind-value="favForm.href" data-on-input="favForm.href = $evt.target.value" placeholder="URL" />
+      </div>
+      <div>
+        <label class="label"><span class="label-text font-semibold">Icon</span></label>
+        <div class="flex items-center gap-2">
+          <input type="text" class="input input-bordered grow" data-bind-value="favForm.icon" data-on-input="favForm.icon = $evt.target.value" placeholder="material-symbols-light:star" />
+          <div class="avatar placeholder">
+            <div class="bg-base-200 text-base-content rounded-box size-10 flex items-center justify-center border border-base-content/10">
+              <iconify-icon data-bind-icon="favForm.icon || 'material-symbols-light:star'" class="text-xl"></iconify-icon>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-action">
+      <button type="button" class="btn btn-ghost" data-on-click="$('#fav-modal').close()">Cancel</button>
+      <button type="button" class="btn btn-primary"
+        data-on-click="const newFav = { id: 'fav-' + Date.now(), title: favForm.title || 'Bookmark', href: favForm.href || '/', icon: favForm.icon || 'material-symbols-light:star-outline' }; localStorage.setItem('favorites', [...(favorites || []), newFav]); $('#fav-modal').close();">
+        Save Favorite
+      </button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop bg-base-900/40">
+    <button>close</button>
+  </form>
+</dialog>
+
+<!-- Delete Favorite Confirmation Modal -->
+<dialog id="fav-delete-modal" class="modal modal-bottom sm:modal-middle" data-on-keydown:escape="$('#fav-delete-modal').close()">
+  <div class="modal-box bg-base-100 border border-base-content/10 shadow-2xl">
+    <h3 class="font-bold text-lg text-error flex items-center gap-2">
+      <iconify-icon icon="material-symbols-light:warning-outline" class="text-2xl"></iconify-icon>
+      Remove Favorite?
+    </h3>
+    <p class="py-4 text-sm opacity-80">Are you sure you want to remove this item from your favorites? This action cannot be undone.</p>
+    <div class="modal-action">
+      <button type="button" class="btn btn-ghost" data-on-click="pendingDeleteId = null; $('#fav-delete-modal').close()">Cancel</button>
+      <button type="button" class="btn btn-error"
+        data-on-click="localStorage.setItem('favorites', (favorites || []).filter(f => (f.id || f) !== pendingDeleteId)); pendingDeleteId = null; $('#fav-delete-modal').close();">
+        Remove
+      </button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop bg-base-900/40">
+    <button>close</button>
+  </form>
+</dialog>
 </div>
