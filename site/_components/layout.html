@@ -1,13 +1,18 @@
 <div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300 min-h-screen" data-signal="{
+    collapsed: _localStorage.collapsed !== undefined ? _localStorage.collapsed : true,
     hovered: false,
     sidebarOpen: false,
     isMobile: _window.innerWidth < 768,
     searchOpen: false,
     searchQuery: '',
     activeSidebarTab: 1,
+    pageTabs: _localStorage.pageTabs !== undefined ? _localStorage.pageTabs : true,
+    rtl: _localStorage.rtl !== undefined ? _localStorage.rtl : false,
+    zoom: Number(_localStorage.zoom !== undefined ? _localStorage.zoom : 2),
     themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset']
-  }" data-class="{ 'md:grid-cols-[20rem_1fr]': !_localStorage.collapsed, 'md:grid-cols-[5rem_1fr]': _localStorage.collapsed !== false }"
-  data-bind-dir="_localStorage.rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: (_localStorage.zoom || 1) + 'rem' }">
+  }" data-class="{ 'md:grid-cols-[20rem_1fr]': !collapsed, 'md:grid-cols-[5rem_1fr]': collapsed }"
+  data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: zoom + 'rem' }"
+  data-effect="_localStorage.pageTabs = pageTabs; _localStorage.rtl = rtl; _localStorage.zoom = zoom; _localStorage.collapsed = collapsed">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content" data-router="{ mode: 'hybrid', pagesDir: '_pages', error: 'error.html' }"
     data-signal:global="{
@@ -68,8 +73,8 @@
           <iconify-icon icon="material-symbols-light:menu" style="font-size: 24px"></iconify-icon>
         </button>
         <div class="flex-none">
-          <button data-on-click="_localStorage.collapsed = !_localStorage.collapsed" aria-label="toggle sidebar"
-            class="btn btn-circle btn-ghost hidden md:flex" data-class="{ 'scale-x-[-1]': !_localStorage.collapsed || hovered }">
+          <button data-on-click="collapsed = !collapsed" aria-label="toggle sidebar"
+            class="btn btn-circle btn-ghost hidden md:flex" data-class="{ 'scale-x-[-1]': !collapsed || hovered }">
             <!-- Sidebar collapse icon -->
             <iconify-icon icon="material-symbols-light:double-arrow" style="font-size: 24px"></iconify-icon>
           </button>
@@ -313,7 +318,7 @@
 
     <!-- TAB BAR -->
     <div data-signal:global="{pageTabToggleHovered: false }"
-      data-class="{'hidden': !_localStorage.pageTabs, 'aura aura-dual text-secondary': pageTabToggleHovered }">
+      data-class="{'hidden': !pageTabs, 'aura aura-dual text-secondary': pageTabToggleHovered }">
       <div class="card pe-2" data-class="{'bg-base-200': pageTabToggleHovered }">
         <div
           class="flex flex-nowrap bg-base-300/20 rounded-none overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-base-content/10"
@@ -338,7 +343,7 @@
             </div>
           </template>
 
-          <button class="btn btn-circle shrink-0" data-class="{ 'hidden': !_localStorage.pageTabs }"
+          <button class="btn btn-circle shrink-0" data-class="{ 'hidden': !pageTabs }"
             data-on-click="tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs.push({ id, title: 'New Tab', icon: 'material-symbols-light:article-outline', content: '_components/tab-new.html' }); activeTabId = id;">
             <iconify-icon icon="material-symbols-light:add" style="font-size: 24px"></iconify-icon>
           </button>
@@ -383,7 +388,7 @@
           </span>
           <div class="flex items-center h-10 pe-4 ps-6 bg-base-300 text-secondary">
             <div class="tooltip z-100" data-tip="Toggle page tabs">
-              <button class="btn btn-xl" data-class="{ 'btn-active': _localStorage.pageTabs }" data-on-click="_localStorage.pageTabs = !_localStorage.pageTabs">
+              <button class="btn btn-xl" data-class="{ 'btn-active': pageTabs }" data-on-click="pageTabs = !pageTabs">
                 <iconify-icon icon="material-symbols-light:tab-group-outline"></iconify-icon>
               </button>
             </div>
@@ -669,7 +674,7 @@
             <div class="flex flex-nowrap items-center">
               <span class="label-text grow">Text Flow Direction</span>
               <label class="grid cursor-pointer place-items-center">
-                <input type="checkbox" class="toggle toggle-primary" data-bind-checked="_localStorage.rtl" />
+                <input type="checkbox" class="toggle toggle-primary" data-bind-checked="rtl" />
               </label>
             </div>
 
@@ -678,11 +683,11 @@
             <!-- Theme Zoom -->
             <div>
               <div class="label-text pb-3">Theme Zoom</div>
-              <input type="range" class="range range-primary" min="0.5" max="2" step="0.1" data-bind-value="_localStorage.zoom" />
+              <input type="range" class="range range-primary" min="0.5" max="2" step="0.1" data-bind-value="zoom" />
               <div class="flex justify-between mt-2">
                 <span class="text-xs">0.5</span>
                 <div class="flex justify-center bg-neutral text-neutral-content rounded w-14 py-1">
-                  <span class="font-semibold text-sm" data-bind="(_localStorage.zoom || 1) + 'x'"></span>
+                  <span class="font-semibold text-sm" data-bind="zoom + 'x'"></span>
                 </div>
                 <span class="text-xs">2.0</span>
               </div>
@@ -694,7 +699,7 @@
             <div class="form-control">
               <label class="label cursor-pointer">
                 <span class="label-text">Page Tabs</span>
-                <input type="checkbox" class="toggle toggle-secondary" data-bind-checked="_localStorage.pageTabs" />
+                <input type="checkbox" class="toggle toggle-secondary" data-bind-checked="pageTabs" />
               </label>
             </div>
 
