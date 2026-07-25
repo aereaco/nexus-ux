@@ -376,6 +376,30 @@ function getObjectMirror(
   return new Proxy(target, {
     get(t, prop: string | symbol) {
       if (typeof prop === 'string') {
+        if (typeof target?.getItem === 'function') {
+          if (prop === 'getItem') {
+            return (key: string) => getOrCreateRef(key).value;
+          }
+          if (prop === 'setItem') {
+            return (key: string, val: any) => {
+              target.setItem(key, String(val));
+              triggerRef(getOrCreateRef(key));
+            };
+          }
+          if (prop === 'removeItem') {
+            return (key: string) => {
+              target.removeItem(key);
+              triggerRef(getOrCreateRef(key));
+            };
+          }
+          if (prop === 'clear') {
+            return () => {
+              target.clear();
+              localCache.forEach(r => triggerRef(r));
+            };
+          }
+        }
+
         const value = getOrCreateRef(prop).value;
         if (typeof value === 'function') return value.bind(t);
         if (value && typeof value === 'object' && !Array.isArray(value)) {
@@ -385,12 +409,11 @@ function getObjectMirror(
       }
       return Reflect.get(t, prop);
     },
-    set(_t, prop, value, _receiver) {
-      if (typeof prop === 'string') {
-        getOrCreateRef(prop).value = value;
-        return true;
+    set(_t, prop, _value, _receiver) {
+      if (typeof console !== 'undefined' && console.warn) {
+        console.warn(`[Nexus Mirror] _${name}.${String(prop)} is a read-only reflective viewport.`);
       }
-      return Reflect.set(_t, prop, value, _receiver);
+      return false;
     }
   });
 }
