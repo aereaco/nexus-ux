@@ -759,7 +759,7 @@
       <!-- Dynamic Context Menu Overlay -->
       <div data-show="ctxMenu !== null"
         class="fixed z-[300] bg-base-100/95 backdrop-blur border border-base-content/10 rounded-box shadow-2xl p-1 min-w-56 text-sm"
-        data-bind-style="{ left: (ctxMenu?.x || 0) + 'px', top: (ctxMenu?.y || 0) + 'px' }"
+        data-bind-style="{ left: (ctxMenu && ctxMenu.x ? ctxMenu.x : 0) + 'px', top: (ctxMenu && ctxMenu.y ? ctxMenu.y : 0) + 'px' }"
         data-on-click:outside="ctxMenu = null"
         data-on-keydown:escape="ctxMenu = null">
         <ul class="menu menu-sm w-full p-0">
