@@ -35,13 +35,8 @@ import { shallowRef, type Ref, heap, customRef, toRaw, triggerRef } from './reac
 import type { RuntimeContext } from './composition.ts';
 import { CLEANUP_FUNCTIONS_KEY } from './consts.ts';
 
-/**
- * Unified Mirror Proxy Cache
- * Caches reactive references to window sub-properties lazily on-demand.
- * Memory allocated = strictly proportional to exact properties tracked by templates.
- */
-const mirrorCache = new Map<string, Ref<any>>();
 const activeListeners = new Set<string>();
+const globalRefRegistry = new Set<Ref<any>>();
 
 /**
  * Layout-metric props that can oscillate during reflow (e.g. a scrollbar
@@ -66,13 +61,8 @@ let rafScheduled = false;
 
 function flushLayoutMetrics() {
   rafScheduled = false;
-  const props = rafDirtyProps;
   rafDirtyProps.clear();
-  for (const prop of props) {
-    if (mirrorCache.has(prop)) {
-      mirrorCache.get(prop)!.value = (globalThis.window as any)[prop];
-    }
-  }
+  globalRefRegistry.forEach(ref => triggerRef(ref));
 }
 
 /**
@@ -82,19 +72,8 @@ function flushLayoutMetrics() {
 function attachListenerIfNeeded(prop: string) {
   if (activeListeners.has(prop)) return;
 
-  const update = (e?: Event) => {
-    if (e && e.type === 'storage' && (e as StorageEvent).key) {
-      const storageKey = (e as StorageEvent).key!;
-      mirrorCache.forEach((ref, k) => {
-        if (k === storageKey || k.endsWith('.' + storageKey)) {
-          triggerRef(ref);
-        }
-      });
-      return;
-    }
-    if (mirrorCache.has(prop)) {
-      mirrorCache.get(prop)!.value = (globalThis.window as any)[prop];
-    }
+  const update = () => {
+    globalRefRegistry.forEach(ref => triggerRef(ref));
   };
 
   const updateCoalesced = () => {
@@ -382,8 +361,6 @@ function getObjectMirror(
         ref = createHeapBackedRef(target, prop, heapKey, globalSignals, scheduler);
     }
     localCache.set(prop, ref);
-    mirrorCache.set(heapKey, ref);
-    mirrorCache.set(prop, ref);
     attachListenerIfNeeded(name);
     attachListenerIfNeeded(prop);
     return ref;
