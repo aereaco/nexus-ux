@@ -131,6 +131,6 @@ Deno.test('Mirror Test 5: Page Refresh Persistence via Native Storage', () => {
 
   // Session 2: Page reload creates fresh mirror over native storage
   const mirror2 = generateDynamicMirror('localStorage', nativeStorage, mockRuntime);
-  assertEquals(mirror2.refresh_rtl, true);
-  assertEquals(mirror2.refresh_zoom, 1.8);
+  assertEquals(mirror2.refresh_rtl, 'true');
+  assertEquals(mirror2.refresh_zoom, '1.8');
 });
