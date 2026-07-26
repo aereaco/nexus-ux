@@ -433,6 +433,10 @@ function getObjectMirror(
         ref = createHeapBackedRef(target, prop, heapKey, globalSignals, scheduler);
     }
     localCache.set(prop, ref);
+    mirrorCache.set(heapKey, ref);
+    mirrorCache.set(prop, ref);
+    attachListenerIfNeeded(name);
+    attachListenerIfNeeded(prop);
     return ref;
   }
 
