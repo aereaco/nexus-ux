@@ -157,24 +157,7 @@ function createHeapBackedRef<T>(
       } catch {
         raw = undefined;
       }
-      if (raw === null) return undefined as any;
-
-      if (typeof raw === 'string') {
-        const trimmed = raw.trim();
-        if (trimmed === 'true') return true as any;
-        if (trimmed === 'false') return false as any;
-        if (trimmed === 'null') return null as any;
-        if (trimmed !== '' && !isNaN(Number(trimmed))) return Number(trimmed) as any;
-        if ((trimmed.startsWith('{') && trimmed.endsWith('}')) ||
-            (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
-          try {
-            return JSON.parse(trimmed);
-          } catch {
-            return raw;
-          }
-        }
-      }
-      return raw;
+      return raw ?? undefined;
     },
     set(_newValue) {
       if (typeof console !== 'undefined' && console.warn) {
