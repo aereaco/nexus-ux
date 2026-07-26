@@ -75,6 +75,56 @@ function flushLayoutMetrics() {
   }
 }
 
+let storagePatched = false;
+function ensureStoragePatch() {
+  if (storagePatched || typeof window === 'undefined' || !window.Storage) return;
+  storagePatched = true;
+  const origSet = Storage.prototype.setItem;
+  const origRemove = Storage.prototype.removeItem;
+  const origClear = Storage.prototype.clear;
+
+  Storage.prototype.setItem = function(key: string, value: string) {
+    const oldValue = this.getItem(key);
+    origSet.call(this, key, value);
+    try {
+      window.dispatchEvent(new StorageEvent('storage', {
+        key,
+        oldValue,
+        newValue: String(value),
+        storageArea: this,
+        url: window.location.href
+      }));
+    } catch (_) {}
+  };
+
+  Storage.prototype.removeItem = function(key: string) {
+    const oldValue = this.getItem(key);
+    origRemove.call(this, key);
+    try {
+      window.dispatchEvent(new StorageEvent('storage', {
+        key,
+        oldValue,
+        newValue: null,
+        storageArea: this,
+        url: window.location.href
+      }));
+    } catch (_) {}
+  };
+
+  Storage.prototype.clear = function() {
+    origClear.call(this);
+    try {
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: null,
+        oldValue: null,
+        newValue: null,
+        storageArea: this,
+        url: window.location.href
+      }));
+    } catch (_) {}
+  };
+}
+
 /**
  * Lazily attach specific event listeners only when the DOM tracks a property
  * that mathematically requires them for synchronization.
@@ -82,9 +132,15 @@ function flushLayoutMetrics() {
 function attachListenerIfNeeded(prop: string) {
   if (activeListeners.has(prop)) return;
 
-  const update = () => {
+  const update = (e?: Event) => {
+    if (e && e.type === 'storage' && (e as StorageEvent).key && (e as StorageEvent).key !== prop) {
+      return;
+    }
     if (mirrorCache.has(prop)) {
-      mirrorCache.get(prop)!.value = (globalThis.window as any)[prop];
+      const targetRef = mirrorCache.get(prop)!;
+      if ((targetRef as any).notify) {
+        (targetRef as any).notify();
+      }
     }
   };
 
@@ -116,6 +172,7 @@ function attachListenerIfNeeded(prop: string) {
 
     case 'localStorage':
     case 'sessionStorage':
+      ensureStoragePatch();
       window.addEventListener('storage', update);
       activeListeners.add(prop);
       break;
@@ -159,41 +216,52 @@ function createHeapBackedRef<T>(
   _scheduler: RuntimeContext['scheduler']
 ): Ref<T> {
   const isStringCoercingAPI = typeof target?.getItem === 'function';
+  let notifyFn: (() => void) | null = null;
 
-  const ref = customRef((track, _trigger) => ({
-    get() {
-      track();
-      let raw: any = undefined;
-      try {
-        raw = isStringCoercingAPI ? target.getItem(prop) : target[prop];
-      } catch {
-        raw = undefined;
-      }
-      if (raw === null) return undefined as any;
+  const ref = customRef((track, trigger) => {
+    notifyFn = trigger;
+    return {
+      get() {
+        track();
+        let raw: any = undefined;
+        try {
+          raw = isStringCoercingAPI ? target.getItem(prop) : target[prop];
+        } catch {
+          raw = undefined;
+        }
+        if (raw === null) return undefined as any;
 
-      if (typeof raw === 'string') {
-        const trimmed = raw.trim();
-        if (trimmed === 'true') return true as any;
-        if (trimmed === 'false') return false as any;
-        if (trimmed === 'null') return null as any;
-        if (trimmed !== '' && !isNaN(Number(trimmed))) return Number(trimmed) as any;
-        if ((trimmed.startsWith('{') && trimmed.endsWith('}')) ||
-            (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
-          try {
-            return JSON.parse(trimmed);
-          } catch {
-            return raw;
+        if (typeof raw === 'string') {
+          const trimmed = raw.trim();
+          if (trimmed === 'true') return true as any;
+          if (trimmed === 'false') return false as any;
+          if (trimmed === 'null') return null as any;
+          if (trimmed !== '' && !isNaN(Number(trimmed))) return Number(trimmed) as any;
+          if ((trimmed.startsWith('{') && trimmed.endsWith('}')) ||
+              (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+            try {
+              return JSON.parse(trimmed);
+            } catch {
+              return raw;
+            }
           }
         }
+        return raw;
+      },
+      set(_newValue) {
+        if (isStringCoercingAPI && typeof target?.setItem === 'function') {
+          try {
+            target.setItem(prop, typeof _newValue === 'object' ? JSON.stringify(_newValue) : String(_newValue));
+          } catch (_) {}
+        } else {
+          try { target[prop] = _newValue; } catch (_) {}
+        }
+        trigger();
       }
-      return raw;
-    },
-    set(_newValue) {
-      if (typeof console !== 'undefined' && console.warn) {
-        console.warn(`[Nexus Mirror] _${heapKey} is a read-only reflective viewport. Mutate Web APIs directly (e.g. localStorage.setItem('${prop}', ...)).`);
-      }
-    }
-  }));
+    };
+  });
+
+  (ref as any).notify = () => notifyFn?.();
 
   return ref as any;
 }
