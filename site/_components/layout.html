@@ -767,7 +767,7 @@
         </li>
         <li data-show="ctxMenu?.type === 'tab'">
           <button type="button"
-            data-on-click="const targetTab = tabs.find(t => t.id === ctxMenu.tabId); if (targetTab) { favForm = { title: targetTab.title || 'Tab Bookmark', href: targetTab.content || '/', icon: targetTab.icon || 'material-symbols-light:star-outline' }; $('#fav-modal').showModal(); } const p = document.getElementById('ctx-menu-overlay'); if (p && p.hidePopover) p.hidePopover();">
+            data-on-click="const targetTab = tabs.find(t => t.id === ctxMenu.tabId); if (targetTab) { const newFav = { id: 'fav-' + Date.now(), title: targetTab.title || 'Tab Bookmark', href: targetTab.content || '/', icon: targetTab.icon || 'material-symbols-light:star-outline' }; favorites = [...(favorites || []), newFav]; } const p = document.getElementById('ctx-menu-overlay'); if (p && p.hidePopover) p.hidePopover();">
             <iconify-icon icon="material-symbols-light:star-outline" class="text-warning text-lg"></iconify-icon>
             <span>Add to Favorites</span>
           </button>
@@ -791,7 +791,7 @@
         </li>
         <li data-show="ctxMenu?.type === 'sidebar'">
           <button type="button"
-            data-on-click="favForm = { title: ctxMenu.title || 'Navigation Bookmark', href: ctxMenu.href || '/', icon: ctxMenu.icon || 'material-symbols-light:star-outline' }; $('#fav-modal').showModal(); const p = document.getElementById('ctx-menu-overlay'); if (p && p.hidePopover) p.hidePopover();">
+            data-on-click="const newFav = { id: 'fav-' + Date.now(), title: ctxMenu.title || 'Navigation Bookmark', href: ctxMenu.href || '/', icon: ctxMenu.icon || 'material-symbols-light:star-outline' }; favorites = [...(favorites || []), newFav]; const p = document.getElementById('ctx-menu-overlay'); if (p && p.hidePopover) p.hidePopover();">
             <iconify-icon icon="material-symbols-light:star-outline" class="text-warning text-lg"></iconify-icon>
             <span>Add to Favorites</span>
           </button>
@@ -799,15 +799,8 @@
 
         <!-- Favorite Item Menu Options -->
         <li data-show="ctxMenu?.type === 'favorite'">
-          <button type="button"
-            data-on-click="const f = ctxMenu.fav; favForm = { title: f.title || f, href: f.href || f, icon: f.icon || 'material-symbols-light:star-outline' }; $('#fav-modal').showModal(); const p = document.getElementById('ctx-menu-overlay'); if (p && p.hidePopover) p.hidePopover();">
-            <iconify-icon icon="material-symbols-light:edit-outline" class="text-lg"></iconify-icon>
-            <span>Edit Favorite</span>
-          </button>
-        </li>
-        <li data-show="ctxMenu?.type === 'favorite'">
           <button type="button" class="text-error hover:bg-error/10"
-            data-on-click="pendingDeleteId = (ctxMenu.fav.id || ctxMenu.fav); $('#fav-delete-modal').showModal(); const p = document.getElementById('ctx-menu-overlay'); if (p && p.hidePopover) p.hidePopover();">
+            data-on-click="const targetId = (ctxMenu.fav.id || ctxMenu.fav); favorites = (favorites || []).filter(f => (f.id || f) !== targetId); const p = document.getElementById('ctx-menu-overlay'); if (p && p.hidePopover) p.hidePopover();">
             <iconify-icon icon="material-symbols-light:delete-outline" class="text-lg"></iconify-icon>
             <span>Remove Favorite</span>
           </button>
