@@ -75,56 +75,6 @@ function flushLayoutMetrics() {
   }
 }
 
-let storagePatched = false;
-function ensureStoragePatch() {
-  if (storagePatched || typeof window === 'undefined' || !window.Storage) return;
-  storagePatched = true;
-  const origSet = Storage.prototype.setItem;
-  const origRemove = Storage.prototype.removeItem;
-  const origClear = Storage.prototype.clear;
-
-  Storage.prototype.setItem = function(key: string, value: string) {
-    const oldValue = this.getItem(key);
-    origSet.call(this, key, value);
-    try {
-      window.dispatchEvent(new StorageEvent('storage', {
-        key,
-        oldValue,
-        newValue: String(value),
-        storageArea: this,
-        url: window.location.href
-      }));
-    } catch (_) {}
-  };
-
-  Storage.prototype.removeItem = function(key: string) {
-    const oldValue = this.getItem(key);
-    origRemove.call(this, key);
-    try {
-      window.dispatchEvent(new StorageEvent('storage', {
-        key,
-        oldValue,
-        newValue: null,
-        storageArea: this,
-        url: window.location.href
-      }));
-    } catch (_) {}
-  };
-
-  Storage.prototype.clear = function() {
-    origClear.call(this);
-    try {
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: null,
-        oldValue: null,
-        newValue: null,
-        storageArea: this,
-        url: window.location.href
-      }));
-    } catch (_) {}
-  };
-}
-
 /**
  * Lazily attach specific event listeners only when the DOM tracks a property
  * that mathematically requires them for synchronization.
@@ -175,7 +125,6 @@ function attachListenerIfNeeded(prop: string) {
 
     case 'localStorage':
     case 'sessionStorage':
-      ensureStoragePatch();
       window.addEventListener('storage', update);
       activeListeners.add(prop);
       break;
