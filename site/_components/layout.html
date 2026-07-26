@@ -392,7 +392,7 @@
           <div class="flex items-center h-10 pe-4 ps-6 bg-base-300 text-secondary">
             <div class="tooltip z-100" data-tip="Toggle page tabs">
               <button class="btn btn-xl" data-class="{ 'btn-active': pageTabs }"
-                data-on-click="localStorage.setItem('pageTabs', !pageTabs)">
+                data-on-click="localStorage.setItem('pageTabs', !_localStorage.pageTabs)">
                 <iconify-icon icon="material-symbols-light:tab-group-outline"></iconify-icon>
               </button>
             </div>
@@ -594,10 +594,13 @@
                 <a data-bind-href="fav.href || fav" class="grow flex items-center gap-3 py-2 px-3"
                   data-on-pointerdown="if ($evt.button === 2 || $evt.buttons === 2 || $evt.which === 3) { const rawX = $evt.clientX || $evt.pageX || 100; const rawY = $evt.clientY || $evt.pageY || 100; if (window.__secHoldTimer) clearTimeout(window.__secHoldTimer); window.__secHoldTimer = setTimeout(() => { const ftitle = fav.title || fav; const fhref = fav.href || fav; const ficon = fav.icon || 'material-symbols-light:star-outline'; const targetId = (fav.id || fav); ctxMenuItems = [{ label: 'Open in New Tab', icon: 'material-symbols-light:open-in-new', action: () => { tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs = [...tabs, { id, title: ftitle, icon: ficon, content: fhref }]; activeTabId = id; } }, { label: 'Add as Pinned Tab', icon: 'material-symbols-light:keep-outline', action: () => { tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs = [...tabs, { id, title: ftitle, icon: ficon, content: fhref }]; pinned = [...pinned, id]; activeTabId = id; } }, { label: 'Remove Favorite', icon: 'material-symbols-light:delete-outline', danger: true, action: () => { favorites = (favorites || []).filter(f => (f.id || f) !== targetId); } }]; const menuWidth = 224; const menuHeight = 180; const posX = (rawX + menuWidth > window.innerWidth) ? (rawX - menuWidth) : rawX; const posY = (rawY + menuHeight > window.innerHeight) ? (rawY - menuHeight) : rawY; const a = document.getElementById('click-anchor'); if (a) { a.style.top = posY + 'px'; a.style.left = posX + 'px'; } const m = document.getElementById('ctx-menu-overlay'); if (m && m.showPopover) m.showPopover(); const cancelNative = (e) => { e.preventDefault(); e.stopPropagation(); window.removeEventListener('contextmenu', cancelNative, true); }; window.addEventListener('contextmenu', cancelNative, true); }, 500); }"
                   data-on-pointerup="if (window.__secHoldTimer) { clearTimeout(window.__secHoldTimer); window.__secHoldTimer = null; }">
-                  <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:star'" class="text-warning text-xl shrink-0"></iconify-icon>
+                  <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:star'"
+                    class="text-warning text-xl shrink-0"></iconify-icon>
                   <span class="truncate font-medium text-sm" data-bind="fav.title || fav"></span>
                 </a>
-                <button type="button" class="btn btn-ghost btn-xs btn-circle text-error opacity-0 group-hover:opacity-100 transition-opacity me-2" title="Remove Favorite"
+                <button type="button"
+                  class="btn btn-ghost btn-xs btn-circle text-error opacity-0 group-hover:opacity-100 transition-opacity me-2"
+                  title="Remove Favorite"
                   data-on-click:stop="pendingDeleteId = fav.id || fav; $('#fav-delete-modal').showModal();">
                   <iconify-icon icon="material-symbols-light:delete-outline" class="text-base"></iconify-icon>
                 </button>
@@ -701,8 +704,7 @@
             <!-- Theme Zoom -->
             <div>
               <div class="label-text pb-3">Theme Zoom</div>
-              <input type="range" class="range range-primary" min="0.5" max="2" step="0.1"
-                data-bind-value="zoom"
+              <input type="range" class="range range-primary" min="0.5" max="2" step="0.1" data-bind-value="zoom"
                 data-on-input="localStorage.setItem('zoom', $evt.target.value)" />
               <div class="flex justify-between mt-2">
                 <span class="text-xs">0.5</span>
@@ -719,8 +721,7 @@
             <div class="form-control">
               <label class="label cursor-pointer">
                 <span class="label-text">Page Tabs</span>
-                <input type="checkbox" class="toggle toggle-secondary"
-                  data-bind-checked="pageTabs"
+                <input type="checkbox" class="toggle toggle-secondary" data-bind-checked="pageTabs"
                   data-on-change="localStorage.setItem('pageTabs', $evt.target.checked)" />
               </label>
             </div>
@@ -752,7 +753,8 @@
       </div>
 
       <!-- DaisyUI 5 Virtual Anchor Target -->
-      <div id="click-anchor" class="fixed pointer-events-none" style="anchor-name: --ctx-anchor; position: fixed; top: 0px; left: 0px; width: 0px; height: 0px;"></div>
+      <div id="click-anchor" class="fixed pointer-events-none"
+        style="anchor-name: --ctx-anchor; position: fixed; top: 0px; left: 0px; width: 0px; height: 0px;"></div>
 
       <!-- Native HTML Popover API + DaisyUI 5 Menu Context Menu Template -->
       <ul id="ctx-menu-overlay" popover
@@ -770,14 +772,14 @@
             <!-- Nested Submenu Details (e.g. Close >) -->
             <details data-show="item.submenu && item.submenu.length > 0">
               <summary>
-                <iconify-icon data-bind-icon="item.icon || 'material-symbols-light:close'" class="text-lg"></iconify-icon>
+                <iconify-icon data-bind-icon="item.icon || 'material-symbols-light:close'"
+                  class="text-lg"></iconify-icon>
                 <span data-bind="item.label"></span>
               </summary>
               <ul>
                 <template data-for="sub in item.submenu" data-key="sub.label">
                   <li>
-                    <button type="button"
-                      data-class="{ 'text-error hover:bg-error/10': sub.danger }"
+                    <button type="button" data-class="{ 'text-error hover:bg-error/10': sub.danger }"
                       data-on-click="if (sub.action) { sub.action(); } const p = document.getElementById('ctx-menu-overlay'); if (p && p.hidePopover) p.hidePopover();">
                       <iconify-icon data-bind-icon="sub.icon" class="text-lg"></iconify-icon>
                       <span data-bind="sub.label"></span>
@@ -791,7 +793,8 @@
       </ul>
 
       <!-- Add / Edit Favorite Modal -->
-      <dialog id="fav-modal" class="modal modal-bottom sm:modal-middle" data-on-keydown:escape="$('#fav-modal').close()">
+      <dialog id="fav-modal" class="modal modal-bottom sm:modal-middle"
+        data-on-keydown:escape="$('#fav-modal').close()">
         <div class="modal-box bg-base-100 border border-base-content/10 shadow-2xl">
           <h3 class="font-bold text-lg flex items-center gap-2">
             <iconify-icon icon="material-symbols-light:star-outline" class="text-warning text-2xl"></iconify-icon>
@@ -801,19 +804,24 @@
           <div class="form-control w-full space-y-4 my-2">
             <div>
               <label class="label"><span class="label-text font-semibold">Title</span></label>
-              <input type="text" class="input input-bordered w-full" data-bind-value="favForm.title" data-on-input="favForm.title = $evt.target.value" placeholder="Title" />
+              <input type="text" class="input input-bordered w-full" data-bind-value="favForm.title"
+                data-on-input="favForm.title = $evt.target.value" placeholder="Title" />
             </div>
             <div>
               <label class="label"><span class="label-text font-semibold">Destination URL / Page</span></label>
-              <input type="text" class="input input-bordered w-full" data-bind-value="favForm.href" data-on-input="favForm.href = $evt.target.value" placeholder="URL" />
+              <input type="text" class="input input-bordered w-full" data-bind-value="favForm.href"
+                data-on-input="favForm.href = $evt.target.value" placeholder="URL" />
             </div>
             <div>
               <label class="label"><span class="label-text font-semibold">Icon</span></label>
               <div class="flex items-center gap-2">
-                <input type="text" class="input input-bordered grow" data-bind-value="favForm.icon" data-on-input="favForm.icon = $evt.target.value" placeholder="material-symbols-light:star" />
+                <input type="text" class="input input-bordered grow" data-bind-value="favForm.icon"
+                  data-on-input="favForm.icon = $evt.target.value" placeholder="material-symbols-light:star" />
                 <div class="avatar placeholder">
-                  <div class="bg-base-200 text-base-content rounded-box size-10 flex items-center justify-center border border-base-content/10">
-                    <iconify-icon data-bind-icon="favForm.icon || 'material-symbols-light:star'" class="text-xl"></iconify-icon>
+                  <div
+                    class="bg-base-200 text-base-content rounded-box size-10 flex items-center justify-center border border-base-content/10">
+                    <iconify-icon data-bind-icon="favForm.icon || 'material-symbols-light:star'"
+                      class="text-xl"></iconify-icon>
                   </div>
                 </div>
               </div>
@@ -833,15 +841,18 @@
       </dialog>
 
       <!-- Delete Favorite Confirmation Modal -->
-      <dialog id="fav-delete-modal" class="modal modal-bottom sm:modal-middle" data-on-keydown:escape="$('#fav-delete-modal').close()">
+      <dialog id="fav-delete-modal" class="modal modal-bottom sm:modal-middle"
+        data-on-keydown:escape="$('#fav-delete-modal').close()">
         <div class="modal-box bg-base-100 border border-base-content/10 shadow-2xl">
           <h3 class="font-bold text-lg text-error flex items-center gap-2">
             <iconify-icon icon="material-symbols-light:warning-outline" class="text-2xl"></iconify-icon>
             Remove Favorite?
           </h3>
-          <p class="py-4 text-sm opacity-80">Are you sure you want to remove this item from your favorites? This action cannot be undone.</p>
+          <p class="py-4 text-sm opacity-80">Are you sure you want to remove this item from your favorites? This action
+            cannot be undone.</p>
           <div class="modal-action">
-            <button type="button" class="btn btn-ghost" data-on-click="pendingDeleteId = null; $('#fav-delete-modal').close()">Cancel</button>
+            <button type="button" class="btn btn-ghost"
+              data-on-click="pendingDeleteId = null; $('#fav-delete-modal').close()">Cancel</button>
             <button type="button" class="btn btn-error"
               data-on-click="localStorage.setItem('favorites', (favorites || []).filter(f => (f.id || f) !== pendingDeleteId)); pendingDeleteId = null; $('#fav-delete-modal').close();">
               Remove
