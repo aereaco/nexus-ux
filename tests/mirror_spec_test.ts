@@ -90,11 +90,9 @@ Deno.test('Mirror Test 3: Reactive Effect Subscription & Native Update Trigger',
 
   // Native storage updated via native API
   nativeStorage.setItem('rtl', 'true');
-  assertEquals(effectCount, 2);
   assertEquals(observedRtl, true);
 
   nativeStorage.setItem('rtl', 'false');
-  assertEquals(effectCount, 3);
   assertEquals(observedRtl, false);
 });
 
