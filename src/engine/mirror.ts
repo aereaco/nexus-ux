@@ -361,6 +361,7 @@ function getObjectMirror(
         ref = createHeapBackedRef(target, prop, heapKey, globalSignals, scheduler);
     }
     localCache.set(prop, ref);
+    globalRefRegistry.add(ref);
     attachListenerIfNeeded(name);
     attachListenerIfNeeded(prop);
     return ref;
