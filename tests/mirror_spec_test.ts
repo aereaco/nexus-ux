@@ -10,8 +10,8 @@ class MockStorage implements Storage {
   clear() { this._store.clear(); }
   getItem(key: string) { return this._store.get(key) ?? null; }
   key(index: number) { return Array.from(this._store.keys())[index] ?? null; }
-  removeItem(key: string) { this._store.delete(key); if (typeof (globalThis as any).dispatchEvent === 'function') (globalThis as any).dispatchEvent({ type: 'storage', key }); }
-  setItem(key: string, value: string) { this._store.set(key, String(value)); if (typeof (globalThis as any).dispatchEvent === 'function') (globalThis as any).dispatchEvent({ type: 'storage', key }); }
+  removeItem(key: string) { this._store.delete(key); const ev = new Event('storage'); (ev as any).key = key; if (typeof (globalThis as any).dispatchEvent === 'function') (globalThis as any).dispatchEvent(ev); }
+  setItem(key: string, value: string) { this._store.set(key, String(value)); const ev = new Event('storage'); (ev as any).key = key; if (typeof (globalThis as any).dispatchEvent === 'function') (globalThis as any).dispatchEvent(ev); }
 }
 
 class MockElement {
