@@ -1074,7 +1074,7 @@ logic overhead. Used heavily alongside `data-ux-theme` for building native
 </button>
 ```
 
-
+````
 > [!TIP]
 > **Data Painting**: Use `data-var-icon="'\2713'"` combined with CSS
 > `content: var(--icon)` for high-performance icon toggling without DOM
