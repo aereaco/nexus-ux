@@ -392,13 +392,13 @@
           <div class="flex items-center h-10 pe-4 ps-6 bg-base-300 text-secondary">
             <div class="tooltip z-100" data-tip="Toggle page tabs">
               <button class="btn btn-xl" data-class="{ 'btn-active': pageTabs }"
-                data-on-click="localStorage.setItem('pageTabs', !_localStorage.pageTabs)">
+                data-on-click="pageTabs = !pageTabs; localStorage.setItem('pageTabs', pageTabs)">
                 <iconify-icon icon="material-symbols-light:tab-group-outline"></iconify-icon>
               </button>
             </div>
           </div>
         </div>
-        `
+
       </nav>
     </div>
 

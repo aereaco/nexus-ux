@@ -178,7 +178,7 @@ function createHeapBackedRef<T>(
         if (trimmed === 'null') return null as any;
         if (trimmed !== '' && !isNaN(Number(trimmed))) return Number(trimmed) as any;
         if ((trimmed.startsWith('{') && trimmed.endsWith('}')) ||
-          (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+            (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
           try {
             return JSON.parse(trimmed);
           } catch {
