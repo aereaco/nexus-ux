@@ -346,7 +346,7 @@
           </template>
 
           <button class="btn btn-circle shrink-0" data-class="{ 'hidden': !pageTabs }"
-            data-on-click="tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs.push({ id, title: 'New Tab', icon: 'material-symbols-light:article-outline', content: '_components/tab-new.html' }); activeTabId = id;">
+            data-on-click="tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs = [...tabs, { id, title: 'New Tab', icon: 'material-symbols-light:article-outline', content: '_components/tab-new.html' }]; activeTabId = id;">
             <iconify-icon icon="material-symbols-light:add" style="font-size: 24px"></iconify-icon>
           </button>
         </div>
@@ -781,7 +781,7 @@
         <!-- Sidebar Navigation Item Menu Options -->
         <li data-show="ctxMenu?.type === 'sidebar'">
           <button type="button"
-            data-on-click="tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs.push({ id, title: ctxMenu.title || 'New Tab', icon: ctxMenu.icon || 'material-symbols-light:article-outline', content: ctxMenu.href || '/' }); activeTabId = id; const p = document.getElementById('ctx-menu-overlay'); if (p && p.hidePopover) p.hidePopover();">
+            data-on-click="tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs = [...tabs, { id, title: ctxMenu.title || 'New Tab', icon: ctxMenu.icon || 'material-symbols-light:article-outline', content: ctxMenu.href || '/' }]; activeTabId = id; const p = document.getElementById('ctx-menu-overlay'); if (p && p.hidePopover) p.hidePopover();">
             <iconify-icon icon="material-symbols-light:open-in-new" class="text-lg"></iconify-icon>
             <span>Open in New Tab</span>
           </button>
