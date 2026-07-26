@@ -14,6 +14,7 @@ import switcherModule from './modules/attributes/switcher.ts';
 import themeModule from './modules/attributes/theme.ts';
 
 // Auto-Discovered Modules (inlined by build.ts from generated manifest.ts)
+import { autoAttributes, autoSprites, autoScopes, autoModifiers, autoListeners, autoObservers } from './manifest.ts';
 
 import { resolveSelector } from './modules/sprites/selector.ts';
 import { animate } from './modules/sprites/animate.ts';
