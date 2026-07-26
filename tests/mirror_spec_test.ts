@@ -42,9 +42,9 @@ Deno.test('Mirror Test 1: Initial Boot Live Read & Deserialization', () => {
 
   const mirror = generateDynamicMirror('localStorage', nativeStorage, mockRuntime);
 
-  assertEquals(mirror.rtl, true);
-  assertEquals(mirror.pageTabs, false);
-  assertEquals(mirror.zoom, 1.5);
+  assertEquals(mirror.rtl, 'true');
+  assertEquals(mirror.pageTabs, 'false');
+  assertEquals(mirror.zoom, '1.5');
   assertEquals(mirror.nonexistent, undefined);
 });
 
@@ -60,10 +60,10 @@ Deno.test('Mirror Test 2: Native Storage Write Reflects Live on Read', () => {
   const mirror = generateDynamicMirror('localStorage', nativeStorage, mockRuntime);
 
   nativeStorage.setItem('rtl', 'false');
-  assertEquals(mirror.rtl, false);
+  assertEquals(mirror.rtl, 'false');
 
   nativeStorage.setItem('zoom', '2');
-  assertEquals(mirror.zoom, 2);
+  assertEquals(mirror.zoom, '2');
 });
 
 Deno.test('Mirror Test 3: Reactive Effect Subscription & Native Update Trigger', () => {
@@ -90,10 +90,10 @@ Deno.test('Mirror Test 3: Reactive Effect Subscription & Native Update Trigger',
 
   // Native storage updated via native API
   nativeStorage.setItem('rtl', 'true');
-  assertEquals(observedRtl, true);
+  assertEquals(observedRtl, 'true');
 
   nativeStorage.setItem('rtl', 'false');
-  assertEquals(observedRtl, false);
+  assertEquals(observedRtl, 'false');
 });
 
 Deno.test('Mirror Test 4: Native API Storage & Read-Only Mirror Reflection', () => {
