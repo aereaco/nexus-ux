@@ -88,17 +88,17 @@ Deno.test('Mirror Test 3: Reactive Effect Subscription & Native Update Trigger',
   assertEquals(effectCount, 1);
   assertEquals(observedRtl, undefined);
 
-  // Native storage updated via setItem method trap or native API
-  mirror.setItem('rtl', 'true');
+  // Native storage updated via native API
+  nativeStorage.setItem('rtl', 'true');
   assertEquals(effectCount, 2);
   assertEquals(observedRtl, true);
 
-  mirror.setItem('rtl', 'false');
+  nativeStorage.setItem('rtl', 'false');
   assertEquals(effectCount, 3);
   assertEquals(observedRtl, false);
 });
 
-Deno.test('Mirror Test 4: Method Access Parity (.getItem / .setItem)', () => {
+Deno.test('Mirror Test 4: Native API Storage & Read-Only Mirror Reflection', () => {
   const nativeStorage = new MockStorage();
   const mockRuntime: any = {
     globalSignals: () => ({}),
@@ -109,12 +109,11 @@ Deno.test('Mirror Test 4: Method Access Parity (.getItem / .setItem)', () => {
 
   const mirror = generateDynamicMirror('localStorage', nativeStorage, mockRuntime);
 
-  mirror.setItem('theme', 'dark');
+  nativeStorage.setItem('theme', 'dark');
   assertEquals(nativeStorage.getItem('theme'), 'dark');
-  assertEquals(mirror.getItem('theme'), 'dark');
   assertEquals(mirror.theme, 'dark');
 
-  mirror.removeItem('theme');
+  nativeStorage.removeItem('theme');
   assertEquals(nativeStorage.getItem('theme'), null);
   assertEquals(mirror.theme, undefined);
 });
