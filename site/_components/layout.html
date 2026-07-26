@@ -331,7 +331,7 @@
               data-bind-aria-selected="activeTabId === tab.id"
               data-class="{'tab-active border-b border-primary text-primary': activeTabId === tab.id }"
               data-on-click="activeTabId = tab.id"
-              data-on-pointerdown="if ($evt.button === 2 || $evt.buttons === 2 || $evt.which === 3) { const rawX = $evt.clientX || $evt.pageX || 100; const rawY = $evt.clientY || $evt.pageY || 100; if (window.__secHoldTimer) clearTimeout(window.__secHoldTimer); window.__secHoldTimer = setTimeout(() => { ctxMenu = { type: 'tab', tabId: tab.id, title: tab.title, content: tab.content, icon: tab.icon }; const menuWidth = 224; const menuHeight = 180; const posX = (rawX + menuWidth > window.innerWidth) ? (rawX - menuWidth) : rawX; const posY = (rawY + menuHeight > window.innerHeight) ? (rawY - menuHeight) : rawY; const m = document.getElementById('ctx-menu-overlay'); if (m) { m.style.top = posY + 'px'; m.style.insetInlineStart = posX + 'px'; if (m.showPopover) m.showPopover(); } const cancelNative = (e) => { e.preventDefault(); e.stopPropagation(); window.removeEventListener('contextmenu', cancelNative, true); }; window.addEventListener('contextmenu', cancelNative, true); }, 500); }"
+              data-on-pointerdown="if ($evt.button === 2 || $evt.buttons === 2 || $evt.which === 3) { const rawX = $evt.clientX || $evt.pageX || 100; const rawY = $evt.clientY || $evt.pageY || 100; if (window.__secHoldTimer) clearTimeout(window.__secHoldTimer); window.__secHoldTimer = setTimeout(() => { ctxMenu = { type: 'tab', tabId: tab.id, title: tab.title, content: tab.content, icon: tab.icon }; const menuWidth = 224; const menuHeight = 180; const posX = (rawX + menuWidth > window.innerWidth) ? (rawX - menuWidth) : rawX; const posY = (rawY + menuHeight > window.innerHeight) ? (rawY - menuHeight) : rawY; const a = document.getElementById('click-anchor'); if (a) { a.style.top = posY + 'px'; a.style.left = posX + 'px'; } const m = document.getElementById('ctx-menu-overlay'); if (m && m.showPopover) m.showPopover(); const cancelNative = (e) => { e.preventDefault(); e.stopPropagation(); window.removeEventListener('contextmenu', cancelNative, true); }; window.addEventListener('contextmenu', cancelNative, true); }, 500); }"
               data-on-pointerup="if (window.__secHoldTimer) { clearTimeout(window.__secHoldTimer); window.__secHoldTimer = null; }">
               <iconify-icon icon="material-symbols-light:drag-indicator"
                 class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
@@ -750,10 +750,13 @@
         </button>
       </div>
 
-      <!-- Native HTML Popover API + DaisyUI Menu Context Menu -->
+      <!-- DaisyUI 5 Virtual Anchor Target -->
+      <div id="click-anchor" class="fixed pointer-events-none" style="anchor-name: --ctx-anchor; position: fixed; top: 0px; left: 0px; width: 0px; height: 0px;"></div>
+
+      <!-- Native HTML Popover API + DaisyUI 5 Menu Context Menu -->
       <ul id="ctx-menu-overlay" popover
-        style="margin: 0; inset: auto;"
-        class="menu menu-sm bg-base-100 text-base-content rounded-box shadow-xl border border-base-200 w-56 p-2 m-0 border-base-content/10">
+        class="dropdown menu w-56 rounded-box bg-base-100 shadow-sm border border-base-200 p-2 m-0"
+        style="position-anchor: --ctx-anchor; top: anchor(bottom); inset-inline-start: anchor(start); margin: 0;">
         <!-- Tab Menu Options -->
         <li data-show="ctxMenu?.type === 'tab'">
           <button type="button"
