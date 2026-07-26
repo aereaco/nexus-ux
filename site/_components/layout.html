@@ -754,58 +754,40 @@
       <!-- DaisyUI 5 Virtual Anchor Target -->
       <div id="click-anchor" class="fixed pointer-events-none" style="anchor-name: --ctx-anchor; position: fixed; top: 0px; left: 0px; width: 0px; height: 0px;"></div>
 
-      <!-- Native HTML Popover API + DaisyUI 5 Menu Context Menu -->
+      <!-- Native HTML Popover API + DaisyUI 5 Menu Context Menu Template -->
       <ul id="ctx-menu-overlay" popover
         class="dropdown menu w-56 rounded-box bg-base-100 shadow-sm border border-base-200 p-2 m-0"
         style="position-anchor: --ctx-anchor; top: anchor(bottom); inset-inline-start: anchor(start); margin: 0;">
-        <!-- Tab Menu Options -->
-        <li data-show="ctxMenu?.type === 'tab'">
-          <button type="button"
-            data-on-click="const tid = ctxMenu.tabId; pinned = pinned.includes(tid) ? pinned.filter(id => id !== tid) : [...pinned, tid]; const p = document.getElementById('ctx-menu-overlay'); if (p && p.hidePopover) p.hidePopover();">
-            <iconify-icon data-bind-icon="pinned.includes(ctxMenu?.tabId) ? 'material-symbols-light:keep-off-outline' : 'material-symbols-light:keep-outline'" class="text-lg"></iconify-icon>
-            <span data-bind="pinned.includes(ctxMenu?.tabId) ? 'Unpin Tab' : 'Pin Tab'"></span>
-          </button>
-        </li>
-        <li data-show="ctxMenu?.type === 'tab'">
-          <button type="button"
-            data-on-click="const targetTab = tabs.find(t => t.id === ctxMenu.tabId); if (targetTab) { const newFav = { id: 'fav-' + Date.now(), title: targetTab.title || 'Tab Bookmark', href: targetTab.content || '/', icon: targetTab.icon || 'material-symbols-light:star-outline' }; favorites = [...(favorites || []), newFav]; } const p = document.getElementById('ctx-menu-overlay'); if (p && p.hidePopover) p.hidePopover();">
-            <iconify-icon icon="material-symbols-light:star-outline" class="text-warning text-lg"></iconify-icon>
-            <span>Add to Favorites</span>
-          </button>
-        </li>
-        <li class="divider my-1" data-show="ctxMenu?.type === 'tab'"></li>
-        <li data-show="ctxMenu?.type === 'tab'">
-          <button type="button" class="text-error hover:bg-error/10"
-            data-on-click="const tid = ctxMenu.tabId; const wasActive = activeTabId === tid; tabs = tabs.filter(t => t.id !== tid); if (wasActive) activeTabId = tabs[0]?.id; const p = document.getElementById('ctx-menu-overlay'); if (p && p.hidePopover) p.hidePopover();">
-            <iconify-icon icon="material-symbols-light:close" class="text-lg"></iconify-icon>
-            <span>Close Tab</span>
-          </button>
-        </li>
+        <template data-for="item in ctxMenuItems" data-key="item.label">
+          <li data-class="{ 'divider my-1': item.isDivider }">
+            <button type="button" data-show="!item.isDivider && (!item.submenu || item.submenu.length === 0)"
+              data-class="{ 'text-error hover:bg-error/10': item.danger }"
+              data-on-click="if (item.action) { item.action(); } const p = document.getElementById('ctx-menu-overlay'); if (p && p.hidePopover) p.hidePopover();">
+              <iconify-icon data-bind-icon="item.icon" class="text-lg"></iconify-icon>
+              <span data-bind="item.label"></span>
+            </button>
 
-        <!-- Sidebar Navigation Item Menu Options -->
-        <li data-show="ctxMenu?.type === 'sidebar'">
-          <button type="button"
-            data-on-click="tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs = [...tabs, { id, title: ctxMenu.title || 'New Tab', icon: ctxMenu.icon || 'material-symbols-light:article-outline', content: ctxMenu.href || '/' }]; activeTabId = id; const p = document.getElementById('ctx-menu-overlay'); if (p && p.hidePopover) p.hidePopover();">
-            <iconify-icon icon="material-symbols-light:open-in-new" class="text-lg"></iconify-icon>
-            <span>Open in New Tab</span>
-          </button>
-        </li>
-        <li data-show="ctxMenu?.type === 'sidebar'">
-          <button type="button"
-            data-on-click="const newFav = { id: 'fav-' + Date.now(), title: ctxMenu.title || 'Navigation Bookmark', href: ctxMenu.href || '/', icon: ctxMenu.icon || 'material-symbols-light:star-outline' }; favorites = [...(favorites || []), newFav]; const p = document.getElementById('ctx-menu-overlay'); if (p && p.hidePopover) p.hidePopover();">
-            <iconify-icon icon="material-symbols-light:star-outline" class="text-warning text-lg"></iconify-icon>
-            <span>Add to Favorites</span>
-          </button>
-        </li>
-
-        <!-- Favorite Item Menu Options -->
-        <li data-show="ctxMenu?.type === 'favorite'">
-          <button type="button" class="text-error hover:bg-error/10"
-            data-on-click="const targetId = (ctxMenu.fav.id || ctxMenu.fav); favorites = (favorites || []).filter(f => (f.id || f) !== targetId); const p = document.getElementById('ctx-menu-overlay'); if (p && p.hidePopover) p.hidePopover();">
-            <iconify-icon icon="material-symbols-light:delete-outline" class="text-lg"></iconify-icon>
-            <span>Remove Favorite</span>
-          </button>
-        </li>
+            <!-- Nested Submenu Details (e.g. Close >) -->
+            <details data-show="item.submenu && item.submenu.length > 0">
+              <summary>
+                <iconify-icon data-bind-icon="item.icon || 'material-symbols-light:close'" class="text-lg"></iconify-icon>
+                <span data-bind="item.label"></span>
+              </summary>
+              <ul>
+                <template data-for="sub in item.submenu" data-key="sub.label">
+                  <li>
+                    <button type="button"
+                      data-class="{ 'text-error hover:bg-error/10': sub.danger }"
+                      data-on-click="if (sub.action) { sub.action(); } const p = document.getElementById('ctx-menu-overlay'); if (p && p.hidePopover) p.hidePopover();">
+                      <iconify-icon data-bind-icon="sub.icon" class="text-lg"></iconify-icon>
+                      <span data-bind="sub.label"></span>
+                    </button>
+                  </li>
+                </template>
+              </ul>
+            </details>
+          </li>
+        </template>
       </ul>
 
       <!-- Add / Edit Favorite Modal -->
