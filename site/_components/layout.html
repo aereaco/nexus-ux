@@ -21,6 +21,7 @@
         pinned: [],
         tabSeq: 0,
         ctxMenu: null,
+        ctxMenuItems: [],
         favorites: _localStorage.favorites ?? [],
         favForm: { title: '', href: '', icon: 'material-symbols-light:star-outline' },
         pendingDeleteId: null,
@@ -331,9 +332,8 @@
               data-bind-aria-selected="activeTabId === tab.id"
               data-class="{'tab-active border-b border-primary text-primary': activeTabId === tab.id }"
               data-on-click="activeTabId = tab.id"
-              data-on-pointerdown="if ($evt.button === 2 || $evt.buttons === 2 || $evt.which === 3) { const x = Math.round($evt.clientX || $evt.pageX || 100); const y = Math.round($evt.clientY || $evt.pageY || 100); if (window.__secHoldTimer) clearTimeout(window.__secHoldTimer); window.__secHoldTimer = setTimeout(() => { ctxMenu = { type: 'tab', tabId: tab.id, title: tab.title, content: tab.content, icon: tab.icon, x: x, y: y }; const m = document.getElementById('ctx-menu-overlay'); if (m) { m.style.position = 'fixed'; m.style.zIndex = '999999'; m.style.left = x + 'px'; m.style.top = y + 'px'; } const cancelNative = (e) => { e.preventDefault(); e.stopPropagation(); window.removeEventListener('contextmenu', cancelNative, true); }; window.addEventListener('contextmenu', cancelNative, true); }, 500); }"
-              data-on-pointerup="if (window.__secHoldTimer) { clearTimeout(window.__secHoldTimer); window.__secHoldTimer = null; }"
-              data-on-pointerleave="if (window.__secHoldTimer) { clearTimeout(window.__secHoldTimer); window.__secHoldTimer = null; }">
+              data-on-pointerdown="if ($evt.button === 2 || $evt.buttons === 2 || $evt.which === 3) { const rawX = $evt.clientX || $evt.pageX || 100; const rawY = $evt.clientY || $evt.pageY || 100; if (window.__secHoldTimer) clearTimeout(window.__secHoldTimer); window.__secHoldTimer = setTimeout(() => { const tid = tab.id; const isPinned = pinned.includes(tid); const tabIdx = tabs.findIndex(t => t.id === tid); ctxMenuItems = [{ label: isPinned ? 'Unpin Tab' : 'Pin Tab', icon: isPinned ? 'material-symbols-light:keep-off-outline' : 'material-symbols-light:keep-outline', action: () => { pinned = pinned.includes(tid) ? pinned.filter(id => id !== tid) : [...pinned, tid]; } }, { label: 'Add to Favorites', icon: 'material-symbols-light:star-outline', action: () => { favorites = [...(favorites || []), { id: 'fav-' + Date.now(), title: tab.title || 'Tab Bookmark', href: tab.content || '/', icon: tab.icon || 'material-symbols-light:star-outline' }]; } }, { label: 'Duplicate Tab', icon: 'material-symbols-light:content-copy', action: () => { tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs = [...tabs, { id, title: tab.title || 'New Tab', icon: tab.icon || 'material-symbols-light:article-outline', content: tab.content || '/' }]; activeTabId = id; } }, { label: 'Close', icon: 'material-symbols-light:close', submenu: [{ label: 'Close Tabs to Left', icon: 'material-symbols-light:arrow-back', danger: true, action: () => { const leftIds = tabs.slice(0, tabIdx).filter(t => !pinned.includes(t.id)).map(t => t.id); tabs = tabs.filter(t => !leftIds.includes(t.id)); if (!tabs.some(t => t.id === activeTabId)) activeTabId = tabs[0]?.id; } }, { label: 'Close Tabs to Right', icon: 'material-symbols-light:arrow-forward', danger: true, action: () => { const rightIds = tabs.slice(tabIdx + 1).filter(t => !pinned.includes(t.id)).map(t => t.id); tabs = tabs.filter(t => !rightIds.includes(t.id)); if (!tabs.some(t => t.id === activeTabId)) activeTabId = tabs[0]?.id; } }, { label: 'Close Other Tabs', icon: 'material-symbols-light:deselect', danger: true, action: () => { tabs = tabs.filter(t => t.id === tid || pinned.includes(t.id)); activeTabId = tid; } }, { label: 'Close All Tabs', icon: 'material-symbols-light:cancel', danger: true, action: () => { tabs = tabs.filter(t => pinned.includes(t.id)); if (tabs.length > 0) activeTabId = tabs[0].id; } }] }]; const menuWidth = 224; const menuHeight = 220; const posX = (rawX + menuWidth > window.innerWidth) ? (rawX - menuWidth) : rawX; const posY = (rawY + menuHeight > window.innerHeight) ? (rawY - menuHeight) : rawY; const a = document.getElementById('click-anchor'); if (a) { a.style.top = posY + 'px'; a.style.left = posX + 'px'; } const m = document.getElementById('ctx-menu-overlay'); if (m && m.showPopover) m.showPopover(); const cancelNative = (e) => { e.preventDefault(); e.stopPropagation(); window.removeEventListener('contextmenu', cancelNative, true); }; window.addEventListener('contextmenu', cancelNative, true); }, 500); }"
+              data-on-pointerup="if (window.__secHoldTimer) { clearTimeout(window.__secHoldTimer); window.__secHoldTimer = null; }">
               <iconify-icon icon="material-symbols-light:drag-indicator"
                 class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
               <iconify-icon data-bind-icon="tab.icon" class="text-lg px-2"></iconify-icon>
@@ -347,7 +347,7 @@
           </template>
 
           <button class="btn btn-circle shrink-0" data-class="{ 'hidden': !pageTabs }"
-            data-on-click="tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs.push({ id, title: 'New Tab', icon: 'material-symbols-light:article-outline', content: '_components/tab-new.html' }); activeTabId = id;">
+            data-on-click="tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs = [...tabs, { id, title: 'New Tab', icon: 'material-symbols-light:article-outline', content: '_components/tab-new.html' }]; activeTabId = id;">
             <iconify-icon icon="material-symbols-light:add" style="font-size: 24px"></iconify-icon>
           </button>
         </div>
@@ -392,13 +392,13 @@
           <div class="flex items-center h-10 pe-4 ps-6 bg-base-300 text-secondary">
             <div class="tooltip z-100" data-tip="Toggle page tabs">
               <button class="btn btn-xl" data-class="{ 'btn-active': pageTabs }"
-                data-on-click="localStorage.setItem('pageTabs', !pageTabs)">
+                data-on-click="localStorage.setItem('pageTabs', !_localStorage.pageTabs)">
                 <iconify-icon icon="material-symbols-light:tab-group-outline"></iconify-icon>
               </button>
             </div>
           </div>
         </div>
-
+        `
       </nav>
     </div>
 
@@ -568,9 +568,8 @@
             <a data-bind-href="item.href" data-bind-data-tab-title="item.tabTitle"
               data-bind-data-tab-icon="item.tabIcon"
               data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-              data-on-pointerdown="if ($evt.button === 2 || $evt.buttons === 2 || $evt.which === 3) { const x = Math.round($evt.clientX || $evt.pageX || 100); const y = Math.round($evt.clientY || $evt.pageY || 100); if (window.__secHoldTimer) clearTimeout(window.__secHoldTimer); window.__secHoldTimer = setTimeout(() => { ctxMenu = { type: 'sidebar', title: item.title, href: item.href, icon: item.icon, x: x, y: y }; const m = document.getElementById('ctx-menu-overlay'); if (m) { m.style.position = 'fixed'; m.style.zIndex = '999999'; m.style.left = x + 'px'; m.style.top = y + 'px'; } const cancelNative = (e) => { e.preventDefault(); e.stopPropagation(); window.removeEventListener('contextmenu', cancelNative, true); }; window.addEventListener('contextmenu', cancelNative, true); }, 500); }"
-              data-on-pointerup="if (window.__secHoldTimer) { clearTimeout(window.__secHoldTimer); window.__secHoldTimer = null; }"
-              data-on-pointerleave="if (window.__secHoldTimer) { clearTimeout(window.__secHoldTimer); window.__secHoldTimer = null; }">
+              data-on-pointerdown="if ($evt.button === 2 || $evt.buttons === 2 || $evt.which === 3) { const rawX = $evt.clientX || $evt.pageX || 100; const rawY = $evt.clientY || $evt.pageY || 100; if (window.__secHoldTimer) clearTimeout(window.__secHoldTimer); window.__secHoldTimer = setTimeout(() => { const stitle = item.title || 'Page'; const shref = item.href || '/'; const sicon = item.icon || 'material-symbols-light:article-outline'; ctxMenuItems = [{ label: 'Open in New Tab', icon: 'material-symbols-light:open-in-new', action: () => { tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs = [...tabs, { id, title: stitle, icon: sicon, content: shref }]; activeTabId = id; } }, { label: 'Add as Pinned Tab', icon: 'material-symbols-light:keep-outline', action: () => { tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs = [...tabs, { id, title: stitle, icon: sicon, content: shref }]; pinned = [...pinned, id]; activeTabId = id; } }, { label: 'Add to Favorites', icon: 'material-symbols-light:star-outline', action: () => { favorites = [...(favorites || []), { id: 'fav-' + Date.now(), title: stitle, href: shref, icon: sicon }]; } }]; const menuWidth = 224; const menuHeight = 180; const posX = (rawX + menuWidth > window.innerWidth) ? (rawX - menuWidth) : rawX; const posY = (rawY + menuHeight > window.innerHeight) ? (rawY - menuHeight) : rawY; const a = document.getElementById('click-anchor'); if (a) { a.style.top = posY + 'px'; a.style.left = posX + 'px'; } const m = document.getElementById('ctx-menu-overlay'); if (m && m.showPopover) m.showPopover(); const cancelNative = (e) => { e.preventDefault(); e.stopPropagation(); window.removeEventListener('contextmenu', cancelNative, true); }; window.addEventListener('contextmenu', cancelNative, true); }, 500); }"
+              data-on-pointerup="if (window.__secHoldTimer) { clearTimeout(window.__secHoldTimer); window.__secHoldTimer = null; }">
               <iconify-icon data-bind-icon="item.icon" style="font-size: 24px"></iconify-icon>
               <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
             </a>
@@ -593,13 +592,15 @@
             <template data-for="fav in favorites" data-key="fav.id || fav">
               <li class="flex flex-row items-center justify-between group rounded-box hover:bg-base-200">
                 <a data-bind-href="fav.href || fav" class="grow flex items-center gap-3 py-2 px-3"
-                  data-on-pointerdown="if ($evt.button === 2 || $evt.buttons === 2 || $evt.which === 3) { const x = Math.round($evt.clientX || $evt.pageX || 100); const y = Math.round($evt.clientY || $evt.pageY || 100); if (window.__secHoldTimer) clearTimeout(window.__secHoldTimer); window.__secHoldTimer = setTimeout(() => { ctxMenu = { type: 'favorite', fav: fav, x: x, y: y }; const m = document.getElementById('ctx-menu-overlay'); if (m) { m.style.position = 'fixed'; m.style.zIndex = '999999'; m.style.left = x + 'px'; m.style.top = y + 'px'; } const cancelNative = (e) => { e.preventDefault(); e.stopPropagation(); window.removeEventListener('contextmenu', cancelNative, true); }; window.addEventListener('contextmenu', cancelNative, true); }, 500); }"
-                  data-on-pointerup="if (window.__secHoldTimer) { clearTimeout(window.__secHoldTimer); window.__secHoldTimer = null; }"
-                  data-on-pointerleave="if (window.__secHoldTimer) { clearTimeout(window.__secHoldTimer); window.__secHoldTimer = null; }">
-                  <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:star'" class="text-warning text-xl shrink-0"></iconify-icon>
+                  data-on-pointerdown="if ($evt.button === 2 || $evt.buttons === 2 || $evt.which === 3) { const rawX = $evt.clientX || $evt.pageX || 100; const rawY = $evt.clientY || $evt.pageY || 100; if (window.__secHoldTimer) clearTimeout(window.__secHoldTimer); window.__secHoldTimer = setTimeout(() => { const ftitle = fav.title || fav; const fhref = fav.href || fav; const ficon = fav.icon || 'material-symbols-light:star-outline'; const targetId = (fav.id || fav); ctxMenuItems = [{ label: 'Open in New Tab', icon: 'material-symbols-light:open-in-new', action: () => { tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs = [...tabs, { id, title: ftitle, icon: ficon, content: fhref }]; activeTabId = id; } }, { label: 'Add as Pinned Tab', icon: 'material-symbols-light:keep-outline', action: () => { tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs = [...tabs, { id, title: ftitle, icon: ficon, content: fhref }]; pinned = [...pinned, id]; activeTabId = id; } }, { label: 'Remove Favorite', icon: 'material-symbols-light:delete-outline', danger: true, action: () => { favorites = (favorites || []).filter(f => (f.id || f) !== targetId); } }]; const menuWidth = 224; const menuHeight = 180; const posX = (rawX + menuWidth > window.innerWidth) ? (rawX - menuWidth) : rawX; const posY = (rawY + menuHeight > window.innerHeight) ? (rawY - menuHeight) : rawY; const a = document.getElementById('click-anchor'); if (a) { a.style.top = posY + 'px'; a.style.left = posX + 'px'; } const m = document.getElementById('ctx-menu-overlay'); if (m && m.showPopover) m.showPopover(); const cancelNative = (e) => { e.preventDefault(); e.stopPropagation(); window.removeEventListener('contextmenu', cancelNative, true); }; window.addEventListener('contextmenu', cancelNative, true); }, 500); }"
+                  data-on-pointerup="if (window.__secHoldTimer) { clearTimeout(window.__secHoldTimer); window.__secHoldTimer = null; }">
+                  <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:star'"
+                    class="text-warning text-xl shrink-0"></iconify-icon>
                   <span class="truncate font-medium text-sm" data-bind="fav.title || fav"></span>
                 </a>
-                <button type="button" class="btn btn-ghost btn-xs btn-circle text-error opacity-0 group-hover:opacity-100 transition-opacity me-2" title="Remove Favorite"
+                <button type="button"
+                  class="btn btn-ghost btn-xs btn-circle text-error opacity-0 group-hover:opacity-100 transition-opacity me-2"
+                  title="Remove Favorite"
                   data-on-click:stop="pendingDeleteId = fav.id || fav; $('#fav-delete-modal').showModal();">
                   <iconify-icon icon="material-symbols-light:delete-outline" class="text-base"></iconify-icon>
                 </button>
@@ -703,8 +704,7 @@
             <!-- Theme Zoom -->
             <div>
               <div class="label-text pb-3">Theme Zoom</div>
-              <input type="range" class="range range-primary" min="0.5" max="2" step="0.1"
-                data-bind-value="zoom"
+              <input type="range" class="range range-primary" min="0.5" max="2" step="0.1" data-bind-value="zoom"
                 data-on-input="localStorage.setItem('zoom', $evt.target.value)" />
               <div class="flex justify-between mt-2">
                 <span class="text-xs">0.5</span>
@@ -721,8 +721,7 @@
             <div class="form-control">
               <label class="label cursor-pointer">
                 <span class="label-text">Page Tabs</span>
-                <input type="checkbox" class="toggle toggle-secondary"
-                  data-bind-checked="pageTabs"
+                <input type="checkbox" class="toggle toggle-secondary" data-bind-checked="pageTabs"
                   data-on-change="localStorage.setItem('pageTabs', $evt.target.checked)" />
               </label>
             </div>
@@ -753,74 +752,49 @@
         </button>
       </div>
 
-      <!-- Dynamic Context Menu Overlay -->
-      <div id="ctx-menu-overlay" data-show="ctxMenu !== null"
-        style="position: fixed; z-index: 999999; left: 0px; top: 0px;"
-        class="bg-base-100/95 backdrop-blur border border-base-content/10 rounded-box shadow-2xl p-1 min-w-56 text-sm"
-        data-bind-style="{ left: (ctxMenu ? ctxMenu.x + 'px' : '0px'), top: (ctxMenu ? ctxMenu.y + 'px' : '0px') }"
-        data-on-click:outside="ctxMenu = null"
-        data-on-keydown:escape="ctxMenu = null">
-        <ul class="menu menu-sm w-full p-0">
-          <!-- Tab Menu Options -->
-          <li data-show="ctxMenu?.type === 'tab'">
-            <button type="button"
-              data-on-click="const tid = ctxMenu.tabId; pinned = pinned.includes(tid) ? pinned.filter(id => id !== tid) : [...pinned, tid]; ctxMenu = null;">
-              <iconify-icon data-bind-icon="pinned.includes(ctxMenu?.tabId) ? 'material-symbols-light:keep-off-outline' : 'material-symbols-light:keep-outline'" class="text-lg"></iconify-icon>
-              <span data-bind="pinned.includes(ctxMenu?.tabId) ? 'Unpin Tab' : 'Pin Tab'"></span>
-            </button>
-          </li>
-          <li data-show="ctxMenu?.type === 'tab'">
-            <button type="button"
-              data-on-click="const targetTab = tabs.find(t => t.id === ctxMenu.tabId); if (targetTab) { favForm = { title: targetTab.title || 'Tab Bookmark', href: targetTab.content || '/', icon: targetTab.icon || 'material-symbols-light:star-outline' }; $('#fav-modal').showModal(); } ctxMenu = null;">
-              <iconify-icon icon="material-symbols-light:star-outline" class="text-warning text-lg"></iconify-icon>
-              <span>Add to Favorites</span>
-            </button>
-          </li>
-          <li class="divider my-0" data-show="ctxMenu?.type === 'tab'"></li>
-          <li data-show="ctxMenu?.type === 'tab'">
-            <button type="button" class="text-error"
-              data-on-click="const tid = ctxMenu.tabId; const wasActive = activeTabId === tid; tabs = tabs.filter(t => t.id !== tid); if (wasActive) activeTabId = tabs[0]?.id; ctxMenu = null;">
-              <iconify-icon icon="material-symbols-light:close" class="text-lg"></iconify-icon>
-              <span>Close Tab</span>
-            </button>
-          </li>
+      <!-- DaisyUI 5 Virtual Anchor Target -->
+      <div id="click-anchor" class="fixed pointer-events-none"
+        style="anchor-name: --ctx-anchor; position: fixed; top: 0px; left: 0px; width: 0px; height: 0px;"></div>
 
-          <!-- Sidebar Navigation Item Menu Options -->
-          <li data-show="ctxMenu?.type === 'sidebar'">
-            <button type="button"
-              data-on-click="tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs.push({ id, title: ctxMenu.title || 'New Tab', icon: ctxMenu.icon || 'material-symbols-light:article-outline', content: ctxMenu.href || '/' }); activeTabId = id; ctxMenu = null;">
-              <iconify-icon icon="material-symbols-light:open-in-new" class="text-lg"></iconify-icon>
-              <span>Open in New Tab</span>
+      <!-- Native HTML Popover API + DaisyUI 5 Menu Context Menu Template -->
+      <ul id="ctx-menu-overlay" popover
+        class="dropdown menu w-56 rounded-box bg-base-100 shadow-sm border border-base-200 p-2 m-0"
+        style="position-anchor: --ctx-anchor; top: anchor(bottom); inset-inline-start: anchor(start); margin: 0;">
+        <template data-for="item in ctxMenuItems" data-key="item.label">
+          <li data-class="{ 'divider my-1': item.isDivider }">
+            <button type="button" data-show="!item.isDivider && (!item.submenu || item.submenu.length === 0)"
+              data-class="{ 'text-error hover:bg-error/10': item.danger }"
+              data-on-click="if (item.action) { item.action(); } const p = document.getElementById('ctx-menu-overlay'); if (p && p.hidePopover) p.hidePopover();">
+              <iconify-icon data-bind-icon="item.icon" class="text-lg"></iconify-icon>
+              <span data-bind="item.label"></span>
             </button>
-          </li>
-          <li data-show="ctxMenu?.type === 'sidebar'">
-            <button type="button"
-              data-on-click="favForm = { title: ctxMenu.title || 'Navigation Bookmark', href: ctxMenu.href || '/', icon: ctxMenu.icon || 'material-symbols-light:star-outline' }; $('#fav-modal').showModal(); ctxMenu = null;">
-              <iconify-icon icon="material-symbols-light:star-outline" class="text-warning text-lg"></iconify-icon>
-              <span>Add to Favorites</span>
-            </button>
-          </li>
 
-          <!-- Favorite Item Menu Options -->
-          <li data-show="ctxMenu?.type === 'favorite'">
-            <button type="button"
-              data-on-click="const f = ctxMenu.fav; favForm = { title: f.title || f, href: f.href || f, icon: f.icon || 'material-symbols-light:star-outline' }; $('#fav-modal').showModal(); ctxMenu = null;">
-              <iconify-icon icon="material-symbols-light:edit-outline" class="text-lg"></iconify-icon>
-              <span>Edit Favorite</span>
-            </button>
+            <!-- Nested Submenu Details (e.g. Close >) -->
+            <details data-show="item.submenu && item.submenu.length > 0">
+              <summary>
+                <iconify-icon data-bind-icon="item.icon || 'material-symbols-light:close'"
+                  class="text-lg"></iconify-icon>
+                <span data-bind="item.label"></span>
+              </summary>
+              <ul>
+                <template data-for="sub in item.submenu" data-key="sub.label">
+                  <li>
+                    <button type="button" data-class="{ 'text-error hover:bg-error/10': sub.danger }"
+                      data-on-click="if (sub.action) { sub.action(); } const p = document.getElementById('ctx-menu-overlay'); if (p && p.hidePopover) p.hidePopover();">
+                      <iconify-icon data-bind-icon="sub.icon" class="text-lg"></iconify-icon>
+                      <span data-bind="sub.label"></span>
+                    </button>
+                  </li>
+                </template>
+              </ul>
+            </details>
           </li>
-          <li data-show="ctxMenu?.type === 'favorite'">
-            <button type="button" class="text-error"
-              data-on-click="pendingDeleteId = (ctxMenu.fav.id || ctxMenu.fav); $('#fav-delete-modal').showModal(); ctxMenu = null;">
-              <iconify-icon icon="material-symbols-light:delete-outline" class="text-lg"></iconify-icon>
-              <span>Remove Favorite</span>
-            </button>
-          </li>
-        </ul>
-      </div>
+        </template>
+      </ul>
 
       <!-- Add / Edit Favorite Modal -->
-      <dialog id="fav-modal" class="modal modal-bottom sm:modal-middle" data-on-keydown:escape="$('#fav-modal').close()">
+      <dialog id="fav-modal" class="modal modal-bottom sm:modal-middle"
+        data-on-keydown:escape="$('#fav-modal').close()">
         <div class="modal-box bg-base-100 border border-base-content/10 shadow-2xl">
           <h3 class="font-bold text-lg flex items-center gap-2">
             <iconify-icon icon="material-symbols-light:star-outline" class="text-warning text-2xl"></iconify-icon>
@@ -830,19 +804,24 @@
           <div class="form-control w-full space-y-4 my-2">
             <div>
               <label class="label"><span class="label-text font-semibold">Title</span></label>
-              <input type="text" class="input input-bordered w-full" data-bind-value="favForm.title" data-on-input="favForm.title = $evt.target.value" placeholder="Title" />
+              <input type="text" class="input input-bordered w-full" data-bind-value="favForm.title"
+                data-on-input="favForm.title = $evt.target.value" placeholder="Title" />
             </div>
             <div>
               <label class="label"><span class="label-text font-semibold">Destination URL / Page</span></label>
-              <input type="text" class="input input-bordered w-full" data-bind-value="favForm.href" data-on-input="favForm.href = $evt.target.value" placeholder="URL" />
+              <input type="text" class="input input-bordered w-full" data-bind-value="favForm.href"
+                data-on-input="favForm.href = $evt.target.value" placeholder="URL" />
             </div>
             <div>
               <label class="label"><span class="label-text font-semibold">Icon</span></label>
               <div class="flex items-center gap-2">
-                <input type="text" class="input input-bordered grow" data-bind-value="favForm.icon" data-on-input="favForm.icon = $evt.target.value" placeholder="material-symbols-light:star" />
+                <input type="text" class="input input-bordered grow" data-bind-value="favForm.icon"
+                  data-on-input="favForm.icon = $evt.target.value" placeholder="material-symbols-light:star" />
                 <div class="avatar placeholder">
-                  <div class="bg-base-200 text-base-content rounded-box size-10 flex items-center justify-center border border-base-content/10">
-                    <iconify-icon data-bind-icon="favForm.icon || 'material-symbols-light:star'" class="text-xl"></iconify-icon>
+                  <div
+                    class="bg-base-200 text-base-content rounded-box size-10 flex items-center justify-center border border-base-content/10">
+                    <iconify-icon data-bind-icon="favForm.icon || 'material-symbols-light:star'"
+                      class="text-xl"></iconify-icon>
                   </div>
                 </div>
               </div>
@@ -862,15 +841,18 @@
       </dialog>
 
       <!-- Delete Favorite Confirmation Modal -->
-      <dialog id="fav-delete-modal" class="modal modal-bottom sm:modal-middle" data-on-keydown:escape="$('#fav-delete-modal').close()">
+      <dialog id="fav-delete-modal" class="modal modal-bottom sm:modal-middle"
+        data-on-keydown:escape="$('#fav-delete-modal').close()">
         <div class="modal-box bg-base-100 border border-base-content/10 shadow-2xl">
           <h3 class="font-bold text-lg text-error flex items-center gap-2">
             <iconify-icon icon="material-symbols-light:warning-outline" class="text-2xl"></iconify-icon>
             Remove Favorite?
           </h3>
-          <p class="py-4 text-sm opacity-80">Are you sure you want to remove this item from your favorites? This action cannot be undone.</p>
+          <p class="py-4 text-sm opacity-80">Are you sure you want to remove this item from your favorites? This action
+            cannot be undone.</p>
           <div class="modal-action">
-            <button type="button" class="btn btn-ghost" data-on-click="pendingDeleteId = null; $('#fav-delete-modal').close()">Cancel</button>
+            <button type="button" class="btn btn-ghost"
+              data-on-click="pendingDeleteId = null; $('#fav-delete-modal').close()">Cancel</button>
             <button type="button" class="btn btn-error"
               data-on-click="localStorage.setItem('favorites', (favorites || []).filter(f => (f.id || f) !== pendingDeleteId)); pendingDeleteId = null; $('#fav-delete-modal').close();">
               Remove
