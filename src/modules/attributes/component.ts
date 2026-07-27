@@ -151,7 +151,6 @@ const componentModule: AttributeModule = {
             } else {
               if (!runtime.fetch) throw new Error('Fetch utility not available');
               html = await runtime.fetch.request(config.path, { responseType: 'text' }, el) as string;
-              sessionStorage.setItem('nx:' + config.path, html);
             }
 
             if (runtime.isDevMode) console.log(`[Component] Template loaded for <${el.tagName}>, length: ${html.length}`);
