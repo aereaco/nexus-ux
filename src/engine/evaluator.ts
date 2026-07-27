@@ -36,7 +36,7 @@ import { getSelfHealAgent } from './agent.ts';
 import { evaluationError, syntaxError } from './debug.ts';
 import { getDataStack, hasScopeProvider, resolveScopeProvider, registerScopeProvider } from './scope.ts';
 
-import { MirrorProxy, generateDynamicMirror } from './mirror.ts';
+import { generateDynamicMirror } from './mirror.ts';
 
 declare module "./composition.ts" {
   interface RuntimeContext {
@@ -250,8 +250,8 @@ export function evaluateLater(
       if (typeof key === 'string') {
         // 1. Mirror Proxy (`_` prefix)
         if (key.startsWith('_')) {
-          if (key === '_' || key === '_window') return MirrorProxy;
-          const realName = key.slice(1);
+          // Bare `_` is a shorthand alias for `_window`
+          const realName = key === '_' ? 'window' : key.slice(1);
           const globalSignals = runtime.globalSignals();
           let val = (globalSignals as any)[key];
           if (val !== undefined) return val;
