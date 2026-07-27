@@ -1,5 +1,5 @@
 <div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300 min-h-screen" data-signal="{
-      collapsed: _localStorage.getItem('collapsed') ?? true,
+      collapsed: localStorage.getItem('collapsed') ?? true,
       pageTabs: _localStorage.pageTabs ?? 'true',
       rtl: _localStorage.rtl ?? false,
       zoom: _localStorage.zoom ?? 1,
@@ -74,7 +74,7 @@
           <iconify-icon icon="material-symbols-light:menu" style="font-size: 24px"></iconify-icon>
         </button>
         <div class="flex-none">
-          <button data-on-click="_localStorage.setItem('collapsed', !collapsed)" aria-label="toggle sidebar"
+          <button data-on-click="localStorage.setItem('collapsed', !collapsed)" aria-label="toggle sidebar"
             class="btn btn-circle btn-ghost hidden md:flex" data-class="{ 'scale-x-[-1]': !collapsed || hovered }">
             <!-- Sidebar collapse icon -->
             <iconify-icon icon="material-symbols-light:double-arrow" style="font-size: 24px"></iconify-icon>
