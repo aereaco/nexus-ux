@@ -2,12 +2,11 @@
  * Nexus-UX Self-Heal Agent & Crash Beacon System
  *
  * Native AI-debugging interface for the framework. Captures structured
- * crash beacons containing SignalHeap snapshots, Ghost Mirror state, and
- * call-stack frames when errors occur.
+ * crash beacons containing SignalHeap snapshots and call-stack frames
+ * when errors occur.
  *
  * Beacon Contents:
  *   - SignalHeap snapshot: Typed heap state (float/int/bool/string/object/array)
- *   - GhostMirror snapshot: Reactive mirror state for all tracked properties
  *   - Call stack: Function/file/line frames at error point
  *   - Navigator/Memory: Browser environment context
  *
@@ -25,7 +24,6 @@
  * Nexus-UX Innovations Preserved:
  *   - First framework with native AI-debugging interface
  *   - SignalHeap binary snapshots for precise reactive state capture
- *   - Ghost Mirror integration for DOM state reconstruction
  *   - Beacon history with configurable retention
  */
 
@@ -41,7 +39,6 @@ export interface CrashBeacon {
   timestamp: number;
   tier: TierLevel;
   signalHeap: SignalHeapSnapshot;
-  ghostMirror: GhostMirrorSnapshot;
   callStack: CallStackFrame[];
   navigator: NavigatorInfo;
   memory?: MemoryInfo;
@@ -53,18 +50,6 @@ export interface SignalHeapSnapshot {
   objectSignals: Record<string, unknown>[];
   signalIndexMap: Record<string, number>;
   size: number;
-}
-
-export interface GhostMirrorSnapshot {
-  activeNodes: number;
-  dirtyNodes: number;
-  spatialIndex: QuadtreeStats;
-}
-
-export interface QuadtreeStats {
-  nodes: number;
-  maxDepth: number;
-  objects: number;
 }
 
 export interface CallStackFrame {
@@ -91,7 +76,6 @@ export interface MemoryInfo {
 export interface SelfHealConfig {
   enabled: boolean;
   captureHeap: boolean;
-  captureMirror: boolean;
   captureStack: boolean;
   maxStackDepth: number;
   emitToConsole: boolean;
@@ -102,7 +86,6 @@ export interface SelfHealConfig {
 const DEFAULT_CONFIG: SelfHealConfig = {
   enabled: true,
   captureHeap: true,
-  captureMirror: true,
   captureStack: true,
   maxStackDepth: 20,
   emitToConsole: true,
@@ -117,7 +100,6 @@ export class SelfHealAgent {
   private beaconHistory: CrashBeacon[] = [];
   private maxHistorySize = 10;
   private heapSnapshot: SignalHeapSnapshot | null = null;
-  private mirrorSnapshot: GhostMirrorSnapshot | null = null;
   private isCapturing = false;
   private globalErrorHandler: ((error: Error, context?: unknown) => void) | null = null;
   private globalRejectionHandler: ((reason: unknown, promise?: Promise<unknown>) => void) | null = null;
@@ -170,7 +152,6 @@ export class SelfHealAgent {
         timestamp: Date.now(),
         tier: topology.getTier(),
         signalHeap: this.config.captureHeap ? this.captureSignalHeap() : this.createEmptyHeapSnapshot(),
-        ghostMirror: this.config.captureMirror ? this.captureGhostMirror() : this.createEmptyMirrorSnapshot(),
         callStack: this.config.captureStack ? this.captureCallStack(error) : [],
         navigator: this.captureNavigator(),
         memory: this.captureMemory()
@@ -209,7 +190,6 @@ export class SelfHealAgent {
       timestamp: Date.now(),
       tier: topology.getTier(),
       signalHeap: this.createEmptyHeapSnapshot(),
-      ghostMirror: this.createEmptyMirrorSnapshot(),
       callStack: [{ function: error.message, file: error.stack?.split('\n')[0] || 'unknown', line: 0, column: 0 }],
       navigator: this.captureNavigator(),
       memory: this.captureMemory()
@@ -259,41 +239,6 @@ export class SelfHealAgent {
     };
   }
 
-  /**
-   * Capture Ghost Mirror snapshot
-   */
-  private captureGhostMirror(): GhostMirrorSnapshot {
-    let activeNodes = 0;
-    let dirtyNodes = 0;
-    let spatialIndex: QuadtreeStats = { nodes: 0, maxDepth: 0, objects: 0 };
-
-    try {
-      // Access predictive module for quadtree stats
-      const predictiveModule = (globalThis as any).__nexus_predictive;
-      if (predictiveModule?.quadtree) {
-        const qt = predictiveModule.quadtree;
-        spatialIndex = {
-          nodes: qt.nodes?.length || 0,
-          maxDepth: qt.maxDepth || 0,
-          objects: qt.objects?.length || 0
-        };
-      }
-
-      // Access DOM state
-      if (typeof document !== 'undefined') {
-        activeNodes = document.querySelectorAll('[data-signal]').length;
-        dirtyNodes = document.querySelectorAll('[data-dirty]').length;
-      }
-    } catch (e) {
-      // Silently fail
-    }
-
-    return {
-      activeNodes,
-      dirtyNodes,
-      spatialIndex
-    };
-  }
 
   /**
    * Capture call stack from error
@@ -381,17 +326,6 @@ export class SelfHealAgent {
       objectSignals: [],
       signalIndexMap: {},
       size: 0
-    };
-  }
-
-  /**
-   * Create empty mirror snapshot
-   */
-  private createEmptyMirrorSnapshot(): GhostMirrorSnapshot {
-    return {
-      activeNodes: 0,
-      dirtyNodes: 0,
-      spatialIndex: { nodes: 0, maxDepth: 0, objects: 0 }
     };
   }
 

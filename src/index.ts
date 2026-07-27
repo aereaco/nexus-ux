@@ -23,7 +23,7 @@ import { fetchModule } from './engine/fetch.ts';
 // --- Inline utilities from deleted sprite modules ---
 // Legacy sprites (el, id, global, dispatch, nextTick, store, watch,
 // fetch, http, download, clipboard, cache, notification, payment, ws)
-// are replaced by native mirrors (_fetch, _clipboard, etc.) or inline below.
+// are replaced by native Web API calls or inline below.
 
 const _idCounters: Record<string, number> = {};
 export function $id(groupName: string = 'default'): string {
