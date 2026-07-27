@@ -150,7 +150,20 @@ const componentModule: AttributeModule = {
               html = template.innerHTML;
             } else {
               if (!runtime.fetch) throw new Error('Fetch utility not available');
-              html = await runtime.fetch.request(config.path, { responseType: 'text' }, el) as string;
+              const cacheKey = `nx_comp:${config.path}`;
+              const cached = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(cacheKey) : null;
+              if (cached) {
+                html = cached;
+              } else {
+                html = await runtime.fetch.request(config.path, { responseType: 'text' }, el) as string;
+                if (typeof sessionStorage !== 'undefined' && html) {
+                  try {
+                    sessionStorage.setItem(cacheKey, html);
+                  } catch {
+                    // Ignore quota limits
+                  }
+                }
+              }
             }
 
             if (runtime.isDevMode) console.log(`[Component] Template loaded for <${el.tagName}>, length: ${html.length}`);
