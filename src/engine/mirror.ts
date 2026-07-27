@@ -31,7 +31,7 @@
  *   - Layout-metric coalescing for reflow stability
  */
 
-import { shallowRef, type Ref, heap, customRef, toRaw, triggerRef } from './reactivity.ts';
+import { type Ref, heap, customRef, toRaw, triggerRef } from './reactivity.ts';
 import type { RuntimeContext } from './composition.ts';
 import { CLEANUP_FUNCTIONS_KEY } from './consts.ts';
 
@@ -131,42 +131,43 @@ function attachListenerIfNeeded(prop: string) {
 }
 
 /**
- * Tier 1 — Direct property access.
- * Creates a reactive heap-backed ref for any API whose properties are readable/writable
- * via standard property access (window, localStorage, sessionStorage, navigator, etc.).
+ * Category 1 & 2 — Direct Property and Key-Value Storage reactive ref.
  *
- * Structural detection: APIs implementing the Storage interface (getItem + setItem)
- * are string-coercing by spec — objects are always JSON-serialized before writing.
- * All other APIs receive the raw value via Reflect.set.
+ * Category 1 (Direct Property / Method): Uses Reflect.get/Reflect.set for all
+ *   direct property APIs (window, navigator, location, screen, history, etc.)
+ * Category 2 (Key-Value Storage): Uses getItem/setItem for W3C Storage APIs
+ *   (localStorage, sessionStorage) — Reflect.get cannot access storage keys.
+ *
+ * The customRef getter calls track() to register the active DOM effect as a
+ * reactive subscriber in the Mutation Ownership Tracking engine.
+ * The customRef setter calls trigger() to notify all subscribers on mutation.
  */
 function createHeapBackedRef<T>(
   target: any,
   prop: string,
-  heapKey: string,
+  _heapKey: string,
   _globalSignals: Record<string, unknown>,
   _scheduler: RuntimeContext['scheduler']
 ): Ref<T> {
-  const isStringCoercingAPI = typeof target?.getItem === 'function';
+  const isKVStorage = typeof target?.getItem === 'function'; // Category 2 detection
 
-  const ref = customRef((track, _trigger) => ({
+  return customRef<T>((track, trigger) => ({
     get() {
-      track();
-      let raw: any = undefined;
-      try {
-        raw = isStringCoercingAPI ? target.getItem(prop) : target[prop];
-      } catch {
-        raw = undefined;
-      }
-      return raw ?? undefined;
+      track(); // Registers active DOM effect as subscriber in ownership tracker
+      const raw = isKVStorage
+        ? target.getItem(prop)               // Category 2: W3C Storage spec read
+        : Reflect.get(target, prop, target); // Category 1: native property/getter read
+      return (raw ?? undefined) as T;
     },
-    set(_newValue) {
-      if (typeof console !== 'undefined' && console.warn) {
-        console.warn(`[Nexus Mirror] _${heapKey} is a read-only reflective viewport. Mutate Web APIs directly (e.g. localStorage.setItem('${prop}', ...)).`);
+    set(newValue: any) {
+      if (isKVStorage) {
+        target.setItem(prop, String(newValue)); // Category 2: W3C Storage spec write
+      } else {
+        Reflect.set(target, prop, newValue, target); // Category 1: native property write
       }
+      trigger(); // Notifies all subscribed DOM effects to re-evaluate
     }
   }));
-
-  return ref as any;
 }
 
 // ─── Three-Tier Capability Detection ───────────────────────────────────────────
@@ -351,22 +352,40 @@ function getObjectMirror(
   }
 
   return new Proxy(target, {
-    get(t, prop: string | symbol) {
+    get(t, prop: string | symbol, receiver) {
       if (typeof prop === 'string') {
-        const value = getOrCreateRef(prop).value;
-        if (typeof value === 'function') return value.bind(t);
-        if (value && typeof value === 'object' && !Array.isArray(value)) {
-          return getObjectMirror(value, `${name}_${prop}`, globalSignals, scheduler);
+        // Use Reflect.get to detect Category 3 — native Methods & Functions
+        // (setItem, removeItem, clear, pushState, back, getRandomValues, etc.)
+        const native = Reflect.get(t, prop, receiver);
+
+        if (typeof native === 'function') {
+          // Category 3: wrap method execution to fan-out triggerRef to ALL
+          // cached refs in the ownership tracker after any mutation completes.
+          return (...args: any[]) => {
+            const result = Reflect.apply(native, t, args);
+            localCache.forEach(r => triggerRef(r));
+            return result;
+          };
         }
-        return value;
+
+        // Category 1 & 2 — Properties: reactive read via customRef.
+        // getOrCreateRef().value calls track() inside customRef getter,
+        // registering the active DOM effect in the ownership tracker.
+        return getOrCreateRef(prop).value;
       }
-      return Reflect.get(t, prop);
+      return Reflect.get(t, prop, receiver);
     },
-    set(_t, prop, _value, _receiver) {
-      if (typeof console !== 'undefined' && console.warn) {
-        console.warn(`[Nexus Mirror] _${name}.${String(prop)} is a read-only reflective viewport.`);
+
+    set(_t, prop: string | symbol, value, _receiver) {
+      if (typeof prop === 'string') {
+        // Write through the customRef setter:
+        // Category 2 → target.setItem(prop, String(value)) + trigger()
+        // Category 1 → Reflect.set(target, prop, value) + trigger()
+        // Both paths notify all subscribed DOM effects in the ownership tracker.
+        getOrCreateRef(prop).value = value;
+        return true;
       }
-      return false;
+      return Reflect.set(_t, prop, value, _receiver);
     }
   });
 }
@@ -563,32 +582,4 @@ export function generateDynamicMirror(name: string, target: any, runtime: Runtim
     }
   });
 }
-
-/**
- * @deprecated Use generateDynamicMirror instead.
- * Kept for backward compatibility during transition.
- */
-export const MirrorProxy = typeof window !== 'undefined' ? new Proxy(globalThis.window, {
-  get(target, prop) {
-    if (typeof prop === 'string') {
-      if (!mirrorCache.has(prop)) {
-        mirrorCache.set(prop, shallowRef((target as any)[prop]));
-        attachListenerIfNeeded(prop);
-      }
-
-      const v = mirrorCache.get(prop)!.value;
-      return typeof v === 'function' ? v.bind(target) : v;
-    }
-    return Reflect.get(target, prop);
-  },
-  set(target, prop, value) {
-    if (typeof prop === 'string') {
-      const success = Reflect.set(target, prop, value);
-      if (success && mirrorCache.has(prop)) {
-        mirrorCache.get(prop)!.value = value;
-      }
-      return success;
-    }
-    return Reflect.set(target, prop, value);
-  }
-}) : {};
+
