@@ -5,6 +5,14 @@ import { COMPONENT_CONTEXT_KEY, DATA_STACK_KEY } from '../../engine/consts.ts';
 import type { NexusEnhancedElement } from '../../engine/reactivity.ts';
 import { initError } from '../../engine/debug.ts';
 
+/**
+ * Module-level HTML cache: URL → fetched HTML string.
+ * Survives element teardown/recreation (e.g. tab switching via data-component).
+ * First fetch populates the cache; all subsequent loads are synchronous.
+ * Keyed by resolved path so the same component URL is only ever fetched once.
+ */
+const componentCache = new Map<string, string>();
+
 export interface ComponentConfig {
   path: string;
   lazy?: boolean;
@@ -150,7 +158,13 @@ const componentModule: AttributeModule = {
               html = template.innerHTML;
             } else {
               if (!runtime.fetch) throw new Error('Fetch utility not available');
-              html = await runtime.fetch.request(config.path, { responseType: 'text' }, el) as string;
+              // Serve from cache if already fetched; otherwise fetch and cache.
+              if (componentCache.has(config.path)) {
+                html = componentCache.get(config.path)!;
+              } else {
+                html = await runtime.fetch.request(config.path, { responseType: 'text' }, el) as string;
+                componentCache.set(config.path, html);
+              }
             }
 
             if (runtime.isDevMode) console.log(`[Component] Template loaded for <${el.tagName}>, length: ${html.length}`);
