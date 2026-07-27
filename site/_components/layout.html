@@ -1,8 +1,8 @@
 <div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300 min-h-screen" data-signal="{
-      collapsed: _localStorage.collapsed !== 'false',
-      pageTabs: _localStorage.pageTabs !== 'false',
-      rtl: _localStorage.rtl === 'false',
-      zoom: _localStorage.zoom ?? 1,
+      collapsed: localStorage.collapsed !== 'false',
+      pageTabs: localStorage.pageTabs !== 'false',
+      rtl: localStorage.rtl === 'false',
+      zoom: localStorage.zoom ?? 1,
       hovered: false,
       sidebarOpen: false,
       isMobile: window.innerWidth < 768,
@@ -22,7 +22,7 @@
         tabSeq: 0,
         ctxMenu: null,
         ctxMenuItems: [],
-        favorites: _localStorage.favorites ?? [],
+        favorites: localStorage.favorites ?? [],
         favForm: { title: '', href: '', icon: 'material-symbols-light:star-outline' },
         pendingDeleteId: null,
         themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset'],
@@ -491,7 +491,7 @@
     <!-- Default Diagnostic Content (fallback if no route component provided) -->
     <div data-if="!dashboardComponent">
       <div class="p-4 text-2xl font-bold">Nexus-UX Engine Layout Shell</div>
-      <p class="pb-4 ps-4 text-accent" data-bind="'Windows Size: ' + _window.innerWidth"></p>
+      <p class="pb-4 ps-4 text-accent" data-bind="'Windows Size: ' + window.innerWidth"></p>
       <p class="pb-4 ps-4 text-secondary" data-bind="'Windows Size < 1024 (Mobile Match): ' + isMobile"></p>
       <p class="pb-4 ps-4 text-info" data-bind="'Sidebar Collapsed: ' + collapsed"></p>
       <p class="pb-4 ps-4 text-success" data-bind="'Sidebar Hovered: ' + hovered"></p>
