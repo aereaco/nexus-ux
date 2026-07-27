@@ -36,7 +36,7 @@ import { getSelfHealAgent } from './agent.ts';
 import { evaluationError, syntaxError } from './debug.ts';
 import { getDataStack, hasScopeProvider, resolveScopeProvider, registerScopeProvider } from './scope.ts';
 
-import { generateDynamicMirror } from './mirror.ts';
+
 
 declare module "./composition.ts" {
   interface RuntimeContext {
@@ -248,27 +248,7 @@ export function evaluateLater(
     get(target, key): unknown {
       if (key === Symbol.unscopables) return undefined;
       if (typeof key === 'string') {
-        // 1. Mirror Proxy (`_` prefix)
-        if (key.startsWith('_')) {
-          // Bare `_` is a shorthand alias for `_window`
-          const realName = key === '_' ? 'window' : key.slice(1);
-          const globalSignals = runtime.globalSignals();
-          let val = (globalSignals as any)[key];
-          if (val !== undefined) return val;
-          try {
-            const nativeTarget = (globalThis as any)[realName];
-            if (nativeTarget !== undefined) {
-              const wrapped = generateDynamicMirror(realName, nativeTarget, runtime, el as HTMLElement);
-              (globalSignals as any)[key] = wrapped;
-              return wrapped;
-            }
-          } catch (_e) {
-            // Ignore
-          }
-          return undefined;
-        }
-
-        // 2. Scope Providers (modular sprites)
+        // 1. Scope Providers (modular sprites)
         if (hasScopeProvider(key)) return resolveScopeProvider(key, el, runtime);
 
         // ZCZS: Live Scope Resolution — evaluate relative to exact current DOM position

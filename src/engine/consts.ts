@@ -44,7 +44,6 @@ export const NEG_TOKENS = {
   OVERRIDE: '!',
   PSEUDO: '::',
   GRID: '||',
-  MIRROR: '_',
 } as const;
 
 export const MODIFIER_DELIMITER = NEG_TOKENS.MODIFIER;
