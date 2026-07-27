@@ -415,26 +415,12 @@
             }">
 
 
-      <!-- Route tab single outlet: the router sync effect (above) updates
-           tab.content on navigation, and this expression re-evaluates reactively,
-           keeping all in-tab link navigation working correctly.
-           Null component when a custom-component tab is active (prevents double-fetch). -->
-      <div role="tabpanel" class="h-dvh"
-           data-show="!router.tabPaths[activeTabId]"
-           data-component="!router.tabPaths[activeTabId]
-             ? (tabs.find(t => t.id === activeTabId)?.content || null)
-             : null">
-      </div>
-
-      <!-- Custom-component tab cache: each panel (New Tab, link tabs) is rendered
-           once on creation and toggled with display:none on switch — zero re-fetch.
-           Route tab iterations receive null component so they don't load here. -->
-      <template data-for="tab in tabs" data-key="tab.id">
-        <div role="tabpanel" class="h-dvh"
-             data-show="router.tabPaths[tab.id] === 'custom-component' && activeTabId === tab.id"
-             data-component="router.tabPaths[tab.id] === 'custom-component' ? tab.content : null">
-        </div>
-      </template>
+      <!-- Panel outlet: bound to the active tab's own content field.
+             This is the single source of truth for the panel — route tabs
+             have their content synced from router.route via the data-effect
+             above; custom-component tabs (launchpad, link tabs) carry their
+             own content URL. No secondary signal needed. -->
+      <div role="tabpanel" class="h-dvh" data-component="tabs.find(t => t.id === activeTabId)?.content || null"></div>
     </div>
 
     <!-- CONTEXT MENU (tab + link actions) -->
