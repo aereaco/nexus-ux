@@ -1143,9 +1143,53 @@ export const routerAttributeModule: AttributeModule = {
             const idx = tabs.findIndex((t: any) => t.id === _at);
             if (idx >= 0 && nextRoute) {
               const cur = tabs[idx].content;
-              const meta = state.tabMeta[_at] || {};
-              const nextTitle = meta.title || (nextRoute === '_pages/home.html' ? 'Home' : (nextRoute === '_pages/settings.html' ? 'Settings' : (nextRoute === '_pages/profile.html' ? 'Profile' : (nextRoute === errorPage ? (state.errorCode ? 'Error ' + state.errorCode : 'Error') : 'Tab'))));
-              const nextIcon = meta.icon || (nextRoute === '_pages/home.html' ? 'material-symbols-light:home-outline' : (nextRoute === '_pages/settings.html' ? 'material-symbols-light:settings-outline' : (nextRoute === '_pages/profile.html' ? 'material-symbols-light:person-outline' : 'material-symbols-light:article-outline')));
+              const cleanRoute = (nextRoute || '').replace(/^\/+/, '');
+              const cleanPath = (path || '').replace(/^\/+/, '');
+              let nextTitle = meta.title;
+              let nextIcon = meta.icon;
+
+              if (!nextTitle) {
+                const sidebarItems = (globals.sidebarItems as any[]) || [];
+                const sideMatch = sidebarItems.find((s: any) => s.href === path || s.href === '/' + cleanPath);
+                if (sideMatch) {
+                  nextTitle = sideMatch.tabTitle || sideMatch.title;
+                  nextIcon = nextIcon || sideMatch.tabIcon || sideMatch.icon;
+                } else if (matched?.name) {
+                  nextTitle = matched.name.charAt(0).toUpperCase() + matched.name.slice(1);
+                }
+
+                if (!nextTitle) {
+                  if (cleanRoute === '_pages/home.html' || cleanPath === '' || cleanPath === 'home') {
+                    nextTitle = 'Home';
+                    nextIcon = nextIcon || 'material-symbols-light:home-outline';
+                  } else if (cleanRoute === '_pages/settings.html' || cleanPath === 'settings') {
+                    nextTitle = 'Settings';
+                    nextIcon = nextIcon || 'material-symbols-light:settings-outline';
+                  } else if (cleanRoute === '_pages/profile.html' || cleanPath === 'profile') {
+                    nextTitle = 'Profile';
+                    nextIcon = nextIcon || 'material-symbols-light:person-outline';
+                  } else if (cleanRoute === (errorPage || '').replace(/^\/+/, '') || cleanPath === 'error') {
+                    nextTitle = state.errorCode ? 'Error ' + state.errorCode : 'Error';
+                    nextIcon = nextIcon || 'material-symbols-light:warning-outline';
+                  } else {
+                    const seg = cleanPath.split('/')[0];
+                    nextTitle = seg ? seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' ') : 'Tab';
+                    nextIcon = nextIcon || 'material-symbols-light:article-outline';
+                  }
+                }
+              }
+
+              if (!nextIcon) {
+                if (cleanRoute === '_pages/home.html' || cleanPath === '') {
+                  nextIcon = 'material-symbols-light:home-outline';
+                } else if (cleanRoute === '_pages/settings.html' || cleanPath === 'settings') {
+                  nextIcon = 'material-symbols-light:settings-outline';
+                } else if (cleanRoute === '_pages/profile.html' || cleanPath === 'profile') {
+                  nextIcon = 'material-symbols-light:person-outline';
+                } else {
+                  nextIcon = 'material-symbols-light:article-outline';
+                }
+              }
               if (cur !== nextRoute || tabs[idx].title !== nextTitle || tabs[idx].icon !== nextIcon) {
                 const nt = tabs.slice();
                 nt[idx] = { ...nt[idx], content: nextRoute, title: nextTitle, icon: nextIcon };
