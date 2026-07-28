@@ -1014,6 +1014,16 @@ export const routerAttributeModule: AttributeModule = {
           return;
         }
 
+        // Direct URL access protection for wallgarden shadow routes
+        if (matched && matched.internal) {
+          const isDirectAddressBarNav = !suppressNavIntercept && typeof globalThis.location !== 'undefined' &&
+            stripBase(globalThis.location.pathname) === matched.path;
+          if (isDirectAddressBarNav) {
+            state.navigate('/error', { replace: true });
+            return;
+          }
+        }
+
         // No signal match: try filesystem resolution in static/hybrid modes,
         // else fall back to the declaratively configured error pages. Shadow
         // paths resolve the same way (the router's internal fetch can reach
