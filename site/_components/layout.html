@@ -44,12 +44,12 @@
          render through the router but are excluded from router.manifest so the
          client has no discoverable URL. The active route's component URL is
          published to router.route; the content panel binds to it declaratively. -->
-    <div data-route="/" data-route-name="home" data-tab-title="Home" data-tab-icon="material-symbols-light:home-outline" data-component="_pages/home.html" data-route-shadow></div>
-    <div data-route="/settings" data-route-name="settings" data-tab-title="Settings" data-tab-icon="material-symbols-light:settings-outline" data-component="_pages/settings.html"></div>
-    <div data-route="/profile" data-route-name="profile" data-tab-title="Profile" data-tab-icon="material-symbols-light:person-outline" data-component="_pages/profile.html"></div>
-    <div data-route="/_internal/admin-console" data-route-name="admin" data-tab-title="Admin Console" data-tab-icon="material-symbols-light:admin-panel-settings"
+    <div data-route="/" data-route-name="home" data-component="_pages/home.html" data-route-shadow></div>
+    <div data-route="/settings" data-route-name="settings" data-component="_pages/settings.html"></div>
+    <div data-route="/profile" data-route-name="profile" data-component="_pages/profile.html"></div>
+    <div data-route="/_internal/admin-console" data-route-name="admin"
       data-component="_pages/_internal/admin-console.html" data-route-shadow></div>
-    <div data-route="/error" data-route-name="error" data-tab-title="Error" data-tab-icon="material-symbols-light:warning-outline" data-component="_pages/error.html" data-route-shadow></div>
+    <div data-route="/error" data-route-name="error" data-component="_pages/error.html" data-route-shadow></div>
 
     <!-- Reactive sync: when the router resolves a route, update the active
          route-tab's content field so the panel (which reads tabs[].content)
@@ -415,12 +415,14 @@
             }">
 
 
-      <!-- Panel outlet: bound to the active tab's own content field.
-             This is the single source of truth for the panel — route tabs
-             have their content synced from router.route via the data-effect
-             above; custom-component tabs (launchpad, link tabs) carry their
-             own content URL. No secondary signal needed. -->
-      <div role="tabpanel" class="h-dvh" data-component="tabs.find(t => t.id === activeTabId)?.content || null"></div>
+      <!-- Panel outlets: each tab gets its own panel rendered once on creation.
+             Switching tabs is a pure display toggle (data-show) — zero re-fetches.
+             Route tabs have their content URL synced from router.route via the
+             data-effect above; custom-component tabs carry their own content URL. -->
+      <template data-for="tab in tabs" data-key="tab.id">
+        <div role="tabpanel" class="h-dvh" data-show="activeTabId === tab.id" data-component="tab.content">
+        </div>
+      </template>
     </div>
 
     <!-- CONTEXT MENU (tab + link actions) -->

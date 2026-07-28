@@ -208,12 +208,12 @@ export interface RouterState {
     query?: Record<string, unknown>,
     opts?: { replace?: boolean },
   ): void;
-   isActive(path: string, exact?: boolean): boolean;
-   buildQuery(obj: Record<string, unknown>): string;
-   // Surface a server/HTTP error (e.g. 500/502/503/504) and render the
-   // generic `error` page. Pass the code to present the right message; omit to
-   // clear and return to normal routing. The `error` page reads `#router.errorCode`.
-   setError(code?: string | number | null): void;
+  isActive(path: string, exact?: boolean): boolean;
+  buildQuery(obj: Record<string, unknown>): string;
+  // Surface a server/HTTP error (e.g. 500/502/503/504) and render the
+  // generic `error` page. Pass the code to present the right message; omit to
+  // clear and return to normal routing. The `error` page reads `#router.errorCode`.
+  setError(code?: string | number | null): void;
   addRoute(route: RouteRecord): void;
   removeRoute(route: RouteRecord): void;
   renderActiveTab(): void;
@@ -512,13 +512,12 @@ export const routerAttributeModule: AttributeModule = {
           }
 
           const target = applyBase(url);
-          const targetPath = stripBase(target);
           const tabId = opts?.tabId ?? getActiveTabId() ?? state.activeTabId ?? null;
 
           // Track this tab's current path + metadata so switching the active
           // tab (or back/forward) re-renders the correct outlet.
           if (tabId) {
-            state.tabPaths[tabId] = targetPath;
+            state.tabPaths[tabId] = stripBase(target);
             if (opts?.title !== undefined || opts?.icon !== undefined) {
               state.tabMeta[tabId] = {
                 ...(state.tabMeta[tabId] || {}),
@@ -526,20 +525,6 @@ export const routerAttributeModule: AttributeModule = {
                 ...(opts?.icon !== undefined ? { icon: opts.icon } : {}),
               };
             }
-          }
-
-          const isShadow = shadowMatch(targetPath) || routeList.some((r) => r.internal && (r.path === targetPath || r.name === targetPath));
-
-          if (isShadow) {
-            // Shadow routes are internal wallgarden routes — update internal route state
-            // and active tab, but DO NOT push or expose the shadow URL to browser address bar.
-            suppressNavIntercept = true;
-            try {
-              updateRoute(target);
-            } finally {
-              suppressNavIntercept = false;
-            }
-            return;
           }
 
           if ('navigation' in globalThis) {
@@ -940,21 +925,21 @@ export const routerAttributeModule: AttributeModule = {
       // Resolve a filesystem component URL for static/hybrid modes.
       // The `_pages` folder is NOT hardcoded — it comes from `config.pagesDir`
       // (default '_pages'), so `/profile` -> `_pages/profile.html`, `/` -> index.
-        const resolveStaticComponent = (path: string): string => {
-          const dir = (state.config.pagesDir || '').replace(/^\/+|\/+$/g, '');
-          const rel = (path === '/' || path === '') ? '/index.html' : path.replace(/\/$/, '');
-          const withExt = rel.endsWith('.html') ? rel : rel + '.html';
-          const full = dir ? `/${dir}${withExt}` : withExt;
-          return applyBase(full);
-        };
+      const resolveStaticComponent = (path: string): string => {
+        const dir = (state.config.pagesDir || '').replace(/^\/+|\/+$/g, '');
+        const rel = (path === '/' || path === '') ? '/index.html' : path.replace(/\/$/, '');
+        const withExt = rel.endsWith('.html') ? rel : rel + '.html';
+        const full = dir ? `/${dir}${withExt}` : withExt;
+        return applyBase(full);
+      };
 
-        // Publish the resolved component URL into state.outlet. The content
-        // panel binds to tabs[].content (driven by the layout's data-effect
-        // sync), so this is the router-internal state used by renderActiveTab
-        // and any outlet-model consumer (`data-component="#router.outlet"`).
-        const publishOutlet = (url: string | null) => {
-          state.outlet = url;
-        };
+      // Publish the resolved component URL into state.outlet. The content
+      // panel binds to tabs[].content (driven by the layout's data-effect
+      // sync), so this is the router-internal state used by renderActiveTab
+      // and any outlet-model consumer (`data-component="#router.outlet"`).
+      const publishOutlet = (url: string | null) => {
+        state.outlet = url;
+      };
 
       // 3. Update Logic (async to support awaited hooks)
       const updateRoute = async (fullPath: string) => {
@@ -1012,16 +997,6 @@ export const routerAttributeModule: AttributeModule = {
         if (matched && matched.redirect) {
           state.navigate(matched.redirect, { replace: true });
           return;
-        }
-
-        // Direct URL access protection for wallgarden shadow routes
-        if (matched && matched.internal) {
-          const isDirectAddressBarNav = !suppressNavIntercept && typeof globalThis.location !== 'undefined' &&
-            stripBase(globalThis.location.pathname) === matched.path;
-          if (isDirectAddressBarNav) {
-            state.navigate('/error', { replace: true });
-            return;
-          }
         }
 
         // No signal match: try filesystem resolution in static/hybrid modes,
@@ -1154,72 +1129,29 @@ export const routerAttributeModule: AttributeModule = {
           // alone so their `custom-component` content persists.
           const tabs = (globals.tabs as any[]) || [];
           const atIdx = tabs.findIndex((t: any) => t.id === _at);
-           // A tab whose stored path is the 'custom-component' sentinel (e.g. a
-           // freshly opened new-tab launchpad) must NOT have its content swapped
-           // by a concurrent/delayed updateRoute, AND its sentinel must be
-           // preserved: overwriting it with the resolved URL path here would make
-           // the very next updateRoute fail the guard and clobber the launchpad.
-           // Leave the sentinel intact while the launchpad is showing.
-           if (atIdx >= 0 && state.tabPaths[_at] === 'custom-component') {
-             // Preserve the sentinel; do not overwrite with the resolved path.
-           } else {
-          state.tabPaths[_at] = path;
-          const nextRoute = matched?.component ?? staticComponent ?? null;
-          const idx = tabs.findIndex((t: any) => t.id === _at);
-          if (idx >= 0 && nextRoute) {
-            const cur = tabs[idx].content;
-            const meta = state.tabMeta[_at] || {};
-            let nextTitle = meta.title;
-            let nextIcon = meta.icon;
-
-            if (!nextTitle) {
-              const sidebarItems = (globals.sidebarItems as any[]) || [];
-              const sideMatch = sidebarItems.find((s: any) => s.href === path || s.href === '/' + path.replace(/^\/+/, ''));
-              if (sideMatch) {
-                nextTitle = sideMatch.tabTitle || sideMatch.title;
-                nextIcon = nextIcon || sideMatch.tabIcon || sideMatch.icon;
-              } else if (matched) {
-                const el = matched.element;
-                const attrTitle = el?.getAttribute?.('data-tab-title') || el?.getAttribute?.('title');
-                const attrIcon = el?.getAttribute?.('data-tab-icon') || el?.getAttribute?.('icon');
-                if (attrTitle) {
-                  nextTitle = attrTitle;
-                  nextIcon = nextIcon || attrIcon;
-                } else if (matched.name) {
-                  nextTitle = matched.name.charAt(0).toUpperCase() + matched.name.slice(1);
-                  nextIcon = nextIcon || attrIcon;
-                }
-              }
-
-              if (!nextTitle) {
-                const cleanR = (nextRoute || '').replace(/^\/+/, '');
-                if (cleanR === '_pages/home.html' || path === '/') {
-                  nextTitle = 'Home';
-                  nextIcon = nextIcon || 'material-symbols-light:home-outline';
-                } else if (cleanR === '_pages/settings.html' || path === '/settings') {
-                  nextTitle = 'Settings';
-                  nextIcon = nextIcon || 'material-symbols-light:settings-outline';
-                } else if (cleanR === '_pages/profile.html' || path === '/profile') {
-                  nextTitle = 'Profile';
-                  nextIcon = nextIcon || 'material-symbols-light:person-outline';
-                } else if (cleanR === errorPage || path === cleanErrorPath) {
-                  nextTitle = state.errorCode ? 'Error ' + state.errorCode : 'Error';
-                  nextIcon = nextIcon || 'material-symbols-light:warning-outline';
-                } else {
-                  const seg = path.replace(/^\/+/, '').split('/')[0];
-                  nextTitle = seg ? seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' ') : 'Tab';
-                  nextIcon = nextIcon || 'material-symbols-light:article-outline';
-                }
+          // A tab whose stored path is the 'custom-component' sentinel (e.g. a
+          // freshly opened new-tab launchpad) must NOT have its content swapped
+          // by a concurrent/delayed updateRoute, AND its sentinel must be
+          // preserved: overwriting it with the resolved URL path here would make
+          // the very next updateRoute fail the guard and clobber the launchpad.
+          // Leave the sentinel intact while the launchpad is showing.
+          if (atIdx >= 0 && state.tabPaths[_at] === 'custom-component') {
+            // Preserve the sentinel; do not overwrite with the resolved path.
+          } else {
+            state.tabPaths[_at] = path;
+            const nextRoute = matched?.component ?? staticComponent ?? null;
+            const idx = tabs.findIndex((t: any) => t.id === _at);
+            if (idx >= 0 && nextRoute) {
+              const cur = tabs[idx].content;
+              const meta = state.tabMeta[_at] || {};
+              const nextTitle = meta.title || (nextRoute === '_pages/home.html' ? 'Home' : (nextRoute === '_pages/settings.html' ? 'Settings' : (nextRoute === '_pages/profile.html' ? 'Profile' : (nextRoute === errorPage ? (state.errorCode ? 'Error ' + state.errorCode : 'Error') : 'Tab'))));
+              const nextIcon = meta.icon || (nextRoute === '_pages/home.html' ? 'material-symbols-light:home-outline' : (nextRoute === '_pages/settings.html' ? 'material-symbols-light:settings-outline' : (nextRoute === '_pages/profile.html' ? 'material-symbols-light:person-outline' : 'material-symbols-light:article-outline')));
+              if (cur !== nextRoute || tabs[idx].title !== nextTitle || tabs[idx].icon !== nextIcon) {
+                const nt = tabs.slice();
+                nt[idx] = { ...nt[idx], content: nextRoute, title: nextTitle, icon: nextIcon };
+                runtime.setGlobalSignal('tabs', nt);
               }
             }
-            if (!nextIcon) nextIcon = 'material-symbols-light:article-outline';
-
-            if (cur !== nextRoute || tabs[idx].title !== nextTitle || tabs[idx].icon !== nextIcon) {
-              const nt = tabs.slice();
-              nt[idx] = { ...nt[idx], content: nextRoute, title: nextTitle, icon: nextIcon };
-              runtime.setGlobalSignal('tabs', nt);
-            }
-          }
           }
         }
 

@@ -150,24 +150,11 @@ const componentModule: AttributeModule = {
               html = template.innerHTML;
             } else {
               if (!runtime.fetch) throw new Error('Fetch utility not available');
-              const cacheKey = `nx_comp:${config.path}`;
-              const cached = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(cacheKey) : null;
-              if (cached) {
-                html = cached;
-              } else {
-                html = await runtime.fetch.request(config.path, { responseType: 'text' }, el) as string;
-                if (typeof sessionStorage !== 'undefined' && html) {
-                  try {
-                    sessionStorage.setItem(cacheKey, html);
-                  } catch {
-                    // Ignore quota limits
-                  }
-                }
-              }
+              html = await runtime.fetch.request(config.path, { responseType: 'text' }, el) as string;
             }
 
             if (runtime.isDevMode) console.log(`[Component] Template loaded for <${el.tagName}>, length: ${html.length}`);
-            
+
             componentState.templateContent = html;
 
             if (config.shadowrootmode) {
@@ -244,6 +231,19 @@ const componentModule: AttributeModule = {
     } catch (e) {
       initError('component', `Failed to init component: ${e instanceof Error ? e.message : String(e)}`, el, value);
     }
+  }
+};
+
+export default componentModule;
+      });
+
+return () => {
+  // cleanup
+};
+
+    } catch (e) {
+  initError('component', `Failed to init component: ${e instanceof Error ? e.message : String(e)}`, el, value);
+}
   }
 };
 
