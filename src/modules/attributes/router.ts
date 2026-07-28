@@ -1169,8 +1169,51 @@ export const routerAttributeModule: AttributeModule = {
           if (idx >= 0 && nextRoute) {
             const cur = tabs[idx].content;
             const meta = state.tabMeta[_at] || {};
-            const nextTitle = meta.title || (nextRoute === '_pages/home.html' ? 'Home' : (nextRoute === '_pages/settings.html' ? 'Settings' : (nextRoute === '_pages/profile.html' ? 'Profile' : (nextRoute === errorPage ? (state.errorCode ? 'Error ' + state.errorCode : 'Error') : 'Tab'))));
-            const nextIcon = meta.icon || (nextRoute === '_pages/home.html' ? 'material-symbols-light:home-outline' : (nextRoute === '_pages/settings.html' ? 'material-symbols-light:settings-outline' : (nextRoute === '_pages/profile.html' ? 'material-symbols-light:person-outline' : 'material-symbols-light:article-outline')));
+            let nextTitle = meta.title;
+            let nextIcon = meta.icon;
+
+            if (!nextTitle) {
+              const sidebarItems = (globals.sidebarItems as any[]) || [];
+              const sideMatch = sidebarItems.find((s: any) => s.href === path || s.href === '/' + path.replace(/^\/+/, ''));
+              if (sideMatch) {
+                nextTitle = sideMatch.tabTitle || sideMatch.title;
+                nextIcon = nextIcon || sideMatch.tabIcon || sideMatch.icon;
+              } else if (matched) {
+                const el = matched.element;
+                const attrTitle = el?.getAttribute?.('data-tab-title') || el?.getAttribute?.('title');
+                const attrIcon = el?.getAttribute?.('data-tab-icon') || el?.getAttribute?.('icon');
+                if (attrTitle) {
+                  nextTitle = attrTitle;
+                  nextIcon = nextIcon || attrIcon;
+                } else if (matched.name) {
+                  nextTitle = matched.name.charAt(0).toUpperCase() + matched.name.slice(1);
+                  nextIcon = nextIcon || attrIcon;
+                }
+              }
+
+              if (!nextTitle) {
+                const cleanR = (nextRoute || '').replace(/^\/+/, '');
+                if (cleanR === '_pages/home.html' || path === '/') {
+                  nextTitle = 'Home';
+                  nextIcon = nextIcon || 'material-symbols-light:home-outline';
+                } else if (cleanR === '_pages/settings.html' || path === '/settings') {
+                  nextTitle = 'Settings';
+                  nextIcon = nextIcon || 'material-symbols-light:settings-outline';
+                } else if (cleanR === '_pages/profile.html' || path === '/profile') {
+                  nextTitle = 'Profile';
+                  nextIcon = nextIcon || 'material-symbols-light:person-outline';
+                } else if (cleanR === errorPage || path === cleanErrorPath) {
+                  nextTitle = state.errorCode ? 'Error ' + state.errorCode : 'Error';
+                  nextIcon = nextIcon || 'material-symbols-light:warning-outline';
+                } else {
+                  const seg = path.replace(/^\/+/, '').split('/')[0];
+                  nextTitle = seg ? seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' ') : 'Tab';
+                  nextIcon = nextIcon || 'material-symbols-light:article-outline';
+                }
+              }
+            }
+            if (!nextIcon) nextIcon = 'material-symbols-light:article-outline';
+
             if (cur !== nextRoute || tabs[idx].title !== nextTitle || tabs[idx].icon !== nextIcon) {
               const nt = tabs.slice();
               nt[idx] = { ...nt[idx], content: nextRoute, title: nextTitle, icon: nextIcon };
