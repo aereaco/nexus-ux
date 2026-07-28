@@ -512,12 +512,13 @@ export const routerAttributeModule: AttributeModule = {
           }
 
           const target = applyBase(url);
+          const targetPath = stripBase(target);
           const tabId = opts?.tabId ?? getActiveTabId() ?? state.activeTabId ?? null;
 
           // Track this tab's current path + metadata so switching the active
           // tab (or back/forward) re-renders the correct outlet.
           if (tabId) {
-            state.tabPaths[tabId] = stripBase(target);
+            state.tabPaths[tabId] = targetPath;
             if (opts?.title !== undefined || opts?.icon !== undefined) {
               state.tabMeta[tabId] = {
                 ...(state.tabMeta[tabId] || {}),
@@ -525,6 +526,20 @@ export const routerAttributeModule: AttributeModule = {
                 ...(opts?.icon !== undefined ? { icon: opts.icon } : {}),
               };
             }
+          }
+
+          const isShadow = shadowMatch(targetPath) || routeList.some((r) => r.internal && (r.path === targetPath || r.name === targetPath));
+
+          if (isShadow) {
+            // Shadow routes are internal wallgarden routes — update internal route state
+            // and active tab, but DO NOT push or expose the shadow URL to browser address bar.
+            suppressNavIntercept = true;
+            try {
+              updateRoute(target);
+            } finally {
+              suppressNavIntercept = false;
+            }
+            return;
           }
 
           if ('navigation' in globalThis) {
