@@ -235,16 +235,3 @@ const componentModule: AttributeModule = {
 };
 
 export default componentModule;
-      });
-
-return () => {
-  // cleanup
-};
-
-    } catch (e) {
-  initError('component', `Failed to init component: ${e instanceof Error ? e.message : String(e)}`, el, value);
-}
-  }
-};
-
-export default componentModule;
