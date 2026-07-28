@@ -415,14 +415,12 @@
             }">
 
 
-      <!-- Panel outlets: each tab gets its own panel rendered once on creation.
-             Switching tabs is a pure display toggle (data-show) — zero re-fetches.
-             Route tabs have their content URL synced from router.route via the
-             data-effect above; custom-component tabs carry their own content URL. -->
-      <template data-for="tab in tabs" data-key="tab.id">
-        <div role="tabpanel" class="h-dvh" data-show="activeTabId === tab.id" data-component="tab.content">
-        </div>
-      </template>
+      <!-- Panel outlet: bound to the active tab's own content field.
+             This is the single source of truth for the panel — route tabs
+             have their content synced from router.route via the data-effect
+             above; custom-component tabs (launchpad, link tabs) carry their
+             own content URL. No secondary signal needed. -->
+      <div role="tabpanel" class="h-dvh" data-component="tabs.find(t => t.id === activeTabId)?.content || null"></div>
     </div>
 
     <!-- CONTEXT MENU (tab + link actions) -->
