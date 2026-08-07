@@ -229,27 +229,34 @@ async function buildBundle(options: BuildOptions = {}) {
       dir: string,
       exportName: string,
       jsonKey: string,
-      whitelist: string[] | undefined
+      whitelist: string[] | undefined,
+      priorityOrder: string[] = []
     ) {
       const arr: string[] = [];
+      const entries: { name: string; modName: string }[] = [];
       try {
         const fullPath = path.resolve(cwd, "src", dir);
         for await (const entry of Deno.readDir(fullPath)) {
           if (entry.isFile && entry.name.endsWith(".ts") && entry.name !== "index.ts") {
             const nameWithoutExt = entry.name.replace(".ts", "");
-            // Apply whitelist filter if provided
             if (whitelist && !whitelist.includes(nameWithoutExt)) {
               console.log(`  [Tree-shaken] ${dir}/${entry.name}`);
               continue;
             }
             const modName = `mod_${counter++}`;
             manifestLines.push(`import * as ${modName} from './${dir}/${entry.name}';`);
-            arr.push(`{ name: '${nameWithoutExt}', module: ${modName} }`);
+            entries.push({ name: nameWithoutExt, modName });
             manifestJsonData[jsonKey].push(nameWithoutExt);
           }
         }
       } catch { /* ignore */ }
 
+      const prioritySet = new Set(priorityOrder);
+      const priority = entries.filter(e => prioritySet.has(e.name));
+      const rest = entries.filter(e => !prioritySet.has(e.name)).sort((a, b) => a.name.localeCompare(b.name));
+      const ordered = [...priority, ...rest];
+
+      ordered.forEach(e => arr.push(`{ name: '${e.name}', module: ${e.modName} }`));
       manifestLines.push(`export const ${exportName}: any[] = [${arr.map(a => `  ${a}`).join(',\n')}];`);
     }
 
