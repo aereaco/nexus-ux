@@ -111,7 +111,6 @@ legacy frameworks by utilizing direct token-to-function mapping.
 | **`:`** | **Modifier** | **Pipeline Anchor**. Defines interceptors, wrappers, and execution behavior. | `<button data-on-click:once="save()"></button>` |
 | **`.`** | **Native Access** | **Reactive Property Traversal**. Standard property access through reactive proxy for native APIs (window, localStorage, etc.). | `<div data-bind="window.innerWidth"></div>` |
 | **`#`** | **Global Signal** | **Reactive Source**. Accesses user-defined Global Signals managed by the Shared Memory Heap. | `<div data-bind="#auth.user"></div>` |
-| **`_`** | **Env Mirror** | **API Snapshot**. Accesses reactive wrappers of Browser/OS native APIs. | `<div data-bind="_window.innerWidth"></div>` |
 | **`$`** | **Logic / Selector** | **Sprite / Command**. Framework tools and the Unified Selector engine for spatial queries. | `<button data-on-click="$(^form).save()"></button>` |
 | **`@`** | **Scope Rule** | **Boundary Rule**. Site-aware CSS-like scope boundaries, media, or container rules. | `<div data-bind="@media(min-width: 1024px) { 'Desktop' }"></div>` |
 | **`&`** | **Context Reference** | **Parent / Local Context**. References current execution context or parent scope. | `<div data-bind="&.parent.title"></div>` |
