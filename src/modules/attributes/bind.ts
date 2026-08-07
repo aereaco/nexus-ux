@@ -89,24 +89,7 @@ function createNativeBinding(value: string, runtime: RuntimeContext, el: HTMLEle
   const properties = propertyPath.split('.').filter(Boolean);
   const finalProperty = properties[properties.length - 1];
 
-  const nativeProxy = new Proxy(target, {
-    get(_obj, prop: string | symbol) {
-      if (typeof prop === 'symbol') return (_obj as any)[prop];
-      const val = Reflect.get(_obj, prop);
-      if (typeof val === 'function') return val.bind(_obj);
-      return val;
-    },
-    set(_obj, prop: string | symbol, value: unknown) {
-      if (typeof prop === 'symbol') return Reflect.set(_obj, prop, value);
-      const result = Reflect.set(_obj, prop, value);
-      if (result && typeof prop === 'string' && prop === finalProperty) {
-        runtime.evaluate(el, `${value} = $newValue`, { $newValue: value });
-      }
-      return result;
-    },
-  });
-
-  const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
+  const [runner, effectCleanup] = runtime.elementBoundEffect(el, () => {
     const result = runtime.evaluate(el, value);
     if (result !== undefined && result !== null) {
       if (typeof result === 'object' && !Array.isArray(result)) {
@@ -148,26 +131,29 @@ function createNativeBinding(value: string, runtime: RuntimeContext, el: HTMLEle
       }
     }
   });
+  cleanupFns.push(effectCleanup);
 
-  cleanupFns.push(cleanup);
-
-  if (target === globalThis && (propertyPath === 'innerWidth' || propertyPath === 'innerHeight' || propertyPath === 'scrollX' || propertyPath === 'scrollY')) {
-    const onNativeChange = () => {
-      runtime.evaluate(el, `${value}`, { $newValue: (globalThis as any)[propertyPath] });
-    };
-    if (propertyPath === 'innerWidth' || propertyPath === 'innerHeight') {
-      globalThis.addEventListener('resize', onNativeChange);
-      cleanupFns.push(() => globalThis.removeEventListener('resize', onNativeChange));
-    } else if (propertyPath === 'scrollX' || propertyPath === 'scrollY') {
-      globalThis.addEventListener('scroll', onNativeChange);
-      cleanupFns.push(() => globalThis.removeEventListener('scroll', onNativeChange));
+  if (target === globalThis) {
+    const property = finalProperty;
+    if (property === 'innerWidth' || property === 'innerHeight') {
+      const onResize = () => {
+        runner();
+      };
+      globalThis.addEventListener('resize', onResize);
+      cleanupFns.push(() => globalThis.removeEventListener('resize', onResize));
+    } else if (property === 'scrollX' || property === 'scrollY') {
+      const onScroll = () => {
+        runner();
+      };
+      globalThis.addEventListener('scroll', onScroll);
+      cleanupFns.push(() => globalThis.removeEventListener('scroll', onScroll));
     }
   }
 
   if (target === globalThis.localStorage || target === globalThis.sessionStorage) {
     const onStorage = (e: StorageEvent) => {
       if (e.key === finalProperty) {
-        runtime.evaluate(el, `${value}`, { $newValue: e.newValue });
+        runner();
       }
     };
     globalThis.addEventListener('storage', onStorage);
