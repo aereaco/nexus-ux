@@ -192,6 +192,78 @@ if (isWorker) {
       document.head.appendChild(bridgeStyle);
     }
   }
+
+  private registerFromManifest() {
+    autoAttributes.forEach(({ name, module }) => {
+      let registeredAny = false;
+      for (const maybe of Object.values(module)) {
+        if (maybe && typeof maybe === 'object' && 'attribute' in maybe && typeof (maybe as any).handle === 'function') {
+          this.coordinator.registerAttributeModule((maybe as any).attribute || name, maybe as any);
+          registeredAny = true;
+        }
+      }
+      if (!registeredAny) {
+        const attrMod = module.default || Object.values(module)[0];
+        if (attrMod) {
+          this.coordinator.registerAttributeModule(attrMod.attribute || name, attrMod as any);
+        }
+      }
+    });
+
+    autoSprites.forEach(({ name, module }) => {
+      const spriteMod = module.default || Object.values(module).find((m: any) => m && typeof m.sprites === 'function');
+      if (spriteMod && typeof spriteMod.sprites === 'function') {
+        this.coordinator.registerSpriteModule(spriteMod.name || name, spriteMod);
+      } else {
+        let exportsObj = module;
+        if (typeof module.default === 'function') {
+          exportsObj = module.default(this.coordinator.runtimeContext);
+        }
+        Object.entries(exportsObj).forEach(([exportName, handler]) => {
+          if (exportName === 'default') return;
+          const handle = (_el: HTMLElement, ...args: any[]) => (handler as any)(...args);
+          const proxyHandle = new Proxy(handle, {
+            get(target, key) {
+              if (key in target) return (target as any)[key];
+              const val = (handler as any)[key];
+              return typeof val === 'function' ? val.bind(handler) : val;
+            }
+          });
+          this.coordinator.registerActionModule(exportName, {
+            name: exportName,
+            handle: proxyHandle
+          });
+        });
+      }
+    });
+
+    autoModifiers.forEach(({ module }) => {
+      let exportsObj = module.default || module;
+      if (exportsObj && exportsObj.name && typeof exportsObj.handle === 'function') {
+        this.coordinator.registerModifierModule(exportsObj.name, exportsObj);
+      } else if (typeof exportsObj === 'object') {
+        Object.values(exportsObj).forEach((mod: any) => {
+          if (mod && mod.name && typeof mod.handle === 'function') {
+            this.coordinator.registerModifierModule(mod.name, mod);
+          }
+        });
+      }
+    });
+
+    autoObservers.forEach(({ name, module }) => {
+      const obsMod = module.default || Object.values(module)[0];
+      if (obsMod) {
+        this.coordinator.registerObserverModule(obsMod.name || name, obsMod);
+      }
+    });
+
+    autoListeners.forEach(({ name, module }) => {
+      const listenerMod = module.default || Object.values(module)[0];
+      if (listenerMod) {
+        this.coordinator.registerListenerModule(listenerMod.name || name, listenerMod);
+      }
+    });
+  }
 }
 
 if (typeof window !== 'undefined' && Nexus) {
