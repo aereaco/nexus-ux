@@ -601,6 +601,96 @@ export function onEffectCleanup(fn: () => void) {
 
 let effectIdCounter = 0;
 
+// =============================================================================
+// Native API Tracking
+// =============================================================================
+// Tracks native API reads during expression evaluation and automatically
+// registers listeners to re-trigger the effect when those APIs change.
+// ZCZS: Zero-copy - only stores references to runners and cleanup functions.
+
+interface NativeApiDependency {
+  property: string;
+  target: object;
+  eventType: string;
+  cleanup: () => void;
+}
+
+interface NativeApiState {
+  dependencies: Map<string, NativeApiDependency>;
+  runners: Set<ReactiveEffectRunner<void>>;
+}
+
+const nativeApiRegistry = new WeakMap<HTMLElement, NativeApiState>();
+
+function getOrCreateNativeApiState(el: HTMLElement): NativeApiState {
+  let state = nativeApiRegistry.get(el);
+  if (!state) {
+    state = { dependencies: new Map(), runners: new Set() };
+    nativeApiRegistry.set(el, state);
+  }
+  return state;
+}
+
+export function trackNativeApiRead(
+  el: HTMLElement,
+  target: object,
+  property: string,
+  runner: ReactiveEffectRunner<void>
+): void {
+  const state = getOrCreateNativeApiState(el);
+  const targetName = target === globalThis ? 'window' :
+                     target === globalThis.localStorage ? 'localStorage' :
+                     target === globalThis.sessionStorage ? 'sessionStorage' :
+                     target === globalThis.navigator ? 'navigator' :
+                     target === globalThis.document ? 'document' :
+                     target === globalThis.screen ? 'screen' : 'unknown';
+  const key = `${targetName}.${property}`;
+
+  if (!state.dependencies.has(key)) {
+    let eventType: string;
+    let handler: EventListener;
+
+    if (target === globalThis) {
+      if (property === 'innerWidth' || property === 'innerHeight') {
+        eventType = 'resize';
+        handler = () => { state.runners.forEach(r => { try { r(); } catch {} }); };
+      } else if (property === 'scrollX' || property === 'scrollY') {
+        eventType = 'scroll';
+        handler = () => { state.runners.forEach(r => { try { r(); } catch {} }); };
+      } else {
+        return;
+      }
+    } else if (target === globalThis.localStorage || target === globalThis.sessionStorage) {
+      eventType = 'storage';
+      handler = (e: StorageEvent) => {
+        if (e.key === property) {
+          state.runners.forEach(r => { try { r(); } catch {} });
+        }
+      };
+    } else {
+      return;
+    }
+
+    globalThis.addEventListener(eventType, handler);
+    state.dependencies.set(key, {
+      property,
+      target,
+      eventType,
+      cleanup: () => globalThis.removeEventListener(eventType, handler)
+    });
+  }
+
+  state.runners.add(runner);
+}
+
+export function cleanupNativeApiTracking(el: HTMLElement): void {
+  const state = nativeApiRegistry.get(el);
+  if (state) {
+    state.dependencies.forEach(dep => dep.cleanup());
+    nativeApiRegistry.delete(el);
+  }
+}
+
 export function elementBoundEffect(
   el: HTMLElement,
   effectCallback: () => void,
