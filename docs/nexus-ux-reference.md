@@ -1484,9 +1484,9 @@ endpoint.
 
 ### 7.9. HTTP Convenience Methods — DEPRECATED
 
-> **⚠️ DEPRECATED**: Use the `_http` namespace mirror instead. `$get`, `$post`,
-> `$put`, `$patch`, `$delete` are thin wrappers around `_http` with identical
-> semantics. See [§2.6.1](#261-native-mirror-quick-reference) for migration.
+> **⚠️ DEPRECATED**: Use native `fetch` directly. `$get`, `$post`,
+> `$put`, `$patch`, `$delete` are thin wrappers around `fetch` with identical
+> semantics. See [§2.6](#26-native-api-signal-binding) for migration.
 
 **Legacy**:
 - `$get(url, [options])`
@@ -1495,7 +1495,7 @@ endpoint.
 - `$patch(url, body, [options])`
 - `$delete(url, [options])`
 
-**Modern equivalents** (same options, same auto-JSON behavior):
+**Modern equivalents** (native fetch):
 
 ```html
 <!-- DEPRECATED -->
@@ -1503,8 +1503,8 @@ endpoint.
 <button data-on-click="await $post('/api/users', { name })"></button>
 
 <!-- ✅ RECOMMENDED -->
-<div data-on-load="users = await fetch with options (native). get('/api/users')"></div>
-<button data-on-click="await fetch with options (native). post('/api/users', { name })"></button>
+<div data-on-load="users = await fetch('/api/users')"></div>
+<button data-on-click="await fetch('/api/users', { method: 'POST', body: JSON.stringify({ name }) })"></button>
 ```
 
 **Common options** (all HTTP sprites):
