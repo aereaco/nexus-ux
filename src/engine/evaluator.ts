@@ -21,11 +21,10 @@
  * Coordination:
  *   - Parser (attributeParser.ts) extracts directive/argument/modifiers.
  *   - Scope (scope.ts) provides data stack and scope providers.
- *   - Mirror (mirror.ts) generates dynamic browser API wrappers.
  *   - SelfHeal (agent.ts) captures evaluation errors as crash beacons.
  *
  * Nexus-UX Innovations Preserved:
- *   - Dynamic `_` mirror generation for any browser API
+ *   - Dynamic native API tracking for any browser API
  *   - Live scope resolution via data stack + global signals + providers
  *   - `with(scope)` evaluation for natural property access
  *   - Loop guard preventing runaway recursive evaluation
