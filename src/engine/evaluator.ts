@@ -37,49 +37,54 @@ import { getDataStack, hasScopeProvider, resolveScopeProvider, registerScopeProv
 import { trackNativeApiRead, activeNativeApiRunner } from './reactivity.ts';
 
 // =============================================================================
-// Native API Expression Parser
+// Native API Tracking Proxies
 // =============================================================================
-// Parses expression strings to find native API references so we can
-// automatically set up reactive listeners. This is the architectural fix
-// that makes ANY native API access reactive, regardless of expression shape.
+// Wraps native browser API objects in Proxies that automatically register
+// listeners when properties are read. This makes ANY native API access
+// reactive without hardcoding property lists.
 
-const NATIVE_API_PATTERNS = [
-  { pattern: /\bwindow\.(\w+)/g, target: globalThis, properties: ['innerWidth', 'innerHeight', 'scrollX', 'scrollY', 'scrollY', 'innerHeight'] },
-  { pattern: /\bglobalThis\.(\w+)/g, target: globalThis, properties: ['innerWidth', 'innerHeight', 'scrollX', 'scrollY'] },
-  { pattern: /\blocalStorage\.(\w+)/g, target: globalThis.localStorage, properties: ['*'] },
-  { pattern: /\bsessionStorage\.(\w+)/g, target: globalThis.sessionStorage, properties: ['*'] },
-  { pattern: /\bnavigator\.(\w+)/g, target: globalThis.navigator, properties: ['*'] },
-  { pattern: /\bdocument\.(\w+)/g, target: globalThis.document, properties: ['*'] },
-  { pattern: /\bscreen\.(\w+)/g, target: globalThis.screen, properties: ['*'] },
+const NATIVE_API_TARGETS = [
+  { key: 'window', target: globalThis, events: ['resize', 'scroll'] },
+  { key: 'globalThis', target: globalThis, events: ['resize', 'scroll'] },
+  { key: 'localStorage', target: globalThis.localStorage, events: ['storage'] },
+  { key: 'sessionStorage', target: globalThis.sessionStorage, events: ['storage'] },
+  { key: 'navigator', target: globalThis.navigator, events: ['online', 'offline'] },
+  { key: 'document', target: globalThis.document, events: ['visibilitychange'] },
+  { key: 'screen', target: globalThis.screen, events: ['resize'] },
 ];
 
-function parseNativeApiReferences(expression: string): Array<{ target: object; property: string }> {
-  const refs: Array<{ target: object; property: string }> = [];
-  const seen = new Set<string>();
-  
-  for (const { pattern, target, properties } of NATIVE_API_PATTERNS) {
-    pattern.lastIndex = 0;
-    let match: RegExpExecArray | null;
-    while ((match = pattern.exec(expression)) !== null) {
-      const prop = match[1];
-      const key = `${target === globalThis ? 'window' : 'localStorage'}.${prop}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        refs.push({ target, property: prop });
+const nativeApiProxies = new WeakMap<object, object>();
+
+function getNativeApiProxy(target: object, el: HTMLElement): object {
+  if (nativeApiProxies.has(target)) return nativeApiProxies.get(target)!;
+
+  const proxy = new Proxy(target, {
+    get(_obj, prop: string | symbol) {
+      if (typeof prop === 'symbol') return (_obj as any)[prop];
+      
+      if (activeNativeApiRunner && el instanceof HTMLElement) {
+        trackNativeApiRead(el, _obj, String(prop), activeNativeApiRunner);
       }
+      
+      const val = Reflect.get(_obj, prop);
+      if (typeof val === 'function') return val.bind(_obj);
+      return val;
+    },
+    set(_obj, prop: string | symbol, value: unknown) {
+      if (typeof prop === 'symbol') return Reflect.set(_obj, prop, value);
+      const result = Reflect.set(_obj, prop, value);
+      return result;
     }
-  }
-  
-  return refs;
+  });
+
+  nativeApiProxies.set(target, proxy);
+  return proxy;
 }
 
-function registerNativeApiListeners(el: HTMLElement, expression: string): void {
-  if (!activeNativeApiRunner) return;
-  
-  const refs = parseNativeApiReferences(expression);
-  for (const ref of refs) {
-    trackNativeApiRead(el, ref.target, ref.property, activeNativeApiRunner);
-  }
+export function resolveNativeApi(key: string): object | undefined {
+  const match = NATIVE_API_TARGETS.find(a => a.key === key);
+  if (!match) return undefined;
+  return getNativeApiProxy(match.target, el as HTMLElement);
 }
 
 
