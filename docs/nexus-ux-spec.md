@@ -434,7 +434,7 @@ legacy frameworks by utilizing direct token-to-function mapping.
 | :--- | :--- | :--- | :--- |
 | **`-`** | **Intent / Argument** | **Directive Delimiter**. Separates directive name from its intent/argument (what it acts on). | `<div data-ignore-ux></div>`, `<div data-route-layout></div>` |
 | **`:`** | **Modifier** | **Pipeline Anchor**. Defines interceptors, wrappers, and execution behavior. | `<button data-on-click:once="save()"></button>` |
-| **`.`** | **Native Access** | **Reactive Property Traversal**. Standard property access through reactive proxy (*never* an attribute delimiter). | `<div data-bind="user.name"></div>` |
+| **`.`** | **Native Access** | **Reactive Property Traversal**. Standard property access through reactive proxy for native APIs (window, localStorage, etc.). | `<div data-bind="window.innerWidth"></div>` |
 | **`#`** | **Global Signal** | **Reactive Source**. Accesses user-defined Global Signals managed by the Shared Memory Heap. | `<div data-bind="#auth.user"></div>` |
 | **`_`** | **Env Mirror** | **API Snapshot**. Accesses reactive wrappers of Browser/OS native APIs. | `<div data-bind="_window.innerWidth"></div>` |
 | **`$`** | **Logic / Selector** | **Sprite / Command**. Framework tools and the Unified Selector engine for spatial queries. | `<button data-on-click="$(^form).save()"></button>` |
