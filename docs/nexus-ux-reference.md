@@ -1397,7 +1397,7 @@ loading state:
 <!-- ✅ RECOMMENDED -->
 <div data-signal="{ weather: null }">
   <button
-    data-on-click="weather = (await _fetch('https://api.weather.com/v1/london')).json()"
+    data-on-click="weather = (await fetch('https://api.weather.com/v1/london')).json()"
   >
     Get Weather
   </button>
@@ -1406,11 +1406,9 @@ loading state:
 
 ### 7.7. WebSocket (`$ws`) — DEPRECATED
 
-### 7.7. WebSocket (`$ws`) — DEPRECATED
-
-> **⚠️ DEPRECATED**: Use `_WebSocket` environment mirror instead. `$ws` provided
-> custom reconnection logic and state wrapping, but the native `_WebSocket` mirror
-> now offers identical reactive multiplexing with auto-cleanup. See [§2.6.1](#261-native-mirror-quick-reference).
+> **⚠️ DEPRECATED**: Use native `WebSocket` directly. `$ws` provided
+> custom reconnection logic and state wrapping, but the native `WebSocket` API
+> now offers identical reactive multiplexing with auto-cleanup. See [§2.6](#26-native-api-signal-binding).
 
 **Deprecated Syntax**: `$ws(url, [protocols])`
 
