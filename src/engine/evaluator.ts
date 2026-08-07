@@ -34,6 +34,7 @@ import { RuntimeContext } from './composition.ts';
 import { getSelfHealAgent } from './agent.ts';
 import { evaluationError, syntaxError } from './debug.ts';
 import { getDataStack, hasScopeProvider, resolveScopeProvider, registerScopeProvider } from './scope.ts';
+import { trackNativeApiRead, activeNativeApiRunner } from './reactivity.ts';
 
 
 
