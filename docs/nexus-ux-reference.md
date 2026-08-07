@@ -1202,21 +1202,21 @@ Native API binding uses standard JS property access in signals and bindings. The
 | `$get(url, opts)` | `fetch(url, { method: 'GET' })` | Replace `$get(...)` with native `fetch` |
 | `$post(url, body, opts)` | `fetch(url, { method: 'POST', body: JSON.stringify(body) })` | Replace `$post(...)` with native `fetch` |
 | `$put(url, body, opts)` | `fetch(url, { method: 'PUT', body: JSON.stringify(body) })` | Replace `$put(...)` with native `fetch` |
-| `$patch(url, body, opts)` | `_http.patch(url, body, opts)` | Replace `$patch(...)` → `_http.patch(...)` |
-| `$delete(url, opts)` | `_http.delete(url, opts)` | Replace `$delete(...)` → `_http.delete(...)` |
-| `$clipboard.write(text)` | `_clipboard.writeText(text)` | Replace `$clipboard.write(...)` → `_clipboard.writeText(...)` |
-| `$clipboard.read()` | `_clipboard.readText()` | Replace `$clipboard.read()` → `_clipboard.readText()` |
-| `$cache.put(name, url, res)` | `_caches.default.put(url, res)` | Use `_caches` Cache Storage API directly |
-| `$cache.match(name, url)` | `_caches.default.match(url)` | Returns `Response` or `null` |
-| `$cache.delete(name, url)` | `_caches.default.delete(url)` | |
-| `$cache.keys(name)` | `_caches.default.keys()` | |
-| `$notification.send(title, opts)` | `_Notification(title, opts)` | Replace `$notification.send(...)` → `new _Notification(...)` |
-| `$notification.permission` | `_Notification.permission` | Read-only reactive string |
-| `$notification.requestPermission()` | `_Notification.requestPermission()` | Returns Promise<string> |
-| `$payment.request(methods, details)` | `new _PaymentRequest(methods, details)` | Replace `$payment.request(...)` → `new _PaymentRequest(...)` |
-| `$payment.canMakePayment(methods)` | `_PaymentRequest.canMakePayment(methods)` | |
-| `$ws(url)` | `_WebSocket(url)` | Replace `$ws(...)` → `_WebSocket(...)` |
-| `$download(filename, content, mime)` | `_download(filename, content, mime)` | Utility function, same name |
+| `$patch(url, body, opts)` | `fetch(url, { method: 'PATCH', body: JSON.stringify(body) })` | Replace `$patch(...)` with native `fetch` |
+| `$delete(url, opts)` | `fetch(url, { method: 'DELETE' })` | Replace `$delete(...)` with native `fetch` |
+| `$clipboard.write(text)` | `navigator.clipboard.writeText(text)` | Use native Clipboard API directly |
+| `$clipboard.read()` | `navigator.clipboard.readText()` | Use native Clipboard API directly |
+| `$cache.put(name, url, res)` | `caches.default.put(url, res)` | Use native Cache Storage API directly |
+| `$cache.match(name, url)` | `caches.default.match(url)` | Returns `Response` or `null` |
+| `$cache.delete(name, url)` | `caches.default.delete(url)` | |
+| `$cache.keys(name)` | `caches.default.keys()` | |
+| `$notification.send(title, opts)` | `new Notification(title, opts)` | Use native Notification API directly |
+| `$notification.permission` | `Notification.permission` | Read-only reactive string |
+| `$notification.requestPermission()` | `Notification.requestPermission()` | Returns `Promise<string>` |
+| `$payment.request(methods, details)` | `new PaymentRequest(methods, details)` | Use native Payment Request API directly |
+| `$payment.canMakePayment(methods)` | `PaymentRequest.canMakePayment(methods)` | |
+| `$ws(url)` | `new WebSocket(url)` | Use native WebSocket directly |
+| `$download(filename, content, mime)` | `URL.createObjectURL(new Blob([content], { type: mime }))` | Use native Blob/URL API directly |
 | `$store(name, initial)` | `#name` via global signals | Use `data-signal-global` and `#storeName` |
 | `$watch(expr, cb)` | `watch(() => expr, cb)` | Use reactivity engine's `watch()` directly in `data-effect` |
 
