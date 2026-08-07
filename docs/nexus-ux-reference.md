@@ -700,7 +700,7 @@ Modifiers composed with `data-on-[event]` to alter the native event behavior.
 
 - **Debounce**: `<input data-on-input:debounce(500ms)="query = $el.value">`
 - **Throttle**:
-  `<div data-on-scroll:throttle(16ms)="scrollY = _window.scrollY">`
+  `<div data-on-scroll:throttle(16ms)="scrollY = window.scrollY">`
 
 ### 4.5. Universal Behavioral Composition (Pipelines)
 
