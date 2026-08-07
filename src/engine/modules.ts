@@ -403,13 +403,6 @@ export class ModuleCoordinator {
     this.utilityModules.set(name, module);
   }
 
-  public registerMirrorModule(name: string, module: MirrorModule): void {
-    this.mirrorModules.set(name, module);
-    // Auto-inject into expression scope with _ prefix
-    const proxy = module.create(this.runtimeContext);
-    this.runtimeContext.setGlobalSignal(`_${module.prefix}`, proxy);
-  }
-
   public registerSpriteModule(name: string, module: SpriteModule): void {
     this.spriteModules.set(name, module);
     // Auto-inject sprite commands into expression scope
