@@ -1593,18 +1593,17 @@ Dispatches a `CustomEvent` on the current element. Bubbles by default.
 <div data-on-load="$watch('searchQuery', (n, o) => results = $get('/api?q=' + n))"></div>
 
 <!-- ✅ RECOMMENDED -->
-<div data-effect="watch(() => searchQuery, (n, o) => results = fetch with options (native). get('/api?q=' + n))"></div>
+<div data-effect="watch(() => searchQuery, (n, o) => results = fetch('/api?q=' + n))"></div>
 ```
 
 ### 7.12. Utility Sprites — ALL DEPRECATED
 
 > **⚠️ ALL DEPRECATED**: These utility sprites have been replaced by native
-> native APIs. See [§2.6](#26-environment-mirrors-) and
-> [Chapter 7.5](#75-environment-mirrors-) for the modern equivalents.
+> browser APIs. See [§2.6](#26-native-api-signal-binding) for the modern equivalents.
 
-#### 7.12.1. `$clipboard` → `_clipboard`
+#### 7.12.1. `$clipboard` — DEPRECATED
 
-**DEPRECATED**: Use `_clipboard` (native Clipboard API mirror).
+**DEPRECATED**: Use native Clipboard API directly.
 
 **Legacy**: `$clipboard.write(text)`, `$clipboard.read()`
 **Modern**: `navigator.clipboard.writeText(text)`, `navigator.clipboard.readText()`
@@ -1617,11 +1616,10 @@ Dispatches a `CustomEvent` on the current element. Bubbles by default.
 <button data-on-click="navigator.clipboard.writeText(code)">Copy</button>
 ```
 
-#### 7.12.2. `$download` → `_download` utility
+#### 7.12.2. `$download` — DEPRECATED
 
-**STATUS**: Kept as a utility function (not a sprite module). The `native download pattern()`
-helper remains available globally; it's a thin synchronous wrapper around
-`URL.createObjectURL` + anchor click and does not require a sprite wrapper.
+**STATUS**: Removed. Use native Blob/URL API directly:
+`URL.createObjectURL(new Blob([content], { type: mime }))`
 
 ```html
 <button data-on-click="native download pattern('report.csv', csvData, 'text/csv')">
