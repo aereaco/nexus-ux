@@ -1373,15 +1373,16 @@ loading state:
 - `auth.email` - Current user's email
 - `auth.role` - Current user's role
 
-### 7.4. External APIs (`$fetch`) — DEPRECATED
+### 7.4. External APIs — DEPRECATED
 
-> **⚠️ DEPRECATED**: Use `_fetch` environment mirror instead. The `$fetch` sprite
-> wrapper is a legacy compatibility layer. Native `_fetch()` provides identical
-> SuspenseProxy integration with zero wrapper overhead. See [Chapter 7.5](#75-environment-mirrors-).
+> **⚠️ DEPRECATED**: Use native browser APIs directly. The `$fetch`, `$http`, `$clipboard`,
+> `$cache`, `$notification`, `$payment`, `$ws`, and `$download` sprites are legacy
+> compatibility wrappers. Native browser APIs provide identical functionality with
+> zero wrapper overhead. See [§2.6](#26-native-api-signal-binding).
 
 **Deprecated Syntax**: `$fetch(url, options)`
 
-**Modern Equivalent**: `_fetch(url, options)`
+**Modern Equivalent**: `fetch(url, options)`
 
 ```html
 <!-- DEPRECATED -->
