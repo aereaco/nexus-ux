@@ -1175,33 +1175,33 @@ Native API binding uses standard JS property access in signals and bindings. The
 
 ```html
 <div class="grid grid-cols-[0rem_1fr]" data-signal="{
-      collapsed: _localStorage.collapsed ?? true,
-      pageTabs: _localStorage.pageTabs ?? true,
-      rtl: _localStorage.rtl ?? false,
-      zoom: _localStorage.zoom ?? 1
+      collapsed: localStorage.collapsed ?? true,
+      pageTabs: localStorage.pageTabs ?? true,
+      rtl: localStorage.rtl ?? false,
+      zoom: localStorage.zoom ?? 1
     }" data-class="{ 'md:grid-cols-[5rem_1fr]': collapsed }"
     data-bind-dir="rtl ? 'rtl' : 'ltr'">
 
   <!-- Pure Web API Action Directive (Mutates native storage directly) -->
-  <button data-on-click="localStorage.setItem('collapsed', !_localStorage.collapsed)"
+  <button data-on-click="localStorage.setItem('collapsed', !localStorage.collapsed)"
           data-class="{ 'scale-x-[-1]': !collapsed }">
     Toggle Sidebar
   </button>
 </div>
 ```
 
-- **1. Signal Declaration:** Declaratively seed signals directly from mirror expressions with explicit nullish defaults (`??`).
-- **2. Pure Web API Action Directives:** Action handlers call native browser APIs directly (`localStorage.setItem(...)`). The **Reactive Mirror** pushes updates to watching signals automatically—no duplicate manual signal mutations are needed!
-- **3. Concise Template View Directives:** HTML elements observe short, readable signal names (`!collapsed`, `pageTabs`, `rtl`), eliminating template code bloat.
+- **1. Signal Declaration:** Declaratively seed signals directly from native API expressions with explicit nullish defaults (`??`).
+- **2. Pure Web API Action Directives:** Action handlers call native browser APIs directly (`localStorage.setItem(...)`). The reactive binding pushes updates to watching signals automatically—no duplicate manual signal mutations are needed!
+- **3. Concise Template View Directives:** HTML elements observe short, readable signal names (`collapsed`, `pageTabs`, `rtl`), eliminating template code bloat.
 
 ### Quick Migration Reference
 
-| Deprecated Sprite | Native Mirror Equivalent | Migration |
-| :---------------- | :----------------------- | :-------- |
-| `$fetch(url, opts)` | `_fetch(url, opts)` | Replace `$fetch(...)` with `_fetch(...)` |
-| `$get(url, opts)` | `_http.get(url, opts)` | Replace `$get(...)` → `_http.get(...)` |
-| `$post(url, body, opts)` | `_http.post(url, body, opts)` | Replace `$post(...)` → `_http.post(...)` |
-| `$put(url, body, opts)` | `_http.put(url, body, opts)` | Replace `$put(...)` → `_http.put(...)` |
+| Deprecated Sprite | Native Equivalent | Migration |
+| :---------------- | :---------------- | :-------- |
+| `$fetch(url, opts)` | `fetch(url, opts)` | Use native `fetch` directly |
+| `$get(url, opts)` | `fetch(url, { method: 'GET' })` | Replace `$get(...)` with native `fetch` |
+| `$post(url, body, opts)` | `fetch(url, { method: 'POST', body: JSON.stringify(body) })` | Replace `$post(...)` with native `fetch` |
+| `$put(url, body, opts)` | `fetch(url, { method: 'PUT', body: JSON.stringify(body) })` | Replace `$put(...)` with native `fetch` |
 | `$patch(url, body, opts)` | `_http.patch(url, body, opts)` | Replace `$patch(...)` → `_http.patch(...)` |
 | `$delete(url, opts)` | `_http.delete(url, opts)` | Replace `$delete(...)` → `_http.delete(...)` |
 | `$clipboard.write(text)` | `_clipboard.writeText(text)` | Replace `$clipboard.write(...)` → `_clipboard.writeText(...)` |
