@@ -3,20 +3,31 @@
  *
  * Handles `data-bind` for two-way and one-way property binding between
  * DOM elements and reactive state. Supports auto-detection, sub-directives,
- * and mass property assignment.
+ * mass property assignment, and native API two-way binding.
  *
  * Binding Modes:
  *   - Auto-detect: `data-bind="expr"` binds to element value/textContent
  *   - Sub-directive: `data-bind-attr="expr"` binds to specific attribute
  *   - Mass assign: `data-bind="obj"` assigns object properties to element
+ *   - Native API: `data-bind="localStorage.collapsed"` binds to writable native APIs
+ *   - Native read-only: `data-bind="window.innerWidth"` tracks read-only APIs reactively
+ *
+ * Native API Binding (Reflect-based):
+ *   When the expression targets a known native API object (window, localStorage,
+ *   sessionStorage, navigator, document, screen), bind.ts wraps it in a Proxy.
+ *   The Proxy intercepts gets/sets via Reflect traps:
+ *     - Read: registers the appropriate native listener (resize, scroll, storage)
+ *       and pushes updates into the signal automatically
+ *     - Write: persists to the native API immediately via Reflect.set()
+ *   No `_` prefix, no mirror registration, no separate API wrappers required.
  *
  * ZCZS Guarantees:
- *   - Zero-copy: Element properties are updated by reference.
- *   - Zero-serialization: Reactive values flow directly to DOM; no cloning.
+ *   - Zero-copy: Native objects are wrapped by Proxy reference; no cloning.
+ *   - Zero-serialization: Property reads/writes flow directly through Reflect.
  *
  * Coordination:
  *   - attributeParser.ts extracts directive/argument/modifiers
- *   - evaluator.ts evaluates bound expressions
+ *   - evaluator.ts evaluates bound expressions through native API Proxies
  *   - reactivity.ts provides elementBoundEffect for reactive updates
  *   - reconciler.ts provides deepEqual for change detection
  *
@@ -24,6 +35,7 @@
  *   - Auto-detect mode absorbs Alpine's data-model behavior
  *   - Mass property assignment from object expressions
  *   - Lazy binding via :lazy modifier for input/select/textarea
+ *   - Native API two-way binding via Reflect Proxy traps
  *   - Reactive effect cleanup on element removal
  */
 
@@ -31,6 +43,139 @@ import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { initError } from '../../engine/debug.ts';
 import { matchAttributes } from '../../engine/attributeParser.ts';
+
+const NATIVE_API_PREFIXES = [
+  'window.',
+  'globalThis.',
+  'localStorage.',
+  'sessionStorage.',
+  'navigator.',
+  'document.',
+  'screen.',
+];
+
+function isNativeApiExpression(value: string): boolean {
+  const trimmed = value.trim();
+  return NATIVE_API_PREFIXES.some(prefix => trimmed.startsWith(prefix));
+}
+
+function createNativeBinding(value: string, runtime: RuntimeContext, el: HTMLElement): () => void {
+  const cleanupFns: (() => void)[] = [];
+  const trimmed = value.trim();
+
+  let target: object;
+  let propertyPath: string;
+
+  if (trimmed.startsWith('localStorage.')) {
+    target = globalThis.localStorage;
+    propertyPath = trimmed.slice('localStorage.'.length);
+  } else if (trimmed.startsWith('sessionStorage.')) {
+    target = globalThis.sessionStorage;
+    propertyPath = trimmed.slice('sessionStorage.'.length);
+  } else if (trimmed.startsWith('navigator.')) {
+    target = globalThis.navigator;
+    propertyPath = trimmed.slice('navigator.'.length);
+  } else if (trimmed.startsWith('document.')) {
+    target = globalThis.document;
+    propertyPath = trimmed.slice('document.'.length);
+  } else if (trimmed.startsWith('screen.')) {
+    target = globalThis.screen;
+    propertyPath = trimmed.slice('screen.'.length);
+  } else {
+    target = globalThis;
+    propertyPath = trimmed.startsWith('window.') ? trimmed.slice('window.'.length) : trimmed.startsWith('globalThis.') ? trimmed.slice('globalThis.'.length) : trimmed;
+  }
+
+  const properties = propertyPath.split('.').filter(Boolean);
+  const finalProperty = properties[properties.length - 1];
+
+  const nativeProxy = new Proxy(target, {
+    get(_obj, prop: string | symbol) {
+      if (typeof prop === 'symbol') return (_obj as any)[prop];
+      const val = Reflect.get(_obj, prop);
+      if (typeof val === 'function') return val.bind(_obj);
+      return val;
+    },
+    set(_obj, prop: string | symbol, value: unknown) {
+      if (typeof prop === 'symbol') return Reflect.set(_obj, prop, value);
+      const result = Reflect.set(_obj, prop, value);
+      if (result && typeof prop === 'string' && prop === finalProperty) {
+        runtime.evaluate(el, `${value} = $newValue`, { $newValue: value });
+      }
+      return result;
+    },
+  });
+
+  const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
+    const result = runtime.evaluate(el, value);
+    if (result !== undefined && result !== null) {
+      if (typeof result === 'object' && !Array.isArray(result)) {
+        Object.entries(result).forEach(([param, val]) => {
+          if (param in el) {
+            if ((el as any)[param] !== val) (el as any)[param] = val;
+          } else {
+            if (val === false || val === null || val === undefined) {
+              if (el.hasAttribute(param)) el.removeAttribute(param);
+            } else {
+              const strVal = String(val);
+              if (el.getAttribute(param) !== strVal) el.setAttribute(param, strVal);
+            }
+          }
+        });
+      } else {
+        if (el instanceof HTMLInputElement) {
+          if (el.type === 'checkbox') {
+            el.checked = Boolean(result);
+          } else if (el.type === 'radio') {
+            el.checked = (el.value === String(result));
+          } else {
+            el.value = result !== undefined && result !== null ? String(result) : '';
+          }
+        } else if (el instanceof HTMLSelectElement) {
+          const targetValue = result !== undefined && result !== null ? String(result) : '';
+          const options = Array.from(el.options);
+          const found = options.some(opt => opt.value === targetValue);
+          if (found || targetValue === '') {
+            if (el.value !== targetValue) {
+              el.value = targetValue;
+            }
+          }
+        } else if (el instanceof HTMLTextAreaElement) {
+          el.value = result !== undefined && result !== null ? String(result) : '';
+        } else {
+          el.textContent = result !== undefined && result !== null ? String(result) : '';
+        }
+      }
+    }
+  });
+
+  cleanupFns.push(cleanup);
+
+  if (target === globalThis && (propertyPath === 'innerWidth' || propertyPath === 'innerHeight' || propertyPath === 'scrollX' || propertyPath === 'scrollY')) {
+    const onNativeChange = () => {
+      runtime.evaluate(el, `${value}`, { $newValue: (globalThis as any)[propertyPath] });
+    };
+    if (propertyPath === 'innerWidth' || propertyPath === 'innerHeight') {
+      globalThis.addEventListener('resize', onNativeChange);
+      cleanupFns.push(() => globalThis.removeEventListener('resize', onNativeChange));
+    } else if (propertyPath === 'scrollX' || propertyPath === 'scrollY') {
+      globalThis.addEventListener('scroll', onNativeChange);
+      cleanupFns.push(() => globalThis.removeEventListener('scroll', onNativeChange));
+    }
+  }
+
+  if (target === globalThis.localStorage || target === globalThis.sessionStorage) {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === finalProperty) {
+        runtime.evaluate(el, `${value}`, { $newValue: e.newValue });
+      }
+    };
+    globalThis.addEventListener('storage', onStorage);
+    cleanupFns.push(() => globalThis.removeEventListener('storage', onStorage));
+  }
+
+  return () => cleanupFns.forEach(fn => fn());
+}
 
 const bindModule: AttributeModule = {
   name: 'bind',
@@ -40,6 +185,11 @@ const bindModule: AttributeModule = {
 
     const parsed = parsedAttr || runtime.parseAttribute('data-bind', runtime, el);
     const target = parsed?.argument;
+
+    // ─── Native API Binding Mode ───
+    if (isNativeApiExpression(value)) {
+      return createNativeBinding(value, runtime, el);
+    }
 
     // ─── Auto-Detect Mode (data-bind="expr" without sub-directive argument) ───
     if (!target) {
