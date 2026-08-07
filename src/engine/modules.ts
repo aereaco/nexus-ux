@@ -197,7 +197,6 @@ export class ModuleCoordinator {
   public listenerModules: Map<string, ListenerModule> = new Map();
   public observerModules: Map<string, ObserverModule> = new Map();
   public utilityModules: Map<string, UtilityModule> = new Map();
-  public mirrorModules: Map<string, MirrorModule> = new Map();
   public spriteModules: Map<string, SpriteModule> = new Map();
   public scopeModules: Map<string, ScopeModule> = new Map();
   private directiveOrder: string[] = [];
