@@ -36,6 +36,52 @@ import { evaluationError, syntaxError } from './debug.ts';
 import { getDataStack, hasScopeProvider, resolveScopeProvider, registerScopeProvider } from './scope.ts';
 import { trackNativeApiRead, activeNativeApiRunner } from './reactivity.ts';
 
+// =============================================================================
+// Native API Expression Parser
+// =============================================================================
+// Parses expression strings to find native API references so we can
+// automatically set up reactive listeners. This is the architectural fix
+// that makes ANY native API access reactive, regardless of expression shape.
+
+const NATIVE_API_PATTERNS = [
+  { pattern: /\bwindow\.(\w+)/g, target: globalThis, properties: ['innerWidth', 'innerHeight', 'scrollX', 'scrollY', 'scrollY', 'innerHeight'] },
+  { pattern: /\bglobalThis\.(\w+)/g, target: globalThis, properties: ['innerWidth', 'innerHeight', 'scrollX', 'scrollY'] },
+  { pattern: /\blocalStorage\.(\w+)/g, target: globalThis.localStorage, properties: ['*'] },
+  { pattern: /\bsessionStorage\.(\w+)/g, target: globalThis.sessionStorage, properties: ['*'] },
+  { pattern: /\bnavigator\.(\w+)/g, target: globalThis.navigator, properties: ['*'] },
+  { pattern: /\bdocument\.(\w+)/g, target: globalThis.document, properties: ['*'] },
+  { pattern: /\bscreen\.(\w+)/g, target: globalThis.screen, properties: ['*'] },
+];
+
+function parseNativeApiReferences(expression: string): Array<{ target: object; property: string }> {
+  const refs: Array<{ target: object; property: string }> = [];
+  const seen = new Set<string>();
+  
+  for (const { pattern, target, properties } of NATIVE_API_PATTERNS) {
+    pattern.lastIndex = 0;
+    let match: RegExpExecArray | null;
+    while ((match = pattern.exec(expression)) !== null) {
+      const prop = match[1];
+      const key = `${target === globalThis ? 'window' : 'localStorage'}.${prop}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        refs.push({ target, property: prop });
+      }
+    }
+  }
+  
+  return refs;
+}
+
+function registerNativeApiListeners(el: HTMLElement, expression: string): void {
+  if (!activeNativeApiRunner) return;
+  
+  const refs = parseNativeApiReferences(expression);
+  for (const ref of refs) {
+    trackNativeApiRead(el, ref.target, ref.property, activeNativeApiRunner);
+  }
+}
+
 
 
 declare module "./composition.ts" {
