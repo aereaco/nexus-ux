@@ -1,4 +1,4 @@
-import { UtilityModule } from './modules.ts';
+import { UtilityModule } from './moduleTypes.ts';
 import { RuntimeContext } from './composition.ts';
 import { reportError } from './debug.ts';
 import { CUSTOM_EVENT_PREFIX } from './consts.ts';
