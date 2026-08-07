@@ -139,15 +139,6 @@ export interface UtilityModule extends Module {
 }
 
 /**
- * Represents a module that provides reactive read/write wrappers for browser APIs.
- * Mirrors are injected into the expression scope with the `_` prefix.
- */
-export interface MirrorModule extends Module {
-  prefix: string;  // e.g. 'localStorage', 'sessionStorage', 'indexedDB'
-  create(runtime: RuntimeContext): object;  // Returns the reactive Proxy
-}
-
-/**
  * Represents a module that provides imperative commands in expression scope.
  * Sprites are injected with the `$` prefix.
  */
