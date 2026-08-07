@@ -10,7 +10,7 @@
  *   - `#global` → __global.global (bypasses local scope shadowing)
  *   - `$expr` → passed through to Proxy scope (logic prefix)
  *   - `@rule(...) { body }` → _scopes.rule(...) (scope rules)
- *   - `_mirror()` → dynamic browser API mirror generation
+ *   - Native API tracking for any browser API via Proxy/Reflect
  *   - `&.parent` → context reference (resolved by scope chain)
  *
  * ZCZS Role:
