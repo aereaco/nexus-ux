@@ -1780,7 +1780,7 @@ Periodic Background Sync.
 
 > **⚠️ DEPRECATED**: Use `new PaymentRequest(methods, details)` directly.
 
-Payment Request API replaced by native mirror.
+Payment Request API replaced by native browser API.
 
 ```html
 <!-- DEPRECATED -->
