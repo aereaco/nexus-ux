@@ -44,19 +44,53 @@ import { RuntimeContext } from '../../engine/composition.ts';
 import { initError } from '../../engine/debug.ts';
 import { matchAttributes } from '../../engine/attributeParser.ts';
 
-const NATIVE_API_PREFIXES = [
-  'window.',
-  'globalThis.',
-  'localStorage.',
-  'sessionStorage.',
-  'navigator.',
-  'document.',
-  'screen.',
+const NATIVE_API_PATTERNS = [
+  /\bwindow\.(\w+)/g,
+  /\bglobalThis\.(\w+)/g,
+  /\blocalStorage\.(\w+)/g,
+  /\bsessionStorage\.(\w+)/g,
+  /\bnavigator\.(\w+)/g,
+  /\bdocument\.(\w+)/g,
+  /\bscreen\.(\w+)/g,
 ];
+
+function extractNativeApis(value: string): Array<{ target: object; property: string }> {
+  const apis: Array<{ target: object; property: string }> = [];
+  const seen = new Set<string>();
+  for (const pattern of NATIVE_API_PATTERNS) {
+    pattern.lastIndex = 0;
+    let match: RegExpExecArray | null;
+    while ((match = pattern.exec(value)) !== null) {
+      const [, prop] = match;
+      const key = `${pattern.source.split('\\b')[1]?.split('.')[0] || 'unknown'}.${prop}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        let target: object;
+        if (pattern.source.includes('window') || pattern.source.includes('globalThis')) {
+          target = globalThis;
+        } else if (pattern.source.includes('localStorage')) {
+          target = globalThis.localStorage;
+        } else if (pattern.source.includes('sessionStorage')) {
+          target = globalThis.sessionStorage;
+        } else if (pattern.source.includes('navigator')) {
+          target = globalThis.navigator;
+        } else if (pattern.source.includes('document')) {
+          target = globalThis.document;
+        } else if (pattern.source.includes('screen')) {
+          target = globalThis.screen;
+        } else {
+          target = globalThis;
+        }
+        apis.push({ target, property: prop });
+      }
+    }
+  }
+  return apis;
+}
 
 function isNativeApiExpression(value: string): boolean {
   const trimmed = value.trim();
-  return NATIVE_API_PREFIXES.some(prefix => trimmed.startsWith(prefix));
+  return extractNativeApis(trimmed).length > 0;
 }
 
 function applyBindingResult(result: unknown, el: HTMLElement): void {
