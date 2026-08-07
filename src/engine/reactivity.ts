@@ -804,6 +804,7 @@ export function elementBoundEffect(
         delete enhancedEl[RUN_EFFECT_RUNNERS_KEY];
       }
     }
+    cleanupNativeApiTracking(el);
   };
 
   if (!enhancedEl[CLEANUP_FUNCTIONS_KEY]) {
