@@ -1622,14 +1622,14 @@ Dispatches a `CustomEvent` on the current element. Bubbles by default.
 `URL.createObjectURL(new Blob([content], { type: mime }))`
 
 ```html
-<button data-on-click="native download pattern('report.csv', csvData, 'text/csv')">
+<button data-on-click="const url = URL.createObjectURL(new Blob([csvData], { type: 'text/csv' })); const a = document.createElement('a'); a.href = url; a.download = 'report.csv'; a.click(); URL.revokeObjectURL(url)">
   Export CSV
 </button>
 ```
 
-#### 7.12.3. `$cache` → `_caches`
+#### 7.12.3. `$cache` — DEPRECATED
 
-**DEPRECATED**: Use the native `_caches` Cache Storage mirror.
+**DEPRECATED**: Use the native Cache API directly.
 
 **Legacy**: `$cache.put(name, url, res)`, `$cache.match(name, url)`, etc.
 **Modern**: `caches.default.put(url, response)`, `caches.default.match(url)`, etc.
@@ -1642,9 +1642,8 @@ Dispatches a `CustomEvent` on the current element. Bubbles by default.
 <button data-on-click="caches.default.put('/api/data', response)">Cache</button>
 ```
 
-> **Note**: The native Cache API uses `Cache` objects directly. The `_caches`
-> mirror provides reactive access to `caches.open(name)`, `put()`, `match()`,
-> `delete()`, `keys()`, `clear()`.
+> **Note**: The native Cache API uses `Cache` objects directly. Use
+> `caches.open(name)`, `put()`, `match()`, `delete()`, `keys()`, `clear()`.
 
 #### 7.12.4. `$notification` → `Notification`
 
