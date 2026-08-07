@@ -185,8 +185,6 @@ export class UX {
       emitToPlatform: false
     });
 
-    ensureScrollbarGutter();
-
     this.init();
 
     if (typeof document !== 'undefined') {
