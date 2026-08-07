@@ -43,22 +43,20 @@ import { trackNativeApiRead, activeNativeApiRunner } from './reactivity.ts';
 // listeners when properties are read. This makes ANY native API access
 // reactive without hardcoding property lists.
 
-const NATIVE_API_TARGETS = [
-  { key: 'window', target: globalThis, events: ['resize', 'scroll'] },
-  { key: 'globalThis', target: globalThis, events: ['resize', 'scroll'] },
-  { key: 'localStorage', target: globalThis.localStorage, events: ['storage'] },
-  { key: 'sessionStorage', target: globalThis.sessionStorage, events: ['storage'] },
-  { key: 'navigator', target: globalThis.navigator, events: ['online', 'offline'] },
-  { key: 'document', target: globalThis.document, events: ['visibilitychange'] },
-  { key: 'screen', target: globalThis.screen, events: ['resize'] },
-];
+const NATIVE_API_KEYS = new Set(['window', 'globalThis', 'localStorage', 'sessionStorage', 'navigator', 'document', 'screen']);
 
-const nativeApiProxies = new WeakMap<object, object>();
+const NATIVE_API_TARGETS: Record<string, object> = {
+  window: globalThis,
+  globalThis: globalThis,
+  localStorage: globalThis.localStorage,
+  sessionStorage: globalThis.sessionStorage,
+  navigator: globalThis.navigator,
+  document: globalThis.document,
+  screen: globalThis.screen,
+};
 
-function getNativeApiProxy(target: object, el: HTMLElement): object {
-  if (nativeApiProxies.has(target)) return nativeApiProxies.get(target)!;
-
-  const proxy = new Proxy(target, {
+function createTrackingProxy(target: object, el: HTMLElement): object {
+  return new Proxy(target, {
     get(_obj, prop: string | symbol) {
       if (typeof prop === 'symbol') return (_obj as any)[prop];
       
@@ -72,19 +70,15 @@ function getNativeApiProxy(target: object, el: HTMLElement): object {
     },
     set(_obj, prop: string | symbol, value: unknown) {
       if (typeof prop === 'symbol') return Reflect.set(_obj, prop, value);
-      const result = Reflect.set(_obj, prop, value);
-      return result;
+      return Reflect.set(_obj, prop, value);
     }
   });
-
-  nativeApiProxies.set(target, proxy);
-  return proxy;
 }
 
-export function resolveNativeApi(key: string): object | undefined {
-  const match = NATIVE_API_TARGETS.find(a => a.key === key);
-  if (!match) return undefined;
-  return getNativeApiProxy(match.target, el as HTMLElement);
+export function resolveNativeApi(key: string, el: HTMLElement): object | undefined {
+  const target = NATIVE_API_TARGETS[key];
+  if (!target) return undefined;
+  return createTrackingProxy(target, el);
 }
 
 
