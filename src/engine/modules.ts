@@ -164,7 +164,6 @@ declare module "./composition.ts" {
     registerListenerModule: (name: string, module: ListenerModule) => void;
     registerObserverModule: (name: string, module: ObserverModule) => void;
     registerUtilityModule: (name: string, module: UtilityModule) => void;
-    registerMirrorModule: (name: string, module: MirrorModule) => void;
     registerSpriteModule: (name: string, module: SpriteModule) => void;
     registerScopeModule: (name: string, module: ScopeModule) => void;
     runtime: RuntimeContext;
