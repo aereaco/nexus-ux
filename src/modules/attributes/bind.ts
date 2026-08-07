@@ -138,32 +138,11 @@ function applyBindingResult(result: unknown, el: HTMLElement): void {
 function createNativeBinding(value: string, runtime: RuntimeContext, el: HTMLElement): () => void {
   const cleanupFns: (() => void)[] = [];
   const trimmed = value.trim();
+  const nativeApis = extractNativeApis(trimmed);
 
-  let target: object;
-  let propertyPath: string;
-
-  if (trimmed.startsWith('localStorage.')) {
-    target = globalThis.localStorage;
-    propertyPath = trimmed.slice('localStorage.'.length);
-  } else if (trimmed.startsWith('sessionStorage.')) {
-    target = globalThis.sessionStorage;
-    propertyPath = trimmed.slice('sessionStorage.'.length);
-  } else if (trimmed.startsWith('navigator.')) {
-    target = globalThis.navigator;
-    propertyPath = trimmed.slice('navigator.'.length);
-  } else if (trimmed.startsWith('document.')) {
-    target = globalThis.document;
-    propertyPath = trimmed.slice('document.'.length);
-  } else if (trimmed.startsWith('screen.')) {
-    target = globalThis.screen;
-    propertyPath = trimmed.slice('screen.'.length);
-  } else {
-    target = globalThis;
-    propertyPath = trimmed.startsWith('window.') ? trimmed.slice('window.'.length) : trimmed.startsWith('globalThis.') ? trimmed.slice('globalThis.'.length) : trimmed;
+  if (nativeApis.length === 0) {
+    return () => {};
   }
-
-  const properties = propertyPath.split('.').filter(Boolean);
-  const finalProperty = properties[properties.length - 1];
 
   const [runner, effectCleanup] = runtime.elementBoundEffect(el, () => {
     const result = runtime.evaluate(el, value);
@@ -171,31 +150,29 @@ function createNativeBinding(value: string, runtime: RuntimeContext, el: HTMLEle
   });
   cleanupFns.push(effectCleanup);
 
-  if (target === globalThis) {
-    const property = finalProperty;
-    if (property === 'innerWidth' || property === 'innerHeight') {
-      const onResize = () => {
-        runner();
-      };
-      globalThis.addEventListener('resize', onResize);
-      cleanupFns.push(() => globalThis.removeEventListener('resize', onResize));
-    } else if (property === 'scrollX' || property === 'scrollY') {
-      const onScroll = () => {
-        runner();
-      };
-      globalThis.addEventListener('scroll', onScroll);
-      cleanupFns.push(() => globalThis.removeEventListener('scroll', onScroll));
-    }
-  }
-
-  if (target === globalThis.localStorage || target === globalThis.sessionStorage) {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === finalProperty) {
-        runner();
+  for (const api of nativeApis) {
+    const property = api.property;
+    if (api.target === globalThis) {
+      if (property === 'innerWidth' || property === 'innerHeight') {
+        const onResize = () => { runner(); };
+        globalThis.addEventListener('resize', onResize);
+        cleanupFns.push(() => globalThis.removeEventListener('resize', onResize));
+      } else if (property === 'scrollX' || property === 'scrollY') {
+        const onScroll = () => { runner(); };
+        globalThis.addEventListener('scroll', onScroll);
+        cleanupFns.push(() => globalThis.removeEventListener('scroll', onScroll));
       }
-    };
-    globalThis.addEventListener('storage', onStorage);
-    cleanupFns.push(() => globalThis.removeEventListener('storage', onStorage));
+    }
+
+    if (api.target === globalThis.localStorage || api.target === globalThis.sessionStorage) {
+      const onStorage = (e: StorageEvent) => {
+        if (e.key === property) {
+          runner();
+        }
+      };
+      globalThis.addEventListener('storage', onStorage);
+      cleanupFns.push(() => globalThis.removeEventListener('storage', onStorage));
+    }
   }
 
   return () => cleanupFns.forEach(fn => fn());
