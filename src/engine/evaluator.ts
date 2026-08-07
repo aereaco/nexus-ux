@@ -75,7 +75,7 @@ function createTrackingProxy(target: object, el: HTMLElement): object {
   });
 }
 
-export function resolveNativeApi(key: string, el: HTMLElement): object | undefined {
+function resolveNativeApi(key: string, el: HTMLElement): object | undefined {
   const target = NATIVE_API_TARGETS[key];
   if (!target) return undefined;
   return createTrackingProxy(target, el);
