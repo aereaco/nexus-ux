@@ -5,8 +5,7 @@
  * The mutation observer module defines itself here.
  * 
  * Note: IntersectionObserver and ResizeObserver are now handled dynamically
- * via the mirror system (`_IntersectionObserver`, `_ResizeObserver`) for
- * singleton multiplexing via bare invocation.
+ * via singleton multiplexing via bare invocation.
  */
 
 import { ObserverModule } from './modules.ts';
