@@ -4,6 +4,9 @@ import { ROOT_SELECTOR } from './engine/consts.ts';
 import { topology } from './engine/topology.ts';
 import { initSelfHeal, getBeaconHistory } from './engine/agent.ts';
 import { stylesheet, discoverColorTokens, buildTailwindThemeBridge } from './modules/attributes/stylesheet.ts';
+import { fetchModule } from './engine/fetch.ts';
+import { resolveSelector } from './modules/sprites/selector.ts';
+import { animate } from './modules/sprites/animate.ts';
 
 // Auto-Discovered Modules (inlined by build.ts from generated manifest.ts)
 import {
