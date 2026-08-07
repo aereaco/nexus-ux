@@ -644,34 +644,38 @@ See [§7.11](#711-state-sprites--deprecated) in the reference for detailed examp
 
 ---
 
-### 2.6. Reactive Mirrors (`_`) — The Live Web API Observer Engine
+### 2.6. Native API Signal Binding
 
-Reactive Mirrors are **live, push-based reactive viewports** mapped directly to native browser APIs (`globalThis.window`). They use the `_` prefix, triggering the framework's dynamic JIT proxy engine that directly binds browser capabilities to visual state without requiring static module wrappers or custom hooks.
+Native API Signal Binding provides **live, push-based reactive access** to browser APIs (`window`, `localStorage`, `navigator`, etc.) without requiring `_` prefix mirrors or separate module registration. When a `data-signal` or `data-bind` expression reads a native API property, the framework automatically registers the appropriate native listeners and pushes updates into the signal reactively.
 
-- **Lazy Reactivity Allocation (ZCZS)**: Memory for synchronization (like `resize`, `storage`, or `hashchange` event listeners) is only allocated to the runtime heap if an HTML template explicitly registers a read dependency on that property. If your application never accesses `_localStorage`, no tracking payload or system listener is booted.
-- **Push-Based Native Observation**: Native Web API getters (`localStorage.getItem()`) are static/pull-based and sample state only at invocation. Reactive Mirrors (`_localStorage.collapsed`) register fine-grained dependencies on read and **actively push state updates** to all watching signals, effects, and DOM elements whenever native Web APIs mutate.
+- **Lazy Reactivity Allocation (ZCZS)**: Memory for synchronization (like `resize`, `storage`, or `hashchange` event listeners) is only allocated if an HTML template explicitly reads a native API property. If your application never accesses `window.innerWidth`, no tracking payload or system listener is booted.
+- **Push-Based Native Observation**: Native Web API getters (`localStorage.getItem()`) are static/pull-based. Native API Signal Binding registers fine-grained dependencies on read and **actively pushes state updates** to all watching signals, effects, and DOM elements whenever native Web APIs mutate.
 - **Pure Web API Action Pattern**:
   ```html
   <div data-signal="{
-        collapsed: _localStorage.collapsed ?? true,
-        pageTabs: _localStorage.pageTabs ?? true,
-        rtl: _localStorage.rtl ?? false,
-        zoom: _localStorage.zoom ?? 1
+        collapsed: localStorage.collapsed ?? true,
+        pageTabs: localStorage.pageTabs ?? true,
+        rtl: localStorage.rtl ?? false,
+        zoom: localStorage.zoom ?? 1
       }">
-    <button data-on-click="localStorage.setItem('collapsed', !_localStorage.collapsed)"
+    <button data-on-click="localStorage.setItem('collapsed', !localStorage.collapsed)"
             data-class="{ 'scale-x-[-1]': !collapsed }">
   </div>
   ```
-  - **Signal Declaration:** Declaratively seed signals directly from mirror expressions with explicit nullish defaults (`??`).
-  - **Action Directives:** Execute native browser API calls directly (`localStorage.setItem(...)`) without duplicate manual signal mutations.
-  - **Template View Directives:** HTML elements observe short, clean signal names (`!collapsed`, `pageTabs`), keeping templates non-verbose.
+  - **Signal Declaration:** Declaratively seed signals directly from native API expressions with explicit nullish defaults (`??`).
+  - **Action Directives:** Execute native browser API calls directly (`localStorage.setItem(...)`). The reactive binding pushes updates to watching signals automatically—no duplicate manual signal mutations are needed!
+  - **Template View Directives:** HTML elements observe short, clean signal names (`collapsed`, `pageTabs`), keeping templates non-verbose.
 
-#### 2.6.1. Native Reactive Mirror Quick Reference
+#### 2.6.1. Native API Binding Quick Reference
 
-| Mirror / Namespace     | Type          | Read-Write?  | Description & Replacement Notes                                                                                             | Migration From           |
-| :--------------------- | :------------ | :----------- | :-------------------------------------------------------------------------------------------------------------------------- | :----------------------- |
-| **`_window`**          | `Window`      | ⚠️ read-only | Reactive proxy to `window`. Arbitrary properties tracked lazily (e.g., `_window.innerWidth`).                              | —                        |
-| **`_localStorage`**    | `Storage`     | ⚠️ read-only | Reactive read-only viewport to `localStorage`. Mutate via native `localStorage.setItem()`.                               | —                        |
+| API / Namespace     | Type          | Read-Write?  | Description & Usage                                                                                             | Example |
+| :------------------ | :------------ | :----------- | :-------------------------------------------------------------------------------------------------------------- | :--- |
+| **`window`**        | `Window`      | ⚠️ read-only | Reactive proxy to `window`. Properties like `innerWidth`, `scrollY` tracked lazily via resize/scroll listeners. | `<div data-bind="window.innerWidth"></div>` |
+| **`localStorage`**  | `Storage`     | ✅ read-write | Two-way reactive binding. Reads return current value; writes persist automatically via `Reflect.set()` trap.     | `<div data-bind="localStorage.collapsed"></div>` |
+| **`sessionStorage`**| `Storage`     | ✅ read-write | Same pattern as localStorage, scoped to session.                                                               | `<div data-bind="sessionStorage.theme"></div>` |
+| **`navigator`**     | `Navigator`   | ⚠️ read-only | Reactive read-only viewport to `navigator` (platform, language, onLine, etc.).                                   | `<div data-bind="navigator.language"></div>` |
+| **`document`**      | `Document`    | ⚠️ read-only | Reactive read-only viewport to `document` (title, visibilityState, etc.).                                       | `<div data-bind="document.title"></div>` |
+| **`screen`**        | `Screen`      | ⚠️ read-only | Reactive orientation/dimensions via JIT resize listener.                                                        | `<div data-bind="screen.width"></div>` |
 | **`_sessionStorage`**  | `Storage`     | ⚠️ read-only | Reactive read-only viewport to `sessionStorage`. Mutate via native `sessionStorage.setItem()`.                            | —                        |
 | **`_navigator`**       | `Navigator`   | ⚠️ read-only | Reactive online/offline, hardware concurrency, media devices, etc.                                                         | —                        |
 | **`_screen`**          | `Screen`      | ⚠️ read-only | Reactive orientation/dimensions via JIT resize listener.                                                                   | —                        |
