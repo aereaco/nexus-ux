@@ -1137,23 +1137,41 @@ event listeners), return a cleanup function:
 
 ---
 
-## Chapter 7: Sprites (`$`) & Reactive Mirrors (`_`)
+## Chapter 7: Sprites (`$`) & Native API Binding
 
 Nexus-UX provides two complementary namespaces for imperative and reactive operations:
 
 - **Sprites (`$`)** — Framework-level commands and value-add integrations (SurrealDB,
   GraphQL, animation, selector engine, etc.). These remain as explicit sprite modules.
-- **Reactive Mirrors (`_`)** — **Live, push-based native browser API viewports** with full fine-grained reactivity, ownership tracking, and zero-copy performance. The `_` prefix triggers lazy JIT proxy generation for *any* browser API without requiring framework wrapper modules or custom hooks.
+- **Native API Binding** — Direct reactive access to browser APIs through `data-signal` and `data-bind`. No `_` prefix or mirror registration required. Standard JS property access (`window.innerWidth`, `localStorage.collapsed`) automatically becomes reactive through Proxy/Reflect traps.
 
-> **⚠️ Mirror-First Policy**: For all browser-native functionality, use `_` mirrors
-> instead of legacy sprite wrappers. Sprites like `$fetch`, `$clipboard`, `$cache`,
-> `$notification`, `$payment`, `$ws`, `$download`, `$http` are **deprecated**.
-> Direct native mirror equivalents are available as `_fetch`, `_clipboard`,
-> `_caches`, `_Notification`, `_PaymentRequest`, `_WebSocket`, `_download` (utility
-> function), `_http` (namespace). See [§2.6](#26-reactive-mirrors-) and
-> [Chapter 7.5](#75-reactive-mirrors-).
+> **⚠️ Native API Binding Policy**: For all browser-native functionality, use standard
+> JS property access in `data-signal` and `data-bind`. The framework automatically
+> tracks reads and writes through Proxy/Reflect traps. Legacy sprite wrappers like
+> `$fetch`, `$clipboard`, `$cache`, `$notification`, `$payment`, `$ws`, `$download`,
+> `$http` are deprecated in favor of direct native API access. See [§2.6](#26-native-api-signal-binding).
 
-### The Reactive Mirror Architecture Pattern
+### Native API Binding Pattern
+
+Native API binding uses standard JS property access in signals and bindings. The framework intercepts reads/writes via Proxy/Reflect and automatically:
+- Registers native listeners (resize, scroll, storage) on first read
+- Pushes updates back into the signal reactively
+- Persists writes to writable APIs (localStorage, sessionStorage) immediately
+
+```html
+<div data-signal="{
+      collapsed: localStorage.collapsed ?? true,
+      pageTabs: localStorage.pageTabs ?? true,
+      rtl: localStorage.rtl ?? false,
+      zoom: localStorage.zoom ?? 1
+    }">
+  <button data-on-click="localStorage.setItem('collapsed', !localStorage.collapsed)"
+          data-class="{ 'scale-x-[-1]': !collapsed }">
+</div>
+```
+- **Signal Declaration:** Declaratively seed signals directly from native API expressions with explicit nullish defaults (`??`).
+- **Action Directives:** Execute native browser API calls directly (`localStorage.setItem(...)`). The reactive binding pushes updates to watching signals automatically—no duplicate manual signal mutations are needed!
+- **Template View Directives:** HTML elements observe short, clean signal names (`collapsed`, `pageTabs`), keeping templates non-verbose.
 
 ```html
 <div class="grid grid-cols-[0rem_1fr]" data-signal="{
