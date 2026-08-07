@@ -188,47 +188,7 @@ const bindModule: AttributeModule = {
         // 1. Reactive Effect: State → DOM
         const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
           const result = runtime.evaluate(el, value);
-
-          // ─── Direct Heap/Object Mapping ───
-          if (result && typeof result === 'object' && !Array.isArray(result)) {
-            Object.entries(result).forEach(([param, val]) => {
-              if (param in el) {
-                if ((el as any)[param] !== val) (el as any)[param] = val;
-              } else {
-                if (val === false || val === null || val === undefined) {
-                  if (el.hasAttribute(param)) el.removeAttribute(param);
-                } else {
-                  const strVal = String(val);
-                  if (el.getAttribute(param) !== strVal) el.setAttribute(param, strVal);
-                }
-              }
-            });
-            return;
-          }
-
-          // ─── Standard Model Detection (Single Value) ───
-          if (el instanceof HTMLInputElement) {
-            if (el.type === 'checkbox') {
-              el.checked = Boolean(result);
-            } else if (el.type === 'radio') {
-              el.checked = (el.value === String(result));
-            } else {
-              el.value = result !== undefined && result !== null ? String(result) : '';
-            }
-          } else if (el instanceof HTMLSelectElement) {
-            const targetValue = result !== undefined && result !== null ? String(result) : '';
-            const options = Array.from(el.options);
-            const found = options.some(opt => opt.value === targetValue);
-            if (found || targetValue === '') {
-              if (el.value !== targetValue) {
-                el.value = targetValue;
-              }
-            }
-          } else if (el instanceof HTMLTextAreaElement) {
-            el.value = result !== undefined && result !== null ? String(result) : '';
-          } else {
-            el.textContent = result !== undefined && result !== null ? String(result) : '';
-          }
+          applyBindingResult(result, el);
         });
         cleanupFns.push(cleanup);
 
