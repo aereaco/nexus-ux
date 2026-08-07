@@ -296,6 +296,12 @@ export function evaluateLater(
         // 1. Scope Providers (modular sprites)
         if (hasScopeProvider(key)) return resolveScopeProvider(key, el, runtime);
 
+        // 1.5 Native API Tracking Proxies
+        if (NATIVE_API_KEYS.has(key)) {
+          const proxy = resolveNativeApi(key, el as HTMLElement);
+          if (proxy) return proxy;
+        }
+
         // ZCZS: Live Scope Resolution — evaluate relative to exact current DOM position
         const dataStack = getDataStack(el as HTMLElement);
 
