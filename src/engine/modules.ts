@@ -295,7 +295,6 @@ export class ModuleCoordinator {
       registerListenerModule: this.registerListenerModule.bind(this),
       registerObserverModule: this.registerObserverModule.bind(this),
       registerUtilityModule: this.registerUtilityModule.bind(this),
-      registerMirrorModule: this.registerMirrorModule.bind(this),
       registerSpriteModule: this.registerSpriteModule.bind(this),
       registerScopeModule: this.registerScopeModule.bind(this),
       runtime: this.runtimeContext,
