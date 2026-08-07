@@ -59,6 +59,48 @@ function isNativeApiExpression(value: string): boolean {
   return NATIVE_API_PREFIXES.some(prefix => trimmed.startsWith(prefix));
 }
 
+function applyBindingResult(result: unknown, el: HTMLElement): void {
+  if (result !== undefined && result !== null) {
+    if (typeof result === 'object' && !Array.isArray(result)) {
+      Object.entries(result).forEach(([param, val]) => {
+        if (param in el) {
+          if ((el as any)[param] !== val) (el as any)[param] = val;
+        } else {
+          if (val === false || val === null || val === undefined) {
+            if (el.hasAttribute(param)) el.removeAttribute(param);
+          } else {
+            const strVal = String(val);
+            if (el.getAttribute(param) !== strVal) el.setAttribute(param, strVal);
+          }
+        }
+      });
+    } else {
+      if (el instanceof HTMLInputElement) {
+        if (el.type === 'checkbox') {
+          el.checked = Boolean(result);
+        } else if (el.type === 'radio') {
+          el.checked = (el.value === String(result));
+        } else {
+          el.value = result !== undefined && result !== null ? String(result) : '';
+        }
+      } else if (el instanceof HTMLSelectElement) {
+        const targetValue = result !== undefined && result !== null ? String(result) : '';
+        const options = Array.from(el.options);
+        const found = options.some(opt => opt.value === targetValue);
+        if (found || targetValue === '') {
+          if (el.value !== targetValue) {
+            el.value = targetValue;
+          }
+        }
+      } else if (el instanceof HTMLTextAreaElement) {
+        el.value = result !== undefined && result !== null ? String(result) : '';
+      } else {
+        el.textContent = result !== undefined && result !== null ? String(result) : '';
+      }
+    }
+  }
+}
+
 function createNativeBinding(value: string, runtime: RuntimeContext, el: HTMLElement): () => void {
   const cleanupFns: (() => void)[] = [];
   const trimmed = value.trim();
@@ -91,45 +133,7 @@ function createNativeBinding(value: string, runtime: RuntimeContext, el: HTMLEle
 
   const [runner, effectCleanup] = runtime.elementBoundEffect(el, () => {
     const result = runtime.evaluate(el, value);
-    if (result !== undefined && result !== null) {
-      if (typeof result === 'object' && !Array.isArray(result)) {
-        Object.entries(result).forEach(([param, val]) => {
-          if (param in el) {
-            if ((el as any)[param] !== val) (el as any)[param] = val;
-          } else {
-            if (val === false || val === null || val === undefined) {
-              if (el.hasAttribute(param)) el.removeAttribute(param);
-            } else {
-              const strVal = String(val);
-              if (el.getAttribute(param) !== strVal) el.setAttribute(param, strVal);
-            }
-          }
-        });
-      } else {
-        if (el instanceof HTMLInputElement) {
-          if (el.type === 'checkbox') {
-            el.checked = Boolean(result);
-          } else if (el.type === 'radio') {
-            el.checked = (el.value === String(result));
-          } else {
-            el.value = result !== undefined && result !== null ? String(result) : '';
-          }
-        } else if (el instanceof HTMLSelectElement) {
-          const targetValue = result !== undefined && result !== null ? String(result) : '';
-          const options = Array.from(el.options);
-          const found = options.some(opt => opt.value === targetValue);
-          if (found || targetValue === '') {
-            if (el.value !== targetValue) {
-              el.value = targetValue;
-            }
-          }
-        } else if (el instanceof HTMLTextAreaElement) {
-          el.value = result !== undefined && result !== null ? String(result) : '';
-        } else {
-          el.textContent = result !== undefined && result !== null ? String(result) : '';
-        }
-      }
-    }
+    applyBindingResult(result, el);
   });
   cleanupFns.push(effectCleanup);
 
