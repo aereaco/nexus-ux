@@ -691,6 +691,9 @@ export function cleanupNativeApiTracking(el: HTMLElement): void {
   }
 }
 
+// Active runner during expression evaluation - used by evaluator to track native API reads
+let activeNativeApiRunner: ReactiveEffectRunner<void> | null = null;
+
 export function elementBoundEffect(
   el: HTMLElement,
   effectCallback: () => void,
