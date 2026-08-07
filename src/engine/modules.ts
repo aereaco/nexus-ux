@@ -14,7 +14,6 @@
  *   - ListenerModule: Global event listeners (SPA routing, history)
  *   - ObserverModule: Browser Observer API integrations (mutation, resize)
  *   - UtilityModule: Global utilities (fetch, logging)
- *   - MirrorModule: Reactive wrappers for browser APIs (_fetch, _clipboard)
  *
  * ZCZS Role:
  *   - Zero-copy: Module references are stored by name in Maps; no
