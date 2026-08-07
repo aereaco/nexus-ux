@@ -705,6 +705,7 @@ export function elementBoundEffect(
   let lastErrorMessage = '';
 
   const suspenseWrappedCallback = () => {
+    activeNativeApiRunner = runner;
     try {
       effectCallback();
       consecutiveFailures = 0;
@@ -753,6 +754,8 @@ export function elementBoundEffect(
           }
         }
       }
+    } finally {
+      activeNativeApiRunner = null;
     }
   };
 
