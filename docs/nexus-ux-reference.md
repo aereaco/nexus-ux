@@ -1679,10 +1679,10 @@ property directly.
 
 ### 7.13. Cache Sprites — DEPRECATED
 
-> **⚠️ DEPRECATED**: Use `_caches` native Cache Storage mirror instead.
+> **⚠️ DEPRECATED**: Use the native Cache API directly.
 
 **Legacy sprite**: `$cache` — Cache Storage API wrapper.
-**Modern**: `_caches` — direct reactive access to the native Cache API.
+**Modern**: `caches` — direct access to the native Cache API.
 
 ```html
 <!-- DEPRECATED -->
@@ -1696,15 +1696,13 @@ property directly.
 >Cache Config</button>
 ```
 
-The native `_caches` API exposes:
-- `caches.default` — default Cache object (reactive)
+The native Cache API exposes:
+- `caches.default` — default Cache object
 - `.put(url, response)` — cache a Response
 - `.match(url)` — returns `Response | null`
 - `.delete(url)` — remove entry
 - `.keys()` — iterator of cached URLs
 - `.clear()` — empty the cache
-- `cache.keys(name)` → `{ data: string[], status, error }`
-- `cache.clear(name)` → `{ status, error }`
 
 ### 7.14. Application & Background Sprites
 
