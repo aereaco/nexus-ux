@@ -30,7 +30,6 @@
  *   - Typed module registration with directive ordering (metadata.after/before)
  *   - Modifier interceptPipeline for evaluation wrapping
  *   - Sprite auto-injection into expression scope
- *   - Mirror auto-injection with _ prefix
  */
 import {
   RuntimeContext,
