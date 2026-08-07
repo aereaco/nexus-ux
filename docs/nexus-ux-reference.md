@@ -1428,7 +1428,7 @@ loading state:
 </div>
 ```
 
-The `_WebSocket` mirror returns a reactive proxy with:
+The native `WebSocket` API returns a reactive proxy with:
 - `.state` — `'connecting' | 'open' | 'closing' | 'closed'`
 - `.lastMessage` — last received message
 - `.send(data)` — send data
