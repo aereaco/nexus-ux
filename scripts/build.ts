@@ -272,7 +272,7 @@ async function buildBundle(options: BuildOptions = {}) {
       modWhitelist = (Array.from(analysisResult.modifiers) as string[]).filter(m => availableModifiers.includes(m));
     }
 
-    await generateRegistry("modules/attributes", "autoAttributes", "attributes", attrWhitelist);
+    await generateRegistry("modules/attributes", "autoAttributes", "attributes", attrWhitelist, ['import', 'signal', 'computed', 'switcher', 'theme']);
     await generateRegistry("modules/sprites", "autoSprites", "sprites", spriteWhitelist);
     await generateRegistry("modules/scopes", "autoScopes", "scopes", undefined);
     await generateRegistry("modules/modifiers", "autoModifiers", "modifiers", modWhitelist);
