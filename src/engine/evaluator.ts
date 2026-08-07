@@ -444,6 +444,10 @@ export function evaluateLater(
         }
       });
 
+      if (el instanceof HTMLElement) {
+        registerNativeApiListeners(el, expression);
+      }
+
       const result = func.call(el, currentScope);
       if (shouldAutoEvaluateFunctions && typeof result === 'function') {
         receiver(result.call(el, currentScope));
