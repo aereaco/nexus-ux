@@ -1412,7 +1412,7 @@ loading state:
 
 **Deprecated Syntax**: `$ws(url, [protocols])`
 
-**Modern Equivalent**: `_WebSocket(url, protocols)`
+**Modern Equivalent**: `WebSocket(url, protocols)`
 
 ```html
 <!-- DEPRECATED -->
@@ -1423,7 +1423,7 @@ loading state:
 
 <!-- ✅ RECOMMENDED (identical API surface) -->
 <div data-signal="{ socket: null, messages: [] }">
-  <button data-on-click="socket = _WebSocket('wss://chat.example.com')">Connect</button>
+  <button data-on-click="socket = WebSocket('wss://chat.example.com')">Connect</button>
   <p data-bind="socket?.state"></p>
 </div>
 ```
@@ -1503,8 +1503,8 @@ endpoint.
 <button data-on-click="await $post('/api/users', { name })"></button>
 
 <!-- ✅ RECOMMENDED -->
-<div data-on-load="users = await _http.get('/api/users')"></div>
-<button data-on-click="await _http.post('/api/users', { name })"></button>
+<div data-on-load="users = await fetch with options (native). get('/api/users')"></div>
+<button data-on-click="await fetch with options (native). post('/api/users', { name })"></button>
 ```
 
 **Common options** (all HTTP sprites):
@@ -1593,13 +1593,13 @@ Dispatches a `CustomEvent` on the current element. Bubbles by default.
 <div data-on-load="$watch('searchQuery', (n, o) => results = $get('/api?q=' + n))"></div>
 
 <!-- ✅ RECOMMENDED -->
-<div data-effect="watch(() => searchQuery, (n, o) => results = _http.get('/api?q=' + n))"></div>
+<div data-effect="watch(() => searchQuery, (n, o) => results = fetch with options (native). get('/api?q=' + n))"></div>
 ```
 
 ### 7.12. Utility Sprites — ALL DEPRECATED
 
 > **⚠️ ALL DEPRECATED**: These utility sprites have been replaced by native
-> environment mirrors. See [§2.6](#26-environment-mirrors-) and
+> native APIs. See [§2.6](#26-environment-mirrors-) and
 > [Chapter 7.5](#75-environment-mirrors-) for the modern equivalents.
 
 #### 7.12.1. `$clipboard` → `_clipboard`
@@ -1607,24 +1607,24 @@ Dispatches a `CustomEvent` on the current element. Bubbles by default.
 **DEPRECATED**: Use `_clipboard` (native Clipboard API mirror).
 
 **Legacy**: `$clipboard.write(text)`, `$clipboard.read()`
-**Modern**: `_clipboard.writeText(text)`, `_clipboard.readText()`
+**Modern**: `navigator.clipboard.writeText(text)`, `navigator.clipboard.readText()`
 
 ```html
 <!-- DEPRECATED -->
 <button data-on-click="$clipboard.write(code)">Copy</button>
 
 <!-- ✅ RECOMMENDED -->
-<button data-on-click="_clipboard.writeText(code)">Copy</button>
+<button data-on-click="navigator.clipboard.writeText(code)">Copy</button>
 ```
 
 #### 7.12.2. `$download` → `_download` utility
 
-**STATUS**: Kept as a utility function (not a sprite module). The `_download()`
+**STATUS**: Kept as a utility function (not a sprite module). The `native download pattern()`
 helper remains available globally; it's a thin synchronous wrapper around
 `URL.createObjectURL` + anchor click and does not require a sprite wrapper.
 
 ```html
-<button data-on-click="_download('report.csv', csvData, 'text/csv')">
+<button data-on-click="native download pattern('report.csv', csvData, 'text/csv')">
   Export CSV
 </button>
 ```
@@ -1634,50 +1634,50 @@ helper remains available globally; it's a thin synchronous wrapper around
 **DEPRECATED**: Use the native `_caches` Cache Storage mirror.
 
 **Legacy**: `$cache.put(name, url, res)`, `$cache.match(name, url)`, etc.
-**Modern**: `_caches.default.put(url, response)`, `_caches.default.match(url)`, etc.
+**Modern**: `caches.default.put(url, response)`, `caches.default.match(url)`, etc.
 
 ```html
 <!-- DEPRECATED -->
 <button data-on-click="cache.put('assets', '/api/data')">Cache</button>
 
 <!-- ✅ RECOMMENDED -->
-<button data-on-click="_caches.default.put('/api/data', response)">Cache</button>
+<button data-on-click="caches.default.put('/api/data', response)">Cache</button>
 ```
 
 > **Note**: The native Cache API uses `Cache` objects directly. The `_caches`
 > mirror provides reactive access to `caches.open(name)`, `put()`, `match()`,
 > `delete()`, `keys()`, `clear()`.
 
-#### 7.12.4. `$notification` → `_Notification`
+#### 7.12.4. `$notification` → `Notification`
 
-**DEPRECATED**: Use the native `_Notification` constructor and `.permission`
+**DEPRECATED**: Use the native `Notification` constructor and `.permission`
 property directly.
 
 **Legacy**: `$notification.send(title, opts)`, `$notification.permission`,
 `$notification.requestPermission()`
 **Modern**:
-- `new _Notification(title, options)` — show notification
-- `_Notification.permission` — reactive permission state
-- `_Notification.requestPermission()` — request access
+- `new Notification(title, options)` — show notification
+- `Notification.permission` — reactive permission state
+- `Notification.requestPermission()` — request access
 
 ```html
 <!-- DEPRECATED -->
 <button data-on-click="$notification.send('Hello!')">Notify</button>
 
 <!-- ✅ RECOMMENDED -->
-<button data-on-click="new _Notification('Hello!')">Notify</button>
+<button data-on-click="new Notification('Hello!')">Notify</button>
 ```
 
-#### 7.12.5. `$payment` → `_PaymentRequest`
+#### 7.12.5. `$payment` → `PaymentRequest`
 
-**DEPRECATED**: Use `new _PaymentRequest(methods, details)` directly.
+**DEPRECATED**: Use `new PaymentRequest(methods, details)` directly.
 
 ```html
 <!-- DEPRECATED -->
 <button data-on-click="payment.request(methods, details)">Pay</button>
 
 <!-- ✅ RECOMMENDED -->
-<button data-on-click="new _PaymentRequest(methods, details).show()">Pay</button>
+<button data-on-click="new PaymentRequest(methods, details).show()">Pay</button>
 ```
 
 ### 7.13. Cache Sprites — DEPRECATED
@@ -1694,13 +1694,13 @@ property directly.
 <!-- ✅ RECOMMENDED -->
 <button
   data-on-click="
-    fetch('/api/config').then(res => _caches.default.put('/api/config', res))
+    fetch('/api/config').then(res => caches.default.put('/api/config', res))
   "
 >Cache Config</button>
 ```
 
 The native `_caches` API exposes:
-- `_caches.default` — default Cache object (reactive)
+- `caches.default` — default Cache object (reactive)
 - `.put(url, response)` — cache a Response
 - `.match(url)` — returns `Response | null`
 - `.delete(url)` — remove entry
@@ -1731,16 +1731,16 @@ Service Worker lifecycle management — a value-add integration over the raw
 
 #### 7.14.2. `notification` — DEPRECATED
 
-> **⚠️ DEPRECATED**: Use `_Notification` mirror directly.
+> **⚠️ DEPRECATED**: Use `Notification` mirror directly.
 
-Replaced by the native `_Notification` constructor. See [§7.12.4](#71243-notification---_notification).
+Replaced by the native `Notification` constructor. See [§7.12.4](#71243-notification---Notification).
 
 ```html
 <!-- DEPRECATED -->
 <button data-on-click="$notification.send('Hello!')">Notify</button>
 
 <!-- ✅ RECOMMENDED -->
-<button data-on-click="new _Notification('Hello!')">Notify</button>
+<button data-on-click="new Notification('Hello!')">Notify</button>
 ```
 ---
 
@@ -1783,7 +1783,7 @@ Periodic Background Sync.
 
 #### 7.14.7. `payment` — DEPRECATED
 
-> **⚠️ DEPRECATED**: Use `new _PaymentRequest(methods, details)` directly.
+> **⚠️ DEPRECATED**: Use `new PaymentRequest(methods, details)` directly.
 
 Payment Request API replaced by native mirror.
 
@@ -1792,14 +1792,14 @@ Payment Request API replaced by native mirror.
 <button data-on-click="result = payment.request(methods, details)">Pay Now</button>
 
 <!-- ✅ RECOMMENDED -->
-<button data-on-click="result = (new _PaymentRequest(methods, details)).show()">
+<button data-on-click="result = (new PaymentRequest(methods, details)).show()">
   Pay Now
 </button>
 ```
 
 ---
 
-## Chapter 7.5: Environment Mirrors (`_`) — The Unified JIT Proxy
+## Chapter 7.5: native APIs (`_`) — The Unified JIT Proxy
 
 Mirrors are **reactive wrappers** mapped directly to the `globalThis.window`
 object. They use the `_` prefix, triggering the framework's lazy JIT proxy
@@ -1819,17 +1819,17 @@ accessible without specialized syntax.
 
 ```html
 <!-- Read: responsive layout info tracked lazily on native 'resize' -->
-<p data-bind="'Viewport: ' + _window.innerWidth + 'x' + _window.innerHeight">
+<p data-bind="'Viewport: ' + window.innerWidth + 'x' + window.innerHeight">
 </p>
 
 <!-- Read: scroll-linked animation wrapped securely around native scroll properties -->
-<div data-style-opacity="Math.max(0, 1 - _window.scrollY / 300)">
+<div data-style-opacity="Math.max(0, 1 - window.scrollY / 300)">
   Hero Content
 </div>
 
 <!-- Write: update native document title directly -->
 <div
-  data-effect="_window.document.title = 'Dashboard (' + notifications.length + ')'"
+  data-effect="window.document.title = 'Dashboard (' + notifications.length + ')'"
 >
 </div>
 ```
@@ -1842,14 +1842,14 @@ across tabs via dynamic JIT `storage` event bindings.
 
 ```html
 <!-- Read: initialize from stored value -->
-<div data-signal="{ theme: _localStorage.theme || 'light' }">
+<div data-signal="{ theme: localStorage.theme || 'light' }">
   <button data-on-click="theme = theme === 'light' ? 'dark' : 'light'">
     Toggle Theme ({theme})
   </button>
 </div>
 
 <!-- Write: persist directly -->
-<button data-on-click="_localStorage.theme = 'dark'">Force Dark Mode</button>
+<button data-on-click="localStorage.theme = 'dark'">Force Dark Mode</button>
 ```
 
 ### 7.5.3. `_sessionStorage` (read-write)
@@ -3381,3 +3381,4 @@ AOT Tailwind compilation generating `PACKED_THEME_CSS` at build time.
 [nexus-ux-spec.md](nexus-ux-spec.md),
 [.agent/rules/directives.md](.agent/rules/directives.md)\
 **Contact**: support@aerea.co
+
