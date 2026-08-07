@@ -32,7 +32,6 @@ on outcomes and practical implementation patterns. Built on the **Omni-State
 6. [Chapter 5: Styling, Classes & Dynamic Theming](#chapter-5-styling-classes--dynamic-theming)
 7. [Chapter 6: Advanced Orchestration (Effects, Custom)](#chapter-6-advanced-orchestration-effects-custom)
 8. [Chapter 7: Sprites ($) & Data Integration](#chapter-7-sprites--data-integration)
-   8.5 [Chapter 7.5: Environment Mirrors (_)](#chapter-75-environment-mirrors-)
 9. [Chapter 8: Advanced Patterns & Real-World](#chapter-8-advanced-patterns--real-world)
 10. [Chapter 9: Routing & Navigation](#chapter-9-routing--navigation)
 11. [Chapter 10: Component System](#chapter-10-component-system)
