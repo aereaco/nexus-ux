@@ -136,6 +136,7 @@ const signalModule: AttributeModule = {
           } else {
           // Subsequent run: only sync keys that CHANGED from the last EVALUATED state
           const currentEval = newState as Record<string, unknown>;
+          let hasChanges = false;
           if (isGlobal) {
             const globals = runtime.globalSignals() as Record<string, unknown>;
             Object.keys(currentEval).forEach(key => {
@@ -150,6 +151,7 @@ const signalModule: AttributeModule = {
               if (changed) {
                 globals[key] = curVal;
                 lastEvaluatedState![key] = cloneValue(curVal);
+                hasChanges = true;
               }
             });
           } else {
@@ -166,8 +168,12 @@ const signalModule: AttributeModule = {
               if (changed) {
                 value[key] = curVal;
                 lastEvaluatedState![key] = cloneValue(curVal);
+                hasChanges = true;
               }
             });
+          }
+          if (hasChanges) {
+            runtime.triggerRef(stateRef);
           }
         }
       }
