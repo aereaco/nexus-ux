@@ -3340,7 +3340,7 @@ decisions, not bugs.
 All legacy browser-API sprites (`$fetch`, `$clipboard`, `$cache`, `$notification`,
 `$payment`, `$ws`, `$download`, `$http`, `$get`, `$post`, `$put`, `$patch`,
 `$delete`, `$store`, `$watch`, `$device`, `$fs`) have been **removed** from the
-codebase. Native `_` mirror proxies provide identical functionality.
+codebase. Standard JS property access via Native API Binding provides identical functionality without separate mirror modules or `_` prefixes.
 
 ### RC-2: `data-text` and `data-model` Absorption
 
@@ -3368,9 +3368,29 @@ under-documented in earlier versions of this reference:
 Production builds use esbuild + SWC minification + Brotli-11 compression, with
 AOT Tailwind compilation generating `PACKED_THEME_CSS` at build time.
 
+### RC-7: Native API Binding System
+
+Direct JS property access (`window.innerWidth`, `localStorage.collapsed`) automatically creates Proxy/Reflect tracking proxies that register native event listeners (`resize`, `scroll`, `storage`) on read and push updates to dependent signals and DOM elements in real-time.
+
 ---
 
-**Nexus-UX Technical Reference v2026.02.14**\
+## Chapter 16: Living Development Roadmap & Active TODO List
+
+Per Nexus-UX **Documentation-Driven Development (DDD)** directives, documentation stays ahead of codebase implementation as the single source of truth for architectural direction.
+
+### Active TODO List
+
+- [x] **Native API Auto-Tracking Proxy**: Generic Proxy/Reflect tracking for `window`, `localStorage`, `sessionStorage`, `document`, `screen`.
+- [x] **Initial Boot Timing Alignment**: Synchronous `runSelf` initialization in `elementBoundEffect` so initial hydration reads capture dependencies.
+- [x] **Real-Time Signal Property Re-Evaluation**: Trigger `stateRef` subscribers when evaluated signal properties mutate on window/storage events.
+- [x] **Zero-Mirror Cleanup**: Removal of legacy `_` prefix mirrors in favor of direct property access.
+- [ ] **Nexus-UX Official SPA Site**: Complete port of dashboard shell (`layout.html`, `documentation.html`, `router.html`) into single-page application architecture under `site/`.
+- [ ] **Dev Server SPA Fallback**: Add History API index fallback in `scripts/serve.ts` for clean SPA route navigation (`hybrid` mode).
+- [ ] **IndexedDB Engine Diagnostics Integration**: Connect live CodeMirror playground state in `documentation.html` to runtime SelfHeal agent.
+
+---
+
+**Nexus-UX Technical Reference v2026.08.08**\
 **Maintained by**: Aerea Co.\
 **See Also**:
 [nexus-ux-spec.md](nexus-ux-spec.md),
