@@ -291,6 +291,7 @@ function startWatcher() {
     const paths = [...buffer].filter((p) => !isIgnored(p));
     buffer.clear();
     if (paths.length === 0) return;
+    console.log("[serve] Watcher triggered by paths:", paths);
     if (AUTO) gitCommit(paths);
     if (WATCH) broadcastReload();
   };
