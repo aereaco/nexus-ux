@@ -383,6 +383,22 @@ manifest. No manual registration required.
 
 ---
 
+## 🗺️ Living Development Roadmap & Active TODO List
+
+Per Nexus-UX **Documentation-Driven Development (DDD)** directives, documentation stays ahead of code implementation as the single source of truth for architecture and features.
+
+### Active TODO List
+
+- [x] **Native API Auto-Tracking Proxy**: Generic Proxy/Reflect tracking for `window`, `localStorage`, `sessionStorage`, `document`, `screen`.
+- [x] **Initial Boot Timing Alignment**: Synchronous `runSelf` initialization in `elementBoundEffect` so initial hydration reads capture dependencies.
+- [x] **Real-Time Signal Property Re-Evaluation**: Trigger `stateRef` subscribers when evaluated signal properties mutate on window/storage events.
+- [x] **Zero-Mirror Cleanup**: Removal of legacy `_` prefix mirrors in favor of direct property access.
+- [ ] **Nexus-UX Official SPA Site**: Complete port of dashboard shell (`layout.html`, `documentation.html`, `router.html`) into single-page application architecture under `site/`.
+- [ ] **Dev Server SPA Fallback**: Add History API index fallback in `scripts/serve.ts` for clean SPA route navigation (`hybrid` mode).
+- [ ] **IndexedDB Engine Diagnostics Integration**: Connect live CodeMirror playground state in `documentation.html` to runtime SelfHeal agent.
+
+---
+
 ## 🤝 Contributing
 
 Nexus-UX is developed under the **MIT License**. Contributions are welcome via
