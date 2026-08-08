@@ -69,7 +69,8 @@ const signalModule: AttributeModule = {
     const parsed = parsedAttr || runtime.parseAttribute('data-signal', runtime, el);
     const isGlobal = parsed?.argument === 'global' || 
                      parsed?.modifiers.includes('global') || 
-                     el.hasAttribute('data-init');
+                     el.hasAttribute('data-init') ||
+                     el.hasAttribute('data-ux-init');
 
     // 2.5 Parse Ghost Keys for pre-allocation
     const { ghostKeys, typeHints } = parseGhostKeys(expression);
