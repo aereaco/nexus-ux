@@ -173,24 +173,19 @@ async function importLink(
 
     // Direct link tag injection for standard URLs (native parallel browser load)
     await new Promise<void>((resolve) => {
-      let done = false;
-      const finish = () => { if (!done) { done = true; resolve(); } };
-      const timer = setTimeout(finish, 2500);
-
       const existing = document.querySelector(`link[href="${href}"]`);
       if (existing) {
-        finish();
+        resolve();
         return;
       }
 
       const link = document.createElement('link');
       applyAttributes(link, attrs);
       link.href = href;
-      link.onload = () => { clearTimeout(timer); finish(); };
+      link.onload = () => resolve();
       link.onerror = () => {
-        clearTimeout(timer);
         reportError(new Error(`Nexus Import: Failed to load ${href}`), el);
-        finish();
+        resolve();
       };
       (document.head || document.documentElement).appendChild(link);
       cleanupFns.push(() => link.remove());
@@ -280,23 +275,18 @@ async function importScript(
     }
 
     await new Promise<void>((resolve) => {
-        let done = false;
-        const finish = () => { if (!done) { done = true; resolve(); } };
-        const timer = setTimeout(finish, 2500);
-
         const existing = document.querySelector(`script[src="${finalSrc}"]`);
         if (existing) {
-          finish();
+          resolve();
           return;
         }
 
         const script = document.createElement('script');
         applyAttributes(script, attrs);
-        script.onload = () => { clearTimeout(timer); finish(); };
+        script.onload = () => resolve();
         script.onerror = () => {
-            clearTimeout(timer);
             reportError(new Error(`Nexus Import: Failed to load script ${src}`), el);
-            finish();
+            resolve();
         };
         script.src = finalSrc;
         (document.head || document.documentElement).appendChild(script);
