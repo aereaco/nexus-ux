@@ -172,7 +172,18 @@ const forModule: AttributeModule = {
                   n.removeAttribute('data-for');
                   delete (n as any)[IS_TEMPLATE_KEY];
                 }
-                runtime.processElement(n);
+
+                // Remove stale markers from blueprint clone so processElement re-walks freshly
+                const cleanClonedMarkers = (target: Node) => {
+                  delete (target as any)[MARKER_KEY];
+                  delete (target as any)[CLEANUP_FUNCTIONS_KEY];
+                  if (target.childNodes) {
+                    target.childNodes.forEach(cleanClonedMarkers);
+                  }
+                };
+                cleanClonedMarkers(n);
+
+                runtime.processElement(n, true);
               }
             });
             mountedMap.set(key, nodes);
