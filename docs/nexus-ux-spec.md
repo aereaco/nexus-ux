@@ -649,6 +649,7 @@ See [§7.11](#711-state-sprites--deprecated) in the reference for detailed examp
 Native API Signal Binding provides **live, push-based reactive access** to browser APIs (`window`, `localStorage`, `navigator`, etc.) without requiring `_` prefix mirrors or separate module registration. When a `data-signal` or `data-bind` expression reads a native API property, the framework automatically registers the appropriate native listeners and pushes updates into the signal reactively.
 
 - **Lazy Reactivity Allocation (ZCZS)**: Memory for synchronization (like `resize`, `storage`, or `hashchange` event listeners) is only allocated if an HTML template explicitly reads a native API property. If your application never accesses `window.innerWidth`, no tracking payload or system listener is booted.
+- **Initial Hydration Boot Tracking Guarantee**: Native API property reads performed during initial element hydration are captured synchronously via pre-allocated `runSelf` effect runners inside `elementBoundEffect`, guaranteeing listeners are attached prior to initial paint.
 - **Push-Based Native Observation**: Native Web API getters (`localStorage.getItem()`) are static/pull-based. Native API Signal Binding registers fine-grained dependencies on read and **actively pushes state updates** to all watching signals, effects, and DOM elements whenever native Web APIs mutate.
 - **Pure Web API Action Pattern**:
   ```html
