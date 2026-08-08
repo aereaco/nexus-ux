@@ -511,9 +511,9 @@ const importModule: AttributeModule = {
                 itemTasks.push(importAdopt(id, item.adopt, iterationCleanupFns, runtime, el));
             }
 
-            // Scripts
+            // Scripts — run asynchronously so external CDN scripts (Iconify) do not block FOUC gate
             if (item.script) {
-                itemTasks.push(importScript(id, item.script, iterationCleanupFns, runtime, el));
+                importScript(id, item.script, iterationCleanupFns, runtime, el).catch(() => {});
             }
 
             // Styles / Themes (Unified)
