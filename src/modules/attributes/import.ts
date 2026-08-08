@@ -441,8 +441,14 @@ const importModule: AttributeModule = {
       const config = runtime.evaluate(el, attrExpr) as Record<string, ImportPayload>;
       const configStr = JSON.stringify(config);
       
-      // Optimization: Skip if config hasn't changed
-      if (configStr === lastConfigStr) return;
+      // Optimization: Skip re-import if config hasn't changed, but ensure FOUC gate is released
+      if (configStr === lastConfigStr) {
+        el.classList.remove('nexus-loading');
+        el.classList.add('nexus-ready');
+        el.removeAttribute('data-nexus-loading');
+        el.setAttribute('data-nexus-ready', '');
+        return;
+      }
       lastConfigStr = configStr;
 
       // Clean up previous iteration
