@@ -33,7 +33,7 @@ import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { initError } from '../../engine/debug.ts';
 import { addScopeToNode } from '../../engine/scope.ts';
-import { CLEANUP_FUNCTIONS_KEY, IS_TEMPLATE_KEY } from '../../engine/consts.ts';
+import { CLEANUP_FUNCTIONS_KEY, IS_TEMPLATE_KEY, MARKER_KEY } from '../../engine/consts.ts';
 import { nexusClassMap, nexusStyleMap } from '../../engine/reconciler.ts';
 
 // SVGs (paths, etc.) are SVGElement, not HTMLElement — both must be treated
