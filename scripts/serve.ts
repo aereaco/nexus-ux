@@ -10,7 +10,7 @@ const PORT = 8081;
 // are only ignored when they actually live UNDER the served root — when
 // the server is rooted at /site/ those dirs are siblings, not children,
 // so the bundle + deps must still be served.
-const IGNORE_ALWAYS = [".git/", "deno.lock"];
+const IGNORE_ALWAYS = [".git/", "deno.lock", ".gemini/", "scratch/", ".system_generated/", "brain/", "tmp/", ".vscode/", ".idea/"];
 const IGNORE_UNDER_ROOT = ["dist/", "node_modules/"];
 const DEBOUNCE_MS = 750;
 
