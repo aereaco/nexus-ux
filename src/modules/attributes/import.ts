@@ -188,7 +188,6 @@ async function importLink(
         resolve();
       };
       (document.head || document.documentElement).appendChild(link);
-      cleanupFns.push(() => link.remove());
       runtime.log(`Nexus Import [${id}]: Link tag injected: ${href}`);
     });
   });
@@ -290,7 +289,6 @@ async function importScript(
         };
         script.src = finalSrc;
         (document.head || document.documentElement).appendChild(script);
-        cleanupFns.push(() => script.remove());
         runtime.log(`Nexus Import [${id}]: Script injected: ${src}`);
     });
   });
@@ -531,7 +529,6 @@ const importModule: AttributeModule = {
       };
 
       runImports().then(finalize).catch(() => finalize());
-      finalize();
     });
 
     return () => {
