@@ -34,52 +34,6 @@ import { RuntimeContext } from './composition.ts';
 import { getSelfHealAgent } from './agent.ts';
 import { evaluationError, syntaxError } from './debug.ts';
 import { getDataStack, hasScopeProvider, resolveScopeProvider, registerScopeProvider } from './scope.ts';
-import { trackNativeApiRead, activeNativeApiRunner } from './reactivity.ts';
-
-// =============================================================================
-// Native API Tracking Proxies
-// =============================================================================
-// Wraps native browser API objects in Proxies that automatically register
-// listeners when properties are read. This makes ANY native API access
-// reactive without hardcoding property lists.
-
-const NATIVE_API_KEYS = new Set(['window', 'globalThis', 'localStorage', 'sessionStorage', 'navigator', 'document', 'screen']);
-
-const NATIVE_API_TARGETS: Record<string, object> = {
-  window: globalThis,
-  globalThis: globalThis,
-  localStorage: globalThis.localStorage,
-  sessionStorage: globalThis.sessionStorage,
-  navigator: globalThis.navigator,
-  document: globalThis.document,
-  screen: globalThis.screen,
-};
-
-function createTrackingProxy(target: object, el: HTMLElement): object {
-  return new Proxy(target, {
-    get(_obj, prop: string | symbol) {
-      if (typeof prop === 'symbol') return (_obj as any)[prop];
-      
-      if (activeNativeApiRunner && el instanceof HTMLElement) {
-        trackNativeApiRead(el, _obj, String(prop), activeNativeApiRunner);
-      }
-      
-      const val = Reflect.get(_obj, prop);
-      if (typeof val === 'function') return val.bind(_obj);
-      return val;
-    },
-    set(_obj, prop: string | symbol, value: unknown) {
-      if (typeof prop === 'symbol') return Reflect.set(_obj, prop, value);
-      return Reflect.set(_obj, prop, value);
-    }
-  });
-}
-
-function resolveNativeApi(key: string, el: HTMLElement): object | undefined {
-  const target = NATIVE_API_TARGETS[key];
-  if (!target) return undefined;
-  return createTrackingProxy(target, el);
-}
 
 
 
@@ -295,12 +249,6 @@ export function evaluateLater(
       if (typeof key === 'string') {
         // 1. Scope Providers (modular sprites)
         if (hasScopeProvider(key)) return resolveScopeProvider(key, el, runtime);
-
-        // 1.5 Native API Tracking Proxies
-        if (NATIVE_API_KEYS.has(key)) {
-          const proxy = resolveNativeApi(key, el as HTMLElement);
-          if (proxy) return proxy;
-        }
 
         // ZCZS: Live Scope Resolution — evaluate relative to exact current DOM position
         const dataStack = getDataStack(el as HTMLElement);
