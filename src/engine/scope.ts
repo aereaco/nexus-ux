@@ -236,15 +236,28 @@ export function createScopeProxy(
   onTrigger?: () => void
 ): Record<string, unknown> {
   return new Proxy({}, {
-    has(_, key) { return Reflect.has(stateRef.value, key); },
-    get(_, key) { return Reflect.get(stateRef.value, key); },
+    has(_, key) { 
+      const target = stateRef.value;
+      return Reflect.has(target, key); 
+    },
+    get(_, key) { 
+      const target = stateRef.value;
+      return Reflect.get(target, key); 
+    },
     set(_, key, value) {
-      const res = Reflect.set(stateRef.value, key, value);
+      const target = stateRef.value;
+      const res = Reflect.set(target, key, value);
       if (onSet) onSet(key as string, value);
       if (onTrigger) onTrigger();
       return res;
     },
-    ownKeys() { return Reflect.ownKeys(stateRef.value); },
-    getOwnPropertyDescriptor(_, key) { return Reflect.getOwnPropertyDescriptor(stateRef.value, key); }
+    ownKeys() { 
+      const target = stateRef.value;
+      return Reflect.ownKeys(target); 
+    },
+    getOwnPropertyDescriptor(_, key) { 
+      const target = stateRef.value;
+      return Reflect.getOwnPropertyDescriptor(target, key); 
+    }
   });
 }
