@@ -90,6 +90,14 @@ export class UX {
       const html = document.documentElement;
       if (document.querySelector('[data-import]')) {
         html.classList.add('nexus-loading');
+        setTimeout(() => {
+          if (!html.classList.contains('nexus-ready')) {
+            html.classList.remove('nexus-loading');
+            html.classList.add('nexus-ready');
+            html.removeAttribute('data-nexus-loading');
+            html.setAttribute('data-nexus-ready', '');
+          }
+        }, 2500);
       } else {
         html.classList.add('nexus-ready');
       }

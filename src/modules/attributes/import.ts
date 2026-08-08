@@ -160,21 +160,28 @@ async function importLink(
     const href = attrs.href as string;
     if (!href) return;
 
-    if (attrs.rel === 'stylesheet') {
+    // VFS URIs (idb://) are resolved dynamically as constructable CSS
+    if (href.startsWith('idb://')) {
       const cssText = await resolveContent(href);
       if (cssText) {
         const cleanup = await stylesheet.adoptRawCSS(cssText, `import-${id}-${href}`);
         cleanupFns.push(cleanup);
-        runtime.log(`Nexus Import [${id}]: CSS adopted (raw): ${href}`);
+        runtime.log(`Nexus Import [${id}]: CSS adopted (idb): ${href}`);
         return;
       }
     }
 
-    // Fallback: Legacy link tag with load waiting & safety timeout
+    // Direct link tag injection for standard URLs (native parallel browser load)
     await new Promise<void>((resolve) => {
       let done = false;
       const finish = () => { if (!done) { done = true; resolve(); } };
-      const timer = setTimeout(finish, 4000);
+      const timer = setTimeout(finish, 2500);
+
+      const existing = document.querySelector(`link[href="${href}"]`);
+      if (existing) {
+        finish();
+        return;
+      }
 
       const link = document.createElement('link');
       applyAttributes(link, attrs);
@@ -189,6 +196,39 @@ async function importLink(
       cleanupFns.push(() => link.remove());
       runtime.log(`Nexus Import [${id}]: Link tag injected: ${href}`);
     });
+  });
+  await Promise.all(tasks);
+}
+
+/**
+ * adopt: — Fetches CSS content and adopts it as a constructable CSSStyleSheet.
+ * The sheet lives in document.adoptedStyleSheets (ZCZS-native, Nexus-scoped).
+ * It is NOT visible in document.styleSheets — use link: when third-party
+ * stylesheet scanners (e.g. @tailwindcss/browser) need to read it.
+ */
+async function importAdopt(
+  id: string,
+  payload: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>,
+  cleanupFns: Array<() => void>,
+  runtime: RuntimeContext,
+  _el: HTMLElement
+): Promise<void> {
+  const items = Array.isArray(payload) ? payload : [payload];
+  const tasks = items.map(async (item) => {
+    let href: string;
+    if (typeof item === 'string') {
+      href = item;
+    } else {
+      href = (item as Record<string, string | boolean | number>).href as string;
+    }
+    if (!href) return;
+
+    const cssText = await resolveContent(href);
+    if (!cssText) return;
+
+    const cleanup = await stylesheet.adoptRawCSS(cssText, `import-adopt-${id}-${href}`);
+    cleanupFns.push(cleanup);
+    runtime.log(`Nexus Import [${id}]: CSS adopted (constructable): ${href}`);
   });
   await Promise.all(tasks);
 }
@@ -242,7 +282,13 @@ async function importScript(
     await new Promise<void>((resolve) => {
         let done = false;
         const finish = () => { if (!done) { done = true; resolve(); } };
-        const timer = setTimeout(finish, 4000);
+        const timer = setTimeout(finish, 2500);
+
+        const existing = document.querySelector(`script[src="${finalSrc}"]`);
+        if (existing) {
+          finish();
+          return;
+        }
 
         const script = document.createElement('script');
         applyAttributes(script, attrs);
