@@ -56,8 +56,8 @@ const onModule: AttributeModule = {
       target.addEventListener(eventName, handler as EventListener, options);
 
       if (
-        (eventName === 'load' && document.readyState === 'complete') ||
-        (eventName === 'DOMContentLoaded' && (document.readyState === 'interactive' || document.readyState === 'complete'))
+        (eventName === 'load' && document.readyState !== 'loading') ||
+        (eventName === 'DOMContentLoaded' && document.readyState !== 'loading')
       ) {
         if (target === window || target === document || target === el) {
           try {
