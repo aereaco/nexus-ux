@@ -26,7 +26,7 @@
 /// <reference path="./composition.ts" />
 
 // 1. Core Constants
-export const ROOT_SELECTOR = '[data-init]';
+export const ROOT_SELECTOR = '[data-init], [data-ux-init], [data-signal], [data-router], [data-import], [data-stylesheet], [data-ux-theme], body';
 export const STATE = 'nexus';
 export const ATTRIBUTE_PREFIX = 'data-';
 export const CUSTOM_EVENT_PREFIX = 'ux-';
