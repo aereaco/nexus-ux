@@ -531,6 +531,7 @@ const importModule: AttributeModule = {
       };
 
       runImports().then(finalize).catch(() => finalize());
+      finalize();
     });
 
     return () => {
