@@ -704,8 +704,14 @@ export function elementBoundEffect(
   let consecutiveFailures = 0;
   let lastErrorMessage = '';
 
+  let runner: ReactiveEffectRunner<void>;
+  const runSelf: ReactiveEffectRunner<void> = Object.assign(
+    () => { if (runner) return runner(); },
+    { effect: null as any }
+  );
+
   const suspenseWrappedCallback = () => {
-    activeNativeApiRunner = runner;
+    activeNativeApiRunner = runSelf;
     try {
       effectCallback();
       consecutiveFailures = 0;
@@ -759,7 +765,6 @@ export function elementBoundEffect(
     }
   };
 
-  let runner: ReactiveEffectRunner<void>;
   const stableJob = () => { if (runner) runner(); };
   try {
     const schedulerOptions: ReactiveEffectOptions = {
@@ -767,6 +772,7 @@ export function elementBoundEffect(
       ...options
     };
     runner = effect(suspenseWrappedCallback, schedulerOptions);
+    runSelf.effect = runner.effect;
   } catch (e) {
     console.error(`[Reactivity Error] effect() failed for <${el.tagName}>:`, e);
     throw e;
