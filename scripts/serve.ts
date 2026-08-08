@@ -196,6 +196,7 @@ function needsBuild(paths: string[]): boolean {
   return paths.some((p) => {
     let f = p.replace(/\\/g, "/").replace(/^\.\//, "");
     if (f.startsWith(cwd + "/")) f = f.slice(cwd.length + 1);
+    if (f === "src/manifest.ts") return false;
     return f.startsWith("src/") || f === "deno.json" || f === "scripts/build.ts";
   });
 }
