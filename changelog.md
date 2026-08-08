@@ -1,10 +1,28 @@
 # Nexus-UX Changelog & Codebase Alignment Analysis
 
-**Latest Alignment Date**: 2026-07-25  
+**Latest Alignment Date**: 2026-08-08  
 
 ---
 
-## Recent Major Release: 2026-07-25 — Reactive Mirrors Architecture & Build Optimization
+## Recent Major Release: 2026-08-08 — Native API Binding Architecture & Real-Time Hydration Alignment
+
+### 🌟 Highlights & Breakthroughs
+- **Direct Native API Binding System:**
+  - Standard JS property access (`window.innerWidth`, `localStorage.collapsed`) in `data-signal` and `data-bind` automatically creates Proxy/Reflect tracking proxies without requiring legacy `_` prefix mirrors or separate module registrations.
+  - Intercepts property reads to register native browser event listeners (`resize`, `scroll`, `storage`) dynamically.
+- **Initial Boot Timing Fix (`elementBoundEffect`):**
+  - Resolved `undefined` runner capture during initial synchronous effect execution by pre-allocating a stable `runSelf` function reference.
+  - Native API property reads in `data-signal` and `data-bind` now register their event listeners during initial DOM hydration.
+- **Real-Time Signal Property Re-Evaluation (`signalModule`):**
+  - Updated `signalModule` to execute `runtime.triggerRef(stateRef)` whenever evaluated property values change during signal re-evaluation.
+  - Ensures dependent directives (`data-bind="isMobile"`, `data-bind="'Mobile Match: ' + isMobile"`, `data-if`, `data-class`) update in real-time on window resize and storage events across the DOM.
+- **Zero-Copy Performance & Bundle Shrink:**
+  - Complete removal of `MirrorModule` and legacy `_` mirror wrappers.
+  - Two-pass minification (esbuild + SWC) and Brotli compression resulting in **187.80 KB minified** and **51.99 KB Brotli** bundle payloads.
+
+---
+
+## Release: 2026-07-25 — Reactive Mirrors Architecture & Build Optimization
 
 ### 🌟 Highlights & Breakthroughs
 - **Standardized Nomenclature:** Adopted official framework terminology **Reactive Mirrors (`_`)** across codebase and docs.
