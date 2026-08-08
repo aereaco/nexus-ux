@@ -1254,12 +1254,12 @@ export const dragAttribute: AttributeModule = {
   name: "drag",
   attribute: "drag",
   handle: (element: HTMLElement, _value: string, runtime: RuntimeContext) => {
-    if ((element as any).__nexusDragBound) return (element as any).__nexusDragCleanup;
-    (element as any).__nexusDragBound = true;
-
     const isContainer = element.hasAttribute('data-drag-container') || element.hasAttribute('data-teleport:drop');
-    const container = isContainer ? element : element.parentElement;
+    const container = isContainer ? element : (element.closest('[data-drag-container], [data-teleport:drop]') as HTMLElement | null);
     if (!container) return;
+
+    if ((container as any).__nexusDragBound) return (container as any).__nexusDragCleanup;
+    (container as any).__nexusDragBound = true;
 
     let cleanupEffect: (() => void) | undefined = undefined;
 
