@@ -298,6 +298,7 @@ function startWatcher() {
 
   (async () => {
     for await (const event of watcher) {
+      if (event.kind === "access") continue;
       for (const p of event.paths) buffer.add(p);
       if (timer !== undefined) clearTimeout(timer);
       timer = setTimeout(flush, DEBOUNCE_MS);
