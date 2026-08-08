@@ -78,9 +78,9 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
     const isEnd = i === len;
     const char = isEnd ? '' : rest[i];
 
-    // `:` ALWAYS transitions to MODIFIER state (per §2.1)
+    // `:` or `.` ALWAYS transitions to MODIFIER state
     // `-` transitions from DIRECTIVE to ARGUMENT state
-    const isModifierDelim = char === MODIFIER_DELIMITER;
+    const isModifierDelim = char === MODIFIER_DELIMITER || char === '.';
     const isArgDelim = char === '-';
     const isDelim = isModifierDelim || isArgDelim;
 
