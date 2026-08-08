@@ -30,33 +30,35 @@ reactive state graph while achieving **100% functional parity with Tailwind v4**
 
 ---
 
-## 🎯 Reactive Mirrors Architecture (`_`)
+---
 
-Nexus-UX uses **Reactive Mirrors** (`_localStorage`, `_window`, `_navigator`, `_location`, `_fetch`, `_clipboard`, `_caches`, etc.) as **live, push-based reactive viewports** over native browser APIs. 
+## 🎯 Native API Binding Architecture
 
-Unlike static native getters (`localStorage.getItem()`) that sample state only at invocation, **Reactive Mirrors** register fine-grained dependencies on read and **actively push state updates** to watching signals and DOM elements whenever native Web APIs mutate.
+Nexus-UX provides **direct, fine-grained, push-based reactivity** for native browser APIs (`window`, `localStorage`, `sessionStorage`, `navigator`, `document`, `screen`) directly through standard JavaScript property access.
 
-### Standard Reactive Mirror Pattern
+Unlike static native getters (`localStorage.getItem()`) that sample state only at invocation, **Native API Binding** automatically intercepts reads and writes via Proxy/Reflect traps. It registers fine-grained event listeners on read and **actively pushes state updates** to watching signals and DOM elements whenever native Web APIs mutate. No `_` prefix or mirror module registration required.
+
+### Standard Native API Binding Pattern
 
 ```html
 <div class="grid grid-cols-[0rem_1fr]" data-signal="{
-      collapsed: _localStorage.collapsed ?? true,
-      pageTabs: _localStorage.pageTabs ?? true,
-      rtl: _localStorage.rtl ?? false,
-      zoom: _localStorage.zoom ?? 1
+      collapsed: localStorage.collapsed ?? true,
+      pageTabs: localStorage.pageTabs ?? true,
+      rtl: localStorage.rtl ?? false,
+      zoom: localStorage.zoom ?? 1
     }" data-class="{ 'md:grid-cols-[5rem_1fr]': collapsed }">
 
   <!-- Pure Web API Action Directive (Mutates native storage directly) -->
-  <button data-on-click="localStorage.setItem('collapsed', !_localStorage.collapsed)"
+  <button data-on-click="localStorage.setItem('collapsed', !localStorage.collapsed)"
           data-class="{ 'scale-x-[-1]': !collapsed }">
     Toggle Sidebar
   </button>
 </div>
 ```
 
-- **Declarative Signal Seeding:** Initialize signals directly from mirror expressions with explicit nullish defaults (`??`).
-- **Pure Web API Actions:** Action handlers call native browser APIs directly (`localStorage.setItem(...)`). The mirror pushes updates to watching signals automatically—no manual signal mutations needed!
-- **Concise View Templates:** Elements observe short signal names (`!collapsed`, `pageTabs`), eliminating template code bloat.
+- **Declarative Signal Seeding:** Initialize signals directly from native API expressions with explicit nullish defaults (`??`).
+- **Pure Web API Actions:** Action handlers call native browser APIs directly (`localStorage.setItem(...)`). The binding pushes updates to watching signals automatically—no manual signal mutations needed!
+- **Concise View Templates:** Elements observe short signal names (`collapsed`, `pageTabs`), eliminating template code bloat.
 
 - **Live Push Reactivity:** Instant same-tab & cross-tab updates without polling or re-renders
 - **Zero-Copy Performance:** Proxies wrap native APIs by reference without cloning
@@ -106,9 +108,8 @@ Nexus-UX utilizes a deterministic, token-based grammar for high-baud efficiency.
 
 | Token   | Designation       | Purpose                                         | Example                            |
 | :------ | :---------------- | :---------------------------------------------- | :--------------------------------- |
-| **`.`** | Native Access | Unwrapped, raw JS/DOM property access. | `user.name` |
+| **`.`** | Native Access | Unwrapped, raw JS/DOM/Browser API property access. | `window.innerWidth`, `user.name` |
 | **`#`** | Global Signal | The Global Registry of reactive sources. | `#auth.user` |
-| **`_`** | Env Mirror | Reactive ownership-tracked proxies for native Browser APIs. | `_window.innerWidth` |
 | **`:`** | Modifier          | Pipeline anchors and interceptors.              | `data-on-click:once`               |
 | **`$`** | Sprite / Selector | Framework tools, Sprites, and the $() engine. | `$(^card).$animate()` |
 | **`@`** | Scope Rule        | Context-aware boundary rules (Media, OS, Auth). | `@media(min-width: 600px) { ... }` |
