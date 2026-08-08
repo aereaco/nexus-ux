@@ -154,13 +154,13 @@ async function importLink(
       const parsed = parseInlineAttrs(item);
       attrs = parsed.href ? parsed : { href: item, rel: 'stylesheet' };
     } else {
-      attrs = item as Record<string, string | boolean | number>;
+      attrs = { rel: 'stylesheet', ...(item as Record<string, string | boolean | number>) };
     }
 
     const href = attrs.href as string;
     if (!href) return;
 
-    if (attrs.rel === 'stylesheet' || !attrs.rel) {
+    if (attrs.rel === 'stylesheet') {
       const cssText = await resolveContent(href);
       if (cssText) {
         const cleanup = await stylesheet.adoptRawCSS(cssText, `import-${id}-${href}`);
@@ -170,53 +170,25 @@ async function importLink(
       }
     }
 
-    // Fallback: Legacy link tag with load waiting
+    // Fallback: Legacy link tag with load waiting & safety timeout
     await new Promise<void>((resolve) => {
+      let done = false;
+      const finish = () => { if (!done) { done = true; resolve(); } };
+      const timer = setTimeout(finish, 4000);
+
       const link = document.createElement('link');
       applyAttributes(link, attrs);
       link.href = href;
-      link.onload = () => resolve();
+      link.onload = () => { clearTimeout(timer); finish(); };
       link.onerror = () => {
+        clearTimeout(timer);
         reportError(new Error(`Nexus Import: Failed to load ${href}`), el);
-        resolve();
+        finish();
       };
-      document.head.appendChild(link);
+      (document.head || document.documentElement).appendChild(link);
       cleanupFns.push(() => link.remove());
       runtime.log(`Nexus Import [${id}]: Link tag injected: ${href}`);
     });
-  });
-  await Promise.all(tasks);
-}
-
-/**
- * adopt: — Fetches CSS content and adopts it as a constructable CSSStyleSheet.
- * The sheet lives in document.adoptedStyleSheets (ZCZS-native, Nexus-scoped).
- * It is NOT visible in document.styleSheets — use link: when third-party
- * stylesheet scanners (e.g. @tailwindcss/browser) need to read it.
- */
-async function importAdopt(
-  id: string,
-  payload: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>,
-  cleanupFns: Array<() => void>,
-  runtime: RuntimeContext,
-  _el: HTMLElement
-): Promise<void> {
-  const items = Array.isArray(payload) ? payload : [payload];
-  const tasks = items.map(async (item) => {
-    let href: string;
-    if (typeof item === 'string') {
-      href = item;
-    } else {
-      href = (item as Record<string, string | boolean | number>).href as string;
-    }
-    if (!href) return;
-
-    const cssText = await resolveContent(href);
-    if (!cssText) return;
-
-    const cleanup = await stylesheet.adoptRawCSS(cssText, `import-adopt-${id}-${href}`);
-    cleanupFns.push(cleanup);
-    runtime.log(`Nexus Import [${id}]: CSS adopted (constructable): ${href}`);
   });
   await Promise.all(tasks);
 }
@@ -268,15 +240,20 @@ async function importScript(
     }
 
     await new Promise<void>((resolve) => {
+        let done = false;
+        const finish = () => { if (!done) { done = true; resolve(); } };
+        const timer = setTimeout(finish, 4000);
+
         const script = document.createElement('script');
         applyAttributes(script, attrs);
-        script.onload = () => resolve();
+        script.onload = () => { clearTimeout(timer); finish(); };
         script.onerror = () => {
+            clearTimeout(timer);
             reportError(new Error(`Nexus Import: Failed to load script ${src}`), el);
-            resolve();
+            finish();
         };
         script.src = finalSrc;
-        document.head.appendChild(script);
+        (document.head || document.documentElement).appendChild(script);
         cleanupFns.push(() => script.remove());
         runtime.log(`Nexus Import [${id}]: Script injected: ${src}`);
     });
@@ -517,7 +494,7 @@ const importModule: AttributeModule = {
         await Promise.all(tasks);
       };
 
-      runImports().then(finalize);
+      runImports().then(finalize).catch(() => finalize());
     });
 
     return () => {
