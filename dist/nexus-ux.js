@@ -1938,6 +1938,208 @@ ${suggestion}`);
     stylesheet: () => stylesheet
   });
 
+  // src/engine/cache.ts
+  var DB_NAME = "nexus-media-cache";
+  var DB_VERSION = 1;
+  var STORE_NAME = "media_blobs";
+  var dbPromise = null;
+  function getIDB() {
+    if (typeof window === "undefined" || typeof indexedDB === "undefined") {
+      return Promise.resolve(null);
+    }
+    if (dbPromise)
+      return dbPromise;
+    dbPromise = new Promise((resolve) => {
+      try {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onupgradeneeded = () => {
+          const db = request.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME);
+          }
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => {
+          console.warn("[Nexus Cache] IndexedDB open failed, falling back.");
+          resolve(null);
+        };
+      } catch {
+        resolve(null);
+      }
+    });
+    return dbPromise;
+  }
+  async function getIDBItem(key) {
+    const db = await getIDB();
+    if (!db)
+      return null;
+    return new Promise((resolve) => {
+      try {
+        const tx = db.transaction(STORE_NAME, "readonly");
+        const store = tx.objectStore(STORE_NAME);
+        const req = store.get(key);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => resolve(null);
+      } catch {
+        resolve(null);
+      }
+    });
+  }
+  async function setIDBItem(key, entry) {
+    const db = await getIDB();
+    if (!db)
+      return;
+    try {
+      const tx = db.transaction(STORE_NAME, "readwrite");
+      const store = tx.objectStore(STORE_NAME);
+      store.put(entry, key);
+    } catch {
+    }
+  }
+  var UniversalCacheEngine = class {
+    inMemoryCache = /* @__PURE__ */ new Map();
+    /**
+     * Retrieves a resource with 0ms instant cache hit, followed by background
+     * ETag revalidation.
+     */
+    async fetchWithCache(url, options = {}) {
+      const {
+        storage = url.startsWith("http") && !url.includes(location?.host || "") ? "local" : "session",
+        responseType = "text",
+        timeoutMs = 5e3,
+        onUpdate
+      } = options;
+      const cacheKey = `nx_cache:${url}`;
+      let cachedEntry = this.inMemoryCache.get(cacheKey) || null;
+      if (!cachedEntry) {
+        if (storage === "db" || responseType === "blob" || responseType === "arrayBuffer") {
+          cachedEntry = await getIDBItem(cacheKey);
+        } else if (typeof window !== "undefined") {
+          try {
+            const store = storage === "local" ? localStorage : sessionStorage;
+            const raw = store.getItem(cacheKey);
+            if (raw) {
+              cachedEntry = JSON.parse(raw);
+            }
+          } catch {
+          }
+        }
+      }
+      if (cachedEntry) {
+        this.inMemoryCache.set(cacheKey, cachedEntry);
+        if (typeof document !== "undefined" && document.documentElement.hasAttribute("data-debug")) {
+          console.log(`[Cache Engine] INSTANT HIT (0ms): ${url}`);
+        }
+        this.revalidateInBackground(url, cacheKey, cachedEntry, options);
+        return cachedEntry.content;
+      }
+      if (typeof document !== "undefined" && document.documentElement.hasAttribute("data-debug")) {
+        console.log(`[Cache Engine] MISS: Fetching ${url}`);
+      }
+      const freshEntry = await this.performNetworkFetch(url, options, void 0);
+      await this.saveCacheEntry(cacheKey, freshEntry, storage, responseType);
+      this.inMemoryCache.set(cacheKey, freshEntry);
+      return freshEntry.content;
+    }
+    /**
+     * Non-blocking background HTTP fetch with If-None-Match header
+     */
+    revalidateInBackground(url, cacheKey, cachedEntry, options) {
+      setTimeout(async () => {
+        try {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), options.timeoutMs || 5e3);
+          const headers = {};
+          if (cachedEntry.etag) {
+            headers["If-None-Match"] = cachedEntry.etag;
+          }
+          const res = await fetch(url, { signal: controller.signal, headers });
+          clearTimeout(timer);
+          if (res.status === 304) {
+            if (typeof document !== "undefined" && document.documentElement.hasAttribute("data-debug")) {
+              console.log(`[Cache Engine] VERIFIED 304 (Not Modified): ${url}`);
+            }
+            return;
+          }
+          if (res.status === 200) {
+            const etag = res.headers.get("ETag") || res.headers.get("etag") || void 0;
+            let content;
+            switch (options.responseType) {
+              case "json":
+                content = await res.json();
+                break;
+              case "blob":
+                content = await res.blob();
+                break;
+              case "arrayBuffer":
+                content = await res.arrayBuffer();
+                break;
+              case "text":
+              default:
+                content = await res.text();
+                break;
+            }
+            const newEntry = { content, etag, timestamp: Date.now() };
+            await this.saveCacheEntry(cacheKey, newEntry, options.storage || "session", options.responseType || "text");
+            this.inMemoryCache.set(cacheKey, newEntry);
+            if (typeof document !== "undefined" && document.documentElement.hasAttribute("data-debug")) {
+              console.log(`[Cache Engine] UPDATE DETECTED (200 OK): ${url}`);
+            }
+            if (options.onUpdate) {
+              options.onUpdate(content);
+            }
+          }
+        } catch {
+        }
+      }, 100);
+    }
+    async performNetworkFetch(url, options, etagHeader) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), options.timeoutMs || 5e3);
+      const headers = {};
+      if (etagHeader)
+        headers["If-None-Match"] = etagHeader;
+      const res = await fetch(url, { signal: controller.signal, headers });
+      clearTimeout(timer);
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      const etag = res.headers.get("ETag") || res.headers.get("etag") || void 0;
+      let content;
+      switch (options.responseType) {
+        case "json":
+          content = await res.json();
+          break;
+        case "blob":
+          content = await res.blob();
+          break;
+        case "arrayBuffer":
+          content = await res.arrayBuffer();
+          break;
+        case "text":
+        default:
+          content = await res.text();
+          break;
+      }
+      return { content, etag, timestamp: Date.now() };
+    }
+    async saveCacheEntry(key, entry, storage, responseType) {
+      if (storage === "db" || responseType === "blob" || responseType === "arrayBuffer") {
+        await setIDBItem(key, entry);
+      } else if (typeof window !== "undefined") {
+        try {
+          const store = storage === "local" ? localStorage : sessionStorage;
+          store.setItem(key, JSON.stringify(entry));
+        } catch {
+        }
+      }
+    }
+    clearMemoryCache() {
+      this.inMemoryCache.clear();
+    }
+  };
+  var cacheEngine = new UniversalCacheEngine();
+
   // src/modules/attributes/assert.ts
   var assert_exports = {};
   __export(assert_exports, {
@@ -2250,11 +2452,11 @@ ${suggestion}`);
   init_debug();
 
   // src/engine/utils/idb.ts
-  var DB_NAME = "nexus-store";
+  var DB_NAME2 = "nexus-store";
   var DEFAULT_STORES = ["files", "builds", "patterns", "components", "themes"];
   async function openDB(version) {
     return new Promise((resolve, reject) => {
-      const request = version ? indexedDB.open(DB_NAME, version) : indexedDB.open(DB_NAME);
+      const request = version ? indexedDB.open(DB_NAME2, version) : indexedDB.open(DB_NAME2);
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
       request.onupgradeneeded = (event) => {
@@ -2294,7 +2496,7 @@ ${suggestion}`);
       const nextVersion = db.version + 1;
       db.close();
       db = await new Promise((resolve, reject) => {
-        const req = indexedDB.open(DB_NAME, nextVersion);
+        const req = indexedDB.open(DB_NAME2, nextVersion);
         req.onupgradeneeded = (e) => {
           const udb = e.target.result;
           if (!udb.objectStoreNames.contains(storeName)) {
@@ -2769,21 +2971,16 @@ ${scripts}
                   throw new Error(`Template ${config.path} not found`);
                 html = template.innerHTML;
               } else {
-                if (!runtime.fetch)
-                  throw new Error("Fetch utility not available");
-                const cacheKey = `nx_comp:${config.path}`;
-                const cached = typeof sessionStorage !== "undefined" ? sessionStorage.getItem(cacheKey) : null;
-                if (cached) {
-                  html = cached;
-                } else {
-                  html = await runtime.fetch.request(config.path, { responseType: "text" }, el);
-                  if (typeof sessionStorage !== "undefined" && html) {
-                    try {
-                      sessionStorage.setItem(cacheKey, html);
-                    } catch {
+                const result = await cacheEngine.fetchWithCache(config.path, {
+                  storage: "session",
+                  responseType: "text",
+                  onUpdate: (fresh) => {
+                    if (typeof fresh === "string" && fresh !== componentState.templateContent) {
+                      componentState.templateContent = fresh;
                     }
                   }
-                }
+                });
+                html = typeof result === "string" ? result : String(result);
               }
               if (runtime.isDevMode)
                 console.log(`[Component] Template loaded for <${el.tagName}>, length: ${html.length}`);
@@ -5590,35 +5787,22 @@ ${scripts}
   function isVFSUri(str) {
     return /^(idb|fs|https?|wss?):\/\//.test(str);
   }
-  async function fetchWithTimeout(resource, options = {}) {
-    const { timeout = 3e3 } = options;
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), timeout);
-    try {
-      const response = await fetch(resource, {
-        ...options,
-        signal: controller.signal
-      });
-      clearTimeout(id);
-      return response;
-    } catch (error) {
-      clearTimeout(id);
-      throw error;
-    }
-  }
   async function resolveContent(uri) {
     if (isVFSUri(uri) && uri.startsWith("idb://")) {
       const key = uri.replace(/^idb:\/\//, "");
       return readFromIDB(key);
     }
-    const cached = assetCache.get(uri);
-    if (cached)
-      return cached;
     try {
-      const response = await fetchWithTimeout(uri, { mode: "cors", timeout: 3e3 });
-      if (!response.ok)
-        return null;
-      const text = await response.text();
+      const result = await cacheEngine.fetchWithCache(uri, {
+        storage: "local",
+        responseType: "text",
+        onUpdate: (fresh) => {
+          if (typeof fresh === "string") {
+            assetCache.set(uri, fresh);
+          }
+        }
+      });
+      const text = typeof result === "string" ? result : String(result);
       assetCache.set(uri, text);
       return text;
     } catch {
@@ -10378,113 +10562,19 @@ ${bridge}`, {
     }
   }
   async function fetchWithCache(url, timeoutMs = 3e3, onUpdate) {
-    const cacheKey = `nexus-cache:${url}`;
-    let cached = null;
-    if (typeof localStorage !== "undefined") {
-      try {
-        cached = localStorage.getItem(cacheKey);
-        if (cached && (cached.trim().startsWith("<!DOCTYPE") || cached.trim().startsWith("<!doctype") || cached.trim().startsWith("<html"))) {
-          localStorage.removeItem(cacheKey);
-          cached = null;
+    const result = await cacheEngine.fetchWithCache(url, {
+      storage: "local",
+      responseType: "text",
+      timeoutMs,
+      onUpdate: (fresh) => {
+        if (typeof fresh === "string" && onUpdate) {
+          onUpdate(fresh);
         }
-      } catch {
+        refreshThemeBridge().catch(() => {
+        });
       }
-    }
-    if (cached) {
-      const cachedVal = cached;
-      console.log(`[Nexus Cache] INSTANT HIT: Loading ${url} from localStorage cache.`);
-      setTimeout(async () => {
-        try {
-          const controller = new AbortController();
-          const id = setTimeout(() => controller.abort(), timeoutMs);
-          const res = await fetch(url, { signal: controller.signal });
-          clearTimeout(id);
-          if (!res.ok)
-            return;
-          const freshText = await res.text();
-          if (freshText.trim().startsWith("<!DOCTYPE") || freshText.trim().startsWith("<!doctype") || freshText.trim().startsWith("<html"))
-            return;
-          if (hashString(cachedVal) !== hashString(freshText)) {
-            console.log(`[Nexus Cache] UPDATE DETECTED: CDN changed for ${url}. Caching for next load.`);
-            if (typeof localStorage !== "undefined") {
-              try {
-                localStorage.setItem(cacheKey, freshText);
-              } catch {
-              }
-            }
-            if (onUpdate)
-              onUpdate(freshText);
-          } else {
-            console.log(`[Nexus Cache] VERIFIED: Cache matches CDN for ${url}.`);
-          }
-        } catch (err2) {
-          console.warn(`[Nexus Cache] Background CDN hash check failed for ${url}:`, err2);
-        }
-      }, 5e3);
-      return cachedVal;
-    }
-    console.log(`[Nexus Cache] CACHE MISS: Fetching local/CDN resource for ${url}.`);
-    let localUrl = "";
-    if (url.includes("tailwindcss@4/")) {
-      const file = url.split("tailwindcss@4/")[1];
-      localUrl = `/node_modules/tailwindcss/${file}`;
-    }
-    const doFetch = async (targetUrl) => {
-      const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), timeoutMs);
-      try {
-        const res = await fetch(targetUrl, { signal: controller.signal });
-        clearTimeout(id);
-        if (!res.ok)
-          throw new Error(`HTTP error ${res.status}`);
-        const text = await res.text();
-        if (text.trim().startsWith("<!DOCTYPE") || text.trim().startsWith("<!doctype") || text.trim().startsWith("<html")) {
-          throw new Error(`Received HTML fallback response for ${targetUrl}`);
-        }
-        return text;
-      } catch (err2) {
-        clearTimeout(id);
-        throw err2;
-      }
-    };
-    if (localUrl) {
-      try {
-        console.log(`[Nexus Cache] Trying local relative fallback path: ${localUrl}`);
-        const text = await doFetch(localUrl);
-        console.log(`[Nexus Cache] SUCCESS: Loaded local resource for ${url} from ${localUrl}`);
-        if (typeof localStorage !== "undefined") {
-          try {
-            localStorage.setItem(cacheKey, text);
-          } catch {
-          }
-        }
-        return text;
-      } catch {
-        console.log(`[Nexus Cache] Local relative fallback failed for ${url}. Falling back to CDN.`);
-      }
-    }
-    try {
-      const text = await doFetch(url);
-      console.log(`[Nexus Cache] SUCCESS: Loaded resource from CDN for ${url}`);
-      if (typeof localStorage !== "undefined") {
-        try {
-          localStorage.setItem(cacheKey, text);
-        } catch {
-        }
-      }
-      return text;
-    } catch (err2) {
-      console.error(`[Nexus Cache] Failed CDN fetch for ${url}:`, err2);
-      throw err2;
-    }
-  }
-  function hashString(str) {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      hash = (hash << 5) - hash + str.charCodeAt(i);
-      hash |= 0;
-    }
-    return String(hash);
+    });
+    return typeof result === "string" ? result : String(result);
   }
   var StyleSheetManager = class {
     _adoptedSheets = /* @__PURE__ */ new Map();
@@ -10680,6 +10770,19 @@ ${bridge}`, {
     if (_isJitEngineBooted)
       return;
     _isJitEngineBooted = true;
+    if (typeof document !== "undefined" && typeof MutationObserver !== "undefined") {
+      const themeObserver = new MutationObserver((mutations) => {
+        for (const m of mutations) {
+          if (m.type === "attributes" && (m.attributeName === "data-theme" || m.attributeName === "class")) {
+            requestAnimationFrame(() => {
+              refreshThemeBridge().catch(() => {
+              });
+            });
+          }
+        }
+      });
+      themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "class"] });
+    }
     ensureCompiler().catch((err2) => console.error("[Nexus] JIT init failed:", err2));
   }
   function markExternalStylesSettled() {
@@ -10789,7 +10892,7 @@ ${bridge}`, {
     }
     return fragment;
   }
-  function hashString2(str) {
+  function hashString(str) {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       hash = (hash << 5) - hash + str.charCodeAt(i);
@@ -10804,10 +10907,10 @@ ${bridge}`, {
         return `link:${el.getAttribute("href") || ""}:${el.getAttribute("rel") || ""}`;
       }
       if (el.tagName === "STYLE") {
-        return `style:${hashString2(el.textContent || "")}`;
+        return `style:${hashString(el.textContent || "")}`;
       }
       if (el.tagName === "SCRIPT") {
-        return `script:${el.getAttribute("src") || ""}:${hashString2(el.textContent || "")}`;
+        return `script:${el.getAttribute("src") || ""}:${hashString(el.textContent || "")}`;
       }
       if (el.tagName === "TITLE") {
         return "title";
@@ -11185,6 +11288,20 @@ ${bridge}`, {
   var fetchCacheTimers = /* @__PURE__ */ new Map();
   var fetchUtilities = {
     request: (url, options, el) => {
+      const isGetOrHead = !options.method || options.method.toUpperCase() === "GET" || options.method.toUpperCase() === "HEAD";
+      if (isGetOrHead) {
+        return cacheEngine.fetchWithCache(url, {
+          storage: "session",
+          responseType: options.responseType || "text",
+          onUpdate: (freshData) => {
+            el.dispatchEvent(new CustomEvent(`${CUSTOM_EVENT_PREFIX}fetch-success`, {
+              bubbles: true,
+              cancelable: false,
+              detail: { url, options, data: freshData }
+            }));
+          }
+        });
+      }
       const cacheKey = `${url}:${options.method || "GET"}:${options.responseType || "text"}`;
       if (fetchCache.has(cacheKey))
         return fetchCache.get(cacheKey);
