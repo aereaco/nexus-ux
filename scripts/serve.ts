@@ -50,7 +50,7 @@ const SITE_PREFIX = (() => {
 function mapAppPath(pathname: string): string {
   if (SITE_PREFIX === "") return pathname;
   if (pathname === "/" || pathname === "") return SITE_PREFIX + "/index.html";
-  if (/^\/(_components|_pages|_assets)\//.test(pathname)) return SITE_PREFIX + pathname;
+  if (/^\/(_components|_pages|_internal|_assets)\//.test(pathname)) return SITE_PREFIX + pathname;
   return pathname;
 }
 
