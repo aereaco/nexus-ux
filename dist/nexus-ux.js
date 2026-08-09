@@ -6137,11 +6137,47 @@ ${match}</ul>
             const globalSignals = runtime.globalSignals();
             const router = globalSignals["router"];
             if (!router || !router.addRoute) {
-              reportError(
-                new Error("data-route used but #router not found. Ensure data-router is present."),
-                el
-              );
+              queueMicrotask(() => {
+                try {
+                  routeAttributeModule.handle(el, routePath, runtime, parsed);
+                } catch {
+                }
+              });
               return;
+            }
+            let jsonConfig = null;
+            if (routePath && routePath.trim().startsWith("{")) {
+              try {
+                const evaluated = runtime.evaluate(el, routePath);
+                if (evaluated && typeof evaluated === "object") {
+                  jsonConfig = evaluated;
+                }
+              } catch {
+              }
+            }
+            if (jsonConfig && Array.isArray(jsonConfig.routes)) {
+              const addedRecords = [];
+              jsonConfig.routes.forEach((item) => {
+                const path = item.route || item.path || "/";
+                const component2 = item.path || item.component;
+                const isProtected = item.protected === true || item.protected === "yes" || item.shadow === true || item.internal === true;
+                const record = {
+                  path,
+                  element: el,
+                  name: item.name,
+                  component: component2,
+                  redirect: item.redirect,
+                  layout: item.layout,
+                  meta: item.meta || {},
+                  internal: isProtected,
+                  source: "declared"
+                };
+                router.addRoute(record);
+                addedRecords.push(record);
+              });
+              return () => {
+                addedRecords.forEach((r) => router.removeRoute(r));
+              };
             }
             const name = el.getAttribute("data-route-name") || void 0;
             const redirect = el.getAttribute("data-route-redirect") || void 0;
@@ -6153,8 +6189,8 @@ ${match}</ul>
             const beforeLeaveExpr = el.getAttribute("data-route-before-leave");
             const afterLeaveExpr = el.getAttribute("data-route-after-leave");
             const handlerExpr = el.getAttribute("data-route-handler");
-            const shadowAttr = el.getAttribute("data-route-shadow");
-            const internal = el.hasAttribute("data-route-shadow") || shadowAttr === "" || shadowAttr === "true" || shadowAttr === "shadow";
+            const shadowAttr = el.getAttribute("data-route-shadow") || el.getAttribute("data-route-protected");
+            const internal = el.hasAttribute("data-route-shadow") || el.hasAttribute("data-route-protected") || shadowAttr === "" || shadowAttr === "true" || shadowAttr === "shadow" || shadowAttr === "yes";
             let meta = {};
             if (metaStr) {
               try {
