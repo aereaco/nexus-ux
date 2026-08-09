@@ -331,7 +331,7 @@ export class CorePredictiveEngine {
 
     if (typeof document === 'undefined') return;
 
-    const selectors = 'a[href], button, [data-route], [data-component], [data-signal], [data-on-click]';
+    const selectors = 'a[href], button, [data-on-click], [data-route-link], [data-action]';
     const elements = document.querySelectorAll(selectors);
 
     elements.forEach((el) => {
@@ -460,15 +460,14 @@ export class CorePredictiveEngine {
       })
     );
 
-    const route = el.getAttribute('data-route') || el.getAttribute('href');
+    const href = el.getAttribute('href') || el.getAttribute('data-route-link');
     const comp = el.getAttribute('data-component');
 
-    if (route) {
-      if (this.prewarmHook) this.prewarmHook(route);
-      cacheEngine.fetchWithCache(route, { storage: 'session', responseType: 'text' }).catch(() => {});
+    if (href) {
+      cacheEngine.fetchWithCache(href, { storage: 'session', responseType: 'text' }).catch(() => {});
     }
 
-    if (comp) {
+    if (comp && !el.hasAttribute('data-route')) {
       cacheEngine.fetchWithCache(comp, { storage: 'session', responseType: 'text' }).catch(() => {});
     }
   }
