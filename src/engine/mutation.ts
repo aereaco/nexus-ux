@@ -92,8 +92,13 @@ const mutationObserverModule: ObserverModule = {
               if (!target) return;
               const attrName = mutation.attributeName;
 
-              if (attrName === 'class') {
+              if (attrName === 'class' || attrName === 'data-theme') {
                 context.adoptStyle(target);
+                if (target === document.documentElement) {
+                  import('../modules/attributes/stylesheet.ts').then(mod => {
+                    mod.markExternalStylesSettled();
+                  }).catch(() => {});
+                }
               }
 
               // Skip framework-managed attributes entirely.
@@ -103,7 +108,7 @@ const mutationObserverModule: ObserverModule = {
               //   effect → setAttribute → observer → RUN_EFFECT_RUNNERS_KEY
               //   → effect → setAttribute → observer → ∞
               if (attrName === 'style' || attrName === 'draggable' ||
-                  attrName?.startsWith('data-') || attrName?.startsWith('nexus-')) return;
+                  (attrName?.startsWith('data-') && attrName !== 'data-theme') || attrName?.startsWith('nexus-')) return;
 
               // For non-framework attributes (e.g. third-party library changes),
               // notify borrowers only — NOT the element's own effects.
