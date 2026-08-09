@@ -816,6 +816,13 @@ export const routerAttributeModule: AttributeModule = {
       // (the evaluator rewrites `#name` -> `__global.name`, stripping the `#`).
       runtime.setGlobalSignal('router', state);
 
+      // Flush any declared routes queued before router initialized
+      const pendingRoutes = (runtime as any)._pendingDeclaredRoutes as any[] | undefined;
+      if (pendingRoutes && pendingRoutes.length > 0) {
+        pendingRoutes.forEach((rec) => state.addRoute(rec));
+        (runtime as any)._pendingDeclaredRoutes = [];
+      }
+
       // --- Per-tab history: active tab is owned by the layout's global signal.
       // The router reads/writes `activeTabId` there so the tab bar + panels
       // (which bind `activeTabId`) and the router's outlet stay in sync.

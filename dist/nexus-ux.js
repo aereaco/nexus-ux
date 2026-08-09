@@ -6731,6 +6731,11 @@ ${match}</ul>
               }
             });
             runtime.setGlobalSignal("router", state);
+            const pendingRoutes = runtime._pendingDeclaredRoutes;
+            if (pendingRoutes && pendingRoutes.length > 0) {
+              pendingRoutes.forEach((rec) => state.addRoute(rec));
+              runtime._pendingDeclaredRoutes = [];
+            }
             const globals = runtime.globalSignals();
             const getActiveTabId = () => typeof globals.activeTabId === "string" && globals.activeTabId || null;
             const setActiveTabId = (id) => {
