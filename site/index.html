@@ -1,5 +1,15 @@
 <!DOCTYPE html>
-<html lang="en" data-init data-debug data-stylesheet data-theme="{ default: 'auto' }" data-import="{ 
+<html lang="en" data-init data-debug data-stylesheet data-theme="{ default: 'auto' }"
+      data-route="{
+        routes: [
+          { name: 'home', route: '/', path: '_pages/home.html', protected: true },
+          { name: 'profile', route: '/profile', path: '_pages/profile.html' },
+          { name: 'settings', route: '/settings', path: '_pages/settings.html' },
+          { name: 'admin', route: '/_internal/admin-console', path: '_internal/admin-console.html', protected: true },
+          { name: 'error', route: '/_internal/error', path: '_internal/error.html', protected: true }
+        ]
+      }"
+      data-import="{ 
         'DaisyUI': { 
           link: [
             { href: 'https://cdn.jsdelivr.net/npm/daisyui@5' },
