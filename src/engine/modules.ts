@@ -373,9 +373,18 @@ export class ModuleCoordinator {
         if (afterIndex !== -1) this.directiveOrder.splice(afterIndex + 1, 0, key);
         else this.directiveOrder.push(key);
       } else if (module.metadata?.before?.[0]) {
-        const beforeIndex = this.directiveOrder.indexOf(module.metadata.before[0]);
-        if (beforeIndex !== -1) this.directiveOrder.splice(beforeIndex, 0, key);
-        else this.directiveOrder.unshift(key);
+        let placed = false;
+        for (const target of module.metadata.before) {
+          const beforeIndex = this.directiveOrder.indexOf(target);
+          if (beforeIndex !== -1) {
+            this.directiveOrder.splice(beforeIndex, 0, key);
+            placed = true;
+            break;
+          }
+        }
+        if (!placed) this.directiveOrder.unshift(key);
+      } else if (key === 'signal') {
+        this.directiveOrder.unshift(key);
       } else {
         this.directiveOrder.push(key);
       }
