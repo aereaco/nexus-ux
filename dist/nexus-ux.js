@@ -6135,9 +6135,9 @@ ${match}</ul>
             if (parsed?.argument)
               return;
             const registerOrQueue = (record) => {
-              const router2 = runtime.globalSignals()["router"];
-              if (router2 && router2.addRoute) {
-                router2.addRoute(record);
+              const router = runtime.globalSignals()["router"];
+              if (router && router.addRoute) {
+                router.addRoute(record);
               } else {
                 const pending = runtime._pendingDeclaredRoutes || [];
                 pending.push(record);
@@ -6171,11 +6171,14 @@ ${match}</ul>
                   internal: isProtected,
                   source: "declared"
                 };
-                router.addRoute(record);
+                registerOrQueue(record);
                 addedRecords.push(record);
               });
               return () => {
-                addedRecords.forEach((r) => router.removeRoute(r));
+                const router = runtime.globalSignals()["router"];
+                if (router && router.removeRoute) {
+                  addedRecords.forEach((r) => router.removeRoute(r));
+                }
               };
             }
             const name = el.getAttribute("data-route-name") || void 0;
@@ -6231,9 +6234,12 @@ ${match}</ul>
               afterLeave: makeHook(afterLeaveExpr),
               handler: makeHook(handlerExpr)
             };
-            router.addRoute(routeRecord);
+            registerOrQueue(routeRecord);
             return () => {
-              router.removeRoute(routeRecord);
+              const router = runtime.globalSignals()["router"];
+              if (router && router.removeRoute) {
+                router.removeRoute(routeRecord);
+              }
             };
           } catch (e) {
             reportError(e instanceof Error ? e : new Error(String(e)), el);
@@ -10409,9 +10415,9 @@ ${match}</ul>
               const title = anchor.getAttribute("data-tab-title") || void 0;
               const icon = anchor.getAttribute("data-tab-icon") || void 0;
               const signals = context.globalSignals();
-              const router2 = signals["router"];
-              if (router2 && typeof router2.navigate === "function") {
-                router2.navigate(path, { title, icon });
+              const router = signals["router"];
+              if (router && typeof router.navigate === "function") {
+                router.navigate(path, { title, icon });
               } else {
                 globalThis.history.pushState({ scrollY: globalThis.scrollY }, "", path);
                 document.dispatchEvent(

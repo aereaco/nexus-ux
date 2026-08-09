@@ -80,12 +80,15 @@ export const routeAttributeModule: AttributeModule = {
             internal: isProtected,
             source: 'declared',
           };
-          router.addRoute(record);
+          registerOrQueue(record);
           addedRecords.push(record);
         });
 
         return () => {
-          addedRecords.forEach((r) => router.removeRoute(r));
+          const router = runtime.globalSignals()['router'] as any;
+          if (router && router.removeRoute) {
+            addedRecords.forEach((r) => router.removeRoute(r));
+          }
         };
       }
 
@@ -152,10 +155,13 @@ export const routeAttributeModule: AttributeModule = {
         handler: makeHook(handlerExpr),
       };
 
-      router.addRoute(routeRecord);
+      registerOrQueue(routeRecord);
 
       return () => {
-        router.removeRoute(routeRecord);
+        const router = runtime.globalSignals()['router'] as any;
+        if (router && router.removeRoute) {
+          router.removeRoute(routeRecord);
+        }
       };
     } catch (e) {
       reportError(e instanceof Error ? e : new Error(String(e)), el);
