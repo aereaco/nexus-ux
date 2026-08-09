@@ -2,6 +2,7 @@ import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { addScopeToNode, getDataStack } from '../../engine/scope.ts';
 import { COMPONENT_CONTEXT_KEY, DATA_STACK_KEY } from '../../engine/consts.ts';
+import { cacheEngine } from '../../engine/cache.ts';
 import type { NexusEnhancedElement } from '../../engine/reactivity.ts';
 import { initError } from '../../engine/debug.ts';
 
