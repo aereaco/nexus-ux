@@ -513,11 +513,14 @@ export const routerAttributeModule: AttributeModule = {
 
           const target = applyBase(url);
           const tabId = opts?.tabId ?? getActiveTabId() ?? state.activeTabId ?? null;
+          const cleanPath = stripBase(target);
+          const matched = routeList.find((r) => r.path === cleanPath || r.path === url);
+          const isShadow = matched?.internal || shadowMatch(cleanPath);
 
           // Track this tab's current path + metadata so switching the active
           // tab (or back/forward) re-renders the correct outlet.
           if (tabId) {
-            state.tabPaths[tabId] = stripBase(target);
+            state.tabPaths[tabId] = cleanPath;
             if (opts?.title !== undefined || opts?.icon !== undefined) {
               state.tabMeta[tabId] = {
                 ...(state.tabMeta[tabId] || {}),
@@ -525,6 +528,12 @@ export const routerAttributeModule: AttributeModule = {
                 ...(opts?.icon !== undefined ? { icon: opts.icon } : {}),
               };
             }
+          }
+
+          if (isShadow) {
+            // Shadow routes resolve and render in memory but NEVER pollute the address bar
+            updateRoute(target);
+            return;
           }
 
           if ('navigation' in globalThis) {

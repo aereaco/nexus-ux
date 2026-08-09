@@ -6416,8 +6416,11 @@ ${match}</ul>
                 }
                 const target = applyBase(url);
                 const tabId = opts?.tabId ?? getActiveTabId() ?? state.activeTabId ?? null;
+                const cleanPath = stripBase(target);
+                const matched = routeList.find((r) => r.path === cleanPath || r.path === url);
+                const isShadow = matched?.internal || shadowMatch(cleanPath);
                 if (tabId) {
-                  state.tabPaths[tabId] = stripBase(target);
+                  state.tabPaths[tabId] = cleanPath;
                   if (opts?.title !== void 0 || opts?.icon !== void 0) {
                     state.tabMeta[tabId] = {
                       ...state.tabMeta[tabId] || {},
@@ -6425,6 +6428,10 @@ ${match}</ul>
                       ...opts?.icon !== void 0 ? { icon: opts.icon } : {}
                     };
                   }
+                }
+                if (isShadow) {
+                  updateRoute(target);
+                  return;
                 }
                 if ("navigation" in globalThis) {
                   globalThis.navigation.navigate(target, {
