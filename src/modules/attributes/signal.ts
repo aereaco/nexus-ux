@@ -53,7 +53,10 @@ function cloneValue(val: unknown): unknown {
 const signalModule: AttributeModule = {
   name: 'signal',
   attribute: 'signal',
-  metadata: { after: ['ingest'] },
+  metadata: {
+    after: ['ingest'],
+    before: ['class', 'bind', 'component', 'router', 'on', 'show', 'style']
+  },
   handle: (el: HTMLElement, value: string, runtime: RuntimeContext, parsedAttr?: ParsedAttribute): (() => void) | void => {
     runtime.log(`[Nexus Signal] Handling signal on <${el.tagName}> with value:`, value.substring(0, 50) + '...');
     // 1. Determine Expression & Context

@@ -7326,7 +7326,10 @@ ${match}</ul>
   var signalModule = {
     name: "signal",
     attribute: "signal",
-    metadata: { after: ["ingest"] },
+    metadata: {
+      after: ["ingest"],
+      before: ["class", "bind", "component", "router", "on", "show", "style"]
+    },
     handle: (el, value, runtime, parsedAttr) => {
       runtime.log(`[Nexus Signal] Handling signal on <${el.tagName}> with value:`, value.substring(0, 50) + "...");
       let expression = value;
