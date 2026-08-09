@@ -36,10 +36,6 @@ export const routeAttributeModule: AttributeModule = {
   attribute: 'route', // maps to data-route
   handle: (el: HTMLElement, routePath: string, runtime: RuntimeContext, parsed?: ParsedAttribute) => {
     try {
-      // The directive matcher also routes suffixed attributes (data-route-redirect,
-      // data-route-before-enter, ...) to this handler with the SUFFIX as the
-      // argument. Only the bare `data-route` attribute registers a route; the
-      // config attributes are read via getAttribute below.
       if (parsed?.argument) return;
 
       const globalSignals = runtime.globalSignals();
@@ -47,14 +43,56 @@ export const routeAttributeModule: AttributeModule = {
       const router = globalSignals['router'] as any;
 
       if (!router || !router.addRoute) {
-        reportError(
-          new Error('data-route used but #router not found. Ensure data-router is present.'),
-          el,
-        );
+        // If router not initialized yet, retry on next microtask tick
+        queueMicrotask(() => {
+          try {
+            routeAttributeModule.handle(el, routePath, runtime, parsed);
+          } catch {}
+        });
         return;
       }
 
-      // Read config attributes.
+      // Check if data-route contains a JSON signal object (e.g. data-route="{ routes: [...] }")
+      let jsonConfig: { routes?: Array<Record<string, any>> } | null = null;
+      if (routePath && routePath.trim().startsWith('{')) {
+        try {
+          const evaluated = runtime.evaluate(el, routePath);
+          if (evaluated && typeof evaluated === 'object') {
+            jsonConfig = evaluated as { routes?: Array<Record<string, any>> };
+          }
+        } catch {
+          // ignore evaluation error
+        }
+      }
+
+      if (jsonConfig && Array.isArray(jsonConfig.routes)) {
+        const addedRecords: any[] = [];
+        jsonConfig.routes.forEach((item) => {
+          const path = item.route || item.path || '/';
+          const component = item.path || item.component;
+          const isProtected = item.protected === true || item.protected === 'yes' || item.shadow === true || item.internal === true;
+
+          const record = {
+            path,
+            element: el,
+            name: item.name,
+            component,
+            redirect: item.redirect,
+            layout: item.layout,
+            meta: item.meta || {},
+            internal: isProtected,
+            source: 'declared',
+          };
+          router.addRoute(record);
+          addedRecords.push(record);
+        });
+
+        return () => {
+          addedRecords.forEach((r) => router.removeRoute(r));
+        };
+      }
+
+      // Single route element declaration fallback (legacy <div data-route="...">)
       const name = el.getAttribute('data-route-name') || undefined;
       const redirect = el.getAttribute('data-route-redirect') || undefined;
       const layout = el.getAttribute('data-route-layout') || undefined;
@@ -65,8 +103,8 @@ export const routeAttributeModule: AttributeModule = {
       const beforeLeaveExpr = el.getAttribute('data-route-before-leave');
       const afterLeaveExpr = el.getAttribute('data-route-after-leave');
       const handlerExpr = el.getAttribute('data-route-handler');
-      const shadowAttr = el.getAttribute('data-route-shadow');
-      const internal = el.hasAttribute('data-route-shadow') || shadowAttr === '' || shadowAttr === 'true' || shadowAttr === 'shadow';
+      const shadowAttr = el.getAttribute('data-route-shadow') || el.getAttribute('data-route-protected');
+      const internal = el.hasAttribute('data-route-shadow') || el.hasAttribute('data-route-protected') || shadowAttr === '' || shadowAttr === 'true' || shadowAttr === 'shadow' || shadowAttr === 'yes';
 
       let meta: unknown = {};
       if (metaStr) {
@@ -77,8 +115,6 @@ export const routeAttributeModule: AttributeModule = {
         }
       }
 
-      // Doc-compatible guard context: `ctx.signals.value('auth.user')` reads a
-      // (possibly nested) global signal; `ctx.to` / `ctx.from` mirror $to/$from.
       const readSignal = (dotted: string): unknown => {
         const parts = String(dotted).split('.');
         let cur: unknown = runtime.globalSignals();
@@ -92,9 +128,6 @@ export const routeAttributeModule: AttributeModule = {
         return cur;
       };
 
-      // Compile a hook expression into a (to, from) => unknown function.
-      // `$to` / `$from` / `ctx` are exposed as top-level identifiers via evaluator
-      // extras.
       const makeHook = (expr: string | null) =>
         expr
           ? (to: unknown, from: unknown) =>
@@ -124,7 +157,6 @@ export const routeAttributeModule: AttributeModule = {
 
       router.addRoute(routeRecord);
 
-      // Cleanup: remove from router when the element is destroyed.
       return () => {
         router.removeRoute(routeRecord);
       };
