@@ -1,32 +1,5846 @@
-var UX=(()=>{var en=Object.defineProperty;var ps=Object.getOwnPropertyDescriptor;var gs=Object.getOwnPropertyNames;var hs=Object.prototype.hasOwnProperty;var Qe=(n,e)=>()=>(n&&(e=n(n=0)),e);var _=(n,e)=>{for(var t in e)en(n,t,{get:e[t],enumerable:!0})},bs=(n,e,t,r)=>{if(e&&typeof e=="object"||typeof e=="function")for(let o of gs(e))!hs.call(n,o)&&o!==t&&en(n,o,{get:()=>e[o],enumerable:!(r=ps(e,o))||r.enumerable});return n};var ys=n=>bs(en({},"__esModule",{value:!0}),n);var wt,no,Je,fe,xt,vs,ro,X,tn,I,ce,Ie,oe,G,Ee,Tt,W=Qe(()=>{wt="[data-init], [data-ux-init], [data-signal], [data-router], [data-import], [data-stylesheet], [data-ux-theme], body",no="nexus",Je="data-",fe="ux-",xt="data-preserve",vs={INTENT:"-",PATH:".",GLOBAL:"#",MODIFIER:":",LOGIC:"$",RULE:"@",CONTEXT:"&",OVERRIDE:"!",PSEUDO:"::",GRID:"||"},ro=vs.MODIFIER,X=Symbol.for("__data_stack__"),tn=Symbol.for("__component_context__"),I=Symbol.for("__cleanup_functions__"),ce=Symbol.for("__effect_runners__"),Ie=Symbol.for("__run_effect_runners__"),oe=Symbol.for("__nexus_marker__"),G=Symbol.for("__nexus_is_template__"),Ee=250,Tt=250});var oo={};_(oo,{MCPClient:()=>Ze});var Ze,nn=Qe(()=>{O();Ze=class{url;eventSource=null;requestId=0;pendingRequests=new Map;onConnectCallback;onMessageCallback;constructor(e){this.url=e}connect(){return new Promise((e,t)=>{try{this.eventSource=new EventSource(this.url),this.eventSource.onopen=()=>{this.onConnectCallback&&this.onConnectCallback(),e()},this.eventSource.onerror=r=>{H(new Error(`MCP Connection failed: ${this.url}`)),t(r)},this.eventSource.onmessage=r=>{try{let o=JSON.parse(r.data);this.handleIncoming(o)}catch{H(new Error(`MCP Malformed JSON: ${r.data}`))}},this.eventSource.addEventListener("message",r=>{try{let o=JSON.parse(r.data);this.handleIncoming(o)}catch{}})}catch(r){t(r)}})}sendRequest(e,t={}){let r=++this.requestId,o=JSON.stringify({jsonrpc:"2.0",id:r,method:e,params:t});return new Promise((i,a)=>{this.pendingRequests.set(r,s=>i(s)),fetch(this.url,{method:"POST",headers:{"Content-Type":"application/json"},body:o}).catch(s=>{this.pendingRequests.delete(r),a(s)})})}handleIncoming(e){if(e.id!==void 0){let t=this.pendingRequests.get(e.id);t&&(this.pendingRequests.delete(e.id),t(e.result||e.error))}else e.method&&this.onMessageCallback&&this.onMessageCallback(e.method,e.params)}onConnect(e){this.onConnectCallback=e}onNotification(e){this.onMessageCallback=e}disconnect(){this.eventSource?.close()}}});function H(n,e,t){let r=`[UX Error] ${n.message}`;console.error(r,{element:e,expression:t,originalError:n});let a=globalThis.Nexus?.coordinator?.runtimeContext;if(a?.mcp&&a.isDevMode&&a.mcp.sendRequest("sampling/createMessage",{messages:[{role:"user",content:{type:"text",text:`Diagnose and suggest a fix for this Nexus-UX engine error:
-Message: ${n.message}
-Expression: ${t||"N/A"}
-Element: ${e?.outerHTML?.substring(0,500)||"N/A"}
-Stack: ${n.stack}`}}]}).then(s=>{let l=s?.content,c=l?.text||(Array.isArray(l)?l[0]?.text:void 0);c&&console.info(`[Nexus AI Diagnosis] \u2728 Suggested Fix:
-${c}`)}).catch(()=>{}),typeof CustomEvent<"u"){let s=new CustomEvent(`${fe}error`,{bubbles:!0,cancelable:!1,detail:{message:r,element:e,expression:t,originalError:n}});e?.dispatchEvent(s)||typeof document<"u"&&document.dispatchEvent(s)}}function P(n,e,t,r){let o=new tt(`Initialization failed for ${n}: ${e}`,t,r);H(o,t,r)}function rn(n,e,t,r){let o=new tt(`Syntax error in ${Je}${n}="${e}": ${t}`,r,e);H(o,r,e)}function io(n,e,t){let r=new tt(`Expression evaluation failed: ${e.message}`,t,n);r.stack=e.stack,H(r,t,n)}function so(n){if(!(typeof MutationObserver>"u"||typeof document>"u"))try{et=new MutationObserver(e=>{try{for(let t of e)if(t.type==="attributes"&&t.attributeName==="data-debug"){let o=t.target.getAttribute("data-debug");if(n.isDevMode=o!==null,o&&o.trim().startsWith("{"))try{let i=new Function(`return (${o})`)();i.mcp&&!n.mcp&&Promise.resolve().then(()=>(nn(),oo)).then(({MCPClient:a})=>{n.mcp=new a(i.mcp),n.mcp.connect().catch(()=>{console.warn(`[Nexus Debug] MCP connection failed: ${i.mcp}`)})})}catch{}}}catch(t){console.error("[Nexus Sanitizer] Internal error (isolated):",t)}}),et.observe(document.documentElement,{attributes:!0,subtree:!0})}catch(e){console.error("[Nexus Sanitizer] Failed to initialize:",e)}}function ao(){et&&(et.disconnect(),et=null)}var tt,we,et,O=Qe(()=>{W();tt=class n extends Error{constructor(t,r,o){super(t);this.element=r;this.expression=o;this.name="UXError",Object.setPrototypeOf(this,n.prototype)}};we={log:(n,...e)=>{n.isDevMode&&console.log("[Nexus]",...e)},warn:(n,...e)=>{n.isDevMode&&console.warn("[Nexus]",...e)},info:(n,...e)=>{n.isDevMode&&console.info("[Nexus]",...e)},debug:(n,...e)=>{n.isDevMode&&console.debug("[Nexus Debug]",...e)},error:(n,...e)=>{console.error("[Nexus Error]",...e)}},et=null});function Es(){return Mt?new Promise(n=>{St=n,Mt.port2.postMessage(null)}):typeof globalThis.scheduler=="object"&&typeof globalThis.scheduler?.yield=="function"?globalThis.scheduler.yield():new Promise(n=>setTimeout(n,0))}var te,Mt,St,ws,on,Ce,At=Qe(()=>{try{typeof SharedArrayBuffer<"u"&&typeof globalThis.crossOriginIsolated<"u"&&globalThis.crossOriginIsolated?te=new Int32Array(new SharedArrayBuffer(6*4)):te=new Int32Array(new ArrayBuffer(6*4))}catch{te=new Int32Array(new ArrayBuffer(6*4))}Mt=null,St=null;typeof MessageChannel<"u"&&(Mt=new MessageChannel,Mt.port1.onmessage=()=>{St&&(St(),St=null)});ws=8,on=class n{captureQueue=[];evaluateQueue=[];resolveQueue=[];paintQueue=[];nextTickQueue=[];pending=!1;flushing=!1;evaluateSet=new Set;stallBudget=ws;enqueueCapture(e){this.captureQueue.push(e),this.syncSharedState(),this.requestFlush()}enqueueEvaluate(e){this.evaluateSet.has(e)||(this.evaluateSet.add(e),this.evaluateQueue.push(e),this.syncSharedState(),this.requestFlush())}enqueueEffect(e){this.enqueueEvaluate(e)}enqueueResolve(e){this.resolveQueue.push(e),this.syncSharedState(),this.requestFlush()}enqueuePaint(e){this.paintQueue.push(e),this.syncSharedState(),this.requestFlush()}enqueueMorph(e){this.enqueuePaint(e)}enqueueClean(e){this.paintQueue.push(e),this.syncSharedState(),this.requestFlush()}nextTick(e){this.nextTickQueue.push(e),this.requestFlush()}getSharedState(){return te}requestFlush(){this.pending||(this.pending=!0,Atomics.store(te,1,1),queueMicrotask(()=>{this.flushComputationPhases()}))}async flushComputationPhases(){if(!this.flushing){this.flushing=!0;try{Atomics.store(te,0,1),await this.runQueueWithYielding(this.captureQueue),Atomics.store(te,0,2),await this.runQueueWithYielding(this.evaluateQueue),this.evaluateSet.clear(),Atomics.store(te,0,3),await this.runQueueWithYielding(this.resolveQueue),this.paintQueue.length>0||this.nextTickQueue.length>0?await this.flushPaintPhase():this.finalize()}catch(e){console.error("[Nexus Scheduler] Async loop error:",e),this.finalize()}}}flushPaintPhase(){return new Promise(e=>{typeof requestAnimationFrame<"u"?requestAnimationFrame(()=>{Atomics.store(te,0,4),this.runQueueSync(this.paintQueue),this.runQueueSync(this.nextTickQueue),this.finalize(),e()}):setTimeout(()=>{Atomics.store(te,0,4),this.runQueueSync(this.paintQueue),this.runQueueSync(this.nextTickQueue),this.finalize(),e()},0)})}finalize(){this.flushing=!1,this.pending=!1,Atomics.store(te,0,0),Atomics.store(te,1,0),this.syncSharedState(),(this.captureQueue.length>0||this.evaluateQueue.length>0||this.resolveQueue.length>0||this.paintQueue.length>0||this.nextTickQueue.length>0)&&(this.pending=!1,this.requestFlush())}static MAX_QUEUE_ITERATIONS=1e4;async runQueueWithYielding(e){if(e.length===0)return;let t=performance.now(),r=0;for(;e.length>0;){if(++r>n.MAX_QUEUE_ITERATIONS){console.error(`[Nexus Scheduler] Loop guard: ${r} iterations exceeded. Remaining queue size: ${e.length}. Draining queue to prevent infinite loop.`),e.length=0;break}let o=e.shift();try{o()}catch(i){console.error("[Nexus Scheduler] Job error:",i)}performance.now()-t>this.stallBudget&&(this.syncSharedState(),await Es())}this.syncSharedState()}runQueueSync(e){let t=e.length;if(t!==0){for(let r=0;r<t;r++)try{e[r]()}catch(o){console.error("[Nexus Scheduler] Job error:",o)}e.splice(0,t)}}syncSharedState(){Atomics.store(te,2,this.captureQueue.length),Atomics.store(te,3,this.evaluateQueue.length),Atomics.store(te,4,this.resolveQueue.length),Atomics.store(te,5,this.paintQueue.length)}},Ce=new on});var Ot={};_(Ot,{default:()=>fl,predictive:()=>je,predictiveModule:()=>ri});function dl(n){let e=n.getAttribute("data-prefetch");if(e&&e.trim())return e.trim();if(n instanceof HTMLAnchorElement){let t=n.getAttribute("href")||"";return t&&!t.startsWith("#")&&!t.startsWith("http")&&!t.startsWith("//")?t:null}for(let t of Array.from(n.attributes)){if(!t.name.startsWith("data-on-"))continue;let r=t.value.match(ul);if(r&&r[1])return r[1]}return null}var ar,ul,lr,je,ri,fl,cr=Qe(()=>{At();ar=class n{bounds;capacity;depth=0;points=[];divided=!1;northeast=null;northwest=null;southeast=null;southwest=null;constructor(e,t=10){this.bounds=e,this.capacity=t}insert(e,t,r){if(!this.contains(t,r))return!1;if(this.points.length<this.capacity)return this.points.push({el:e,x:t,y:r}),!0;let o=!0;for(let i=0;i<this.points.length;i++)if(this.points[i].x!==t||this.points[i].y!==r){o=!1;break}return o?(this.points.push({el:e,x:t,y:r}),!0):(this.divided||this.subdivide(),this.northeast.insert(e,t,r)||this.northwest.insert(e,t,r)||this.southeast.insert(e,t,r)||this.southwest.insert(e,t,r))}queryRange(e,t,r,o){let i=[];if(!this.intersects(e,t,r,o))return i;for(let a of this.points)this.pointInRect(a.x,a.y,e,t,r,o)&&i.push(a.el);return this.divided&&(i.push(...this.northeast.queryRange(e,t,r,o)),i.push(...this.northwest.queryRange(e,t,r,o)),i.push(...this.southeast.queryRange(e,t,r,o)),i.push(...this.southwest.queryRange(e,t,r,o))),i}queryRadius(e,t,r){let o=[],i=r*r;if(!this.intersects(e-r,t-r,r*2,r*2))return o;for(let a of this.points){let s=a.x-e,l=a.y-t;s*s+l*l<=i&&o.push(a.el)}return this.divided&&(o.push(...this.northeast.queryRadius(e,t,r)),o.push(...this.northwest.queryRadius(e,t,r)),o.push(...this.southeast.queryRadius(e,t,r)),o.push(...this.southwest.queryRadius(e,t,r))),o}clear(){this.points=[],this.divided=!1,this.northeast=null,this.northwest=null,this.southeast=null,this.southwest=null}contains(e,t){return e>=this.bounds.x&&e<this.bounds.x+this.bounds.width&&t>=this.bounds.y&&t<this.bounds.y+this.bounds.height}intersects(e,t,r,o){return!(e>this.bounds.x+this.bounds.width||e+r<this.bounds.x||t>this.bounds.y+this.bounds.height||t+o<this.bounds.y)}pointInRect(e,t,r,o,i,a){return e>=r&&e<=r+i&&t>=o&&t<=o+a}subdivide(){let{x:e,y:t,width:r,height:o}=this.bounds,i=r/2,a=o/2;this.northeast=new n({x:e+i,y:t,width:i,height:a},this.capacity),this.northwest=new n({x:e,y:t,width:i,height:a},this.capacity),this.southeast=new n({x:e+i,y:t+a,width:i,height:a},this.capacity),this.southwest=new n({x:e,y:t+a,width:i,height:a},this.capacity),this.divided=!0}},ul=/(?:#?router\.(?:navigate|go)|(?<!\w)navigate)\s*\(\s*['"`]([^'"`]+)['"`]/;lr=class{lastPoint=null;velocity={x:0,y:0,z:0,t:0};predictiveNodes=new Set;cleanupFns=[];debugTracker=null;prewarmHook=null;prewarmFired=new Set;quadtree;viewportWidth=0;viewportHeight=0;rebuildTimer=null;fadeTimer=null;constructor(){typeof window<"u"&&(this.viewportWidth=window.innerWidth,this.viewportHeight=window.innerHeight),typeof document<"u"&&this.init()}init(){let e=()=>{if(typeof document<"u"&&document.body&&document.documentElement.hasAttribute("data-debug")&&!this.debugTracker){let s="http://www.w3.org/2000/svg",l=document.createElementNS(s,"svg");l.setAttribute("class","nexus-predictive-tracker"),l.style.position="fixed",l.style.pointerEvents="none",l.style.zIndex="999999",l.style.overflow="visible",l.style.transform="translate(-50%, -50%)",l.style.width="200px",l.style.height="200px",l.style.left="-1000px",l.style.top="-1000px";let c=document.createElementNS(s,"circle");c.setAttribute("cx","100"),c.setAttribute("cy","100"),c.setAttribute("r","20"),c.setAttribute("fill","rgba(255, 0, 128, 0.1)"),c.setAttribute("stroke","rgba(255, 0, 128, 0.5)"),c.setAttribute("stroke-width","2"),c.style.transition="r 0.15s ease-out";let u=document.createElementNS(s,"line");u.setAttribute("x1","100"),u.setAttribute("y1","100"),u.setAttribute("x2","100"),u.setAttribute("y2","100"),u.setAttribute("stroke","rgba(255, 0, 128, 0.5)"),u.setAttribute("stroke-width","2"),u.setAttribute("stroke-dasharray","4 4"),u.style.opacity="0",u.style.transition="x2 0.1s linear, y2 0.1s linear, opacity 0.3s ease-out";let d=document.createElementNS(s,"line");d.setAttribute("x1","100"),d.setAttribute("y1","100"),d.setAttribute("x2","100"),d.setAttribute("y2","100"),d.setAttribute("stroke","rgba(34, 197, 94, 0.9)"),d.setAttribute("stroke-width","2"),d.style.transition="x2 0.1s linear, y2 0.1s linear, opacity 0.1s ease",d.style.opacity="0",l.appendChild(c),l.appendChild(u),l.appendChild(d),document.body.appendChild(l),this.debugTracker={svg:l,halo:c,line:u,targetLine:d}}this.rebuildQuadtree()};typeof document<"u"&&document.readyState==="loading"?(document.addEventListener("DOMContentLoaded",e),this.cleanupFns.push(()=>document.removeEventListener("DOMContentLoaded",e))):e();let t=s=>this.track(s.clientX,s.clientY),r=s=>{let l=s.touches[0];l&&this.track(l.clientX,l.clientY)},o=()=>{this.viewportWidth=window.innerWidth,this.viewportHeight=window.innerHeight,this.rebuildQuadtree()},i=()=>{this.rebuildTimer&&clearTimeout(this.rebuildTimer),this.rebuildTimer=setTimeout(()=>this.rebuildQuadtree(),16)};globalThis.addEventListener("mousemove",t),globalThis.addEventListener("touchstart",r,{passive:!0}),globalThis.addEventListener("resize",o),globalThis.addEventListener("scroll",i,{passive:!0});let a=()=>{this.rebuildTimer&&clearTimeout(this.rebuildTimer),this.rebuildTimer=setTimeout(()=>this.rebuildQuadtree(),200)};globalThis.addEventListener("nexus:dom-mutated",a),this.cleanupFns.push(()=>globalThis.removeEventListener("mousemove",t),()=>globalThis.removeEventListener("touchstart",r),()=>globalThis.removeEventListener("resize",o),()=>globalThis.removeEventListener("scroll",i),()=>globalThis.removeEventListener("nexus:dom-mutated",a),()=>{this.rebuildTimer&&clearTimeout(this.rebuildTimer),this.fadeTimer&&clearTimeout(this.fadeTimer)})}setPrewarm(e){this.prewarmHook=e}dispose(){this.cleanupFns.forEach(e=>e()),this.quadtree.clear(),this.debugTracker&&this.debugTracker.svg.parentNode&&this.debugTracker.svg.parentNode.removeChild(this.debugTracker.svg)}getDynamicSelectors(){let e=new Set(["[data-signal]","[data-on-click]","[data-on-hover]","[data-on-mouseenter]","[data-on-touchstart]","button","a","input","select","textarea","label","[data-bind]"]);if(typeof document>"u")return Array.from(e).join(", ");try{let t=Array.from(document.styleSheets);document.adoptedStyleSheets&&t.push(...document.adoptedStyleSheets);for(let r of t)try{let o=r.cssRules||r.rules;if(!o)continue;for(let i=0;i<o.length;i++){let a=o[i];if(a.selectorText&&(a.selectorText.includes(":hover")||a.selectorText.includes(":active")||a.selectorText.includes(":focus"))){let s=a.selectorText.split(",");for(let l of s){l=l.split("::")[0];let c=l.replace(/:hover|:active|:focus/g,"").trim();c&&c!=="*"&&c!=="html"&&c!=="body"&&e.add(c)}}}}catch{}}catch{}return Array.from(e).join(", ")}rebuildQuadtree(){if(typeof document>"u")return;let e=window.scrollX,t=window.scrollY,r=window.innerWidth,o=window.innerHeight;this.viewportWidth=r,this.viewportHeight=o;let i=r*.15,a=o*.15;this.quadtree=new ar({x:e-i,y:t-a,width:r+i*2,height:o+a*2},20);let s=this.getDynamicSelectors();document.querySelectorAll(s).forEach(c=>{if(c instanceof HTMLElement){let u=c.getBoundingClientRect(),d=u.x+u.width/2+e,p=u.y+u.height/2+t;this.quadtree.insert(c,d,p)}}),this.prewarmFired.clear()}updateElement(e){let t=e.getBoundingClientRect(),r=t.x+t.width/2+window.scrollX,o=t.y+t.height/2+window.scrollY;this.quadtree.insert(e,r,o)}track(e,t,r=0){let o=performance.now(),i=e+window.scrollX,a=t+window.scrollY;if(this.lastPoint){let s=o-this.lastPoint.t;s>1&&(this.velocity={x:(i-this.lastPoint.x)/s,y:(a-this.lastPoint.y)/s,z:(r-this.lastPoint.z)/s,t:1},this.debugTracker&&(this.debugTracker.line.style.opacity="1"),Ce.enqueueCapture(()=>this.predict(i,a,r)))}this.lastPoint={x:i,y:a,z:r,t:o},this.fadeTimer&&clearTimeout(this.fadeTimer),this.fadeTimer=setTimeout(()=>{this.velocity={x:0,y:0,z:0,t:1},this.debugTracker&&(this.debugTracker.line.style.opacity="0",this.debugTracker.targetLine.style.opacity="0")},150)}predict(e,t,r){let o=e+this.velocity.x*100,i=t+this.velocity.y*100,a=r+this.velocity.z*100,s=this.quadtree.queryRadius(o,i,150),l=new Set,c,u=1/0;if(s.forEach(d=>{if(d instanceof HTMLElement){l.add(d);let p=d.className||"",f=typeof p=="string"&&(p.includes("hover:")||p.includes("active:")||p.includes("focus:"));if(d.hasAttribute("data-on-click")||d.hasAttribute("data-on-hover")||d.hasAttribute("data-on-mouseenter")||d.tagName==="BUTTON"||d.tagName==="A"||d.tagName==="INPUT"||d.tagName==="SELECT"||d.tagName==="TEXTAREA"||d.hasAttribute("data-bind")||f){let g=d.getBoundingClientRect(),y=g.x+g.width/2+window.scrollX,v=g.y+g.height/2+window.scrollY,b=Math.hypot(y-o,v-i);if(b<u&&(u=b,c={cx:y,cy:v},this.prewarmHook)){let T=dl(d);T&&!this.prewarmFired.has(T)&&(this.prewarmFired.add(T),this.prewarmHook(T))}}}}),this.debugTracker){let d=e-window.scrollX,p=t-window.scrollY;this.debugTracker.svg.style.left=`${d}px`,this.debugTracker.svg.style.top=`${p}px`;let f=Math.sqrt(this.velocity.x**2+this.velocity.y**2),m=Math.min(80,Math.max(20,20+f*5));this.debugTracker.halo.setAttribute("r",m.toString());let g=100+this.velocity.x*200,y=100+this.velocity.y*200;if(this.debugTracker.line.setAttribute("x2",g.toString()),this.debugTracker.line.setAttribute("y2",y.toString()),c){let v=c,b=100+(v.cx-e),T=100+(v.cy-t);this.debugTracker.targetLine.setAttribute("x2",b.toString()),this.debugTracker.targetLine.setAttribute("y2",T.toString()),this.debugTracker.targetLine.style.opacity="1"}else this.debugTracker.targetLine.style.opacity="0",this.debugTracker.targetLine.setAttribute("x2","100"),this.debugTracker.targetLine.setAttribute("y2","100")}l.forEach(d=>{this.predictiveNodes.has(d)||this.preWarm(d)}),this.predictiveNodes.forEach(d=>{l.has(d)||this.coolDown(d)}),this.predictiveNodes=l}preWarm(e){e.classList.add("nexus-predictive-warm"),e.dispatchEvent(new CustomEvent("nexus:predictive-warm",{detail:{velocity:this.velocity}}))}coolDown(e){e.classList.remove("nexus-predictive-warm"),e.dispatchEvent(new CustomEvent("nexus:predictive-cool"))}getVelocity(){return this.velocity}},je=new lr;globalThis._nexusQuadtree=je.quadtree;ri={name:"predictive",key:"$predictive",sprites:n=>{n.predictive=je;let e=()=>{let r=n.globalSignals?.()?.router;r?.prewarm&&je.setPrewarm(o=>r.prewarm(o))};return e(),Ce.enqueueCapture(e),{getVelocity:()=>je.getVelocity(),updateElement:t=>je.updateElement(t)}}},fl=ri});var yc={};_(yc,{$id:()=>ds,$nextTick:()=>fs,Nexus:()=>Gt,UX:()=>Qt});W();W();O();At();var $e=typeof SharedArrayBuffer<"u",an=class{_floatHeap;_intHeap;_boolHeap;_stringHeap;_stringPool;_objectHeap;_arrayHeap;_indexMap;_typeMap;_nextIndex=0;_shared=!1;constructor(e=1024,t=!1){if(this._shared=t&&$e,this._shared){let r=new SharedArrayBuffer(e*8);this._floatHeap=new Float64Array(r),this._intHeap=new Int32Array(r,e*4),this._boolHeap=new Uint8Array(new SharedArrayBuffer(e))}else this._floatHeap=new Float64Array(e),this._intHeap=new Int32Array(e),this._boolHeap=new Uint8Array(e);this._stringHeap=new Map,this._stringPool=new Map,this._objectHeap=new Map,this._arrayHeap=new Map,this._indexMap=new Map,this._typeMap=new Map}_allocateSlot(e,t){if(this._indexMap.has(e))return this._typeMap.set(e,t),this._indexMap.get(e);let r=this._nextIndex++;return this._indexMap.set(e,r),this._typeMap.set(e,t),r}allocateForValue(e,t){return typeof t=="number"?Number.isInteger(t)?this.allocateInt(e):this.allocateNumeric(e):typeof t=="boolean"?this.allocateBoolean(e):typeof t=="string"?this.allocateString(e):Array.isArray(t)?this.allocateArray(e):typeof t=="object"&&t!==null?this.allocateObject(e):this.allocateObject(e)}allocateNumeric(e){return this._allocateSlot(e,"float")}allocateInt(e){return this._allocateSlot(e,"int")}allocateBoolean(e){return this._allocateSlot(e,"bool")}allocateString(e){return this._allocateSlot(e,"string")}allocateObject(e){return this._allocateSlot(e,"object")}allocateArray(e){return this._allocateSlot(e,"array")}set(e,t){typeof t=="number"?Number.isInteger(t)?this.setInt(e,t):this.setNumeric(e,t):typeof t=="boolean"?this.setBoolean(e,t):typeof t=="string"?this.setString(e,t):Array.isArray(t)?this.setArray(e,t):typeof t=="object"&&t!==null&&this.setObject(e,t)}get(e){switch(this._typeMap.get(e)){case"float":return this.getNumeric(e);case"int":return this.getInt(e);case"bool":return this.getBoolean(e);case"string":return this.getString(e);case"array":return this.getArray(e);case"object":return this.getObject(e);default:return}}setNumeric(e,t){let r=this.allocateNumeric(e);this._floatHeap[r]=t}getNumeric(e){let t=this._indexMap.get(e);return t!==void 0?this._floatHeap[t]:void 0}setInt(e,t){let r=this.allocateInt(e);this._intHeap[r]=t}getInt(e){let t=this._indexMap.get(e);return t!==void 0?this._intHeap[t]:void 0}setBoolean(e,t){let r=this.allocateBoolean(e);this._boolHeap[r]=t?1:0}getBoolean(e){let t=this._indexMap.get(e);return t!==void 0?this._boolHeap[t]===1:void 0}setString(e,t){this._allocateSlot(e,"string"),this._stringPool.has(t)||this._stringPool.set(t,this._stringPool.size),this._stringHeap.set(e,t)}getString(e){return this._stringHeap.get(e)}setObject(e,t){this._allocateSlot(e,"object"),this._objectHeap.set(e,t)}getObject(e){return this._objectHeap.get(e)}setArray(e,t){this._allocateSlot(e,"array"),this._arrayHeap.set(e,t)}getArray(e){return this._arrayHeap.get(e)}has(e){return this._indexMap.has(e)}getType(e){return this._typeMap.get(e)}delete(e){this._indexMap.delete(e),this._typeMap.delete(e),this._stringHeap.delete(e),this._objectHeap.delete(e),this._arrayHeap.delete(e)}attachSharedBuffer(e){this._shared||(this._shared=!0,this._floatHeap=new Float64Array(e),this._intHeap=new Int32Array(e,this._floatHeap.length*8),this._boolHeap=new Uint8Array(e,this._floatHeap.length*8+this._intHeap.length*4),console.log("[SignalHeap] Attached SharedArrayBuffer"))}},Y=new an,lo=Symbol.for("nexus.ownership"),sn=Symbol.for("nexus.borrow"),ln=class{_ownerships=new WeakMap;_borrows=new WeakMap;acquire(e,t){let r={ownerId:t,refCount:1,acquiredAt:Date.now()};this._ownerships.set(e,r),e[lo]=r}release(e,t){let r=this._ownerships.get(e);!r||r.ownerId!==t||(r.refCount--,r.refCount<=0&&(this._ownerships.delete(e),delete e[lo]))}borrowImmutable(e,t){let r=this._borrows.get(e)||[];return r.some(o=>o.type==="mutable")?!1:(r.push({borrower:t,type:"immutable",borrowedAt:Date.now()}),this._borrows.set(e,r),e[sn]=r[r.length-1],!0)}borrowMutable(e,t){let r=this._borrows.get(e);if(r&&r.length>0)return!1;let o={borrower:t,type:"mutable",borrowedAt:Date.now()};return this._borrows.set(e,[o]),e[sn]=o,!0}returnBorrow(e,t){let r=this._borrows.get(e);if(!r)return;let o=r.findIndex(i=>i.borrower===t);o!==-1&&(r.splice(o,1),r.length===0&&this._borrows.delete(e),delete e[sn])}validateBorrow(e,t){let r=this._borrows.get(e);if(t==="mutable"&&r&&r.length>0)throw new Error(`Mutable borrow denied for ${t}: active borrows exist`);if(t==="immutable"&&r?.some(o=>o.type==="mutable"))throw new Error(`Immutable borrow denied for ${t}: mutable borrow exists`)}getBorrowers(e){return this._borrows.get(e)||[]}},nt=new ln,Ct=Symbol("iterate"),cn=new WeakMap,ue=null;function Pe(n,e){if(!ue)return;let t=cn.get(n);t||(t=new Map,cn.set(n,t));let r=t.get(e);r||(r=new Set,t.set(e,r)),r.has(ue)||(r.add(ue),ue.deps.add(r))}function xe(n,e){let t=cn.get(n);if(!t)return;let r=new Set,o=i=>{if(i)for(let a of i)a!==ue&&r.add(a)};o(t.get(e)),Array.isArray(n)&&(e==="length"?t.forEach((i,a)=>{(a==="length"||typeof a=="string"&&Number(a)>=n.length)&&o(i)}):typeof e=="string"&&!isNaN(Number(e))&&(o(t.get("length")),o(t.get(Ct))));for(let i of r)i.scheduler?i.scheduler():i.run()}var co=new WeakMap,un=new WeakMap;function ot(n){return un.has(n)}function fo(n){return ot(n)}function mo(n){return!1}function _e(n){let e=n?.__v_raw;return e?_e(e):n}function B(n){if(!n||typeof n!="object"||un.has(n))return n;let e=co.get(n);return e||(e=new Proxy(n,{get(t,r,o){if(r==="__v_raw")return t;if(r==="__v_isReactive")return!0;Pe(t,r);let i=Reflect.get(t,r,o);return i&&typeof i=="object"?B(i):i},set(t,r,o,i){if(t!==_e(i))return Reflect.set(t,r,o,i);let a=Reflect.get(t,r,i),s=Array.isArray(t)?t.length:0,l=_e(o),c=Reflect.set(t,r,l);if(c){let u=!Object.prototype.hasOwnProperty.call(t,r);(a!==l||Array.isArray(t)&&t.length!==s)&&(xe(t,r),u&&xe(t,Ct))}return c},deleteProperty(t,r){let o=Object.prototype.hasOwnProperty.call(t,r),i=Reflect.deleteProperty(t,r);return i&&o&&(xe(t,r),xe(t,Ct)),i},has(t,r){return Pe(t,r),Reflect.has(t,r)},ownKeys(t){return Pe(t,Array.isArray(t)?"length":Ct),Reflect.ownKeys(t)}}),co.set(n,e),un.set(e,n),e)}function po(n){return B(n)}function go(n){return B(n)}function ho(n){return B(n)}function st(n,e){let t={deps:new Set,scheduler:e?.scheduler,run(){if(!this.deps)return;uo(this);let o=ue;ue=this;try{return n()}finally{ue=o}},stop(){uo(this),this.deps&&(this.deps.clear(),this.deps=null)}};e?.lazy||t.run();let r=t.run.bind(t);return r.effect=t,r}function uo(n){if(n.deps){for(let e of n.deps)e.delete(n);n.deps.clear()}}function it(n){let e=n?.effect||n;e&&typeof e.stop=="function"&&e.stop()}var _t=class{_value;_rawValue;__v_isRef=!0;constructor(e,t=!1){this._rawValue=t?e:_e(e),this._value=t?e:typeof e=="object"&&e!==null?B(e):e}get value(){return Pe(this,"value"),this._value}set value(e){e=_e(e),e!==this._rawValue&&(this._rawValue=e,this._value=typeof e=="object"&&e!==null?B(e):e,xe(this,"value"))}};function Lt(n){return new _t(n)}function Le(n){return!!(n&&n.__v_isRef===!0)}function bo(n){return new _t(n,!0)}function yo(n){xe(n,"value")}function vo(n){return Le(n)?n.value:n}function mn(n){let{get:e,set:t}=n(()=>Pe(r,"value"),()=>xe(r,"value")),r={__v_isRef:!0,get value(){return e()},set value(o){t(o)}};return r}var dn=class{_value;_dirty=!0;_runner;__v_isRef=!0;__v_isReadonly=!0;constructor(e){this._runner=st(e,{lazy:!0,scheduler:()=>{this._dirty||(this._dirty=!0,xe(this,"value"))}})}get value(){return Pe(this,"value"),this._dirty&&(this._value=this._runner(),this._dirty=!1),this._value}};function Rt(n){return new dn(n)}function Eo(n,e,t){let r;Le(n)?r=()=>n.value:ot(n)?r=()=>rt(n):typeof n=="function"?r=n:Array.isArray(n)?r=()=>n.map(s=>Le(s)?s.value:ot(s)?rt(s):s):r=()=>{};let o,i=()=>{let s=a();e&&(e(s,o),o=s)},a=st(r,{lazy:!0,scheduler:()=>{t?.scheduler?t.scheduler(i):i()}});return t?.immediate?i():o=a(),()=>{it(a)}}function rt(n,e=new Set){if(typeof n!="object"||n===null||e.has(n))return n;if(e.add(n),Le(n))rt(n.value,e);else if(Array.isArray(n))for(let t=0;t<n.length;t++)rt(n[t],e);else for(let t of Object.keys(n))rt(n[t],e);return n}var fn=class{constructor(e,t,r){this._object=e;this._key=t;this._defaultValue=r}__v_isRef=!0;get value(){let e=this._object[this._key];return e===void 0?this._defaultValue:e}set value(e){this._object[this._key]=e}};function pn(n,e,t){let r=n[e];return Le(r)?r:new fn(n,e,t)}function wo(n){let e=Array.isArray(n)?new Array(n.length):{};for(let t in n)e[t]=pn(n,t);return e}function xo(n){if(ue){let e=ue.cleanupFns;if(!e){e=[],ue.cleanupFns=e;let t=ue.run;ue.run=function(){for(let r of e)try{r()}catch{}return e.length=0,t.apply(this,arguments)}}e.push(n)}}var xs=0;function To(n,e,t){let r=new WeakSet,o=0,i=0,a="",s=()=>{try{e(),i=0,a=""}catch(f){if(f instanceof Promise){if(r.has(f))return;window._nexusDebug&&console.debug(`[Nexus Suspense] <${n.tagName}> suspended pending network resolution.`),o++,r.add(f),f.finally(()=>{if(o--,r.delete(f),window._nexusDebug&&console.debug(`[Nexus Suspense] <${n.tagName}> resumed.`),l){let m=0,g=10;queueMicrotask(()=>{if(!(o>0)){if(m++>g){console.warn(`[Nexus Loop Guard] Stopped runaway effect on <${n.tagName}> after ${g} re-entries.`);return}l()}})}})}else{let m=f instanceof Error?f.message:String(f);m===a?i++:(i=1,a=m),i>=3?(console.error(`[Nexus Diagnostic] Persistent error on <${n.tagName}> (${i}x):`,f),H(f instanceof Error?f:new Error(m),n,`Persistent failure (${i}x) \u2014 effect quarantined`),it(l),n[ce]?.delete(l)):globalThis.Nexus?.coordinator?.runtimeContext?.isDevMode&&console.debug(`[Nexus Transient] <${n.tagName}> effect attempt ${i}/3:`,m)}}},l,c=()=>{l&&l()};try{let f={scheduler:()=>{Ce.enqueueEvaluate(c)},...t};l=st(s,f)}catch(f){throw console.error(`[Reactivity Error] effect() failed for <${n.tagName}>:`,f),f}let u=n;u[ce]||(u[ce]=new Set,u.nexus||(u.nexus={}),u.nexus.effectRunners=u[ce]),u[ce].add(l),u[Ie]||(u[Ie]=()=>{if(u[ce])for(let f of u[ce])try{f()}catch(m){console.error(`[Nexus Isolation] Effect failed on <${u.tagName}>, isolated from ${u[ce].size-1} sibling effects:`,m),H(m instanceof Error?m:new Error(String(m)),u,"Isolated effect failure")}});let d=()=>{it(l);let f=n;f[ce]&&(f[ce].delete(l),f[ce].size===0&&(delete f[ce],delete f[Ie]))};u[I]||(u[I]=new Map);let p=`effect-${xs++}`;return u[I].set(p,d),[l,d]}function at(n,e,t){let r=e||`unified_${Math.random().toString(36).slice(2)}`;t?Object.entries(t).forEach(([a,s])=>{let l=`${r}.${a}`;s==="number"?Y.allocateNumeric(l):s==="boolean"?Y.allocateBoolean(l):s==="string"&&Y.setString(l,"")}):Object.entries(n).forEach(([a,s])=>{let l=`${r}.${a}`;typeof s=="number"?Y.allocateNumeric(l):typeof s=="boolean"&&Y.allocateBoolean(l)});let o=B(n),i=r;return nt.acquire(o,i),mn((a,s)=>({get(){return a(),nt.validateBorrow(o,"immutable"),o},set(l){nt.validateBorrow(o,"mutable"),l&&typeof l=="object"?Object.entries(l).forEach(([c,u])=>{let d=`${r}.${c}`;Y.set(d,u),o[c]=u}):o=l,s()}}))}function So(n,e){let t=e||`computed_${Math.random().toString(36).slice(2)}`;return Rt(()=>{let r=n();return Y.set(t,r),r})}W();var zr={};_(zr,{NexusStyleSheet:()=>ht,PACKED_COMPONENTS:()=>pt,PREFLIGHT_CSS:()=>Zl,buildTailwindThemeBridge:()=>Fe,default:()=>nc,discoverColorTokens:()=>Be,initializeJitEngine:()=>Yi,jitSheet:()=>He,markExternalStylesSettled:()=>On,stylesheet:()=>Q});var gn={};_(gn,{default:()=>Ms});O();var Ss={name:"assert",attribute:"assert",handle:(n,e,t)=>{try{let r=t.evaluate(n,e);if(!r){let o=`Assertion failed: "${e}" evaluated to falsy value based on ${r}`;console.error(o,n),P("assert",o,n,e)}}catch(r){P("assert",`Assertion error: ${r instanceof Error?r.message:String(r)}`,n,e)}}},Ms=Ss;var hn={};_(hn,{default:()=>Rs});O();var As=[/\bwindow\.(\w+)/g,/\bglobalThis\.(\w+)/g,/\blocalStorage\.(\w+)/g,/\bsessionStorage\.(\w+)/g,/\bnavigator\.(\w+)/g,/\bdocument\.(\w+)/g,/\bscreen\.(\w+)/g];function Mo(n){let e=[],t=new Set;for(let r of As){r.lastIndex=0;let o;for(;(o=r.exec(n))!==null;){let[,i]=o,a=`${r.source.split("\\b")[1]?.split(".")[0]||"unknown"}.${i}`;if(!t.has(a)){t.add(a);let s;r.source.includes("window")||r.source.includes("globalThis")?s=globalThis:r.source.includes("localStorage")?s=globalThis.localStorage:r.source.includes("sessionStorage")?s=globalThis.sessionStorage:r.source.includes("navigator")?s=globalThis.navigator:r.source.includes("document")?s=globalThis.document:r.source.includes("screen")?s=globalThis.screen:s=globalThis,e.push({target:s,property:i})}}}return e}function Cs(n){let e=n.trim();return Mo(e).length>0}function Ao(n,e){if(n!=null)if(typeof n=="object"&&!Array.isArray(n))Object.entries(n).forEach(([t,r])=>{if(t in e)e[t]!==r&&(e[t]=r);else if(r===!1||r===null||r===void 0)e.hasAttribute(t)&&e.removeAttribute(t);else{let o=String(r);e.getAttribute(t)!==o&&e.setAttribute(t,o)}});else if(e instanceof HTMLInputElement)e.type==="checkbox"?e.checked=!!n:e.type==="radio"?e.checked=e.value===String(n):e.value=n!=null?String(n):"";else if(e instanceof HTMLSelectElement){let t=n!=null?String(n):"";(Array.from(e.options).some(i=>i.value===t)||t==="")&&e.value!==t&&(e.value=t)}else e instanceof HTMLTextAreaElement?e.value=n!=null?String(n):"":e.textContent=n!=null?String(n):""}function _s(n,e,t){let r=[],o=n.trim(),i=Mo(o);if(i.length===0)return()=>{};let[a,s]=e.elementBoundEffect(t,()=>{let l=e.evaluate(t,n);Ao(l,t)});r.push(s);for(let l of i){let c=l.property;if(l.target===globalThis){if(c==="innerWidth"||c==="innerHeight"){let u=()=>{a()};globalThis.addEventListener("resize",u),r.push(()=>globalThis.removeEventListener("resize",u))}else if(c==="scrollX"||c==="scrollY"){let u=()=>{a()};globalThis.addEventListener("scroll",u),r.push(()=>globalThis.removeEventListener("scroll",u))}}if(l.target===globalThis.localStorage||l.target===globalThis.sessionStorage){let u=d=>{d.key===c&&a()};globalThis.addEventListener("storage",u),r.push(()=>globalThis.removeEventListener("storage",u))}}return()=>r.forEach(l=>l())}var Ls={name:"bind",attribute:"bind",handle:(n,e,t,r)=>{if(!e)return;let i=(r||t.parseAttribute("data-bind",t,n))?.argument;if(Cs(e))return _s(e,t,n);if(!i){let s=[];try{let[l,c]=t.elementBoundEffect(n,()=>{let d=t.evaluate(n,e);Ao(d,n)});if(s.push(c),n instanceof HTMLInputElement||n instanceof HTMLSelectElement||n instanceof HTMLTextAreaElement||n.isContentEditable){let p=n.hasAttribute("data-bind:lazy")||n instanceof HTMLSelectElement||n instanceof HTMLInputElement&&(n.type==="checkbox"||n.type==="radio")?"change":"input",f=m=>{let g;if(n instanceof HTMLInputElement&&n.type==="checkbox")g=n.checked;else if(n instanceof HTMLInputElement&&n.type==="radio"){if(g=n.checked?n.value:void 0,g===void 0)return}else n instanceof HTMLSelectElement&&n.multiple?g=Array.from(n.selectedOptions).map(b=>b.value):n instanceof HTMLInputElement&&(n.type==="range"||n.type==="number")?g=n.value===""?"":Number(n.value):"value"in n&&(g=n.value);let y=e.trim();if(/^[a-zA-Z_$][a-zA-Z0-9_$]*(\.[a-zA-Z_$][a-zA-Z0-9_$]*|\[[^\]]+\])*$/.test(y))try{let b=t.evaluate(n,e);b&&typeof b=="object"&&"value"in b?t.evaluate(n,`${e}.value = $newValue`,{$newValue:g}):t.evaluate(n,`${e} = $newValue`,{$newValue:g})}catch{}};n.addEventListener(p,f),s.push(()=>n.removeEventListener(p,f))}}catch(l){t.reportError(l instanceof Error?l:new Error(String(l)),n,`Auto-bind failed: ${e}`)}return()=>s.forEach(l=>l())}if(i==="lazy")return;let a=[];try{let[s,l]=t.elementBoundEffect(n,()=>{let c=t.evaluate(n,e),u=c!=null?String(c):"";if(i==="value"||i==="checked")n instanceof HTMLInputElement&&n.type==="checkbox"?n.checked!==!!c&&(n.checked=!!c):n instanceof HTMLInputElement&&n.type==="radio"?i==="checked"?n.checked!==!!c&&(n.checked=!!c):n.value!==u&&(n.value=u):"value"in n&&n.value!==u&&(n.value=u);else if(i==="text")n.textContent!==u&&(n.textContent=u);else if(i==="html")n.innerHTML!==u&&(n.innerHTML=u);else if(i==="style")t.reconcileStyle(n,c);else if(i==="draggable"){let d=c?"true":"false";n.getAttribute("draggable")!==d&&n.setAttribute("draggable",d)}else i==="dir"?(n.getAttribute("dir")!==u&&n.setAttribute("dir",u),document.documentElement.getAttribute("dir")!==u&&document.documentElement.setAttribute("dir",u)):c===!1||c===null||c===void 0?n.hasAttribute(i)&&n.removeAttribute(i):n.getAttribute(i)!==u&&n.setAttribute(i,u)});if(a.push(l),i==="value"||i==="checked"){let u=n.hasAttribute("data-bind:lazy")||n instanceof HTMLInputElement&&(n.type==="checkbox"||n.type==="radio")||n instanceof HTMLSelectElement?"change":"input",d=p=>{let f;if(n instanceof HTMLInputElement&&n.type==="checkbox")f=n.checked;else if(n instanceof HTMLInputElement&&n.type==="radio")f=n.checked?n.value:void 0;else if(n instanceof HTMLInputElement&&(n.type==="range"||n.type==="number")){let m=p.target.value;f=m===""?"":Number(m)}else f=p.target.value;t.evaluate(n,`${e} = $newValue`,{$newValue:f})};n.addEventListener(u,d),a.push(()=>n.removeEventListener(u,d))}}catch(s){P("bind",`Failed to bind ${i}: ${s instanceof Error?s.message:String(s)}`,n,e)}return()=>a.forEach(s=>s())}},Rs=Ls;var yn={};_(yn,{default:()=>Ws});O();var bn="nexus-store",ks=["files","builds","patterns","components","themes"];async function Co(n){return new Promise((e,t)=>{let r=n?indexedDB.open(bn,n):indexedDB.open(bn);r.onsuccess=()=>e(r.result),r.onerror=()=>t(r.error),r.onupgradeneeded=o=>{let i=o.target.result;ks.forEach(a=>{i.objectStoreNames.contains(a)||i.createObjectStore(a)})}})}async function _o(n,e){let t=await Co();return new Promise((r,o)=>{if(!t.objectStoreNames.contains(n)){t.close(),r(null);return}let s=t.transaction(n,"readonly").objectStore(n).get(e);s.onsuccess=()=>{t.close(),r(s.result)},s.onerror=()=>{t.close(),o(s.error)}})}async function Lo(n,e,t){let r=await Co();if(!r.objectStoreNames.contains(n)){let o=r.version+1;r.close(),r=await new Promise((i,a)=>{let s=indexedDB.open(bn,o);s.onupgradeneeded=l=>{let c=l.target.result;c.objectStoreNames.contains(n)||c.createObjectStore(n)},s.onsuccess=()=>i(s.result),s.onerror=()=>a(s.error)})}return new Promise((o,i)=>{let a=r.transaction(n,"readwrite");a.objectStore(n).put(t,e),a.oncomplete=()=>{r.close(),o()},a.onerror=()=>{r.close(),i(a.error)}})}var Hs="builds";async function Ns(n,e,t){await Lo(Hs,n,{data:e,meta:t,updatedAt:Date.now()})}function Is(n){return n.replace(/\/\*[\s\S]*?\*\//g,"").replace(/\s+/g," ").replace(/\s*([{}:;,])\s*/g,"$1").replace(/;}/g,"}").trim()}function Ps(n){return n.replace(/\/\/.*$/gm,"").replace(/\/\*[\s\S]*?\*\//g,"").replace(/\s+/g," ").trim()}function $s(n,e){let t=[],r=Q.collectRules();r&&t.push(r),document.querySelectorAll("head style").forEach(i=>{i.textContent&&t.push(i.textContent)}),n.querySelectorAll("style").forEach(i=>{i.textContent&&t.push(i.textContent)});let o=t.join(`
+var UX = (() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __esm = (fn, res) => function __init() {
+    return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+  };
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-`);return e?Is(o):o}function Ds(n,e){let t=[];n.querySelectorAll("script:not([src])").forEach(o=>{o.textContent&&t.push(o.textContent)});let r=t.join(`
+  // src/engine/consts.ts
+  var ROOT_SELECTOR, STATE, ATTRIBUTE_PREFIX, CUSTOM_EVENT_PREFIX, DATA_PRESERVE_ATTR, NEG_TOKENS, MODIFIER_DELIMITER, DATA_STACK_KEY, COMPONENT_CONTEXT_KEY, CLEANUP_FUNCTIONS_KEY, EFFECT_RUNNERS_KEY, RUN_EFFECT_RUNNERS_KEY, MARKER_KEY, IS_TEMPLATE_KEY, DEFAULT_DEBOUNCE_TIME, DEFAULT_THROTTLE_TIME;
+  var init_consts = __esm({
+    "src/engine/consts.ts"() {
+      ROOT_SELECTOR = "[data-init], [data-ux-init], [data-signal], [data-router], [data-import], [data-stylesheet], [data-ux-theme], body";
+      STATE = "nexus";
+      ATTRIBUTE_PREFIX = "data-";
+      CUSTOM_EVENT_PREFIX = "ux-";
+      DATA_PRESERVE_ATTR = "data-preserve";
+      NEG_TOKENS = {
+        INTENT: "-",
+        PATH: ".",
+        GLOBAL: "#",
+        MODIFIER: ":",
+        LOGIC: "$",
+        RULE: "@",
+        CONTEXT: "&",
+        OVERRIDE: "!",
+        PSEUDO: "::",
+        GRID: "||"
+      };
+      MODIFIER_DELIMITER = NEG_TOKENS.MODIFIER;
+      DATA_STACK_KEY = Symbol.for("__data_stack__");
+      COMPONENT_CONTEXT_KEY = Symbol.for("__component_context__");
+      CLEANUP_FUNCTIONS_KEY = Symbol.for("__cleanup_functions__");
+      EFFECT_RUNNERS_KEY = Symbol.for("__effect_runners__");
+      RUN_EFFECT_RUNNERS_KEY = Symbol.for("__run_effect_runners__");
+      MARKER_KEY = Symbol.for("__nexus_marker__");
+      IS_TEMPLATE_KEY = Symbol.for("__nexus_is_template__");
+      DEFAULT_DEBOUNCE_TIME = 250;
+      DEFAULT_THROTTLE_TIME = 250;
+    }
+  });
 
-`);return e?Ps(r):r}function Os(n){let e=n.cloneNode(!0);return e.querySelectorAll("[data-nexus-loading]").forEach(t=>t.removeAttribute("data-nexus-loading")),e.querySelectorAll("[data-nexus-ready]").forEach(t=>t.removeAttribute("data-nexus-ready")),e.querySelectorAll(".nexus-loading").forEach(t=>t.classList.remove("nexus-loading")),e.querySelectorAll(".nexus-ready").forEach(t=>t.classList.remove("nexus-ready")),e.querySelectorAll('[class=""]').forEach(t=>t.removeAttribute("class")),e.innerHTML}function Bs(n,e,t,r,o){let i=r.nexusSrc||"https://cdn.nexus-ux.dev/nexus-ux.js";return`<!DOCTYPE html>
+  // src/engine/mcp.ts
+  var mcp_exports = {};
+  __export(mcp_exports, {
+    MCPClient: () => MCPClient
+  });
+  var MCPClient;
+  var init_mcp = __esm({
+    "src/engine/mcp.ts"() {
+      init_debug();
+      MCPClient = class {
+        url;
+        eventSource = null;
+        requestId = 0;
+        pendingRequests = /* @__PURE__ */ new Map();
+        onConnectCallback;
+        onMessageCallback;
+        constructor(serverUrl) {
+          this.url = serverUrl;
+        }
+        /**
+         * Connect to the MCP server via SSE.
+         */
+        connect() {
+          return new Promise((resolve, reject) => {
+            try {
+              this.eventSource = new EventSource(this.url);
+              this.eventSource.onopen = () => {
+                if (this.onConnectCallback)
+                  this.onConnectCallback();
+                resolve();
+              };
+              this.eventSource.onerror = (err2) => {
+                reportError(new Error(`MCP Connection failed: ${this.url}`));
+                reject(err2);
+              };
+              this.eventSource.onmessage = (event) => {
+                try {
+                  const payload = JSON.parse(event.data);
+                  this.handleIncoming(payload);
+                } catch (_e) {
+                  reportError(new Error(`MCP Malformed JSON: ${event.data}`));
+                }
+              };
+              this.eventSource.addEventListener("message", (e) => {
+                try {
+                  const payload = JSON.parse(e.data);
+                  this.handleIncoming(payload);
+                } catch (_e) {
+                }
+              });
+            } catch (e) {
+              reject(e);
+            }
+          });
+        }
+        /**
+         * Send a JSON-RPC 2.0 request to the MCP server via POST.
+         */
+        sendRequest(method, params = {}) {
+          const id = ++this.requestId;
+          const body = JSON.stringify({
+            jsonrpc: "2.0",
+            id,
+            method,
+            params
+          });
+          return new Promise((resolve, reject) => {
+            this.pendingRequests.set(id, (res) => resolve(res));
+            fetch(this.url, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body
+            }).catch((err2) => {
+              this.pendingRequests.delete(id);
+              reject(err2);
+            });
+          });
+        }
+        /**
+         * Handle incoming JSON-RPC messages (Responses or Notifications).
+         */
+        handleIncoming(payload) {
+          if (payload.id !== void 0) {
+            const resolve = this.pendingRequests.get(payload.id);
+            if (resolve) {
+              this.pendingRequests.delete(payload.id);
+              resolve(payload.result || payload.error);
+            }
+          } else if (payload.method) {
+            if (this.onMessageCallback) {
+              this.onMessageCallback(payload.method, payload.params);
+            }
+          }
+        }
+        onConnect(cb) {
+          this.onConnectCallback = cb;
+        }
+        onNotification(cb) {
+          this.onMessageCallback = cb;
+        }
+        disconnect() {
+          this.eventSource?.close();
+        }
+      };
+    }
+  });
+
+  // src/engine/debug.ts
+  function reportError(error, element, expression) {
+    const errorMessage = `[UX Error] ${error.message}`;
+    console.error(errorMessage, { element, expression, originalError: error });
+    const Nexus2 = globalThis.Nexus;
+    const coordinator = Nexus2?.coordinator;
+    const runtime = coordinator?.runtimeContext;
+    if (runtime?.mcp && runtime.isDevMode) {
+      runtime.mcp.sendRequest("sampling/createMessage", {
+        messages: [{
+          role: "user",
+          content: {
+            type: "text",
+            text: `Diagnose and suggest a fix for this Nexus-UX engine error:
+Message: ${error.message}
+Expression: ${expression || "N/A"}
+Element: ${element?.outerHTML?.substring(0, 500) || "N/A"}
+Stack: ${error.stack}`
+          }
+        }]
+      }).then((res) => {
+        const content = res?.content;
+        const suggestion = content?.text || (Array.isArray(content) ? content[0]?.text : void 0);
+        if (suggestion) {
+          console.info(`[Nexus AI Diagnosis] \u2728 Suggested Fix:
+${suggestion}`);
+        }
+      }).catch(() => {
+      });
+    }
+    if (typeof CustomEvent !== "undefined") {
+      const errorEvent = new CustomEvent(`${CUSTOM_EVENT_PREFIX}error`, {
+        bubbles: true,
+        cancelable: false,
+        detail: {
+          message: errorMessage,
+          element,
+          expression,
+          originalError: error
+        }
+      });
+      element?.dispatchEvent(errorEvent) || typeof document !== "undefined" && document.dispatchEvent(errorEvent);
+    }
+  }
+  function initError(moduleName, message, element, expression) {
+    const error = new UXError(`Initialization failed for ${moduleName}: ${message}`, element, expression);
+    reportError(error, element, expression);
+  }
+  function syntaxError(directiveName, attributeValue, message, element) {
+    const error = new UXError(
+      `Syntax error in ${ATTRIBUTE_PREFIX}${directiveName}="${attributeValue}": ${message}`,
+      element,
+      attributeValue
+    );
+    reportError(error, element, attributeValue);
+  }
+  function evaluationError(expression, originalError, element) {
+    const error = new UXError(
+      `Expression evaluation failed: ${originalError.message}`,
+      element,
+      expression
+    );
+    error.stack = originalError.stack;
+    reportError(error, element, expression);
+  }
+  function initSanitizingEngine(runtimeContext) {
+    if (typeof MutationObserver === "undefined" || typeof document === "undefined")
+      return;
+    try {
+      sanitizingObserver = new MutationObserver((mutations) => {
+        try {
+          for (const mutation of mutations) {
+            if (mutation.type === "attributes" && mutation.attributeName === "data-debug") {
+              const target = mutation.target;
+              const debugValue = target.getAttribute("data-debug");
+              runtimeContext.isDevMode = debugValue !== null;
+              if (debugValue && debugValue.trim().startsWith("{")) {
+                try {
+                  const config = new Function(`return (${debugValue})`)();
+                  if (config.mcp && !runtimeContext.mcp) {
+                    Promise.resolve().then(() => (init_mcp(), mcp_exports)).then(({ MCPClient: MCPClient2 }) => {
+                      runtimeContext.mcp = new MCPClient2(config.mcp);
+                      runtimeContext.mcp.connect().catch(() => {
+                        console.warn(`[Nexus Debug] MCP connection failed: ${config.mcp}`);
+                      });
+                    });
+                  }
+                } catch {
+                }
+              }
+            }
+          }
+        } catch (e) {
+          console.error("[Nexus Sanitizer] Internal error (isolated):", e);
+        }
+      });
+      sanitizingObserver.observe(document.documentElement, { attributes: true, subtree: true });
+    } catch (e) {
+      console.error("[Nexus Sanitizer] Failed to initialize:", e);
+    }
+  }
+  function disposeSanitizingEngine() {
+    if (sanitizingObserver) {
+      sanitizingObserver.disconnect();
+      sanitizingObserver = null;
+    }
+  }
+  var UXError, logger, sanitizingObserver;
+  var init_debug = __esm({
+    "src/engine/debug.ts"() {
+      init_consts();
+      UXError = class _UXError extends Error {
+        constructor(message, element, expression) {
+          super(message);
+          this.element = element;
+          this.expression = expression;
+          this.name = "UXError";
+          Object.setPrototypeOf(this, _UXError.prototype);
+        }
+      };
+      logger = {
+        log: (context, ...args) => {
+          if (context.isDevMode)
+            console.log(`[Nexus]`, ...args);
+        },
+        warn: (context, ...args) => {
+          if (context.isDevMode)
+            console.warn(`[Nexus]`, ...args);
+        },
+        info: (context, ...args) => {
+          if (context.isDevMode)
+            console.info(`[Nexus]`, ...args);
+        },
+        debug: (context, ...args) => {
+          if (context.isDevMode)
+            console.debug(`[Nexus Debug]`, ...args);
+        },
+        error: (_context, ...args) => {
+          console.error(`[Nexus Error]`, ...args);
+        }
+      };
+      sanitizingObserver = null;
+    }
+  });
+
+  // src/engine/scheduler.ts
+  function yieldToBrowser() {
+    if (yieldChannel) {
+      return new Promise((resolve) => {
+        yieldResolve = resolve;
+        yieldChannel.port2.postMessage(null);
+      });
+    }
+    if (typeof globalThis.scheduler === "object" && typeof globalThis.scheduler?.yield === "function") {
+      return globalThis.scheduler.yield();
+    }
+    return new Promise((resolve) => setTimeout(resolve, 0));
+  }
+  var PHASE_CURRENT, PHASE_PENDING, CAPTURE_LEN, EVALUATE_LEN, RESOLVE_LEN, PAINT_LEN, STATE_SLOTS, sharedState, yieldChannel, yieldResolve, STALL_BUDGET_MS, Scheduler, scheduler;
+  var init_scheduler = __esm({
+    "src/engine/scheduler.ts"() {
+      PHASE_CURRENT = 0;
+      PHASE_PENDING = 1;
+      CAPTURE_LEN = 2;
+      EVALUATE_LEN = 3;
+      RESOLVE_LEN = 4;
+      PAINT_LEN = 5;
+      STATE_SLOTS = 6;
+      try {
+        if (typeof SharedArrayBuffer !== "undefined" && typeof globalThis.crossOriginIsolated !== "undefined" && globalThis.crossOriginIsolated) {
+          sharedState = new Int32Array(new SharedArrayBuffer(STATE_SLOTS * 4));
+        } else {
+          sharedState = new Int32Array(new ArrayBuffer(STATE_SLOTS * 4));
+        }
+      } catch {
+        sharedState = new Int32Array(new ArrayBuffer(STATE_SLOTS * 4));
+      }
+      yieldChannel = null;
+      yieldResolve = null;
+      if (typeof MessageChannel !== "undefined") {
+        yieldChannel = new MessageChannel();
+        yieldChannel.port1.onmessage = () => {
+          if (yieldResolve) {
+            yieldResolve();
+            yieldResolve = null;
+          }
+        };
+      }
+      STALL_BUDGET_MS = 8;
+      Scheduler = class _Scheduler {
+        // Phase 1: Capture (Input/Signal Flagging)
+        captureQueue = [];
+        // Phase 2: Evaluate (Downstream effects & Ghost DOM)
+        evaluateQueue = [];
+        // Phase 3: Resolve (Instruction Queue translation)
+        resolveQueue = [];
+        // Phase 4: Paint (DOM mutation execution)
+        paintQueue = [];
+        nextTickQueue = [];
+        pending = false;
+        flushing = false;
+        // Deduplication set: prevents the same runner from being enqueued multiple
+        // times in the same flush cycle, which was the root cause of infinite loops.
+        evaluateSet = /* @__PURE__ */ new Set();
+        /** Configurable stall detection budget (ms). Phases yielding after this. */
+        stallBudget = STALL_BUDGET_MS;
+        /**
+         * Phase 1: Capture
+         */
+        enqueueCapture(job) {
+          this.captureQueue.push(job);
+          this.syncSharedState();
+          this.requestFlush();
+        }
+        /**
+         * Phase 2: Evaluate (Legacy enqueueEffect/enqueueMorph mapping)
+         * Deduplicates: if a runner is already queued, skip re-enqueue.
+         */
+        enqueueEvaluate(job) {
+          if (this.evaluateSet.has(job))
+            return;
+          this.evaluateSet.add(job);
+          this.evaluateQueue.push(job);
+          this.syncSharedState();
+          this.requestFlush();
+        }
+        // Alias for compatibility with existing modules
+        enqueueEffect(job) {
+          this.enqueueEvaluate(job);
+        }
+        /**
+         * Phase 3: Resolve
+         */
+        enqueueResolve(job) {
+          this.resolveQueue.push(job);
+          this.syncSharedState();
+          this.requestFlush();
+        }
+        /**
+         * Phase 4: Paint (Legacy enqueueMorph mapping)
+         */
+        enqueuePaint(job) {
+          this.paintQueue.push(job);
+          this.syncSharedState();
+          this.requestFlush();
+        }
+        // Alias for compatibility with existing code
+        enqueueMorph(job) {
+          this.enqueuePaint(job);
+        }
+        // Alias for Phase 4 or cleanup
+        enqueueClean(job) {
+          this.paintQueue.push(job);
+          this.syncSharedState();
+          this.requestFlush();
+        }
+        /**
+         * Schedules a task to run after the current atomic frame completes.
+         */
+        nextTick(job) {
+          this.nextTickQueue.push(job);
+          this.requestFlush();
+        }
+        /**
+         * Exposes the shared phase state for cross-context coordination.
+         * Workers can read this to check scheduler load without IPC.
+         */
+        getSharedState() {
+          return sharedState;
+        }
+        // ─── Async Process Loop ───────────────────────────────────────────────
+        /**
+         * Request a flush using the async process loop.
+         * Phases 1-3 are dispatched via queueMicrotask for immediate processing.
+         * Phase 4 (Paint) is deferred to requestAnimationFrame for frame alignment.
+         */
+        requestFlush() {
+          if (this.pending)
+            return;
+          this.pending = true;
+          Atomics.store(sharedState, PHASE_PENDING, 1);
+          queueMicrotask(() => {
+            this.flushComputationPhases();
+          });
+        }
+        /**
+         * Flush computation phases (Capture, Evaluate, Resolve) with stall detection.
+         * If any phase exceeds the budget, yield to the browser and resume.
+         */
+        async flushComputationPhases() {
+          if (this.flushing)
+            return;
+          this.flushing = true;
+          try {
+            Atomics.store(sharedState, PHASE_CURRENT, 1);
+            await this.runQueueWithYielding(this.captureQueue);
+            Atomics.store(sharedState, PHASE_CURRENT, 2);
+            await this.runQueueWithYielding(this.evaluateQueue);
+            this.evaluateSet.clear();
+            Atomics.store(sharedState, PHASE_CURRENT, 3);
+            await this.runQueueWithYielding(this.resolveQueue);
+            if (this.paintQueue.length > 0 || this.nextTickQueue.length > 0) {
+              await this.flushPaintPhase();
+            } else {
+              this.finalize();
+            }
+          } catch (e) {
+            console.error("[Nexus Scheduler] Async loop error:", e);
+            this.finalize();
+          }
+        }
+        /**
+         * Flush the Paint phase on the next animation frame.
+         */
+        flushPaintPhase() {
+          return new Promise((resolve) => {
+            if (typeof requestAnimationFrame !== "undefined") {
+              requestAnimationFrame(() => {
+                Atomics.store(sharedState, PHASE_CURRENT, 4);
+                this.runQueueSync(this.paintQueue);
+                this.runQueueSync(this.nextTickQueue);
+                this.finalize();
+                resolve();
+              });
+            } else {
+              setTimeout(() => {
+                Atomics.store(sharedState, PHASE_CURRENT, 4);
+                this.runQueueSync(this.paintQueue);
+                this.runQueueSync(this.nextTickQueue);
+                this.finalize();
+                resolve();
+              }, 0);
+            }
+          });
+        }
+        /**
+         * Reset scheduler state after a full flush cycle.
+         */
+        finalize() {
+          this.flushing = false;
+          this.pending = false;
+          Atomics.store(sharedState, PHASE_CURRENT, 0);
+          Atomics.store(sharedState, PHASE_PENDING, 0);
+          this.syncSharedState();
+          if (this.captureQueue.length > 0 || this.evaluateQueue.length > 0 || this.resolveQueue.length > 0 || this.paintQueue.length > 0 || this.nextTickQueue.length > 0) {
+            this.pending = false;
+            this.requestFlush();
+          }
+        }
+        // ─── Queue Execution ──────────────────────────────────────────────────
+        /** Maximum iterations per queue flush to prevent infinite loops */
+        static MAX_QUEUE_ITERATIONS = 1e4;
+        /**
+         * Run a queue with stall detection. If execution exceeds the budget,
+         * yield to the browser and resume processing.
+         */
+        async runQueueWithYielding(queue) {
+          if (queue.length === 0)
+            return;
+          const startTime = performance.now();
+          let iterations = 0;
+          while (queue.length > 0) {
+            if (++iterations > _Scheduler.MAX_QUEUE_ITERATIONS) {
+              console.error(
+                `[Nexus Scheduler] Loop guard: ${iterations} iterations exceeded. Remaining queue size: ${queue.length}. Draining queue to prevent infinite loop.`
+              );
+              queue.length = 0;
+              break;
+            }
+            const job = queue.shift();
+            try {
+              job();
+            } catch (e) {
+              console.error("[Nexus Scheduler] Job error:", e);
+            }
+            if (performance.now() - startTime > this.stallBudget) {
+              this.syncSharedState();
+              await yieldToBrowser();
+            }
+          }
+          this.syncSharedState();
+        }
+        /**
+         * Run a queue synchronously (used for Paint phase which must be atomic).
+         */
+        runQueueSync(queue) {
+          const len = queue.length;
+          if (len === 0)
+            return;
+          for (let i = 0; i < len; i++) {
+            try {
+              queue[i]();
+            } catch (e) {
+              console.error("[Nexus Scheduler] Job error:", e);
+            }
+          }
+          queue.splice(0, len);
+        }
+        /**
+         * Sync queue lengths to the shared state buffer for cross-context visibility.
+         */
+        syncSharedState() {
+          Atomics.store(sharedState, CAPTURE_LEN, this.captureQueue.length);
+          Atomics.store(sharedState, EVALUATE_LEN, this.evaluateQueue.length);
+          Atomics.store(sharedState, RESOLVE_LEN, this.resolveQueue.length);
+          Atomics.store(sharedState, PAINT_LEN, this.paintQueue.length);
+        }
+      };
+      scheduler = new Scheduler();
+    }
+  });
+
+  // src/modules/sprites/predictive.ts
+  var predictive_exports = {};
+  __export(predictive_exports, {
+    default: () => predictive_default,
+    predictive: () => predictive,
+    predictiveModule: () => predictiveModule
+  });
+  function extractNavTarget(el) {
+    const hint = el.getAttribute("data-prefetch");
+    if (hint && hint.trim())
+      return hint.trim();
+    if (el instanceof HTMLAnchorElement) {
+      const href = el.getAttribute("href") || "";
+      if (href && !href.startsWith("#") && !href.startsWith("http") && !href.startsWith("//")) {
+        return href;
+      }
+      return null;
+    }
+    for (const attr of Array.from(el.attributes)) {
+      if (!attr.name.startsWith("data-on-"))
+        continue;
+      const m = attr.value.match(NAV_CALL_RE);
+      if (m && m[1])
+        return m[1];
+    }
+    return null;
+  }
+  var Quadtree, NAV_CALL_RE, PredictiveEngine, predictive, predictiveModule, predictive_default;
+  var init_predictive = __esm({
+    "src/modules/sprites/predictive.ts"() {
+      init_scheduler();
+      Quadtree = class _Quadtree {
+        bounds;
+        capacity;
+        depth = 0;
+        points = [];
+        divided = false;
+        northeast = null;
+        northwest = null;
+        southeast = null;
+        southwest = null;
+        constructor(bounds, capacity = 10) {
+          this.bounds = bounds;
+          this.capacity = capacity;
+        }
+        /**
+         * Insert an element with its center point into the quadtree
+         */
+        insert(el, x, y) {
+          if (!this.contains(x, y))
+            return false;
+          if (this.points.length < this.capacity) {
+            this.points.push({ el, x, y });
+            return true;
+          }
+          let allIdentical = true;
+          for (let i = 0; i < this.points.length; i++) {
+            if (this.points[i].x !== x || this.points[i].y !== y) {
+              allIdentical = false;
+              break;
+            }
+          }
+          if (allIdentical) {
+            this.points.push({ el, x, y });
+            return true;
+          }
+          if (!this.divided) {
+            this.subdivide();
+          }
+          return this.northeast.insert(el, x, y) || this.northwest.insert(el, x, y) || this.southeast.insert(el, x, y) || this.southwest.insert(el, x, y);
+        }
+        /**
+         * Query all elements within a range (bounding box)
+         * ZCZS: Uses Float64Array for results to minimize allocation
+         */
+        queryRange(x, y, width, height) {
+          const results = [];
+          if (!this.intersects(x, y, width, height)) {
+            return results;
+          }
+          for (const point of this.points) {
+            if (this.pointInRect(point.x, point.y, x, y, width, height)) {
+              results.push(point.el);
+            }
+          }
+          if (this.divided) {
+            results.push(...this.northeast.queryRange(x, y, width, height));
+            results.push(...this.northwest.queryRange(x, y, width, height));
+            results.push(...this.southeast.queryRange(x, y, width, height));
+            results.push(...this.southwest.queryRange(x, y, width, height));
+          }
+          return results;
+        }
+        /**
+         * Query elements near a point (circle query)
+         */
+        queryRadius(x, y, radius) {
+          const results = [];
+          const r2 = radius * radius;
+          if (!this.intersects(x - radius, y - radius, radius * 2, radius * 2)) {
+            return results;
+          }
+          for (const point of this.points) {
+            const dx = point.x - x;
+            const dy = point.y - y;
+            if (dx * dx + dy * dy <= r2) {
+              results.push(point.el);
+            }
+          }
+          if (this.divided) {
+            results.push(...this.northeast.queryRadius(x, y, radius));
+            results.push(...this.northwest.queryRadius(x, y, radius));
+            results.push(...this.southeast.queryRadius(x, y, radius));
+            results.push(...this.southwest.queryRadius(x, y, radius));
+          }
+          return results;
+        }
+        /**
+         * Clear all points from the quadtree
+         */
+        clear() {
+          this.points = [];
+          this.divided = false;
+          this.northeast = null;
+          this.northwest = null;
+          this.southeast = null;
+          this.southwest = null;
+        }
+        contains(x, y) {
+          return x >= this.bounds.x && x < this.bounds.x + this.bounds.width && y >= this.bounds.y && y < this.bounds.y + this.bounds.height;
+        }
+        intersects(x, y, w, h) {
+          return !(x > this.bounds.x + this.bounds.width || x + w < this.bounds.x || y > this.bounds.y + this.bounds.height || y + h < this.bounds.y);
+        }
+        pointInRect(px, py, rx, ry, rw, rh) {
+          return px >= rx && px <= rx + rw && py >= ry && py <= ry + rh;
+        }
+        subdivide() {
+          const { x, y, width, height } = this.bounds;
+          const hw = width / 2;
+          const hh = height / 2;
+          this.northeast = new _Quadtree(
+            { x: x + hw, y, width: hw, height: hh },
+            this.capacity
+          );
+          this.northwest = new _Quadtree(
+            { x, y, width: hw, height: hh },
+            this.capacity
+          );
+          this.southeast = new _Quadtree({
+            x: x + hw,
+            y: y + hh,
+            width: hw,
+            height: hh
+          }, this.capacity);
+          this.southwest = new _Quadtree(
+            { x, y: y + hh, width: hw, height: hh },
+            this.capacity
+          );
+          this.divided = true;
+        }
+      };
+      NAV_CALL_RE = /(?:#?router\.(?:navigate|go)|(?<!\w)navigate)\s*\(\s*['"`]([^'"`]+)['"`]/;
+      PredictiveEngine = class {
+        lastPoint = null;
+        velocity = { x: 0, y: 0, z: 0, t: 0 };
+        predictiveNodes = /* @__PURE__ */ new Set();
+        cleanupFns = [];
+        debugTracker = null;
+        // Hook the router registers to pre-warm a hovered route link's component.
+        prewarmHook = null;
+        // Dedup: track refs already fired this rebuild cycle so the cache isn't
+        // spammed on every mousemove frame. Cleared when the quadtree rebuilds.
+        prewarmFired = /* @__PURE__ */ new Set();
+        // ZCZS: Quadtree for O(log n) spatial queries
+        quadtree;
+        viewportWidth = 0;
+        viewportHeight = 0;
+        rebuildTimer = null;
+        fadeTimer = null;
+        constructor() {
+          if (typeof window !== "undefined") {
+            this.viewportWidth = window.innerWidth;
+            this.viewportHeight = window.innerHeight;
+          }
+          if (typeof document !== "undefined") {
+            this.init();
+          }
+        }
+        init() {
+          const setup = () => {
+            if (typeof document !== "undefined" && document.body && document.documentElement.hasAttribute("data-debug") && !this.debugTracker) {
+              const svgNS = "http://www.w3.org/2000/svg";
+              const svg = document.createElementNS(svgNS, "svg");
+              svg.setAttribute("class", "nexus-predictive-tracker");
+              svg.style.position = "fixed";
+              svg.style.pointerEvents = "none";
+              svg.style.zIndex = "999999";
+              svg.style.overflow = "visible";
+              svg.style.transform = "translate(-50%, -50%)";
+              svg.style.width = "200px";
+              svg.style.height = "200px";
+              svg.style.left = "-1000px";
+              svg.style.top = "-1000px";
+              const halo = document.createElementNS(svgNS, "circle");
+              halo.setAttribute("cx", "100");
+              halo.setAttribute("cy", "100");
+              halo.setAttribute("r", "20");
+              halo.setAttribute("fill", "rgba(255, 0, 128, 0.1)");
+              halo.setAttribute("stroke", "rgba(255, 0, 128, 0.5)");
+              halo.setAttribute("stroke-width", "2");
+              halo.style.transition = "r 0.15s ease-out";
+              const line = document.createElementNS(svgNS, "line");
+              line.setAttribute("x1", "100");
+              line.setAttribute("y1", "100");
+              line.setAttribute("x2", "100");
+              line.setAttribute("y2", "100");
+              line.setAttribute("stroke", "rgba(255, 0, 128, 0.5)");
+              line.setAttribute("stroke-width", "2");
+              line.setAttribute("stroke-dasharray", "4 4");
+              line.style.opacity = "0";
+              line.style.transition = "x2 0.1s linear, y2 0.1s linear, opacity 0.3s ease-out";
+              const targetLine = document.createElementNS(svgNS, "line");
+              targetLine.setAttribute("x1", "100");
+              targetLine.setAttribute("y1", "100");
+              targetLine.setAttribute("x2", "100");
+              targetLine.setAttribute("y2", "100");
+              targetLine.setAttribute("stroke", "rgba(34, 197, 94, 0.9)");
+              targetLine.setAttribute("stroke-width", "2");
+              targetLine.style.transition = "x2 0.1s linear, y2 0.1s linear, opacity 0.1s ease";
+              targetLine.style.opacity = "0";
+              svg.appendChild(halo);
+              svg.appendChild(line);
+              svg.appendChild(targetLine);
+              document.body.appendChild(svg);
+              this.debugTracker = { svg, halo, line, targetLine };
+            }
+            this.rebuildQuadtree();
+          };
+          if (typeof document !== "undefined" && document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", setup);
+            this.cleanupFns.push(
+              () => document.removeEventListener("DOMContentLoaded", setup)
+            );
+          } else {
+            setup();
+          }
+          const onMouseMove = (e) => this.track(e.clientX, e.clientY);
+          const onTouchStart = (e) => {
+            const touch = e.touches[0];
+            if (touch)
+              this.track(touch.clientX, touch.clientY);
+          };
+          const onResize = () => {
+            this.viewportWidth = window.innerWidth;
+            this.viewportHeight = window.innerHeight;
+            this.rebuildQuadtree();
+          };
+          const onScroll = () => {
+            if (this.rebuildTimer)
+              clearTimeout(this.rebuildTimer);
+            this.rebuildTimer = setTimeout(
+              () => this.rebuildQuadtree(),
+              16
+            );
+          };
+          globalThis.addEventListener("mousemove", onMouseMove);
+          globalThis.addEventListener("touchstart", onTouchStart, {
+            passive: true
+          });
+          globalThis.addEventListener("resize", onResize);
+          globalThis.addEventListener("scroll", onScroll, { passive: true });
+          const onDomMutated = () => {
+            if (this.rebuildTimer)
+              clearTimeout(this.rebuildTimer);
+            this.rebuildTimer = setTimeout(
+              () => this.rebuildQuadtree(),
+              200
+            );
+          };
+          globalThis.addEventListener("nexus:dom-mutated", onDomMutated);
+          this.cleanupFns.push(
+            () => globalThis.removeEventListener("mousemove", onMouseMove),
+            () => globalThis.removeEventListener("touchstart", onTouchStart),
+            () => globalThis.removeEventListener("resize", onResize),
+            () => globalThis.removeEventListener("scroll", onScroll),
+            () => globalThis.removeEventListener("nexus:dom-mutated", onDomMutated),
+            () => {
+              if (this.rebuildTimer)
+                clearTimeout(this.rebuildTimer);
+              if (this.fadeTimer)
+                clearTimeout(this.fadeTimer);
+            }
+          );
+        }
+        /** Tear down all listeners. */
+        /**
+         * Register a pre-warm callback (wired by the router sprite). Called with
+         * the resolved href of a route link the cursor is projected to hit, so the
+         * destination's component HTML can be fetched into the cache before the
+         * click lands — turning the predictive frustum into fetch pre-warming.
+         */
+        setPrewarm(fn) {
+          this.prewarmHook = fn;
+        }
+        dispose() {
+          this.cleanupFns.forEach((fn) => fn());
+          this.quadtree.clear();
+          if (this.debugTracker && this.debugTracker.svg.parentNode) {
+            this.debugTracker.svg.parentNode.removeChild(this.debugTracker.svg);
+          }
+        }
+        /**
+         * Rebuild the quadtree with all data-signal elements
+         * Called on init and resize
+         */
+        getDynamicSelectors() {
+          const baseSelectors = /* @__PURE__ */ new Set([
+            "[data-signal]",
+            "[data-on-click]",
+            "[data-on-hover]",
+            "[data-on-mouseenter]",
+            "[data-on-touchstart]",
+            "button",
+            "a",
+            "input",
+            "select",
+            "textarea",
+            "label",
+            "[data-bind]"
+          ]);
+          if (typeof document === "undefined")
+            return Array.from(baseSelectors).join(", ");
+          try {
+            const sheets = Array.from(document.styleSheets);
+            if (document.adoptedStyleSheets) {
+              sheets.push(...document.adoptedStyleSheets);
+            }
+            for (const sheet of sheets) {
+              try {
+                const rules = sheet.cssRules || sheet.rules;
+                if (!rules)
+                  continue;
+                for (let j = 0; j < rules.length; j++) {
+                  const rule = rules[j];
+                  if (rule.selectorText && (rule.selectorText.includes(":hover") || rule.selectorText.includes(":active") || rule.selectorText.includes(":focus"))) {
+                    const segments = rule.selectorText.split(",");
+                    for (let segment of segments) {
+                      segment = segment.split("::")[0];
+                      const clean = segment.replace(/:hover|:active|:focus/g, "").trim();
+                      if (clean && clean !== "*" && clean !== "html" && clean !== "body") {
+                        baseSelectors.add(clean);
+                      }
+                    }
+                  }
+                }
+              } catch (e) {
+              }
+            }
+          } catch (e) {
+          }
+          return Array.from(baseSelectors).join(", ");
+        }
+        rebuildQuadtree() {
+          if (typeof document === "undefined")
+            return;
+          const scrollX = window.scrollX;
+          const scrollY = window.scrollY;
+          const vw = window.innerWidth;
+          const vh = window.innerHeight;
+          this.viewportWidth = vw;
+          this.viewportHeight = vh;
+          const bufferX = vw * 0.15;
+          const bufferY = vh * 0.15;
+          this.quadtree = new Quadtree(
+            {
+              x: scrollX - bufferX,
+              y: scrollY - bufferY,
+              width: vw + bufferX * 2,
+              height: vh + bufferY * 2
+            },
+            20
+          );
+          const selectors = this.getDynamicSelectors();
+          const elements = document.querySelectorAll(selectors);
+          elements.forEach((el) => {
+            if (el instanceof HTMLElement) {
+              const rect = el.getBoundingClientRect();
+              const centerX = rect.x + rect.width / 2 + scrollX;
+              const centerY = rect.y + rect.height / 2 + scrollY;
+              this.quadtree.insert(el, centerX, centerY);
+            }
+          });
+          this.prewarmFired.clear();
+        }
+        /**
+         * Update quadtree when elements are added/removed
+         */
+        updateElement(el) {
+          const rect = el.getBoundingClientRect();
+          const centerX = rect.x + rect.width / 2 + window.scrollX;
+          const centerY = rect.y + rect.height / 2 + window.scrollY;
+          this.quadtree.insert(el, centerX, centerY);
+        }
+        track(x, y, z = 0) {
+          const t = performance.now();
+          const pageX = x + window.scrollX;
+          const pageY = y + window.scrollY;
+          if (this.lastPoint) {
+            const dt = t - this.lastPoint.t;
+            if (dt > 1) {
+              this.velocity = {
+                x: (pageX - this.lastPoint.x) / dt,
+                y: (pageY - this.lastPoint.y) / dt,
+                z: (z - this.lastPoint.z) / dt,
+                t: 1
+              };
+              if (this.debugTracker)
+                this.debugTracker.line.style.opacity = "1";
+              scheduler.enqueueCapture(() => this.predict(pageX, pageY, z));
+            }
+          }
+          this.lastPoint = { x: pageX, y: pageY, z, t };
+          if (this.fadeTimer)
+            clearTimeout(this.fadeTimer);
+          this.fadeTimer = setTimeout(() => {
+            this.velocity = { x: 0, y: 0, z: 0, t: 1 };
+            if (this.debugTracker) {
+              this.debugTracker.line.style.opacity = "0";
+              this.debugTracker.targetLine.style.opacity = "0";
+            }
+          }, 150);
+        }
+        /**
+         * Projects the interaction frustum and identifies nodes to pre-warm.
+         * ZCZS: Uses quadtree for O(log n) spatial queries
+         */
+        predict(x, y, z) {
+          const px = x + this.velocity.x * 100;
+          const py = y + this.velocity.y * 100;
+          const _pz = z + this.velocity.z * 100;
+          const targets = this.quadtree.queryRadius(px, py, 150);
+          const newPredictiveNodes = /* @__PURE__ */ new Set();
+          let snappedTarget = void 0;
+          let minD = Infinity;
+          targets.forEach((target) => {
+            if (target instanceof HTMLElement) {
+              newPredictiveNodes.add(target);
+              const className = target.className || "";
+              const hasTailwindInteraction = typeof className === "string" && (className.includes("hover:") || className.includes("active:") || className.includes("focus:"));
+              const isInteractiveNode = target.hasAttribute("data-on-click") || target.hasAttribute("data-on-hover") || target.hasAttribute("data-on-mouseenter") || target.tagName === "BUTTON" || target.tagName === "A" || target.tagName === "INPUT" || target.tagName === "SELECT" || target.tagName === "TEXTAREA" || target.hasAttribute("data-bind") || hasTailwindInteraction;
+              if (isInteractiveNode) {
+                const rect = target.getBoundingClientRect();
+                const cx = rect.x + rect.width / 2 + window.scrollX;
+                const cy = rect.y + rect.height / 2 + window.scrollY;
+                const d = Math.hypot(cx - px, cy - py);
+                if (d < minD) {
+                  minD = d;
+                  snappedTarget = { cx, cy };
+                  if (this.prewarmHook) {
+                    const ref2 = extractNavTarget(target);
+                    if (ref2 && !this.prewarmFired.has(ref2)) {
+                      this.prewarmFired.add(ref2);
+                      this.prewarmHook(ref2);
+                    }
+                  }
+                }
+              }
+            }
+          });
+          if (this.debugTracker) {
+            const vpX = x - window.scrollX;
+            const vpY = y - window.scrollY;
+            this.debugTracker.svg.style.left = `${vpX}px`;
+            this.debugTracker.svg.style.top = `${vpY}px`;
+            const speed = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
+            const targetR = Math.min(80, Math.max(20, 20 + speed * 5));
+            this.debugTracker.halo.setAttribute("r", targetR.toString());
+            const trajX = 100 + this.velocity.x * 200;
+            const trajY = 100 + this.velocity.y * 200;
+            this.debugTracker.line.setAttribute("x2", trajX.toString());
+            this.debugTracker.line.setAttribute("y2", trajY.toString());
+            if (snappedTarget) {
+              const target = snappedTarget;
+              const targetX = 100 + (target.cx - x);
+              const targetY = 100 + (target.cy - y);
+              this.debugTracker.targetLine.setAttribute("x2", targetX.toString());
+              this.debugTracker.targetLine.setAttribute("y2", targetY.toString());
+              this.debugTracker.targetLine.style.opacity = "1";
+            } else {
+              this.debugTracker.targetLine.style.opacity = "0";
+              this.debugTracker.targetLine.setAttribute("x2", "100");
+              this.debugTracker.targetLine.setAttribute("y2", "100");
+            }
+          }
+          newPredictiveNodes.forEach((node) => {
+            if (!this.predictiveNodes.has(node)) {
+              this.preWarm(node);
+            }
+          });
+          this.predictiveNodes.forEach((node) => {
+            if (!newPredictiveNodes.has(node)) {
+              this.coolDown(node);
+            }
+          });
+          this.predictiveNodes = newPredictiveNodes;
+        }
+        preWarm(el) {
+          el.classList.add("nexus-predictive-warm");
+          el.dispatchEvent(
+            new CustomEvent("nexus:predictive-warm", {
+              detail: { velocity: this.velocity }
+            })
+          );
+        }
+        coolDown(el) {
+          el.classList.remove("nexus-predictive-warm");
+          el.dispatchEvent(new CustomEvent("nexus:predictive-cool"));
+        }
+        getVelocity() {
+          return this.velocity;
+        }
+      };
+      predictive = new PredictiveEngine();
+      globalThis._nexusQuadtree = predictive.quadtree;
+      predictiveModule = {
+        name: "predictive",
+        key: "$predictive",
+        sprites: (context) => {
+          context.predictive = predictive;
+          const wire = () => {
+            const globals = context.globalSignals?.();
+            const router = globals?.router;
+            if (router?.prewarm)
+              predictive.setPrewarm((ref2) => router.prewarm(ref2));
+          };
+          wire();
+          scheduler.enqueueCapture(wire);
+          return {
+            getVelocity: () => predictive.getVelocity(),
+            updateElement: (el) => predictive.updateElement(el)
+          };
+        }
+      };
+      predictive_default = predictiveModule;
+    }
+  });
+
+  // src/index.ts
+  var src_exports = {};
+  __export(src_exports, {
+    $id: () => $id,
+    $nextTick: () => $nextTick,
+    Nexus: () => Nexus,
+    UX: () => UX
+  });
+
+  // src/engine/modules.ts
+  init_consts();
+
+  // src/engine/reactivity.ts
+  init_consts();
+  init_debug();
+  init_scheduler();
+  var ZCZS_SUPPORTED = typeof SharedArrayBuffer !== "undefined";
+  var SignalHeap = class {
+    _floatHeap;
+    _intHeap;
+    _boolHeap;
+    _stringHeap;
+    _stringPool;
+    _objectHeap;
+    _arrayHeap;
+    _indexMap;
+    _typeMap;
+    _nextIndex = 0;
+    _shared = false;
+    constructor(size = 1024, shared = false) {
+      this._shared = shared && ZCZS_SUPPORTED;
+      if (this._shared) {
+        const sab = new SharedArrayBuffer(size * 8);
+        this._floatHeap = new Float64Array(sab);
+        this._intHeap = new Int32Array(sab, size * 4);
+        this._boolHeap = new Uint8Array(new SharedArrayBuffer(size));
+      } else {
+        this._floatHeap = new Float64Array(size);
+        this._intHeap = new Int32Array(size);
+        this._boolHeap = new Uint8Array(size);
+      }
+      this._stringHeap = /* @__PURE__ */ new Map();
+      this._stringPool = /* @__PURE__ */ new Map();
+      this._objectHeap = /* @__PURE__ */ new Map();
+      this._arrayHeap = /* @__PURE__ */ new Map();
+      this._indexMap = /* @__PURE__ */ new Map();
+      this._typeMap = /* @__PURE__ */ new Map();
+    }
+    _allocateSlot(key, type) {
+      if (this._indexMap.has(key)) {
+        this._typeMap.set(key, type);
+        return this._indexMap.get(key);
+      }
+      const index = this._nextIndex++;
+      this._indexMap.set(key, index);
+      this._typeMap.set(key, type);
+      return index;
+    }
+    allocateForValue(key, value) {
+      if (typeof value === "number") {
+        if (Number.isInteger(value))
+          return this.allocateInt(key);
+        return this.allocateNumeric(key);
+      } else if (typeof value === "boolean") {
+        return this.allocateBoolean(key);
+      } else if (typeof value === "string") {
+        return this.allocateString(key);
+      } else if (Array.isArray(value)) {
+        return this.allocateArray(key);
+      } else if (typeof value === "object" && value !== null) {
+        return this.allocateObject(key);
+      }
+      return this.allocateObject(key);
+    }
+    allocateNumeric(key) {
+      return this._allocateSlot(key, "float");
+    }
+    allocateInt(key) {
+      return this._allocateSlot(key, "int");
+    }
+    allocateBoolean(key) {
+      return this._allocateSlot(key, "bool");
+    }
+    allocateString(key) {
+      return this._allocateSlot(key, "string");
+    }
+    allocateObject(key) {
+      return this._allocateSlot(key, "object");
+    }
+    allocateArray(key) {
+      return this._allocateSlot(key, "array");
+    }
+    set(key, value) {
+      if (typeof value === "number") {
+        if (Number.isInteger(value))
+          this.setInt(key, value);
+        else
+          this.setNumeric(key, value);
+      } else if (typeof value === "boolean") {
+        this.setBoolean(key, value);
+      } else if (typeof value === "string") {
+        this.setString(key, value);
+      } else if (Array.isArray(value)) {
+        this.setArray(key, value);
+      } else if (typeof value === "object" && value !== null) {
+        this.setObject(key, value);
+      }
+    }
+    get(key) {
+      const type = this._typeMap.get(key);
+      switch (type) {
+        case "float":
+          return this.getNumeric(key);
+        case "int":
+          return this.getInt(key);
+        case "bool":
+          return this.getBoolean(key);
+        case "string":
+          return this.getString(key);
+        case "array":
+          return this.getArray(key);
+        case "object":
+          return this.getObject(key);
+        default:
+          return void 0;
+      }
+    }
+    setNumeric(key, value) {
+      const index = this.allocateNumeric(key);
+      this._floatHeap[index] = value;
+    }
+    getNumeric(key) {
+      const index = this._indexMap.get(key);
+      return index !== void 0 ? this._floatHeap[index] : void 0;
+    }
+    setInt(key, value) {
+      const index = this.allocateInt(key);
+      this._intHeap[index] = value;
+    }
+    getInt(key) {
+      const index = this._indexMap.get(key);
+      return index !== void 0 ? this._intHeap[index] : void 0;
+    }
+    setBoolean(key, value) {
+      const index = this.allocateBoolean(key);
+      this._boolHeap[index] = value ? 1 : 0;
+    }
+    getBoolean(key) {
+      const index = this._indexMap.get(key);
+      return index !== void 0 ? this._boolHeap[index] === 1 : void 0;
+    }
+    setString(key, value) {
+      this._allocateSlot(key, "string");
+      if (!this._stringPool.has(value)) {
+        this._stringPool.set(value, this._stringPool.size);
+      }
+      this._stringHeap.set(key, value);
+    }
+    getString(key) {
+      return this._stringHeap.get(key);
+    }
+    setObject(key, value) {
+      this._allocateSlot(key, "object");
+      this._objectHeap.set(key, value);
+    }
+    getObject(key) {
+      return this._objectHeap.get(key);
+    }
+    setArray(key, value) {
+      this._allocateSlot(key, "array");
+      this._arrayHeap.set(key, value);
+    }
+    getArray(key) {
+      return this._arrayHeap.get(key);
+    }
+    has(key) {
+      return this._indexMap.has(key);
+    }
+    getType(key) {
+      return this._typeMap.get(key);
+    }
+    delete(key) {
+      this._indexMap.delete(key);
+      this._typeMap.delete(key);
+      this._stringHeap.delete(key);
+      this._objectHeap.delete(key);
+      this._arrayHeap.delete(key);
+    }
+    attachSharedBuffer(sab) {
+      if (this._shared)
+        return;
+      this._shared = true;
+      this._floatHeap = new Float64Array(sab);
+      this._intHeap = new Int32Array(sab, this._floatHeap.length * 8);
+      this._boolHeap = new Uint8Array(sab, this._floatHeap.length * 8 + this._intHeap.length * 4);
+      console.log("[SignalHeap] Attached SharedArrayBuffer");
+    }
+  };
+  var heap = new SignalHeap();
+  var OWNERSHIP_KEY = Symbol.for("nexus.ownership");
+  var BORROW_KEY = Symbol.for("nexus.borrow");
+  var OwnershipTracker = class {
+    _ownerships = /* @__PURE__ */ new WeakMap();
+    _borrows = /* @__PURE__ */ new WeakMap();
+    acquire(value, ownerId) {
+      const ownership2 = { ownerId, refCount: 1, acquiredAt: Date.now() };
+      this._ownerships.set(value, ownership2);
+      value[OWNERSHIP_KEY] = ownership2;
+    }
+    release(value, ownerId) {
+      const ownership2 = this._ownerships.get(value);
+      if (!ownership2 || ownership2.ownerId !== ownerId)
+        return;
+      ownership2.refCount--;
+      if (ownership2.refCount <= 0) {
+        this._ownerships.delete(value);
+        delete value[OWNERSHIP_KEY];
+      }
+    }
+    borrowImmutable(value, borrower) {
+      const borrows = this._borrows.get(value) || [];
+      if (borrows.some((b) => b.type === "mutable"))
+        return false;
+      borrows.push({ borrower, type: "immutable", borrowedAt: Date.now() });
+      this._borrows.set(value, borrows);
+      value[BORROW_KEY] = borrows[borrows.length - 1];
+      return true;
+    }
+    borrowMutable(value, borrower) {
+      const borrows = this._borrows.get(value);
+      if (borrows && borrows.length > 0)
+        return false;
+      const borrow = { borrower, type: "mutable", borrowedAt: Date.now() };
+      this._borrows.set(value, [borrow]);
+      value[BORROW_KEY] = borrow;
+      return true;
+    }
+    returnBorrow(value, borrower) {
+      const borrows = this._borrows.get(value);
+      if (!borrows)
+        return;
+      const idx = borrows.findIndex((b) => b.borrower === borrower);
+      if (idx !== -1) {
+        borrows.splice(idx, 1);
+        if (borrows.length === 0)
+          this._borrows.delete(value);
+        delete value[BORROW_KEY];
+      }
+    }
+    validateBorrow(value, type) {
+      const borrows = this._borrows.get(value);
+      if (type === "mutable" && borrows && borrows.length > 0) {
+        throw new Error(`Mutable borrow denied for ${type}: active borrows exist`);
+      }
+      if (type === "immutable" && borrows?.some((b) => b.type === "mutable")) {
+        throw new Error(`Immutable borrow denied for ${type}: mutable borrow exists`);
+      }
+    }
+    getBorrowers(value) {
+      return this._borrows.get(value) || [];
+    }
+  };
+  var ownership = new OwnershipTracker();
+  var ITERATE_KEY = Symbol("iterate");
+  var targetMap = /* @__PURE__ */ new WeakMap();
+  var activeEffect = null;
+  function track(target, key) {
+    if (!activeEffect)
+      return;
+    let depsMap = targetMap.get(target);
+    if (!depsMap) {
+      depsMap = /* @__PURE__ */ new Map();
+      targetMap.set(target, depsMap);
+    }
+    let dep = depsMap.get(key);
+    if (!dep) {
+      dep = /* @__PURE__ */ new Set();
+      depsMap.set(key, dep);
+    }
+    if (!dep.has(activeEffect)) {
+      dep.add(activeEffect);
+      activeEffect.deps.add(dep);
+    }
+  }
+  function trigger(target, key) {
+    const depsMap = targetMap.get(target);
+    if (!depsMap)
+      return;
+    const effectsToRun = /* @__PURE__ */ new Set();
+    const addEffects = (effects) => {
+      if (effects) {
+        for (const eff of effects) {
+          if (eff !== activeEffect)
+            effectsToRun.add(eff);
+        }
+      }
+    };
+    addEffects(depsMap.get(key));
+    if (Array.isArray(target)) {
+      if (key === "length") {
+        depsMap.forEach((effects, k) => {
+          if (k === "length" || typeof k === "string" && Number(k) >= target.length) {
+            addEffects(effects);
+          }
+        });
+      } else if (typeof key === "string" && !isNaN(Number(key))) {
+        addEffects(depsMap.get("length"));
+        addEffects(depsMap.get(ITERATE_KEY));
+      }
+    }
+    for (const eff of effectsToRun) {
+      if (eff.scheduler)
+        eff.scheduler();
+      else
+        eff.run();
+    }
+  }
+  var reactiveMap = /* @__PURE__ */ new WeakMap();
+  var rawMap = /* @__PURE__ */ new WeakMap();
+  function isReactive(value) {
+    return rawMap.has(value);
+  }
+  function isProxy(value) {
+    return isReactive(value);
+  }
+  function isReadonly(_value) {
+    return false;
+  }
+  function toRaw(observed) {
+    const raw = observed?.__v_raw;
+    return raw ? toRaw(raw) : observed;
+  }
+  function reactive(target) {
+    if (!target || typeof target !== "object")
+      return target;
+    if (rawMap.has(target))
+      return target;
+    let proxy = reactiveMap.get(target);
+    if (proxy)
+      return proxy;
+    proxy = new Proxy(target, {
+      get(t, key, receiver) {
+        if (key === "__v_raw")
+          return t;
+        if (key === "__v_isReactive")
+          return true;
+        track(t, key);
+        const res = Reflect.get(t, key, receiver);
+        if (res && typeof res === "object") {
+          return reactive(res);
+        }
+        return res;
+      },
+      set(t, key, value, receiver) {
+        if (t !== toRaw(receiver)) {
+          return Reflect.set(t, key, value, receiver);
+        }
+        const oldVal = Reflect.get(t, key, receiver);
+        const oldLength = Array.isArray(t) ? t.length : 0;
+        const rawVal = toRaw(value);
+        const success = Reflect.set(t, key, rawVal);
+        if (success) {
+          const isNewKey = !Object.prototype.hasOwnProperty.call(t, key);
+          if (oldVal !== rawVal || Array.isArray(t) && t.length !== oldLength) {
+            trigger(t, key);
+            if (isNewKey)
+              trigger(t, ITERATE_KEY);
+          }
+        }
+        return success;
+      },
+      deleteProperty(t, key) {
+        const hasKey = Object.prototype.hasOwnProperty.call(t, key);
+        const success = Reflect.deleteProperty(t, key);
+        if (success && hasKey) {
+          trigger(t, key);
+          trigger(t, ITERATE_KEY);
+        }
+        return success;
+      },
+      has(t, key) {
+        track(t, key);
+        return Reflect.has(t, key);
+      },
+      ownKeys(t) {
+        track(t, Array.isArray(t) ? "length" : ITERATE_KEY);
+        return Reflect.ownKeys(t);
+      }
+    });
+    reactiveMap.set(target, proxy);
+    rawMap.set(proxy, target);
+    return proxy;
+  }
+  function shallowReactive(target) {
+    return reactive(target);
+  }
+  function readonly(target) {
+    return reactive(target);
+  }
+  function shallowReadonly(target) {
+    return reactive(target);
+  }
+  function effect(fn, options) {
+    const effectRunner = {
+      deps: /* @__PURE__ */ new Set(),
+      scheduler: options?.scheduler,
+      run() {
+        if (!this.deps)
+          return;
+        cleanupEffect(this);
+        const lastActiveEffect = activeEffect;
+        activeEffect = this;
+        try {
+          return fn();
+        } finally {
+          activeEffect = lastActiveEffect;
+        }
+      },
+      stop() {
+        cleanupEffect(this);
+        if (this.deps) {
+          this.deps.clear();
+          this.deps = null;
+        }
+      }
+    };
+    if (!options?.lazy) {
+      effectRunner.run();
+    }
+    const runner = effectRunner.run.bind(effectRunner);
+    runner.effect = effectRunner;
+    return runner;
+  }
+  function cleanupEffect(eff) {
+    if (!eff.deps)
+      return;
+    for (const dep of eff.deps) {
+      dep.delete(eff);
+    }
+    eff.deps.clear();
+  }
+  function stop(runner) {
+    const eff = runner?.effect || runner;
+    if (eff && typeof eff.stop === "function") {
+      eff.stop();
+    }
+  }
+  var RefImpl = class {
+    _value;
+    _rawValue;
+    __v_isRef = true;
+    constructor(value, shallow = false) {
+      this._rawValue = shallow ? value : toRaw(value);
+      this._value = shallow ? value : typeof value === "object" && value !== null ? reactive(value) : value;
+    }
+    get value() {
+      track(this, "value");
+      return this._value;
+    }
+    set value(newValue) {
+      newValue = toRaw(newValue);
+      if (newValue !== this._rawValue) {
+        this._rawValue = newValue;
+        this._value = typeof newValue === "object" && newValue !== null ? reactive(newValue) : newValue;
+        trigger(this, "value");
+      }
+    }
+  };
+  function ref(value) {
+    return new RefImpl(value);
+  }
+  function isRef(value) {
+    return !!(value && value.__v_isRef === true);
+  }
+  function shallowRef(value) {
+    return new RefImpl(value, true);
+  }
+  function triggerRef(r) {
+    trigger(r, "value");
+  }
+  function unref(r) {
+    return isRef(r) ? r.value : r;
+  }
+  function customRef(factory) {
+    const { get, set } = factory(
+      () => track(refObj, "value"),
+      () => trigger(refObj, "value")
+    );
+    const refObj = {
+      __v_isRef: true,
+      get value() {
+        return get();
+      },
+      set value(v) {
+        set(v);
+      }
+    };
+    return refObj;
+  }
+  var ComputedRefImpl = class {
+    _value;
+    _dirty = true;
+    _runner;
+    __v_isRef = true;
+    __v_isReadonly = true;
+    constructor(getter) {
+      this._runner = effect(getter, {
+        lazy: true,
+        scheduler: () => {
+          if (!this._dirty) {
+            this._dirty = true;
+            trigger(this, "value");
+          }
+        }
+      });
+    }
+    get value() {
+      track(this, "value");
+      if (this._dirty) {
+        this._value = this._runner();
+        this._dirty = false;
+      }
+      return this._value;
+    }
+  };
+  function computed(getter) {
+    return new ComputedRefImpl(getter);
+  }
+  function watch(source, cb, options) {
+    let getter;
+    if (isRef(source))
+      getter = () => source.value;
+    else if (isReactive(source))
+      getter = () => traverse(source);
+    else if (typeof source === "function")
+      getter = source;
+    else if (Array.isArray(source)) {
+      getter = () => source.map((s) => isRef(s) ? s.value : isReactive(s) ? traverse(s) : s);
+    } else
+      getter = () => {
+      };
+    let oldValue;
+    const job = () => {
+      const newValue = runner();
+      if (cb) {
+        cb(newValue, oldValue);
+        oldValue = newValue;
+      }
+    };
+    const runner = effect(getter, {
+      lazy: true,
+      scheduler: () => {
+        if (options?.scheduler)
+          options.scheduler(job);
+        else
+          job();
+      }
+    });
+    if (options?.immediate)
+      job();
+    else
+      oldValue = runner();
+    return () => {
+      stop(runner);
+    };
+  }
+  function traverse(value, seen = /* @__PURE__ */ new Set()) {
+    if (typeof value !== "object" || value === null || seen.has(value))
+      return value;
+    seen.add(value);
+    if (isRef(value))
+      traverse(value.value, seen);
+    else if (Array.isArray(value)) {
+      for (let i = 0; i < value.length; i++)
+        traverse(value[i], seen);
+    } else {
+      for (const key of Object.keys(value))
+        traverse(value[key], seen);
+    }
+    return value;
+  }
+  var ObjectRefImpl = class {
+    constructor(_object, _key, _defaultValue) {
+      this._object = _object;
+      this._key = _key;
+      this._defaultValue = _defaultValue;
+    }
+    __v_isRef = true;
+    get value() {
+      const val = this._object[this._key];
+      return val === void 0 ? this._defaultValue : val;
+    }
+    set value(newVal) {
+      this._object[this._key] = newVal;
+    }
+  };
+  function toRef(object, key, defaultValue) {
+    const val = object[key];
+    return isRef(val) ? val : new ObjectRefImpl(object, key, defaultValue);
+  }
+  function toRefs(object) {
+    const ret = Array.isArray(object) ? new Array(object.length) : {};
+    for (const key in object)
+      ret[key] = toRef(object, key);
+    return ret;
+  }
+  function onEffectCleanup(fn) {
+    if (activeEffect) {
+      let cleanupFns = activeEffect.cleanupFns;
+      if (!cleanupFns) {
+        cleanupFns = [];
+        activeEffect.cleanupFns = cleanupFns;
+        const originalRun = activeEffect.run;
+        activeEffect.run = function() {
+          for (const cleanup of cleanupFns) {
+            try {
+              cleanup();
+            } catch {
+            }
+          }
+          cleanupFns.length = 0;
+          return originalRun.apply(this, arguments);
+        };
+      }
+      cleanupFns.push(fn);
+    }
+  }
+  var effectIdCounter = 0;
+  function elementBoundEffect(el, effectCallback, options) {
+    const pendingPromises = /* @__PURE__ */ new WeakSet();
+    let pendingCount = 0;
+    let consecutiveFailures = 0;
+    let lastErrorMessage = "";
+    const suspenseWrappedCallback = () => {
+      try {
+        effectCallback();
+        consecutiveFailures = 0;
+        lastErrorMessage = "";
+      } catch (err2) {
+        if (err2 instanceof Promise) {
+          if (pendingPromises.has(err2))
+            return;
+          if (window._nexusDebug)
+            console.debug(`[Nexus Suspense] <${el.tagName}> suspended pending network resolution.`);
+          pendingCount++;
+          pendingPromises.add(err2);
+          err2.finally(() => {
+            pendingCount--;
+            pendingPromises.delete(err2);
+            if (window._nexusDebug)
+              console.debug(`[Nexus Suspense] <${el.tagName}> resumed.`);
+            if (runner) {
+              let reEntryCount = 0;
+              const MAX_REENTRY = 10;
+              const safeRun = () => {
+                if (pendingCount > 0)
+                  return;
+                if (reEntryCount++ > MAX_REENTRY) {
+                  console.warn(`[Nexus Loop Guard] Stopped runaway effect on <${el.tagName}> after ${MAX_REENTRY} re-entries.`);
+                  return;
+                }
+                runner();
+              };
+              queueMicrotask(safeRun);
+            }
+          });
+        } else {
+          const msg = err2 instanceof Error ? err2.message : String(err2);
+          if (msg === lastErrorMessage)
+            consecutiveFailures++;
+          else {
+            consecutiveFailures = 1;
+            lastErrorMessage = msg;
+          }
+          if (consecutiveFailures >= 3) {
+            console.error(`[Nexus Diagnostic] Persistent error on <${el.tagName}> (${consecutiveFailures}x):`, err2);
+            reportError(err2 instanceof Error ? err2 : new Error(msg), el, `Persistent failure (${consecutiveFailures}x) \u2014 effect quarantined`);
+            stop(runner);
+            const enhanced = el;
+            enhanced[EFFECT_RUNNERS_KEY]?.delete(runner);
+          } else {
+            if (globalThis.Nexus?.coordinator?.runtimeContext?.isDevMode) {
+              console.debug(`[Nexus Transient] <${el.tagName}> effect attempt ${consecutiveFailures}/3:`, msg);
+            }
+          }
+        }
+      }
+    };
+    let runner;
+    const stableJob = () => {
+      if (runner)
+        runner();
+    };
+    try {
+      const schedulerOptions = {
+        scheduler: () => {
+          scheduler.enqueueEvaluate(stableJob);
+        },
+        ...options
+      };
+      runner = effect(suspenseWrappedCallback, schedulerOptions);
+    } catch (e) {
+      console.error(`[Reactivity Error] effect() failed for <${el.tagName}>:`, e);
+      throw e;
+    }
+    const enhancedEl = el;
+    if (!enhancedEl[EFFECT_RUNNERS_KEY]) {
+      enhancedEl[EFFECT_RUNNERS_KEY] = /* @__PURE__ */ new Set();
+      if (!enhancedEl.nexus)
+        enhancedEl.nexus = {};
+      enhancedEl.nexus.effectRunners = enhancedEl[EFFECT_RUNNERS_KEY];
+    }
+    enhancedEl[EFFECT_RUNNERS_KEY].add(runner);
+    if (!enhancedEl[RUN_EFFECT_RUNNERS_KEY]) {
+      enhancedEl[RUN_EFFECT_RUNNERS_KEY] = () => {
+        if (!enhancedEl[EFFECT_RUNNERS_KEY])
+          return;
+        for (const r of enhancedEl[EFFECT_RUNNERS_KEY]) {
+          try {
+            r();
+          } catch (err2) {
+            console.error(`[Nexus Isolation] Effect failed on <${enhancedEl.tagName}>, isolated from ${enhancedEl[EFFECT_RUNNERS_KEY].size - 1} sibling effects:`, err2);
+            reportError(err2 instanceof Error ? err2 : new Error(String(err2)), enhancedEl, "Isolated effect failure");
+          }
+        }
+      };
+    }
+    const cleanup = () => {
+      stop(runner);
+      const enhancedEl2 = el;
+      if (enhancedEl2[EFFECT_RUNNERS_KEY]) {
+        enhancedEl2[EFFECT_RUNNERS_KEY].delete(runner);
+        if (enhancedEl2[EFFECT_RUNNERS_KEY].size === 0) {
+          delete enhancedEl2[EFFECT_RUNNERS_KEY];
+          delete enhancedEl2[RUN_EFFECT_RUNNERS_KEY];
+        }
+      }
+    };
+    if (!enhancedEl[CLEANUP_FUNCTIONS_KEY]) {
+      enhancedEl[CLEANUP_FUNCTIONS_KEY] = /* @__PURE__ */ new Map();
+    }
+    const cleanupKey = `effect-${effectIdCounter++}`;
+    enhancedEl[CLEANUP_FUNCTIONS_KEY].set(cleanupKey, cleanup);
+    return [runner, cleanup];
+  }
+  function unifiedRef(initialValue, key, typeHints) {
+    const heapKey = key || `unified_${Math.random().toString(36).slice(2)}`;
+    if (typeHints) {
+      Object.entries(typeHints).forEach(([k, type]) => {
+        const fullKey = `${heapKey}.${k}`;
+        if (type === "number")
+          heap.allocateNumeric(fullKey);
+        else if (type === "boolean")
+          heap.allocateBoolean(fullKey);
+        else if (type === "string")
+          heap.setString(fullKey, "");
+      });
+    } else {
+      Object.entries(initialValue).forEach(([k, v]) => {
+        const fullKey = `${heapKey}.${k}`;
+        if (typeof v === "number")
+          heap.allocateNumeric(fullKey);
+        else if (typeof v === "boolean")
+          heap.allocateBoolean(fullKey);
+      });
+    }
+    let state = reactive(initialValue);
+    const ownerId = heapKey;
+    ownership.acquire(state, ownerId);
+    return customRef((track2, trigger2) => ({
+      get() {
+        track2();
+        ownership.validateBorrow(state, "immutable");
+        return state;
+      },
+      set(newValue) {
+        ownership.validateBorrow(state, "mutable");
+        if (newValue && typeof newValue === "object") {
+          Object.entries(newValue).forEach(([k, v]) => {
+            const fullKey = `${heapKey}.${k}`;
+            heap.set(fullKey, v);
+            state[k] = v;
+          });
+        } else {
+          state = newValue;
+        }
+        trigger2();
+      }
+    }));
+  }
+  function unifiedComputed(getter, key) {
+    const heapKey = key || `computed_${Math.random().toString(36).slice(2)}`;
+    return computed(() => {
+      const value = getter();
+      heap.set(heapKey, value);
+      return value;
+    });
+  }
+
+  // src/engine/reconciler.ts
+  init_consts();
+
+  // src/modules/attributes/stylesheet.ts
+  var stylesheet_exports = {};
+  __export(stylesheet_exports, {
+    NexusStyleSheet: () => NexusStyleSheet,
+    PACKED_COMPONENTS: () => PACKED_COMPONENTS,
+    PREFLIGHT_CSS: () => PREFLIGHT_CSS,
+    buildTailwindThemeBridge: () => buildTailwindThemeBridge,
+    default: () => stylesheet_default,
+    discoverColorTokens: () => discoverColorTokens,
+    initializeJitEngine: () => initializeJitEngine,
+    jitSheet: () => jitSheet,
+    markExternalStylesSettled: () => markExternalStylesSettled,
+    stylesheet: () => stylesheet
+  });
+
+  // src/modules/attributes/assert.ts
+  var assert_exports = {};
+  __export(assert_exports, {
+    default: () => assert_default
+  });
+  init_debug();
+  var assertModule = {
+    name: "assert",
+    attribute: "assert",
+    handle: (el, value, runtime) => {
+      try {
+        const result = runtime.evaluate(el, value);
+        if (!result) {
+          const msg = `Assertion failed: "${value}" evaluated to falsy value based on ${result}`;
+          console.error(msg, el);
+          initError("assert", msg, el, value);
+        }
+      } catch (e) {
+        initError("assert", `Assertion error: ${e instanceof Error ? e.message : String(e)}`, el, value);
+      }
+    }
+  };
+  var assert_default = assertModule;
+
+  // src/modules/attributes/bind.ts
+  var bind_exports = {};
+  __export(bind_exports, {
+    default: () => bind_default
+  });
+  init_debug();
+  var NATIVE_API_PATTERNS = [
+    /\bwindow\.(\w+)/g,
+    /\bglobalThis\.(\w+)/g,
+    /\blocalStorage\.(\w+)/g,
+    /\bsessionStorage\.(\w+)/g,
+    /\bnavigator\.(\w+)/g,
+    /\bdocument\.(\w+)/g,
+    /\bscreen\.(\w+)/g
+  ];
+  function extractNativeApis(value) {
+    const apis = [];
+    const seen = /* @__PURE__ */ new Set();
+    for (const pattern of NATIVE_API_PATTERNS) {
+      pattern.lastIndex = 0;
+      let match;
+      while ((match = pattern.exec(value)) !== null) {
+        const [, prop] = match;
+        const key = `${pattern.source.split("\\b")[1]?.split(".")[0] || "unknown"}.${prop}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          let target;
+          if (pattern.source.includes("window") || pattern.source.includes("globalThis")) {
+            target = globalThis;
+          } else if (pattern.source.includes("localStorage")) {
+            target = globalThis.localStorage;
+          } else if (pattern.source.includes("sessionStorage")) {
+            target = globalThis.sessionStorage;
+          } else if (pattern.source.includes("navigator")) {
+            target = globalThis.navigator;
+          } else if (pattern.source.includes("document")) {
+            target = globalThis.document;
+          } else if (pattern.source.includes("screen")) {
+            target = globalThis.screen;
+          } else {
+            target = globalThis;
+          }
+          apis.push({ target, property: prop });
+        }
+      }
+    }
+    return apis;
+  }
+  function isNativeApiExpression(value) {
+    const trimmed = value.trim();
+    return extractNativeApis(trimmed).length > 0;
+  }
+  function applyBindingResult(result, el) {
+    if (result !== void 0 && result !== null) {
+      if (typeof result === "object" && !Array.isArray(result)) {
+        Object.entries(result).forEach(([param, val]) => {
+          if (param in el) {
+            if (el[param] !== val)
+              el[param] = val;
+          } else {
+            if (val === false || val === null || val === void 0) {
+              if (el.hasAttribute(param))
+                el.removeAttribute(param);
+            } else {
+              const strVal = String(val);
+              if (el.getAttribute(param) !== strVal)
+                el.setAttribute(param, strVal);
+            }
+          }
+        });
+      } else {
+        if (el instanceof HTMLInputElement) {
+          if (el.type === "checkbox") {
+            el.checked = Boolean(result);
+          } else if (el.type === "radio") {
+            el.checked = el.value === String(result);
+          } else {
+            el.value = result !== void 0 && result !== null ? String(result) : "";
+          }
+        } else if (el instanceof HTMLSelectElement) {
+          const targetValue = result !== void 0 && result !== null ? String(result) : "";
+          const options = Array.from(el.options);
+          const found = options.some((opt) => opt.value === targetValue);
+          if (found || targetValue === "") {
+            if (el.value !== targetValue) {
+              el.value = targetValue;
+            }
+          }
+        } else if (el instanceof HTMLTextAreaElement) {
+          el.value = result !== void 0 && result !== null ? String(result) : "";
+        } else {
+          el.textContent = result !== void 0 && result !== null ? String(result) : "";
+        }
+      }
+    }
+  }
+  function createNativeBinding(value, runtime, el) {
+    const cleanupFns = [];
+    const trimmed = value.trim();
+    const nativeApis = extractNativeApis(trimmed);
+    if (nativeApis.length === 0) {
+      return () => {
+      };
+    }
+    const [runner, effectCleanup] = runtime.elementBoundEffect(el, () => {
+      const result = runtime.evaluate(el, value);
+      applyBindingResult(result, el);
+    });
+    cleanupFns.push(effectCleanup);
+    for (const api of nativeApis) {
+      const property = api.property;
+      if (api.target === globalThis) {
+        if (property === "innerWidth" || property === "innerHeight") {
+          const onResize = () => {
+            runner();
+          };
+          globalThis.addEventListener("resize", onResize);
+          cleanupFns.push(() => globalThis.removeEventListener("resize", onResize));
+        } else if (property === "scrollX" || property === "scrollY") {
+          const onScroll = () => {
+            runner();
+          };
+          globalThis.addEventListener("scroll", onScroll);
+          cleanupFns.push(() => globalThis.removeEventListener("scroll", onScroll));
+        }
+      }
+      if (api.target === globalThis.localStorage || api.target === globalThis.sessionStorage) {
+        const onStorage = (e) => {
+          if (e.key === property) {
+            runner();
+          }
+        };
+        globalThis.addEventListener("storage", onStorage);
+        cleanupFns.push(() => globalThis.removeEventListener("storage", onStorage));
+      }
+    }
+    return () => cleanupFns.forEach((fn) => fn());
+  }
+  var bindModule = {
+    name: "bind",
+    attribute: "bind",
+    handle: (el, value, runtime, parsedAttr) => {
+      if (!value)
+        return;
+      const parsed = parsedAttr || runtime.parseAttribute("data-bind", runtime, el);
+      const target = parsed?.argument;
+      if (isNativeApiExpression(value)) {
+        return createNativeBinding(value, runtime, el);
+      }
+      if (!target) {
+        const cleanupFns2 = [];
+        try {
+          const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
+            const result = runtime.evaluate(el, value);
+            applyBindingResult(result, el);
+          });
+          cleanupFns2.push(cleanup);
+          const isFormInput = el instanceof HTMLInputElement || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement || el.isContentEditable;
+          if (isFormInput) {
+            const isLazy = el.hasAttribute("data-bind:lazy");
+            const eventName = isLazy ? "change" : el instanceof HTMLSelectElement || el instanceof HTMLInputElement && (el.type === "checkbox" || el.type === "radio") ? "change" : "input";
+            const inputHandler = (_e) => {
+              let newValue;
+              if (el instanceof HTMLInputElement && el.type === "checkbox") {
+                newValue = el.checked;
+              } else if (el instanceof HTMLInputElement && el.type === "radio") {
+                newValue = el.checked ? el.value : void 0;
+                if (newValue === void 0)
+                  return;
+              } else if (el instanceof HTMLSelectElement && el.multiple) {
+                newValue = Array.from(el.selectedOptions).map((opt) => opt.value);
+              } else if (el instanceof HTMLInputElement && (el.type === "range" || el.type === "number")) {
+                newValue = el.value === "" ? "" : Number(el.value);
+              } else if ("value" in el) {
+                newValue = el.value;
+              }
+              const trimmedVal = value.trim();
+              const isValidLValue = /^[a-zA-Z_$][a-zA-Z0-9_$]*(\.[a-zA-Z_$][a-zA-Z0-9_$]*|\[[^\]]+\])*$/.test(trimmedVal);
+              if (isValidLValue) {
+                try {
+                  const current = runtime.evaluate(el, value);
+                  if (current && typeof current === "object" && "value" in current) {
+                    runtime.evaluate(el, `${value}.value = $newValue`, { $newValue: newValue });
+                  } else {
+                    runtime.evaluate(el, `${value} = $newValue`, { $newValue: newValue });
+                  }
+                } catch {
+                }
+              }
+            };
+            el.addEventListener(eventName, inputHandler);
+            cleanupFns2.push(() => el.removeEventListener(eventName, inputHandler));
+          }
+        } catch (e) {
+          runtime.reportError(e instanceof Error ? e : new Error(String(e)), el, `Auto-bind failed: ${value}`);
+        }
+        return () => cleanupFns2.forEach((fn) => fn());
+      }
+      if (target === "lazy")
+        return;
+      const cleanupFns = [];
+      try {
+        const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
+          const result = runtime.evaluate(el, value);
+          const attrValue = result !== void 0 && result !== null ? String(result) : "";
+          if (target === "value" || target === "checked") {
+            if (el instanceof HTMLInputElement && el.type === "checkbox") {
+              if (el.checked !== Boolean(result))
+                el.checked = Boolean(result);
+            } else if (el instanceof HTMLInputElement && el.type === "radio") {
+              if (target === "checked") {
+                if (el.checked !== Boolean(result))
+                  el.checked = Boolean(result);
+              } else {
+                if (el.value !== attrValue)
+                  el.value = attrValue;
+              }
+            } else if ("value" in el) {
+              if (el.value !== attrValue)
+                el.value = attrValue;
+            }
+          } else if (target === "text") {
+            if (el.textContent !== attrValue)
+              el.textContent = attrValue;
+          } else if (target === "html") {
+            if (el.innerHTML !== attrValue)
+              el.innerHTML = attrValue;
+          } else if (target === "style") {
+            runtime.reconcileStyle(el, result);
+          } else if (target === "draggable") {
+            const newVal = result ? "true" : "false";
+            if (el.getAttribute("draggable") !== newVal) {
+              el.setAttribute("draggable", newVal);
+            }
+          } else if (target === "dir") {
+            if (el.getAttribute("dir") !== attrValue) {
+              el.setAttribute("dir", attrValue);
+            }
+            if (document.documentElement.getAttribute("dir") !== attrValue) {
+              document.documentElement.setAttribute("dir", attrValue);
+            }
+          } else {
+            if (result === false || result === null || result === void 0) {
+              if (el.hasAttribute(target))
+                el.removeAttribute(target);
+            } else {
+              if (el.getAttribute(target) !== attrValue)
+                el.setAttribute(target, attrValue);
+            }
+          }
+        });
+        cleanupFns.push(cleanup);
+        if (target === "value" || target === "checked") {
+          const isLazy = el.hasAttribute("data-bind:lazy");
+          const eventName = isLazy ? "change" : el instanceof HTMLInputElement && (el.type === "checkbox" || el.type === "radio") || el instanceof HTMLSelectElement ? "change" : "input";
+          const inputHandler = (e) => {
+            let newValue;
+            if (el instanceof HTMLInputElement && el.type === "checkbox") {
+              newValue = el.checked;
+            } else if (el instanceof HTMLInputElement && el.type === "radio") {
+              newValue = el.checked ? el.value : void 0;
+            } else if (el instanceof HTMLInputElement && (el.type === "range" || el.type === "number")) {
+              const raw = e.target.value;
+              newValue = raw === "" ? "" : Number(raw);
+            } else {
+              newValue = e.target.value;
+            }
+            runtime.evaluate(el, `${value} = $newValue`, { $newValue: newValue });
+          };
+          el.addEventListener(eventName, inputHandler);
+          cleanupFns.push(() => el.removeEventListener(eventName, inputHandler));
+        }
+      } catch (e) {
+        initError("bind", `Failed to bind ${target}: ${e instanceof Error ? e.message : String(e)}`, el, value);
+      }
+      return () => cleanupFns.forEach((fn) => fn());
+    }
+  };
+  var bind_default = bindModule;
+
+  // src/modules/attributes/build.ts
+  var build_exports = {};
+  __export(build_exports, {
+    default: () => build_default
+  });
+  init_debug();
+
+  // src/engine/utils/idb.ts
+  var DB_NAME = "nexus-store";
+  var DEFAULT_STORES = ["files", "builds", "patterns", "components", "themes"];
+  async function openDB(version) {
+    return new Promise((resolve, reject) => {
+      const request = version ? indexedDB.open(DB_NAME, version) : indexedDB.open(DB_NAME);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+      request.onupgradeneeded = (event) => {
+        const db = event.target.result;
+        DEFAULT_STORES.forEach((store) => {
+          if (!db.objectStoreNames.contains(store)) {
+            db.createObjectStore(store);
+          }
+        });
+      };
+    });
+  }
+  async function readIDB(storeName, key) {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      if (!db.objectStoreNames.contains(storeName)) {
+        db.close();
+        resolve(null);
+        return;
+      }
+      const tx = db.transaction(storeName, "readonly");
+      const store = tx.objectStore(storeName);
+      const getReq = store.get(key);
+      getReq.onsuccess = () => {
+        db.close();
+        resolve(getReq.result);
+      };
+      getReq.onerror = () => {
+        db.close();
+        reject(getReq.error);
+      };
+    });
+  }
+  async function writeIDB(storeName, key, data) {
+    let db = await openDB();
+    if (!db.objectStoreNames.contains(storeName)) {
+      const nextVersion = db.version + 1;
+      db.close();
+      db = await new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, nextVersion);
+        req.onupgradeneeded = (e) => {
+          const udb = e.target.result;
+          if (!udb.objectStoreNames.contains(storeName)) {
+            udb.createObjectStore(storeName);
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(storeName, "readwrite");
+      const store = tx.objectStore(storeName);
+      store.put(data, key);
+      tx.oncomplete = () => {
+        db.close();
+        resolve();
+      };
+      tx.onerror = () => {
+        db.close();
+        reject(tx.error);
+      };
+    });
+  }
+
+  // src/modules/attributes/build.ts
+  var BUILD_STORE = "builds";
+  async function writeToIDB(key, data, meta) {
+    await writeIDB(BUILD_STORE, key, { data, meta, updatedAt: Date.now() });
+  }
+  function minifyCSS(css) {
+    return css.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\s+/g, " ").replace(/\s*([{}:;,])\s*/g, "$1").replace(/;}/g, "}").trim();
+  }
+  function minifyJS(js) {
+    return js.replace(/\/\/.*$/gm, "").replace(/\/\*[\s\S]*?\*\//g, "").replace(/\s+/g, " ").trim();
+  }
+  function collectStyles(root, shouldMinify) {
+    const sheets = [];
+    const managedRules = stylesheet.collectRules();
+    if (managedRules)
+      sheets.push(managedRules);
+    document.querySelectorAll("head style").forEach((style) => {
+      if (style.textContent)
+        sheets.push(style.textContent);
+    });
+    root.querySelectorAll("style").forEach((style) => {
+      if (style.textContent)
+        sheets.push(style.textContent);
+    });
+    const combined = sheets.join("\n\n");
+    return shouldMinify ? minifyCSS(combined) : combined;
+  }
+  function collectScripts(root, shouldMinify) {
+    const scripts = [];
+    root.querySelectorAll("script:not([src])").forEach((script) => {
+      if (script.textContent)
+        scripts.push(script.textContent);
+    });
+    const combined = scripts.join("\n\n");
+    return shouldMinify ? minifyJS(combined) : combined;
+  }
+  function serializeDOM(root) {
+    const clone = root.cloneNode(true);
+    clone.querySelectorAll("[data-nexus-loading]").forEach((el) => el.removeAttribute("data-nexus-loading"));
+    clone.querySelectorAll("[data-nexus-ready]").forEach((el) => el.removeAttribute("data-nexus-ready"));
+    clone.querySelectorAll(".nexus-loading").forEach((el) => el.classList.remove("nexus-loading"));
+    clone.querySelectorAll(".nexus-ready").forEach((el) => el.classList.remove("nexus-ready"));
+    clone.querySelectorAll('[class=""]').forEach((el) => el.removeAttribute("class"));
+    return clone.innerHTML;
+  }
+  function buildStandaloneDocument(htmlContent, styles, scripts, config, title) {
+    const nexusSrc = config.nexusSrc || "https://cdn.nexus-ux.dev/nexus-ux.js";
+    return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${o}</title>
-    <script type="module" src="${i}"><\/script>
-${e?`    <style>
-${e}
-    </style>`:""}
+    <title>${title}</title>
+    <script type="module" src="${nexusSrc}"><\/script>
+${styles ? `    <style>
+${styles}
+    </style>` : ""}
 </head>
 <body data-init>
-${n}
-${t?`<script>
-${t}
-<\/script>`:""}
+${htmlContent}
+${scripts ? `<script>
+${scripts}
+<\/script>` : ""}
 </body>
-</html>`}var Fs={name:"build",attribute:"build",handle:(n,e,t)=>{let r=async()=>{let o;try{let c=t.evaluate(n,e);if(typeof c=="string")o={target:c};else if(typeof c=="object"&&c!==null)o=c;else throw new Error("Invalid build configuration")}catch(c){return H(new Error(`Build: Failed to evaluate configuration: ${c}`),n),{success:!1,error:String(c)}}if(!o.target)return H(new Error("Build: Missing target URI"),n),{success:!1,error:"Missing target URI"};let i=o.minify??!1,a=o.includeStyles??!0,s=o.includeScripts??!0,l=o.standalone??!0;try{let c=o.scope||"html",u=c==="html"?document.documentElement:document.querySelector(c)||document.documentElement,d=Os(u),p=a?$s(u,i):"",f=s?Ds(u,i):"",m;if(l){let y=document.title||"Nexus-UX Application";m=Bs(d,p,f,o,y)}else m=d;let g=o.target.replace(/^idb:\/\//,"");return await Ns(g,m,{builtAt:Date.now(),scope:o.scope||"html",minified:i,standalone:l,size:m.length}),t.log(`Nexus Build: Bundle written to ${o.target} (${m.length} bytes)`),{success:!0,target:o.target,size:m.length,timestamp:Date.now()}}catch(c){let u=c instanceof Error?c.message:String(c);return H(new Error(`Build failed: ${u}`),n),{success:!1,error:u}}};return t.setGlobalSignal("$build",r),()=>{}}},Ws=Fs;var vn={};_(vn,{default:()=>Us});O();var js={name:"class",attribute:"class",handle:(n,e,t,r)=>{let o=r||t.parseAttribute("data-class",t,n);if(o)try{let[i,a]=t.elementBoundEffect(n,()=>{let s=t.evaluate(n,e);o.argument?s?n.classList.add(o.argument):n.classList.remove(o.argument):t.reconcileClass(n,s)});return a}catch(i){P("class",`Failed to reconcile class: ${i instanceof Error?i.message:String(i)}`,n,e)}}},Us=js;var wn={};_(wn,{default:()=>Ks});W();function j(n){let e=n;if(e[X])return e[X];if(typeof ShadowRoot<"u"&&e instanceof ShadowRoot)return j(e.host);let t=e.parentElement||e.parentNode;if(!t)return[];if(typeof ShadowRoot<"u"&&t instanceof ShadowRoot){let r=t;return r[X]?r[X]:[]}return t instanceof DocumentFragment?[]:t instanceof Element?j(t):[]}function ne(n,e,t){let r=n,o=j(t||n);return r[X]=[e,...o],()=>{r[X]&&(r[X]=r[X].filter(i=>i!==e))}}function Ro(n){return!!n[X]}var En=new Map;function ge(n,e){En.set(n,e)}function ko(n){return En.has(n)}function Ho(n,e,t){let r=En.get(n);return r?r(e,t):void 0}function kt(n){let e=[],t={},r=n.trim();if(!r.startsWith("{")&&!r.startsWith("({"))return{ghostKeys:e,typeHints:t};let i=r.indexOf("{")+1,a=r.length;for(;i<a;){for(;i<a&&/\s/.test(r[i]);)i++;let s="";if(r[i]==='"'||r[i]==="'"){let p=r[i++];for(;i<a&&r[i]!==p;)s+=r[i++];i++}else for(;i<a&&/[\w$]/.test(r[i]);)s+=r[i++];if(!s)break;for(;i<a&&/[\s:]/.test(r[i]);)i++;let l="",c=0,u=null;for(;i<a;){let p=r[i];if(u){if(p==="\\"){l+=p+(r[i+1]||""),i+=2;continue}p===u&&(u=null),l+=p,i++;continue}if(p==='"'||p==="'"||p==="`"){u=p,l+=p,i++;continue}if(p==="{"||p==="["||p==="("){c++,l+=p,i++;continue}if(p==="}"||p==="]"||p===")"){if(c===0)break;c--,l+=p,i++;continue}if(p===","&&c===0){i++;break}l+=p,i++}let d=l.trim();s&&(e.push(s),d.startsWith("true")||d.startsWith("false")?t[s]="boolean":/^-?\d/.test(d)?t[s]="number":/^['"`]/.test(d)?t[s]="string":(d.startsWith("[")||d.startsWith("{"))&&(t[s]="object"))}return{ghostKeys:e,typeHints:t}}function Ht(n,e,t){return new Proxy({},{has(r,o){let i=n.value;return Reflect.has(i,o)},get(r,o){let i=n.value;return Reflect.get(i,o)},set(r,o,i){let a=n.value,s=Reflect.set(a,o,i);return e&&e(o,i),t&&t(),s},ownKeys(){let r=n.value;return Reflect.ownKeys(r)},getOwnPropertyDescriptor(r,o){let i=n.value;return Reflect.getOwnPropertyDescriptor(i,o)}})}W();O();function qs(n,e){return new Proxy(e,{has(t,r){return r in t?!0:j(n).some(o=>r in o)},get(t,r){if(r in t)return Reflect.get(t,r);let o=j(n);for(let i of o)if(r in i)return i[r]},set(t,r,o){let i=j(n);for(let a of i)if(r in a)return a[r]=o,!0;return Reflect.set(t,r,o)},ownKeys(t){let r=new Set(Reflect.ownKeys(t));for(let o of j(n))for(let i of Object.keys(o))r.add(i);return Array.from(r)},getOwnPropertyDescriptor(t,r){if(r in t)return Reflect.getOwnPropertyDescriptor(t,r);for(let o of j(n))if(r in o)return{configurable:!0,enumerable:!0,writable:!0,value:o[r]}}})}var zs={name:"component",attribute:"component",handle:(n,e,t)=>{try{if(n.hasAttribute("data-route"))return;let r=t.reactive({isConnected:!1,isLoading:!1,hasError:!1,errorMessage:"",templateContent:""}),o={element:n,...r};n[tn]=o;let i;return t.effect(()=>{let a,s=t.evaluate(n,e);if(n[tn]||ne(n,o),typeof s=="object"&&s!==null)a=s;else if(typeof s=="string")try{a=JSON.parse(s)}catch{a={path:s}}else return;if(!a.path||a.path==="none"||a.path===i)return;i=a.path;let l=async()=>{r.isLoading=!0,r.hasError=!1;try{let c="";if(a.path.trim().startsWith("<"))c=a.path;else if(a.path.startsWith("#")){let u=document.querySelector(a.path);if(!u)throw new Error(`Template ${a.path} not found`);c=u.innerHTML}else{if(!t.fetch)throw new Error("Fetch utility not available");let u=`nx_comp:${a.path}`,d=typeof sessionStorage<"u"?sessionStorage.getItem(u):null;if(d)c=d;else if(c=await t.fetch.request(a.path,{responseType:"text"},n),typeof sessionStorage<"u"&&c)try{sessionStorage.setItem(u,c)}catch{}}if(t.isDevMode&&console.log(`[Component] Template loaded for <${n.tagName}>, length: ${c.length}`),r.templateContent=c,a.shadowrootmode){n.shadowRoot||n.attachShadow({mode:a.shadowrootmode});let u=n.shadowRoot,d=n.getAttribute("data-scope"),p;if(d&&d.trim()){let f=t.evaluate(n,d);p=Object.assign(Object.create(null),o,f&&typeof f=="object"?f:{})}else p=qs(n,o);u[X]=[p],t.morphDOM(u,c),Array.from(u.children).forEach(f=>{(f instanceof HTMLElement||f instanceof SVGElement)&&t.processElement(f)})}else t.morphDOM(n,c),Array.from(n.children).forEach(u=>{(u instanceof HTMLElement||u instanceof SVGElement)&&t.processElement(u)}),t.processElement(n)}catch(c){if(r.hasError=!0,r.errorMessage=c instanceof Error?c.message:String(c),P("component",r.errorMessage,n,e),a.fallback){let u=t.evaluate(n,a.fallback);t.morphDOM(n,String(u))}}finally{r.isLoading=!1}};a.lazy,l()}),()=>{}}catch(r){P("component",`Failed to init component: ${r instanceof Error?r.message:String(r)}`,n,e)}}},Ks=zs;var xn={};_(xn,{default:()=>Vs});var Ys={name:"computed",attribute:"computed",metadata:{after:["signal"]},handle:(n,e,t)=>{let r=[],o=n.hasAttribute("data-computed:global"),{ghostKeys:i}=kt(e),a={};i.forEach(u=>a[u]=void 0);let s=at(a),l=n.id||`computed_${Math.random().toString(36).slice(2)}`;if(n.hasAttribute("data-computed")){let u=Ht(s),d=ne(n,u);r.push(d);let[p,f]=t.elementBoundEffect(n,()=>{let m=t.evaluate(n,e||"{}");typeof m=="object"&&m!==null&&Object.entries(m).forEach(([g,y])=>{if(typeof y!="function")return;let v=So(()=>{try{return y()}catch(T){return t.isDevMode&&t.warn(`[Computed Error] Failed to evaluate getter for "${g}":`,T),null}},g),b=t.watch(v,T=>{s.value[g]=T},{immediate:!0});r.push(b)})});r.push(f)}let c=Array.from(n.attributes).filter(u=>u.name.startsWith("data-computed-"));if(c.length>0){let u=at({},`computed_${l}`),d=new Proxy({},{has(f,m){return Reflect.has(u.value,m)},get(f,m){return Reflect.get(u.value,m)},set(f,m,g){return Reflect.set(u.value,m,g)},ownKeys(){return Reflect.ownKeys(u.value)},getOwnPropertyDescriptor(f,m){return Reflect.getOwnPropertyDescriptor(u.value,m)}}),p;o||(p=ne(n,d),r.push(p)),c.forEach(f=>{let m=f.name.substring(14);if(!m)return;let[g,y]=t.elementBoundEffect(n,()=>{let v=f.value,b=t.computed(()=>{try{return t.evaluate(n,v)}catch(T){return t.isDevMode&&t.warn(`[Computed Error] Failed to evaluate expression for "${m}":`,T),null}});if(o||!p){let T=t.watch(b,E=>{t.setGlobalSignal(m,E)},{immediate:!0});r.push(T)}else{let T=t.watch(b,E=>{u.value[m]=E},{immediate:!0});r.push(T)}});r.push(y)})}return()=>{r.forEach(u=>u())}}},Vs=Ys;var Tn={};_(Tn,{default:()=>Gs});var Xs={name:"debug",attribute:"debug",handle:(n,e,t)=>{let r=j(n);if(console.group("[Nexus Debug] Element:",n),console.log("Value:",e),console.log("Data Stack:",r),console.log("Global Signals:",t.globalSignals()),console.groupEnd(),e)try{let o=t.evaluate(n,e);console.log(`[Nexus Debug] Expression "${e}" result:`,o)}catch(o){console.error("[Nexus Debug] Evaluation failed:",o)}}},Gs=Xs;var Ln={};_(Ln,{DragReorderEngine:()=>$t,Draggable:()=>ye,buildReorderContext:()=>$o,default:()=>ta,dragAttribute:()=>Do});var _n={};_(_n,{animate:()=>De,flip:()=>Pt});var Mn={};_(Mn,{resolveSelector:()=>be});var Nt={0:{level:0,name:"Mono-Thread (Fallback)",threads:1,usesSharedArrayBuffer:!1,usesWorkers:!1,predictiveEngineDedicated:!1},1:{level:1,name:"Dual-Thread (Standard)",threads:2,usesSharedArrayBuffer:$e,usesWorkers:!0,predictiveEngineDedicated:!1},2:{level:2,name:"Tri-Thread (Performance)",threads:3,usesSharedArrayBuffer:$e,usesWorkers:!0,predictiveEngineDedicated:!1},3:{level:3,name:"Quad-Thread (Sovereign)",threads:4,usesSharedArrayBuffer:$e,usesWorkers:!0,predictiveEngineDedicated:!0}},Sn=class{currentTier=0;workers=[];sharedBuffer=null;lagHistory=[];LAG_SAMPLE_SIZE=60;LAG_THRESHOLD=.4;FRAME_BUDGET=16.67;SCALE_COOLDOWN_MS=5e3;MIN_SAMPLES_FOR_SCALE_UP=5;autoScaleEnabled=!0;monitoringInterval=null;lastScaleTime=0;constructor(){}start(){this.boot()}boot(){let e=typeof crossOriginIsolated<"u"&&crossOriginIsolated,t=navigator.hardwareConcurrency||2,r=typeof globalThis.__NEXUS_IO__<"u";t>=4&&(e||r)?this.currentTier=3:t>=3&&(e||r)?this.currentTier=2:t>=2&&typeof Worker<"u"?this.currentTier=1:this.currentTier=0,console.log(`[Nexus Topology] Boot: Detected ${t} cores, SAB: ${e}, NexusIO: ${r}`),console.log(`[Nexus Topology] Selected Tier: ${this.currentTier} (${Nt[this.currentTier].name})`),this.initializeTier()}async initializeTier(){let e=Nt[this.currentTier];if(e.usesSharedArrayBuffer&&$e)try{this.sharedBuffer=new SharedArrayBuffer(1024*1024),Y&&Y.attachSharedBuffer(this.sharedBuffer),console.log("[Nexus Topology] SharedArrayBuffer initialized")}catch(t){console.warn("[Nexus Topology] Failed to initialize SAB, falling back:",t),this.currentTier=Math.max(0,this.currentTier-1),this.initializeTier();return}e.usesWorkers&&this.currentTier>0&&await this.spawnWorkers(this.currentTier),this.autoScaleEnabled&&this.currentTier>0?this.startMonitoring():this.stopMonitoring()}async spawnWorkers(e){let r=Nt[e].threads-1;this.terminateWorkers();for(let o=0;o<r;o++)try{let i="/dist/nexus-ux.js";typeof document<"u"&&document.currentScript instanceof HTMLScriptElement&&(i=document.currentScript.src);let a=new Worker(i,{type:"module"});a.onmessage=s=>{},this.workers.push(a)}catch(i){console.warn(`[Nexus Topology] Failed to spawn worker ${o}:`,i)}console.log(`[Nexus Topology] Spawned ${this.workers.length} worker(s) for Tier ${e}`)}terminateWorkers(){this.workers.forEach(e=>e.terminate()),this.workers=[]}startMonitoring(){this.monitoringInterval||(this.monitoringInterval=setInterval(()=>{this.measureLag()},1e3))}stopMonitoring(){this.monitoringInterval&&(clearInterval(this.monitoringInterval),this.monitoringInterval=null)}measureLag(){let e=performance.now();requestAnimationFrame(()=>{let o=(performance.now()-e)/this.FRAME_BUDGET;this.lagHistory.push(o),this.lagHistory.length>this.LAG_SAMPLE_SIZE&&this.lagHistory.shift();let i=this.lagHistory.reduce((s,l)=>s+l,0)/this.lagHistory.length;performance.now()-this.lastScaleTime<this.SCALE_COOLDOWN_MS||(i>this.LAG_THRESHOLD&&this.currentTier<3&&this.lagHistory.length>=this.MIN_SAMPLES_FOR_SCALE_UP?this.scaleUp():i<.1&&this.currentTier>0&&this.lagHistory.length>=this.LAG_SAMPLE_SIZE&&this.scaleDown())})}async scaleUp(){let e=this.currentTier+1;console.log(`[Nexus Topology] Scaling UP from Tier ${this.currentTier} to Tier ${e}`),this.lagHistory=[],this.lastScaleTime=performance.now(),this.currentTier=e,await this.initializeTier(),typeof window<"u"&&window.dispatchEvent(new CustomEvent("nexus:topology-scale",{detail:{tier:this.currentTier,direction:"up"}}))}async scaleDown(){let e=this.currentTier-1;e<0||(console.log(`[Nexus Topology] Scaling DOWN from Tier ${this.currentTier} to Tier ${e}`),this.lagHistory=[],this.currentTier=e,await this.initializeTier(),typeof window<"u"&&window.dispatchEvent(new CustomEvent("nexus:topology-scale",{detail:{tier:this.currentTier,direction:"down"}})))}getTier(){return this.currentTier}getTierConfig(){return Nt[this.currentTier]}getActiveWorkers(){return this.workers.length}isSABAvailable(){return!!this.sharedBuffer}getLagVariance(){return this.lagHistory.length===0?0:this.lagHistory.reduce((e,t)=>e+t,0)/this.lagHistory.length}getSharedBuffer(){return this.sharedBuffer}setAutoScale(e){this.autoScaleEnabled=e,e&&this.currentTier>0?this.startMonitoring():this.monitoringInterval&&(clearInterval(this.monitoringInterval),this.monitoringInterval=null)}async setTier(e){e!==this.currentTier&&(console.log(`[Nexus Topology] Manual tier change: ${this.currentTier} -> ${e}`),this.currentTier=e,await this.initializeTier())}getWorker(e){return this.workers[e%this.workers.length]||null}dispose(){this.monitoringInterval&&(clearInterval(this.monitoringInterval),this.monitoringInterval=null),this.terminateWorkers(),this.sharedBuffer=null}},me=new Sn;W();var Qs={enabled:!0,captureHeap:!0,captureStack:!0,maxStackDepth:20,emitToConsole:!0,emitToPlatform:!1},It=class{config;beaconHistory=[];maxHistorySize=10;heapSnapshot=null;isCapturing=!1;globalErrorHandler=null;globalRejectionHandler=null;runtime=null;constructor(e,t={}){e&&(this.runtime=e,this.runtime.agent=this),this.config={...Qs,...t},this.setupGlobalHandlers()}setupGlobalHandlers(){typeof window>"u"||(this.globalErrorHandler=(e,t)=>{this.captureBeacon(e,"error",t)},globalThis.addEventListener("error",this.globalErrorHandler),this.globalRejectionHandler=(e,t)=>{let r=e instanceof Error?e:new Error(String(e));this.captureBeacon(r,"unhandledRejection",{promise:t})},globalThis.addEventListener("unhandledrejection",this.globalRejectionHandler))}captureBeacon(e,t,r){if(this.isCapturing)return this.createMinimalBeacon(e,t);this.isCapturing=!0;let o=performance.now();try{let i={id:this.generateBeaconId(),timestamp:Date.now(),tier:me.getTier(),signalHeap:this.config.captureHeap?this.captureSignalHeap():this.createEmptyHeapSnapshot(),callStack:this.config.captureStack?this.captureCallStack(e):[],navigator:this.captureNavigator(),memory:this.captureMemory()};return this.beaconHistory.push(i),this.beaconHistory.length>this.maxHistorySize&&this.beaconHistory.shift(),this.config.emitToConsole&&this.emitToConsole(i,t,r),this.config.emitToPlatform&&this.config.platformEndpoint&&this.emitToPlatform(i),i}catch{return this.createMinimalBeacon(e,t)}finally{this.isCapturing=!1}}createMinimalBeacon(e,t){return{id:this.generateBeaconId(),timestamp:Date.now(),tier:me.getTier(),signalHeap:this.createEmptyHeapSnapshot(),callStack:[{function:e.message,file:e.stack?.split(`
-`)[0]||"unknown",line:0,column:0}],navigator:this.captureNavigator(),memory:this.captureMemory()}}captureSignalHeap(){let e=null,t=null,r=[],o={};try{if(this.runtime){if(Y){let s=Y;s._floatHeap instanceof Float64Array&&(e=new Float64Array(s._floatHeap)),s._intHeap instanceof Int32Array&&(t=new Int32Array(s._intHeap)),o={...s._indexMap||{}}}let a=this.runtime.globalSignals();a&&(r=[a])}}catch{}let i=(e?.byteLength||0)+(t?.byteLength||0);return{numericSignals:e,booleanSignals:t,objectSignals:r,signalIndexMap:o,size:i}}captureCallStack(e){let t=[];if(!e.stack)return t;let r=e.stack.split(`
-`).slice(1),o=Math.min(r.length,this.config.maxStackDepth);for(let i=0;i<o;i++){let a=r[i].trim();if(!a)continue;let s=a.match(/at\s+(?:(.+?)\s+)?\(?(.+?):(\d+):(\d+)\)?/);s?t.push({function:s[1]||"anonymous",file:s[2],line:parseInt(s[3],10),column:parseInt(s[4],10)}):(s=a.match(/(?:(.+?)@)?(.+?):(\d+):(\d+)/),s&&t.push({function:s[1]||"anonymous",file:s[2],line:parseInt(s[3],10),column:parseInt(s[4],10)}))}return t}captureNavigator(){return typeof navigator>"u"?{userAgent:"",language:"",hardwareConcurrency:0}:{userAgent:navigator.userAgent,language:navigator.language,hardwareConcurrency:navigator.hardwareConcurrency||0,deviceMemory:navigator.deviceMemory}}captureMemory(){if(typeof performance.memory>"u")return;let e=performance.memory;return{usedJSHeapSize:e.usedJSHeapSize,totalJSHeapSize:e.totalJSHeapSize,jsHeapSizeLimit:e.jsHeapSizeLimit}}createEmptyHeapSnapshot(){return{numericSignals:null,booleanSignals:null,objectSignals:[],signalIndexMap:{},size:0}}generateBeaconId(){return`beacon_${Date.now()}_${Math.random().toString(36).slice(2,11)}`}emitToConsole(e,t,r){console.error("[Nexus Self-Heal] Crash Beacon captured",{id:e.id,type:t,timestamp:new Date(e.timestamp).toISOString(),tier:e.tier,memory:e.memory,error:e.callStack[0]?.function||"Unknown",stack:e.callStack}),r&&console.error("[Nexus Self-Heal] Context:",r)}async emitToPlatform(e){if(this.config.platformEndpoint)try{await fetch(this.config.platformEndpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(e)})}catch{}}getBeaconHistory(){return[...this.beaconHistory]}getLatestBeacon(){return this.beaconHistory[this.beaconHistory.length-1]||null}getBeaconById(e){return this.beaconHistory.find(t=>t.id===e)||null}clearHistory(){this.beaconHistory=[]}updateConfig(e){this.config={...this.config,...e}}manualCapture(e,t){let r=new Error(e);return this.captureBeacon(r,"manual",t)}reportResolutionFailure(e,t,r){if(!this.config.enabled)return;let o=()=>{let i=r?.error?` (Error: ${r.error})`:"";if(console.warn(`[Nexus Resolution Beacon] ${e.toUpperCase()} Failure: "${t}"${i}`,{context:r,timestamp:new Date().toISOString()}),this.config.emitToPlatform&&this.config.platformEndpoint){let a={id:`res_${this.generateBeaconId()}`,timestamp:Date.now(),type:"resolution_failure",failureType:e,identifier:t,context:r,tier:me.getTier(),navigator:this.captureNavigator()};this.emitToPlatform(a)}};if(e==="expression"&&r&&r.node instanceof Element){let i=r.node;requestAnimationFrame(()=>{if(!i[G]&&i.isConnected){if(this.runtime){let a=!1;try{this.runtime.evaluate(i,t)!==void 0&&(a=!0)}catch{a=!1}if(a)return}o()}})}else o()}dispose(){typeof globalThis>"u"||(this.globalErrorHandler&&globalThis.removeEventListener("error",this.globalErrorHandler),this.globalRejectionHandler&&globalThis.removeEventListener("unhandledrejection",this.globalRejectionHandler),this.beaconHistory=[])}},Te=null;function lt(n,e){return Te||(Te=new It(n,e)),Te}function No(n,e){return Te?(Te.updateConfig(e||{}),Te):(Te=new It(n,e),Te)}function Io(){return lt().getBeaconHistory()}function be(n,e){if(!e)return null;if(typeof e!="string")return Po(e);let t=n,r="";if(e.startsWith("^")){let s=e.match(/^\^([.#a-zA-Z0-9_-]+)(.*)/);s&&(t=n.closest(s[1]),r=s[2].trim())}else if(e.startsWith("-")){let s=e.match(/^-([.#a-zA-Z0-9_-]+)(.*)/);if(s){let l=s[1],c=s[2];for(t=n.previousElementSibling;t&&l&&!t.matches(l);)t=t.previousElementSibling;r=c.trim()}}else if(e.startsWith("+")){let s=e.match(/^\+([.#a-zA-Z0-9_-]+)(.*)/);if(s){let l=s[1],c=s[2];for(t=n.nextElementSibling;t&&l&&!t.matches(l);)t=t.nextElementSibling;r=c.trim()}}else if(e.startsWith("~")){let s=e.match(/^~([.#a-zA-Z0-9_-]+)(.*)/);if(s){let l=s[1],c=s[2];t=n.parentElement?.querySelector(l),r=c.trim()}}else if(e.startsWith(">"))t=n.querySelector(e),r="";else if(e.startsWith("*"))t=document.querySelector(e.substring(1).trim()),r="";else{let s=Array.from(n.querySelectorAll(e));if(s.length>0)return ct(s);let l=Array.from(document.querySelectorAll(e));if(l.length===0)try{lt().reportResolutionFailure("selector",e,{contextEl:n})}catch{}return ct(l)}if(t&&r){let s=Array.from(t.querySelectorAll(r));return ct(s)}if(!t)return ct([]);let o=t||document,i=e.replace(/^[*^>~+-]/,"").trim()||"*",a=Array.from(o.querySelectorAll(i));return ct(a)}function ct(n){let e=n.map(t=>Po(t));return new Proxy(e,{get(t,r,o){if(typeof r=="symbol")return Reflect.get(t,r,o);let i=t[r];if(i!==void 0)return typeof i=="function"?i.bind(t):i;if(t.length>0){let a=t[0],s=a[r];return typeof s=="function"?s.bind(a):s}},set(t,r,o,i){return typeof r=="symbol"?Reflect.set(t,r,o,i):isNaN(Number(r))?t.length>0?(t[0][r]=o,!0):!1:(t[Number(r)]=o,!0)}})}function Po(n){return new Proxy(n,{get(e,t){if(typeof t=="symbol")return e[t];let r=e[t];if(r!==void 0)return typeof r=="function"?r.bind(e):r;let o=j(e);for(let i of o)if(t in i)return i[t]},set(e,t,r){if(typeof t=="symbol")return e[t]=r,!0;let o=j(e);for(let i of o)if(t in i)return i[t]=r,!0;return e[t]=r,!0}})}async function Pt(n,e,t={}){let{duration:r=300,easing:o="ease-out"}=t,i=typeof n=="string"?be(document.body,n):null,a=i?Array.isArray(i)?i:[i]:Array.from(n),s=new Map;a.forEach(l=>{s.set(l,l.getBoundingClientRect())}),await e(),await new Promise(requestAnimationFrame),await new Promise(requestAnimationFrame),a.forEach(l=>{let c=s.get(l),u=l.getBoundingClientRect();if(!c)return;let d=c.left-u.left,p=c.top-u.top;(d!==0||p!==0)&&(l.style.transition="none",l.style.transform=`translate3d(${d}px, ${p}px, 0)`,l.offsetWidth,l.style.transition=`transform ${r}ms ${o}`,l.style.transform="translate3d(0, 0, 0)",l.addEventListener("transitionend",()=>{l.style.transition="",l.style.transform=""},{once:!0}))})}function De(n,e,t={},r){if(typeof globalThis.window>"u"){r&&r();return}if(Array.isArray(e)){let o=n.animate(e,t);return r&&(o.onfinish=r),o}return Js(n,e,t,r)}De.flip=Pt;De.out=(n,e,t)=>De(n,"leave",e,t);function Js(n,e,t={},r){let o=e==="enter"?t.enter:t.leave,i=e==="enter"?t.enterStart:t.leaveStart,a=e==="enter"?t.enterEnd:t.leaveEnd;An(n,o||""),An(n,i||""),n.offsetHeight,requestAnimationFrame(()=>{requestAnimationFrame(()=>{Cn(n,i||""),An(n,a||"");let s=Zs(n),l=!1,c=()=>{l||(l=!0,Cn(n,o||""),Cn(n,a||""),r&&r())};s>0?(n.addEventListener("transitionend",u=>{u.target===n&&c()},{once:!0}),setTimeout(c,s+50)):c()})})}var Zs=n=>{let e=globalThis.window.getComputedStyle(n),t=s=>s.split(",").map(l=>parseFloat(l)*1e3||0),r=t(e.transitionDuration),o=t(e.transitionDelay),i=t(e.animationDuration),a=0;return r.forEach((s,l)=>a=Math.max(a,s+(o[l]||0))),Math.max(a,...i,0)},An=(n,e)=>e.split(" ").filter(Boolean).forEach(t=>n.classList.add(t)),Cn=(n,e)=>e.split(" ").filter(Boolean).forEach(t=>n.classList.remove(t));W();function ea(n){let e=n;for(;e;){let t=getComputedStyle(e),r=t.overflowY,o=t.overflowX;if(r==="auto"||r==="scroll"||(o==="auto"||o==="scroll"))return e;e=e.parentElement}return document.documentElement}var ye=class n{static active=null;static ghost=null;static clone=null;el;options;_pointerDownBound;_pointerMoveBound;_pointerUpBound;_touchStartBound;dragEl=null;parentEl=null;nextEl=null;lastTarget=null;lastDirection=0;pastFirstInvertThresh=!1;isCircumstantialInvert=!1;targetMoveDistance=0;targetBeforeFirstSwap;_swapHighlightTarget=null;tapEvt=null;dragStarted=!1;multiDragElements=[];originalIndices=new Map;scrollParent=null;_lastActiveItemScope=null;_lastSourceItemScope=null;_dockedContainer=null;scrollParentBounds=null;_runtime;constructor(e,t,r){this.el=e,this._runtime=r,this.options={animation:150,ghostClass:"draggable-ghost",dragClass:"draggable-drag",chosenClass:"draggable-chosen",selectedClass:"draggable-selected",swapClass:"draggable-swap-highlight",fallbackOnBody:!0,swapThreshold:1,invertedSwapThreshold:1,invertSwap:!1,draggable:"[data-drag]",sort:!0,...t},this._pointerDownBound=this._onPointerDown.bind(this),this._pointerMoveBound=this._onPointerMove.bind(this),this._pointerUpBound=this._onPointerUp.bind(this),this._touchStartBound=o=>{let i=o.target,a=i.closest(this.options.draggable);if(a&&this.el.contains(a)){if(a.closest("[data-drag-container]")!==this.el||a.getAttribute("draggable")==="false"||this.options.handle&&!i.closest(this.options.handle)||this.options.filter&&i.closest(this.options.filter))return;let l=i.tagName.toUpperCase();if(["INPUT","SELECT","TEXTAREA","BUTTON"].includes(l))return;o.preventDefault()}},this.el.addEventListener("pointerdown",this._pointerDownBound),this.el.addEventListener("touchstart",this._touchStartBound,{passive:!1})}destroy(){this.el.removeEventListener("pointerdown",this._pointerDownBound),this.el.removeEventListener("touchstart",this._touchStartBound),this._cleanupDragListeners()}_onPointerDown(e){if(e.button!==0||n.active)return;let t=e.target,r=t.closest(this.options.draggable);if(!r||!this.el.contains(r)||r.closest("[data-drag-container]")!==this.el||r.getAttribute("draggable")==="false"||this.options.handle&&!t.closest(this.options.handle)||this.options.filter&&t.closest(this.options.filter))return;let i=t.tagName.toUpperCase();["INPUT","SELECT","TEXTAREA","BUTTON"].includes(i)||(e.preventDefault(),e.stopPropagation(),this.dragEl=r,this.tapEvt=e,this.dragStarted=!1,this.dragEl.classList.add(this.options.chosenClass),document.addEventListener("pointermove",this._pointerMoveBound),document.addEventListener("pointerup",this._pointerUpBound),document.addEventListener("pointercancel",this._pointerUpBound))}_onPointerMove(e){if(!this.tapEvt||!this.dragEl)return;let t=e.clientX-this.tapEvt.clientX,r=e.clientY-this.tapEvt.clientY;if(!this.dragStarted){let o=e.pointerType==="touch"?8:3;Math.sqrt(t*t+r*r)>o&&this._startDrag(e);return}n.ghost&&(n.ghost.style.transform=`translate3d(${t}px, ${r}px, 0)`),this._maybeAutoScroll(e.clientX,e.clientY),this._onDragOver(e)}_startDrag(e){if(this.dragStarted=!0,n.active=this,this.parentEl=this.dragEl.parentElement,this.nextEl=this.dragEl.nextElementSibling,this.parentEl){let s=j(this.parentEl);this._lastSourceItemScope=s.find(l=>l&&"item"in l&&l.item&&typeof l.item=="object")}this.originalIndices.clear();let t=0;Array.from(this.el.children).forEach(s=>{s.matches(this.options.draggable)&&s.getAttribute("draggable")!=="false"&&!s[G]&&(s.draggableIndex=t,this.originalIndices.set(s,t),t++)}),this.options.multiDrag&&(this.dragEl.classList.contains(this.options.selectedClass)?this.multiDragElements=Array.from(this.el.children).filter(s=>s.matches(this.options.draggable)&&s.classList.contains(this.options.selectedClass)):(Array.from(this.el.children).forEach(s=>{let c=j(s).find(u=>u&&"item"in u&&u.item&&typeof u.item=="object");c&&c.item&&(c.item.selected=s===this.dragEl)}),this.multiDragElements=[this.dragEl])),typeof this.options.group=="object"&&this.options.group.pull==="clone"&&(n.clone=this.dragEl.cloneNode(!0),this.dragEl.parentNode.insertBefore(n.clone,this.dragEl));let o=this.dragEl.getBoundingClientRect();n.ghost=this.dragEl.cloneNode(!0),n.ghost.style.position="fixed",n.ghost.style.top=`${o.top}px`,n.ghost.style.left=`${o.left}px`,n.ghost.style.width=`${o.width}px`,n.ghost.style.height=`${o.height}px`,n.ghost.style.maskImage="linear-gradient(to bottom right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)",n.ghost.style.webkitMaskImage="linear-gradient(to bottom right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)",n.ghost.style.pointerEvents="none",n.ghost.style.zIndex="100000",n.ghost.classList.add(this.options.ghostClass);let i=this.dragEl[oe];i&&(n.ghost[oe]=i);let a=j(this.dragEl);a.length&&(n.ghost[X]=a),document.body.appendChild(n.ghost),this.dragEl.classList.add(this.options.chosenClass),this.dragEl.classList.add(this.options.dragClass),this.options.multiDrag&&this.multiDragElements.length>0&&this.multiDragElements.forEach(s=>{s!==this.dragEl&&(s.style.display="none")}),this.scrollParent=ea(this.el),this.scrollParentBounds=this.scrollParent.getBoundingClientRect(),this.options.onStart&&this.options.onStart({item:this.dragEl,oldIndex:this.originalIndices.get(this.dragEl),originalEvent:e})}_onDragOver(e){if(!this.dragEl)return;if(this.parentEl&&this._lastSourceItemScope&&this._lastSourceItemScope.item)if(this.dragEl.parentElement!==this.parentEl)this._lastSourceItemScope.item.isDraggedOut=!0;else{let m=this.parentEl.getBoundingClientRect(),g=e.clientX<m.left||e.clientX>m.right||e.clientY<m.top||e.clientY>m.bottom;this._lastSourceItemScope.item.isDraggedOut=g}let t=this._findTargetUnderCursor(e.clientX,e.clientY);if(!t||t===this.dragEl){this._clearDragOverState();return}if(this.dragEl.contains(t)){this._clearDragOverState();return}let r=t.hasAttribute("data-drag-container")?t:t.closest("[data-drag-container]");if(!r){this._clearDragOverState();return}let o=null,i=r.__draggable;i&&i.draggable&&(o=i.draggable);let a=r===this.el;if(!a&&(!o||!this._canPullPut(o))){this._clearDocked(),this._clearDragOverState();return}if(this._updateDragOverState(r,e),t.hasAttribute("data-drag-container")){if(this.dragEl.parentElement!==t){let m=this._captureRects(this.dragEl.parentElement),g=this._captureRects(t);t.appendChild(this.dragEl),this._animateShift(this.dragEl.parentElement,m),this._animateShift(t,g)}this._updateDocked();return}let s=t.getBoundingClientRect(),l=this.dragEl.getBoundingClientRect(),c=this._detectDirection(r)==="vertical",u=this.dragEl.parentNode!==r,d=!this._dragElInRowColumn(l,s,c),p=c?"top":"left";this.lastTarget!==t&&(this.targetBeforeFirstSwap=s[p],this.pastFirstInvertThresh=!1,this.isCircumstantialInvert=!d&&this.options.invertSwap||u);let f=this._getSwapDirection(e,t,s,c,d?1:this.options.swapThreshold,this.options.invertedSwapThreshold,this.isCircumstantialInvert,this.lastTarget===t);if(f!==0){this.options.swap&&this._setSwapHighlight(t);let m=null,g=Array.from(this.dragEl.parentElement.children).indexOf(this.dragEl);if(g!==-1)do g-=f,m=this.dragEl.parentElement.children[g];while(m&&(getComputedStyle(m).display==="none"||m===n.ghost));if(m===t)return;this.lastTarget=t,this.lastDirection=f;let y=this._captureRects(this.dragEl.parentElement),v=a?y:this._captureRects(r);if(this.options.swap)this._swapNodes(this.dragEl,t);else{let b=t.nextElementSibling,T=f===1;T&&!b?r.appendChild(this.dragEl):r.insertBefore(this.dragEl,T?b:t)}if(this._animateShift(this.dragEl.parentElement,y),a||this._animateShift(r,v),this._updateDocked(),this.targetBeforeFirstSwap!==void 0&&!this.isCircumstantialInvert){let b=t.getBoundingClientRect();this.targetMoveDistance=Math.abs(this.targetBeforeFirstSwap-b[p])}}}_onPointerUp(e){if(this._cleanupDragListeners(),this._clearSwapHighlight(),this.dragEl){if(this.dragEl.classList.remove(this.options.chosenClass),this.dragStarted){this.dragEl.classList.remove(this.options.dragClass),this.options.multiDrag&&this.multiDragElements.length>0&&this.multiDragElements.forEach(i=>{i.style.display=""}),this.dragEl&&(this.dragEl.style.display=""),n.clone&&(n.clone.parentNode?.removeChild(n.clone),n.clone=null),n.ghost&&(n.ghost.parentNode?.removeChild(n.ghost),n.ghost=null);let t=0,r=Array.from(this.dragEl.parentElement.children);for(let i=0;i<r.length;i++){let a=r[i];if(a===this.dragEl)break;a.classList.contains(this.options.selectedClass)||a.nodeName.toUpperCase()!=="TEMPLATE"&&(a[G]||a.getAttribute("draggable")!=="false"&&a.matches(this.options.draggable)&&t++)}let o=this.originalIndices.get(this.dragEl);this.options.onEnd&&this.options.onEnd({item:this.dragEl,from:this.parentEl,to:this.dragEl.parentElement,oldIndex:o,newIndex:t,originalEvent:e,items:[...this.multiDragElements],oldIndicies:this.multiDragElements.map(i=>({multiDragElement:i,index:this.originalIndices.get(i)??-1}))}),this.options.multiDrag&&(this.multiDragElements=[])}else if(this.options.multiDrag){let r=j(this.dragEl).find(o=>o&&"item"in o&&o.item&&typeof o.item=="object");r&&r.item&&(r.item.selected=!r.item.selected)}}this._clearDragOverState(),this._lastSourceItemScope&&this._lastSourceItemScope.item&&(this._lastSourceItemScope.item.isDraggedOut=!1,this._lastSourceItemScope=null),this._clearDocked(),this.el&&this.el.querySelectorAll("[data-drag-container]").forEach(t=>{}),n.active=null,this.dragEl=null,this.tapEvt=null,this.dragStarted=!1,this._clearDocked()}_cleanupDragListeners(){document.removeEventListener("pointermove",this._pointerMoveBound),document.removeEventListener("pointerup",this._pointerUpBound),document.removeEventListener("pointercancel",this._pointerUpBound)}_clearDocked(){this._dockedContainer&&(this._dockedContainer.removeAttribute("data-dropzone-state"),this._dockedContainer=null)}_updateDocked(){if(!this.dragEl)return;let e=this.dragEl.closest("[data-drag-container]");e!==this._dockedContainer&&(this._dockedContainer&&this._dockedContainer.removeAttribute("data-dropzone-state"),e&&e.setAttribute("data-dropzone-state","docked"),this._dockedContainer=e)}_clearDragOverState(){this._lastActiveItemScope&&this._lastActiveItemScope.item&&(this._lastActiveItemScope.item.isDragOver=!1,this._lastActiveItemScope=null),this._clearSwapHighlight()}_setSwapHighlight(e){this._swapHighlightTarget&&this._swapHighlightTarget!==e&&this._swapHighlightTarget.classList.remove(this.options.swapClass),e.classList.add(this.options.swapClass),this._swapHighlightTarget=e}_clearSwapHighlight(){this._swapHighlightTarget&&(this._swapHighlightTarget.classList.remove(this.options.swapClass),this._swapHighlightTarget=null)}_updateDragOverState(e,t){let o=j(e).find(i=>i&&"item"in i&&i.item&&typeof i.item=="object");if(this._lastActiveItemScope!==o&&(this._clearDragOverState(),this._lastActiveItemScope=o||null),o&&o.item){let i=e.getBoundingClientRect(),a=t.clientX>=i.left&&t.clientX<=i.right&&t.clientY>=i.top&&t.clientY<=i.bottom;o.item.isDragOver=a}}_findTargetUnderCursor(e,t){let r=document.elementFromPoint(e,t);if(!r)return null;let o=r.closest("[data-drag-container]");if(!o||!o.__draggable)return null;let i=Array.from(o.children).filter(l=>l.nodeName.toUpperCase()!=="TEMPLATE"&&l!==this.dragEl&&l!==n.ghost&&l.style.display!=="none"&&!l[G]&&!l.classList.contains("draggable-ghost"));if(i.length===0)return o;let a=null,s=1/0;for(let l of i){let c=l.getBoundingClientRect(),u=c.left+c.width/2,d=c.top+c.height/2,p=e-u,f=t-d,m=p*p+f*f;m<s&&(s=m,a=l)}return a}_detectDirection(e){if(this.options.direction)return this.options.direction==="grid"?"vertical":this.options.direction;let t=getComputedStyle(e);if(t.display==="flex")return t.flexDirection==="column"||t.flexDirection==="column-reverse"?"vertical":"horizontal";if(t.display==="grid")return t.gridTemplateColumns.split(" ").length<=1?"vertical":"horizontal";let r=Array.from(e.children).filter(o=>o.nodeName.toUpperCase()!=="TEMPLATE");if(r.length>=2){let o=r[0].getBoundingClientRect(),i=r[1].getBoundingClientRect();return Math.abs(o.top-i.top)<4?"horizontal":"vertical"}return"vertical"}_dragElInRowColumn(e,t,r){let o=r?e.left:e.top,i=r?e.right:e.bottom,a=r?e.width:e.height,s=r?t.left:t.top,l=r?t.right:t.bottom,c=r?t.width:t.height,u=1;return Math.abs(o-s)<u||Math.abs(i-l)<u||Math.abs(o+a/2-(s+c/2))<u}_getSwapDirection(e,t,r,o,i,a,s,l){let c=o?e.clientY:e.clientX,u=o?r.height:r.width,d=o?r.top:r.left,p=o?r.bottom:r.right,f=!1;if(!s){if(l&&this.targetMoveDistance<u*i){if(!this.pastFirstInvertThresh&&(this.lastDirection===1?c>d+u*a/2:c<p-u*a/2)&&(this.pastFirstInvertThresh=!0),this.pastFirstInvertThresh)f=!0;else if(this.lastDirection===1?c<d+this.targetMoveDistance:c>p-this.targetMoveDistance)return-this.lastDirection}else if(c>d+u*(1-i)/2&&c<p-u*(1-i)/2)return this._getInsertDirection(e,t,r,o)}return f=f||s,f&&(c<d+u*a/2||c>p-u*a/2)?c>d+u/2?1:-1:0}_getInsertDirection(e,t,r,o){let i=o?e.clientY:e.clientX,a=o?r.top:r.left,s=o?r.height:r.width;return i>a+s/2?1:-1}_swapNodes(e,t){let r=e.parentNode,o=t.parentNode;if(!r||!o||r.isEqualNode(t)||o.isEqualNode(e))return;let i=Array.from(r.children),a=i.indexOf(e),s=i.indexOf(t);r.isEqualNode(o)&&a<s?(r.insertBefore(t,i[a]),o.insertBefore(e,i[s+1]||null)):(r.insertBefore(t,i[a]),o.insertBefore(e,i[s]||null))}_maybeAutoScroll(e,t){if(!this.scrollParent||!this.scrollParentBounds)return;let{left:r,top:o,width:i,height:a}=this.scrollParentBounds,s=40,l=15,c=e-r,u=r+i-e,d=t-o,p=o+a-t,f=0,m=0,g=this.scrollParent.scrollLeft>0,y=this.scrollParent.scrollLeft<this.scrollParent.scrollWidth-this.scrollParent.clientWidth,v=this.scrollParent.scrollTop>0,b=this.scrollParent.scrollTop<this.scrollParent.scrollHeight-this.scrollParent.clientHeight;c<s&&g?f=-l*(1-c/s):u<s&&y&&(f=l*(1-u/s)),d<s&&v?m=-l*(1-d/s):p<s&&b&&(m=l*(1-p/s)),(f!==0||m!==0)&&this.scrollParent.scrollBy({left:f,top:m})}_canPullPut(e){let t=this.options.group,r=e.options.group;if(!t||!r)return!1;let o=typeof t=="object"?t.name:t,i=typeof r=="object"?r.name:r;if(o&&i&&o===i){let a=typeof t=="object"&&t.pull!==void 0?t.pull:!0,s=typeof r=="object"&&r.put!==void 0?r.put:!0;return!!a&&!!s}return!1}_captureRects(e){let t=new Map;return Array.from(e.children).forEach(r=>{r.nodeName.toUpperCase()!=="TEMPLATE"&&t.set(r,r.getBoundingClientRect())}),t}_animateShift(e,t){Array.from(e.children).forEach(r=>{if(r.nodeName.toUpperCase()==="TEMPLATE"||r===this.dragEl)return;let o=t.get(r);if(!o)return;let i=r.getBoundingClientRect(),a=o.left-i.left,s=o.top-i.top;if(a!==0||s!==0){r.style.transition="none",r.style.transform=`translate3d(${a}px, ${s}px, 0)`,r.offsetHeight,r.style.transition=`transform ${this.options.animation}ms ease-out`,r.style.transform="translate3d(0, 0, 0)";let l=()=>{r.style.transition="",r.style.transform=""};r.addEventListener("transitionend",l,{once:!0})}})}},$t=class{constructor(e,t){this.ctx=e;this.runtime=t;this.ctx.container&&this.init()}draggable=null;finalToIndex=-1;init(){let e=this.ctx.container,t=e.getAttribute("data-drag-multi")==="true",r=e.getAttribute("data-drag-selected-class")||"draggable-selected",o=e.hasAttribute("data-drag-swap")||e.getAttribute("data-drag-swap")==="true",i=e.getAttribute("data-drag-swap-class")||"draggable-swap-highlight",a=e.getAttribute("data-drag-group"),s;if(a){s={name:a};let y=e.getAttribute("data-drag-pull")!=="false"?e.hasAttribute("data-drag-clone")||e.getAttribute("data-drag-clone")==="true"?"clone":!0:!1,v=e.getAttribute("data-drag-put")!=="false",b=e.getAttribute("data-drag-revert-clone")==="true";s.pull=y,s.put=v,s.revertClone=b}let l=e.getAttribute("data-drag-direction"),c=l==="grid"?void 0:l,u=a==="nested",d=e.getAttribute("data-drag-swap-threshold"),p=d?parseFloat(d):u?.65:1,m=e.getAttribute("data-drag-invert-swap")==="true"||u;this.draggable=new ye(e,{animation:this.ctx.animationDuration??150,ghostClass:this.ctx.ghostClass??"draggable-ghost",dragClass:this.ctx.dragClass??"draggable-drag",ghostOpacity:this.ctx.ghostOpacity??.4,fallbackOnBody:this.ctx.fallbackOnBody!==!1,swapThreshold:p,invertSwap:m,direction:c,handle:e.getAttribute("data-drag-handle")||void 0,filter:e.getAttribute("data-drag-filter")||void 0,draggable:"[data-drag]",multiDrag:t,selectedClass:r,swap:o,swapClass:i,group:s,sort:this.ctx.sort!==!1,onStart:g=>{let y=this.runtime?.globalSignals();y&&(y["drag:start"]={element:g.item,originalEvent:g.originalEvent,fromIndex:g.oldIndex});let v=g.from;this.runtime&&v&&this.updateEmptyState(v)},onEnd:g=>{this.finalToIndex=g.newIndex;let y=this.runtime?.globalSignals();y&&(y["drag:end"]={element:g.item,originalEvent:g.originalEvent,cancelled:!1});let v=g.from,b=g.to,T=v.getAttribute("data-drag-container")||v.getAttribute("data-teleport:drop"),E=b.getAttribute("data-drag-container")||b.getAttribute("data-teleport:drop");if(!T||!this.runtime)return;let C=g.oldIndex,h=g.newIndex,A=t&&g.items&&g.items.length>0,L=Array.from(b.children),k=this.runtime.sprites?.$animate?.flip||Pt;if(b!==v&&E){let N=this.runtime.evaluate(b,E),$=this.runtime.evaluate(v,T);if(Array.isArray(N)&&Array.isArray($)){let U=s?.pull==="clone"||b.hasAttribute("data-drag-clone")||b.getAttribute("data-drag-clone")==="true",ae=[],Z=[];if(A){let D=(g.oldIndicies||[]).slice().sort((V,de)=>de.index-V.index);ae=(g.oldIndicies||[]).slice().sort((V,de)=>V.index-de.index).map(V=>{let de=$[V.index];return U?{...de,id:`${de.id}-clone-${Date.now()}-${Math.random().toString(36).substr(2,5)}`}:de}),U||(Z=D.map(V=>V.index))}else{let D=$[C];ae=[U?{...D,id:`${D.id}-clone-${Date.now()}-${Math.random().toString(36).substr(2,5)}`}:D],U||(Z=[C])}if(U)if(ye.clone&&ye.clone.parentNode&&(ye.clone.parentNode.removeChild(ye.clone),ye.clone=null),A)(g.oldIndicies||[]).slice().sort((z,V)=>z.index-V.index).forEach(z=>{let V=z.multiDragElement,de=v.children[z.index];de?v.insertBefore(V,de):v.appendChild(V)});else{let D=v.children[C];D?v.insertBefore(g.item,D):v.appendChild(g.item)}else A?g.items.forEach(D=>{D.parentNode===v&&v.removeChild(D)}):g.item.parentNode===v&&v.removeChild(g.item);U?this.ctx.updateList(D=>{N.splice(h,0,...ae)}):k(L,()=>{this.ctx.updateList(D=>{for(let z of Z)D.splice(z,1);N.splice(h,0,...ae)})},{duration:this.ctx.animationDuration??150}),this.runtime&&(this.updateEmptyState(v),this.updateEmptyState(b))}}else{let N=this.runtime.evaluate(v,T);Array.isArray(N)&&(k(L,()=>{this.ctx.updateList($=>{if(o)if(A){let U=g.oldIndicies||[],ae=g.newIndicies||[];for(let Z=0;Z<U.length;Z++){let D=U[Z].index,z=ae[Z].index;if(D!==-1&&z!==-1){let V=$[z];$[z]=$[D],$[D]=V}}}else{let U=$[h];$[h]=$[C],$[C]=U}else if(A){let U=(g.oldIndicies||[]).slice().sort((D,z)=>z.index-D.index),Z=(g.oldIndicies||[]).slice().sort((D,z)=>D.index-z.index).map(D=>N[D.index]);for(let D of U)$.splice(D.index,1);$.splice(h,0,...Z)}else{let[U]=$.splice(C,1);$.splice(h,0,U)}})},{duration:this.ctx.animationDuration??150}),this.runtime&&this.updateEmptyState(v))}}}),this.draggable._runtime=this.runtime}updateEmptyState(e){let t=j(e);if(t.length>0){let r=t[0],o=e.querySelector(":scope > [data-drag]:not([data-for])")!=null;r.dragEmpty=!o}}startDrag(){}updateDrag(){}endDrag(){}getFinalToIndex(){return this.finalToIndex}};function $o(n,e,t,r){let o=()=>{try{let i=t.evaluate(n,e);return Array.isArray(i)?i:[]}catch{return[]}};return{getList:o,updateList:i=>{let a=o();i(a)},container:n,direction:r?.direction,ghostClass:r?.ghostClass,dragClass:r?.dragClass,ghostOpacity:r?.ghostOpacity,group:r?.group,sort:r?.sort!==!1,swap:r?.swap,swapClass:r?.swapClass,fallbackOnBody:r?.fallbackOnBody,swapThreshold:r?.swapThreshold,edgeScrollThreshold:r?.edgeScrollThreshold??40,autoScrollSpeed:r?.autoScrollSpeed??15,animationDuration:r?.animationDuration??150,onReorder:r?.onReorder}}var Do={name:"drag",attribute:"drag",handle:(n,e,t)=>{if(!(n.hasAttribute("data-drag-container")||n.hasAttribute("data-teleport:drop")))return;if(n.__nexusDragBound)return n.__nexusDragCleanup;n.__nexusDragBound=!0;let o=n,i,[a,s]=t.elementBoundEffect(o,()=>{let l=o.getAttribute("data-bind-data-drag-swap-threshold")||o.getAttribute("data-bind:data-drag-swap-threshold"),c=l?t.evaluate(o,l):void 0,u=o.getAttribute("data-bind-data-drag-invert-swap-threshold")||o.getAttribute("data-bind:data-drag-invert-swap-threshold"),d=u?t.evaluate(o,u):void 0;if(!o.__draggable)try{let f=o.getAttribute("data-drag-container")||o.getAttribute("data-teleport:drop")||"",m=o.getAttribute("data-drag-ghost-opacity"),g=m?parseFloat(m):void 0,y=$o(o,f,t,{ghostOpacity:g}),v=new $t(y,t);o.__draggable=v;let b=o;b[I]||(b[I]=new Map);let T=b[I],E=()=>{v.draggable&&v.draggable.destroy(),delete o.__draggable};T instanceof Map?T.set("draggable-cleanup",E):Array.isArray(T)&&T.push(E)}catch(f){t.reportError(f instanceof Error?f:new Error(String(f)),o,"drag-init")}let p=o.__draggable;p&&p.draggable&&(c!=null&&c!==""&&(p.draggable.options.swapThreshold=Number(c)),d!=null&&d!==""&&(p.draggable.options.invertedSwapThreshold=Number(d)))});return i=()=>{s(),delete n.__nexusDragBound,delete n.__nexusDragCleanup},n.__nexusDragCleanup=i,i}},ta=Do;var Rn={};_(Rn,{default:()=>ra});O();var na={name:"effect",attribute:"effect",handle:(n,e,t)=>{try{let r=!1,[o,i]=t.elementBoundEffect(n,()=>{if(!r){r=!0;try{t.evaluate(n,e)}finally{r=!1}}});return i}catch(r){P("effect",`Failed to run effect: ${r instanceof Error?r.message:String(r)}`,n,e)}}},ra=na;var kn={};_(kn,{default:()=>da,flowAttribute:()=>Bo,flowEdgesAttribute:()=>ua,flowHandleAttribute:()=>ca,flowNodeAttribute:()=>la});var oa="http://www.w3.org/2000/svg",ia=.2,sa=4,aa="[data-flow-node],[data-flow-handle],[data-flow-nodrag],button,a,input,textarea,select,label",Oo=n=>{let t=n?.closest("[data-flow]")?.__nexusFlowViewport;return t?{x:t.x||0,y:t.y||0,zoom:t.zoom||1}:{x:0,y:0,zoom:1}},Bo={name:"flow",attribute:"flow",handle:(n,e,t)=>{let r=t.evaluate(n,e),i=r&&typeof r=="object"&&!Array.isArray(r)&&("zoom"in r||"x"in r||"y"in r)?r:B({x:0,y:0,zoom:1});i.zoom===void 0&&(i.zoom=1),i.x===void 0&&(i.x=0),i.y===void 0&&(i.y=0),n.__nexusFlowViewport=i,n.classList.add("nexus-flow","nexus-flow-pane");let a=n.getAttribute("data-flow-grid"),s=a!==null&&parseFloat(a)||0,l=!1,c=0,u=0,d=E=>E.button===1||E.button===0&&E.altKey?!0:E.button===0?!E.target.closest(aa):!1,p=E=>{d(E)&&(l=!0,c=E.clientX-i.x,u=E.clientY-i.y,n.setPointerCapture(E.pointerId),n.style.cursor="grabbing")},f=E=>{l&&(i.x=E.clientX-c,i.y=E.clientY-u)},m=E=>{if(l){l=!1;try{n.releasePointerCapture(E.pointerId)}catch{}n.style.cursor=""}},g=E=>{E.preventDefault();let C=n.getBoundingClientRect(),h=E.clientX-C.left,A=E.clientY-C.top,L=Math.exp(-E.deltaY*.0015),k=i.zoom||1,N=Math.min(Math.max(k*L,ia),sa);if(N===k)return;let $=(h-i.x)/k,U=(A-i.y)/k;i.x=h-$*N,i.y=A-U*N,i.zoom=N};n.addEventListener("pointerdown",p),n.addEventListener("pointermove",f),n.addEventListener("pointerup",m),n.addEventListener("wheel",g,{passive:!1}),i.tick===void 0&&(i.tick=0);let y=0,v=()=>{i.tick++,++y<24?requestAnimationFrame(v):y===24&&setTimeout(()=>i.tick++,350)};requestAnimationFrame(v);let b=null;if(typeof ResizeObserver<"u"){let E=n.querySelector(".nexus-flow-content");E&&(b=new ResizeObserver(()=>{i.tick++}),b.observe(E))}let T=t.effect(()=>{let E=i.zoom||1,C=i.x||0,h=i.y||0,A=n.querySelector(".nexus-flow-content")||n;if(A.classList.add("nexus-flow-viewport"),A.style.transformOrigin="0 0",A.style.transform=`translate(${C}px, ${h}px) scale(${E})`,s>0&&n.style.backgroundImage){let L=s*E;n.style.backgroundSize=`${L}px ${L}px`,n.style.backgroundPosition=`${C}px ${h}px`}});return()=>{T(),b&&b.disconnect(),n.removeEventListener("pointerdown",p),n.removeEventListener("pointermove",f),n.removeEventListener("pointerup",m),n.removeEventListener("wheel",g),delete n.__nexusFlowViewport}}},la={name:"flowNode",attribute:"flow-node",handle:(n,e,t)=>{let r=t.evaluate(n,e);if(!r||typeof r!="object")return;let o=()=>{let v=r.position;return v?{x:v.x||0,y:v.y||0}:{x:r.x||0,y:r.y||0}},i=(v,b)=>{r.position?(r.position.x=v,r.position.y=b):(r.x=v,r.y=b)},a=()=>{let v=n.getAttribute("data-flow-snap");if(v!==null)return parseFloat(v)||0;let T=n.closest("[data-flow]")?.getAttribute("data-flow-grid");return T!=null&&parseFloat(T)||0},s=(v,b,T)=>T>0?{x:Math.round(v/T)*T,y:Math.round(b/T)*T}:{x:v,y:b},l=!1,c=0,u=0,d=0,p=0,f=v=>{if(v.button!==0||v.altKey||v.target.closest("[data-flow-handle],[data-flow-nodrag],button,a,input,textarea,select,label"))return;v.stopPropagation(),l=!0,c=v.clientX,u=v.clientY;let b=o();d=b.x,p=b.y,n.setPointerCapture(v.pointerId),n.style.zIndex="1000"},m=v=>{if(!l)return;let b=Oo(n).zoom,T=(v.clientX-c)/b,E=(v.clientY-u)/b,C=s(d+T,p+E,a());i(C.x,C.y)},g=v=>{if(l){l=!1;try{n.releasePointerCapture(v.pointerId)}catch{}n.style.zIndex=""}};n.addEventListener("pointerdown",f),n.addEventListener("pointermove",m),n.addEventListener("pointerup",g);let y=t.effect(()=>{n.style.position="absolute",n.style.left="0",n.style.top="0";let v=o(),b=s(v.x,v.y,a());n.style.transform=`translate3d(${b.x}px, ${b.y}px, 0)`});return()=>{y(),n.removeEventListener("pointerdown",f),n.removeEventListener("pointermove",m),n.removeEventListener("pointerup",g)}}},ca={name:"flowHandle",attribute:"flow-handle",handle:(n,e,t)=>{let r="source",o=e.trim();if(o==="source"||o==="target")r=o;else if(o)try{let u=t.evaluate(n,o);(u==="source"||u==="target")&&(r=u)}catch{}n.setAttribute("data-nexus-flow-handle",r),n.classList.add("nexus-flow-handle");let i=()=>n.closest("[data-flow]"),a=(u,d)=>{let p=i(),f=Oo(n),m=p.getBoundingClientRect();return{x:(u-m.left-f.x)/f.zoom,y:(d-m.top-f.y)/f.zoom}},s=u=>{let d=u.getBoundingClientRect();return a(d.left+d.width/2,d.top+d.height/2)},l=()=>{let u=i();if(!u)return null;let d=u.querySelector("[data-flow-edges]"),p=d?.getAttribute("data-nexus-flow-edges-expr")||d?.getAttribute("data-flow-edges")||"edges";try{let f=t.evaluate(u,p);return Array.isArray(f)?f:null}catch{return null}},c=u=>{if(u.button!==0)return;u.stopPropagation(),u.preventDefault();let d=i(),p=d?.querySelector("[data-flow-edges]");if(!d||!p)return;let f=n.closest("[data-flow-node]"),m=f?.id||f?.getAttribute("data-bind-id")||n.id||"",g=s(n),y=document.createElementNS(oa,"path");y.setAttribute("class","nexus-flow-edge nexus-flow-edge-preview"),y.setAttribute("fill","none"),y.setAttribute("stroke","currentColor"),y.setAttribute("stroke-width","2"),y.setAttribute("stroke-dasharray","4 4"),y.style.pointerEvents="none",p.appendChild(y);let v=T=>{let E=a(T.clientX,T.clientY),C=Math.abs(g.x-E.x)/2;y.setAttribute("d",`M ${g.x} ${g.y} C ${g.x+C} ${g.y}, ${E.x-C} ${E.y}, ${E.x} ${E.y}`)},b=T=>{document.removeEventListener("pointermove",v),document.removeEventListener("pointerup",b),y.remove();let C=document.elementFromPoint(T.clientX,T.clientY)?.closest("[data-flow-node]"),h=C?.id||C?.getAttribute("data-bind-id")||"";if(h&&h!==m){let A=l();A&&!A.some(L=>L.source===m&&L.target===h)&&A.push({source:m,target:h})}};document.addEventListener("pointermove",v),document.addEventListener("pointerup",b)};return n.addEventListener("pointerdown",c),()=>{n.removeEventListener("pointerdown",c)}}},ua={name:"flowEdges",attribute:"flow-edges",handle:(n,e)=>{let t=e.trim()||"edges";n.setAttribute("data-nexus-flow-edges-expr",t),n.classList.add("nexus-flow-edges","absolute","inset-0","overflow-visible","pointer-events-none");let o=n.closest("[data-flow]")?.querySelector(".nexus-flow-content");return o&&n.parentElement!==o&&o.appendChild(n),()=>{n.removeAttribute("data-nexus-flow-edges-expr")}}},da=Bo;var In={};_(In,{default:()=>ma});O();W();var Hn=n=>n instanceof HTMLElement||n instanceof SVGElement;function Nn(n,e){let t=ut.get(n);t&&ut.set(e,new Set(t));let r=dt.get(n);r&&dt.set(e,new Set(r));let o=Array.from(n.children),i=Array.from(e.children);for(let a=0;a<o.length;a++)o[a]&&i[a]&&Nn(o[a],i[a])}var fa={name:"for",attribute:"for",handle:(n,e,t)=>{let r=n instanceof HTMLTemplateElement,o=r?n.content:n,i="",a,s="",l=e.indexOf(" in ");if(l===-1){P("for",`Invalid syntax: ${e}. Expected "item in items"`,n,e);return}let c=e.substring(0,l).trim();if(s=e.substring(l+4).trim(),c.startsWith("(")&&c.endsWith(")")){let f=c.substring(1,c.length-1),m=f.indexOf(",");m!==-1?(i=f.substring(0,m).trim(),a=f.substring(m+1).trim()):i=f.trim()}else i=c;let u=document.createComment(` for: ${e} `);n.parentNode?.insertBefore(u,n),r||(n.style.display="none",n[G]=!0);let d=f=>{f.forEach(m=>{if(m instanceof HTMLElement||m instanceof SVGElement){let g=m,y=g[I];y&&(y.forEach(v=>v()),delete g[I]),d(Array.from(m.childNodes))}m.parentNode?.removeChild(m)})},p=new Map;try{let[f,m]=t.elementBoundEffect(n,()=>{let g=t.evaluate(n,s);if(!Array.isArray(g))return;let y=new Set,v=[];g.forEach((T,E)=>{let C=T.id??E;y.add(C);let h=p.get(C);if(h)h.forEach(A=>{if(Hn(A)){let L=A,k=L[Symbol.for("__data_stack__")]||L.__data_stack__;if(k&&k.length>0){let N=k[0];N[i]=T,a&&(N[a]=E)}else{let N={[i]:T};a&&(N[a]=E),ne(A,t.shallowReactive(N),n)}}});else{let A=o.cloneNode(!0);if(!r)Nn(o,A);else{let L=Array.from(o.childNodes).filter(N=>N instanceof HTMLElement),k=Array.from(A.childNodes).filter(N=>N instanceof HTMLElement);for(let N=0;N<L.length;N++)L[N]&&k[N]&&Nn(L[N],k[N])}h=r?Array.from(A.childNodes).filter(Hn):[A],h.forEach(L=>{if(Hn(L)){let k={[i]:T};a&&(k[a]=E),ne(L,t.shallowReactive(k),n),r||(L.style.display="",L.removeAttribute("data-for"),delete L[G]);let N=$=>{delete $[oe],delete $[I],$.childNodes&&$.childNodes.forEach(N)};N(L),t.processElement(L,!0)}}),p.set(C,h)}v.push(...h)});for(let[T,E]of p.entries())y.has(T)||(d(E),p.delete(T));let b=u;for(let T=v.length-1;T>=0;T--){let E=v[T];E.nextSibling!==b&&u.parentNode?.insertBefore(E,b),b=E}});return()=>{m();for(let g of p.values())d(g);p.clear(),u.remove()}}catch(f){P("for",`Failed to initialize for: ${f instanceof Error?f.message:String(f)}`,n,e)}}},ma=fa;var Pn={};_(Pn,{default:()=>ga});O();var pa={name:"html",attribute:"html",handle:(n,e,t)=>{try{let[r,o]=t.elementBoundEffect(n,()=>{let i=t.evaluate(n,e),a=i==null?"":String(i);n.innerHTML!==a&&(n.innerHTML=a,t.processElement(n))});return o}catch(r){P("html",`Failed to bind html: ${r instanceof Error?r.message:String(r)}`,n,e)}}},ga=pa;var $n={};_($n,{default:()=>ba});O();W();function Fo(n){if(!(n instanceof HTMLElement))return;let e=Array.from(n.childNodes);for(let o of e)Fo(o);let t=n,r=t[I];r&&(r.forEach(o=>{try{o()}catch{}}),delete t[I]),delete t[oe]}var ha={name:"if",attribute:"if",handle:(n,e,t)=>{let r=n.parentNode;if(!r||r instanceof DocumentFragment)return;let o=document.createComment(` if: ${e} `);r.insertBefore(o,n);let i=n instanceof HTMLTemplateElement,a=i?n.content:n;i||(n.style.display="none",n[G]=!0);let s=[],l=!1,c=d=>{d.forEach(p=>{Fo(p),p.parentNode?.removeChild(p)})},u=()=>{let d=a.cloneNode(!0);d instanceof HTMLElement?(d.removeAttribute("data-if"),delete d[G],d.style.removeProperty("display"),s=[d]):s=Array.from(d.childNodes),s.forEach(p=>{o.parentNode?.insertBefore(p,o),p instanceof HTMLElement&&t.processElement(p)})};try{let[d,p]=t.elementBoundEffect(n,()=>{!!t.evaluate(n,e)?l||(u(),l=!0):l&&(c(s),s=[],l=!1)});return()=>{p(),c(s),s=[],o.parentNode&&o.remove()}}catch(d){P("if",`Failed to initialize if: ${d instanceof Error?d.message:String(d)}`,n,e)}}},ba=ha;var Dn={};_(Dn,{default:()=>Aa});O();async function ya(n){let e=n.split("/")[0]||"files",t=await _o(e,n);return t?typeof t=="string"?t:t.data&&typeof t.data=="string"?t.data:t.data instanceof ArrayBuffer?new TextDecoder().decode(t.data):null:null}var Wo=new Map;function jo(n){return/^(idb|fs|https?|wss?):\/\//.test(n)}async function va(n,e={}){let{timeout:t=3e3}=e,r=new AbortController,o=setTimeout(()=>r.abort(),t);try{let i=await fetch(n,{...e,signal:r.signal});return clearTimeout(o),i}catch(i){throw clearTimeout(o),i}}async function Oe(n){if(jo(n)&&n.startsWith("idb://")){let t=n.replace(/^idb:\/\//,"");return ya(t)}let e=Wo.get(n);if(e)return e;try{let t=await va(n,{mode:"cors",timeout:3e3});if(!t.ok)return null;let r=await t.text();return Wo.set(n,r),r}catch{return null}}function Uo(n){let e={},t=/([a-z-]+)=["']([^"']+)["']/gi,r;for(;(r=t.exec(n))!==null;)e[r[1]]=r[2];return e}function qo(n,e){Object.entries(e).forEach(([t,r])=>{t==="content"||t==="innerText"||t==="textContent"||t==="href"||t==="src"||(r===!0?n.setAttribute(t,""):r===!1?n.removeAttribute(t):n.setAttribute(t,String(r)))})}async function zo(n,e,t,r,o){let a=(Array.isArray(e)?e:[e]).map(async s=>{let l;if(typeof s=="string"){let u=Uo(s);l=u.href?u:{href:s,rel:"stylesheet"}}else l={rel:"stylesheet",...s};let c=l.href;if(c){if(c.startsWith("idb://")){let u=await Oe(c);if(u){let d=await Q.adoptRawCSS(u,`import-${n}-${c}`);t.push(d),r.log(`Nexus Import [${n}]: CSS adopted (idb): ${c}`);return}}await new Promise(u=>{if(document.querySelector(`link[href="${c}"]`)){u();return}let p=document.createElement("link");qo(p,l),p.href=c,p.onload=()=>u(),p.onerror=()=>{H(new Error(`Nexus Import: Failed to load ${c}`),o),u()},(document.head||document.documentElement).appendChild(p),r.log(`Nexus Import [${n}]: Link tag injected: ${c}`)})}});await Promise.all(a)}async function Ea(n,e,t,r,o){let a=(Array.isArray(e)?e:[e]).map(async s=>{let l;if(typeof s=="string"?l=s:l=s.href,!l)return;let c=await Oe(l);if(!c)return;let u=await Q.adoptRawCSS(c,`import-adopt-${n}-${l}`);t.push(u),r.log(`Nexus Import [${n}]: CSS adopted (constructable): ${l}`)});await Promise.all(a)}async function wa(n,e,t,r,o){let a=(Array.isArray(e)?e:[e]).map(async s=>{let l=typeof s=="string"?{src:s}:s;typeof s=="string"&&!l.src&&(l=Uo(s),l.src||(l={src:s}));let c=l.src;if(!c)return;let u=c;if(c.startsWith("idb://")){let d=await Oe(c);if(d){let p=new Blob([d],{type:l.type||"text/javascript"}),f=URL.createObjectURL(p);u=f,t.push(()=>URL.revokeObjectURL(f))}}if(c.includes("tailwindcss/browser")&&!document.querySelector("style[data-nexus-tailwind-bridge]")){let d=Be(),p=Fe(d);if(p){let f=document.createElement("style");f.setAttribute("type","text/tailwindcss"),f.setAttribute("data-nexus-tailwind-bridge",""),f.textContent=p,document.head.appendChild(f),t.push(()=>f.remove()),r.log(`Nexus Import [${n}]: Tailwind theme bridge injected (${d.size} color tokens discovered)`)}}await new Promise(d=>{if(document.querySelector(`script[src="${u}"]`)){d();return}let f=document.createElement("script");qo(f,l),f.onload=()=>d(),f.onerror=()=>{H(new Error(`Nexus Import: Failed to load script ${c}`),o),d()},f.src=u,(document.head||document.documentElement).appendChild(f),r.log(`Nexus Import [${n}]: Script injected: ${c}`)})});await Promise.all(a)}async function xa(n,e,t,r,o){let a=(Array.isArray(e)?e:[e]).map(async s=>{let l=typeof s=="string"?{content:s}:s,c=l.content||(typeof s=="string"?s:"");if(!c&&!l.href)return;if(l.href){await zo(n,l,t,r,o);return}let u=jo(c)?await Oe(c):c;if(!u)return;let d=await Q.adoptCSS(u,`import-style-${n}`);t.push(d),r.log(`Nexus Import [${n}]: Style adopted (ZCZS)`)});await Promise.all(a)}async function Ta(n,e,t,r,o,i){let a=await Oe(e);if(!a)throw new Error(`Pattern not found: ${e}`);let s=r.target&&t.querySelector(r.target)||t,l=r.position||"append",c=document.createElement("div");switch(c.setAttribute("data-import-pattern",n),c.innerHTML=a,l){case"replace":s.innerHTML="",s.appendChild(c);break;case"prepend":s.insertBefore(c,s.firstChild);break;case"append":s.appendChild(c);break;case"before":s.parentElement?.insertBefore(c,s);break;case"after":s.parentElement?.insertBefore(c,s.nextSibling);break}o.push(()=>c.remove()),i.log(`Nexus Import [${n}]: Pattern loaded from ${e}`)}async function Sa(n,e,t,r){let o=await Oe(e);if(!o)throw new Error(`Component template not found: ${e}`);let s=new DOMParser().parseFromString(o,"text/html").querySelectorAll("template[data-component-name]");if(s.length>0)s.forEach(l=>{let c=l.getAttribute("data-component-name"),u=document.createElement("template");u.id=`component-${c}`,u.innerHTML=l.innerHTML,document.body.appendChild(u),t.push(()=>u.remove()),r.log(`Nexus Import [${n}]: Component "${c}" registered from ${e}`)});else{let l=document.createElement("template");l.id=`component-${n}`,l.innerHTML=o,document.body.appendChild(l),t.push(()=>l.remove()),r.log(`Nexus Import [${n}]: Component registered from ${e}`)}}if(typeof document<"u"){let n=document.createElement("style");n.setAttribute("data-nexus-fouc",""),n.textContent=`
+</html>`;
+  }
+  var buildModule = {
+    name: "build",
+    attribute: "build",
+    handle: (el, expression, runtime) => {
+      const doBuild = async () => {
+        let config;
+        try {
+          const evaluated = runtime.evaluate(el, expression);
+          if (typeof evaluated === "string") {
+            config = { target: evaluated };
+          } else if (typeof evaluated === "object" && evaluated !== null) {
+            config = evaluated;
+          } else {
+            throw new Error("Invalid build configuration");
+          }
+        } catch (e) {
+          reportError(new Error(`Build: Failed to evaluate configuration: ${e}`), el);
+          return { success: false, error: String(e) };
+        }
+        if (!config.target) {
+          reportError(new Error("Build: Missing target URI"), el);
+          return { success: false, error: "Missing target URI" };
+        }
+        const shouldMinify = config.minify ?? false;
+        const includeStyles = config.includeStyles ?? true;
+        const includeScripts = config.includeScripts ?? true;
+        const standalone = config.standalone ?? true;
+        try {
+          const scopeSelector = config.scope || "html";
+          const scopeRoot = scopeSelector === "html" ? document.documentElement : document.querySelector(scopeSelector) || document.documentElement;
+          const htmlContent = serializeDOM(scopeRoot);
+          const styles = includeStyles ? collectStyles(scopeRoot, shouldMinify) : "";
+          const scripts = includeScripts ? collectScripts(scopeRoot, shouldMinify) : "";
+          let output;
+          if (standalone) {
+            const title = document.title || "Nexus-UX Application";
+            output = buildStandaloneDocument(htmlContent, styles, scripts, config, title);
+          } else {
+            output = htmlContent;
+          }
+          const targetKey = config.target.replace(/^idb:\/\//, "");
+          await writeToIDB(targetKey, output, {
+            builtAt: Date.now(),
+            scope: config.scope || "html",
+            minified: shouldMinify,
+            standalone,
+            size: output.length
+          });
+          runtime.log(`Nexus Build: Bundle written to ${config.target} (${output.length} bytes)`);
+          return {
+            success: true,
+            target: config.target,
+            size: output.length,
+            timestamp: Date.now()
+          };
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          reportError(new Error(`Build failed: ${msg}`), el);
+          return { success: false, error: msg };
+        }
+      };
+      runtime.setGlobalSignal("$build", doBuild);
+      return () => {
+      };
+    }
+  };
+  var build_default = buildModule;
+
+  // src/modules/attributes/class.ts
+  var class_exports = {};
+  __export(class_exports, {
+    default: () => class_default
+  });
+  init_debug();
+  var classModule = {
+    name: "class",
+    attribute: "class",
+    handle: (el, value, runtime, parsedAttr) => {
+      const parsed = parsedAttr || runtime.parseAttribute("data-class", runtime, el);
+      if (!parsed)
+        return;
+      try {
+        const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
+          const result = runtime.evaluate(el, value);
+          if (parsed.argument) {
+            if (result) {
+              el.classList.add(parsed.argument);
+            } else {
+              el.classList.remove(parsed.argument);
+            }
+          } else {
+            runtime.reconcileClass(el, result);
+          }
+        });
+        return cleanup;
+      } catch (e) {
+        initError("class", `Failed to reconcile class: ${e instanceof Error ? e.message : String(e)}`, el, value);
+      }
+    }
+  };
+  var class_default = classModule;
+
+  // src/modules/attributes/component.ts
+  var component_exports = {};
+  __export(component_exports, {
+    default: () => component_default
+  });
+
+  // src/engine/scope.ts
+  init_consts();
+  function getDataStack(element) {
+    const node = element;
+    if (node[DATA_STACK_KEY]) {
+      return node[DATA_STACK_KEY];
+    }
+    if (typeof ShadowRoot !== "undefined" && node instanceof ShadowRoot) {
+      return getDataStack(node.host);
+    }
+    const parent = node.parentElement || node.parentNode;
+    if (!parent) {
+      return [];
+    }
+    if (typeof ShadowRoot !== "undefined" && parent instanceof ShadowRoot) {
+      const shadow = parent;
+      if (shadow[DATA_STACK_KEY]) {
+        return shadow[DATA_STACK_KEY];
+      }
+      return [];
+    }
+    if (parent instanceof DocumentFragment) {
+      return [];
+    }
+    if (parent instanceof Element) {
+      return getDataStack(parent);
+    }
+    return [];
+  }
+  function addScopeToNode(element, data, referenceNode) {
+    const node = element;
+    const parentStack = getDataStack(referenceNode || element);
+    node[DATA_STACK_KEY] = [data, ...parentStack];
+    return () => {
+      if (node[DATA_STACK_KEY]) {
+        node[DATA_STACK_KEY] = node[DATA_STACK_KEY].filter((item) => item !== data);
+      }
+    };
+  }
+  function hasScope(element) {
+    return !!element[DATA_STACK_KEY];
+  }
+  var scopeProviderRegistry = /* @__PURE__ */ new Map();
+  function registerScopeProvider(key, provider) {
+    scopeProviderRegistry.set(key, provider);
+  }
+  function hasScopeProvider(key) {
+    return scopeProviderRegistry.has(key);
+  }
+  function resolveScopeProvider(key, el, runtime) {
+    const provider = scopeProviderRegistry.get(key);
+    return provider ? provider(el, runtime) : void 0;
+  }
+  function parseGhostKeys(expression) {
+    const ghostKeys = [];
+    const typeHints = {};
+    const trimmed = expression.trim();
+    if (!trimmed.startsWith("{") && !trimmed.startsWith("({"))
+      return { ghostKeys, typeHints };
+    const start = trimmed.indexOf("{");
+    let i = start + 1;
+    const len = trimmed.length;
+    while (i < len) {
+      while (i < len && /\s/.test(trimmed[i]))
+        i++;
+      let key = "";
+      if (trimmed[i] === '"' || trimmed[i] === "'") {
+        const quote = trimmed[i++];
+        while (i < len && trimmed[i] !== quote)
+          key += trimmed[i++];
+        i++;
+      } else {
+        while (i < len && /[\w$]/.test(trimmed[i]))
+          key += trimmed[i++];
+      }
+      if (!key)
+        break;
+      while (i < len && /[\s:]/.test(trimmed[i]))
+        i++;
+      let value = "";
+      let depth = 0;
+      let inString = null;
+      while (i < len) {
+        const ch = trimmed[i];
+        if (inString) {
+          if (ch === "\\") {
+            value += ch + (trimmed[i + 1] || "");
+            i += 2;
+            continue;
+          }
+          if (ch === inString)
+            inString = null;
+          value += ch;
+          i++;
+          continue;
+        }
+        if (ch === '"' || ch === "'" || ch === "`") {
+          inString = ch;
+          value += ch;
+          i++;
+          continue;
+        }
+        if (ch === "{" || ch === "[" || ch === "(") {
+          depth++;
+          value += ch;
+          i++;
+          continue;
+        }
+        if (ch === "}" || ch === "]" || ch === ")") {
+          if (depth === 0)
+            break;
+          depth--;
+          value += ch;
+          i++;
+          continue;
+        }
+        if (ch === "," && depth === 0) {
+          i++;
+          break;
+        }
+        value += ch;
+        i++;
+      }
+      const valToken = value.trim();
+      if (key) {
+        ghostKeys.push(key);
+        if (valToken.startsWith("true") || valToken.startsWith("false"))
+          typeHints[key] = "boolean";
+        else if (/^-?\d/.test(valToken))
+          typeHints[key] = "number";
+        else if (/^['"`]/.test(valToken))
+          typeHints[key] = "string";
+        else if (valToken.startsWith("[") || valToken.startsWith("{"))
+          typeHints[key] = "object";
+      }
+    }
+    return { ghostKeys, typeHints };
+  }
+  function createScopeProxy(stateRef, onSet, onTrigger) {
+    return new Proxy({}, {
+      has(_, key) {
+        const target = stateRef.value;
+        return Reflect.has(target, key);
+      },
+      get(_, key) {
+        const target = stateRef.value;
+        return Reflect.get(target, key);
+      },
+      set(_, key, value) {
+        const target = stateRef.value;
+        const res = Reflect.set(target, key, value);
+        if (onSet)
+          onSet(key, value);
+        if (onTrigger)
+          onTrigger();
+        return res;
+      },
+      ownKeys() {
+        const target = stateRef.value;
+        return Reflect.ownKeys(target);
+      },
+      getOwnPropertyDescriptor(_, key) {
+        const target = stateRef.value;
+        return Reflect.getOwnPropertyDescriptor(target, key);
+      }
+    });
+  }
+
+  // src/modules/attributes/component.ts
+  init_consts();
+  init_debug();
+  function createInheritedShadowScope(host, ctx) {
+    return new Proxy(ctx, {
+      has(target, key) {
+        if (key in target)
+          return true;
+        return getDataStack(host).some((scope) => key in scope);
+      },
+      get(target, key) {
+        if (key in target)
+          return Reflect.get(target, key);
+        const stack = getDataStack(host);
+        for (const scope of stack) {
+          if (key in scope)
+            return scope[key];
+        }
+        return void 0;
+      },
+      set(target, key, value) {
+        const stack = getDataStack(host);
+        for (const scope of stack) {
+          if (key in scope) {
+            scope[key] = value;
+            return true;
+          }
+        }
+        return Reflect.set(target, key, value);
+      },
+      ownKeys(target) {
+        const keys = new Set(Reflect.ownKeys(target));
+        for (const scope of getDataStack(host)) {
+          for (const k of Object.keys(scope))
+            keys.add(k);
+        }
+        return Array.from(keys);
+      },
+      getOwnPropertyDescriptor(target, key) {
+        if (key in target)
+          return Reflect.getOwnPropertyDescriptor(target, key);
+        for (const scope of getDataStack(host)) {
+          if (key in scope) {
+            return { configurable: true, enumerable: true, writable: true, value: scope[key] };
+          }
+        }
+        return void 0;
+      }
+    });
+  }
+  var componentModule = {
+    name: "component",
+    attribute: "component",
+    handle: (el, value, runtime) => {
+      try {
+        if (el.hasAttribute("data-route"))
+          return;
+        const componentState = runtime.reactive({
+          isConnected: false,
+          isLoading: false,
+          hasError: false,
+          errorMessage: "",
+          templateContent: ""
+        });
+        const ctx = {
+          element: el,
+          ...componentState
+        };
+        el[COMPONENT_CONTEXT_KEY] = ctx;
+        let __lastPath;
+        runtime.effect(() => {
+          let config;
+          const evaluated = runtime.evaluate(el, value);
+          if (!el[COMPONENT_CONTEXT_KEY]) {
+            addScopeToNode(el, ctx);
+          }
+          if (typeof evaluated === "object" && evaluated !== null) {
+            config = evaluated;
+          } else if (typeof evaluated === "string") {
+            try {
+              config = JSON.parse(evaluated);
+            } catch {
+              config = { path: evaluated };
+            }
+          } else {
+            return;
+          }
+          if (!config.path || config.path === "none")
+            return;
+          if (config.path === __lastPath)
+            return;
+          __lastPath = config.path;
+          const load = async () => {
+            componentState.isLoading = true;
+            componentState.hasError = false;
+            try {
+              let html = "";
+              if (config.path.trim().startsWith("<")) {
+                html = config.path;
+              } else if (config.path.startsWith("#")) {
+                const template = document.querySelector(config.path);
+                if (!template)
+                  throw new Error(`Template ${config.path} not found`);
+                html = template.innerHTML;
+              } else {
+                if (!runtime.fetch)
+                  throw new Error("Fetch utility not available");
+                const cacheKey = `nx_comp:${config.path}`;
+                const cached = typeof sessionStorage !== "undefined" ? sessionStorage.getItem(cacheKey) : null;
+                if (cached) {
+                  html = cached;
+                } else {
+                  html = await runtime.fetch.request(config.path, { responseType: "text" }, el);
+                  if (typeof sessionStorage !== "undefined" && html) {
+                    try {
+                      sessionStorage.setItem(cacheKey, html);
+                    } catch {
+                    }
+                  }
+                }
+              }
+              if (runtime.isDevMode)
+                console.log(`[Component] Template loaded for <${el.tagName}>, length: ${html.length}`);
+              componentState.templateContent = html;
+              if (config.shadowrootmode) {
+                if (!el.shadowRoot)
+                  el.attachShadow({ mode: config.shadowrootmode });
+                const shadow = el.shadowRoot;
+                const scopeExpr = el.getAttribute("data-scope");
+                let shadowScope;
+                if (scopeExpr && scopeExpr.trim()) {
+                  const declared = runtime.evaluate(el, scopeExpr);
+                  const declaredObj = declared && typeof declared === "object" ? declared : {};
+                  shadowScope = Object.assign(/* @__PURE__ */ Object.create(null), ctx, declaredObj);
+                } else {
+                  shadowScope = createInheritedShadowScope(el, ctx);
+                }
+                shadow[DATA_STACK_KEY] = [shadowScope];
+                runtime.morphDOM(shadow, html);
+                Array.from(shadow.children).forEach((child) => {
+                  if (child instanceof HTMLElement || child instanceof SVGElement) {
+                    runtime.processElement(child);
+                  }
+                });
+              } else {
+                runtime.morphDOM(el, html);
+                Array.from(el.children).forEach((child) => {
+                  if (child instanceof HTMLElement || child instanceof SVGElement) {
+                    runtime.processElement(child);
+                  }
+                });
+                runtime.processElement(el);
+              }
+            } catch (e) {
+              componentState.hasError = true;
+              componentState.errorMessage = e instanceof Error ? e.message : String(e);
+              initError("component", componentState.errorMessage, el, value);
+              if (config.fallback) {
+                const fb = runtime.evaluate(el, config.fallback);
+                runtime.morphDOM(el, String(fb));
+              }
+            } finally {
+              componentState.isLoading = false;
+            }
+          };
+          if (!config.lazy) {
+            load();
+          } else {
+            load();
+          }
+        });
+        return () => {
+        };
+      } catch (e) {
+        initError("component", `Failed to init component: ${e instanceof Error ? e.message : String(e)}`, el, value);
+      }
+    }
+  };
+  var component_default = componentModule;
+
+  // src/modules/attributes/computed.ts
+  var computed_exports = {};
+  __export(computed_exports, {
+    default: () => computed_default
+  });
+  var computedModule = {
+    name: "computed",
+    attribute: "computed",
+    metadata: { after: ["signal"] },
+    handle: (el, value, runtime) => {
+      const computedCleanup = [];
+      const isGlobal = el.hasAttribute("data-computed:global");
+      const { ghostKeys } = parseGhostKeys(value);
+      const initialGhostState = {};
+      ghostKeys.forEach((key) => initialGhostState[key] = void 0);
+      const stateRef = unifiedRef(initialGhostState);
+      const scopeId = el.id || `computed_${Math.random().toString(36).slice(2)}`;
+      if (el.hasAttribute("data-computed")) {
+        const scopeProxy = createScopeProxy(stateRef);
+        const addCleanup = addScopeToNode(el, scopeProxy);
+        computedCleanup.push(addCleanup);
+        const [_runner, effectCleanup] = runtime.elementBoundEffect(el, () => {
+          const computedDefs = runtime.evaluate(el, value || "{}");
+          if (typeof computedDefs === "object" && computedDefs !== null) {
+            Object.entries(computedDefs).forEach(([propName, getter]) => {
+              if (typeof getter !== "function")
+                return;
+              const computedVal = unifiedComputed(() => {
+                try {
+                  return getter();
+                } catch (e) {
+                  if (runtime.isDevMode)
+                    runtime.warn(`[Computed Error] Failed to evaluate getter for "${propName}":`, e);
+                  return null;
+                }
+              }, propName);
+              const stop2 = runtime.watch(computedVal, (val) => {
+                stateRef.value[propName] = val;
+              }, { immediate: true });
+              computedCleanup.push(stop2);
+            });
+          }
+        });
+        computedCleanup.push(effectCleanup);
+      }
+      const attrs = Array.from(el.attributes).filter((a) => a.name.startsWith("data-computed-"));
+      if (attrs.length > 0) {
+        const attrStateRef = unifiedRef({}, `computed_${scopeId}`);
+        const scopeProxy = new Proxy({}, {
+          has(_, key) {
+            return Reflect.has(attrStateRef.value, key);
+          },
+          get(_, key) {
+            return Reflect.get(attrStateRef.value, key);
+          },
+          set(_, key, value2) {
+            return Reflect.set(attrStateRef.value, key, value2);
+          },
+          ownKeys() {
+            return Reflect.ownKeys(attrStateRef.value);
+          },
+          getOwnPropertyDescriptor(_, key) {
+            return Reflect.getOwnPropertyDescriptor(attrStateRef.value, key);
+          }
+        });
+        let addCleanup;
+        if (!isGlobal) {
+          addCleanup = addScopeToNode(el, scopeProxy);
+          computedCleanup.push(addCleanup);
+        }
+        attrs.forEach((attr) => {
+          const propName = attr.name.substring("data-computed-".length);
+          if (!propName)
+            return;
+          const [_runner, effectCleanup] = runtime.elementBoundEffect(el, () => {
+            const expression = attr.value;
+            const computedVal = runtime.computed(() => {
+              try {
+                return runtime.evaluate(el, expression);
+              } catch (e) {
+                if (runtime.isDevMode)
+                  runtime.warn(`[Computed Error] Failed to evaluate expression for "${propName}":`, e);
+                return null;
+              }
+            });
+            if (isGlobal || !addCleanup) {
+              const stop2 = runtime.watch(computedVal, (val) => {
+                runtime.setGlobalSignal(propName, val);
+              }, { immediate: true });
+              computedCleanup.push(stop2);
+            } else {
+              const stop2 = runtime.watch(computedVal, (val) => {
+                attrStateRef.value[propName] = val;
+              }, { immediate: true });
+              computedCleanup.push(stop2);
+            }
+          });
+          computedCleanup.push(effectCleanup);
+        });
+      }
+      return () => {
+        computedCleanup.forEach((c) => c());
+      };
+    }
+  };
+  var computed_default = computedModule;
+
+  // src/modules/attributes/debug.ts
+  var debug_exports = {};
+  __export(debug_exports, {
+    default: () => debug_default
+  });
+  var debugModule = {
+    name: "debug",
+    attribute: "debug",
+    handle: (el, value, runtime) => {
+      const stack = getDataStack(el);
+      console.group(`[Nexus Debug] Element:`, el);
+      console.log("Value:", value);
+      console.log("Data Stack:", stack);
+      console.log("Global Signals:", runtime.globalSignals());
+      console.groupEnd();
+      if (value) {
+        try {
+          const result = runtime.evaluate(el, value);
+          console.log(`[Nexus Debug] Expression "${value}" result:`, result);
+        } catch (e) {
+          console.error(`[Nexus Debug] Evaluation failed:`, e);
+        }
+      }
+    }
+  };
+  var debug_default = debugModule;
+
+  // src/modules/attributes/drag.ts
+  var drag_exports = {};
+  __export(drag_exports, {
+    DragReorderEngine: () => DragReorderEngine,
+    Draggable: () => Draggable,
+    buildReorderContext: () => buildReorderContext,
+    default: () => drag_default,
+    dragAttribute: () => dragAttribute
+  });
+
+  // src/modules/sprites/animate.ts
+  var animate_exports = {};
+  __export(animate_exports, {
+    animate: () => animate,
+    flip: () => flip
+  });
+
+  // src/modules/sprites/selector.ts
+  var selector_exports = {};
+  __export(selector_exports, {
+    resolveSelector: () => resolveSelector
+  });
+
+  // src/engine/topology.ts
+  var TIER_CONFIGS = {
+    0: {
+      level: 0,
+      name: "Mono-Thread (Fallback)",
+      threads: 1,
+      usesSharedArrayBuffer: false,
+      usesWorkers: false,
+      predictiveEngineDedicated: false
+    },
+    1: {
+      level: 1,
+      name: "Dual-Thread (Standard)",
+      threads: 2,
+      usesSharedArrayBuffer: ZCZS_SUPPORTED,
+      usesWorkers: true,
+      predictiveEngineDedicated: false
+    },
+    2: {
+      level: 2,
+      name: "Tri-Thread (Performance)",
+      threads: 3,
+      usesSharedArrayBuffer: ZCZS_SUPPORTED,
+      usesWorkers: true,
+      predictiveEngineDedicated: false
+    },
+    3: {
+      level: 3,
+      name: "Quad-Thread (Sovereign)",
+      threads: 4,
+      usesSharedArrayBuffer: ZCZS_SUPPORTED,
+      usesWorkers: true,
+      predictiveEngineDedicated: true
+    }
+  };
+  var EngineTopology = class {
+    currentTier = 0;
+    workers = [];
+    sharedBuffer = null;
+    lagHistory = [];
+    LAG_SAMPLE_SIZE = 60;
+    LAG_THRESHOLD = 0.4;
+    // 40% of frame budget
+    FRAME_BUDGET = 16.67;
+    // 60fps = 16.67ms per frame
+    SCALE_COOLDOWN_MS = 5e3;
+    // ignore lag spikes within 5s of a tier change
+    MIN_SAMPLES_FOR_SCALE_UP = 5;
+    // require history before scaling up
+    autoScaleEnabled = true;
+    monitoringInterval = null;
+    lastScaleTime = 0;
+    constructor() {
+    }
+    start() {
+      this.boot();
+    }
+    /**
+     * Boot probe - determines optimal tier based on environment
+     * Spec 5.2.1: Auto-Adaptation Logic
+     */
+    boot() {
+      const isCrossOriginIsolated = typeof crossOriginIsolated !== "undefined" && crossOriginIsolated;
+      const cores = navigator.hardwareConcurrency || 2;
+      const hasNexusIO = typeof globalThis.__NEXUS_IO__ !== "undefined";
+      if (cores >= 4 && (isCrossOriginIsolated || hasNexusIO)) {
+        this.currentTier = 3;
+      } else if (cores >= 3 && (isCrossOriginIsolated || hasNexusIO)) {
+        this.currentTier = 2;
+      } else if (cores >= 2 && typeof Worker !== "undefined") {
+        this.currentTier = 1;
+      } else {
+        this.currentTier = 0;
+      }
+      console.log(`[Nexus Topology] Boot: Detected ${cores} cores, SAB: ${isCrossOriginIsolated}, NexusIO: ${hasNexusIO}`);
+      console.log(`[Nexus Topology] Selected Tier: ${this.currentTier} (${TIER_CONFIGS[this.currentTier].name})`);
+      this.initializeTier();
+    }
+    /**
+     * Initialize resources for the selected tier
+     */
+    async initializeTier() {
+      const config = TIER_CONFIGS[this.currentTier];
+      if (config.usesSharedArrayBuffer && ZCZS_SUPPORTED) {
+        try {
+          this.sharedBuffer = new SharedArrayBuffer(1024 * 1024);
+          if (heap) {
+            heap.attachSharedBuffer(this.sharedBuffer);
+          }
+          console.log("[Nexus Topology] SharedArrayBuffer initialized");
+        } catch (e) {
+          console.warn("[Nexus Topology] Failed to initialize SAB, falling back:", e);
+          this.currentTier = Math.max(0, this.currentTier - 1);
+          this.initializeTier();
+          return;
+        }
+      }
+      if (config.usesWorkers && this.currentTier > 0) {
+        await this.spawnWorkers(this.currentTier);
+      }
+      if (this.autoScaleEnabled && this.currentTier > 0) {
+        this.startMonitoring();
+      } else {
+        this.stopMonitoring();
+      }
+    }
+    /**
+     * Spawn worker threads based on tier
+     */
+    async spawnWorkers(tier) {
+      const config = TIER_CONFIGS[tier];
+      const workerCount = config.threads - 1;
+      this.terminateWorkers();
+      for (let i = 0; i < workerCount; i++) {
+        try {
+          let scriptSrc = "/dist/nexus-ux.js";
+          if (typeof document !== "undefined" && document.currentScript instanceof HTMLScriptElement) {
+            scriptSrc = document.currentScript.src;
+          }
+          const worker = new Worker(scriptSrc, { type: "module" });
+          worker.onmessage = (e) => {
+          };
+          this.workers.push(worker);
+        } catch (e) {
+          console.warn(`[Nexus Topology] Failed to spawn worker ${i}:`, e);
+        }
+      }
+      console.log(`[Nexus Topology] Spawned ${this.workers.length} worker(s) for Tier ${tier}`);
+    }
+    /**
+     * Terminate all worker threads
+     */
+    terminateWorkers() {
+      this.workers.forEach((w) => w.terminate());
+      this.workers = [];
+    }
+    /**
+     * Start lag variance monitoring for auto-scaling
+     * Spec 5.1.2: The Autoscale Mechanism
+     */
+    startMonitoring() {
+      if (this.monitoringInterval)
+        return;
+      this.monitoringInterval = setInterval(() => {
+        this.measureLag();
+      }, 1e3);
+    }
+    stopMonitoring() {
+      if (this.monitoringInterval) {
+        clearInterval(this.monitoringInterval);
+        this.monitoringInterval = null;
+      }
+    }
+    /**
+     * Measure frame lag and trigger scale up/down
+     */
+    measureLag() {
+      const frameStart = performance.now();
+      requestAnimationFrame(() => {
+        const frameEnd = performance.now();
+        const frameTime = frameEnd - frameStart;
+        const lagRatio = frameTime / this.FRAME_BUDGET;
+        this.lagHistory.push(lagRatio);
+        if (this.lagHistory.length > this.LAG_SAMPLE_SIZE) {
+          this.lagHistory.shift();
+        }
+        const avgLag = this.lagHistory.reduce((a, b) => a + b, 0) / this.lagHistory.length;
+        const now = performance.now();
+        if (now - this.lastScaleTime < this.SCALE_COOLDOWN_MS) {
+          return;
+        }
+        if (avgLag > this.LAG_THRESHOLD && this.currentTier < 3 && this.lagHistory.length >= this.MIN_SAMPLES_FOR_SCALE_UP) {
+          this.scaleUp();
+        } else if (avgLag < 0.1 && this.currentTier > 0 && this.lagHistory.length >= this.LAG_SAMPLE_SIZE) {
+          this.scaleDown();
+        }
+      });
+    }
+    /**
+     * Scale up to higher tier
+     */
+    async scaleUp() {
+      const newTier = this.currentTier + 1;
+      console.log(`[Nexus Topology] Scaling UP from Tier ${this.currentTier} to Tier ${newTier}`);
+      this.lagHistory = [];
+      this.lastScaleTime = performance.now();
+      this.currentTier = newTier;
+      await this.initializeTier();
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("nexus:topology-scale", {
+          detail: { tier: this.currentTier, direction: "up" }
+        }));
+      }
+    }
+    /**
+     * Scale down to lower tier
+     */
+    async scaleDown() {
+      const newTier = this.currentTier - 1;
+      if (newTier < 0)
+        return;
+      console.log(`[Nexus Topology] Scaling DOWN from Tier ${this.currentTier} to Tier ${newTier}`);
+      this.lagHistory = [];
+      this.currentTier = newTier;
+      await this.initializeTier();
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("nexus:topology-scale", {
+          detail: { tier: this.currentTier, direction: "down" }
+        }));
+      }
+    }
+    /**
+     * Get current tier configuration
+     */
+    getTier() {
+      return this.currentTier;
+    }
+    /**
+     * Get tier configuration
+     */
+    getTierConfig() {
+      return TIER_CONFIGS[this.currentTier];
+    }
+    /**
+     * Get number of active workers
+     */
+    getActiveWorkers() {
+      return this.workers.length;
+    }
+    /**
+     * Check if SAB is available
+     */
+    isSABAvailable() {
+      return !!this.sharedBuffer;
+    }
+    /**
+     * Get lag variance
+     */
+    getLagVariance() {
+      if (this.lagHistory.length === 0)
+        return 0;
+      return this.lagHistory.reduce((a, b) => a + b, 0) / this.lagHistory.length;
+    }
+    /**
+     * Get SharedArrayBuffer for cross-thread communication
+     */
+    getSharedBuffer() {
+      return this.sharedBuffer;
+    }
+    /**
+     * Enable/disable auto-scaling
+     */
+    setAutoScale(enabled) {
+      this.autoScaleEnabled = enabled;
+      if (enabled && this.currentTier > 0) {
+        this.startMonitoring();
+      } else if (this.monitoringInterval) {
+        clearInterval(this.monitoringInterval);
+        this.monitoringInterval = null;
+      }
+    }
+    /**
+     * Force specific tier (for testing or manual override)
+     */
+    async setTier(tier) {
+      if (tier === this.currentTier)
+        return;
+      console.log(`[Nexus Topology] Manual tier change: ${this.currentTier} -> ${tier}`);
+      this.currentTier = tier;
+      await this.initializeTier();
+    }
+    /**
+     * Get worker for task distribution
+     */
+    getWorker(index) {
+      return this.workers[index % this.workers.length] || null;
+    }
+    /**
+     * Cleanup resources
+     */
+    dispose() {
+      if (this.monitoringInterval) {
+        clearInterval(this.monitoringInterval);
+        this.monitoringInterval = null;
+      }
+      this.terminateWorkers();
+      this.sharedBuffer = null;
+    }
+  };
+  var topology = new EngineTopology();
+
+  // src/engine/agent.ts
+  init_consts();
+  var DEFAULT_CONFIG = {
+    enabled: true,
+    captureHeap: true,
+    captureStack: true,
+    maxStackDepth: 20,
+    emitToConsole: true,
+    emitToPlatform: false
+    // Disabled by default - requires platform endpoint
+  };
+  var SelfHealAgent = class {
+    config;
+    beaconHistory = [];
+    maxHistorySize = 10;
+    heapSnapshot = null;
+    isCapturing = false;
+    globalErrorHandler = null;
+    globalRejectionHandler = null;
+    runtime = null;
+    constructor(runtime, config = {}) {
+      if (runtime) {
+        this.runtime = runtime;
+        this.runtime.agent = this;
+      }
+      this.config = { ...DEFAULT_CONFIG, ...config };
+      this.setupGlobalHandlers();
+    }
+    /**
+     * Setup global error handlers for automatic beacon capture
+     */
+    setupGlobalHandlers() {
+      if (typeof window === "undefined")
+        return;
+      this.globalErrorHandler = (error, context) => {
+        this.captureBeacon(error, "error", context);
+      };
+      globalThis.addEventListener("error", this.globalErrorHandler);
+      this.globalRejectionHandler = (reason, promise) => {
+        const error = reason instanceof Error ? reason : new Error(String(reason));
+        this.captureBeacon(error, "unhandledRejection", { promise });
+      };
+      globalThis.addEventListener("unhandledrejection", this.globalRejectionHandler);
+    }
+    /**
+     * Capture a crash beacon with full state snapshot
+     */
+    captureBeacon(error, type, context) {
+      if (this.isCapturing) {
+        return this.createMinimalBeacon(error, type);
+      }
+      this.isCapturing = true;
+      const _startTime = performance.now();
+      try {
+        const beacon = {
+          id: this.generateBeaconId(),
+          timestamp: Date.now(),
+          tier: topology.getTier(),
+          signalHeap: this.config.captureHeap ? this.captureSignalHeap() : this.createEmptyHeapSnapshot(),
+          callStack: this.config.captureStack ? this.captureCallStack(error) : [],
+          navigator: this.captureNavigator(),
+          memory: this.captureMemory()
+        };
+        this.beaconHistory.push(beacon);
+        if (this.beaconHistory.length > this.maxHistorySize) {
+          this.beaconHistory.shift();
+        }
+        if (this.config.emitToConsole) {
+          this.emitToConsole(beacon, type, context);
+        }
+        if (this.config.emitToPlatform && this.config.platformEndpoint) {
+          this.emitToPlatform(beacon);
+        }
+        return beacon;
+      } catch (e) {
+        return this.createMinimalBeacon(error, type);
+      } finally {
+        this.isCapturing = false;
+      }
+    }
+    /**
+     * Create a minimal beacon when full capture fails
+     */
+    createMinimalBeacon(error, type) {
+      return {
+        id: this.generateBeaconId(),
+        timestamp: Date.now(),
+        tier: topology.getTier(),
+        signalHeap: this.createEmptyHeapSnapshot(),
+        callStack: [{ function: error.message, file: error.stack?.split("\n")[0] || "unknown", line: 0, column: 0 }],
+        navigator: this.captureNavigator(),
+        memory: this.captureMemory()
+      };
+    }
+    /**
+     * Capture Signal Heap snapshot (Zero-Copy optimized)
+     */
+    captureSignalHeap() {
+      let numericSignals = null;
+      let booleanSignals = null;
+      let objectSignals = [];
+      let signalIndexMap = {};
+      try {
+        if (this.runtime) {
+          if (heap) {
+            const h = heap;
+            if (h._floatHeap instanceof Float64Array)
+              numericSignals = new Float64Array(h._floatHeap);
+            if (h._intHeap instanceof Int32Array)
+              booleanSignals = new Int32Array(h._intHeap);
+            signalIndexMap = { ...h._indexMap || {} };
+          }
+          const globalState = this.runtime.globalSignals();
+          if (globalState) {
+            objectSignals = [globalState];
+          }
+        }
+      } catch (e) {
+      }
+      const size = (numericSignals?.byteLength || 0) + (booleanSignals?.byteLength || 0);
+      return {
+        numericSignals,
+        booleanSignals,
+        objectSignals,
+        signalIndexMap,
+        size
+      };
+    }
+    /**
+     * Capture call stack from error
+     */
+    captureCallStack(error) {
+      const frames = [];
+      if (!error.stack)
+        return frames;
+      const stackLines = error.stack.split("\n").slice(1);
+      const maxDepth = Math.min(stackLines.length, this.config.maxStackDepth);
+      for (let i = 0; i < maxDepth; i++) {
+        const line = stackLines[i].trim();
+        if (!line)
+          continue;
+        let match = line.match(/at\s+(?:(.+?)\s+)?\(?(.+?):(\d+):(\d+)\)?/);
+        if (match) {
+          frames.push({
+            function: match[1] || "anonymous",
+            file: match[2],
+            line: parseInt(match[3], 10),
+            column: parseInt(match[4], 10)
+          });
+        } else {
+          match = line.match(/(?:(.+?)@)?(.+?):(\d+):(\d+)/);
+          if (match) {
+            frames.push({
+              function: match[1] || "anonymous",
+              file: match[2],
+              line: parseInt(match[3], 10),
+              column: parseInt(match[4], 10)
+            });
+          }
+        }
+      }
+      return frames;
+    }
+    /**
+     * Capture navigator info
+     */
+    captureNavigator() {
+      if (typeof navigator === "undefined") {
+        return { userAgent: "", language: "", hardwareConcurrency: 0 };
+      }
+      return {
+        userAgent: navigator.userAgent,
+        language: navigator.language,
+        hardwareConcurrency: navigator.hardwareConcurrency || 0,
+        deviceMemory: navigator.deviceMemory
+      };
+    }
+    /**
+     * Capture memory info if available
+     */
+    captureMemory() {
+      if (typeof performance.memory === "undefined") {
+        return void 0;
+      }
+      const mem = performance.memory;
+      return {
+        usedJSHeapSize: mem.usedJSHeapSize,
+        totalJSHeapSize: mem.totalJSHeapSize,
+        jsHeapSizeLimit: mem.jsHeapSizeLimit
+      };
+    }
+    /**
+     * Create empty heap snapshot
+     */
+    createEmptyHeapSnapshot() {
+      return {
+        numericSignals: null,
+        booleanSignals: null,
+        objectSignals: [],
+        signalIndexMap: {},
+        size: 0
+      };
+    }
+    /**
+     * Generate unique beacon ID
+     */
+    generateBeaconId() {
+      return `beacon_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+    }
+    /**
+     * Emit beacon to console
+     */
+    emitToConsole(beacon, type, context) {
+      console.error("[Nexus Self-Heal] Crash Beacon captured", {
+        id: beacon.id,
+        type,
+        timestamp: new Date(beacon.timestamp).toISOString(),
+        tier: beacon.tier,
+        memory: beacon.memory,
+        error: beacon.callStack[0]?.function || "Unknown",
+        stack: beacon.callStack
+      });
+      if (context) {
+        console.error("[Nexus Self-Heal] Context:", context);
+      }
+    }
+    /**
+     * Emit beacon to Aerea platform for AI analysis
+     */
+    async emitToPlatform(beacon) {
+      if (!this.config.platformEndpoint)
+        return;
+      try {
+        await fetch(this.config.platformEndpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(beacon)
+        });
+      } catch (e) {
+      }
+    }
+    /**
+     * Get beacon history
+     */
+    getBeaconHistory() {
+      return [...this.beaconHistory];
+    }
+    /**
+     * Get latest beacon
+     */
+    getLatestBeacon() {
+      return this.beaconHistory[this.beaconHistory.length - 1] || null;
+    }
+    /**
+     * Get beacon by ID
+     */
+    getBeaconById(id) {
+      return this.beaconHistory.find((b) => b.id === id) || null;
+    }
+    /**
+     * Clear beacon history
+     */
+    clearHistory() {
+      this.beaconHistory = [];
+    }
+    /**
+     * Update configuration
+     */
+    updateConfig(config) {
+      this.config = { ...this.config, ...config };
+    }
+    /**
+     * Manually trigger a beacon capture
+     */
+    manualCapture(message, context) {
+      const error = new Error(message);
+      return this.captureBeacon(error, "manual", context);
+    }
+    /**
+     * Report a non-breaking resolution failure to the Agentic Host.
+     * This is used for missing selectors or failed expression evaluations
+     * that don't throw but impede framework functionality.
+     */
+    reportResolutionFailure(type, identifier, context) {
+      if (!this.config.enabled)
+        return;
+      const emitBeacon = () => {
+        const errMsg = context?.error ? ` (Error: ${context.error})` : "";
+        console.warn(`[Nexus Resolution Beacon] ${type.toUpperCase()} Failure: "${identifier}"${errMsg}`, {
+          context,
+          timestamp: (/* @__PURE__ */ new Date()).toISOString()
+        });
+        if (this.config.emitToPlatform && this.config.platformEndpoint) {
+          const resolutionBeacon = {
+            id: `res_${this.generateBeaconId()}`,
+            timestamp: Date.now(),
+            type: "resolution_failure",
+            failureType: type,
+            identifier,
+            context,
+            tier: topology.getTier(),
+            navigator: this.captureNavigator()
+          };
+          this.emitToPlatform(resolutionBeacon);
+        }
+      };
+      if (type === "expression" && context && context.node instanceof Element) {
+        const el = context.node;
+        requestAnimationFrame(() => {
+          if (el[IS_TEMPLATE_KEY])
+            return;
+          if (!el.isConnected)
+            return;
+          if (this.runtime) {
+            let resolved = false;
+            try {
+              const res = this.runtime.evaluate(el, identifier);
+              if (res !== void 0)
+                resolved = true;
+            } catch (_e) {
+              resolved = false;
+            }
+            if (resolved)
+              return;
+          }
+          emitBeacon();
+        });
+      } else {
+        emitBeacon();
+      }
+    }
+    /**
+     * Cleanup - remove global handlers
+     */
+    dispose() {
+      if (typeof globalThis === "undefined")
+        return;
+      if (this.globalErrorHandler) {
+        globalThis.removeEventListener("error", this.globalErrorHandler);
+      }
+      if (this.globalRejectionHandler) {
+        globalThis.removeEventListener("unhandledrejection", this.globalRejectionHandler);
+      }
+      this.beaconHistory = [];
+    }
+  };
+  var agentInstance = null;
+  function getSelfHealAgent(runtime, config) {
+    if (!agentInstance) {
+      agentInstance = new SelfHealAgent(runtime, config);
+    }
+    return agentInstance;
+  }
+  function initSelfHeal(runtime, config) {
+    if (agentInstance) {
+      agentInstance.updateConfig(config || {});
+      return agentInstance;
+    }
+    agentInstance = new SelfHealAgent(runtime, config);
+    return agentInstance;
+  }
+  function getBeaconHistory() {
+    return getSelfHealAgent().getBeaconHistory();
+  }
+
+  // src/modules/sprites/selector.ts
+  function resolveSelector(contextEl, selector) {
+    if (!selector)
+      return null;
+    if (typeof selector !== "string")
+      return createReactiveElementProxy(selector);
+    let current = contextEl;
+    let targetSelector = "";
+    if (selector.startsWith("^")) {
+      const match = selector.match(/^\^([.#a-zA-Z0-9_-]+)(.*)/);
+      if (match) {
+        current = contextEl.closest(match[1]);
+        targetSelector = match[2].trim();
+      }
+    } else if (selector.startsWith("-")) {
+      const match = selector.match(/^-([.#a-zA-Z0-9_-]+)(.*)/);
+      if (match) {
+        const sel = match[1];
+        const rest = match[2];
+        current = contextEl.previousElementSibling;
+        while (current && sel && !current.matches(sel)) {
+          current = current.previousElementSibling;
+        }
+        targetSelector = rest.trim();
+      }
+    } else if (selector.startsWith("+")) {
+      const match = selector.match(/^\+([.#a-zA-Z0-9_-]+)(.*)/);
+      if (match) {
+        const sel = match[1];
+        const rest = match[2];
+        current = contextEl.nextElementSibling;
+        while (current && sel && !current.matches(sel)) {
+          current = current.nextElementSibling;
+        }
+        targetSelector = rest.trim();
+      }
+    } else if (selector.startsWith("~")) {
+      const match = selector.match(/^~([.#a-zA-Z0-9_-]+)(.*)/);
+      if (match) {
+        const sel = match[1];
+        const rest = match[2];
+        current = contextEl.parentElement?.querySelector(sel);
+        targetSelector = rest.trim();
+      }
+    } else if (selector.startsWith(">")) {
+      current = contextEl.querySelector(selector);
+      targetSelector = "";
+    } else if (selector.startsWith("*")) {
+      current = document.querySelector(selector.substring(1).trim());
+      targetSelector = "";
+    } else {
+      const items = Array.from(contextEl.querySelectorAll(selector));
+      if (items.length > 0)
+        return createNexusCollection(items);
+      const globalItems = Array.from(document.querySelectorAll(selector));
+      if (globalItems.length === 0) {
+        try {
+          getSelfHealAgent().reportResolutionFailure("selector", selector, { contextEl });
+        } catch (e) {
+        }
+      }
+      return createNexusCollection(globalItems);
+    }
+    if (current && targetSelector) {
+      const refined = Array.from(current.querySelectorAll(targetSelector));
+      return createNexusCollection(refined);
+    }
+    if (!current)
+      return createNexusCollection([]);
+    const root = current || document;
+    const cleanSelector = selector.replace(/^[*^>~+-]/, "").trim() || "*";
+    const results = Array.from(root.querySelectorAll(cleanSelector));
+    return createNexusCollection(results);
+  }
+  function createNexusCollection(elements) {
+    const proxies = elements.map((el) => createReactiveElementProxy(el));
+    return new Proxy(proxies, {
+      get(target, key, receiver) {
+        if (typeof key === "symbol")
+          return Reflect.get(target, key, receiver);
+        const val = target[key];
+        if (val !== void 0) {
+          return typeof val === "function" ? val.bind(target) : val;
+        }
+        if (target.length > 0) {
+          const head = target[0];
+          const headVal = head[key];
+          return typeof headVal === "function" ? headVal.bind(head) : headVal;
+        }
+        return void 0;
+      },
+      set(target, key, value, receiver) {
+        if (typeof key === "symbol")
+          return Reflect.set(target, key, value, receiver);
+        if (!isNaN(Number(key))) {
+          target[Number(key)] = value;
+          return true;
+        }
+        if (target.length > 0) {
+          target[0][key] = value;
+          return true;
+        }
+        return false;
+      }
+    });
+  }
+  function createReactiveElementProxy(el) {
+    return new Proxy(el, {
+      get(target, key) {
+        if (typeof key === "symbol")
+          return target[key];
+        const val = target[key];
+        if (val !== void 0) {
+          return typeof val === "function" ? val.bind(target) : val;
+        }
+        const stack = getDataStack(target);
+        for (const data of stack) {
+          if (key in data)
+            return data[key];
+        }
+        return void 0;
+      },
+      set(target, key, value) {
+        if (typeof key === "symbol") {
+          target[key] = value;
+          return true;
+        }
+        const stack = getDataStack(target);
+        for (const data of stack) {
+          if (key in data) {
+            data[key] = value;
+            return true;
+          }
+        }
+        target[key] = value;
+        return true;
+      }
+    });
+  }
+
+  // src/modules/sprites/animate.ts
+  async function flip(targets, changeCallback, options = {}) {
+    const { duration = 300, easing = "ease-out" } = options;
+    const resolved = typeof targets === "string" ? resolveSelector(document.body, targets) : null;
+    const targetArray = resolved ? Array.isArray(resolved) ? resolved : [resolved] : Array.from(targets);
+    const initialRects = /* @__PURE__ */ new Map();
+    targetArray.forEach((el) => {
+      initialRects.set(el, el.getBoundingClientRect());
+    });
+    await changeCallback();
+    await new Promise(requestAnimationFrame);
+    await new Promise(requestAnimationFrame);
+    targetArray.forEach((el) => {
+      const initialRect = initialRects.get(el);
+      const finalRect = el.getBoundingClientRect();
+      if (!initialRect)
+        return;
+      const dx = initialRect.left - finalRect.left;
+      const dy = initialRect.top - finalRect.top;
+      if (dx !== 0 || dy !== 0) {
+        el.style.transition = "none";
+        el.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+        el.offsetWidth;
+        el.style.transition = `transform ${duration}ms ${easing}`;
+        el.style.transform = "translate3d(0, 0, 0)";
+        el.addEventListener(
+          "transitionend",
+          () => {
+            el.style.transition = "";
+            el.style.transform = "";
+          },
+          { once: true }
+        );
+      }
+    });
+  }
+  function animate(el, keyframesOrState, optionsOrConfig = {}, callback) {
+    if (typeof globalThis.window === "undefined") {
+      if (callback)
+        callback();
+      return;
+    }
+    if (Array.isArray(keyframesOrState)) {
+      const anim = el.animate(keyframesOrState, optionsOrConfig);
+      if (callback)
+        anim.onfinish = callback;
+      return anim;
+    }
+    return $animate_legacy(el, keyframesOrState, optionsOrConfig, callback);
+  }
+  animate.flip = flip;
+  animate.out = (el, config, cb) => animate(el, "leave", config, cb);
+  function $animate_legacy(el, state, config = {}, callback) {
+    const base = state === "enter" ? config.enter : config.leave;
+    const start = state === "enter" ? config.enterStart : config.leaveStart;
+    const end = state === "enter" ? config.enterEnd : config.leaveEnd;
+    applyClasses(el, base || "");
+    applyClasses(el, start || "");
+    void el.offsetHeight;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        removeClasses(el, start || "");
+        applyClasses(el, end || "");
+        const duration = getEffectDurations(el);
+        let finished = false;
+        const cleanup = () => {
+          if (finished)
+            return;
+          finished = true;
+          removeClasses(el, base || "");
+          removeClasses(el, end || "");
+          if (callback)
+            callback();
+        };
+        if (duration > 0) {
+          el.addEventListener("transitionend", (e) => {
+            if (e.target === el)
+              cleanup();
+          }, { once: true });
+          setTimeout(cleanup, duration + 50);
+        } else {
+          cleanup();
+        }
+      });
+    });
+  }
+  var getEffectDurations = (el) => {
+    const styles = globalThis.window.getComputedStyle(el);
+    const parse = (str) => str.split(",").map((s) => parseFloat(s) * 1e3 || 0);
+    const trans = parse(styles.transitionDuration);
+    const delay = parse(styles.transitionDelay);
+    const anim = parse(styles.animationDuration);
+    let max = 0;
+    trans.forEach((d, i) => max = Math.max(max, d + (delay[i] || 0)));
+    return Math.max(max, ...anim, 0);
+  };
+  var applyClasses = (el, s) => s.split(" ").filter(Boolean).forEach((c) => el.classList.add(c));
+  var removeClasses = (el, s) => s.split(" ").filter(Boolean).forEach((c) => el.classList.remove(c));
+
+  // src/modules/attributes/drag.ts
+  init_consts();
+  function getScrollParent(el) {
+    let current = el;
+    while (current) {
+      const style = getComputedStyle(current);
+      const overflowY = style.overflowY;
+      const overflowX = style.overflowX;
+      const isScrollableY = overflowY === "auto" || overflowY === "scroll";
+      const isScrollableX = overflowX === "auto" || overflowX === "scroll";
+      if (isScrollableY || isScrollableX) {
+        return current;
+      }
+      current = current.parentElement;
+    }
+    return document.documentElement;
+  }
+  var Draggable = class _Draggable {
+    static active = null;
+    static ghost = null;
+    static clone = null;
+    el;
+    options;
+    _pointerDownBound;
+    _pointerMoveBound;
+    _pointerUpBound;
+    _touchStartBound;
+    dragEl = null;
+    parentEl = null;
+    nextEl = null;
+    lastTarget = null;
+    lastDirection = 0;
+    pastFirstInvertThresh = false;
+    isCircumstantialInvert = false;
+    targetMoveDistance = 0;
+    targetBeforeFirstSwap;
+    _swapHighlightTarget = null;
+    tapEvt = null;
+    dragStarted = false;
+    multiDragElements = [];
+    originalIndices = /* @__PURE__ */ new Map();
+    scrollParent = null;
+    _lastActiveItemScope = null;
+    _lastSourceItemScope = null;
+    _dockedContainer = null;
+    scrollParentBounds = null;
+    _runtime;
+    constructor(el, options, runtime) {
+      this.el = el;
+      this._runtime = runtime;
+      this.options = {
+        animation: 150,
+        ghostClass: "draggable-ghost",
+        dragClass: "draggable-drag",
+        chosenClass: "draggable-chosen",
+        selectedClass: "draggable-selected",
+        swapClass: "draggable-swap-highlight",
+        fallbackOnBody: true,
+        swapThreshold: 1,
+        invertedSwapThreshold: 1,
+        invertSwap: false,
+        draggable: "[data-drag]",
+        sort: true,
+        ...options
+      };
+      this._pointerDownBound = this._onPointerDown.bind(this);
+      this._pointerMoveBound = this._onPointerMove.bind(this);
+      this._pointerUpBound = this._onPointerUp.bind(this);
+      this._touchStartBound = (e) => {
+        const target = e.target;
+        const dragEl = target.closest(this.options.draggable);
+        if (dragEl && this.el.contains(dragEl)) {
+          const closestContainer = dragEl.closest("[data-drag-container]");
+          if (closestContainer !== this.el)
+            return;
+          if (dragEl.getAttribute("draggable") === "false")
+            return;
+          if (this.options.handle && !target.closest(this.options.handle))
+            return;
+          if (this.options.filter && target.closest(this.options.filter))
+            return;
+          const tagName = target.tagName.toUpperCase();
+          if (["INPUT", "SELECT", "TEXTAREA", "BUTTON"].includes(tagName))
+            return;
+          e.preventDefault();
+        }
+      };
+      this.el.addEventListener("pointerdown", this._pointerDownBound);
+      this.el.addEventListener("touchstart", this._touchStartBound, { passive: false });
+    }
+    destroy() {
+      this.el.removeEventListener("pointerdown", this._pointerDownBound);
+      this.el.removeEventListener("touchstart", this._touchStartBound);
+      this._cleanupDragListeners();
+    }
+    _onPointerDown(e) {
+      if (e.button !== 0)
+        return;
+      if (_Draggable.active)
+        return;
+      const target = e.target;
+      const dragEl = target.closest(this.options.draggable);
+      if (!dragEl || !this.el.contains(dragEl))
+        return;
+      const closestDraggableContainer = dragEl.closest("[data-drag-container]");
+      if (closestDraggableContainer !== this.el) {
+        return;
+      }
+      if (dragEl.getAttribute("draggable") === "false") {
+        return;
+      }
+      if (this.options.handle && !target.closest(this.options.handle))
+        return;
+      if (this.options.filter) {
+        if (target.closest(this.options.filter)) {
+          return;
+        }
+      }
+      const targetTag = target.tagName.toUpperCase();
+      if (["INPUT", "SELECT", "TEXTAREA", "BUTTON"].includes(targetTag)) {
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      this.dragEl = dragEl;
+      this.tapEvt = e;
+      this.dragStarted = false;
+      this.dragEl.classList.add(this.options.chosenClass);
+      document.addEventListener("pointermove", this._pointerMoveBound);
+      document.addEventListener("pointerup", this._pointerUpBound);
+      document.addEventListener("pointercancel", this._pointerUpBound);
+    }
+    _onPointerMove(e) {
+      if (!this.tapEvt || !this.dragEl)
+        return;
+      const dx = e.clientX - this.tapEvt.clientX;
+      const dy = e.clientY - this.tapEvt.clientY;
+      if (!this.dragStarted) {
+        const threshold = e.pointerType === "touch" ? 8 : 3;
+        if (Math.sqrt(dx * dx + dy * dy) > threshold) {
+          this._startDrag(e);
+        }
+        return;
+      }
+      if (_Draggable.ghost) {
+        _Draggable.ghost.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+      }
+      this._maybeAutoScroll(e.clientX, e.clientY);
+      this._onDragOver(e);
+    }
+    _startDrag(e) {
+      this.dragStarted = true;
+      _Draggable.active = this;
+      this.parentEl = this.dragEl.parentElement;
+      this.nextEl = this.dragEl.nextElementSibling;
+      if (this.parentEl) {
+        const stack = getDataStack(this.parentEl);
+        this._lastSourceItemScope = stack.find((s) => s && "item" in s && s.item && typeof s.item === "object");
+      }
+      this.originalIndices.clear();
+      let draggableIdx = 0;
+      Array.from(this.el.children).forEach((child) => {
+        if (child.matches(this.options.draggable) && child.getAttribute("draggable") !== "false" && !child[IS_TEMPLATE_KEY]) {
+          child.draggableIndex = draggableIdx;
+          this.originalIndices.set(child, draggableIdx);
+          draggableIdx++;
+        }
+      });
+      if (this.options.multiDrag) {
+        if (this.dragEl.classList.contains(this.options.selectedClass)) {
+          this.multiDragElements = Array.from(this.el.children).filter(
+            (c) => c.matches(this.options.draggable) && c.classList.contains(this.options.selectedClass)
+          );
+        } else {
+          Array.from(this.el.children).forEach((c) => {
+            const stack = getDataStack(c);
+            const scope = stack.find((s) => s && "item" in s && s.item && typeof s.item === "object");
+            if (scope && scope.item) {
+              scope.item.selected = c === this.dragEl;
+            }
+          });
+          this.multiDragElements = [this.dragEl];
+        }
+      }
+      const pull = typeof this.options.group === "object" && this.options.group.pull === "clone";
+      if (pull) {
+        _Draggable.clone = this.dragEl.cloneNode(true);
+        this.dragEl.parentNode.insertBefore(_Draggable.clone, this.dragEl);
+      }
+      const rect = this.dragEl.getBoundingClientRect();
+      _Draggable.ghost = this.dragEl.cloneNode(true);
+      _Draggable.ghost.style.position = "fixed";
+      _Draggable.ghost.style.top = `${rect.top}px`;
+      _Draggable.ghost.style.left = `${rect.left}px`;
+      _Draggable.ghost.style.width = `${rect.width}px`;
+      _Draggable.ghost.style.height = `${rect.height}px`;
+      _Draggable.ghost.style.maskImage = "linear-gradient(to bottom right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)";
+      _Draggable.ghost.style.webkitMaskImage = "linear-gradient(to bottom right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)";
+      _Draggable.ghost.style.pointerEvents = "none";
+      _Draggable.ghost.style.zIndex = "100000";
+      _Draggable.ghost.classList.add(this.options.ghostClass);
+      const originalMarker = this.dragEl[MARKER_KEY];
+      if (originalMarker)
+        _Draggable.ghost[MARKER_KEY] = originalMarker;
+      const originalStack = getDataStack(this.dragEl);
+      if (originalStack.length)
+        _Draggable.ghost[DATA_STACK_KEY] = originalStack;
+      document.body.appendChild(_Draggable.ghost);
+      this.dragEl.classList.add(this.options.chosenClass);
+      this.dragEl.classList.add(this.options.dragClass);
+      if (this.options.multiDrag && this.multiDragElements.length > 0) {
+        this.multiDragElements.forEach((el) => {
+          if (el !== this.dragEl) {
+            el.style.display = "none";
+          }
+        });
+      }
+      this.scrollParent = getScrollParent(this.el);
+      this.scrollParentBounds = this.scrollParent.getBoundingClientRect();
+      if (this.options.onStart) {
+        this.options.onStart({
+          item: this.dragEl,
+          oldIndex: this.originalIndices.get(this.dragEl),
+          originalEvent: e
+        });
+      }
+    }
+    _onDragOver(e) {
+      if (!this.dragEl)
+        return;
+      if (this.parentEl && this._lastSourceItemScope && this._lastSourceItemScope.item) {
+        if (this.dragEl.parentElement !== this.parentEl) {
+          this._lastSourceItemScope.item.isDraggedOut = true;
+        } else {
+          const rect = this.parentEl.getBoundingClientRect();
+          const isOutside = e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom;
+          this._lastSourceItemScope.item.isDraggedOut = isOutside;
+        }
+      }
+      const target = this._findTargetUnderCursor(e.clientX, e.clientY);
+      if (!target || target === this.dragEl) {
+        this._clearDragOverState();
+        return;
+      }
+      if (this.dragEl.contains(target)) {
+        this._clearDragOverState();
+        return;
+      }
+      const targetParent = target.hasAttribute("data-drag-container") ? target : target.closest("[data-drag-container]");
+      if (!targetParent) {
+        this._clearDragOverState();
+        return;
+      }
+      let targetDraggable = null;
+      const reorderEngine = targetParent.__draggable;
+      if (reorderEngine && reorderEngine.draggable) {
+        targetDraggable = reorderEngine.draggable;
+      }
+      const isSameContainer = targetParent === this.el;
+      if (!isSameContainer) {
+        if (!targetDraggable || !this._canPullPut(targetDraggable)) {
+          this._clearDocked();
+          this._clearDragOverState();
+          return;
+        }
+      }
+      this._updateDragOverState(targetParent, e);
+      if (target.hasAttribute("data-drag-container")) {
+        if (this.dragEl.parentElement !== target) {
+          const srcBefore = this._captureRects(this.dragEl.parentElement);
+          const destBefore = this._captureRects(target);
+          target.appendChild(this.dragEl);
+          this._animateShift(this.dragEl.parentElement, srcBefore);
+          this._animateShift(target, destBefore);
+        }
+        this._updateDocked();
+        return;
+      }
+      const targetRect = target.getBoundingClientRect();
+      const dragRect = this.dragEl.getBoundingClientRect();
+      const vertical = this._detectDirection(targetParent) === "vertical";
+      const differentLevel = this.dragEl.parentNode !== targetParent;
+      const differentRowCol = !this._dragElInRowColumn(dragRect, targetRect, vertical);
+      const side1 = vertical ? "top" : "left";
+      if (this.lastTarget !== target) {
+        this.targetBeforeFirstSwap = targetRect[side1];
+        this.pastFirstInvertThresh = false;
+        this.isCircumstantialInvert = !differentRowCol && this.options.invertSwap || differentLevel;
+      }
+      const direction = this._getSwapDirection(
+        e,
+        target,
+        targetRect,
+        vertical,
+        differentRowCol ? 1 : this.options.swapThreshold,
+        this.options.invertedSwapThreshold,
+        this.isCircumstantialInvert,
+        this.lastTarget === target
+      );
+      if (direction !== 0) {
+        if (this.options.swap) {
+          this._setSwapHighlight(target);
+        }
+        let sibling = null;
+        let dragIndex = Array.from(this.dragEl.parentElement.children).indexOf(this.dragEl);
+        if (dragIndex !== -1) {
+          do {
+            dragIndex -= direction;
+            sibling = this.dragEl.parentElement.children[dragIndex];
+          } while (sibling && (getComputedStyle(sibling).display === "none" || sibling === _Draggable.ghost));
+        }
+        if (sibling === target) {
+          return;
+        }
+        this.lastTarget = target;
+        this.lastDirection = direction;
+        const srcBefore = this._captureRects(this.dragEl.parentElement);
+        const destBefore = isSameContainer ? srcBefore : this._captureRects(targetParent);
+        if (this.options.swap) {
+          this._swapNodes(this.dragEl, target);
+        } else {
+          const nextSibling = target.nextElementSibling;
+          const after = direction === 1;
+          if (after && !nextSibling) {
+            targetParent.appendChild(this.dragEl);
+          } else {
+            targetParent.insertBefore(this.dragEl, after ? nextSibling : target);
+          }
+        }
+        this._animateShift(this.dragEl.parentElement, srcBefore);
+        if (!isSameContainer) {
+          this._animateShift(targetParent, destBefore);
+        }
+        this._updateDocked();
+        if (this.targetBeforeFirstSwap !== void 0 && !this.isCircumstantialInvert) {
+          const newTargetRect = target.getBoundingClientRect();
+          this.targetMoveDistance = Math.abs(this.targetBeforeFirstSwap - newTargetRect[side1]);
+        }
+      }
+    }
+    _onPointerUp(e) {
+      this._cleanupDragListeners();
+      this._clearSwapHighlight();
+      if (this.dragEl) {
+        this.dragEl.classList.remove(this.options.chosenClass);
+        if (this.dragStarted) {
+          this.dragEl.classList.remove(this.options.dragClass);
+          if (this.options.multiDrag && this.multiDragElements.length > 0) {
+            this.multiDragElements.forEach((el) => {
+              el.style.display = "";
+            });
+          }
+          if (this.dragEl)
+            this.dragEl.style.display = "";
+          if (_Draggable.clone) {
+            _Draggable.clone.parentNode?.removeChild(_Draggable.clone);
+            _Draggable.clone = null;
+          }
+          if (_Draggable.ghost) {
+            _Draggable.ghost.parentNode?.removeChild(_Draggable.ghost);
+            _Draggable.ghost = null;
+          }
+          let finalIndex = 0;
+          const children = Array.from(this.dragEl.parentElement.children);
+          for (let i = 0; i < children.length; i++) {
+            const child = children[i];
+            if (child === this.dragEl)
+              break;
+            if (child.classList.contains(this.options.selectedClass))
+              continue;
+            if (child.nodeName.toUpperCase() === "TEMPLATE")
+              continue;
+            if (child[IS_TEMPLATE_KEY])
+              continue;
+            if (child.getAttribute("draggable") === "false")
+              continue;
+            if (child.matches(this.options.draggable)) {
+              finalIndex++;
+            }
+          }
+          const oldIndex = this.originalIndices.get(this.dragEl);
+          if (this.options.onEnd) {
+            this.options.onEnd({
+              item: this.dragEl,
+              from: this.parentEl,
+              to: this.dragEl.parentElement,
+              oldIndex,
+              newIndex: finalIndex,
+              originalEvent: e,
+              items: [...this.multiDragElements],
+              oldIndicies: this.multiDragElements.map((el) => ({
+                multiDragElement: el,
+                index: this.originalIndices.get(el) ?? -1
+              }))
+            });
+          }
+          if (this.options.multiDrag) {
+            this.multiDragElements = [];
+          }
+        } else {
+          if (this.options.multiDrag) {
+            const stack = getDataStack(this.dragEl);
+            const scope = stack.find((s) => s && "item" in s && s.item && typeof s.item === "object");
+            if (scope && scope.item) {
+              scope.item.selected = !scope.item.selected;
+            }
+          }
+        }
+      }
+      this._clearDragOverState();
+      if (this._lastSourceItemScope && this._lastSourceItemScope.item) {
+        this._lastSourceItemScope.item.isDraggedOut = false;
+        this._lastSourceItemScope = null;
+      }
+      this._clearDocked();
+      if (this.el) {
+        this.el.querySelectorAll("[data-drag-container]").forEach((el) => {
+        });
+      }
+      _Draggable.active = null;
+      this.dragEl = null;
+      this.tapEvt = null;
+      this.dragStarted = false;
+      this._clearDocked();
+    }
+    _cleanupDragListeners() {
+      document.removeEventListener("pointermove", this._pointerMoveBound);
+      document.removeEventListener("pointerup", this._pointerUpBound);
+      document.removeEventListener("pointercancel", this._pointerUpBound);
+    }
+    _clearDocked() {
+      if (this._dockedContainer) {
+        this._dockedContainer.removeAttribute("data-dropzone-state");
+        this._dockedContainer = null;
+      }
+    }
+    _updateDocked() {
+      if (!this.dragEl)
+        return;
+      const container = this.dragEl.closest("[data-drag-container]");
+      if (container !== this._dockedContainer) {
+        if (this._dockedContainer) {
+          this._dockedContainer.removeAttribute("data-dropzone-state");
+        }
+        if (container) {
+          container.setAttribute("data-dropzone-state", "docked");
+        }
+        this._dockedContainer = container;
+      }
+    }
+    _clearDragOverState() {
+      if (this._lastActiveItemScope && this._lastActiveItemScope.item) {
+        this._lastActiveItemScope.item.isDragOver = false;
+        this._lastActiveItemScope = null;
+      }
+      this._clearSwapHighlight();
+    }
+    _setSwapHighlight(target) {
+      if (this._swapHighlightTarget && this._swapHighlightTarget !== target) {
+        this._swapHighlightTarget.classList.remove(this.options.swapClass);
+      }
+      target.classList.add(this.options.swapClass);
+      this._swapHighlightTarget = target;
+    }
+    _clearSwapHighlight() {
+      if (this._swapHighlightTarget) {
+        this._swapHighlightTarget.classList.remove(this.options.swapClass);
+        this._swapHighlightTarget = null;
+      }
+    }
+    _updateDragOverState(targetParent, e) {
+      const stack = getDataStack(targetParent);
+      const targetItemScope = stack.find((s) => s && "item" in s && s.item && typeof s.item === "object");
+      if (this._lastActiveItemScope !== targetItemScope) {
+        this._clearDragOverState();
+        this._lastActiveItemScope = targetItemScope || null;
+      }
+      if (targetItemScope && targetItemScope.item) {
+        const rect = targetParent.getBoundingClientRect();
+        const isInside = e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
+        targetItemScope.item.isDragOver = isInside;
+      }
+    }
+    _findTargetUnderCursor(clientX, clientY) {
+      const el = document.elementFromPoint(clientX, clientY);
+      if (!el)
+        return null;
+      const container = el.closest("[data-drag-container]");
+      if (!container || !container.__draggable)
+        return null;
+      const children = Array.from(container.children).filter(
+        (c) => c.nodeName.toUpperCase() !== "TEMPLATE" && c !== this.dragEl && c !== _Draggable.ghost && c.style.display !== "none" && !c[IS_TEMPLATE_KEY] && !c.classList.contains("draggable-ghost")
+      );
+      if (children.length === 0)
+        return container;
+      let closest = null;
+      let minDistance = Infinity;
+      for (const child of children) {
+        const rect = child.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const dx = clientX - centerX;
+        const dy = clientY - centerY;
+        const dist = dx * dx + dy * dy;
+        if (dist < minDistance) {
+          minDistance = dist;
+          closest = child;
+        }
+      }
+      return closest;
+    }
+    _detectDirection(container) {
+      if (this.options.direction)
+        return this.options.direction === "grid" ? "vertical" : this.options.direction;
+      const style = getComputedStyle(container);
+      if (style.display === "flex") {
+        return style.flexDirection === "column" || style.flexDirection === "column-reverse" ? "vertical" : "horizontal";
+      }
+      if (style.display === "grid") {
+        return style.gridTemplateColumns.split(" ").length <= 1 ? "vertical" : "horizontal";
+      }
+      const children = Array.from(container.children).filter((c) => c.nodeName.toUpperCase() !== "TEMPLATE");
+      if (children.length >= 2) {
+        const rect1 = children[0].getBoundingClientRect();
+        const rect2 = children[1].getBoundingClientRect();
+        return Math.abs(rect1.top - rect2.top) < 4 ? "horizontal" : "vertical";
+      }
+      return "vertical";
+    }
+    _dragElInRowColumn(dragRect, targetRect, vertical) {
+      const dragElS1Opp = vertical ? dragRect.left : dragRect.top;
+      const dragElS2Opp = vertical ? dragRect.right : dragRect.bottom;
+      const dragElOppLength = vertical ? dragRect.width : dragRect.height;
+      const targetS1Opp = vertical ? targetRect.left : targetRect.top;
+      const targetS2Opp = vertical ? targetRect.right : targetRect.bottom;
+      const targetOppLength = vertical ? targetRect.width : targetRect.height;
+      const EPS = 1;
+      return Math.abs(dragElS1Opp - targetS1Opp) < EPS || Math.abs(dragElS2Opp - targetS2Opp) < EPS || Math.abs(dragElS1Opp + dragElOppLength / 2 - (targetS1Opp + targetOppLength / 2)) < EPS;
+    }
+    _getSwapDirection(evt, target, targetRect, vertical, swapThreshold, invertedSwapThreshold, invertSwap, isLastTarget) {
+      const mouseOnAxis = vertical ? evt.clientY : evt.clientX;
+      const targetLength = vertical ? targetRect.height : targetRect.width;
+      const targetS1 = vertical ? targetRect.top : targetRect.left;
+      const targetS2 = vertical ? targetRect.bottom : targetRect.right;
+      let invert = false;
+      if (!invertSwap) {
+        if (isLastTarget && this.targetMoveDistance < targetLength * swapThreshold) {
+          if (!this.pastFirstInvertThresh && (this.lastDirection === 1 ? mouseOnAxis > targetS1 + targetLength * invertedSwapThreshold / 2 : mouseOnAxis < targetS2 - targetLength * invertedSwapThreshold / 2)) {
+            this.pastFirstInvertThresh = true;
+          }
+          if (!this.pastFirstInvertThresh) {
+            if (this.lastDirection === 1 ? mouseOnAxis < targetS1 + this.targetMoveDistance : mouseOnAxis > targetS2 - this.targetMoveDistance) {
+              return -this.lastDirection;
+            }
+          } else {
+            invert = true;
+          }
+        } else {
+          if (mouseOnAxis > targetS1 + targetLength * (1 - swapThreshold) / 2 && mouseOnAxis < targetS2 - targetLength * (1 - swapThreshold) / 2) {
+            return this._getInsertDirection(evt, target, targetRect, vertical);
+          }
+        }
+      }
+      invert = invert || invertSwap;
+      if (invert) {
+        if (mouseOnAxis < targetS1 + targetLength * invertedSwapThreshold / 2 || mouseOnAxis > targetS2 - targetLength * invertedSwapThreshold / 2) {
+          return mouseOnAxis > targetS1 + targetLength / 2 ? 1 : -1;
+        }
+      }
+      return 0;
+    }
+    _getInsertDirection(evt, target, targetRect, vertical) {
+      const mouseOnAxis = vertical ? evt.clientY : evt.clientX;
+      const targetS1 = vertical ? targetRect.top : targetRect.left;
+      const targetLength = vertical ? targetRect.height : targetRect.width;
+      return mouseOnAxis > targetS1 + targetLength / 2 ? 1 : -1;
+    }
+    _swapNodes(n1, n2) {
+      const p1 = n1.parentNode;
+      const p2 = n2.parentNode;
+      if (!p1 || !p2 || p1.isEqualNode(n2) || p2.isEqualNode(n1))
+        return;
+      const children = Array.from(p1.children);
+      const i1 = children.indexOf(n1);
+      const i2 = children.indexOf(n2);
+      if (p1.isEqualNode(p2) && i1 < i2) {
+        p1.insertBefore(n2, children[i1]);
+        p2.insertBefore(n1, children[i2 + 1] || null);
+      } else {
+        p1.insertBefore(n2, children[i1]);
+        p2.insertBefore(n1, children[i2] || null);
+      }
+    }
+    _maybeAutoScroll(clientX, clientY) {
+      if (!this.scrollParent || !this.scrollParentBounds)
+        return;
+      const { left, top, width, height } = this.scrollParentBounds;
+      const edgeScrollThreshold = 40;
+      const autoScrollSpeed = 15;
+      const dl = clientX - left;
+      const dr = left + width - clientX;
+      const dt = clientY - top;
+      const db = top + height - clientY;
+      let dx = 0;
+      let dy = 0;
+      const canScrollLeft = this.scrollParent.scrollLeft > 0;
+      const canScrollRight = this.scrollParent.scrollLeft < this.scrollParent.scrollWidth - this.scrollParent.clientWidth;
+      const canScrollTop = this.scrollParent.scrollTop > 0;
+      const canScrollBottom = this.scrollParent.scrollTop < this.scrollParent.scrollHeight - this.scrollParent.clientHeight;
+      if (dl < edgeScrollThreshold && canScrollLeft) {
+        dx = -autoScrollSpeed * (1 - dl / edgeScrollThreshold);
+      } else if (dr < edgeScrollThreshold && canScrollRight) {
+        dx = autoScrollSpeed * (1 - dr / edgeScrollThreshold);
+      }
+      if (dt < edgeScrollThreshold && canScrollTop) {
+        dy = -autoScrollSpeed * (1 - dt / edgeScrollThreshold);
+      } else if (db < edgeScrollThreshold && canScrollBottom) {
+        dy = autoScrollSpeed * (1 - db / edgeScrollThreshold);
+      }
+      if (dx !== 0 || dy !== 0) {
+        this.scrollParent.scrollBy({ left: dx, top: dy });
+      }
+    }
+    _canPullPut(toDraggable) {
+      const fromGroup = this.options.group;
+      const toGroup = toDraggable.options.group;
+      if (!fromGroup || !toGroup)
+        return false;
+      const fromName = typeof fromGroup === "object" ? fromGroup.name : fromGroup;
+      const toName = typeof toGroup === "object" ? toGroup.name : toGroup;
+      if (fromName && toName && fromName === toName) {
+        const fromPull = typeof fromGroup === "object" && fromGroup.pull !== void 0 ? fromGroup.pull : true;
+        const toPut = typeof toGroup === "object" && toGroup.put !== void 0 ? toGroup.put : true;
+        return !!fromPull && !!toPut;
+      }
+      return false;
+    }
+    _captureRects(container) {
+      const rects = /* @__PURE__ */ new Map();
+      Array.from(container.children).forEach((child) => {
+        if (child.nodeName.toUpperCase() !== "TEMPLATE") {
+          rects.set(child, child.getBoundingClientRect());
+        }
+      });
+      return rects;
+    }
+    _animateShift(container, beforeRects) {
+      Array.from(container.children).forEach((child) => {
+        if (child.nodeName.toUpperCase() === "TEMPLATE" || child === this.dragEl)
+          return;
+        const beforeRect = beforeRects.get(child);
+        if (!beforeRect)
+          return;
+        const afterRect = child.getBoundingClientRect();
+        const dx = beforeRect.left - afterRect.left;
+        const dy = beforeRect.top - afterRect.top;
+        if (dx !== 0 || dy !== 0) {
+          child.style.transition = "none";
+          child.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+          child.offsetHeight;
+          child.style.transition = `transform ${this.options.animation}ms ease-out`;
+          child.style.transform = "translate3d(0, 0, 0)";
+          const clean = () => {
+            child.style.transition = "";
+            child.style.transform = "";
+          };
+          child.addEventListener("transitionend", clean, { once: true });
+        }
+      });
+    }
+  };
+  var DragReorderEngine = class {
+    constructor(ctx, runtime) {
+      this.ctx = ctx;
+      this.runtime = runtime;
+      if (this.ctx.container) {
+        this.init();
+      }
+    }
+    draggable = null;
+    finalToIndex = -1;
+    init() {
+      const container = this.ctx.container;
+      const isMulti = container.getAttribute("data-drag-multi") === "true";
+      const selectedClass = container.getAttribute("data-drag-selected-class") || "draggable-selected";
+      const swap = container.hasAttribute("data-drag-swap") || container.getAttribute("data-drag-swap") === "true";
+      const swapClass = container.getAttribute("data-drag-swap-class") || "draggable-swap-highlight";
+      const groupAttr = container.getAttribute("data-drag-group");
+      let group = void 0;
+      if (groupAttr) {
+        group = { name: groupAttr };
+        const pullAttr = container.getAttribute("data-drag-pull");
+        const pull = pullAttr !== "false" ? container.hasAttribute("data-drag-clone") || container.getAttribute("data-drag-clone") === "true" ? "clone" : true : false;
+        const put = container.getAttribute("data-drag-put") !== "false";
+        const revertClone = container.getAttribute("data-drag-revert-clone") === "true";
+        group.pull = pull;
+        group.put = put;
+        group.revertClone = revertClone;
+      }
+      const directionAttr = container.getAttribute("data-drag-direction");
+      const direction = directionAttr === "grid" ? void 0 : directionAttr;
+      const isNested = groupAttr === "nested";
+      const swapThresholdAttr = container.getAttribute("data-drag-swap-threshold");
+      const swapThreshold = swapThresholdAttr ? parseFloat(swapThresholdAttr) : isNested ? 0.65 : 1;
+      const invertSwapAttr = container.getAttribute("data-drag-invert-swap");
+      const invertSwap = invertSwapAttr === "true" || isNested;
+      this.draggable = new Draggable(container, {
+        animation: this.ctx.animationDuration ?? 150,
+        ghostClass: this.ctx.ghostClass ?? "draggable-ghost",
+        dragClass: this.ctx.dragClass ?? "draggable-drag",
+        ghostOpacity: this.ctx.ghostOpacity ?? 0.4,
+        fallbackOnBody: this.ctx.fallbackOnBody !== false,
+        swapThreshold,
+        invertSwap,
+        direction,
+        handle: container.getAttribute("data-drag-handle") || void 0,
+        filter: container.getAttribute("data-drag-filter") || void 0,
+        draggable: "[data-drag]",
+        multiDrag: isMulti,
+        selectedClass,
+        swap,
+        swapClass,
+        group,
+        sort: this.ctx.sort !== false,
+        onStart: (evt) => {
+          const globalSignals = this.runtime?.globalSignals();
+          if (globalSignals) {
+            globalSignals["drag:start"] = {
+              element: evt.item,
+              originalEvent: evt.originalEvent,
+              fromIndex: evt.oldIndex
+            };
+          }
+          const fromContainer = evt.from;
+          if (this.runtime && fromContainer) {
+            this.updateEmptyState(fromContainer);
+          }
+        },
+        onEnd: (evt) => {
+          this.finalToIndex = evt.newIndex;
+          const globalSignals = this.runtime?.globalSignals();
+          if (globalSignals) {
+            globalSignals["drag:end"] = {
+              element: evt.item,
+              originalEvent: evt.originalEvent,
+              cancelled: false
+            };
+          }
+          const fromContainer = evt.from;
+          const toContainer = evt.to;
+          const fromExpr = fromContainer.getAttribute("data-drag-container") || fromContainer.getAttribute("data-teleport:drop");
+          const toExpr = toContainer.getAttribute("data-drag-container") || toContainer.getAttribute("data-teleport:drop");
+          if (!fromExpr || !this.runtime)
+            return;
+          const oldIndex = evt.oldIndex;
+          const newIndex = evt.newIndex;
+          const isMultiDrag = isMulti && evt.items && evt.items.length > 0;
+          const childrenToAnimate = Array.from(toContainer.children);
+          const flipFn = this.runtime.sprites?.$animate?.flip || flip;
+          if (toContainer !== fromContainer && toExpr) {
+            const targetList = this.runtime.evaluate(toContainer, toExpr);
+            const sourceList = this.runtime.evaluate(fromContainer, fromExpr);
+            if (Array.isArray(targetList) && Array.isArray(sourceList)) {
+              const isClone = group?.pull === "clone" || (toContainer.hasAttribute("data-drag-clone") || toContainer.getAttribute("data-drag-clone") === "true");
+              let itemsToInsert = [];
+              let indicesToRemove = [];
+              if (isMultiDrag) {
+                const sortedIndices = (evt.oldIndicies || []).slice().sort((a, b) => b.index - a.index);
+                const sortedOldAsc = (evt.oldIndicies || []).slice().sort((a, b) => a.index - b.index);
+                itemsToInsert = sortedOldAsc.map((x) => {
+                  const item = sourceList[x.index];
+                  return isClone ? { ...item, id: `${item.id}-clone-${Date.now()}-${Math.random().toString(36).substr(2, 5)}` } : item;
+                });
+                if (!isClone) {
+                  indicesToRemove = sortedIndices.map((x) => x.index);
+                }
+              } else {
+                const item = sourceList[oldIndex];
+                itemsToInsert = [isClone ? { ...item, id: `${item.id}-clone-${Date.now()}-${Math.random().toString(36).substr(2, 5)}` } : item];
+                if (!isClone) {
+                  indicesToRemove = [oldIndex];
+                }
+              }
+              if (isClone) {
+                if (Draggable.clone && Draggable.clone.parentNode) {
+                  Draggable.clone.parentNode.removeChild(Draggable.clone);
+                  Draggable.clone = null;
+                }
+                if (isMultiDrag) {
+                  const sortedOldAsc = (evt.oldIndicies || []).slice().sort((a, b) => a.index - b.index);
+                  sortedOldAsc.forEach((x) => {
+                    const el = x.multiDragElement;
+                    const sib = fromContainer.children[x.index];
+                    if (sib) {
+                      fromContainer.insertBefore(el, sib);
+                    } else {
+                      fromContainer.appendChild(el);
+                    }
+                  });
+                } else {
+                  const sib = fromContainer.children[oldIndex];
+                  if (sib) {
+                    fromContainer.insertBefore(evt.item, sib);
+                  } else {
+                    fromContainer.appendChild(evt.item);
+                  }
+                }
+              } else {
+                if (isMultiDrag) {
+                  evt.items.forEach((item) => {
+                    if (item.parentNode === fromContainer) {
+                      fromContainer.removeChild(item);
+                    }
+                  });
+                } else {
+                  if (evt.item.parentNode === fromContainer) {
+                    fromContainer.removeChild(evt.item);
+                  }
+                }
+              }
+              if (isClone) {
+                this.ctx.updateList((src) => {
+                  targetList.splice(newIndex, 0, ...itemsToInsert);
+                });
+              } else {
+                flipFn(childrenToAnimate, () => {
+                  this.ctx.updateList((list) => {
+                    for (const idx of indicesToRemove) {
+                      list.splice(idx, 1);
+                    }
+                    targetList.splice(newIndex, 0, ...itemsToInsert);
+                  });
+                }, { duration: this.ctx.animationDuration ?? 150 });
+              }
+              if (this.runtime) {
+                this.updateEmptyState(fromContainer);
+                this.updateEmptyState(toContainer);
+              }
+            }
+          } else {
+            const sourceList = this.runtime.evaluate(fromContainer, fromExpr);
+            if (Array.isArray(sourceList)) {
+              flipFn(childrenToAnimate, () => {
+                this.ctx.updateList((list) => {
+                  if (swap) {
+                    if (isMultiDrag) {
+                      const oldInd = evt.oldIndicies || [];
+                      const newInd = evt.newIndicies || [];
+                      for (let i = 0; i < oldInd.length; i++) {
+                        const oIdx = oldInd[i].index;
+                        const nIdx = newInd[i].index;
+                        if (oIdx !== -1 && nIdx !== -1) {
+                          const temp = list[nIdx];
+                          list[nIdx] = list[oIdx];
+                          list[oIdx] = temp;
+                        }
+                      }
+                    } else {
+                      const temp = list[newIndex];
+                      list[newIndex] = list[oldIndex];
+                      list[oldIndex] = temp;
+                    }
+                  } else {
+                    if (isMultiDrag) {
+                      const sortedOldDesc = (evt.oldIndicies || []).slice().sort((a, b) => b.index - a.index);
+                      const sortedOldAsc = (evt.oldIndicies || []).slice().sort((a, b) => a.index - b.index);
+                      const itemsToInsert = sortedOldAsc.map((x) => sourceList[x.index]);
+                      for (const x of sortedOldDesc) {
+                        list.splice(x.index, 1);
+                      }
+                      list.splice(newIndex, 0, ...itemsToInsert);
+                    } else {
+                      const [moved] = list.splice(oldIndex, 1);
+                      list.splice(newIndex, 0, moved);
+                    }
+                  }
+                });
+              }, { duration: this.ctx.animationDuration ?? 150 });
+              if (this.runtime) {
+                this.updateEmptyState(fromContainer);
+              }
+            }
+          }
+        }
+      });
+      this.draggable._runtime = this.runtime;
+    }
+    updateEmptyState(container) {
+      const stack = getDataStack(container);
+      if (stack.length > 0) {
+        const scope = stack[0];
+        const hasChildren = container.querySelector(":scope > [data-drag]:not([data-for])") != null;
+        scope.dragEmpty = !hasChildren;
+      }
+    }
+    startDrag() {
+    }
+    updateDrag() {
+    }
+    endDrag() {
+    }
+    getFinalToIndex() {
+      return this.finalToIndex;
+    }
+  };
+  function buildReorderContext(container, listExpr, runtime, options) {
+    const getList = () => {
+      try {
+        const result = runtime.evaluate(container, listExpr);
+        return Array.isArray(result) ? result : [];
+      } catch {
+        return [];
+      }
+    };
+    return {
+      getList,
+      updateList: (mutate) => {
+        const list = getList();
+        mutate(list);
+      },
+      container,
+      direction: options?.direction,
+      ghostClass: options?.ghostClass,
+      dragClass: options?.dragClass,
+      ghostOpacity: options?.ghostOpacity,
+      group: options?.group,
+      sort: options?.sort !== false,
+      swap: options?.swap,
+      swapClass: options?.swapClass,
+      fallbackOnBody: options?.fallbackOnBody,
+      swapThreshold: options?.swapThreshold,
+      edgeScrollThreshold: options?.edgeScrollThreshold ?? 40,
+      autoScrollSpeed: options?.autoScrollSpeed ?? 15,
+      animationDuration: options?.animationDuration ?? 150,
+      onReorder: options?.onReorder
+    };
+  }
+  var dragAttribute = {
+    name: "drag",
+    attribute: "drag",
+    handle: (element, _value, runtime) => {
+      const isContainer = element.hasAttribute("data-drag-container") || element.hasAttribute("data-teleport:drop");
+      if (!isContainer)
+        return;
+      if (element.__nexusDragBound)
+        return element.__nexusDragCleanup;
+      element.__nexusDragBound = true;
+      const container = element;
+      let cleanupEffect2 = void 0;
+      const [_, stopEffect] = runtime.elementBoundEffect(container, () => {
+        const swapThreshExpr = container.getAttribute("data-bind-data-drag-swap-threshold") || container.getAttribute("data-bind:data-drag-swap-threshold");
+        const swapThreshVal = swapThreshExpr ? runtime.evaluate(container, swapThreshExpr) : void 0;
+        const invertThreshExpr = container.getAttribute("data-bind-data-drag-invert-swap-threshold") || container.getAttribute("data-bind:data-drag-invert-swap-threshold");
+        const invertThreshVal = invertThreshExpr ? runtime.evaluate(container, invertThreshExpr) : void 0;
+        if (!container.__draggable) {
+          try {
+            const listExpr = container.getAttribute("data-drag-container") || container.getAttribute("data-teleport:drop") || "";
+            const ghostOpacityAttr = container.getAttribute("data-drag-ghost-opacity");
+            const ghostOpacity = ghostOpacityAttr ? parseFloat(ghostOpacityAttr) : void 0;
+            const ctx = buildReorderContext(container, listExpr, runtime, {
+              ghostOpacity
+            });
+            const engine = new DragReorderEngine(ctx, runtime);
+            container.__draggable = engine;
+            const enhancedContainer = container;
+            if (!enhancedContainer[CLEANUP_FUNCTIONS_KEY]) {
+              enhancedContainer[CLEANUP_FUNCTIONS_KEY] = /* @__PURE__ */ new Map();
+            }
+            const containerCleanups = enhancedContainer[CLEANUP_FUNCTIONS_KEY];
+            const cleanupFn = () => {
+              if (engine.draggable) {
+                engine.draggable.destroy();
+              }
+              delete container.__draggable;
+            };
+            if (containerCleanups instanceof Map) {
+              containerCleanups.set("draggable-cleanup", cleanupFn);
+            } else if (Array.isArray(containerCleanups)) {
+              containerCleanups.push(cleanupFn);
+            }
+          } catch (err2) {
+            runtime.reportError(err2 instanceof Error ? err2 : new Error(String(err2)), container, "drag-init");
+          }
+        }
+        const engineNow = container.__draggable;
+        if (engineNow && engineNow.draggable) {
+          if (swapThreshVal !== void 0 && swapThreshVal !== null && swapThreshVal !== "") {
+            engineNow.draggable.options.swapThreshold = Number(swapThreshVal);
+          }
+          if (invertThreshVal !== void 0 && invertThreshVal !== null && invertThreshVal !== "") {
+            engineNow.draggable.options.invertedSwapThreshold = Number(invertThreshVal);
+          }
+        }
+      });
+      cleanupEffect2 = () => {
+        stopEffect();
+        delete element.__nexusDragBound;
+        delete element.__nexusDragCleanup;
+      };
+      element.__nexusDragCleanup = cleanupEffect2;
+      return cleanupEffect2;
+    }
+  };
+  var drag_default = dragAttribute;
+
+  // src/modules/attributes/effect.ts
+  var effect_exports = {};
+  __export(effect_exports, {
+    default: () => effect_default
+  });
+  init_debug();
+  var effectModule = {
+    name: "effect",
+    attribute: "effect",
+    handle: (el, value, runtime) => {
+      try {
+        let isEvaluating = false;
+        const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
+          if (isEvaluating)
+            return;
+          isEvaluating = true;
+          try {
+            runtime.evaluate(el, value);
+          } finally {
+            isEvaluating = false;
+          }
+        });
+        return cleanup;
+      } catch (e) {
+        initError("effect", `Failed to run effect: ${e instanceof Error ? e.message : String(e)}`, el, value);
+      }
+    }
+  };
+  var effect_default = effectModule;
+
+  // src/modules/attributes/flow.ts
+  var flow_exports = {};
+  __export(flow_exports, {
+    default: () => flow_default,
+    flowAttribute: () => flowAttribute,
+    flowEdgesAttribute: () => flowEdgesAttribute,
+    flowHandleAttribute: () => flowHandleAttribute,
+    flowNodeAttribute: () => flowNodeAttribute
+  });
+  var SVG_NS = "http://www.w3.org/2000/svg";
+  var MIN_ZOOM = 0.2;
+  var MAX_ZOOM = 4;
+  var NO_PAN = "[data-flow-node],[data-flow-handle],[data-flow-nodrag],button,a,input,textarea,select,label";
+  var sharedViewport = (el) => {
+    const flow = el?.closest("[data-flow]");
+    const vp = flow?.__nexusFlowViewport;
+    return vp ? { x: vp.x || 0, y: vp.y || 0, zoom: vp.zoom || 1 } : { x: 0, y: 0, zoom: 1 };
+  };
+  var flowAttribute = {
+    name: "flow",
+    attribute: "flow",
+    handle: (element, value, runtime) => {
+      const evaluated = runtime.evaluate(element, value);
+      const isViewport = evaluated && typeof evaluated === "object" && !Array.isArray(evaluated) && ("zoom" in evaluated || "x" in evaluated || "y" in evaluated);
+      const state = isViewport ? evaluated : reactive({ x: 0, y: 0, zoom: 1 });
+      if (state.zoom === void 0)
+        state.zoom = 1;
+      if (state.x === void 0)
+        state.x = 0;
+      if (state.y === void 0)
+        state.y = 0;
+      element.__nexusFlowViewport = state;
+      element.classList.add("nexus-flow", "nexus-flow-pane");
+      const gridAttr = element.getAttribute("data-flow-grid");
+      const gridSize = gridAttr !== null ? parseFloat(gridAttr) || 0 : 0;
+      let isPanning = false;
+      let startX = 0;
+      let startY = 0;
+      const canPan = (e) => {
+        if (e.button === 1)
+          return true;
+        if (e.button === 0 && e.altKey)
+          return true;
+        if (e.button === 0)
+          return !e.target.closest(NO_PAN);
+        return false;
+      };
+      const onPointerDown = (e) => {
+        if (!canPan(e))
+          return;
+        isPanning = true;
+        startX = e.clientX - state.x;
+        startY = e.clientY - state.y;
+        element.setPointerCapture(e.pointerId);
+        element.style.cursor = "grabbing";
+      };
+      const onPointerMove = (e) => {
+        if (!isPanning)
+          return;
+        state.x = e.clientX - startX;
+        state.y = e.clientY - startY;
+      };
+      const onPointerUp = (e) => {
+        if (!isPanning)
+          return;
+        isPanning = false;
+        try {
+          element.releasePointerCapture(e.pointerId);
+        } catch {
+        }
+        element.style.cursor = "";
+      };
+      const onWheel = (e) => {
+        e.preventDefault();
+        const rect = element.getBoundingClientRect();
+        const px = e.clientX - rect.left;
+        const py = e.clientY - rect.top;
+        const factor = Math.exp(-e.deltaY * 15e-4);
+        const prevZoom = state.zoom || 1;
+        const nextZoom = Math.min(Math.max(prevZoom * factor, MIN_ZOOM), MAX_ZOOM);
+        if (nextZoom === prevZoom)
+          return;
+        const fx = (px - state.x) / prevZoom;
+        const fy = (py - state.y) / prevZoom;
+        state.x = px - fx * nextZoom;
+        state.y = py - fy * nextZoom;
+        state.zoom = nextZoom;
+      };
+      element.addEventListener("pointerdown", onPointerDown);
+      element.addEventListener("pointermove", onPointerMove);
+      element.addEventListener("pointerup", onPointerUp);
+      element.addEventListener("wheel", onWheel, { passive: false });
+      if (state.tick === void 0)
+        state.tick = 0;
+      let settleFrames = 0;
+      const settle = () => {
+        state.tick++;
+        if (++settleFrames < 24)
+          requestAnimationFrame(settle);
+        else if (settleFrames === 24)
+          setTimeout(() => state.tick++, 350);
+      };
+      requestAnimationFrame(settle);
+      let ro = null;
+      if (typeof ResizeObserver !== "undefined") {
+        const contentEl = element.querySelector(".nexus-flow-content");
+        if (contentEl) {
+          ro = new ResizeObserver(() => {
+            state.tick++;
+          });
+          ro.observe(contentEl);
+        }
+      }
+      const stop2 = runtime.effect(() => {
+        const zoom = state.zoom || 1;
+        const x = state.x || 0;
+        const y = state.y || 0;
+        const content = element.querySelector(".nexus-flow-content") || element;
+        content.classList.add("nexus-flow-viewport");
+        content.style.transformOrigin = "0 0";
+        content.style.transform = `translate(${x}px, ${y}px) scale(${zoom})`;
+        if (gridSize > 0 && element.style.backgroundImage) {
+          const scaled = gridSize * zoom;
+          element.style.backgroundSize = `${scaled}px ${scaled}px`;
+          element.style.backgroundPosition = `${x}px ${y}px`;
+        }
+      });
+      return () => {
+        stop2();
+        if (ro)
+          ro.disconnect();
+        element.removeEventListener("pointerdown", onPointerDown);
+        element.removeEventListener("pointermove", onPointerMove);
+        element.removeEventListener("pointerup", onPointerUp);
+        element.removeEventListener("wheel", onWheel);
+        delete element.__nexusFlowViewport;
+      };
+    }
+  };
+  var flowNodeAttribute = {
+    name: "flowNode",
+    attribute: "flow-node",
+    handle: (element, value, runtime) => {
+      const nodeState = runtime.evaluate(element, value);
+      if (!nodeState || typeof nodeState !== "object")
+        return;
+      const readPos = () => {
+        const p = nodeState.position;
+        return p ? { x: p.x || 0, y: p.y || 0 } : { x: nodeState.x || 0, y: nodeState.y || 0 };
+      };
+      const writePos = (x, y) => {
+        if (nodeState.position) {
+          nodeState.position.x = x;
+          nodeState.position.y = y;
+        } else {
+          nodeState.x = x;
+          nodeState.y = y;
+        }
+      };
+      const resolveSnap = () => {
+        const local = element.getAttribute("data-flow-snap");
+        if (local !== null)
+          return parseFloat(local) || 0;
+        const flowEl = element.closest("[data-flow]");
+        const grid = flowEl?.getAttribute("data-flow-grid");
+        if (grid !== null && grid !== void 0)
+          return parseFloat(grid) || 0;
+        return 0;
+      };
+      const snapPoint = (x, y, s) => s > 0 ? { x: Math.round(x / s) * s, y: Math.round(y / s) * s } : { x, y };
+      let isDragging = false;
+      let dragStartX = 0;
+      let dragStartY = 0;
+      let initialX = 0;
+      let initialY = 0;
+      const onPointerDown = (e) => {
+        if (e.button !== 0 || e.altKey)
+          return;
+        if (e.target.closest(
+          "[data-flow-handle],[data-flow-nodrag],button,a,input,textarea,select,label"
+        ))
+          return;
+        e.stopPropagation();
+        isDragging = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        const p = readPos();
+        initialX = p.x;
+        initialY = p.y;
+        element.setPointerCapture(e.pointerId);
+        element.style.zIndex = "1000";
+      };
+      const onPointerMove = (e) => {
+        if (!isDragging)
+          return;
+        const zoom = sharedViewport(element).zoom;
+        const dx = (e.clientX - dragStartX) / zoom;
+        const dy = (e.clientY - dragStartY) / zoom;
+        const snapped = snapPoint(initialX + dx, initialY + dy, resolveSnap());
+        writePos(snapped.x, snapped.y);
+      };
+      const onPointerUp = (e) => {
+        if (!isDragging)
+          return;
+        isDragging = false;
+        try {
+          element.releasePointerCapture(e.pointerId);
+        } catch {
+        }
+        element.style.zIndex = "";
+      };
+      element.addEventListener("pointerdown", onPointerDown);
+      element.addEventListener("pointermove", onPointerMove);
+      element.addEventListener("pointerup", onPointerUp);
+      const stop2 = runtime.effect(() => {
+        element.style.position = "absolute";
+        element.style.left = "0";
+        element.style.top = "0";
+        const p = readPos();
+        const s = snapPoint(p.x, p.y, resolveSnap());
+        element.style.transform = `translate3d(${s.x}px, ${s.y}px, 0)`;
+      });
+      return () => {
+        stop2();
+        element.removeEventListener("pointerdown", onPointerDown);
+        element.removeEventListener("pointermove", onPointerMove);
+        element.removeEventListener("pointerup", onPointerUp);
+      };
+    }
+  };
+  var flowHandleAttribute = {
+    name: "flowHandle",
+    attribute: "flow-handle",
+    handle: (element, value, runtime) => {
+      let kind = "source";
+      const raw = value.trim();
+      if (raw === "source" || raw === "target") {
+        kind = raw;
+      } else if (raw) {
+        try {
+          const resolved = runtime.evaluate(element, raw);
+          if (resolved === "source" || resolved === "target")
+            kind = resolved;
+        } catch {
+        }
+      }
+      element.setAttribute("data-nexus-flow-handle", kind);
+      element.classList.add("nexus-flow-handle");
+      const viewport = () => element.closest("[data-flow]");
+      const toFlow = (clientX, clientY) => {
+        const vp = viewport();
+        const st = sharedViewport(element);
+        const r = vp.getBoundingClientRect();
+        return { x: (clientX - r.left - st.x) / st.zoom, y: (clientY - r.top - st.y) / st.zoom };
+      };
+      const anchorFlow = (el) => {
+        const r = el.getBoundingClientRect();
+        return toFlow(r.left + r.width / 2, r.top + r.height / 2);
+      };
+      const edgesArray = () => {
+        const vp = viewport();
+        if (!vp)
+          return null;
+        const svg = vp.querySelector("[data-flow-edges]");
+        const expr = svg?.getAttribute("data-nexus-flow-edges-expr") || svg?.getAttribute("data-flow-edges") || "edges";
+        try {
+          const arr = runtime.evaluate(vp, expr);
+          return Array.isArray(arr) ? arr : null;
+        } catch {
+          return null;
+        }
+      };
+      const onPointerDown = (e) => {
+        if (e.button !== 0)
+          return;
+        e.stopPropagation();
+        e.preventDefault();
+        const vp = viewport();
+        const svg = vp?.querySelector("[data-flow-edges]");
+        if (!vp || !svg)
+          return;
+        const srcNode = element.closest("[data-flow-node]");
+        const srcId = srcNode?.id || srcNode?.getAttribute("data-bind-id") || element.id || "";
+        const start = anchorFlow(element);
+        const preview = document.createElementNS(SVG_NS, "path");
+        preview.setAttribute("class", "nexus-flow-edge nexus-flow-edge-preview");
+        preview.setAttribute("fill", "none");
+        preview.setAttribute("stroke", "currentColor");
+        preview.setAttribute("stroke-width", "2");
+        preview.setAttribute("stroke-dasharray", "4 4");
+        preview.style.pointerEvents = "none";
+        svg.appendChild(preview);
+        const move = (ev) => {
+          const pt = toFlow(ev.clientX, ev.clientY);
+          const dx = Math.abs(start.x - pt.x) / 2;
+          preview.setAttribute(
+            "d",
+            `M ${start.x} ${start.y} C ${start.x + dx} ${start.y}, ${pt.x - dx} ${pt.y}, ${pt.x} ${pt.y}`
+          );
+        };
+        const up = (ev) => {
+          document.removeEventListener("pointermove", move);
+          document.removeEventListener("pointerup", up);
+          preview.remove();
+          const target = document.elementFromPoint(ev.clientX, ev.clientY);
+          const targetNode = target?.closest("[data-flow-node]");
+          const tgtId = targetNode?.id || targetNode?.getAttribute("data-bind-id") || "";
+          if (tgtId && tgtId !== srcId) {
+            const edges = edgesArray();
+            if (edges && !edges.some((ed) => ed.source === srcId && ed.target === tgtId)) {
+              edges.push({ source: srcId, target: tgtId });
+            }
+          }
+        };
+        document.addEventListener("pointermove", move);
+        document.addEventListener("pointerup", up);
+      };
+      element.addEventListener("pointerdown", onPointerDown);
+      return () => {
+        element.removeEventListener("pointerdown", onPointerDown);
+      };
+    }
+  };
+  var flowEdgesAttribute = {
+    name: "flowEdges",
+    attribute: "flow-edges",
+    handle: (element, value) => {
+      const expr = value.trim() || "edges";
+      element.setAttribute("data-nexus-flow-edges-expr", expr);
+      element.classList.add("nexus-flow-edges", "absolute", "inset-0", "overflow-visible", "pointer-events-none");
+      const flowEl = element.closest("[data-flow]");
+      const content = flowEl?.querySelector(".nexus-flow-content");
+      if (content && element.parentElement !== content) {
+        content.appendChild(element);
+      }
+      return () => {
+        element.removeAttribute("data-nexus-flow-edges-expr");
+      };
+    }
+  };
+  var flow_default = flowAttribute;
+
+  // src/modules/attributes/for.ts
+  var for_exports = {};
+  __export(for_exports, {
+    default: () => for_default
+  });
+  init_debug();
+  init_consts();
+  var isFlowNode = (n) => n instanceof HTMLElement || n instanceof SVGElement;
+  function copyNexusMetadata(src, dest) {
+    const srcClasses = nexusClassMap.get(src);
+    if (srcClasses) {
+      nexusClassMap.set(dest, new Set(srcClasses));
+    }
+    const srcStyles = nexusStyleMap.get(src);
+    if (srcStyles) {
+      nexusStyleMap.set(dest, new Set(srcStyles));
+    }
+    const srcChildren = Array.from(src.children);
+    const destChildren = Array.from(dest.children);
+    for (let i = 0; i < srcChildren.length; i++) {
+      if (srcChildren[i] && destChildren[i]) {
+        copyNexusMetadata(srcChildren[i], destChildren[i]);
+      }
+    }
+  }
+  var forModule = {
+    name: "for",
+    attribute: "for",
+    handle: (el, value, runtime) => {
+      const isTemplate = el instanceof HTMLTemplateElement;
+      const blueprint = isTemplate ? el.content : el;
+      let itemKey = "";
+      let indexKey = void 0;
+      let itemsExpr = "";
+      const inIdx = value.indexOf(" in ");
+      if (inIdx === -1) {
+        initError("for", `Invalid syntax: ${value}. Expected "item in items"`, el, value);
+        return;
+      }
+      const lhs = value.substring(0, inIdx).trim();
+      itemsExpr = value.substring(inIdx + 4).trim();
+      if (lhs.startsWith("(") && lhs.endsWith(")")) {
+        const inner = lhs.substring(1, lhs.length - 1);
+        const commaIdx = inner.indexOf(",");
+        if (commaIdx !== -1) {
+          itemKey = inner.substring(0, commaIdx).trim();
+          indexKey = inner.substring(commaIdx + 1).trim();
+        } else {
+          itemKey = inner.trim();
+        }
+      } else {
+        itemKey = lhs;
+      }
+      const anchor = document.createComment(` for: ${value} `);
+      el.parentNode?.insertBefore(anchor, el);
+      if (!isTemplate) {
+        el.style.display = "none";
+        el[IS_TEMPLATE_KEY] = true;
+      }
+      const disposeNodes = (nodes) => {
+        nodes.forEach((n) => {
+          if (n instanceof HTMLElement || n instanceof SVGElement) {
+            const enhanced = n;
+            const elRemovals = enhanced[CLEANUP_FUNCTIONS_KEY];
+            if (elRemovals) {
+              elRemovals.forEach((cleanup) => cleanup());
+              delete enhanced[CLEANUP_FUNCTIONS_KEY];
+            }
+            disposeNodes(Array.from(n.childNodes));
+          }
+          n.parentNode?.removeChild(n);
+        });
+      };
+      const mountedMap = /* @__PURE__ */ new Map();
+      try {
+        const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
+          const items = runtime.evaluate(el, itemsExpr);
+          if (!Array.isArray(items))
+            return;
+          const currentKeys = /* @__PURE__ */ new Set();
+          const nextNodes = [];
+          items.forEach((item, index) => {
+            const key = item.id ?? index;
+            currentKeys.add(key);
+            let nodes = mountedMap.get(key);
+            if (!nodes) {
+              const clone = isTemplate ? blueprint.cloneNode(true) : blueprint.cloneNode(true);
+              if (!isTemplate) {
+                copyNexusMetadata(blueprint, clone);
+              } else {
+                const srcChildren = Array.from(blueprint.childNodes).filter((n) => n instanceof HTMLElement);
+                const destChildren = Array.from(clone.childNodes).filter((n) => n instanceof HTMLElement);
+                for (let i = 0; i < srcChildren.length; i++) {
+                  if (srcChildren[i] && destChildren[i]) {
+                    copyNexusMetadata(srcChildren[i], destChildren[i]);
+                  }
+                }
+              }
+              nodes = isTemplate ? Array.from(clone.childNodes).filter(isFlowNode) : [clone];
+              nodes.forEach((n) => {
+                if (isFlowNode(n)) {
+                  const scope = { [itemKey]: item };
+                  if (indexKey)
+                    scope[indexKey] = index;
+                  addScopeToNode(n, runtime.shallowReactive(scope), el);
+                  if (!isTemplate) {
+                    n.style.display = "";
+                    n.removeAttribute("data-for");
+                    delete n[IS_TEMPLATE_KEY];
+                  }
+                  const cleanClonedMarkers = (target) => {
+                    delete target[MARKER_KEY];
+                    delete target[CLEANUP_FUNCTIONS_KEY];
+                    if (target.childNodes) {
+                      target.childNodes.forEach(cleanClonedMarkers);
+                    }
+                  };
+                  cleanClonedMarkers(n);
+                  runtime.processElement(n, true);
+                }
+              });
+              mountedMap.set(key, nodes);
+            } else {
+              nodes.forEach((n) => {
+                if (isFlowNode(n)) {
+                  const enhanced = n;
+                  const stack = enhanced[Symbol.for("__data_stack__")] || enhanced["__data_stack__"];
+                  if (stack && stack.length > 0) {
+                    const scope = stack[0];
+                    scope[itemKey] = item;
+                    if (indexKey)
+                      scope[indexKey] = index;
+                  } else {
+                    const scope = { [itemKey]: item };
+                    if (indexKey)
+                      scope[indexKey] = index;
+                    addScopeToNode(n, runtime.shallowReactive(scope), el);
+                  }
+                }
+              });
+            }
+            nextNodes.push(...nodes);
+          });
+          for (const [key, nodes] of mountedMap.entries()) {
+            if (!currentKeys.has(key)) {
+              disposeNodes(nodes);
+              mountedMap.delete(key);
+            }
+          }
+          let expectedBefore = anchor;
+          for (let i = nextNodes.length - 1; i >= 0; i--) {
+            const node = nextNodes[i];
+            if (node.nextSibling !== expectedBefore) {
+              anchor.parentNode?.insertBefore(node, expectedBefore);
+            }
+            expectedBefore = node;
+          }
+        });
+        return () => {
+          cleanup();
+          for (const nodes of mountedMap.values())
+            disposeNodes(nodes);
+          mountedMap.clear();
+          anchor.remove();
+        };
+      } catch (e) {
+        initError("for", `Failed to initialize for: ${e instanceof Error ? e.message : String(e)}`, el, value);
+      }
+    }
+  };
+  var for_default = forModule;
+
+  // src/modules/attributes/html.ts
+  var html_exports = {};
+  __export(html_exports, {
+    default: () => html_default
+  });
+  init_debug();
+  var htmlModule = {
+    name: "html",
+    attribute: "html",
+    handle: (el, value, runtime) => {
+      try {
+        const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
+          const content = runtime.evaluate(el, value);
+          const html = content === void 0 || content === null ? "" : String(content);
+          if (el.innerHTML !== html) {
+            el.innerHTML = html;
+            runtime.processElement(el);
+          }
+        });
+        return cleanup;
+      } catch (e) {
+        initError("html", `Failed to bind html: ${e instanceof Error ? e.message : String(e)}`, el, value);
+      }
+    }
+  };
+  var html_default = htmlModule;
+
+  // src/modules/attributes/if.ts
+  var if_exports = {};
+  __export(if_exports, {
+    default: () => if_default
+  });
+  init_debug();
+  init_consts();
+  function teardownTree(node) {
+    if (!(node instanceof HTMLElement))
+      return;
+    const children = Array.from(node.childNodes);
+    for (const child of children)
+      teardownTree(child);
+    const enhanced = node;
+    const removals = enhanced[CLEANUP_FUNCTIONS_KEY];
+    if (removals) {
+      removals.forEach((c) => {
+        try {
+          c();
+        } catch {
+        }
+      });
+      delete enhanced[CLEANUP_FUNCTIONS_KEY];
+    }
+    delete enhanced[MARKER_KEY];
+  }
+  var ifModule = {
+    name: "if",
+    attribute: "if",
+    handle: (el, value, runtime) => {
+      const parent = el.parentNode;
+      if (!parent || parent instanceof DocumentFragment)
+        return;
+      const anchor = document.createComment(` if: ${value} `);
+      parent.insertBefore(anchor, el);
+      const isTemplate = el instanceof HTMLTemplateElement;
+      const blueprint = isTemplate ? el.content : el;
+      if (!isTemplate) {
+        el.style.display = "none";
+        el[IS_TEMPLATE_KEY] = true;
+      }
+      let currentNodes = [];
+      let isMounted = false;
+      const disposeNodes = (nodes) => {
+        nodes.forEach((n) => {
+          teardownTree(n);
+          n.parentNode?.removeChild(n);
+        });
+      };
+      const mount = () => {
+        const clone = blueprint.cloneNode(true);
+        if (clone instanceof HTMLElement) {
+          clone.removeAttribute("data-if");
+          delete clone[IS_TEMPLATE_KEY];
+          clone.style.removeProperty("display");
+          currentNodes = [clone];
+        } else {
+          currentNodes = Array.from(clone.childNodes);
+        }
+        currentNodes.forEach((n) => {
+          anchor.parentNode?.insertBefore(n, anchor);
+          if (n instanceof HTMLElement)
+            runtime.processElement(n);
+        });
+      };
+      try {
+        const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
+          const condition = Boolean(runtime.evaluate(el, value));
+          if (condition) {
+            if (!isMounted) {
+              mount();
+              isMounted = true;
+            }
+          } else {
+            if (isMounted) {
+              disposeNodes(currentNodes);
+              currentNodes = [];
+              isMounted = false;
+            }
+          }
+        });
+        return () => {
+          cleanup();
+          disposeNodes(currentNodes);
+          currentNodes = [];
+          if (anchor.parentNode)
+            anchor.remove();
+        };
+      } catch (e) {
+        initError("if", `Failed to initialize if: ${e instanceof Error ? e.message : String(e)}`, el, value);
+      }
+    }
+  };
+  var if_default = ifModule;
+
+  // src/modules/attributes/import.ts
+  var import_exports = {};
+  __export(import_exports, {
+    default: () => import_default
+  });
+  init_debug();
+  async function readFromIDB(key) {
+    const storeName = key.split("/")[0] || "files";
+    const result = await readIDB(storeName, key);
+    if (!result)
+      return null;
+    if (typeof result === "string")
+      return result;
+    if (result.data && typeof result.data === "string")
+      return result.data;
+    if (result.data instanceof ArrayBuffer)
+      return new TextDecoder().decode(result.data);
+    return null;
+  }
+  var assetCache = /* @__PURE__ */ new Map();
+  function isVFSUri(str) {
+    return /^(idb|fs|https?|wss?):\/\//.test(str);
+  }
+  async function fetchWithTimeout(resource, options = {}) {
+    const { timeout = 3e3 } = options;
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+    try {
+      const response = await fetch(resource, {
+        ...options,
+        signal: controller.signal
+      });
+      clearTimeout(id);
+      return response;
+    } catch (error) {
+      clearTimeout(id);
+      throw error;
+    }
+  }
+  async function resolveContent(uri) {
+    if (isVFSUri(uri) && uri.startsWith("idb://")) {
+      const key = uri.replace(/^idb:\/\//, "");
+      return readFromIDB(key);
+    }
+    const cached = assetCache.get(uri);
+    if (cached)
+      return cached;
+    try {
+      const response = await fetchWithTimeout(uri, { mode: "cors", timeout: 3e3 });
+      if (!response.ok)
+        return null;
+      const text = await response.text();
+      assetCache.set(uri, text);
+      return text;
+    } catch {
+      return null;
+    }
+  }
+  function parseInlineAttrs(raw) {
+    const attrs = {};
+    const regex = /([a-z-]+)=["']([^"']+)["']/gi;
+    let match;
+    while ((match = regex.exec(raw)) !== null) {
+      attrs[match[1]] = match[2];
+    }
+    return attrs;
+  }
+  function applyAttributes(el, attrs) {
+    Object.entries(attrs).forEach(([key, value]) => {
+      if (key === "content" || key === "innerText" || key === "textContent" || key === "href" || key === "src")
+        return;
+      if (value === true)
+        el.setAttribute(key, "");
+      else if (value === false)
+        el.removeAttribute(key);
+      else
+        el.setAttribute(key, String(value));
+    });
+  }
+  async function importLink(id, payload, cleanupFns, runtime, el) {
+    const items = Array.isArray(payload) ? payload : [payload];
+    const tasks = items.map(async (item) => {
+      let attrs;
+      if (typeof item === "string") {
+        const parsed = parseInlineAttrs(item);
+        attrs = parsed.href ? parsed : { href: item, rel: "stylesheet" };
+      } else {
+        attrs = { rel: "stylesheet", ...item };
+      }
+      const href = attrs.href;
+      if (!href)
+        return;
+      if (href.startsWith("idb://")) {
+        const cssText = await resolveContent(href);
+        if (cssText) {
+          const cleanup = await stylesheet.adoptRawCSS(cssText, `import-${id}-${href}`);
+          cleanupFns.push(cleanup);
+          runtime.log(`Nexus Import [${id}]: CSS adopted (idb): ${href}`);
+          return;
+        }
+      }
+      await new Promise((resolve) => {
+        const existing = document.querySelector(`link[href="${href}"]`);
+        if (existing) {
+          resolve();
+          return;
+        }
+        const link = document.createElement("link");
+        applyAttributes(link, attrs);
+        link.href = href;
+        link.onload = () => resolve();
+        link.onerror = () => {
+          reportError(new Error(`Nexus Import: Failed to load ${href}`), el);
+          resolve();
+        };
+        (document.head || document.documentElement).appendChild(link);
+        runtime.log(`Nexus Import [${id}]: Link tag injected: ${href}`);
+      });
+    });
+    await Promise.all(tasks);
+  }
+  async function importAdopt(id, payload, cleanupFns, runtime, _el) {
+    const items = Array.isArray(payload) ? payload : [payload];
+    const tasks = items.map(async (item) => {
+      let href;
+      if (typeof item === "string") {
+        href = item;
+      } else {
+        href = item.href;
+      }
+      if (!href)
+        return;
+      const cssText = await resolveContent(href);
+      if (!cssText)
+        return;
+      const cleanup = await stylesheet.adoptRawCSS(cssText, `import-adopt-${id}-${href}`);
+      cleanupFns.push(cleanup);
+      runtime.log(`Nexus Import [${id}]: CSS adopted (constructable): ${href}`);
+    });
+    await Promise.all(tasks);
+  }
+  async function importScript(id, payload, cleanupFns, runtime, el) {
+    const items = Array.isArray(payload) ? payload : [payload];
+    const tasks = items.map(async (item) => {
+      let attrs = typeof item === "string" ? { src: item } : item;
+      if (typeof item === "string" && !attrs.src) {
+        attrs = parseInlineAttrs(item);
+        if (!attrs.src)
+          attrs = { src: item };
+      }
+      const src = attrs.src;
+      if (!src)
+        return;
+      let finalSrc = src;
+      if (src.startsWith("idb://")) {
+        const content = await resolveContent(src);
+        if (content) {
+          const blob = new Blob([content], { type: attrs.type || "text/javascript" });
+          const url = URL.createObjectURL(blob);
+          finalSrc = url;
+          cleanupFns.push(() => URL.revokeObjectURL(url));
+        }
+      }
+      if (src.includes("tailwindcss/browser") && !document.querySelector("style[data-nexus-tailwind-bridge]")) {
+        const tokens = discoverColorTokens();
+        const bridge = buildTailwindThemeBridge(tokens);
+        if (bridge) {
+          const bridgeStyle = document.createElement("style");
+          bridgeStyle.setAttribute("type", "text/tailwindcss");
+          bridgeStyle.setAttribute("data-nexus-tailwind-bridge", "");
+          bridgeStyle.textContent = bridge;
+          document.head.appendChild(bridgeStyle);
+          cleanupFns.push(() => bridgeStyle.remove());
+          runtime.log(`Nexus Import [${id}]: Tailwind theme bridge injected (${tokens.size} color tokens discovered)`);
+        }
+      }
+      await new Promise((resolve) => {
+        const existing = document.querySelector(`script[src="${finalSrc}"]`);
+        if (existing) {
+          resolve();
+          return;
+        }
+        const script = document.createElement("script");
+        applyAttributes(script, attrs);
+        script.onload = () => resolve();
+        script.onerror = () => {
+          reportError(new Error(`Nexus Import: Failed to load script ${src}`), el);
+          resolve();
+        };
+        script.src = finalSrc;
+        (document.head || document.documentElement).appendChild(script);
+        runtime.log(`Nexus Import [${id}]: Script injected: ${src}`);
+      });
+    });
+    await Promise.all(tasks);
+  }
+  async function importStyle(id, payload, cleanupFns, runtime, el) {
+    const items = Array.isArray(payload) ? payload : [payload];
+    const tasks = items.map(async (item) => {
+      const attrs = typeof item === "string" ? { content: item } : item;
+      const content = attrs.content || (typeof item === "string" ? item : "");
+      if (!content && !attrs.href)
+        return;
+      if (attrs.href) {
+        await importLink(id, attrs, cleanupFns, runtime, el);
+        return;
+      }
+      const cssText = isVFSUri(content) ? await resolveContent(content) : content;
+      if (!cssText)
+        return;
+      const cleanup = await stylesheet.adoptCSS(cssText, `import-style-${id}`);
+      cleanupFns.push(cleanup);
+      runtime.log(`Nexus Import [${id}]: Style adopted (ZCZS)`);
+    });
+    await Promise.all(tasks);
+  }
+  async function importPattern(id, uri, el, item, cleanupFns, runtime) {
+    const content = await resolveContent(uri);
+    if (!content)
+      throw new Error(`Pattern not found: ${uri}`);
+    const target = item.target ? el.querySelector(item.target) || el : el;
+    const position = item.position || "append";
+    const wrapper = document.createElement("div");
+    wrapper.setAttribute("data-import-pattern", id);
+    wrapper.innerHTML = content;
+    switch (position) {
+      case "replace":
+        target.innerHTML = "";
+        target.appendChild(wrapper);
+        break;
+      case "prepend":
+        target.insertBefore(wrapper, target.firstChild);
+        break;
+      case "append":
+        target.appendChild(wrapper);
+        break;
+      case "before":
+        target.parentElement?.insertBefore(wrapper, target);
+        break;
+      case "after":
+        target.parentElement?.insertBefore(wrapper, target.nextSibling);
+        break;
+    }
+    cleanupFns.push(() => wrapper.remove());
+    runtime.log(`Nexus Import [${id}]: Pattern loaded from ${uri}`);
+  }
+  async function importComponent(id, uri, cleanupFns, runtime) {
+    const content = await resolveContent(uri);
+    if (!content)
+      throw new Error(`Component template not found: ${uri}`);
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(content, "text/html");
+    const templates = doc.querySelectorAll("template[data-component-name]");
+    if (templates.length > 0) {
+      templates.forEach((template) => {
+        const name = template.getAttribute("data-component-name");
+        const templateEl = document.createElement("template");
+        templateEl.id = `component-${name}`;
+        templateEl.innerHTML = template.innerHTML;
+        document.body.appendChild(templateEl);
+        cleanupFns.push(() => templateEl.remove());
+        runtime.log(`Nexus Import [${id}]: Component "${name}" registered from ${uri}`);
+      });
+    } else {
+      const templateEl = document.createElement("template");
+      templateEl.id = `component-${id}`;
+      templateEl.innerHTML = content;
+      document.body.appendChild(templateEl);
+      cleanupFns.push(() => templateEl.remove());
+      runtime.log(`Nexus Import [${id}]: Component registered from ${uri}`);
+    }
+  }
+  if (typeof document !== "undefined") {
+    const style = document.createElement("style");
+    style.setAttribute("data-nexus-fouc", "");
+    style.textContent = `
     /* FOUC guard: keep the document hidden until Nexus-UX has adopted the
        external stylesheets declared via [data-import]. The gate is released
        (nexus-ready / nexus-loading removed) only after imports resolve. */
@@ -38,17 +5852,6513 @@ ${t}
       opacity: 0 !important;
       pointer-events: none !important;
     }
-  `,document.head.appendChild(n)}var Ma={name:"import",attribute:"import",handle:(n,e,t)=>{let r=null,o="",i=t.effect(()=>{let a=n.getAttribute("data-import")||e,s=t.evaluate(n,a),l=JSON.stringify(s);if(l===o){n.classList.remove("nexus-loading"),n.classList.add("nexus-ready"),n.removeAttribute("data-nexus-loading"),n.setAttribute("data-nexus-ready","");return}o=l,r&&(r(),r=null);let c=()=>{n.classList.remove("nexus-loading"),n.classList.add("nexus-ready"),n.removeAttribute("data-nexus-loading"),n.setAttribute("data-nexus-ready",""),t.log("Nexus Import: Assets synchronized."),On()};if(n.classList.add("nexus-loading"),n.setAttribute("data-nexus-loading",""),!s||typeof s!="object"){c();return}let u=Object.keys(s);if(u.length===0){c();return}let d=[];r=()=>d.forEach(f=>f()),(async()=>{let f=u.map(async m=>{let g=s[m];try{let y=[];g.link&&y.push(zo(m,g.link,d,t,n)),g.adopt&&y.push(Ea(m,g.adopt,d,t,n)),g.script&&wa(m,g.script,d,t,n).catch(()=>{});let v=g.style||g.theme;v&&y.push(xa(m,v,d,t,n)),g.pattern&&y.push(Ta(m,g.pattern,n,g,d,t)),g.component&&y.push(Sa(m,g.component,d,t)),await Promise.all(y)}catch(y){H(new Error(`Nexus Import [${m}]: Error ${y}`),n)}});await Promise.all(f)})().then(c).catch(()=>c())});return()=>{i(),r&&r()}}},Aa=Ma;var Bn={};_(Bn,{default:()=>_a});var Ca={name:"markdown",attribute:"markdown",handle:(n,e,t)=>{let r=i=>{let a=i||"",s=[];return a=a.replace(/```([a-z]*)\n([\s\S]*?)```/gim,(l,c,u)=>{let d=`__CODE_BLOCK_${s.length}__`,p=u.replace(/</g,"&lt;").replace(/>/g,"&gt;").trim();return s.push(`<pre class="bg-base-300 p-4 rounded-xl overflow-x-auto text-sm my-4 border border-base-200 font-mono shadow-inner text-base-content" data-lang="${c}"><code>${p}</code></pre>`),d}),a=a.replace(/`([^`]+)`/g,'<code class="bg-base-200 text-primary px-1.5 py-0.5 rounded font-mono text-sm">$1</code>'),a=a.replace(/^### (.*$)/gim,'<h3 class="text-xl font-bold mt-6 mb-3 text-base-content">$1</h3>'),a=a.replace(/^## (.*$)/gim,'<h2 class="text-2xl font-bold mt-8 mb-4 border-b border-base-300 pb-2 border-opacity-50 text-base-content">$1</h2>'),a=a.replace(/^# (.*$)/gim,'<h1 class="text-4xl font-extrabold mt-10 mb-6 tracking-tight text-base-content">$1</h1>'),a=a.replace(/^\s*> (.*$)/gim,'<blockquote class="border-l-4 border-primary bg-primary/5 pl-4 py-2 my-4 italic opacity-90 rounded-r-lg text-base-content">$1</blockquote>'),a=a.replace(/\*\*(.*?)\*\*/g,'<strong class="font-bold text-base-content">$1</strong>'),a=a.replace(/\*(.*?)\*/g,'<em class="italic opacity-90">$1</em>'),a=a.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" class="link link-primary hover:text-primary-focus transition-colors">$1</a>'),a=a.replace(/^\s*-\s+(.*$)/gim,'<li class="ml-6 list-disc marker:text-primary/50 py-0.5 text-base-content">$1</li>'),a=a.replace(/(<li class="ml-6 list-disc[^>]*>.*<\/li>[\s\n]*)+/gim,l=>`<ul class="mt-2 mb-4 space-y-1">
-${l}</ul>
-`),a=a.split(`
-`).map(l=>{let c=l.trim();return c.length>0&&!c.startsWith("<")&&!c.startsWith("__CODE_BLOCK_")?`<p class="mb-4 leading-relaxed opacity-90 text-base-content">${c}</p>`:l}).join(`
-`),a=a.replace(/__CODE_BLOCK_(\d+)__/g,(l,c)=>s[parseInt(c,10)]),a},o=()=>{let i=e?t.evaluate(n,e):n.innerHTML||n.innerText,a=String(i||"").trim();n.classList.contains("nexus-markdown-body")||n.classList.add("nexus-markdown-body","font-sans","antialiased");let s=r(a);n.innerHTML!==s&&(n.innerHTML=s,t.processElement(n))};if(e){let[i,a]=t.elementBoundEffect(n,o);return a}else o()}},_a=Ca;var Wn={};_(Wn,{default:()=>Ha,maskModule:()=>Ko});var Fn={};_(Fn,{format:()=>ft,mask:()=>ka});function La(n,e){let t={9:/[0-9]/,a:/[a-zA-Z]/,"*":/[a-zA-Z0-9]/},r=0,o="";for(let i=0;i<n.length&&r<e.length;i++){let a=n[i],s=t[a];if(s)for(;r<e.length;){if(s.test(e[r])){o+=e[r],r++;break}r++}else e[r]===a&&r++}return o}function Ra(n,e){if(!e)return"";let t=0,r="";for(let o=0;o<n.length&&t<e.length;o++){let i=n[o];["9","a","*"].includes(i)?(r+=e[t],t++):r+=i}return r}function ft(n,e){if(!n||!e)return n;let t=La(e,n);return Ra(e,t)}var ka={format:ft};var Ko={name:"mask",handle(n,e,t){if(!(n instanceof HTMLInputElement)){t.warn("data-mask only supported on <input> elements.",n);return}let r=n.value,o=t.evaluate(n,e)||e,i=()=>{if(o||(o=t.evaluate(n,e)||e),!o)return;let a=n.selectionStart,s=n.value;if(r.length>s.length){r=s;return}let l=ft(s,o);if(n.value=l,r=l,a!==null){let c=ft(s.slice(0,a),o).length;n.setSelectionRange(c,c)}};return n.addEventListener("input",i),i(),()=>{n.removeEventListener("input",i)}}},Ha=Ko;var jn={};_(jn,{default:()=>Ia});O();var Na={name:"on",attribute:"on",handle:(n,e,t,r)=>{let o=r||t.parseAttribute("data-on",t,n);if(!o||!o.argument)return;let i=o.argument,a=o.modifiers;try{let s=p=>{let f=p.detail,m={$evt:p,$detail:f,$newValue:p.target?.value??p.target?.checked??f};return t.evaluate(n,e,m)},l=n,c=!1,u=new Set(["window","document","outside"]),d=new Set(["passive","capture"]);if(a.forEach(p=>{let[f,m]=p.includes("-")?[p.slice(0,p.indexOf("-")),p.slice(p.indexOf("-")+1)]:[p,""];if(u.has(f)){f==="window"&&(l=window),(f==="document"||f==="outside")&&(l=document);return}if(d.has(f)){f==="passive"&&(c={passive:!0}),f==="capture"&&(c=!0);return}let g=t.getModifier(f);g&&(s=g.handle(s,n,m,t))}),l.addEventListener(i,s,c),(i==="load"&&document.readyState!=="loading"||i==="DOMContentLoaded"&&document.readyState!=="loading")&&(l===window||l===document||l===n))try{s(new Event(i))}catch{}return()=>l.removeEventListener(i,s,c)}catch(s){P("on",`Failed to attach listener ${i}: ${s instanceof Error?s.message:String(s)}`,n,e)}}},Ia=Na;var Un={};_(Un,{default:()=>$a});W();var Pa={name:"preserve",attribute:"preserve",handle:(n,e,t)=>(n.setAttribute(xt,"true"),()=>{})},$a=Pa;var qn={};_(qn,{default:()=>Oa});O();var Da={name:"pwa",attribute:"pwa",handle:(n,e,t)=>{let r;try{r=t.evaluate(n,e)}catch(c){H(new Error(`PWA: Evaluation error: ${c}`),n);return}if(!r)return;let o=t.reactive({isOnline:navigator.onLine,isInstalled:!1,updateAvailable:!1,deferredPrompt:null,_waitingWorker:null,install:async()=>{if(!o.deferredPrompt)return t.log("PWA: No install prompt available yet."),!1;o.deferredPrompt.prompt();let{outcome:c}=await o.deferredPrompt.userChoice;return c==="accepted"?(o.deferredPrompt=null,!0):!1},update:()=>{o._waitingWorker&&(o._waitingWorker.postMessage({type:"SKIP_WAITING"}),window.location.reload())}});t.setGlobalSignal("$pwa",o);let i=[],a=()=>{o.isOnline=navigator.onLine};if(globalThis.addEventListener("online",a),globalThis.addEventListener("offline",a),i.push(()=>globalThis.removeEventListener("online",a),()=>globalThis.removeEventListener("offline",a)),r.sw&&"serviceWorker"in navigator){navigator.serviceWorker.register(r.sw).then(d=>{t.log(`PWA: ServiceWorker registered for scope: ${d.scope}`),d.waiting&&(o.updateAvailable=!0,o._waitingWorker=d.waiting),d.onupdatefound=()=>{let p=d.installing;p&&(p.onstatechange=()=>{p.state==="installed"&&navigator.serviceWorker.controller&&(o.updateAvailable=!0,o._waitingWorker=p)})}}).catch(d=>H(new Error(`PWA: ServiceWorker registration failed: ${d}`),n));let c=!1,u=()=>{c||(c=!0,window.location.reload())};navigator.serviceWorker.addEventListener("controllerchange",u),i.push(()=>navigator.serviceWorker.removeEventListener("controllerchange",u))}if(r.themeColor){let c=document.querySelector('meta[name="theme-color"]');c||(c=document.createElement("meta"),c.setAttribute("name","theme-color"),document.head.appendChild(c)),c.setAttribute("content",r.themeColor)}if(r.manifest){let c=document.querySelector('link[rel="manifest"]');c||(c=document.createElement("link"),c.setAttribute("rel","manifest"),document.head.appendChild(c)),c.setAttribute("href",r.manifest)}if(r.icon){let c=document.querySelector('link[rel="apple-touch-icon"]');c||(c=document.createElement("link"),c.setAttribute("rel","apple-touch-icon"),document.head.appendChild(c)),c.setAttribute("href",r.icon)}let s=c=>{c.preventDefault(),o.deferredPrompt=c};globalThis.addEventListener("beforeinstallprompt",s),i.push(()=>globalThis.removeEventListener("beforeinstallprompt",s));let l=()=>{o.isInstalled=!0,o.deferredPrompt=null};return globalThis.addEventListener("appinstalled",l),i.push(()=>globalThis.removeEventListener("appinstalled",l)),()=>i.forEach(c=>c())}},Oa=Da;var zn={};_(zn,{default:()=>Fa});O();var Ba={name:"raf",attribute:"on-raf",handle:(n,e,t)=>{let r,o=performance.now(),i={$time:0,$delta:0},a=s=>{let l=s-o;o=s,i.$time=s,i.$delta=l;try{t.evaluate(n,e,i)}catch(c){H(new Error(`RAF error: ${c}`),n);return}r=requestAnimationFrame(a)};return r=requestAnimationFrame(a),()=>cancelAnimationFrame(r)}},Fa=Ba;var Kn={};_(Kn,{default:()=>Wa,routeAttributeModule:()=>Yo});O();var Yo={name:"route-attribute",attribute:"route",handle:(n,e,t,r)=>{try{if(r?.argument)return;let i=t.globalSignals().router;if(!i||!i.addRoute){H(new Error("data-route used but #router not found. Ensure data-router is present."),n);return}let a=n.getAttribute("data-route-name")||void 0,s=n.getAttribute("data-route-redirect")||void 0,l=n.getAttribute("data-route-layout")||void 0,c=n.getAttribute("data-component")||void 0,u=n.getAttribute("data-route-meta"),d=n.getAttribute("data-route-before-enter"),p=n.getAttribute("data-route-after-enter"),f=n.getAttribute("data-route-before-leave"),m=n.getAttribute("data-route-after-leave"),g=n.getAttribute("data-route-handler"),y=n.getAttribute("data-route-shadow"),v=y===""||y==="true"||y==="shadow",b={};if(u)try{b=t.evaluate(n,u)}catch(h){H(new Error(`Invalid data-route-meta: ${h}`),n)}let T=h=>{let A=String(h).split("."),L=t.globalSignals();for(let k of A)if(L&&typeof L=="object"&&k in L)L=L[k];else return;return L},E=h=>h?(A,L)=>t.evaluate(n,h,{$to:A,$from:L,ctx:{to:A,from:L,signals:{value:T}}}):void 0,C={path:e,element:n,name:a,redirect:s,layout:l,component:c,meta:b,internal:v,source:"declared",beforeEnter:E(d),afterEnter:E(p),beforeLeave:E(f),afterLeave:E(m),handler:E(g)};return i.addRoute(C),()=>{i.removeRoute(C)}}catch(o){H(o instanceof Error?o:new Error(String(o)),n)}}},Wa=Yo;var Yn={};_(Yn,{default:()=>qa,routerAttributeModule:()=>Xo});O();W();function Vo(n){let e=[],t=!1,r=n.replace(/:([a-zA-Z0-9_]+)\?/g,(o,i)=>(e.push(i),"(?:/([^/]+))?")).replace(/:([a-zA-Z0-9_]+)/g,(o,i)=>(e.push(i),"([^/]+)"));return r.endsWith("*")?(t=!0,r=r.slice(0,-1)+"(.*)"):r=r.replace(/\*/g,".*"),{regex:new RegExp(`^${r}$`),keys:e,hasWildcard:t}}function ja(n,e){let t=n.replace(/:([a-zA-Z0-9_]+)\??/g,(r,o)=>{let i=e[o];return i!=null?String(i):""}).replace(/\*$/,()=>e.wildcard!==void 0?String(e.wildcard):"");return t=t.replace(/\/{2,}/g,"/"),t.length>1&&t.endsWith("/")&&(t=t.slice(0,-1)),t||"/"}function Ua(){let n=document.querySelector("base[href]");if(n&&n.href)try{let i=new URL(n.href,globalThis.location.href).pathname;return i.endsWith("/")?i:i+"/"}catch{}let e=globalThis.location.pathname,t=e.lastIndexOf("/");return e.substring(t+1).includes(".")?e.substring(0,t+1):"/"}var Xo={name:"router-attribute",attribute:"router",handle:(n,e,t)=>{try{t.debug("Initializing data-router on",n);let r=globalThis.location.href,o={};if(e&&e.trim())try{let x=t.evaluate(n,e);x&&typeof x=="object"&&(o=x)}catch{}let i=o.mode==="static"||o.mode==="hybrid"?o.mode:"signal",a=typeof o.default=="string"&&o.default?o.default:null,s=globalThis.location.pathname.split("/").pop()||"",l=document.documentElement.getAttribute("data-router.base-path"),c=l!==null&&l!==""?l.endsWith("/")?l:l+"/":Ua(),u=typeof o.pagesDir=="string"&&o.pagesDir?o.pagesDir.replace(/\/+$/,""):"_pages",d=(x,w)=>{let M=x&&x.trim()?x.trim():w;return M.startsWith("/")||M.startsWith("http")?M:`/${u}/${M.replace(/^\/+/,"")}`},p=d(o.error,"error.html"),f={mode:i,default:a,basePath:c,manifest:typeof o.manifest=="string"&&o.manifest?o.manifest:void 0,dynamic:o.dynamic===!0,shadow:o.shadow??void 0,pagesDir:u,error:p},m=x=>{let w=x;return c!=="/"&&w.startsWith(c)&&(w=w.substring(c.length-1)),w.startsWith("/")||(w="/"+w),w},g=x=>c==="/"||c===""?x:x.startsWith("/")?c+x.substring(1):c+x,y=x=>{let w;try{w=new URL(x,r)}catch{return x}return w.pathname+w.search+w.hash},v=x=>{let w=x.replace(/[.+?^${}()|[\]\\]/g,"\\$&").replace(/\*\*\/?/g,"::globstar::").replace(/\*/g,"[^/]*").replace(/::globstar::/g,".*");return new RegExp(`^${w}$`)},b=x=>{let w=h.config.shadow;return w?(Array.isArray(w)?w:[w]).some(S=>v(S).test(x)):!1},T=async()=>{let x=E.slice(),w=h.config.manifest;if(w)try{let M;t.fetch?M=await t.fetch.request(g(w),{responseType:"text"},n):M=await(await fetch(g(w))).text();let S=JSON.parse(M),q=Array.isArray(S)?S:S.routes??[];for(let R of q){if(!R||typeof R.path!="string")continue;let re=Vo(R.path),J={path:R.path,element:document.documentElement,name:R.name,redirect:R.redirect,layout:R.layout,component:R.component,meta:R.meta,internal:R.internal===!0||b(R.path),source:"manifest",...re};J.matcher=re.regex,x.push(J)}}catch(M){H(new Error(`router: failed to load manifest "${w}": ${M}`),n)}h.manifest=x.filter(M=>!M.internal).slice(),h.routes=x.slice()},E=[],C=new WeakMap,h=t.shallowReactive({path:m(globalThis.location.pathname),params:{},query:{},hash:globalThis.location.hash,loading:!1,error:null,errorCode:null,basePath:c,mode:i,route:null,layout:null,outlet:null,meta:{},name:null,previous:null,scrollPosition:{x:0,y:0},currentRoute:null,routes:[],config:f,manifest:[],activeTabId:null,tabPaths:{},tabMeta:{},navigate(x,w){if(x.startsWith("http")||x.startsWith("//")){globalThis.location.href=x;return}let M=g(x),S=w?.tabId??L()??h.activeTabId??null;if(S&&(h.tabPaths[S]=m(M),(w?.title!==void 0||w?.icon!==void 0)&&(h.tabMeta[S]={...h.tabMeta[S]||{},...w?.title!==void 0?{title:w.title}:{},...w?.icon!==void 0?{icon:w.icon}:{}})),"navigation"in globalThis)globalThis.navigation.navigate(M,{history:w?.replace?"replace":"push",state:{tabId:S,scrollY:globalThis.scrollY,title:w?.title,icon:w?.icon}});else{let q={tabId:S,scrollY:globalThis.scrollY,title:w?.title,icon:w?.icon};w?.replace?globalThis.history.replaceState(q,"",M):globalThis.history.pushState(q,"",M),Ve(M)}},back(x){"navigation"in globalThis?globalThis.navigation.back():globalThis.history.back()},forward(x){"navigation"in globalThis?globalThis.navigation.forward():globalThis.history.forward()},canBack(x){if("navigation"in globalThis){let w=globalThis.navigation;return w&&typeof w.canGoBack=="function"?w.canGoBack:!0}return globalThis.history.length>1},canForward(x){if("navigation"in globalThis){let w=globalThis.navigation;return w&&typeof w.canGoForward=="function"?w.canGoForward:!0}return globalThis.history.length>1},navigateByName(x,w={},M,S){let q=E.find(re=>re.name===x);if(!q){H(new Error(`navigateByName: no route named "${x}"`),n);return}let R=ja(q.path,w);M&&Object.keys(M).length&&(R+="?"+h.buildQuery(M)),h.navigate(R,S)},isActive(x,w=!1){let M=h.path;return w?M===x:x==="/"?M==="/":M===x||M.startsWith(x+"/")},buildQuery(x){let w=new URLSearchParams;for(let[M,S]of Object.entries(x))S!=null&&w.append(M,String(S));return w.toString()},addRoute(x){t.debug("addRoute called with path:",x.path);let w=Vo(x.path);C.set(x,w),E.push(x),h.routes=E.slice(),queueMicrotask(()=>{T(),Ve(globalThis.location.href)})},removeRoute(x){let w=E.indexOf(x);w>-1&&E.splice(w,1),C.delete(x),h.routes=E.slice(),queueMicrotask(()=>T())},go(x,w){if(!x)return;if(E.find(S=>S.name===x)){h.navigateByName(x,{},void 0,{replace:w?.replace});return}h.navigate(x,w)},match(x){let w=x?m(x):h.path;for(let M of E){let S=C.get(M);if(!S)continue;let q=w.match(S.regex);if(q){let R={};return S.keys.forEach((re,J)=>{R[re]=q[J+1]||""}),S.hasWildcard&&(R.wildcard=q[S.keys.length+1]||""),D(M,w,R,h.query,h.hash)}}return i==="static"||i==="hybrid"?D(null,w,{},h.query,h.hash):null},renderActiveTab(){let x=L();if(!x)return;let w=h.tabPaths[x];if(w||(w=m(globalThis.location.pathname)||"/",h.tabPaths[x]=w),w==="custom-component"){h.route=null,h.layout=null,Ye(null);let ve=A.tabs?.find(le=>le.id===x),ee=globalThis.location.pathname+globalThis.location.search+globalThis.location.hash;$=!0,globalThis.history.replaceState({tabId:x,scrollY:globalThis.scrollY},"",ee),$=!1;return}let M=new URL(g(w),globalThis.location.origin),S=w,q={};M.searchParams.forEach((ve,ee)=>q[ee]=ve);let R=null,re={};for(let ve of E){let ee=C.get(ve);if(!ee)continue;let le=S.match(ee.regex);if(le){R=ve,ee.keys.forEach((Me,Jt)=>{re[Me]=le[Jt+1]||""}),ee.hasWildcard&&(re.wildcard=le[ee.keys.length+1]||"");break}}let J=null;!R&&(i==="static"||i==="hybrid")&&(J=vt(S)),h.path=S,h.hash=M.hash,h.query=q,h.params=re,h.currentRoute=R,h.meta=R?.meta??{},h.name=R?.name??null,h.route=R?.component??J??null,h.layout=R?.layout??null,Ye(h.layout??h.route),h.error=null,V(R);let Xe=g(S),pe=h.tabMeta[x]||{};$=!0,globalThis.history.replaceState({tabId:x,scrollY:globalThis.scrollY,title:pe.title,icon:pe.icon},"",Xe),$=!1},setActiveTab(x){k(x),h.renderActiveTab()},setError(x){if(x==null||x===""){h.error=null,h.errorCode=null;return}h.errorCode=String(x),globalThis.location.pathname===g("/error")||h.navigate("/error",{replace:!0})},prewarm(x){if(!x)return;let w=null;if(x.startsWith("_")||x.startsWith("/_"))w=g(x.replace(/^\/+/,""));else{let M=E.find(S=>S.name===x);if(M?.component)w=g(M.component.replace(/^\/+/,""));else try{let S=vt(m(x));E.some(R=>R.component&&R.component.endsWith(S.replace(/^\/+/,"")))&&(w=S)}catch{}}if(w)try{t.fetch.request(w,{responseType:"text"},n)}catch{}}});t.setGlobalSignal("router",h);let A=t.globalSignals(),L=()=>typeof A.activeTabId=="string"&&A.activeTabId||null,k=x=>{t.setGlobalSignal("activeTabId",x)},N=!1;t.watch(()=>A.activeTabId,()=>{if(!N)try{h.renderActiveTab()}catch{}});let $=!1,U=null,ae=0,Z=async(x,w,M)=>{if(!x)return{};try{let S=await Promise.resolve(x(w,M));return S===!1?{abort:!0}:typeof S=="string"?{redirect:S}:{}}catch(S){return h.error={type:"hook_error",error:S},H(S instanceof Error?S:new Error(String(S)),n),{abort:!0}}},D=(x,w,M,S,q)=>({path:w,params:M,query:S,hash:q,name:x?.name,meta:x?.meta,component:x?.component,layout:x?.layout}),z=new WeakMap,V=x=>{E.forEach(w=>{if(w===x&&!w.component){if(!z.has(w.element)){let S=w.element.style.display;z.set(w.element,S==="none"?"":S)}t.reconcileStyle(w.element,{display:z.get(w.element)||""})}else{if(!z.has(w.element)){let S=w.element.style.display;z.set(w.element,S==="none"?"":S)}t.reconcileStyle(w.element,{display:"none"})}})},de=x=>{let w=globalThis.history.state?.scrollY;if(w!=null)globalThis.scrollTo(0,w);else if(x){let M=document.getElementById(x.substring(1));M?M.scrollIntoView():globalThis.scrollTo(0,0)}else globalThis.scrollTo(0,0);h.scrollPosition={x:globalThis.scrollX,y:globalThis.scrollY}},vt=x=>{let w=(h.config.pagesDir||"").replace(/^\/+|\/+$/g,""),M=x==="/"||x===""?"/index.html":x.replace(/\/$/,""),S=M.endsWith(".html")?M:M+".html",q=w?`/${w}${S}`:S;return g(q)},Ye=x=>{h.outlet=x},Ve=async x=>{let w=++ae,M=new URL(x,globalThis.location.origin),S=m(M.pathname);if(M.hash&&M.hash.startsWith("#/")?S=M.hash.substring(1):!M.hash&&s&&s!=="404.html"&&/\.html?$/i.test(s)&&S==="/"+s&&(S="/"),a&&S==="/"&&a!=="/"){h.navigate(a,{replace:!0});return}let q={};M.searchParams.forEach((F,ie)=>q[ie]=F);let R=null,re={};for(let F of E){let ie=C.get(F);if(!ie)continue;let K=S.match(ie.regex);if(K){t.debug(`Matched route: ${F.path} via path ${S}`),R=F,ie.keys.forEach((he,Ae)=>{re[he]=K[Ae+1]||""}),ie.hasWildcard&&(re.wildcard=K[ie.keys.length+1]||"");break}}if(R&&R.redirect){h.navigate(R.redirect,{replace:!0});return}let J=null,Xe=h.config.error??d(void 0,"error.html"),pe="/error",ve=S===pe||M.pathname===g(pe);if(!R){if(!ve&&(i==="static"||i==="hybrid")){let F=vt(S);if(E.some(K=>!!(K.component&&K.component.endsWith(F.replace(/^\/+/,"")))))J=F;else if(S==="/"||S==="")J=vt("/");else{h.navigate(pe,{replace:!0});return}}else if(!ve){h.navigate(pe,{replace:!0});return}}let ee=D(R,S,re,q,M.hash),le=h.currentRoute,Me=U,Jt=R?.component??J??null;if(h.route=Jt,h.layout=R?.layout??null,Ye(h.layout??h.route),h.path=S,S!==pe&&M.pathname!==g(pe)&&(h.error=null,h.errorCode=null),h.loading=!0,le){let F=await Z(le.beforeLeave,ee,Me);if(w!==ae){h.loading=!1;return}if(F.abort){h.loading=!1;return}if(F.redirect){h.loading=!1,h.navigate(F.redirect,{replace:!0});return}}if(R){let F=await Z(R.beforeEnter,ee,Me);if(w!==ae){h.loading=!1;return}if(F.abort){h.loading=!1;return}if(F.redirect){h.loading=!1,h.navigate(F.redirect,{replace:!0});return}let ie=await Z(R.handler,ee,Me);if(w!==ae){h.loading=!1;return}if(ie.abort){h.loading=!1;return}if(ie.redirect){h.loading=!1,h.navigate(ie.redirect,{replace:!0});return}}if(w!==ae){h.loading=!1;return}let ms=le?{path:h.path,meta:le.meta}:U?{path:U.path,meta:U.meta}:null;h.hash=M.hash,h.query=q,h.params=re,h.currentRoute=R,h.meta=R?.meta??{},h.name=R?.name??null,h.previous=ms,h.route=R?.component??J??null,h.layout=R?.layout??null,Ye(h.layout??h.route);let Ne=L();if(Ne){let F=A.tabs||[];if(!(F.findIndex(K=>K.id===Ne)>=0&&h.tabPaths[Ne]==="custom-component")){h.tabPaths[Ne]=S;let K=R?.component??J??null,he=F.findIndex(Ae=>Ae.id===Ne);if(he>=0&&K){let Ae=F[he].content,Ge=h.tabMeta[Ne]||{},eo=Ge.title||(K==="_pages/home.html"?"Home":K==="_pages/settings.html"?"Settings":K==="_pages/profile.html"?"Profile":K===Xe?h.errorCode?"Error "+h.errorCode:"Error":"Tab"),to=Ge.icon||(K==="_pages/home.html"?"material-symbols-light:home-outline":K==="_pages/settings.html"?"material-symbols-light:settings-outline":K==="_pages/profile.html"?"material-symbols-light:person-outline":"material-symbols-light:article-outline");if(Ae!==K||F[he].title!==eo||F[he].icon!==to){let Zt=F.slice();Zt[he]={...Zt[he],content:K,title:eo,icon:to},t.setGlobalSignal("tabs",Zt)}}}}if(R||J){if(V(R),h.error=null,h.errorCode=null,h.loading=!1,de(M.hash),S&&S!=="/index.html"&&S!==Xe&&!S.startsWith("/_internal/")){let F=A.recent||[],K={"/":"Home","/settings":"Settings","/profile":"Profile","/_internal/admin-console":"Internal Console"}[S]||S.replace(/^\//,"").replace(/-/g," "),Ae=[{path:S,title:K},...F.filter(Ge=>Ge.path!==S&&Ge.path!=="/index.html")].slice(0,5);t.setGlobalSignal("recent",Ae)}R&&queueMicrotask(async()=>{await Z(R.afterEnter,ee,Me),le&&le!==R&&await Z(le.afterLeave,ee,Me)}),U=ee}else h.loading=!1,(S===pe||M.pathname===g(pe))&&(J=Xe,V(null),h.route=J,Ye(J))},Jr=x=>{if($||!x.canIntercept||x.hashChange||x.downloadRequest!==null)return;let w=new URL(globalThis.location.origin+y(x.destination.url));if(w.origin!==globalThis.location.origin)return;let M=x.destination?.state,S=M&&typeof M.tabId=="string"?M.tabId:null;S&&S!==L()&&k(S),S&&M&&(M.title!==void 0||M.icon!==void 0)&&(h.tabMeta[S]={...h.tabMeta[S]||{},...M.title!==void 0?{title:M.title}:{},...M.icon!==void 0?{icon:M.icon}:{}}),x.intercept({async handler(){await Ve(w.href)}})};"navigation"in globalThis&&globalThis.navigation.addEventListener("navigate",Jr);let Et=x=>{let w=x&&x.state,M=w&&typeof w.tabId=="string"?w.tabId:null;M&&M!==L()&&k(M),M&&w&&(w.title!==void 0||w.icon!==void 0)&&(h.tabMeta[M]={...h.tabMeta[M]||{},...w.title!==void 0?{title:w.title}:{},...w.icon!==void 0?{icon:w.icon}:{}}),Ve(globalThis.location.href)},Zr=`${fe}popstate`;return"navigation"in globalThis||globalThis.addEventListener("popstate",Et),document.addEventListener(Zr,Et),queueMicrotask(()=>{T(),Ve(globalThis.location.href);for(let x of E)x.component&&h.prewarm(x.component);h.prewarm(h.config.error??d(void 0,"error.html"))}),()=>{"navigation"in globalThis&&globalThis.navigation.removeEventListener("navigate",Jr),"navigation"in globalThis||globalThis.removeEventListener("popstate",Et),document.removeEventListener(Zr,Et)}}catch(r){H(r instanceof Error?r:new Error(String(r)),n)}}},qa=Xo;var Vn={};_(Vn,{default:()=>Ka});O();var za={name:"show",attribute:"show",handle:(n,e,t)=>{let r=n.style.display==="none"?"":n.style.display;try{let[o,i]=t.elementBoundEffect(n,()=>{let a=!!t.evaluate(n,e);Dt(n,{display:a?r||"":"none"})});return i}catch(o){P("show",`Failed to initialize show: ${o instanceof Error?o.message:String(o)}`,n,e)}}},Ka=za;var Xn={};_(Xn,{default:()=>Va});function We(n){if(Array.isArray(n))return n.map(We);if(n!==null&&typeof n=="object"){let e={};for(let t of Object.keys(n))e[t]=We(n[t]);return e}return n}var Ya={name:"signal",attribute:"signal",metadata:{after:["ingest"]},handle:(n,e,t,r)=>{t.log(`[Nexus Signal] Handling signal on <${n.tagName}> with value:`,e.substring(0,50)+"...");let o=e;if(!o&&n.tagName==="SCRIPT"&&(o=n.textContent||""),!o.trim())return;let i=r||t.parseAttribute("data-signal",t,n),a=i?.argument==="global"||i?.modifiers.includes("global")||n.hasAttribute("data-init")||n.hasAttribute("data-ux-init"),{ghostKeys:s,typeHints:l}=kt(o),c={};s.forEach(b=>c[b]=void 0);let u=n.id||`el_${Math.random().toString(36).slice(2)}`,d=a?t.ref(t.globalSignals()):at(c,u,l),p=Ht(d,(b,T)=>{if(a){let E=t.globalSignals();E[b]=T}},()=>t.triggerRef(d)),f,m=null,g=!1,[y,v]=t.elementBoundEffect(n,()=>{if(!g){g=!0;try{let b;try{b=t.evaluate(n,o)}catch(T){t.reportError(T instanceof Error?T:new Error(String(T)),n,o);return}if(typeof b=="object"&&b!==null)if(m){let T=b,E=!1;if(a){let C=t.globalSignals();Object.keys(T).forEach(h=>{let A=T[h],L=m[h],k=A!==L;k&&typeof A=="object"&&A!==null&&(k=!mt(A,L)),k&&(C[h]=A,m[h]=We(A),E=!0)})}else{let C=d.value;Object.keys(T).forEach(h=>{let A=T[h],L=m[h],k=A!==L;k&&typeof A=="object"&&A!==null&&(k=!mt(A,L)),k&&(C[h]=A,m[h]=We(A),E=!0)})}E&&t.triggerRef(d)}else{let T={};if(a){let E=t.globalSignals();Object.keys(b).forEach(C=>{C in E||(E[C]=b[C]),T[C]=We(E[C])}),m=T,d.value=E}else m=We(b),d.value=b}}finally{g=!1}}});return a||(f=ne(n,p)),()=>{f&&f(),v()}}},Va=Ya;var Gn={};_(Gn,{default:()=>Ga});O();var Xa={name:"style",attribute:"style",handle:(n,e,t,r)=>{let o=r||t.parseAttribute("data-style",t,n);if(!(!o||o.argument))try{let[i,a]=t.elementBoundEffect(n,()=>{let s=t.evaluate(n,e);t.reconcileStyle(n,s)});return a}catch(i){P("style",`Failed to reconcile style: ${i instanceof Error?i.message:String(i)}`,n,e)}}},Ga=Xa;var Qn={};_(Qn,{default:()=>Ja});O();var Qa={name:"switcher",attribute:"switcher",metadata:{after:["for","signal"]},handle:(n,e,t,r)=>{if(r?.argument)return;t.log(`Nexus Switcher [${e}]: Initializing on`,n);let o=n.getAttribute("data-switcher-options");if(!o){P("switcher","Missing data-switcher-options attribute",n,e);return}let i={$switch:()=>{let a=t.evaluate(n,o),s=t.evaluate(n,e);if(!Array.isArray(a)){t.warn(`Nexus Switcher [${e}]: Options "${o}" is not an array`,a);return}let c=(a.findIndex(p=>(p.id||p)===s)+1)%a.length,u=a[c],d=u.id||u;t.log(`Nexus Switcher [${e}]: Cycling ${s} -> ${d}`);try{t.evaluate(n,`${e} = ${JSON.stringify(d)}`)}catch(p){console.error("Nexus Switcher: Failed to update signal",e,p)}},$isActive:a=>t.evaluate(n,e)===a,get $activeItem(){let a=t.evaluate(n,o),s=t.evaluate(n,e);return Array.isArray(a)&&a.find(l=>(l.id||l)===s)||null}};t.log(`Nexus Switcher [${e}]: Injecting helpers on`,n),ne(n,i);try{let[a,s]=t.elementBoundEffect(n,()=>{let l=t.evaluate(n,e),c=t.evaluate(n,o);t.log(`Nexus Switcher [${e}]: Active state changed to:`,l,"options:",c),Array.from(n.children).forEach(u=>{if(u instanceof HTMLElement){u.classList.add("switcher-transitioning");let d=()=>{u.classList.remove("switcher-transitioning"),u.removeEventListener("transitionend",d),clearTimeout(p)};u.addEventListener("transitionend",d,{once:!0});let p=setTimeout(d,1e3)}})});return s}catch(a){P("switcher",`Failed to initialize switcher: ${a instanceof Error?a.message:String(a)}`,n,e)}}},Ja=Qa;var Jn={};_(Jn,{default:()=>Za,teleportAttribute:()=>Go});W();var Go={name:"teleport",attribute:"teleport",handle:(n,e,t,r)=>{let o=r?.modifiers??[];if(r?.argument==="mode"&&!o.length)return;if(o.includes("drop")){let l=n.getAttribute("data-teleport-mode")||"move",c=d=>{d.preventDefault(),d.dataTransfer&&(d.dataTransfer.dropEffect=l==="clone"?"copy":"move")},u=d=>{try{d.preventDefault(),d.stopPropagation();let p=globalThis._dragState;if(!p){console.warn("[teleport] No drag state \u2014 was the source dragged?");return}let{fromIndex:f,sourceContainer:m,element:g,sourceList:y,reorderEngine:v}=p;if(!Array.isArray(y)){console.warn("[teleport] sourceList is not an array - check expression evaluation");return}let b=t.evaluate(n,e);if(!Array.isArray(b)){console.warn("[teleport] targetList expression did not evaluate to an array");return}let T=y===b,E;if(v&&T){if(E=v.getFinalToIndex(),E===-1){console.warn("[teleport] Reorder engine active but no final index available");return}}else{let h=d.target.closest("[data-drag]"),A=[];for(let L=0;L<n.children.length;L++){let k=n.children[L];k.hasAttribute("data-drag")&&k.getAttribute("draggable")==="true"&&getComputedStyle(k).display!=="none"&&!k[G]&&k.closest("[data-teleport\\:drop]")===n&&A.push(k)}if(h&&A.includes(h)){E=A.indexOf(h);let L=h.getBoundingClientRect();d.clientY-L.top>L.height/2&&(E+=1)}else E=A.length}let C=()=>{try{if(v&&T)return;if(l==="clone"){let h=y[f];h!==void 0&&b.splice(E,0,{...h})}else if(l==="swap"){if(y!==b||f===E)return;let h=y[f];y[f]=b[E],b[E]=h}else if(y===b){if(f===E)return;let[h]=y.splice(f,1),A=f<E?E-1:E;y.splice(A,0,h)}else{let[h]=y.splice(f,1);h!==void 0&&b.splice(E,0,h)}}catch(h){t.reportError(h instanceof Error?h:new Error(String(h)),n,"teleport-mutate")}};"startViewTransition"in document&&C?document.startViewTransition(C):C(),t.globalSignals()["drag:drop"]={sourceList:y,targetList:b,fromIndex:f,toIndex:E,mode:l,item:b[E]}}catch(p){t.reportError(p instanceof Error?p:new Error(String(p)),n,"teleport-drop")}};return n.addEventListener("dragover",c),n.addEventListener("drop",u),()=>{n.removeEventListener("dragover",c),n.removeEventListener("drop",u)}}n.tagName.toLowerCase()!=="template"&&t.warn?.("[Teleport] DOM teleportation should be used on <template> tags.",n);let i=e.trim();if(!i)return;let a;return n.tagName.toLowerCase()==="template"?a=n.content.cloneNode(!0).firstElementChild:(a=n.cloneNode(!0),a.removeAttribute("data-teleport")),n[X]&&(a[X]=n[X]),(()=>{let l=document.querySelector(i);if(!l){t.warn?.(`[Teleport] Target "${i}" not found.`);return}o.includes("prepend")?l.insertBefore(a,l.firstChild):l.appendChild(a)})(),t.processElement?.(a),()=>{a.parentNode&&a.parentNode.removeChild(a)}}},Za=Go;var Zn={};_(Zn,{default:()=>nl});O();var el=["light","dark","cupcake","bumblebee","emerald","corporate","synthwave","retro","cyberpunk","valentine","halloween","garden","forest","aqua","lofi","pastel","fantasy","wireframe","black","luxury","dracula","cmyk","autumn","business","acid","lemonade","night","coffee","winter","dim","nord","sunset"],tl={name:"theme",attribute:"theme",metadata:{before:["signal","switcher","class","style","attr","on","text","html"]},handle:(n,e,t)=>{let r={};if(e&&e.trim())try{r=t.evaluate(n,e)}catch{if(e.startsWith("{"))try{r=new Function("return ("+e+")")()}catch{}else r={default:e.trim()}}(!r||typeof r!="object")&&(r={default:"auto"});let o=2;r.default==="light"||r.default===0?o=0:(r.default==="dark"||r.default===1)&&(o=1);let i=r.light?.theme||"light",a=r.dark?.theme||"dark";if(typeof localStorage<"u")try{let b=localStorage.getItem("ux_theme_state");b!==null&&(o=Number(b));let T=localStorage.getItem("ux_theme_light");T&&(i=T);let E=localStorage.getItem("ux_theme_dark");E&&(a=E)}catch{}let s=t.ref(o),l=t.ref(i),c=t.ref(a),u=t.ref(!1),d=null,p=null;typeof window<"u"&&window.matchMedia&&(d=window.matchMedia("(prefers-color-scheme: dark)"),u.value=d.matches,p=b=>{u.value=b.matches},d.addEventListener("change",p));let f=t.computed(()=>{let b=s.value;return b===2?u.value?c.value:l.value:b===1?c.value:l.value}),m=t.computed(()=>{let b=s.value;return b===0?"light":b===1?"dark":"system"}),g=t.computed(()=>{let b=s.value;return b===0?"material-symbols-light:light-mode-outline":b===1?"material-symbols-light:dark-mode-outline":"material-symbols-light:light-mode-auto-outline"}),y=t.computed(()=>[{type:"light",title:"Light",selected:l.value},{type:"dark",title:"Dark",selected:c.value},{type:"system",title:"System",selected:"system"}]);ne(n,{$theme:{get state(){return s.value},set state(b){s.value=b},get current(){return f.value},get mode(){return m.value},get isSystem(){return s.value===2},get themes(){return el},get types(){return y.value}},get $activeTheme(){return f.value},get $activeMode(){return m.value},get $themeIcon(){return g.value},$switchTheme:()=>{if(s.value=(s.value+1)%3,typeof localStorage<"u")try{localStorage.setItem("ux_theme_state",String(s.value))}catch{}},$setTheme:b=>{if(s.value===1||s.value===2&&u.value){if(c.value=b,typeof localStorage<"u")try{localStorage.setItem("ux_theme_dark",b)}catch{}}else if(l.value=b,typeof localStorage<"u")try{localStorage.setItem("ux_theme_light",b)}catch{}}});try{let[b,T]=t.elementBoundEffect(n,()=>{let E=f.value,C=m.value==="dark"||m.value==="system"&&u.value;E&&n.setAttribute("data-theme",E),C?(n.classList.add("dark"),n.classList.remove("light")):(n.classList.add("light"),n.classList.remove("dark"))});return()=>{d&&p&&d.removeEventListener("change",p),T()}}catch(b){P("theme",`Failed to bind theme: ${b instanceof Error?b.message:String(b)}`,n,e)}}},nl=tl;var er={};_(er,{default:()=>ol});O();var rl={name:"var",attribute:"var",handle:(n,e,t)=>{if(Ro(n))return()=>{};try{let r=t.evaluate(n,e);if(typeof r=="object"&&r!==null){let o=t.reactive(r);return ne(n,o)}else throw new Error("data-var must evaluate to an object")}catch(r){P("var",`Failed to init var: ${r instanceof Error?r.message:String(r)}`,n,e)}}},ol=rl;var tr={};_(tr,{default:()=>Qo});function Qo(n){return{$bgFetch:{fetch(e,t,r){let o=n.reactive({data:null,status:"pending",error:null});return typeof navigator>"u"||!("serviceWorker"in navigator)?(o.error="Service Worker not available",o.status="error",o):((async()=>{try{let i=await navigator.serviceWorker.ready;if(!("backgroundFetch"in i)){o.error="Background Fetch API not supported",o.status="error";return}let a=await i.backgroundFetch.fetch(e,t,r||{});o.data=a,o.status="done",a.addEventListener("progress",()=>{o.data={...a,downloaded:a.downloaded,downloadTotal:a.downloadTotal}})}catch(i){o.error=i instanceof Error?i.message:String(i),o.status="error"}})(),o)},get(e){let t=n.reactive({data:null,status:"loading",error:null});return(async()=>{try{let r=await navigator.serviceWorker.ready;if(!("backgroundFetch"in r)){t.error="Background Fetch API not supported",t.status="error";return}let o=await r.backgroundFetch.get(e);t.data=o,t.status="ready"}catch(r){t.error=r instanceof Error?r.message:String(r),t.status="error"}})(),t},abort(e){let t=n.reactive({status:"pending",error:null});return(async()=>{try{let r=await navigator.serviceWorker.ready;if(!("backgroundFetch"in r)){t.error="Background Fetch API not supported",t.status="error";return}let o=await r.backgroundFetch.get(e);o?(await o.abort(),t.status="done"):(t.error=`No background fetch with id '${e}'`,t.status="error")}catch(r){t.error=r instanceof Error?r.message:String(r),t.status="error"}})(),t}}}}var nr={};_(nr,{default:()=>Jo});function Jo(n){return{$bgSync:{register(e){let t=n.reactive({status:"pending",error:null});return typeof navigator>"u"||!("serviceWorker"in navigator)?(t.error="Service Worker not available",t.status="error",t):((async()=>{try{let r=await navigator.serviceWorker.ready;if(!("sync"in r)){t.error="Background Sync API not supported",t.status="error";return}await r.sync.register(e),t.status="done"}catch(r){t.error=r instanceof Error?r.message:String(r),t.status="error"}})(),t)},get tags(){let e=n.reactive({data:[],status:"loading",error:null});return typeof navigator>"u"||!("serviceWorker"in navigator)?(e.error="Service Worker not available",e.status="error",e):((async()=>{try{let t=await navigator.serviceWorker.ready;if(!("sync"in t)){e.error="Background Sync API not supported",e.status="error";return}let r=await t.sync.getTags();e.data=r,e.status="ready"}catch(t){e.error=t instanceof Error?t.message:String(t),e.status="error"}})(),e)}}}}var rr={};_(rr,{default:()=>il,flowModule:()=>Zo});W();var Zo={name:"flow",key:"$flow",sprites:n=>{let e=(f,m)=>f>=0?.5*f:m*25*Math.sqrt(-f),t=(f,m,g,y,v,b)=>{switch(f){case"left":return[m-e(m-y,b),g];case"right":return[m+e(y-m,b),g];case"top":return[m,g-e(g-v,b)];case"bottom":return[m,g+e(v-g,b)]}},r=(f,m,g,y,v,b,T=.25)=>{let[E,C]=t(g,f,m,y,v,T),[h,A]=t(b,y,v,f,m,T);return`M${f},${m} C${E},${C} ${h},${A} ${y},${v}`},o=(f,m,g,y)=>`M ${f} ${m} L ${g} ${y}`,i=(f,m,g,y)=>{let v=f+(g-f)/2;return`M ${f} ${m} L ${v} ${m} L ${v} ${y} L ${g} ${y}`},a=f=>{let g=f?.closest("[data-flow]")?.__nexusFlowViewport;return g?{x:g.x||0,y:g.y||0,zoom:g.zoom||1}:{x:0,y:0,zoom:1}},s=f=>f?.closest("[data-flow]")||null,l=(f,m,g,y)=>{let v=g.getBoundingClientRect();return{x:(f-v.left-y.x)/y.zoom,y:(m-v.top-y.y)/y.zoom}},c=(f,m,g)=>{let y=f.getBoundingClientRect();return l(y.left+y.width/2,y.top+y.height/2,m,g)},u=(f,m)=>{let g=(f.getAttribute("data-flow-side")||"").toLowerCase();if(g==="left"||g==="right"||g==="top"||g==="bottom")return g;let y=f.getBoundingClientRect(),v=m.getBoundingClientRect(),b=y.left+y.width/2,T=y.top+y.height/2,E=(b-v.left)/(v.width||1),C=(T-v.top)/(v.height||1),h=E,A=1-E,L=C,k=1-C,N=Math.min(h,A,L,k);return N===h?"left":N===A?"right":N===L?"top":"bottom"},d=(f,m)=>{let g=y=>Array.from(f.querySelectorAll(y)).find(v=>!v[G]&&!v.hasAttribute("data-for"))||null;return g(`[data-flow-handle="${m}"]`)||g("[data-flow-handle]")},p={screenToFlow:(f,m,g,y)=>l(m,g,f,y),getBounds:f=>{if(!f||f.length===0)return{x:0,y:0,w:0,h:0};let m=1/0,g=1/0,y=-1/0,v=-1/0;return f.forEach(b=>{let T=b.position||b,E=T.x||0,C=T.y||0,h=b.w||b.width||160,A=b.h||b.height||90;m=Math.min(m,E),g=Math.min(g,C),y=Math.max(y,E+h),v=Math.max(v,C+A)}),{x:m,y:g,w:y-m,h:v-g}},fitView:(f,m,g,y=40)=>{let v=p.getBounds(g);if(v.w<=0||v.h<=0)return;let b=f.getBoundingClientRect(),T=Math.min((b.width-y*2)/v.w,(b.height-y*2)/v.h,1.5);m.x=(b.width-v.w*T)/2-v.x*T,m.y=(b.height-v.h*T)/2-v.y*T,m.zoom=T},edge:(f,m,g={})=>{let y=document.getElementById(f),v=document.getElementById(m);if(!y||!v)return"";let b=g.container||s(y)||s(v);if(!b)return"";let T=a(y),E=d(y,"source"),C=d(v,"target"),h=E||y,A=C||v,L=c(h,b,T),k=c(A,b,T),N=g.type||"bezier";if(N==="straight")return o(L.x,L.y,k.x,k.y);if(N==="step")return i(L.x,L.y,k.x,k.y);let $=E?u(E,y):"right",U=C?u(C,v):"left";return r(L.x,L.y,$,k.x,k.y,U,g.curvature??.25)},connect:(f,m,g={})=>{let y=B({d:""}),v=()=>{if(!f||!m||typeof f.getBoundingClientRect!="function")return;let T=s(f)||s(m);if(!T)return;let E=a(f),C=c(f,T,E),h=c(m,T,E),A=g.type||"bezier";if(A==="straight"){y.d=o(C.x,C.y,h.x,h.y);return}if(A==="step"){y.d=i(C.x,C.y,h.x,h.y);return}y.d=r(C.x,C.y,u(f,f.parentElement||f),h.x,h.y,u(m,m.parentElement||m),g.curvature??.25)},b=()=>{v(),requestAnimationFrame(b)};return b(),y}};return n.$flow=p,p}},il=Zo;var or={};_(or,{configureGqlClient:()=>sl,default:()=>ll,gqlSprite:()=>ti});var ei="/graphql";function sl(n){n.endpoint&&(ei=n.endpoint)}async function al(n,e,t,r){let o=await fetch(n,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({query:e,variables:t||{},operationName:r})});if(!o.ok)throw new Error(`GraphQL request failed: ${o.status} ${o.statusText}`);let i=await o.json();return i.errors,i}function ti(n){let e=n.config?.gqlEndpoint||ei;return async(t,r,o)=>{let i=o?.endpoint||e,a=o?.operationName,s=n.reactive({data:null,errors:null,loading:!0,status:"loading"});try{let l=[],c=t.match(/\{[\s\S]*?\}\s*$/m);if(c){let p=c[0].match(/(?:query|mutation)\s*(?:\([^)]*\))?\s*\{([^{}]+)\{/);p&&p[1].split(",").map(m=>m.trim().split(" ")[0]).forEach(m=>{/_id|_count|_amount|_price|_qty|num|age|year$/i.test(m)&&(l.push(m),Y.allocateNumeric(m))})}let u=await al(i,t,r,a);if(u.data&&typeof u.data=="object"&&l.length>0){let d=u.data;Object.entries(d).forEach(([p,f])=>{f&&typeof f=="object"&&!Array.isArray(f)&&Object.entries(f).forEach(([g,y])=>{typeof y=="number"&&l.includes(g)&&Y.setNumeric(`${g}_0`,y)})})}s.data=u.data,s.errors=u.errors||null,s.status=u.errors?"error":"success"}catch(l){s.errors=[{message:l instanceof Error?l.message:String(l)}],s.status="error"}finally{s.loading=!1}return s}}function ll(n){return{$gql:ti(n)}}var ir={};_(ir,{mcpModule:()=>cl});var cl={name:"mcp",key:"$mcp",sprites:n=>{let e=n.mcp;class t{buffer="";lastFlush=0;signal;constructor(o){this.signal=o}append(o){this.buffer+=o,performance.now()-this.lastFlush>16&&this.flush()}flush(){this.signal.value=this.buffer,this.lastFlush=performance.now()}}return{ask:r=>{if(!e)return"Error: No MCP Server configured.";let o=B({value:""}),i=new t(o);return e.sendRequest("sampling/createMessage",{messages:[{role:"user",content:{type:"text",text:r}}]}).then(a=>{a?.content?.text&&(i.append(a.content.text),i.flush())}),e.onNotification("notifications/sampling/delta",a=>{a.delta?.text&&i.append(a.delta.text)}),o},read:async r=>{if(!e)throw new Error("No MCP Server configured.");return(await e.sendRequest("resources/read",{uri:r}))?.contents?.[0]?.text||null},call:async(r,o={})=>{if(!e)throw new Error("No MCP Server configured.");return(await e.sendRequest("tools/call",{name:r,arguments:o}))?.content?.[0]||null}}}};var sr={};_(sr,{default:()=>ni});function ni(n){return{$periodicSync:{register(e,t){let r=n.reactive({status:"pending",error:null});return typeof navigator>"u"||!("serviceWorker"in navigator)?(r.error="Service Worker not available",r.status="error",r):((async()=>{try{let o=await navigator.serviceWorker.ready;if(!("periodicSync"in o)){r.error="Periodic Background Sync API not supported",r.status="error";return}await o.periodicSync.register(e,t||{}),r.status="done"}catch(o){r.error=o instanceof Error?o.message:String(o),r.status="error"}})(),r)},unregister(e){let t=n.reactive({status:"pending",error:null});return(async()=>{try{let r=await navigator.serviceWorker.ready;if(!("periodicSync"in r)){t.error="Periodic Background Sync API not supported",t.status="error";return}await r.periodicSync.unregister(e),t.status="done"}catch(r){t.error=r instanceof Error?r.message:String(r),t.status="error"}})(),t},get tags(){let e=n.reactive({data:[],status:"loading",error:null});return(async()=>{try{let t=await navigator.serviceWorker.ready;if(!("periodicSync"in t)){e.error="Periodic Background Sync API not supported",e.status="error";return}let r=await t.periodicSync.getTags();e.data=r,e.status="ready"}catch(t){e.error=t instanceof Error?t.message:String(t),e.status="error"}})(),e}}}}cr();var ur={};_(ur,{default:()=>oi});function oi(n){let e=n.reactive({subscription:null,status:"idle",error:null});return typeof navigator<"u"&&"serviceWorker"in navigator&&navigator.serviceWorker.ready.then(t=>{t.pushManager.getSubscription().then(r=>{r&&(e.subscription=r,e.status="active")}).catch(()=>{})}).catch(()=>{}),{$push:{get subscription(){return e.subscription},get status(){return e.status},subscribe(t){let r=n.reactive({data:null,status:"pending",error:null});return typeof navigator>"u"||!("serviceWorker"in navigator)?(r.error="Service Worker not available",r.status="error",r):(e.status="subscribing",(async()=>{try{let o=await navigator.serviceWorker.ready,i;if(typeof t=="string"){let s=atob(t.replace(/-/g,"+").replace(/_/g,"/"));i=new Uint8Array(s.length);for(let l=0;l<s.length;l++)i[l]=s.charCodeAt(l)}else i=t;let a=await o.pushManager.subscribe({userVisibleOnly:!0,applicationServerKey:i});e.subscription=a,e.status="active",r.data=a,r.status="done"}catch(o){let i=o instanceof Error?o.message:String(o);r.error=i,r.status="error",e.error=i,e.status="error"}})(),r)},unsubscribe(){let t=n.reactive({status:"pending",error:null});return e.subscription?((async()=>{try{await e.subscription.unsubscribe(),e.subscription=null,e.status="idle",t.status="done"}catch(r){t.error=r instanceof Error?r.message:String(r),t.status="error"}})(),t):(t.error="No active subscription",t.status="error",t)}}}}var gr={};_(gr,{configureSqlClient:()=>hl,default:()=>bl,sqlSprite:()=>si});var dr=new Map,Se=new Map,fr=new Map,ml=0,Bt="test",Ft="test",mr=null;function pr(n){return dr.has(n)||dr.set(n,{ws:null,connected:!1,ready:!1}),dr.get(n)}function ii(n,e,t){return new Promise((r,o)=>{let i=pr(n);if(i.ready){r(!0);return}i.ws&&i.ws.close(),i.ws=new WebSocket(n),i.connected=!1,i.ready=!1,i.ws.onopen=()=>{i.connected=!0,e||Bt||t||Ft?Wt(i.ws,"use",{namespace:e||Bt,database:t||Ft}).then(()=>{i.ready=!0,r(!0)}).catch(o):(i.ready=!0,r(!0))},i.ws.onmessage=a=>{try{let s=JSON.parse(a.data);if(s.id&&Se.has(s.id)){let{resolve:l,reject:c}=Se.get(s.id);Se.delete(s.id),s.error?c(new Error(s.error.message)):l(s.result)}if(s.method==="notify"&&s.params){let[l]=s.params;l.id&&fr.has(l.id)&&fr.get(l.id)(l.result)}}catch(s){console.error("[Nexus SQL] Failed to parse WebSocket message:",s)}},i.ws.onerror=()=>{i.connected=!1,i.ready=!1,o(new Error("WebSocket connection failed"))},i.ws.onclose=()=>{i.connected=!1,i.ready=!1,Se.forEach(({reject:a})=>a(new Error("Connection closed"))),Se.clear()}})}function Wt(n,e,t){return new Promise((r,o)=>{let i=String(++ml);Se.set(i,{resolve:r,reject:o});let a=JSON.stringify({id:i,method:e,params:t||[]});n.send(a),setTimeout(()=>{Se.has(i)&&(Se.delete(i),o(new Error(`Request ${e} timed out`)))},3e4)})}async function pl(n,e,t,r,o){await ii(n,r,o);let i=pr(n);if(mr&&i.ws)try{await Wt(i.ws,"authenticate",{token:mr})}catch(a){console.warn("[Nexus SQL] Authentication failed:",a)}return Wt(i.ws,"query",{sql:e,vars:t||{}})}async function gl(n,e,t,r,o){await ii(n,r,o);let i=pr(n),s=(await Wt(i.ws,"query",{sql:e,vars:{}}))[0]?.id;return s&&fr.set(s,t),s}function hl(n){n.namespace&&(Bt=n.namespace),n.database&&(Ft=n.database),n.token&&(mr=n.token)}function si(n){let e=n.config?.sqlUrl||"ws://localhost:8000/rpc",t=n.config?.sqlNs||Bt,r=n.config?.sqlDb||Ft;return async(o,i)=>{let a=o.trim().toUpperCase().startsWith("LIVE"),s=n.reactive({data:[],status:a?"connecting":"loading",error:null,liveId:null});try{if(a){let l=[],c=o.match(/SELECT\s+(.+?)\s+FROM/i);c&&c[1].split(",").map(p=>p.trim()).forEach(p=>{if(p!=="*"&&!p.includes("(")){let f=p.split(" AS ").pop()?.trim()||p.trim();/_id|_count|_at|_time|_amount|_price|_qty$/.test(f.toLowerCase())&&(l.push(f),Y.allocateNumeric(f))}});let u=await gl(e,o,d=>{let p=Array.isArray(d)?d:[];l.length>0&&p.forEach((f,m)=>{f&&typeof f=="object"&&l.forEach(g=>{typeof f[g]=="number"&&Y.setNumeric(`${g}_${m}`,f[g])})}),s.data=p,s.status="live"},t,r);s.liveId=u,s.status="live"}else{let l=await pl(e,o,i,t,r),c=l[0]?.result||l;if(Array.isArray(c)&&c.length>10){let u=c[0];if(u&&typeof u=="object"){let d=Object.keys(u);d.filter(f=>typeof u[f]=="number").length/d.length>=.5&&(d.forEach(f=>{typeof u[f]=="number"&&Y.allocateNumeric(f)}),c.forEach((f,m)=>{f&&typeof f=="object"&&d.forEach(g=>{typeof f[g]=="number"&&Y.setNumeric(`${g}_${m}`,f[g])})}))}}s.data=c,s.status="ready"}}catch(l){s.error=l instanceof Error?l.message:String(l),s.status="error"}return s}}function bl(n){return{$sql:si(n)}}var hr={};_(hr,{svgModule:()=>yl});var yl={name:"svg",key:"$svg",sprites:n=>{let e={straight:(t,r,o,i)=>`M ${t} ${r} L ${o} ${i}`,bezier:(t,r,o,i)=>{let a=Math.abs(t-o)/2;return`M ${t} ${r} C ${t+a} ${r}, ${o-a} ${i}, ${o} ${i}`},step:(t,r,o,i)=>{let a=t+(o-t)/2;return`M ${t} ${r} L ${a} ${r} L ${a} ${i} L ${o} ${i}`}};return{connect:(t,r,o={})=>{let i=o.type||"bezier",a=B({d:""}),s=()=>{if(!(!t||!r))try{let c=typeof t.getBoundingClientRect=="function"?t.getBoundingClientRect():null,u=typeof r.getBoundingClientRect=="function"?r.getBoundingClientRect():null;if(!c||!u)return;let d=c.left+c.width/2,p=c.top+c.height/2,f=u.left+u.width/2,m=u.top+u.height/2,g=e[i]||e.bezier;a.d=g(d,p,f,m)}catch{}},l=()=>{s(),requestAnimationFrame(l)};return l(),a},path:(t,r=!1)=>{if(t.length<2)return"";let o=`M ${t[0].x} ${t[0].y}`;for(let i=1;i<t.length;i++)o+=` L ${t[i].x} ${t[i].y}`;return r&&(o+=" Z"),o},animate:(t,r,o)=>t.animate(r,o),pulse:(t,r={})=>t.animate([{transform:"scale(1)"},{transform:`scale(${r.scale||1.1})`},{transform:"scale(1)"}],{duration:r.duration||1e3,iterations:1/0,easing:"ease-in-out"}),morph:(t,r,o={})=>{let i=t.getAttribute("d")||"";return t.animate([{d:`path("${i}")`},{d:`path("${r}")`}],{duration:o.duration||500,easing:o.easing||"ease-in-out",fill:"forwards"})}}}};var br={};_(br,{default:()=>ai});function ai(n){let e=n.reactive({status:"idle",controller:null,registration:null,error:null,updateAvailable:!1});if(typeof navigator<"u"&&"serviceWorker"in navigator){let t=navigator.serviceWorker;t.controller&&(e.status="active",e.controller=t.controller),t.addEventListener("controllerchange",()=>{e.controller=t.controller,e.status=t.controller?"active":"idle"}),t.addEventListener("message",r=>{n.evaluate(document.body,`$dispatch('sw:message', ${JSON.stringify(r.data)})`,{})})}return{$sw:{get status(){return e.status},get controller(){return e.controller},get updateAvailable(){return e.updateAvailable},register(t,r){let o=n.reactive({status:"pending",error:null});return typeof navigator>"u"||!("serviceWorker"in navigator)?(o.error="Service Worker API not available",o.status="error",o):(e.status="registering",(async()=>{try{let i=await navigator.serviceWorker.register(t,r);e.registration=i,i.waiting&&(e.updateAvailable=!0,e.status="waiting"),i.addEventListener("updatefound",()=>{let a=i.installing;a&&a.addEventListener("statechange",()=>{a.state==="installed"&&(navigator.serviceWorker.controller?(e.updateAvailable=!0,e.status="waiting"):e.status="active")})}),o.status="done"}catch(i){o.error=i instanceof Error?i.message:String(i),o.status="error",e.error=o.error,e.status="error"}})(),o)},update(){let t=n.reactive({status:"pending",error:null});return e.registration?((async()=>{try{await e.registration.update(),t.status="done"}catch(r){t.error=r instanceof Error?r.message:String(r),t.status="error"}})(),t):(t.error="No service worker registered",t.status="error",t)},unregister(){let t=n.reactive({status:"pending",error:null});return e.registration?((async()=>{try{await e.registration.unregister()&&(e.status="idle",e.controller=null,e.registration=null,e.updateAvailable=!1),t.status="done"}catch(r){t.error=r instanceof Error?r.message:String(r),t.status="error"}})(),t):(t.error="No service worker registered",t.status="error",t)},postMessage(t){e.controller&&e.controller.postMessage(t)},skipWaiting(){e.registration?.waiting&&e.registration.waiting.postMessage({type:"SKIP_WAITING"})}}}}var Re=B({user:null,isAuthenticated:!1,roles:[],token:null,login:n=>{Re.user=n,Re.isAuthenticated=!0,Re.roles=n.roles||[]},logout:()=>{Re.user=null,Re.isAuthenticated=!1,Re.roles=[],Re.token=null}});var yr=B({isPresent:!1,platform:"web",bridge:null});if(typeof window<"u"&&window.nexusNative){let n=window.nexusNative;yr.isPresent=!0,yr.platform=n.platform||"unknown",yr.bridge=n}var Tl=()=>{if(typeof navigator>"u")return"unknown";let n=navigator.userAgent;return/Mac/.test(n)?"macos":/Win/.test(n)?"windows":/Linux/.test(n)?"linux":/Android/.test(n)?"android":/iPhone|iPad|iPod/.test(n)?"ios":"unknown"},Sl=()=>typeof window>"u"?"light":globalThis.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light",Ju=B({platform:Tl(),theme:Sl(),isMobile:/Android|iPhone|iPad|iPod/i.test(navigator.userAgent),isDesktop:!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)});var ed=B({width:typeof window<"u"?globalThis.innerWidth:1024,height:typeof window<"u"?globalThis.innerHeight:768,scrollX:typeof window<"u"?globalThis.scrollX:0,scrollY:typeof window<"u"?globalThis.scrollY:0,orientation:typeof window<"u"&&globalThis.screen.orientation?globalThis.screen.orientation.type:"landscape-primary",devicePixelRatio:typeof window<"u"?globalThis.devicePixelRatio:1,isPortrait:typeof window<"u"?globalThis.innerHeight>globalThis.innerWidth:!1,isLandscape:typeof window<"u"?globalThis.innerWidth>=globalThis.innerHeight:!0});var Er={};_(Er,{debounceModifier:()=>li,default:()=>Cl});W();function vr(n,e,t){if(!t)return Ee;if(t.startsWith("#")){let r=n.evaluate(e,t),o=typeof r=="number"?r:parseInt(String(r),10);return Number.isNaN(o)?Ee:o}return parseInt(t,10)||Ee}var li={name:"debounce",handle:(n,e,t,r)=>{let o=vr(r,e,t),i;return typeof n=="function"?a=>{let s=vr(r,e,t);clearTimeout(i),i=setTimeout(()=>n(a),s)}:(...a)=>new Promise(s=>{let l=vr(r,e,t);clearTimeout(i),i=setTimeout(()=>{s(typeof n=="function"?n(...a):n)},l)})}},Cl=li;var wr={};_(wr,{default:()=>_l,delayModifier:()=>ui});W();function ci(n,e,t){if(!t)return Ee;if(t.startsWith("#")){let r=n.evaluate(e,t),o=typeof r=="number"?r:parseInt(String(r),10);return Number.isNaN(o)?Ee:o}return parseInt(t,10)||Ee}var ui={name:"delay",handle:(n,e,t,r)=>typeof n=="function"?o=>{setTimeout(()=>n(o),ci(r,e,t))}:(...o)=>new Promise(i=>{setTimeout(()=>{i(typeof n=="function"?n(...o):n)},ci(r,e,t))})},_l=ui;var xr={};_(xr,{default:()=>Ll,documentModifier:()=>di});var di={name:"document",handle:(n,e,t,r)=>n},Ll=di;var Tr={};_(Tr,{default:()=>Rl,dragModifier:()=>fi});var fi={name:"drag",handle:(n,e,t,r)=>{},interceptPipeline:(n,e,t,r)=>{let o=0,i=0,a=!1;return(s,l,c)=>n(s,l,{...c,$drag:{start:u=>{e.setPointerCapture(u.pointerId),o=u.clientX,i=u.clientY,a=!0},move:u=>a?{dx:u.clientX-o,dy:u.clientY-i,x:u.clientX,y:u.clientY}:null,stop:u=>{a=!1,e.releasePointerCapture(u.pointerId)}}})}},Rl=fi;var Sr={};_(Sr,{default:()=>kl,holdModifier:()=>mi});var mi={name:"hold",handle:(n,e,t,r)=>{let o=parseInt(t,10)||500;return typeof n=="function"?i=>{let a=setTimeout(()=>{s(),n(i)},o),s=()=>{a&&(clearTimeout(a),a=null),window.removeEventListener("pointerup",s),window.removeEventListener("pointercancel",s),window.removeEventListener("pointerleave",s),window.removeEventListener("touchend",s),window.removeEventListener("touchcancel",s)};window.addEventListener("pointerup",s,{once:!0}),window.addEventListener("pointercancel",s,{once:!0}),window.addEventListener("pointerleave",s,{once:!0}),window.addEventListener("touchend",s,{once:!0}),window.addEventListener("touchcancel",s,{once:!0})}:n}},kl=mi;var Mr={};_(Mr,{altModifier:()=>Mi,ctrlModifier:()=>Si,default:()=>Nl,deleteModifier:()=>Ti,downModifier:()=>vi,enterModifier:()=>pi,escModifier:()=>hi,escapeModifier:()=>gi,leftModifier:()=>Ei,metaModifier:()=>Ci,rightModifier:()=>wi,shiftModifier:()=>Ai,spaceModifier:()=>bi,tabModifier:()=>xi,upModifier:()=>yi});var Hl=n=>"key"in n,se=(n,e)=>({name:n,handle:(t,r,o,i)=>typeof t=="function"?a=>{if(Hl(a)&&e(a))return t(a)}:t}),pi=se("enter",n=>n.key==="Enter"),gi=se("escape",n=>n.key==="Escape"),hi=se("esc",n=>n.key==="Escape"),bi=se("space",n=>n.key===" "||n.key==="Spacebar"),yi=se("up",n=>n.key==="ArrowUp"||n.key==="Up"),vi=se("down",n=>n.key==="ArrowDown"||n.key==="Down"),Ei=se("left",n=>n.key==="ArrowLeft"||n.key==="Left"),wi=se("right",n=>n.key==="ArrowRight"||n.key==="Right"),xi=se("tab",n=>n.key==="Tab"),Ti=se("delete",n=>n.key==="Delete"||n.key==="Backspace"),Si=se("ctrl",n=>n.ctrlKey),Mi=se("alt",n=>n.altKey),Ai=se("shift",n=>n.shiftKey),Ci=se("meta",n=>n.metaKey),Nl={enter:pi,escape:gi,esc:hi,space:bi,up:yi,down:vi,left:Ei,right:wi,tab:xi,delete:Ti,ctrl:Si,alt:Mi,shift:Ai,meta:Ci};var Ar={};_(Ar,{default:()=>Il,morphModifier:()=>_i});var _i={name:"morph",handle:(n,e,t,r)=>n,interceptPipeline:(n,e,t,r)=>(o,i,a)=>{let s=n(o,i,a),l=c=>{let u=t?be(e,t):e,d=Array.isArray(u)?u[0]:u;d&&jt(d,c)};return s instanceof Promise?s.then(c=>(typeof c=="string"&&l(c),c)):(typeof s=="string"&&l(s),s)}},Il=_i;var Cr={};_(Cr,{default:()=>Pl,onceModifier:()=>Li});var Li={name:"once",handle:(n,e,t,r)=>{let o=!1;return typeof n=="function"?i=>{if(!o)return o=!0,n(i)}:(...i)=>{if(!o)return o=!0,typeof n=="function"?n(...i):n}}},Pl=Li;var _r={};_(_r,{default:()=>$l,outsideModifier:()=>Ri});var Ri={name:"outside",handle:(n,e,t,r)=>typeof n=="function"?o=>{if(o.target&&!e.contains(o.target))return n(o)}:n},$l=Ri;var Lr={};_(Lr,{default:()=>Dl,preventModifier:()=>ki});var ki={name:"prevent",handle:(n,e,t,r)=>typeof n=="function"?o=>(o.preventDefault(),n(o)):n},Dl=ki;var Rr={};_(Rr,{default:()=>Ol,selfModifier:()=>Hi});var Hi={name:"self",handle:(n,e,t,r)=>typeof n=="function"?o=>{if(o.target===e)return n(o)}:n},Ol=Hi;var kr={};_(kr,{default:()=>Bl,stopModifier:()=>Ni});var Ni={name:"stop",handle:(n,e,t,r)=>typeof n=="function"?o=>(o.stopPropagation(),n(o)):n},Bl=Ni;var Nr={};_(Nr,{default:()=>Fl,throttleModifier:()=>Ii});W();function Hr(n,e,t){if(!t)return Tt;if(t.startsWith("#")){let r=n.evaluate(e,t),o=typeof r=="number"?r:parseInt(String(r),10);return Number.isNaN(o)?Tt:o}return parseInt(t,10)||Tt}var Ii={name:"throttle",handle:(n,e,t,r)=>{let o=Hr(r,e,t),i=0;return typeof n=="function"?a=>{let s=Hr(r,e,t),l=performance.now();if(l-i>s)return i=l,n(a)}:(...a)=>{let s=Hr(r,e,t),l=performance.now();if(l-i>s)return i=l,typeof n=="function"?n(...a):n}}},Fl=Ii;var Ir={};_(Ir,{default:()=>Wl,windowModifier:()=>Pi});var Pi={name:"window",handle:(n,e,t,r)=>n},Wl=Pi;var Pr={};_(Pr,{default:()=>jl,zoomModifier:()=>$i});var $i={name:"zoom",handle:(n,e,t,r)=>{},interceptPipeline:(n,e,t,r)=>(o,i,a)=>n(o,i,{...a,$zoom:s=>s instanceof WheelEvent?{delta:s.deltaY>0?.9:1.1,x:s.clientX,y:s.clientY}:{delta:1,x:0,y:0}})},jl=$i;var $r={};_($r,{default:()=>ql});var Ul={name:"bfcache",event:"pageshow",listen(n,e){if(typeof globalThis.window>"u")return;let t=a=>{a.persisted&&(e.isDevMode&&e.debug("[bfcache] Page restored from bfcache, dispatching bfcache:restore"),n.dispatchEvent(new CustomEvent("bfcache:restore",{bubbles:!0,detail:{timestamp:Date.now(),persisted:!0}})))},r=a=>{e.isDevMode&&e.debug(`[bfcache] pagehide - persisted: ${a.persisted}`),n.dispatchEvent(new CustomEvent("bfcache:freeze",{bubbles:!0,detail:{timestamp:Date.now(),persisted:a.persisted}}))},o=()=>{e.isDevMode&&e.debug("[bfcache] Page frozen"),n.dispatchEvent(new CustomEvent("bfcache:freeze",{bubbles:!0,detail:{timestamp:Date.now()}}))},i=()=>{e.isDevMode&&e.debug("[bfcache] Page resumed from freeze"),n.dispatchEvent(new CustomEvent("bfcache:restore",{bubbles:!0,detail:{timestamp:Date.now(),fromFreeze:!0}}))};return globalThis.addEventListener("pageshow",t),globalThis.addEventListener("pagehide",r),"onfreeze"in document&&(document.addEventListener("freeze",o),document.addEventListener("resume",i)),()=>{globalThis.removeEventListener("pageshow",t),globalThis.removeEventListener("pagehide",r),"onfreeze"in document&&(document.removeEventListener("freeze",o),document.removeEventListener("resume",i))}}},ql=Ul;var Dr={};_(Dr,{default:()=>Kl});O();var zl={name:"executeScript",event:"execute-script",listen:(n,e)=>{let t=r=>{if(r instanceof CustomEvent&&r.detail&&typeof r.detail.script=="string")try{new Function("element","runtime",r.detail.script)(n,e)}catch(o){H(new Error(`Execute script error: ${o instanceof Error?o.message:String(o)}`),n)}};return n.addEventListener("execute-script",t),()=>n.removeEventListener("execute-script",t)}},Kl=zl;var Or={};_(Or,{default:()=>Vl});O();W();var Yl={name:"history",event:"popstate",listen:(n,e)=>{if("navigation"in globalThis)return()=>{};let t=`${fe}popstate`,r=o=>{try{o instanceof PopStateEvent&&document.dispatchEvent(new CustomEvent(t,{detail:{url:globalThis.location.href,state:o.state}}))}catch(i){H(new Error(`History listener error: ${i instanceof Error?i.message:String(i)}`),document.body)}};return globalThis.addEventListener("popstate",r),()=>globalThis.removeEventListener("popstate",r)}},Vl=Yl;var Br={};_(Br,{default:()=>Gl});O();W();var Xl={name:"linkRewriter",event:"click",listen:(n,e)=>{let t=globalThis.location.href,r=o=>{try{if(o.defaultPrevented||o.button!==0||o.metaKey||o.ctrlKey||o.shiftKey||o.altKey)return;let i=o.target.closest("a");if(!i||i.origin!==globalThis.location.origin||i.target&&i.target!=="_self"||i.hasAttribute("download")||i.hasAttribute("data-ignore"))return;let a=i.getAttribute("href")||"",s=!0;try{s=new URL(a,t).origin===globalThis.location.origin}catch{}if(!s)return;let l=a+i.search+i.hash;i.dispatchEvent(new CustomEvent(`${fe}navigate`,{bubbles:!0,cancelable:!1,detail:{path:l,anchor:i}})),o.preventDefault();let c=i.getAttribute("data-tab-title")||void 0,u=i.getAttribute("data-tab-icon")||void 0,p=e.globalSignals().router;p&&typeof p.navigate=="function"?p.navigate(l,{title:c,icon:u}):(globalThis.history.pushState({scrollY:globalThis.scrollY},"",l),document.dispatchEvent(new CustomEvent(`${fe}popstate`,{detail:{url:globalThis.location.href}})))}catch(i){H(new Error(`LinkRewriter error: ${i instanceof Error?i.message:String(i)}`),n)}};return n.addEventListener("click",r),()=>n.removeEventListener("click",r)}},Gl=Xl;var Ur={};_(Ur,{default:()=>Jl});O();W();var Fr=new WeakSet,Wr=new Map;function jr(n){let e=n;for(;e;){if(e.id&&(e.id.includes("preact-")||e.id.includes("jetski")||e.id.includes("webpack-")||e.id.includes("chrome-extension")))return!0;e=e.parentElement}return!1}var Ql={name:"mutationObserver",observerType:"MutationObserver",observe:(n,e)=>{try{let t=!1,r=new MutationObserver(o=>{if(t)return;t=!0;let i=new Set,a=performance.now();for(let s of o)s.type==="childList"&&s.addedNodes.forEach(l=>{if(l instanceof HTMLElement){if(jr(l))return;i.add(l)}});for(let[s,l]of Wr)a-l>32&&(Wr.delete(s),Fr.delete(s));try{for(let s of o)if(s.type==="childList")s.addedNodes.length>0&&s.addedNodes.forEach(l=>{if(l instanceof HTMLElement){if(jr(l)||l[oe])return;e.processElement(l)}}),s.removedNodes.forEach(l=>{if(l instanceof HTMLElement){if(jr(l)||l.isConnected||i.has(l)||Fr.has(l))return;let c=l;c[I]&&(c[I].forEach(u=>u()),delete c[I]),delete c[oe]}});else if(s.type==="attributes"){let l=s.target;if(!l)return;let c=s.attributeName;if(c==="class"&&e.adoptStyle(l),c==="style"||c==="draggable"||c?.startsWith("data-")||c?.startsWith("nexus-"))return;nt.getBorrowers(l).forEach(d=>{let p=d.borrower;try{p[Ie]?.()}catch(f){console.error(`[Nexus Isolation] Borrower <${p.tagName}> failed during ownership pulse from <${l.tagName}>:`,f)}})}document.dispatchEvent(new CustomEvent("nexus:dom-mutated",{bubbles:!0})),i.forEach(s=>{Fr.add(s),Wr.set(s,performance.now())})}finally{t=!1}});return r.observe(n,{childList:!0,subtree:!0,attributes:!0}),()=>r.disconnect()}catch(t){H(new Error(`Failed to init MutationObserver: ${t instanceof Error?t.message:String(t)}`),n)}}},Jl=Ql;var Di=[{name:"computed",module:xn},{name:"import",module:Dn},{name:"signal",module:Xn},{name:"switcher",module:Qn},{name:"theme",module:Zn},{name:"assert",module:gn},{name:"bind",module:hn},{name:"build",module:yn},{name:"class",module:vn},{name:"component",module:wn},{name:"debug",module:Tn},{name:"drag",module:Ln},{name:"effect",module:Rn},{name:"flow",module:kn},{name:"for",module:In},{name:"html",module:Pn},{name:"if",module:$n},{name:"markdown",module:Bn},{name:"mask",module:Wn},{name:"on",module:jn},{name:"preserve",module:Un},{name:"pwa",module:qn},{name:"raf",module:zn},{name:"route",module:Kn},{name:"router",module:Yn},{name:"show",module:Vn},{name:"style",module:Gn},{name:"stylesheet",module:zr},{name:"teleport",module:Jn},{name:"var",module:er}],Oi=[{name:"animate",module:_n},{name:"bgFetch",module:tr},{name:"bgSync",module:nr},{name:"flow",module:rr},{name:"gql",module:or},{name:"mask",module:Fn},{name:"mcp",module:ir},{name:"periodicSync",module:sr},{name:"predictive",module:Ot},{name:"push",module:ur},{name:"selector",module:Mn},{name:"sql",module:gr},{name:"svg",module:hr},{name:"sw",module:br}];var Bi=[{name:"debounce",module:Er},{name:"delay",module:wr},{name:"document",module:xr},{name:"drag",module:Tr},{name:"hold",module:Sr},{name:"keys",module:Mr},{name:"morph",module:Ar},{name:"once",module:Cr},{name:"outside",module:_r},{name:"prevent",module:Lr},{name:"self",module:Rr},{name:"stop",module:kr},{name:"throttle",module:Nr},{name:"window",module:Ir},{name:"zoom",module:Pr}],Fi=[{name:"bfcache",module:$r},{name:"executeScript",module:Dr},{name:"history",module:Or},{name:"linkRewriter",module:Br}],Wi=[{name:"mutation",module:Ur}],pt=".draggable-chosen{background-color:var(--color-base-300,#d4d4d8);box-shadow:inset 0 0 0 2px var(--color-primary,#3b82f6)}.draggable-drag{opacity:1;background-color:var(--color-base-300,#d4d4d8);box-shadow:0 25px 50px -12px rgba(0,0,0,.25);transform:scale(1.05);cursor:grabbing;z-index:9999}.draggable-ghost{opacity:1;background-color:var(--color-base-300,#d4d4d8);border:2px solid var(--color-primary,#3b82f6);box-shadow:0 25px 50px -12px rgba(0,0,0,.25)}.draggable-selected{box-shadow:inset 0 0 0 2px var(--color-accent,var(--color-secondary,#ec4899))}.draggable-swap-highlight{background-color:color-mix(in srgb,var(--color-warning,#eab308) 20%,transparent);box-shadow:inset 0 0 0 2px var(--color-warning,#eab308)}.drop-target-before{background:linear-gradient(to bottom,color-mix(in srgb,var(--color-primary,#3b82f6) 30%,transparent) 0%,transparent 20%);box-shadow:inset 0 2px 0 0 var(--color-primary,#3b82f6)}.drop-target-after{background:linear-gradient(to top,color-mix(in srgb,var(--color-primary,#3b82f6) 30%,transparent) 0%,transparent 20%);box-shadow:inset 0 -2px 0 0 var(--color-primary,#3b82f6)}",qr="@keyframes spin{to{transform:rotate(360deg)}}@keyframes ping{75%,100%{transform:scale(2);opacity:0}}@keyframes pulse{50%{opacity:.5}}@keyframes bounce{0%,100%{transform:translateY(-25%);animation-timing-function:cubic-bezier(.8,0,1,1)}50%{transform:none;animation-timing-function:cubic-bezier(0,0,.2,1)}}";var Zl=pt;async function gt(n,e,t){let r=typeof window<"u"?window.location.href:"http://localhost",o=e||r,i=[];if(typeof document<"u")try{let c=document.implementation.createHTMLDocument(""),u=c.createElement("style");u.textContent=n,c.head.appendChild(u);let d=u.sheet;if(d)for(let p of d.cssRules)p instanceof CSSImportRule&&i.push({href:p.href,media:p.media?p.media.mediaText:"",layer:p.layerName||""})}catch{}let a=/@import\s+(?:url\()?['"]([^'"]+)['"]\)?\s*[^;]*;/g,s;for(;(s=a.exec(n))!==null;){let c=s[1];i.some(u=>c.endsWith(u.href)||u.href.endsWith(c))||i.push({href:c,media:"",layer:""})}let l=n;for(let c of i)try{let u=new URL(c.href,o).href,d=await qe(u,3e3,()=>{t&&t()}),p=await gt(d,u,t),f=p;c.media?f=`@media ${c.media} { ${p} }`:c.layer&&(f=`@layer ${c.layer} { ${p} }`);let m=c.href.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),g=new RegExp(`@import\\s+(?:url\\()?['"]?${m}['"]?\\)?[^;]*;`,"g");l=l.replace(g,f)}catch(u){console.warn(`[NexusStyleSheet] Failed to resolve import "${c.href}" relative to "${o}":`,u)}return l}var ht=class extends(typeof CSSStyleSheet<"u"?CSSStyleSheet:class{}){_rawCSSText="";constructor(){super()}async replace(e){if(this._rawCSSText=e,typeof super.replace=="function"){let t=await gt(e,void 0,async()=>{let r=await gt(this._rawCSSText);typeof super.replace=="function"&&await super.replace(r)});return await super.replace(t)}return this}replaceSync(e){this._rawCSSText=e;let t=/@import\s+(?:url\()?['"]([^'"]+)['"]\)?\s*[^;]*;/g.test(e);if(typeof super.replaceSync=="function")try{super.replaceSync(e)}catch{if(!t)throw err}t&&gt(e,void 0,async()=>{let r=await gt(this._rawCSSText);typeof super.replace=="function"&&super.replace(r).catch(o=>console.error(o))}).then(r=>{typeof super.replace=="function"&&super.replace(r).catch(o=>{console.error("[NexusStyleSheet] Dynamic replace of resolved imports failed:",o)})}).catch(r=>{console.error("[NexusStyleSheet] Failed to resolve imports in background:",r)})}},He=typeof CSSStyleSheet<"u"?new CSSStyleSheet:{};function Be(){let n=new Set;try{let e=window.getComputedStyle(document.documentElement);for(let t=0;t<e.length;t++){let r=e[t];r.startsWith("--color-")&&n.add(r.slice(8))}}catch{}return n}function Fe(n){return n.size===0?"":`@theme {
-${Array.from(n).map(t=>`  --color-${t}: var(--color-${t});`).join(`
-`)}
-}`}var Ut=null,ke=null,ze=null,Ue=null,ec=!1,Kr=!1,Yr=new Set,Vr=[];function qi(n){return ke?n==="tailwindcss"||n==="tailwindcss/index.css"?{path:"tailwindcss/index.css",base:"/",content:ke.indexCss}:n==="./theme.css"||n==="tailwindcss/theme.css"?{path:"tailwindcss/theme.css",base:"/",content:ke.themeCss}:n==="./preflight.css"||n==="tailwindcss/preflight.css"?{path:"tailwindcss/preflight.css",base:"/",content:ke.preflightCss}:n==="./utilities.css"||n==="tailwindcss/utilities.css"?{path:"tailwindcss/utilities.css",base:"/",content:ke.utilitiesCss}:{path:n,base:"/",content:""}:{path:n,base:"/",content:""}}async function zi(){return Ue||(Ue=(async()=>{let[n,e,t,r,o]=await Promise.all([qe("https://cdn.jsdelivr.net/npm/tailwindcss@4/index.css"),qe("https://cdn.jsdelivr.net/npm/tailwindcss@4/theme.css"),qe("https://cdn.jsdelivr.net/npm/tailwindcss@4/preflight.css"),qe("https://cdn.jsdelivr.net/npm/tailwindcss@4/utilities.css"),qe("https://cdn.jsdelivr.net/npm/tailwindcss@4/+esm")]);ke={indexCss:n,themeCss:e,preflightCss:t,utilitiesCss:r};let i=new Blob([o],{type:"text/javascript"}),a=URL.createObjectURL(i),s=await import(a);for(URL.revokeObjectURL(a),Ut=s.compile,ze=await Ut('@import "tailwindcss";',{base:"/",loadStylesheet:qi}),await Ki();Vr.length>0;){let{className:l,el:c,runtime:u}=Vr.shift();Q.adoptClass(l,c,u)}})().catch(n=>{throw Ue=null,console.error("[Nexus] Tailwind JIT init failed:",n),n}),Ue)}async function Ki(){if(!(!ze||!Ut||!ke)&&!Kr){Kr=!0;try{let n=Be(),e=Fe(n);ze=await Ut(`@import "tailwindcss";
-${e}`,{base:"/",loadStylesheet:qi});let t=ze.build(Array.from(Yr));He.replaceSync(t)}catch(n){console.error("[Nexus] Theme bridge refresh failed:",n)}finally{Kr=!1}}}async function qe(n,e=3e3,t){let r=`nexus-cache:${n}`,o=null;if(typeof localStorage<"u")try{o=localStorage.getItem(r),o&&(o.trim().startsWith("<!DOCTYPE")||o.trim().startsWith("<!doctype")||o.trim().startsWith("<html"))&&(localStorage.removeItem(r),o=null)}catch{}if(o){let s=o;return console.log(`[Nexus Cache] INSTANT HIT: Loading ${n} from localStorage cache.`),setTimeout(async()=>{try{let l=new AbortController,c=setTimeout(()=>l.abort(),e),u=await fetch(n,{signal:l.signal});if(clearTimeout(c),!u.ok)return;let d=await u.text();if(d.trim().startsWith("<!DOCTYPE")||d.trim().startsWith("<!doctype")||d.trim().startsWith("<html"))return;if(ji(s)!==ji(d)){if(console.log(`[Nexus Cache] UPDATE DETECTED: CDN changed for ${n}. Caching for next load.`),typeof localStorage<"u")try{localStorage.setItem(r,d)}catch{}t&&t(d)}else console.log(`[Nexus Cache] VERIFIED: Cache matches CDN for ${n}.`)}catch(l){console.warn(`[Nexus Cache] Background CDN hash check failed for ${n}:`,l)}},5e3),s}console.log(`[Nexus Cache] CACHE MISS: Fetching local/CDN resource for ${n}.`);let i="";n.includes("tailwindcss@4/")&&(i=`/node_modules/tailwindcss/${n.split("tailwindcss@4/")[1]}`);let a=async s=>{let l=new AbortController,c=setTimeout(()=>l.abort(),e);try{let u=await fetch(s,{signal:l.signal});if(clearTimeout(c),!u.ok)throw new Error(`HTTP error ${u.status}`);let d=await u.text();if(d.trim().startsWith("<!DOCTYPE")||d.trim().startsWith("<!doctype")||d.trim().startsWith("<html"))throw new Error(`Received HTML fallback response for ${s}`);return d}catch(u){throw clearTimeout(c),u}};if(i)try{console.log(`[Nexus Cache] Trying local relative fallback path: ${i}`);let s=await a(i);if(console.log(`[Nexus Cache] SUCCESS: Loaded local resource for ${n} from ${i}`),typeof localStorage<"u")try{localStorage.setItem(r,s)}catch{}return s}catch{console.log(`[Nexus Cache] Local relative fallback failed for ${n}. Falling back to CDN.`)}try{let s=await a(n);if(console.log(`[Nexus Cache] SUCCESS: Loaded resource from CDN for ${n}`),typeof localStorage<"u")try{localStorage.setItem(r,s)}catch{}return s}catch(s){throw console.error(`[Nexus Cache] Failed CDN fetch for ${n}:`,s),s}}function ji(n){let e=0;for(let t=0;t<n.length;t++)e=(e<<5)-e+n.charCodeAt(t),e|=0;return String(e)}var Xr=class{_adoptedSheets=new Map;_knownClasses=new Set;_nextId=0;_preflightEmitted=!1;_getJitSheet(){return He}clearCache(){this._knownClasses.clear()}emitPreflightAndTheme(e){typeof document>"u"||this._preflightEmitted||(Yi(),pt.length>0&&this.adoptCSSSync(pt,"nexus-components"),qr.length>0&&this.adoptCSSSync(qr,"nexus-keyframes"),this._preflightEmitted=!0,e&&(e.classList.forEach(r=>this.adoptClass(r,e)),e.querySelectorAll("*").forEach(r=>{r instanceof HTMLElement&&r.classList.forEach(o=>this.adoptClass(o,r))})))}adoptClass(e,t,r){if(!e||e.trim()===""||t&&t.closest&&t.closest("[data-ignore-style]")||this._knownClasses.has(e))return;let o=e.match(/^[a-z]+-\$([a-zA-Z_$][\w$]*)$/);if(o&&t&&r){this.adoptSignalBinding(t,o[1],r),this._knownClasses.add(e);return}if(!(t&&!t.closest("[data-stylesheet]"))){if(!ze){Vr.push({className:e,el:t,runtime:r}),zi().catch(i=>console.error("[Nexus] JIT init failed:",i));return}try{if(e.includes("{")||e.includes("}")||e.includes("$")||e.includes("?")||e.includes("<")||e.includes(">")||e.includes("&")||e.includes("="))return;Yr.add(e);let i=ze.build(Array.from(Yr));He.replaceSync(i),this._knownClasses.add(e)}catch(i){console.debug(`Nexus-UX JIT compile check: "${e}":`,i)}}}adoptSignalBinding(e,t,r){if(!e.hasAttribute("data-class")){let o=e._signalBindings||[];if(!o.includes(t)){o.push(t),e._signalBindings=o;let i=t.replace(/[#.]/g,"-");r.effect(()=>{let a=r.evaluate(e,t);e.style.setProperty(`--nx-${i}`,String(a!==void 0?a:""))})}}}ensureRule(e,t){if(this._knownClasses.has(e))return;let r=this._getJitSheet();try{r.insertRule(t,r.cssRules.length),this._knownClasses.add(e)}catch{}}collectRules(){let e=[];this._adoptedSheets.forEach(r=>{let o=[];try{for(let i of r.cssRules)o.push(i.cssText)}catch{}o.length&&e.push(o.join(`
-`))});let t=[];try{for(let r of He.cssRules)t.push(r.cssText)}catch{}return t.length&&e.push(t.join(`
-`)),e.join(`
+  `;
+    document.head.appendChild(style);
+  }
+  var importModule = {
+    name: "import",
+    attribute: "import",
+    handle: (el, expression, runtime) => {
+      let activeCleanup = null;
+      let lastConfigStr = "";
+      const stopEffect = runtime.effect(() => {
+        const attrExpr = el.getAttribute("data-import") || expression;
+        const config = runtime.evaluate(el, attrExpr);
+        const configStr = JSON.stringify(config);
+        if (configStr === lastConfigStr) {
+          el.classList.remove("nexus-loading");
+          el.classList.add("nexus-ready");
+          el.removeAttribute("data-nexus-loading");
+          el.setAttribute("data-nexus-ready", "");
+          return;
+        }
+        lastConfigStr = configStr;
+        if (activeCleanup) {
+          activeCleanup();
+          activeCleanup = null;
+        }
+        const finalize = () => {
+          el.classList.remove("nexus-loading");
+          el.classList.add("nexus-ready");
+          el.removeAttribute("data-nexus-loading");
+          el.setAttribute("data-nexus-ready", "");
+          runtime.log(`Nexus Import: Assets synchronized.`);
+          markExternalStylesSettled();
+        };
+        el.classList.add("nexus-loading");
+        el.setAttribute("data-nexus-loading", "");
+        if (!config || typeof config !== "object") {
+          finalize();
+          return;
+        }
+        const ids = Object.keys(config);
+        if (ids.length === 0) {
+          finalize();
+          return;
+        }
+        const iterationCleanupFns = [];
+        activeCleanup = () => iterationCleanupFns.forEach((fn) => fn());
+        const runImports = async () => {
+          const tasks = ids.map(async (id) => {
+            const item = config[id];
+            try {
+              const itemTasks = [];
+              if (item.link) {
+                itemTasks.push(importLink(id, item.link, iterationCleanupFns, runtime, el));
+              }
+              if (item.adopt) {
+                itemTasks.push(importAdopt(id, item.adopt, iterationCleanupFns, runtime, el));
+              }
+              if (item.script) {
+                importScript(id, item.script, iterationCleanupFns, runtime, el).catch(() => {
+                });
+              }
+              const stylePayload = item.style || item.theme;
+              if (stylePayload) {
+                itemTasks.push(importStyle(id, stylePayload, iterationCleanupFns, runtime, el));
+              }
+              if (item.pattern)
+                itemTasks.push(importPattern(id, item.pattern, el, item, iterationCleanupFns, runtime));
+              if (item.component)
+                itemTasks.push(importComponent(id, item.component, iterationCleanupFns, runtime));
+              await Promise.all(itemTasks);
+            } catch (e) {
+              reportError(new Error(`Nexus Import [${id}]: Error ${e}`), el);
+            }
+          });
+          await Promise.all(tasks);
+        };
+        runImports().then(finalize).catch(() => finalize());
+      });
+      return () => {
+        stopEffect();
+        if (activeCleanup)
+          activeCleanup();
+      };
+    }
+  };
+  var import_default = importModule;
 
-`)}adoptCSSSync(e,t,r=document){let o=this.processAtRules(e),i=t||`_auto_${this._nextId++}`,a=this._adoptedSheets.get(i);if(a)return a.replaceSync(o),()=>this.removeSheet(i,r);if(typeof CSSStyleSheet>"u")return()=>{};let s=new CSSStyleSheet;return s.replaceSync(o),this._adoptedSheets.set(i,s),r&&"adoptedStyleSheets"in r&&(r.adoptedStyleSheets=[...r.adoptedStyleSheets,s]),()=>this.removeSheet(i,r)}async adoptCSS(e,t,r=document){let o=this.processAtRules(e),i=t||`_auto_${this._nextId++}`,a=this._adoptedSheets.get(i);if(a)return await a.replace(o),()=>this.removeSheet(i,r);if(typeof CSSStyleSheet>"u")return()=>{};let s=new ht;return await s.replace(o),this._adoptedSheets.set(i,s),r&&"adoptedStyleSheets"in r&&(r.adoptedStyleSheets=[...r.adoptedStyleSheets,s]),()=>this.removeSheet(i,r)}async adoptRawCSS(e,t,r=document){let o=t||`_auto_${this._nextId++}`,i=this._adoptedSheets.get(o);if(i)return await i.replace(e),()=>this.removeSheet(o,r);if(typeof CSSStyleSheet>"u")return()=>{};let a=new ht;return await a.replace(e),this._adoptedSheets.set(o,a),r&&"adoptedStyleSheets"in r&&(r.adoptedStyleSheets=[...r.adoptedStyleSheets,a]),()=>this.removeSheet(o,r)}processAtRules(e){return e}removeSheet(e,t=document){let r=this._adoptedSheets.get(e);r&&(t&&"adoptedStyleSheets"in t&&(t.adoptedStyleSheets=t.adoptedStyleSheets.filter(o=>o!==r)),this._adoptedSheets.delete(e))}dispose(){this._adoptedSheets.forEach((e,t)=>this.removeSheet(t)),this._adoptedSheets.clear(),this._knownClasses.clear(),this._nextId=0}},Q=new Xr,Ui=!1;function Yi(){Ui||(Ui=!0,zi().catch(n=>console.error("[Nexus] JIT init failed:",n)))}function On(){ec=!0,Ue&&Ki().catch(n=>console.error("[Nexus] bridge refresh failed:",n))}var tc={name:"stylesheet",attribute:"stylesheet",handle(n,e,t){let r=[];if(e&&e.trim()){let i=e.trim();r.push(Q.adoptCSSSync(i,void 0,document))}let o=n.getRootNode();if(o&&"adoptedStyleSheets"in o){let i=Array.from(o.adoptedStyleSheets);i.includes(He)||(o.adoptedStyleSheets=[...i,He])}return Q.emitPreflightAndTheme(n),r.push(()=>{Q.emitPreflightAndTheme(n)}),()=>r.forEach(i=>i())}},nc=tc;var bt=()=>!0,rc={morphStyle:"innerHTML",ignoreActiveValue:!0,callbacks:{beforeNodeAdded:bt,afterNodeAdded:bt,beforeNodeMorphed:(n,e)=>{if(n instanceof Element&&n.hasAttribute(xt))return!1;if((n instanceof HTMLInputElement||n instanceof HTMLTextAreaElement||n instanceof HTMLSelectElement)&&n===document.activeElement&&(e instanceof HTMLInputElement||e instanceof HTMLTextAreaElement||e instanceof HTMLSelectElement)&&(e.value=n.value,(n instanceof HTMLInputElement||n instanceof HTMLTextAreaElement)&&(e.selectionStart=n.selectionStart,e.selectionEnd=n.selectionEnd)),n instanceof HTMLElement&&e instanceof HTMLElement&&(n.style.viewTransitionName&&(e.style.viewTransitionName=n.style.viewTransitionName),"_nexus_key"in n&&(e._nexus_key=n._nexus_key)),n instanceof Element){let t=n;t[I]&&(t[I].forEach(r=>r()),t[I].clear()),delete t[oe]}return!0},afterNodeMorphed:bt,beforeNodeRemoved:n=>{if(n instanceof Element){let e=n;e[I]&&(e[I].forEach(t=>t()),e[I].clear())}return!0},afterNodeRemoved:bt,beforeAttributeUpdated:bt}};function Ke(n,e,...t){return n.callbacks&&typeof n.callbacks[e]=="function"?n.callbacks[e](...t):!0}function Vi(n){let t=new DOMParser().parseFromString(n,"text/html");if(n.includes("<html")||n.includes("<body")||n.includes("<head"))return t.documentElement;let r=document.createDocumentFragment(),o=t.body;for(;o.firstChild;)r.appendChild(o.firstChild);return r}function Xi(n){let e=0;for(let t=0;t<n.length;t++)e=(e<<5)-e+n.charCodeAt(t),e|=0;return String(e)}function Gi(n){if(n.nodeType===Node.ELEMENT_NODE){let e=n;if(e.tagName==="LINK")return`link:${e.getAttribute("href")||""}:${e.getAttribute("rel")||""}`;if(e.tagName==="STYLE")return`style:${Xi(e.textContent||"")}`;if(e.tagName==="SCRIPT")return`script:${e.getAttribute("src")||""}:${Xi(e.textContent||"")}`;if(e.tagName==="TITLE")return"title"}return null}function Zi(n,e,t){let r=e.querySelector("title");r&&(document.title=r.textContent||"");let o=Array.from(n.childNodes),i=Array.from(e.childNodes),a=new Map;o.forEach(s=>{let l=Gi(s);l&&a.set(l,s)}),i.forEach(s=>{let l=Gi(s);if(l)if(a.has(l)){let c=a.get(l);a.delete(l),c.nodeType===Node.ELEMENT_NODE&&s.nodeType===Node.ELEMENT_NODE&&c.textContent!==s.textContent&&(c.textContent=s.textContent)}else{let c=s.cloneNode(!0);if(c instanceof HTMLScriptElement){let u=document.createElement("script");Array.from(c.attributes).forEach(d=>u.setAttribute(d.name,d.value)),u.textContent=c.textContent,n.appendChild(u)}else n.appendChild(c)}}),a.forEach(s=>{(s instanceof HTMLLinkElement||s instanceof HTMLStyleElement)&&s.parentNode?.removeChild(s)})}function oc(n,e){if(n.textContent===e.textContent&&n.getAttribute("src")===e.getAttribute("src"))return;let t=document.createElement("script");Array.from(e.attributes).forEach(r=>t.setAttribute(r.name,r.value)),t.textContent=e.textContent,n.parentNode?.replaceChild(t,n)}function Qi(n){if(n.nodeType===Node.ELEMENT_NODE){let e=n;return e.getAttribute("data-key")||e.getAttribute("key")||e.id||null}return null}function Ji(n,e){Ke(e,"beforeNodeRemoved",n)!==!1&&(n.parentNode?.removeChild(n),Ke(e,"afterNodeRemoved",n))}function es(n,e,t){let r=Array.from(n.childNodes),o=Array.from(e.childNodes),i=new Map,a=[];r.forEach(l=>{let c=Qi(l);c?i.set(c,l):a.push(l)});let s=n.firstChild;o.forEach(l=>{let c=l instanceof HTMLIFrameElement,u=Qi(l),d=null;if(u)d=i.get(u)||null,d&&i.delete(u);else{let p=a.findIndex(f=>f.nodeType===l.nodeType&&(f.nodeType!==Node.ELEMENT_NODE||f.tagName===l.tagName));p!==-1&&(d=a.splice(p,1)[0])}if(d)if(c&&d instanceof HTMLIFrameElement){let p=d,f=l;Array.from(p.attributes).forEach(m=>{f.hasAttribute(m.name)||p.removeAttribute(m.name)}),Array.from(f.attributes).forEach(m=>{m.name==="src"&&p.getAttribute("src")===m.value||p.setAttribute(m.name,m.value)})}else d!==s?n.insertBefore(d,s):s=s.nextSibling,Gr(d,l,t);else{let p=l.cloneNode(!0);Ke(t,"beforeNodeAdded",p)!==!1&&(n.insertBefore(p,s),Ke(t,"afterNodeAdded",p),p instanceof HTMLElement&&p.querySelectorAll("script").forEach(m=>{let g=document.createElement("script");Array.from(m.attributes).forEach(y=>g.setAttribute(y.name,y.value)),g.textContent=m.textContent,m.parentNode?.replaceChild(g,m)}))}}),i.forEach(l=>{Ji(l,t)}),a.forEach(l=>{Ji(l,t)})}function Gr(n,e,t){if(Ke(t,"beforeNodeMorphed",n,e)===!1)return;if(n instanceof HTMLHeadElement&&e instanceof HTMLHeadElement){Zi(n,e,t);return}if(n instanceof HTMLScriptElement&&e instanceof HTMLScriptElement){oc(n,e);return}if(n.nodeType!==e.nodeType){n.parentElement?.replaceChild(e.cloneNode(!0),n);return}if(n.nodeType===Node.TEXT_NODE||n.nodeType===Node.COMMENT_NODE){n.nodeValue!==e.nodeValue&&(n.nodeValue=e.nodeValue);return}if(n.nodeType!==Node.ELEMENT_NODE)return;let r=n,o=e;if(r.tagName!==o.tagName){r.parentElement?.replaceChild(o.cloneNode(!0),r);return}let i=r.attributes,a=o.attributes;for(let s=i.length-1;s>=0;s--){let l=i[s];o.hasAttribute(l.name)||r.removeAttribute(l.name)}for(let s=0;s<a.length;s++){let l=a[s];r.getAttribute(l.name)!==l.value&&r.setAttribute(l.name,l.value)}r instanceof HTMLInputElement&&o instanceof HTMLInputElement?r.type==="checkbox"||r.type==="radio"?r.checked=o.checked:r.type!=="file"&&(r!==document.activeElement||!t.ignoreActiveValue)&&(r.value=o.value):r instanceof HTMLTextAreaElement&&o instanceof HTMLTextAreaElement?(r!==document.activeElement||!t.ignoreActiveValue)&&(r.value=o.value):r instanceof HTMLSelectElement&&o instanceof HTMLSelectElement&&(r.value=o.value),es(r,o,t),Ke(t,"afterNodeMorphed",r,o)}function jt(n,e,t={}){let r={...rc,...t},o;if(typeof e=="string"?o=Vi(e):o=e,n===document.documentElement||n.tagName==="HTML"){let i=n,a=o,s=i.querySelector("head"),l=a.querySelector("head");s&&l&&Zi(s,l,r);let c=i.querySelector("body"),u=a.querySelector("body");c&&u&&Gr(c,u,r);let d=i.attributes,p=a.attributes;for(let f=d.length-1;f>=0;f--){let m=d[f];a.hasAttribute(m.name)||i.removeAttribute(m.name)}for(let f=0;f<p.length;f++){let m=p[f];i.setAttribute(m.name,m.value)}}else if(r.morphStyle==="innerHTML"){let i=o.nodeType===Node.DOCUMENT_FRAGMENT_NODE||o.nodeType===Node.ELEMENT_NODE?o:Vi(`<div>${e}</div>`);es(n,i,r)}else{let i=o.nodeType===Node.DOCUMENT_FRAGMENT_NODE&&o.firstChild||o;if(Gr(n,i,r),o.nodeType===Node.DOCUMENT_FRAGMENT_NODE&&o.childNodes.length>1){let a=n.nextSibling,s=n.parentNode;s&&Array.from(o.childNodes).slice(1).forEach(l=>{s.insertBefore(l.cloneNode(!0),a)})}}n.dispatchEvent(new CustomEvent("nexus:dom-morphed",{bubbles:!0}))}var ut=new WeakMap;function ts(n,e){let t=ut.get(n)||new Set,r=new Set,o=i=>{i&&(typeof i=="string"?i.split(/\s+/).filter(Boolean).forEach(a=>r.add(a)):Array.isArray(i)?i.forEach(o):typeof i=="object"&&Object.entries(i).forEach(([a,s])=>{let l=!1;typeof s=="object"&&s!==null?l=Object.values(s).every(c=>!!c):l=!!s,l&&a.split(/\s+/).filter(Boolean).forEach(c=>r.add(c))}))};o(e),t.forEach(i=>{r.has(i)||(n.classList.remove(i),t.delete(i))}),r.forEach(i=>{n.classList.contains(i)||(n.classList.add(i),t.add(i),Q.adoptClass(i,n))}),t.size>0&&ut.set(n,t)}var dt=new WeakMap;function Dt(n,e){if(!e)return;let t=dt.get(n)||new Set,r=new Set,o={};if(typeof e=="string")e.split(";").forEach(i=>{let[a,s]=i.split(":").map(l=>l.trim());a&&s&&(o[a]=s)});else if(typeof e=="object"&&e!==null)o=e;else return;Object.entries(o).forEach(([i,a])=>{let s=i.replace(/[A-Z]/g,l=>`-${l.toLowerCase()}`);a!=null&&a!==!1?(n.style.setProperty(s,String(a)),r.add(s),t.add(s)):(n.style.removeProperty(s),t.delete(s))}),t.forEach(i=>{!(i in o)&&!(i.replace(/-([a-z])/g,(a,s)=>s.toUpperCase())in o)&&(n.style.removeProperty(i),t.delete(i))}),t.size>0&&dt.set(n,t)}function mt(n,e){if(n===e)return!0;if(typeof n!="object"||n===null||typeof e!="object"||e===null)return!1;if(Array.isArray(n)){if(!Array.isArray(e)||n.length!==e.length)return!1;for(let o=0;o<n.length;o++)if(!mt(n[o],e[o]))return!1;return!0}if(Array.isArray(e))return!1;let t=Object.keys(n),r=Object.keys(e);if(t.length!==r.length)return!1;for(let o=0;o<t.length;o++){let i=t[o];if(!Object.prototype.hasOwnProperty.call(e,i)||!mt(n[i],e[i]))return!1}return!0}O();W();var qt=new Map,zt=new Map,Qr={request:(n,e,t)=>{let r=`${n}:${e.method||"GET"}:${e.responseType||"text"}`;if(qt.has(r))return qt.get(r);let o=(async()=>{let i;try{i=new AbortController;let a=i.signal,s={...e,signal:a},l=await fetch(n,s);if(!l.ok)throw new Error(`HTTP error! status: ${l.status}`);let c;switch(e.responseType){case"json":c=await l.json();break;case"blob":c=await l.blob();break;case"arrayBuffer":c=await l.arrayBuffer();break;case"formData":c=await l.formData();break;case"text":default:c=await l.text();break}return t.dispatchEvent(new CustomEvent(`${fe}fetch-success`,{bubbles:!0,cancelable:!1,detail:{url:n,options:e,data:c,response:l}})),c}catch(a){throw a instanceof DOMException&&a.name==="AbortError"?document.documentElement.hasAttribute("data-debug")&&console.warn(`Fetch request to ${n} was aborted.`):H(new Error(`Failed to fetch from ${n}: ${a instanceof Error?a.message:String(a)}`),t),t.dispatchEvent(new CustomEvent(`${fe}fetch-error`,{bubbles:!0,cancelable:!1,detail:{url:n,options:e,error:a}})),a}})();return qt.set(r,o),o.then(()=>{},()=>{zt.has(r)&&clearTimeout(zt.get(r)),zt.set(r,setTimeout(()=>{qt.delete(r),zt.delete(r)},2e3))}),o},createSuspenseProxy:n=>{let e=!1,t=!1,r,o;return n.then(i=>{e=!0,r=i},i=>{t=!0,o=i}),new Proxy(n,{get(i,a){if(a==="then")return i.then.bind(i);if(a==="catch")return i.catch.bind(i);if(a==="finally")return i.finally.bind(i);if(a==="__v_isRef"||a==="__v_isReactive")return!1;if(t)throw o;if(!e)throw n;if(r==null)return;let s=r;if(typeof r=="string")try{s=JSON.parse(r)}catch{}if(s&&typeof s=="object"){let c=["data","results","items","value","_embedded","entries"];for(let u of c)if(s[u]!==void 0){s=s[u];break}}let l=s&&typeof s=="object"?s[a]:void 0;return typeof l=="function"?l.bind(s):l}})}},ns={name:"fetch",install:n=>{n.fetch=Qr}};O();ge("__global",(n,e)=>e.globalSignals());var sc=!0,Kt=0,ac=50;function rs(n,e,t,r={}){if(typeof e!="string"||!e||e.trim()==="")return{};let o=dc(n,e,t),i;return o(a=>i=a,r),i}function lc(n){let e=n;return e.includes("@")&&(e=e.replace(/@(\w+)\s*\((.*?)\)\s*\{([^}]*)\}/g,(t,r,o,i)=>{let a=o.trim().replace(/`/g,"\\`");return`_scopes.${r}(\`${a}\`, () => { return ${i.trim()} })`})),e.includes("#")&&(e=e.replace(/(^|[^a-zA-Z0-9_$'"`])#([a-zA-Z_$][\w$]*)/g,"$1__global.$2")),e}function cc(n){let e=[],t={"{":"}","[":"]","(":")"},r=null,o=!1;for(let i=0;i<n.length;i++){let a=n[i];if(o){o=!1;continue}if(a==="\\"){o=!0;continue}if(r){a===r&&(r=null);continue}if(a==='"'||a==="'"||a==="`"){r=a;continue}if(t[a])e.push({char:a,pos:i});else if(a==="}"||a==="]"||a===")"){let s=e.pop();if(!s||t[s.char]!==a)return{type:"bracket",expected:s?t[s.char]:"none",position:i}}}if(r)return{type:"quote",expected:r,position:n.length};if(e.length>0){let i=e[e.length-1];return{type:"bracket",expected:t[i.char],position:i.pos}}return null}function uc(n,e){let t=n.trim(),r="";if(e instanceof Element){for(let i of Array.from(e.attributes))if(i.value===n){r=i.name;break}}if(r==="data-for"&&!t.includes(" in "))return{severity:"error",message:`Invalid data-for syntax: "${t}". Expected "item in items".`,suggestion:t.includes(" of ")?`Replace 'of' with 'in': "${t.replace(" of "," in ")}"`:'Use pattern: "(item, index) in list"',element:e,expression:t};if(r==="data-var"&&!t.startsWith("{")&&!t.startsWith("({"))return{severity:"error",message:`data-var must evaluate to an object literal. Got: "${t.substring(0,40)}..."`,suggestion:`Wrap in braces: "{ ${t} }"`,element:e,expression:t};let o=cc(t);return o?{severity:"error",message:`Unbalanced ${o.type} in expression: "${t.substring(0,60)}..."`,suggestion:`Check for missing closing '${o.expected}' near position ${o.position}`,element:e,expression:t}:null}function dc(n,e,t,r={}){let o=lc(e),i={...t,...r},a=new Proxy(i,{has(c,u){return u===Symbol.unscopables?!1:typeof u=="string"},get(c,u){if(u!==Symbol.unscopables&&typeof u=="string"){if(ko(u))return Ho(u,n,t);let d=j(n);for(let m of d)if(u in m){let g=m[u];return t.unref(g)}let p=t.globalSignals();if(u in p){let m=p[u];return t.unref(m)}let f=t.globalActions();if(u in f)return f[u];if(u in globalThis){let m=globalThis[u];return typeof m=="function"?m.bind(globalThis):m}}},set(c,u,d){if(typeof u=="string"){let p=t.globalSignals();if(u in p)return p[u]=d,!0;let f=j(n);for(let m of f)if(u in m)return m[u]=d,!0;return f.length>0?(f[0][u]=d,!0):u in c?(c[u]=d,!0):(p[u]=d,!0)}return!1}}),s=uc(e,n);s&&rn(s.element?s.element.tagName.toLowerCase():"unknown",e,`${s.message}
-\u{1F4A1} Suggestion: ${s.suggestion}`,n instanceof HTMLElement?n:void 0);let l;try{l=new Function("scope",`with (scope) { return (${o}) }`)}catch(c){if(c instanceof SyntaxError)try{l=new Function("scope",`with (scope) { ${o} }`)}catch(u){throw u instanceof SyntaxError&&rn("eval",e,u.message,n instanceof HTMLElement?n:void 0),u}else throw c}return(c,u={})=>{if(Kt>ac){console.warn(`[Nexus Loop Guard] Stopped runaway evaluation at depth ${Kt} for expression: "${e}"`),c(void 0);return}Kt++;try{let d=new Proxy(u,{has(f,m){return m===Symbol.unscopables?!1:typeof m=="string"?m in f||m in a:m in f},get(f,m){if(m!==Symbol.unscopables&&typeof m=="string")return m in f?f[m]:a[m]},set(f,m,g){return typeof m=="string"?m in f?(f[m]=g,!0):(a[m]=g,!0):!1}}),p=l.call(n,d);c(sc&&typeof p=="function"?p.call(n,d):p)}catch(d){if(d instanceof Promise)throw d;if(d instanceof TypeError&&d.message.includes("Cannot read properties of")||d instanceof ReferenceError){if(t.isDevMode)try{lt().reportResolutionFailure("expression",e,{error:d.message,node:n})}catch{}c(void 0)}else console.error(`[Evaluator Error] Expression "${e}" failed:`,d),io(e,d instanceof Error?d:new Error(String(d)),n)}finally{Kt--}}}W();function os(n,e,t){let r="",o=!1;if(n.startsWith(Je)?(r=n.slice(Je.length),o=!0):n.startsWith(":")?(r=`bind-${n.slice(1)}`,o=!0):n.startsWith("@")&&(r=`on-${n.slice(1)}`,o=!0),!o)return null;let i,a,s=[],l,c=0,u=r,d=["ux-theme","on-raf","flow-node","flow-handle","flow-edges","flow-grid"].find(m=>r===m||r.startsWith(m+"-")||r.startsWith(m+":"));d&&(i=d,u=r.slice(d.length),u.length>0&&(u.startsWith("-")?(c=1,u=u.slice(1)):u.startsWith(":")&&(c=2,u=u.slice(1))));let p=0,f=u.length;for(let m=0;m<=f;m++){let g=m===f,y=g?"":u[m],v=y===ro||y===".",b=y==="-",T=v||b;if(T||g){if(m>p){let E=u.slice(p,m);c===0?i=E:c===1?a=a?a+"-"+E:E:E.startsWith("$(")&&E.endsWith(")")?l=E.slice(2,-1):s.push(E)}T&&(v?c=2:b&&c===0&&(c=1)),p=m+1}}return{name:n,value:t.getAttribute(n)||"",directive:i,argument:a,modifiers:s,target:l}}At();O();O();W();var yt=class{#e=0;#t;constructor(e=no){this.#t=e}with(e){if(typeof e=="string"){let t=e.length;for(let r=0;r<t;r++)this.with(e.charCodeAt(r))}else typeof e=="boolean"?this.with(1<<(e?7:3)):this.#e=this.#e*33^e;return this}get value(){return this.#e}get string(){return this.#t+Math.abs(this.#e).toString(36)}};function is(n){if(n.id)return n.id;let e=n.getAttribute("data-ux-id")||n.getAttribute("data-key")||n.getAttribute("data-id");if(e){let o=new yt;return o.with(n.tagName).with(e),o.string}let t=new yt,r=n;for(;r;){if(t.with(r.tagName||""),r.id){t.with(r.id);break}let o=r?.parentNode||null;if(o&&(o instanceof Element||o instanceof DocumentFragment||typeof ShadowRoot<"u"&&o instanceof ShadowRoot)){let i=o.children||[];i.length>0&&t.with(Array.from(i).indexOf(r))}r=o instanceof Element?o:typeof ShadowRoot<"u"&&o instanceof ShadowRoot?o.host:(o instanceof DocumentFragment,null),o instanceof DocumentFragment}return t.string}function ss(n,e){return new yt().with(n).with(e).value}W();var Yt=new Map;function as(n,e){Yt.set(n,{module:e,activeCleanups:new Map})}function ls(n,e,t){let r=Yt.get(n);if(!r||r.activeCleanups.has(e))return;let o=r.module.observe(e,t);if(o)return r.activeCleanups.set(e,o),()=>{o(),r.activeCleanups.delete(e)}}function cs(){Yt.forEach(n=>{n.activeCleanups.forEach(e=>e()),n.activeCleanups.clear()}),Yt.clear()}nn();var us=B({}),Vt=class{attributeModules=new Map;actionModules=new Map;modifierModules=new Map;listenerModules=new Map;observerModules=new Map;utilityModules=new Map;spriteModules=new Map;scopeModules=new Map;directiveOrder=[];runtimeContext;initContext;markerDispenser=1;constructor(){if(this.runtimeContext={effect:st,stop:it,reactive:B,toRaw:_e,isReactive:ot,isReadonly:mo,isProxy:fo,readonly:go,shallowReactive:po,shallowReadonly:ho,customRef:mn,triggerRef:yo,unref:vo,ref:Lt,shallowRef:bo,isRef:Le,toRefs:wo,toRef:pn,computed:Rt,watch:Eo,onEffectCleanup:xo,elementBoundEffect:To,morphDOM:jt,fetch:Qr,evaluate:(e,t,r)=>rs(e,t,this.runtimeContext,r),globalSignals:fc.bind(this),setGlobalSignal:mc.bind(this),localSignals:pc.bind(this),localActions:gc.bind(this),globalActions:hc.bind(this),getModifier:e=>this.modifierModules.get(e),processElement:this.processElement.bind(this),reconcileClass:(e,t)=>ts(e,t),reconcileStyle:(e,t)=>Dt(e,t),adoptStyle:e=>e.classList.forEach(t=>Q.adoptClass(t,e)),parseAttribute:os,scheduler:Ce,reportError:(e,t,r)=>we.error(this.runtimeContext,e.message,t,r),$:e=>typeof document>"u"?null:be(document.body,e),isDevMode:typeof document<"u"?document.documentElement.hasAttribute("data-debug"):!1,elUniqId:is,attrHash:ss,topology:{getTier:()=>me.getTier(),getConfig:()=>me.getTierConfig(),getActiveWorkers:()=>me.getActiveWorkers(),isSABAvailable:()=>me.isSABAvailable(),getLagVariance:()=>me.getLagVariance()},log:(...e)=>we.log(this.runtimeContext,...e),warn:(...e)=>we.warn(this.runtimeContext,...e),info:(...e)=>we.info(this.runtimeContext,...e),debug:(...e)=>we.debug(this.runtimeContext,...e),mcp:void 0,sprites:{},update:e=>e()},typeof document<"u"){let e=document.querySelector('meta[name="nexus-mcp-server"]')?.getAttribute("content");e&&(this.runtimeContext.mcp=new Ze(e),this.runtimeContext.mcp.connect().catch(()=>{this.runtimeContext.debug(`[Coordinator] MCP Connection skipped: ${e}`)}))}so(this.runtimeContext),this.initContext={registerAttributeModule:this.registerAttributeModule.bind(this),registerActionModule:this.registerActionModule.bind(this),registerModifierModule:this.registerModifierModule.bind(this),registerListenerModule:this.registerListenerModule.bind(this),registerObserverModule:this.registerObserverModule.bind(this),registerUtilityModule:this.registerUtilityModule.bind(this),registerSpriteModule:this.registerSpriteModule.bind(this),registerScopeModule:this.registerScopeModule.bind(this),runtime:this.runtimeContext}}dispose(){ao(),this.attributeModules.clear(),this.actionModules.clear(),this.modifierModules.clear(),this.listenerModules.clear(),this.observerModules.clear(),this.utilityModules.clear(),cs()}initializeModules(e){this.utilityModules.forEach((r,o)=>{if(r.onGlobalInit)try{r.onGlobalInit(this.runtimeContext)}catch(i){this.runtimeContext.reportError(i instanceof Error?i:new Error(String(i)),void 0,`Failed to initialize module: ${o}`)}}),this.processElement(e);let t=ls("mutationObserver",e,this.runtimeContext);if(t){let r=e;r[I]||(r[I]=new Map),r[I].set("__rootMutationObserver__",t)}this.listenerModules.forEach((r,o)=>{try{let i=r.listen(e,this.runtimeContext);if(typeof i=="function"){let a=e;a[I]||(a[I]=new Map),a[I].set(`__listener_${o}__`,i)}}catch(i){this.runtimeContext.reportError(i instanceof Error?i:new Error(String(i)),void 0,`Failed to start listener module: ${o}`)}})}registerModifierModule(e,t){this.modifierModules.set(e,t)}registerAttributeModule(e,t){let r=t.attribute||e;if(this.attributeModules.set(r,t),this.directiveOrder.indexOf(r)===-1)if(t.metadata?.after?.[0]){let i=this.directiveOrder.indexOf(t.metadata.after[0]);i!==-1?this.directiveOrder.splice(i+1,0,r):this.directiveOrder.push(r)}else if(t.metadata?.before?.[0]){let i=this.directiveOrder.indexOf(t.metadata.before[0]);i!==-1?this.directiveOrder.splice(i,0,r):this.directiveOrder.unshift(r)}else this.directiveOrder.push(r);this.triggerScan()}registerActionModule(e,t){this.actionModules.set(e,t)}registerListenerModule(e,t){this.listenerModules.set(e,t)}registerObserverModule(e,t){this.observerModules.set(e,t),as(e,t)}registerUtilityModule(e,t){this.utilityModules.set(e,t)}registerSpriteModule(e,t){this.spriteModules.set(e,t);let r=t.sprites(this.runtimeContext),o=t.key||`$${e}`;this.runtimeContext.sprites[o]=r,ge(o,()=>r),Object.entries(r).forEach(([i,a])=>{this.registerActionModule(i,{name:i,handle:(s,...l)=>a(...l)})})}registerScopeModule(e,t){this.scopeModules.set(e,t)}scanTimeout=null;triggerScan(){typeof window>"u"||typeof requestAnimationFrame>"u"||(this.scanTimeout!==null&&cancelAnimationFrame(this.scanTimeout),this.scanTimeout=requestAnimationFrame(()=>{document.querySelectorAll(wt).forEach(t=>{t instanceof HTMLElement&&this.processElement(t,!0)}),this.scanTimeout=null}))}getInitContext(){return this.initContext}processElement(e,t=!1,r="none"){let o=r;if(e.hasAttribute("data-ignore-off")?o="none":e.hasAttribute("data-ignore")?o="total":e.hasAttribute("data-ignore-ux")?o="ux":e.hasAttribute("data-ignore-style")&&(o="style"),o!=="total"&&!(!t&&e[oe])){if(this.runtimeContext.isDevMode&&!t&&this.runtimeContext.debug(`[Coordinator] Processing <${e.tagName}> (Isolation: ${o})`,e),e[oe]=this.markerDispenser++,o!=="style"&&e.classList&&e.classList.length>0&&e.classList.forEach(i=>Q.adoptClass(i,e,this.runtimeContext)),o!=="ux"){let i=[];Array.from(e.attributes).forEach((a,s)=>{try{let l=this.runtimeContext.parseAttribute(a.name,this.runtimeContext,e);if(l?.directive){let c=this.attributeModules.get(l.directive);c&&i.push({directiveName:l.directive,handle:()=>{let u=this.runtimeContext;if(l.modifiers&&l.modifiers.length>0){u={...this.runtimeContext};let d=u.evaluate;l.modifiers.forEach(p=>{let f=p,m="",g=p.indexOf("-");g!==-1&&(f=p.substring(0,g),m=p.substring(g+1));let y=this.modifierModules.get(f);y&&typeof y.interceptPipeline=="function"&&(d=y.interceptPipeline(d,e,m||l.target||"",u))}),u.evaluate=d}return c.handle(e,a.value,u,l)},originalIndex:s})}}catch(l){we.warn(`[Directive Isolation] Fault in attribute parse for '${a.name}' on <${e.tagName}>:`,l)}}),i.sort((a,s)=>{let l=this.directiveOrder.indexOf(a.directiveName),c=this.directiveOrder.indexOf(s.directiveName),u=l===-1?this.directiveOrder.length:l,d=c===-1?this.directiveOrder.length:c;return u===d?a.originalIndex-s.originalIndex:u-d}),i.forEach(a=>{let s=e,l=Array.from(e.attributes)[a.originalIndex]?.name||a.directiveName,c=`${l}:${this.runtimeContext.attrHash(a.directiveName,e.getAttribute(l)||"")}`,u=s[I];if(!u?.has(c))try{let d=a.handle();d&&(u||(u=new Map,s[I]=u),u.set(c,d))}catch(d){we.warn(`[Directive Isolation] Fault in execution of directive '${l}' on <${e.tagName}>:`,d)}})}e[G]||Array.from(e.children).forEach(i=>{i instanceof HTMLElement||i instanceof SVGElement?this.processElement(i,t,o):i instanceof Element&&i.classList&&i.classList.length>0&&o!=="style"&&(i.classList.forEach(a=>Q.adoptClass(a,i,this.runtimeContext)),Array.from(i.children).forEach(a=>{a instanceof Element&&a.classList&&a.classList.length>0&&a.classList.forEach(s=>Q.adoptClass(s,a,this.runtimeContext))}))})}}};function fc(){return us}function mc(n,e){us[n]=e}function pc(n){let e=j(n);return e.length>0?e[0]:B({})}function gc(n){return{}}function hc(){let n={};return this.actionModules.forEach((e,t)=>{let r=(...i)=>e.handle(document.body,...i),o=new Proxy(r,{get(i,a){if(a in i)return i[a];let s=e.handle[a];return typeof s=="function"?s.bind(e.handle):s}});n[t]=o}),n}W();var Xt={};function ds(n="default"){return Xt[n]?Xt[n]++:Xt[n]=1,`${n}-${Xt[n]}`}function fs(){return new Promise(n=>{Promise.resolve().then(()=>{requestAnimationFrame(()=>n())})})}var Qt=class{coordinator;constructor(){if(this.coordinator=new Vt,ge("$el",e=>e),ge("$dispatch",e=>(t,r)=>{e instanceof Element&&e.dispatchEvent(new CustomEvent(t,{detail:r,bubbles:!0,cancelable:!0}))}),ge("$global",(e,t)=>t.globalSignals()),ge("$actions",(e,t)=>t.globalActions()),this.coordinator.registerActionModule("$id",{name:"$id",handle:(e,...t)=>ds(...t)}),this.coordinator.registerActionModule("$nextTick",{name:"$nextTick",handle:(e,...t)=>fs(...t)}),this.registerFromManifest(),this.coordinator.runtimeContext.setGlobalSignal("$predictive",(async()=>{let{predictive:e}=await Promise.resolve().then(()=>(cr(),Ot));return e})()),ge("$",e=>t=>be(e,t)),ge("$animate",()=>De),this.coordinator.registerUtilityModule("fetch",ns),No(this.coordinator.runtimeContext,{enabled:!0,emitToConsole:this.coordinator.runtimeContext.isDevMode??!1,emitToPlatform:!1}),this.init(),typeof document<"u"){let e=document.documentElement;document.querySelector("[data-import]")?e.classList.add("nexus-loading"):e.classList.add("nexus-ready"),document.dispatchEvent(new CustomEvent("nexus-ready",{bubbles:!0}))}}registerFromManifest(){Di.forEach(({name:e,module:t})=>{let r=!1;for(let o of Object.values(t))o&&typeof o=="object"&&"attribute"in o&&typeof o.handle=="function"&&(this.coordinator.registerAttributeModule(o.attribute||e,o),r=!0);if(!r){let o=t.default||Object.values(t)[0];o&&this.coordinator.registerAttributeModule(o.attribute||e,o)}}),Oi.forEach(({name:e,module:t})=>{let r=t.default||Object.values(t).find(o=>o&&typeof o.sprites=="function");if(r&&typeof r.sprites=="function")this.coordinator.registerSpriteModule(r.name||e,r);else{let o=t;typeof t.default=="function"&&(o=t.default(this.coordinator.runtimeContext)),Object.entries(o).forEach(([i,a])=>{if(i==="default")return;let s=(c,...u)=>a(...u),l=new Proxy(s,{get(c,u){if(u in c)return c[u];let d=a[u];return typeof d=="function"?d.bind(a):d}});this.coordinator.registerActionModule(i,{name:i,handle:l})})}}),Bi.forEach(({module:e})=>{let t=e.default||e;t&&t.name&&typeof t.handle=="function"?this.coordinator.registerModifierModule(t.name,t):typeof t=="object"&&Object.values(t).forEach(r=>{r&&r.name&&typeof r.handle=="function"&&this.coordinator.registerModifierModule(r.name,r)})}),Wi.forEach(({name:e,module:t})=>{let r=t.default||Object.values(t)[0];r&&this.coordinator.registerObserverModule(r.name||e,r)}),Fi.forEach(({name:e,module:t})=>{let r=t.default||Object.values(t)[0];r&&this.coordinator.registerListenerModule(r.name||e,r)})}init(){typeof window>"u"||(document.readyState==="loading"?document.addEventListener("DOMContentLoaded",()=>this.scan()):this.scan())}scan(){document.querySelectorAll(wt).forEach(t=>{t instanceof HTMLElement&&this.coordinator.initializeModules(t)})}get coordinate(){return this.coordinator}register(e,t,r){let o=this.coordinator;switch(e){case"attribute":o.registerAttributeModule(t,r);break;case"action":o.registerActionModule(t,r);break;case"modifier":o.registerModifierModule(t,r);break;case"listener":o.registerListenerModule(t,r);break;case"observer":o.registerObserverModule(t,r);break;case"utility":o.registerUtilityModule(t,r);break}}},bc=typeof globalThis.WorkerGlobalScope<"u"&&typeof document>"u",Gt=typeof document<"u"?new Qt:null;if(bc)self.onmessage=n=>{n.data.type==="INIT_HEAP"&&console.log("[Nexus Worker] Predictive Heap Handshake OK")};else if(typeof document<"u"&&(me.start(),!document.querySelector("style[data-nexus-tailwind-bridge]")&&document.querySelector('script[src*="tailwindcss/browser"]'))){let n=Be(),e=Fe(n);if(e){let t=document.createElement("style");t.setAttribute("type","text/tailwindcss"),t.setAttribute("data-nexus-tailwind-bridge",""),t.textContent=e,document.head.appendChild(t)}}typeof window<"u"&&Gt&&(globalThis.Nexus=Gt,globalThis.Nexus.selfHeal={getHistory:Io},globalThis._NEXUS_RUNTIME=Gt.coordinator.runtimeContext);return ys(yc);})();
+  // src/modules/attributes/markdown.ts
+  var markdown_exports = {};
+  __export(markdown_exports, {
+    default: () => markdown_default
+  });
+  var markdownModule = {
+    name: "markdown",
+    attribute: "markdown",
+    handle: (el, value, runtime) => {
+      const parseMarkdown = (md) => {
+        let html = md || "";
+        const codeBlocks = [];
+        html = html.replace(/```([a-z]*)\n([\s\S]*?)```/gim, (_match, lang, code) => {
+          const id = `__CODE_BLOCK_${codeBlocks.length}__`;
+          const escaped = code.replace(/</g, "&lt;").replace(/>/g, "&gt;").trim();
+          codeBlocks.push(
+            `<pre class="bg-base-300 p-4 rounded-xl overflow-x-auto text-sm my-4 border border-base-200 font-mono shadow-inner text-base-content" data-lang="${lang}"><code>${escaped}</code></pre>`
+          );
+          return id;
+        });
+        html = html.replace(/`([^`]+)`/g, '<code class="bg-base-200 text-primary px-1.5 py-0.5 rounded font-mono text-sm">$1</code>');
+        html = html.replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold mt-6 mb-3 text-base-content">$1</h3>');
+        html = html.replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold mt-8 mb-4 border-b border-base-300 pb-2 border-opacity-50 text-base-content">$1</h2>');
+        html = html.replace(/^# (.*$)/gim, '<h1 class="text-4xl font-extrabold mt-10 mb-6 tracking-tight text-base-content">$1</h1>');
+        html = html.replace(/^\s*> (.*$)/gim, '<blockquote class="border-l-4 border-primary bg-primary/5 pl-4 py-2 my-4 italic opacity-90 rounded-r-lg text-base-content">$1</blockquote>');
+        html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-base-content">$1</strong>');
+        html = html.replace(/\*(.*?)\*/g, '<em class="italic opacity-90">$1</em>');
+        html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="link link-primary hover:text-primary-focus transition-colors">$1</a>');
+        html = html.replace(/^\s*-\s+(.*$)/gim, '<li class="ml-6 list-disc marker:text-primary/50 py-0.5 text-base-content">$1</li>');
+        html = html.replace(/(<li class="ml-6 list-disc[^>]*>.*<\/li>[\s\n]*)+/gim, (match) => `<ul class="mt-2 mb-4 space-y-1">
+${match}</ul>
+`);
+        html = html.split("\n").map((line) => {
+          const trimmed = line.trim();
+          if (trimmed.length > 0 && !trimmed.startsWith("<") && !trimmed.startsWith("__CODE_BLOCK_")) {
+            return `<p class="mb-4 leading-relaxed opacity-90 text-base-content">${trimmed}</p>`;
+          }
+          return line;
+        }).join("\n");
+        html = html.replace(/__CODE_BLOCK_(\d+)__/g, (_match, idx) => codeBlocks[parseInt(idx, 10)]);
+        return html;
+      };
+      const render = () => {
+        const content = value ? runtime.evaluate(el, value) : el.innerHTML || el.innerText;
+        const mdText = String(content || "").trim();
+        if (!el.classList.contains("nexus-markdown-body")) {
+          el.classList.add("nexus-markdown-body", "font-sans", "antialiased");
+        }
+        const transpiled = parseMarkdown(mdText);
+        if (el.innerHTML !== transpiled) {
+          el.innerHTML = transpiled;
+          runtime.processElement(el);
+        }
+      };
+      if (value) {
+        const [_runner, cleanup] = runtime.elementBoundEffect(el, render);
+        return cleanup;
+      } else {
+        render();
+      }
+    }
+  };
+  var markdown_default = markdownModule;
+
+  // src/modules/attributes/mask.ts
+  var mask_exports2 = {};
+  __export(mask_exports2, {
+    default: () => mask_default,
+    maskModule: () => maskModule
+  });
+
+  // src/modules/sprites/mask.ts
+  var mask_exports = {};
+  __export(mask_exports, {
+    format: () => format,
+    mask: () => mask
+  });
+  function stripDown(template, input) {
+    const regexes = {
+      "9": /[0-9]/,
+      "a": /[a-zA-Z]/,
+      "*": /[a-zA-Z0-9]/
+    };
+    let inputIdx = 0;
+    let result = "";
+    for (let i = 0; i < template.length && inputIdx < input.length; i++) {
+      const char = template[i];
+      const regex = regexes[char];
+      if (regex) {
+        while (inputIdx < input.length) {
+          if (regex.test(input[inputIdx])) {
+            result += input[inputIdx];
+            inputIdx++;
+            break;
+          }
+          inputIdx++;
+        }
+      } else {
+        if (input[inputIdx] === char) {
+          inputIdx++;
+        }
+      }
+    }
+    return result;
+  }
+  function buildUp(template, stripped) {
+    if (!stripped)
+      return "";
+    let strippedIdx = 0;
+    let result = "";
+    for (let i = 0; i < template.length && strippedIdx < stripped.length; i++) {
+      const char = template[i];
+      if (["9", "a", "*"].includes(char)) {
+        result += stripped[strippedIdx];
+        strippedIdx++;
+      } else {
+        result += char;
+      }
+    }
+    return result;
+  }
+  function format(value, template) {
+    if (!value || !template)
+      return value;
+    const stripped = stripDown(template, value);
+    return buildUp(template, stripped);
+  }
+  var mask = {
+    format
+  };
+
+  // src/modules/attributes/mask.ts
+  var maskModule = {
+    name: "mask",
+    handle(el, value, runtime) {
+      if (!(el instanceof HTMLInputElement)) {
+        runtime.warn("data-mask only supported on <input> elements.", el);
+        return;
+      }
+      let lastValue = el.value;
+      let template = runtime.evaluate(el, value) || value;
+      const onInput = () => {
+        if (!template) {
+          template = runtime.evaluate(el, value) || value;
+        }
+        if (!template)
+          return;
+        const cursor = el.selectionStart;
+        const unformatted = el.value;
+        if (lastValue.length > unformatted.length) {
+          lastValue = unformatted;
+          return;
+        }
+        const formatted = format(unformatted, template);
+        el.value = formatted;
+        lastValue = formatted;
+        if (cursor !== null) {
+          const newPos = format(unformatted.slice(0, cursor), template).length;
+          el.setSelectionRange(newPos, newPos);
+        }
+      };
+      el.addEventListener("input", onInput);
+      onInput();
+      return () => {
+        el.removeEventListener("input", onInput);
+      };
+    }
+  };
+  var mask_default = maskModule;
+
+  // src/modules/attributes/on.ts
+  var on_exports = {};
+  __export(on_exports, {
+    default: () => on_default
+  });
+  init_debug();
+  var onModule = {
+    name: "on",
+    attribute: "on",
+    handle: (el, value, runtime, parsedAttr) => {
+      const parsed = parsedAttr || runtime.parseAttribute("data-on", runtime, el);
+      if (!parsed || !parsed.argument)
+        return;
+      const eventName = parsed.argument;
+      const modifiers = parsed.modifiers;
+      try {
+        let handler = (e) => {
+          const detail = e.detail;
+          const extras = {
+            $evt: e,
+            $detail: detail,
+            $newValue: e.target?.value ?? e.target?.checked ?? detail
+          };
+          return runtime.evaluate(el, value, extras);
+        };
+        let target = el;
+        let options = false;
+        const targetModifiers = /* @__PURE__ */ new Set(["window", "document", "outside"]);
+        const optionModifiers = /* @__PURE__ */ new Set(["passive", "capture"]);
+        modifiers.forEach((mod) => {
+          const [modName, fullArg] = mod.includes("-") ? [mod.slice(0, mod.indexOf("-")), mod.slice(mod.indexOf("-") + 1)] : [mod, ""];
+          if (targetModifiers.has(modName)) {
+            if (modName === "window")
+              target = window;
+            if (modName === "document" || modName === "outside")
+              target = document;
+            return;
+          }
+          if (optionModifiers.has(modName)) {
+            if (modName === "passive")
+              options = { passive: true };
+            if (modName === "capture")
+              options = true;
+            return;
+          }
+          const modifierModule = runtime.getModifier(modName);
+          if (modifierModule) {
+            handler = modifierModule.handle(handler, el, fullArg, runtime);
+          }
+        });
+        target.addEventListener(eventName, handler, options);
+        if (eventName === "load" && document.readyState !== "loading" || eventName === "DOMContentLoaded" && document.readyState !== "loading") {
+          if (target === window || target === document || target === el) {
+            try {
+              handler(new Event(eventName));
+            } catch {
+            }
+          }
+        }
+        return () => target.removeEventListener(eventName, handler, options);
+      } catch (e) {
+        initError("on", `Failed to attach listener ${eventName}: ${e instanceof Error ? e.message : String(e)}`, el, value);
+      }
+    }
+  };
+  var on_default = onModule;
+
+  // src/modules/attributes/preserve.ts
+  var preserve_exports = {};
+  __export(preserve_exports, {
+    default: () => preserve_default
+  });
+  init_consts();
+  var preserveModule = {
+    name: "preserve",
+    attribute: "preserve",
+    handle: (el, _value, _runtime) => {
+      el.setAttribute(DATA_PRESERVE_ATTR, "true");
+      return () => {
+      };
+    }
+  };
+  var preserve_default = preserveModule;
+
+  // src/modules/attributes/pwa.ts
+  var pwa_exports = {};
+  __export(pwa_exports, {
+    default: () => pwa_default
+  });
+  init_debug();
+  var pwaModule = {
+    name: "pwa",
+    attribute: "pwa",
+    handle: (el, expression, runtime) => {
+      let config;
+      try {
+        config = runtime.evaluate(el, expression);
+      } catch (e) {
+        reportError(new Error(`PWA: Evaluation error: ${e}`), el);
+        return;
+      }
+      if (!config)
+        return;
+      const pwaState = runtime.reactive({
+        isOnline: navigator.onLine,
+        isInstalled: false,
+        updateAvailable: false,
+        deferredPrompt: null,
+        _waitingWorker: null,
+        install: async () => {
+          if (!pwaState.deferredPrompt) {
+            runtime.log("PWA: No install prompt available yet.");
+            return false;
+          }
+          pwaState.deferredPrompt.prompt();
+          const { outcome } = await pwaState.deferredPrompt.userChoice;
+          if (outcome === "accepted") {
+            pwaState.deferredPrompt = null;
+            return true;
+          }
+          return false;
+        },
+        update: () => {
+          if (pwaState._waitingWorker) {
+            pwaState._waitingWorker.postMessage({ type: "SKIP_WAITING" });
+            window.location.reload();
+          }
+        }
+      });
+      runtime.setGlobalSignal("$pwa", pwaState);
+      const cleanupFns = [];
+      const updateOnlineStatus = () => {
+        pwaState.isOnline = navigator.onLine;
+      };
+      globalThis.addEventListener("online", updateOnlineStatus);
+      globalThis.addEventListener("offline", updateOnlineStatus);
+      cleanupFns.push(
+        () => globalThis.removeEventListener("online", updateOnlineStatus),
+        () => globalThis.removeEventListener("offline", updateOnlineStatus)
+      );
+      if (config.sw && "serviceWorker" in navigator) {
+        navigator.serviceWorker.register(config.sw).then((reg) => {
+          runtime.log(`PWA: ServiceWorker registered for scope: ${reg.scope}`);
+          if (reg.waiting) {
+            pwaState.updateAvailable = true;
+            pwaState._waitingWorker = reg.waiting;
+          }
+          reg.onupdatefound = () => {
+            const installingWorker = reg.installing;
+            if (installingWorker) {
+              installingWorker.onstatechange = () => {
+                if (installingWorker.state === "installed" && navigator.serviceWorker.controller) {
+                  pwaState.updateAvailable = true;
+                  pwaState._waitingWorker = installingWorker;
+                }
+              };
+            }
+          };
+        }).catch((err2) => reportError(new Error(`PWA: ServiceWorker registration failed: ${err2}`), el));
+        let refreshing = false;
+        const onControllerChange = () => {
+          if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+          }
+        };
+        navigator.serviceWorker.addEventListener("controllerchange", onControllerChange);
+        cleanupFns.push(() => navigator.serviceWorker.removeEventListener("controllerchange", onControllerChange));
+      }
+      if (config.themeColor) {
+        let meta = document.querySelector('meta[name="theme-color"]');
+        if (!meta) {
+          meta = document.createElement("meta");
+          meta.setAttribute("name", "theme-color");
+          document.head.appendChild(meta);
+        }
+        meta.setAttribute("content", config.themeColor);
+      }
+      if (config.manifest) {
+        let manifestLink = document.querySelector('link[rel="manifest"]');
+        if (!manifestLink) {
+          manifestLink = document.createElement("link");
+          manifestLink.setAttribute("rel", "manifest");
+          document.head.appendChild(manifestLink);
+        }
+        manifestLink.setAttribute("href", config.manifest);
+      }
+      if (config.icon) {
+        let appleIcon = document.querySelector('link[rel="apple-touch-icon"]');
+        if (!appleIcon) {
+          appleIcon = document.createElement("link");
+          appleIcon.setAttribute("rel", "apple-touch-icon");
+          document.head.appendChild(appleIcon);
+        }
+        appleIcon.setAttribute("href", config.icon);
+      }
+      const onBeforeInstall = (e) => {
+        e.preventDefault();
+        pwaState.deferredPrompt = e;
+      };
+      globalThis.addEventListener("beforeinstallprompt", onBeforeInstall);
+      cleanupFns.push(() => globalThis.removeEventListener("beforeinstallprompt", onBeforeInstall));
+      const onAppInstalled = () => {
+        pwaState.isInstalled = true;
+        pwaState.deferredPrompt = null;
+      };
+      globalThis.addEventListener("appinstalled", onAppInstalled);
+      cleanupFns.push(() => globalThis.removeEventListener("appinstalled", onAppInstalled));
+      return () => cleanupFns.forEach((fn) => fn());
+    }
+  };
+  var pwa_default = pwaModule;
+
+  // src/modules/attributes/raf.ts
+  var raf_exports = {};
+  __export(raf_exports, {
+    default: () => raf_default
+  });
+  init_debug();
+  var rafModule = {
+    name: "raf",
+    attribute: "on-raf",
+    handle: (el, expression, runtime) => {
+      let frame;
+      let lastTime = performance.now();
+      const extras = { $time: 0, $delta: 0 };
+      const loop = (time) => {
+        const delta = time - lastTime;
+        lastTime = time;
+        extras.$time = time;
+        extras.$delta = delta;
+        try {
+          runtime.evaluate(el, expression, extras);
+        } catch (e) {
+          reportError(new Error(`RAF error: ${e}`), el);
+          return;
+        }
+        frame = requestAnimationFrame(loop);
+      };
+      frame = requestAnimationFrame(loop);
+      return () => cancelAnimationFrame(frame);
+    }
+  };
+  var raf_default = rafModule;
+
+  // src/modules/attributes/route.ts
+  var route_exports = {};
+  __export(route_exports, {
+    default: () => route_default,
+    routeAttributeModule: () => routeAttributeModule
+  });
+  init_debug();
+  var routeAttributeModule = {
+    name: "route-attribute",
+    attribute: "route",
+    // maps to data-route
+    handle: (el, routePath, runtime, parsed) => {
+      try {
+        if (parsed?.argument)
+          return;
+        const globalSignals = runtime.globalSignals();
+        const router = globalSignals["router"];
+        if (!router || !router.addRoute) {
+          reportError(
+            new Error("data-route used but #router not found. Ensure data-router is present."),
+            el
+          );
+          return;
+        }
+        const name = el.getAttribute("data-route-name") || void 0;
+        const redirect = el.getAttribute("data-route-redirect") || void 0;
+        const layout = el.getAttribute("data-route-layout") || void 0;
+        const component = el.getAttribute("data-component") || void 0;
+        const metaStr = el.getAttribute("data-route-meta");
+        const beforeEnterExpr = el.getAttribute("data-route-before-enter");
+        const afterEnterExpr = el.getAttribute("data-route-after-enter");
+        const beforeLeaveExpr = el.getAttribute("data-route-before-leave");
+        const afterLeaveExpr = el.getAttribute("data-route-after-leave");
+        const handlerExpr = el.getAttribute("data-route-handler");
+        const shadowAttr = el.getAttribute("data-route-shadow");
+        const internal = shadowAttr === "" || shadowAttr === "true" || shadowAttr === "shadow";
+        let meta = {};
+        if (metaStr) {
+          try {
+            meta = runtime.evaluate(el, metaStr);
+          } catch (e) {
+            reportError(new Error(`Invalid data-route-meta: ${e}`), el);
+          }
+        }
+        const readSignal = (dotted) => {
+          const parts = String(dotted).split(".");
+          let cur = runtime.globalSignals();
+          for (const p of parts) {
+            if (cur && typeof cur === "object" && p in cur) {
+              cur = cur[p];
+            } else {
+              return void 0;
+            }
+          }
+          return cur;
+        };
+        const makeHook = (expr) => expr ? (to, from) => runtime.evaluate(el, expr, {
+          $to: to,
+          $from: from,
+          ctx: { to, from, signals: { value: readSignal } }
+        }) : void 0;
+        const routeRecord = {
+          path: routePath,
+          element: el,
+          name,
+          redirect,
+          layout,
+          component,
+          meta,
+          internal,
+          source: "declared",
+          beforeEnter: makeHook(beforeEnterExpr),
+          afterEnter: makeHook(afterEnterExpr),
+          beforeLeave: makeHook(beforeLeaveExpr),
+          afterLeave: makeHook(afterLeaveExpr),
+          handler: makeHook(handlerExpr)
+        };
+        router.addRoute(routeRecord);
+        return () => {
+          router.removeRoute(routeRecord);
+        };
+      } catch (e) {
+        reportError(e instanceof Error ? e : new Error(String(e)), el);
+      }
+    }
+  };
+  var route_default = routeAttributeModule;
+
+  // src/modules/attributes/router.ts
+  var router_exports = {};
+  __export(router_exports, {
+    default: () => router_default,
+    routerAttributeModule: () => routerAttributeModule
+  });
+  init_debug();
+  init_consts();
+  function pathToRegex(path) {
+    const keys = [];
+    let hasWildcard = false;
+    let pattern = path.replace(/:([a-zA-Z0-9_]+)\?/g, (_, key) => {
+      keys.push(key);
+      return "(?:/([^/]+))?";
+    }).replace(/:([a-zA-Z0-9_]+)/g, (_, key) => {
+      keys.push(key);
+      return "([^/]+)";
+    });
+    if (pattern.endsWith("*")) {
+      hasWildcard = true;
+      pattern = pattern.slice(0, -1) + "(.*)";
+    } else {
+      pattern = pattern.replace(/\*/g, ".*");
+    }
+    return { regex: new RegExp(`^${pattern}$`), keys, hasWildcard };
+  }
+  function fillPath(pattern, params) {
+    let out = pattern.replace(/:([a-zA-Z0-9_]+)\??/g, (_, key) => {
+      const v = params[key];
+      return v !== void 0 && v !== null ? String(v) : "";
+    }).replace(/\*$/, () => params.wildcard !== void 0 ? String(params.wildcard) : "");
+    out = out.replace(/\/{2,}/g, "/");
+    if (out.length > 1 && out.endsWith("/"))
+      out = out.slice(0, -1);
+    return out || "/";
+  }
+  function autoDetectBasePath() {
+    const baseEl = document.querySelector("base[href]");
+    if (baseEl && baseEl.href) {
+      try {
+        const u = new URL(baseEl.href, globalThis.location.href);
+        const p = u.pathname;
+        return p.endsWith("/") ? p : p + "/";
+      } catch {
+      }
+    }
+    const pathname = globalThis.location.pathname;
+    const lastSlash = pathname.lastIndexOf("/");
+    const lastSeg = pathname.substring(lastSlash + 1);
+    if (lastSeg.includes(".")) {
+      return pathname.substring(0, lastSlash + 1);
+    }
+    return "/";
+  }
+  var routerAttributeModule = {
+    name: "router-attribute",
+    attribute: "router",
+    handle: (el, initConfig, runtime) => {
+      try {
+        runtime.debug("Initializing data-router on", el);
+        const appBase = globalThis.location.href;
+        let cfg = {};
+        if (initConfig && initConfig.trim()) {
+          try {
+            const evaluated = runtime.evaluate(el, initConfig);
+            if (evaluated && typeof evaluated === "object") {
+              cfg = evaluated;
+            }
+          } catch {
+          }
+        }
+        const mode = cfg.mode === "static" || cfg.mode === "hybrid" ? cfg.mode : "signal";
+        const defaultPath = typeof cfg.default === "string" && cfg.default ? cfg.default : null;
+        const initialFile = globalThis.location.pathname.split("/").pop() || "";
+        const manualBase = document.documentElement.getAttribute("data-router.base-path");
+        const basePath = manualBase !== null && manualBase !== "" ? manualBase.endsWith("/") ? manualBase : manualBase + "/" : autoDetectBasePath();
+        const pagesDir = typeof cfg.pagesDir === "string" && cfg.pagesDir ? cfg.pagesDir.replace(/\/+$/, "") : "_pages";
+        const resolvePagesPath = (ref2, fallback) => {
+          const raw = ref2 && ref2.trim() ? ref2.trim() : fallback;
+          if (raw.startsWith("/") || raw.startsWith("http"))
+            return raw;
+          return `/${pagesDir}/${raw.replace(/^\/+/, "")}`;
+        };
+        const errorPage = resolvePagesPath(cfg.error, "error.html");
+        const routerConfig = {
+          mode,
+          default: defaultPath,
+          basePath,
+          manifest: typeof cfg.manifest === "string" && cfg.manifest ? cfg.manifest : void 0,
+          dynamic: cfg.dynamic === true,
+          shadow: cfg.shadow ?? void 0,
+          pagesDir,
+          error: errorPage
+        };
+        const stripBase = (pathname) => {
+          let p = pathname;
+          if (basePath !== "/" && p.startsWith(basePath)) {
+            p = p.substring(basePath.length - 1);
+          }
+          if (!p.startsWith("/"))
+            p = "/" + p;
+          return p;
+        };
+        const applyBase = (path) => {
+          if (basePath === "/" || basePath === "")
+            return path;
+          if (path.startsWith("/"))
+            return basePath + path.substring(1);
+          return basePath + path;
+        };
+        const normalizeHref = (href) => {
+          let resolved;
+          try {
+            resolved = new URL(href, appBase);
+          } catch {
+            return href;
+          }
+          return resolved.pathname + resolved.search + resolved.hash;
+        };
+        const globToRegex = (glob) => {
+          let pattern = glob.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*\*\/?/g, "::globstar::").replace(/\*/g, "[^/]*").replace(/::globstar::/g, ".*");
+          return new RegExp(`^${pattern}$`);
+        };
+        const shadowMatch = (path) => {
+          const shadows = state.config.shadow;
+          if (!shadows)
+            return false;
+          const globs = Array.isArray(shadows) ? shadows : [shadows];
+          return globs.some((g) => globToRegex(g).test(path));
+        };
+        const buildManifest = async () => {
+          const entries = routeList.slice();
+          const manifestUrl = state.config.manifest;
+          if (manifestUrl) {
+            try {
+              let raw;
+              if (runtime.fetch) {
+                raw = await runtime.fetch.request(applyBase(manifestUrl), { responseType: "text" }, el);
+              } else {
+                raw = await (await fetch(applyBase(manifestUrl))).text();
+              }
+              const parsed = JSON.parse(raw);
+              const list = Array.isArray(parsed) ? parsed : parsed.routes ?? [];
+              for (const entry of list) {
+                if (!entry || typeof entry.path !== "string")
+                  continue;
+                const meta = pathToRegex(entry.path);
+                const rec = {
+                  path: entry.path,
+                  element: document.documentElement,
+                  name: entry.name,
+                  redirect: entry.redirect,
+                  layout: entry.layout,
+                  component: entry.component,
+                  meta: entry.meta,
+                  internal: entry.internal === true || shadowMatch(entry.path),
+                  source: "manifest",
+                  ...meta
+                };
+                rec.matcher = meta.regex;
+                entries.push(rec);
+              }
+            } catch (e) {
+              reportError(new Error(`router: failed to load manifest "${manifestUrl}": ${e}`), el);
+            }
+          }
+          state.manifest = entries.filter((r) => !r.internal).slice();
+          state.routes = entries.slice();
+        };
+        const routeList = [];
+        const matchMeta = /* @__PURE__ */ new WeakMap();
+        const state = runtime.shallowReactive({
+          path: stripBase(globalThis.location.pathname),
+          params: {},
+          query: {},
+          hash: globalThis.location.hash,
+          loading: false,
+          error: null,
+          errorCode: null,
+          basePath,
+          mode,
+          route: null,
+          layout: null,
+          outlet: null,
+          meta: {},
+          name: null,
+          previous: null,
+          scrollPosition: { x: 0, y: 0 },
+          currentRoute: null,
+          routes: [],
+          // Declarative strategy snapshot + resolved manifest.
+          config: routerConfig,
+          manifest: [],
+          // Per-tab history bookkeeping (native history is the single store).
+          activeTabId: null,
+          tabPaths: {},
+          tabMeta: {},
+          navigate(url, opts) {
+            if (url.startsWith("http") || url.startsWith("//")) {
+              globalThis.location.href = url;
+              return;
+            }
+            const target = applyBase(url);
+            const tabId = opts?.tabId ?? getActiveTabId() ?? state.activeTabId ?? null;
+            if (tabId) {
+              state.tabPaths[tabId] = stripBase(target);
+              if (opts?.title !== void 0 || opts?.icon !== void 0) {
+                state.tabMeta[tabId] = {
+                  ...state.tabMeta[tabId] || {},
+                  ...opts?.title !== void 0 ? { title: opts.title } : {},
+                  ...opts?.icon !== void 0 ? { icon: opts.icon } : {}
+                };
+              }
+            }
+            if ("navigation" in globalThis) {
+              globalThis.navigation.navigate(target, {
+                history: opts?.replace ? "replace" : "push",
+                state: { tabId, scrollY: globalThis.scrollY, title: opts?.title, icon: opts?.icon }
+              });
+            } else {
+              const histState = { tabId, scrollY: globalThis.scrollY, title: opts?.title, icon: opts?.icon };
+              if (opts?.replace)
+                globalThis.history.replaceState(histState, "", target);
+              else
+                globalThis.history.pushState(histState, "", target);
+              updateRoute(target);
+            }
+          },
+          // Back/forward for a tab. Drives the native history; the popstate /
+          // navigation handler resolves which tab the destination belongs to and
+          // switches the active tab if it lands on another tab's entry.
+          back(_opts) {
+            if ("navigation" in globalThis)
+              globalThis.navigation.back();
+            else
+              globalThis.history.back();
+          },
+          forward(_opts) {
+            if ("navigation" in globalThis)
+              globalThis.navigation.forward();
+            else
+              globalThis.history.forward();
+          },
+          canBack(_tabId) {
+            if ("navigation" in globalThis) {
+              const nav = globalThis.navigation;
+              return nav && typeof nav.canGoBack === "function" ? nav.canGoBack : true;
+            }
+            return globalThis.history.length > 1;
+          },
+          canForward(_tabId) {
+            if ("navigation" in globalThis) {
+              const nav = globalThis.navigation;
+              return nav && typeof nav.canGoForward === "function" ? nav.canGoForward : true;
+            }
+            return globalThis.history.length > 1;
+          },
+          navigateByName(name, params = {}, query, opts) {
+            const route = routeList.find((r) => r.name === name);
+            if (!route) {
+              reportError(new Error(`navigateByName: no route named "${name}"`), el);
+              return;
+            }
+            let target = fillPath(route.path, params);
+            if (query && Object.keys(query).length) {
+              target += "?" + state.buildQuery(query);
+            }
+            state.navigate(target, opts);
+          },
+          isActive(path, exact = false) {
+            const current = state.path;
+            if (exact)
+              return current === path;
+            if (path === "/")
+              return current === "/";
+            return current === path || current.startsWith(path + "/");
+          },
+          buildQuery(obj) {
+            const usp = new URLSearchParams();
+            for (const [k, v] of Object.entries(obj)) {
+              if (v === void 0 || v === null)
+                continue;
+              usp.append(k, String(v));
+            }
+            return usp.toString();
+          },
+          addRoute(route) {
+            runtime.debug("addRoute called with path:", route.path);
+            const meta = pathToRegex(route.path);
+            matchMeta.set(route, meta);
+            routeList.push(route);
+            state.routes = routeList.slice();
+            queueMicrotask(() => {
+              buildManifest();
+              updateRoute(globalThis.location.href);
+            });
+          },
+          removeRoute(route) {
+            const idx = routeList.indexOf(route);
+            if (idx > -1)
+              routeList.splice(idx, 1);
+            matchMeta.delete(route);
+            state.routes = routeList.slice();
+            queueMicrotask(() => buildManifest());
+          },
+          // Intuitive navigate: resolve a name via the manifest, else treat the
+          // target as a path. This is the friendly entrypoint for app code.
+          go(target, opts) {
+            if (!target)
+              return;
+            const named = routeList.find((r) => r.name === target);
+            if (named) {
+              state.navigateByName(target, {}, void 0, { replace: opts?.replace });
+              return;
+            }
+            state.navigate(target, opts);
+          },
+          // Match a path (default: current) and return the RouteInfo the router
+          // would use — without navigating. Useful for guards/preview UI.
+          match(path) {
+            const p = path ? stripBase(path) : state.path;
+            for (const route of routeList) {
+              const meta = matchMeta.get(route);
+              if (!meta)
+                continue;
+              const m = p.match(meta.regex);
+              if (m) {
+                const params = {};
+                meta.keys.forEach((key, i) => {
+                  params[key] = m[i + 1] || "";
+                });
+                if (meta.hasWildcard)
+                  params.wildcard = m[meta.keys.length + 1] || "";
+                return buildInfo(route, p, params, state.query, state.hash);
+              }
+            }
+            if (mode === "static" || mode === "hybrid") {
+              return buildInfo(null, p, {}, state.query, state.hash);
+            }
+            return null;
+          },
+          // Render the active tab's stored path through the outlet. Tab switching
+          // uses a direct synchronous state commit — it skips ALL lifecycle hooks
+          // (beforeLeave, beforeEnter, handler, afterEnter) to avoid cascading
+          // re-renders and clobbering.
+          renderActiveTab() {
+            const id = getActiveTabId();
+            if (!id)
+              return;
+            let path = state.tabPaths[id];
+            if (!path) {
+              path = stripBase(globalThis.location.pathname) || "/";
+              state.tabPaths[id] = path;
+            }
+            if (path === "custom-component") {
+              state.route = null;
+              state.layout = null;
+              publishOutlet(null);
+              const _ct = globals.tabs?.find((t) => t.id === id);
+              const url = globalThis.location.pathname + globalThis.location.search + globalThis.location.hash;
+              suppressNavIntercept = true;
+              globalThis.history.replaceState({ tabId: id, scrollY: globalThis.scrollY }, "", url);
+              suppressNavIntercept = false;
+              return;
+            }
+            const fakeUrl = new URL(applyBase(path), globalThis.location.origin);
+            const switchPath = path;
+            const query = {};
+            fakeUrl.searchParams.forEach((val, key) => query[key] = val);
+            let matched = null;
+            const params = {};
+            for (const route of routeList) {
+              const meta2 = matchMeta.get(route);
+              if (!meta2)
+                continue;
+              const m = switchPath.match(meta2.regex);
+              if (m) {
+                matched = route;
+                meta2.keys.forEach((key, i) => {
+                  params[key] = m[i + 1] || "";
+                });
+                if (meta2.hasWildcard)
+                  params.wildcard = m[meta2.keys.length + 1] || "";
+                break;
+              }
+            }
+            let staticComponent = null;
+            if (!matched && (mode === "static" || mode === "hybrid")) {
+              staticComponent = resolveStaticComponent(switchPath);
+            }
+            state.path = switchPath;
+            state.hash = fakeUrl.hash;
+            state.query = query;
+            state.params = params;
+            state.currentRoute = matched;
+            state.meta = matched?.meta ?? {};
+            state.name = matched?.name ?? null;
+            state.route = matched?.component ?? staticComponent ?? null;
+            state.layout = matched?.layout ?? null;
+            publishOutlet(state.layout ?? state.route);
+            state.error = null;
+            commitVisibility(matched);
+            const target = applyBase(switchPath);
+            const meta = state.tabMeta[id] || {};
+            suppressNavIntercept = true;
+            globalThis.history.replaceState(
+              { tabId: id, scrollY: globalThis.scrollY, title: meta.title, icon: meta.icon },
+              "",
+              target
+            );
+            suppressNavIntercept = false;
+          },
+          // Switch the active tab (also updates the layout's global signal so the
+          // tab bar + panels react).
+          setActiveTab(id) {
+            setActiveTabId(id);
+            state.renderActiveTab();
+          },
+          // Surface a server/HTTP error and render the generic `error` page.
+          // A numeric/string code (500/502/503/504…) is published to
+          // `#router.errorCode` so a single error page can present the right
+          // message. Omit or pass null to clear the error and resume routing.
+          setError(code) {
+            if (code === void 0 || code === null || code === "") {
+              state.error = null;
+              state.errorCode = null;
+              return;
+            }
+            state.errorCode = String(code);
+            const onErr = globalThis.location.pathname === applyBase("/error");
+            if (!onErr) {
+              state.navigate("/error", { replace: true });
+            }
+          },
+          // Map an href / name / component URL to its component file URL and
+          // fire a (de-duplicated, sticky-cached) fetch so the panel swap is
+          // instant on arrival. Driven by the predictive engine for hover-intent
+          // pre-warming, and at boot for the known route surface.
+          prewarm(ref2) {
+            if (!ref2)
+              return;
+            let url = null;
+            if (ref2.startsWith("_") || ref2.startsWith("/_")) {
+              url = applyBase(ref2.replace(/^\/+/, ""));
+            } else {
+              const named = routeList.find((r) => r.name === ref2);
+              if (named?.component) {
+                url = applyBase(named.component.replace(/^\/+/, ""));
+              } else {
+                try {
+                  const resolved = resolveStaticComponent(stripBase(ref2));
+                  const maps = routeList.some(
+                    (r) => r.component && r.component.endsWith(resolved.replace(/^\/+/, ""))
+                  );
+                  if (maps)
+                    url = resolved;
+                } catch {
+                }
+              }
+            }
+            if (!url)
+              return;
+            try {
+              runtime.fetch.request(url, { responseType: "text" }, el);
+            } catch {
+            }
+          }
+        });
+        runtime.setGlobalSignal("router", state);
+        const globals = runtime.globalSignals();
+        const getActiveTabId = () => typeof globals.activeTabId === "string" && globals.activeTabId || null;
+        const setActiveTabId = (id) => {
+          runtime.setGlobalSignal("activeTabId", id);
+        };
+        let tabSwitching = false;
+        runtime.watch(
+          () => globals.activeTabId,
+          () => {
+            if (tabSwitching)
+              return;
+            try {
+              state.renderActiveTab();
+            } catch (_e) {
+            }
+          }
+        );
+        let suppressNavIntercept = false;
+        let previousInfo = null;
+        let navToken = 0;
+        const runHook = async (hook, to, from) => {
+          if (!hook)
+            return {};
+          try {
+            const result = await Promise.resolve(hook(to, from));
+            if (result === false)
+              return { abort: true };
+            if (typeof result === "string")
+              return { redirect: result };
+            return {};
+          } catch (e) {
+            state.error = { type: "hook_error", error: e };
+            reportError(e instanceof Error ? e : new Error(String(e)), el);
+            return { abort: true };
+          }
+        };
+        const buildInfo = (route, path, params, query, hash) => ({
+          path,
+          params,
+          query,
+          hash,
+          name: route?.name,
+          meta: route?.meta,
+          component: route?.component,
+          layout: route?.layout
+        });
+        const shownDisplay = /* @__PURE__ */ new WeakMap();
+        const commitVisibility = (matched) => {
+          routeList.forEach((r) => {
+            const showable = r === matched && !r.component;
+            if (showable) {
+              if (!shownDisplay.has(r.element)) {
+                const inline = r.element.style.display;
+                shownDisplay.set(r.element, inline === "none" ? "" : inline);
+              }
+              runtime.reconcileStyle(r.element, { display: shownDisplay.get(r.element) || "" });
+            } else {
+              if (!shownDisplay.has(r.element)) {
+                const inline = r.element.style.display;
+                shownDisplay.set(r.element, inline === "none" ? "" : inline);
+              }
+              runtime.reconcileStyle(r.element, { display: "none" });
+            }
+          });
+        };
+        const restoreScroll = (hash) => {
+          const savedScrollY = globalThis.history.state?.scrollY;
+          if (savedScrollY !== void 0 && savedScrollY !== null) {
+            globalThis.scrollTo(0, savedScrollY);
+          } else if (hash) {
+            const targetEl = document.getElementById(hash.substring(1));
+            if (targetEl)
+              targetEl.scrollIntoView();
+            else
+              globalThis.scrollTo(0, 0);
+          } else {
+            globalThis.scrollTo(0, 0);
+          }
+          state.scrollPosition = { x: globalThis.scrollX, y: globalThis.scrollY };
+        };
+        const resolveStaticComponent = (path) => {
+          const dir = (state.config.pagesDir || "").replace(/^\/+|\/+$/g, "");
+          const rel = path === "/" || path === "" ? "/index.html" : path.replace(/\/$/, "");
+          const withExt = rel.endsWith(".html") ? rel : rel + ".html";
+          const full = dir ? `/${dir}${withExt}` : withExt;
+          return applyBase(full);
+        };
+        const publishOutlet = (url) => {
+          state.outlet = url;
+        };
+        const updateRoute = async (fullPath) => {
+          const token = ++navToken;
+          const url = new URL(fullPath, globalThis.location.origin);
+          let path = stripBase(url.pathname);
+          if (url.hash && url.hash.startsWith("#/")) {
+            path = url.hash.substring(1);
+          } else if (!url.hash && initialFile && initialFile !== "404.html" && // Only collapse when the served document is an actual HTML file
+          // (e.g. /router.html). A clean route like /profile must NOT be
+          // collapsed to "/", or deep links lose their path.
+          /\.html?$/i.test(initialFile) && path === "/" + initialFile) {
+            path = "/";
+          }
+          if (defaultPath && path === "/" && defaultPath !== "/") {
+            state.navigate(defaultPath, { replace: true });
+            return;
+          }
+          const query = {};
+          url.searchParams.forEach((val, key) => query[key] = val);
+          let matched = null;
+          const params = {};
+          for (const route of routeList) {
+            const meta = matchMeta.get(route);
+            if (!meta)
+              continue;
+            const match = path.match(meta.regex);
+            if (match) {
+              runtime.debug(`Matched route: ${route.path} via path ${path}`);
+              matched = route;
+              meta.keys.forEach((key, i) => {
+                params[key] = match[i + 1] || "";
+              });
+              if (meta.hasWildcard) {
+                params.wildcard = match[meta.keys.length + 1] || "";
+              }
+              break;
+            }
+          }
+          if (matched && matched.redirect) {
+            state.navigate(matched.redirect, { replace: true });
+            return;
+          }
+          let staticComponent = null;
+          const errorPage2 = state.config.error ?? resolvePagesPath(void 0, "error.html");
+          const cleanErrorPath = "/error";
+          const alreadyOnError = path === cleanErrorPath || url.pathname === applyBase(cleanErrorPath);
+          if (!matched) {
+            if (!alreadyOnError && (mode === "static" || mode === "hybrid")) {
+              const candidate = resolveStaticComponent(path);
+              const known = routeList.some((r) => {
+                if (r.component && r.component.endsWith(candidate.replace(/^\/+/, "")))
+                  return true;
+                return false;
+              });
+              if (known) {
+                staticComponent = candidate;
+              } else if (path === "/" || path === "") {
+                staticComponent = resolveStaticComponent("/");
+              } else {
+                state.navigate(cleanErrorPath, { replace: true });
+                return;
+              }
+            } else if (!alreadyOnError) {
+              state.navigate(cleanErrorPath, { replace: true });
+              return;
+            }
+          }
+          const toInfo = buildInfo(matched, path, params, query, url.hash);
+          const fromRoute = state.currentRoute;
+          const fromInfo = previousInfo;
+          const resolvedComponent = matched?.component ?? staticComponent ?? null;
+          state.route = resolvedComponent;
+          state.layout = matched?.layout ?? null;
+          publishOutlet(state.layout ?? state.route);
+          state.path = path;
+          if (path !== cleanErrorPath && url.pathname !== applyBase(cleanErrorPath)) {
+            state.error = null;
+            state.errorCode = null;
+          }
+          state.loading = true;
+          if (fromRoute) {
+            const r = await runHook(fromRoute.beforeLeave, toInfo, fromInfo);
+            if (token !== navToken) {
+              state.loading = false;
+              return;
+            }
+            if (r.abort) {
+              state.loading = false;
+              return;
+            }
+            if (r.redirect) {
+              state.loading = false;
+              state.navigate(r.redirect, { replace: true });
+              return;
+            }
+          }
+          if (matched) {
+            const r = await runHook(matched.beforeEnter, toInfo, fromInfo);
+            if (token !== navToken) {
+              state.loading = false;
+              return;
+            }
+            if (r.abort) {
+              state.loading = false;
+              return;
+            }
+            if (r.redirect) {
+              state.loading = false;
+              state.navigate(r.redirect, { replace: true });
+              return;
+            }
+            const h = await runHook(matched.handler, toInfo, fromInfo);
+            if (token !== navToken) {
+              state.loading = false;
+              return;
+            }
+            if (h.abort) {
+              state.loading = false;
+              return;
+            }
+            if (h.redirect) {
+              state.loading = false;
+              state.navigate(h.redirect, { replace: true });
+              return;
+            }
+          }
+          if (token !== navToken) {
+            state.loading = false;
+            return;
+          }
+          const outgoingPrevious = fromRoute ? { path: state.path, meta: fromRoute.meta } : previousInfo ? { path: previousInfo.path, meta: previousInfo.meta } : null;
+          state.hash = url.hash;
+          state.query = query;
+          state.params = params;
+          state.currentRoute = matched;
+          state.meta = matched?.meta ?? {};
+          state.name = matched?.name ?? null;
+          state.previous = outgoingPrevious;
+          state.route = matched?.component ?? staticComponent ?? null;
+          state.layout = matched?.layout ?? null;
+          publishOutlet(state.layout ?? state.route);
+          const _at = getActiveTabId();
+          if (_at) {
+            const tabs = globals.tabs || [];
+            const atIdx = tabs.findIndex((t) => t.id === _at);
+            if (atIdx >= 0 && state.tabPaths[_at] === "custom-component") {
+            } else {
+              state.tabPaths[_at] = path;
+              const nextRoute = matched?.component ?? staticComponent ?? null;
+              const idx = tabs.findIndex((t) => t.id === _at);
+              if (idx >= 0 && nextRoute) {
+                const cur = tabs[idx].content;
+                const meta = state.tabMeta[_at] || {};
+                const nextTitle = meta.title || (nextRoute === "_pages/home.html" ? "Home" : nextRoute === "_pages/settings.html" ? "Settings" : nextRoute === "_pages/profile.html" ? "Profile" : nextRoute === errorPage2 ? state.errorCode ? "Error " + state.errorCode : "Error" : "Tab");
+                const nextIcon = meta.icon || (nextRoute === "_pages/home.html" ? "material-symbols-light:home-outline" : nextRoute === "_pages/settings.html" ? "material-symbols-light:settings-outline" : nextRoute === "_pages/profile.html" ? "material-symbols-light:person-outline" : "material-symbols-light:article-outline");
+                if (cur !== nextRoute || tabs[idx].title !== nextTitle || tabs[idx].icon !== nextIcon) {
+                  const nt = tabs.slice();
+                  nt[idx] = { ...nt[idx], content: nextRoute, title: nextTitle, icon: nextIcon };
+                  runtime.setGlobalSignal("tabs", nt);
+                }
+              }
+            }
+          }
+          if (matched || staticComponent) {
+            commitVisibility(matched);
+            state.error = null;
+            state.errorCode = null;
+            state.loading = false;
+            restoreScroll(url.hash);
+            if (path && path !== "/index.html" && path !== errorPage2 && !path.startsWith("/_internal/")) {
+              const recent = globals.recent || [];
+              const labels = {
+                "/": "Home",
+                "/settings": "Settings",
+                "/profile": "Profile",
+                "/_internal/admin-console": "Internal Console"
+              };
+              const title = labels[path] || path.replace(/^\//, "").replace(/-/g, " ");
+              const entry = { path, title };
+              const next = [entry, ...recent.filter((r) => r.path !== path && r.path !== "/index.html")].slice(0, 5);
+              runtime.setGlobalSignal("recent", next);
+            }
+            if (matched) {
+              queueMicrotask(async () => {
+                await runHook(matched.afterEnter, toInfo, fromInfo);
+                if (fromRoute && fromRoute !== matched) {
+                  await runHook(fromRoute.afterLeave, toInfo, fromInfo);
+                }
+              });
+            }
+            previousInfo = toInfo;
+          } else {
+            state.loading = false;
+            const onErrorPage = path === cleanErrorPath || url.pathname === applyBase(cleanErrorPath);
+            if (onErrorPage) {
+              staticComponent = errorPage2;
+              commitVisibility(null);
+              state.route = staticComponent;
+              publishOutlet(staticComponent);
+            }
+          }
+        };
+        const onNavigate = (e) => {
+          if (suppressNavIntercept)
+            return;
+          if (!e.canIntercept || e.hashChange || e.downloadRequest !== null) {
+            return;
+          }
+          const url = new URL(globalThis.location.origin + normalizeHref(e.destination.url));
+          if (url.origin !== globalThis.location.origin)
+            return;
+          const destState = e.destination?.state;
+          const destTab = destState && typeof destState.tabId === "string" ? destState.tabId : null;
+          if (destTab && destTab !== getActiveTabId()) {
+            setActiveTabId(destTab);
+          }
+          if (destTab && destState) {
+            if (destState.title !== void 0 || destState.icon !== void 0) {
+              state.tabMeta[destTab] = {
+                ...state.tabMeta[destTab] || {},
+                ...destState.title !== void 0 ? { title: destState.title } : {},
+                ...destState.icon !== void 0 ? { icon: destState.icon } : {}
+              };
+            }
+          }
+          e.intercept({
+            async handler() {
+              await updateRoute(url.href);
+            }
+          });
+        };
+        if ("navigation" in globalThis) {
+          globalThis.navigation.addEventListener("navigate", onNavigate);
+        }
+        const onPopState = (event) => {
+          const st = event && event.state;
+          const tab = st && typeof st.tabId === "string" ? st.tabId : null;
+          if (tab && tab !== getActiveTabId()) {
+            setActiveTabId(tab);
+          }
+          if (tab && st) {
+            if (st.title !== void 0 || st.icon !== void 0) {
+              state.tabMeta[tab] = {
+                ...state.tabMeta[tab] || {},
+                ...st.title !== void 0 ? { title: st.title } : {},
+                ...st.icon !== void 0 ? { icon: st.icon } : {}
+              };
+            }
+          }
+          updateRoute(globalThis.location.href);
+        };
+        const popStateEvent = `${CUSTOM_EVENT_PREFIX}popstate`;
+        if (!("navigation" in globalThis)) {
+          globalThis.addEventListener("popstate", onPopState);
+        }
+        document.addEventListener(popStateEvent, onPopState);
+        queueMicrotask(() => {
+          buildManifest();
+          updateRoute(globalThis.location.href);
+          for (const r of routeList) {
+            if (r.component)
+              state.prewarm(r.component);
+          }
+          state.prewarm(state.config.error ?? resolvePagesPath(void 0, "error.html"));
+        });
+        return () => {
+          if ("navigation" in globalThis) {
+            globalThis.navigation.removeEventListener("navigate", onNavigate);
+          }
+          if (!("navigation" in globalThis)) {
+            globalThis.removeEventListener("popstate", onPopState);
+          }
+          document.removeEventListener(popStateEvent, onPopState);
+        };
+      } catch (e) {
+        reportError(e instanceof Error ? e : new Error(String(e)), el);
+      }
+    }
+  };
+  var router_default = routerAttributeModule;
+
+  // src/modules/attributes/show.ts
+  var show_exports = {};
+  __export(show_exports, {
+    default: () => show_default
+  });
+  init_debug();
+  var showModule = {
+    name: "show",
+    attribute: "show",
+    handle: (el, value, runtime) => {
+      const originalDisplay = el.style.display === "none" ? "" : el.style.display;
+      try {
+        const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
+          const show = Boolean(runtime.evaluate(el, value));
+          reconcileStyle(el, { display: show ? originalDisplay || "" : "none" });
+        });
+        return cleanup;
+      } catch (e) {
+        initError("show", `Failed to initialize show: ${e instanceof Error ? e.message : String(e)}`, el, value);
+      }
+    }
+  };
+  var show_default = showModule;
+
+  // src/modules/attributes/signal.ts
+  var signal_exports = {};
+  __export(signal_exports, {
+    default: () => signal_default
+  });
+  function cloneValue(val) {
+    if (Array.isArray(val)) {
+      return val.map(cloneValue);
+    }
+    if (val !== null && typeof val === "object") {
+      const res = {};
+      for (const key of Object.keys(val)) {
+        res[key] = cloneValue(val[key]);
+      }
+      return res;
+    }
+    return val;
+  }
+  var signalModule = {
+    name: "signal",
+    attribute: "signal",
+    metadata: { after: ["ingest"] },
+    handle: (el, value, runtime, parsedAttr) => {
+      runtime.log(`[Nexus Signal] Handling signal on <${el.tagName}> with value:`, value.substring(0, 50) + "...");
+      let expression = value;
+      if (!expression && el.tagName === "SCRIPT") {
+        expression = el.textContent || "";
+      }
+      if (!expression.trim())
+        return;
+      const parsed = parsedAttr || runtime.parseAttribute("data-signal", runtime, el);
+      const isGlobal = parsed?.argument === "global" || parsed?.modifiers.includes("global") || el.hasAttribute("data-init") || el.hasAttribute("data-ux-init");
+      const { ghostKeys, typeHints } = parseGhostKeys(expression);
+      const initialGhostState = {};
+      ghostKeys.forEach((key) => initialGhostState[key] = void 0);
+      const scopeId = el.id || `el_${Math.random().toString(36).slice(2)}`;
+      const stateRef = isGlobal ? runtime.ref(runtime.globalSignals()) : unifiedRef(initialGhostState, scopeId, typeHints);
+      const scopeProxy = createScopeProxy(
+        stateRef,
+        (key, value2) => {
+          if (isGlobal) {
+            const globals = runtime.globalSignals();
+            globals[key] = value2;
+          }
+        },
+        () => runtime.triggerRef(stateRef)
+      );
+      let addCleanup;
+      let lastEvaluatedState = null;
+      let isEvaluating = false;
+      const [_runner, effectCleanup] = runtime.elementBoundEffect(el, () => {
+        if (isEvaluating)
+          return;
+        isEvaluating = true;
+        try {
+          let newState;
+          try {
+            newState = runtime.evaluate(el, expression);
+          } catch (e) {
+            runtime.reportError(e instanceof Error ? e : new Error(String(e)), el, expression);
+            return;
+          }
+          if (typeof newState === "object" && newState !== null) {
+            if (!lastEvaluatedState) {
+              const seeded = {};
+              if (isGlobal) {
+                const globals = runtime.globalSignals();
+                Object.keys(newState).forEach((key) => {
+                  if (!(key in globals)) {
+                    globals[key] = newState[key];
+                  }
+                  seeded[key] = cloneValue(globals[key]);
+                });
+                lastEvaluatedState = seeded;
+                stateRef.value = globals;
+              } else {
+                lastEvaluatedState = cloneValue(newState);
+                stateRef.value = newState;
+              }
+            } else {
+              const currentEval = newState;
+              let hasChanges = false;
+              if (isGlobal) {
+                const globals = runtime.globalSignals();
+                Object.keys(currentEval).forEach((key) => {
+                  const curVal = currentEval[key];
+                  const lastVal = lastEvaluatedState[key];
+                  let changed = curVal !== lastVal;
+                  if (changed && typeof curVal === "object" && curVal !== null) {
+                    changed = !deepEqual(curVal, lastVal);
+                  }
+                  if (changed) {
+                    globals[key] = curVal;
+                    lastEvaluatedState[key] = cloneValue(curVal);
+                    hasChanges = true;
+                  }
+                });
+              } else {
+                const value2 = stateRef.value;
+                Object.keys(currentEval).forEach((key) => {
+                  const curVal = currentEval[key];
+                  const lastVal = lastEvaluatedState[key];
+                  let changed = curVal !== lastVal;
+                  if (changed && typeof curVal === "object" && curVal !== null) {
+                    changed = !deepEqual(curVal, lastVal);
+                  }
+                  if (changed) {
+                    value2[key] = curVal;
+                    lastEvaluatedState[key] = cloneValue(curVal);
+                    hasChanges = true;
+                  }
+                });
+              }
+              if (hasChanges) {
+                runtime.triggerRef(stateRef);
+              }
+            }
+          }
+        } finally {
+          isEvaluating = false;
+        }
+      });
+      if (!isGlobal) {
+        addCleanup = addScopeToNode(el, scopeProxy);
+      }
+      return () => {
+        if (addCleanup)
+          addCleanup();
+        effectCleanup();
+      };
+    }
+  };
+  var signal_default = signalModule;
+
+  // src/modules/attributes/style.ts
+  var style_exports = {};
+  __export(style_exports, {
+    default: () => style_default
+  });
+  init_debug();
+  var styleModule = {
+    name: "style",
+    attribute: "style",
+    handle: (el, value, runtime, parsedAttr) => {
+      const parsed = parsedAttr || runtime.parseAttribute("data-style", runtime, el);
+      if (!parsed || parsed.argument)
+        return;
+      try {
+        const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
+          const result = runtime.evaluate(el, value);
+          runtime.reconcileStyle(el, result);
+        });
+        return cleanup;
+      } catch (e) {
+        initError("style", `Failed to reconcile style: ${e instanceof Error ? e.message : String(e)}`, el, value);
+      }
+    }
+  };
+  var style_default = styleModule;
+
+  // src/modules/attributes/switcher.ts
+  var switcher_exports = {};
+  __export(switcher_exports, {
+    default: () => switcher_default
+  });
+  init_debug();
+  var switcherModule = {
+    name: "switcher",
+    attribute: "switcher",
+    metadata: {
+      after: ["for", "signal"]
+    },
+    handle: (el, expression, runtime, parsedAttr) => {
+      if (parsedAttr?.argument)
+        return;
+      runtime.log(`Nexus Switcher [${expression}]: Initializing on`, el);
+      const optionsAttr = el.getAttribute("data-switcher-options");
+      if (!optionsAttr) {
+        initError("switcher", "Missing data-switcher-options attribute", el, expression);
+        return;
+      }
+      const helpers = {
+        $switch: () => {
+          const items = runtime.evaluate(el, optionsAttr);
+          const current = runtime.evaluate(el, expression);
+          if (!Array.isArray(items)) {
+            runtime.warn(`Nexus Switcher [${expression}]: Options "${optionsAttr}" is not an array`, items);
+            return;
+          }
+          const idx = items.findIndex((item) => (item.id || item) === current);
+          const nextIdx = (idx + 1) % items.length;
+          const nextItem = items[nextIdx];
+          const nextValue = nextItem.id || nextItem;
+          runtime.log(`Nexus Switcher [${expression}]: Cycling ${current} -> ${nextValue}`);
+          try {
+            runtime.evaluate(el, `${expression} = ${JSON.stringify(nextValue)}`);
+          } catch (e) {
+            console.error("Nexus Switcher: Failed to update signal", expression, e);
+          }
+        },
+        $isActive: (id) => {
+          const current = runtime.evaluate(el, expression);
+          const isActive = current === id;
+          return isActive;
+        },
+        get $activeItem() {
+          const items = runtime.evaluate(el, optionsAttr);
+          const current = runtime.evaluate(el, expression);
+          if (!Array.isArray(items))
+            return null;
+          return items.find((item) => (item.id || item) === current) || null;
+        }
+      };
+      runtime.log(`Nexus Switcher [${expression}]: Injecting helpers on`, el);
+      addScopeToNode(el, helpers);
+      try {
+        const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
+          const currentVal = runtime.evaluate(el, expression);
+          const items = runtime.evaluate(el, optionsAttr);
+          runtime.log(`Nexus Switcher [${expression}]: Active state changed to:`, currentVal, "options:", items);
+          Array.from(el.children).forEach((child) => {
+            if (child instanceof HTMLElement) {
+              child.classList.add("switcher-transitioning");
+              const onEnd = () => {
+                child.classList.remove("switcher-transitioning");
+                child.removeEventListener("transitionend", onEnd);
+                clearTimeout(fallback);
+              };
+              child.addEventListener("transitionend", onEnd, { once: true });
+              const fallback = setTimeout(onEnd, 1e3);
+            }
+          });
+        });
+        return cleanup;
+      } catch (e) {
+        initError("switcher", `Failed to initialize switcher: ${e instanceof Error ? e.message : String(e)}`, el, expression);
+      }
+    }
+  };
+  var switcher_default = switcherModule;
+
+  // src/modules/attributes/teleport.ts
+  var teleport_exports = {};
+  __export(teleport_exports, {
+    default: () => teleport_default,
+    teleportAttribute: () => teleportAttribute
+  });
+  init_consts();
+  var teleportAttribute = {
+    name: "teleport",
+    attribute: "teleport",
+    handle: (element, value, runtime, parsed) => {
+      const modifiers = parsed?.modifiers ?? [];
+      if (parsed?.argument === "mode" && !modifiers.length)
+        return;
+      if (modifiers.includes("drop")) {
+        const mode = element.getAttribute("data-teleport-mode") || "move";
+        const onDragOver = (e) => {
+          e.preventDefault();
+          if (e.dataTransfer) {
+            e.dataTransfer.dropEffect = mode === "clone" ? "copy" : "move";
+          }
+        };
+        const onDrop = (e) => {
+          try {
+            e.preventDefault();
+            e.stopPropagation();
+            const dragState = globalThis._dragState;
+            if (!dragState) {
+              console.warn("[teleport] No drag state \u2014 was the source dragged?");
+              return;
+            }
+            const { fromIndex, sourceContainer, element: draggedEl, sourceList, reorderEngine } = dragState;
+            if (!Array.isArray(sourceList)) {
+              console.warn("[teleport] sourceList is not an array - check expression evaluation");
+              return;
+            }
+            const targetList = runtime.evaluate(element, value);
+            if (!Array.isArray(targetList)) {
+              console.warn("[teleport] targetList expression did not evaluate to an array");
+              return;
+            }
+            const isSameList = sourceList === targetList;
+            let toIndex;
+            if (reorderEngine && isSameList) {
+              toIndex = reorderEngine.getFinalToIndex();
+              if (toIndex === -1) {
+                console.warn("[teleport] Reorder engine active but no final index available");
+                return;
+              }
+            } else {
+              const dropTarget = e.target.closest("[data-drag]");
+              const draggableChildren = [];
+              for (let i = 0; i < element.children.length; i++) {
+                const child = element.children[i];
+                if (child.hasAttribute("data-drag") && child.getAttribute("draggable") === "true" && getComputedStyle(child).display !== "none" && !child[IS_TEMPLATE_KEY] && child.closest("[data-teleport\\:drop]") === element) {
+                  draggableChildren.push(child);
+                }
+              }
+              if (dropTarget && draggableChildren.includes(dropTarget)) {
+                toIndex = draggableChildren.indexOf(dropTarget);
+                const rect = dropTarget.getBoundingClientRect();
+                const cursorY = e.clientY - rect.top;
+                if (cursorY > rect.height / 2) {
+                  toIndex += 1;
+                }
+              } else {
+                toIndex = draggableChildren.length;
+              }
+            }
+            const doMutate = () => {
+              try {
+                if (reorderEngine && isSameList) {
+                  return;
+                }
+                if (mode === "clone") {
+                  const item = sourceList[fromIndex];
+                  if (item !== void 0) {
+                    targetList.splice(toIndex, 0, { ...item });
+                  }
+                } else if (mode === "swap") {
+                  if (sourceList !== targetList)
+                    return;
+                  if (fromIndex === toIndex)
+                    return;
+                  const tmp = sourceList[fromIndex];
+                  sourceList[fromIndex] = targetList[toIndex];
+                  targetList[toIndex] = tmp;
+                } else {
+                  if (sourceList === targetList) {
+                    if (fromIndex === toIndex)
+                      return;
+                    const [item] = sourceList.splice(fromIndex, 1);
+                    const insertIndex = fromIndex < toIndex ? toIndex - 1 : toIndex;
+                    sourceList.splice(insertIndex, 0, item);
+                  } else {
+                    const [item] = sourceList.splice(fromIndex, 1);
+                    if (item !== void 0) {
+                      targetList.splice(toIndex, 0, item);
+                    }
+                  }
+                }
+              } catch (err2) {
+                runtime.reportError(err2 instanceof Error ? err2 : new Error(String(err2)), element, "teleport-mutate");
+              }
+            };
+            if ("startViewTransition" in document && doMutate) {
+              document.startViewTransition(doMutate);
+            } else {
+              doMutate();
+            }
+            runtime.globalSignals()["drag:drop"] = {
+              sourceList,
+              targetList,
+              fromIndex,
+              toIndex,
+              mode,
+              item: targetList[toIndex]
+            };
+          } catch (err2) {
+            runtime.reportError(err2 instanceof Error ? err2 : new Error(String(err2)), element, "teleport-drop");
+          }
+        };
+        element.addEventListener("dragover", onDragOver);
+        element.addEventListener("drop", onDrop);
+        return () => {
+          element.removeEventListener("dragover", onDragOver);
+          element.removeEventListener("drop", onDrop);
+        };
+      }
+      if (element.tagName.toLowerCase() !== "template") {
+        runtime.warn?.("[Teleport] DOM teleportation should be used on <template> tags.", element);
+      }
+      const targetSelector = value.trim();
+      if (!targetSelector)
+        return;
+      let clone;
+      if (element.tagName.toLowerCase() === "template") {
+        clone = element.content.cloneNode(true).firstElementChild;
+      } else {
+        clone = element.cloneNode(true);
+        clone.removeAttribute("data-teleport");
+      }
+      if (element[DATA_STACK_KEY]) {
+        clone[DATA_STACK_KEY] = element[DATA_STACK_KEY];
+      }
+      const placeInDom = () => {
+        const target = document.querySelector(targetSelector);
+        if (!target) {
+          runtime.warn?.(`[Teleport] Target "${targetSelector}" not found.`);
+          return;
+        }
+        if (modifiers.includes("prepend")) {
+          target.insertBefore(clone, target.firstChild);
+        } else {
+          target.appendChild(clone);
+        }
+      };
+      placeInDom();
+      runtime.processElement?.(clone);
+      return () => {
+        if (clone.parentNode) {
+          clone.parentNode.removeChild(clone);
+        }
+      };
+    }
+  };
+  var teleport_default = teleportAttribute;
+
+  // src/modules/attributes/theme.ts
+  var theme_exports = {};
+  __export(theme_exports, {
+    default: () => theme_default
+  });
+  init_debug();
+  var ALL_DAISYUI_THEMES = [
+    "light",
+    "dark",
+    "cupcake",
+    "bumblebee",
+    "emerald",
+    "corporate",
+    "synthwave",
+    "retro",
+    "cyberpunk",
+    "valentine",
+    "halloween",
+    "garden",
+    "forest",
+    "aqua",
+    "lofi",
+    "pastel",
+    "fantasy",
+    "wireframe",
+    "black",
+    "luxury",
+    "dracula",
+    "cmyk",
+    "autumn",
+    "business",
+    "acid",
+    "lemonade",
+    "night",
+    "coffee",
+    "winter",
+    "dim",
+    "nord",
+    "sunset"
+  ];
+  var themeModule = {
+    name: "theme",
+    attribute: "theme",
+    metadata: {
+      before: ["signal", "switcher", "class", "style", "attr", "on", "text", "html"]
+    },
+    handle: (el, expression, runtime) => {
+      let rawConfig = {};
+      if (expression && expression.trim()) {
+        try {
+          rawConfig = runtime.evaluate(el, expression);
+        } catch (_) {
+          if (expression.startsWith("{")) {
+            try {
+              rawConfig = new Function("return (" + expression + ")")();
+            } catch (_2) {
+            }
+          } else {
+            rawConfig = { default: expression.trim() };
+          }
+        }
+      }
+      if (!rawConfig || typeof rawConfig !== "object") {
+        rawConfig = { default: "auto" };
+      }
+      let initialModeState = 2;
+      if (rawConfig.default === "light" || rawConfig.default === 0)
+        initialModeState = 0;
+      else if (rawConfig.default === "dark" || rawConfig.default === 1)
+        initialModeState = 1;
+      let savedLight = rawConfig.light?.theme || "light";
+      let savedDark = rawConfig.dark?.theme || "dark";
+      if (typeof localStorage !== "undefined") {
+        try {
+          const savedState = localStorage.getItem("ux_theme_state");
+          if (savedState !== null)
+            initialModeState = Number(savedState);
+          const l = localStorage.getItem("ux_theme_light");
+          if (l)
+            savedLight = l;
+          const d = localStorage.getItem("ux_theme_dark");
+          if (d)
+            savedDark = d;
+        } catch (_) {
+        }
+      }
+      const modeState = runtime.ref(initialModeState);
+      const lightSelected = runtime.ref(savedLight);
+      const darkSelected = runtime.ref(savedDark);
+      const systemDark = runtime.ref(false);
+      let mq = null;
+      let listener = null;
+      if (typeof window !== "undefined" && window.matchMedia) {
+        mq = window.matchMedia("(prefers-color-scheme: dark)");
+        systemDark.value = mq.matches;
+        listener = (e) => {
+          systemDark.value = e.matches;
+        };
+        mq.addEventListener("change", listener);
+      }
+      const currentTheme = runtime.computed(() => {
+        const s = modeState.value;
+        if (s === 2) {
+          return systemDark.value ? darkSelected.value : lightSelected.value;
+        }
+        return s === 1 ? darkSelected.value : lightSelected.value;
+      });
+      const activeModeName = runtime.computed(() => {
+        const s = modeState.value;
+        if (s === 0)
+          return "light";
+        if (s === 1)
+          return "dark";
+        return "system";
+      });
+      const themeIcon = runtime.computed(() => {
+        const s = modeState.value;
+        if (s === 0)
+          return "material-symbols-light:light-mode-outline";
+        if (s === 1)
+          return "material-symbols-light:dark-mode-outline";
+        return "material-symbols-light:light-mode-auto-outline";
+      });
+      const themeTypesComputed = runtime.computed(() => [
+        { type: "light", title: "Light", selected: lightSelected.value },
+        { type: "dark", title: "Dark", selected: darkSelected.value },
+        { type: "system", title: "System", selected: "system" }
+      ]);
+      const helpers = {
+        $theme: {
+          get state() {
+            return modeState.value;
+          },
+          set state(v) {
+            modeState.value = v;
+          },
+          get current() {
+            return currentTheme.value;
+          },
+          get mode() {
+            return activeModeName.value;
+          },
+          get isSystem() {
+            return modeState.value === 2;
+          },
+          get themes() {
+            return ALL_DAISYUI_THEMES;
+          },
+          get types() {
+            return themeTypesComputed.value;
+          }
+        },
+        get $activeTheme() {
+          return currentTheme.value;
+        },
+        get $activeMode() {
+          return activeModeName.value;
+        },
+        get $themeIcon() {
+          return themeIcon.value;
+        },
+        $switchTheme: () => {
+          modeState.value = (modeState.value + 1) % 3;
+          if (typeof localStorage !== "undefined") {
+            try {
+              localStorage.setItem("ux_theme_state", String(modeState.value));
+            } catch (_) {
+            }
+          }
+        },
+        $setTheme: (t) => {
+          const isDark = modeState.value === 1 || modeState.value === 2 && systemDark.value;
+          if (isDark) {
+            darkSelected.value = t;
+            if (typeof localStorage !== "undefined") {
+              try {
+                localStorage.setItem("ux_theme_dark", t);
+              } catch (_) {
+              }
+            }
+          } else {
+            lightSelected.value = t;
+            if (typeof localStorage !== "undefined") {
+              try {
+                localStorage.setItem("ux_theme_light", t);
+              } catch (_) {
+              }
+            }
+          }
+        }
+      };
+      addScopeToNode(el, helpers);
+      try {
+        const [_runner, cleanupEffect2] = runtime.elementBoundEffect(el, () => {
+          const themeToApply = currentTheme.value;
+          const isDark = activeModeName.value === "dark" || activeModeName.value === "system" && systemDark.value;
+          if (themeToApply) {
+            el.setAttribute("data-theme", themeToApply);
+          }
+          if (isDark) {
+            el.classList.add("dark");
+            el.classList.remove("light");
+          } else {
+            el.classList.add("light");
+            el.classList.remove("dark");
+          }
+        });
+        return () => {
+          if (mq && listener)
+            mq.removeEventListener("change", listener);
+          cleanupEffect2();
+        };
+      } catch (e) {
+        initError("theme", `Failed to bind theme: ${e instanceof Error ? e.message : String(e)}`, el, expression);
+      }
+    }
+  };
+  var theme_default = themeModule;
+
+  // src/modules/attributes/var.ts
+  var var_exports = {};
+  __export(var_exports, {
+    default: () => var_default
+  });
+  init_debug();
+  var varModule = {
+    name: "var",
+    attribute: "var",
+    handle: (el, value, runtime) => {
+      if (hasScope(el)) {
+        return () => {
+        };
+      }
+      try {
+        const initialData = runtime.evaluate(el, value);
+        if (typeof initialData === "object" && initialData !== null) {
+          const reactiveData = runtime.reactive(initialData);
+          const removeScope = addScopeToNode(el, reactiveData);
+          return removeScope;
+        } else {
+          throw new Error("data-var must evaluate to an object");
+        }
+      } catch (e) {
+        initError("var", `Failed to init var: ${e instanceof Error ? e.message : String(e)}`, el, value);
+      }
+    }
+  };
+  var var_default = varModule;
+
+  // src/modules/sprites/bgFetch.ts
+  var bgFetch_exports = {};
+  __export(bgFetch_exports, {
+    default: () => bgFetchFactory
+  });
+  function bgFetchFactory(runtime) {
+    return {
+      $bgFetch: {
+        /**
+         * Start a background fetch.
+         * Returns reactive { data: BackgroundFetchRegistration | null, status, error }.
+         */
+        fetch(id, requests, options) {
+          const op = runtime.reactive({
+            data: null,
+            status: "pending",
+            error: null
+          });
+          if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) {
+            op.error = "Service Worker not available";
+            op.status = "error";
+            return op;
+          }
+          (async () => {
+            try {
+              const reg = await navigator.serviceWorker.ready;
+              if (!("backgroundFetch" in reg)) {
+                op.error = "Background Fetch API not supported";
+                op.status = "error";
+                return;
+              }
+              const bgFetch = await reg.backgroundFetch.fetch(id, requests, options || {});
+              op.data = bgFetch;
+              op.status = "done";
+              bgFetch.addEventListener("progress", () => {
+                op.data = { ...bgFetch, downloaded: bgFetch.downloaded, downloadTotal: bgFetch.downloadTotal };
+              });
+            } catch (e) {
+              op.error = e instanceof Error ? e.message : String(e);
+              op.status = "error";
+            }
+          })();
+          return op;
+        },
+        /**
+         * Get an existing background fetch registration.
+         */
+        get(id) {
+          const op = runtime.reactive({
+            data: null,
+            status: "loading",
+            error: null
+          });
+          (async () => {
+            try {
+              const reg = await navigator.serviceWorker.ready;
+              if (!("backgroundFetch" in reg)) {
+                op.error = "Background Fetch API not supported";
+                op.status = "error";
+                return;
+              }
+              const bgFetch = await reg.backgroundFetch.get(id);
+              op.data = bgFetch;
+              op.status = "ready";
+            } catch (e) {
+              op.error = e instanceof Error ? e.message : String(e);
+              op.status = "error";
+            }
+          })();
+          return op;
+        },
+        /**
+         * Abort a background fetch.
+         */
+        abort(id) {
+          const op = runtime.reactive({
+            status: "pending",
+            error: null
+          });
+          (async () => {
+            try {
+              const reg = await navigator.serviceWorker.ready;
+              if (!("backgroundFetch" in reg)) {
+                op.error = "Background Fetch API not supported";
+                op.status = "error";
+                return;
+              }
+              const bgFetch = await reg.backgroundFetch.get(id);
+              if (bgFetch) {
+                await bgFetch.abort();
+                op.status = "done";
+              } else {
+                op.error = `No background fetch with id '${id}'`;
+                op.status = "error";
+              }
+            } catch (e) {
+              op.error = e instanceof Error ? e.message : String(e);
+              op.status = "error";
+            }
+          })();
+          return op;
+        }
+      }
+    };
+  }
+
+  // src/modules/sprites/bgSync.ts
+  var bgSync_exports = {};
+  __export(bgSync_exports, {
+    default: () => bgSyncFactory
+  });
+  function bgSyncFactory(runtime) {
+    return {
+      $bgSync: {
+        /**
+         * Register a one-time background sync.
+         * Returns reactive { status, error }.
+         */
+        register(tag) {
+          const op = runtime.reactive({
+            status: "pending",
+            error: null
+          });
+          if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) {
+            op.error = "Service Worker not available";
+            op.status = "error";
+            return op;
+          }
+          (async () => {
+            try {
+              const reg = await navigator.serviceWorker.ready;
+              if (!("sync" in reg)) {
+                op.error = "Background Sync API not supported";
+                op.status = "error";
+                return;
+              }
+              await reg.sync.register(tag);
+              op.status = "done";
+            } catch (e) {
+              op.error = e instanceof Error ? e.message : String(e);
+              op.status = "error";
+            }
+          })();
+          return op;
+        },
+        /**
+         * Get all registered sync tags.
+         * Returns reactive { data: string[], status, error }.
+         */
+        get tags() {
+          const op = runtime.reactive({
+            data: [],
+            status: "loading",
+            error: null
+          });
+          if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) {
+            op.error = "Service Worker not available";
+            op.status = "error";
+            return op;
+          }
+          (async () => {
+            try {
+              const reg = await navigator.serviceWorker.ready;
+              if (!("sync" in reg)) {
+                op.error = "Background Sync API not supported";
+                op.status = "error";
+                return;
+              }
+              const tags = await reg.sync.getTags();
+              op.data = tags;
+              op.status = "ready";
+            } catch (e) {
+              op.error = e instanceof Error ? e.message : String(e);
+              op.status = "error";
+            }
+          })();
+          return op;
+        }
+      }
+    };
+  }
+
+  // src/modules/sprites/flow.ts
+  var flow_exports2 = {};
+  __export(flow_exports2, {
+    default: () => flow_default2,
+    flowModule: () => flowModule
+  });
+  init_consts();
+  var flowModule = {
+    name: "flow",
+    key: "$flow",
+    sprites: (context) => {
+      const calculateControlOffset = (distance, curvature) => distance >= 0 ? 0.5 * distance : curvature * 25 * Math.sqrt(-distance);
+      const controlWithCurvature = (side, x1, y1, x2, y2, c) => {
+        switch (side) {
+          case "left":
+            return [x1 - calculateControlOffset(x1 - x2, c), y1];
+          case "right":
+            return [x1 + calculateControlOffset(x2 - x1, c), y1];
+          case "top":
+            return [x1, y1 - calculateControlOffset(y1 - y2, c)];
+          case "bottom":
+            return [x1, y1 + calculateControlOffset(y2 - y1, c)];
+        }
+      };
+      const bezierPath = (sx, sy, ssIde, tx, ty, tSide, curvature = 0.25) => {
+        const [scx, scy] = controlWithCurvature(ssIde, sx, sy, tx, ty, curvature);
+        const [tcx, tcy] = controlWithCurvature(tSide, tx, ty, sx, sy, curvature);
+        return `M${sx},${sy} C${scx},${scy} ${tcx},${tcy} ${tx},${ty}`;
+      };
+      const straightPath = (x1, y1, x2, y2) => `M ${x1} ${y1} L ${x2} ${y2}`;
+      const stepPath = (x1, y1, x2, y2) => {
+        const mx = x1 + (x2 - x1) / 2;
+        return `M ${x1} ${y1} L ${mx} ${y1} L ${mx} ${y2} L ${x2} ${y2}`;
+      };
+      const viewportOf = (el) => {
+        const flow = el?.closest("[data-flow]");
+        const vp = flow?.__nexusFlowViewport;
+        return vp ? { x: vp.x || 0, y: vp.y || 0, zoom: vp.zoom || 1 } : { x: 0, y: 0, zoom: 1 };
+      };
+      const flowContainer = (el) => el?.closest("[data-flow]") || null;
+      const screenToFlow = (clientX, clientY, container, vp) => {
+        const r = container.getBoundingClientRect();
+        return {
+          x: (clientX - r.left - vp.x) / vp.zoom,
+          y: (clientY - r.top - vp.y) / vp.zoom
+        };
+      };
+      const anchorFlow = (el, container, vp) => {
+        const r = el.getBoundingClientRect();
+        return screenToFlow(r.left + r.width / 2, r.top + r.height / 2, container, vp);
+      };
+      const inferSide = (handle, node) => {
+        const declared = (handle.getAttribute("data-flow-side") || "").toLowerCase();
+        if (declared === "left" || declared === "right" || declared === "top" || declared === "bottom") {
+          return declared;
+        }
+        const h = handle.getBoundingClientRect();
+        const n = node.getBoundingClientRect();
+        const hx = h.left + h.width / 2;
+        const hy = h.top + h.height / 2;
+        const relX = (hx - n.left) / (n.width || 1);
+        const relY = (hy - n.top) / (n.height || 1);
+        const dl = relX, dr = 1 - relX, dt = relY, db = 1 - relY;
+        const min = Math.min(dl, dr, dt, db);
+        if (min === dl)
+          return "left";
+        if (min === dr)
+          return "right";
+        if (min === dt)
+          return "top";
+        return "bottom";
+      };
+      const findHandle = (node, role) => {
+        const real = (sel) => Array.from(node.querySelectorAll(sel)).find((el) => !el[IS_TEMPLATE_KEY] && !el.hasAttribute("data-for")) || null;
+        return real(`[data-flow-handle="${role}"]`) || real("[data-flow-handle]");
+      };
+      const $flow = {
+        /** Screen coordinates -> flow-space (public, xyflow pointToRendererPoint). */
+        screenToFlow: (container, x, y, state) => screenToFlow(x, y, container, state),
+        /** Bounding box of a node collection in flow-space. */
+        getBounds: (nodes) => {
+          if (!nodes || nodes.length === 0)
+            return { x: 0, y: 0, w: 0, h: 0 };
+          let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+          nodes.forEach((n) => {
+            const p = n.position || n;
+            const x = p.x || 0, y = p.y || 0, w = n.w || n.width || 160, h = n.h || n.height || 90;
+            minX = Math.min(minX, x);
+            minY = Math.min(minY, y);
+            maxX = Math.max(maxX, x + w);
+            maxY = Math.max(maxY, y + h);
+          });
+          return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+        },
+        /** Center + zoom the viewport to fit all nodes (mutates viewport state). */
+        fitView: (container, state, nodes, padding = 40) => {
+          const bounds = $flow.getBounds(nodes);
+          if (bounds.w <= 0 || bounds.h <= 0)
+            return;
+          const rect = container.getBoundingClientRect();
+          const zoom = Math.min(
+            (rect.width - padding * 2) / bounds.w,
+            (rect.height - padding * 2) / bounds.h,
+            1.5
+          );
+          state.x = (rect.width - bounds.w * zoom) / 2 - bounds.x * zoom;
+          state.y = (rect.height - bounds.h * zoom) / 2 - bounds.y * zoom;
+          state.zoom = zoom;
+        },
+        /**
+         * Synchronous edge path string between two nodes (by DOM id), computed in
+         * flow-space so it is independent of the current pan/zoom. The edges SVG
+         * lives inside the transformed viewport, so this flow-space `d` renders
+         * correctly and stays attached to handles as the canvas pans/zooms.
+         *
+         * Uses the real xyflow directional bezier anchored at the source/target
+         * handle elements, inferring each handle's side from its geometry.
+         */
+        edge: (sourceId, targetId, options = {}) => {
+          const a = document.getElementById(sourceId);
+          const b = document.getElementById(targetId);
+          if (!a || !b)
+            return "";
+          const container = options.container || flowContainer(a) || flowContainer(b);
+          if (!container)
+            return "";
+          const vp = viewportOf(a);
+          const srcHandle = findHandle(a, "source");
+          const tgtHandle = findHandle(b, "target");
+          const sAnchor = srcHandle || a;
+          const tAnchor = tgtHandle || b;
+          const s = anchorFlow(sAnchor, container, vp);
+          const t = anchorFlow(tAnchor, container, vp);
+          const type = options.type || "bezier";
+          if (type === "straight")
+            return straightPath(s.x, s.y, t.x, t.y);
+          if (type === "step")
+            return stepPath(s.x, s.y, t.x, t.y);
+          const sSide = srcHandle ? inferSide(srcHandle, a) : "right";
+          const tSide = tgtHandle ? inferSide(tgtHandle, b) : "left";
+          return bezierPath(s.x, s.y, sSide, t.x, t.y, tSide, options.curvature ?? 0.25);
+        },
+        /**
+         * Reactive edge attached to two live DOM elements. Returns a reactive
+         * `{ d }` that self-updates every frame — used for the connection preview
+         * and any imperative edge rendering.
+         */
+        connect: (elA, elB, options = {}) => {
+          const pathData = reactive({ d: "" });
+          const update = () => {
+            if (!elA || !elB || typeof elA.getBoundingClientRect !== "function")
+              return;
+            const container = flowContainer(elA) || flowContainer(elB);
+            if (!container)
+              return;
+            const vp = viewportOf(elA);
+            const s = anchorFlow(elA, container, vp);
+            const t = anchorFlow(elB, container, vp);
+            const type = options.type || "bezier";
+            if (type === "straight") {
+              pathData.d = straightPath(s.x, s.y, t.x, t.y);
+              return;
+            }
+            if (type === "step") {
+              pathData.d = stepPath(s.x, s.y, t.x, t.y);
+              return;
+            }
+            pathData.d = bezierPath(
+              s.x,
+              s.y,
+              inferSide(elA, elA.parentElement || elA),
+              t.x,
+              t.y,
+              inferSide(elB, elB.parentElement || elB),
+              options.curvature ?? 0.25
+            );
+          };
+          const ticker = () => {
+            update();
+            requestAnimationFrame(ticker);
+          };
+          ticker();
+          return pathData;
+        }
+      };
+      context.$flow = $flow;
+      return $flow;
+    }
+  };
+  var flow_default2 = flowModule;
+
+  // src/modules/sprites/gql.ts
+  var gql_exports = {};
+  __export(gql_exports, {
+    configureGqlClient: () => configureGqlClient,
+    default: () => gql_default,
+    gqlSprite: () => gqlSprite
+  });
+  var defaultEndpoint = "/graphql";
+  function configureGqlClient(config) {
+    if (config.endpoint)
+      defaultEndpoint = config.endpoint;
+  }
+  async function executeGraphQL(endpoint, query, variables, operationName) {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        query,
+        variables: variables || {},
+        operationName
+      })
+    });
+    if (!response.ok) {
+      throw new Error(`GraphQL request failed: ${response.status} ${response.statusText}`);
+    }
+    const result = await response.json();
+    if (result.errors) {
+      return result;
+    }
+    return result;
+  }
+  function gqlSprite(runtime) {
+    const endpoint = runtime.config?.gqlEndpoint || defaultEndpoint;
+    return async (query, variables, options) => {
+      const actualEndpoint = options?.endpoint || endpoint;
+      const operationName = options?.operationName;
+      const result = runtime.reactive({
+        data: null,
+        errors: null,
+        loading: true,
+        status: "loading"
+      });
+      try {
+        const numericFields = [];
+        const fieldMatch = query.match(/\{[\s\S]*?\}\s*$/m);
+        if (fieldMatch) {
+          const queryBody = fieldMatch[0];
+          const topLevelFields = queryBody.match(/(?:query|mutation)\s*(?:\([^)]*\))?\s*\{([^{}]+)\{/);
+          if (topLevelFields) {
+            const fields = topLevelFields[1].split(",").map((f) => f.trim().split(" ")[0]);
+            fields.forEach((f) => {
+              if (/_id|_count|_amount|_price|_qty|num|age|year$/i.test(f)) {
+                numericFields.push(f);
+                heap.allocateNumeric(f);
+              }
+            });
+          }
+        }
+        const response = await executeGraphQL(actualEndpoint, query, variables, operationName);
+        if (response.data && typeof response.data === "object" && numericFields.length > 0) {
+          const dataObj = response.data;
+          Object.entries(dataObj).forEach(([key, value]) => {
+            if (value && typeof value === "object" && !Array.isArray(value)) {
+              const nested = value;
+              Object.entries(nested).forEach(([field, fieldValue]) => {
+                if (typeof fieldValue === "number" && numericFields.includes(field)) {
+                  heap.setNumeric(`${field}_0`, fieldValue);
+                }
+              });
+            }
+          });
+        }
+        result.data = response.data;
+        result.errors = response.errors || null;
+        result.status = response.errors ? "error" : "success";
+      } catch (err2) {
+        result.errors = [{
+          message: err2 instanceof Error ? err2.message : String(err2)
+        }];
+        result.status = "error";
+      } finally {
+        result.loading = false;
+      }
+      return result;
+    };
+  }
+  function gql_default(runtime) {
+    return {
+      $gql: gqlSprite(runtime)
+    };
+  }
+
+  // src/modules/sprites/mcp.ts
+  var mcp_exports2 = {};
+  __export(mcp_exports2, {
+    mcpModule: () => mcpModule
+  });
+  var mcpModule = {
+    name: "mcp",
+    key: "$mcp",
+    sprites: (context) => {
+      const client = context.mcp;
+      class StreamBuffer {
+        buffer = "";
+        lastFlush = 0;
+        signal;
+        constructor(targetSignal) {
+          this.signal = targetSignal;
+        }
+        append(chunk) {
+          this.buffer += chunk;
+          const now = performance.now();
+          if (now - this.lastFlush > 16) {
+            this.flush();
+          }
+        }
+        flush() {
+          this.signal.value = this.buffer;
+          this.lastFlush = performance.now();
+        }
+      }
+      return {
+        /**
+         * AI Sampling: $mcp.ask(prompt)
+         */
+        ask: (prompt) => {
+          if (!client)
+            return "Error: No MCP Server configured.";
+          const output = reactive({ value: "" });
+          const buffer = new StreamBuffer(output);
+          client.sendRequest("sampling/createMessage", {
+            messages: [{ role: "user", content: { type: "text", text: prompt } }]
+          }).then((res) => {
+            if (res?.content?.text) {
+              buffer.append(res.content.text);
+              buffer.flush();
+            }
+          });
+          client.onNotification("notifications/sampling/delta", (params) => {
+            if (params.delta?.text) {
+              buffer.append(params.delta.text);
+            }
+          });
+          return output;
+        },
+        /**
+         * Resource Reading: $mcp.read(uri)
+         */
+        read: async (uri) => {
+          if (!client)
+            throw new Error("No MCP Server configured.");
+          const res = await client.sendRequest("resources/read", { uri });
+          return res?.contents?.[0]?.text || null;
+        },
+        /**
+         * Tool Calling: $mcp.call(name, args)
+         */
+        call: async (name, args = {}) => {
+          if (!client)
+            throw new Error("No MCP Server configured.");
+          const res = await client.sendRequest("tools/call", { name, arguments: args });
+          return res?.content?.[0] || null;
+        }
+      };
+    }
+  };
+
+  // src/modules/sprites/periodicSync.ts
+  var periodicSync_exports = {};
+  __export(periodicSync_exports, {
+    default: () => periodicSyncFactory
+  });
+  function periodicSyncFactory(runtime) {
+    return {
+      $periodicSync: {
+        /**
+         * Register a periodic background sync.
+         * Returns reactive { status, error }.
+         */
+        register(tag, options) {
+          const op = runtime.reactive({
+            status: "pending",
+            error: null
+          });
+          if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) {
+            op.error = "Service Worker not available";
+            op.status = "error";
+            return op;
+          }
+          (async () => {
+            try {
+              const reg = await navigator.serviceWorker.ready;
+              if (!("periodicSync" in reg)) {
+                op.error = "Periodic Background Sync API not supported";
+                op.status = "error";
+                return;
+              }
+              await reg.periodicSync.register(tag, options || {});
+              op.status = "done";
+            } catch (e) {
+              op.error = e instanceof Error ? e.message : String(e);
+              op.status = "error";
+            }
+          })();
+          return op;
+        },
+        /**
+         * Unregister a periodic sync tag.
+         */
+        unregister(tag) {
+          const op = runtime.reactive({
+            status: "pending",
+            error: null
+          });
+          (async () => {
+            try {
+              const reg = await navigator.serviceWorker.ready;
+              if (!("periodicSync" in reg)) {
+                op.error = "Periodic Background Sync API not supported";
+                op.status = "error";
+                return;
+              }
+              await reg.periodicSync.unregister(tag);
+              op.status = "done";
+            } catch (e) {
+              op.error = e instanceof Error ? e.message : String(e);
+              op.status = "error";
+            }
+          })();
+          return op;
+        },
+        /**
+         * Get all registered periodic sync tags.
+         */
+        get tags() {
+          const op = runtime.reactive({
+            data: [],
+            status: "loading",
+            error: null
+          });
+          (async () => {
+            try {
+              const reg = await navigator.serviceWorker.ready;
+              if (!("periodicSync" in reg)) {
+                op.error = "Periodic Background Sync API not supported";
+                op.status = "error";
+                return;
+              }
+              const tags = await reg.periodicSync.getTags();
+              op.data = tags;
+              op.status = "ready";
+            } catch (e) {
+              op.error = e instanceof Error ? e.message : String(e);
+              op.status = "error";
+            }
+          })();
+          return op;
+        }
+      }
+    };
+  }
+
+  // src/manifest.ts
+  init_predictive();
+
+  // src/modules/sprites/push.ts
+  var push_exports = {};
+  __export(push_exports, {
+    default: () => pushFactory
+  });
+  function pushFactory(runtime) {
+    const state = runtime.reactive({
+      subscription: null,
+      status: "idle",
+      error: null
+    });
+    if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
+      navigator.serviceWorker.ready.then((reg) => {
+        reg.pushManager.getSubscription().then((sub) => {
+          if (sub) {
+            state.subscription = sub;
+            state.status = "active";
+          }
+        }).catch(() => {
+        });
+      }).catch(() => {
+      });
+    }
+    return {
+      $push: {
+        get subscription() {
+          return state.subscription;
+        },
+        get status() {
+          return state.status;
+        },
+        /**
+         * Subscribe to push notifications.
+         * @param applicationServerKey - VAPID public key (base64 or Uint8Array)
+         */
+        subscribe(applicationServerKey) {
+          const op = runtime.reactive({
+            data: null,
+            status: "pending",
+            error: null
+          });
+          if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) {
+            op.error = "Service Worker not available";
+            op.status = "error";
+            return op;
+          }
+          state.status = "subscribing";
+          (async () => {
+            try {
+              const reg = await navigator.serviceWorker.ready;
+              let key;
+              if (typeof applicationServerKey === "string") {
+                const raw = atob(applicationServerKey.replace(/-/g, "+").replace(/_/g, "/"));
+                key = new Uint8Array(raw.length);
+                for (let i = 0; i < raw.length; i++)
+                  key[i] = raw.charCodeAt(i);
+              } else {
+                key = applicationServerKey;
+              }
+              const sub = await reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: key
+              });
+              state.subscription = sub;
+              state.status = "active";
+              op.data = sub;
+              op.status = "done";
+            } catch (e) {
+              const msg = e instanceof Error ? e.message : String(e);
+              op.error = msg;
+              op.status = "error";
+              state.error = msg;
+              state.status = "error";
+            }
+          })();
+          return op;
+        },
+        /**
+         * Unsubscribe from push notifications.
+         */
+        unsubscribe() {
+          const op = runtime.reactive({
+            status: "pending",
+            error: null
+          });
+          if (!state.subscription) {
+            op.error = "No active subscription";
+            op.status = "error";
+            return op;
+          }
+          (async () => {
+            try {
+              await state.subscription.unsubscribe();
+              state.subscription = null;
+              state.status = "idle";
+              op.status = "done";
+            } catch (e) {
+              op.error = e instanceof Error ? e.message : String(e);
+              op.status = "error";
+            }
+          })();
+          return op;
+        }
+      }
+    };
+  }
+
+  // src/modules/sprites/sql.ts
+  var sql_exports = {};
+  __export(sql_exports, {
+    configureSqlClient: () => configureSqlClient,
+    default: () => sql_default,
+    sqlSprite: () => sqlSprite
+  });
+  var connectionPool = /* @__PURE__ */ new Map();
+  var pendingRequests = /* @__PURE__ */ new Map();
+  var liveQueries = /* @__PURE__ */ new Map();
+  var requestId = 0;
+  var defaultNs = "test";
+  var defaultDb = "test";
+  var authToken = null;
+  function getConnection(url) {
+    if (!connectionPool.has(url)) {
+      connectionPool.set(url, {
+        ws: null,
+        connected: false,
+        ready: false
+      });
+    }
+    return connectionPool.get(url);
+  }
+  function connect(url, ns, db) {
+    return new Promise((resolve, reject) => {
+      const conn = getConnection(url);
+      if (conn.ready) {
+        resolve(true);
+        return;
+      }
+      if (conn.ws) {
+        conn.ws.close();
+      }
+      conn.ws = new WebSocket(url);
+      conn.connected = false;
+      conn.ready = false;
+      conn.ws.onopen = () => {
+        conn.connected = true;
+        if (ns || defaultNs || db || defaultDb) {
+          sendRequest(conn.ws, "use", {
+            namespace: ns || defaultNs,
+            database: db || defaultDb
+          }).then(() => {
+            conn.ready = true;
+            resolve(true);
+          }).catch(reject);
+        } else {
+          conn.ready = true;
+          resolve(true);
+        }
+      };
+      conn.ws.onmessage = (event) => {
+        try {
+          const response = JSON.parse(event.data);
+          if (response.id && pendingRequests.has(response.id)) {
+            const { resolve: res, reject: rej } = pendingRequests.get(response.id);
+            pendingRequests.delete(response.id);
+            if (response.error) {
+              rej(new Error(response.error.message));
+            } else {
+              res(response.result);
+            }
+          }
+          if (response.method === "notify" && response.params) {
+            const [notification] = response.params;
+            if (notification.id && liveQueries.has(notification.id)) {
+              liveQueries.get(notification.id)(notification.result);
+            }
+          }
+        } catch (e) {
+          console.error("[Nexus SQL] Failed to parse WebSocket message:", e);
+        }
+      };
+      conn.ws.onerror = () => {
+        conn.connected = false;
+        conn.ready = false;
+        reject(new Error("WebSocket connection failed"));
+      };
+      conn.ws.onclose = () => {
+        conn.connected = false;
+        conn.ready = false;
+        pendingRequests.forEach(({ reject: reject2 }) => reject2(new Error("Connection closed")));
+        pendingRequests.clear();
+      };
+    });
+  }
+  function sendRequest(ws, method, params) {
+    return new Promise((resolve, reject) => {
+      const id = String(++requestId);
+      pendingRequests.set(id, { resolve, reject });
+      const message = JSON.stringify({
+        id,
+        method,
+        params: params || []
+      });
+      ws.send(message);
+      setTimeout(() => {
+        if (pendingRequests.has(id)) {
+          pendingRequests.delete(id);
+          reject(new Error(`Request ${method} timed out`));
+        }
+      }, 3e4);
+    });
+  }
+  async function executeQuery(url, query, vars, ns, db) {
+    await connect(url, ns, db);
+    const conn = getConnection(url);
+    if (authToken && conn.ws) {
+      try {
+        await sendRequest(conn.ws, "authenticate", { token: authToken });
+      } catch (e) {
+        console.warn("[Nexus SQL] Authentication failed:", e);
+      }
+    }
+    return sendRequest(conn.ws, "query", {
+      sql: query,
+      vars: vars || {}
+    });
+  }
+  async function subscribeLive(url, query, callback, ns, db) {
+    await connect(url, ns, db);
+    const conn = getConnection(url);
+    const result = await sendRequest(conn.ws, "query", {
+      sql: query,
+      vars: {}
+    });
+    const liveId = result[0]?.id;
+    if (liveId) {
+      liveQueries.set(liveId, callback);
+    }
+    return liveId;
+  }
+  function configureSqlClient(config) {
+    if (config.namespace)
+      defaultNs = config.namespace;
+    if (config.database)
+      defaultDb = config.database;
+    if (config.token)
+      authToken = config.token;
+  }
+  function sqlSprite(runtime) {
+    const url = runtime.config?.sqlUrl || "ws://localhost:8000/rpc";
+    const ns = runtime.config?.sqlNs || defaultNs;
+    const db = runtime.config?.sqlDb || defaultDb;
+    return async (query, vars) => {
+      const isLive = query.trim().toUpperCase().startsWith("LIVE");
+      const result = runtime.reactive({
+        data: [],
+        status: isLive ? "connecting" : "loading",
+        error: null,
+        liveId: null
+      });
+      try {
+        if (isLive) {
+          const numericFields = [];
+          const fieldMatch = query.match(/SELECT\s+(.+?)\s+FROM/i);
+          if (fieldMatch) {
+            const fields = fieldMatch[1].split(",").map((f) => f.trim());
+            fields.forEach((f) => {
+              if (f !== "*" && !f.includes("(")) {
+                const fieldName = f.split(" AS ").pop()?.trim() || f.trim();
+                if (/_id|_count|_at|_time|_amount|_price|_qty$/.test(fieldName.toLowerCase())) {
+                  numericFields.push(fieldName);
+                  heap.allocateNumeric(fieldName);
+                }
+              }
+            });
+          }
+          const liveId = await subscribeLive(url, query, (data) => {
+            const arr = Array.isArray(data) ? data : [];
+            if (numericFields.length > 0) {
+              arr.forEach((row, idx) => {
+                if (row && typeof row === "object") {
+                  numericFields.forEach((field) => {
+                    if (typeof row[field] === "number") {
+                      heap.setNumeric(`${field}_${idx}`, row[field]);
+                    }
+                  });
+                }
+              });
+            }
+            result.data = arr;
+            result.status = "live";
+          }, ns, db);
+          result.liveId = liveId;
+          result.status = "live";
+        } else {
+          const response = await executeQuery(url, query, vars, ns, db);
+          const queryResult = response[0]?.result || response;
+          if (Array.isArray(queryResult) && queryResult.length > 10) {
+            const sample = queryResult[0];
+            if (sample && typeof sample === "object") {
+              const keys = Object.keys(sample);
+              const numericCount = keys.filter((k) => typeof sample[k] === "number").length;
+              if (numericCount / keys.length >= 0.5) {
+                keys.forEach((k) => {
+                  if (typeof sample[k] === "number") {
+                    heap.allocateNumeric(k);
+                  }
+                });
+                queryResult.forEach((row, idx) => {
+                  if (row && typeof row === "object") {
+                    keys.forEach((k) => {
+                      if (typeof row[k] === "number") {
+                        heap.setNumeric(`${k}_${idx}`, row[k]);
+                      }
+                    });
+                  }
+                });
+              }
+            }
+          }
+          result.data = queryResult;
+          result.status = "ready";
+        }
+      } catch (err2) {
+        result.error = err2 instanceof Error ? err2.message : String(err2);
+        result.status = "error";
+      }
+      return result;
+    };
+  }
+  function sql_default(runtime) {
+    return {
+      $sql: sqlSprite(runtime)
+    };
+  }
+
+  // src/modules/sprites/svg.ts
+  var svg_exports = {};
+  __export(svg_exports, {
+    svgModule: () => svgModule
+  });
+  var svgModule = {
+    name: "svg",
+    key: "$svg",
+    sprites: (context) => {
+      const generators = {
+        straight: (x1, y1, x2, y2) => `M ${x1} ${y1} L ${x2} ${y2}`,
+        bezier: (x1, y1, x2, y2) => {
+          const dx = Math.abs(x1 - x2) / 2;
+          return `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+        },
+        step: (x1, y1, x2, y2) => {
+          const mx = x1 + (x2 - x1) / 2;
+          return `M ${x1} ${y1} L ${mx} ${y1} L ${mx} ${y2} L ${x2} ${y2}`;
+        }
+      };
+      return {
+        /**
+         * Connects two elements with a reactive SVG path.
+         */
+        connect: (elA, elB, options = {}) => {
+          const type = options.type || "bezier";
+          const pathData = reactive({ d: "" });
+          const update = () => {
+            if (!elA || !elB)
+              return;
+            try {
+              const rA = typeof elA.getBoundingClientRect === "function" ? elA.getBoundingClientRect() : null;
+              const rB = typeof elB.getBoundingClientRect === "function" ? elB.getBoundingClientRect() : null;
+              if (!rA || !rB)
+                return;
+              const x1 = rA.left + rA.width / 2;
+              const y1 = rA.top + rA.height / 2;
+              const x2 = rB.left + rB.width / 2;
+              const y2 = rB.top + rB.height / 2;
+              const generator = generators[type] || generators.bezier;
+              pathData.d = generator(x1, y1, x2, y2);
+            } catch (e) {
+            }
+          };
+          const ticker = () => {
+            update();
+            requestAnimationFrame(ticker);
+          };
+          ticker();
+          return pathData;
+        },
+        /**
+         * Generates a reactive path string from a point array.
+         */
+        path: (points, closed = false) => {
+          if (points.length < 2)
+            return "";
+          let d = `M ${points[0].x} ${points[0].y}`;
+          for (let i = 1; i < points.length; i++) {
+            d += ` L ${points[i].x} ${points[i].y}`;
+          }
+          if (closed)
+            d += " Z";
+          return d;
+        },
+        /**
+         * Animates any SVG attribute using native WAAPI.
+         */
+        animate: (el, keyframes, options) => {
+          return el.animate(keyframes, options);
+        },
+        /**
+         * Pulse an element using a native scale transform.
+         */
+        pulse: (el, options = {}) => {
+          return el.animate([
+            { transform: "scale(1)" },
+            { transform: `scale(${options.scale || 1.1})` },
+            { transform: "scale(1)" }
+          ], {
+            duration: options.duration || 1e3,
+            iterations: Infinity,
+            easing: "ease-in-out"
+          });
+        },
+        /**
+         * Morph one path into another.
+         * Uses path() notation for WAAPI support in modern browsers.
+         */
+        morph: (el, targetD, options = {}) => {
+          const currentD = el.getAttribute("d") || "";
+          return el.animate([
+            { d: `path("${currentD}")` },
+            { d: `path("${targetD}")` }
+          ], {
+            duration: options.duration || 500,
+            easing: options.easing || "ease-in-out",
+            fill: "forwards"
+          });
+        }
+      };
+    }
+  };
+
+  // src/modules/sprites/sw.ts
+  var sw_exports = {};
+  __export(sw_exports, {
+    default: () => swFactory
+  });
+  function swFactory(runtime) {
+    const state = runtime.reactive({
+      status: "idle",
+      controller: null,
+      registration: null,
+      error: null,
+      updateAvailable: false
+    });
+    if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
+      const sw = navigator.serviceWorker;
+      if (sw.controller) {
+        state.status = "active";
+        state.controller = sw.controller;
+      }
+      sw.addEventListener("controllerchange", () => {
+        state.controller = sw.controller;
+        state.status = sw.controller ? "active" : "idle";
+      });
+      sw.addEventListener("message", (event) => {
+        runtime.evaluate(document.body, `$dispatch('sw:message', ${JSON.stringify(event.data)})`, {});
+      });
+    }
+    return {
+      $sw: {
+        /**
+         * Reactive status of the service worker.
+         */
+        get status() {
+          return state.status;
+        },
+        /**
+         * Reactive reference to the active controller.
+         */
+        get controller() {
+          return state.controller;
+        },
+        /**
+         * Whether an update is waiting to be activated.
+         */
+        get updateAvailable() {
+          return state.updateAvailable;
+        },
+        /**
+         * Register a service worker.
+         * Returns reactive { status, error } container.
+         */
+        register(scriptURL, options) {
+          const op = runtime.reactive({
+            status: "pending",
+            error: null
+          });
+          if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) {
+            op.error = "Service Worker API not available";
+            op.status = "error";
+            return op;
+          }
+          state.status = "registering";
+          (async () => {
+            try {
+              const registration = await navigator.serviceWorker.register(scriptURL, options);
+              state.registration = registration;
+              if (registration.waiting) {
+                state.updateAvailable = true;
+                state.status = "waiting";
+              }
+              registration.addEventListener("updatefound", () => {
+                const installing = registration.installing;
+                if (installing) {
+                  installing.addEventListener("statechange", () => {
+                    if (installing.state === "installed") {
+                      if (navigator.serviceWorker.controller) {
+                        state.updateAvailable = true;
+                        state.status = "waiting";
+                      } else {
+                        state.status = "active";
+                      }
+                    }
+                  });
+                }
+              });
+              op.status = "done";
+            } catch (e) {
+              op.error = e instanceof Error ? e.message : String(e);
+              op.status = "error";
+              state.error = op.error;
+              state.status = "error";
+            }
+          })();
+          return op;
+        },
+        /**
+         * Check for service worker updates.
+         */
+        update() {
+          const op = runtime.reactive({
+            status: "pending",
+            error: null
+          });
+          if (!state.registration) {
+            op.error = "No service worker registered";
+            op.status = "error";
+            return op;
+          }
+          (async () => {
+            try {
+              await state.registration.update();
+              op.status = "done";
+            } catch (e) {
+              op.error = e instanceof Error ? e.message : String(e);
+              op.status = "error";
+            }
+          })();
+          return op;
+        },
+        /**
+         * Unregister the active service worker.
+         */
+        unregister() {
+          const op = runtime.reactive({
+            status: "pending",
+            error: null
+          });
+          if (!state.registration) {
+            op.error = "No service worker registered";
+            op.status = "error";
+            return op;
+          }
+          (async () => {
+            try {
+              const success = await state.registration.unregister();
+              if (success) {
+                state.status = "idle";
+                state.controller = null;
+                state.registration = null;
+                state.updateAvailable = false;
+              }
+              op.status = "done";
+            } catch (e) {
+              op.error = e instanceof Error ? e.message : String(e);
+              op.status = "error";
+            }
+          })();
+          return op;
+        },
+        /**
+         * Send a message to the active service worker.
+         */
+        postMessage(data) {
+          if (state.controller) {
+            state.controller.postMessage(data);
+          }
+        },
+        /**
+         * Skip waiting — activate the waiting worker immediately.
+         */
+        skipWaiting() {
+          if (state.registration?.waiting) {
+            state.registration.waiting.postMessage({ type: "SKIP_WAITING" });
+          }
+        }
+      }
+    };
+  }
+
+  // src/modules/scopes/auth.ts
+  var authScope = reactive({
+    user: null,
+    isAuthenticated: false,
+    roles: [],
+    token: null,
+    // Methods to simulate login/logout for now
+    login: (userData) => {
+      authScope.user = userData;
+      authScope.isAuthenticated = true;
+      authScope.roles = userData.roles || [];
+    },
+    logout: () => {
+      authScope.user = null;
+      authScope.isAuthenticated = false;
+      authScope.roles = [];
+      authScope.token = null;
+    }
+  });
+
+  // src/modules/scopes/native.ts
+  var nativeScope = reactive({
+    isPresent: false,
+    platform: "web",
+    bridge: null
+  });
+  if (typeof window !== "undefined" && window.nexusNative) {
+    const native = window.nexusNative;
+    nativeScope.isPresent = true;
+    nativeScope.platform = native.platform || "unknown";
+    nativeScope.bridge = native;
+  }
+
+  // src/modules/scopes/os.ts
+  var getOS = () => {
+    if (typeof navigator === "undefined")
+      return "unknown";
+    const ua = navigator.userAgent;
+    if (/Mac/.test(ua))
+      return "macos";
+    if (/Win/.test(ua))
+      return "windows";
+    if (/Linux/.test(ua))
+      return "linux";
+    if (/Android/.test(ua))
+      return "android";
+    if (/iPhone|iPad|iPod/.test(ua))
+      return "ios";
+    return "unknown";
+  };
+  var getTheme = () => {
+    if (typeof window === "undefined")
+      return "light";
+    return globalThis.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  };
+  var osScope = reactive({
+    platform: getOS(),
+    theme: getTheme(),
+    isMobile: /Android|iPhone|iPad|iPod/i.test(navigator.userAgent),
+    isDesktop: !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+  });
+
+  // src/modules/scopes/view.ts
+  var viewScope = reactive({
+    width: typeof window !== "undefined" ? globalThis.innerWidth : 1024,
+    height: typeof window !== "undefined" ? globalThis.innerHeight : 768,
+    scrollX: typeof window !== "undefined" ? globalThis.scrollX : 0,
+    scrollY: typeof window !== "undefined" ? globalThis.scrollY : 0,
+    orientation: typeof window !== "undefined" && globalThis.screen.orientation ? globalThis.screen.orientation.type : "landscape-primary",
+    devicePixelRatio: typeof window !== "undefined" ? globalThis.devicePixelRatio : 1,
+    isPortrait: typeof window !== "undefined" ? globalThis.innerHeight > globalThis.innerWidth : false,
+    isLandscape: typeof window !== "undefined" ? globalThis.innerWidth >= globalThis.innerHeight : true
+  });
+
+  // src/modules/modifiers/debounce.ts
+  var debounce_exports = {};
+  __export(debounce_exports, {
+    debounceModifier: () => debounceModifier,
+    default: () => debounce_default
+  });
+  init_consts();
+  function resolveDebounce(runtime, el, arg) {
+    if (!arg)
+      return DEFAULT_DEBOUNCE_TIME;
+    if (arg.startsWith("#")) {
+      const val = runtime.evaluate(el, arg);
+      const num = typeof val === "number" ? val : parseInt(String(val), 10);
+      return Number.isNaN(num) ? DEFAULT_DEBOUNCE_TIME : num;
+    }
+    return parseInt(arg, 10) || DEFAULT_DEBOUNCE_TIME;
+  }
+  var debounceModifier = {
+    name: "debounce",
+    handle: (payload, el, arg, runtime) => {
+      const wait = resolveDebounce(runtime, el, arg);
+      let timeout;
+      if (typeof payload === "function") {
+        return (e) => {
+          const wait2 = resolveDebounce(runtime, el, arg);
+          clearTimeout(timeout);
+          timeout = setTimeout(() => payload(e), wait2);
+        };
+      }
+      return (...args) => {
+        return new Promise((resolve) => {
+          const wait2 = resolveDebounce(runtime, el, arg);
+          clearTimeout(timeout);
+          timeout = setTimeout(() => {
+            resolve(typeof payload === "function" ? payload(...args) : payload);
+          }, wait2);
+        });
+      };
+    }
+  };
+  var debounce_default = debounceModifier;
+
+  // src/modules/modifiers/delay.ts
+  var delay_exports = {};
+  __export(delay_exports, {
+    default: () => delay_default,
+    delayModifier: () => delayModifier
+  });
+  init_consts();
+  function resolveDelay(runtime, el, arg) {
+    if (!arg)
+      return DEFAULT_DEBOUNCE_TIME;
+    if (arg.startsWith("#")) {
+      const val = runtime.evaluate(el, arg);
+      const num = typeof val === "number" ? val : parseInt(String(val), 10);
+      return Number.isNaN(num) ? DEFAULT_DEBOUNCE_TIME : num;
+    }
+    return parseInt(arg, 10) || DEFAULT_DEBOUNCE_TIME;
+  }
+  var delayModifier = {
+    name: "delay",
+    handle: (payload, el, arg, runtime) => {
+      if (typeof payload === "function") {
+        return (e) => {
+          setTimeout(() => payload(e), resolveDelay(runtime, el, arg));
+        };
+      }
+      return (...args) => {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve(typeof payload === "function" ? payload(...args) : payload);
+          }, resolveDelay(runtime, el, arg));
+        });
+      };
+    }
+  };
+  var delay_default = delayModifier;
+
+  // src/modules/modifiers/document.ts
+  var document_exports = {};
+  __export(document_exports, {
+    default: () => document_default,
+    documentModifier: () => documentModifier
+  });
+  var documentModifier = {
+    name: "document",
+    handle: (_payload, _el, _arg, _runtime) => {
+      return _payload;
+    }
+  };
+  var document_default = documentModifier;
+
+  // src/modules/modifiers/drag.ts
+  var drag_exports2 = {};
+  __export(drag_exports2, {
+    default: () => drag_default2,
+    dragModifier: () => dragModifier
+  });
+  var dragModifier = {
+    name: "drag",
+    handle: (_payload, _element, _argument, _runtime) => {
+    },
+    interceptPipeline: (evaluate2, element, _argument, _runtime) => {
+      let startX = 0;
+      let startY = 0;
+      let isDragging = false;
+      return (el, expression, extras) => {
+        return evaluate2(el, expression, {
+          ...extras,
+          $drag: {
+            start: (e) => {
+              element.setPointerCapture(e.pointerId);
+              startX = e.clientX;
+              startY = e.clientY;
+              isDragging = true;
+            },
+            move: (e) => {
+              if (!isDragging)
+                return null;
+              return {
+                dx: e.clientX - startX,
+                dy: e.clientY - startY,
+                x: e.clientX,
+                y: e.clientY
+              };
+            },
+            stop: (e) => {
+              isDragging = false;
+              element.releasePointerCapture(e.pointerId);
+            }
+          }
+        });
+      };
+    }
+  };
+  var drag_default2 = dragModifier;
+
+  // src/modules/modifiers/hold.ts
+  var hold_exports = {};
+  __export(hold_exports, {
+    default: () => hold_default,
+    holdModifier: () => holdModifier
+  });
+  var holdModifier = {
+    name: "hold",
+    handle: (payload, _el, arg, _runtime) => {
+      const wait = parseInt(arg, 10) || 500;
+      if (typeof payload === "function") {
+        return (e) => {
+          let timer = setTimeout(() => {
+            cleanup();
+            payload(e);
+          }, wait);
+          const cleanup = () => {
+            if (timer) {
+              clearTimeout(timer);
+              timer = null;
+            }
+            window.removeEventListener("pointerup", cleanup);
+            window.removeEventListener("pointercancel", cleanup);
+            window.removeEventListener("pointerleave", cleanup);
+            window.removeEventListener("touchend", cleanup);
+            window.removeEventListener("touchcancel", cleanup);
+          };
+          window.addEventListener("pointerup", cleanup, { once: true });
+          window.addEventListener("pointercancel", cleanup, { once: true });
+          window.addEventListener("pointerleave", cleanup, { once: true });
+          window.addEventListener("touchend", cleanup, { once: true });
+          window.addEventListener("touchcancel", cleanup, { once: true });
+        };
+      }
+      return payload;
+    }
+  };
+  var hold_default = holdModifier;
+
+  // src/modules/modifiers/keys.ts
+  var keys_exports = {};
+  __export(keys_exports, {
+    altModifier: () => altModifier,
+    ctrlModifier: () => ctrlModifier,
+    default: () => keys_default,
+    deleteModifier: () => deleteModifier,
+    downModifier: () => downModifier,
+    enterModifier: () => enterModifier,
+    escModifier: () => escModifier,
+    escapeModifier: () => escapeModifier,
+    leftModifier: () => leftModifier,
+    metaModifier: () => metaModifier,
+    rightModifier: () => rightModifier,
+    shiftModifier: () => shiftModifier,
+    spaceModifier: () => spaceModifier,
+    tabModifier: () => tabModifier,
+    upModifier: () => upModifier
+  });
+  var isKeyboardEvent = (e) => "key" in e;
+  var createKeyModifier = (name, check) => ({
+    name,
+    handle: (payload, _el, _arg, _runtime) => {
+      if (typeof payload === "function") {
+        return (e) => {
+          if (isKeyboardEvent(e) && check(e)) {
+            return payload(e);
+          }
+        };
+      }
+      return payload;
+    }
+  });
+  var enterModifier = createKeyModifier("enter", (e) => e.key === "Enter");
+  var escapeModifier = createKeyModifier("escape", (e) => e.key === "Escape");
+  var escModifier = createKeyModifier("esc", (e) => e.key === "Escape");
+  var spaceModifier = createKeyModifier("space", (e) => e.key === " " || e.key === "Spacebar");
+  var upModifier = createKeyModifier("up", (e) => e.key === "ArrowUp" || e.key === "Up");
+  var downModifier = createKeyModifier("down", (e) => e.key === "ArrowDown" || e.key === "Down");
+  var leftModifier = createKeyModifier("left", (e) => e.key === "ArrowLeft" || e.key === "Left");
+  var rightModifier = createKeyModifier("right", (e) => e.key === "ArrowRight" || e.key === "Right");
+  var tabModifier = createKeyModifier("tab", (e) => e.key === "Tab");
+  var deleteModifier = createKeyModifier("delete", (e) => e.key === "Delete" || e.key === "Backspace");
+  var ctrlModifier = createKeyModifier("ctrl", (e) => e.ctrlKey);
+  var altModifier = createKeyModifier("alt", (e) => e.altKey);
+  var shiftModifier = createKeyModifier("shift", (e) => e.shiftKey);
+  var metaModifier = createKeyModifier("meta", (e) => e.metaKey);
+  var keys_default = {
+    enter: enterModifier,
+    escape: escapeModifier,
+    esc: escModifier,
+    space: spaceModifier,
+    up: upModifier,
+    down: downModifier,
+    left: leftModifier,
+    right: rightModifier,
+    tab: tabModifier,
+    delete: deleteModifier,
+    ctrl: ctrlModifier,
+    alt: altModifier,
+    shift: shiftModifier,
+    meta: metaModifier
+  };
+
+  // src/modules/modifiers/morph.ts
+  var morph_exports = {};
+  __export(morph_exports, {
+    default: () => morph_default,
+    morphModifier: () => morphModifier
+  });
+  var morphModifier = {
+    name: "morph",
+    handle: (payload, _el, _arg, _runtime) => {
+      return payload;
+    },
+    interceptPipeline: (evaluate2, element, arg, runtime) => {
+      return (evalEl, expression, extras) => {
+        const result = evaluate2(evalEl, expression, extras);
+        const applyMorph = (htmlString) => {
+          const target = arg ? resolveSelector(element, arg) : element;
+          const realTarget = Array.isArray(target) ? target[0] : target;
+          if (realTarget)
+            morphDOM(realTarget, htmlString);
+        };
+        if (result instanceof Promise) {
+          return result.then((res) => {
+            if (typeof res === "string")
+              applyMorph(res);
+            return res;
+          });
+        } else if (typeof result === "string") {
+          applyMorph(result);
+        }
+        return result;
+      };
+    }
+  };
+  var morph_default = morphModifier;
+
+  // src/modules/modifiers/once.ts
+  var once_exports = {};
+  __export(once_exports, {
+    default: () => once_default,
+    onceModifier: () => onceModifier
+  });
+  var onceModifier = {
+    name: "once",
+    handle: (payload, _el, _arg, _runtime) => {
+      let fired = false;
+      if (typeof payload === "function") {
+        return (e) => {
+          if (!fired) {
+            fired = true;
+            return payload(e);
+          }
+        };
+      }
+      return (...args) => {
+        if (!fired) {
+          fired = true;
+          return typeof payload === "function" ? payload(...args) : payload;
+        }
+      };
+    }
+  };
+  var once_default = onceModifier;
+
+  // src/modules/modifiers/outside.ts
+  var outside_exports = {};
+  __export(outside_exports, {
+    default: () => outside_default,
+    outsideModifier: () => outsideModifier
+  });
+  var outsideModifier = {
+    name: "outside",
+    handle: (payload, el, _arg, _runtime) => {
+      if (typeof payload === "function") {
+        return (e) => {
+          if (e.target && !el.contains(e.target)) {
+            return payload(e);
+          }
+        };
+      }
+      return payload;
+    }
+  };
+  var outside_default = outsideModifier;
+
+  // src/modules/modifiers/prevent.ts
+  var prevent_exports = {};
+  __export(prevent_exports, {
+    default: () => prevent_default,
+    preventModifier: () => preventModifier
+  });
+  var preventModifier = {
+    name: "prevent",
+    handle: (payload, _el, _arg, _runtime) => {
+      if (typeof payload === "function") {
+        return (e) => {
+          e.preventDefault();
+          return payload(e);
+        };
+      }
+      return payload;
+    }
+  };
+  var prevent_default = preventModifier;
+
+  // src/modules/modifiers/self.ts
+  var self_exports = {};
+  __export(self_exports, {
+    default: () => self_default,
+    selfModifier: () => selfModifier
+  });
+  var selfModifier = {
+    name: "self",
+    handle: (payload, el, _arg, _runtime) => {
+      if (typeof payload === "function") {
+        return (e) => {
+          if (e.target === el)
+            return payload(e);
+        };
+      }
+      return payload;
+    }
+  };
+  var self_default = selfModifier;
+
+  // src/modules/modifiers/stop.ts
+  var stop_exports = {};
+  __export(stop_exports, {
+    default: () => stop_default,
+    stopModifier: () => stopModifier
+  });
+  var stopModifier = {
+    name: "stop",
+    handle: (payload, _el, _arg, _runtime) => {
+      if (typeof payload === "function") {
+        return (e) => {
+          e.stopPropagation();
+          return payload(e);
+        };
+      }
+      return payload;
+    }
+  };
+  var stop_default = stopModifier;
+
+  // src/modules/modifiers/throttle.ts
+  var throttle_exports = {};
+  __export(throttle_exports, {
+    default: () => throttle_default,
+    throttleModifier: () => throttleModifier
+  });
+  init_consts();
+  function resolveThrottle(runtime, el, arg) {
+    if (!arg)
+      return DEFAULT_THROTTLE_TIME;
+    if (arg.startsWith("#")) {
+      const val = runtime.evaluate(el, arg);
+      const num = typeof val === "number" ? val : parseInt(String(val), 10);
+      return Number.isNaN(num) ? DEFAULT_THROTTLE_TIME : num;
+    }
+    return parseInt(arg, 10) || DEFAULT_THROTTLE_TIME;
+  }
+  var throttleModifier = {
+    name: "throttle",
+    handle: (payload, el, arg, runtime) => {
+      const wait = resolveThrottle(runtime, el, arg);
+      let last = 0;
+      if (typeof payload === "function") {
+        return (e) => {
+          const wait2 = resolveThrottle(runtime, el, arg);
+          const now = performance.now();
+          if (now - last > wait2) {
+            last = now;
+            return payload(e);
+          }
+        };
+      }
+      return (...args) => {
+        const wait2 = resolveThrottle(runtime, el, arg);
+        const now = performance.now();
+        if (now - last > wait2) {
+          last = now;
+          return typeof payload === "function" ? payload(...args) : payload;
+        }
+      };
+    }
+  };
+  var throttle_default = throttleModifier;
+
+  // src/modules/modifiers/window.ts
+  var window_exports = {};
+  __export(window_exports, {
+    default: () => window_default,
+    windowModifier: () => windowModifier
+  });
+  var windowModifier = {
+    name: "window",
+    handle: (_payload, _el, _arg, _runtime) => {
+      return _payload;
+    }
+  };
+  var window_default = windowModifier;
+
+  // src/modules/modifiers/zoom.ts
+  var zoom_exports = {};
+  __export(zoom_exports, {
+    default: () => zoom_default,
+    zoomModifier: () => zoomModifier
+  });
+  var zoomModifier = {
+    name: "zoom",
+    handle: (_payload, _element, _argument, _runtime) => {
+    },
+    interceptPipeline: (evaluate2, _element, _argument, _runtime) => {
+      return (el, expression, extras) => {
+        return evaluate2(el, expression, {
+          ...extras,
+          $zoom: (e) => {
+            if (e instanceof WheelEvent) {
+              const delta = e.deltaY;
+              return {
+                delta: delta > 0 ? 0.9 : 1.1,
+                x: e.clientX,
+                y: e.clientY
+              };
+            }
+            return { delta: 1, x: 0, y: 0 };
+          }
+        });
+      };
+    }
+  };
+  var zoom_default = zoomModifier;
+
+  // src/modules/listeners/bfcache.ts
+  var bfcache_exports = {};
+  __export(bfcache_exports, {
+    default: () => bfcache_default
+  });
+  var bfcacheListener = {
+    name: "bfcache",
+    event: "pageshow",
+    listen(element, runtime) {
+      if (typeof globalThis.window === "undefined")
+        return;
+      const handlePageShow = (event) => {
+        if (event.persisted) {
+          if (runtime.isDevMode) {
+            runtime.debug("[bfcache] Page restored from bfcache, dispatching bfcache:restore");
+          }
+          element.dispatchEvent(new CustomEvent("bfcache:restore", {
+            bubbles: true,
+            detail: {
+              timestamp: Date.now(),
+              persisted: true
+            }
+          }));
+        }
+      };
+      const handlePageHide = (event) => {
+        if (runtime.isDevMode) {
+          runtime.debug(`[bfcache] pagehide - persisted: ${event.persisted}`);
+        }
+        element.dispatchEvent(new CustomEvent("bfcache:freeze", {
+          bubbles: true,
+          detail: {
+            timestamp: Date.now(),
+            persisted: event.persisted
+          }
+        }));
+      };
+      const handleFreeze = () => {
+        if (runtime.isDevMode) {
+          runtime.debug("[bfcache] Page frozen");
+        }
+        element.dispatchEvent(new CustomEvent("bfcache:freeze", {
+          bubbles: true,
+          detail: { timestamp: Date.now() }
+        }));
+      };
+      const handleResume = () => {
+        if (runtime.isDevMode) {
+          runtime.debug("[bfcache] Page resumed from freeze");
+        }
+        element.dispatchEvent(new CustomEvent("bfcache:restore", {
+          bubbles: true,
+          detail: { timestamp: Date.now(), fromFreeze: true }
+        }));
+      };
+      globalThis.addEventListener("pageshow", handlePageShow);
+      globalThis.addEventListener("pagehide", handlePageHide);
+      if ("onfreeze" in document) {
+        document.addEventListener("freeze", handleFreeze);
+        document.addEventListener("resume", handleResume);
+      }
+      return () => {
+        globalThis.removeEventListener("pageshow", handlePageShow);
+        globalThis.removeEventListener("pagehide", handlePageHide);
+        if ("onfreeze" in document) {
+          document.removeEventListener("freeze", handleFreeze);
+          document.removeEventListener("resume", handleResume);
+        }
+      };
+    }
+  };
+  var bfcache_default = bfcacheListener;
+
+  // src/modules/listeners/executeScript.ts
+  var executeScript_exports = {};
+  __export(executeScript_exports, {
+    default: () => executeScript_default
+  });
+  init_debug();
+  var executeScriptModule = {
+    name: "executeScript",
+    event: "execute-script",
+    listen: (el, runtime) => {
+      const handler = (event) => {
+        if (event instanceof CustomEvent && event.detail && typeof event.detail.script === "string") {
+          try {
+            new Function("element", "runtime", event.detail.script)(el, runtime);
+          } catch (e) {
+            reportError(new Error(`Execute script error: ${e instanceof Error ? e.message : String(e)}`), el);
+          }
+        }
+      };
+      el.addEventListener("execute-script", handler);
+      return () => el.removeEventListener("execute-script", handler);
+    }
+  };
+  var executeScript_default = executeScriptModule;
+
+  // src/modules/listeners/history.ts
+  var history_exports = {};
+  __export(history_exports, {
+    default: () => history_default
+  });
+  init_debug();
+  init_consts();
+  var historyModule = {
+    name: "history",
+    event: "popstate",
+    listen: (_el, _context) => {
+      if ("navigation" in globalThis) {
+        return () => {
+        };
+      }
+      const popStateEvent = `${CUSTOM_EVENT_PREFIX}popstate`;
+      const handler = (event) => {
+        try {
+          if (event instanceof PopStateEvent) {
+            document.dispatchEvent(
+              new CustomEvent(popStateEvent, {
+                detail: { url: globalThis.location.href, state: event.state }
+              })
+            );
+          }
+        } catch (e) {
+          reportError(
+            new Error(`History listener error: ${e instanceof Error ? e.message : String(e)}`),
+            document.body
+          );
+        }
+      };
+      globalThis.addEventListener("popstate", handler);
+      return () => globalThis.removeEventListener("popstate", handler);
+    }
+  };
+  var history_default = historyModule;
+
+  // src/modules/listeners/linkRewriter.ts
+  var linkRewriter_exports = {};
+  __export(linkRewriter_exports, {
+    default: () => linkRewriter_default
+  });
+  init_debug();
+  init_consts();
+  var linkRewriterModule = {
+    name: "linkRewriter",
+    event: "click",
+    listen: (el, context) => {
+      const appBase = globalThis.location.href;
+      const handler = (event) => {
+        try {
+          if (event.defaultPrevented)
+            return;
+          if (event.button !== 0)
+            return;
+          if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+            return;
+          const anchor = event.target.closest("a");
+          if (!anchor)
+            return;
+          if (anchor.origin !== globalThis.location.origin)
+            return;
+          if (anchor.target && anchor.target !== "_self")
+            return;
+          if (anchor.hasAttribute("download") || anchor.hasAttribute("data-ignore"))
+            return;
+          const rawHref = anchor.getAttribute("href") || "";
+          let sameOrigin = true;
+          try {
+            sameOrigin = new URL(rawHref, appBase).origin === globalThis.location.origin;
+          } catch {
+          }
+          if (!sameOrigin)
+            return;
+          const path = rawHref + anchor.search + anchor.hash;
+          anchor.dispatchEvent(
+            new CustomEvent(`${CUSTOM_EVENT_PREFIX}navigate`, {
+              bubbles: true,
+              cancelable: false,
+              detail: { path, anchor }
+            })
+          );
+          event.preventDefault();
+          const title = anchor.getAttribute("data-tab-title") || void 0;
+          const icon = anchor.getAttribute("data-tab-icon") || void 0;
+          const signals = context.globalSignals();
+          const router = signals["router"];
+          if (router && typeof router.navigate === "function") {
+            router.navigate(path, { title, icon });
+          } else {
+            globalThis.history.pushState({ scrollY: globalThis.scrollY }, "", path);
+            document.dispatchEvent(
+              new CustomEvent(`${CUSTOM_EVENT_PREFIX}popstate`, {
+                detail: { url: globalThis.location.href }
+              })
+            );
+          }
+        } catch (e) {
+          reportError(
+            new Error(`LinkRewriter error: ${e instanceof Error ? e.message : String(e)}`),
+            el
+          );
+        }
+      };
+      el.addEventListener("click", handler);
+      return () => el.removeEventListener("click", handler);
+    }
+  };
+  var linkRewriter_default = linkRewriterModule;
+
+  // src/engine/mutation.ts
+  var mutation_exports = {};
+  __export(mutation_exports, {
+    default: () => mutation_default
+  });
+  init_debug();
+  init_consts();
+  var movedNodes = /* @__PURE__ */ new WeakSet();
+  var movedNodeTimers = /* @__PURE__ */ new Map();
+  function isExternalOverlay(node) {
+    let current = node;
+    while (current) {
+      if (current.id && (current.id.includes("preact-") || current.id.includes("jetski") || current.id.includes("webpack-") || current.id.includes("chrome-extension"))) {
+        return true;
+      }
+      current = current.parentElement;
+    }
+    return false;
+  }
+  var mutationObserverModule = {
+    name: "mutationObserver",
+    observerType: "MutationObserver",
+    observe: (el, context) => {
+      try {
+        let isProcessing = false;
+        const observer = new MutationObserver((mutationsList) => {
+          if (isProcessing)
+            return;
+          isProcessing = true;
+          const addedThisBatch = /* @__PURE__ */ new Set();
+          const now = performance.now();
+          for (const mutation of mutationsList) {
+            if (mutation.type === "childList") {
+              mutation.addedNodes.forEach((node) => {
+                if (node instanceof HTMLElement) {
+                  if (isExternalOverlay(node))
+                    return;
+                  addedThisBatch.add(node);
+                }
+              });
+            }
+          }
+          for (const [node, ts] of movedNodeTimers) {
+            if (now - ts > 32) {
+              movedNodeTimers.delete(node);
+              movedNodes.delete(node);
+            }
+          }
+          try {
+            for (const mutation of mutationsList) {
+              if (mutation.type === "childList") {
+                if (mutation.addedNodes.length > 0) {
+                  mutation.addedNodes.forEach((node) => {
+                    if (node instanceof HTMLElement) {
+                      if (isExternalOverlay(node))
+                        return;
+                      const enhancedTarget = node;
+                      if (enhancedTarget[MARKER_KEY])
+                        return;
+                      context.processElement(node);
+                    }
+                  });
+                }
+                mutation.removedNodes.forEach((node) => {
+                  if (node instanceof HTMLElement) {
+                    if (isExternalOverlay(node))
+                      return;
+                    if (node.isConnected || addedThisBatch.has(node) || movedNodes.has(node))
+                      return;
+                    const enhancedTarget = node;
+                    if (enhancedTarget[CLEANUP_FUNCTIONS_KEY]) {
+                      enhancedTarget[CLEANUP_FUNCTIONS_KEY].forEach((cleanup) => cleanup());
+                      delete enhancedTarget[CLEANUP_FUNCTIONS_KEY];
+                    }
+                    delete enhancedTarget[MARKER_KEY];
+                  }
+                });
+              } else if (mutation.type === "attributes") {
+                const target = mutation.target;
+                if (!target)
+                  return;
+                const attrName = mutation.attributeName;
+                if (attrName === "class") {
+                  context.adoptStyle(target);
+                }
+                if (attrName === "style" || attrName === "draggable" || attrName?.startsWith("data-") || attrName?.startsWith("nexus-"))
+                  return;
+                const borrows = ownership.getBorrowers(target);
+                borrows.forEach((borrow) => {
+                  const borrower = borrow.borrower;
+                  try {
+                    borrower[RUN_EFFECT_RUNNERS_KEY]?.();
+                  } catch (err2) {
+                    console.error(
+                      `[Nexus Isolation] Borrower <${borrower.tagName}> failed during ownership pulse from <${target.tagName}>:`,
+                      err2
+                    );
+                  }
+                });
+              }
+            }
+            document.dispatchEvent(new CustomEvent("nexus:dom-mutated", { bubbles: true }));
+            addedThisBatch.forEach((node) => {
+              movedNodes.add(node);
+              movedNodeTimers.set(node, performance.now());
+            });
+          } finally {
+            isProcessing = false;
+          }
+        });
+        observer.observe(el, { childList: true, subtree: true, attributes: true });
+        return () => observer.disconnect();
+      } catch (e) {
+        reportError(new Error(`Failed to init MutationObserver: ${e instanceof Error ? e.message : String(e)}`), el);
+      }
+    }
+  };
+  var mutation_default = mutationObserverModule;
+
+  // src/manifest.ts
+  var autoAttributes = [
+    { name: "assert", module: assert_exports },
+    { name: "bind", module: bind_exports },
+    { name: "build", module: build_exports },
+    { name: "class", module: class_exports },
+    { name: "component", module: component_exports },
+    { name: "computed", module: computed_exports },
+    { name: "debug", module: debug_exports },
+    { name: "drag", module: drag_exports },
+    { name: "effect", module: effect_exports },
+    { name: "flow", module: flow_exports },
+    { name: "for", module: for_exports },
+    { name: "html", module: html_exports },
+    { name: "if", module: if_exports },
+    { name: "import", module: import_exports },
+    { name: "markdown", module: markdown_exports },
+    { name: "mask", module: mask_exports2 },
+    { name: "on", module: on_exports },
+    { name: "preserve", module: preserve_exports },
+    { name: "pwa", module: pwa_exports },
+    { name: "raf", module: raf_exports },
+    { name: "route", module: route_exports },
+    { name: "router", module: router_exports },
+    { name: "show", module: show_exports },
+    { name: "signal", module: signal_exports },
+    { name: "style", module: style_exports },
+    { name: "stylesheet", module: stylesheet_exports },
+    { name: "switcher", module: switcher_exports },
+    { name: "teleport", module: teleport_exports },
+    { name: "theme", module: theme_exports },
+    { name: "var", module: var_exports }
+  ];
+  var autoSprites = [
+    { name: "animate", module: animate_exports },
+    { name: "bgFetch", module: bgFetch_exports },
+    { name: "bgSync", module: bgSync_exports },
+    { name: "flow", module: flow_exports2 },
+    { name: "gql", module: gql_exports },
+    { name: "mask", module: mask_exports },
+    { name: "mcp", module: mcp_exports2 },
+    { name: "periodicSync", module: periodicSync_exports },
+    { name: "predictive", module: predictive_exports },
+    { name: "push", module: push_exports },
+    { name: "selector", module: selector_exports },
+    { name: "sql", module: sql_exports },
+    { name: "svg", module: svg_exports },
+    { name: "sw", module: sw_exports }
+  ];
+  var autoModifiers = [
+    { name: "debounce", module: debounce_exports },
+    { name: "delay", module: delay_exports },
+    { name: "document", module: document_exports },
+    { name: "drag", module: drag_exports2 },
+    { name: "hold", module: hold_exports },
+    { name: "keys", module: keys_exports },
+    { name: "morph", module: morph_exports },
+    { name: "once", module: once_exports },
+    { name: "outside", module: outside_exports },
+    { name: "prevent", module: prevent_exports },
+    { name: "self", module: self_exports },
+    { name: "stop", module: stop_exports },
+    { name: "throttle", module: throttle_exports },
+    { name: "window", module: window_exports },
+    { name: "zoom", module: zoom_exports }
+  ];
+  var autoListeners = [
+    { name: "bfcache", module: bfcache_exports },
+    { name: "executeScript", module: executeScript_exports },
+    { name: "history", module: history_exports },
+    { name: "linkRewriter", module: linkRewriter_exports }
+  ];
+  var autoObservers = [{ name: "mutation", module: mutation_exports }];
+  var PACKED_COMPONENTS = ".draggable-chosen{background-color:var(--color-base-300,#d4d4d8);box-shadow:inset 0 0 0 2px var(--color-primary,#3b82f6)}.draggable-drag{opacity:1;background-color:var(--color-base-300,#d4d4d8);box-shadow:0 25px 50px -12px rgba(0,0,0,.25);transform:scale(1.05);cursor:grabbing;z-index:9999}.draggable-ghost{opacity:1;background-color:var(--color-base-300,#d4d4d8);border:2px solid var(--color-primary,#3b82f6);box-shadow:0 25px 50px -12px rgba(0,0,0,.25)}.draggable-selected{box-shadow:inset 0 0 0 2px var(--color-accent,var(--color-secondary,#ec4899))}.draggable-swap-highlight{background-color:color-mix(in srgb,var(--color-warning,#eab308) 20%,transparent);box-shadow:inset 0 0 0 2px var(--color-warning,#eab308)}.drop-target-before{background:linear-gradient(to bottom,color-mix(in srgb,var(--color-primary,#3b82f6) 30%,transparent) 0%,transparent 20%);box-shadow:inset 0 2px 0 0 var(--color-primary,#3b82f6)}.drop-target-after{background:linear-gradient(to top,color-mix(in srgb,var(--color-primary,#3b82f6) 30%,transparent) 0%,transparent 20%);box-shadow:inset 0 -2px 0 0 var(--color-primary,#3b82f6)}";
+  var PACKED_KEYFRAMES = "@keyframes spin{to{transform:rotate(360deg)}}@keyframes ping{75%,100%{transform:scale(2);opacity:0}}@keyframes pulse{50%{opacity:.5}}@keyframes bounce{0%,100%{transform:translateY(-25%);animation-timing-function:cubic-bezier(.8,0,1,1)}50%{transform:none;animation-timing-function:cubic-bezier(0,0,.2,1)}}";
+
+  // src/modules/attributes/stylesheet.ts
+  var PREFLIGHT_CSS = PACKED_COMPONENTS;
+  async function resolveImports(cssText, baseUrl, onUpdate) {
+    const defaultBase = typeof window !== "undefined" ? window.location.href : "http://localhost";
+    const currentBase = baseUrl || defaultBase;
+    const imports = [];
+    if (typeof document !== "undefined") {
+      try {
+        const parserDoc = document.implementation.createHTMLDocument("");
+        const styleEl = parserDoc.createElement("style");
+        styleEl.textContent = cssText;
+        parserDoc.head.appendChild(styleEl);
+        const sheet = styleEl.sheet;
+        if (sheet) {
+          for (const rule of sheet.cssRules) {
+            if (rule instanceof CSSImportRule) {
+              imports.push({
+                href: rule.href,
+                media: rule.media ? rule.media.mediaText : "",
+                layer: rule.layerName || ""
+              });
+            }
+          }
+        }
+      } catch {
+      }
+    }
+    const importRegex = /@import\s+(?:url\()?['"]([^'"]+)['"]\)?\s*[^;]*;/g;
+    let m;
+    while ((m = importRegex.exec(cssText)) !== null) {
+      const href = m[1];
+      if (!imports.some((i) => href.endsWith(i.href) || i.href.endsWith(href))) {
+        imports.push({ href, media: "", layer: "" });
+      }
+    }
+    let resolved = cssText;
+    for (const imp of imports) {
+      try {
+        const absoluteUrl = new URL(imp.href, currentBase).href;
+        const content = await fetchWithCache(absoluteUrl, 3e3, () => {
+          if (onUpdate)
+            onUpdate();
+        });
+        const nestedResolved = await resolveImports(content, absoluteUrl, onUpdate);
+        let wrapper = nestedResolved;
+        if (imp.media)
+          wrapper = `@media ${imp.media} { ${nestedResolved} }`;
+        else if (imp.layer)
+          wrapper = `@layer ${imp.layer} { ${nestedResolved} }`;
+        const escaped = imp.href.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const targetRegex = new RegExp(`@import\\s+(?:url\\()?['"]?${escaped}['"]?\\)?[^;]*;`, "g");
+        resolved = resolved.replace(targetRegex, wrapper);
+      } catch (err2) {
+        console.warn(`[NexusStyleSheet] Failed to resolve import "${imp.href}" relative to "${currentBase}":`, err2);
+      }
+    }
+    return resolved;
+  }
+  var NexusStyleSheet = class extends (typeof CSSStyleSheet !== "undefined" ? CSSStyleSheet : class {
+  }) {
+    _rawCSSText = "";
+    constructor() {
+      super();
+    }
+    async replace(cssText) {
+      this._rawCSSText = cssText;
+      if (typeof super.replace === "function") {
+        const resolved = await resolveImports(cssText, void 0, async () => {
+          const freshResolved = await resolveImports(this._rawCSSText);
+          if (typeof super.replace === "function") {
+            await super.replace(freshResolved);
+          }
+        });
+        return await super.replace(resolved);
+      }
+      return this;
+    }
+    replaceSync(cssText) {
+      this._rawCSSText = cssText;
+      const hasImports = /@import\s+(?:url\()?['"]([^'"]+)['"]\)?\s*[^;]*;/g.test(cssText);
+      if (typeof super.replaceSync === "function") {
+        try {
+          super.replaceSync(cssText);
+        } catch {
+          if (!hasImports)
+            throw err;
+        }
+      }
+      if (hasImports) {
+        resolveImports(cssText, void 0, async () => {
+          const freshResolved = await resolveImports(this._rawCSSText);
+          if (typeof super.replace === "function") {
+            super.replace(freshResolved).catch((err2) => console.error(err2));
+          }
+        }).then((resolved) => {
+          if (typeof super.replace === "function") {
+            super.replace(resolved).catch((err2) => {
+              console.error("[NexusStyleSheet] Dynamic replace of resolved imports failed:", err2);
+            });
+          }
+        }).catch((err2) => {
+          console.error("[NexusStyleSheet] Failed to resolve imports in background:", err2);
+        });
+      }
+    }
+  };
+  var jitSheet = typeof CSSStyleSheet !== "undefined" ? new CSSStyleSheet() : {};
+  function discoverColorTokens() {
+    const tokens = /* @__PURE__ */ new Set();
+    try {
+      const style = window.getComputedStyle(document.documentElement);
+      for (let i = 0; i < style.length; i++) {
+        const prop = style[i];
+        if (prop.startsWith("--color-")) {
+          tokens.add(prop.slice(8));
+        }
+      }
+    } catch {
+    }
+    return tokens;
+  }
+  function buildTailwindThemeBridge(tokens) {
+    if (tokens.size === 0)
+      return "";
+    const decls = Array.from(tokens).map((name) => `  --color-${name}: var(--color-${name});`).join("\n");
+    return `@theme {
+${decls}
+}`;
+  }
+  var compileFn = null;
+  var coreCss = null;
+  var tailwindCompiler = null;
+  var compilerReadyPromise = null;
+  var externalStylesSettled = false;
+  var _rebuildingBridge = false;
+  var compiledClassesSet = /* @__PURE__ */ new Set();
+  var pendingClasses = [];
+  function coreLoadStylesheet(id) {
+    if (!coreCss)
+      return { path: id, base: "/", content: "" };
+    if (id === "tailwindcss" || id === "tailwindcss/index.css") {
+      return { path: "tailwindcss/index.css", base: "/", content: coreCss.indexCss };
+    }
+    if (id === "./theme.css" || id === "tailwindcss/theme.css") {
+      return { path: "tailwindcss/theme.css", base: "/", content: coreCss.themeCss };
+    }
+    if (id === "./preflight.css" || id === "tailwindcss/preflight.css") {
+      return { path: "tailwindcss/preflight.css", base: "/", content: coreCss.preflightCss };
+    }
+    if (id === "./utilities.css" || id === "tailwindcss/utilities.css") {
+      return { path: "tailwindcss/utilities.css", base: "/", content: coreCss.utilitiesCss };
+    }
+    return { path: id, base: "/", content: "" };
+  }
+  async function ensureCompiler() {
+    if (compilerReadyPromise)
+      return compilerReadyPromise;
+    compilerReadyPromise = (async () => {
+      const [indexCss, themeCss, preflightCss, utilitiesCss, compilerJs] = await Promise.all([
+        fetchWithCache("https://cdn.jsdelivr.net/npm/tailwindcss@4/index.css"),
+        fetchWithCache("https://cdn.jsdelivr.net/npm/tailwindcss@4/theme.css"),
+        fetchWithCache("https://cdn.jsdelivr.net/npm/tailwindcss@4/preflight.css"),
+        fetchWithCache("https://cdn.jsdelivr.net/npm/tailwindcss@4/utilities.css"),
+        fetchWithCache("https://cdn.jsdelivr.net/npm/tailwindcss@4/+esm")
+      ]);
+      coreCss = { indexCss, themeCss, preflightCss, utilitiesCss };
+      const blob = new Blob([compilerJs], { type: "text/javascript" });
+      const blobUrl = URL.createObjectURL(blob);
+      const mod = await import(blobUrl);
+      URL.revokeObjectURL(blobUrl);
+      compileFn = mod.compile;
+      tailwindCompiler = await compileFn(`@import "tailwindcss";`, {
+        base: "/",
+        loadStylesheet: coreLoadStylesheet
+      });
+      await refreshThemeBridge();
+      while (pendingClasses.length > 0) {
+        const { className, el, runtime } = pendingClasses.shift();
+        stylesheet.adoptClass(className, el, runtime);
+      }
+    })().catch((err2) => {
+      compilerReadyPromise = null;
+      console.error("[Nexus] Tailwind JIT init failed:", err2);
+      throw err2;
+    });
+    return compilerReadyPromise;
+  }
+  async function refreshThemeBridge() {
+    if (!tailwindCompiler || !compileFn || !coreCss)
+      return;
+    if (_rebuildingBridge)
+      return;
+    _rebuildingBridge = true;
+    try {
+      const tokens = discoverColorTokens();
+      const bridge = buildTailwindThemeBridge(tokens);
+      tailwindCompiler = await compileFn(`@import "tailwindcss";
+${bridge}`, {
+        base: "/",
+        loadStylesheet: coreLoadStylesheet
+      });
+      const compiledCSS = tailwindCompiler.build(Array.from(compiledClassesSet));
+      jitSheet.replaceSync(compiledCSS);
+    } catch (err2) {
+      console.error("[Nexus] Theme bridge refresh failed:", err2);
+    } finally {
+      _rebuildingBridge = false;
+    }
+  }
+  async function fetchWithCache(url, timeoutMs = 3e3, onUpdate) {
+    const cacheKey = `nexus-cache:${url}`;
+    let cached = null;
+    if (typeof localStorage !== "undefined") {
+      try {
+        cached = localStorage.getItem(cacheKey);
+        if (cached && (cached.trim().startsWith("<!DOCTYPE") || cached.trim().startsWith("<!doctype") || cached.trim().startsWith("<html"))) {
+          localStorage.removeItem(cacheKey);
+          cached = null;
+        }
+      } catch {
+      }
+    }
+    if (cached) {
+      const cachedVal = cached;
+      console.log(`[Nexus Cache] INSTANT HIT: Loading ${url} from localStorage cache.`);
+      setTimeout(async () => {
+        try {
+          const controller = new AbortController();
+          const id = setTimeout(() => controller.abort(), timeoutMs);
+          const res = await fetch(url, { signal: controller.signal });
+          clearTimeout(id);
+          if (!res.ok)
+            return;
+          const freshText = await res.text();
+          if (freshText.trim().startsWith("<!DOCTYPE") || freshText.trim().startsWith("<!doctype") || freshText.trim().startsWith("<html"))
+            return;
+          if (hashString(cachedVal) !== hashString(freshText)) {
+            console.log(`[Nexus Cache] UPDATE DETECTED: CDN changed for ${url}. Caching for next load.`);
+            if (typeof localStorage !== "undefined") {
+              try {
+                localStorage.setItem(cacheKey, freshText);
+              } catch {
+              }
+            }
+            if (onUpdate)
+              onUpdate(freshText);
+          } else {
+            console.log(`[Nexus Cache] VERIFIED: Cache matches CDN for ${url}.`);
+          }
+        } catch (err2) {
+          console.warn(`[Nexus Cache] Background CDN hash check failed for ${url}:`, err2);
+        }
+      }, 5e3);
+      return cachedVal;
+    }
+    console.log(`[Nexus Cache] CACHE MISS: Fetching local/CDN resource for ${url}.`);
+    let localUrl = "";
+    if (url.includes("tailwindcss@4/")) {
+      const file = url.split("tailwindcss@4/")[1];
+      localUrl = `/node_modules/tailwindcss/${file}`;
+    }
+    const doFetch = async (targetUrl) => {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const res = await fetch(targetUrl, { signal: controller.signal });
+        clearTimeout(id);
+        if (!res.ok)
+          throw new Error(`HTTP error ${res.status}`);
+        const text = await res.text();
+        if (text.trim().startsWith("<!DOCTYPE") || text.trim().startsWith("<!doctype") || text.trim().startsWith("<html")) {
+          throw new Error(`Received HTML fallback response for ${targetUrl}`);
+        }
+        return text;
+      } catch (err2) {
+        clearTimeout(id);
+        throw err2;
+      }
+    };
+    if (localUrl) {
+      try {
+        console.log(`[Nexus Cache] Trying local relative fallback path: ${localUrl}`);
+        const text = await doFetch(localUrl);
+        console.log(`[Nexus Cache] SUCCESS: Loaded local resource for ${url} from ${localUrl}`);
+        if (typeof localStorage !== "undefined") {
+          try {
+            localStorage.setItem(cacheKey, text);
+          } catch {
+          }
+        }
+        return text;
+      } catch {
+        console.log(`[Nexus Cache] Local relative fallback failed for ${url}. Falling back to CDN.`);
+      }
+    }
+    try {
+      const text = await doFetch(url);
+      console.log(`[Nexus Cache] SUCCESS: Loaded resource from CDN for ${url}`);
+      if (typeof localStorage !== "undefined") {
+        try {
+          localStorage.setItem(cacheKey, text);
+        } catch {
+        }
+      }
+      return text;
+    } catch (err2) {
+      console.error(`[Nexus Cache] Failed CDN fetch for ${url}:`, err2);
+      throw err2;
+    }
+  }
+  function hashString(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash << 5) - hash + str.charCodeAt(i);
+      hash |= 0;
+    }
+    return String(hash);
+  }
+  var StyleSheetManager = class {
+    _adoptedSheets = /* @__PURE__ */ new Map();
+    _knownClasses = /* @__PURE__ */ new Set();
+    _nextId = 0;
+    _preflightEmitted = false;
+    _getJitSheet() {
+      return jitSheet;
+    }
+    clearCache() {
+      this._knownClasses.clear();
+    }
+    emitPreflightAndTheme(rootEl) {
+      if (typeof document === "undefined")
+        return;
+      if (this._preflightEmitted)
+        return;
+      initializeJitEngine();
+      if (PACKED_COMPONENTS.length > 0) {
+        this.adoptCSSSync(PACKED_COMPONENTS, "nexus-components");
+      }
+      if (PACKED_KEYFRAMES.length > 0) {
+        this.adoptCSSSync(PACKED_KEYFRAMES, "nexus-keyframes");
+      }
+      this._preflightEmitted = true;
+      if (rootEl) {
+        rootEl.classList.forEach((cls) => this.adoptClass(cls, rootEl));
+        const all = rootEl.querySelectorAll("*");
+        all.forEach((el) => {
+          if (el instanceof HTMLElement) {
+            el.classList.forEach((cls) => this.adoptClass(cls, el));
+          }
+        });
+      }
+    }
+    adoptClass(className, el, runtime) {
+      if (!className || className.trim() === "")
+        return;
+      if (el && el.closest && el.closest("[data-ignore-style]"))
+        return;
+      if (this._knownClasses.has(className))
+        return;
+      const hasSignalMatch = className.match(/^[a-z]+-\$([a-zA-Z_$][\w$]*)$/);
+      if (hasSignalMatch && el && runtime) {
+        this.adoptSignalBinding(el, hasSignalMatch[1], runtime);
+        this._knownClasses.add(className);
+        return;
+      }
+      if (el && !el.closest("[data-stylesheet]")) {
+        return;
+      }
+      if (!tailwindCompiler) {
+        pendingClasses.push({ className, el, runtime });
+        ensureCompiler().catch((err2) => console.error("[Nexus] JIT init failed:", err2));
+        return;
+      }
+      try {
+        if (className.includes("{") || className.includes("}") || className.includes("$") || className.includes("?") || className.includes("<") || className.includes(">") || className.includes("&") || className.includes("=")) {
+          return;
+        }
+        compiledClassesSet.add(className);
+        const compiledCSS = tailwindCompiler.build(Array.from(compiledClassesSet));
+        jitSheet.replaceSync(compiledCSS);
+        this._knownClasses.add(className);
+      } catch (err2) {
+        console.debug(`Nexus-UX JIT compile check: "${className}":`, err2);
+      }
+    }
+    adoptSignalBinding(el, signalName, runtime) {
+      if (!el.hasAttribute("data-class")) {
+        const currentBindings = el._signalBindings || [];
+        if (!currentBindings.includes(signalName)) {
+          currentBindings.push(signalName);
+          el._signalBindings = currentBindings;
+          const varName = signalName.replace(/[#.]/g, "-");
+          runtime.effect(() => {
+            const val = runtime.evaluate(el, signalName);
+            el.style.setProperty(`--nx-${varName}`, String(val !== void 0 ? val : ""));
+          });
+        }
+      }
+    }
+    ensureRule(className, cssText) {
+      if (this._knownClasses.has(className))
+        return;
+      const sheet = this._getJitSheet();
+      try {
+        sheet.insertRule(cssText, sheet.cssRules.length);
+        this._knownClasses.add(className);
+      } catch {
+      }
+    }
+    collectRules() {
+      const sheets = [];
+      this._adoptedSheets.forEach((sheet) => {
+        const rules2 = [];
+        try {
+          for (const rule of sheet.cssRules)
+            rules2.push(rule.cssText);
+        } catch {
+        }
+        if (rules2.length)
+          sheets.push(rules2.join("\n"));
+      });
+      const rules = [];
+      try {
+        for (const rule of jitSheet.cssRules)
+          rules.push(rule.cssText);
+      } catch {
+      }
+      if (rules.length)
+        sheets.push(rules.join("\n"));
+      return sheets.join("\n\n");
+    }
+    adoptCSSSync(cssText, id, root = document) {
+      const processedCSS = this.processAtRules(cssText);
+      const sheetId = id || `_auto_${this._nextId++}`;
+      const existing = this._adoptedSheets.get(sheetId);
+      if (existing) {
+        existing.replaceSync(processedCSS);
+        return () => this.removeSheet(sheetId, root);
+      }
+      if (typeof CSSStyleSheet === "undefined")
+        return () => {
+        };
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(processedCSS);
+      this._adoptedSheets.set(sheetId, sheet);
+      if (root && "adoptedStyleSheets" in root) {
+        root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
+      }
+      return () => this.removeSheet(sheetId, root);
+    }
+    async adoptCSS(cssText, id, root = document) {
+      const processedCSS = this.processAtRules(cssText);
+      const sheetId = id || `_auto_${this._nextId++}`;
+      const existing = this._adoptedSheets.get(sheetId);
+      if (existing) {
+        await existing.replace(processedCSS);
+        return () => this.removeSheet(sheetId, root);
+      }
+      if (typeof CSSStyleSheet === "undefined")
+        return () => {
+        };
+      const sheet = new NexusStyleSheet();
+      await sheet.replace(processedCSS);
+      this._adoptedSheets.set(sheetId, sheet);
+      if (root && "adoptedStyleSheets" in root) {
+        root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
+      }
+      return () => this.removeSheet(sheetId, root);
+    }
+    async adoptRawCSS(cssText, id, root = document) {
+      const sheetId = id || `_auto_${this._nextId++}`;
+      const existing = this._adoptedSheets.get(sheetId);
+      if (existing) {
+        await existing.replace(cssText);
+        return () => this.removeSheet(sheetId, root);
+      }
+      if (typeof CSSStyleSheet === "undefined")
+        return () => {
+        };
+      const sheet = new NexusStyleSheet();
+      await sheet.replace(cssText);
+      this._adoptedSheets.set(sheetId, sheet);
+      if (root && "adoptedStyleSheets" in root) {
+        root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
+      }
+      return () => this.removeSheet(sheetId, root);
+    }
+    processAtRules(css) {
+      return css;
+    }
+    removeSheet(id, root = document) {
+      const sheet = this._adoptedSheets.get(id);
+      if (!sheet)
+        return;
+      if (root && "adoptedStyleSheets" in root) {
+        root.adoptedStyleSheets = root.adoptedStyleSheets.filter((s) => s !== sheet);
+      }
+      this._adoptedSheets.delete(id);
+    }
+    dispose() {
+      this._adoptedSheets.forEach((_sheet, id) => this.removeSheet(id));
+      this._adoptedSheets.clear();
+      this._knownClasses.clear();
+      this._nextId = 0;
+    }
+  };
+  var stylesheet = new StyleSheetManager();
+  var _isJitEngineBooted = false;
+  function initializeJitEngine() {
+    if (_isJitEngineBooted)
+      return;
+    _isJitEngineBooted = true;
+    ensureCompiler().catch((err2) => console.error("[Nexus] JIT init failed:", err2));
+  }
+  function markExternalStylesSettled() {
+    externalStylesSettled = true;
+    if (compilerReadyPromise) {
+      refreshThemeBridge().catch((err2) => console.error("[Nexus] bridge refresh failed:", err2));
+    }
+  }
+  var stylesheetModule = {
+    name: "stylesheet",
+    attribute: "stylesheet",
+    handle(el, expression, _runtime) {
+      const cleanupFns = [];
+      if (expression && expression.trim()) {
+        const css = expression.trim();
+        cleanupFns.push(stylesheet.adoptCSSSync(css, void 0, document));
+      }
+      const root = el.getRootNode();
+      if (root && "adoptedStyleSheets" in root) {
+        const sheetsList = Array.from(root.adoptedStyleSheets);
+        if (!sheetsList.includes(jitSheet)) {
+          root.adoptedStyleSheets = [...sheetsList, jitSheet];
+        }
+      }
+      stylesheet.emitPreflightAndTheme(el);
+      cleanupFns.push(() => {
+        stylesheet.emitPreflightAndTheme(el);
+      });
+      return () => cleanupFns.forEach((fn) => fn());
+    }
+  };
+  var stylesheet_default = stylesheetModule;
+
+  // src/engine/reconciler.ts
+  var noOp = () => true;
+  var defaults = {
+    morphStyle: "innerHTML",
+    ignoreActiveValue: true,
+    // Never clobber what the user is currently typing
+    callbacks: {
+      beforeNodeAdded: noOp,
+      afterNodeAdded: noOp,
+      beforeNodeMorphed: (from, to) => {
+        if (from instanceof Element && from.hasAttribute(DATA_PRESERVE_ATTR)) {
+          return false;
+        }
+        if (from instanceof HTMLInputElement || from instanceof HTMLTextAreaElement || from instanceof HTMLSelectElement) {
+          if (from === document.activeElement) {
+            if (to instanceof HTMLInputElement || to instanceof HTMLTextAreaElement || to instanceof HTMLSelectElement) {
+              to.value = from.value;
+              if (from instanceof HTMLInputElement || from instanceof HTMLTextAreaElement) {
+                to.selectionStart = from.selectionStart;
+                to.selectionEnd = from.selectionEnd;
+              }
+            }
+          }
+        }
+        if (from instanceof HTMLElement && to instanceof HTMLElement) {
+          if (from.style.viewTransitionName) {
+            to.style.viewTransitionName = from.style.viewTransitionName;
+          }
+          if ("_nexus_key" in from) {
+            to._nexus_key = from._nexus_key;
+          }
+        }
+        if (from instanceof Element) {
+          const enhancedFrom = from;
+          if (enhancedFrom[CLEANUP_FUNCTIONS_KEY]) {
+            enhancedFrom[CLEANUP_FUNCTIONS_KEY].forEach((cleanup) => cleanup());
+            enhancedFrom[CLEANUP_FUNCTIONS_KEY].clear();
+          }
+          delete enhancedFrom[MARKER_KEY];
+        }
+        return true;
+      },
+      afterNodeMorphed: noOp,
+      beforeNodeRemoved: (node) => {
+        if (node instanceof Element) {
+          const enhancedNode = node;
+          if (enhancedNode[CLEANUP_FUNCTIONS_KEY]) {
+            enhancedNode[CLEANUP_FUNCTIONS_KEY].forEach((cleanup) => cleanup());
+            enhancedNode[CLEANUP_FUNCTIONS_KEY].clear();
+          }
+        }
+        return true;
+      },
+      afterNodeRemoved: noOp,
+      beforeAttributeUpdated: noOp
+    }
+  };
+  function runCallback(config, name, ...args) {
+    if (config.callbacks && typeof config.callbacks[name] === "function") {
+      return config.callbacks[name](...args);
+    }
+    return true;
+  }
+  function parseHTML(html) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+    if (html.includes("<html") || html.includes("<body") || html.includes("<head")) {
+      return doc.documentElement;
+    }
+    const fragment = document.createDocumentFragment();
+    const body = doc.body;
+    while (body.firstChild) {
+      fragment.appendChild(body.firstChild);
+    }
+    return fragment;
+  }
+  function hashString2(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash << 5) - hash + str.charCodeAt(i);
+      hash |= 0;
+    }
+    return String(hash);
+  }
+  function getHeadElementKey(node) {
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      const el = node;
+      if (el.tagName === "LINK") {
+        return `link:${el.getAttribute("href") || ""}:${el.getAttribute("rel") || ""}`;
+      }
+      if (el.tagName === "STYLE") {
+        return `style:${hashString2(el.textContent || "")}`;
+      }
+      if (el.tagName === "SCRIPT") {
+        return `script:${el.getAttribute("src") || ""}:${hashString2(el.textContent || "")}`;
+      }
+      if (el.tagName === "TITLE") {
+        return "title";
+      }
+    }
+    return null;
+  }
+  function morphHead(fromHead, toHead, config) {
+    const toTitle = toHead.querySelector("title");
+    if (toTitle) {
+      document.title = toTitle.textContent || "";
+    }
+    const fromChildren = Array.from(fromHead.childNodes);
+    const toChildren = Array.from(toHead.childNodes);
+    const fromMap = /* @__PURE__ */ new Map();
+    fromChildren.forEach((child) => {
+      const key = getHeadElementKey(child);
+      if (key)
+        fromMap.set(key, child);
+    });
+    toChildren.forEach((toChild) => {
+      const key = getHeadElementKey(toChild);
+      if (!key)
+        return;
+      if (fromMap.has(key)) {
+        const fromChild = fromMap.get(key);
+        fromMap.delete(key);
+        if (fromChild.nodeType === Node.ELEMENT_NODE && toChild.nodeType === Node.ELEMENT_NODE) {
+          if (fromChild.textContent !== toChild.textContent) {
+            fromChild.textContent = toChild.textContent;
+          }
+        }
+      } else {
+        const newNode = toChild.cloneNode(true);
+        if (newNode instanceof HTMLScriptElement) {
+          const activeScript = document.createElement("script");
+          Array.from(newNode.attributes).forEach((attr) => activeScript.setAttribute(attr.name, attr.value));
+          activeScript.textContent = newNode.textContent;
+          fromHead.appendChild(activeScript);
+        } else {
+          fromHead.appendChild(newNode);
+        }
+      }
+    });
+    fromMap.forEach((node) => {
+      if (node instanceof HTMLLinkElement || node instanceof HTMLStyleElement) {
+        node.parentNode?.removeChild(node);
+      }
+    });
+  }
+  function morphScript(fromScript, toScript) {
+    if (fromScript.textContent === toScript.textContent && fromScript.getAttribute("src") === toScript.getAttribute("src")) {
+      return;
+    }
+    const activeScript = document.createElement("script");
+    Array.from(toScript.attributes).forEach((attr) => activeScript.setAttribute(attr.name, attr.value));
+    activeScript.textContent = toScript.textContent;
+    fromScript.parentNode?.replaceChild(activeScript, fromScript);
+  }
+  function getElementKey(node) {
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      const el = node;
+      return el.getAttribute("data-key") || el.getAttribute("key") || el.id || null;
+    }
+    return null;
+  }
+  function removeNode(node, config) {
+    if (runCallback(config, "beforeNodeRemoved", node) === false)
+      return;
+    node.parentNode?.removeChild(node);
+    runCallback(config, "afterNodeRemoved", node);
+  }
+  function morphChildren(fromParent, toParent, config) {
+    const fromChildren = Array.from(fromParent.childNodes);
+    const toChildren = Array.from(toParent.childNodes);
+    const fromKeyMap = /* @__PURE__ */ new Map();
+    const fromNoKeyList = [];
+    fromChildren.forEach((child) => {
+      const key = getElementKey(child);
+      if (key) {
+        fromKeyMap.set(key, child);
+      } else {
+        fromNoKeyList.push(child);
+      }
+    });
+    let currentFromChild = fromParent.firstChild;
+    toChildren.forEach((toChild) => {
+      const isIframe = toChild instanceof HTMLIFrameElement;
+      const key = getElementKey(toChild);
+      let matchedFromChild = null;
+      if (key) {
+        matchedFromChild = fromKeyMap.get(key) || null;
+        if (matchedFromChild) {
+          fromKeyMap.delete(key);
+        }
+      } else {
+        const matchIdx = fromNoKeyList.findIndex(
+          (node) => node.nodeType === toChild.nodeType && (node.nodeType !== Node.ELEMENT_NODE || node.tagName === toChild.tagName)
+        );
+        if (matchIdx !== -1) {
+          matchedFromChild = fromNoKeyList.splice(matchIdx, 1)[0];
+        }
+      }
+      if (matchedFromChild) {
+        if (isIframe && matchedFromChild instanceof HTMLIFrameElement) {
+          const fromEl = matchedFromChild;
+          const toEl = toChild;
+          Array.from(fromEl.attributes).forEach((attr) => {
+            if (!toEl.hasAttribute(attr.name))
+              fromEl.removeAttribute(attr.name);
+          });
+          Array.from(toEl.attributes).forEach((attr) => {
+            if (attr.name === "src" && fromEl.getAttribute("src") === attr.value)
+              return;
+            fromEl.setAttribute(attr.name, attr.value);
+          });
+        } else {
+          if (matchedFromChild !== currentFromChild) {
+            fromParent.insertBefore(matchedFromChild, currentFromChild);
+          } else {
+            currentFromChild = currentFromChild.nextSibling;
+          }
+          morphNodes(matchedFromChild, toChild, config);
+        }
+      } else {
+        const newNode = toChild.cloneNode(true);
+        if (runCallback(config, "beforeNodeAdded", newNode) !== false) {
+          fromParent.insertBefore(newNode, currentFromChild);
+          runCallback(config, "afterNodeAdded", newNode);
+          if (newNode instanceof HTMLElement) {
+            const scripts = newNode.querySelectorAll("script");
+            scripts.forEach((script) => {
+              const activeScript = document.createElement("script");
+              Array.from(script.attributes).forEach((attr) => activeScript.setAttribute(attr.name, attr.value));
+              activeScript.textContent = script.textContent;
+              script.parentNode?.replaceChild(activeScript, script);
+            });
+          }
+        }
+      }
+    });
+    fromKeyMap.forEach((node) => {
+      removeNode(node, config);
+    });
+    fromNoKeyList.forEach((node) => {
+      removeNode(node, config);
+    });
+  }
+  function morphNodes(from, to, config) {
+    if (runCallback(config, "beforeNodeMorphed", from, to) === false) {
+      return;
+    }
+    if (from instanceof HTMLHeadElement && to instanceof HTMLHeadElement) {
+      morphHead(from, to, config);
+      return;
+    }
+    if (from instanceof HTMLScriptElement && to instanceof HTMLScriptElement) {
+      morphScript(from, to);
+      return;
+    }
+    if (from.nodeType !== to.nodeType) {
+      from.parentElement?.replaceChild(to.cloneNode(true), from);
+      return;
+    }
+    if (from.nodeType === Node.TEXT_NODE || from.nodeType === Node.COMMENT_NODE) {
+      if (from.nodeValue !== to.nodeValue) {
+        from.nodeValue = to.nodeValue;
+      }
+      return;
+    }
+    if (from.nodeType !== Node.ELEMENT_NODE)
+      return;
+    const fromEl = from;
+    const toEl = to;
+    if (fromEl.tagName !== toEl.tagName) {
+      fromEl.parentElement?.replaceChild(toEl.cloneNode(true), fromEl);
+      return;
+    }
+    const fromAttrs = fromEl.attributes;
+    const toAttrs = toEl.attributes;
+    for (let i = fromAttrs.length - 1; i >= 0; i--) {
+      const attr = fromAttrs[i];
+      if (!toEl.hasAttribute(attr.name)) {
+        fromEl.removeAttribute(attr.name);
+      }
+    }
+    for (let i = 0; i < toAttrs.length; i++) {
+      const attr = toAttrs[i];
+      if (fromEl.getAttribute(attr.name) !== attr.value) {
+        fromEl.setAttribute(attr.name, attr.value);
+      }
+    }
+    if (fromEl instanceof HTMLInputElement && toEl instanceof HTMLInputElement) {
+      if (fromEl.type === "checkbox" || fromEl.type === "radio") {
+        fromEl.checked = toEl.checked;
+      } else if (fromEl.type !== "file") {
+        if (fromEl !== document.activeElement || !config.ignoreActiveValue) {
+          fromEl.value = toEl.value;
+        }
+      }
+    } else if (fromEl instanceof HTMLTextAreaElement && toEl instanceof HTMLTextAreaElement) {
+      if (fromEl !== document.activeElement || !config.ignoreActiveValue) {
+        fromEl.value = toEl.value;
+      }
+    } else if (fromEl instanceof HTMLSelectElement && toEl instanceof HTMLSelectElement) {
+      fromEl.value = toEl.value;
+    }
+    morphChildren(fromEl, toEl, config);
+    runCallback(config, "afterNodeMorphed", fromEl, toEl);
+  }
+  function morphDOM(from, to, options = {}) {
+    const config = { ...defaults, ...options };
+    let toNode;
+    if (typeof to === "string") {
+      toNode = parseHTML(to);
+    } else {
+      toNode = to;
+    }
+    if (from === document.documentElement || from.tagName === "HTML") {
+      const fromHTML = from;
+      const toHTML = toNode;
+      const fromHead = fromHTML.querySelector("head");
+      const toHead = toHTML.querySelector("head");
+      if (fromHead && toHead) {
+        morphHead(fromHead, toHead, config);
+      }
+      const fromBody = fromHTML.querySelector("body");
+      const toBody = toHTML.querySelector("body");
+      if (fromBody && toBody) {
+        morphNodes(fromBody, toBody, config);
+      }
+      const fromAttrs = fromHTML.attributes;
+      const toAttrs = toHTML.attributes;
+      for (let i = fromAttrs.length - 1; i >= 0; i--) {
+        const attr = fromAttrs[i];
+        if (!toHTML.hasAttribute(attr.name))
+          fromHTML.removeAttribute(attr.name);
+      }
+      for (let i = 0; i < toAttrs.length; i++) {
+        const attr = toAttrs[i];
+        fromHTML.setAttribute(attr.name, attr.value);
+      }
+    } else {
+      if (config.morphStyle === "innerHTML") {
+        const toParent = toNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE || toNode.nodeType === Node.ELEMENT_NODE ? toNode : parseHTML(`<div>${to}</div>`);
+        morphChildren(from, toParent, config);
+      } else {
+        const targetNode = toNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE ? toNode.firstChild || toNode : toNode;
+        morphNodes(from, targetNode, config);
+        if (toNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE && toNode.childNodes.length > 1) {
+          let sibling = from.nextSibling;
+          const parent = from.parentNode;
+          if (parent) {
+            Array.from(toNode.childNodes).slice(1).forEach((node) => {
+              parent.insertBefore(node.cloneNode(true), sibling);
+            });
+          }
+        }
+      }
+    }
+    from.dispatchEvent(new CustomEvent("nexus:dom-morphed", { bubbles: true }));
+  }
+  var nexusClassMap = /* @__PURE__ */ new WeakMap();
+  function reconcileClass(el, value) {
+    const currentAdded = nexusClassMap.get(el) || /* @__PURE__ */ new Set();
+    const toAdd = /* @__PURE__ */ new Set();
+    const process = (val) => {
+      if (!val)
+        return;
+      if (typeof val === "string") {
+        val.split(/\s+/).filter(Boolean).forEach((c) => toAdd.add(c));
+      } else if (Array.isArray(val)) {
+        val.forEach(process);
+      } else if (typeof val === "object") {
+        Object.entries(val).forEach(([cls, cond]) => {
+          let isMatch = false;
+          if (typeof cond === "object" && cond !== null) {
+            isMatch = Object.values(cond).every((v) => !!v);
+          } else {
+            isMatch = !!cond;
+          }
+          if (isMatch)
+            cls.split(/\s+/).filter(Boolean).forEach((c) => toAdd.add(c));
+        });
+      }
+    };
+    process(value);
+    currentAdded.forEach((cls) => {
+      if (!toAdd.has(cls)) {
+        el.classList.remove(cls);
+        currentAdded.delete(cls);
+      }
+    });
+    toAdd.forEach((cls) => {
+      if (!el.classList.contains(cls)) {
+        el.classList.add(cls);
+        currentAdded.add(cls);
+        stylesheet.adoptClass(cls, el);
+      }
+    });
+    if (currentAdded.size > 0)
+      nexusClassMap.set(el, currentAdded);
+  }
+  var nexusStyleMap = /* @__PURE__ */ new WeakMap();
+  function reconcileStyle(el, value) {
+    if (!value)
+      return;
+    const currentAdded = nexusStyleMap.get(el) || /* @__PURE__ */ new Set();
+    const toAdd = /* @__PURE__ */ new Set();
+    let styleObj = {};
+    if (typeof value === "string") {
+      value.split(";").forEach((pair) => {
+        const [prop, val] = pair.split(":").map((s) => s.trim());
+        if (prop && val)
+          styleObj[prop] = val;
+      });
+    } else if (typeof value === "object" && value !== null) {
+      styleObj = value;
+    } else {
+      return;
+    }
+    Object.entries(styleObj).forEach(([prop, val]) => {
+      const cssProp = prop.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`);
+      if (val !== null && val !== void 0 && val !== false) {
+        el.style.setProperty(cssProp, String(val));
+        toAdd.add(cssProp);
+        currentAdded.add(cssProp);
+      } else {
+        el.style.removeProperty(cssProp);
+        currentAdded.delete(cssProp);
+      }
+    });
+    currentAdded.forEach((prop) => {
+      if (!(prop in styleObj) && !(prop.replace(/-([a-z])/g, (_m, c) => c.toUpperCase()) in styleObj)) {
+        el.style.removeProperty(prop);
+        currentAdded.delete(prop);
+      }
+    });
+    if (currentAdded.size > 0)
+      nexusStyleMap.set(el, currentAdded);
+  }
+  function deepEqual(a, b) {
+    if (a === b)
+      return true;
+    if (typeof a !== "object" || a === null || typeof b !== "object" || b === null)
+      return false;
+    if (Array.isArray(a)) {
+      if (!Array.isArray(b) || a.length !== b.length)
+        return false;
+      for (let i = 0; i < a.length; i++) {
+        if (!deepEqual(a[i], b[i]))
+          return false;
+      }
+      return true;
+    }
+    if (Array.isArray(b))
+      return false;
+    const keysA = Object.keys(a);
+    const keysB = Object.keys(b);
+    if (keysA.length !== keysB.length)
+      return false;
+    for (let i = 0; i < keysA.length; i++) {
+      const key = keysA[i];
+      if (!Object.prototype.hasOwnProperty.call(b, key) || !deepEqual(a[key], b[key])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // src/engine/fetch.ts
+  init_debug();
+  init_consts();
+  var fetchCache = /* @__PURE__ */ new Map();
+  var fetchCacheTimers = /* @__PURE__ */ new Map();
+  var fetchUtilities = {
+    request: (url, options, el) => {
+      const cacheKey = `${url}:${options.method || "GET"}:${options.responseType || "text"}`;
+      if (fetchCache.has(cacheKey))
+        return fetchCache.get(cacheKey);
+      const promise = (async () => {
+        let controller;
+        try {
+          controller = new AbortController();
+          const signal = controller.signal;
+          const fetchOptions = {
+            ...options,
+            signal
+          };
+          const response = await fetch(url, fetchOptions);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          let data;
+          switch (options.responseType) {
+            case "json":
+              data = await response.json();
+              break;
+            case "blob":
+              data = await response.blob();
+              break;
+            case "arrayBuffer":
+              data = await response.arrayBuffer();
+              break;
+            case "formData":
+              data = await response.formData();
+              break;
+            case "text":
+            default:
+              data = await response.text();
+              break;
+          }
+          el.dispatchEvent(new CustomEvent(`${CUSTOM_EVENT_PREFIX}fetch-success`, {
+            bubbles: true,
+            cancelable: false,
+            detail: { url, options, data, response }
+          }));
+          return data;
+        } catch (e) {
+          if (e instanceof DOMException && e.name === "AbortError") {
+            if (document.documentElement.hasAttribute("data-debug")) {
+              console.warn(`Fetch request to ${url} was aborted.`);
+            }
+          } else {
+            reportError(new Error(`Failed to fetch from ${url}: ${e instanceof Error ? e.message : String(e)}`), el);
+          }
+          el.dispatchEvent(new CustomEvent(`${CUSTOM_EVENT_PREFIX}fetch-error`, {
+            bubbles: true,
+            cancelable: false,
+            detail: { url, options, error: e }
+          }));
+          throw e;
+        }
+      })();
+      fetchCache.set(cacheKey, promise);
+      promise.then(
+        () => {
+        },
+        () => {
+          if (fetchCacheTimers.has(cacheKey))
+            clearTimeout(fetchCacheTimers.get(cacheKey));
+          fetchCacheTimers.set(cacheKey, setTimeout(() => {
+            fetchCache.delete(cacheKey);
+            fetchCacheTimers.delete(cacheKey);
+          }, 2e3));
+        }
+      );
+      return promise;
+    },
+    /**
+     * Creates a deeply reactive Suspense proxy that throws its pending Promise when accessed.
+     * This allows Nexus-UX to gracefully pause elementBoundEffect until the fetch completes.
+     */
+    createSuspenseProxy: (promise) => {
+      let isResolved = false;
+      let isRejected = false;
+      let result;
+      let error;
+      promise.then(
+        (res) => {
+          isResolved = true;
+          result = res;
+        },
+        (err2) => {
+          isRejected = true;
+          error = err2;
+        }
+      );
+      return new Proxy(promise, {
+        get(target, prop) {
+          if (prop === "then")
+            return target.then.bind(target);
+          if (prop === "catch")
+            return target.catch.bind(target);
+          if (prop === "finally")
+            return target.finally.bind(target);
+          if (prop === "__v_isRef" || prop === "__v_isReactive")
+            return false;
+          if (isRejected)
+            throw error;
+          if (!isResolved)
+            throw promise;
+          if (result === void 0 || result === null)
+            return void 0;
+          let finalResult = result;
+          if (typeof result === "string") {
+            try {
+              finalResult = JSON.parse(result);
+            } catch (_e) {
+            }
+          }
+          if (finalResult && typeof finalResult === "object") {
+            const envelopes = ["data", "results", "items", "value", "_embedded", "entries"];
+            for (const envelope of envelopes) {
+              if (finalResult[envelope] !== void 0) {
+                finalResult = finalResult[envelope];
+                break;
+              }
+            }
+          }
+          const val = finalResult && typeof finalResult === "object" ? finalResult[prop] : void 0;
+          return typeof val === "function" ? val.bind(finalResult) : val;
+        }
+      });
+    }
+  };
+  var fetchModule = {
+    name: "fetch",
+    install: (context) => {
+      context.fetch = fetchUtilities;
+    }
+  };
+
+  // src/engine/evaluator.ts
+  init_debug();
+  registerScopeProvider("__global", (_, runtime) => runtime.globalSignals());
+  var shouldAutoEvaluateFunctions = true;
+  var currentEvalDepth = 0;
+  var MAX_EVAL_DEPTH = 50;
+  function evaluate(el, expression, runtime, extras = {}) {
+    if (typeof expression !== "string" || !expression || expression.trim() === "")
+      return {};
+    const runner = evaluateLater(el, expression, runtime);
+    let res;
+    runner((v) => res = v, extras);
+    return res;
+  }
+  function preProcessExpression(expression) {
+    let processed = expression;
+    if (processed.includes("@")) {
+      processed = processed.replace(/@(\w+)\s*\((.*?)\)\s*\{([^}]*)\}/g, (_match, name, arg, body) => {
+        const safeArg = arg.trim().replace(/`/g, "\\`");
+        return `_scopes.${name}(\`${safeArg}\`, () => { return ${body.trim()} })`;
+      });
+    }
+    if (processed.includes("#")) {
+      processed = processed.replace(/(^|[^a-zA-Z0-9_$'"`])#([a-zA-Z_$][\w$]*)/g, "$1__global.$2");
+    }
+    return processed;
+  }
+  function checkBalanced(expr) {
+    const stack = [];
+    const pairs = { "{": "}", "[": "]", "(": ")" };
+    let inString = null;
+    let escape = false;
+    for (let i = 0; i < expr.length; i++) {
+      const char = expr[i];
+      if (escape) {
+        escape = false;
+        continue;
+      }
+      if (char === "\\") {
+        escape = true;
+        continue;
+      }
+      if (inString) {
+        if (char === inString)
+          inString = null;
+        continue;
+      }
+      if (char === '"' || char === "'" || char === "`") {
+        inString = char;
+        continue;
+      }
+      if (pairs[char]) {
+        stack.push({ char, pos: i });
+      } else if (char === "}" || char === "]" || char === ")") {
+        const last = stack.pop();
+        if (!last || pairs[last.char] !== char) {
+          return { type: "bracket", expected: last ? pairs[last.char] : "none", position: i };
+        }
+      }
+    }
+    if (inString) {
+      return { type: "quote", expected: inString, position: expr.length };
+    }
+    if (stack.length > 0) {
+      const last = stack[stack.length - 1];
+      return { type: "bracket", expected: pairs[last.char], position: last.pos };
+    }
+    return null;
+  }
+  function validateExpression(expression, el) {
+    const trimmed = expression.trim();
+    let attrName = "";
+    if (el instanceof Element) {
+      for (const attr of Array.from(el.attributes)) {
+        if (attr.value === expression) {
+          attrName = attr.name;
+          break;
+        }
+      }
+    }
+    if (attrName === "data-for") {
+      if (!trimmed.includes(" in ")) {
+        return {
+          severity: "error",
+          message: `Invalid data-for syntax: "${trimmed}". Expected "item in items".`,
+          suggestion: trimmed.includes(" of ") ? `Replace 'of' with 'in': "${trimmed.replace(" of ", " in ")}"` : `Use pattern: "(item, index) in list"`,
+          element: el,
+          expression: trimmed
+        };
+      }
+    }
+    if (attrName === "data-var") {
+      if (!trimmed.startsWith("{") && !trimmed.startsWith("({")) {
+        return {
+          severity: "error",
+          message: `data-var must evaluate to an object literal. Got: "${trimmed.substring(0, 40)}..."`,
+          suggestion: `Wrap in braces: "{ ${trimmed} }"`,
+          element: el,
+          expression: trimmed
+        };
+      }
+    }
+    const balanced = checkBalanced(trimmed);
+    if (balanced) {
+      return {
+        severity: "error",
+        message: `Unbalanced ${balanced.type} in expression: "${trimmed.substring(0, 60)}..."`,
+        suggestion: `Check for missing closing '${balanced.expected}' near position ${balanced.position}`,
+        element: el,
+        expression: trimmed
+      };
+    }
+    return null;
+  }
+  function evaluateLater(el, expression, runtime, initialExtras = {}) {
+    const processedExpression = preProcessExpression(expression);
+    const baseScope = {
+      ...runtime,
+      ...initialExtras
+    };
+    const scope = new Proxy(baseScope, {
+      has(target, key) {
+        if (key === Symbol.unscopables)
+          return false;
+        if (typeof key === "string") {
+          return true;
+        }
+        return false;
+      },
+      get(target, key) {
+        if (key === Symbol.unscopables)
+          return void 0;
+        if (typeof key === "string") {
+          if (hasScopeProvider(key))
+            return resolveScopeProvider(key, el, runtime);
+          const dataStack = getDataStack(el);
+          for (const data of dataStack) {
+            if (key in data) {
+              const val = data[key];
+              return runtime.unref(val);
+            }
+          }
+          const globalSignals = runtime.globalSignals();
+          if (key in globalSignals) {
+            const val = globalSignals[key];
+            return runtime.unref(val);
+          }
+          const globalActions = runtime.globalActions();
+          if (key in globalActions) {
+            return globalActions[key];
+          }
+          if (key in globalThis) {
+            const val = globalThis[key];
+            return typeof val === "function" ? val.bind(globalThis) : val;
+          }
+        }
+        return void 0;
+      },
+      set(target, key, value) {
+        if (typeof key === "string") {
+          const globalSignals = runtime.globalSignals();
+          if (key in globalSignals) {
+            globalSignals[key] = value;
+            return true;
+          }
+          const dataStack = getDataStack(el);
+          for (const data of dataStack) {
+            if (key in data) {
+              data[key] = value;
+              return true;
+            }
+          }
+          if (dataStack.length > 0) {
+            dataStack[0][key] = value;
+            return true;
+          }
+          if (key in target) {
+            target[key] = value;
+            return true;
+          }
+          globalSignals[key] = value;
+          return true;
+        }
+        return false;
+      }
+    });
+    const diagnostic = validateExpression(expression, el);
+    if (diagnostic) {
+      syntaxError(
+        diagnostic.element ? diagnostic.element.tagName.toLowerCase() : "unknown",
+        expression,
+        `${diagnostic.message}
+\u{1F4A1} Suggestion: ${diagnostic.suggestion}`,
+        el instanceof HTMLElement ? el : void 0
+      );
+    }
+    let func;
+    try {
+      func = new Function("scope", `with (scope) { return (${processedExpression}) }`);
+    } catch (e) {
+      if (e instanceof SyntaxError) {
+        try {
+          func = new Function("scope", `with (scope) { ${processedExpression} }`);
+        } catch (e2) {
+          if (e2 instanceof SyntaxError) {
+            syntaxError("eval", expression, e2.message, el instanceof HTMLElement ? el : void 0);
+          }
+          throw e2;
+        }
+      } else {
+        throw e;
+      }
+    }
+    return (receiver, callExtras = {}) => {
+      if (currentEvalDepth > MAX_EVAL_DEPTH) {
+        console.warn(`[Nexus Loop Guard] Stopped runaway evaluation at depth ${currentEvalDepth} for expression: "${expression}"`);
+        receiver(void 0);
+        return;
+      }
+      currentEvalDepth++;
+      try {
+        const currentScope = new Proxy(callExtras, {
+          has(target, key) {
+            if (key === Symbol.unscopables)
+              return false;
+            if (typeof key === "string")
+              return key in target || key in scope;
+            return key in target;
+          },
+          get(target, key) {
+            if (key === Symbol.unscopables)
+              return void 0;
+            if (typeof key === "string") {
+              if (key in target)
+                return target[key];
+              return scope[key];
+            }
+            return void 0;
+          },
+          set(target, key, value) {
+            if (typeof key === "string") {
+              if (key in target) {
+                target[key] = value;
+                return true;
+              }
+              scope[key] = value;
+              return true;
+            }
+            return false;
+          }
+        });
+        const result = func.call(el, currentScope);
+        if (shouldAutoEvaluateFunctions && typeof result === "function") {
+          receiver(result.call(el, currentScope));
+        } else {
+          receiver(result);
+        }
+      } catch (e) {
+        if (e instanceof Promise)
+          throw e;
+        if (e instanceof TypeError && e.message.includes("Cannot read properties of") || e instanceof ReferenceError) {
+          if (runtime.isDevMode) {
+            try {
+              getSelfHealAgent().reportResolutionFailure("expression", expression, {
+                error: e.message,
+                node: el
+              });
+            } catch (_err) {
+            }
+          }
+          receiver(void 0);
+        } else {
+          console.error(`[Evaluator Error] Expression "${expression}" failed:`, e);
+          evaluationError(expression, e instanceof Error ? e : new Error(String(e)), el);
+        }
+      } finally {
+        currentEvalDepth--;
+      }
+    };
+  }
+
+  // src/engine/attributeParser.ts
+  init_consts();
+  function parseAttribute(name, _runtime, element) {
+    let rawName = "";
+    let isNexus = false;
+    if (name.startsWith(ATTRIBUTE_PREFIX)) {
+      rawName = name.slice(ATTRIBUTE_PREFIX.length);
+      isNexus = true;
+    } else if (name.startsWith(":")) {
+      rawName = `bind-${name.slice(1)}`;
+      isNexus = true;
+    } else if (name.startsWith("@")) {
+      rawName = `on-${name.slice(1)}`;
+      isNexus = true;
+    }
+    if (!isNexus) {
+      return null;
+    }
+    let directive = void 0;
+    let argument = void 0;
+    const modifiers = [];
+    let target = void 0;
+    let state = 0;
+    let rest = rawName;
+    const hyphenated = ["ux-theme", "on-raf", "flow-node", "flow-handle", "flow-edges", "flow-grid"].find(
+      (h) => rawName === h || rawName.startsWith(h + "-") || rawName.startsWith(h + ":")
+    );
+    if (hyphenated) {
+      directive = hyphenated;
+      rest = rawName.slice(hyphenated.length);
+      if (rest.length > 0) {
+        if (rest.startsWith("-")) {
+          state = 1;
+          rest = rest.slice(1);
+        } else if (rest.startsWith(":")) {
+          state = 2;
+          rest = rest.slice(1);
+        }
+      }
+    }
+    let currentTokenStart = 0;
+    const len = rest.length;
+    for (let i = 0; i <= len; i++) {
+      const isEnd = i === len;
+      const char = isEnd ? "" : rest[i];
+      const isModifierDelim = char === MODIFIER_DELIMITER || char === ".";
+      const isArgDelim = char === "-";
+      const isDelim = isModifierDelim || isArgDelim;
+      if (isDelim || isEnd) {
+        if (i > currentTokenStart) {
+          const token = rest.slice(currentTokenStart, i);
+          if (state === 0) {
+            directive = token;
+          } else if (state === 1) {
+            argument = argument ? argument + "-" + token : token;
+          } else {
+            if (token.startsWith("$(") && token.endsWith(")")) {
+              target = token.slice(2, -1);
+            } else {
+              modifiers.push(token);
+            }
+          }
+        }
+        if (isDelim) {
+          if (isModifierDelim) {
+            state = 2;
+          } else if (isArgDelim && state === 0) {
+            state = 1;
+          }
+        }
+        currentTokenStart = i + 1;
+      }
+    }
+    return {
+      name,
+      value: element.getAttribute(name) || "",
+      directive,
+      argument,
+      modifiers,
+      target
+    };
+  }
+
+  // src/engine/modules.ts
+  init_scheduler();
+  init_debug();
+  init_debug();
+
+  // src/engine/utils/hash.ts
+  init_consts();
+  var Hash = class {
+    #value = 0;
+    #prefix;
+    constructor(prefix = STATE) {
+      this.#prefix = prefix;
+    }
+    /**
+     * Incorporates a value into the hash.
+     */
+    with(x) {
+      if (typeof x === "string") {
+        const len = x.length;
+        for (let i = 0; i < len; i++) {
+          this.with(x.charCodeAt(i));
+        }
+      } else if (typeof x === "boolean") {
+        this.with(1 << (x ? 7 : 3));
+      } else {
+        this.#value = this.#value * 33 ^ x;
+      }
+      return this;
+    }
+    get value() {
+      return this.#value;
+    }
+    /**
+     * Returns the hash as a base36 string prefixed with the state key.
+     */
+    get string() {
+      return this.#prefix + Math.abs(this.#value).toString(36);
+    }
+  };
+  function elUniqId(el) {
+    if (el.id)
+      return el.id;
+    const key = el.getAttribute("data-ux-id") || el.getAttribute("data-key") || el.getAttribute("data-id");
+    if (key) {
+      const hash2 = new Hash();
+      hash2.with(el.tagName).with(key);
+      return hash2.string;
+    }
+    const hash = new Hash();
+    let currentEl = el;
+    while (currentEl) {
+      hash.with(currentEl.tagName || "");
+      if (currentEl.id) {
+        hash.with(currentEl.id);
+        break;
+      }
+      const p = currentEl?.parentNode || null;
+      if (p && (p instanceof Element || p instanceof DocumentFragment || typeof ShadowRoot !== "undefined" && p instanceof ShadowRoot)) {
+        const children = p.children || [];
+        if (children.length > 0) {
+          hash.with(Array.from(children).indexOf(currentEl));
+        }
+      }
+      currentEl = p instanceof Element ? p : typeof ShadowRoot !== "undefined" && p instanceof ShadowRoot ? p.host : p instanceof DocumentFragment ? null : null;
+      if (p instanceof DocumentFragment && !currentEl) {
+      }
+    }
+    return hash.string;
+  }
+  function attrHash(key, val) {
+    return new Hash().with(key).with(val).value;
+  }
+
+  // src/engine/modules.ts
+  init_consts();
+
+  // src/engine/observers.ts
+  var registry = /* @__PURE__ */ new Map();
+  function registerObserver(name, module) {
+    registry.set(name, {
+      module,
+      activeCleanups: /* @__PURE__ */ new Map()
+    });
+  }
+  function attachObserver(name, el, runtime) {
+    const entry = registry.get(name);
+    if (!entry)
+      return void 0;
+    if (entry.activeCleanups.has(el))
+      return void 0;
+    const cleanup = entry.module.observe(el, runtime);
+    if (cleanup) {
+      entry.activeCleanups.set(el, cleanup);
+      return () => {
+        cleanup();
+        entry.activeCleanups.delete(el);
+      };
+    }
+    return void 0;
+  }
+  function disposeObservers() {
+    registry.forEach((entry) => {
+      entry.activeCleanups.forEach((cleanup) => cleanup());
+      entry.activeCleanups.clear();
+    });
+    registry.clear();
+  }
+
+  // src/engine/modules.ts
+  init_mcp();
+  var globalReactiveState = reactive({});
+  var ModuleCoordinator = class {
+    attributeModules = /* @__PURE__ */ new Map();
+    actionModules = /* @__PURE__ */ new Map();
+    modifierModules = /* @__PURE__ */ new Map();
+    listenerModules = /* @__PURE__ */ new Map();
+    observerModules = /* @__PURE__ */ new Map();
+    utilityModules = /* @__PURE__ */ new Map();
+    spriteModules = /* @__PURE__ */ new Map();
+    scopeModules = /* @__PURE__ */ new Map();
+    directiveOrder = [];
+    runtimeContext;
+    initContext;
+    markerDispenser = 1;
+    constructor() {
+      this.runtimeContext = {
+        effect,
+        stop,
+        reactive,
+        toRaw,
+        isReactive,
+        isReadonly,
+        isProxy,
+        readonly,
+        shallowReactive,
+        shallowReadonly,
+        customRef,
+        triggerRef,
+        unref,
+        ref,
+        shallowRef,
+        isRef,
+        toRefs,
+        toRef,
+        computed,
+        watch,
+        onEffectCleanup,
+        elementBoundEffect,
+        morphDOM,
+        fetch: fetchUtilities,
+        evaluate: (el, expression, extras) => evaluate(el, expression, this.runtimeContext, extras),
+        globalSignals: getGlobalSignals.bind(this),
+        setGlobalSignal: setGlobalSignal.bind(this),
+        localSignals: getLocalSignals.bind(this),
+        localActions: getLocalActions.bind(this),
+        globalActions: getGlobalActions.bind(this),
+        getModifier: (name) => this.modifierModules.get(name),
+        processElement: this.processElement.bind(this),
+        reconcileClass: (el, val) => reconcileClass(el, val),
+        reconcileStyle: (el, val) => reconcileStyle(el, val),
+        adoptStyle: (el) => el.classList.forEach((cls) => stylesheet.adoptClass(cls, el)),
+        parseAttribute,
+        scheduler,
+        reportError: (err2, el, expr) => logger.error(this.runtimeContext, err2.message, el, expr),
+        $: (selector) => {
+          if (typeof document === "undefined")
+            return null;
+          return resolveSelector(document.body, selector);
+        },
+        isDevMode: typeof document !== "undefined" ? document.documentElement.hasAttribute("data-debug") : false,
+        elUniqId,
+        attrHash,
+        // Engine Topology (Tier 0-3)
+        topology: {
+          getTier: () => topology.getTier(),
+          getConfig: () => topology.getTierConfig(),
+          getActiveWorkers: () => topology.getActiveWorkers(),
+          isSABAvailable: () => topology.isSABAvailable(),
+          getLagVariance: () => topology.getLagVariance()
+        },
+        log: (...args) => logger.log(this.runtimeContext, ...args),
+        warn: (...args) => logger.warn(this.runtimeContext, ...args),
+        info: (...args) => logger.info(this.runtimeContext, ...args),
+        debug: (...args) => logger.debug(this.runtimeContext, ...args),
+        mcp: void 0,
+        // Placeholder for initialization below
+        sprites: {},
+        // Namespace for all registered sprites
+        update: (fn) => fn()
+        // Immediate execution for now
+      };
+      if (typeof document !== "undefined") {
+        const mcpUrl = document.querySelector('meta[name="nexus-mcp-server"]')?.getAttribute("content");
+        if (mcpUrl) {
+          this.runtimeContext.mcp = new MCPClient(mcpUrl);
+          this.runtimeContext.mcp.connect().catch(() => {
+            this.runtimeContext.debug(`[Coordinator] MCP Connection skipped: ${mcpUrl}`);
+          });
+        }
+      }
+      initSanitizingEngine(this.runtimeContext);
+      this.initContext = {
+        registerAttributeModule: this.registerAttributeModule.bind(this),
+        registerActionModule: this.registerActionModule.bind(this),
+        registerModifierModule: this.registerModifierModule.bind(this),
+        registerListenerModule: this.registerListenerModule.bind(this),
+        registerObserverModule: this.registerObserverModule.bind(this),
+        registerUtilityModule: this.registerUtilityModule.bind(this),
+        registerSpriteModule: this.registerSpriteModule.bind(this),
+        registerScopeModule: this.registerScopeModule.bind(this),
+        runtime: this.runtimeContext
+      };
+    }
+    dispose() {
+      disposeSanitizingEngine();
+      this.attributeModules.clear();
+      this.actionModules.clear();
+      this.modifierModules.clear();
+      this.listenerModules.clear();
+      this.observerModules.clear();
+      this.utilityModules.clear();
+      disposeObservers();
+    }
+    initializeModules(rootElement) {
+      this.utilityModules.forEach((module, name) => {
+        if (module.onGlobalInit) {
+          try {
+            module.onGlobalInit(this.runtimeContext);
+          } catch (e) {
+            this.runtimeContext.reportError(
+              e instanceof Error ? e : new Error(String(e)),
+              void 0,
+              `Failed to initialize module: ${name}`
+            );
+          }
+        }
+      });
+      this.processElement(rootElement);
+      const cleanup = attachObserver("mutationObserver", rootElement, this.runtimeContext);
+      if (cleanup) {
+        const enhanced = rootElement;
+        if (!enhanced[CLEANUP_FUNCTIONS_KEY])
+          enhanced[CLEANUP_FUNCTIONS_KEY] = /* @__PURE__ */ new Map();
+        enhanced[CLEANUP_FUNCTIONS_KEY].set("__rootMutationObserver__", cleanup);
+      }
+      this.listenerModules.forEach((module, name) => {
+        try {
+          const cleanupFn = module.listen(rootElement, this.runtimeContext);
+          if (typeof cleanupFn === "function") {
+            const enhanced = rootElement;
+            if (!enhanced[CLEANUP_FUNCTIONS_KEY])
+              enhanced[CLEANUP_FUNCTIONS_KEY] = /* @__PURE__ */ new Map();
+            enhanced[CLEANUP_FUNCTIONS_KEY].set(`__listener_${name}__`, cleanupFn);
+          }
+        } catch (e) {
+          this.runtimeContext.reportError(
+            e instanceof Error ? e : new Error(String(e)),
+            void 0,
+            `Failed to start listener module: ${name}`
+          );
+        }
+      });
+    }
+    registerModifierModule(name, module) {
+      this.modifierModules.set(name, module);
+    }
+    registerAttributeModule(name, module) {
+      const key = module.attribute || name;
+      this.attributeModules.set(key, module);
+      const index = this.directiveOrder.indexOf(key);
+      if (index === -1) {
+        if (module.metadata?.after?.[0]) {
+          const afterIndex = this.directiveOrder.indexOf(module.metadata.after[0]);
+          if (afterIndex !== -1)
+            this.directiveOrder.splice(afterIndex + 1, 0, key);
+          else
+            this.directiveOrder.push(key);
+        } else if (module.metadata?.before?.[0]) {
+          const beforeIndex = this.directiveOrder.indexOf(module.metadata.before[0]);
+          if (beforeIndex !== -1)
+            this.directiveOrder.splice(beforeIndex, 0, key);
+          else
+            this.directiveOrder.unshift(key);
+        } else {
+          this.directiveOrder.push(key);
+        }
+      }
+      this.triggerScan();
+    }
+    registerActionModule(name, module) {
+      this.actionModules.set(name, module);
+    }
+    registerListenerModule(name, module) {
+      this.listenerModules.set(name, module);
+    }
+    registerObserverModule(name, module) {
+      this.observerModules.set(name, module);
+      registerObserver(name, module);
+    }
+    registerUtilityModule(name, module) {
+      this.utilityModules.set(name, module);
+    }
+    registerSpriteModule(name, module) {
+      this.spriteModules.set(name, module);
+      const sprites = module.sprites(this.runtimeContext);
+      const spriteKey = module.key || `$${name}`;
+      this.runtimeContext.sprites[spriteKey] = sprites;
+      registerScopeProvider(spriteKey, () => sprites);
+      Object.entries(sprites).forEach(([spriteName, handler]) => {
+        this.registerActionModule(spriteName, {
+          name: spriteName,
+          handle: (_el, ...args) => handler(...args)
+        });
+      });
+    }
+    registerScopeModule(name, module) {
+      this.scopeModules.set(name, module);
+    }
+    scanTimeout = null;
+    triggerScan() {
+      if (typeof window === "undefined" || typeof requestAnimationFrame === "undefined")
+        return;
+      if (this.scanTimeout !== null)
+        cancelAnimationFrame(this.scanTimeout);
+      this.scanTimeout = requestAnimationFrame(() => {
+        const roots = document.querySelectorAll(ROOT_SELECTOR);
+        roots.forEach((root) => {
+          if (root instanceof HTMLElement) {
+            this.processElement(root, true);
+          }
+        });
+        this.scanTimeout = null;
+      });
+    }
+    getInitContext() {
+      return this.initContext;
+    }
+    /**
+     * Processes a DOM element and its children, applying directive modules.
+     * Now supports recursive Isolation Firewalls via data-ignore.
+     */
+    processElement(element, forceReWalk = false, isolationLevel = "none") {
+      let currentIsolation = isolationLevel;
+      if (element.hasAttribute("data-ignore-off")) {
+        currentIsolation = "none";
+      } else if (element.hasAttribute("data-ignore")) {
+        currentIsolation = "total";
+      } else if (element.hasAttribute("data-ignore-ux")) {
+        currentIsolation = "ux";
+      } else if (element.hasAttribute("data-ignore-style")) {
+        currentIsolation = "style";
+      }
+      if (currentIsolation === "total")
+        return;
+      if (!forceReWalk && element[MARKER_KEY])
+        return;
+      if (this.runtimeContext.isDevMode && !forceReWalk)
+        this.runtimeContext.debug(`[Coordinator] Processing <${element.tagName}> (Isolation: ${currentIsolation})`, element);
+      element[MARKER_KEY] = this.markerDispenser++;
+      if (currentIsolation !== "style" && element.classList && element.classList.length > 0) {
+        element.classList.forEach((cls) => stylesheet.adoptClass(cls, element, this.runtimeContext));
+      }
+      if (currentIsolation !== "ux") {
+        const handlersToExecute = [];
+        Array.from(element.attributes).forEach((attr, index) => {
+          try {
+            const parsedAttr = this.runtimeContext.parseAttribute(attr.name, this.runtimeContext, element);
+            if (parsedAttr?.directive) {
+              const module = this.attributeModules.get(parsedAttr.directive);
+              if (module) {
+                handlersToExecute.push({
+                  directiveName: parsedAttr.directive,
+                  handle: () => {
+                    let scopedRuntime = this.runtimeContext;
+                    if (parsedAttr.modifiers && parsedAttr.modifiers.length > 0) {
+                      scopedRuntime = { ...this.runtimeContext };
+                      let currentEvaluate = scopedRuntime.evaluate;
+                      parsedAttr.modifiers.forEach((modFull) => {
+                        let modName = modFull;
+                        let modArg = "";
+                        const dashIdx = modFull.indexOf("-");
+                        if (dashIdx !== -1) {
+                          modName = modFull.substring(0, dashIdx);
+                          modArg = modFull.substring(dashIdx + 1);
+                        }
+                        const modModule = this.modifierModules.get(modName);
+                        if (modModule && typeof modModule.interceptPipeline === "function") {
+                          currentEvaluate = modModule.interceptPipeline(currentEvaluate, element, modArg || parsedAttr.target || "", scopedRuntime);
+                        }
+                      });
+                      scopedRuntime.evaluate = currentEvaluate;
+                    }
+                    return module.handle(element, attr.value, scopedRuntime, parsedAttr);
+                  },
+                  originalIndex: index
+                });
+              }
+            }
+          } catch (err2) {
+            logger.warn(`[Directive Isolation] Fault in attribute parse for '${attr.name}' on <${element.tagName}>:`, err2);
+          }
+        });
+        handlersToExecute.sort((a, b) => {
+          const indexA = this.directiveOrder.indexOf(a.directiveName);
+          const indexB = this.directiveOrder.indexOf(b.directiveName);
+          const effA = indexA === -1 ? this.directiveOrder.length : indexA;
+          const effB = indexB === -1 ? this.directiveOrder.length : indexB;
+          return effA === effB ? a.originalIndex - b.originalIndex : effA - effB;
+        });
+        handlersToExecute.forEach((handler) => {
+          const enhancedEl = element;
+          const fullAttrName = Array.from(element.attributes)[handler.originalIndex]?.name || handler.directiveName;
+          const hashKey = `${fullAttrName}:${this.runtimeContext.attrHash(handler.directiveName, element.getAttribute(fullAttrName) || "")}`;
+          let elRemovals = enhancedEl[CLEANUP_FUNCTIONS_KEY];
+          if (elRemovals?.has(hashKey))
+            return;
+          try {
+            const cleanup = handler.handle();
+            if (cleanup) {
+              if (!elRemovals) {
+                elRemovals = /* @__PURE__ */ new Map();
+                enhancedEl[CLEANUP_FUNCTIONS_KEY] = elRemovals;
+              }
+              elRemovals.set(hashKey, cleanup);
+            }
+          } catch (err2) {
+            logger.warn(`[Directive Isolation] Fault in execution of directive '${fullAttrName}' on <${element.tagName}>:`, err2);
+          }
+        });
+      }
+      if (element[IS_TEMPLATE_KEY]) {
+        return;
+      }
+      Array.from(element.children).forEach((child) => {
+        if (child instanceof HTMLElement || child instanceof SVGElement) {
+          this.processElement(child, forceReWalk, currentIsolation);
+        } else if (child instanceof Element && child.classList && child.classList.length > 0) {
+          if (currentIsolation !== "style") {
+            child.classList.forEach((cls) => stylesheet.adoptClass(cls, child, this.runtimeContext));
+            Array.from(child.children).forEach((grandchild) => {
+              if (grandchild instanceof Element && grandchild.classList && grandchild.classList.length > 0) {
+                grandchild.classList.forEach((cls) => stylesheet.adoptClass(cls, grandchild, this.runtimeContext));
+              }
+            });
+          }
+        }
+      });
+    }
+  };
+  function getGlobalSignals() {
+    return globalReactiveState;
+  }
+  function setGlobalSignal(key, value) {
+    globalReactiveState[key] = value;
+  }
+  function getLocalSignals(el) {
+    const dataStack = getDataStack(el);
+    return dataStack.length > 0 ? dataStack[0] : reactive({});
+  }
+  function getLocalActions(_el) {
+    return {};
+  }
+  function getGlobalActions() {
+    const actions = {};
+    this.actionModules.forEach((module, name) => {
+      const action = (...args) => module.handle(document.body, ...args);
+      const proxyAction = new Proxy(action, {
+        get(target, key) {
+          if (key in target)
+            return target[key];
+          const val = module.handle[key];
+          return typeof val === "function" ? val.bind(module.handle) : val;
+        }
+      });
+      actions[name] = proxyAction;
+    });
+    return actions;
+  }
+
+  // src/index.ts
+  init_consts();
+  var _idCounters = {};
+  function $id(groupName = "default") {
+    if (!_idCounters[groupName]) {
+      _idCounters[groupName] = 1;
+    } else {
+      _idCounters[groupName]++;
+    }
+    return `${groupName}-${_idCounters[groupName]}`;
+  }
+  function $nextTick() {
+    return new Promise((resolve) => {
+      Promise.resolve().then(() => {
+        requestAnimationFrame(() => resolve());
+      });
+    });
+  }
+  var UX = class {
+    coordinator;
+    constructor() {
+      this.coordinator = new ModuleCoordinator();
+      registerScopeProvider("$el", (el) => el);
+      registerScopeProvider("$dispatch", (el) => (eventName, detail) => {
+        if (!(el instanceof Element))
+          return;
+        el.dispatchEvent(new CustomEvent(eventName, { detail, bubbles: true, cancelable: true }));
+      });
+      registerScopeProvider("$global", (_el, runtime) => runtime.globalSignals());
+      registerScopeProvider("$actions", (_el, runtime) => runtime.globalActions());
+      this.coordinator.registerActionModule("$id", {
+        name: "$id",
+        handle: (_el, ...args) => $id(...args)
+      });
+      this.coordinator.registerActionModule("$nextTick", {
+        name: "$nextTick",
+        handle: (_el, ...args) => $nextTick(...args)
+      });
+      this.registerFromManifest();
+      this.coordinator.runtimeContext.setGlobalSignal("$predictive", (async () => {
+        const { predictive: predictive2 } = await Promise.resolve().then(() => (init_predictive(), predictive_exports));
+        return predictive2;
+      })());
+      registerScopeProvider("$", (el) => (selector) => resolveSelector(el, selector));
+      registerScopeProvider("$animate", () => animate);
+      this.coordinator.registerUtilityModule("fetch", fetchModule);
+      initSelfHeal(this.coordinator.runtimeContext, {
+        enabled: true,
+        emitToConsole: this.coordinator.runtimeContext.isDevMode ?? false,
+        emitToPlatform: false
+      });
+      this.init();
+      if (typeof document !== "undefined") {
+        const html = document.documentElement;
+        if (document.querySelector("[data-import]")) {
+          html.classList.add("nexus-loading");
+        } else {
+          html.classList.add("nexus-ready");
+        }
+        document.dispatchEvent(new CustomEvent("nexus-ready", { bubbles: true }));
+      }
+    }
+    registerFromManifest() {
+      autoAttributes.forEach(({ name, module }) => {
+        let registeredAny = false;
+        for (const maybe of Object.values(module)) {
+          if (maybe && typeof maybe === "object" && "attribute" in maybe && typeof maybe.handle === "function") {
+            this.coordinator.registerAttributeModule(maybe.attribute || name, maybe);
+            registeredAny = true;
+          }
+        }
+        if (!registeredAny) {
+          const attrMod = module.default || Object.values(module)[0];
+          if (attrMod) {
+            this.coordinator.registerAttributeModule(attrMod.attribute || name, attrMod);
+          }
+        }
+      });
+      autoSprites.forEach(({ name, module }) => {
+        const spriteMod = module.default || Object.values(module).find((m) => m && typeof m.sprites === "function");
+        if (spriteMod && typeof spriteMod.sprites === "function") {
+          this.coordinator.registerSpriteModule(spriteMod.name || name, spriteMod);
+        } else {
+          let exportsObj = module;
+          if (typeof module.default === "function") {
+            exportsObj = module.default(this.coordinator.runtimeContext);
+          }
+          Object.entries(exportsObj).forEach(([exportName, handler]) => {
+            if (exportName === "default")
+              return;
+            const handle = (_el, ...args) => handler(...args);
+            const proxyHandle = new Proxy(handle, {
+              get(target, key) {
+                if (key in target)
+                  return target[key];
+                const val = handler[key];
+                return typeof val === "function" ? val.bind(handler) : val;
+              }
+            });
+            this.coordinator.registerActionModule(exportName, {
+              name: exportName,
+              handle: proxyHandle
+            });
+          });
+        }
+      });
+      autoModifiers.forEach(({ module }) => {
+        let exportsObj = module.default || module;
+        if (exportsObj && exportsObj.name && typeof exportsObj.handle === "function") {
+          this.coordinator.registerModifierModule(exportsObj.name, exportsObj);
+        } else if (typeof exportsObj === "object") {
+          Object.values(exportsObj).forEach((mod) => {
+            if (mod && mod.name && typeof mod.handle === "function") {
+              this.coordinator.registerModifierModule(mod.name, mod);
+            }
+          });
+        }
+      });
+      autoObservers.forEach(({ name, module }) => {
+        const obsMod = module.default || Object.values(module)[0];
+        if (obsMod) {
+          this.coordinator.registerObserverModule(obsMod.name || name, obsMod);
+        }
+      });
+      autoListeners.forEach(({ name, module }) => {
+        const listenerMod = module.default || Object.values(module)[0];
+        if (listenerMod) {
+          this.coordinator.registerListenerModule(listenerMod.name || name, listenerMod);
+        }
+      });
+    }
+    init() {
+      if (typeof window === "undefined")
+        return;
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => this.scan());
+      } else {
+        this.scan();
+      }
+    }
+    scan() {
+      const roots = document.querySelectorAll(ROOT_SELECTOR);
+      roots.forEach((root) => {
+        if (root instanceof HTMLElement) {
+          this.coordinator.initializeModules(root);
+        }
+      });
+    }
+    get coordinate() {
+      return this.coordinator;
+    }
+    register(type, name, module) {
+      const c = this.coordinator;
+      switch (type) {
+        case "attribute":
+          c.registerAttributeModule(name, module);
+          break;
+        case "action":
+          c.registerActionModule(name, module);
+          break;
+        case "modifier":
+          c.registerModifierModule(name, module);
+          break;
+        case "listener":
+          c.registerListenerModule(name, module);
+          break;
+        case "observer":
+          c.registerObserverModule(name, module);
+          break;
+        case "utility":
+          c.registerUtilityModule(name, module);
+          break;
+      }
+    }
+  };
+  var isWorker = typeof globalThis.WorkerGlobalScope !== "undefined" && typeof document === "undefined";
+  var Nexus = typeof document !== "undefined" ? new UX() : null;
+  if (isWorker) {
+    self.onmessage = (e) => {
+      if (e.data.type === "INIT_HEAP")
+        console.log("[Nexus Worker] Predictive Heap Handshake OK");
+    };
+  } else if (typeof document !== "undefined") {
+    topology.start();
+    if (!document.querySelector("style[data-nexus-tailwind-bridge]") && document.querySelector('script[src*="tailwindcss/browser"]')) {
+      const tokens = discoverColorTokens();
+      const bridge = buildTailwindThemeBridge(tokens);
+      if (bridge) {
+        const bridgeStyle = document.createElement("style");
+        bridgeStyle.setAttribute("type", "text/tailwindcss");
+        bridgeStyle.setAttribute("data-nexus-tailwind-bridge", "");
+        bridgeStyle.textContent = bridge;
+        document.head.appendChild(bridgeStyle);
+      }
+    }
+  }
+  if (typeof window !== "undefined" && Nexus) {
+    globalThis.Nexus = Nexus;
+    globalThis.Nexus.selfHeal = { getHistory: getBeaconHistory };
+    globalThis._NEXUS_RUNTIME = Nexus.coordinator.runtimeContext;
+  }
+  return __toCommonJS(src_exports);
+})();
