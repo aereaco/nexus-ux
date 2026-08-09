@@ -7435,6 +7435,9 @@ ${match}</ul>
           addCleanup();
         effectCleanup();
       };
+    },
+    metadata: {
+      before: ["class", "bind", "component", "router", "on", "show", "style"]
     }
   };
   var signal_default = signalModule;

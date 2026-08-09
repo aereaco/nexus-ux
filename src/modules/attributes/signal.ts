@@ -193,6 +193,9 @@ const signalModule: AttributeModule = {
       // Ownership is released when the ref is garbage collected
       // (tracked via Symbol ownership in the unifiedRef closure)
     };
+  },
+  metadata: {
+    before: ['class', 'bind', 'component', 'router', 'on', 'show', 'style']
   }
 };
 
