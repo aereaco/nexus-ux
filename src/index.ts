@@ -67,10 +67,9 @@ export class UX {
     this.registerFromManifest();
 
     // Predictive engine
-    this.coordinator.runtimeContext.setGlobalSignal('$predictive', (async () => {
-      const { predictive } = await import('./modules/sprites/predictive.ts');
-      return predictive;
-    })());
+    this.coordinator.runtimeContext.setGlobalSignal('$predictive', corePredictiveEngine);
+    (this as any).predictive = corePredictiveEngine;
+    (this as any).cache = cacheEngine;
 
     // Contextual selector and animation
     registerScopeProvider('$', (el: any) => (selector: string) => resolveSelector(el as HTMLElement, selector));

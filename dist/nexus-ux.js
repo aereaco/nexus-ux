@@ -12531,6 +12531,8 @@ ${bridge}`, {
   init_stylesheet();
   init_selector();
   init_animate();
+  init_predictive();
+  init_cache();
   init_manifest();
   var _idCounters = {};
   function $id(groupName = "default") {
@@ -12569,10 +12571,9 @@ ${bridge}`, {
         handle: (_el, ...args) => $nextTick(...args)
       });
       this.registerFromManifest();
-      this.coordinator.runtimeContext.setGlobalSignal("$predictive", (async () => {
-        const { predictive: predictive2 } = await Promise.resolve().then(() => (init_predictive2(), predictive_exports));
-        return predictive2;
-      })());
+      this.coordinator.runtimeContext.setGlobalSignal("$predictive", corePredictiveEngine);
+      this.predictive = corePredictiveEngine;
+      this.cache = cacheEngine;
       registerScopeProvider("$", (el) => (selector) => resolveSelector(el, selector));
       registerScopeProvider("$animate", () => animate);
       this.coordinator.registerUtilityModule("fetch", fetchModule);
