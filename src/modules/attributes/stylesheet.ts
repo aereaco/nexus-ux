@@ -357,66 +357,6 @@ async function fetchWithCache(url: string, timeoutMs = 3000, onUpdate?: (fresh: 
   return typeof result === 'string' ? result : String(result);
 }
 
-  console.log(`[Nexus Cache] CACHE MISS: Fetching local/CDN resource for ${url}.`);
-  let localUrl = '';
-  if (url.includes('tailwindcss@4/')) {
-    const file = url.split('tailwindcss@4/')[1];
-    localUrl = `/node_modules/tailwindcss/${file}`;
-  }
-
-  const doFetch = async (targetUrl: string): Promise<string> => {
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      const res = await fetch(targetUrl, { signal: controller.signal });
-      clearTimeout(id);
-      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
-      const text = await res.text();
-      if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<!doctype') || text.trim().startsWith('<html')) {
-        throw new Error(`Received HTML fallback response for ${targetUrl}`);
-      }
-      return text;
-    } catch (err) {
-      clearTimeout(id);
-      throw err;
-    }
-  };
-
-  if (localUrl) {
-    try {
-      console.log(`[Nexus Cache] Trying local relative fallback path: ${localUrl}`);
-      const text = await doFetch(localUrl);
-      console.log(`[Nexus Cache] SUCCESS: Loaded local resource for ${url} from ${localUrl}`);
-      if (typeof localStorage !== 'undefined') {
-        try {
-          localStorage.setItem(cacheKey, text);
-        } catch {
-          // ignore
-        }
-      }
-      return text;
-    } catch {
-      console.log(`[Nexus Cache] Local relative fallback failed for ${url}. Falling back to CDN.`);
-    }
-  }
-
-  try {
-    const text = await doFetch(url);
-    console.log(`[Nexus Cache] SUCCESS: Loaded resource from CDN for ${url}`);
-    if (typeof localStorage !== 'undefined') {
-      try {
-        localStorage.setItem(cacheKey, text);
-      } catch {
-        // ignore
-      }
-    }
-    return text;
-  } catch (err) {
-    console.error(`[Nexus Cache] Failed CDN fetch for ${url}:`, err);
-    throw err;
-  }
-}
-
 function hashString(str: string): string {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
