@@ -6807,6 +6807,11 @@ ${match}</ul>
               state.scrollPosition = { x: globalThis.scrollX, y: globalThis.scrollY };
             };
             const resolveStaticComponent = (path) => {
+              const clean = path.replace(/^\/+/, "");
+              if (clean.startsWith("_internal/") || clean.startsWith("_pages/")) {
+                const withExt2 = clean.endsWith(".html") ? clean : clean + ".html";
+                return applyBase("/" + withExt2);
+              }
               const dir = (state.config.pagesDir || "").replace(/^\/+|\/+$/g, "");
               const rel = path === "/" || path === "" ? "/index.html" : path.replace(/\/$/, "");
               const withExt = rel.endsWith(".html") ? rel : rel + ".html";

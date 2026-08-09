@@ -937,6 +937,11 @@ export const routerAttributeModule: AttributeModule = {
       // The `_pages` folder is NOT hardcoded — it comes from `config.pagesDir`
       // (default '_pages'), so `/profile` -> `_pages/profile.html`, `/` -> index.
       const resolveStaticComponent = (path: string): string => {
+        const clean = path.replace(/^\/+/, '');
+        if (clean.startsWith('_internal/') || clean.startsWith('_pages/')) {
+          const withExt = clean.endsWith('.html') ? clean : clean + '.html';
+          return applyBase('/' + withExt);
+        }
         const dir = (state.config.pagesDir || '').replace(/^\/+|\/+$/g, '');
         const rel = (path === '/' || path === '') ? '/index.html' : path.replace(/\/$/, '');
         const withExt = rel.endsWith('.html') ? rel : rel + '.html';
