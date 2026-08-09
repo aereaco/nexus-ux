@@ -8447,37 +8447,11 @@ ${match}</ul>
     }
   });
 
-  // src/modules/sprites/predictive.ts
-  var predictive_exports = {};
-  __export(predictive_exports, {
-    default: () => predictive_default,
-    predictive: () => predictive,
-    predictiveModule: () => predictiveModule
-  });
-  function extractNavTarget(el) {
-    const hint = el.getAttribute("data-prefetch");
-    if (hint && hint.trim())
-      return hint.trim();
-    if (el instanceof HTMLAnchorElement) {
-      const href = el.getAttribute("href") || "";
-      if (href && !href.startsWith("#") && !href.startsWith("http") && !href.startsWith("//")) {
-        return href;
-      }
-      return null;
-    }
-    for (const attr of Array.from(el.attributes)) {
-      if (!attr.name.startsWith("data-on-"))
-        continue;
-      const m = attr.value.match(NAV_CALL_RE);
-      if (m && m[1])
-        return m[1];
-    }
-    return null;
-  }
-  var Quadtree, NAV_CALL_RE, PredictiveEngine, predictive, predictiveModule, predictive_default;
+  // src/engine/predictive.ts
+  var Quadtree, CorePredictiveEngine, corePredictiveEngine;
   var init_predictive = __esm({
-    "src/modules/sprites/predictive.ts"() {
-      init_scheduler();
+    "src/engine/predictive.ts"() {
+      init_cache();
       Quadtree = class _Quadtree {
         bounds;
         capacity;
@@ -8492,9 +8466,6 @@ ${match}</ul>
           this.bounds = bounds;
           this.capacity = capacity;
         }
-        /**
-         * Insert an element with its center point into the quadtree
-         */
         insert(el, x, y) {
           if (!this.contains(x, y))
             return false;
@@ -8509,7 +8480,7 @@ ${match}</ul>
               break;
             }
           }
-          if (allIdentical) {
+          if (allIdentical || this.depth >= 8) {
             this.points.push({ el, x, y });
             return true;
           }
@@ -8518,477 +8489,252 @@ ${match}</ul>
           }
           return this.northeast.insert(el, x, y) || this.northwest.insert(el, x, y) || this.southeast.insert(el, x, y) || this.southwest.insert(el, x, y);
         }
-        /**
-         * Query all elements within a range (bounding box)
-         * ZCZS: Uses Float64Array for results to minimize allocation
-         */
-        queryRange(x, y, width, height) {
-          const results = [];
-          if (!this.intersects(x, y, width, height)) {
-            return results;
-          }
-          for (const point of this.points) {
-            if (this.pointInRect(point.x, point.y, x, y, width, height)) {
-              results.push(point.el);
-            }
-          }
-          if (this.divided) {
-            results.push(...this.northeast.queryRange(x, y, width, height));
-            results.push(...this.northwest.queryRange(x, y, width, height));
-            results.push(...this.southeast.queryRange(x, y, width, height));
-            results.push(...this.southwest.queryRange(x, y, width, height));
-          }
-          return results;
-        }
-        /**
-         * Query elements near a point (circle query)
-         */
-        queryRadius(x, y, radius) {
-          const results = [];
-          const r2 = radius * radius;
-          if (!this.intersects(x - radius, y - radius, radius * 2, radius * 2)) {
-            return results;
-          }
-          for (const point of this.points) {
-            const dx = point.x - x;
-            const dy = point.y - y;
-            if (dx * dx + dy * dy <= r2) {
-              results.push(point.el);
-            }
-          }
-          if (this.divided) {
-            results.push(...this.northeast.queryRadius(x, y, radius));
-            results.push(...this.northwest.queryRadius(x, y, radius));
-            results.push(...this.southeast.queryRadius(x, y, radius));
-            results.push(...this.southwest.queryRadius(x, y, radius));
-          }
-          return results;
-        }
-        /**
-         * Clear all points from the quadtree
-         */
-        clear() {
-          this.points = [];
-          this.divided = false;
-          this.northeast = null;
-          this.northwest = null;
-          this.southeast = null;
-          this.southwest = null;
-        }
-        contains(x, y) {
-          return x >= this.bounds.x && x < this.bounds.x + this.bounds.width && y >= this.bounds.y && y < this.bounds.y + this.bounds.height;
-        }
-        intersects(x, y, w, h) {
-          return !(x > this.bounds.x + this.bounds.width || x + w < this.bounds.x || y > this.bounds.y + this.bounds.height || y + h < this.bounds.y);
-        }
-        pointInRect(px, py, rx, ry, rw, rh) {
-          return px >= rx && px <= rx + rw && py >= ry && py <= ry + rh;
-        }
         subdivide() {
           const { x, y, width, height } = this.bounds;
-          const hw = width / 2;
-          const hh = height / 2;
-          this.northeast = new _Quadtree(
-            { x: x + hw, y, width: hw, height: hh },
-            this.capacity
-          );
-          this.northwest = new _Quadtree(
-            { x, y, width: hw, height: hh },
-            this.capacity
-          );
-          this.southeast = new _Quadtree({
-            x: x + hw,
-            y: y + hh,
-            width: hw,
-            height: hh
-          }, this.capacity);
-          this.southwest = new _Quadtree(
-            { x, y: y + hh, width: hw, height: hh },
-            this.capacity
-          );
+          const w = width / 2;
+          const h = height / 2;
+          this.northeast = new _Quadtree({ x: x + w, y, width: w, height: h }, this.capacity);
+          this.northwest = new _Quadtree({ x, y, width: w, height: h }, this.capacity);
+          this.southeast = new _Quadtree({ x: x + w, y: y + h, width: w, height: h }, this.capacity);
+          this.southwest = new _Quadtree({ x, y: y + h, width: w, height: h }, this.capacity);
+          this.northeast.depth = this.depth + 1;
+          this.northwest.depth = this.depth + 1;
+          this.southeast.depth = this.depth + 1;
+          this.southwest.depth = this.depth + 1;
           this.divided = true;
         }
+        contains(x, y) {
+          return x >= this.bounds.x && x <= this.bounds.x + this.bounds.width && y >= this.bounds.y && y <= this.bounds.y + this.bounds.height;
+        }
+        query(range, found = /* @__PURE__ */ new Set()) {
+          if (range.x > this.bounds.x + this.bounds.width || range.x + range.width < this.bounds.x || range.y > this.bounds.y + this.bounds.height || range.y + range.height < this.bounds.y) {
+            return found;
+          }
+          for (const p of this.points) {
+            if (p.x >= range.x && p.x <= range.x + range.width && p.y >= range.y && p.y <= range.y + range.height) {
+              found.add(p.el);
+            }
+          }
+          if (this.divided) {
+            this.northwest.query(range, found);
+            this.northeast.query(range, found);
+            this.southwest.query(range, found);
+            this.southeast.query(range, found);
+          }
+          return found;
+        }
+        clear() {
+          this.points = [];
+          if (this.divided) {
+            this.northwest?.clear();
+            this.northeast?.clear();
+            this.southwest?.clear();
+            this.southeast?.clear();
+            this.divided = false;
+          }
+        }
       };
-      NAV_CALL_RE = /(?:#?router\.(?:navigate|go)|(?<!\w)navigate)\s*\(\s*['"`]([^'"`]+)['"`]/;
-      PredictiveEngine = class {
-        lastPoint = null;
-        velocity = { x: 0, y: 0, z: 0, t: 0 };
-        predictiveNodes = /* @__PURE__ */ new Set();
-        cleanupFns = [];
-        debugTracker = null;
-        // Hook the router registers to pre-warm a hovered route link's component.
-        prewarmHook = null;
-        // Dedup: track refs already fired this rebuild cycle so the cache isn't
-        // spammed on every mousemove frame. Cleared when the quadtree rebuilds.
-        prewarmFired = /* @__PURE__ */ new Set();
-        // ZCZS: Quadtree for O(log n) spatial queries
+      CorePredictiveEngine = class {
+        history = [];
         quadtree;
-        viewportWidth = 0;
-        viewportHeight = 0;
-        rebuildTimer = null;
-        fadeTimer = null;
+        viewportWidth = 1920;
+        viewportHeight = 1080;
+        cleanupFns = [];
+        prewarmHook = null;
+        activePredictiveNodes = /* @__PURE__ */ new Set();
+        eyeTrackingActive = false;
+        voiceIntentActive = false;
         constructor() {
           if (typeof window !== "undefined") {
             this.viewportWidth = window.innerWidth;
             this.viewportHeight = window.innerHeight;
-          }
-          if (typeof document !== "undefined") {
             this.init();
           }
         }
         init() {
-          const setup = () => {
-            if (typeof document !== "undefined" && document.body && document.documentElement.hasAttribute("data-debug") && !this.debugTracker) {
-              const svgNS = "http://www.w3.org/2000/svg";
-              const svg = document.createElementNS(svgNS, "svg");
-              svg.setAttribute("class", "nexus-predictive-tracker");
-              svg.style.position = "fixed";
-              svg.style.pointerEvents = "none";
-              svg.style.zIndex = "999999";
-              svg.style.overflow = "visible";
-              svg.style.transform = "translate(-50%, -50%)";
-              svg.style.width = "200px";
-              svg.style.height = "200px";
-              svg.style.left = "-1000px";
-              svg.style.top = "-1000px";
-              const halo = document.createElementNS(svgNS, "circle");
-              halo.setAttribute("cx", "100");
-              halo.setAttribute("cy", "100");
-              halo.setAttribute("r", "20");
-              halo.setAttribute("fill", "rgba(255, 0, 128, 0.1)");
-              halo.setAttribute("stroke", "rgba(255, 0, 128, 0.5)");
-              halo.setAttribute("stroke-width", "2");
-              halo.style.transition = "r 0.15s ease-out";
-              const line = document.createElementNS(svgNS, "line");
-              line.setAttribute("x1", "100");
-              line.setAttribute("y1", "100");
-              line.setAttribute("x2", "100");
-              line.setAttribute("y2", "100");
-              line.setAttribute("stroke", "rgba(255, 0, 128, 0.5)");
-              line.setAttribute("stroke-width", "2");
-              line.setAttribute("stroke-dasharray", "4 4");
-              line.style.opacity = "0";
-              line.style.transition = "x2 0.1s linear, y2 0.1s linear, opacity 0.3s ease-out";
-              const targetLine = document.createElementNS(svgNS, "line");
-              targetLine.setAttribute("x1", "100");
-              targetLine.setAttribute("y1", "100");
-              targetLine.setAttribute("x2", "100");
-              targetLine.setAttribute("y2", "100");
-              targetLine.setAttribute("stroke", "rgba(34, 197, 94, 0.9)");
-              targetLine.setAttribute("stroke-width", "2");
-              targetLine.style.transition = "x2 0.1s linear, y2 0.1s linear, opacity 0.1s ease";
-              targetLine.style.opacity = "0";
-              svg.appendChild(halo);
-              svg.appendChild(line);
-              svg.appendChild(targetLine);
-              document.body.appendChild(svg);
-              this.debugTracker = { svg, halo, line, targetLine };
-            }
-            this.rebuildQuadtree();
+          this.rebuildQuadtree();
+          if (typeof window === "undefined")
+            return;
+          const onMouseMove = (e) => {
+            this.recordPoint(e.clientX, e.clientY, 0, performance.now());
+            this.processPrediction();
           };
-          if (typeof document !== "undefined" && document.readyState === "loading") {
-            document.addEventListener("DOMContentLoaded", setup);
-            this.cleanupFns.push(
-              () => document.removeEventListener("DOMContentLoaded", setup)
-            );
-          } else {
-            setup();
-          }
-          const onMouseMove = (e) => this.track(e.clientX, e.clientY);
           const onTouchStart = (e) => {
-            const touch = e.touches[0];
-            if (touch)
-              this.track(touch.clientX, touch.clientY);
-          };
-          const onResize = () => {
-            this.viewportWidth = window.innerWidth;
-            this.viewportHeight = window.innerHeight;
-            this.rebuildQuadtree();
-          };
-          const onScroll = () => {
-            if (this.rebuildTimer)
-              clearTimeout(this.rebuildTimer);
-            this.rebuildTimer = setTimeout(
-              () => this.rebuildQuadtree(),
-              16
-            );
-          };
-          globalThis.addEventListener("mousemove", onMouseMove);
-          globalThis.addEventListener("touchstart", onTouchStart, {
-            passive: true
-          });
-          globalThis.addEventListener("resize", onResize);
-          globalThis.addEventListener("scroll", onScroll, { passive: true });
-          const onDomMutated = () => {
-            if (this.rebuildTimer)
-              clearTimeout(this.rebuildTimer);
-            this.rebuildTimer = setTimeout(
-              () => this.rebuildQuadtree(),
-              200
-            );
-          };
-          globalThis.addEventListener("nexus:dom-mutated", onDomMutated);
-          this.cleanupFns.push(
-            () => globalThis.removeEventListener("mousemove", onMouseMove),
-            () => globalThis.removeEventListener("touchstart", onTouchStart),
-            () => globalThis.removeEventListener("resize", onResize),
-            () => globalThis.removeEventListener("scroll", onScroll),
-            () => globalThis.removeEventListener("nexus:dom-mutated", onDomMutated),
-            () => {
-              if (this.rebuildTimer)
-                clearTimeout(this.rebuildTimer);
-              if (this.fadeTimer)
-                clearTimeout(this.fadeTimer);
+            if (e.touches.length > 0) {
+              const touch = e.touches[0];
+              this.prewarmElementAtPoint(touch.clientX, touch.clientY);
+              this.recordPoint(touch.clientX, touch.clientY, 0, performance.now());
             }
-          );
-        }
-        /** Tear down all listeners. */
-        /**
-         * Register a pre-warm callback (wired by the router sprite). Called with
-         * the resolved href of a route link the cursor is projected to hit, so the
-         * destination's component HTML can be fetched into the cache before the
-         * click lands — turning the predictive frustum into fetch pre-warming.
-         */
-        setPrewarm(fn) {
-          this.prewarmHook = fn;
-        }
-        dispose() {
-          this.cleanupFns.forEach((fn) => fn());
-          this.quadtree.clear();
-          if (this.debugTracker && this.debugTracker.svg.parentNode) {
-            this.debugTracker.svg.parentNode.removeChild(this.debugTracker.svg);
-          }
-        }
-        /**
-         * Rebuild the quadtree with all data-signal elements
-         * Called on init and resize
-         */
-        getDynamicSelectors() {
-          const baseSelectors = /* @__PURE__ */ new Set([
-            "[data-signal]",
-            "[data-on-click]",
-            "[data-on-hover]",
-            "[data-on-mouseenter]",
-            "[data-on-touchstart]",
-            "button",
-            "a",
-            "input",
-            "select",
-            "textarea",
-            "label",
-            "[data-bind]"
-          ]);
-          if (typeof document === "undefined")
-            return Array.from(baseSelectors).join(", ");
-          try {
-            const sheets = Array.from(document.styleSheets);
-            if (document.adoptedStyleSheets) {
-              sheets.push(...document.adoptedStyleSheets);
+          };
+          const onTouchMove = (e) => {
+            if (e.touches.length > 0) {
+              const touch = e.touches[0];
+              this.recordPoint(touch.clientX, touch.clientY, 0, performance.now());
+              this.processPrediction();
             }
-            for (const sheet of sheets) {
-              try {
-                const rules = sheet.cssRules || sheet.rules;
-                if (!rules)
-                  continue;
-                for (let j = 0; j < rules.length; j++) {
-                  const rule = rules[j];
-                  if (rule.selectorText && (rule.selectorText.includes(":hover") || rule.selectorText.includes(":active") || rule.selectorText.includes(":focus"))) {
-                    const segments = rule.selectorText.split(",");
-                    for (let segment of segments) {
-                      segment = segment.split("::")[0];
-                      const clean = segment.replace(/:hover|:active|:focus/g, "").trim();
-                      if (clean && clean !== "*" && clean !== "html" && clean !== "body") {
-                        baseSelectors.add(clean);
-                      }
-                    }
+          };
+          const onPointerMove = (e) => {
+            if (e.pointerType === "pen") {
+              const z = e.pressure ? e.pressure * 10 : 1;
+              this.recordPoint(e.clientX, e.clientY, z, performance.now());
+              this.processPrediction();
+            }
+          };
+          const onFocusIn = (e) => {
+            if (e.target instanceof HTMLElement) {
+              this.prewarmElement(e.target);
+            }
+          };
+          let gamepadTimer = null;
+          const pollGamepad = () => {
+            if (typeof navigator !== "undefined" && navigator.getGamepads) {
+              const gamepads = navigator.getGamepads();
+              for (const gp of gamepads) {
+                if (gp && (gp.buttons.some((b) => b.pressed) || gp.axes.some((a) => Math.abs(a) > 0.2))) {
+                  const active = document.activeElement;
+                  if (active instanceof HTMLElement) {
+                    this.prewarmElement(active);
                   }
                 }
-              } catch (e) {
               }
             }
-          } catch (e) {
-          }
-          return Array.from(baseSelectors).join(", ");
+            gamepadTimer = requestAnimationFrame(pollGamepad);
+          };
+          window.addEventListener("mousemove", onMouseMove, { passive: true });
+          window.addEventListener("touchstart", onTouchStart, { passive: true });
+          window.addEventListener("touchmove", onTouchMove, { passive: true });
+          window.addEventListener("pointermove", onPointerMove, { passive: true });
+          window.addEventListener("focusin", onFocusIn, { passive: true });
+          gamepadTimer = requestAnimationFrame(pollGamepad);
+          this.cleanupFns.push(() => {
+            window.removeEventListener("mousemove", onMouseMove);
+            window.removeEventListener("touchstart", onTouchStart);
+            window.removeEventListener("touchmove", onTouchMove);
+            window.removeEventListener("pointermove", onPointerMove);
+            window.removeEventListener("focusin", onFocusIn);
+            if (gamepadTimer)
+              cancelAnimationFrame(gamepadTimer);
+          });
+        }
+        recordPoint(x, y, z, t) {
+          this.history.push({ x, y, z, t });
+          if (this.history.length > 5)
+            this.history.shift();
         }
         rebuildQuadtree() {
+          this.quadtree = new Quadtree({
+            x: 0,
+            y: 0,
+            width: this.viewportWidth,
+            height: this.viewportHeight
+          });
           if (typeof document === "undefined")
             return;
-          const scrollX = window.scrollX;
-          const scrollY = window.scrollY;
-          const vw = window.innerWidth;
-          const vh = window.innerHeight;
-          this.viewportWidth = vw;
-          this.viewportHeight = vh;
-          const bufferX = vw * 0.15;
-          const bufferY = vh * 0.15;
-          this.quadtree = new Quadtree(
-            {
-              x: scrollX - bufferX,
-              y: scrollY - bufferY,
-              width: vw + bufferX * 2,
-              height: vh + bufferY * 2
-            },
-            20
-          );
-          const selectors = this.getDynamicSelectors();
+          const selectors = "a[href], button, [data-route], [data-component], [data-signal], [data-on-click]";
           const elements = document.querySelectorAll(selectors);
           elements.forEach((el) => {
             if (el instanceof HTMLElement) {
               const rect = el.getBoundingClientRect();
-              const centerX = rect.x + rect.width / 2 + scrollX;
-              const centerY = rect.y + rect.height / 2 + scrollY;
+              const centerX = rect.left + rect.width / 2;
+              const centerY = rect.top + rect.height / 2;
               this.quadtree.insert(el, centerX, centerY);
             }
           });
-          this.prewarmFired.clear();
         }
-        /**
-         * Update quadtree when elements are added/removed
-         */
-        updateElement(el) {
-          const rect = el.getBoundingClientRect();
-          const centerX = rect.x + rect.width / 2 + window.scrollX;
-          const centerY = rect.y + rect.height / 2 + window.scrollY;
-          this.quadtree.insert(el, centerX, centerY);
+        processPrediction() {
+          if (this.history.length < 3)
+            return;
+          const p0 = this.history[this.history.length - 3];
+          const p2 = this.history[this.history.length - 1];
+          const dt = (p2.t - p0.t) / 1e3;
+          if (dt <= 0)
+            return;
+          const vx = (p2.x - p0.x) / dt;
+          const vy = (p2.y - p0.y) / dt;
+          const speed = Math.sqrt(vx * vx + vy * vy);
+          if (speed < 50)
+            return;
+          const timeHorizon = 0.15;
+          const projX = p2.x + vx * timeHorizon;
+          const projY = p2.y + vy * timeHorizon;
+          const minX = Math.min(p2.x, projX) - 20;
+          const minY = Math.min(p2.y, projY) - 20;
+          const maxX = Math.max(p2.x, projX) + 20;
+          const maxY = Math.max(p2.y, projY) + 20;
+          const range = {
+            x: minX,
+            y: minY,
+            width: maxX - minX,
+            height: maxY - minY
+          };
+          const predicted = this.quadtree.query(range);
+          predicted.forEach((el) => this.prewarmElement(el));
         }
-        track(x, y, z = 0) {
-          const t = performance.now();
-          const pageX = x + window.scrollX;
-          const pageY = y + window.scrollY;
-          if (this.lastPoint) {
-            const dt = t - this.lastPoint.t;
-            if (dt > 1) {
-              this.velocity = {
-                x: (pageX - this.lastPoint.x) / dt,
-                y: (pageY - this.lastPoint.y) / dt,
-                z: (z - this.lastPoint.z) / dt,
-                t: 1
-              };
-              if (this.debugTracker)
-                this.debugTracker.line.style.opacity = "1";
-              scheduler.enqueueCapture(() => this.predict(pageX, pageY, z));
-            }
+        prewarmElementAtPoint(x, y) {
+          if (typeof document === "undefined")
+            return;
+          const el = document.elementFromPoint(x, y);
+          if (el instanceof HTMLElement) {
+            this.prewarmElement(el);
           }
-          this.lastPoint = { x: pageX, y: pageY, z, t };
-          if (this.fadeTimer)
-            clearTimeout(this.fadeTimer);
-          this.fadeTimer = setTimeout(() => {
-            this.velocity = { x: 0, y: 0, z: 0, t: 1 };
-            if (this.debugTracker) {
-              this.debugTracker.line.style.opacity = "0";
-              this.debugTracker.targetLine.style.opacity = "0";
-            }
-          }, 150);
         }
-        /**
-         * Projects the interaction frustum and identifies nodes to pre-warm.
-         * ZCZS: Uses quadtree for O(log n) spatial queries
-         */
-        predict(x, y, z) {
-          const px = x + this.velocity.x * 100;
-          const py = y + this.velocity.y * 100;
-          const _pz = z + this.velocity.z * 100;
-          const targets = this.quadtree.queryRadius(px, py, 150);
-          const newPredictiveNodes = /* @__PURE__ */ new Set();
-          let snappedTarget = void 0;
-          let minD = Infinity;
-          targets.forEach((target) => {
-            if (target instanceof HTMLElement) {
-              newPredictiveNodes.add(target);
-              const className = target.className || "";
-              const hasTailwindInteraction = typeof className === "string" && (className.includes("hover:") || className.includes("active:") || className.includes("focus:"));
-              const isInteractiveNode = target.hasAttribute("data-on-click") || target.hasAttribute("data-on-hover") || target.hasAttribute("data-on-mouseenter") || target.tagName === "BUTTON" || target.tagName === "A" || target.tagName === "INPUT" || target.tagName === "SELECT" || target.tagName === "TEXTAREA" || target.hasAttribute("data-bind") || hasTailwindInteraction;
-              if (isInteractiveNode) {
-                const rect = target.getBoundingClientRect();
-                const cx = rect.x + rect.width / 2 + window.scrollX;
-                const cy = rect.y + rect.height / 2 + window.scrollY;
-                const d = Math.hypot(cx - px, cy - py);
-                if (d < minD) {
-                  minD = d;
-                  snappedTarget = { cx, cy };
-                  if (this.prewarmHook) {
-                    const ref2 = extractNavTarget(target);
-                    if (ref2 && !this.prewarmFired.has(ref2)) {
-                      this.prewarmFired.add(ref2);
-                      this.prewarmHook(ref2);
-                    }
-                  }
-                }
-              }
-            }
-          });
-          if (this.debugTracker) {
-            const vpX = x - window.scrollX;
-            const vpY = y - window.scrollY;
-            this.debugTracker.svg.style.left = `${vpX}px`;
-            this.debugTracker.svg.style.top = `${vpY}px`;
-            const speed = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
-            const targetR = Math.min(80, Math.max(20, 20 + speed * 5));
-            this.debugTracker.halo.setAttribute("r", targetR.toString());
-            const trajX = 100 + this.velocity.x * 200;
-            const trajY = 100 + this.velocity.y * 200;
-            this.debugTracker.line.setAttribute("x2", trajX.toString());
-            this.debugTracker.line.setAttribute("y2", trajY.toString());
-            if (snappedTarget) {
-              const target = snappedTarget;
-              const targetX = 100 + (target.cx - x);
-              const targetY = 100 + (target.cy - y);
-              this.debugTracker.targetLine.setAttribute("x2", targetX.toString());
-              this.debugTracker.targetLine.setAttribute("y2", targetY.toString());
-              this.debugTracker.targetLine.style.opacity = "1";
-            } else {
-              this.debugTracker.targetLine.style.opacity = "0";
-              this.debugTracker.targetLine.setAttribute("x2", "100");
-              this.debugTracker.targetLine.setAttribute("y2", "100");
-            }
+        prewarmElement(el) {
+          const route = el.getAttribute("data-route") || el.getAttribute("href");
+          const comp = el.getAttribute("data-component");
+          if (route) {
+            if (this.prewarmHook)
+              this.prewarmHook(route);
+            cacheEngine.fetchWithCache(route, { storage: "session", responseType: "text" }).catch(() => {
+            });
           }
-          newPredictiveNodes.forEach((node) => {
-            if (!this.predictiveNodes.has(node)) {
-              this.preWarm(node);
-            }
-          });
-          this.predictiveNodes.forEach((node) => {
-            if (!newPredictiveNodes.has(node)) {
-              this.coolDown(node);
-            }
-          });
-          this.predictiveNodes = newPredictiveNodes;
+          if (comp) {
+            cacheEngine.fetchWithCache(comp, { storage: "session", responseType: "text" }).catch(() => {
+            });
+          }
         }
-        preWarm(el) {
-          el.classList.add("nexus-predictive-warm");
-          el.dispatchEvent(
-            new CustomEvent("nexus:predictive-warm", {
-              detail: { velocity: this.velocity }
-            })
-          );
+        setPrewarmHook(fn) {
+          this.prewarmHook = fn;
         }
-        coolDown(el) {
-          el.classList.remove("nexus-predictive-warm");
-          el.dispatchEvent(new CustomEvent("nexus:predictive-cool"));
+        // Opt-In Hardware Permission API Methods
+        enableEyeTracking(options = {}) {
+          this.eyeTrackingActive = true;
+          if (typeof document !== "undefined" && document.documentElement.hasAttribute("data-debug")) {
+            console.log("[Predictive Core] Opt-In Eye-Tracking activated with options:", options);
+          }
         }
-        getVelocity() {
-          return this.velocity;
+        enableVoiceIntent(options = {}) {
+          this.voiceIntentActive = true;
+          if (typeof document !== "undefined" && document.documentElement.hasAttribute("data-debug")) {
+            console.log("[Predictive Core] Opt-In Voice Intent activated with options:", options);
+          }
+        }
+        dispose() {
+          this.cleanupFns.forEach((fn) => fn());
+          this.quadtree.clear();
         }
       };
-      predictive = new PredictiveEngine();
-      globalThis._nexusQuadtree = predictive.quadtree;
+      corePredictiveEngine = new CorePredictiveEngine();
+    }
+  });
+
+  // src/modules/sprites/predictive.ts
+  var predictive_exports = {};
+  __export(predictive_exports, {
+    default: () => predictive_default,
+    predictive: () => predictive,
+    predictiveModule: () => predictiveModule
+  });
+  var predictive, predictiveModule, predictive_default;
+  var init_predictive2 = __esm({
+    "src/modules/sprites/predictive.ts"() {
+      init_predictive();
+      predictive = corePredictiveEngine;
       predictiveModule = {
         name: "predictive",
         key: "$predictive",
         sprites: (context) => {
-          context.predictive = predictive;
-          const wire = () => {
-            const globals = context.globalSignals?.();
-            const router = globals?.router;
-            if (router?.prewarm)
-              predictive.setPrewarm((ref2) => router.prewarm(ref2));
-          };
-          wire();
-          scheduler.enqueueCapture(wire);
-          return {
-            getVelocity: () => predictive.getVelocity(),
-            updateElement: (el) => predictive.updateElement(el)
-          };
+          context.predictive = corePredictiveEngine;
+          return corePredictiveEngine;
         }
       };
       predictive_default = predictiveModule;
@@ -10688,7 +10434,7 @@ ${match}</ul>
       init_mask();
       init_mcp2();
       init_periodicSync();
-      init_predictive();
+      init_predictive2();
       init_push();
       init_selector();
       init_sql();
@@ -12824,7 +12570,7 @@ ${bridge}`, {
       });
       this.registerFromManifest();
       this.coordinator.runtimeContext.setGlobalSignal("$predictive", (async () => {
-        const { predictive: predictive2 } = await Promise.resolve().then(() => (init_predictive(), predictive_exports));
+        const { predictive: predictive2 } = await Promise.resolve().then(() => (init_predictive2(), predictive_exports));
         return predictive2;
       })());
       registerScopeProvider("$", (el) => (selector) => resolveSelector(el, selector));
