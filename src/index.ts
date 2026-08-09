@@ -7,6 +7,8 @@ import { stylesheet, discoverColorTokens, buildTailwindThemeBridge } from './mod
 import { fetchModule } from './engine/fetch.ts';
 import { resolveSelector } from './modules/sprites/selector.ts';
 import { animate } from './modules/sprites/animate.ts';
+import { corePredictiveEngine } from './engine/predictive.ts';
+import { cacheEngine } from './engine/cache.ts';
 
 // Auto-Discovered Modules (inlined by build.ts from generated manifest.ts)
 import {
