@@ -1,4 +1,5 @@
 import { scheduler } from "../../engine/scheduler.ts";
+import { cacheEngine } from "../../engine/cache.ts";
 
 /**
  * 4D Predictive Engine
