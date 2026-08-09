@@ -343,52 +343,19 @@ async function refreshThemeBridge(): Promise<void> {
 // ============================================================================
 
 async function fetchWithCache(url: string, timeoutMs = 3000, onUpdate?: (fresh: string) => void): Promise<string> {
-  const cacheKey = `nexus-cache:${url}`;
-  let cached: string | null = null;
-
-  if (typeof localStorage !== 'undefined') {
-    try {
-      cached = localStorage.getItem(cacheKey);
-      if (cached && (cached.trim().startsWith('<!DOCTYPE') || cached.trim().startsWith('<!doctype') || cached.trim().startsWith('<html'))) {
-        localStorage.removeItem(cacheKey);
-        cached = null;
+  const result = await cacheEngine.fetchWithCache(url, {
+    storage: 'local',
+    responseType: 'text',
+    timeoutMs,
+    onUpdate: (fresh) => {
+      if (typeof fresh === 'string' && onUpdate) {
+        onUpdate(fresh);
       }
-    } catch {
-      // ignore
+      refreshThemeBridge().catch(() => {});
     }
-  }
-
-  if (cached) {
-    const cachedVal = cached;
-    console.log(`[Nexus Cache] INSTANT HIT: Loading ${url} from localStorage cache.`);
-    setTimeout(async () => {
-      try {
-        const controller = new AbortController();
-        const id = setTimeout(() => controller.abort(), timeoutMs);
-        const res = await fetch(url, { signal: controller.signal });
-        clearTimeout(id);
-        if (!res.ok) return;
-        const freshText = await res.text();
-        if (freshText.trim().startsWith('<!DOCTYPE') || freshText.trim().startsWith('<!doctype') || freshText.trim().startsWith('<html')) return;
-        if (hashString(cachedVal) !== hashString(freshText)) {
-          console.log(`[Nexus Cache] UPDATE DETECTED: CDN changed for ${url}. Caching for next load.`);
-          if (typeof localStorage !== 'undefined') {
-            try {
-              localStorage.setItem(cacheKey, freshText);
-            } catch {
-              // ignore
-            }
-          }
-          if (onUpdate) onUpdate(freshText);
-        } else {
-          console.log(`[Nexus Cache] VERIFIED: Cache matches CDN for ${url}.`);
-        }
-      } catch (err) {
-        console.warn(`[Nexus Cache] Background CDN hash check failed for ${url}:`, err);
-      }
-    }, 5000);
-    return cachedVal;
-  }
+  });
+  return typeof result === 'string' ? result : String(result);
+}
 
   console.log(`[Nexus Cache] CACHE MISS: Fetching local/CDN resource for ${url}.`);
   let localUrl = '';
