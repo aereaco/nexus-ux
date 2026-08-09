@@ -734,16 +734,18 @@ export const routerAttributeModule: AttributeModule = {
 
           commitVisibility(matched);
 
-          // Update browser address bar to reflect the active tab's path.
-          const target = applyBase(switchPath);
-          const meta = state.tabMeta[id] || {};
-          suppressNavIntercept = true;
-          globalThis.history.replaceState(
-            { tabId: id, scrollY: globalThis.scrollY, title: meta.title, icon: meta.icon },
-            '',
-            target,
-          );
-          suppressNavIntercept = false;
+          // Update browser address bar to reflect the active tab's path (unless shadow route).
+          if (!matched?.internal && !shadowMatch(switchPath)) {
+            const target = applyBase(switchPath);
+            const meta = state.tabMeta[id] || {};
+            suppressNavIntercept = true;
+            globalThis.history.replaceState(
+              { tabId: id, scrollY: globalThis.scrollY, title: meta.title, icon: meta.icon },
+              '',
+              target,
+            );
+            suppressNavIntercept = false;
+          }
         },
 
         // Switch the active tab (also updates the layout's global signal so the
