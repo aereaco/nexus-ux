@@ -154,21 +154,16 @@ const componentModule: AttributeModule = {
               if (!template) throw new Error(`Template ${config.path} not found`);
               html = template.innerHTML;
             } else {
-              if (!runtime.fetch) throw new Error('Fetch utility not available');
-              const cacheKey = `nx_comp:${config.path}`;
-              const cached = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(cacheKey) : null;
-              if (cached) {
-                html = cached;
-              } else {
-                html = await runtime.fetch.request(config.path, { responseType: 'text' }, el) as string;
-                if (typeof sessionStorage !== 'undefined' && html) {
-                  try {
-                    sessionStorage.setItem(cacheKey, html);
-                  } catch {
-                    // Ignore quota limits
+              const result = await cacheEngine.fetchWithCache(config.path, {
+                storage: 'session',
+                responseType: 'text',
+                onUpdate: (fresh) => {
+                  if (typeof fresh === 'string' && fresh !== componentState.templateContent) {
+                    componentState.templateContent = fresh;
                   }
                 }
-              }
+              });
+              html = typeof result === 'string' ? result : String(result);
             }
 
             if (runtime.isDevMode) console.log(`[Component] Template loaded for <${el.tagName}>, length: ${html.length}`);
