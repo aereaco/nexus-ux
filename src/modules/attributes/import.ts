@@ -93,13 +93,17 @@ async function resolveContent(uri: string): Promise<string | null> {
     const key = uri.replace(/^idb:\/\//, '');
     return readFromIDB(key);
   }
-  // Legacy: treat as a URL
-  const cached = assetCache.get(uri);
-  if (cached) return cached;
   try {
-    const response = await fetchWithTimeout(uri, { mode: 'cors', timeout: 3000 });
-    if (!response.ok) return null;
-    const text = await response.text();
+    const result = await cacheEngine.fetchWithCache(uri, {
+      storage: 'local',
+      responseType: 'text',
+      onUpdate: (fresh) => {
+        if (typeof fresh === 'string') {
+          assetCache.set(uri, fresh);
+        }
+      }
+    });
+    const text = typeof result === 'string' ? result : String(result);
     assetCache.set(uri, text);
     return text;
   } catch {
