@@ -667,6 +667,20 @@ export function initializeJitEngine(): void {
   if (_isJitEngineBooted) return;
   _isJitEngineBooted = true;
 
+  // Watch for data-theme changes on documentElement to automatically refresh theme bridge
+  if (typeof document !== 'undefined' && typeof MutationObserver !== 'undefined') {
+    const themeObserver = new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        if (m.type === 'attributes' && (m.attributeName === 'data-theme' || m.attributeName === 'class')) {
+          requestAnimationFrame(() => {
+            refreshThemeBridge().catch(() => {});
+          });
+        }
+      }
+    });
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] });
+  }
+
   // Play Mode: Initialize official JIT compiler lazily
   // Theme/preflight CSS is fetched from CDN at runtime; no AOT stylesheet is bundled.
   ensureCompiler().catch((err: unknown) => console.error('[Nexus] JIT init failed:', err));
