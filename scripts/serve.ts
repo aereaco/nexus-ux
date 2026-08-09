@@ -97,7 +97,7 @@ async function rewriteBase(res: Response): Promise<Response> {
   return new Response(next, { status: res.status, headers: res.headers });
 }
 
-const RELOAD_CLIENT = `<script>(function(){var p=location.protocol==='https:'?'wss://':'ws://';var s=new WebSocket(p+location.host+'/__reload');s.onmessage=function(){location.reload();};})();</script>`;
+const RELOAD_CLIENT = `<script>(function(){var p=location.protocol==='https:'?'wss://':'ws://';var s=new WebSocket(p+location.host+'/__reload');s.onmessage=function(){try{sessionStorage.clear();}catch(e){}location.reload();};})();</script>`;
 
 async function injectReload(res: Response): Promise<Response> {
   const type = res.headers.get("content-type") ?? "";
