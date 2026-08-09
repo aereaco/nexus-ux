@@ -3,6 +3,7 @@ import { RuntimeContext } from '../../engine/composition.ts';
 import { reportError } from '../../engine/debug.ts';
 import { readIDB } from '../../engine/utils/idb.ts';
 import { stylesheet, discoverColorTokens, buildTailwindThemeBridge, markExternalStylesSettled } from './stylesheet.ts';
+import { cacheEngine } from '../../engine/cache.ts';
 
 /**
  * Lightweight IndexedDB read helper for idb:// URIs.
