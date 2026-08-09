@@ -1004,6 +1004,16 @@ export const routerAttributeModule: AttributeModule = {
           }
         }
 
+        // Direct URL access protection for wallgarden shadow routes
+        if (matched && matched.internal && path !== '/') {
+          const isDirectAddressBarNav = !suppressNavIntercept && typeof globalThis.location !== 'undefined' &&
+            stripBase(globalThis.location.pathname) === matched.path;
+          if (isDirectAddressBarNav) {
+            state.navigate('/error', { replace: true });
+            return;
+          }
+        }
+
         // Declarative redirect: follow route.redirect before committing.
         if (matched && matched.redirect) {
           state.navigate(matched.redirect, { replace: true });
