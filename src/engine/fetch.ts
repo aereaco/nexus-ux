@@ -20,7 +20,22 @@ export interface FetchUtilities {
 
 export const fetchUtilities: FetchUtilities = {
   request: (url: string, options: FetchOptions, el: HTMLElement): Promise<unknown> => {
-    // Zero-Serialization cache key to adhere to ZCZS mandate
+    const isGetOrHead = !options.method || options.method.toUpperCase() === 'GET' || options.method.toUpperCase() === 'HEAD';
+
+    if (isGetOrHead) {
+      return cacheEngine.fetchWithCache(url, {
+        storage: 'session',
+        responseType: (options.responseType as any) || 'text',
+        onUpdate: (freshData) => {
+          el.dispatchEvent(new CustomEvent(`${CUSTOM_EVENT_PREFIX}fetch-success`, {
+            bubbles: true,
+            cancelable: false,
+            detail: { url, options, data: freshData },
+          }));
+        }
+      });
+    }
+
     const cacheKey = `${url}:${options.method || 'GET'}:${options.responseType || 'text'}`;
     if (fetchCache.has(cacheKey)) return fetchCache.get(cacheKey)!;
 
