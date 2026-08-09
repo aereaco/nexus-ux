@@ -30,16 +30,12 @@ import * as mod_26 from './modules/attributes/switcher.ts';
 import * as mod_27 from './modules/attributes/teleport.ts';
 import * as mod_28 from './modules/attributes/theme.ts';
 import * as mod_29 from './modules/attributes/var.ts';
-export const autoAttributes: any[] = [  { name: 'computed', module: mod_5 },
-  { name: 'import', module: mod_13 },
-  { name: 'signal', module: mod_23 },
-  { name: 'switcher', module: mod_26 },
-  { name: 'theme', module: mod_28 },
-  { name: 'assert', module: mod_0 },
+export const autoAttributes: any[] = [  { name: 'assert', module: mod_0 },
   { name: 'bind', module: mod_1 },
   { name: 'build', module: mod_2 },
   { name: 'class', module: mod_3 },
   { name: 'component', module: mod_4 },
+  { name: 'computed', module: mod_5 },
   { name: 'debug', module: mod_6 },
   { name: 'drag', module: mod_7 },
   { name: 'effect', module: mod_8 },
@@ -47,6 +43,7 @@ export const autoAttributes: any[] = [  { name: 'computed', module: mod_5 },
   { name: 'for', module: mod_10 },
   { name: 'html', module: mod_11 },
   { name: 'if', module: mod_12 },
+  { name: 'import', module: mod_13 },
   { name: 'markdown', module: mod_14 },
   { name: 'mask', module: mod_15 },
   { name: 'on', module: mod_16 },
@@ -56,9 +53,12 @@ export const autoAttributes: any[] = [  { name: 'computed', module: mod_5 },
   { name: 'route', module: mod_20 },
   { name: 'router', module: mod_21 },
   { name: 'show', module: mod_22 },
+  { name: 'signal', module: mod_23 },
   { name: 'style', module: mod_24 },
   { name: 'stylesheet', module: mod_25 },
+  { name: 'switcher', module: mod_26 },
   { name: 'teleport', module: mod_27 },
+  { name: 'theme', module: mod_28 },
   { name: 'var', module: mod_29 }];
 import * as mod_30 from './modules/sprites/animate.ts';
 import * as mod_31 from './modules/sprites/bgFetch.ts';
@@ -142,3 +142,4 @@ import * as mod_mutation from './engine/mutation.ts';
 export const autoObservers: any[] = [{ name: 'mutation', module: mod_mutation }];
 export const PACKED_COMPONENTS = ".draggable-chosen{background-color:var(--color-base-300,#d4d4d8);box-shadow:inset 0 0 0 2px var(--color-primary,#3b82f6)}.draggable-drag{opacity:1;background-color:var(--color-base-300,#d4d4d8);box-shadow:0 25px 50px -12px rgba(0,0,0,.25);transform:scale(1.05);cursor:grabbing;z-index:9999}.draggable-ghost{opacity:1;background-color:var(--color-base-300,#d4d4d8);border:2px solid var(--color-primary,#3b82f6);box-shadow:0 25px 50px -12px rgba(0,0,0,.25)}.draggable-selected{box-shadow:inset 0 0 0 2px var(--color-accent,var(--color-secondary,#ec4899))}.draggable-swap-highlight{background-color:color-mix(in srgb,var(--color-warning,#eab308) 20%,transparent);box-shadow:inset 0 0 0 2px var(--color-warning,#eab308)}.drop-target-before{background:linear-gradient(to bottom,color-mix(in srgb,var(--color-primary,#3b82f6) 30%,transparent) 0%,transparent 20%);box-shadow:inset 0 2px 0 0 var(--color-primary,#3b82f6)}.drop-target-after{background:linear-gradient(to top,color-mix(in srgb,var(--color-primary,#3b82f6) 30%,transparent) 0%,transparent 20%);box-shadow:inset 0 -2px 0 0 var(--color-primary,#3b82f6)}";
 export const PACKED_KEYFRAMES = "@keyframes spin{to{transform:rotate(360deg)}}@keyframes ping{75%,100%{transform:scale(2);opacity:0}}@keyframes pulse{50%{opacity:.5}}@keyframes bounce{0%,100%{transform:translateY(-25%);animation-timing-function:cubic-bezier(.8,0,1,1)}50%{transform:none;animation-timing-function:cubic-bezier(0,0,.2,1)}}";
+export const PACKED_THEME_CSS = "";
