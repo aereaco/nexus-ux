@@ -109,14 +109,16 @@ const componentModule: AttributeModule = {
       };
 
       el[COMPONENT_CONTEXT_KEY] = ctx;
+      let scopeAttached = false;
 
       let __lastPath: string | undefined;
       runtime.effect(() => {
         let config: ComponentConfig;
         // Parse config in parent scope before attaching internal componentState
         const evaluated = runtime.evaluate(el, value);
-        if (!el[COMPONENT_CONTEXT_KEY]) {
+        if (!scopeAttached) {
           addScopeToNode(el, ctx);
+          scopeAttached = true;
         }
         if (typeof evaluated === 'object' && evaluated !== null) {
           config = evaluated as ComponentConfig;

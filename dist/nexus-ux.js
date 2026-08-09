@@ -2731,12 +2731,14 @@ ${scripts}
           ...componentState
         };
         el[COMPONENT_CONTEXT_KEY] = ctx;
+        let scopeAttached = false;
         let __lastPath;
         runtime.effect(() => {
           let config;
           const evaluated = runtime.evaluate(el, value);
-          if (!el[COMPONENT_CONTEXT_KEY]) {
+          if (!scopeAttached) {
             addScopeToNode(el, ctx);
+            scopeAttached = true;
           }
           if (typeof evaluated === "object" && evaluated !== null) {
             config = evaluated;
