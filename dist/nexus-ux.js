@@ -6817,6 +6817,13 @@ ${match}</ul>
                   break;
                 }
               }
+              if (matched && matched.internal && path !== "/") {
+                const isDirectAddressBarNav = !suppressNavIntercept && typeof globalThis.location !== "undefined" && stripBase(globalThis.location.pathname) === matched.path;
+                if (isDirectAddressBarNav) {
+                  state.navigate("/error", { replace: true });
+                  return;
+                }
+              }
               if (matched && matched.redirect) {
                 state.navigate(matched.redirect, { replace: true });
                 return;
