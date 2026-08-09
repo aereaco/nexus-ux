@@ -36,6 +36,7 @@
 import { effect as _effect } from '../../engine/reactivity.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { AttributeModule } from '../../engine/modules.ts';
+import { cacheEngine } from '../../engine/cache.ts';
 
 // ============================================================================
 // 1. AOT-INJECTED STYLE LAYER CONSTANTS
