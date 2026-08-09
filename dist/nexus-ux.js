@@ -10980,19 +10980,6 @@ ${bridge}`, {
     if (_isJitEngineBooted)
       return;
     _isJitEngineBooted = true;
-    if (typeof document !== "undefined" && typeof MutationObserver !== "undefined") {
-      const themeObserver = new MutationObserver((mutations) => {
-        for (const m of mutations) {
-          if (m.type === "attributes" && (m.attributeName === "data-theme" || m.attributeName === "class")) {
-            requestAnimationFrame(() => {
-              refreshThemeBridge().catch(() => {
-              });
-            });
-          }
-        }
-      });
-      themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "class"] });
-    }
     ensureCompiler().catch((err2) => console.error("[Nexus] JIT init failed:", err2));
   }
   function markExternalStylesSettled() {
