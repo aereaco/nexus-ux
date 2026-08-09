@@ -542,6 +542,8 @@ export class ModuleCoordinator {
       });
 
       handlersToExecute.sort((a, b) => {
+        if (a.directiveName === 'signal' && b.directiveName !== 'signal') return -1;
+        if (b.directiveName === 'signal' && a.directiveName !== 'signal') return 1;
         const indexA = this.directiveOrder.indexOf(a.directiveName);
         const indexB = this.directiveOrder.indexOf(b.directiveName);
         const effA = indexA === -1 ? this.directiveOrder.length : indexA;
