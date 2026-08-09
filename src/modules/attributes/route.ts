@@ -38,19 +38,16 @@ export const routeAttributeModule: AttributeModule = {
     try {
       if (parsed?.argument) return;
 
-      const globalSignals = runtime.globalSignals();
-      // deno-lint-ignore no-explicit-any
-      const router = globalSignals['router'] as any;
-
-      if (!router || !router.addRoute) {
-        // If router not initialized yet, retry on next microtask tick
-        queueMicrotask(() => {
-          try {
-            routeAttributeModule.handle(el, routePath, runtime, parsed);
-          } catch {}
-        });
-        return;
-      }
+      const registerOrQueue = (record: any) => {
+        const router = runtime.globalSignals()['router'] as any;
+        if (router && router.addRoute) {
+          router.addRoute(record);
+        } else {
+          const pending = (runtime as any)._pendingDeclaredRoutes || [];
+          pending.push(record);
+          (runtime as any)._pendingDeclaredRoutes = pending;
+        }
+      };
 
       // Check if data-route contains a JSON signal object (e.g. data-route="{ routes: [...] }")
       let jsonConfig: { routes?: Array<Record<string, any>> } | null = null;

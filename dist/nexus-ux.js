@@ -6134,17 +6134,16 @@ ${match}</ul>
           try {
             if (parsed?.argument)
               return;
-            const globalSignals = runtime.globalSignals();
-            const router = globalSignals["router"];
-            if (!router || !router.addRoute) {
-              queueMicrotask(() => {
-                try {
-                  routeAttributeModule.handle(el, routePath, runtime, parsed);
-                } catch {
-                }
-              });
-              return;
-            }
+            const registerOrQueue = (record) => {
+              const router2 = runtime.globalSignals()["router"];
+              if (router2 && router2.addRoute) {
+                router2.addRoute(record);
+              } else {
+                const pending = runtime._pendingDeclaredRoutes || [];
+                pending.push(record);
+                runtime._pendingDeclaredRoutes = pending;
+              }
+            };
             let jsonConfig = null;
             if (routePath && routePath.trim().startsWith("{")) {
               try {
@@ -10410,9 +10409,9 @@ ${match}</ul>
               const title = anchor.getAttribute("data-tab-title") || void 0;
               const icon = anchor.getAttribute("data-tab-icon") || void 0;
               const signals = context.globalSignals();
-              const router = signals["router"];
-              if (router && typeof router.navigate === "function") {
-                router.navigate(path, { title, icon });
+              const router2 = signals["router"];
+              if (router2 && typeof router2.navigate === "function") {
+                router2.navigate(path, { title, icon });
               } else {
                 globalThis.history.pushState({ scrollY: globalThis.scrollY }, "", path);
                 document.dispatchEvent(
