@@ -6591,17 +6591,17 @@ ${match}</ul>
                 let matched = null;
                 const params = {};
                 for (const route of routeList) {
-                  const meta2 = matchMeta.get(route);
-                  if (!meta2)
+                  const meta = matchMeta.get(route);
+                  if (!meta)
                     continue;
-                  const m = switchPath.match(meta2.regex);
+                  const m = switchPath.match(meta.regex);
                   if (m) {
                     matched = route;
-                    meta2.keys.forEach((key, i) => {
+                    meta.keys.forEach((key, i) => {
                       params[key] = m[i + 1] || "";
                     });
-                    if (meta2.hasWildcard)
-                      params.wildcard = m[meta2.keys.length + 1] || "";
+                    if (meta.hasWildcard)
+                      params.wildcard = m[meta.keys.length + 1] || "";
                     break;
                   }
                 }
@@ -6621,15 +6621,17 @@ ${match}</ul>
                 publishOutlet(state.layout ?? state.route);
                 state.error = null;
                 commitVisibility(matched);
-                const target = applyBase(switchPath);
-                const meta = state.tabMeta[id] || {};
-                suppressNavIntercept = true;
-                globalThis.history.replaceState(
-                  { tabId: id, scrollY: globalThis.scrollY, title: meta.title, icon: meta.icon },
-                  "",
-                  target
-                );
-                suppressNavIntercept = false;
+                if (!matched?.internal && !shadowMatch(switchPath)) {
+                  const target = applyBase(switchPath);
+                  const meta = state.tabMeta[id] || {};
+                  suppressNavIntercept = true;
+                  globalThis.history.replaceState(
+                    { tabId: id, scrollY: globalThis.scrollY, title: meta.title, icon: meta.icon },
+                    "",
+                    target
+                  );
+                  suppressNavIntercept = false;
+                }
               },
               // Switch the active tab (also updates the layout's global signal so the
               // tab bar + panels react).
