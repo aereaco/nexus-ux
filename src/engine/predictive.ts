@@ -156,6 +156,14 @@ export class CorePredictiveEngine {
   private activePredictiveNodes: Set<HTMLElement> = new Set();
   private eyeTrackingActive = false;
   private voiceIntentActive = false;
+  private debugTracker?: {
+    svg: SVGSVGElement;
+    halo: SVGCircleElement;
+    line: SVGLineElement;
+    targetLine: SVGLineElement;
+  };
+  private fadeTimer: number | null = null;
+  private velocity = { x: 0, y: 0, z: 0, t: 1 };
 
   constructor() {
     if (typeof window !== 'undefined') {
@@ -170,8 +178,73 @@ export class CorePredictiveEngine {
 
     if (typeof window === 'undefined') return;
 
+    const setupDebugTracker = () => {
+      if (
+        typeof document !== 'undefined' &&
+        document.body &&
+        document.documentElement.hasAttribute('data-debug') &&
+        !this.debugTracker
+      ) {
+        const svgNS = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(svgNS, 'svg');
+        svg.setAttribute('class', 'nexus-predictive-tracker');
+        svg.style.position = 'fixed';
+        svg.style.pointerEvents = 'none';
+        svg.style.zIndex = '999999';
+        svg.style.overflow = 'visible';
+        svg.style.transform = 'translate(-50%, -50%)';
+        svg.style.width = '200px';
+        svg.style.height = '200px';
+        svg.style.left = '-1000px';
+        svg.style.top = '-1000px';
+
+        const halo = document.createElementNS(svgNS, 'circle');
+        halo.setAttribute('cx', '100');
+        halo.setAttribute('cy', '100');
+        halo.setAttribute('r', '20');
+        halo.setAttribute('fill', 'rgba(99, 102, 241, 0.15)');
+        halo.setAttribute('stroke', 'rgba(99, 102, 241, 0.6)');
+        halo.setAttribute('stroke-width', '1.5');
+        svg.appendChild(halo);
+
+        const line = document.createElementNS(svgNS, 'line');
+        line.setAttribute('x1', '100');
+        line.setAttribute('y1', '100');
+        line.setAttribute('x2', '100');
+        line.setAttribute('y2', '100');
+        line.setAttribute('stroke', 'rgba(99, 102, 241, 0.6)');
+        line.setAttribute('stroke-width', '2');
+        line.setAttribute('stroke-dasharray', '3 3');
+        line.style.opacity = '0';
+        svg.appendChild(line);
+
+        const targetLine = document.createElementNS(svgNS, 'line');
+        targetLine.setAttribute('x1', '100');
+        targetLine.setAttribute('y1', '100');
+        targetLine.setAttribute('x2', '100');
+        targetLine.setAttribute('y2', '100');
+        targetLine.setAttribute('stroke', 'rgba(34, 197, 94, 0.8)');
+        targetLine.setAttribute('stroke-width', '2');
+        targetLine.style.opacity = '0';
+        svg.appendChild(targetLine);
+
+        document.body.appendChild(svg);
+        this.debugTracker = { svg, halo, line, targetLine };
+      }
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', setupDebugTracker);
+    } else {
+      setupDebugTracker();
+    }
+
+    // Listen for DOM mutations to refresh Quadtree
+    document.addEventListener('nexus:dom-mutated', () => this.rebuildQuadtree(), { passive: true });
+
     // 1. Mouse Trajectory Tracker ($V_{xyzt}$)
     const onMouseMove = (e: MouseEvent) => {
+      setupDebugTracker();
       this.recordPoint(e.clientX, e.clientY, 0, performance.now());
       this.processPrediction();
     };
@@ -284,6 +357,31 @@ export class CorePredictiveEngine {
     const vy = (p2.y - p0.y) / dt;
     const speed = Math.sqrt(vx * vx + vy * vy);
 
+    this.velocity = { x: vx, y: vy, z: 0, t: dt };
+
+    if (this.debugTracker) {
+      this.debugTracker.svg.style.left = `${p2.x}px`;
+      this.debugTracker.svg.style.top = `${p2.y}px`;
+
+      const targetR = Math.min(80, Math.max(20, 20 + speed * 0.05));
+      this.debugTracker.halo.setAttribute('r', targetR.toString());
+
+      const trajX = 100 + vx * 0.1;
+      const trajY = 100 + vy * 0.1;
+      this.debugTracker.line.setAttribute('x2', trajX.toString());
+      this.debugTracker.line.setAttribute('y2', trajY.toString());
+      this.debugTracker.line.style.opacity = speed > 30 ? '1' : '0';
+    }
+
+    if (this.fadeTimer) clearTimeout(this.fadeTimer);
+    this.fadeTimer = setTimeout(() => {
+      this.velocity = { x: 0, y: 0, z: 0, t: 1 };
+      if (this.debugTracker) {
+        this.debugTracker.line.style.opacity = '0';
+        this.debugTracker.targetLine.style.opacity = '0';
+      }
+    }, 150) as unknown as number;
+
     if (speed < 50) return; // Ignore slow/idle sweeps
 
     const timeHorizon = 0.15; // 150ms prediction
@@ -302,8 +400,48 @@ export class CorePredictiveEngine {
       height: maxY - minY,
     };
 
-    const predicted = this.quadtree.query(range);
-    predicted.forEach((el) => this.prewarmElement(el));
+    const newPredictiveNodes = this.quadtree.query(range);
+    let snappedTarget: { cx: number; cy: number } | undefined = undefined;
+    let minD = Infinity;
+
+    newPredictiveNodes.forEach((target) => {
+      const rect = target.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const d = Math.hypot(cx - projX, cy - projY);
+      if (d < minD) {
+        minD = d;
+        snappedTarget = { cx, cy };
+      }
+    });
+
+    if (this.debugTracker) {
+      if (snappedTarget) {
+        const target = snappedTarget as { cx: number; cy: number };
+        const targetX = 100 + (target.cx - p2.x);
+        const targetY = 100 + (target.cy - p2.y);
+        this.debugTracker.targetLine.setAttribute('x2', targetX.toString());
+        this.debugTracker.targetLine.setAttribute('y2', targetY.toString());
+        this.debugTracker.targetLine.style.opacity = '1';
+      } else {
+        this.debugTracker.targetLine.style.opacity = '0';
+      }
+    }
+
+    newPredictiveNodes.forEach((node) => {
+      if (!this.activePredictiveNodes.has(node)) {
+        this.prewarmElement(node);
+      }
+    });
+
+    this.activePredictiveNodes.forEach((node) => {
+      if (!newPredictiveNodes.has(node)) {
+        node.classList.remove('nexus-predictive-warm');
+        node.dispatchEvent(new CustomEvent('nexus:predictive-cool'));
+      }
+    });
+
+    this.activePredictiveNodes = newPredictiveNodes;
   }
 
   private prewarmElementAtPoint(x: number, y: number) {
@@ -315,6 +453,13 @@ export class CorePredictiveEngine {
   }
 
   private prewarmElement(el: HTMLElement) {
+    el.classList.add('nexus-predictive-warm');
+    el.dispatchEvent(
+      new CustomEvent('nexus:predictive-warm', {
+        detail: { velocity: this.velocity },
+      })
+    );
+
     const route = el.getAttribute('data-route') || el.getAttribute('href');
     const comp = el.getAttribute('data-component');
 
@@ -350,6 +495,9 @@ export class CorePredictiveEngine {
   dispose() {
     this.cleanupFns.forEach(fn => fn());
     this.quadtree.clear();
+    if (this.debugTracker && this.debugTracker.svg.parentNode) {
+      this.debugTracker.svg.parentNode.removeChild(this.debugTracker.svg);
+    }
   }
 }
 
