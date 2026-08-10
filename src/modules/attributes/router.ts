@@ -904,6 +904,10 @@ export const routerAttributeModule: AttributeModule = {
       const shownDisplay = new WeakMap<HTMLElement, string>();
       const commitVisibility = (matched: RouteRecord | null) => {
         routeList.forEach((r: RouteRecord) => {
+          // Never hide root document or body element
+          if (!r.element || r.element === document.documentElement || r.element === document.body) {
+            return;
+          }
           // Only section-model routes (no data-component) render inline. Routes
           // that declare a component are outlet-driven and their declaration
           // element stays hidden.

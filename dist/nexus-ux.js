@@ -6789,6 +6789,9 @@ ${match}</ul>
             const shownDisplay = /* @__PURE__ */ new WeakMap();
             const commitVisibility = (matched) => {
               routeList.forEach((r) => {
+                if (!r.element || r.element === document.documentElement || r.element === document.body) {
+                  return;
+                }
                 const showable = r === matched && !r.component;
                 if (showable) {
                   if (!shownDisplay.has(r.element)) {
