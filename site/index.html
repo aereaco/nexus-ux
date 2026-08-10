@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="en" data-init data-debug data-stylesheet data-theme="{ default: 'auto' }"
-      data-router="{ mode: 'hybrid', pagesDir: '_pages', error: '_internal/error.html' }"
-      data-route="{
+      data-router="{
+        signal: 'router',
+        mode: 'hybrid',
+        pagesDir: '_pages',
+        error: '_internal/error.html',
         routes: [
-          { name: 'home', route: '/', path: '_pages/home.html', protected: true },
-          { name: 'profile', route: '/profile', path: '_pages/profile.html' },
-          { name: 'settings', route: '/settings', path: '_pages/settings.html' },
-          { name: 'admin', route: '/_internal/admin-console', path: '_internal/admin-console.html', protected: true },
-          { name: 'error', route: '/_internal/error', path: '_internal/error.html', protected: true }
+          { id: 'home', route: '/', path: '_pages/home.html', protected: true },
+          { id: 'profile', route: '/profile', path: '_pages/profile.html' },
+          { id: 'settings', route: '/settings', path: '_pages/settings.html' },
+          { id: 'admin', route: '/_internal/admin-console', path: '_internal/admin-console.html', protected: true },
+          { id: 'error', route: '/_internal/error', path: '_internal/error.html', protected: true }
         ]
       }"
       data-import="{ 
