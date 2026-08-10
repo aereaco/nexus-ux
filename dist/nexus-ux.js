@@ -8750,6 +8750,63 @@ ${match}</ul>
           if (this.history.length > 5)
             this.history.shift();
         }
+        prewarmManifest = /* @__PURE__ */ new Set();
+        parseSrcset(value) {
+          const urls = [];
+          if (!value)
+            return urls;
+          const candidates = value.split(",");
+          for (const cand of candidates) {
+            const trimmed = cand.trim();
+            if (!trimmed)
+              continue;
+            const urlToken = trimmed.split(/\s+/)[0];
+            if (urlToken)
+              urls.push(urlToken);
+          }
+          return urls;
+        }
+        extractTargetUrls(el) {
+          const urls = [];
+          const href = el.getAttribute("href");
+          if (href)
+            urls.push(href);
+          const src = el.getAttribute("src");
+          if (src)
+            urls.push(src);
+          const action = el.getAttribute("action");
+          if (action)
+            urls.push(action);
+          const dataAttr = el.getAttribute("data");
+          if (dataAttr && el.tagName === "OBJECT")
+            urls.push(dataAttr);
+          const srcset = el.getAttribute("srcset");
+          if (srcset)
+            urls.push(...this.parseSrcset(srcset));
+          const comp = el.getAttribute("data-component") || el.getAttribute("data-component-path");
+          if (comp && !el.hasAttribute("data-route"))
+            urls.push(comp);
+          const routeLink = el.getAttribute("data-route-link");
+          if (routeLink)
+            urls.push(routeLink);
+          const importAttr = el.getAttribute("data-import");
+          if (importAttr) {
+            const matches = importAttr.match(/(?:https?:\/\/|\/|\.\/|\.\.\/|[a-zA-Z0-9_\-]+\/)[a-zA-Z0-9_\-\.]+\.[a-zA-Z0-9]+/gi);
+            if (matches)
+              urls.push(...matches);
+          }
+          for (let i = 0; i < el.attributes.length; i++) {
+            const attr = el.attributes[i];
+            const name = attr.name;
+            if (name.startsWith("data-on-") || name === "data-signal" || name === "data-effect" || name.startsWith("data-bind")) {
+              const matches = attr.value.match(/(?:https?:\/\/|\/|\.\/|\.\.\/|[a-zA-Z0-9_\-]+\/)[a-zA-Z0-9_\-\.]+\.[a-zA-Z0-9]+/gi);
+              if (matches) {
+                urls.push(...matches);
+              }
+            }
+          }
+          return Array.from(new Set(urls));
+        }
         rebuildQuadtree() {
           this.quadtree = new Quadtree({
             x: 0,
@@ -8759,14 +8816,15 @@ ${match}</ul>
           });
           if (typeof document === "undefined")
             return;
-          const selectors = "a[href], button, [data-on-click], [data-route-link], [data-action]";
-          const elements = document.querySelectorAll(selectors);
-          elements.forEach((el) => {
-            if (el instanceof HTMLElement) {
+          const isInteractive = (el) => el.tagName === "A" || el.tagName === "BUTTON" || el.tagName === "INPUT" || el.hasAttribute("href") || el.hasAttribute("data-route-link") || el.hasAttribute("data-component") || Array.from(el.attributes).some((a) => a.name.startsWith("data-on-"));
+          document.querySelectorAll("*").forEach((el) => {
+            if (el instanceof HTMLElement && isInteractive(el)) {
               const rect = el.getBoundingClientRect();
-              const centerX = rect.left + rect.width / 2;
-              const centerY = rect.top + rect.height / 2;
-              this.quadtree.insert(el, centerX, centerY);
+              if (rect.width > 0 && rect.height > 0) {
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                this.quadtree.insert(el, centerX, centerY);
+              }
             }
           });
         }
@@ -8870,16 +8928,42 @@ ${match}</ul>
               detail: { velocity: this.velocity }
             })
           );
-          const href = el.getAttribute("href") || el.getAttribute("data-route-link");
-          const comp = el.getAttribute("data-component");
-          if (href) {
-            cacheEngine.fetchWithCache(href, { storage: "session", responseType: "text" }).catch(() => {
+          const targets = this.extractTargetUrls(el);
+          targets.forEach((url) => {
+            if (!this.prewarmManifest.has(url)) {
+              this.prewarmManifest.add(url);
+              cacheEngine.fetchWithCache(url, { storage: "session", responseType: "text" }).catch(() => {
+              });
+            }
+          });
+        }
+        /**
+         * Reactive Real-Time DOM Integration:
+         * Called by the central MutationObserver when new DOM nodes are mounted or morphed.
+         */
+        onNodesAdded(nodes) {
+          if (typeof document === "undefined")
+            return;
+          const processElement = (el) => {
+            const urls = this.extractTargetUrls(el);
+            urls.forEach((url) => {
+              if (!this.prewarmManifest.has(url)) {
+                this.prewarmManifest.add(url);
+                cacheEngine.fetchWithCache(url, { storage: "session", responseType: "text" }).catch(() => {
+                });
+              }
             });
-          }
-          if (comp && !el.hasAttribute("data-route")) {
-            cacheEngine.fetchWithCache(comp, { storage: "session", responseType: "text" }).catch(() => {
-            });
-          }
+          };
+          Array.from(nodes).forEach((node) => {
+            if (node instanceof HTMLElement) {
+              processElement(node);
+              node.querySelectorAll("*").forEach((child) => {
+                if (child instanceof HTMLElement)
+                  processElement(child);
+              });
+            }
+          });
+          this.rebuildQuadtree();
         }
         setPrewarmHook(fn) {
           this.prewarmHook = fn;
