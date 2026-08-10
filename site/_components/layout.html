@@ -16,7 +16,7 @@
   <div class="drawer-content"
     data-signal:global="{
 
-        activeTabId: 'home',
+        activeTabId: router.routes[0]?.id,
         activeTab: null,
         pinned: [],
         tabSeq: 0,
@@ -32,13 +32,10 @@
           { href: '/settings', title: 'Settings', icon: 'material-symbols-light:settings-outline', tabTitle: 'Settings', tabIcon: 'material-symbols-light:settings-outline' }
         ],
         tabs: [{
-          id: 'home',
-          title: 'Home',
-          icon: 'material-symbols-light:home-outline',
-          content: '_pages/home.html',
-          originUrl: '/_pages/home.html',
-          originTitle: 'Home',
-          originIcon: 'material-symbols-light:home-outline'
+          id: router.routes[0]?.id,
+          title: router.routes[0]?.meta?.title,
+          icon: router.routes[0]?.meta?.icon,
+          content: router.routes[0]?.path
         }],
         createTab(content = '_components/tab-new.html', title = 'New Tab', icon = 'material-symbols-light:article-outline') {
           this.tabSeq++;
