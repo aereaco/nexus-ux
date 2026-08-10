@@ -2578,7 +2578,6 @@ ${scripts}
                         runtime.processElement(child);
                       }
                     });
-                    runtime.processElement(el);
                   }
                 } catch (e) {
                   componentState.hasError = true;
