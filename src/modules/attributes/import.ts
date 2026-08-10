@@ -425,12 +425,9 @@ if (typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.setAttribute('data-nexus-fouc', '');
   style.textContent = `
-    /* FOUC guard: keep the document hidden until Nexus-UX has adopted the
-       external stylesheets declared via [data-import]. The gate is released
-       (nexus-ready / nexus-loading removed) only after imports resolve. */
+    /* FOUC guard: keep element hidden until Nexus-UX finishes loading assets. */
     html.nexus-loading,
     [data-nexus-loading],
-    [data-import]:not(.nexus-ready),
     body[data-nexus-fouc-pending] {
       visibility: hidden !important;
       opacity: 0 !important;
