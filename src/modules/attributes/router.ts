@@ -307,6 +307,7 @@ export const routerAttributeModule: AttributeModule = {
 
       // Parse optional config object: data-router="{ mode: 'hybrid', default: '/home' }"
       let cfg: {
+        signal?: string;
         mode?: RouterMode;
         default?: string;
         pagesDir?: string;
@@ -314,6 +315,16 @@ export const routerAttributeModule: AttributeModule = {
         dynamic?: boolean;
         shadow?: string | string[];
         error?: string;
+        routes?: Array<{
+          id?: string;
+          name?: string;
+          route?: string;
+          path?: string;
+          protected?: boolean;
+          redirect?: string;
+          layout?: string;
+          meta?: unknown;
+        }>;
       } = {};
       if (initConfig && initConfig.trim()) {
         try {
