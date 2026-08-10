@@ -362,11 +362,8 @@ export class CorePredictiveEngine {
     const routeLink = el.getAttribute('data-route-link');
     if (routeLink) urls.push(routeLink);
 
-    const importAttr = el.getAttribute('data-import');
-    if (importAttr) {
-      const matches = importAttr.match(/(?:https?:\/\/|\/|\.\/|\.\.\/|[a-zA-Z0-9_\-]+\/)[a-zA-Z0-9_\-\.]+\.[a-zA-Z0-9]+/gi);
-      if (matches) urls.push(...matches);
-    }
+    // Note: data-import payloads (CDN links, Iconify) are managed exclusively by import.ts
+    // to prevent FOUC gate race conditions, so they are intentionally bypassed here.
 
     // 3. Directive Expressions (data-on-*, data-signal, data-effect, data-bind)
     for (let i = 0; i < el.attributes.length; i++) {

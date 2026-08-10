@@ -8794,12 +8794,6 @@ ${match}</ul>
           const routeLink = el.getAttribute("data-route-link");
           if (routeLink)
             urls.push(routeLink);
-          const importAttr = el.getAttribute("data-import");
-          if (importAttr) {
-            const matches = importAttr.match(/(?:https?:\/\/|\/|\.\/|\.\.\/|[a-zA-Z0-9_\-]+\/)[a-zA-Z0-9_\-\.]+\.[a-zA-Z0-9]+/gi);
-            if (matches)
-              urls.push(...matches);
-          }
           for (let i = 0; i < el.attributes.length; i++) {
             const attr = el.attributes[i];
             const name = attr.name;
