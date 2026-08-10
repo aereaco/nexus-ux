@@ -5390,11 +5390,18 @@ ${scripts}
           resolve();
           return;
         }
+        const timer = setTimeout(() => {
+          resolve();
+        }, 2500);
         const link = document.createElement("link");
         applyAttributes(link, attrs);
         link.href = href;
-        link.onload = () => resolve();
+        link.onload = () => {
+          clearTimeout(timer);
+          resolve();
+        };
         link.onerror = () => {
+          clearTimeout(timer);
           reportError(new Error(`Nexus Import: Failed to load ${href}`), el);
           resolve();
         };
