@@ -6532,6 +6532,28 @@ ${match}</ul>
             };
             const routeList = [];
             const matchMeta = /* @__PURE__ */ new WeakMap();
+            if (Array.isArray(cfg.routes)) {
+              for (const r of cfg.routes) {
+                if (r && (r.route || r.path)) {
+                  const path = r.route || r.path || "/";
+                  const meta = pathToRegex(path);
+                  const rec = {
+                    path,
+                    element: el,
+                    name: r.id || r.name,
+                    redirect: r.redirect,
+                    layout: r.layout,
+                    component: r.path || r.component,
+                    meta: r.meta,
+                    source: "declared",
+                    ...meta
+                  };
+                  rec.matcher = meta.regex;
+                  matchMeta.set(rec, meta);
+                  routeList.push(rec);
+                }
+              }
+            }
             const state = runtime.shallowReactive({
               path: stripBase(globalThis.location.pathname),
               params: {},
