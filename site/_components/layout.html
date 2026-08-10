@@ -39,7 +39,75 @@
           originUrl: '/_pages/home.html',
           originTitle: 'Home',
           originIcon: 'material-symbols-light:home-outline'
-        }] }">
+        }],
+        createTab(content = '_components/tab-new.html', title = 'New Tab', icon = 'material-symbols-light:article-outline') {
+          this.tabSeq++;
+          const id = 'tab-' + this.tabSeq;
+          if (content.startsWith('_components/')) {
+            router.tabPaths[id] = 'custom-component';
+          }
+          this.tabs = [...this.tabs, { id, title, icon, content }];
+          this.activeTabId = id;
+        },
+        closeTab(id) {
+          const wasActive = this.activeTabId === id;
+          this.tabs = this.tabs.filter(t => t.id !== id);
+          this.pinned = this.pinned.filter(p => p !== id);
+          if (wasActive && this.tabs.length > 0) {
+            this.activeTabId = this.tabs[0].id;
+          }
+        },
+        pinTab(id) {
+          if (this.pinned.includes(id)) {
+            this.pinned = this.pinned.filter(p => p !== id);
+          } else {
+            this.pinned = [...this.pinned, id];
+          }
+        },
+        duplicateTab(id) {
+          const src = this.tabs.find(t => t.id === id);
+          if (!src) return;
+          this.tabSeq++;
+          const newId = 'tab-' + this.tabSeq;
+          const content = src.content || '_components/tab-generic.html';
+          if (content.startsWith('_components/')) {
+            router.tabPaths[newId] = 'custom-component';
+          } else {
+            router.tabPaths[newId] = router.tabPaths[id];
+          }
+          this.tabs = [...this.tabs, { id: newId, title: src.title || 'Tab', icon: src.icon || 'material-symbols-light:article-outline', content }];
+          this.activeTabId = newId;
+        },
+        openTabContextMenu(tab, evt) {
+          const e = evt;
+          const rawX = e.clientX || e.pageX || 100;
+          const rawY = e.clientY || e.pageY || 100;
+          const tid = tab.id;
+          const isPinned = this.pinned.includes(tid);
+          this.ctxMenuItems = [
+            {
+              label: isPinned ? 'Unpin Tab' : 'Pin Tab',
+              icon: isPinned ? 'material-symbols-light:keep-off-outline' : 'material-symbols-light:keep-outline',
+              action: () => this.pinTab(tid)
+            },
+            {
+              label: 'Duplicate Tab',
+              icon: 'material-symbols-light:content-copy',
+              action: () => this.duplicateTab(tid)
+            },
+            {
+              label: 'Close Tab',
+              icon: 'material-symbols-light:close',
+              danger: true,
+              action: () => this.closeTab(tid)
+            }
+          ];
+          const menuWidth = 224;
+          const menuHeight = 220;
+          const posX = (rawX + menuWidth > window.innerWidth) ? (rawX - menuWidth) : rawX;
+          const posY = (rawY + menuHeight > window.innerHeight) ? (rawY - menuHeight) : rawY;
+          this.ctxMenu = { type: 'tab', tabId: tid, x: posX, y: posY };
+        } }">
     <!-- Signal-Based Routes configured on <html> via data-route="{ routes: [...] }" -->
 
     <!-- Reactive sync: when the router resolves a route, update the active
