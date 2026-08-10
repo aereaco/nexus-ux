@@ -44,6 +44,12 @@ const mutationObserverModule: ObserverModule = {
           }
         }
 
+        if (addedThisBatch.size > 0) {
+          import('./predictive.ts').then(mod => {
+            mod.corePredictiveEngine.onNodesAdded(addedThisBatch);
+          }).catch(() => {});
+        }
+
         // Purge stale moved node entries (>2 frames old ≈ 32ms)
         for (const [node, ts] of movedNodeTimers) {
           if (now - ts > 32) {
