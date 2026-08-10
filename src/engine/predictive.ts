@@ -539,29 +539,36 @@ export class CorePredictiveEngine {
   /**
    * Reactive Real-Time DOM Integration:
    * Called by the central MutationObserver when new DOM nodes are mounted or morphed.
+   * Defers execution to queueMicrotask to ensure synchronous layout thrashing (getBoundingClientRect)
+   * never interrupts DOM element rendering or component adoption.
    */
   onNodesAdded(nodes: ArrayLike<Node> | Iterable<Node>) {
     if (typeof document === 'undefined') return;
-    const processElement = (el: HTMLElement) => {
-      const urls = this.extractTargetUrls(el);
-      urls.forEach((url) => {
-        if (!this.prewarmManifest.has(url)) {
-          this.prewarmManifest.add(url);
-          cacheEngine.fetchWithCache(url, { storage: 'session', responseType: 'text' }).catch(() => {});
+    const nodeList = Array.from(nodes);
+    if (nodeList.length === 0) return;
+
+    queueMicrotask(() => {
+      const processElement = (el: HTMLElement) => {
+        const urls = this.extractTargetUrls(el);
+        urls.forEach((url) => {
+          if (!this.prewarmManifest.has(url)) {
+            this.prewarmManifest.add(url);
+            cacheEngine.fetchWithCache(url, { storage: 'session', responseType: 'text' }).catch(() => {});
+          }
+        });
+      };
+
+      nodeList.forEach((node) => {
+        if (node instanceof HTMLElement) {
+          processElement(node);
+          node.querySelectorAll('*').forEach((child) => {
+            if (child instanceof HTMLElement) processElement(child);
+          });
         }
       });
-    };
 
-    Array.from(nodes).forEach((node) => {
-      if (node instanceof HTMLElement) {
-        processElement(node);
-        node.querySelectorAll('*').forEach((child) => {
-          if (child instanceof HTMLElement) processElement(child);
-        });
-      }
+      this.rebuildQuadtree();
     });
-
-    this.rebuildQuadtree();
   }
 
   setPrewarmHook(fn: (ref: string) => void) {
