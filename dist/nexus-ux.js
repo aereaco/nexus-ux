@@ -2344,7 +2344,8 @@ ${scripts}
           meta[name] = content;
         }
       });
-      const routerState = runtime.getGlobalSignal("router") || runtime.getGlobalSignal("appRouter");
+      const globals = runtime.globalSignals ? runtime.globalSignals() : {};
+      const routerState = globals.router || globals.appRouter;
       if (routerState) {
         if (!routerState.meta)
           routerState.meta = {};
