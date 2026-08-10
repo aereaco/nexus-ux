@@ -318,7 +318,6 @@ const componentModule: AttributeModule = {
                   runtime.processElement(child as unknown as HTMLElement);
                 }
               });
-              runtime.processElement(el);
             }
           } catch (e) {
             componentState.hasError = true;
