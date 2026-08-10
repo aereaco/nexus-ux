@@ -87,9 +87,8 @@ function extractResourceMetadata(
       }
     });
 
-    // Publish metadata to global router signal if present
-    const routerState =
-      runtime.getGlobalSignal('router') || runtime.getGlobalSignal('appRouter');
+    const globals = runtime.globalSignals ? runtime.globalSignals() : {};
+    const routerState = (globals.router || globals.appRouter) as any;
     if (routerState) {
       if (!routerState.meta) routerState.meta = {};
       routerState.meta[path] = meta;
