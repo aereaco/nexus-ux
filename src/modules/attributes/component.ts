@@ -14,13 +14,130 @@ export interface ComponentConfig {
 }
 
 /**
+ * Base class for all Web Component elements managed by Nexus-UX.
+ * Provides native custom element capabilities, Shadow DOM / Light DOM root
+ * isolation, form-association hooks, and cleanup registration.
+ */
+export class BaseComponent extends HTMLElement {
+  root: ShadowRoot | this;
+  internals?: ElementInternals;
+  _templateContent?: DocumentFragment;
+  _styles?: (HTMLStyleElement | HTMLLinkElement)[];
+  _scripts?: HTMLScriptElement[];
+  _cleanupFunctions: (() => void)[] = [];
+  _componentSrc: string | null = null;
+  _isRendered = false;
+
+  constructor(isShadowDOM?: boolean) {
+    super();
+    if (isShadowDOM) {
+      this.root = this.attachShadow({ mode: 'open' });
+    } else {
+      this.root = this;
+    }
+    if (typeof this.attachInternals === 'function') {
+      try {
+        this.internals = this.attachInternals();
+      } catch {
+        // Ignored if not form-associated
+      }
+    }
+  }
+
+  connectedCallback() {
+    this._isRendered = true;
+  }
+
+  disconnectedCallback() {
+    this._cleanupFunctions.forEach((fn) => fn());
+    this._cleanupFunctions = [];
+  }
+
+  registerCleanup(fn: () => void) {
+    this._cleanupFunctions.push(fn);
+  }
+}
+
+/**
+ * Extracts resource metadata (<title>, <meta name="..." content="...">)
+ * from fetched component HTML text and publishes it to the global router signal.
+ */
+function extractResourceMetadata(
+  htmlText: string,
+  path: string,
+  runtime: RuntimeContext
+): Record<string, string> {
+  const meta: Record<string, string> = {};
+  if (!htmlText || typeof htmlText !== 'string') return meta;
+
+  try {
+    const parser = new DOMParser();
+    const parsedDoc = parser.parseFromString(htmlText, 'text/html');
+
+    const titleEl = parsedDoc.querySelector('title');
+    if (titleEl && titleEl.textContent) {
+      meta.title = titleEl.textContent.trim();
+    }
+
+    parsedDoc.querySelectorAll('meta[name]').forEach((metaEl) => {
+      const name = metaEl.getAttribute('name');
+      const content = metaEl.getAttribute('content');
+      if (name && content) {
+        meta[name] = content;
+      }
+    });
+
+    // Publish metadata to global router signal if present
+    const routerState =
+      runtime.getGlobalSignal('router') || runtime.getGlobalSignal('appRouter');
+    if (routerState) {
+      if (!routerState.meta) routerState.meta = {};
+      routerState.meta[path] = meta;
+
+      if (Array.isArray(routerState.routes)) {
+        const routeRecord = routerState.routes.find((r: any) => r.path === path);
+        if (routeRecord) {
+          routeRecord.meta = { ...(routeRecord.meta || {}), ...meta };
+        }
+      }
+    }
+
+    if (meta.title && typeof document !== 'undefined') {
+      document.title = meta.title;
+    }
+  } catch (e) {
+    console.error(`[Component] Failed to extract metadata for ${path}:`, e);
+  }
+  return meta;
+}
+
+/**
+ * Dynamically registers custom element tag if not already registered.
+ */
+function ensureCustomElementRegistered(tagName: string): void {
+  if (typeof customElements === 'undefined') return;
+  const tag = tagName.toLowerCase();
+  if (tag.includes('-') && !customElements.get(tag)) {
+    try {
+      customElements.define(
+        tag,
+        class extends BaseComponent {
+          constructor() {
+            super();
+          }
+        }
+      );
+    } catch {
+      // Custom element already registered or name conflict
+    }
+  }
+}
+
+/**
  * Builds a single reactive-ish object that reads/writes through the host's
  * merged data stack (most-local scope wins), then layers the component ctx on
  * top. This is the "implicit inherit" scope seeded onto a shadow root so that
  * data-bind inside the shadow tree behaves exactly like light DOM.
- *
- * Reads walk the host stack front-to-back (nearest scope first); writes target
- * the nearest scope that already owns the key, otherwise the component ctx.
  */
 function createInheritedShadowScope(
   host: HTMLElement,
@@ -60,7 +177,12 @@ function createInheritedShadowScope(
       if (key in target) return Reflect.getOwnPropertyDescriptor(target, key);
       for (const scope of getDataStack(host)) {
         if (key in scope) {
-          return { configurable: true, enumerable: true, writable: true, value: scope[key as string] };
+          return {
+            configurable: true,
+            enumerable: true,
+            writable: true,
+            value: scope[key as string]
+          };
         }
       }
       return undefined;
@@ -89,13 +211,10 @@ const componentModule: AttributeModule = {
   attribute: 'component',
   handle: (el: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void => {
     try {
-      // A `data-route` element's `data-component` is a route DECLARATION consumed
-      // by the router (published to `$router.route`), not an inline render. Skip
-      // it here to avoid double-rendering; the outlet element
-      // (`<main data-component="$router.route">`, which has no data-route) renders.
       if (el.hasAttribute('data-route')) return;
 
-      // Initialize Context
+      ensureCustomElementRegistered(el.tagName);
+
       const componentState = runtime.reactive({
         isConnected: false,
         isLoading: false,
@@ -115,7 +234,6 @@ const componentModule: AttributeModule = {
       let __lastPath: string | undefined;
       runtime.effect(() => {
         let config: ComponentConfig;
-        // Parse config in parent scope before attaching internal componentState
         const evaluated = runtime.evaluate(el, value);
         if (!scopeAttached) {
           addScopeToNode(el, ctx);
@@ -135,10 +253,6 @@ const componentModule: AttributeModule = {
 
         if (!config.path || config.path === 'none') return;
 
-        // Memoize by resolved path: only re-fetch/remorph when the target
-        // actually changes. A re-run caused by an unrelated signal (e.g. hover)
-        // must NOT tear down and rebuild the component, or panel state (input
-        // focus, scroll, form values) is lost on every unrelated update.
         if (config.path === __lastPath) return;
         __lastPath = config.path;
 
@@ -160,26 +274,24 @@ const componentModule: AttributeModule = {
                 onUpdate: (fresh) => {
                   if (typeof fresh === 'string' && fresh !== componentState.templateContent) {
                     componentState.templateContent = fresh;
+                    extractResourceMetadata(fresh, config.path, runtime);
                   }
                 }
               });
               html = typeof result === 'string' ? result : String(result);
             }
 
-            if (runtime.isDevMode) console.log(`[Component] Template loaded for <${el.tagName}>, length: ${html.length}`);
+            if (runtime.isDevMode) {
+              console.log(`[Component] Template loaded for <${el.tagName}>, length: ${html.length}`);
+            }
 
             componentState.templateContent = html;
+            extractResourceMetadata(html, config.path, runtime);
 
             if (config.shadowrootmode) {
               if (!el.shadowRoot) el.attachShadow({ mode: config.shadowrootmode });
               const shadow = el.shadowRoot!;
 
-              // --- Seed the shadow root's scope ---------------------------------
-              // Explicit opt-in: data-scope="{ ... }" evaluated in the HOST's
-              // parent scope; its result becomes the shadow scope (layered over
-              // the component ctx). This is the encapsulation boundary.
-              // Implicit (default): a proxy over the host's merged data stack so
-              // data-bind inside the shadow "just works" like light DOM.
               const scopeExpr = el.getAttribute('data-scope');
               let shadowScope: Record<string, unknown>;
               if (scopeExpr && scopeExpr.trim()) {
@@ -188,7 +300,6 @@ const componentModule: AttributeModule = {
                   declared && typeof declared === 'object'
                     ? (declared as Record<string, unknown>)
                     : {};
-                // Component ctx stays available; declared keys are the crossing set.
                 shadowScope = Object.assign(Object.create(null), ctx, declaredObj);
               } else {
                 shadowScope = createInheritedShadowScope(el, ctx);
@@ -196,10 +307,6 @@ const componentModule: AttributeModule = {
               (shadow as unknown as NexusEnhancedElement)[DATA_STACK_KEY] = [shadowScope];
 
               runtime.morphDOM(shadow as unknown as HTMLElement, html);
-              // Process the shadow tree by walking its top-level element children.
-              // A ShadowRoot itself has no hasAttribute(), so it cannot be passed
-              // to processElement directly; its children inherit the seeded scope
-              // via getDataStack's ShadowRoot boundary handling.
               Array.from(shadow.children).forEach((child) => {
                 if (child instanceof HTMLElement || child instanceof SVGElement) {
                   runtime.processElement(child as unknown as HTMLElement);
@@ -207,8 +314,6 @@ const componentModule: AttributeModule = {
               });
             } else {
               runtime.morphDOM(el, html);
-              // Walk the freshly injected children so their directives
-              // (data-signal / data-bind / nested components) are evaluated.
               Array.from(el.children).forEach((child) => {
                 if (child instanceof HTMLElement || child instanceof SVGElement) {
                   runtime.processElement(child as unknown as HTMLElement);
@@ -216,7 +321,6 @@ const componentModule: AttributeModule = {
               });
               runtime.processElement(el);
             }
-
           } catch (e) {
             componentState.hasError = true;
             componentState.errorMessage = e instanceof Error ? e.message : String(e);
@@ -230,19 +334,21 @@ const componentModule: AttributeModule = {
           }
         };
 
-        if (!config.lazy) {
-          load();
-        } else {
-          load();
-        }
+        load();
       });
 
       return () => {
-        // cleanup
+        if (el instanceof BaseComponent) {
+          el.disconnectedCallback();
+        }
       };
-
     } catch (e) {
-      initError('component', `Failed to init component: ${e instanceof Error ? e.message : String(e)}`, el, value);
+      initError(
+        'component',
+        `Failed to init component: ${e instanceof Error ? e.message : String(e)}`,
+        el,
+        value
+      );
     }
   }
 };
