@@ -846,9 +846,8 @@ export const routerAttributeModule: AttributeModule = {
       });
 
       // 2. Register Global Signal
-      // Stored under the bare key `router`; expressions reference it via `#router`
-      // (the evaluator rewrites `#name` -> `__global.name`, stripping the `#`).
-      runtime.setGlobalSignal('router', state);
+      const routerSignalName = cfg.signal || 'router';
+      runtime.setGlobalSignal(routerSignalName, state);
 
       // Flush any declared routes queued before router initialized
       const pendingRoutes = (runtime as any)._pendingDeclaredRoutes as any[] | undefined;

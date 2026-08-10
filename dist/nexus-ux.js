@@ -6860,7 +6860,8 @@ ${match}</ul>
                 }
               }
             });
-            runtime.setGlobalSignal("router", state);
+            const routerSignalName = cfg.signal || "router";
+            runtime.setGlobalSignal(routerSignalName, state);
             const pendingRoutes = runtime._pendingDeclaredRoutes;
             if (pendingRoutes && pendingRoutes.length > 0) {
               pendingRoutes.forEach((rec) => state.addRoute(rec));
