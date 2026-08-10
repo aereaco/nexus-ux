@@ -8522,6 +8522,11 @@ ${match}</ul>
   });
 
   // src/engine/predictive.ts
+  var predictive_exports = {};
+  __export(predictive_exports, {
+    CorePredictiveEngine: () => CorePredictiveEngine,
+    corePredictiveEngine: () => corePredictiveEngine
+  });
   var Quadtree, CorePredictiveEngine, corePredictiveEngine;
   var init_predictive = __esm({
     "src/engine/predictive.ts"() {
@@ -8994,8 +8999,8 @@ ${match}</ul>
   });
 
   // src/modules/sprites/predictive.ts
-  var predictive_exports = {};
-  __export(predictive_exports, {
+  var predictive_exports2 = {};
+  __export(predictive_exports2, {
     default: () => predictive_default,
     predictive: () => predictive,
     predictiveModule: () => predictiveModule
@@ -10583,6 +10588,12 @@ ${match}</ul>
                   });
                 }
               }
+              if (addedThisBatch.size > 0) {
+                Promise.resolve().then(() => (init_predictive(), predictive_exports)).then((mod) => {
+                  mod.corePredictiveEngine.onNodesAdded(addedThisBatch);
+                }).catch(() => {
+                });
+              }
               for (const [node, ts] of movedNodeTimers) {
                 if (now - ts > 32) {
                   movedNodeTimers.delete(node);
@@ -10783,7 +10794,7 @@ ${match}</ul>
         { name: "mask", module: mask_exports },
         { name: "mcp", module: mcp_exports2 },
         { name: "periodicSync", module: periodicSync_exports },
-        { name: "predictive", module: predictive_exports },
+        { name: "predictive", module: predictive_exports2 },
         { name: "push", module: push_exports },
         { name: "selector", module: selector_exports },
         { name: "sql", module: sql_exports },
