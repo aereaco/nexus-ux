@@ -485,6 +485,29 @@ export const routerAttributeModule: AttributeModule = {
         { regex: RegExp; keys: string[]; hasWildcard: boolean }
       >();
 
+      if (Array.isArray(cfg.routes)) {
+        for (const r of cfg.routes) {
+          if (r && (r.route || r.path)) {
+            const path = r.route || r.path || '/';
+            const meta = pathToRegex(path);
+            const rec: RouteRecord = {
+              path,
+              element: el,
+              name: r.id || r.name,
+              redirect: r.redirect,
+              layout: r.layout,
+              component: r.path || r.component,
+              meta: r.meta,
+              source: 'declared',
+              ...meta
+            } as RouteRecord;
+            (rec as any).matcher = meta.regex;
+            matchMeta.set(rec, meta);
+            routeList.push(rec);
+          }
+        }
+      }
+
       // 1. Create Reactive State
       // shallowReactive prevents deep proxying of HTMLElements held in routes.
       const state: RouterState = runtime.shallowReactive<RouterState>({
