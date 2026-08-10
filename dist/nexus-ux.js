@@ -2323,8 +2323,65 @@ ${scripts}
   // src/modules/attributes/component.ts
   var component_exports = {};
   __export(component_exports, {
+    BaseComponent: () => BaseComponent,
     default: () => component_default
   });
+  function extractResourceMetadata(htmlText, path, runtime) {
+    const meta = {};
+    if (!htmlText || typeof htmlText !== "string")
+      return meta;
+    try {
+      const parser = new DOMParser();
+      const parsedDoc = parser.parseFromString(htmlText, "text/html");
+      const titleEl = parsedDoc.querySelector("title");
+      if (titleEl && titleEl.textContent) {
+        meta.title = titleEl.textContent.trim();
+      }
+      parsedDoc.querySelectorAll("meta[name]").forEach((metaEl) => {
+        const name = metaEl.getAttribute("name");
+        const content = metaEl.getAttribute("content");
+        if (name && content) {
+          meta[name] = content;
+        }
+      });
+      const routerState = runtime.getGlobalSignal("router") || runtime.getGlobalSignal("appRouter");
+      if (routerState) {
+        if (!routerState.meta)
+          routerState.meta = {};
+        routerState.meta[path] = meta;
+        if (Array.isArray(routerState.routes)) {
+          const routeRecord = routerState.routes.find((r) => r.path === path);
+          if (routeRecord) {
+            routeRecord.meta = { ...routeRecord.meta || {}, ...meta };
+          }
+        }
+      }
+      if (meta.title && typeof document !== "undefined") {
+        document.title = meta.title;
+      }
+    } catch (e) {
+      console.error(`[Component] Failed to extract metadata for ${path}:`, e);
+    }
+    return meta;
+  }
+  function ensureCustomElementRegistered(tagName) {
+    if (typeof customElements === "undefined")
+      return;
+    const tag = tagName.toLowerCase();
+    if (tag.includes("-") && !customElements.get(tag)) {
+      try {
+        customElements.define(
+          tag,
+          class extends BaseComponent {
+            constructor() {
+              super();
+            }
+          }
+        );
+      } catch {
+      }
+    }
+  }
   function createInheritedShadowScope(host, ctx) {
     return new Proxy(ctx, {
       has(target, key) {
@@ -2365,20 +2422,59 @@ ${scripts}
           return Reflect.getOwnPropertyDescriptor(target, key);
         for (const scope of getDataStack(host)) {
           if (key in scope) {
-            return { configurable: true, enumerable: true, writable: true, value: scope[key] };
+            return {
+              configurable: true,
+              enumerable: true,
+              writable: true,
+              value: scope[key]
+            };
           }
         }
         return void 0;
       }
     });
   }
-  var componentModule, component_default;
+  var BaseComponent, componentModule, component_default;
   var init_component = __esm({
     "src/modules/attributes/component.ts"() {
       init_scope();
       init_consts();
       init_cache();
       init_debug();
+      BaseComponent = class extends HTMLElement {
+        root;
+        internals;
+        _templateContent;
+        _styles;
+        _scripts;
+        _cleanupFunctions = [];
+        _componentSrc = null;
+        _isRendered = false;
+        constructor(isShadowDOM) {
+          super();
+          if (isShadowDOM) {
+            this.root = this.attachShadow({ mode: "open" });
+          } else {
+            this.root = this;
+          }
+          if (typeof this.attachInternals === "function") {
+            try {
+              this.internals = this.attachInternals();
+            } catch {
+            }
+          }
+        }
+        connectedCallback() {
+          this._isRendered = true;
+        }
+        disconnectedCallback() {
+          this._cleanupFunctions.forEach((fn) => fn());
+          this._cleanupFunctions = [];
+        }
+        registerCleanup(fn) {
+          this._cleanupFunctions.push(fn);
+        }
+      };
       componentModule = {
         name: "component",
         attribute: "component",
@@ -2386,6 +2482,7 @@ ${scripts}
           try {
             if (el.hasAttribute("data-route"))
               return;
+            ensureCustomElementRegistered(el.tagName);
             const componentState = runtime.reactive({
               isConnected: false,
               isLoading: false,
@@ -2442,14 +2539,17 @@ ${scripts}
                       onUpdate: (fresh) => {
                         if (typeof fresh === "string" && fresh !== componentState.templateContent) {
                           componentState.templateContent = fresh;
+                          extractResourceMetadata(fresh, config.path, runtime);
                         }
                       }
                     });
                     html = typeof result === "string" ? result : String(result);
                   }
-                  if (runtime.isDevMode)
+                  if (runtime.isDevMode) {
                     console.log(`[Component] Template loaded for <${el.tagName}>, length: ${html.length}`);
+                  }
                   componentState.templateContent = html;
+                  extractResourceMetadata(html, config.path, runtime);
                   if (config.shadowrootmode) {
                     if (!el.shadowRoot)
                       el.attachShadow({ mode: config.shadowrootmode });
@@ -2491,16 +2591,20 @@ ${scripts}
                   componentState.isLoading = false;
                 }
               };
-              if (!config.lazy) {
-                load();
-              } else {
-                load();
-              }
+              load();
             });
             return () => {
+              if (el instanceof BaseComponent) {
+                el.disconnectedCallback();
+              }
             };
           } catch (e) {
-            initError("component", `Failed to init component: ${e instanceof Error ? e.message : String(e)}`, el, value);
+            initError(
+              "component",
+              `Failed to init component: ${e instanceof Error ? e.message : String(e)}`,
+              el,
+              value
+            );
           }
         }
       };
