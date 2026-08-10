@@ -391,22 +391,21 @@
               data-bind-aria-selected="activeTabId === tab.id"
               data-class="{'tab-active border-b border-primary text-primary': activeTabId === tab.id }"
               data-on-click="activeTabId = tab.id"
-              data-on-pointerdown="if ($evt.button === 2 || $evt.buttons === 2 || $evt.which === 3) { const rawX = $evt.clientX || $evt.pageX || 100; const rawY = $evt.clientY || $evt.pageY || 100; if (window.__secHoldTimer) clearTimeout(window.__secHoldTimer); window.__secHoldTimer = setTimeout(() => { const tid = tab.id; const isPinned = pinned.includes(tid); const tabIdx = tabs.findIndex(t => t.id === tid); ctxMenuItems = [{ label: isPinned ? 'Unpin Tab' : 'Pin Tab', icon: isPinned ? 'material-symbols-light:keep-off-outline' : 'material-symbols-light:keep-outline', action: () => { pinned = pinned.includes(tid) ? pinned.filter(id => id !== tid) : [...pinned, tid]; } }, { label: 'Add to Favorites', icon: 'material-symbols-light:star-outline', action: () => { favorites = [...(favorites || []), { id: 'fav-' + Date.now(), title: tab.title || 'Tab Bookmark', href: tab.content || '/', icon: tab.icon || 'material-symbols-light:star-outline' }]; } }, { label: 'Duplicate Tab', icon: 'material-symbols-light:content-copy', action: () => { tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs = [...tabs, { id, title: tab.title || 'New Tab', icon: tab.icon || 'material-symbols-light:article-outline', content: tab.content || '/' }]; activeTabId = id; } }, { label: 'Close', icon: 'material-symbols-light:close', submenu: [{ label: 'Close Tabs to Left', icon: 'material-symbols-light:arrow-back', danger: true, action: () => { const leftIds = tabs.slice(0, tabIdx).filter(t => !pinned.includes(t.id)).map(t => t.id); tabs = tabs.filter(t => !leftIds.includes(t.id)); if (!tabs.some(t => t.id === activeTabId)) activeTabId = tabs[0]?.id; } }, { label: 'Close Tabs to Right', icon: 'material-symbols-light:arrow-forward', danger: true, action: () => { const rightIds = tabs.slice(tabIdx + 1).filter(t => !pinned.includes(t.id)).map(t => t.id); tabs = tabs.filter(t => !rightIds.includes(t.id)); if (!tabs.some(t => t.id === activeTabId)) activeTabId = tabs[0]?.id; } }, { label: 'Close Other Tabs', icon: 'material-symbols-light:deselect', danger: true, action: () => { tabs = tabs.filter(t => t.id === tid || pinned.includes(t.id)); activeTabId = tid; } }, { label: 'Close All Tabs', icon: 'material-symbols-light:cancel', danger: true, action: () => { tabs = tabs.filter(t => pinned.includes(t.id)); if (tabs.length > 0) activeTabId = tabs[0].id; } }] }]; const menuWidth = 224; const menuHeight = 220; const posX = (rawX + menuWidth > window.innerWidth) ? (rawX - menuWidth) : rawX; const posY = (rawY + menuHeight > window.innerHeight) ? (rawY - menuHeight) : rawY; const a = document.getElementById('click-anchor'); if (a) { a.style.top = posY + 'px'; a.style.left = posX + 'px'; } const m = document.getElementById('ctx-menu-overlay'); if (m && m.showPopover) m.showPopover(); const cancelNative = (e) => { e.preventDefault(); e.stopPropagation(); window.removeEventListener('contextmenu', cancelNative, true); }; window.addEventListener('contextmenu', cancelNative, true); }, 500); }"
-              data-on-pointerup="if (window.__secHoldTimer) { clearTimeout(window.__secHoldTimer); window.__secHoldTimer = null; }">
+              data-on-contextmenu:prevent="openTabContextMenu(tab, $evt)">
               <iconify-icon icon="material-symbols-light:drag-indicator"
                 class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
               <iconify-icon data-bind-icon="tab.icon" class="text-lg px-2"></iconify-icon>
               <span class="pe-4 whitespace-nowrap" data-bind="tab.title"></span>
               <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close tab" title="Close tab"
                 data-class="{ 'hidden': pinned.includes(tab.id) }"
-                data-on-click:stop="const wasActive = activeTabId === tab.id; tabs = tabs.filter(t => t.id !== tab.id); if (wasActive) activeTabId = tabs[0]?.id;">
+                data-on-click:stop="closeTab(tab.id)">
                 <iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
               </button>
             </div>
           </template>
 
           <button class="btn btn-circle shrink-0" data-class="{ 'hidden': !pageTabs }"
-            data-on-click="tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs = [...tabs, { id, title: 'New Tab', icon: 'material-symbols-light:article-outline', content: '_components/tab-new.html' }]; activeTabId = id;">
+            data-on-click="createTab('_components/tab-new.html', 'New Tab')">
             <iconify-icon icon="material-symbols-light:add" style="font-size: 24px"></iconify-icon>
           </button>
         </div>
