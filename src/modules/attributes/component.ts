@@ -79,7 +79,8 @@ function extractResourceMetadata(
     const parser = new DOMParser();
     const parsedDoc = parser.parseFromString(htmlText, 'text/html');
 
-    const titleEl = parsedDoc.querySelector('title');
+    const headEl = parsedDoc.head || parsedDoc;
+    const titleEl = headEl.querySelector('title');
     if (titleEl && titleEl.textContent) {
       meta.title = titleEl.textContent.trim();
     }
