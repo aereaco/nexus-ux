@@ -325,6 +325,11 @@ const componentModule: AttributeModule = {
                 }
               });
             }
+
+            const focusable = (config.shadowrootmode ? el.shadowRoot : el)?.querySelector('[autofocus], [data-autofocus]');
+            if (focusable instanceof HTMLElement) {
+              focusable.focus();
+            }
           } catch (e) {
             componentState.hasError = true;
             componentState.errorMessage = e instanceof Error ? e.message : String(e);
