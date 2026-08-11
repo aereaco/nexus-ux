@@ -508,6 +508,17 @@ export const routerAttributeModule: AttributeModule = {
         }
       }
 
+      const initialRoutes = routeList.map((r) => ({
+        id: r.name || r.path,
+        name: r.name,
+        route: r.path,
+        path: r.component || r.path,
+        meta: r.meta || {},
+        protected: (r as any).protected,
+        redirect: r.redirect,
+        layout: r.layout
+      }));
+
       // 1. Create Reactive State
       // shallowReactive prevents deep proxying of HTMLElements held in routes.
       const state: RouterState = runtime.shallowReactive<RouterState>({
@@ -528,7 +539,7 @@ export const routerAttributeModule: AttributeModule = {
         previous: null,
         scrollPosition: { x: 0, y: 0 },
         currentRoute: null,
-        routes: [],
+        routes: initialRoutes,
 
         // Declarative strategy snapshot + resolved manifest.
         config: routerConfig,
