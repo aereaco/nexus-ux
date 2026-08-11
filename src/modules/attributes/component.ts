@@ -79,8 +79,8 @@ function extractResourceMetadata(
     const parser = new DOMParser();
     const parsedDoc = parser.parseFromString(htmlText, 'text/html');
 
-    const headEl = parsedDoc.head || parsedDoc;
-    const titleEl = headEl.querySelector('title');
+    const titles = Array.from(parsedDoc.querySelectorAll('title'));
+    const titleEl = titles.find((t) => !t.closest('svg'));
     if (titleEl && titleEl.textContent) {
       meta.title = titleEl.textContent.trim();
     }
