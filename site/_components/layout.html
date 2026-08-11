@@ -104,6 +104,35 @@
           const posX = (rawX + menuWidth > window.innerWidth) ? (rawX - menuWidth) : rawX;
           const posY = (rawY + menuHeight > window.innerHeight) ? (rawY - menuHeight) : rawY;
           this.ctxMenu = { type: 'tab', tabId: tid, x: posX, y: posY };
+        },
+        openNavContextMenu(href, title, icon, evt) {
+          const e = evt;
+          const rawX = e.clientX || 100;
+          const rawY = e.clientY || 100;
+          this.ctxMenuItems = [
+            {
+              label: 'Open in New Tab',
+              icon: 'material-symbols-light:add',
+              action: () => {
+                this.tabSeq++;
+                const id = 'tab-' + this.tabSeq;
+                this.tabs = [...this.tabs, { id, title: title || 'Tab', icon: icon || 'material-symbols-light:article-outline', content: href }];
+                this.activeTabId = id;
+              }
+            },
+            {
+              label: 'Copy Link Address',
+              icon: 'material-symbols-light:content-copy',
+              action: () => {
+                if (navigator.clipboard) navigator.clipboard.writeText(href);
+              }
+            }
+          ];
+          const menuWidth = 224;
+          const menuHeight = 120;
+          const posX = (rawX + menuWidth > window.innerWidth) ? (rawX - menuWidth) : rawX;
+          const posY = (rawY + menuHeight > window.innerHeight) ? (rawY - menuHeight) : rawY;
+          this.ctxMenu = { type: 'nav', url: href, x: posX, y: posY };
         } }">
     <!-- Signal-Based Routes configured on <html> via data-route="{ routes: [...] }" -->
 
