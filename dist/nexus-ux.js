@@ -6556,6 +6556,16 @@ ${match}</ul>
                 }
               }
             }
+            const initialRoutes = routeList.map((r) => ({
+              id: r.name || r.path,
+              name: r.name,
+              route: r.path,
+              path: r.component || r.path,
+              meta: r.meta || {},
+              protected: r.protected,
+              redirect: r.redirect,
+              layout: r.layout
+            }));
             const state = runtime.shallowReactive({
               path: stripBase(globalThis.location.pathname),
               params: {},
@@ -6574,7 +6584,7 @@ ${match}</ul>
               previous: null,
               scrollPosition: { x: 0, y: 0 },
               currentRoute: null,
-              routes: [],
+              routes: initialRoutes,
               // Declarative strategy snapshot + resolved manifest.
               config: routerConfig,
               manifest: [],
