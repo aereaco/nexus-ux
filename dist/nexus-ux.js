@@ -2435,14 +2435,16 @@ ${scripts}
       }
     });
   }
-  var BaseComponent, componentModule, component_default;
+  var ElementBase, BaseComponent, componentModule, component_default;
   var init_component = __esm({
     "src/modules/attributes/component.ts"() {
       init_scope();
       init_consts();
       init_cache();
       init_debug();
-      BaseComponent = class extends HTMLElement {
+      ElementBase = typeof HTMLElement !== "undefined" ? HTMLElement : class {
+      };
+      BaseComponent = class extends ElementBase {
         root;
         internals;
         _templateContent;

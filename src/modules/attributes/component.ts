@@ -13,12 +13,17 @@ export interface ComponentConfig {
   fallback?: string;
 }
 
+const ElementBase: typeof HTMLElement =
+  typeof HTMLElement !== 'undefined'
+    ? HTMLElement
+    : (class {} as typeof HTMLElement);
+
 /**
  * Base class for all Web Component elements managed by Nexus-UX.
  * Provides native custom element capabilities, Shadow DOM / Light DOM root
  * isolation, form-association hooks, and cleanup registration.
  */
-export class BaseComponent extends HTMLElement {
+export class BaseComponent extends ElementBase {
   root: ShadowRoot | this;
   internals?: ElementInternals;
   _templateContent?: DocumentFragment;
