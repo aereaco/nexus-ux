@@ -1224,12 +1224,17 @@ export const routerAttributeModule: AttributeModule = {
             const idx = tabs.findIndex((t: any) => t.id === _at);
             if (idx >= 0 && nextRoute) {
               const cur = tabs[idx].content;
-              const meta = state.tabMeta[_at] || {};
-              const nextTitle = meta.title || (nextRoute === '_pages/home.html' ? 'Home' : (nextRoute === '_pages/settings.html' ? 'Settings' : (nextRoute === '_pages/profile.html' ? 'Profile' : (nextRoute === errorPage ? (state.errorCode ? 'Error ' + state.errorCode : 'Error') : 'Tab'))));
-              const nextIcon = meta.icon || (nextRoute === '_pages/home.html' ? 'material-symbols-light:home-outline' : (nextRoute === '_pages/settings.html' ? 'material-symbols-light:settings-outline' : (nextRoute === '_pages/profile.html' ? 'material-symbols-light:person-outline' : 'material-symbols-light:article-outline')));
-              if (cur !== nextRoute || tabs[idx].title !== nextTitle || tabs[idx].icon !== nextIcon) {
+              const routeMeta = matched?.meta || state.meta[nextRoute] || {};
+              const nextTitle = routeMeta.title || meta.title;
+              const nextIcon = routeMeta.icon || meta.icon;
+              if (cur !== nextRoute || (nextTitle && tabs[idx].title !== nextTitle) || (nextIcon && tabs[idx].icon !== nextIcon)) {
                 const nt = tabs.slice();
-                nt[idx] = { ...nt[idx], content: nextRoute, title: nextTitle, icon: nextIcon };
+                nt[idx] = {
+                  ...nt[idx],
+                  content: nextRoute,
+                  ...(nextTitle ? { title: nextTitle } : {}),
+                  ...(nextIcon ? { icon: nextIcon } : {})
+                };
                 runtime.setGlobalSignal('tabs', nt);
               }
             }
@@ -1247,14 +1252,8 @@ export const routerAttributeModule: AttributeModule = {
           // Update recent path list directly (excluding error page and internal tools).
           if (path && path !== '/index.html' && path !== errorPage && !path.startsWith('/_internal/')) {
             const recent = (globals.recent as any[]) || [];
-            const labels: Record<string, string> = {
-              '/': 'Home',
-              '/settings': 'Settings',
-              '/profile': 'Profile',
-              '/_internal/admin-console': 'Internal Console'
-            };
-            const title = labels[path] || path.replace(/^\//, '').replace(/-/g, ' ');
-            const entry = { path, title };
+            const routeTitle = matched?.meta?.title || state.meta[nextRoute]?.title || path.replace(/^\//, '').replace(/-/g, ' ');
+            const entry = { path, title: routeTitle };
             const next = [entry, ...recent.filter((r: any) => r.path !== path && r.path !== '/index.html')].slice(0, 5);
             runtime.setGlobalSignal('recent', next);
           }
