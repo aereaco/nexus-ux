@@ -142,34 +142,10 @@
     <div data-effect="
       const rt = router.route;
       const rid = activeTabId;
-      if (!rid) return;
+      if (!rt || !rid) return;
+      if (router.tabPaths[rid] === 'custom-component') return;
       const idx = tabs.findIndex(t => t.id === rid);
-      if (idx > -1) {
-        const matched = router.routes?.find(r => r.path === rt || r.route === rt);
-        const metaTitle = matched?.meta?.title || router.meta?.[rt]?.title;
-        const metaIcon = matched?.meta?.icon || router.meta?.[rt]?.icon;
-        tabs = tabs.map((t, i) => {
-          if (i === idx && rt && !t.content.startsWith('_components/')) {
-            return {
-              ...t,
-              content: rt,
-              ...(metaTitle ? { title: metaTitle } : {}),
-              ...(metaIcon ? { icon: metaIcon } : {})
-            };
-          }
-          const tMeta = router.routes?.find(r => r.path === t.content || r.route === t.content) || router.meta?.[t.content];
-          const syncTitle = tMeta?.meta?.title || tMeta?.title || router.meta?.[t.content]?.title;
-          const syncIcon = tMeta?.meta?.icon || tMeta?.icon || router.meta?.[t.content]?.icon;
-          if (syncTitle || syncIcon) {
-            return {
-              ...t,
-              ...(syncTitle ? { title: syncTitle } : {}),
-              ...(syncIcon ? { icon: syncIcon } : {})
-            };
-          }
-          return t;
-        });
-      }
+      if (idx > -1 && tabs[idx].content !== rt) tabs[idx].content = rt;
     " style="display:none" aria-hidden="true"></div>
 
     <!-- Drawer Header -->
