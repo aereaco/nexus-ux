@@ -1,7 +1,7 @@
 <div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300 min-h-screen" data-signal="{
       collapsed: localStorage.collapsed !== 'false',
       pageTabs: localStorage.pageTabs !== 'false',
-      rtl: localStorage.rtl === 'false',
+      rtl: localStorage.rtl === 'true',
       zoom: localStorage.zoom ?? 1,
       hovered: false,
       sidebarOpen: false,
@@ -11,12 +11,13 @@
       activeSidebarTab: 1,
       themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset']
     }" data-class="{ 'md:grid-cols-[20rem_1fr]': !collapsed, 'md:grid-cols-[5rem_1fr]': collapsed }"
-  data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: zoom + 'rem' }">
+  data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: zoom + 'rem' }"
+  data-on-resize:window="isMobile = window.innerWidth < 768">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content"
     data-signal:global="{
 
-        activeTabId: router.routes[0]?.id,
+        activeTabId: 'home',
         activeTab: null,
         pinned: [],
         tabSeq: 0,
@@ -32,17 +33,14 @@
           { href: '/settings', title: 'Settings', icon: 'material-symbols-light:settings-outline', tabTitle: 'Settings', tabIcon: 'material-symbols-light:settings-outline' }
         ],
         tabs: [{
-          id: router.routes[0]?.id,
-          title: router.routes[0]?.meta?.title,
-          icon: router.routes[0]?.meta?.icon,
-          content: router.routes[0]?.path
+          id: 'home',
+          title: 'Home',
+          icon: 'material-symbols-light:home-outline',
+          content: '/_pages/home.html'
         }],
         createTab(content = '_components/tab-new.html', title = 'New Tab', icon = 'material-symbols-light:article-outline') {
           this.tabSeq++;
           const id = 'tab-' + this.tabSeq;
-          if (content.startsWith('_components/')) {
-            router.tabPaths[id] = 'custom-component';
-          }
           this.tabs = [...this.tabs, { id, title, icon, content }];
           this.activeTabId = id;
         },
