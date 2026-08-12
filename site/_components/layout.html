@@ -33,10 +33,10 @@
           { href: '/settings', title: 'Settings', icon: 'material-symbols-light:settings-outline', tabTitle: 'Settings', tabIcon: 'material-symbols-light:settings-outline' }
         ],
         tabs: [{
-          id: router.routes[0]?.id,
-          title: router.routes[0]?.meta?.title,
-          icon: router.routes[0]?.meta?.icon,
-          content: router.routes[0]?.path
+          id: 'home',
+          title: 'Home',
+          icon: 'material-symbols-light:home-outline',
+          content: '/_pages/home.html'
         }],
         createTab(content = '_components/tab-new.html', title = 'New Tab', icon = 'material-symbols-light:article-outline') {
           this.tabSeq++;
