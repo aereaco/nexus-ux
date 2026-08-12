@@ -500,8 +500,11 @@
 
       <!-- Retained Multi-Panel Outlets: Each tab retains its mounted DOM tree.
            data-show toggles panel visibility instantly (display: none) without destroying nodes or resetting state. -->
-      <!-- Primary Router Outlet: Native Web Component bound to router.route -->
-      <router-outlet data-component="router.route" class="h-full w-full block"></router-outlet>
+      <template data-for="tab in tabs" data-key="tab.id">
+        <div role="tabpanel" class="h-full w-full" data-show="activeTabId === tab.id">
+          <tab-content data-component="tab.content"></tab-content>
+        </div>
+      </template>
     </div>
 
     <!-- CONTEXT MENU (tab + link actions) -->
