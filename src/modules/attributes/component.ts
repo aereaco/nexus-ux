@@ -324,6 +324,7 @@ const componentModule: AttributeModule = {
                   runtime.processElement(child as unknown as HTMLElement);
                 }
               });
+              runtime.processElement(el);
             }
 
             const focusable = (config.shadowrootmode ? el.shadowRoot : el)?.querySelector('[autofocus], [data-autofocus]');
