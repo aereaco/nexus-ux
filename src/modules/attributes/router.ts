@@ -1240,20 +1240,17 @@ export const routerAttributeModule: AttributeModule = {
             // Preserve the sentinel; do not overwrite with the resolved path.
           } else {
             state.tabPaths[_at] = path;
-            const nextRoute = matched?.component ?? staticComponent ?? null;
+            const resolvedSource = matched?.component ?? staticComponent ?? null;
             const idx = tabs.findIndex((t: any) => t.id === _at);
-            if (idx >= 0 && nextRoute) {
-              const cur = tabs[idx].content;
-              const routeMeta = matched?.meta || state.meta[nextRoute] || {};
-              const nextTitle = routeMeta.title || meta.title;
-              const nextIcon = routeMeta.icon || meta.icon;
-              if (cur !== nextRoute || (nextTitle && tabs[idx].title !== nextTitle) || (nextIcon && tabs[idx].icon !== nextIcon)) {
+            if (idx >= 0 && resolvedSource) {
+              const cur = tabs[idx];
+              if (cur.source !== resolvedSource || cur.route !== path) {
                 const nt = tabs.slice();
-                nt[idx] = {
-                  ...nt[idx],
-                  content: nextRoute,
-                  ...(nextTitle ? { title: nextTitle } : {}),
-                  ...(nextIcon ? { icon: nextIcon } : {})
+                nt[idx] = { ...cur, source: resolvedSource, route: path };
+                runtime.setGlobalSignal('tabs', nt);
+              }
+            }
+
                 };
                 runtime.setGlobalSignal('tabs', nt);
               }
