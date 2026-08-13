@@ -6656,7 +6656,7 @@ ${match}</ul>
                   }
                 }
                 const _activeId = tabId || getActiveTabId();
-                if (_activeId) {
+                if (_activeId && state.tabPaths[_activeId] !== "custom-component") {
                   const _tabs = (runtime.globalSignals ? runtime.globalSignals() : {}).tabs;
                   if (Array.isArray(_tabs)) {
                     const _tab = _tabs.find((t) => t.id === _activeId);

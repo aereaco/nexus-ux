@@ -577,9 +577,9 @@ export const routerAttributeModule: AttributeModule = {
 
           // ZCZS: update active tab's source/route directly via the reactive
           // proxy — no array rebuild, no setGlobalSignal round-trip.
-          // The router owns getActiveTabId() internally; no need to re-query globalSignals.
+          // Guard: never clobber a custom-component (launchpad) sentinel tab.
           const _activeId = tabId || getActiveTabId();
-          if (_activeId) {
+          if (_activeId && state.tabPaths[_activeId] !== 'custom-component') {
             const _tabs = (runtime.globalSignals ? runtime.globalSignals() : {}).tabs as any[];
             if (Array.isArray(_tabs)) {
               const _tab = _tabs.find((t: any) => t.id === _activeId);
