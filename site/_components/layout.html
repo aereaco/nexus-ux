@@ -539,11 +539,11 @@
            tabs, so sidebar/router navigation still updates the visible panel. -->
     <div class="p-6 relative"
       data-on-click="
-        const a = $evt.target.closest('a');
+        const a = $evt.target.closest('a[href]');
         if (a) {
-          const idx = tabs.findIndex(t => t.id === activeTabId);
-          if (idx > -1 && tabs[idx].isNewTab) {
-            tabs[idx].isNewTab = false;
+          const href = a.getAttribute('href');
+          if (href && !href.startsWith('http') && !a.hasAttribute('download')) {
+            navigateActiveTab(href);
           }
         }
       "
