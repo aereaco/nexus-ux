@@ -321,6 +321,12 @@ const componentModule: AttributeModule = {
             const extracted = extractResourceMetadata(html, config.path, runtime);
             componentState.meta = extracted;
 
+            // Sync resolved metadata back to the reactive tab object so the tab
+            // header binding (tab.meta ?? tab.linkedContent?.meta) updates immediately.
+            if (tabObj && extracted && (extracted.title || extracted.icon)) {
+              tabObj.meta = { ...(tabObj.meta || {}), ...extracted };
+            }
+
             if (config.shadowrootmode) {
               if (!el.shadowRoot) el.attachShadow({ mode: config.shadowrootmode });
               const shadow = el.shadowRoot!;
