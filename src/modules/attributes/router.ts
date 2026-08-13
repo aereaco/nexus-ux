@@ -1243,6 +1243,12 @@ export const routerAttributeModule: AttributeModule = {
               // no array rebuild, no setGlobalSignal round-trip needed.
               if (cur.source !== resolvedSource) cur.source = resolvedSource;
               if (cur.route !== path) cur.route = path;
+              // Sync tab.meta from route manifest so header title/icon reflects
+              // the navigated page immediately (before linkedContent fetch resolves).
+              const routeMeta = matched?.meta as Record<string, string> | undefined;
+              if (routeMeta?.title || routeMeta?.icon) {
+                cur.meta = { ...(cur.meta || {}), ...routeMeta };
+              }
             }
           }
         }
