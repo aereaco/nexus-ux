@@ -401,6 +401,27 @@
     <!-- Tab state lives in the global signal declared on `drawer-content`
          (data-signal:global), so the bar and panels share one scope. -->
 
+    <!-- Inline template for tab headers -->
+    <template id="tab-header-template">
+      <div role="tab" tabindex="0"
+        class="flex items-center shrink-0 px-2 cursor-pointer hover:'border-primary' transition-colors" data-drag
+        data-bind-aria-selected="activeTabId === tab.id"
+        data-class="{'tab-active border-b border-primary text-primary': activeTabId === tab.id }"
+        data-on-click="activeTabId = tab.id"
+        data-on-auxclick="if ($evt.button === 1) closeTab(tab.id)"
+        data-on-contextmenu:prevent="openTabContextMenu(tab, $evt)">
+        <iconify-icon icon="material-symbols-light:drag-indicator"
+          class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
+        <iconify-icon data-bind-icon="tab.icon" class="text-lg px-2"></iconify-icon>
+        <span class="pe-4 whitespace-nowrap" data-bind="tab.title"></span>
+        <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close tab" title="Close tab"
+          data-class="{ 'hidden': pinned.includes(tab.id) }"
+          data-on-click:stop="closeTab(tab.id)">
+          <iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
+        </button>
+      </div>
+    </template>
+
     <!-- TAB BAR -->
     <div data-signal:global="{pageTabToggleHovered: false }"
       data-class="{'hidden': !pageTabs, 'aura aura-dual text-secondary': pageTabToggleHovered }">
@@ -410,22 +431,7 @@
           role="tablist" aria-orientation="horizontal" data-drag-container="tabs" data-drag-group="tabs"
           data-drag-direction="horizontal" data-drag-swap-threshold="0.55">
           <template data-for="tab in tabs" data-key="tab.id">
-            <div role="tab" tabindex="0"
-              class="flex items-center shrink-0 px-2 cursor-pointer hover:'border-primary' transition-colors" data-drag
-              data-bind-aria-selected="activeTabId === tab.id"
-              data-class="{'tab-active border-b border-primary text-primary': activeTabId === tab.id }"
-              data-on-click="activeTabId = tab.id"
-              data-on-contextmenu:prevent="openTabContextMenu(tab, $evt)">
-              <iconify-icon icon="material-symbols-light:drag-indicator"
-                class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
-              <iconify-icon data-bind-icon="tab.icon" class="text-lg px-2"></iconify-icon>
-              <span class="pe-4 whitespace-nowrap" data-bind="tab.title"></span>
-              <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close tab" title="Close tab"
-                data-class="{ 'hidden': pinned.includes(tab.id) }"
-                data-on-click:stop="closeTab(tab.id)">
-                <iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
-              </button>
-            </div>
+            <tab-header data-component="'#tab-header-template'"></tab-header>
           </template>
 
           <button class="btn btn-circle shrink-0" data-class="{ 'hidden': !pageTabs }"
