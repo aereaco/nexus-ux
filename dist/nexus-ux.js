@@ -2358,6 +2358,20 @@ ${scripts}
           }
         }
       }
+      const tabs = globals.tabs || [];
+      if (Array.isArray(tabs) && (meta2.title || meta2.icon)) {
+        const nextTabs = tabs.map((t) => {
+          if (t.content === path) {
+            return {
+              ...t,
+              ...meta2.title ? { title: meta2.title } : {},
+              ...meta2.icon ? { icon: meta2.icon } : {}
+            };
+          }
+          return t;
+        });
+        runtime.setGlobalSignal("tabs", nextTabs);
+      }
       if (meta2.title && typeof document !== "undefined") {
         document.title = meta2.title;
       }
