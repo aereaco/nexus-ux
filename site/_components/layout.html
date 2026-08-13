@@ -427,8 +427,8 @@
         data-on-contextmenu:prevent="openTabContextMenu(tab, $evt)">
         <iconify-icon icon="material-symbols-light:drag-indicator"
           class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
-        <iconify-icon data-bind-icon="(meta[tab.source] || meta[tab.route])?.icon || 'material-symbols-light:article-outline'" class="text-lg px-2"></iconify-icon>
-        <span class="pe-4 whitespace-nowrap" data-bind="(meta[tab.source] || meta[tab.route])?.title || 'New Tab'"></span>
+        <iconify-icon data-bind-icon="tab.linkedContent?.meta?.icon" class="text-lg px-2"></iconify-icon>
+        <span class="pe-4 whitespace-nowrap" data-bind="tab.linkedContent?.meta?.title"></span>
         <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close tab" title="Close tab"
           data-class="{ 'hidden': pinned.includes(tab.id) }"
           data-on-click:stop="closeTab(tab.id)">
