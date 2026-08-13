@@ -427,7 +427,7 @@
         <iconify-icon icon="material-symbols-light:drag-indicator"
           class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
         <iconify-icon data-bind-icon="router.meta?.[tab.source]?.icon || 'material-symbols-light:article-outline'" class="text-lg px-2"></iconify-icon>
-        <span class="pe-4 whitespace-nowrap" data-bind="router.meta?.[tab.source]?.title || 'Home'"></span>
+        <span class="pe-4 whitespace-nowrap" data-bind="router.meta?.[tab.source]?.title || 'New Tab'"></span>
         <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close tab" title="Close tab"
           data-class="{ 'hidden': pinned.includes(tab.id) }"
           data-on-click:stop="closeTab(tab.id)">
