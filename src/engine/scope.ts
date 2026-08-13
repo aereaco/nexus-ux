@@ -238,21 +238,25 @@ export function createScopeProxy(
   return new Proxy({}, {
     has(_, key) { 
       const target = stateRef.value;
+      if (typeof key === 'string') track(target, key);
       return Reflect.has(target, key); 
     },
     get(_, key) { 
       const target = stateRef.value;
+      if (typeof key === 'string') track(target, key);
       return Reflect.get(target, key); 
     },
     set(_, key, value) {
       const target = stateRef.value;
       const res = Reflect.set(target, key, value);
+      if (typeof key === 'string') trigger(target, key);
       if (onSet) onSet(key as string, value);
       if (onTrigger) onTrigger();
       return res;
     },
     ownKeys() { 
       const target = stateRef.value;
+      track(target, Symbol.for('iterate'));
       return Reflect.ownKeys(target); 
     },
     getOwnPropertyDescriptor(_, key) { 

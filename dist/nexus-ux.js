@@ -2287,15 +2287,21 @@ ${scripts}
     return new Proxy({}, {
       has(_, key) {
         const target = stateRef.value;
+        if (typeof key === "string")
+          track(target, key);
         return Reflect.has(target, key);
       },
       get(_, key) {
         const target = stateRef.value;
+        if (typeof key === "string")
+          track(target, key);
         return Reflect.get(target, key);
       },
       set(_, key, value) {
         const target = stateRef.value;
         const res = Reflect.set(target, key, value);
+        if (typeof key === "string")
+          trigger(target, key);
         if (onSet)
           onSet(key, value);
         if (onTrigger)
@@ -2304,6 +2310,7 @@ ${scripts}
       },
       ownKeys() {
         const target = stateRef.value;
+        track(target, Symbol.for("iterate"));
         return Reflect.ownKeys(target);
       },
       getOwnPropertyDescriptor(_, key) {
@@ -2316,6 +2323,7 @@ ${scripts}
   var init_scope = __esm({
     "src/engine/scope.ts"() {
       init_consts();
+      init_reactivity();
       scopeProviderRegistry = /* @__PURE__ */ new Map();
     }
   });
