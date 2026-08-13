@@ -7195,6 +7195,10 @@ ${match}</ul>
                       cur.source = resolvedSource;
                     if (cur.route !== path)
                       cur.route = path;
+                    const routeMeta = matched?.meta;
+                    if (routeMeta?.title || routeMeta?.icon) {
+                      cur.meta = { ...cur.meta || {}, ...routeMeta };
+                    }
                   }
                 }
               }
