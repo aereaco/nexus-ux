@@ -2581,6 +2581,7 @@ ${scripts}
                         runtime.processElement(child);
                       }
                     });
+                    runtime.processElement(el);
                   }
                   const focusable = (config.shadowrootmode ? el.shadowRoot : el)?.querySelector("[autofocus], [data-autofocus]");
                   if (focusable instanceof HTMLElement) {
