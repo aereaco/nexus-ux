@@ -10772,7 +10772,7 @@ ${match}</ul>
                           if (isExternalOverlay(node))
                             return;
                           const enhancedTarget = node;
-                          if (enhancedTarget[MARKER_KEY])
+                          if (enhancedTarget[MARKER_KEY] && enhancedTarget[CLEANUP_FUNCTIONS_KEY])
                             return;
                           context.processElement(node);
                         }
