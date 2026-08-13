@@ -149,7 +149,7 @@
         const metaTitle = matched?.meta?.title || router.meta?.[rt]?.title;
         const metaIcon = matched?.meta?.icon || router.meta?.[rt]?.icon;
         tabs = tabs.map((t, i) => {
-          if (i === idx) {
+          if (i === idx && !t.content.startsWith('_components/')) {
             return {
               ...t,
               content: rt,
