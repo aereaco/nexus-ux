@@ -2486,6 +2486,9 @@ ${scripts}
           try {
             if (el.hasAttribute("data-route"))
               return;
+            if (el.__nxComponentInit)
+              return;
+            el.__nxComponentInit = true;
             ensureCustomElementRegistered(el.tagName);
             const componentState = runtime.reactive({
               isConnected: false,
