@@ -426,8 +426,8 @@
         data-on-contextmenu:prevent="openTabContextMenu(tab, $evt)">
         <iconify-icon icon="material-symbols-light:drag-indicator"
           class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
-        <iconify-icon data-bind-icon="router.meta?.[tab.source]?.icon || router.routes?.find(r => r.path === tab.source || r.path === tab.route)?.meta?.icon || 'material-symbols-light:article-outline'" class="text-lg px-2"></iconify-icon>
-        <span class="pe-4 whitespace-nowrap" data-bind="router.meta?.[tab.source]?.title || router.routes?.find(r => r.path === tab.source || r.path === tab.route)?.meta?.title || 'Loading...'"></span>
+        <iconify-icon data-bind-icon="router.meta?.[tab.source]?.icon || router.routes?.find(r => r.component === tab.source || r.path === tab.route || r.path === tab.source)?.meta?.icon || 'material-symbols-light:article-outline'" class="text-lg px-2"></iconify-icon>
+        <span class="pe-4 whitespace-nowrap" data-bind="router.meta?.[tab.source]?.title || router.routes?.find(r => r.component === tab.source || r.path === tab.route || r.path === tab.source)?.meta?.title || 'Loading...'"></span>
         <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close tab" title="Close tab"
           data-class="{ 'hidden': pinned.includes(tab.id) }"
           data-on-click:stop="closeTab(tab.id)">
