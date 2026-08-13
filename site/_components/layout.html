@@ -65,7 +65,15 @@
             else if (resolved === '/settings') resolved = '/_pages/settings.html';
             else if (resolved === '/profile') resolved = '/_pages/profile.html';
             const tab = this.tabs[idx];
-            const updated = { ...tab, url: resolved, content: resolved };
+            const meta = (typeof router !== 'undefined' && router.meta && router.meta[resolved]) || {};
+            const updated = {
+              ...tab,
+              url: resolved,
+              content: resolved,
+              meta: { ...(tab.meta || {}), ...meta },
+              ...(meta.title ? { title: meta.title } : {}),
+              ...(meta.icon ? { icon: meta.icon } : {})
+            };
             this.tabs = this.tabs.map((t, i) => i === idx ? updated : t);
             if (typeof router !== 'undefined' && router) {
               router.route = resolved;
