@@ -36,14 +36,14 @@
           id: 'home',
           url: '/_pages/home.html',
           content: '/_pages/home.html',
-          title: '',
-          icon: '',
+          title: 'Home',
+          icon: 'material-symbols-light:home-outline',
           meta: {}
         }],
         createTab(url = '_components/tab-new.html') {
           this.tabSeq++;
           const id = 'tab-' + this.tabSeq;
-          this.tabs = [...this.tabs, { id, url, content: url, title: '', icon: '', meta: {} }];
+          this.tabs = [...this.tabs, { id, url, content: url, title: 'New Tab', icon: 'material-symbols-light:article-outline', meta: {} }];
           this.activeTabId = id;
           if (typeof router !== 'undefined' && router) {
             router.route = url;
