@@ -575,22 +575,18 @@ export const routerAttributeModule: AttributeModule = {
             }
           }
 
-          const globals = runtime.globalSignals ? runtime.globalSignals() : {};
-          const activeId = (globals.activeTabId as string) || tabId;
-          const tabs = globals.tabs as any[];
-          if (Array.isArray(tabs) && activeId) {
-            const idx = tabs.findIndex((t: any) => t.id === activeId);
-            if (idx > -1) {
-              const curTab = tabs[idx];
-              const resolvedSource = matched?.component || (cleanPath === '/' ? '/_pages/home.html' : cleanPath);
-              if (curTab.source !== resolvedSource || curTab.route !== cleanPath) {
-                const updated = {
-                  ...curTab,
-                  source: resolvedSource,
-                  route: cleanPath
-                };
-                const nextTabs = tabs.map((t, i) => (i === idx ? updated : t));
-                runtime.setGlobalSignal('tabs', nextTabs);
+          // ZCZS: update active tab's source/route directly via the reactive
+          // proxy — no array rebuild, no setGlobalSignal round-trip.
+          // The router owns getActiveTabId() internally; no need to re-query globalSignals.
+          const _activeId = tabId || getActiveTabId();
+          if (_activeId) {
+            const _tabs = (runtime.globalSignals ? runtime.globalSignals() : {}).tabs as any[];
+            if (Array.isArray(_tabs)) {
+              const _tab = _tabs.find((t: any) => t.id === _activeId);
+              if (_tab) {
+                const resolvedSource = matched?.component || (cleanPath === '/' ? '/_pages/home.html' : cleanPath);
+                if (_tab.source !== resolvedSource) _tab.source = resolvedSource;
+                if (_tab.route !== cleanPath) _tab.route = cleanPath;
               }
             }
           }

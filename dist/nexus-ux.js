@@ -6655,22 +6655,17 @@ ${match}</ul>
                     };
                   }
                 }
-                const globals2 = runtime.globalSignals ? runtime.globalSignals() : {};
-                const activeId = globals2.activeTabId || tabId;
-                const tabs = globals2.tabs;
-                if (Array.isArray(tabs) && activeId) {
-                  const idx = tabs.findIndex((t) => t.id === activeId);
-                  if (idx > -1) {
-                    const curTab = tabs[idx];
-                    const resolvedSource = matched?.component || (cleanPath === "/" ? "/_pages/home.html" : cleanPath);
-                    if (curTab.source !== resolvedSource || curTab.route !== cleanPath) {
-                      const updated = {
-                        ...curTab,
-                        source: resolvedSource,
-                        route: cleanPath
-                      };
-                      const nextTabs = tabs.map((t, i) => i === idx ? updated : t);
-                      runtime.setGlobalSignal("tabs", nextTabs);
+                const _activeId = tabId || getActiveTabId();
+                if (_activeId) {
+                  const _tabs = (runtime.globalSignals ? runtime.globalSignals() : {}).tabs;
+                  if (Array.isArray(_tabs)) {
+                    const _tab = _tabs.find((t) => t.id === _activeId);
+                    if (_tab) {
+                      const resolvedSource = matched?.component || (cleanPath === "/" ? "/_pages/home.html" : cleanPath);
+                      if (_tab.source !== resolvedSource)
+                        _tab.source = resolvedSource;
+                      if (_tab.route !== cleanPath)
+                        _tab.route = cleanPath;
                     }
                   }
                 }
