@@ -158,15 +158,17 @@
       const idx = tabs.findIndex(t => t.id === rid);
       if (idx > -1) {
         const cur = tabs[idx];
-        if (cur && cur.content !== rt && !cur.isNewTab) {
-          const matched = router.routes?.find(r => r.path === rt || r.route === rt);
-          const metaTitle = matched?.meta?.title || router.meta?.[rt]?.title;
-          const metaIcon = matched?.meta?.icon || router.meta?.[rt]?.icon;
+        if (cur && (cur.url !== rt || cur.content !== rt)) {
+          const matchedMeta = router.meta?.[rt] || router.routes?.find(r => r.path === rt || r.route === rt)?.meta;
           tabs = tabs.map((t, i) => i === idx ? {
             ...t,
+            url: rt,
             content: rt,
-            ...(metaTitle ? { title: metaTitle } : {}),
-            ...(metaIcon ? { icon: metaIcon } : {})
+            ...(matchedMeta ? {
+              meta: { ...(t.meta || {}), ...matchedMeta },
+              title: matchedMeta.title || t.title || '',
+              icon: matchedMeta.icon || t.icon || ''
+            } : {})
           } : t);
         }
       }
