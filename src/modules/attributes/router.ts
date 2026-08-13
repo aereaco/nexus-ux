@@ -1258,7 +1258,7 @@ export const routerAttributeModule: AttributeModule = {
           // Update recent path list directly (excluding error page and internal tools).
           if (path && path !== '/index.html' && path !== errorPage && !path.startsWith('/_internal/')) {
             const recent = (globals.recent as any[]) || [];
-            const routeTitle = matched?.meta?.title || state.meta[nextRoute]?.title || path.replace(/^\//, '').replace(/-/g, ' ');
+            const routeTitle = matched?.meta?.title || path.replace(/^\//, '').replace(/-/g, ' ');
             const entry = { path, title: routeTitle };
             const next = [entry, ...recent.filter((r: any) => r.path !== path && r.path !== '/index.html')].slice(0, 5);
             runtime.setGlobalSignal('recent', next);

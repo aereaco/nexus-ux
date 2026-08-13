@@ -7206,7 +7206,7 @@ ${match}</ul>
                 restoreScroll(url.hash);
                 if (path && path !== "/index.html" && path !== errorPage2 && !path.startsWith("/_internal/")) {
                   const recent = globals.recent || [];
-                  const routeTitle = matched?.meta?.title || state.meta[nextRoute]?.title || path.replace(/^\//, "").replace(/-/g, " ");
+                  const routeTitle = matched?.meta?.title || path.replace(/^\//, "").replace(/-/g, " ");
                   const entry = { path, title: routeTitle };
                   const next = [entry, ...recent.filter((r) => r.path !== path && r.path !== "/index.html")].slice(0, 5);
                   runtime.setGlobalSignal("recent", next);
