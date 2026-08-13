@@ -2502,7 +2502,8 @@ ${scripts}
               isLoading: false,
               hasError: false,
               errorMessage: "",
-              templateContent: ""
+              templateContent: "",
+              meta: {}
             });
             const ctx = {
               element: el,
@@ -2554,7 +2555,8 @@ ${scripts}
                       onUpdate: (fresh) => {
                         if (typeof fresh === "string" && fresh !== componentState.templateContent) {
                           componentState.templateContent = fresh;
-                          extractResourceMetadata(fresh, config.path, runtime);
+                          const extracted2 = extractResourceMetadata(fresh, config.path, runtime);
+                          componentState.meta = extracted2;
                         }
                       }
                     });
@@ -2564,7 +2566,8 @@ ${scripts}
                     console.log(`[Component] Template loaded for <${el.tagName}>, length: ${html.length}`);
                   }
                   componentState.templateContent = html;
-                  extractResourceMetadata(html, config.path, runtime);
+                  const extracted = extractResourceMetadata(html, config.path, runtime);
+                  componentState.meta = extracted;
                   if (config.shadowrootmode) {
                     if (!el.shadowRoot)
                       el.attachShadow({ mode: config.shadowrootmode });

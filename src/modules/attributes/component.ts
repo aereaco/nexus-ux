@@ -226,7 +226,8 @@ const componentModule: AttributeModule = {
         isLoading: false,
         hasError: false,
         errorMessage: '',
-        templateContent: ''
+        templateContent: '',
+        meta: {} as Record<string, string>
       });
 
       const ctx: ComponentContext = {
@@ -281,7 +282,8 @@ const componentModule: AttributeModule = {
                 onUpdate: (fresh) => {
                   if (typeof fresh === 'string' && fresh !== componentState.templateContent) {
                     componentState.templateContent = fresh;
-                    extractResourceMetadata(fresh, config.path, runtime);
+                    const extracted = extractResourceMetadata(fresh, config.path, runtime);
+                    componentState.meta = extracted;
                   }
                 }
               });
@@ -293,7 +295,8 @@ const componentModule: AttributeModule = {
             }
 
             componentState.templateContent = html;
-            extractResourceMetadata(html, config.path, runtime);
+            const extracted = extractResourceMetadata(html, config.path, runtime);
+            componentState.meta = extracted;
 
             if (config.shadowrootmode) {
               if (!el.shadowRoot) el.attachShadow({ mode: config.shadowrootmode });
