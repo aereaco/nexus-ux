@@ -2346,11 +2346,11 @@ ${scripts}
       if (titleEl && titleEl.textContent) {
         meta2.title = titleEl.textContent.trim();
       }
-      parsedDoc.querySelectorAll("meta[name]").forEach((metaEl) => {
-        const name = metaEl.getAttribute("name");
+      parsedDoc.querySelectorAll("meta").forEach((metaEl) => {
+        const key = metaEl.getAttribute("name") || metaEl.getAttribute("property");
         const content = metaEl.getAttribute("content");
-        if (name && content) {
-          meta2[name] = content;
+        if (key && content) {
+          meta2[key] = content.trim();
         }
       });
       const globals = runtime.globalSignals ? runtime.globalSignals() : {};
@@ -2367,13 +2367,15 @@ ${scripts}
         }
       }
       const tabs = globals.tabs || [];
-      if (Array.isArray(tabs) && (meta2.title || meta2.icon)) {
+      if (Array.isArray(tabs) && Object.keys(meta2).length > 0) {
         const nextTabs = tabs.map((t) => {
-          if (t.content === path) {
+          if (t.url === path || t.content === path) {
+            const mergedMeta = { ...t.meta || {}, ...meta2 };
             return {
               ...t,
-              ...meta2.title ? { title: meta2.title } : {},
-              ...meta2.icon ? { icon: meta2.icon } : {}
+              meta: mergedMeta,
+              title: mergedMeta.title || t.title || "",
+              icon: mergedMeta.icon || t.icon || ""
             };
           }
           return t;

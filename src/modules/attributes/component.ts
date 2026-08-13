@@ -85,11 +85,11 @@ function extractResourceMetadata(
       meta.title = titleEl.textContent.trim();
     }
 
-    parsedDoc.querySelectorAll('meta[name]').forEach((metaEl) => {
-      const name = metaEl.getAttribute('name');
+    parsedDoc.querySelectorAll('meta').forEach((metaEl) => {
+      const key = metaEl.getAttribute('name') || metaEl.getAttribute('property');
       const content = metaEl.getAttribute('content');
-      if (name && content) {
-        meta[name] = content;
+      if (key && content) {
+        meta[key] = content.trim();
       }
     });
 
@@ -108,13 +108,15 @@ function extractResourceMetadata(
     }
 
     const tabs = (globals.tabs as any[]) || [];
-    if (Array.isArray(tabs) && (meta.title || meta.icon)) {
+    if (Array.isArray(tabs) && Object.keys(meta).length > 0) {
       const nextTabs = tabs.map((t: any) => {
-        if (t.content === path) {
+        if (t.url === path || t.content === path) {
+          const mergedMeta = { ...(t.meta || {}), ...meta };
           return {
             ...t,
-            ...(meta.title ? { title: meta.title } : {}),
-            ...(meta.icon ? { icon: meta.icon } : {})
+            meta: mergedMeta,
+            title: mergedMeta.title || t.title || '',
+            icon: mergedMeta.icon || t.icon || ''
           };
         }
         return t;
