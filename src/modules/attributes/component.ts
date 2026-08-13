@@ -249,11 +249,13 @@ const componentModule: AttributeModule = {
 
       el[COMPONENT_CONTEXT_KEY] = ctx;
 
+      let tabObj: Record<string, unknown> | null = null;
       const dataStack = getDataStack(el);
       for (const scope of dataStack) {
         if (scope && typeof scope === 'object' && 'tab' in scope) {
-          const tabObj = (scope as any).tab;
-          if (tabObj && typeof tabObj === 'object') {
+          const t = (scope as any).tab;
+          if (t && typeof t === 'object') {
+            tabObj = t;
             tabObj.linkedContent = componentState;
           }
           break;
