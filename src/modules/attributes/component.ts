@@ -107,6 +107,21 @@ function extractResourceMetadata(
       }
     }
 
+    const tabs = (globals.tabs as any[]) || [];
+    if (Array.isArray(tabs) && (meta.title || meta.icon)) {
+      const nextTabs = tabs.map((t: any) => {
+        if (t.content === path) {
+          return {
+            ...t,
+            ...(meta.title ? { title: meta.title } : {}),
+            ...(meta.icon ? { icon: meta.icon } : {})
+          };
+        }
+        return t;
+      });
+      runtime.setGlobalSignal('tabs', nextTabs);
+    }
+
     if (meta.title && typeof document !== 'undefined') {
       document.title = meta.title;
     }
