@@ -56,6 +56,22 @@
             router.route = tab.url || tab.content;
           }
         },
+        navigateActiveTab(targetUrl) {
+          const id = this.activeTabId;
+          const idx = this.tabs.findIndex(t => t.id === id);
+          if (idx > -1) {
+            let resolved = targetUrl;
+            if (resolved === '/' || resolved === '') resolved = '/_pages/home.html';
+            else if (resolved === '/settings') resolved = '/_pages/settings.html';
+            else if (resolved === '/profile') resolved = '/_pages/profile.html';
+            const tab = this.tabs[idx];
+            const updated = { ...tab, url: resolved, content: resolved };
+            this.tabs = this.tabs.map((t, i) => i === idx ? updated : t);
+            if (typeof router !== 'undefined' && router) {
+              router.route = resolved;
+            }
+          }
+        },
         closeTab(id) {
           const wasActive = this.activeTabId === id;
           this.tabs = this.tabs.filter(t => t.id !== id);
