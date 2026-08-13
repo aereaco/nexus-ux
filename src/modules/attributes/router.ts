@@ -1241,19 +1241,12 @@ export const routerAttributeModule: AttributeModule = {
           } else {
             state.tabPaths[_at] = path;
             const resolvedSource = matched?.component ?? staticComponent ?? null;
-            const idx = tabs.findIndex((t: any) => t.id === _at);
-            if (idx >= 0 && resolvedSource) {
-              const cur = tabs[idx];
-              if (cur.source !== resolvedSource || cur.route !== path) {
-                const nt = tabs.slice();
-                nt[idx] = { ...cur, source: resolvedSource, route: path };
-                runtime.setGlobalSignal('tabs', nt);
-              }
-            }
-
-                };
-                runtime.setGlobalSignal('tabs', nt);
-              }
+            if (resolvedSource && atIdx >= 0) {
+              const cur = tabs[atIdx];
+              // ZCZS: mutate the reactive tab object in-place via the proxy —
+              // no array rebuild, no setGlobalSignal round-trip needed.
+              if (cur.source !== resolvedSource) cur.source = resolvedSource;
+              if (cur.route !== path) cur.route = path;
             }
           }
         }
