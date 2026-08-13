@@ -433,7 +433,7 @@
         class="flex items-center shrink-0 px-2 cursor-pointer hover:'border-primary' transition-colors" data-drag
         data-bind-aria-selected="activeTabId === tab.id"
         data-class="{'tab-active border-b border-primary text-primary': activeTabId === tab.id }"
-        data-on-click="activeTabId = tab.id"
+        data-on-click="switchTab(tab.id)"
         data-on-auxclick="if ($evt.button === 1) closeTab(tab.id)"
         data-on-contextmenu:prevent="openTabContextMenu(tab, $evt)">
         <iconify-icon icon="material-symbols-light:drag-indicator"
@@ -461,7 +461,7 @@
           </template>
 
           <button class="btn btn-circle shrink-0" data-class="{ 'hidden': !pageTabs }"
-            data-on-click="createTab('_components/tab-new.html', 'New Tab')">
+            data-on-click="createTab('_components/tab-new.html')">
             <iconify-icon icon="material-symbols-light:add" style="font-size: 24px"></iconify-icon>
           </button>
         </div>
