@@ -14,8 +14,7 @@
   data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: zoom + 'rem' }"
   data-on-resize:window="isMobile = window.innerWidth < 768">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
-  <div class="drawer-content"
-    data-signal:global="{
+  <div class="drawer-content" data-signal:global="{
 
         meta: { '/_pages/home.html': { title: 'Home', icon: 'material-symbols-light:home-outline' }, '/': { title: 'Home', icon: 'material-symbols-light:home-outline' } },
         activeTabId: 'home',
@@ -413,19 +412,17 @@
     <!-- Inline template for tab headers -->
     <template id="tab-header-template">
       <div role="tab" tabindex="0"
-        class="flex items-center shrink-0 px-2 cursor-pointer hover:'border-primary' transition-colors"
+        class="flex items-center shrink-0 pt-2 px-2 cursor-pointer hover:'border-primary' transition-colors"
         data-bind-aria-selected="activeTabId === tab.id"
         data-class="{'tab-active border-b border-primary text-primary': activeTabId === tab.id }"
-        data-on-click="switchTab(tab.id)"
-        data-on-auxclick="if ($evt.button === 1) closeTab(tab.id)"
+        data-on-click="switchTab(tab.id)" data-on-auxclick="if ($evt.button === 1) closeTab(tab.id)"
         data-on-contextmenu:prevent="openTabContextMenu(tab, $evt)">
         <iconify-icon icon="material-symbols-light:drag-indicator"
           class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
         <iconify-icon data-bind-icon="tab.linkedContent?.meta?.icon" class="text-lg px-2"></iconify-icon>
         <span class="pe-4 whitespace-nowrap" data-bind="tab.linkedContent?.meta?.title"></span>
         <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close tab" title="Close tab"
-          data-class="{ 'hidden': pinned.includes(tab.id) }"
-          data-on-click:stop="closeTab(tab.id)">
+          data-class="{ 'hidden': pinned.includes(tab.id) }" data-on-click:stop="closeTab(tab.id)">
           <iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
         </button>
       </div>
@@ -504,8 +501,7 @@
            new-tab launchpad, link tabs) share one outlet. A sync effect below
            keeps the active tab's content in step with router.route for route
            tabs, so sidebar/router navigation still updates the visible panel. -->
-    <div class="p-6 relative"
-      data-on-click="
+    <div class="p-6 relative" data-on-click="
         const a = $evt.target.closest('a[href]');
         if (a) {
           const href = a.getAttribute('href');
@@ -513,8 +509,7 @@
             navigateActiveTab(href);
           }
         }
-      "
-      data-on-contextmenu:stop="
+      " data-on-contextmenu:stop="
             const e = $evt;
             const a = e.target.closest('a');
             if (a && a.origin === location.origin && !a.hasAttribute('download') && (!a.target || a.target === '_self')) {
