@@ -248,6 +248,17 @@ const componentModule: AttributeModule = {
       };
 
       el[COMPONENT_CONTEXT_KEY] = ctx;
+
+      const dataStack = getDataStack(el);
+      for (const scope of dataStack) {
+        if (scope && typeof scope === 'object' && 'tab' in scope) {
+          const tabObj = (scope as any).tab;
+          if (tabObj && typeof tabObj === 'object') {
+            tabObj.linkedContent = componentState;
+          }
+          break;
+        }
+      }
       let scopeAttached = false;
 
       let __lastPath: string | undefined;
