@@ -2522,12 +2522,14 @@ ${scripts}
               ...componentState
             };
             el[COMPONENT_CONTEXT_KEY] = ctx;
+            let tabObj = null;
             const dataStack = getDataStack(el);
             for (const scope of dataStack) {
               if (scope && typeof scope === "object" && "tab" in scope) {
-                const tabObj2 = scope.tab;
-                if (tabObj2 && typeof tabObj2 === "object") {
-                  tabObj2.linkedContent = componentState;
+                const t = scope.tab;
+                if (t && typeof t === "object") {
+                  tabObj = t;
+                  tabObj.linkedContent = componentState;
                 }
                 break;
               }
