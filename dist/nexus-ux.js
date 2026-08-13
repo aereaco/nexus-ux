@@ -2356,13 +2356,19 @@ ${scripts}
       const globals = runtime.globalSignals ? runtime.globalSignals() : {};
       const routerState = globals.router || globals.appRouter;
       if (routerState) {
-        if (!routerState.meta)
-          routerState.meta = {};
         const norm = path.startsWith("/") ? path : "/" + path;
         const unnorm = path.startsWith("/") ? path.slice(1) : path;
-        routerState.meta[path] = meta2;
-        routerState.meta[norm] = meta2;
-        routerState.meta[unnorm] = meta2;
+        const curMeta = routerState.meta || {};
+        const nextMeta = {
+          ...curMeta,
+          [path]: meta2,
+          [norm]: meta2,
+          [unnorm]: meta2
+        };
+        routerState.meta = nextMeta;
+        if (runtime.setGlobalSignal) {
+          runtime.setGlobalSignal("router", routerState);
+        }
         if (Array.isArray(routerState.routes)) {
           const routeRecord = routerState.routes.find((r) => r.path === path || r.path === norm || r.path === unnorm);
           if (routeRecord) {
