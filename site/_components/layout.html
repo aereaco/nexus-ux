@@ -34,15 +34,27 @@
         ],
         tabs: [{
           id: 'home',
-          title: 'Home',
-          icon: 'material-symbols-light:home-outline',
-          content: '/_pages/home.html'
+          url: '/_pages/home.html',
+          content: '/_pages/home.html',
+          title: '',
+          icon: '',
+          meta: {}
         }],
-        createTab(content = '_components/tab-new.html', title = 'New Tab', icon = 'material-symbols-light:article-outline') {
+        createTab(url = '_components/tab-new.html') {
           this.tabSeq++;
           const id = 'tab-' + this.tabSeq;
-          this.tabs = [...this.tabs, { id, title, icon, content, isNewTab: content.startsWith('_components/') }];
+          this.tabs = [...this.tabs, { id, url, content: url, title: '', icon: '', meta: {} }];
           this.activeTabId = id;
+          if (typeof router !== 'undefined' && router) {
+            router.route = url;
+          }
+        },
+        switchTab(id) {
+          this.activeTabId = id;
+          const tab = this.tabs.find(t => t.id === id);
+          if (tab && (tab.url || tab.content) && typeof router !== 'undefined' && router) {
+            router.route = tab.url || tab.content;
+          }
         },
         closeTab(id) {
           const wasActive = this.activeTabId === id;
