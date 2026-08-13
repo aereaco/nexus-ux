@@ -413,7 +413,7 @@
     <!-- Inline template for tab headers -->
     <template id="tab-header-template">
       <div role="tab" tabindex="0"
-        class="flex items-center shrink-0 px-2 cursor-pointer hover:'border-primary' transition-colors" data-drag
+        class="flex items-center shrink-0 px-2 cursor-pointer hover:'border-primary' transition-colors"
         data-bind-aria-selected="activeTabId === tab.id"
         data-class="{'tab-active border-b border-primary text-primary': activeTabId === tab.id }"
         data-on-click="switchTab(tab.id)"
@@ -440,7 +440,7 @@
           role="tablist" aria-orientation="horizontal" data-drag-container="tabs" data-drag-group="tabs"
           data-drag-direction="horizontal" data-drag-swap-threshold="0.55">
           <template data-for="tab in tabs" data-key="tab.id">
-            <tab-header data-component="'#tab-header-template'"></tab-header>
+            <tab-header data-component="'#tab-header-template'" data-drag></tab-header>
           </template>
 
           <button class="btn btn-circle shrink-0" data-class="{ 'hidden': !pageTabs }"
