@@ -66,7 +66,7 @@ const mutationObserverModule: ObserverModule = {
                   if (node instanceof HTMLElement) {
                     if (isExternalOverlay(node)) return;
                     const enhancedTarget = node as NexusEnhancedElement;
-                    if (enhancedTarget[MARKER_KEY]) return;
+                    if (enhancedTarget[MARKER_KEY] && enhancedTarget[CLEANUP_FUNCTIONS_KEY]) return;
                     context.processElement(node as HTMLElement);
                   }
                 });
