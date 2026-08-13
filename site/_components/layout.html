@@ -35,12 +35,13 @@
         tabs: [{
           id: 'home',
           source: '/_pages/home.html',
-          route: '/'
+          route: '/',
+          meta: { title: 'Home', icon: 'material-symbols-light:home-outline' }
         }],
         createTab(source = '_components/tab-new.html', route = '') {
           this.tabSeq++;
           const id = 'tab-' + this.tabSeq;
-          this.tabs = [...this.tabs, { id, source, route: route || source }];
+          this.tabs = [...this.tabs, { id, source, route: route || source, meta: { title: 'New Tab', icon: 'material-symbols-light:article-outline' } }];
           this.activeTabId = id;
           if (typeof router !== 'undefined' && router) {
             // Mark as custom-component sentinel so updateRoute never clobbers
@@ -419,8 +420,8 @@
         data-on-contextmenu:prevent="openTabContextMenu(tab, $evt)">
         <iconify-icon icon="material-symbols-light:drag-indicator"
           class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
-        <iconify-icon data-bind-icon="(tab.linkedContent?.meta ?? meta[tab.source])?.icon" class="text-lg px-2"></iconify-icon>
-        <span class="pe-4 whitespace-nowrap" data-bind="(tab.linkedContent?.meta ?? meta[tab.source])?.title"></span>
+        <iconify-icon data-bind-icon="(tab.meta ?? tab.linkedContent?.meta)?.icon" class="text-lg px-2"></iconify-icon>
+        <span class="pe-4 whitespace-nowrap" data-bind="(tab.meta ?? tab.linkedContent?.meta)?.title"></span>
         <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close tab" title="Close tab"
           data-class="{ 'hidden': pinned.includes(tab.id) }" data-on-click:stop="closeTab(tab.id)">
           <iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
