@@ -284,12 +284,6 @@ export function evaluateLater(
     },
     set(target, key, value): boolean {
       if (typeof key === 'string') {
-        const globalSignals = runtime.globalSignals();
-        if (key in globalSignals) {
-          (globalSignals as any)[key] = value;
-          return true;
-        }
-
         const dataStack = getDataStack(el as HTMLElement);
 
         for (const data of dataStack) {
@@ -297,6 +291,12 @@ export function evaluateLater(
             (data as any)[key] = value;
             return true;
           }
+        }
+
+        const globalSignals = runtime.globalSignals();
+        if (key in globalSignals) {
+          (globalSignals as any)[key] = value;
+          return true;
         }
 
         // Fallback: If not found in stack, auto-create in the closest reactive local scope
