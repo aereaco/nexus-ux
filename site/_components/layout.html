@@ -34,49 +34,39 @@
         ],
         tabs: [{
           id: 'home',
-          url: '/_pages/home.html',
-          content: '/_pages/home.html',
-          title: 'Home',
-          icon: 'material-symbols-light:home-outline',
-          meta: {}
+          source: '/_pages/home.html',
+          route: '/'
         }],
-        createTab(url = '_components/tab-new.html') {
+        createTab(source = '_components/tab-new.html', route = '') {
           this.tabSeq++;
           const id = 'tab-' + this.tabSeq;
-          this.tabs = [...this.tabs, { id, url, content: url, title: 'New Tab', icon: 'material-symbols-light:article-outline', meta: {} }];
+          this.tabs = [...this.tabs, { id, source, route: route || source }];
           this.activeTabId = id;
           if (typeof router !== 'undefined' && router) {
-            router.route = url;
+            router.route = route || source;
           }
         },
         switchTab(id) {
           this.activeTabId = id;
           const tab = this.tabs.find(t => t.id === id);
-          if (tab && (tab.url || tab.content) && typeof router !== 'undefined' && router) {
-            router.route = tab.url || tab.content;
+          if (tab && typeof router !== 'undefined' && router) {
+            router.route = tab.route || tab.source;
           }
         },
-        navigateActiveTab(targetUrl) {
+        navigateActiveTab(targetSource, targetRoute) {
           const id = this.activeTabId;
           const idx = this.tabs.findIndex(t => t.id === id);
           if (idx > -1) {
-            let resolved = targetUrl;
-            if (resolved === '/' || resolved === '') resolved = '/_pages/home.html';
-            else if (resolved === '/settings') resolved = '/_pages/settings.html';
-            else if (resolved === '/profile') resolved = '/_pages/profile.html';
+            let src = targetSource;
+            let rte = targetRoute || targetSource;
+            if (src === '/' || src === '') { src = '/_pages/home.html'; rte = '/'; }
+            else if (src === '/settings') { src = '/_pages/settings.html'; rte = '/settings'; }
+            else if (src === '/profile') { src = '/_pages/profile.html'; rte = '/profile'; }
             const tab = this.tabs[idx];
-            const meta = (typeof router !== 'undefined' && router.meta && router.meta[resolved]) || {};
-            const updated = {
-              ...tab,
-              url: resolved,
-              content: resolved,
-              meta: { ...(tab.meta || {}), ...meta },
-              ...(meta.title ? { title: meta.title } : {}),
-              ...(meta.icon ? { icon: meta.icon } : {})
-            };
+            const updated = { ...tab, source: src, route: rte };
             this.tabs = this.tabs.map((t, i) => i === idx ? updated : t);
             if (typeof router !== 'undefined' && router) {
-              router.route = resolved;
+              router.route = rte;
             }
           }
         },
