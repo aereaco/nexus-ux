@@ -12275,17 +12275,17 @@ ${bridge}`, {
       },
       set(target, key, value) {
         if (typeof key === "string") {
-          const globalSignals = runtime.globalSignals();
-          if (key in globalSignals) {
-            globalSignals[key] = value;
-            return true;
-          }
           const dataStack = getDataStack(el);
           for (const data of dataStack) {
             if (key in data) {
               data[key] = value;
               return true;
             }
+          }
+          const globalSignals = runtime.globalSignals();
+          if (key in globalSignals) {
+            globalSignals[key] = value;
+            return true;
           }
           if (dataStack.length > 0) {
             dataStack[0][key] = value;
