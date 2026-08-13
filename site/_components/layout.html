@@ -158,7 +158,7 @@
       const idx = tabs.findIndex(t => t.id === rid);
       if (idx > -1) {
         const cur = tabs[idx];
-        if (cur && (cur.url !== rt || cur.content !== rt)) {
+        if (cur && !cur.url.startsWith('_components/') && (cur.url !== rt || cur.content !== rt)) {
           const matchedMeta = router.meta?.[rt] || router.routes?.find(r => r.path === rt || r.route === rt)?.meta;
           tabs = tabs.map((t, i) => i === idx ? {
             ...t,
