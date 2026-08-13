@@ -145,8 +145,8 @@
       if (!rt || !rid) return;
       const idx = tabs.findIndex(t => t.id === rid);
       if (idx > -1) {
-        if (this._lastRt !== rt && tabs[idx].content !== rt) {
-          this._lastRt = rt;
+        const cur = tabs[idx];
+        if (cur && cur.content !== rt && !cur.isNewTab) {
           const matched = router.routes?.find(r => r.path === rt || r.route === rt);
           const metaTitle = matched?.meta?.title || router.meta?.[rt]?.title;
           const metaIcon = matched?.meta?.icon || router.meta?.[rt]?.icon;
