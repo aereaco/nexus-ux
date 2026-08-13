@@ -2598,6 +2598,7 @@ ${scripts}
                         runtime.processElement(child);
                       }
                     });
+                    el.setAttribute("data-nx-cmp-done", "true");
                     runtime.processElement(el);
                   }
                   const focusable = (config.shadowrootmode ? el.shadowRoot : el)?.querySelector("[autofocus], [data-autofocus]");

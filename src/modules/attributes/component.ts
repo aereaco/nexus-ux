@@ -341,6 +341,7 @@ const componentModule: AttributeModule = {
                   runtime.processElement(child as unknown as HTMLElement);
                 }
               });
+              el.setAttribute('data-nx-cmp-done', 'true');
               runtime.processElement(el);
             }
 
