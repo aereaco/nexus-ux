@@ -426,8 +426,8 @@
         data-on-contextmenu:prevent="openTabContextMenu(tab, $evt)">
         <iconify-icon icon="material-symbols-light:drag-indicator"
           class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
-        <iconify-icon data-bind-icon="(tabs.find(t => t.id === tab.id) || tab).icon" class="text-lg px-2"></iconify-icon>
-        <span class="pe-4 whitespace-nowrap" data-bind="(tabs.find(t => t.id === tab.id) || tab).title"></span>
+        <iconify-icon data-bind-icon="meta.icon" class="text-lg px-2"></iconify-icon>
+        <span class="pe-4 whitespace-nowrap" data-bind="meta.title"></span>
         <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close tab" title="Close tab"
           data-class="{ 'hidden': pinned.includes(tab.id) }"
           data-on-click:stop="closeTab(tab.id)">
