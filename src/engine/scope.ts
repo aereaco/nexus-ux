@@ -33,7 +33,7 @@
  */
 
 import { DATA_STACK_KEY } from './consts.ts';
-import { NexusEnhancedElement } from './reactivity.ts';
+import { NexusEnhancedElement, track, trigger } from './reactivity.ts';
 
 /**
  * Retrieves the data stack associated with a given HTMLElement.
