@@ -412,7 +412,7 @@
     <!-- Inline template for tab headers -->
     <template id="tab-header-template">
       <div role="tab" tabindex="0"
-        class="flex items-center shrink-0 pt-2 px-2 cursor-pointer hover:'border-primary' transition-colors"
+        class="flex items-center shrink-0 p-2 cursor-pointer hover:'border-primary' transition-colors"
         data-bind-aria-selected="activeTabId === tab.id"
         data-class="{'tab-active border-b border-primary text-primary': activeTabId === tab.id }"
         data-on-click="switchTab(tab.id)" data-on-auxclick="if ($evt.button === 1) closeTab(tab.id)"
