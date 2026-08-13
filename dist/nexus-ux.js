@@ -2525,9 +2525,9 @@ ${scripts}
             const dataStack = getDataStack(el);
             for (const scope of dataStack) {
               if (scope && typeof scope === "object" && "tab" in scope) {
-                const tabObj = scope.tab;
-                if (tabObj && typeof tabObj === "object") {
-                  tabObj.linkedContent = componentState;
+                const tabObj2 = scope.tab;
+                if (tabObj2 && typeof tabObj2 === "object") {
+                  tabObj2.linkedContent = componentState;
                 }
                 break;
               }
@@ -2590,6 +2590,9 @@ ${scripts}
                   componentState.templateContent = html;
                   const extracted = extractResourceMetadata(html, config.path, runtime);
                   componentState.meta = extracted;
+                  if (tabObj && extracted && (extracted.title || extracted.icon)) {
+                    tabObj.meta = { ...tabObj.meta || {}, ...extracted };
+                  }
                   if (config.shadowrootmode) {
                     if (!el.shadowRoot)
                       el.attachShadow({ mode: config.shadowrootmode });
