@@ -94,26 +94,27 @@ function extractResourceMetadata(
     });
 
     const globals = runtime.globalSignals ? runtime.globalSignals() : {};
-    const routerState = (globals.router || globals.appRouter) as any;
-    if (routerState) {
+    if (globals) {
       const norm = path.startsWith('/') ? path : '/' + path;
       const unnorm = path.startsWith('/') ? path.slice(1) : path;
-      const curMeta = routerState.meta || {};
+      const curMeta = globals.meta || {};
       const nextMeta = {
         ...curMeta,
         [path]: meta,
         [norm]: meta,
         [unnorm]: meta
       };
-      routerState.meta = nextMeta;
       if (runtime.setGlobalSignal) {
-        runtime.setGlobalSignal('router', routerState);
+        runtime.setGlobalSignal('meta', nextMeta);
       }
-
-      if (Array.isArray(routerState.routes)) {
-        const routeRecord = routerState.routes.find((r: any) => r.path === path || r.path === norm || r.path === unnorm);
-        if (routeRecord) {
-          routeRecord.meta = { ...(routeRecord.meta || {}), ...meta };
+      const routerState = (globals.router || globals.appRouter) as any;
+      if (routerState) {
+        routerState.meta = nextMeta;
+        if (Array.isArray(routerState.routes)) {
+          const routeRecord = routerState.routes.find((r: any) => r.path === path || r.path === norm || r.path === unnorm);
+          if (routeRecord) {
+            routeRecord.meta = { ...(routeRecord.meta || {}), ...meta };
+          }
         }
       }
     }
