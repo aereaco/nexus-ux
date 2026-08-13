@@ -217,6 +217,8 @@ const componentModule: AttributeModule = {
   handle: (el: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void => {
     try {
       if (el.hasAttribute('data-route')) return;
+      if ((el as any).__nxComponentInit) return;
+      (el as any).__nxComponentInit = true;
 
       ensureCustomElementRegistered(el.tagName);
 
