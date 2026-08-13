@@ -41,7 +41,7 @@
         createTab(content = '_components/tab-new.html', title = 'New Tab', icon = 'material-symbols-light:article-outline') {
           this.tabSeq++;
           const id = 'tab-' + this.tabSeq;
-          this.tabs = [...this.tabs, { id, title, icon, content }];
+          this.tabs = [...this.tabs, { id, title, icon, content, isNewTab: content.startsWith('_components/') }];
           this.activeTabId = id;
         },
         closeTab(id) {
