@@ -107,10 +107,13 @@ function extractResourceMetadata(
       }
     }
 
+    const normalizePath = (p: string) => (p ? (p.startsWith('/') ? p : '/' + p) : '');
+    const normPath = normalizePath(path);
     const tabs = (globals.tabs as any[]) || [];
     if (Array.isArray(tabs) && Object.keys(meta).length > 0) {
       const nextTabs = tabs.map((t: any) => {
-        if (t.url === path || t.content === path) {
+        const normUrl = normalizePath(t.url || t.content || '');
+        if (normUrl === normPath || normUrl.includes(normPath) || normPath.includes(normUrl)) {
           const mergedMeta = { ...(t.meta || {}), ...meta };
           return {
             ...t,

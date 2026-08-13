@@ -2366,10 +2366,13 @@ ${scripts}
           }
         }
       }
+      const normalizePath = (p) => p ? p.startsWith("/") ? p : "/" + p : "";
+      const normPath = normalizePath(path);
       const tabs = globals.tabs || [];
       if (Array.isArray(tabs) && Object.keys(meta2).length > 0) {
         const nextTabs = tabs.map((t) => {
-          if (t.url === path || t.content === path) {
+          const normUrl = normalizePath(t.url || t.content || "");
+          if (normUrl === normPath || normUrl.includes(normPath) || normPath.includes(normUrl)) {
             const mergedMeta = { ...t.meta || {}, ...meta2 };
             return {
               ...t,
