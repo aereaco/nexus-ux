@@ -285,9 +285,10 @@ const componentModule: AttributeModule = {
             if (config.path.trim().startsWith('<')) {
               html = config.path;
             } else if (config.path.startsWith('#')) {
-              const template = document.querySelector(config.path) as HTMLTemplateElement;
+              const rootNode = el.getRootNode() as Document | ShadowRoot | HTMLElement;
+              const template = (rootNode?.querySelector ? rootNode.querySelector(config.path) : null) || document.querySelector(config.path);
               if (!template) throw new Error(`Template ${config.path} not found`);
-              html = template.innerHTML;
+              html = (template as HTMLTemplateElement).innerHTML;
             } else {
               const result = await cacheEngine.fetchWithCache(config.path, {
                 storage: 'session',

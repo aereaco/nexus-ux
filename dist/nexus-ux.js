@@ -2548,7 +2548,8 @@ ${scripts}
                   if (config.path.trim().startsWith("<")) {
                     html = config.path;
                   } else if (config.path.startsWith("#")) {
-                    const template = document.querySelector(config.path);
+                    const rootNode = el.getRootNode();
+                    const template = (rootNode?.querySelector ? rootNode.querySelector(config.path) : null) || document.querySelector(config.path);
                     if (!template)
                       throw new Error(`Template ${config.path} not found`);
                     html = template.innerHTML;
