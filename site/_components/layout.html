@@ -44,31 +44,23 @@
           this.tabs = [...this.tabs, { id, source, route: route || source }];
           this.activeTabId = id;
           if (typeof router !== 'undefined' && router) {
-            router.route = route || source;
+            // Mark as custom-component sentinel so updateRoute never clobbers
+            // a launchpad/component tab with a URL-resolved page.
+            router.tabPaths[id] = 'custom-component';
+            router.setActiveTab(id);
           }
         },
         switchTab(id) {
           this.activeTabId = id;
-          const tab = this.tabs.find(t => t.id === id);
-          if (tab && typeof router !== 'undefined' && router) {
-            router.route = tab.route || tab.source;
+          if (typeof router !== 'undefined' && router) {
+            router.setActiveTab(id);
           }
         },
-        navigateActiveTab(targetSource, targetRoute) {
-          const id = this.activeTabId;
-          const idx = this.tabs.findIndex(t => t.id === id);
-          if (idx > -1) {
-            let src = targetSource;
-            let rte = targetRoute || targetSource;
-            if (src === '/' || src === '') { src = '/_pages/home.html'; rte = '/'; }
-            else if (src === '/settings') { src = '/_pages/settings.html'; rte = '/settings'; }
-            else if (src === '/profile') { src = '/_pages/profile.html'; rte = '/profile'; }
-            const tab = this.tabs[idx];
-            const updated = { ...tab, source: src, route: rte };
-            this.tabs = this.tabs.map((t, i) => i === idx ? updated : t);
-            if (typeof router !== 'undefined' && router) {
-              router.route = rte;
-            }
+        navigateActiveTab(href) {
+          // Delegate entirely to the router — it resolves the component source
+          // from its own route manifest and updates the active tab via ZCZS.
+          if (typeof router !== 'undefined' && router) {
+            router.navigate(href);
           }
         },
         closeTab(id) {
@@ -91,14 +83,16 @@
           if (!src) return;
           this.tabSeq++;
           const newId = 'tab-' + this.tabSeq;
-          const content = src.content || '_components/tab-generic.html';
-          if (content.startsWith('_components/')) {
+          const source = src.source || '_components/tab-generic.html';
+          const route = src.route || '';
+          if (source.startsWith('_components/')) {
             router.tabPaths[newId] = 'custom-component';
           } else {
-            router.tabPaths[newId] = router.tabPaths[id];
+            router.tabPaths[newId] = router.tabPaths[id] || route;
           }
-          this.tabs = [...this.tabs, { id: newId, title: src.title || 'Tab', icon: src.icon || 'material-symbols-light:article-outline', content }];
+          this.tabs = [...this.tabs, { id: newId, source, route }];
           this.activeTabId = newId;
+          router.setActiveTab(newId);
         },
         openTabContextMenu(tab, evt) {
           const e = evt;
