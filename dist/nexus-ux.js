@@ -2358,9 +2358,13 @@ ${scripts}
       if (routerState) {
         if (!routerState.meta)
           routerState.meta = {};
+        const norm = path.startsWith("/") ? path : "/" + path;
+        const unnorm = path.startsWith("/") ? path.slice(1) : path;
         routerState.meta[path] = meta2;
+        routerState.meta[norm] = meta2;
+        routerState.meta[unnorm] = meta2;
         if (Array.isArray(routerState.routes)) {
-          const routeRecord = routerState.routes.find((r) => r.path === path);
+          const routeRecord = routerState.routes.find((r) => r.path === path || r.path === norm || r.path === unnorm);
           if (routeRecord) {
             routeRecord.meta = { ...routeRecord.meta || {}, ...meta2 };
           }
