@@ -531,7 +531,7 @@
            data-show toggles panel visibility instantly (display: none) without destroying nodes or resetting state. -->
       <template data-for="tab in tabs" data-key="tab.id">
         <div role="tabpanel" class="h-full w-full" data-show="activeTabId === tab.id">
-          <tab-content data-component="tab.content"></tab-content>
+          <tab-content data-component="tab.source || tab.content"></tab-content>
         </div>
       </template>
     </div>
