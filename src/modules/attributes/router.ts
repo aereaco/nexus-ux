@@ -575,6 +575,26 @@ export const routerAttributeModule: AttributeModule = {
             }
           }
 
+          const globals = runtime.globalSignals ? runtime.globalSignals() : {};
+          const activeId = (globals.activeTabId as string) || tabId;
+          const tabs = globals.tabs as any[];
+          if (Array.isArray(tabs) && activeId) {
+            const idx = tabs.findIndex((t: any) => t.id === activeId);
+            if (idx > -1) {
+              const curTab = tabs[idx];
+              const resolvedSource = matched?.component || (cleanPath === '/' ? '/_pages/home.html' : cleanPath);
+              if (curTab.source !== resolvedSource || curTab.route !== cleanPath) {
+                const updated = {
+                  ...curTab,
+                  source: resolvedSource,
+                  route: cleanPath
+                };
+                const nextTabs = tabs.map((t, i) => (i === idx ? updated : t));
+                runtime.setGlobalSignal('tabs', nextTabs);
+              }
+            }
+          }
+
           if (isShadow) {
             // Shadow routes resolve and render in memory but NEVER pollute the address bar
             updateRoute(target);
