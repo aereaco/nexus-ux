@@ -7186,14 +7186,32 @@ ${match}</ul>
               state.route = matched?.component ?? staticComponent ?? null;
               state.layout = matched?.layout ?? null;
               publishOutlet(state.layout ?? state.route);
-              const _at = getActiveTabId();
-              if (_at) {
-                const tabs = globals.tabs || [];
+              const tabs = globals.tabs || [];
+              let _at = getActiveTabId();
+              const resolvedSource = matched?.component ?? staticComponent ?? null;
+              if ((!_at || tabs.length === 0) && resolvedSource) {
+                const initialId = matched?.id || matched?.name || (path.replace(/[^\w-]/g, "_") || "tab-1");
+                _at = initialId;
+                setActiveTabId(initialId);
+                state.tabPaths[_at] = path;
+                const newTab = {
+                  id: initialId,
+                  route: path,
+                  source: resolvedSource
+                };
+                const routeMeta = matched?.meta;
+                if (routeMeta?.title || routeMeta?.icon) {
+                  newTab.meta = { ...routeMeta };
+                }
+                tabs.push(newTab);
+                if (runtime.setGlobalSignal) {
+                  runtime.setGlobalSignal("tabs", tabs);
+                }
+              } else if (_at) {
                 const atIdx = tabs.findIndex((t) => t.id === _at);
                 if (atIdx >= 0 && state.tabPaths[_at] === "custom-component") {
                 } else {
                   state.tabPaths[_at] = path;
-                  const resolvedSource = matched?.component ?? staticComponent ?? null;
                   if (resolvedSource && atIdx >= 0) {
                     const cur = tabs[atIdx];
                     if (cur.source !== resolvedSource)
