@@ -436,13 +436,11 @@ legacy frameworks by utilizing direct token-to-function mapping.
 | **`:`** | **Modifier** | **Pipeline Anchor**. Defines interceptors, wrappers, and execution behavior. | `<button data-on-click:once="save()"></button>` |
 | **`.`** | **Native Access** | **Reactive Property Traversal**. Standard property access through reactive proxy for native APIs (window, localStorage, etc.). | `<div data-bind="window.innerWidth"></div>` |
 | **`#`** | **Global Signal** | **Reactive Source**. Accesses user-defined Global Signals managed by the Shared Memory Heap. | `<div data-bind="#auth.user"></div>` |
-| **`_`** | **Env Mirror** | **API Snapshot**. Accesses reactive wrappers of Browser/OS native APIs. | `<div data-bind="_window.innerWidth"></div>` |
 | **`$`** | **Logic / Selector** | **Sprite / Command**. Framework tools and the Unified Selector engine for spatial queries. | `<button data-on-click="$(^form).save()"></button>` |
 | **`@`** | **Scope Rule** | **Boundary Rule**. Site-aware CSS-like scope boundaries, media, or container rules. | `<div data-bind="@media(min-width: 1024px) { 'Desktop' }"></div>` |
 | **`&`** | **Context Reference** | **Parent / Local Context**. References current execution context or parent scope. | `<div data-bind="&.parent.title"></div>` |
 | **`!`** | **Override / Force** | **Value Override**. Forces value or execution behavior, overriding defaults. | `<button data-bind="!disabled"></button>` |
 | **`::`** | **Pseudo Selector** | **DOM Pseudo Binding**. Target pseudo-elements or pseudo-classes. | `<div data-style="::before { content: '*' }"></div>` |
-| **`||`** | **Grid / Parallel** | **Parallel Execution**. Evaluates parallel or grid-based expressions. | `<div data-signal="|| expr1 || expr2"></div>` |
 
 #### 2.1.1. Deep-Dive: Native Access (`.`) vs. Global Signals (`#`)
 
@@ -455,9 +453,11 @@ critical for effective orchestration.
   triggers a cascade through the **Unified Nexus Scheduler**, updating all
   dependent DOM nodes.
 - **Native Access (`.`)**: Standard reactive property traversal. When an
-  expression uses `.property`, it accesses the property through the reactive
-  proxy, ensuring that reads are tracked and writes trigger updates. The `.`
-  token is the default accessor for local scope signals and object properties.
+  expression uses `.property` (e.g. `window.innerWidth`, `localStorage.theme`),
+  it accesses the property through the reactive Proxy/Reflect layer, ensuring that
+  reads automatically attach native event listeners and writes trigger downstream
+  signal updates. The `.` token is the default accessor for local scope signals,
+  nested objects, and native browser APIs alike.
 
 ---
 
@@ -523,126 +523,6 @@ reactive context, mirroring CSS syntax for familiar structure.
 | **@native**    | Native API Sync    | Interoperating with Nexus-IO runtime signals.        |
 | **@auth**      | Security Scope     | UI-gating based on active permission signals.        |
 | **@view**      | Transition Link    | Hooking into the View Transitions API during morphs. |
-
----
-
-### 2.5. Sprites (`$`) — Imperative Command Catalog
-
-Sprites are imperative, framework-level commands available within any expression
-context. Each sprite is a single-purpose function, invoked via the `$` prefix.
-
-#### 2.5.1. Data Sprites
-
-| Sprite                         | Description                                                                                                                                                                                          | Practical Example                                                               | Status |
-| :----------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------ | :----: |
-| **`$sql(query, [bindings])`**  | SurrealQL — executes a SurrealDB query via the Nexus-IO WebSocket. Supports `LIVE SELECT` for real-time subscriptions. Returns a `Promise`.                                                          | `data-signal="{ users: $sql('LIVE SELECT * FROM user') }"`                      |   ✅   |
-| **`$gql(query, [variables])`** | GraphQL — executes a GraphQL query/mutation against a configured endpoint. Returns a `Promise<{ data, errors }>`.                                                                                    | `data-on-load="users = (await $gql('query { users { id name } }')).data.users"` |   ✅   |
-| **`$ws(url, [protocols])`**    | WebSocket — opens a managed WebSocket connection. Returns a reactive handle with `.send(data)`, `.close()`, and reactive `.state` / `.lastMessage`. Auto-reconnects; cleaned up on element disposal. | `data-on-load="socket = $ws('wss://chat.example.com')"`                         |  ❌    |
-
-> **DEPRECATED**: `$ws` replaced by `_WebSocket` native mirror. See [§2.6.1](#261-native-mirror-quick-reference).
-
-#### 2.5.2. Network Sprites (HTTP) — DEPRECATED
-
-> **⚠️ DEPRECATED**: Use native `_fetch` / `_http` environment mirrors instead.
-> The HTTP/Network sprite wrappers have been removed in favor of direct
-> browser API mirrors. See [§2.6.1](#261-native-mirror-quick-reference).
-
-| Legacy Sprite             | Native Mirror Replacement                                                                  | Migration |
-| :------------------------ | :----------------------------------------------------------------------------------------- | :-------- |
-| **`$fetch(url, opts)`**   | `_fetch(url, opts)` — raw fetch with SuspenseProxy integration                             | Replace `$fetch(...)` → `_fetch(...)` |
-| **`$get(url, opts)`**     | `_http.get(url, opts)` — convenience method on native `_http` object                      | Replace `$get(...)` → `_http.get(...)` |
-| **`$post(url, body, opts)`** | `_http.post(url, body, opts)`                                                             | Replace `$post(...)` → `_http.post(...)` |
-| **`$put(url, body, opts)`**   | `_http.put(url, body, opts)`                                                               | Replace `$put(...)` → `_http.put(...)` |
-| **`$patch(url, body, opts)`** | `_http.patch(url, body, opts)`                                                             | Replace `$patch(...)` → `_http.patch(...)` |
-| **`$delete(url, opts)`**      | `_http.delete(url, opts)`                                                                  | Replace `$delete(...)` → `_http.delete(...)` |
-
-> **Note**: `_http` methods auto-serialize JSON bodies and auto-parse responses,
-> identical to the legacy sprite behavior. Suspense/loading states are handled
-> identically via the reactive proxy returned by `_fetch`.
-
-#### 2.5.3. DOM Sprites
-
-| Sprite                           | Description                                                                                                               | Practical Example                                                                    |
-| :------------------------------- | :------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------- |
-| **`$el`**                        | Element — reference to the current element the expression is evaluated on.                                                | `data-on-focus="$el.classList.add('ring')"`                                          |
-| **`$nextTick([callback])`**      | Next Tick — schedules `callback` after the current reactive flush completes. Returns a `Promise` if no callback provided. | `data-on-click="count++; await $nextTick(); console.log($el.textContent)"` |
-| **`$dispatch(event, [detail])`** | Dispatch — dispatches a `CustomEvent` on the current element. Bubbles by default.                                         | `data-on-click="$dispatch('item-selected', { id: itemId })"`                         |
-
-#### 2.5.4. State Sprites — DEPRECATED
-
-> **⚠️ DEPRECATED**: Use global signals (`#storeName`) and `watch()` instead.
-> These sprites have been replaced by built-in reactivity primitives.
-
-| Sprite                        | Description                                                                                                                     | Practical Example                                                               | Status |
-| :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------ | :----: |
-| **`$store(name, [initial])`** | Store — accesses a named cross-component reactive store. Creates the store with `initial` if it doesn't exist.                  | `data-signal="{ cart: $store('cart', []) }"`                                    |  ❌    |
-| **`$watch(expr, callback)`**  | Watch — observes a reactive expression and invokes `callback(newVal, oldVal)` when it changes. Returns an `unwatch()` function. | `data-on-load="$watch('searchQuery', (n) => results = $get('/search?q=' + n))"` |  ❌    |
-
-**Migration**:
-- `$store('name', init)` → use `data-signal-global` on a parent to define a global signal, access via `#name`
-- `$watch(expr, cb)` → use `watch(() => expr, cb)` inside a `data-effect`
-
-See [§7.11](#711-state-sprites--deprecated) in the reference for detailed examples.
-
-#### 2.5.5. Navigation Sprites
-
-| Sprite                              | Description                                                                                           | Practical Example                                |
-| :---------------------------------- | :---------------------------------------------------------------------------------------------------- | :----------------------------------------------- |
-| **`#router.navigate(url, [opts])`** | Navigate — programmatic client-side navigation. Supports `{ replace: true }` for history replacement. | `data-on-click="#router.navigate('/dashboard')"` |
-
-#### 2.5.6. Runtime Sprites (Nexus-IO Provided)
-
-| Sprite        | Description                                                                                               | Practical Example                                                                     |
-| :------------ | :-------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------ |
-| **`$fs`**     | Filesystem — sandboxed filesystem access. Methods: `.read(path)`, `.write(path, content)`, `.list(path)`. | `data-on-click="$fs.write('log.txt', 'Clicked at ' + new Date())"`                    |
-| **`$device`** | Device — hardware capability access. Properties: `.battery`, `.location`, `.camera`.                      | `data-on-click="$device.location.getCurrentPosition().then(pos => console.log(pos))"` |
-
-#### 2.5.7. Utility Sprites — DEPRECATED
-
-> **⚠️ DEPRECATED**: All utility sprites replaced by native `_` environment mirrors.
-> See [Chapter 7.12](#712-utility-sprites--deprecated) of the reference for complete
-> migration guide.
-
-| Sprite                                         | Native Mirror Equivalent                                              | Status |
-| :--------------------------------------------- | :-------------------------------------------------------------------- | :----: |
-| **`$clipboard.write(text)`**                   | → `_clipboard.writeText(text)`                                        |  ❌    |
-| **`$clipboard.read()`**                        | → `_clipboard.readText()`                                             |  ❌    |
-| **`$download(filename, content, [mime])`**     | → `_download(filename, content, mime)` utility function (retained)    |   ⚠️   |
-| **`cache.put(name, url, [res])`**              | → `_caches.default.put(url, res)`                                     |  ❌    |
-| **`cache.match(name, url)`**                   | → `_caches.default.match(url)` (returns `Response \| null`)          |  ❌    |
-| **`cache.delete(name, url)`**                  | → `_caches.default.delete(url)`                                       |  ❌    |
-| **`cache.keys(name)`**                         | → `_caches.default.keys()`                                            |  ❌    |
-| **`cache.clear(name)`**                        | → `_caches.default.clear()`                                           |  ❌    |
-
-#### 2.5.8. Application Sprites
-
-| Sprite                                 | Description                                                                                        | Practical Example                                                | Status |
-| :------------------------------------- | :------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------- | :----: |
-| **`sw.register(url, [opts])`**         | Service Worker REGISTER — registers a SW. Returns reactive `{ status, error }`.                    | `data-on-load="sw.register('/sw.js')"`                           |   ✅   |
-| **`sw.status`**                        | Reactive SW lifecycle state: `'idle'`, `'registering'`, `'active'`, `'waiting'`, `'error'`.        | `data-bind="'SW: ' + sw.status"`                                 |   ✅   |
-| **`sw.update()`**                      | Check for SW updates. Returns reactive container.                                                  | `data-on-click="sw.update()"`                                    |   ✅   |
-| **`sw.skipWaiting()`**                 | Activate waiting worker immediately.                                                               | `data-on-click="sw.skipWaiting()"`                               |   ✅   |
-| **`notification.send(title, [opts])`** | Send a notification. Auto-requests permission. Returns reactive `{ status, error, notification }`. | `data-on-click="notification.send('Hello!', { body: 'World' })"` |  ❌    |
-| **`notification.permission`**          | Reactive notification permission state: `'default'`, `'granted'`, `'denied'`.                      | `data-show="notification.permission === 'granted'"`              |  ❌    |
-| **`notification.requestPermission()`** | Request notification permission. Returns reactive `{ data, status, error }`.                       | `data-on-click="notification.requestPermission()"`               |  ❌    |
-
-> **DEPRECATED** entries: Use `_Notification` mirror directly. See [§7.12.4](#71243-notification---_notification).
-
-#### 2.5.9. Background Service Sprites
-
-| Sprite                                            | Description                                                                                                         | Practical Example                                                             | Status |
-| :------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------- | :----: |
-| **`push.subscribe(vapidKey)`**                    | Push subscribe — subscribes to push notifications. Returns reactive `{ data, status, error }`.                      | `data-on-click="push.subscribe(vapidPublicKey)"`                              |   ✅   |
-| **`push.unsubscribe()`**                          | Push unsubscribe. Returns reactive `{ status, error }`.                                                             | `data-on-click="push.unsubscribe()"`                                          |   ✅   |
-| **`bgFetch.fetch(id, urls, [opts])`**             | Background Fetch — downloads large assets in the background. Returns reactive container with progress.              | `data-on-click="bgFetch.fetch('update', ['/large.zip'])"`                     |   ✅   |
-| **`bgSync.register(tag)`**                        | Background Sync — registers a one-time sync for when the device comes online. Returns reactive `{ status, error }`. | `data-on-click="bgSync.register('sync-messages')"`                            |   ✅   |
-| **`periodicSync.register(tag, { minInterval })`** | Periodic Sync — registers a periodic background sync. Returns reactive `{ status, error }`.                         | `data-on-click="periodicSync.register('content', { minInterval: 86400000 })"` |   ✅   |
-| **`payment.request(methods, details, [opts])`**   | Payment Request — shows browser-native payment UI. Returns reactive `{ data, status, error }`.                      | `data-on-click="payment.request(methods, details)"`                           |  ❌    |
-| **`payment.canMakePayment(methods)`**             | Payment check — checks if payment method is available. Returns `{ data: boolean, status, error }`.                  | `data-on-load="canPay = payment.canMakePayment(methods)"`                     |  ❌    |
-
-> **DEPRECATED** entries: Use `new _PaymentRequest(methods, details)` directly. See [§7.14.7](#7147-payment--deprecated) in the reference.
-
----
 
 ### 2.6. Native API Signal Binding
 
