@@ -797,12 +797,25 @@ Nexus-UX provides a built-in, zero-dependency Tailwind v4 (Oxide) compiler. This
   <input type="color" data-bind="dynamicColor" class="mt-4">
   <input type="text" data-bind="paddingSize" class="mt-4 border rounded">
 </div>
+### 5.4. `data-stylesheet` — Adopted StyleSheets & Constructable CSS
+
+**Syntax**: `data-stylesheet="cssStringOrUrl"`
+
+**Purpose**: Bridges dynamic styles into `document.adoptedStyleSheets` or component Shadow DOMs with zero DOM pollution and instant CSSOM parsing.
+
+- **Tailwind Theme Bridge**: Synchronizes theme tokens, DaisyUI styles, and custom variables into adopted stylesheets (`buildTailwindThemeBridge`).
+- **Dynamic Token Discovery**: Automatically extracts declared `--color-*` tokens and provides reactive palette adjustments without modifying HTML `<style>` nodes.
+
+```html
+<!-- Injects constructable stylesheet directly into document.adoptedStyleSheets -->
+<div data-stylesheet="':root { --brand-primary: #3b82f6; }'"></div>
 ```
 
-### 5.4. Bridging UI Libraries with `data-var`
+---
 
-Modern CSS libraries (e.g., DaisyUI) utilize CSS Custom Properties for internal
-logic.
+### 5.5. Bridging UI Libraries with `data-var`
+
+Modern CSS libraries (e.g., DaisyUI, Tailwind v4) utilize CSS Custom Properties for internal logic and design tokens.
 
 - **Taming DaisyUI Progress**:
   ```html
@@ -810,59 +823,48 @@ logic.
     <span data-bind="percent + '%'"></span>
   </div>
   ```
-- **Dynamic Theming**:
+- **Dynamic Theming & Data Painting**:
   ```html
   <body data-var-primary-color="#auth.theme.primary">
     <button class="btn btn-primary">Themed Button</button>
   </body>
   ```
 
-### 5.5. `data-ux-theme` — Intelligent Theme Orchrestration
+---
 
-**Syntax**: `data-ux-theme="{ default: 'mode', themes: { mode: { config } } }"`
+### 5.6. `data-theme` / `data-ux-theme` — Intelligent Theme Orchestration
 
-**Purpose**: Automates complex layout, color-mode, and system-preference
-(`prefers-color-scheme`) logic, automatically lifting the resolved theme mapping
-(e.g., `'cupcake'`) to the root HTML `data-theme` attribute for library
-compatibility (DaisyUI).
+**Syntax**: `data-theme="{ default: 'auto', modes: { auto: { ... }, light: { theme: 'cupcake' }, dark: { theme: 'synthwave' } } }"`
 
-**Examples**:
+**Purpose**: Automates color-mode switching, system preference listening (`prefers-color-scheme`), and synchronizes the resolved theme mapping (e.g., `'cupcake'`) to the root HTML `data-theme` attribute for DaisyUI / Tailwind compatibility.
 
-```html
-<html data-ux-theme="{
-    default: 'auto',
-    modes: {
-        auto: { icon: 'auto-mode-icon' },
-        light: { icon: 'sun-icon', theme: 'cupcake' },
-        dark: { icon: 'moon-icon', theme: 'synthwave' }
-    }
-}">
-```
-
-**Access**: Use the globally injected `#theme` signal to read the resolved
-configuration anywhere in the app (e.g., `<span data-class="#theme.icon">`).
-
-### 5.5. `data-switcher` — State Iteration
-
-**Syntax**: `data-switcher-signalName="['val1', 'val2', 'val3']"`
-
-Automates iterating through an array of states upon user interaction without
-logic overhead. Used heavily alongside `data-ux-theme` for building native
-"Theme Toggle" buttons.
+**Exposed State & Helpers**:
+- `#theme.current`: Active theme key (`'cupcake'`, `'synthwave'`, etc.).
+- `#theme.mode`: Active mode (`'auto'`, `'light'`, `'dark'`).
+- `$switchTheme()`: Toggles between available theme modes.
+- `$themeIcon`: Current mode indicator icon string.
+- `$activeMode`: Resolved boolean state.
 
 **Example**:
 
 ```html
-<button data-switcher-mode="['light', 'dark', 'auto']">
-  Toggle Mode
-</button>
+<html data-theme="{
+    default: 'auto',
+    modes: {
+        auto: { icon: 'auto-icon' },
+        light: { icon: 'sun-icon', theme: 'cupcake' },
+        dark: { icon: 'moon-icon', theme: 'synthwave' }
+    }
+}">
+  <body>
+    <!-- Theme Switcher Button -->
+    <button data-on-click="$switchTheme()">
+      <span data-bind="$themeIcon"></span>
+      <span data-bind="#theme.current"></span>
+    </button>
+  </body>
+</html>
 ```
-
-````
-> [!TIP]
-> **Data Painting**: Use `data-var-icon="'\2713'"` combined with CSS
-> `content: var(--icon)` for high-performance icon toggling without DOM
-> mutations.
 
 ---
 
