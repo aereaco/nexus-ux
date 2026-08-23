@@ -1325,95 +1325,47 @@ resolution, and DOM node identification, optimized for zero garbage collection.
 nexus-ux/
 ├── src/
 │   ├── index.ts              # Entry point — UX class, inline utilities
-│   ├── manifest.ts           # AUTO-GENERATED module registry
-│   ├── engine/               # Core runtime (reactivity, scheduler, observers, mirrors)
+│   ├── manifest.ts           # AUTO-GENERATED module registry (build.ts)
+│   ├── engine/               # Core runtime (reactivity, scheduler, observers, ZCZS heap)
 │   │   ├── modules.ts        # ModuleCoordinator registration & lifecycle
-│   │   ├── mutation.ts       # Framework MutationObserver
+│   │   ├── mutation.ts       # Single MutationObserver authority
 │   │   ├── observers.ts      # Centralized observer registry
-│   │   ├── mirror.ts         # Unified JIT proxy cache for _ mirrors
-│   │   ├── reactivity.ts     # Vue-based reactivity + ZCZS SignalHeap
+│   │   ├── reactivity.ts     # Vue-based reactivity + ZCZS SignalHeap & ownership
 │   │   ├── scope.ts          # Data stack & scope proxy creation
-│   │   ├── reconciler.ts     # Idiomorph-based DOM morphing
-│   │   ├── evaluator.ts      # NEG expression evaluation
+│   │   ├── reconciler.ts     # Idiomorph-based DOM morphing & deep diffing
+│   │   ├── evaluator.ts      # NEG expression evaluation & Native API Proxies
 │   │   ├── scheduler.ts      # Reactive flush scheduling
 │   │   ├── topology.ts       # Adaptive thread topology
 │   │   ├── agent.ts          # Self-heal & crash beacons
+│   │   ├── predictive.ts     # 4D predictive interaction engine
+│   │   ├── cache.ts          # Internal LRU caching engine
+│   │   ├── assets.ts         # Constructable stylesheets & asset manager
+│   │   ├── mcp.ts            # Model Context Protocol client
 │   │   └── ...
 │   ├── modules/
-│   │   ├── attributes/       # data-* directive handlers (31 modules)
-│   │   │   ├── signal.ts
-│   │   │   ├── bind.ts
-│   │   │   ├── if.ts
-│   │   │   ├── for.ts
-│   │   │   ├── style.ts
-│   │   │   ├── class.ts
-│   │   │   ├── on.ts
-│   │   │   ├── import.ts
-│   │   │   ├── theme.ts
-│   │   │   ├── switcher.ts
-│   │   │   ├── effect.ts
-│   │   │   ├── show.ts
-│   │   │   ├── html.ts
-│   │   │   ├── computed.ts
-│   │   │   ├── raf.ts
-│   │   │   ├── markdown.ts
-│   │   │   ├── preserve.ts
-│   │   │   ├── assert.ts
-│   │   │   ├── component.ts
-│   │   │   ├── pwa.ts
-│   │   │   ├── build.ts
-│   │   │   ├── router.ts
-│   │   │   ├── route.ts
-│   │   │   ├── drag.ts
-│   │   │   ├── teleport.ts
-│   │   │   ├── flow.ts
-│   │   │   ├── spatial.ts
-│   │   │   ├── mask.ts
-│   │   │   ├── debug.ts
-│   │   │   └── var.ts
-│   │   ├── sprites/          # $ sprite implementations (15 modules)
-│   │   │   ├── sql.ts
-│   │   │   ├── gql.ts
-│   │   │   ├── animate.ts
-│   │   │   ├── selector.ts
-│   │   │   ├── predictive.ts
-│   │   │   ├── spatial.ts
-│   │   │   ├── flow.ts
-│   │   │   ├── svg.ts
-│   │   │   ├── sw.ts
-│   │   │   ├── push.ts
-│   │   │   ├── bgFetch.ts
-│   │   │   ├── bgSync.ts
-│   │   │   ├── periodicSync.ts
-│   │   │   ├── mcp.ts
-│   │   │   └── mask.ts
-│   │   ├── modifiers/        # : Pipeline modifiers (10 modules)
-│   │   │   ├── debounce.ts
-│   │   │   ├── throttle.ts
-│   │   │   ├── once.ts
-│   │   │   ├── prevent.ts
-│   │   │   ├── stop.ts
-│   │   │   ├── keys.ts
-│   │   │   ├── self.ts
-│   │   │   ├── morph.ts
-│   │   │   ├── drag.ts
-│   │   │   └── zoom.ts
+│   │   ├── attributes/       # data-* directive handlers (30 modules)
+│   │   │   ├── assert.ts, bind.ts, build.ts, class.ts, component.ts
+│   │   │   ├── computed.ts, debug.ts, drag.ts, effect.ts, flow.ts
+│   │   │   ├── for.ts, html.ts, if.ts, import.ts, markdown.ts
+│   │   │   ├── mask.ts, on.ts, preserve.ts, pwa.ts, raf.ts
+│   │   │   ├── route.ts, router.ts, show.ts, signal.ts, style.ts
+│   │   │   ├── stylesheet.ts, switcher.ts, teleport.ts, theme.ts, var.ts
+│   │   ├── sprites/          # $ sprite implementations (14 modules)
+│   │   │   ├── animate.ts, bgFetch.ts, bgSync.ts, flow.ts, gql.ts
+│   │   │   ├── mask.ts, mcp.ts, periodicSync.ts, predictive.ts, push.ts
+│   │   │   ├── selector.ts, sql.ts, svg.ts, sw.ts
+│   │   ├── modifiers/        # : Pipeline modifiers (15 modules)
+│   │   │   ├── debounce.ts, delay.ts, document.ts, drag.ts, hold.ts
+│   │   │   ├── keys.ts, morph.ts, once.ts, outside.ts, prevent.ts
+│   │   │   ├── self.ts, stop.ts, throttle.ts, window.ts, zoom.ts
 │   │   ├── scopes/           # @ Logical Scope Rules (6 modules)
-│   │   │   ├── media.ts
-│   │   │   ├── container.ts
-│   │   │   ├── auth.ts
-│   │   │   ├── os.ts
-│   │   │   ├── view.ts
-│   │   │   └── native.ts
+│   │   │   ├── auth.ts, container.ts, media.ts, native.ts, os.ts, view.ts
 │   │   └── listeners/        # Global event listeners (4 modules)
-│   │       ├── bfcache.ts
-│   │       ├── history.ts
-│   │       ├── linkRewriter.ts
-│   │       └── executeScript.ts
-│   └── lib/                  # Utilities
-├── docs/                     # Specification & reference
-├── scripts/                  # Build & dev utilities
-└── dist/                     # Compiled production bundles
+│   │       ├── bfcache.ts, executeScript.ts, history.ts, linkRewriter.ts
+├── docs/                     # Specification & practical reference
+├── scripts/                  # Build (build.ts) & dev server (serve.ts)
+├── site/                     # Official Nexus-UX SPA website & labs
+└── dist/                     # Compiled production bundles (IIFE, min.js, br)
 ```
 
 ### 7.3. Hello World Module Implementations
@@ -1436,14 +1388,11 @@ const helloAttr: AttributeModule = {
 #### 7.3.2 Action Module (Sprite)
 
 ```typescript
-const helloAction: ActionPlugin = {
-  type: PluginType.Action,
+const helloAction: ActionModule = {
   name: "greet",
-  actions: {
-    hello: (name: string) => `Hello ${name}!`,
-  },
+  handle: (el, name: string) => `Hello ${name}!`,
 };
-// Usage: <div data-bind="greet.hello('Nexus')"></div>
+// Usage: <div data-bind="greet('Nexus')"></div>
 ```
 
 #### 7.3.3 Listener Module
@@ -1451,9 +1400,10 @@ const helloAction: ActionPlugin = {
 ```typescript
 const helloListener: ListenerModule = {
   name: 'helloListener',
-  onGlobalInit: (ctx) => {
-    window.addEventListener('nexus-hello', (e) => console.log(e.detail));
-    return () => window.removeEventListener('nexus-hello', ...);
+  listen: (el, runtime) => {
+    const handler = (e: Event) => console.log('Nexus Hello Event');
+    window.addEventListener('nexus-hello', handler);
+    return () => window.removeEventListener('nexus-hello', handler);
   }
 };
 ```
@@ -1463,11 +1413,11 @@ const helloListener: ListenerModule = {
 ```typescript
 const helloObserver: ObserverModule = {
   name: "helloObserver",
-  onLoad: (ctx) => {
+  observe: (el, runtime) => {
     const observer = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting) console.log("Hello in view!");
     });
-    observer.observe(ctx.el);
+    observer.observe(el);
     return () => observer.disconnect();
   },
 };
@@ -1484,31 +1434,31 @@ Generator** and an open **Runtime Plugin API**.
 ### 8.1. The `src/modules/*` Convention
 
 Every discrete piece of logic in the framework—whether a directive (`data-*`), a
-global sprite (`$fetch`), a scope rule (`@os`), or an environment mirror
-(`_window`)—lives isolated within the `src/modules/` directory hierarchy.
+global sprite (`$animate`), or a scope rule (`@media`)—lives isolated within the
+`src/modules/` directory hierarchy:
 
-- `src/modules/attributes/`: Directives (`data-signal`, `data-ux-theme`)
-- `src/modules/sprites/`: Action handlers and tools (`$sql`, `save`)
-- `src/modules/scopes/`: Evaluation closures for the `@` Grammar (`@auth`)
-- `src/modules/mirrors/`: Reactive snapshots of browser APIs (`_localStorage`)
+- `src/modules/attributes/`: Directives (`data-signal`, `data-drag`, `data-stylesheet`, `data-theme`)
+- `src/modules/sprites/`: Action handlers and tools (`$sql`, `$selector`, `$flow`)
+- `src/modules/modifiers/`: Event pipeline modifiers (`:once`, `:debounce`, `:prevent`)
+- `src/modules/scopes/`: Evaluation closures for the `@` Grammar (`@media`, `@auth`)
+- `src/modules/listeners/`: Global lifecycle event listeners (`history`, `bfcache`)
 
 ### 8.2. Build-Time Manifest Generation
 
 Running `deno task build` triggers `scripts/build.ts`, the build orchestrator:
 
-1. **Discovery**: Crawls `src/modules/*` to detect module files.
-2. **Manifest Generation**: Writes `src/manifest.ts` with categorical arrays (`autoAttributes`, `autoSprites`, `autoModifiers`, `autoObservers`).
+1. **Discovery**: Crawls `src/modules/*` to detect all module files.
+2. **Manifest Generation**: Writes `src/manifest.ts` with categorical arrays (`autoAttributes`, `autoSprites`, `autoModifiers`, `autoScopes`, `autoListeners`, `autoObservers`).
 3. **Tree-Shaking** (with `--app=DIR`): Scans the app directory, analyzes HTML/TS usage,
    and generates a whitelist of only the modules actually used. Auto-injected sprites
-   (`el`, `id`, `global`, `dispatch`, `nextTick`) and mirror-provided browser APIs
-   (`fetch`, `http`, `download`, `clipboard`, `cache`, `notification`, `payment`, `ws`)
-   are automatically excluded from the bundle.
+   (`$el`, `$id`, `$global`, `$dispatch`, `$nextTick`) and native browser APIs
+   are automatically excluded from unnecessary imports.
 4. **Bundling**: esbuild creates a single IIFE bundle (`dist/nexus-ux.js`).
 5. **Minification** (with `--minify` or `--app`): Two-pass minification (esbuild + SWC)
    followed by Brotli‑11 compression produces `nexus-ux.min.js.br`.
 
-Zero-Maintenance Registration: The core runtime (`src/index.ts`) iterates over the
-manifest arrays, injecting them into the `ModuleCoordinator` dynamically. Adding a
+Zero-Maintenance Registration: The core runtime (`src/index.ts`) imports the
+manifest arrays and registers them into the `ModuleCoordinator` dynamically. Adding a
 new framework feature requires zero registration boilerplate.
 
 ### 8.3. The Runtime Plugin API (`Nexus.register`)
