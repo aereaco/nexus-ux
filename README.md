@@ -79,92 +79,72 @@ _not_ require module imports:
 
 ### Retained Sprites (Unique Value)
 
-These sprites provide capabilities beyond native browser APIs and remain as
+These 14 sprites provide capabilities beyond native browser APIs and remain as
 explicit modules:
 
-| Sprite         | Description                                                                 |
-| :------------- | :-------------------------------------------------------------------------- |
-| **`$animate`** | Reactive animation engine with keyframes and timeline control              |
-| **`$selector`** | High-performance DOM query engine (`$()` selector)                         |
-| **`$predictive`** | 4D predictive interaction engine (frustum projection, quadtree)         |
-| **`$sql`**     | SurrealDB reactive queries (LIVE SELECT support)                           |
-| **`$gql`**     | GraphQL queries with reactive results                                      |
-| **`$mcp`**     | Model Context Protocol integration for AI agents                           |
-| **`$svg`**     | Reactive SVG manipulation engine                                           |
-| **`$spatial`** | 3D spatial tracking (x, y, z coordinates)                                  |
-| **`$flow`**    | Gesture flow recognizer (swipes, pans)                                     |
-| **`$mask`**    | Advanced clipping and masking                                              |
-| **`$sw`**      | Service Worker registration & lifecycle management                         |
-| **`$push`**    | Push notification subscription                                             |
-| **`$bgSync`**  | Background Sync API wrapper                                                |
-| **`$bgFetch`** | Background Fetch API wrapper                                               |
-| **`$periodicSync`** | Periodic Background Sync API wrapper                                |
+| Sprite | Description |
+| :--- | :--- |
+| **`$animate`** | Reactive Web Animations API engine with keyframes and timeline control |
+| **`$selector`** | High-performance reactive DOM query engine (`$()` selector) |
+| **`$predictive`** | 4D predictive interaction engine (frustum projection, quadtree) |
+| **`$sql`** | SurrealDB reactive queries (LIVE SELECT real-time diff sync) |
+| **`$gql`** | GraphQL queries with reactive results |
+| **`$mcp`** | Model Context Protocol integration for AI agent orchestration |
+| **`$svg`** | Reactive SVG manipulation and geometry engine |
+| **`$flow`** | Infinite canvas and gesture flow recognizer (swipes, pans, pinch-zoom) |
+| **`$mask`** | Advanced clipping and visual masking |
+| **`$sw`** | Service Worker registration & lifecycle management |
+| **`$push`** | Web Push notification subscription and handler |
+| **`$bgSync`** | Background Sync API wrapper for offline action replay |
+| **`$bgFetch`** | Background Fetch API wrapper for large background transfers |
+| **`$periodicSync`** | Periodic Background Sync API wrapper |
 
 ---
 
 ## 🛰️ The NEG Grammar (Nexus Expression Grammar)
 
-Nexus-UX utilizes a deterministic, token-based grammar for high-baud efficiency.
+Nexus-UX utilizes a deterministic, token-based grammar for high-baud efficiency:
 
-| Token   | Designation       | Purpose                                         | Example                            |
-| :------ | :---------------- | :---------------------------------------------- | :--------------------------------- |
-| **`.`** | Native Access | Unwrapped, raw JS/DOM/Browser API property access. | `window.innerWidth`, `user.name` |
-| **`#`** | Global Signal | The Global Registry of reactive sources. | `#auth.user` |
-| **`:`** | Modifier          | Pipeline anchors and interceptors.              | `data-on-click:once`               |
-| **`$`** | Sprite / Selector | Framework tools, Sprites, and the $() engine. | `$(^card).$animate()` |
-| **`@`** | Scope Rule        | Context-aware boundary rules (Media, OS, Auth). | `@media(min-width: 600px) { ... }` |
-
----
-
-## 🧩 Core Directives
-
-| Directive       | Role               | Description                                                                     |
-| :-------------- | :----------------- | :------------------------------------------------------------------------------ |
-| `data-signal`   | **State**          | Initializes reactive signals. Supports **Signal Auto-Promotion** on-the-fly.    |
-| `data-class`    | **Hardened JIT**   | Reconciles Tailwind v4 utilities against reactive state with 0ms latency.       |
-| `data-bind`     | **Binding**        | High-performance bidirectional binding to inputs and state.                     |
-| `data-bind`     | **Painting**       | Two-way binding for element properties and text content.                                |
-| `data-on`       | **Behavior**       | Standard and **Native Event Mapping** (`hover`, `click:debounce.200ms`).        |
-| `data-on-hover` | **Orchestration**  | Maps native mouseenter/mouseleave to a local `hovered` signal.                  |
-| `data-import`   | **Asset Registry** | Asynchronously adopts links, scripts, and components into the Unified Registry. |
-| `data-switcher` | **Iteration**      | Automates cycling through states (e.g., Theme Toggles).                         |
+| Token | Designation | Purpose | Example |
+| :--- | :--- | :--- | :--- |
+| **`.`** | **Native Access** | Unwrapped, raw JS/DOM/Browser API reactive property access. | `window.innerWidth`, `localStorage.theme` |
+| **`#`** | **Global Signal** | The Global Registry of shared reactive sources. | `#auth.user` |
+| **`:`** | **Modifier** | Pipeline anchors, filters, and lifecycle wrappers. | `data-on-click:once:prevent` |
+| **`$`** | **Sprite / Selector** | Framework tools, Sprites, and the `$()` selector engine. | `$(^card).$animate()`, `$sql(...)` |
+| **`@`** | **Scope Rule** | Context-aware boundary rules (Media, OS, Auth). | `@media(min-width: 600px) { ... }` |
 
 ---
 
-## 🔍 The High-Fidelity JIT Engine
+## 🧩 Core Directives (30 Modules)
 
-Nexus-UX doesn't just "support" Tailwind; it implements the **Official Tailwind
-v4 Design System** logic natively.
-
-- **Compositing Parity**: Advanced utilities like **Filters, Backdrop Filters,
-  and Transforms** are synchronized via `@property` registrations for
-  hardware-accelerated performance.
-- **Motion Hardening**: Standard transition durations (150ms) and animation
-  keyframes (`spin`, `pulse`, etc.) are baked into the core registry.
-- **Zero FOUC**: Uses `adoptCSSSync` to ensure UI structure and presentation are
-  linked before the first paint.
-
----
-
-## ⚡ High-Order Sprites (`$`)
-
-- **`$sql`**: Direct SurrealDB integration with LIVE queries.
-- **`$gql`**: GraphQL queries with reactive results.
-- **`$animate`**: Keyframe animation engine.
-- **`$selector`**: Reactive DOM query engine (`$()`).
-- **`$predictive`**: 4D predictive tracking (velocity, quadtree).
-- **`$spatial`**: 3D spatial coordinates (`$spatial.x/y/z`).
-- **`$flow`**: Gesture recognizer (swipe, pan, pinch).
-- **`$mask`**: Advanced clipping/masking.
-- **`$sw`**: Service Worker lifecycle management.
-- **`$push` / `$bgSync` / `$bgFetch` / `$periodicSync`**: Background APIs.
-- **`$mcp`**: Model Context Protocol for AI agent integration.
-- **`$svg`**: Reactive SVG manipulation.
-
-**Note**: Legacy network sprites (`$fetch`, `$get`, `$post`, etc.) and utility
-sprites (`$clipboard`, `$cache`, `$store`, `$watch`) have been **removed**.
-Use native `_fetch`, `_clipboard`, `_caches`, global signals `#store`, and
-`watch()` instead. See **§2.6.1** in the spec for mirror equivalents.
+| Directive | Role | Description |
+| :--- | :--- | :--- |
+| **`data-signal`** | **State** | Initializes reactive signals with continuous dependency re-evaluation and typed heap allocation. |
+| **`data-bind`** | **Binding** | High-performance bidirectional binding to inputs, text content, and native browser Web APIs. |
+| **`data-computed`** | **Derivative** | Read-only derived signal caching expression results. |
+| **`data-effect`** | **Side Effect** | Element-bound reactive side effects with automated disposal cleanups. |
+| **`data-if` / `data-show`** | **Control Flow** | Conditional rendering via physical DOM morphing (`data-if`) or visual toggling (`data-show`). |
+| **`data-for`** | **Iteration** | Keyed list rendering with zero memory allocation. |
+| **`data-class`** | **Hardened JIT** | Reconciles dynamic classes and Tailwind v4 utilities against reactive state. |
+| **`data-style`** | **Dynamic Style** | Dynamic inline CSS property synchronization with automatic unit appending. |
+| **`data-stylesheet`** | **Adopted CSS** | Bridges constructable stylesheets and Tailwind v4 theme tokens into the CSSOM. |
+| **`data-theme`** | **Theming** | Dynamic theme and color-mode orchestrator (`auto`, `light`, `dark`). |
+| **`data-switcher`** | **Iteration** | Automates cycling through states (e.g., Theme Switchers). |
+| **`data-drag`** | **Drag & Drop** | Native DnD engine supporting multi-drag, groups, cloning, handles, and sorting. |
+| **`data-flow`** | **Spatial Canvas** | Infinite-canvas layout engine with pan, zoom, and spatial coordinate mapping. |
+| **`data-on`** | **Behavior** | Event handlers with NEG pipeline modifiers (`:debounce`, `:once`, `:prevent`). |
+| **`data-router` / `data-route`** | **Routing** | Declarative SPA client routing with guards, layouts, and History API sync. |
+| **`data-component`** | **Components** | Mounts reusable HTML component fragments into Shadow DOM or light DOM. |
+| **`data-import`** | **Asset Registry** | Asynchronously adopts scripts, stylesheets, and VFS components. |
+| **`data-pwa`** | **PWA** | Progressive Web App lifecycle, service worker registration, and install prompts. |
+| **`data-markdown`** | **Transpiler** | Zero-dependency markdown-to-HTML parser with Tailwind typography. |
+| **`data-mask`** | **Masking** | Visual SVG and CSS mask synchronization. |
+| **`data-preserve`** | **Shield** | Prevents node and state loss during server-driven morph reconciliation. |
+| **`data-var-[name]`** | **Data Painting** | Directly synchronizes state to CSS custom properties (`--[name]`). |
+| **`data-raf`** | **Animation** | Runs 120fps animation callbacks on every animation frame. |
+| **`data-teleport`** | **Portal** | Teleports elements to target containers while preserving reactive context. |
+| **`data-assert` / `data-debug`** | **Diagnostics** | Runtime invariant assertions and agentic self-heal inspector beacons. |
+| **`data-build`** | **Bundler** | In-browser asset serialization to IndexedDB. |
 
 ---
 
