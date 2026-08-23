@@ -409,6 +409,20 @@
     <!-- Tab state lives in the global signal declared on `drawer-content`
          (data-signal:global), so the bar and panels share one scope. -->
 
+    <!-- Loading placeholder template with DaisyUI skeleton content -->
+    <template id="tab-loading-template">
+      <head>
+        <title>Loading...</title>
+        <meta name="icon" content="svg-spinners:90-ring-with-bg">
+      </head>
+      <div class="flex flex-col gap-4 p-6 w-full animate-pulse">
+        <div class="skeleton h-8 w-48"></div>
+        <div class="skeleton h-4 w-full"></div>
+        <div class="skeleton h-4 w-3/4"></div>
+        <div class="skeleton h-32 w-full mt-4"></div>
+      </div>
+    </template>
+
     <!-- Inline template for tab headers -->
     <template id="tab-header-template">
       <div role="tab" tabindex="0"
