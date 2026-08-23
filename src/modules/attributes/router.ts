@@ -1217,14 +1217,34 @@ export const routerAttributeModule: AttributeModule = {
 
         // Per-tab: remember the resolved path for the active tab so switching
         // back to it (or a back/forward that lands here) re-renders correctly.
-        const _at = getActiveTabId();
-        if (_at) {
+        const tabs = (globals.tabs as any[]) || [];
+        let _at = getActiveTabId();
+        const resolvedSource = matched?.component ?? staticComponent ?? null;
+
+        if ((!_at || tabs.length === 0) && resolvedSource) {
+          const initialId = matched?.id || matched?.name || (path.replace(/[^\w-]/g, '_') || 'tab-1');
+          _at = initialId;
+          setActiveTabId(initialId);
+          state.tabPaths[_at] = path;
+          const newTab: Record<string, unknown> = {
+            id: initialId,
+            route: path,
+            source: resolvedSource
+          };
+          const routeMeta = matched?.meta as Record<string, string> | undefined;
+          if (routeMeta?.title || routeMeta?.icon) {
+            newTab.meta = { ...routeMeta };
+          }
+          tabs.push(newTab);
+          if (runtime.setGlobalSignal) {
+            runtime.setGlobalSignal('tabs', tabs);
+          }
+        } else if (_at) {
           // Guard custom-component tabs (e.g. a freshly opened new-tab
           // launchpad). A concurrent/delayed updateRoute — including the boot
           // microtask — resolves the browser URL and would otherwise clobber
           // the launchpad's content with `_pages/home.html`. Leave such tabs
           // alone so their `custom-component` content persists.
-          const tabs = (globals.tabs as any[]) || [];
           const atIdx = tabs.findIndex((t: any) => t.id === _at);
           // A tab whose stored path is the 'custom-component' sentinel (e.g. a
           // freshly opened new-tab launchpad) must NOT have its content swapped
@@ -1236,7 +1256,6 @@ export const routerAttributeModule: AttributeModule = {
             // Preserve the sentinel; do not overwrite with the resolved path.
           } else {
             state.tabPaths[_at] = path;
-            const resolvedSource = matched?.component ?? staticComponent ?? null;
             if (resolvedSource && atIdx >= 0) {
               const cur = tabs[atIdx];
               // ZCZS: mutate the reactive tab object in-place via the proxy —
