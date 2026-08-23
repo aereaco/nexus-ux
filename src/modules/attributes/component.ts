@@ -93,32 +93,6 @@ function extractResourceMetadata(
       }
     });
 
-    const globals = runtime.globalSignals ? runtime.globalSignals() : {};
-    if (globals) {
-      const norm = path.startsWith('/') ? path : '/' + path;
-      const unnorm = path.startsWith('/') ? path.slice(1) : path;
-      const curMeta = globals.meta || {};
-      const nextMeta = {
-        ...curMeta,
-        [path]: meta,
-        [norm]: meta,
-        [unnorm]: meta
-      };
-      if (runtime.setGlobalSignal) {
-        runtime.setGlobalSignal('meta', nextMeta);
-      }
-      const routerState = (globals.router || globals.appRouter) as any;
-      if (routerState) {
-        routerState.meta = nextMeta;
-        if (Array.isArray(routerState.routes)) {
-          const routeRecord = routerState.routes.find((r: any) => r.path === path || r.path === norm || r.path === unnorm);
-          if (routeRecord) {
-            routeRecord.meta = { ...(routeRecord.meta || {}), ...meta };
-          }
-        }
-      }
-    }
-
     if (meta.title && typeof document !== 'undefined') {
       document.title = meta.title;
     }
