@@ -336,7 +336,7 @@ Nexus-UX targets **ES2022** and uses modern web APIs:
 - **Cache API**, **Background Sync**, **Push API** — progressive web app features
 - **requestIdleCallback**, **requestAnimationFrame** — scheduler integration
 
-All Environment APIs are provided via environment mirrors (`_` prefix) and work in both browser and Deno runtimes where available.
+All native browser APIs (`window`, `localStorage`, `document`, etc.) are tracked reactively via direct Native API Binding with zero wrapper overhead.
 
 ---
 
@@ -345,12 +345,12 @@ All Environment APIs are provided via environment mirrors (`_` prefix) and work 
 ```
 src/
 ├── index.ts              # Entry point — UX class, inline utilities
-├── manifest.ts           # AUTO-GENERATED module registry
-├── engine/               # Core runtime (reactivity, scheduler, observers, mirrors)
+├── manifest.ts           # AUTO-GENERATED module registry (build.ts)
+├── engine/               # Core runtime (reactivity, scheduler, observers, ZCZS heap)
 ├── modules/
-│   ├── attributes/       # data-* directive handlers (31 modules)
-│   ├── sprites/          # $ sprite implementations (15 modules)
-│   ├── modifiers/        # : Pipeline modifiers (10 modules)
+│   ├── attributes/       # data-* directive handlers (30 modules)
+│   ├── sprites/          # $ sprite implementations (14 modules)
+│   ├── modifiers/        # : Pipeline modifiers (15 modules)
 │   ├── scopes/           # @ Logical Scope Rules (6 modules)
 │   └── listeners/        # Global event listeners (4 modules)
 ├── docs/                 # Specification & reference
