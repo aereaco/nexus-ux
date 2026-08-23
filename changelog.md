@@ -1,10 +1,24 @@
 # Nexus-UX Changelog & Codebase Alignment Analysis
 
-**Latest Alignment Date**: 2026-08-08  
+**Latest Alignment Date**: 2026-08-23  
 
 ---
 
-## Recent Major Release: 2026-08-08 — Native API Binding Architecture & Real-Time Hydration Alignment
+## Recent Major Release: 2026-08-23 — Comprehensive Specification & Documentation Alignment across All 69 Modules
+
+### 🌟 Highlights & Breakthroughs
+- **Exhaustive Module & Directive Documentation**:
+  - Full specification and reference guide coverage for all **69 auto-discovered modules** (30 Attributes, 14 Sprites, 15 Modifiers, 6 Scopes, 4 Listeners, 1 Observer).
+  - Added in-depth practical reference documentation for [`data-drag`](file:///c:/Users/verno/Development/nexus-ux/src/modules/attributes/drag.ts) (multi-drag selection, sorting, handles, shared transfer groups, clone mode, custom swap thresholds, auto-scrolling, packed CSS classes) and [`data-flow`](file:///c:/Users/verno/Development/nexus-ux/src/modules/attributes/flow.ts) (infinite canvas viewport, coordinate mapping, pan/zoom gesture integration).
+  - Documented constructable stylesheet management in [`data-stylesheet`](file:///c:/Users/verno/Development/nexus-ux/src/modules/attributes/stylesheet.ts), theme orchestration in [`data-theme`](file:///c:/Users/verno/Development/nexus-ux/src/modules/attributes/theme.ts), and zero-dependency markdown parsing in [`data-markdown`](file:///c:/Users/verno/Development/nexus-ux/src/modules/attributes/markdown.ts).
+- **NEG Grammar & Direct Native API Harmonization**:
+  - Completely purged legacy `_` Environment Mirror references across specification, reference guide, and README.
+  - Refined `.` token designation as **Native Access** for reactive Proxy/Reflect property traversal (`window.innerWidth`, `localStorage.theme`).
+  - Standardized directory tree representations to match the current module architecture.
+
+---
+
+## Release: 2026-08-08 — Native API Binding Architecture & Real-Time Hydration Alignment
 
 ### 🌟 Highlights & Breakthroughs
 - **Direct Native API Binding System:**
