@@ -225,363 +225,343 @@ internally:
 
 ### 2.1. `data-signal` — Declare Reactive State
 
-**Syntax**: `data-signal="{ signalName: initialValue, ... }"`
+**Syntax**: `data-signal="{ signalName: initialValue, ... }"`  
+**Modifiers**: `:global` / `data-signal-global` (attaches to `#` global signal heap), `:deep` (enforces deep cloning for mutable structures)
 
-**Purpose**: Creates a reactive scope with signals.
+**Purpose**: Creates a reactive scope on a DOM element. In Nexus-UX, `data-signal` is an active `elementBoundEffect` — **not a static one-time JSON initializer**. It runs during initial synchronous hydration and continuously re-evaluates whenever its reactive dependencies (including native browser APIs) change.
 
-**Examples**:
-
-```html
-<!-- Simple value -->
-<div data-signal="{ count: 0 }">
-  <p>{count}</p>
-</div>
-
-<!-- Object -->
-<div data-signal="{ user: { name: 'John', age: 30 } }">
-  <p>{user.name} is {user.age} years old</p>
-</div>
-
-<!-- Array -->
-<div data-signal="{ items: ['Apple', 'Banana', 'Cherry'] }">
-  <ul>
-    <li data-for="item in items">{item}</li>
-  </ul>
-</div>
-
-<!-- Live query (SurrealDB) -->
-<div
-  data-signal="{ todos: $sql('LIVE SELECT * FROM todo WHERE owner = auth.id') }"
->
-  <p>You have {todos.length} todos</p>
-</div>
-
-<!-- Computed signal (derived from other signals) -->
-<div data-signal="{ firstName: 'John', lastName: 'Doe' }">
-  <div data-signal="{ fullName: firstName + ' ' + lastName }">
-    <p>{fullName}</p>
-  </div>
-</div>
-```
-
-**Scoping**: Signals are scoped to the element they're declared on and all
-descendants.
-
-```html
-<div data-signal="{ count: 10 }">
-  <p>{count}</p>
-  <!-- ✅ Accessible -->
-  <div>
-    <p>{count}</p>
-    <!-- ✅ Accessible (child element) -->
-  </div>
-</div>
-<p>{count}</p>
-<!-- ❌ Not accessible (outside scope) -->
-```
-
-**Signal naming**: Must start with `$` when referenced in expressions.
-
-#### 2.1.1. State Management Directives
-
-| Directive                | Designation           | Behavioral Outcome                                         |
-| :----------------------- | :-------------------- | :--------------------------------------------------------- |
-| **`data-signal`**        | **State Root**        | Initializes a local reactive proxy.                        |
-| **`data-signal-global`** | **Beacon**            | Links the element to the shared Global Binary Heap.        |
-| **`data-computed`**      | **Logic Derivative**  | Creates a read-only signal that caches expression results. |
-| **`data-preserve`**      | **Structural Shield** | Prevents node/identity loss during server-driven morphs.   |
-
-#### 2.1.2. Logic Inheritance (`--`)
-
-Nexus-UX supports **Signal Inheritance** for theme-level logic. Signals prefixed
-with `--` automatically cascade to all descendants.
-
-- **Source**: `<div data-signal="{ --theme: 'dark' }">`
-- **Target**: `<span data-bind="--theme"></span>` (Accesses inherited value).
-
-#### 2.1.3. Practical Data Patterns
-
-- **Initial Fetch**:
-  ```html
-  <div
-    data-signal="{ users: [] }"
-    data-on-load="users = await $get('/api/users')"
-  >
-  </div>
-  ```
-- **Shared Application State**:
-  ```html
-  <body data-signal-global="appState"> <!-- All children can now use #appState -->
-  ```
-
-### 2.2. `data-bind` — Two-Way Data Binding
-
-**Syntax**: `data-bind-property="signalExpression"`
-
-**Purpose**: Binds an element property to a signal, updating both when either
-changes.
-
-**Supported properties**:
-
-- `value` (input, textarea, select)
-- `checked` (checkbox, radio)
-- `disabled` (any element)
-- `hidden` (any element)
-- Any custom property
+**Lifecycle & Execution Flow**:
+1. **Ghost Key Pre-Allocation**: `parseGhostKeys(expression)` extracts property keys and type hints, pre-allocating slots on the continuous typed SignalHeap (`Float64Array`, `Int32Array`, `Uint8Array`).
+2. **Synchronous Runner Assignment**: The effect runner wrapper (`runSelf`) is assigned to `activeNativeApiRunner` **before** calling `effect()`, ensuring initial reads of native browser globals (`window.innerWidth`, `localStorage.collapsed`, `scrollY`) immediately attach system event listeners on the first synchronous pass.
+3. **Continuous Dependency Notification**: When evaluated signal properties mutate on subsequent runs, `signalModule` calls `runtime.triggerRef(stateRef)`, instantly dispatching change notifications to all downstream directives (`data-bind`, `data-class`, `data-if`).
 
 **Examples**:
 
 ```html
-<!-- Text input -->
-<div data-signal="{ name: '' }">
-  <input type="text" data-bind="name">
-  <p>Hello, {name}!</p>
+<!-- Primitive values with automatic heap slot allocation -->
+<div data-signal="{ count: 0, title: 'Counter' }">
+  <p data-bind="title"></p>: <span data-bind="count"></span>
+  <button data-on-click="count++">+1</button>
 </div>
 
-<!-- Checkbox -->
-<div data-signal="{ agreed: false }">
-  <input type="checkbox" data-bind="agreed">
-  <p data-if="agreed">Thank you for agreeing!</p>
+<!-- Native API Reactive Binding directly inside Signal -->
+<div data-signal="{
+  isMobile: window.innerWidth < 768,
+  collapsed: localStorage.collapsed ?? true,
+  scrollY: window.scrollY
+}">
+  <p data-bind="'Mobile View: ' + isMobile"></p>
+  <p data-bind="'Scroll Position: ' + scrollY"></p>
 </div>
 
-<!-- Select dropdown -->
-<div data-signal="{ color: 'red' }">
-  <select data-bind="color">
-    <option value="red">Red</option>
-    <option value="green">Green</option>
-    <option value="blue">Blue</option>
-  </select>
-  <p>Selected: {color}</p>
-</div>
-
-<!-- Disabled state -->
-<div data-signal="{ loading: false }">
-  <button
-    data-bind-disabled="loading"
-    data-on-click="loading = true; setTimeout(() => loading = false, 2000)"
-  >
-    {loading ? 'Loading...' : 'Click Me'}
-  </button>
+<!-- Live query (SurrealDB Real-Time Sync) -->
+<div data-signal="{ todos: $sql('LIVE SELECT * FROM todo WHERE owner = auth.id') }">
+  <p>Active Todos: <span data-bind="todos.length"></span></p>
 </div>
 ```
-
-**Advanced**: Bind to nested object properties
-
-```html
-<div
-  data-signal="{ user: { profile: { name: 'John', email: 'john@example.com' } } }"
->
-  <input type="text" data-bind="user.profile.name">
-  <input type="email" data-bind="user.profile.email">
-</div>
-```
-
-#### 2.2.1. Content & Attribute Binding
-
-| **`data-bind`** | **Auto-Detect** | **The Unified Binding Engine**.
-Auto-detects target property (text, value, checked) based on element type.
-Absorbs legacy `data-bind` and `data-model`. | | **`data-html`** | **HTML
-Content** | Sets `innerHTML`. **CAUTION**: Use only for trusted content. | |
-**`data-var-[name]`** | **Variable Sync** | **CSS Custom Property Bridge**.
-Direct synchronization of state to CSS variables (`--[name]`). | |
-**`data-bind-[attr]`** | **Attribute Sync** | Reactively syncs a signal to any
-native HTML attribute. |
-
-#### 2.2.2. Form Two-Way Binding
-
-Nexus-UX provides robust two-way binding for all standard form elements via
-`data-bind`.
-
-- **Input/Textarea**: `<input data-bind="username">`
-- **Select**:
-  ```html
-  <select data-bind="selectedId">
-    <template data-for="opt in options">
-      <option data-bind="opt.id" data-bind="opt.label"></option>
-    </template>
-  </select>
-  ```
-- **Checkbox**: `<input type="checkbox" data-bind="isActive">` (Binds to
-  Boolean).
-
-#### 2.2.3. Automatic Unit Appending (data-style)
-
-When numeric signals are used in `data-style`, the engine automatically appends
-the appropriate CSS unit (e.g., `px`), bypassing string parsing for 60fps
-fluidity.
-
-- **Automatic Optimization**: `data-style-left="val"` (Raw number sync).
-
-#### 2.2.4. "Data Painting" with `data-var`
-
-Directly sync state to CSS Custom Properties. Essential for DaisyUI integration.
-
-- **Pattern**: `<div class="radial-progress" data-var-value="percent"></div>`
-
-#### 2.2.6. "Data Import" 2.0 — Reactive Grouped Namespaces
-
-**Syntax**: `data-import="{ groupName: { type: 'url' } }"`
-
-**Purpose**: Defers HTML rendering until critical external assets (like tailwind
-CDN or custom fonts) are fully loaded, parsed, and adopted via Constructable
-Stylesheets. Supports reactive updates and multiple asset types per namespace.
-
-- **Standard Pattern**:
-  `<html data-import="{ tailwind: { link: 'https://cdn.tailwindcss.com' } }"> ... </html>`
-
-- **Reactive Theme Switcher**:
-  ```html
-  <div data-import="{ theme: { theme: 'themes/' + currentTheme + '.css' } }">
-  ```
 
 ---
 
-## Chapter 3: Control Flow & Rendering
+### 2.2. `data-bind` — Unified Property, Form & Native API Binding
 
-### 3.1. Conditional Rendering Specification
+**Syntax**:
+- **Auto-Detect**: `data-bind="expression"` (binds to `value`, `checked`, or `textContent` based on element type)
+- **Sub-Directive**: `data-bind-attribute="expression"` (e.g. `data-bind-title="tooltip"`, `data-bind-disabled="isLoading"`)
+- **Native API**: `data-bind="window.innerWidth"`, `data-bind="localStorage.theme"`
 
-| Directive       | Rendering Mode       | Technical Implication                                            |
-| :-------------- | :------------------- | :--------------------------------------------------------------- |
-| **`data-if`**   | **Physical Removal** | Element is added/removed from the DOM. Requires `<template>`.    |
-| **`data-show`** | **Visual Toggle**    | Toggles `display: none`. Item remains in the accessibility tree. |
+**Purpose**: Provides bidirectional and one-way synchronization between reactive state and DOM elements or browser Web APIs.
 
-> [!IMPORTANT]
-> **Performance**: Use `data-show` for elements that toggle frequently (e.g.,
-> dropdowns) to avoid the layout cost of DOM insertion/removal. Use `data-if`
-> for heavy components that should only exist when active.
-
-### 3.2. `data-if` — Conditional Rendering
-
-**Syntax**: `data-if="condition"`
-
-**Purpose**: Shows/hides element based on condition. Element is **removed from
-DOM** when false (not just hidden with CSS).
-
-**Examples**:
-
-```html
-<!-- Simple boolean -->
-<div data-signal="{ loggedIn: false }">
-  <div data-if="loggedIn">
-    <p>Welcome back!</p>
-  </div>
-  <div data-if="!loggedIn">
-    <p>Please log in.</p>
-  </div>
-</div>
-
-<!-- Comparison -->
-<div data-signal="{ age: 16 }">
-  <p data-if="age >= 18">You can vote!</p>
-  <p data-if="age < 18">You're too young to vote.</p>
-</div>
-
-<!-- Complex expression -->
-<div data-signal="{ user: { role: 'admin', active: true } }">
-  <div data-if="user.role === 'admin' && user.active">
-    <p>Admin dashboard</p>
-  </div>
-</div>
-
-<!-- Null/undefined checks -->
-<div data-signal="{ data: null }">
-  <p data-if="data">Data loaded: {data}</p>
-  <p data-if="!data">Loading...</p>
-</div>
-```
-
-**Performance note**: `data-if` is more performant than CSS `display: none`
-because the browser doesn't have to calculate layout/paint for hidden elements.
-
-**`data-if` with `<template>` Example**:
-
-```html
-<template data-if="isPremium">
-  <div class="badge badge-gold">VIP Content</div>
-</template>
-```
-
-### 3.3. `data-for` — List Rendering
-
-**Syntax**: `data-for="item in arrayExpression"`\
-**Optional key**: `data-key="item.id"`
-
-**Purpose**: Repeats element for each item in an array.
+**Supported Modes**:
+1. **Form Input Auto-Detection**:
+   - `<input type="text" data-bind="username">`: Bidirectional sync with `input` event (or `change` if `data-bind:lazy`).
+   - `<input type="checkbox" data-bind="isActive">`: Bidirectional sync with `checked` boolean state.
+   - `<input type="radio" value="dark" data-bind="theme">`: Syncs radio group state.
+   - `<select data-bind="selectedCategory">`: Syncs dropdown selection (single or multi).
+   - `<textarea data-bind="notes">`: Bidirectional text synchronization.
+2. **Text Content & Attributes**:
+   - `<div>` / `<span>`: Syncs to `textContent`.
+   - `data-bind-href="user.profileUrl"`: Sets HTML attribute dynamically.
+   - `data-bind-disabled="isSubmitting"`: Toggles boolean attribute.
+3. **Direct Native API Binding**:
+   - Intercepts property reads (`window.innerWidth`, `localStorage.theme`) and writes (`localStorage.setItem(...)`) via Proxy/Reflect traps without requiring wrapper modules or `_` prefixes.
 
 **Examples**:
 
 ```html
-<!-- Simple array -->
-<div data-signal="{ fruits: ['Apple', 'Banana', 'Cherry'] }">
-  <ul>
-    <li data-for="fruit in fruits">{fruit}</li>
+<!-- Form Two-Way Binding -->
+<div data-signal="{ form: { name: '', email: '', agree: false } }">
+  <input type="text" placeholder="Name" data-bind="form.name">
+  <input type="email" placeholder="Email" data-bind="form.email">
+  <input type="checkbox" data-bind="form.agree">
+  <button data-bind-disabled="!form.agree || !form.name">Submit</button>
+</div>
+
+<!-- Live Window Width & Storage Reactivity -->
+<div data-signal="{ width: window.innerWidth }">
+  <span data-bind="window.innerWidth"></span>
+  <span data-bind="'Window Width: ' + window.innerWidth"></span>
+</div>
+```
+
+---
+
+### 2.3. `data-computed` — Derived Reactive Computations
+
+**Syntax**: `data-computed="{ derivedKey: expression, ... }"`
+
+**Purpose**: Declares read-only computed properties derived from other signals or state expressions, caching results until dependencies mutate.
+
+```html
+<div data-signal="{ items: [10, 20, 30], taxRate: 0.08 }">
+  <div data-computed="{
+    subtotal: items.reduce((acc, n) => acc + n, 0),
+    total: subtotal * (1 + taxRate)
+  }">
+    <p>Subtotal: $<span data-bind="subtotal"></span></p>
+    <p>Total: $<span data-bind="total.toFixed(2)"></span></p>
+  </div>
+</div>
+```
+
+---
+
+### 2.4. `data-effect` — Element-Bound Reactive Side Effects
+
+**Syntax**: `data-effect="expressionOrStatement"`
+
+**Purpose**: Runs arbitrary JavaScript logic whenever reactive dependencies mutate. Cleanups registered via `onEffectCleanup` run automatically prior to re-execution or when the element is removed from the DOM.
+
+```html
+<div data-signal="{ count: 0 }">
+  <div data-effect="document.title = 'Count: ' + count"></div>
+  <button data-on-click="count++">Increment</button>
+</div>
+```
+
+---
+
+### 2.5. Additional Essential Directives
+
+- **`data-var-[name]`**: CSS Variable Sync — maps reactive state directly to CSS custom properties (`--[name]`) for zero-layout data painting.
+  ```html
+  <div class="radial-progress" data-var-value="progressPercent"></div>
+  ```
+- **`data-html`**: Sets inner HTML reactively for trusted HTML strings.
+  ```html
+  <div data-html="renderedContent"></div>
+  ```
+- **`data-import`**: Asynchronously imports scripts, stylesheets, and remote VFS components into the Constructable StyleSheet registry.
+  ```html
+  <html data-import="{ chartJs: { script: '/assets/chart.js' } }">
+  ```
+- **`data-markdown`**: Zero-dependency inline markdown-to-HTML parser using native Tailwind classes and code block syntax preservation.
+  ```html
+  <div data-markdown="doc.Description"></div>
+  ```
+- **`data-mask`**: Applies dynamic SVG/CSS clipping masks.
+  ```html
+  <div data-mask="radial-gradient(circle, black 50%, transparent 100%)"></div>
+  ```
+- **`data-pwa`**: PWA orchestrator managing service worker registration, offline state, and install prompts via `$pwa`.
+  ```html
+  <div data-pwa data-show="$pwa.canInstall">
+    <button data-on-click="$pwa.install()">Install App</button>
+  </div>
+  ```
+- **`data-raf`**: Runs high-frequency 120fps animation frame callbacks with `$time` and `$delta`.
+  ```html
+  <div data-raf="rotation = ($time / 10) % 360" data-style="{ transform: 'rotate(' + rotation + 'deg)' }"></div>
+  ```
+- **`data-preserve`**: Structural shield that prevents elements and their subtrees from being replaced or lost during server-driven morphs.
+  ```html
+  <div data-preserve id="persistent-player"></div>
+  ```
+- **`data-assert`**: Development-mode assertion that warns when invariants are violated.
+  ```html
+  <div data-assert="items.length > 0"></div>
+  ```
+- **`data-build`**: In-browser bundler that serializes the current DOM state into IndexedDB.
+
+---
+
+## Chapter 3: Control Flow & Interactive Layouts
+
+### 3.1. `data-if` & `data-show` — Conditional Rendering
+
+| Directive | Mechanism | Use Case |
+| :--- | :--- | :--- |
+| **`data-if`** | Physical DOM insertion & removal with morph diffing | Heavy components, tabs, conditional subtrees |
+| **`data-show`** | Visual toggle via `display: none` | Frequent toggles (dropdowns, tooltips, modals) |
+
+```html
+<!-- Physical DOM insertion/removal -->
+<div data-signal="{ authenticated: false }">
+  <template data-if="authenticated">
+    <div class="user-profile">Welcome back!</div>
+  </template>
+</div>
+
+<!-- Visual display toggle -->
+<div data-signal="{ open: false }">
+  <button data-on-click="open = !open">Menu</button>
+  <ul data-show="open" class="dropdown-menu">
+    <li>Profile</li>
+    <li>Settings</li>
   </ul>
 </div>
+```
 
-<!-- Array of objects -->
-<div data-signal="{ users: $sql('SELECT * FROM user') }">
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Email</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr data-for="user in users" data-key="user.id">
-        <td>{user.name}</td>
-        <td>{user.email}</td>
-      </tr>
-    </tbody>
-  </table>
+---
+
+### 3.2. `data-for` — Zero-Allocation List Rendering
+
+**Syntax**: `data-for="item in items"` or `data-for="(item, index) in items"`  
+**Companion Attribute**: `data-key="item.id"`
+
+Repeats the element or template for each array item, using keyed diffing for minimal DOM mutations:
+
+```html
+<div data-signal="{ users: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }] }">
+  <ul>
+    <li data-for="user in users" data-key="user.id">
+      <span data-bind="user.name"></span>
+    </li>
+  </ul>
 </div>
+```
 
-<!-- Indexed access -->
-<div data-signal="{ items: ['First', 'Second', 'Third'] }">
-  <div data-for="(item, index) in items">
-    <p>{index + 1}. {item}</p>
+---
+
+### 3.3. `data-switcher` — Multi-State Iteration
+
+**Syntax**: `data-switcher="stateSignal"`  
+**Companion Attribute**: `data-switcher-options="['light', 'dark', 'system']"`
+
+Cycles through an array of states on user click:
+
+```html
+<button data-switcher="theme" data-switcher-options="['light', 'dark', 'system']">
+  Theme: <span data-bind="theme"></span>
+</button>
+```
+
+---
+
+### 3.4. `data-teleport` — DOM Portals & Teleportation
+
+**Syntax**: `data-teleport="targetSelector"`
+
+Teleports elements into target DOM containers (such as `body` or modal backdrops) while preserving their reactive context:
+
+```html
+<div data-signal="{ modalOpen: false }">
+  <button data-on-click="modalOpen = true">Open Modal</button>
+  <template data-if="modalOpen">
+    <div data-teleport="body" class="modal-backdrop">
+      <div class="modal-card">
+        <h3>Modal Dialog</h3>
+        <button data-on-click="modalOpen = false">Close</button>
+      </div>
+    </div>
+  </template>
+</div>
+```
+
+---
+
+### 3.5. `data-drag` — Drag & Drop Engine (Deep Dive)
+
+**Syntax**: `data-drag-container="listExpression"` (on container), `data-drag` (on draggable items)
+
+Nexus-UX provides a comprehensive native Drag & Drop engine supporting sorting, shared groups, cloning, multi-drag, handles, and custom swap thresholds.
+
+#### Drag Directives & Attributes
+
+| Attribute | Scope | Description |
+| :--- | :--- | :--- |
+| **`data-drag-container`** | Container | Binds a reactive array to the draggable list container. |
+| **`data-drag`** | Item | Marks an element as draggable. |
+| **`data-drag-group`** | Container | Assigns containers to a shared transfer group for cross-list drag-and-drop. |
+| **`data-drag-handle`** | Item / Container | Restricts dragging activation to elements matching the selector (e.g. `.handle`). |
+| **`data-drag-clone`** | Container | Enables element cloning from source container to target container. |
+| **`data-drag-multi`** | Container | Enables multi-item selection (`Cmd`/`Ctrl` + Click) and batch drag. |
+| **`data-drag-swap`** | Container | Enables swap mode (items swap positions instead of inserting). |
+| **`data-drag-direction`** | Container | Forces layout direction: `'vertical'` or `'horizontal'`. |
+| **`data-drag-threshold`** | Container | Floating swap sensitivity threshold (e.g. `0.5`). |
+| **`data-drag-autoscroll`** | Container | Enables automatic viewport/container scrolling near boundaries. |
+
+#### Packed CSS Drag Classes
+The engine injects optimized drag styles automatically:
+- `.draggable-chosen`: Applied to the active drag item at drag start.
+- `.draggable-drag`: Applied during dragging motion.
+- `.draggable-ghost`: Applied to the placeholder position in the list.
+- `.draggable-selected`: Applied to items selected during multi-drag.
+- `.draggable-swap-highlight`: Applied to hover target in swap mode.
+- `.drop-target-before` / `.drop-target-after`: Indicator gradient bars for precise drop positioning.
+
+#### Example: Shared Group with Handles & Multi-Drag
+
+```html
+<div class="grid grid-cols-2 gap-4" data-signal="{ todo: ['Task 1', 'Task 2'], done: ['Task 3'] }">
+  <!-- Container 1 -->
+  <div class="card p-4 bg-base-200"
+       data-drag-container="todo"
+       data-drag-group="'tasks'"
+       data-drag-handle="'.handle'"
+       data-drag-multi>
+    <h3>To Do</h3>
+    <div data-for="item in todo" data-drag class="p-3 bg-base-100 rounded my-2 flex items-center gap-2">
+      <span class="handle cursor-grab">⠿</span>
+      <span data-bind="item"></span>
+    </div>
   </div>
-</div>
 
-<!-- Nested loops -->
-<div
-  data-signal="{ categories: [
-  { name: 'Fruits', items: ['Apple', 'Banana'] },
-  { name: 'Vegetables', items: ['Carrot', 'Broccoli'] }
-] }"
->
-  <div data-for="category in categories">
-    <h3>{category.name}</h3>
-    <ul>
-      <li data-for="item in category.items">{item}</li>
-    </ul>
+  <!-- Container 2 -->
+  <div class="card p-4 bg-base-200"
+       data-drag-container="done"
+       data-drag-group="'tasks'"
+       data-drag-handle="'.handle'"
+       data-drag-multi>
+    <h3>Done</h3>
+    <div data-for="item in done" data-drag class="p-3 bg-base-100 rounded my-2 flex items-center gap-2">
+      <span class="handle cursor-grab">⠿</span>
+      <span data-bind="item"></span>
+    </div>
   </div>
 </div>
 ```
 
-**Keyed reconciliation**: Use `data-key` for efficient DOM updates when array
-changes.
+---
+
+### 3.6. `data-flow` — Spatial Canvas & Flow Layout (Deep Dive)
+
+**Syntax**: `data-flow="flowOptions"`
+
+**Purpose**: Orchestrates interactive infinite-canvas viewports, diagramming surfaces, and gesture-driven spatial layouts with built-in pan, zoom, and coordinate transform math.
+
+#### Flow Properties & State
+The flow engine exposes reactive spatial state `{ x, y, zoom, minZoom, maxZoom }`:
+- **Pan Navigation**: Click-and-drag panning on the canvas background.
+- **Wheel Zoom**: Smooth mouse wheel zooming anchored to the cursor focal point.
+- **Pinch Zoom**: Multi-touch pinch zoom support on mobile/touch screens.
+- **Spatial Node Coordinates**: Child nodes with `data-flow-node` or `data-spatial` automatically translate relative to the canvas coordinate matrix.
+
+#### Example: Interactive Infinite Canvas
 
 ```html
-<!-- Without key: Entire list re-renders on change -->
-<div data-for="user in users">
-  <p>{user.name}</p>
+<div data-signal="{ canvas: { x: 0, y: 0, zoom: 1 } }">
+  <div data-flow="{ state: canvas, minZoom: 0.2, maxZoom: 3 }"
+       class="w-full h-[600px] overflow-hidden bg-base-300 relative cursor-grab">
+    <div class="flow-viewport" data-style="{ transform: 'translate(' + canvas.x + 'px, ' + canvas.y + 'px) scale(' + canvas.zoom + ')' }">
+      <div class="flow-node absolute p-4 bg-primary text-white rounded-xl shadow-lg" style="left: 100px; top: 150px">
+        Node A
+      </div>
+      <div class="flow-node absolute p-4 bg-secondary text-white rounded-xl shadow-lg" style="left: 400px; top: 250px">
+        Node B
+      </div>
+    </div>
+  </div>
 </div>
-
-<!-- With key: Only changed items re-render -->
-<div data-for="user in users" data-key="user.id">
-  <p>{user.name}</p>
-</div>
-```
-
-**Performance**: Always use `data-key="item.id"` for large lists (>100 items).
-
-**With `<template>` (canonical form)**:
-
-```html
-<template data-for="user in users" data-key="user.id">
-  <li data-bind="user.name"></li>
-</template>
 ```
 
 ---
@@ -590,223 +570,29 @@ changes.
 
 ### 4.1. `data-on` — Event Handlers
 
-**Syntax**: `data-on-eventName="expression"`\
-**Modifiers**: `:prevent`, `:stop`, `:once`, `:key`
+**Syntax**: `data-on-EVENT:MODIFIER="expression"`
 
-**Supported events**: `click`, `input`, `change`, `submit`, `keydown`, `keyup`,
-`mouseenter`, `mouseleave`, `focus`, `blur`, etc.
+Binds native and custom DOM events to reactive expressions.
 
-**Examples**:
+### 4.2. Complete NEG Modifiers Registry (15 Modules)
 
-```html
-<!-- Basic click handler -->
-<div data-signal="{ count: 0 }">
-  <button data-on-click="count++">Increment</button>
-  <p>{count}</p>
-</div>
-
-<!-- Multiple statements -->
-<button data-on-click="console.log('Clicked!'); alert('Hello!')">
-  Click me
-</button>
-
-<!-- Event object access -->
-<input type="text" data-on-input="console.log(event.target.value)">
-
-<!-- Prevent default -->
-<form data-on-submit:prevent="handleSubmit()">
-  <input type="text" name="email">
-  <button type="submit">Submit</button>
-</form>
-
-<!-- Stop propagation -->
-<div data-on-click="console.log('Outer')">
-  <button data-on-click:stop="console.log('Inner')">
-    Click me (won't bubble up)
-  </button>
-</div>
-
-<!-- Once modifier (handler only fires once) -->
-<button data-on-click:once="console.log('This will only log once')">
-  Click me
-</button>
-
-<!-- Key modifiers -->
-<input type="text" data-on-keydown:enter="submitForm()">
-<input type="text" data-on-keydown:escape="clearInput()">
-<input type="text" data-on-keydown:ctrl.s="saveDocument()">
-```
-
-**Event modifiers summary**:
-
-- `.prevent` - calls `event.preventDefault()`
-- `.stop` - calls `event.stopPropagation()`
-- `.once` - handler only fires once, then removes itself
-- `.enter`, `.escape`, `.space` - keyboard key filters
-- `.ctrl`, `.shift`, `.alt`, `.meta` - modifier key combinations
-
-### 4.2. Native Event Binding (Interactivity Orchestration)
-
-Nexus-UX provides **Native Event Binding** for high-fidelity interactivity.
-Directives like `data-on-hover` are not virtual; they map directly to the
-browser's native event stack to drive reactive orchestration.
-
-#### 4.2.1. `data-on-hover` — Reactive Hover Orchestration
-
-**Syntax**: `data-on-hover="expression"`
-
-**Purpose**: Sets a local signal named `$hovered` to `true` (mouseenter) and
-`false` (mouseleave), while executing the provided expression.
-
-**Practical Examples**:
-
-```html
-<!-- Native hover orchestration -->
-<div
-  class="p-4 transition-colors"
-  data-class="{ 'bg-primary': $hovered }"
-  data-on-hover="console.log('Hover state:', $hovered)"
->
-  Hover to Reveal Registry
-</div>
-```
-
-> [!NOTE]
-> **Orchestration Rule**: Because `$hovered` is a native-mapped signal, it can
-> be referenced in any other directive (like `data-class` or `data-style`) on
-> the same element or its descendants for complex visual reactions.
-
-### 4.2. Event Listener Modifiers (Extended)
-
-Modifiers composed with `data-on-[event]` to alter the native event behavior.
-
-| Modifier   | Behavioral Outcome                                           |
-| :--------- | :----------------------------------------------------------- |
-| `:prevent` | Calls `event.preventDefault()`.                              |
-| `:stop`    | Calls `event.stopPropagation()`.                             |
-| `:once`    | Listener is automatically removed after the first execution. |
-| `:outside` | Executes only when a click occurs outside the element.       |
-| `:snap`    | Synchronizes the execution to the next animation frame.      |
-
-### 4.3. Specialized Lifecycle Directives
-
-| Directive                   | Execution Point                | Primary Use Case                                    |
-| :-------------------------- | :----------------------------- | :-------------------------------------------------- |
-| **`data-on-load`**          | Element entry to DOM.          | Fetching initial data, initializing 3rd party libs. |
-| **`data-on-raf`**           | Every `requestAnimationFrame`. | Zero-allocation animations, canvas updates.         |
-| **`data-on-intersect`**     | Viewport entry/exit.           | Infinite scroll beacons, spatial triggers.          |
-
-### 4.4. High-Performance Timing
-
-- **Debounce**: `<input data-on-input:debounce(500ms)="query = $el.value">`
-- **Throttle**:
-  `<div data-on-scroll:throttle(16ms)="scrollY = window.scrollY">`
-
-### 4.5. Universal Behavioral Composition (Pipelines)
-
-Behaviors in Nexus-UX are decoupled from specific directives. They are composed
-into a **Pipeline** using the modifier (`:`) syntax, creating a deterministic
-chain of execution.
-
-#### 4.5.1. Modifier Classification
-
-| Category         | Role           | Execution Phase | Examples                                                   |
-| :--------------- | :------------- | :-------------- | :--------------------------------------------------------- |
-| **Interceptors** | **Guards**     | Pre-Execution   | `:confirm`, `:auth`, `:validate`, `:debounce`, `:throttle` |
-| **Wrappers**     | **Lifecycles** | Execution Frame | `:indicator`, `:transition`, `:busy`                       |
-| **Pipeways**     | **Outcomes**   | Post-Execution  | `:morph`, `:log`, `:toast`, `:dispatch`, `:preserve`       |
-
-#### 4.5.2. Pipeline Execution Logic
-
-1. **Intercept**: The engine runs all interceptors. If any fail (e.g.,
-   `:confirm` is rejected), the pipeline terminates.
-2. **Wraps**: Active wrappers are initialized (e.g., an `#indicator` is shown).
-3. **Execute**: The core directive logic or sprite (e.g., `$post`) is executed.
-4. **Resolve**: Post-execution handlers (Pipeways) process the result (e.g.,
-   `:morph` the response into the DOM).
-5. **Finalize**: Wrappers are cleaned up (e.g., the indicator is hidden).
-
-#### 4.5.3. Detailed Modifier Reference
-
-- **`:confirm('msg')`**: Pauses execution for a native window confirmation.
-- **`:auth('role')`**: Gates execution based on the `#auth` signal state.
-- **`:indicator(selector)`**: Shows the target element during async operations
-  and hides it after.
-- **`:morph`**: Essential for Hypermedia. It morphs the result of an async
-  sprite into the current element's children.
-- **`:transition`**: Wraps the update in the browser's native View Transitions
-  API.
-- **`:preserve`**: **The Behavioral Anchor**. Buffers the directive's value
-  before a morph and restores it after to prevent data loss.
-
-#### 4.5.4. Practical Composition Examples
-
-- **The Secure Auto-Saver**:
-  ```html
-  <input
-    data-bind-value:debounce(1000ms):indicator(#sync-icon):post:preserve="/api/save"
-  >
-  ```
-  _Logic_: Wait 1s (debounce), show sync icon, post data, preserve the input's
-  focus/value during the morph.
-
-- **The Guarded Operation**:
-  ```html
-  <button data-on-click:confirm('Burn state?'):auth('admin'):morph="$post('/api/reset')">
-     Wipe Data
-  </button>
-  ```
-  _Logic_: Confirm with user, check admin rights, then post and morph the
-   result.
-
-### 4.6. Drag-and-Drop & Teleportation
-
-Nexus-UX implements **drag-and-drop** via a clean two-directive system that respects ZCZS and reactive data structures. No heavy libraries, just native HTML5 DnD events wired to your signals.
-
-#### `data-drag` — The Drag Source
-
-**Syntax**: `data-drag` (value optional, reserved for metadata)
-
-**Purpose**: Makes an element draggable. On `dragstart`, captures a ZCZS memory pointer to the source reactive array and stores it in `globalThis._dragState`. The drop target consumes this pointer to perform the actual mutation.
-
-**Example: Simple Draggable List**
-```html
-<div data-signal="{ items: ['A', 'B', 'C'] }">
-  <ul data-teleport:drop="items">
-    <li data-for="item in items"
-        data-drag
-        data-bind="item">{item}</li>
-  </ul>
-</div>
-```
-Dragging an item reorders the `items` array reactively.
-
-#### `data-teleport:drop` — The Drop Zone
-
-**Syntax**: `data-teleport:drop="listExpression"`  
-**Modifiers**: `:clone` (copy), `:swap` (exchange positions)
-
-**Purpose**: Turns the element into an HTML5 drop zone. On `drop`, reads the global drag state and mutates the target array directly. View Transitions are used automatically when available.
-
-**Example: Shared Transfer**
-```html
-<!-- Source container -->
-<ul data-teleport:drop="sourceList">
-  <li data-for="item in sourceList"
-      data-drag
-      data-bind="item">{item}</li>
-</ul>
-
-<!-- Target container -->
-<ul data-teleport:drop="targetList">
-  <li data-for="item in targetList"
-      data-drag
-      data-bind="item">{item}</li>
-</ul>
-```
-
-> [!IMPORTANT]
-> **ZCZS Guarantee**: The dragged item's identity is preserved as a **memory reference**, not a JSON copy. Nested objects, circular references, and reactive proxies survive the transfer intact — zero serialization cost.
+| Modifier | Execution Role | Practical Example |
+| :--- | :--- | :--- |
+| **`:debounce.[ms]`** | Delays execution until silence threshold passes | `data-on-input:debounce.300ms="search()"` |
+| **`:throttle.[ms]`** | Limits execution frequency to rate interval | `data-on-scroll:throttle.100ms="checkPosition()"` |
+| **`:prevent`** | Calls `event.preventDefault()` | `data-on-submit:prevent="handleSubmit()"` |
+| **`:stop`** | Calls `event.stopPropagation()` | `data-on-click:stop="handleClick()"` |
+| **`:once`** | Executes handler only once then unbinds | `data-on-click:once="initAnalytics()"` |
+| **`:outside`** | Triggers when click occurs outside the element | `data-on-click:outside="dropdownOpen = false"` |
+| **`:self`** | Triggers only if `event.target === $el` | `data-on-click:self="closeModal()"` |
+| **`:window`** | Attaches event listener to `window` | `data-on-keydown:window="handleKey($event)"` |
+| **`:document`** | Attaches event listener to `document` | `data-on-visibilitychange:document="handleVisibility()"` |
+| **`:keys.[key]`** | Filters keydown events to specific key combinations | `data-on-keydown:keys.enter="submit()"` |
+| **`:hold.[ms]`** | Triggers upon continuous press-and-hold | `data-on-pointerdown:hold.500ms="showContextMenu()"` |
+| **`:delay.[ms]`** | Delays event handler execution | `data-on-mouseenter:delay.200ms="showTooltip()"` |
+| **`:morph`** | Morphs asynchronous response into DOM | `data-on-click:morph="fetchNewCard()"` |
+| **`:drag`** | Augments drag events with delta math | `data-on-pointermove:drag="updatePosition($event)"` |
+| **`:zoom`** | Augments wheel events with zoom factor | `data-on-wheel:zoom="handleZoom($event)"` |
 
 ---
 
