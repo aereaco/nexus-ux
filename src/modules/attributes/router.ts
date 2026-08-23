@@ -1221,53 +1221,25 @@ export const routerAttributeModule: AttributeModule = {
         let _at = getActiveTabId();
         const resolvedSource = matched?.component ?? staticComponent ?? null;
 
-        if ((!_at || tabs.length === 0) && resolvedSource) {
-          const initialId = matched?.id || matched?.name || (path.replace(/[^\w-]/g, '_') || 'tab-1');
-          _at = initialId;
-          setActiveTabId(initialId);
-          state.tabPaths[_at] = path;
-          const newTab: Record<string, unknown> = {
-            id: initialId,
-            route: path,
-            source: resolvedSource
-          };
-          const routeMeta = matched?.meta as Record<string, string> | undefined;
-          if (routeMeta?.title || routeMeta?.icon) {
-            newTab.meta = { ...routeMeta };
-          }
-          tabs.push(newTab);
-          if (runtime.setGlobalSignal) {
-            runtime.setGlobalSignal('tabs', tabs);
-          }
-        } else if (_at) {
-          // Guard custom-component tabs (e.g. a freshly opened new-tab
-          // launchpad). A concurrent/delayed updateRoute — including the boot
-          // microtask — resolves the browser URL and would otherwise clobber
-          // the launchpad's content with `_pages/home.html`. Leave such tabs
-          // alone so their `custom-component` content persists.
+        if (_at) {
           const atIdx = tabs.findIndex((t: any) => t.id === _at);
-          // A tab whose stored path is the 'custom-component' sentinel (e.g. a
-          // freshly opened new-tab launchpad) must NOT have its content swapped
-          // by a concurrent/delayed updateRoute, AND its sentinel must be
-          // preserved: overwriting it with the resolved URL path here would make
-          // the very next updateRoute fail the guard and clobber the launchpad.
-          // Leave the sentinel intact while the launchpad is showing.
           if (atIdx >= 0 && state.tabPaths[_at] === 'custom-component') {
             // Preserve the sentinel; do not overwrite with the resolved path.
-          } else {
+          } else if (atIdx >= 0 && resolvedSource) {
             state.tabPaths[_at] = path;
-            if (resolvedSource && atIdx >= 0) {
-              const cur = tabs[atIdx];
-              // ZCZS: mutate the reactive tab object in-place via the proxy —
-              // no array rebuild, no setGlobalSignal round-trip needed.
-              if (cur.source !== resolvedSource) cur.source = resolvedSource;
-              if (cur.route !== path) cur.route = path;
-              // Sync tab.meta from route manifest so header title/icon reflects
-              // the navigated page immediately (before linkedContent fetch resolves).
-              const routeMeta = matched?.meta as Record<string, string> | undefined;
-              if (routeMeta?.title || routeMeta?.icon) {
-                cur.meta = { ...(cur.meta || {}), ...routeMeta };
-              }
+            const cur = tabs[atIdx];
+            if (cur.id === 'initial') {
+              const newId = matched?.id || matched?.name || (path === '/' ? 'home' : path.replace(/[^\w-]/g, '_'));
+              cur.id = newId;
+              setActiveTabId(newId);
+              delete state.tabPaths['initial'];
+              state.tabPaths[newId] = path;
+            }
+            if (cur.source !== resolvedSource) cur.source = resolvedSource;
+            if (cur.route !== path) cur.route = path;
+            const routeMeta = matched?.meta as Record<string, string> | undefined;
+            if (routeMeta?.title || routeMeta?.icon) {
+              cur.meta = { ...(cur.meta || {}), ...routeMeta };
             }
           }
         }
