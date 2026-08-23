@@ -415,11 +415,29 @@
         <title>Loading...</title>
         <meta name="icon" content="svg-spinners:90-ring-with-bg">
       </head>
-      <div class="flex flex-col gap-4 p-6 w-full animate-pulse">
-        <div class="skeleton h-8 w-48"></div>
-        <div class="skeleton h-4 w-full"></div>
-        <div class="skeleton h-4 w-3/4"></div>
-        <div class="skeleton h-32 w-full mt-4"></div>
+      <div class="flex flex-col gap-6 w-full min-h-[70vh]">
+        <!-- Header row: Title bar + action button -->
+        <div class="flex items-center justify-between pb-4 border-b border-base-content/10">
+          <div class="skeleton h-9 w-64 rounded-lg"></div>
+          <div class="skeleton h-9 w-28 rounded-lg"></div>
+        </div>
+        
+        <!-- Top Stats/Metrics Grid: 3 cards across -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="skeleton h-28 w-full rounded-box"></div>
+          <div class="skeleton h-28 w-full rounded-box"></div>
+          <div class="skeleton h-28 w-full rounded-box"></div>
+        </div>
+
+        <!-- Main Content Area Panel -->
+        <div class="skeleton h-72 w-full rounded-box"></div>
+
+        <!-- Detail Text Lines -->
+        <div class="flex flex-col gap-3 pt-2">
+          <div class="skeleton h-4 w-full rounded"></div>
+          <div class="skeleton h-4 w-5/6 rounded"></div>
+          <div class="skeleton h-4 w-4/6 rounded"></div>
+        </div>
       </div>
     </template>
 
