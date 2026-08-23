@@ -7189,39 +7189,26 @@ ${match}</ul>
               const tabs = globals.tabs || [];
               let _at = getActiveTabId();
               const resolvedSource = matched?.component ?? staticComponent ?? null;
-              if ((!_at || tabs.length === 0) && resolvedSource) {
-                const initialId = matched?.id || matched?.name || (path.replace(/[^\w-]/g, "_") || "tab-1");
-                _at = initialId;
-                setActiveTabId(initialId);
-                state.tabPaths[_at] = path;
-                const newTab = {
-                  id: initialId,
-                  route: path,
-                  source: resolvedSource
-                };
-                const routeMeta = matched?.meta;
-                if (routeMeta?.title || routeMeta?.icon) {
-                  newTab.meta = { ...routeMeta };
-                }
-                tabs.push(newTab);
-                if (runtime.setGlobalSignal) {
-                  runtime.setGlobalSignal("tabs", tabs);
-                }
-              } else if (_at) {
+              if (_at) {
                 const atIdx = tabs.findIndex((t) => t.id === _at);
                 if (atIdx >= 0 && state.tabPaths[_at] === "custom-component") {
-                } else {
+                } else if (atIdx >= 0 && resolvedSource) {
                   state.tabPaths[_at] = path;
-                  if (resolvedSource && atIdx >= 0) {
-                    const cur = tabs[atIdx];
-                    if (cur.source !== resolvedSource)
-                      cur.source = resolvedSource;
-                    if (cur.route !== path)
-                      cur.route = path;
-                    const routeMeta = matched?.meta;
-                    if (routeMeta?.title || routeMeta?.icon) {
-                      cur.meta = { ...cur.meta || {}, ...routeMeta };
-                    }
+                  const cur = tabs[atIdx];
+                  if (cur.id === "initial") {
+                    const newId = matched?.id || matched?.name || (path === "/" ? "home" : path.replace(/[^\w-]/g, "_"));
+                    cur.id = newId;
+                    setActiveTabId(newId);
+                    delete state.tabPaths["initial"];
+                    state.tabPaths[newId] = path;
+                  }
+                  if (cur.source !== resolvedSource)
+                    cur.source = resolvedSource;
+                  if (cur.route !== path)
+                    cur.route = path;
+                  const routeMeta = matched?.meta;
+                  if (routeMeta?.title || routeMeta?.icon) {
+                    cur.meta = { ...cur.meta || {}, ...routeMeta };
                   }
                 }
               }
