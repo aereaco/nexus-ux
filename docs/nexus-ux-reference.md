@@ -1008,11 +1008,7 @@ Native API binding uses standard JS property access in signals and bindings. The
 | `$store(name, initial)` | `#name` via global signals | Use `data-signal-global` and `#storeName` |
 | `$watch(expr, cb)` | `watch(() => expr, cb)` | Use reactivity engine's `watch()` directly in `data-effect` |
 
-> **Note**: Legacy sprite wrappers are **removed** from the codebase as of the
-> mirror-auto-wrap refactor. The native `_` mirrors provide identical functionality
-> with zero wrapper maintenance overhead. All remaining sprites (`$sql`, `$gql`,
-> `$router`, `$animate`, `$selector`, etc.) are
-> **retained** as they provide unique value beyond native browser APIs.
+> **Note**: Legacy sprite wrappers are **removed** from the codebase. Direct Native API Binding provides identical functionality with zero wrapper overhead. All 14 framework sprites (`$sql`, `$gql`, `$animate`, `$selector`, `$flow`, `$sw`, `$mcp`, `$predictive`, `$push`, `$bgFetch`, `$bgSync`, `$periodicSync`, `$mask`, `$svg`) and 5 auto-injected utilities (`$el`, `$id`, `$dispatch`, `$global`, `$nextTick`) are retained for specialized capabilities.
 
 ---
 
