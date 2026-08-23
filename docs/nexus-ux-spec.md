@@ -755,145 +755,66 @@ Nexus-UX uses **HTML attributes (directives)** to bind data and behavior. Now
 that the reader understands the NEG token set (Chapter 2), here is the complete
 directive catalog:
 
-#### 3.6.1. Core Directives
+#### 3.6.1. Core State & Binding Directives
 
-- **`data-signal`**: Reactive State Declaration — defines reactive signals on an element, forming the source of truth for UI state.
-- **`data-bind`**: Two-Way Binding — synchronizes element properties (`value`, `checked`, `textContent`, etc.) with signals automatically. Absorbs legacy `data-text` and `data-model` behavior.
-- **`data-html`**: HTML Content — sets `innerHTML` for trusted content.
-- **`data-computed`**: Derived Signals — creates cached, read-only computed values derived from other signals.
-- **`data-effect`**: Side-effects — runs arbitrary logic in response to signal changes without touching the DOM.
-- **`data-import`**: Asset Import — asynchronously loads and manages third-party scripts and stylesheets with ZCZS-optimized constructable stylesheets.
-- **`data-markdown`**: Markdown Rendering — zero-dependency markdown-to-HTML transpilation directly in the browser.
-- **`data-pwa`**: PWA Orchestration — manages Service Worker registration, manifest integration, and offline state via `$pwa`.
-- **`data-mask`**: Visual Masking — applies SVG masks and CSS mask-image dynamically.
+- **`data-signal`**: Reactive State Declaration — defines reactive signals on an element, forming the source of truth for UI state. Evaluated as an `elementBoundEffect` that continuously re-evaluates and synchronizes reactive dependencies. Supports ghost key pre-allocation and global signal bindings (`#`).
+- **`data-bind`**: Two-Way & Native API Binding — synchronizes element properties (`value`, `checked`, `textContent`, form inputs) and native browser Web APIs (`window.innerWidth`, `localStorage.theme`) directly via Proxy/Reflect traps with automatic event listener attachment.
+- **`data-computed`**: Derived Signals — creates cached, read-only computed values derived from other signals or expressions with zero overhead.
+- **`data-effect`**: Reactive Side Effects — runs arbitrary logic in response to signal changes without touching the DOM, managing cleanups on re-execution or element disposal.
+- **`data-var-[name]`**: CSS Variable Sync — direct synchronization of state to CSS custom properties (`--[name]`). Essential for **Data Painting** and UI component library integration.
+- **`data-html`**: HTML Content — sets `innerHTML` for trusted content with reactive re-rendering.
 
-#### 3.6.2. Control Flow Directives
+#### 3.6.2. Control Flow & Rendering Directives
 
-- **`data-if`**: Conditional Rendering — physical DOM removal/insertion.
-- **`data-show`**: Visual Toggle — toggles `display: none` without DOM removal.
-- **`data-for`**: List Iteration — efficient array rendering with keyed
-  reconciliation.
-- **`data-key`**: Keyed Reconciliation — provides a unique identity for
-  `data-for` items to optimize DOM reuse.
+- **`data-if`**: Conditional Rendering — physical DOM insertion and removal with Idiomorph reconciliation.
+- **`data-show`**: Visual Toggle — toggles `display: none` without DOM removal for instant transitions.
+- **`data-for`**: List Iteration — zero-allocation array rendering with keyed item reconciliation (`data-key`).
+- **`data-switcher`**: State Cycle Iteration — provides a high-performance state toggle component (e.g., Theme Switcher). Companion attribute `data-switcher-options` defines the cycle array.
+- **`data-teleport`**: DOM Portal — teleports elements to target containers (`body`, selector) or drag/drop dropzones.
 
-#### 3.6.3. Advanced Interoperability & Themes
+#### 3.6.3. Interaction, Drag & Flow Directives
 
-- **`data-theme`**: Theme Management — manages light/dark mode and custom
-  thematic tokens.
-- **`data-switcher`**: State Iteration — provides a high-performance state toggle
-  component (e.g., Theme Toggle). Companion attribute `data-switcher-options`
-  defines the cycle array.
+- **`data-drag`**: Drag & Drop Engine — full-featured interactive drag-and-drop supporting sorting, shared groups (`data-drag-group`), element cloning, handle constraints (`data-drag-handle`), multi-drag selection (`data-drag-multi`), swap thresholds, auto-scrolling, and packed CSS classes (`.draggable-ghost`, `.draggable-drag`, `.drop-target-before/after`).
+- **`data-flow`**: Spatial Canvas & Flow Layout — orchestrates a virtual interactive canvas with pan and zoom controls, coordinate mapping, and reactive spatial state `{ x, y, zoom }`.
+- **`data-on`**: Event Handlers — responds to user interactions with NEG pipeline modifiers (e.g. `data-on-click:once:prevent`, `data-on-input:debounce.200ms`).
+- **`data-raf`**: Animation Frame Scheduler — runs logic on every `requestAnimationFrame` tick with `$time` and `$delta` for 120fps smooth animations.
 
-#### 3.6.4. Event & Interaction Directives
+#### 3.6.4. Styling, Themes & Adopted StyleSheets
 
-- **`data-on`**: Event Handlers — responds to user interaction (e.g., `data-on-click`).
-- **`data-on-load`**: Lifecycle Hook — runs code when the element enters the DOM.
-- **`data-on-raf`**: Animation Frame Hook — runs code on every `requestAnimationFrame` tick with `$time` and `$delta`.
-- **`data-on-intersect`**: Visibility Hook — fires when the element enters/exits the viewport.
-- **`data-drag`**: Drag Source — makes an element draggable, emitting a ZCZS memory pointer for drop targets to consume via `data-teleport:drop`.
+- **`data-stylesheet`**: Adopted StyleSheets Bridge — injects constructable stylesheets directly into the document or Shadow DOM, providing zero-DOM-pollution styling, Tailwind v4 theme bridge synchronization (`buildTailwindThemeBridge`), and dynamic token injection.
+- **`data-class`**: Dynamic CSS Classes — toggles classes based on object conditionals (`{ 'btn-primary': isActive }`) or array lists.
+- **`data-style`**: Dynamic Inline Styles — binds CSS style properties to signals using object expressions with automatic unit reconciliation.
+- **`data-theme`**: Dynamic Theme Engine — orchestrates application themes and DaisyUI v5 modes (`auto`, `light`, `dark`), providing `$switchTheme()`, `$themeIcon`, and `$activeMode` helpers.
 
-#### 3.6.5. Spatial, Flow & Rendering Directives
+#### 3.6.5. Architecture, PWA, Assets & Components
 
-- **`data-flow`**: Viewport Flow Layout — orchestrates a virtual canvas with pan and zoom controls, maintaining a reactive spatial state `{ x, y, zoom }`.
-- **`data-spatial`**: Spatial Marker — tags an element for inclusion in the 4D predictive engine's spatial index (quadtree) for layout transition orchestration.
-- **`data-markdown`**: Markdown Transpilation — zero-dependency parsing of markdown strings into styled HTML, leveraging the framework's native utility classes.
-
-#### 3.6.6. Styling Directives
-
-- **`data-style`**: Dynamic Styling — binds CSS properties to signals using
-  object literals, strings, or arrays. When numeric signals are used, the engine
-  handles appropriate unit reconciliation.
-- **`data-class`**: Dynamic CSS Classes — toggles classes based on object or
-  array conditions.
-- **`data-var-[name]`**: CSS Variable Sync — direct synchronization to CSS
-  custom properties (`--[name]`). Essential for **Data Painting** and UI library
-  integration (e.g., DaisyUI).
-- **`data-mask`**: Visual Masking — dynamically synchronizes custom SVG assets
-  or variables into the standard CSS Mask/Webkit-Mask compliance layers.
-
-#### 3.6.7. Structural & Development Directives
-
-- **`data-preserve`**: Structural Shield — prevents node loss during server-driven morphs.
-- **`data-component`**: Component Declaration — defines reusable Custom Elements with Shadow DOM, constructable stylesheets, and lifecycle hooks.
-- **`data-debug`**: Debug Inspector — activates the sanitizing engine and DevTools surface for the element subtree.
-- **`data-assert`**: Development Assertion — fires console warnings when conditions fail (stripped in production).
-- **`data-build`**: In-Browser Bundler — serializes the current DOM state and assets into a deployable bundle, writing directly to IndexedDB. Enables fully client-side build pipelines.
-
-#### 3.6.8. Routing & Navigation Directives
-
-- **`data-router`**: Router Initialization — declares the application's router
-  on the `<html>` element. Creates the `#router` signal with full navigation
-  state (`path`, `params`, `query`, `hash`, `loading`, `error`, `previous`,
-  `layout`, `route`, `meta`, `scrollPosition`, `routes`, `mode`). Supports three
-  routing modes: `signal` (programmatic route definitions), `static`
-  (filesystem-based HTML resolution), and `hybrid` (signal-first with filesystem
-  fallback). Automatically intercepts `<a>` tag clicks for client-side
-  navigation and manages History API (`pushState`/`replaceState`/`popstate`).
-
-  The routing **strategy** is declared declaratively as an object on `data-router`
-  and exposed reactively as `#router.config`:
-  `{ mode, default, basePath, manifest, dynamic, shadow, notFound }`. The strategy
-  is signal-driven — changing it re-resolves routes without tearing down the DOM.
-- **`data-route`**: Route Definition — declaratively registers a route by
-  placing `data-route="/path/:param"` on an element. The route is automatically
-  added to `#router.routes` and removed when the element is destroyed. Supports
-  parameterized paths (`:id`), optional parameters (`:id?`), and wildcards
-  (`*`). Companion attributes (`data-route-name`, `data-route-redirect`,
-  `data-route-layout`, `data-route-meta`, `data-route-before-enter`,
-  `data-route-after-enter`, `data-route-before-leave`, `data-route-after-leave`,
-  `data-route-shadow`) are parsed by the same module. `data-route-shadow` (boolean)
-  marks the route as **internal**: it resolves and renders through the router but
-  is excluded from the public `#router.manifest` so the client has no discoverable
-  URL.
-
-#### 3.6.9. Route Configuration Attributes
-
-Route elements support additional configuration via companion attributes:
-
-- **`data-route-handler`**: Route Handler — an expression to execute when the
-  route is matched.
-- **`data-route-meta`**: Route Metadata — a JS object of arbitrary metadata
-  attached to the route (e.g., `"{ title: 'Dashboard', requiresAuth: true }"`).
-- **`data-route-redirect`**: Route Redirect — a path to redirect to instead of
-  rendering.
-- **`data-route-layout`**: Route Layout — a layout component URL to wrap the
-  route content.
-- **`data-route-before-enter`**: Navigation Guard — fires before entering the
-  route. Return `false` to cancel, return a string to redirect.
-- **`data-route-after-enter`**: Post-Navigation Hook — fires after the route has
-  been entered and rendered.
-- **`data-route-before-leave`**: Exit Guard — fires before leaving the route.
-  Return `false` to cancel, return a string to redirect.
-- **`data-route-after-leave`**: Post-Exit Hook — fires after the route has been
-  left.
-
-> See §2.5 for the complete Sprite (`$`) catalog and §2.6 for the Environment
-> Mirror (`_`) catalog.
-
-> See the
-> [Nexus-UX Reference Guide](file:///home/aerea/development/nexus-ux-reference.20260214.md)
-> for exhaustive directive documentation with examples.
+- **`data-component`**: Component Mount & Declaration — mounts external or inline HTML component fragments (`.html`) into Shadow DOM or light DOM, integrating with router outlets (`data-component="$router.route"`).
+- **`data-router`**: SPA Router Orchestrator — initializes the client router on `<html>` and exposes `#router` with support for `hybrid`, `static`, and `signal` modes, navigation guards, and History API synchronization.
+- **`data-route`**: Declarative Route Definition — declares route paths (`/user/:id`), layouts (`data-route-layout`), and navigation guards (`data-route-before-enter`, `data-route-after-leave`).
+- **`data-import`**: Asset & Module Orchestration — asynchronously loads scripts, constructable stylesheets, and remote VFS components into the unified registry.
+- **`data-pwa`**: Progressive Web App Lifecycle — orchestrates Service Worker registration, manifest updates, offline caching, and install prompts via `$pwa`.
+- **`data-markdown`**: Zero-Dependency Markdown Transpiler — compiles markdown strings into styled HTML with Tailwind typography and code block formatting.
+- **`data-mask`**: Visual Masking — applies dynamic SVG and CSS clipping masks to elements.
+- **`data-preserve`**: Structural Morph Shield — protects DOM elements and their subtree from being overwritten during morph reconciliation or server swaps.
+- **`data-debug`**: Diagnostics & Inspector — activates dev-mode inspection, sanitization logging, and self-heal resolution beacons.
+- **`data-assert`**: Invariant Assertion — runs runtime assertions during development to enforce state integrity.
+- **`data-build`**: In-Browser Bundling Engine — serializes DOM state and assets into deployable bundles stored in IndexedDB.
 
 ---
 
 ## Chapter 4: Systemic Coordination (The Handshake Logic)
 
-This chapter details how the pillars of Nexus-UX coordinate to create a living
-UI.
+This chapter details how the pillars of Nexus-UX coordinate to create a living UI.
 
-### 4.1. The Reactive Loop: Signal to Mirror
+### 4.1. The Reactive Loop: Signal to Native Web API Binding
 
-Signals (#) and Mirrors (_) are reconciled in a unified reactive loop.
+Signals (`#` and local scopes) and Native Web APIs are reconciled in a unified reactive loop.
 
-- **Coordination**: A change to a global signal like `#auth.user` updates a
-  mirror like `_localStorage.session`. This change can then trigger a `@media`
-  scoped directive in the UI to update the navigation bar text.
+- **Direct Native Tracking**: When a directive reads `window.innerWidth` or `localStorage.theme`, the Proxy/Reflect evaluator automatically registers the appropriate native listener (`resize`, `storage`) and pushes updates into dependent signals. No wrapper modules or `_` prefixes are required.
 
-### 4.2. Signal Mirroring (Real-Time Sync)
+### 4.2. Database Synchronization (SurrealDB Real-Time Sync)
 
-The browser runtime maintains a live WebSocket connection to the Nexus-IO
-Kernel. The following diagram illustrates the complete real-time synchronization
-loop:
+The browser runtime maintains a live WebSocket connection to the Nexus-IO Kernel (SurrealDB):
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
