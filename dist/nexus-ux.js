@@ -13017,6 +13017,31 @@ ${bridge}`, {
       });
       registerScopeProvider("$global", (_el, runtime) => runtime.globalSignals());
       registerScopeProvider("$actions", (_el, runtime) => runtime.globalActions());
+      registerScopeProvider("$meta", (el, runtime) => {
+        if (el) {
+          const stack = getDataStack(el);
+          for (const scope of stack) {
+            if (scope && typeof scope === "object" && "meta" in scope && scope.meta) {
+              return scope.meta;
+            }
+          }
+        }
+        const globals = runtime.globalSignals ? runtime.globalSignals() : {};
+        const routerState = globals.router || globals.appRouter;
+        if (routerState && routerState.meta && Object.keys(routerState.meta).length > 0) {
+          return routerState.meta;
+        }
+        const docMeta = {};
+        if (typeof document !== "undefined") {
+          if (document.title)
+            docMeta.title = document.title;
+          const iconEl = document.querySelector('link[rel~="icon"], link[rel~="shortcut icon"], meta[name="icon"]');
+          if (iconEl) {
+            docMeta.icon = iconEl.getAttribute("href") || iconEl.getAttribute("content") || "";
+          }
+        }
+        return docMeta;
+      });
       this.coordinator.registerActionModule("$id", {
         name: "$id",
         handle: (_el, ...args) => $id(...args)

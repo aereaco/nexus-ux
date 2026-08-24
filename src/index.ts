@@ -1,5 +1,5 @@
 import { ModuleCoordinator } from './engine/modules.ts';
-import { registerScopeProvider } from './engine/scope.ts';
+import { registerScopeProvider, getDataStack } from './engine/scope.ts';
 import { ROOT_SELECTOR } from './engine/consts.ts';
 import { topology } from './engine/topology.ts';
 import { initSelfHeal, getBeaconHistory } from './engine/agent.ts';
@@ -52,6 +52,30 @@ export class UX {
     });
     registerScopeProvider('$global', (_el, runtime) => runtime.globalSignals());
     registerScopeProvider('$actions', (_el, runtime) => runtime.globalActions());
+    registerScopeProvider('$meta', (el, runtime) => {
+      if (el) {
+        const stack = getDataStack(el);
+        for (const scope of stack) {
+          if (scope && typeof scope === 'object' && 'meta' in scope && (scope as any).meta) {
+            return (scope as any).meta;
+          }
+        }
+      }
+      const globals = runtime.globalSignals ? runtime.globalSignals() : {};
+      const routerState = (globals.router || globals.appRouter) as any;
+      if (routerState && routerState.meta && Object.keys(routerState.meta).length > 0) {
+        return routerState.meta;
+      }
+      const docMeta: Record<string, any> = {};
+      if (typeof document !== 'undefined') {
+        if (document.title) docMeta.title = document.title;
+        const iconEl = document.querySelector('link[rel~="icon"], link[rel~="shortcut icon"], meta[name="icon"]');
+        if (iconEl) {
+          docMeta.icon = iconEl.getAttribute('href') || iconEl.getAttribute('content') || '';
+        }
+      }
+      return docMeta;
+    });
 
     // Inline actions
     this.coordinator.registerActionModule('$id', {
