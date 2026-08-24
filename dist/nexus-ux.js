@@ -2334,7 +2334,7 @@ ${scripts}
     BaseComponent: () => BaseComponent,
     default: () => component_default
   });
-  function extractResourceMetadata(htmlText, path, runtime, metaFilter) {
+  function extractResourceMetadata(htmlText, path, runtime) {
     const meta = {};
     if (!htmlText || typeof htmlText !== "string")
       return meta;
@@ -2353,54 +2353,38 @@ ${scripts}
           meta[key] = content.trim();
         }
       });
-      const icons = [];
-      parsedDoc.querySelectorAll('link[rel~="icon"], link[rel~="shortcut icon"], link[rel~="apple-touch-icon"], meta[name="icon"]').forEach((iconEl) => {
-        const href = iconEl.getAttribute("href") || iconEl.getAttribute("content");
-        if (href && !icons.includes(href.trim())) {
-          icons.push(href.trim());
+      const globals = runtime.globalSignals ? runtime.globalSignals() : {};
+      if (globals) {
+        const norm = path.startsWith("/") ? path : "/" + path;
+        const unnorm = path.startsWith("/") ? path.slice(1) : path;
+        const curMeta = globals.meta || {};
+        const nextMeta = {
+          ...curMeta,
+          [path]: meta,
+          [norm]: meta,
+          [unnorm]: meta
+        };
+        if (runtime.setGlobalSignal) {
+          runtime.setGlobalSignal("meta", nextMeta);
         }
-      });
-      if (icons.length > 0) {
-        meta.icons = icons;
-        if (!meta.icon)
-          meta.icon = icons[0];
+        const routerState = globals.router || globals.appRouter;
+        if (routerState) {
+          routerState.meta = nextMeta;
+          if (Array.isArray(routerState.routes)) {
+            const routeRecord = routerState.routes.find((r) => r.path === path || r.path === norm || r.path === unnorm);
+            if (routeRecord) {
+              routeRecord.meta = { ...routeRecord.meta || {}, ...meta };
+            }
+          }
+        }
       }
       if (meta.title && typeof document !== "undefined") {
         document.title = meta.title;
-      }
-      if (metaFilter && Array.isArray(metaFilter) && metaFilter.length > 0) {
-        const filtered = {};
-        for (const k of metaFilter) {
-          if (k in meta)
-            filtered[k] = meta[k];
-        }
-        return filtered;
       }
     } catch (e) {
       console.error(`[Component] Failed to extract metadata for ${path}:`, e);
     }
     return meta;
-  }
-  function syncExtractedMetadataToScope(el, extracted, runtime) {
-    if (!extracted || Object.keys(extracted).length === 0)
-      return;
-    const dataStack = getDataStack(el);
-    for (const scope of dataStack) {
-      if (scope && typeof scope === "object") {
-        if ("tab" in scope && scope.tab && typeof scope.tab === "object") {
-          scope.tab.meta = { ...scope.tab.meta || {}, ...extracted };
-          const globals = runtime.globalSignals();
-          if (globals && Array.isArray(globals.tabs)) {
-            runtime.setGlobalSignal("tabs", [...globals.tabs]);
-          }
-          break;
-        }
-        if ("meta" in scope && typeof scope.meta === "object") {
-          scope.meta = { ...scope.meta || {}, ...extracted };
-          break;
-        }
-      }
-    }
   }
   function ensureCustomElementRegistered(tagName) {
     if (typeof customElements === "undefined")
@@ -2538,6 +2522,18 @@ ${scripts}
               ...componentState
             };
             el[COMPONENT_CONTEXT_KEY] = ctx;
+            let tabObj = null;
+            const dataStack = getDataStack(el);
+            for (const scope of dataStack) {
+              if (scope && typeof scope === "object" && "tab" in scope) {
+                const t = scope.tab;
+                if (t && typeof t === "object") {
+                  tabObj = t;
+                  tabObj.linkedContent = componentState;
+                }
+                break;
+              }
+            }
             let scopeAttached = false;
             let __lastPath;
             runtime.effect(() => {
@@ -2558,10 +2554,7 @@ ${scripts}
               } else {
                 return;
               }
-              if (!config.path || config.path === "none" || config.path === "undefined" || config.path === "null")
-                return;
-              config.path = config.path.replace(/^['"]+|['"]+$/g, "").trim();
-              if (!config.path || config.path.includes("||") || config.path.includes("&&") || config.path.includes(" "))
+              if (!config.path || config.path === "none")
                 return;
               if (config.path === __lastPath)
                 return;
@@ -2586,9 +2579,8 @@ ${scripts}
                       onUpdate: (fresh) => {
                         if (typeof fresh === "string" && fresh !== componentState.templateContent) {
                           componentState.templateContent = fresh;
-                          const extracted2 = extractResourceMetadata(fresh, config.path, runtime, config.meta);
+                          const extracted2 = extractResourceMetadata(fresh, config.path, runtime);
                           componentState.meta = extracted2;
-                          syncExtractedMetadataToScope(el, extracted2, runtime);
                         }
                       }
                     });
@@ -2598,9 +2590,11 @@ ${scripts}
                     console.log(`[Component] Template loaded for <${el.tagName}>, length: ${html.length}`);
                   }
                   componentState.templateContent = html;
-                  const extracted = extractResourceMetadata(html, config.path, runtime, config.meta);
+                  const extracted = extractResourceMetadata(html, config.path, runtime);
                   componentState.meta = extracted;
-                  syncExtractedMetadataToScope(el, extracted, runtime);
+                  if (tabObj && extracted && (extracted.title || extracted.icon)) {
+                    tabObj.meta = { ...tabObj.meta || {}, ...extracted };
+                  }
                   if (config.shadowrootmode) {
                     if (!el.shadowRoot)
                       el.attachShadow({ mode: config.shadowrootmode });
@@ -6583,43 +6577,8 @@ ${match}</ul>
                   reportError(new Error(`router: failed to load manifest "${manifestUrl}": ${e}`), el);
                 }
               }
-              const publicEntries = entries.filter((r) => !r.internal && !r.path.startsWith("/_internal/"));
-              await Promise.all(
-                publicEntries.map(async (rec) => {
-                  const compPath = rec.component || (rec.path === "/" ? "/_pages/home.html" : `/_pages${rec.path}.html`);
-                  if (compPath && !compPath.startsWith("#")) {
-                    try {
-                      let html = "";
-                      if (runtime.fetch) {
-                        html = await runtime.fetch.request(applyBase(compPath), { responseType: "text" }, el);
-                      } else {
-                        html = await (await fetch(applyBase(compPath))).text();
-                      }
-                      if (html && typeof html === "string") {
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(html, "text/html");
-                        const titleEl = Array.from(doc.querySelectorAll("title")).find((t) => !t.closest("svg"));
-                        const iconEl = doc.querySelector('link[rel~="icon"], link[rel~="shortcut icon"], link[rel~="apple-touch-icon"], meta[name="icon"]');
-                        const title = titleEl?.textContent?.trim() || (rec.name ? rec.name.charAt(0).toUpperCase() + rec.name.slice(1) : rec.path === "/" ? "Home" : rec.path.replace(/^\//, ""));
-                        const icon = iconEl?.getAttribute("href")?.trim() || iconEl?.getAttribute("content")?.trim() || "material-symbols-light:article-outline";
-                        rec.title = title;
-                        rec.icon = icon;
-                        rec.meta = { ...typeof rec.meta === "object" && rec.meta !== null ? rec.meta : {}, title, icon };
-                      }
-                    } catch {
-                    }
-                  }
-                })
-              );
-              publicEntries.sort((a, b) => {
-                if (a.path === "/" || a.name === "home" || a.path === "/home")
-                  return -1;
-                if (b.path === "/" || b.name === "home" || b.path === "/home")
-                  return 1;
-                return a.path.localeCompare(b.path);
-              });
-              state.manifest = publicEntries.slice();
-              state.routes = publicEntries.slice();
+              state.manifest = entries.filter((r) => !r.internal).slice();
+              state.routes = entries.slice();
             };
             const routeList = [];
             const matchMeta = /* @__PURE__ */ new WeakMap();
@@ -6679,15 +6638,42 @@ ${match}</ul>
               manifest: [],
               // Per-tab history bookkeeping (native history is the single store).
               activeTabId: null,
+              tabPaths: {},
+              tabMeta: {},
               navigate(url, opts) {
                 if (url.startsWith("http") || url.startsWith("//")) {
                   globalThis.location.href = url;
                   return;
                 }
                 const target = applyBase(url);
+                const tabId = opts?.tabId ?? getActiveTabId() ?? state.activeTabId ?? null;
                 const cleanPath = stripBase(target);
                 const matched = routeList.find((r) => r.path === cleanPath || r.path === url);
                 const isShadow = matched?.internal || shadowMatch(cleanPath);
+                if (tabId) {
+                  state.tabPaths[tabId] = cleanPath;
+                  if (opts?.title !== void 0 || opts?.icon !== void 0) {
+                    state.tabMeta[tabId] = {
+                      ...state.tabMeta[tabId] || {},
+                      ...opts?.title !== void 0 ? { title: opts.title } : {},
+                      ...opts?.icon !== void 0 ? { icon: opts.icon } : {}
+                    };
+                  }
+                }
+                const _activeId = tabId || getActiveTabId();
+                if (_activeId && state.tabPaths[_activeId] !== "custom-component") {
+                  const _tabs = (runtime.globalSignals ? runtime.globalSignals() : {}).tabs;
+                  if (Array.isArray(_tabs)) {
+                    const _tab = _tabs.find((t) => t.id === _activeId);
+                    if (_tab) {
+                      const resolvedSource = matched?.component || (cleanPath === "/" ? "/_pages/home.html" : cleanPath);
+                      if (_tab.source !== resolvedSource)
+                        _tab.source = resolvedSource;
+                      if (_tab.route !== cleanPath)
+                        _tab.route = cleanPath;
+                    }
+                  }
+                }
                 if (isShadow) {
                   updateRoute(target);
                   return;
@@ -6695,10 +6681,10 @@ ${match}</ul>
                 if ("navigation" in globalThis) {
                   globalThis.navigation.navigate(target, {
                     history: opts?.replace ? "replace" : "push",
-                    state: { scrollY: globalThis.scrollY, title: opts?.title, icon: opts?.icon }
+                    state: { tabId, scrollY: globalThis.scrollY, title: opts?.title, icon: opts?.icon }
                   });
                 } else {
-                  const histState = { scrollY: globalThis.scrollY, title: opts?.title, icon: opts?.icon };
+                  const histState = { tabId, scrollY: globalThis.scrollY, title: opts?.title, icon: opts?.icon };
                   if (opts?.replace)
                     globalThis.history.replaceState(histState, "", target);
                   else
@@ -6956,13 +6942,14 @@ ${match}</ul>
               runtime._pendingDeclaredRoutes = [];
             }
             const globals = runtime.globalSignals();
-            const getActiveTabId = () => typeof globals.activeTabId === "string" && globals.activeTabId || null;
+            const getActiveTabId = () => typeof globals.activePageTabId === "string" && globals.activePageTabId || typeof globals.activeTabId === "string" && globals.activeTabId || null;
             const setActiveTabId = (id) => {
+              runtime.setGlobalSignal("activePageTabId", id);
               runtime.setGlobalSignal("activeTabId", id);
             };
             let tabSwitching = false;
             runtime.watch(
-              () => globals.activeTabId,
+              () => globals.activePageTabId || globals.activeTabId,
               () => {
                 if (tabSwitching)
                   return;
@@ -7200,12 +7187,40 @@ ${match}</ul>
               state.route = matched?.component ?? staticComponent ?? null;
               state.layout = matched?.layout ?? null;
               publishOutlet(state.layout ?? state.route);
+              const _at = getActiveTabId();
+              if (_at) {
+                const tabs = globals.tabs || [];
+                const atIdx = tabs.findIndex((t) => t.id === _at);
+                if (atIdx >= 0 && state.tabPaths[_at] === "custom-component") {
+                } else {
+                  state.tabPaths[_at] = path;
+                  const resolvedSource = matched?.component ?? staticComponent ?? null;
+                  if (resolvedSource && atIdx >= 0) {
+                    const cur = tabs[atIdx];
+                    if (cur.source !== resolvedSource)
+                      cur.source = resolvedSource;
+                    if (cur.route !== path)
+                      cur.route = path;
+                    const routeMeta = matched?.meta;
+                    if (routeMeta?.title || routeMeta?.icon) {
+                      cur.meta = { ...cur.meta || {}, ...routeMeta };
+                    }
+                  }
+                }
+              }
               if (matched || staticComponent) {
                 commitVisibility(matched);
                 state.error = null;
                 state.errorCode = null;
                 state.loading = false;
                 restoreScroll(url.hash);
+                if (path && path !== "/index.html" && path !== errorPage2 && !path.startsWith("/_internal/")) {
+                  const recent = globals.recent || [];
+                  const routeTitle = matched?.meta?.title || path.replace(/^\//, "").replace(/-/g, " ");
+                  const entry = { path, title: routeTitle };
+                  const next = [entry, ...recent.filter((r) => r.path !== path && r.path !== "/index.html")].slice(0, 5);
+                  runtime.setGlobalSignal("recent", next);
+                }
                 if (matched) {
                   queueMicrotask(async () => {
                     await runHook(matched.afterEnter, toInfo, fromInfo);
@@ -13030,31 +13045,6 @@ ${bridge}`, {
       });
       registerScopeProvider("$global", (_el, runtime) => runtime.globalSignals());
       registerScopeProvider("$actions", (_el, runtime) => runtime.globalActions());
-      registerScopeProvider("$meta", (el, runtime) => {
-        if (el) {
-          const stack = getDataStack(el);
-          for (const scope of stack) {
-            if (scope && typeof scope === "object" && "meta" in scope && scope.meta) {
-              return scope.meta;
-            }
-          }
-        }
-        const globals = runtime.globalSignals ? runtime.globalSignals() : {};
-        const routerState = globals.router || globals.appRouter;
-        if (routerState && routerState.meta && Object.keys(routerState.meta).length > 0) {
-          return routerState.meta;
-        }
-        const docMeta = {};
-        if (typeof document !== "undefined") {
-          if (document.title)
-            docMeta.title = document.title;
-          const iconEl = document.querySelector('link[rel~="icon"], link[rel~="shortcut icon"], meta[name="icon"]');
-          if (iconEl) {
-            docMeta.icon = iconEl.getAttribute("href") || iconEl.getAttribute("content") || "";
-          }
-        }
-        return docMeta;
-      });
       this.coordinator.registerActionModule("$id", {
         name: "$id",
         handle: (_el, ...args) => $id(...args)

@@ -471,45 +471,9 @@ export const routerAttributeModule: AttributeModule = {
           }
         }
 
-        // Pure CSR Metadata Extraction for declared / discovered route files:
-        const publicEntries = entries.filter((r) => !r.internal && !r.path.startsWith('/_internal/'));
-        await Promise.all(
-          publicEntries.map(async (rec) => {
-            const compPath = rec.component || (rec.path === '/' ? '/_pages/home.html' : `/_pages${rec.path}.html`);
-            if (compPath && !compPath.startsWith('#')) {
-              try {
-                let html = '';
-                if (runtime.fetch) {
-                  html = (await runtime.fetch.request(applyBase(compPath), { responseType: 'text' }, el)) as string;
-                } else {
-                  html = await (await fetch(applyBase(compPath))).text();
-                }
-                if (html && typeof html === 'string') {
-                  const parser = new DOMParser();
-                  const doc = parser.parseFromString(html, 'text/html');
-                  const titleEl = Array.from(doc.querySelectorAll('title')).find((t) => !t.closest('svg'));
-                  const iconEl = doc.querySelector('link[rel~="icon"], link[rel~="shortcut icon"], link[rel~="apple-touch-icon"], meta[name="icon"]');
-                  const title = titleEl?.textContent?.trim() || (rec.name ? rec.name.charAt(0).toUpperCase() + rec.name.slice(1) : (rec.path === '/' ? 'Home' : rec.path.replace(/^\//, '')));
-                  const icon = iconEl?.getAttribute('href')?.trim() || iconEl?.getAttribute('content')?.trim() || 'material-symbols-light:article-outline';
-                  (rec as any).title = title;
-                  (rec as any).icon = icon;
-                  rec.meta = { ...(typeof rec.meta === 'object' && rec.meta !== null ? rec.meta : {}), title, icon };
-                }
-              } catch {}
-            }
-          })
-        );
-
-        // Sort so that Home ('/' or 'home') is always listed first, followed by alphabetical order:
-        publicEntries.sort((a, b) => {
-          if (a.path === '/' || a.name === 'home' || a.path === '/home') return -1;
-          if (b.path === '/' || b.name === 'home' || b.path === '/home') return 1;
-          return a.path.localeCompare(b.path);
-        });
-
         // Public manifest = non-internal entries (what the app advertises).
-        state.manifest = publicEntries.slice();
-        state.routes = publicEntries.slice();
+        state.manifest = entries.filter((r) => !r.internal).slice();
+        state.routes = entries.slice();
       };
 
       // Raw (non-reactive) route registry. RegExp matchers must never enter the
@@ -583,16 +547,49 @@ export const routerAttributeModule: AttributeModule = {
 
         // Per-tab history bookkeeping (native history is the single store).
         activeTabId: null,
-        navigate(url: string, opts?: { replace?: boolean; title?: string; icon?: string }) {
+        tabPaths: {} as Record<string, string>,
+        tabMeta: {} as Record<string, { title?: string; icon?: string }>,
+
+        navigate(url: string, opts?: { replace?: boolean; tabId?: string; title?: string; icon?: string }) {
           if (url.startsWith('http') || url.startsWith('//')) {
             globalThis.location.href = url;
             return;
           }
 
           const target = applyBase(url);
+          const tabId = opts?.tabId ?? getActiveTabId() ?? state.activeTabId ?? null;
           const cleanPath = stripBase(target);
           const matched = routeList.find((r) => r.path === cleanPath || r.path === url);
           const isShadow = matched?.internal || shadowMatch(cleanPath);
+
+          // Track this tab's current path + metadata so switching the active
+          // tab (or back/forward) re-renders the correct outlet.
+          if (tabId) {
+            state.tabPaths[tabId] = cleanPath;
+            if (opts?.title !== undefined || opts?.icon !== undefined) {
+              state.tabMeta[tabId] = {
+                ...(state.tabMeta[tabId] || {}),
+                ...(opts?.title !== undefined ? { title: opts.title } : {}),
+                ...(opts?.icon !== undefined ? { icon: opts.icon } : {}),
+              };
+            }
+          }
+
+          // ZCZS: update active tab's source/route directly via the reactive
+          // proxy — no array rebuild, no setGlobalSignal round-trip.
+          // Guard: never clobber a custom-component (launchpad) sentinel tab.
+          const _activeId = tabId || getActiveTabId();
+          if (_activeId && state.tabPaths[_activeId] !== 'custom-component') {
+            const _tabs = (runtime.globalSignals ? runtime.globalSignals() : {}).tabs as any[];
+            if (Array.isArray(_tabs)) {
+              const _tab = _tabs.find((t: any) => t.id === _activeId);
+              if (_tab) {
+                const resolvedSource = matched?.component || (cleanPath === '/' ? '/_pages/home.html' : cleanPath);
+                if (_tab.source !== resolvedSource) _tab.source = resolvedSource;
+                if (_tab.route !== cleanPath) _tab.route = cleanPath;
+              }
+            }
+          }
 
           if (isShadow) {
             // Shadow routes resolve and render in memory but NEVER pollute the address bar
@@ -603,10 +600,10 @@ export const routerAttributeModule: AttributeModule = {
           if ('navigation' in globalThis) {
             (globalThis as any).navigation.navigate(target, {
               history: opts?.replace ? 'replace' : 'push',
-              state: { scrollY: globalThis.scrollY, title: opts?.title, icon: opts?.icon },
+              state: { tabId, scrollY: globalThis.scrollY, title: opts?.title, icon: opts?.icon },
             });
           } else {
-            const histState = { scrollY: globalThis.scrollY, title: opts?.title, icon: opts?.icon };
+            const histState = { tabId, scrollY: globalThis.scrollY, title: opts?.title, icon: opts?.icon };
             if (opts?.replace) globalThis.history.replaceState(histState, '', target);
             else globalThis.history.pushState(histState, '', target);
             updateRoute(target);
@@ -887,21 +884,23 @@ export const routerAttributeModule: AttributeModule = {
       }
 
       // --- Per-tab history: active tab is owned by the layout's global signal.
-      // The router reads/writes `activeTabId` there so the tab bar + panels
-      // (which bind `activeTabId`) and the router's outlet stay in sync.
+      // The router reads/writes `activePageTabId` there so the tab bar + panels
+      // (which bind `activePageTabId`) and the router's outlet stay in sync.
       const globals = runtime.globalSignals() as Record<string, unknown>;
       const getActiveTabId = (): string | null =>
+        (typeof globals.activePageTabId === 'string' && globals.activePageTabId) ||
         (typeof globals.activeTabId === 'string' && globals.activeTabId) || null;
       const setActiveTabId = (id: string) => {
+        runtime.setGlobalSignal('activePageTabId', id);
         runtime.setGlobalSignal('activeTabId', id);
       };
 
       // When the layout switches the active tab, re-render the outlet for it.
       // (globalSignals() is a reactive object, so watch() fires on change.)
-      // Guard against re-entrant calls (e.g. commitTabSwitch writing activeTabId).
+      // Guard against re-entrant calls (e.g. commitTabSwitch writing activePageTabId).
       let tabSwitching = false;
       runtime.watch(
-        () => globals.activeTabId,
+        () => globals.activePageTabId || globals.activeTabId,
         () => {
           if (tabSwitching) return;
           try { state.renderActiveTab(); } catch (_e) { /* noop */ }
@@ -1218,6 +1217,44 @@ export const routerAttributeModule: AttributeModule = {
         // inner `#router.route` outlet), else render the route component directly.
         publishOutlet(state.layout ?? state.route);
 
+        // Per-tab: remember the resolved path for the active tab so switching
+        // back to it (or a back/forward that lands here) re-renders correctly.
+        const _at = getActiveTabId();
+        if (_at) {
+          // Guard custom-component tabs (e.g. a freshly opened new-tab
+          // launchpad). A concurrent/delayed updateRoute — including the boot
+          // microtask — resolves the browser URL and would otherwise clobber
+          // the launchpad's content with `_pages/home.html`. Leave such tabs
+          // alone so their `custom-component` content persists.
+          const tabs = (globals.tabs as any[]) || [];
+          const atIdx = tabs.findIndex((t: any) => t.id === _at);
+          // A tab whose stored path is the 'custom-component' sentinel (e.g. a
+          // freshly opened new-tab launchpad) must NOT have its content swapped
+          // by a concurrent/delayed updateRoute, AND its sentinel must be
+          // preserved: overwriting it with the resolved URL path here would make
+          // the very next updateRoute fail the guard and clobber the launchpad.
+          // Leave the sentinel intact while the launchpad is showing.
+          if (atIdx >= 0 && state.tabPaths[_at] === 'custom-component') {
+            // Preserve the sentinel; do not overwrite with the resolved path.
+          } else {
+            state.tabPaths[_at] = path;
+            const resolvedSource = matched?.component ?? staticComponent ?? null;
+            if (resolvedSource && atIdx >= 0) {
+              const cur = tabs[atIdx];
+              // ZCZS: mutate the reactive tab object in-place via the proxy —
+              // no array rebuild, no setGlobalSignal round-trip needed.
+              if (cur.source !== resolvedSource) cur.source = resolvedSource;
+              if (cur.route !== path) cur.route = path;
+              // Sync tab.meta from route manifest so header title/icon reflects
+              // the navigated page immediately (before linkedContent fetch resolves).
+              const routeMeta = matched?.meta as Record<string, string> | undefined;
+              if (routeMeta?.title || routeMeta?.icon) {
+                cur.meta = { ...(cur.meta || {}), ...routeMeta };
+              }
+            }
+          }
+        }
+
         if (matched || staticComponent) {
           commitVisibility(matched); // section model (no-op visually for outlet-only)
           state.error = null;
@@ -1225,6 +1262,15 @@ export const routerAttributeModule: AttributeModule = {
           state.loading = false;
 
           restoreScroll(url.hash);
+
+          // Update recent path list directly (excluding error page and internal tools).
+          if (path && path !== '/index.html' && path !== errorPage && !path.startsWith('/_internal/')) {
+            const recent = (globals.recent as any[]) || [];
+            const routeTitle = matched?.meta?.title || path.replace(/^\//, '').replace(/-/g, ' ');
+            const entry = { path, title: routeTitle };
+            const next = [entry, ...recent.filter((r: any) => r.path !== path && r.path !== '/index.html')].slice(0, 5);
+            runtime.setGlobalSignal('recent', next);
+          }
 
 
           // afterEnter / afterLeave.

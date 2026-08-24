@@ -1,5 +1,4 @@
-<div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300 min-h-screen"
-  data-signal="{
+<div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300 min-h-screen" data-signal="{
       collapsed: localStorage.collapsed !== 'false',
       pageTabs: localStorage.pageTabs !== 'false',
       rtl: localStorage.rtl === 'true',
@@ -15,71 +14,61 @@
   data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: zoom + 'rem' }"
   data-on-resize:window="isMobile = window.innerWidth < 768">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
-  <div class="drawer-content"
-    data-on-load="if (typeof router !== 'undefined' && router) navigateActiveTab(window.location.pathname)"
-    data-signal:global="{
+  <div class="drawer-content" data-signal:global="{
 
         meta: { '/_pages/home.html': { title: 'Home', icon: 'material-symbols-light:home-outline' }, '/': { title: 'Home', icon: 'material-symbols-light:home-outline' }, '_components/tab-new.html': { title: 'New Tab', icon: 'material-symbols-light:article-outline' } },
-        activeTabId: 'tab-1',
+        activePageTabId: 'home',
         activeTab: null,
         pinned: [],
-        tabSeq: 1,
+        tabSeq: 0,
         ctxMenu: null,
         ctxMenuItems: [],
-        recent: JSON.parse(sessionStorage.getItem('recent') || '[]'),
         favorites: localStorage.favorites ?? [],
         favForm: { title: '', href: '', icon: 'material-symbols-light:star-outline' },
         pendingDeleteId: null,
         themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset'],
+        sidebarItems: [
+          { href: '/', title: 'Homepage', icon: 'material-symbols-light:home-outline', tabTitle: 'Home', tabIcon: 'material-symbols-light:home-outline' },
+          { href: '/profile', title: 'Profile', icon: 'material-symbols-light:person-outline', tabTitle: 'Profile', tabIcon: 'material-symbols-light:person-outline' },
+          { href: '/settings', title: 'Settings', icon: 'material-symbols-light:settings-outline', tabTitle: 'Settings', tabIcon: 'material-symbols-light:settings-outline' }
+        ],
         tabs: [{
-          id: 'tab-1',
-          source: '#tab-loading-template',
-          route: window.location.pathname || '/',
-          meta: { title: 'Loading...', icon: 'svg-spinners:90-ring-with-bg' }
+          id: 'home',
+          source: '/_pages/home.html',
+          route: '/',
+          meta: { title: 'Home', icon: 'material-symbols-light:home-outline' }
         }],
         createTab(source = '_components/tab-new.html', route = '') {
           this.tabSeq++;
           const id = 'tab-' + this.tabSeq;
           this.tabs = [...this.tabs, { id, source, route: route || source, meta: { title: 'New Tab', icon: 'material-symbols-light:article-outline' } }];
-          this.activeTabId = id;
+          this.activePageTabId = id;
+          if (typeof router !== 'undefined' && router) {
+            // Mark as custom-component sentinel so updateRoute never clobbers
+            // a launchpad/component tab with a URL-resolved page.
+            router.tabPaths[id] = 'custom-component';
+            router.setActiveTab(id);
+          }
         },
         switchTab(id) {
-          this.activeTabId = id;
-          const cur = this.tabs.find(t => t.id === id);
-          if (cur && cur.route && !cur.route.startsWith('#') && !cur.source.startsWith('_components/')) {
-            if (typeof router !== 'undefined' && router) {
-              router.navigate(cur.route);
-            }
+          this.activePageTabId = id;
+          if (typeof router !== 'undefined' && router) {
+            router.setActiveTab(id);
           }
         },
         navigateActiveTab(href) {
+          // Delegate entirely to the router — it resolves the component source
+          // from its own route manifest and updates the active tab via ZCZS.
           if (typeof router !== 'undefined' && router) {
             router.navigate(href);
           }
-          const path = href.startsWith('/') ? href : '/' + href;
-          const cur = this.tabs.find(t => t.id === this.activeTabId);
-          const resolvedSource = path === '/' ? '/_pages/home.html' : (path.endsWith('.html') ? path : `/_pages${path}.html`);
-          if (cur) {
-            cur.source = resolvedSource;
-            cur.route = path;
-          }
-          if (path && path !== '/index.html' && !path.startsWith('/_components/') && !path.startsWith('/_internal/')) {
-            const routeItem = typeof router !== 'undefined' && router?.routes ? router.routes.find(r => r.path === path) : null;
-            const title = routeItem?.title || (path === '/' ? 'Home' : path.replace(/^\//, '').replace(/-/g, ' '));
-            const icon = routeItem?.icon || (path === '/' ? 'material-symbols-light:home-outline' : 'material-symbols-light:article-outline');
-            const entry = { path, title, icon };
-            this.recent = [entry, ...(this.recent || []).filter(r => r.path !== path && r.path !== '/index.html')].slice(0, 8);
-            try {
-              sessionStorage.setItem('recent', JSON.stringify(this.recent));
-            } catch {}
-          }
         },
         closeTab(id) {
-          const wasActive = this.activeTabId === id;
+          const wasActive = this.activePageTabId === id;
           this.tabs = this.tabs.filter(t => t.id !== id);
           this.pinned = this.pinned.filter(p => p !== id);
           if (wasActive && this.tabs.length > 0) {
-            this.activeTabId = this.tabs[0].id;
+            this.activePageTabId = this.tabs[0].id;
           }
         },
         pinTab(id) {
@@ -96,8 +85,14 @@
           const newId = 'tab-' + this.tabSeq;
           const source = src.source || '_components/tab-generic.html';
           const route = src.route || '';
-          this.tabs = [...this.tabs, { id: newId, source, route, meta: src.meta ? { ...src.meta } : undefined }];
-          this.activeTabId = newId;
+          if (source.startsWith('_components/')) {
+            router.tabPaths[newId] = 'custom-component';
+          } else {
+            router.tabPaths[newId] = router.tabPaths[id] || route;
+          }
+          this.tabs = [...this.tabs, { id: newId, source, route }];
+          this.activePageTabId = newId;
+          router.setActiveTab(newId);
         },
         openTabContextMenu(tab, evt) {
           const e = evt;
@@ -141,7 +136,7 @@
                 this.tabSeq++;
                 const id = 'tab-' + this.tabSeq;
                 this.tabs = [...this.tabs, { id, title: title || 'Tab', icon: icon || 'material-symbols-light:article-outline', content: href }];
-                this.activeTabId = id;
+                this.activePageTabId = id;
               }
             },
             {
@@ -415,44 +410,12 @@
     <!-- Tab state lives in the global signal declared on `drawer-content`
          (data-signal:global), so the bar and panels share one scope. -->
 
-    <!-- Loading placeholder template with DaisyUI skeleton content -->
-    <template id="tab-loading-template">
-      <head>
-        <title>Loading...</title>
-        <meta name="icon" content="svg-spinners:90-ring-with-bg">
-      </head>
-      <div class="flex flex-col gap-6 w-full min-h-[70vh] animate-pulse">
-        <!-- Header row: Title bar + action button -->
-        <div class="flex items-center justify-between pb-4 border-b border-base-content/10">
-          <div class="skeleton bg-base-300 h-9 w-64 rounded-lg"></div>
-          <div class="skeleton bg-base-300 h-9 w-28 rounded-lg"></div>
-        </div>
-        
-        <!-- Top Stats/Metrics Grid: 3 cards across -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="skeleton bg-base-300 h-28 w-full rounded-box"></div>
-          <div class="skeleton bg-base-300 h-28 w-full rounded-box"></div>
-          <div class="skeleton bg-base-300 h-28 w-full rounded-box"></div>
-        </div>
-
-        <!-- Main Content Area Panel -->
-        <div class="skeleton bg-base-300 h-72 w-full rounded-box"></div>
-
-        <!-- Detail Text Lines -->
-        <div class="flex flex-col gap-3 pt-2">
-          <div class="skeleton bg-base-300 h-4 w-full rounded"></div>
-          <div class="skeleton bg-base-300 h-4 w-5/6 rounded"></div>
-          <div class="skeleton bg-base-300 h-4 w-4/6 rounded"></div>
-        </div>
-      </div>
-    </template>
-
     <!-- Inline template for tab headers -->
     <template id="tab-header-template">
       <div role="tab" tabindex="0"
         class="flex items-center shrink-0 p-2 cursor-pointer hover:'border-primary' transition-colors"
-        data-bind-aria-selected="activeTabId === tab.id"
-        data-class="{'tab-active border-b border-primary text-primary': activeTabId === tab.id }"
+        data-bind-aria-selected="activePageTabId === tab.id"
+        data-class="{'tab-active border-b border-primary text-primary': activePageTabId === tab.id }"
         data-on-click="switchTab(tab.id)" data-on-auxclick="if ($evt.button === 1) closeTab(tab.id)"
         data-on-contextmenu:prevent="openTabContextMenu(tab, $evt)">
         <iconify-icon icon="material-symbols-light:drag-indicator"
@@ -558,8 +521,8 @@
       <!-- Retained Multi-Panel Outlets: Each tab retains its mounted DOM tree.
            data-show toggles panel visibility instantly (display: none) without destroying nodes or resetting state. -->
       <template data-for="tab in tabs" data-key="tab.id">
-        <div role="tabpanel" class="h-full w-full" data-show="activeTabId === tab.id">
-          <tab-content class="block w-full h-full" data-component="tab.source || tab.content"></tab-content>
+        <div role="tabpanel" class="h-full w-full" data-show="activePageTabId === tab.id">
+          <tab-content data-component="tab.source || tab.content"></tab-content>
         </div>
       </template>
     </div>
@@ -579,28 +542,28 @@
           <span data-bind="pinned.includes(ctxMenu.tabId) ? 'Unpin' : 'Pin'"></span>
         </button>
         <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-          data-on-click:stop="const src = tabs.find(t => t.id === ctxMenu.tabId); const id = 'tab-' + (++tabSeq); const nc = (src && src.content) || '_components/tab-generic.html'; if (nc.startsWith('_components/')) { router.tabPaths[id] = 'custom-component'; } else { router.tabPaths[id] = router.tabPaths[ctxMenu.tabId]; } tabs = [...tabs, { id, title: (src && src.title) || 'Tab', icon: (src && src.icon) || 'material-symbols-light:article-outline', content: nc }]; activeTabId = id; ctxMenu = null;">
+          data-on-click:stop="const src = tabs.find(t => t.id === ctxMenu.tabId); const id = 'tab-' + (++tabSeq); const nc = (src && src.content) || '_components/tab-generic.html'; if (nc.startsWith('_components/')) { router.tabPaths[id] = 'custom-component'; } else { router.tabPaths[id] = router.tabPaths[ctxMenu.tabId]; } tabs = [...tabs, { id, title: (src && src.title) || 'Tab', icon: (src && src.icon) || 'material-symbols-light:article-outline', content: nc }]; activePageTabId = id; ctxMenu = null;">
           <iconify-icon icon="material-symbols-light:add" class="text-lg"></iconify-icon>
           <span>Open in new tab</span>
         </button>
         <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
           data-class="{ 'hidden': pinned.includes(ctxMenu.tabId) }"
-          data-on-click:stop="const id = ctxMenu.tabId; const wasActive = activeTabId === id; tabs = tabs.filter(t => t.id !== id); pinned = pinned.filter(p => p !== id); if (wasActive) activeTabId = tabs[0]?.id; ctxMenu = null;">
+          data-on-click:stop="const id = ctxMenu.tabId; const wasActive = activePageTabId === id; tabs = tabs.filter(t => t.id !== id); pinned = pinned.filter(p => p !== id); if (wasActive) activePageTabId = tabs[0]?.id; ctxMenu = null;">
           <iconify-icon icon="material-symbols-light:close" class="text-lg"></iconify-icon>
           <span>Close tab</span>
         </button>
         <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-          data-on-click:stop="const id = ctxMenu.tabId; const idx = tabs.findIndex(t => t.id === id); tabs = tabs.filter((t, i) => i <= idx || pinned.includes(t.id)); if (!tabs.find(t => t.id === activeTabId)) activeTabId = tabs[0]?.id; ctxMenu = null;">
+          data-on-click:stop="const id = ctxMenu.tabId; const idx = tabs.findIndex(t => t.id === id); tabs = tabs.filter((t, i) => i <= idx || pinned.includes(t.id)); if (!tabs.find(t => t.id === activePageTabId)) activePageTabId = tabs[0]?.id; ctxMenu = null;">
           <iconify-icon icon="material-symbols-light:chevron-left" class="text-lg"></iconify-icon>
           <span>Close tabs to the left</span>
         </button>
         <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-          data-on-click:stop="const id = ctxMenu.tabId; const idx = tabs.findIndex(t => t.id === id); tabs = tabs.filter((t, i) => i >= idx || pinned.includes(t.id)); if (!tabs.find(t => t.id === activeTabId)) activeTabId = tabs[0]?.id; ctxMenu = null;">
+          data-on-click:stop="const id = ctxMenu.tabId; const idx = tabs.findIndex(t => t.id === id); tabs = tabs.filter((t, i) => i >= idx || pinned.includes(t.id)); if (!tabs.find(t => t.id === activePageTabId)) activePageTabId = tabs[0]?.id; ctxMenu = null;">
           <iconify-icon icon="material-symbols-light:chevron-right" class="text-lg"></iconify-icon>
           <span>Close tabs to the right</span>
         </button>
         <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-          data-on-click:stop="tabs = tabs.filter(t => pinned.includes(t.id)); if (!tabs.find(t => t.id === activeTabId)) activeTabId = tabs[0]?.id; ctxMenu = null;">
+          data-on-click:stop="tabs = tabs.filter(t => pinned.includes(t.id)); if (!tabs.find(t => t.id === activePageTabId)) activePageTabId = tabs[0]?.id; ctxMenu = null;">
           <iconify-icon icon="material-symbols-light:clear-all" class="text-lg"></iconify-icon>
           <span>Close other tabs</span>
         </button>
@@ -614,7 +577,7 @@
       <!-- LINK actions -->
       <template data-if="ctxMenu && ctxMenu.type === 'link'">
         <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-          data-on-click:stop="const u = ctxMenu.url; const id = 'tab-' + (++tabSeq); router.tabPaths[id] = u; tabs = [...tabs, { id, title: ctxMenu.title || 'Tab', icon: ctxMenu.icon || 'material-symbols-light:article-outline', content: u }]; activeTabId = id; ctxMenu = null;">
+          data-on-click:stop="const u = ctxMenu.url; const id = 'tab-' + (++tabSeq); router.tabPaths[id] = u; tabs = [...tabs, { id, title: ctxMenu.title || 'Tab', icon: ctxMenu.icon || 'material-symbols-light:article-outline', content: u }]; activePageTabId = id; ctxMenu = null;">
           <iconify-icon icon="material-symbols-light:add" class="text-lg"></iconify-icon>
           <span>Open in new tab</span>
         </button>
@@ -702,13 +665,14 @@
         </button>
       </div>
 
-      <ul class="menu w-full grow" data-show="activeSidebarTab === 1">
-        <template data-for="item in (router?.routes || [])" data-key="item.path">
-          <li class="transition-transform duration-300 hover:scale-102">
-            <a data-bind-href="item.path"
-              data-class="{ 'active': activeTab?.route === item.path }"
+      <ul class="menu w-full grow" data-show="activeSidebarTab === 1" data-drag-container="sidebarItems"
+        data-drag-direction="vertical" data-drag-swap-threshold="0.55">
+        <template data-for="item in sidebarItems" data-key="item.href">
+          <li class="transition-transform duration-300 hover:scale-102" data-drag>
+            <a data-bind-href="item.href" data-bind-data-tab-title="item.tabTitle"
+              data-bind-data-tab-icon="item.tabIcon"
               data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-              data-on-contextmenu:prevent="openNavContextMenu(item.path, item.title, item.icon, $evt)">
+              data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
               <iconify-icon data-bind-icon="item.icon" style="font-size: 24px"></iconify-icon>
               <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
             </a>
@@ -731,7 +695,7 @@
             <template data-for="fav in favorites" data-key="fav.id || fav">
               <li class="flex flex-row items-center justify-between group rounded-box hover:bg-base-200">
                 <a data-bind-href="fav.href || fav" class="grow flex items-center gap-3 py-2 px-3"
-                  data-on-pointerdown="if ($evt.button === 2 || $evt.buttons === 2 || $evt.which === 3) { const rawX = $evt.clientX || $evt.pageX || 100; const rawY = $evt.clientY || $evt.pageY || 100; if (window.__secHoldTimer) clearTimeout(window.__secHoldTimer); window.__secHoldTimer = setTimeout(() => { const ftitle = fav.title || fav; const fhref = fav.href || fav; const ficon = fav.icon || 'material-symbols-light:star-outline'; const targetId = (fav.id || fav); ctxMenuItems = [{ label: 'Open in New Tab', icon: 'material-symbols-light:open-in-new', action: () => { tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs = [...tabs, { id, title: ftitle, icon: ficon, content: fhref }]; activeTabId = id; } }, { label: 'Add as Pinned Tab', icon: 'material-symbols-light:keep-outline', action: () => { tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs = [...tabs, { id, title: ftitle, icon: ficon, content: fhref }]; pinned = [...pinned, id]; activeTabId = id; } }, { label: 'Remove Favorite', icon: 'material-symbols-light:delete-outline', danger: true, action: () => { favorites = (favorites || []).filter(f => (f.id || f) !== targetId); } }]; const menuWidth = 224; const menuHeight = 180; const posX = (rawX + menuWidth > window.innerWidth) ? (rawX - menuWidth) : rawX; const posY = (rawY + menuHeight > window.innerHeight) ? (rawY - menuHeight) : rawY; const a = document.getElementById('click-anchor'); if (a) { a.style.top = posY + 'px'; a.style.left = posX + 'px'; } const m = document.getElementById('ctx-menu-overlay'); if (m && m.showPopover) m.showPopover(); const cancelNative = (e) => { e.preventDefault(); e.stopPropagation(); window.removeEventListener('contextmenu', cancelNative, true); }; window.addEventListener('contextmenu', cancelNative, true); }, 500); }"
+                  data-on-pointerdown="if ($evt.button === 2 || $evt.buttons === 2 || $evt.which === 3) { const rawX = $evt.clientX || $evt.pageX || 100; const rawY = $evt.clientY || $evt.pageY || 100; if (window.__secHoldTimer) clearTimeout(window.__secHoldTimer); window.__secHoldTimer = setTimeout(() => { const ftitle = fav.title || fav; const fhref = fav.href || fav; const ficon = fav.icon || 'material-symbols-light:star-outline'; const targetId = (fav.id || fav); ctxMenuItems = [{ label: 'Open in New Tab', icon: 'material-symbols-light:open-in-new', action: () => { tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs = [...tabs, { id, title: ftitle, icon: ficon, content: fhref }]; activePageTabId = id; } }, { label: 'Add as Pinned Tab', icon: 'material-symbols-light:keep-outline', action: () => { tabSeq = tabSeq + 1; const id = 'tab-' + tabSeq; router.tabPaths[id] = 'custom-component'; tabs = [...tabs, { id, title: ftitle, icon: ficon, content: fhref }]; pinned = [...pinned, id]; activePageTabId = id; } }, { label: 'Remove Favorite', icon: 'material-symbols-light:delete-outline', danger: true, action: () => { favorites = (favorites || []).filter(f => (f.id || f) !== targetId); } }]; const menuWidth = 224; const menuHeight = 180; const posX = (rawX + menuWidth > window.innerWidth) ? (rawX - menuWidth) : rawX; const posY = (rawY + menuHeight > window.innerHeight) ? (rawY - menuHeight) : rawY; const a = document.getElementById('click-anchor'); if (a) { a.style.top = posY + 'px'; a.style.left = posX + 'px'; } const m = document.getElementById('ctx-menu-overlay'); if (m && m.showPopover) m.showPopover(); const cancelNative = (e) => { e.preventDefault(); e.stopPropagation(); window.removeEventListener('contextmenu', cancelNative, true); }; window.addEventListener('contextmenu', cancelNative, true); }, 500); }"
                   data-on-pointerup="if (window.__secHoldTimer) { clearTimeout(window.__secHoldTimer); window.__secHoldTimer = null; }">
                   <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:star'"
                     class="text-warning text-xl shrink-0"></iconify-icon>

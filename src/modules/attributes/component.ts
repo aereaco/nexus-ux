@@ -70,10 +70,9 @@ export class BaseComponent extends ElementBase {
 function extractResourceMetadata(
   htmlText: string,
   path: string,
-  runtime: RuntimeContext,
-  metaFilter?: string[] | null
-): Record<string, any> {
-  const meta: Record<string, any> = {};
+  runtime: RuntimeContext
+): Record<string, string> {
+  const meta: Record<string, string> = {};
   if (!htmlText || typeof htmlText !== 'string') return meta;
 
   try {
@@ -94,58 +93,39 @@ function extractResourceMetadata(
       }
     });
 
-    const icons: string[] = [];
-    parsedDoc.querySelectorAll('link[rel~="icon"], link[rel~="shortcut icon"], link[rel~="apple-touch-icon"], meta[name="icon"]').forEach((iconEl) => {
-      const href = iconEl.getAttribute('href') || iconEl.getAttribute('content');
-      if (href && !icons.includes(href.trim())) {
-        icons.push(href.trim());
+    const globals = runtime.globalSignals ? runtime.globalSignals() : {};
+    if (globals) {
+      const norm = path.startsWith('/') ? path : '/' + path;
+      const unnorm = path.startsWith('/') ? path.slice(1) : path;
+      const curMeta = globals.meta || {};
+      const nextMeta = {
+        ...curMeta,
+        [path]: meta,
+        [norm]: meta,
+        [unnorm]: meta
+      };
+      if (runtime.setGlobalSignal) {
+        runtime.setGlobalSignal('meta', nextMeta);
       }
-    });
-
-    if (icons.length > 0) {
-      meta.icons = icons;
-      if (!meta.icon) meta.icon = icons[0];
+      const routerState = (globals.router || globals.appRouter) as any;
+      if (routerState) {
+        routerState.meta = nextMeta;
+        if (Array.isArray(routerState.routes)) {
+          const routeRecord = routerState.routes.find((r: any) => r.path === path || r.path === norm || r.path === unnorm);
+          if (routeRecord) {
+            routeRecord.meta = { ...(routeRecord.meta || {}), ...meta };
+          }
+        }
+      }
     }
 
     if (meta.title && typeof document !== 'undefined') {
       document.title = meta.title;
     }
-
-    if (metaFilter && Array.isArray(metaFilter) && metaFilter.length > 0) {
-      const filtered: Record<string, any> = {};
-      for (const k of metaFilter) {
-        if (k in meta) filtered[k] = meta[k];
-      }
-      return filtered;
-    }
   } catch (e) {
     console.error(`[Component] Failed to extract metadata for ${path}:`, e);
   }
   return meta;
-}
-
-/**
- * Synchronizes extracted metadata to any enclosing tab or meta scope on the element.
- */
-function syncExtractedMetadataToScope(el: HTMLElement, extracted: Record<string, any>, runtime: RuntimeContext): void {
-  if (!extracted || Object.keys(extracted).length === 0) return;
-  const dataStack = getDataStack(el);
-  for (const scope of dataStack) {
-    if (scope && typeof scope === 'object') {
-      if ('tab' in scope && (scope as any).tab && typeof (scope as any).tab === 'object') {
-        (scope as any).tab.meta = { ...((scope as any).tab.meta || {}), ...extracted };
-        const globals = runtime.globalSignals() as Record<string, unknown>;
-        if (globals && Array.isArray(globals.tabs)) {
-          runtime.setGlobalSignal('tabs', [...globals.tabs]);
-        }
-        break;
-      }
-      if ('meta' in scope && typeof (scope as any).meta === 'object') {
-        (scope as any).meta = { ...((scope as any).meta || {}), ...extracted };
-        break;
-      }
-    }
-  }
 }
 
 /**
@@ -268,6 +248,19 @@ const componentModule: AttributeModule = {
       };
 
       el[COMPONENT_CONTEXT_KEY] = ctx;
+
+      let tabObj: Record<string, unknown> | null = null;
+      const dataStack = getDataStack(el);
+      for (const scope of dataStack) {
+        if (scope && typeof scope === 'object' && 'tab' in scope) {
+          const t = (scope as any).tab;
+          if (t && typeof t === 'object') {
+            tabObj = t;
+            tabObj.linkedContent = componentState;
+          }
+          break;
+        }
+      }
       let scopeAttached = false;
 
       let __lastPath: string | undefined;
@@ -290,9 +283,7 @@ const componentModule: AttributeModule = {
           return;
         }
 
-        if (!config.path || config.path === 'none' || config.path === 'undefined' || config.path === 'null') return;
-        config.path = config.path.replace(/^['"]+|['"]+$/g, '').trim();
-        if (!config.path || config.path.includes('||') || config.path.includes('&&') || config.path.includes(' ')) return;
+        if (!config.path || config.path === 'none') return;
 
         if (config.path === __lastPath) return;
         __lastPath = config.path;
@@ -316,9 +307,8 @@ const componentModule: AttributeModule = {
                 onUpdate: (fresh) => {
                   if (typeof fresh === 'string' && fresh !== componentState.templateContent) {
                     componentState.templateContent = fresh;
-                    const extracted = extractResourceMetadata(fresh, config.path, runtime, config.meta);
+                    const extracted = extractResourceMetadata(fresh, config.path, runtime);
                     componentState.meta = extracted;
-                    syncExtractedMetadataToScope(el, extracted, runtime);
                   }
                 }
               });
@@ -330,9 +320,14 @@ const componentModule: AttributeModule = {
             }
 
             componentState.templateContent = html;
-            const extracted = extractResourceMetadata(html, config.path, runtime, config.meta);
+            const extracted = extractResourceMetadata(html, config.path, runtime);
             componentState.meta = extracted;
-            syncExtractedMetadataToScope(el, extracted, runtime);
+
+            // Sync resolved metadata back to the reactive tab object so the tab
+            // header binding (tab.meta ?? tab.linkedContent?.meta) updates immediately.
+            if (tabObj && extracted && (extracted.title || extracted.icon)) {
+              tabObj.meta = { ...(tabObj.meta || {}), ...extracted };
+            }
 
             if (config.shadowrootmode) {
               if (!el.shadowRoot) el.attachShadow({ mode: config.shadowrootmode });
