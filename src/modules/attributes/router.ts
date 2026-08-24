@@ -547,49 +547,16 @@ export const routerAttributeModule: AttributeModule = {
 
         // Per-tab history bookkeeping (native history is the single store).
         activeTabId: null,
-        tabPaths: {} as Record<string, string>,
-        tabMeta: {} as Record<string, { title?: string; icon?: string }>,
-
-        navigate(url: string, opts?: { replace?: boolean; tabId?: string; title?: string; icon?: string }) {
+        navigate(url: string, opts?: { replace?: boolean; title?: string; icon?: string }) {
           if (url.startsWith('http') || url.startsWith('//')) {
             globalThis.location.href = url;
             return;
           }
 
           const target = applyBase(url);
-          const tabId = opts?.tabId ?? getActiveTabId() ?? state.activeTabId ?? null;
           const cleanPath = stripBase(target);
           const matched = routeList.find((r) => r.path === cleanPath || r.path === url);
           const isShadow = matched?.internal || shadowMatch(cleanPath);
-
-          // Track this tab's current path + metadata so switching the active
-          // tab (or back/forward) re-renders the correct outlet.
-          if (tabId) {
-            state.tabPaths[tabId] = cleanPath;
-            if (opts?.title !== undefined || opts?.icon !== undefined) {
-              state.tabMeta[tabId] = {
-                ...(state.tabMeta[tabId] || {}),
-                ...(opts?.title !== undefined ? { title: opts.title } : {}),
-                ...(opts?.icon !== undefined ? { icon: opts.icon } : {}),
-              };
-            }
-          }
-
-          // ZCZS: update active tab's source/route directly via the reactive
-          // proxy — no array rebuild, no setGlobalSignal round-trip.
-          // Guard: never clobber a custom-component (launchpad) sentinel tab.
-          const _activeId = tabId || getActiveTabId();
-          if (_activeId && state.tabPaths[_activeId] !== 'custom-component') {
-            const _tabs = (runtime.globalSignals ? runtime.globalSignals() : {}).tabs as any[];
-            if (Array.isArray(_tabs)) {
-              const _tab = _tabs.find((t: any) => t.id === _activeId);
-              if (_tab) {
-                const resolvedSource = matched?.component || (cleanPath === '/' ? '/_pages/home.html' : cleanPath);
-                if (_tab.source !== resolvedSource) _tab.source = resolvedSource;
-                if (_tab.route !== cleanPath) _tab.route = cleanPath;
-              }
-            }
-          }
 
           if (isShadow) {
             // Shadow routes resolve and render in memory but NEVER pollute the address bar
@@ -600,10 +567,10 @@ export const routerAttributeModule: AttributeModule = {
           if ('navigation' in globalThis) {
             (globalThis as any).navigation.navigate(target, {
               history: opts?.replace ? 'replace' : 'push',
-              state: { tabId, scrollY: globalThis.scrollY, title: opts?.title, icon: opts?.icon },
+              state: { scrollY: globalThis.scrollY, title: opts?.title, icon: opts?.icon },
             });
           } else {
-            const histState = { tabId, scrollY: globalThis.scrollY, title: opts?.title, icon: opts?.icon };
+            const histState = { scrollY: globalThis.scrollY, title: opts?.title, icon: opts?.icon };
             if (opts?.replace) globalThis.history.replaceState(histState, '', target);
             else globalThis.history.pushState(histState, '', target);
             updateRoute(target);
