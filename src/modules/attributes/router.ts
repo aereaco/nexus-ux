@@ -1182,28 +1182,6 @@ export const routerAttributeModule: AttributeModule = {
         // inner `#router.route` outlet), else render the route component directly.
         publishOutlet(state.layout ?? state.route);
 
-        // Per-tab: remember the resolved path for the active tab so switching
-        // back to it (or a back/forward that lands here) re-renders correctly.
-        const tabs = (globals.tabs as any[]) || [];
-        let _at = getActiveTabId();
-        const resolvedSource = matched?.component ?? staticComponent ?? null;
-
-        if (_at) {
-          const atIdx = tabs.findIndex((t: any) => t.id === _at);
-          if (atIdx >= 0 && state.tabPaths[_at] === 'custom-component') {
-            // Preserve the sentinel; do not overwrite with the resolved path.
-          } else if (atIdx >= 0 && resolvedSource) {
-            state.tabPaths[_at] = path;
-            const cur = tabs[atIdx];
-            if (cur.source !== resolvedSource) cur.source = resolvedSource;
-            if (cur.route !== path) cur.route = path;
-            const routeMeta = matched?.meta as Record<string, string> | undefined;
-            if (routeMeta?.title || routeMeta?.icon) {
-              cur.meta = { ...(cur.meta || {}), ...routeMeta };
-            }
-          }
-        }
-
         if (matched || staticComponent) {
           commitVisibility(matched); // section model (no-op visually for outlet-only)
           state.error = null;
@@ -1211,15 +1189,6 @@ export const routerAttributeModule: AttributeModule = {
           state.loading = false;
 
           restoreScroll(url.hash);
-
-          // Update recent path list directly (excluding error page and internal tools).
-          if (path && path !== '/index.html' && path !== errorPage && !path.startsWith('/_internal/')) {
-            const recent = (globals.recent as any[]) || [];
-            const routeTitle = matched?.meta?.title || path.replace(/^\//, '').replace(/-/g, ' ');
-            const entry = { path, title: routeTitle };
-            const next = [entry, ...recent.filter((r: any) => r.path !== path && r.path !== '/index.html')].slice(0, 5);
-            runtime.setGlobalSignal('recent', next);
-          }
 
 
           // afterEnter / afterLeave.
