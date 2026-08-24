@@ -266,7 +266,9 @@ const componentModule: AttributeModule = {
           return;
         }
 
-        if (!config.path || config.path === 'none') return;
+        if (!config.path || config.path === 'none' || config.path === 'undefined' || config.path === 'null') return;
+        config.path = config.path.replace(/^['"]+|['"]+$/g, '').trim();
+        if (!config.path || config.path.includes('||') || config.path.includes('&&') || config.path.includes(' ')) return;
 
         if (config.path === __lastPath) return;
         __lastPath = config.path;

@@ -1,5 +1,4 @@
 <div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300 min-h-screen"
-  data-on-load="if (typeof router !== 'undefined' && router) router.navigate(window.location.pathname)"
   data-signal="{
       collapsed: localStorage.collapsed !== 'false',
       pageTabs: localStorage.pageTabs !== 'false',
@@ -37,8 +36,8 @@
         ],
         tabs: [{
           id: 'tab-1',
-          source: '#tab-loading-template',
-          route: ''
+          source: (window.location.pathname === '/' || window.location.pathname === '') ? '/_pages/home.html' : (window.location.pathname.endsWith('.html') ? window.location.pathname : `/_pages${window.location.pathname}.html`),
+          route: (window.location.pathname === '' ? '/' : window.location.pathname)
         }],
         createTab(source = '_components/tab-new.html', route = '') {
           this.tabSeq++;
