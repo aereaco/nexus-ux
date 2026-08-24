@@ -101,7 +101,6 @@
           const route = src.route || '';
           this.tabs = [...this.tabs, { id: newId, source, route, meta: src.meta ? { ...src.meta } : undefined }];
           this.activeTabId = newId;
-        },    router.setActiveTab(newId);
         },
         openTabContextMenu(tab, evt) {
           const e = evt;
