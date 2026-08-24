@@ -2334,7 +2334,7 @@ ${scripts}
     BaseComponent: () => BaseComponent,
     default: () => component_default
   });
-  function extractResourceMetadata(htmlText, path, runtime) {
+  function extractResourceMetadata(htmlText, path, runtime, metaFilter) {
     const meta = {};
     if (!htmlText || typeof htmlText !== "string")
       return meta;
@@ -2353,8 +2353,28 @@ ${scripts}
           meta[key] = content.trim();
         }
       });
+      const icons = [];
+      parsedDoc.querySelectorAll('link[rel~="icon"], link[rel~="shortcut icon"], link[rel~="apple-touch-icon"], meta[name="icon"]').forEach((iconEl) => {
+        const href = iconEl.getAttribute("href") || iconEl.getAttribute("content");
+        if (href && !icons.includes(href.trim())) {
+          icons.push(href.trim());
+        }
+      });
+      if (icons.length > 0) {
+        meta.icons = icons;
+        if (!meta.icon)
+          meta.icon = icons[0];
+      }
       if (meta.title && typeof document !== "undefined") {
         document.title = meta.title;
+      }
+      if (metaFilter && Array.isArray(metaFilter) && metaFilter.length > 0) {
+        const filtered = {};
+        for (const k of metaFilter) {
+          if (k in meta)
+            filtered[k] = meta[k];
+        }
+        return filtered;
       }
     } catch (e) {
       console.error(`[Component] Failed to extract metadata for ${path}:`, e);

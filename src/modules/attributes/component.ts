@@ -70,9 +70,10 @@ export class BaseComponent extends ElementBase {
 function extractResourceMetadata(
   htmlText: string,
   path: string,
-  runtime: RuntimeContext
-): Record<string, string> {
-  const meta: Record<string, string> = {};
+  runtime: RuntimeContext,
+  metaFilter?: string[] | null
+): Record<string, any> {
+  const meta: Record<string, any> = {};
   if (!htmlText || typeof htmlText !== 'string') return meta;
 
   try {
@@ -93,8 +94,29 @@ function extractResourceMetadata(
       }
     });
 
+    const icons: string[] = [];
+    parsedDoc.querySelectorAll('link[rel~="icon"], link[rel~="shortcut icon"], link[rel~="apple-touch-icon"], meta[name="icon"]').forEach((iconEl) => {
+      const href = iconEl.getAttribute('href') || iconEl.getAttribute('content');
+      if (href && !icons.includes(href.trim())) {
+        icons.push(href.trim());
+      }
+    });
+
+    if (icons.length > 0) {
+      meta.icons = icons;
+      if (!meta.icon) meta.icon = icons[0];
+    }
+
     if (meta.title && typeof document !== 'undefined') {
       document.title = meta.title;
+    }
+
+    if (metaFilter && Array.isArray(metaFilter) && metaFilter.length > 0) {
+      const filtered: Record<string, any> = {};
+      for (const k of metaFilter) {
+        if (k in meta) filtered[k] = meta[k];
+      }
+      return filtered;
     }
   } catch (e) {
     console.error(`[Component] Failed to extract metadata for ${path}:`, e);
