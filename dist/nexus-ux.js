@@ -2517,18 +2517,6 @@ ${scripts}
               ...componentState
             };
             el[COMPONENT_CONTEXT_KEY] = ctx;
-            let tabObj = null;
-            const dataStack = getDataStack(el);
-            for (const scope of dataStack) {
-              if (scope && typeof scope === "object" && "tab" in scope) {
-                const t = scope.tab;
-                if (t && typeof t === "object") {
-                  tabObj = t;
-                  tabObj.linkedContent = componentState;
-                }
-                break;
-              }
-            }
             let scopeAttached = false;
             let __lastPath;
             runtime.effect(() => {
@@ -2574,7 +2562,7 @@ ${scripts}
                       onUpdate: (fresh) => {
                         if (typeof fresh === "string" && fresh !== componentState.templateContent) {
                           componentState.templateContent = fresh;
-                          const extracted2 = extractResourceMetadata(fresh, config.path, runtime);
+                          const extracted2 = extractResourceMetadata(fresh, config.path, runtime, config.meta);
                           componentState.meta = extracted2;
                         }
                       }
@@ -2585,11 +2573,8 @@ ${scripts}
                     console.log(`[Component] Template loaded for <${el.tagName}>, length: ${html.length}`);
                   }
                   componentState.templateContent = html;
-                  const extracted = extractResourceMetadata(html, config.path, runtime);
+                  const extracted = extractResourceMetadata(html, config.path, runtime, config.meta);
                   componentState.meta = extracted;
-                  if (tabObj && extracted && (extracted.title || extracted.icon)) {
-                    tabObj.meta = { ...tabObj.meta || {}, ...extracted };
-                  }
                   if (config.shadowrootmode) {
                     if (!el.shadowRoot)
                       el.attachShadow({ mode: config.shadowrootmode });
