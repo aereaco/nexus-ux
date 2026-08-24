@@ -7139,38 +7139,12 @@ ${match}</ul>
               state.route = matched?.component ?? staticComponent ?? null;
               state.layout = matched?.layout ?? null;
               publishOutlet(state.layout ?? state.route);
-              const tabs = globals.tabs || [];
-              let _at = getActiveTabId();
-              const resolvedSource = matched?.component ?? staticComponent ?? null;
-              if (_at) {
-                const atIdx = tabs.findIndex((t) => t.id === _at);
-                if (atIdx >= 0 && state.tabPaths[_at] === "custom-component") {
-                } else if (atIdx >= 0 && resolvedSource) {
-                  state.tabPaths[_at] = path;
-                  const cur = tabs[atIdx];
-                  if (cur.source !== resolvedSource)
-                    cur.source = resolvedSource;
-                  if (cur.route !== path)
-                    cur.route = path;
-                  const routeMeta = matched?.meta;
-                  if (routeMeta?.title || routeMeta?.icon) {
-                    cur.meta = { ...cur.meta || {}, ...routeMeta };
-                  }
-                }
-              }
               if (matched || staticComponent) {
                 commitVisibility(matched);
                 state.error = null;
                 state.errorCode = null;
                 state.loading = false;
                 restoreScroll(url.hash);
-                if (path && path !== "/index.html" && path !== errorPage2 && !path.startsWith("/_internal/")) {
-                  const recent = globals.recent || [];
-                  const routeTitle = matched?.meta?.title || path.replace(/^\//, "").replace(/-/g, " ");
-                  const entry = { path, title: routeTitle };
-                  const next = [entry, ...recent.filter((r) => r.path !== path && r.path !== "/index.html")].slice(0, 5);
-                  runtime.setGlobalSignal("recent", next);
-                }
                 if (matched) {
                   queueMicrotask(async () => {
                     await runHook(matched.afterEnter, toInfo, fromInfo);
