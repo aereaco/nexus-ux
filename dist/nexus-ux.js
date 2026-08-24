@@ -6618,42 +6618,15 @@ ${match}</ul>
               manifest: [],
               // Per-tab history bookkeeping (native history is the single store).
               activeTabId: null,
-              tabPaths: {},
-              tabMeta: {},
               navigate(url, opts) {
                 if (url.startsWith("http") || url.startsWith("//")) {
                   globalThis.location.href = url;
                   return;
                 }
                 const target = applyBase(url);
-                const tabId = opts?.tabId ?? getActiveTabId() ?? state.activeTabId ?? null;
                 const cleanPath = stripBase(target);
                 const matched = routeList.find((r) => r.path === cleanPath || r.path === url);
                 const isShadow = matched?.internal || shadowMatch(cleanPath);
-                if (tabId) {
-                  state.tabPaths[tabId] = cleanPath;
-                  if (opts?.title !== void 0 || opts?.icon !== void 0) {
-                    state.tabMeta[tabId] = {
-                      ...state.tabMeta[tabId] || {},
-                      ...opts?.title !== void 0 ? { title: opts.title } : {},
-                      ...opts?.icon !== void 0 ? { icon: opts.icon } : {}
-                    };
-                  }
-                }
-                const _activeId = tabId || getActiveTabId();
-                if (_activeId && state.tabPaths[_activeId] !== "custom-component") {
-                  const _tabs = (runtime.globalSignals ? runtime.globalSignals() : {}).tabs;
-                  if (Array.isArray(_tabs)) {
-                    const _tab = _tabs.find((t) => t.id === _activeId);
-                    if (_tab) {
-                      const resolvedSource = matched?.component || (cleanPath === "/" ? "/_pages/home.html" : cleanPath);
-                      if (_tab.source !== resolvedSource)
-                        _tab.source = resolvedSource;
-                      if (_tab.route !== cleanPath)
-                        _tab.route = cleanPath;
-                    }
-                  }
-                }
                 if (isShadow) {
                   updateRoute(target);
                   return;
@@ -6661,10 +6634,10 @@ ${match}</ul>
                 if ("navigation" in globalThis) {
                   globalThis.navigation.navigate(target, {
                     history: opts?.replace ? "replace" : "push",
-                    state: { tabId, scrollY: globalThis.scrollY, title: opts?.title, icon: opts?.icon }
+                    state: { scrollY: globalThis.scrollY, title: opts?.title, icon: opts?.icon }
                   });
                 } else {
-                  const histState = { tabId, scrollY: globalThis.scrollY, title: opts?.title, icon: opts?.icon };
+                  const histState = { scrollY: globalThis.scrollY, title: opts?.title, icon: opts?.icon };
                   if (opts?.replace)
                     globalThis.history.replaceState(histState, "", target);
                   else
