@@ -1228,13 +1228,6 @@ export const routerAttributeModule: AttributeModule = {
           } else if (atIdx >= 0 && resolvedSource) {
             state.tabPaths[_at] = path;
             const cur = tabs[atIdx];
-            if (cur.id === 'initial') {
-              const newId = matched?.id || matched?.name || (path === '/' ? 'home' : path.replace(/[^\w-]/g, '_'));
-              cur.id = newId;
-              setActiveTabId(newId);
-              delete state.tabPaths['initial'];
-              state.tabPaths[newId] = path;
-            }
             if (cur.source !== resolvedSource) cur.source = resolvedSource;
             if (cur.route !== path) cur.route = path;
             const routeMeta = matched?.meta as Record<string, string> | undefined;
