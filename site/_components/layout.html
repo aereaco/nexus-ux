@@ -15,7 +15,9 @@
   data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: zoom + 'rem' }"
   data-on-resize:window="isMobile = window.innerWidth < 768">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
-  <div class="drawer-content" data-signal:global="{
+  <div class="drawer-content"
+    data-on-load="if (typeof router !== 'undefined' && router) navigateActiveTab(window.location.pathname)"
+    data-signal:global="{
 
         meta: { '/_pages/home.html': { title: 'Home', icon: 'material-symbols-light:home-outline' }, '/': { title: 'Home', icon: 'material-symbols-light:home-outline' }, '_components/tab-new.html': { title: 'New Tab', icon: 'material-symbols-light:article-outline' } },
         activeTabId: 'tab-1',
@@ -29,15 +31,11 @@
         favForm: { title: '', href: '', icon: 'material-symbols-light:star-outline' },
         pendingDeleteId: null,
         themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset'],
-        sidebarItems: [
-          { href: '/', title: 'Homepage', icon: 'material-symbols-light:home-outline', tabTitle: 'Home', tabIcon: 'material-symbols-light:home-outline' },
-          { href: '/profile', title: 'Profile', icon: 'material-symbols-light:person-outline', tabTitle: 'Profile', tabIcon: 'material-symbols-light:person-outline' },
-          { href: '/settings', title: 'Settings', icon: 'material-symbols-light:settings-outline', tabTitle: 'Settings', tabIcon: 'material-symbols-light:settings-outline' }
-        ],
         tabs: [{
           id: 'tab-1',
-          source: (window.location.pathname === '/' || window.location.pathname === '') ? '/_pages/home.html' : (window.location.pathname.endsWith('.html') ? window.location.pathname : `/_pages${window.location.pathname}.html`),
-          route: (window.location.pathname === '' ? '/' : window.location.pathname)
+          source: '#tab-loading-template',
+          route: window.location.pathname || '/',
+          meta: { title: 'Loading...', icon: 'svg-spinners:90-ring-with-bg' }
         }],
         createTab(source = '_components/tab-new.html', route = '') {
           this.tabSeq++;
@@ -65,10 +63,10 @@
             cur.source = resolvedSource;
             cur.route = path;
           }
-          if (path && path !== '/index.html' && !path.startsWith('/_components/')) {
-            const sidebarItem = this.sidebarItems?.find(s => s.href === path);
-            const title = sidebarItem?.tabTitle || sidebarItem?.title || (path === '/' ? 'Home' : path.replace(/^\//, '').replace(/-/g, ' '));
-            const icon = sidebarItem?.tabIcon || sidebarItem?.icon || (path === '/' ? 'material-symbols-light:home-outline' : 'material-symbols-light:article-outline');
+          if (path && path !== '/index.html' && !path.startsWith('/_components/') && !path.startsWith('/_internal/')) {
+            const routeItem = typeof router !== 'undefined' && router?.routes ? router.routes.find(r => r.path === path) : null;
+            const title = routeItem?.title || (path === '/' ? 'Home' : path.replace(/^\//, '').replace(/-/g, ' '));
+            const icon = routeItem?.icon || (path === '/' ? 'material-symbols-light:home-outline' : 'material-symbols-light:article-outline');
             const entry = { path, title, icon };
             this.recent = [entry, ...(this.recent || []).filter(r => r.path !== path && r.path !== '/index.html')].slice(0, 8);
             try {
@@ -704,14 +702,13 @@
         </button>
       </div>
 
-      <ul class="menu w-full grow" data-show="activeSidebarTab === 1" data-drag-container="sidebarItems"
-        data-drag-direction="vertical" data-drag-swap-threshold="0.55">
-        <template data-for="item in sidebarItems" data-key="item.href">
-          <li class="transition-transform duration-300 hover:scale-102" data-drag>
-            <a data-bind-href="item.href" data-bind-data-tab-title="item.tabTitle"
-              data-bind-data-tab-icon="item.tabIcon"
+      <ul class="menu w-full grow" data-show="activeSidebarTab === 1">
+        <template data-for="item in (router?.routes || [])" data-key="item.path">
+          <li class="transition-transform duration-300 hover:scale-102">
+            <a data-bind-href="item.path"
+              data-class="{ 'active': activeTab?.route === item.path }"
               data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-              data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
+              data-on-contextmenu:prevent="openNavContextMenu(item.path, item.title, item.icon, $evt)">
               <iconify-icon data-bind-icon="item.icon" style="font-size: 24px"></iconify-icon>
               <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
             </a>

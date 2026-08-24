@@ -125,6 +125,30 @@ function extractResourceMetadata(
 }
 
 /**
+ * Synchronizes extracted metadata to any enclosing tab or meta scope on the element.
+ */
+function syncExtractedMetadataToScope(el: HTMLElement, extracted: Record<string, any>, runtime: RuntimeContext): void {
+  if (!extracted || Object.keys(extracted).length === 0) return;
+  const dataStack = getDataStack(el);
+  for (const scope of dataStack) {
+    if (scope && typeof scope === 'object') {
+      if ('tab' in scope && (scope as any).tab && typeof (scope as any).tab === 'object') {
+        (scope as any).tab.meta = { ...((scope as any).tab.meta || {}), ...extracted };
+        const globals = runtime.globalSignals() as Record<string, unknown>;
+        if (globals && Array.isArray(globals.tabs)) {
+          runtime.setGlobalSignal('tabs', [...globals.tabs]);
+        }
+        break;
+      }
+      if ('meta' in scope && typeof (scope as any).meta === 'object') {
+        (scope as any).meta = { ...((scope as any).meta || {}), ...extracted };
+        break;
+      }
+    }
+  }
+}
+
+/**
  * Dynamically registers custom element tag if not already registered.
  */
 function ensureCustomElementRegistered(tagName: string): void {
@@ -294,6 +318,7 @@ const componentModule: AttributeModule = {
                     componentState.templateContent = fresh;
                     const extracted = extractResourceMetadata(fresh, config.path, runtime, config.meta);
                     componentState.meta = extracted;
+                    syncExtractedMetadataToScope(el, extracted, runtime);
                   }
                 }
               });
@@ -307,6 +332,7 @@ const componentModule: AttributeModule = {
             componentState.templateContent = html;
             const extracted = extractResourceMetadata(html, config.path, runtime, config.meta);
             componentState.meta = extracted;
+            syncExtractedMetadataToScope(el, extracted, runtime);
 
             if (config.shadowrootmode) {
               if (!el.shadowRoot) el.attachShadow({ mode: config.shadowrootmode });

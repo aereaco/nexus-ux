@@ -471,9 +471,45 @@ export const routerAttributeModule: AttributeModule = {
           }
         }
 
+        // Pure CSR Metadata Extraction for declared / discovered route files:
+        const publicEntries = entries.filter((r) => !r.internal && !r.path.startsWith('/_internal/'));
+        await Promise.all(
+          publicEntries.map(async (rec) => {
+            const compPath = rec.component || (rec.path === '/' ? '/_pages/home.html' : `/_pages${rec.path}.html`);
+            if (compPath && !compPath.startsWith('#')) {
+              try {
+                let html = '';
+                if (runtime.fetch) {
+                  html = (await runtime.fetch.request(applyBase(compPath), { responseType: 'text' }, el)) as string;
+                } else {
+                  html = await (await fetch(applyBase(compPath))).text();
+                }
+                if (html && typeof html === 'string') {
+                  const parser = new DOMParser();
+                  const doc = parser.parseFromString(html, 'text/html');
+                  const titleEl = Array.from(doc.querySelectorAll('title')).find((t) => !t.closest('svg'));
+                  const iconEl = doc.querySelector('link[rel~="icon"], link[rel~="shortcut icon"], link[rel~="apple-touch-icon"], meta[name="icon"]');
+                  const title = titleEl?.textContent?.trim() || (rec.name ? rec.name.charAt(0).toUpperCase() + rec.name.slice(1) : (rec.path === '/' ? 'Home' : rec.path.replace(/^\//, '')));
+                  const icon = iconEl?.getAttribute('href')?.trim() || iconEl?.getAttribute('content')?.trim() || 'material-symbols-light:article-outline';
+                  (rec as any).title = title;
+                  (rec as any).icon = icon;
+                  rec.meta = { ...(typeof rec.meta === 'object' && rec.meta !== null ? rec.meta : {}), title, icon };
+                }
+              } catch {}
+            }
+          })
+        );
+
+        // Sort so that Home ('/' or 'home') is always listed first, followed by alphabetical order:
+        publicEntries.sort((a, b) => {
+          if (a.path === '/' || a.name === 'home' || a.path === '/home') return -1;
+          if (b.path === '/' || b.name === 'home' || b.path === '/home') return 1;
+          return a.path.localeCompare(b.path);
+        });
+
         // Public manifest = non-internal entries (what the app advertises).
-        state.manifest = entries.filter((r) => !r.internal).slice();
-        state.routes = entries.slice();
+        state.manifest = publicEntries.slice();
+        state.routes = publicEntries.slice();
       };
 
       // Raw (non-reactive) route registry. RegExp matchers must never enter the

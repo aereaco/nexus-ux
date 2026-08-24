@@ -2381,6 +2381,27 @@ ${scripts}
     }
     return meta;
   }
+  function syncExtractedMetadataToScope(el, extracted, runtime) {
+    if (!extracted || Object.keys(extracted).length === 0)
+      return;
+    const dataStack = getDataStack(el);
+    for (const scope of dataStack) {
+      if (scope && typeof scope === "object") {
+        if ("tab" in scope && scope.tab && typeof scope.tab === "object") {
+          scope.tab.meta = { ...scope.tab.meta || {}, ...extracted };
+          const globals = runtime.globalSignals();
+          if (globals && Array.isArray(globals.tabs)) {
+            runtime.setGlobalSignal("tabs", [...globals.tabs]);
+          }
+          break;
+        }
+        if ("meta" in scope && typeof scope.meta === "object") {
+          scope.meta = { ...scope.meta || {}, ...extracted };
+          break;
+        }
+      }
+    }
+  }
   function ensureCustomElementRegistered(tagName) {
     if (typeof customElements === "undefined")
       return;
@@ -2567,6 +2588,7 @@ ${scripts}
                           componentState.templateContent = fresh;
                           const extracted2 = extractResourceMetadata(fresh, config.path, runtime, config.meta);
                           componentState.meta = extracted2;
+                          syncExtractedMetadataToScope(el, extracted2, runtime);
                         }
                       }
                     });
@@ -2578,6 +2600,7 @@ ${scripts}
                   componentState.templateContent = html;
                   const extracted = extractResourceMetadata(html, config.path, runtime, config.meta);
                   componentState.meta = extracted;
+                  syncExtractedMetadataToScope(el, extracted, runtime);
                   if (config.shadowrootmode) {
                     if (!el.shadowRoot)
                       el.attachShadow({ mode: config.shadowrootmode });
@@ -6560,8 +6583,43 @@ ${match}</ul>
                   reportError(new Error(`router: failed to load manifest "${manifestUrl}": ${e}`), el);
                 }
               }
-              state.manifest = entries.filter((r) => !r.internal).slice();
-              state.routes = entries.slice();
+              const publicEntries = entries.filter((r) => !r.internal && !r.path.startsWith("/_internal/"));
+              await Promise.all(
+                publicEntries.map(async (rec) => {
+                  const compPath = rec.component || (rec.path === "/" ? "/_pages/home.html" : `/_pages${rec.path}.html`);
+                  if (compPath && !compPath.startsWith("#")) {
+                    try {
+                      let html = "";
+                      if (runtime.fetch) {
+                        html = await runtime.fetch.request(applyBase(compPath), { responseType: "text" }, el);
+                      } else {
+                        html = await (await fetch(applyBase(compPath))).text();
+                      }
+                      if (html && typeof html === "string") {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, "text/html");
+                        const titleEl = Array.from(doc.querySelectorAll("title")).find((t) => !t.closest("svg"));
+                        const iconEl = doc.querySelector('link[rel~="icon"], link[rel~="shortcut icon"], link[rel~="apple-touch-icon"], meta[name="icon"]');
+                        const title = titleEl?.textContent?.trim() || (rec.name ? rec.name.charAt(0).toUpperCase() + rec.name.slice(1) : rec.path === "/" ? "Home" : rec.path.replace(/^\//, ""));
+                        const icon = iconEl?.getAttribute("href")?.trim() || iconEl?.getAttribute("content")?.trim() || "material-symbols-light:article-outline";
+                        rec.title = title;
+                        rec.icon = icon;
+                        rec.meta = { ...typeof rec.meta === "object" && rec.meta !== null ? rec.meta : {}, title, icon };
+                      }
+                    } catch {
+                    }
+                  }
+                })
+              );
+              publicEntries.sort((a, b) => {
+                if (a.path === "/" || a.name === "home" || a.path === "/home")
+                  return -1;
+                if (b.path === "/" || b.name === "home" || b.path === "/home")
+                  return 1;
+                return a.path.localeCompare(b.path);
+              });
+              state.manifest = publicEntries.slice();
+              state.routes = publicEntries.slice();
             };
             const routeList = [];
             const matchMeta = /* @__PURE__ */ new WeakMap();
