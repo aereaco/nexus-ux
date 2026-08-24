@@ -25,6 +25,7 @@
         tabSeq: 1,
         ctxMenu: null,
         ctxMenuItems: [],
+        recent: JSON.parse(sessionStorage.getItem('recent') || '[]'),
         favorites: localStorage.favorites ?? [],
         favForm: { title: '', href: '', icon: 'material-symbols-light:star-outline' },
         pendingDeleteId: null,
@@ -44,24 +45,36 @@
           const id = 'tab-' + this.tabSeq;
           this.tabs = [...this.tabs, { id, source, route: route || source, meta: { title: 'New Tab', icon: 'material-symbols-light:article-outline' } }];
           this.activeTabId = id;
-          if (typeof router !== 'undefined' && router) {
-            // Mark as custom-component sentinel so updateRoute never clobbers
-            // a launchpad/component tab with a URL-resolved page.
-            router.tabPaths[id] = 'custom-component';
-            router.setActiveTab(id);
-          }
         },
         switchTab(id) {
           this.activeTabId = id;
-          if (typeof router !== 'undefined' && router) {
-            router.setActiveTab(id);
+          const cur = this.tabs.find(t => t.id === id);
+          if (cur && cur.route && !cur.route.startsWith('#') && !cur.source.startsWith('_components/')) {
+            if (typeof router !== 'undefined' && router) {
+              router.navigate(cur.route);
+            }
           }
         },
         navigateActiveTab(href) {
-          // Delegate entirely to the router — it resolves the component source
-          // from its own route manifest and updates the active tab via ZCZS.
           if (typeof router !== 'undefined' && router) {
             router.navigate(href);
+          }
+          const path = href.startsWith('/') ? href : '/' + href;
+          const cur = this.tabs.find(t => t.id === this.activeTabId);
+          const resolvedSource = path === '/' ? '/_pages/home.html' : (path.endsWith('.html') ? path : `/_pages${path}.html`);
+          if (cur) {
+            cur.source = resolvedSource;
+            cur.route = path;
+          }
+          if (path && path !== '/index.html' && !path.startsWith('/_components/')) {
+            const sidebarItem = this.sidebarItems?.find(s => s.href === path);
+            const title = sidebarItem?.tabTitle || sidebarItem?.title || (path === '/' ? 'Home' : path.replace(/^\//, '').replace(/-/g, ' '));
+            const icon = sidebarItem?.tabIcon || sidebarItem?.icon || (path === '/' ? 'material-symbols-light:home-outline' : 'material-symbols-light:article-outline');
+            const entry = { path, title, icon };
+            this.recent = [entry, ...(this.recent || []).filter(r => r.path !== path && r.path !== '/index.html')].slice(0, 8);
+            try {
+              sessionStorage.setItem('recent', JSON.stringify(this.recent));
+            } catch {}
           }
         },
         closeTab(id) {
@@ -86,14 +99,9 @@
           const newId = 'tab-' + this.tabSeq;
           const source = src.source || '_components/tab-generic.html';
           const route = src.route || '';
-          if (source.startsWith('_components/')) {
-            router.tabPaths[newId] = 'custom-component';
-          } else {
-            router.tabPaths[newId] = router.tabPaths[id] || route;
-          }
-          this.tabs = [...this.tabs, { id: newId, source, route }];
+          this.tabs = [...this.tabs, { id: newId, source, route, meta: src.meta ? { ...src.meta } : undefined }];
           this.activeTabId = newId;
-          router.setActiveTab(newId);
+        },    router.setActiveTab(newId);
         },
         openTabContextMenu(tab, evt) {
           const e = evt;
