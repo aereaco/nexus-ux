@@ -382,8 +382,9 @@ async function buildBundle(options: BuildOptions = {}) {
       console.log("Minifying with SWC...");
       const code = await Deno.readTextFile(outFile);
       const result = await swcMinify(code, {
-        compress: { passes: 3, unused: true, dead_code: true, drop_console: true },
-        mangle: { toplevel: true, reserved: ["UX"] }
+        module: true,
+        compress: { passes: 2 },
+        mangle: true
       });
       const minified = result.code || code;
       await Deno.writeTextFile(minFile, minified);
