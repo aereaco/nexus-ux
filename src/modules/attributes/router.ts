@@ -186,6 +186,8 @@ export interface RouterState {
   scrollPosition: { x: number; y: number };
   currentRoute: RouteRecord | null;
   routes: RouteRecord[];
+  pages: DiscoveredPage[];
+  discoverPages(): Promise<void>;
   config: RouterConfig;
   manifest: RouteRecord[];
   match(path?: string): RouteInfo | null;
