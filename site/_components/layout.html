@@ -592,10 +592,10 @@
         </button>
       </div>
 
-      <ul class="menu w-full grow" data-show="activeSidebarTab === 1" data-drag-container="sidebarItems">
-        <template data-for="item in sidebarItems" data-key="item.href">
+      <ul class="menu w-full grow" data-show="activeSidebarTab === 1" data-drag-container="router.pages">
+        <template data-for="item in router.pages" data-key="item.href">
           <li class="cursor-pointer" data-drag>
-            <a data-bind-href="item.href" data-bind-data-tab-title="item.tabTitle"
+            <a data-bind-href="item.href" draggable="false" data-bind-data-tab-title="item.tabTitle"
               data-bind-data-tab-icon="item.tabIcon"
               data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
               data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
