@@ -3759,16 +3759,27 @@ ${scripts}
     }
     return document.documentElement;
   }
-  function getBoundItemFromElement(el) {
+  function getBoundItemFromElement(el, runtime) {
     if (!el)
       return null;
+    if (runtime) {
+      try {
+        const itm = runtime.evaluate(el, "item");
+        if (itm && typeof itm === "object")
+          return itm;
+        const tab = runtime.evaluate(el, "tab");
+        if (tab && typeof tab === "object")
+          return tab;
+      } catch {
+      }
+    }
     const stack = getDataStack(el);
     for (const s of stack) {
       if (s && typeof s === "object") {
-        if ("tab" in s && s.tab)
-          return s.tab;
         if ("item" in s && s.item)
           return s.item;
+        if ("tab" in s && s.tab)
+          return s.tab;
         for (const key of Object.keys(s)) {
           if (key !== "index" && s[key] && typeof s[key] === "object") {
             return s[key];
@@ -3777,6 +3788,17 @@ ${scripts}
       }
     }
     return null;
+  }
+  function matchesItemIdentity(a, b) {
+    if (!a || !b)
+      return false;
+    if (a === b)
+      return true;
+    if (typeof a !== "object" || typeof b !== "object")
+      return false;
+    const idA = a.id ?? a.href ?? a.key ?? a.path ?? a.name;
+    const idB = b.id ?? b.href ?? b.key ?? b.path ?? b.name;
+    return idA !== void 0 && idB !== void 0 && idA === idB;
   }
   function buildReorderContext(container, listExpr, runtime, options) {
     const getList = () => {
@@ -3800,8 +3822,17 @@ ${scripts}
             if (targetObj && typeof targetObj === "object") {
               targetObj[prop] = [...list];
             }
-          } else if (runtime.setGlobalSignal && runtime.globalSignals && listExpr in runtime.globalSignals()) {
-            runtime.setGlobalSignal(listExpr, [...list]);
+          } else {
+            const stack = getDataStack(container);
+            for (const s of stack) {
+              if (s && typeof s === "object" && listExpr in s) {
+                s[listExpr] = [...list];
+                break;
+              }
+            }
+            if (runtime.setGlobalSignal && runtime.globalSignals && listExpr in runtime.globalSignals()) {
+              runtime.setGlobalSignal(listExpr, [...list]);
+            }
           }
         } catch {
         }
@@ -4684,12 +4715,10 @@ ${scripts}
                           }
                           list.splice(newIndex, 0, ...itemsToInsert);
                         } else {
-                          const draggedItem = getBoundItemFromElement(evt.item);
+                          const draggedItem = getBoundItemFromElement(evt.item, this.runtime);
                           let srcIndex = -1;
                           if (draggedItem) {
-                            srcIndex = list.findIndex(
-                              (x) => x === draggedItem || x && draggedItem && x.id !== void 0 && x.id === draggedItem.id
-                            );
+                            srcIndex = list.findIndex((x) => matchesItemIdentity(x, draggedItem));
                           }
                           if (srcIndex === -1 && typeof oldIndex === "number" && oldIndex >= 0 && oldIndex < list.length) {
                             srcIndex = oldIndex;
@@ -4697,11 +4726,9 @@ ${scripts}
                           let destIndex = typeof newIndex === "number" ? newIndex : -1;
                           const nextSib = evt.item.nextElementSibling;
                           if (nextSib) {
-                            const nextItem = getBoundItemFromElement(nextSib);
+                            const nextItem = getBoundItemFromElement(nextSib, this.runtime);
                             if (nextItem) {
-                              const targetIdx = list.findIndex(
-                                (x) => x === nextItem || x && nextItem && x.id !== void 0 && x.id === nextItem.id
-                              );
+                              const targetIdx = list.findIndex((x) => matchesItemIdentity(x, nextItem));
                               if (targetIdx !== -1) {
                                 destIndex = srcIndex < targetIdx ? targetIdx - 1 : targetIdx;
                               }

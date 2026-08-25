@@ -595,8 +595,8 @@
       <ul class="menu w-full grow" data-show="activeSidebarTab === 1" data-drag-container="sidebarItems"
         data-drag-direction="vertical" data-drag-swap-threshold="0.55">
         <template data-for="item in sidebarItems" data-key="item.href">
-          <li class="transition-transform duration-300 hover:scale-102" data-drag>
-            <a data-bind-href="item.href" data-bind-data-tab-title="item.tabTitle"
+          <li class="cursor-pointer" data-drag>
+            <a data-bind-href="item.href" draggable="false" data-bind-data-tab-title="item.tabTitle"
               data-bind-data-tab-icon="item.tabIcon"
               data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
               data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">

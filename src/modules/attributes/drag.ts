@@ -21,13 +21,23 @@ function getScrollParent(el: HTMLElement): HTMLElement {
   return document.documentElement;
 }
 
-function getBoundItemFromElement(el: HTMLElement | null): any {
+function getBoundItemFromElement(el: HTMLElement | null, runtime?: RuntimeContext): any {
   if (!el) return null;
+  if (runtime) {
+    try {
+      const itm = runtime.evaluate(el, 'item');
+      if (itm && typeof itm === 'object') return itm;
+      const tab = runtime.evaluate(el, 'tab');
+      if (tab && typeof tab === 'object') return tab;
+    } catch {
+      /* fallback */
+    }
+  }
   const stack = getDataStack(el);
   for (const s of stack) {
     if (s && typeof s === 'object') {
-      if ('tab' in s && s.tab) return s.tab;
       if ('item' in s && s.item) return s.item;
+      if ('tab' in s && s.tab) return s.tab;
       for (const key of Object.keys(s)) {
         if (key !== 'index' && s[key] && typeof s[key] === 'object') {
           return s[key];
@@ -36,6 +46,15 @@ function getBoundItemFromElement(el: HTMLElement | null): any {
     }
   }
   return null;
+}
+
+function matchesItemIdentity(a: any, b: any): boolean {
+  if (!a || !b) return false;
+  if (a === b) return true;
+  if (typeof a !== 'object' || typeof b !== 'object') return false;
+  const idA = a.id ?? a.href ?? a.key ?? a.path ?? a.name;
+  const idB = b.id ?? b.href ?? b.key ?? b.path ?? b.name;
+  return idA !== undefined && idB !== undefined && idA === idB;
 }
 
 export interface DragReorderContext<T> {
@@ -1190,12 +1209,10 @@ export class DragReorderEngine<T> {
                     }
                     list.splice(newIndex, 0, ...itemsToInsert);
                   } else {
-                    const draggedItem = getBoundItemFromElement(evt.item);
+                    const draggedItem = getBoundItemFromElement(evt.item, this.runtime);
                     let srcIndex = -1;
                     if (draggedItem) {
-                      srcIndex = list.findIndex(
-                        (x: any) => x === draggedItem || (x && draggedItem && x.id !== undefined && x.id === draggedItem.id)
-                      );
+                      srcIndex = list.findIndex((x: any) => matchesItemIdentity(x, draggedItem));
                     }
                     if (srcIndex === -1 && typeof oldIndex === 'number' && oldIndex >= 0 && oldIndex < list.length) {
                       srcIndex = oldIndex;
@@ -1205,11 +1222,9 @@ export class DragReorderEngine<T> {
                     let destIndex = typeof newIndex === 'number' ? newIndex : -1;
                     const nextSib = (evt.item as HTMLElement).nextElementSibling as HTMLElement | null;
                     if (nextSib) {
-                      const nextItem = getBoundItemFromElement(nextSib);
+                      const nextItem = getBoundItemFromElement(nextSib, this.runtime);
                       if (nextItem) {
-                        const targetIdx = list.findIndex(
-                          (x: any) => x === nextItem || (x && nextItem && x.id !== undefined && x.id === nextItem.id)
-                        );
+                        const targetIdx = list.findIndex((x: any) => matchesItemIdentity(x, nextItem));
                         if (targetIdx !== -1) {
                           destIndex = srcIndex < targetIdx ? targetIdx - 1 : targetIdx;
                         }
@@ -1289,8 +1304,17 @@ export function buildReorderContext<T>(
           if (targetObj && typeof targetObj === 'object') {
             targetObj[prop] = [...list];
           }
-        } else if (runtime.setGlobalSignal && runtime.globalSignals && (listExpr in runtime.globalSignals())) {
-          runtime.setGlobalSignal(listExpr, [...list]);
+        } else {
+          const stack = getDataStack(container);
+          for (const s of stack) {
+            if (s && typeof s === 'object' && listExpr in s) {
+              s[listExpr] = [...list];
+              break;
+            }
+          }
+          if (runtime.setGlobalSignal && runtime.globalSignals && (listExpr in runtime.globalSignals())) {
+            runtime.setGlobalSignal(listExpr, [...list]);
+          }
         }
       } catch {
         /* no-op fallback */
