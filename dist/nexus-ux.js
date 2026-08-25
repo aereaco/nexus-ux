@@ -6614,6 +6614,19 @@ ${match}</ul>
               redirect: r.redirect,
               layout: r.layout
             }));
+            const resolveStaticComponent = (path) => {
+              const clean = path.replace(/^\/+/, "");
+              if (clean.startsWith("_internal/") || clean.startsWith("_pages/")) {
+                const withExt2 = clean.endsWith(".html") ? clean : clean + ".html";
+                return applyBase("/" + withExt2);
+              }
+              const dir = (routerConfig.pagesDir || pagesDir || "").replace(/^\/+|\/+$/g, "");
+              const defaultIndex = routerConfig.index || cfg.index || "home.html";
+              const rel = path === "/" || path === "" ? `/${defaultIndex}` : path.startsWith("/") ? path : "/" + path;
+              const withExt = rel.endsWith(".html") ? rel : rel + ".html";
+              const full = dir ? `/${dir}${withExt}` : withExt;
+              return applyBase(full);
+            };
             const buildInfo = (route, path, params, query, hash) => ({
               path,
               params,
@@ -6624,8 +6637,11 @@ ${match}</ul>
               component: route?.component,
               layout: route?.layout
             });
+            const initialPath = stripBase(globalThis.location.pathname) || "/";
+            const initialMatched = routeList.find((r) => r.path === initialPath);
+            const initialSource = initialMatched?.component || resolveStaticComponent(initialPath);
             const state = runtime.shallowReactive({
-              path: stripBase(globalThis.location.pathname),
+              path: initialPath,
               params: {},
               query: {},
               hash: globalThis.location.hash,
@@ -6634,14 +6650,14 @@ ${match}</ul>
               errorCode: null,
               basePath,
               mode,
-              route: null,
-              layout: null,
-              outlet: null,
-              meta: {},
-              name: null,
+              route: initialSource,
+              layout: initialMatched?.layout ?? null,
+              outlet: initialSource,
+              meta: initialMatched?.meta || {},
+              name: initialMatched?.name ?? null,
               previous: null,
               scrollPosition: { x: 0, y: 0 },
-              currentRoute: null,
+              currentRoute: initialMatched || null,
               routes: initialRoutes,
               // Declarative strategy snapshot + resolved manifest.
               config: routerConfig,
@@ -6649,13 +6665,13 @@ ${match}</ul>
               // --- First-Class Page Tab Workspaces ---
               pageTabs: [
                 {
-                  id: "home",
-                  source: resolvePagesPath(cfg.index || "home.html", "home.html"),
-                  route: stripBase(globalThis.location.pathname) || "/",
-                  meta: {}
+                  id: "tab-0",
+                  source: initialSource,
+                  route: initialPath,
+                  meta: initialMatched?.meta || {}
                 }
               ],
-              activePageTabId: "home",
+              activePageTabId: "tab-0",
               pinnedPageTabs: [],
               tabSeq: 0,
               get activePageTab() {
@@ -7094,18 +7110,6 @@ ${match}</ul>
                 globalThis.scrollTo(0, 0);
               }
               state.scrollPosition = { x: globalThis.scrollX, y: globalThis.scrollY };
-            };
-            const resolveStaticComponent = (path) => {
-              const clean = path.replace(/^\/+/, "");
-              if (clean.startsWith("_internal/") || clean.startsWith("_pages/")) {
-                const withExt2 = clean.endsWith(".html") ? clean : clean + ".html";
-                return applyBase("/" + withExt2);
-              }
-              const dir = (state.config.pagesDir || "").replace(/^\/+|\/+$/g, "");
-              const rel = path === "/" || path === "" ? "/index.html" : path.replace(/\/$/, "");
-              const withExt = rel.endsWith(".html") ? rel : rel + ".html";
-              const full = dir ? `/${dir}${withExt}` : withExt;
-              return applyBase(full);
             };
             const publishOutlet = (url) => {
               state.outlet = url;

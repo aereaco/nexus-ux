@@ -518,6 +518,21 @@ export const routerAttributeModule: AttributeModule = {
         layout: r.layout
       }));
 
+      // Resolve a filesystem component URL for static/hybrid modes.
+      const resolveStaticComponent = (path: string): string => {
+        const clean = path.replace(/^\/+/, '');
+        if (clean.startsWith('_internal/') || clean.startsWith('_pages/')) {
+          const withExt = clean.endsWith('.html') ? clean : clean + '.html';
+          return applyBase('/' + withExt);
+        }
+        const dir = (routerConfig.pagesDir || pagesDir || '').replace(/^\/+|\/+$/g, '');
+        const defaultIndex = routerConfig.index || cfg.index || 'home.html';
+        const rel = (path === '/' || path === '') ? `/${defaultIndex}` : (path.startsWith('/') ? path : '/' + path);
+        const withExt = rel.endsWith('.html') ? rel : rel + '.html';
+        const full = dir ? `/${dir}${withExt}` : withExt;
+        return applyBase(full);
+      };
+
       // Build a RouteInfo snapshot for hook consumers and matchers.
       const buildInfo = (
         route: RouteRecord | null,
@@ -536,10 +551,14 @@ export const routerAttributeModule: AttributeModule = {
         layout: route?.layout,
       });
 
+      const initialPath = stripBase(globalThis.location.pathname) || '/';
+      const initialMatched = routeList.find((r) => r.path === initialPath);
+      const initialSource = initialMatched?.component || resolveStaticComponent(initialPath);
+
       // 1. Create Reactive State
       // shallowReactive prevents deep proxying of HTMLElements held in routes.
       const state: RouterState = runtime.shallowReactive<RouterState>({
-        path: stripBase(globalThis.location.pathname),
+        path: initialPath,
         params: {},
         query: {},
         hash: globalThis.location.hash,
@@ -548,14 +567,14 @@ export const routerAttributeModule: AttributeModule = {
         errorCode: null,
         basePath,
         mode,
-        route: null,
-        layout: null,
-        outlet: null,
-        meta: {},
-        name: null,
+        route: initialSource,
+        layout: initialMatched?.layout ?? null,
+        outlet: initialSource,
+        meta: initialMatched?.meta || {},
+        name: initialMatched?.name ?? null,
         previous: null,
         scrollPosition: { x: 0, y: 0 },
-        currentRoute: null,
+        currentRoute: initialMatched || null,
         routes: initialRoutes,
 
         // Declarative strategy snapshot + resolved manifest.
@@ -565,13 +584,13 @@ export const routerAttributeModule: AttributeModule = {
         // --- First-Class Page Tab Workspaces ---
         pageTabs: [
           {
-            id: 'home',
-            source: resolvePagesPath(cfg.index || 'home.html', 'home.html'),
-            route: stripBase(globalThis.location.pathname) || '/',
-            meta: {}
+            id: 'tab-0',
+            source: initialSource,
+            route: initialPath,
+            meta: (initialMatched?.meta as Record<string, any>) || {}
           }
         ] as PageTab[],
-        activePageTabId: 'home',
+        activePageTabId: 'tab-0',
         pinnedPageTabs: [] as string[],
         tabSeq: 0,
         get activePageTab(): PageTab | null {
@@ -1072,22 +1091,6 @@ export const routerAttributeModule: AttributeModule = {
           globalThis.scrollTo(0, 0);
         }
         state.scrollPosition = { x: globalThis.scrollX, y: globalThis.scrollY };
-      };
-
-      // Resolve a filesystem component URL for static/hybrid modes.
-      // The `_pages` folder is NOT hardcoded — it comes from `config.pagesDir`
-      // (default '_pages'), so `/profile` -> `_pages/profile.html`, `/` -> index.
-      const resolveStaticComponent = (path: string): string => {
-        const clean = path.replace(/^\/+/, '');
-        if (clean.startsWith('_internal/') || clean.startsWith('_pages/')) {
-          const withExt = clean.endsWith('.html') ? clean : clean + '.html';
-          return applyBase('/' + withExt);
-        }
-        const dir = (state.config.pagesDir || '').replace(/^\/+|\/+$/g, '');
-        const rel = (path === '/' || path === '') ? '/index.html' : path.replace(/\/$/, '');
-        const withExt = rel.endsWith('.html') ? rel : rel + '.html';
-        const full = dir ? `/${dir}${withExt}` : withExt;
-        return applyBase(full);
       };
 
       // Publish the resolved component URL into state.outlet. The content
