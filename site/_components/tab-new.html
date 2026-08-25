@@ -49,8 +49,8 @@
       <template data-for="item in recent" data-key="item.path">
         <li>
           <a data-bind-href="item.path" data-bind-title="item.title"
-             data-bind-data-tab-title="item.title" data-bind-data-tab-icon="'material-symbols-light:article-outline'">
-            <iconify-icon icon="material-symbols-light:article-outline" style="font-size: 20px"></iconify-icon>
+             data-bind-data-tab-title="item.title" data-bind-data-tab-icon="item.icon || 'material-symbols-light:article-outline'">
+            <iconify-icon data-bind-icon="item.icon || 'material-symbols-light:article-outline'" style="font-size: 20px"></iconify-icon>
             <span data-bind="item.title"></span>
           </a>
         </li>

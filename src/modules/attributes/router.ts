@@ -525,12 +525,30 @@ export const routerAttributeModule: AttributeModule = {
           const withExt = clean.endsWith('.html') ? clean : clean + '.html';
           return applyBase('/' + withExt);
         }
-        const dir = (routerConfig.pagesDir || pagesDir || '').replace(/^\/+|\/+$/g, '');
+        const dir = (routerConfig.pagesDir || pagesDir || '_pages').replace(/^\/+|\/+$/g, '');
         const defaultIndex = routerConfig.index || cfg.index || 'home.html';
         const rel = (path === '/' || path === '') ? `/${defaultIndex}` : (path.startsWith('/') ? path : '/' + path);
         const withExt = rel.endsWith('.html') ? rel : rel + '.html';
         const full = dir ? `/${dir}${withExt}` : withExt;
         return applyBase(full);
+      };
+
+      const isAllowedStaticCandidate = (candidate: string, cleanPath: string): boolean => {
+        // 1. Declared routes are always authorized
+        if (routeList.some((r) => r.path === cleanPath || (r.component && r.component.endsWith(candidate.replace(/^\/+/, ''))))) {
+          return true;
+        }
+        // 2. Disallow path traversal
+        if (cleanPath.includes('..') || candidate.includes('..')) {
+          return false;
+        }
+        // 3. Direct URL access to non-pages directory (e.g. _components, _internal) is forbidden unless declared
+        if (cleanPath.startsWith('/_components') || cleanPath.startsWith('/_internal') || cleanPath.startsWith('_components') || cleanPath.startsWith('_internal')) {
+          return false;
+        }
+        const dir = (routerConfig.pagesDir || pagesDir || '_pages').replace(/^\/+|\/+$/g, '');
+        const cleanCandidate = candidate.replace(/^\/+/, '');
+        return cleanCandidate.startsWith(dir + '/');
       };
 
       // Build a RouteInfo snapshot for hook consumers and matchers.
@@ -1190,24 +1208,37 @@ export const routerAttributeModule: AttributeModule = {
           if (!alreadyOnError && (mode === 'static' || mode === 'hybrid')) {
             // Try to resolve a real page under `pagesDir` for this clean path.
             const candidate = resolveStaticComponent(path);
-            // Only treat it as found if the path actually maps to a known page:
-            // a clean route like /profile resolves to _pages/profile.html which is
-            // a declared data-route target; unknown clean paths fall through to /error.
-            const known = routeList.some((r) => {
-              if (r.component && r.component.endsWith(candidate.replace(/^\/+/, ''))) return true;
-              return false;
-            });
-            if (known) {
-              staticComponent = candidate;
-            } else if (path === '/' || path === '') {
-              staticComponent = resolveStaticComponent('/');
+            if (isAllowedStaticCandidate(candidate, path)) {
+              let exists = false;
+              try {
+                const res = await fetch(candidate, { method: 'HEAD' });
+                if (res.ok) {
+                  exists = true;
+                } else if (res.status === 405) {
+                  // Fallback for servers that reject HEAD
+                  const getRes = await fetch(candidate, { method: 'GET' });
+                  if (getRes.ok) exists = true;
+                }
+              } catch {
+                exists = false;
+              }
+
+              if (exists) {
+                staticComponent = candidate;
+              } else {
+                state.errorCode = 404;
+                state.navigate(cleanErrorPath, { replace: true });
+                return;
+              }
             } else {
-              // Unknown clean path -> route to the dynamic error page.
+              // Forbidden/disallowed path traversal or non-pagesDir directory -> 404 error page.
+              state.errorCode = 404;
               state.navigate(cleanErrorPath, { replace: true });
               return;
             }
           } else if (!alreadyOnError) {
             // signal-only mode (or already on an error page) with no match => /error.
+            state.errorCode = 404;
             state.navigate(cleanErrorPath, { replace: true });
             return;
           }
@@ -1336,8 +1367,10 @@ export const routerAttributeModule: AttributeModule = {
           // Update recent path list directly (excluding error page and internal tools).
           if (path && path !== '/index.html' && path !== errorPage && !path.startsWith('/_internal/')) {
             const recent = (globals.recent as any[]) || [];
-            const routeTitle = matched?.meta?.title || path.replace(/^\//, '').replace(/-/g, ' ');
-            const entry = { path, title: routeTitle };
+            const curTab = state.pageTabs.find((t) => t.id === _at);
+            const routeTitle = curTab?.meta?.title || (curTab?.linkedContent?.meta)?.title || matched?.meta?.title || path.replace(/^\//, '').replace(/-/g, ' ');
+            const routeIcon = curTab?.meta?.icon || (curTab?.linkedContent?.meta)?.icon || (matched?.meta as any)?.icon || 'material-symbols-light:article-outline';
+            const entry = { path, title: routeTitle, icon: routeIcon };
             const next = [entry, ...recent.filter((r: any) => r.path !== path && r.path !== '/index.html')].slice(0, 5);
             runtime.setGlobalSignal('recent', next);
           }

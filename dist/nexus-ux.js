@@ -2594,6 +2594,21 @@ ${scripts}
                   componentState.meta = extracted;
                   if (tabObj && extracted && (extracted.title || extracted.icon)) {
                     tabObj.meta = { ...tabObj.meta || {}, ...extracted };
+                    const globals = runtime.globalSignals ? runtime.globalSignals() : {};
+                    const recent = globals.recent;
+                    if (Array.isArray(recent) && (tabObj.route || tabObj.source)) {
+                      const targetPath = tabObj.route || tabObj.source;
+                      const idx = recent.findIndex((r) => r.path === targetPath || r.path === tabObj?.route);
+                      if (idx >= 0) {
+                        const updated = [...recent];
+                        updated[idx] = {
+                          ...updated[idx],
+                          title: extracted.title || updated[idx].title,
+                          icon: extracted.icon || updated[idx].icon || "material-symbols-light:article-outline"
+                        };
+                        runtime.setGlobalSignal("recent", updated);
+                      }
+                    }
                   }
                   if (config.shadowrootmode) {
                     if (!el.shadowRoot)
@@ -6620,12 +6635,26 @@ ${match}</ul>
                 const withExt2 = clean.endsWith(".html") ? clean : clean + ".html";
                 return applyBase("/" + withExt2);
               }
-              const dir = (routerConfig.pagesDir || pagesDir || "").replace(/^\/+|\/+$/g, "");
+              const dir = (routerConfig.pagesDir || pagesDir || "_pages").replace(/^\/+|\/+$/g, "");
               const defaultIndex = routerConfig.index || cfg.index || "home.html";
               const rel = path === "/" || path === "" ? `/${defaultIndex}` : path.startsWith("/") ? path : "/" + path;
               const withExt = rel.endsWith(".html") ? rel : rel + ".html";
               const full = dir ? `/${dir}${withExt}` : withExt;
               return applyBase(full);
+            };
+            const isAllowedStaticCandidate = (candidate, cleanPath) => {
+              if (routeList.some((r) => r.path === cleanPath || r.component && r.component.endsWith(candidate.replace(/^\/+/, "")))) {
+                return true;
+              }
+              if (cleanPath.includes("..") || candidate.includes("..")) {
+                return false;
+              }
+              if (cleanPath.startsWith("/_components") || cleanPath.startsWith("/_internal") || cleanPath.startsWith("_components") || cleanPath.startsWith("_internal")) {
+                return false;
+              }
+              const dir = (routerConfig.pagesDir || pagesDir || "_pages").replace(/^\/+|\/+$/g, "");
+              const cleanCandidate = candidate.replace(/^\/+/, "");
+              return cleanCandidate.startsWith(dir + "/");
             };
             const buildInfo = (route, path, params, query, hash) => ({
               path,
@@ -7169,20 +7198,34 @@ ${match}</ul>
               if (!matched) {
                 if (!alreadyOnError && (mode === "static" || mode === "hybrid")) {
                   const candidate = resolveStaticComponent(path);
-                  const known = routeList.some((r) => {
-                    if (r.component && r.component.endsWith(candidate.replace(/^\/+/, "")))
-                      return true;
-                    return false;
-                  });
-                  if (known) {
-                    staticComponent = candidate;
-                  } else if (path === "/" || path === "") {
-                    staticComponent = resolveStaticComponent("/");
+                  if (isAllowedStaticCandidate(candidate, path)) {
+                    let exists = false;
+                    try {
+                      const res = await fetch(candidate, { method: "HEAD" });
+                      if (res.ok) {
+                        exists = true;
+                      } else if (res.status === 405) {
+                        const getRes = await fetch(candidate, { method: "GET" });
+                        if (getRes.ok)
+                          exists = true;
+                      }
+                    } catch {
+                      exists = false;
+                    }
+                    if (exists) {
+                      staticComponent = candidate;
+                    } else {
+                      state.errorCode = 404;
+                      state.navigate(cleanErrorPath, { replace: true });
+                      return;
+                    }
                   } else {
+                    state.errorCode = 404;
                     state.navigate(cleanErrorPath, { replace: true });
                     return;
                   }
                 } else if (!alreadyOnError) {
+                  state.errorCode = 404;
                   state.navigate(cleanErrorPath, { replace: true });
                   return;
                 }
@@ -7304,8 +7347,10 @@ ${match}</ul>
                 restoreScroll(url.hash);
                 if (path && path !== "/index.html" && path !== errorPage2 && !path.startsWith("/_internal/")) {
                   const recent = globals.recent || [];
-                  const routeTitle = matched?.meta?.title || path.replace(/^\//, "").replace(/-/g, " ");
-                  const entry = { path, title: routeTitle };
+                  const curTab = state.pageTabs.find((t) => t.id === _at);
+                  const routeTitle = curTab?.meta?.title || curTab?.linkedContent?.meta?.title || matched?.meta?.title || path.replace(/^\//, "").replace(/-/g, " ");
+                  const routeIcon = curTab?.meta?.icon || curTab?.linkedContent?.meta?.icon || matched?.meta?.icon || "material-symbols-light:article-outline";
+                  const entry = { path, title: routeTitle, icon: routeIcon };
                   const next = [entry, ...recent.filter((r) => r.path !== path && r.path !== "/index.html")].slice(0, 5);
                   runtime.setGlobalSignal("recent", next);
                 }
