@@ -1483,6 +1483,43 @@ export const routerAttributeModule: AttributeModule = {
         state.prewarm(state.config.error ?? resolvePagesPath(undefined, 'error.html'));
       });
 
+      // Reactive synchronization of extracted metadata into the global recent signal list
+      runtime.effect(() => {
+        const activeTab = state.activePageTab;
+        if (!activeTab || !activeTab.route || activeTab.route.startsWith('/_internal')) return;
+        const meta = activeTab.meta || activeTab.linkedContent?.meta;
+        const title = meta?.title;
+        const icon = meta?.icon;
+        if (title || icon) {
+          const globals = runtime.globalSignals ? runtime.globalSignals() : {};
+          const recent = (globals.recent as any[]) || [];
+          const idx = recent.findIndex((r: any) => r.path === activeTab.route);
+          if (idx >= 0 && (recent[idx].title !== title || recent[idx].icon !== icon)) {
+            const updated = [...recent];
+            updated[idx] = {
+              ...updated[idx],
+              title: title || updated[idx].title,
+              icon: icon || updated[idx].icon || 'material-symbols-light:article-outline',
+            };
+            runtime.setGlobalSignal('recent', updated);
+          }
+        }
+      });
+
+      // Reactive synchronization of active page tab title to the native browser window/tab title
+      runtime.effect(() => {
+        const activeTab = state.activePageTab;
+        if (!activeTab || typeof document === 'undefined') return;
+        const meta = activeTab.meta || activeTab.linkedContent?.meta;
+        const title = meta?.title
+          || (activeTab.source?.includes('tab-new.html') ? 'New Tab' : '')
+          || (activeTab.route && activeTab.route !== '/' ? activeTab.route.replace(/^\//, '').replace(/-/g, ' ') : '')
+          || 'Nexus-UX';
+        if (title && document.title !== title) {
+          document.title = title;
+        }
+      });
+
       return () => {
         if ('navigation' in globalThis) {
           (globalThis as any).navigation.removeEventListener('navigate', onNavigate);

@@ -118,10 +118,6 @@ function extractResourceMetadata(
         }
       }
     }
-
-    if (meta.title && typeof document !== 'undefined') {
-      document.title = meta.title;
-    }
   } catch (e) {
     console.error(`[Component] Failed to extract metadata for ${path}:`, e);
   }
@@ -327,23 +323,6 @@ const componentModule: AttributeModule = {
             // header binding (tab.meta ?? tab.linkedContent?.meta) updates immediately.
             if (tabObj && extracted && (extracted.title || extracted.icon)) {
               tabObj.meta = { ...(tabObj.meta || {}), ...extracted };
-
-              // Sync extracted metadata into global recent signal list
-              const globals = (runtime.globalSignals ? runtime.globalSignals() : {}) as any;
-              const recent = globals.recent;
-              if (Array.isArray(recent) && (tabObj.route || tabObj.source)) {
-                const targetPath = (tabObj.route || tabObj.source) as string;
-                const idx = recent.findIndex((r: any) => r.path === targetPath || r.path === tabObj?.route);
-                if (idx >= 0) {
-                  const updated = [...recent];
-                  updated[idx] = {
-                    ...updated[idx],
-                    title: extracted.title || updated[idx].title,
-                    icon: extracted.icon || updated[idx].icon || 'material-symbols-light:article-outline'
-                  };
-                  runtime.setGlobalSignal('recent', updated);
-                }
-              }
             }
 
             if (config.shadowrootmode) {

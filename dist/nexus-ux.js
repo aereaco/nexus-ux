@@ -2378,9 +2378,6 @@ ${scripts}
           }
         }
       }
-      if (meta.title && typeof document !== "undefined") {
-        document.title = meta.title;
-      }
     } catch (e) {
       console.error(`[Component] Failed to extract metadata for ${path}:`, e);
     }
@@ -2594,21 +2591,6 @@ ${scripts}
                   componentState.meta = extracted;
                   if (tabObj && extracted && (extracted.title || extracted.icon)) {
                     tabObj.meta = { ...tabObj.meta || {}, ...extracted };
-                    const globals = runtime.globalSignals ? runtime.globalSignals() : {};
-                    const recent = globals.recent;
-                    if (Array.isArray(recent) && (tabObj.route || tabObj.source)) {
-                      const targetPath = tabObj.route || tabObj.source;
-                      const idx = recent.findIndex((r) => r.path === targetPath || r.path === tabObj?.route);
-                      if (idx >= 0) {
-                        const updated = [...recent];
-                        updated[idx] = {
-                          ...updated[idx],
-                          title: extracted.title || updated[idx].title,
-                          icon: extracted.icon || updated[idx].icon || "material-symbols-light:article-outline"
-                        };
-                        runtime.setGlobalSignal("recent", updated);
-                      }
-                    }
                   }
                   if (config.shadowrootmode) {
                     if (!el.shadowRoot)
@@ -7436,6 +7418,38 @@ ${match}</ul>
                   state.prewarm(r.component);
               }
               state.prewarm(state.config.error ?? resolvePagesPath(void 0, "error.html"));
+            });
+            runtime.effect(() => {
+              const activeTab = state.activePageTab;
+              if (!activeTab || !activeTab.route || activeTab.route.startsWith("/_internal"))
+                return;
+              const meta = activeTab.meta || activeTab.linkedContent?.meta;
+              const title = meta?.title;
+              const icon = meta?.icon;
+              if (title || icon) {
+                const globals2 = runtime.globalSignals ? runtime.globalSignals() : {};
+                const recent = globals2.recent || [];
+                const idx = recent.findIndex((r) => r.path === activeTab.route);
+                if (idx >= 0 && (recent[idx].title !== title || recent[idx].icon !== icon)) {
+                  const updated = [...recent];
+                  updated[idx] = {
+                    ...updated[idx],
+                    title: title || updated[idx].title,
+                    icon: icon || updated[idx].icon || "material-symbols-light:article-outline"
+                  };
+                  runtime.setGlobalSignal("recent", updated);
+                }
+              }
+            });
+            runtime.effect(() => {
+              const activeTab = state.activePageTab;
+              if (!activeTab || typeof document === "undefined")
+                return;
+              const meta = activeTab.meta || activeTab.linkedContent?.meta;
+              const title = meta?.title || (activeTab.source?.includes("tab-new.html") ? "New Tab" : "") || (activeTab.route && activeTab.route !== "/" ? activeTab.route.replace(/^\//, "").replace(/-/g, " ") : "") || "Nexus-UX";
+              if (title && document.title !== title) {
+                document.title = title;
+              }
             });
             return () => {
               if ("navigation" in globalThis) {
