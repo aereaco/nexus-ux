@@ -3759,6 +3759,25 @@ ${scripts}
     }
     return document.documentElement;
   }
+  function getBoundItemFromElement(el) {
+    if (!el)
+      return null;
+    const stack = getDataStack(el);
+    for (const s of stack) {
+      if (s && typeof s === "object") {
+        if ("tab" in s && s.tab)
+          return s.tab;
+        if ("item" in s && s.item)
+          return s.item;
+        for (const key of Object.keys(s)) {
+          if (key !== "index" && s[key] && typeof s[key] === "object") {
+            return s[key];
+          }
+        }
+      }
+    }
+    return null;
+  }
   function buildReorderContext(container, listExpr, runtime, options) {
     const getList = () => {
       try {
@@ -3773,6 +3792,19 @@ ${scripts}
       updateList: (mutate) => {
         const list = getList();
         mutate(list);
+        try {
+          if (listExpr.includes(".")) {
+            const parts = listExpr.split(".");
+            const prop = parts.pop();
+            const targetObj = runtime.evaluate(container, parts.join("."));
+            if (targetObj && typeof targetObj === "object") {
+              targetObj[prop] = [...list];
+            }
+          } else if (runtime.setGlobalSignal && runtime.globalSignals && listExpr in runtime.globalSignals()) {
+            runtime.setGlobalSignal(listExpr, [...list]);
+          }
+        } catch {
+        }
       },
       container,
       direction: options?.direction,
@@ -4652,8 +4684,39 @@ ${scripts}
                           }
                           list.splice(newIndex, 0, ...itemsToInsert);
                         } else {
-                          const [moved] = list.splice(oldIndex, 1);
-                          list.splice(newIndex, 0, moved);
+                          const draggedItem = getBoundItemFromElement(evt.item);
+                          let srcIndex = -1;
+                          if (draggedItem) {
+                            srcIndex = list.findIndex(
+                              (x) => x === draggedItem || x && draggedItem && x.id !== void 0 && x.id === draggedItem.id
+                            );
+                          }
+                          if (srcIndex === -1 && typeof oldIndex === "number" && oldIndex >= 0 && oldIndex < list.length) {
+                            srcIndex = oldIndex;
+                          }
+                          let destIndex = typeof newIndex === "number" ? newIndex : -1;
+                          const nextSib = evt.item.nextElementSibling;
+                          if (nextSib) {
+                            const nextItem = getBoundItemFromElement(nextSib);
+                            if (nextItem) {
+                              const targetIdx = list.findIndex(
+                                (x) => x === nextItem || x && nextItem && x.id !== void 0 && x.id === nextItem.id
+                              );
+                              if (targetIdx !== -1) {
+                                destIndex = srcIndex < targetIdx ? targetIdx - 1 : targetIdx;
+                              }
+                            }
+                          } else {
+                            destIndex = list.length - 1;
+                          }
+                          if (srcIndex >= 0 && srcIndex < list.length && destIndex >= 0 && destIndex < list.length) {
+                            if (srcIndex !== destIndex) {
+                              const [moved] = list.splice(srcIndex, 1);
+                              if (moved !== void 0) {
+                                list.splice(destIndex, 0, moved);
+                              }
+                            }
+                          }
                         }
                       }
                     });
@@ -6686,7 +6749,7 @@ ${match}</ul>
               pinnedPageTabs: [],
               tabSeq: 0,
               get activePageTab() {
-                return this.pageTabs?.find((t) => t.id === this.activePageTabId) || null;
+                return this.pageTabs?.find((t) => t && t.id === this.activePageTabId) || null;
               },
               createPageTab(source, route) {
                 state.tabSeq++;

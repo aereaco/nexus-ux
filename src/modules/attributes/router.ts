@@ -612,7 +612,7 @@ export const routerAttributeModule: AttributeModule = {
         pinnedPageTabs: [] as string[],
         tabSeq: 0,
         get activePageTab(): PageTab | null {
-          return (this as any).pageTabs?.find((t: PageTab) => t.id === (this as any).activePageTabId) || null;
+          return (this as any).pageTabs?.find((t: PageTab) => t && t.id === (this as any).activePageTabId) || null;
         },
         createPageTab(source?: string, route?: string) {
           state.tabSeq++;

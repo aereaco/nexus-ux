@@ -21,6 +21,23 @@ function getScrollParent(el: HTMLElement): HTMLElement {
   return document.documentElement;
 }
 
+function getBoundItemFromElement(el: HTMLElement | null): any {
+  if (!el) return null;
+  const stack = getDataStack(el);
+  for (const s of stack) {
+    if (s && typeof s === 'object') {
+      if ('tab' in s && s.tab) return s.tab;
+      if ('item' in s && s.item) return s.item;
+      for (const key of Object.keys(s)) {
+        if (key !== 'index' && s[key] && typeof s[key] === 'object') {
+          return s[key];
+        }
+      }
+    }
+  }
+  return null;
+}
+
 export interface DragReorderContext<T> {
   getList: () => T[];
   updateList: (mutate: (list: T[]) => void) => void;
@@ -381,9 +398,9 @@ export class Draggable {
     const isSameContainer = targetParent === this.el;
     if (!isSameContainer) {
       if (!targetDraggable || !this._canPullPut(targetDraggable)) {
-    this._clearDocked();
+        this._clearDocked();
 
-    this._clearDragOverState();
+        this._clearDragOverState();
         return; // Pull/Put not allowed between groups
       }
     }
@@ -659,7 +676,7 @@ export class Draggable {
   private _updateDragOverState(targetParent: HTMLElement, e: PointerEvent) {
     const stack = getDataStack(targetParent);
     const targetItemScope = stack.find(s => s && 'item' in s && s.item && typeof s.item === 'object') as any;
-    
+
     if (this._lastActiveItemScope !== targetItemScope) {
       this._clearDragOverState();
       this._lastActiveItemScope = targetItemScope || null;
@@ -1173,8 +1190,44 @@ export class DragReorderEngine<T> {
                     }
                     list.splice(newIndex, 0, ...itemsToInsert);
                   } else {
-                    const [moved] = list.splice(oldIndex, 1);
-                    list.splice(newIndex, 0, moved);
+                    const draggedItem = getBoundItemFromElement(evt.item);
+                    let srcIndex = -1;
+                    if (draggedItem) {
+                      srcIndex = list.findIndex(
+                        (x: any) => x === draggedItem || (x && draggedItem && x.id !== undefined && x.id === draggedItem.id)
+                      );
+                    }
+                    if (srcIndex === -1 && typeof oldIndex === 'number' && oldIndex >= 0 && oldIndex < list.length) {
+                      srcIndex = oldIndex;
+                    }
+
+                    // Compute destination index based on target siblings
+                    let destIndex = typeof newIndex === 'number' ? newIndex : -1;
+                    const nextSib = (evt.item as HTMLElement).nextElementSibling as HTMLElement | null;
+                    if (nextSib) {
+                      const nextItem = getBoundItemFromElement(nextSib);
+                      if (nextItem) {
+                        const targetIdx = list.findIndex(
+                          (x: any) => x === nextItem || (x && nextItem && x.id !== undefined && x.id === nextItem.id)
+                        );
+                        if (targetIdx !== -1) {
+                          destIndex = srcIndex < targetIdx ? targetIdx - 1 : targetIdx;
+                        }
+                      }
+                    } else {
+                      // Dropped at the very end
+                      destIndex = list.length - 1;
+                    }
+
+                    // Strict bounds and valid index safety check: only splice when verified
+                    if (srcIndex >= 0 && srcIndex < list.length && destIndex >= 0 && destIndex < list.length) {
+                      if (srcIndex !== destIndex) {
+                        const [moved] = list.splice(srcIndex, 1);
+                        if (moved !== undefined) {
+                          list.splice(destIndex, 0, moved);
+                        }
+                      }
+                    }
                   }
                 }
               });
@@ -1228,6 +1281,20 @@ export function buildReorderContext<T>(
     updateList: (mutate) => {
       const list = getList();
       mutate(list);
+      try {
+        if (listExpr.includes('.')) {
+          const parts = listExpr.split('.');
+          const prop = parts.pop()!;
+          const targetObj = runtime.evaluate(container, parts.join('.'));
+          if (targetObj && typeof targetObj === 'object') {
+            targetObj[prop] = [...list];
+          }
+        } else if (runtime.setGlobalSignal && runtime.globalSignals && (listExpr in runtime.globalSignals())) {
+          runtime.setGlobalSignal(listExpr, [...list]);
+        }
+      } catch {
+        /* no-op fallback */
+      }
     },
     container,
     direction: options?.direction,
