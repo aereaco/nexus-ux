@@ -128,6 +128,16 @@ interface RouteRecord {
 
 type RouterMode = 'signal' | 'static' | 'hybrid';
 
+export interface DiscoveredPage {
+  href: string;
+  title: string;
+  icon: string;
+  tabTitle: string;
+  tabIcon: string;
+  path?: string;
+  meta?: Record<string, any>;
+}
+
 export interface PageTab {
   id: string;
   source: string;
