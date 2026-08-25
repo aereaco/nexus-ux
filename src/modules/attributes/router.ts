@@ -626,17 +626,20 @@ export const routerAttributeModule: AttributeModule = {
             let icon = r.meta?.icon;
 
             try {
-              const res = await (runtime.fetch ? runtime.fetch(compPath) : fetch(compPath));
-              if (res && res.ok) {
-                const html = await res.text();
-                const headMatch = html.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
-                if (headMatch) {
-                  const headContent = headMatch[1];
-                  const titleMatch = headContent.match(/<title[^>]*>([^<]+)<\/title>/i);
-                  const iconMatch = headContent.match(/<meta[^>]*name=["']icon["'][^>]*content=["']([^"']+)["']/i) ||
-                                    headContent.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']icon["']/i);
-                  if (titleMatch) title = titleMatch[1].trim();
-                  if (iconMatch) icon = iconMatch[1].trim();
+              const fetchFn = typeof globalThis.fetch === 'function' ? globalThis.fetch.bind(globalThis) : null;
+              if (fetchFn) {
+                const res = await fetchFn(compPath);
+                if (res && res.ok) {
+                  const html = await res.text();
+                  const headMatch = html.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
+                  if (headMatch) {
+                    const headContent = headMatch[1];
+                    const titleMatch = headContent.match(/<title[^>]*>([^<]+)<\/title>/i);
+                    const iconMatch = headContent.match(/<meta[^>]*name=["']icon["'][^>]*content=["']([^"']+)["']/i) ||
+                                      headContent.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']icon["']/i);
+                    if (titleMatch) title = titleMatch[1].trim();
+                    if (iconMatch) icon = iconMatch[1].trim();
+                  }
                 }
               }
             } catch {
