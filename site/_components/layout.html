@@ -17,9 +17,6 @@
   <div class="drawer-content" data-signal:global="{
 
         activePageTabId: 'home',
-        activeTab: null,
-        pinned: [],
-        tabSeq: 0,
         ctxMenu: null,
         ctxMenuItems: [],
         favorites: localStorage.favorites ?? [],
@@ -31,89 +28,28 @@
           { href: '/profile', title: 'Profile', icon: 'material-symbols-light:person-outline', tabTitle: 'Profile', tabIcon: 'material-symbols-light:person-outline' },
           { href: '/settings', title: 'Settings', icon: 'material-symbols-light:settings-outline', tabTitle: 'Settings', tabIcon: 'material-symbols-light:settings-outline' }
         ],
-        tabs: [{
-          id: 'home',
-          source: '/_pages/home.html',
-          route: '/'
-        }],
-        createTab(source = '_components/tab-new.html', route = '') {
-          this.tabSeq++;
-          const id = 'tab-' + this.tabSeq;
-          this.tabs = [...this.tabs, { id, source, route: route || source }];
-          this.activePageTabId = id;
-          if (typeof router !== 'undefined' && router) {
-            // Mark as custom-component sentinel so updateRoute never clobbers
-            // a launchpad/component tab with a URL-resolved page.
-            router.tabPaths[id] = 'custom-component';
-            router.setActiveTab(id);
-          }
-        },
-        switchTab(id) {
-          this.activePageTabId = id;
-          if (typeof router !== 'undefined' && router) {
-            router.setActiveTab(id);
-          }
-        },
-        navigateActiveTab(href) {
-          // Delegate entirely to the router — it resolves the component source
-          // from its own route manifest and updates the active tab via ZCZS.
-          if (typeof router !== 'undefined' && router) {
-            router.navigate(href);
-          }
-        },
-        closeTab(id) {
-          const wasActive = this.activePageTabId === id;
-          this.tabs = this.tabs.filter(t => t.id !== id);
-          this.pinned = this.pinned.filter(p => p !== id);
-          if (wasActive && this.tabs.length > 0) {
-            this.activePageTabId = this.tabs[0].id;
-          }
-        },
-        pinTab(id) {
-          if (this.pinned.includes(id)) {
-            this.pinned = this.pinned.filter(p => p !== id);
-          } else {
-            this.pinned = [...this.pinned, id];
-          }
-        },
-        duplicateTab(id) {
-          const src = this.tabs.find(t => t.id === id);
-          if (!src) return;
-          this.tabSeq++;
-          const newId = 'tab-' + this.tabSeq;
-          const source = src.source || '_components/tab-generic.html';
-          const route = src.route || '';
-          if (source.startsWith('_components/')) {
-            router.tabPaths[newId] = 'custom-component';
-          } else {
-            router.tabPaths[newId] = router.tabPaths[id] || route;
-          }
-          this.tabs = [...this.tabs, { id: newId, source, route }];
-          this.activePageTabId = newId;
-          router.setActiveTab(newId);
-        },
         openTabContextMenu(tab, evt) {
           const e = evt;
           const rawX = e.clientX || e.pageX || 100;
           const rawY = e.clientY || e.pageY || 100;
           const tid = tab.id;
-          const isPinned = this.pinned.includes(tid);
+          const isPinned = (router.pinnedPageTabs || []).includes(tid);
           this.ctxMenuItems = [
             {
               label: isPinned ? 'Unpin Tab' : 'Pin Tab',
               icon: isPinned ? 'material-symbols-light:keep-off-outline' : 'material-symbols-light:keep-outline',
-              action: () => this.pinTab(tid)
+              action: () => router.pinPageTab(tid)
             },
             {
               label: 'Duplicate Tab',
               icon: 'material-symbols-light:content-copy',
-              action: () => this.duplicateTab(tid)
+              action: () => router.duplicatePageTab(tid)
             },
             {
               label: 'Close Tab',
               icon: 'material-symbols-light:close',
               danger: true,
-              action: () => this.closeTab(tid)
+              action: () => router.closePageTab(tid)
             }
           ];
           const menuWidth = 224;
@@ -130,12 +66,7 @@
             {
               label: 'Open in New Tab',
               icon: 'material-symbols-light:add',
-              action: () => {
-                this.tabSeq++;
-                const id = 'tab-' + this.tabSeq;
-                this.tabs = [...this.tabs, { id, title: title || 'Tab', icon: icon || 'material-symbols-light:article-outline', content: href }];
-                this.activePageTabId = id;
-              }
+              action: () => router.createPageTab(href, href)
             },
             {
               label: 'Copy Link Address',
@@ -412,16 +343,16 @@
     <template id="tab-header-template">
       <div role="tab" tabindex="0"
         class="flex items-center shrink-0 p-2 cursor-pointer hover:'border-primary' transition-colors"
-        data-bind-aria-selected="activePageTabId === tab.id"
-        data-class="{'tab-active border-b border-primary text-primary': activePageTabId === tab.id }"
-        data-on-click="switchTab(tab.id)" data-on-auxclick="if ($evt.button === 1) closeTab(tab.id)"
+        data-bind-aria-selected="router.activePageTabId === tab.id"
+        data-class="{'tab-active border-b border-primary text-primary': router.activePageTabId === tab.id }"
+        data-on-click="router.switchPageTab(tab.id)" data-on-auxclick="if ($evt.button === 1) router.closePageTab(tab.id)"
         data-on-contextmenu:prevent="openTabContextMenu(tab, $evt)">
         <iconify-icon icon="material-symbols-light:drag-indicator"
           class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
-        <iconify-icon data-bind-icon="(tab.meta ?? tab.linkedContent?.meta)?.icon || 'material-symbols-light:article-outline'" class="text-lg px-2"></iconify-icon>
-        <span class="pe-4 whitespace-nowrap" data-bind="(tab.meta ?? tab.linkedContent?.meta)?.title || (tab.linkedContent?.isLoading ? 'Loading...' : 'Tab')"></span>
+        <iconify-icon data-bind-icon="tab.meta?.icon || tab.linkedContent?.meta?.icon || 'material-symbols-light:article-outline'" class="text-lg px-2"></iconify-icon>
+        <span class="pe-4 whitespace-nowrap" data-bind="tab.meta?.title || tab.linkedContent?.meta?.title || 'Tab'"></span>
         <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close tab" title="Close tab"
-          data-class="{ 'hidden': pinned.includes(tab.id) }" data-on-click:stop="closeTab(tab.id)">
+          data-class="{ 'hidden': (router.pinnedPageTabs || []).includes(tab.id) }" data-on-click:stop="router.closePageTab(tab.id)">
           <iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
         </button>
       </div>
@@ -435,12 +366,12 @@
           class="flex flex-nowrap bg-base-300/20 rounded-none overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-base-content/10"
           role="tablist" aria-orientation="horizontal" data-drag-container="tabs" data-drag-group="tabs"
           data-drag-direction="horizontal" data-drag-swap-threshold="0.55">
-          <template data-for="tab in tabs" data-key="tab.id">
+          <template data-for="tab in router.pageTabs" data-key="tab.id">
             <tab-header data-component="'#tab-header-template'" data-drag></tab-header>
           </template>
 
           <button class="btn btn-circle shrink-0" data-class="{ 'hidden': !pageTabs }"
-            data-on-click="createTab('_components/tab-new.html')">
+            data-on-click="router.createPageTab('_components/tab-new.html')">
             <iconify-icon icon="material-symbols-light:add" style="font-size: 24px"></iconify-icon>
           </button>
         </div>
@@ -518,8 +449,8 @@
 
       <!-- Retained Multi-Panel Outlets: Each tab retains its mounted DOM tree.
            data-show toggles panel visibility instantly (display: none) without destroying nodes or resetting state. -->
-      <template data-for="tab in tabs" data-key="tab.id">
-        <div role="tabpanel" class="h-full w-full" data-show="activePageTabId === tab.id">
+      <template data-for="tab in router.pageTabs" data-key="tab.id">
+        <div role="tabpanel" class="h-full w-full" data-show="router.activePageTabId === tab.id">
           <tab-content data-component="tab.source || tab.content"></tab-content>
         </div>
       </template>
@@ -533,40 +464,40 @@
       <!-- TAB actions -->
       <template data-if="ctxMenu && ctxMenu.type === 'tab'">
         <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-          data-on-click:stop="const id = ctxMenu.tabId; const idx = tabs.findIndex(t => t.id === id); const t = tabs[idx]; if (idx > -1) { const np = pinned.includes(id) ? pinned.filter(p => p !== id) : [...pinned, id]; pinned = np; if (!pinned.includes(id) && t.originUrl) { tabs[idx] = { ...t, content: t.originUrl, title: t.originTitle, icon: t.originIcon }; } } ctxMenu = null;">
+          data-on-click:stop="router.pinPageTab(ctxMenu.tabId); ctxMenu = null;">
           <iconify-icon
-            data-bind-icon="(pinned.includes(ctxMenu.tabId) ? 'material-symbols-light:push-pin-outline' : 'material-symbols-light:push-pin')"
+            data-bind-icon="((router.pinnedPageTabs || []).includes(ctxMenu.tabId) ? 'material-symbols-light:push-pin-outline' : 'material-symbols-light:push-pin')"
             class="text-lg"></iconify-icon>
-          <span data-bind="pinned.includes(ctxMenu.tabId) ? 'Unpin' : 'Pin'"></span>
+          <span data-bind="(router.pinnedPageTabs || []).includes(ctxMenu.tabId) ? 'Unpin' : 'Pin'"></span>
         </button>
         <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-          data-on-click:stop="const src = tabs.find(t => t.id === ctxMenu.tabId); const id = 'tab-' + (++tabSeq); const nc = (src && src.content) || '_components/tab-generic.html'; if (nc.startsWith('_components/')) { router.tabPaths[id] = 'custom-component'; } else { router.tabPaths[id] = router.tabPaths[ctxMenu.tabId]; } tabs = [...tabs, { id, title: (src && src.title) || 'Tab', icon: (src && src.icon) || 'material-symbols-light:article-outline', content: nc }]; activePageTabId = id; ctxMenu = null;">
+          data-on-click:stop="router.duplicatePageTab(ctxMenu.tabId); ctxMenu = null;">
           <iconify-icon icon="material-symbols-light:add" class="text-lg"></iconify-icon>
           <span>Open in new tab</span>
         </button>
         <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-          data-class="{ 'hidden': pinned.includes(ctxMenu.tabId) }"
-          data-on-click:stop="const id = ctxMenu.tabId; const wasActive = activePageTabId === id; tabs = tabs.filter(t => t.id !== id); pinned = pinned.filter(p => p !== id); if (wasActive) activePageTabId = tabs[0]?.id; ctxMenu = null;">
+          data-class="{ 'hidden': (router.pinnedPageTabs || []).includes(ctxMenu.tabId) }"
+          data-on-click:stop="router.closePageTab(ctxMenu.tabId); ctxMenu = null;">
           <iconify-icon icon="material-symbols-light:close" class="text-lg"></iconify-icon>
           <span>Close tab</span>
         </button>
         <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-          data-on-click:stop="const id = ctxMenu.tabId; const idx = tabs.findIndex(t => t.id === id); tabs = tabs.filter((t, i) => i <= idx || pinned.includes(t.id)); if (!tabs.find(t => t.id === activePageTabId)) activePageTabId = tabs[0]?.id; ctxMenu = null;">
+          data-on-click:stop="const id = ctxMenu.tabId; const idx = router.pageTabs.findIndex(t => t.id === id); router.pageTabs = router.pageTabs.filter((t, i) => i >= idx || (router.pinnedPageTabs || []).includes(t.id)); if (!router.pageTabs.find(t => t.id === router.activePageTabId)) router.switchPageTab(router.pageTabs[0]?.id); ctxMenu = null;">
           <iconify-icon icon="material-symbols-light:chevron-left" class="text-lg"></iconify-icon>
           <span>Close tabs to the left</span>
         </button>
         <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-          data-on-click:stop="const id = ctxMenu.tabId; const idx = tabs.findIndex(t => t.id === id); tabs = tabs.filter((t, i) => i >= idx || pinned.includes(t.id)); if (!tabs.find(t => t.id === activePageTabId)) activePageTabId = tabs[0]?.id; ctxMenu = null;">
+          data-on-click:stop="const id = ctxMenu.tabId; const idx = router.pageTabs.findIndex(t => t.id === id); router.pageTabs = router.pageTabs.filter((t, i) => i <= idx || (router.pinnedPageTabs || []).includes(t.id)); if (!router.pageTabs.find(t => t.id === router.activePageTabId)) router.switchPageTab(router.pageTabs[0]?.id); ctxMenu = null;">
           <iconify-icon icon="material-symbols-light:chevron-right" class="text-lg"></iconify-icon>
           <span>Close tabs to the right</span>
         </button>
         <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-          data-on-click:stop="tabs = tabs.filter(t => pinned.includes(t.id)); if (!tabs.find(t => t.id === activePageTabId)) activePageTabId = tabs[0]?.id; ctxMenu = null;">
+          data-on-click:stop="const id = ctxMenu.tabId; router.pageTabs = router.pageTabs.filter(t => t.id === id || (router.pinnedPageTabs || []).includes(t.id)); router.switchPageTab(id); ctxMenu = null;">
           <iconify-icon icon="material-symbols-light:clear-all" class="text-lg"></iconify-icon>
           <span>Close other tabs</span>
         </button>
         <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-          data-on-click:stop="const t = tabs.find(x => x.id === ctxMenu.tabId); if (t) { const entry = { title: t.title, url: t.content, icon: t.icon }; const favs = JSON.parse(localStorage.getItem('nexus-favorites') || '[]'); favs.push(entry); localStorage.setItem('nexus-favorites', JSON.stringify(favs)); favorites = favs; } ctxMenu = null;">
+          data-on-click:stop="const t = router.pageTabs.find(x => x.id === ctxMenu.tabId); if (t) { const entry = { title: (t.meta ?? t.linkedContent?.meta)?.title || 'Tab', url: t.route || t.source, icon: (t.meta ?? t.linkedContent?.meta)?.icon || 'material-symbols-light:star-outline' }; favorites = [...favorites, entry]; localStorage.favorites = favorites; } ctxMenu = null;">
           <iconify-icon icon="material-symbols-light:star-outline" class="text-lg"></iconify-icon>
           <span>Save to Favorites</span>
         </button>
@@ -575,12 +506,12 @@
       <!-- LINK actions -->
       <template data-if="ctxMenu && ctxMenu.type === 'link'">
         <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-          data-on-click:stop="const u = ctxMenu.url; const id = 'tab-' + (++tabSeq); router.tabPaths[id] = u; tabs = [...tabs, { id, title: ctxMenu.title || 'Tab', icon: ctxMenu.icon || 'material-symbols-light:article-outline', content: u }]; activePageTabId = id; ctxMenu = null;">
+          data-on-click:stop="router.createPageTab(ctxMenu.url, ctxMenu.url); ctxMenu = null;">
           <iconify-icon icon="material-symbols-light:add" class="text-lg"></iconify-icon>
           <span>Open in new tab</span>
         </button>
         <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-          data-on-click:stop="const u = ctxMenu.url; if (u) { const entry = { title: ctxMenu.title || u, url: u, icon: ctxMenu.icon || '' }; const favs = JSON.parse(localStorage.getItem('nexus-favorites') || '[]'); favs.push(entry); localStorage.setItem('nexus-favorites', JSON.stringify(favs)); favorites = favs; } ctxMenu = null;">
+          data-on-click:stop="if (ctxMenu.url) { const entry = { title: ctxMenu.title || ctxMenu.url, href: ctxMenu.url, icon: ctxMenu.icon || 'material-symbols-light:star-outline' }; favorites = [...favorites, entry]; localStorage.favorites = favorites; } ctxMenu = null;">
           <iconify-icon icon="material-symbols-light:star-outline" class="text-lg"></iconify-icon>
           <span>Save to Favorites</span>
         </button>

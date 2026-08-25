@@ -6614,6 +6614,16 @@ ${match}</ul>
               redirect: r.redirect,
               layout: r.layout
             }));
+            const buildInfo = (route, path, params, query, hash) => ({
+              path,
+              params,
+              query,
+              hash,
+              name: route?.name,
+              meta: route?.meta,
+              component: route?.component,
+              layout: route?.layout
+            });
             const state = runtime.shallowReactive({
               path: stripBase(globalThis.location.pathname),
               params: {},
@@ -6636,6 +6646,67 @@ ${match}</ul>
               // Declarative strategy snapshot + resolved manifest.
               config: routerConfig,
               manifest: [],
+              // --- First-Class Page Tab Workspaces ---
+              pageTabs: [
+                {
+                  id: "home",
+                  source: resolvePagesPath(cfg.index || "home.html", "home.html"),
+                  route: stripBase(globalThis.location.pathname) || "/",
+                  meta: {}
+                }
+              ],
+              activePageTabId: "home",
+              pinnedPageTabs: [],
+              tabSeq: 0,
+              get activePageTab() {
+                return this.pageTabs?.find((t) => t.id === this.activePageTabId) || null;
+              },
+              createPageTab(source, route) {
+                state.tabSeq++;
+                const id = "tab-" + state.tabSeq;
+                const src = source || state.config.newPageTab || "_components/tab-new.html";
+                const r = route !== void 0 ? route : src.startsWith("_components/") ? "" : src;
+                state.pageTabs = [...state.pageTabs, { id, source: src, route: r, meta: {} }];
+                state.activePageTabId = id;
+                state.tabPaths[id] = src.startsWith("_components/") ? "custom-component" : r || src;
+                state.setActiveTab(id);
+              },
+              switchPageTab(id) {
+                state.activePageTabId = id;
+                state.setActiveTab(id);
+                const tab = state.pageTabs.find((t) => t.id === id);
+                if (tab && tab.route && typeof globalThis.history !== "undefined") {
+                  globalThis.history.replaceState({ pageTabId: id, tabId: id }, "", tab.route);
+                }
+              },
+              closePageTab(id) {
+                const wasActive = state.activePageTabId === id;
+                state.pageTabs = state.pageTabs.filter((t) => t.id !== id);
+                state.pinnedPageTabs = state.pinnedPageTabs.filter((p) => p !== id);
+                if (wasActive && state.pageTabs.length > 0) {
+                  state.switchPageTab(state.pageTabs[0].id);
+                }
+              },
+              duplicatePageTab(id) {
+                const srcTab = state.pageTabs.find((t) => t.id === id);
+                if (!srcTab)
+                  return;
+                state.tabSeq++;
+                const newId = "tab-" + state.tabSeq;
+                const source = srcTab.source;
+                const route = srcTab.route || "";
+                state.tabPaths[newId] = source.startsWith("_components/") ? "custom-component" : state.tabPaths[id] || route;
+                state.pageTabs = [...state.pageTabs, { id: newId, source, route, meta: { ...srcTab.meta || {} } }];
+                state.activePageTabId = newId;
+                state.setActiveTab(newId);
+              },
+              pinPageTab(id) {
+                if (state.pinnedPageTabs.includes(id)) {
+                  state.pinnedPageTabs = state.pinnedPageTabs.filter((p) => p !== id);
+                } else {
+                  state.pinnedPageTabs = [...state.pinnedPageTabs, id];
+                }
+              },
               // Per-tab history bookkeeping (native history is the single store).
               activeTabId: null,
               tabPaths: {},
@@ -6646,7 +6717,7 @@ ${match}</ul>
                   return;
                 }
                 const target = applyBase(url);
-                const tabId = opts?.tabId ?? getActiveTabId() ?? state.activeTabId ?? null;
+                const tabId = opts?.tabId ?? getActiveTabId() ?? state.activePageTabId ?? state.activeTabId ?? null;
                 const cleanPath = stripBase(target);
                 const matched = routeList.find((r) => r.path === cleanPath || r.path === url);
                 const isShadow = matched?.internal || shadowMatch(cleanPath);
@@ -6660,13 +6731,22 @@ ${match}</ul>
                     };
                   }
                 }
-                const _activeId = tabId || getActiveTabId();
+                const _activeId = tabId || state.activePageTabId || getActiveTabId();
                 if (_activeId && state.tabPaths[_activeId] !== "custom-component") {
+                  const curPageTab = state.pageTabs.find((t) => t.id === _activeId);
+                  if (curPageTab) {
+                    const resolvedSource = matched?.component || (cleanPath === "/" ? resolvePagesPath(cfg.index || "home.html", "home.html") : cleanPath);
+                    if (curPageTab.source !== resolvedSource)
+                      curPageTab.source = resolvedSource;
+                    if (curPageTab.route !== cleanPath)
+                      curPageTab.route = cleanPath;
+                    state.pageTabs = [...state.pageTabs];
+                  }
                   const _tabs = (runtime.globalSignals ? runtime.globalSignals() : {}).tabs;
                   if (Array.isArray(_tabs)) {
                     const _tab = _tabs.find((t) => t.id === _activeId);
                     if (_tab) {
-                      const resolvedSource = matched?.component || (cleanPath === "/" ? "/_pages/home.html" : cleanPath);
+                      const resolvedSource = matched?.component || (cleanPath === "/" ? resolvePagesPath(cfg.index || "home.html", "home.html") : cleanPath);
                       if (_tab.source !== resolvedSource)
                         _tab.source = resolvedSource;
                       if (_tab.route !== cleanPath)
@@ -6978,16 +7058,6 @@ ${match}</ul>
                 return { abort: true };
               }
             };
-            const buildInfo = (route, path, params, query, hash) => ({
-              path,
-              params,
-              query,
-              hash,
-              name: route?.name,
-              meta: route?.meta,
-              component: route?.component,
-              layout: route?.layout
-            });
             const shownDisplay = /* @__PURE__ */ new WeakMap();
             const commitVisibility = (matched) => {
               routeList.forEach((r) => {
@@ -7187,23 +7257,37 @@ ${match}</ul>
               state.route = matched?.component ?? staticComponent ?? null;
               state.layout = matched?.layout ?? null;
               publishOutlet(state.layout ?? state.route);
-              const _at = getActiveTabId();
+              const _at = state.activePageTabId || getActiveTabId();
               if (_at) {
-                const tabs = globals.tabs || [];
-                const atIdx = tabs.findIndex((t) => t.id === _at);
-                if (atIdx >= 0 && state.tabPaths[_at] === "custom-component") {
-                } else {
+                const isCustomComp = state.tabPaths[_at] === "custom-component";
+                if (!isCustomComp) {
                   state.tabPaths[_at] = path;
                   const resolvedSource = matched?.component ?? staticComponent ?? null;
-                  if (resolvedSource && atIdx >= 0) {
-                    const cur = tabs[atIdx];
-                    if (cur.source !== resolvedSource)
-                      cur.source = resolvedSource;
-                    if (cur.route !== path)
-                      cur.route = path;
-                    const routeMeta = matched?.meta;
-                    if (routeMeta?.title || routeMeta?.icon) {
-                      cur.meta = { ...cur.meta || {}, ...routeMeta };
+                  if (resolvedSource) {
+                    const curPageTab = state.pageTabs.find((t) => t.id === _at);
+                    if (curPageTab) {
+                      if (curPageTab.source !== resolvedSource)
+                        curPageTab.source = resolvedSource;
+                      if (curPageTab.route !== path)
+                        curPageTab.route = path;
+                      const routeMeta = matched?.meta;
+                      if (routeMeta?.title || routeMeta?.icon) {
+                        curPageTab.meta = { ...curPageTab.meta || {}, ...routeMeta };
+                      }
+                      state.pageTabs = [...state.pageTabs];
+                    }
+                    const tabs = globals.tabs || [];
+                    const atIdx = tabs.findIndex((t) => t.id === _at);
+                    if (atIdx >= 0) {
+                      const cur = tabs[atIdx];
+                      if (cur.source !== resolvedSource)
+                        cur.source = resolvedSource;
+                      if (cur.route !== path)
+                        cur.route = path;
+                      const routeMeta = matched?.meta;
+                      if (routeMeta?.title || routeMeta?.icon) {
+                        cur.meta = { ...cur.meta || {}, ...routeMeta };
+                      }
                     }
                   }
                 }
@@ -7251,9 +7335,9 @@ ${match}</ul>
               if (url.origin !== globalThis.location.origin)
                 return;
               const destState = e.destination?.state;
-              const destTab = destState && typeof destState.tabId === "string" ? destState.tabId : null;
-              if (destTab && destTab !== getActiveTabId()) {
-                setActiveTabId(destTab);
+              const destTab = destState && (typeof destState.pageTabId === "string" ? destState.pageTabId : typeof destState.tabId === "string" ? destState.tabId : null);
+              if (destTab && destTab !== state.activePageTabId) {
+                state.switchPageTab(destTab);
               }
               if (destTab && destState) {
                 if (destState.title !== void 0 || destState.icon !== void 0) {
@@ -7275,9 +7359,9 @@ ${match}</ul>
             }
             const onPopState = (event) => {
               const st = event && event.state;
-              const tab = st && typeof st.tabId === "string" ? st.tabId : null;
-              if (tab && tab !== getActiveTabId()) {
-                setActiveTabId(tab);
+              const tab = st && (typeof st.pageTabId === "string" ? st.pageTabId : typeof st.tabId === "string" ? st.tabId : null);
+              if (tab && tab !== state.activePageTabId) {
+                state.switchPageTab(tab);
               }
               if (tab && st) {
                 if (st.title !== void 0 || st.icon !== void 0) {

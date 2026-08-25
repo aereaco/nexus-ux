@@ -128,6 +128,14 @@ interface RouteRecord {
 
 type RouterMode = 'signal' | 'static' | 'hybrid';
 
+export interface PageTab {
+  id: string;
+  source: string;
+  route?: string;
+  meta?: Record<string, any>;
+  linkedContent?: any;
+}
+
 export interface RouterConfig {
   mode: RouterMode;
   default: string | null;
@@ -136,15 +144,14 @@ export interface RouterConfig {
   manifest?: string;
   // When true, fold runtime-discovered routes into #router.manifest.
   dynamic?: boolean;
-  // Glob(s) marking internal/shadow routes (e.g. '/_internal/**').
-  shadow?: string | string[];
+  // Declarative component/page to load for new page tabs.
+  newPageTab?: string;
+  // Default index page filename inside pagesDir (e.g. 'home.html').
+  index?: string;
   // Declarative directory that clean routes resolve into (no hardcoded path).
   // e.g. '_pages' => '/profile' -> '_pages/profile.html'. Defaults to '_pages'.
   pagesDir?: string;
-  // Single error-handling page for ALL errors (404 + 5xx…). The page
-  // reads `#router.errorCode` ('404' for not-found, '500'/'502'/… for
-  // HTTP errors) to present the right message. No separate 404 page.
-  // Resolved relative to `pagesDir` when it is a bare name.
+  // Single error-handling page for ALL errors (404 + 5xx…).
   error?: string;
 }
 
@@ -156,16 +163,12 @@ export interface RouterState {
   loading: boolean;
   error: unknown;
   // Active HTTP/server error code driving the generic error page (500/502/…).
-  // Null for normal routing; the `error` config page reads this to render
-  // the correct message instead of a per-code page per status.
   errorCode: string | null;
   basePath: string;
   mode: RouterMode;
   // Outlet-driving signals (component URLs) + metadata.
   route: string | null;
   layout: string | null;
-  // The effective outlet URL: layout when present, else route. Bind a single
-  // static outlet to this: `<main data-component="#router.outlet">`.
   outlet: string | null;
   meta: unknown;
   name: string | null;
@@ -173,28 +176,27 @@ export interface RouterState {
   scrollPosition: { x: number; y: number };
   currentRoute: RouteRecord | null;
   routes: RouteRecord[];
-  // Reactive snapshot of the declarative routing strategy (mode/default/manifest/
-  // dynamic/shadow/error/basePath). Changes re-trigger a soft re-resolution.
   config: RouterConfig;
-  // Resolved route manifest: declared data-route entries + manifest file + dynamic
-  // scan, merged. Public entries (non-internal) are what the app advertises.
   manifest: RouteRecord[];
-  // Match a path and return the RouteInfo the router would use (no navigation).
   match(path?: string): RouteInfo | null;
-  // Intuitive navigate: by route name (→ navigateByName) or path (→ navigate).
   go(target: string, opts?: { replace?: boolean; tabId?: string; title?: string; icon?: string }): void;
 
+  // --- First-Class Page Tab Workspaces ---
+  pageTabs: PageTab[];
+  activePageTabId: string | null;
+  pinnedPageTabs: string[];
+  tabSeq: number;
+  activePageTab: PageTab | null;
+  createPageTab(source?: string, route?: string): void;
+  switchPageTab(id: string): void;
+  closePageTab(id: string): void;
+  duplicatePageTab(id: string): void;
+  pinPageTab(id: string): void;
+
   // --- Per-tab history (woven into the native browser history) ---
-  // Each tab owns its own back/forward timeline. The native browser history is
-  // the single store; every entry is stamped with `tabId` (+title/icon/scroll)
-  // so back/forward can resolve which tab an entry belongs to.
   activeTabId: string | null;
-  // Last resolved path per tab (so switching the active tab re-renders it).
   tabPaths: Record<string, string>;
-  // Last title/icon per tab (synced from link attrs or fetched page metadata).
   tabMeta: Record<string, { title?: string; icon?: string }>;
-  // Move the active tab's history back/forward. Falls through to the native
-  // history; the popstate/navigation handler resolves the owning tab.
   back(opts?: { tabId?: string }): void;
   forward(opts?: { tabId?: string }): void;
   canBack(tabId?: string): boolean;
@@ -210,9 +212,6 @@ export interface RouterState {
   ): void;
   isActive(path: string, exact?: boolean): boolean;
   buildQuery(obj: Record<string, unknown>): string;
-  // Surface a server/HTTP error (e.g. 500/502/503/504) and render the
-  // generic `error` page. Pass the code to present the right message; omit to
-  // clear and return to normal routing. The `error` page reads `#router.errorCode`.
   setError(code?: string | number | null): void;
   addRoute(route: RouteRecord): void;
   removeRoute(route: RouteRecord): void;
@@ -519,6 +518,24 @@ export const routerAttributeModule: AttributeModule = {
         layout: r.layout
       }));
 
+      // Build a RouteInfo snapshot for hook consumers and matchers.
+      const buildInfo = (
+        route: RouteRecord | null,
+        path: string,
+        params: Record<string, string>,
+        query: Record<string, string>,
+        hash: string,
+      ): RouteInfo => ({
+        path,
+        params,
+        query,
+        hash,
+        name: route?.name,
+        meta: route?.meta,
+        component: route?.component,
+        layout: route?.layout,
+      });
+
       // 1. Create Reactive State
       // shallowReactive prevents deep proxying of HTMLElements held in routes.
       const state: RouterState = runtime.shallowReactive<RouterState>({
@@ -545,6 +562,67 @@ export const routerAttributeModule: AttributeModule = {
         config: routerConfig,
         manifest: [],
 
+        // --- First-Class Page Tab Workspaces ---
+        pageTabs: [
+          {
+            id: 'home',
+            source: resolvePagesPath(cfg.index || 'home.html', 'home.html'),
+            route: stripBase(globalThis.location.pathname) || '/',
+            meta: {}
+          }
+        ] as PageTab[],
+        activePageTabId: 'home',
+        pinnedPageTabs: [] as string[],
+        tabSeq: 0,
+        get activePageTab(): PageTab | null {
+          return (this as any).pageTabs?.find((t: PageTab) => t.id === (this as any).activePageTabId) || null;
+        },
+        createPageTab(source?: string, route?: string) {
+          state.tabSeq++;
+          const id = 'tab-' + state.tabSeq;
+          const src = source || state.config.newPageTab || '_components/tab-new.html';
+          const r = route !== undefined ? route : (src.startsWith('_components/') ? '' : src);
+          state.pageTabs = [...state.pageTabs, { id, source: src, route: r, meta: {} }];
+          state.activePageTabId = id;
+          state.tabPaths[id] = src.startsWith('_components/') ? 'custom-component' : (r || src);
+          state.setActiveTab(id);
+        },
+        switchPageTab(id: string) {
+          state.activePageTabId = id;
+          state.setActiveTab(id);
+          const tab = state.pageTabs.find((t: PageTab) => t.id === id);
+          if (tab && tab.route && typeof globalThis.history !== 'undefined') {
+            globalThis.history.replaceState({ pageTabId: id, tabId: id }, '', tab.route);
+          }
+        },
+        closePageTab(id: string) {
+          const wasActive = state.activePageTabId === id;
+          state.pageTabs = state.pageTabs.filter((t: PageTab) => t.id !== id);
+          state.pinnedPageTabs = state.pinnedPageTabs.filter((p: string) => p !== id);
+          if (wasActive && state.pageTabs.length > 0) {
+            state.switchPageTab(state.pageTabs[0].id);
+          }
+        },
+        duplicatePageTab(id: string) {
+          const srcTab = state.pageTabs.find((t: PageTab) => t.id === id);
+          if (!srcTab) return;
+          state.tabSeq++;
+          const newId = 'tab-' + state.tabSeq;
+          const source = srcTab.source;
+          const route = srcTab.route || '';
+          state.tabPaths[newId] = source.startsWith('_components/') ? 'custom-component' : (state.tabPaths[id] || route);
+          state.pageTabs = [...state.pageTabs, { id: newId, source, route, meta: { ...(srcTab.meta || {}) } }];
+          state.activePageTabId = newId;
+          state.setActiveTab(newId);
+        },
+        pinPageTab(id: string) {
+          if (state.pinnedPageTabs.includes(id)) {
+            state.pinnedPageTabs = state.pinnedPageTabs.filter((p: string) => p !== id);
+          } else {
+            state.pinnedPageTabs = [...state.pinnedPageTabs, id];
+          }
+        },
+
         // Per-tab history bookkeeping (native history is the single store).
         activeTabId: null,
         tabPaths: {} as Record<string, string>,
@@ -557,7 +635,7 @@ export const routerAttributeModule: AttributeModule = {
           }
 
           const target = applyBase(url);
-          const tabId = opts?.tabId ?? getActiveTabId() ?? state.activeTabId ?? null;
+          const tabId = opts?.tabId ?? getActiveTabId() ?? state.activePageTabId ?? state.activeTabId ?? null;
           const cleanPath = stripBase(target);
           const matched = routeList.find((r) => r.path === cleanPath || r.path === url);
           const isShadow = matched?.internal || shadowMatch(cleanPath);
@@ -575,16 +653,24 @@ export const routerAttributeModule: AttributeModule = {
             }
           }
 
-          // ZCZS: update active tab's source/route directly via the reactive
-          // proxy — no array rebuild, no setGlobalSignal round-trip.
-          // Guard: never clobber a custom-component (launchpad) sentinel tab.
-          const _activeId = tabId || getActiveTabId();
+          // ZCZS: update active tab's source/route directly via the reactive proxy
+          const _activeId = tabId || state.activePageTabId || getActiveTabId();
           if (_activeId && state.tabPaths[_activeId] !== 'custom-component') {
+            // 1. Sync router.pageTabs
+            const curPageTab = state.pageTabs.find((t: PageTab) => t.id === _activeId);
+            if (curPageTab) {
+              const resolvedSource = matched?.component || (cleanPath === '/' ? resolvePagesPath(cfg.index || 'home.html', 'home.html') : cleanPath);
+              if (curPageTab.source !== resolvedSource) curPageTab.source = resolvedSource;
+              if (curPageTab.route !== cleanPath) curPageTab.route = cleanPath;
+              state.pageTabs = [...state.pageTabs];
+            }
+
+            // 2. Sync globals.tabs (backward compatibility)
             const _tabs = (runtime.globalSignals ? runtime.globalSignals() : {}).tabs as any[];
             if (Array.isArray(_tabs)) {
               const _tab = _tabs.find((t: any) => t.id === _activeId);
               if (_tab) {
-                const resolvedSource = matched?.component || (cleanPath === '/' ? '/_pages/home.html' : cleanPath);
+                const resolvedSource = matched?.component || (cleanPath === '/' ? resolvePagesPath(cfg.index || 'home.html', 'home.html') : cleanPath);
                 if (_tab.source !== resolvedSource) _tab.source = resolvedSource;
                 if (_tab.route !== cleanPath) _tab.route = cleanPath;
               }
@@ -941,24 +1027,6 @@ export const routerAttributeModule: AttributeModule = {
         }
       };
 
-      // Build a RouteInfo snapshot for hook consumers.
-      const buildInfo = (
-        route: RouteRecord | null,
-        path: string,
-        params: Record<string, string>,
-        query: Record<string, string>,
-        hash: string,
-      ): RouteInfo => ({
-        path,
-        params,
-        query,
-        hash,
-        name: route?.name,
-        meta: route?.meta,
-        component: route?.component,
-        layout: route?.layout,
-      });
-
       // Show the matched element, hide the rest. Route sections are tracked per
       // element so the matched view is only re-shown once (avoids a hidden flag
       // per record). Use reconcileStyle so visibility survives reconcile passes
@@ -1219,37 +1287,36 @@ export const routerAttributeModule: AttributeModule = {
 
         // Per-tab: remember the resolved path for the active tab so switching
         // back to it (or a back/forward that lands here) re-renders correctly.
-        const _at = getActiveTabId();
+        const _at = state.activePageTabId || getActiveTabId();
         if (_at) {
-          // Guard custom-component tabs (e.g. a freshly opened new-tab
-          // launchpad). A concurrent/delayed updateRoute — including the boot
-          // microtask — resolves the browser URL and would otherwise clobber
-          // the launchpad's content with `_pages/home.html`. Leave such tabs
-          // alone so their `custom-component` content persists.
-          const tabs = (globals.tabs as any[]) || [];
-          const atIdx = tabs.findIndex((t: any) => t.id === _at);
-          // A tab whose stored path is the 'custom-component' sentinel (e.g. a
-          // freshly opened new-tab launchpad) must NOT have its content swapped
-          // by a concurrent/delayed updateRoute, AND its sentinel must be
-          // preserved: overwriting it with the resolved URL path here would make
-          // the very next updateRoute fail the guard and clobber the launchpad.
-          // Leave the sentinel intact while the launchpad is showing.
-          if (atIdx >= 0 && state.tabPaths[_at] === 'custom-component') {
-            // Preserve the sentinel; do not overwrite with the resolved path.
-          } else {
+          const isCustomComp = state.tabPaths[_at] === 'custom-component';
+          if (!isCustomComp) {
             state.tabPaths[_at] = path;
             const resolvedSource = matched?.component ?? staticComponent ?? null;
-            if (resolvedSource && atIdx >= 0) {
-              const cur = tabs[atIdx];
-              // ZCZS: mutate the reactive tab object in-place via the proxy —
-              // no array rebuild, no setGlobalSignal round-trip needed.
-              if (cur.source !== resolvedSource) cur.source = resolvedSource;
-              if (cur.route !== path) cur.route = path;
-              // Sync tab.meta from route manifest so header title/icon reflects
-              // the navigated page immediately (before linkedContent fetch resolves).
-              const routeMeta = matched?.meta as Record<string, string> | undefined;
-              if (routeMeta?.title || routeMeta?.icon) {
-                cur.meta = { ...(cur.meta || {}), ...routeMeta };
+            if (resolvedSource) {
+              // 1. Sync first-class router.pageTabs
+              const curPageTab = state.pageTabs.find((t) => t.id === _at);
+              if (curPageTab) {
+                if (curPageTab.source !== resolvedSource) curPageTab.source = resolvedSource;
+                if (curPageTab.route !== path) curPageTab.route = path;
+                const routeMeta = matched?.meta as Record<string, string> | undefined;
+                if (routeMeta?.title || routeMeta?.icon) {
+                  curPageTab.meta = { ...(curPageTab.meta || {}), ...routeMeta };
+                }
+                state.pageTabs = [...state.pageTabs];
+              }
+
+              // 2. Backward compatibility: sync globals.tabs
+              const tabs = (globals.tabs as any[]) || [];
+              const atIdx = tabs.findIndex((t: any) => t.id === _at);
+              if (atIdx >= 0) {
+                const cur = tabs[atIdx];
+                if (cur.source !== resolvedSource) cur.source = resolvedSource;
+                if (cur.route !== path) cur.route = path;
+                const routeMeta = matched?.meta as Record<string, string> | undefined;
+                if (routeMeta?.title || routeMeta?.icon) {
+                  cur.meta = { ...(cur.meta || {}), ...routeMeta };
+                }
               }
             }
           }
@@ -1316,9 +1383,9 @@ export const routerAttributeModule: AttributeModule = {
         // belongs to a different (non-active) tab, switch the active tab to it
         // (real-browser interleaving of tab timelines in one history).
         const destState = e.destination?.state;
-        const destTab = destState && typeof destState.tabId === 'string' ? destState.tabId : null;
-        if (destTab && destTab !== getActiveTabId()) {
-          setActiveTabId(destTab);
+        const destTab = destState && (typeof destState.pageTabId === 'string' ? destState.pageTabId : (typeof destState.tabId === 'string' ? destState.tabId : null));
+        if (destTab && destTab !== state.activePageTabId) {
+          state.switchPageTab(destTab);
         }
         if (destTab && destState) {
           if (destState.title !== undefined || destState.icon !== undefined) {
@@ -1345,9 +1412,9 @@ export const routerAttributeModule: AttributeModule = {
       const onPopState = (event?: any) => {
         // Per-tab: resolve the owning tab from the history entry state.
         const st = event && event.state;
-        const tab = st && typeof st.tabId === 'string' ? st.tabId : null;
-        if (tab && tab !== getActiveTabId()) {
-          setActiveTabId(tab);
+        const tab = st && (typeof st.pageTabId === 'string' ? st.pageTabId : (typeof st.tabId === 'string' ? st.tabId : null));
+        if (tab && tab !== state.activePageTabId) {
+          state.switchPageTab(tab);
         }
         if (tab && st) {
           if (st.title !== undefined || st.icon !== undefined) {
