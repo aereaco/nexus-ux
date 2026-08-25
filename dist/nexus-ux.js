@@ -6760,9 +6760,9 @@ ${match}</ul>
                 }
                 const _activeId = tabId || state.activePageTabId || getActiveTabId();
                 if (_activeId && state.tabPaths[_activeId] !== "custom-component") {
+                  const resolvedSource = matched?.component || resolveStaticComponent(cleanPath);
                   const curPageTab = state.pageTabs.find((t) => t.id === _activeId);
                   if (curPageTab) {
-                    const resolvedSource = matched?.component || (cleanPath === "/" ? resolvePagesPath(cfg.index || "home.html", "home.html") : cleanPath);
                     if (curPageTab.source !== resolvedSource)
                       curPageTab.source = resolvedSource;
                     if (curPageTab.route !== cleanPath)
@@ -6773,7 +6773,6 @@ ${match}</ul>
                   if (Array.isArray(_tabs)) {
                     const _tab = _tabs.find((t) => t.id === _activeId);
                     if (_tab) {
-                      const resolvedSource = matched?.component || (cleanPath === "/" ? resolvePagesPath(cfg.index || "home.html", "home.html") : cleanPath);
                       if (_tab.source !== resolvedSource)
                         _tab.source = resolvedSource;
                       if (_tab.route !== cleanPath)
