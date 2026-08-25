@@ -7186,6 +7186,7 @@ ${match}</ul>
               pendingRoutes.forEach((rec) => state.addRoute(rec));
               runtime._pendingDeclaredRoutes = [];
             }
+            state.discoverPages();
             const globals = runtime.globalSignals();
             const getActiveTabId = () => typeof globals.activePageTabId === "string" && globals.activePageTabId || typeof globals.activeTabId === "string" && globals.activeTabId || null;
             const setActiveTabId = (id) => {

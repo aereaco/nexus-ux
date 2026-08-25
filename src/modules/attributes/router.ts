@@ -1071,6 +1071,9 @@ export const routerAttributeModule: AttributeModule = {
         (runtime as any)._pendingDeclaredRoutes = [];
       }
 
+      // Automatically discover public pages and extract metadata
+      state.discoverPages();
+
       // --- Per-tab history: active tab is owned by the layout's global signal.
       // The router reads/writes `activePageTabId` there so the tab bar + panels
       // (which bind `activePageTabId`) and the router's outlet stay in sync.
