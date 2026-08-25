@@ -6760,6 +6760,55 @@ ${match}</ul>
               scrollPosition: { x: 0, y: 0 },
               currentRoute: initialMatched || null,
               routes: initialRoutes,
+              pages: [],
+              async discoverPages() {
+                const publicRoutes = routeList.filter((r) => {
+                  const p = r.path || "";
+                  const comp = r.component || "";
+                  if (p.startsWith("/_internal") || comp.startsWith("/_internal") || comp.startsWith("_internal/"))
+                    return false;
+                  if (r.name === "error" || r.name === "admin" || r.protected)
+                    return false;
+                  return true;
+                });
+                const discovered = [];
+                for (const r of publicRoutes) {
+                  const href = r.path || "/";
+                  const compPath = r.component || resolveStaticComponent(href);
+                  let title = r.meta?.title;
+                  let icon = r.meta?.icon;
+                  try {
+                    const res = await (runtime.fetch ? runtime.fetch(compPath) : fetch(compPath));
+                    if (res && res.ok) {
+                      const html = await res.text();
+                      const headMatch = html.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
+                      if (headMatch) {
+                        const headContent = headMatch[1];
+                        const titleMatch = headContent.match(/<title[^>]*>([^<]+)<\/title>/i);
+                        const iconMatch = headContent.match(/<meta[^>]*name=["']icon["'][^>]*content=["']([^"']+)["']/i) || headContent.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']icon["']/i);
+                        if (titleMatch)
+                          title = titleMatch[1].trim();
+                        if (iconMatch)
+                          icon = iconMatch[1].trim();
+                      }
+                    }
+                  } catch {
+                  }
+                  const defaultTitle = href === "/" ? "Home" : href.replace(/^\/+/, "").replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+                  const finalTitle = title || defaultTitle;
+                  const finalIcon = icon || "material-symbols-light:article-outline";
+                  discovered.push({
+                    href,
+                    title: finalTitle,
+                    icon: finalIcon,
+                    tabTitle: finalTitle,
+                    tabIcon: finalIcon,
+                    path: compPath,
+                    meta: { title: finalTitle, icon: finalIcon }
+                  });
+                }
+                state.pages = discovered;
+              },
               // Declarative strategy snapshot + resolved manifest.
               config: routerConfig,
               manifest: [],
