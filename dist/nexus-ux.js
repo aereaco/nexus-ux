@@ -6762,53 +6762,124 @@ ${match}</ul>
               routes: initialRoutes,
               pages: [],
               async discoverPages() {
-                const publicRoutes = routeList.filter((r) => {
-                  const p = r.path || "";
-                  const comp = r.component || "";
-                  if (p.startsWith("/_internal") || comp.startsWith("/_internal") || comp.startsWith("_internal/"))
-                    return false;
-                  if (r.name === "error" || r.name === "admin" || r.protected)
-                    return false;
-                  return true;
-                });
-                const discovered = [];
-                for (const r of publicRoutes) {
-                  const href = r.path || "/";
-                  const compPath = r.component || resolveStaticComponent(href);
-                  let title = r.meta?.title;
-                  let icon = r.meta?.icon;
+                const fetchFn = typeof globalThis.fetch === "function" ? globalThis.fetch.bind(globalThis) : null;
+                if (!fetchFn)
+                  return;
+                const pDir = pagesDir.replace(/^\/+|\/+$/g, "");
+                const manifestUrl = `/${pDir}/manifest.json`;
+                const dirUrl = `/${pDir}/`;
+                let fileNames = [];
+                try {
+                  const manifestRes = await fetchFn(manifestUrl);
+                  if (manifestRes && manifestRes.ok) {
+                    const json = await manifestRes.json();
+                    if (Array.isArray(json)) {
+                      fileNames = json;
+                    }
+                  }
+                } catch {
+                }
+                if (fileNames.length === 0) {
                   try {
-                    const fetchFn = typeof globalThis.fetch === "function" ? globalThis.fetch.bind(globalThis) : null;
-                    if (fetchFn) {
-                      const res = await fetchFn(compPath);
-                      if (res && res.ok) {
-                        const html = await res.text();
-                        const headMatch = html.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
-                        if (headMatch) {
-                          const headContent = headMatch[1];
-                          const titleMatch = headContent.match(/<title[^>]*>([^<]+)<\/title>/i);
-                          const iconMatch = headContent.match(/<meta[^>]*name=["']icon["'][^>]*content=["']([^"']+)["']/i) || headContent.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']icon["']/i);
-                          if (titleMatch)
-                            title = titleMatch[1].trim();
-                          if (iconMatch)
-                            icon = iconMatch[1].trim();
+                    const dirRes = await fetchFn(dirUrl);
+                    if (dirRes && dirRes.ok) {
+                      const dirHtml = await dirRes.text();
+                      const doc = new DOMParser().parseFromString(dirHtml, "text/html");
+                      const links = Array.from(doc.querySelectorAll("a[href]"));
+                      const validExts = [".html", ".htm", ".md", ".markdown"];
+                      for (const a of links) {
+                        const hrefAttr = a.getAttribute("href") || "";
+                        const fname = hrefAttr.split("/").pop()?.split("?")[0] || "";
+                        if (fname && validExts.some((ext) => fname.endsWith(ext)) && !fileNames.includes(fname)) {
+                          fileNames.push(fname);
                         }
                       }
                     }
                   } catch {
                   }
-                  const defaultTitle = href === "/" ? "Home" : href.replace(/^\/+/, "").replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-                  const finalTitle = title || defaultTitle;
-                  const finalIcon = icon || "material-symbols-light:article-outline";
-                  discovered.push({
-                    href,
-                    title: finalTitle,
-                    icon: finalIcon,
-                    tabTitle: finalTitle,
-                    tabIcon: finalIcon,
-                    path: compPath,
-                    meta: { title: finalTitle, icon: finalIcon }
+                }
+                const discovered = [];
+                if (fileNames.length > 0) {
+                  for (const fname of fileNames) {
+                    const cleanName = fname.replace(/\.(html|htm|md|markdown)$/i, "");
+                    const href = cleanName === "home" || cleanName === "index" ? "/" : `/${cleanName}`;
+                    const compPath = `/${pDir}/${fname}`;
+                    let title = "";
+                    let icon = "";
+                    try {
+                      const res = await fetchFn(compPath);
+                      if (res && res.ok) {
+                        const html = await res.text();
+                        const doc = new DOMParser().parseFromString(html, "text/html");
+                        title = doc.querySelector("title")?.textContent?.trim() || "";
+                        icon = doc.querySelector('meta[name="icon"]')?.getAttribute("content")?.trim() || "";
+                      }
+                    } catch {
+                    }
+                    const defaultTitle = href === "/" ? "Home" : href.replace(/^\/+/, "").replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+                    const finalTitle = title || defaultTitle;
+                    const finalIcon = icon || "material-symbols-light:article-outline";
+                    discovered.push({
+                      href,
+                      title: finalTitle,
+                      icon: finalIcon,
+                      tabTitle: finalTitle,
+                      tabIcon: finalIcon,
+                      path: compPath,
+                      meta: { title: finalTitle, icon: finalIcon }
+                    });
+                    const existing = state.routes.find((r) => r.path === href);
+                    if (!existing) {
+                      state.routes.push({
+                        path: href,
+                        component: compPath,
+                        name: cleanName,
+                        meta: { title: finalTitle, icon: finalIcon }
+                      });
+                    }
+                  }
+                } else {
+                  const publicRoutes = routeList.filter((r) => {
+                    const p = r.path || "";
+                    const comp = r.component || "";
+                    if (p.startsWith("/_internal") || comp.startsWith("/_internal") || comp.startsWith("_internal/"))
+                      return false;
+                    if (r.name === "error" || r.name === "admin" || r.protected)
+                      return false;
+                    return true;
                   });
+                  for (const r of publicRoutes) {
+                    const href = r.path || "/";
+                    const compPath = r.component || (href === "/" ? `/${pDir}/home.html` : `/${pDir}/${href.replace(/^\/+/, "")}.html`);
+                    let title = r.meta?.title;
+                    let icon = r.meta?.icon;
+                    try {
+                      const res = await fetchFn(compPath);
+                      if (res && res.ok) {
+                        const html = await res.text();
+                        const doc = new DOMParser().parseFromString(html, "text/html");
+                        const t = doc.querySelector("title")?.textContent?.trim();
+                        const ic = doc.querySelector('meta[name="icon"]')?.getAttribute("content")?.trim();
+                        if (t)
+                          title = t;
+                        if (ic)
+                          icon = ic;
+                      }
+                    } catch {
+                    }
+                    const defaultTitle = href === "/" ? "Home" : href.replace(/^\/+/, "").replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+                    const finalTitle = title || defaultTitle;
+                    const finalIcon = icon || "material-symbols-light:article-outline";
+                    discovered.push({
+                      href,
+                      title: finalTitle,
+                      icon: finalIcon,
+                      tabTitle: finalTitle,
+                      tabIcon: finalIcon,
+                      path: compPath,
+                      meta: { title: finalTitle, icon: finalIcon }
+                    });
+                  }
                 }
                 state.pages = discovered;
               },
