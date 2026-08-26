@@ -2,6 +2,7 @@
   "tasks": {
     "build": "deno run -A scripts/build.ts",
     "test": "deno test -A src/",
+    "setup": "git config core.hooksPath scripts/git/hooks",
     "serve": "deno run -A https://deno.land/std@0.212.0/http/file_server.ts --reload",
     "serve:dev": "deno run -A scripts/serve.ts --watch --autocommit",
     "build:push": "deno run -A scripts/build.ts --minify --push"
