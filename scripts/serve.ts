@@ -1,4 +1,5 @@
 import { serveDir } from "https://deno.land/std@0.212.0/http/file_server.ts";
+import { generateManifest } from "./git/manifest.ts";
 
 const AUTO = Deno.args.includes("--autocommit");
 const WATCH = Deno.args.includes("--watch");
