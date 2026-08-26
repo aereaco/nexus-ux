@@ -304,7 +304,16 @@ function startWatcher() {
   })();
 }
 
+function ensureGitHooks() {
+  try {
+    new Deno.Command("git", { args: ["config", "core.hooksPath", "scripts/git/hooks"] }).outputSync();
+  } catch (_) {
+    // Ignore if git not available
+  }
+}
+
 if (ENABLED) {
+  ensureGitHooks();
   startWatcher();
   console.log(`[serve] watch mode on | autocommit=${AUTO} reload=${WATCH} build=${BUILD}`);
 }
