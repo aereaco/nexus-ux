@@ -1,0 +1,19 @@
+#!/bin/sh
+deno eval '
+  const pagesDir = "site/_pages";
+  const validExts = [".html", ".htm", ".md", ".markdown"];
+  try {
+    const files = [];
+    for (const entry of Deno.readDirSync(pagesDir)) {
+      if (entry.isFile && validExts.some(ext => entry.name.endsWith(ext))) {
+        files.push(entry.name);
+      }
+    }
+    files.sort();
+    Deno.writeTextFileSync("site/_pages/manifest.json", JSON.stringify(files, null, 2) + "\n");
+    new Deno.Command("git", { args: ["add", "site/_pages/manifest.json"] }).outputSync();
+    console.log("[pre-commit] Updated site/_pages/manifest.json with", files.length, "pages.");
+  } catch (e) {
+    console.warn("[pre-commit] manifest generation skipped:", e.message);
+  }
+'
