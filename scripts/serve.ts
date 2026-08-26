@@ -237,7 +237,13 @@ function classify(file: string, diff: string): string {
 
 function gitCommit(paths: string[]) {
   const staged = paths.filter((p) => !p.includes("/.git/") && !p.endsWith("/.git") && p !== ".git");
-  if (staged.length === 0) return;
+  // Update page manifest when _pages is touched
+  if (staged.some((p) => p.includes("_pages"))) {
+    generateManifest();
+    if (!staged.includes("site/_pages/manifest.json")) {
+      staged.push("site/_pages/manifest.json");
+    }
+  }
 
   // Rebuild the bundle when source changed, then fold the regenerated bundle
   // into this commit so the artifact never drifts from the source that
