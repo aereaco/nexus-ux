@@ -48,7 +48,7 @@
     "order": 6
   },
   {
-    "id": "admin-console",
+    "id": "admin",
     "route": "",
     "path": "/_internal/admin-console.html",
     "title": "Admin Console",
