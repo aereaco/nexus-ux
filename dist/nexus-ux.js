@@ -12558,17 +12558,6 @@ ${bridge}`, {
         };
       }
     }
-    if (attrName === "data-var") {
-      if (!trimmed.startsWith("{") && !trimmed.startsWith("({")) {
-        return {
-          severity: "error",
-          message: `data-var must evaluate to an object literal. Got: "${trimmed.substring(0, 40)}..."`,
-          suggestion: `Wrap in braces: "{ ${trimmed} }"`,
-          element: el,
-          expression: trimmed
-        };
-      }
-    }
     const balanced = checkBalanced(trimmed);
     if (balanced) {
       return {

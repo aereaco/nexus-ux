@@ -194,19 +194,6 @@ function validateExpression(expression: string, el: Element | Text | Comment): U
     }
   }
 
-  // Declarative: data-var must be an object literal
-  if (attrName === 'data-var') {
-    if (!trimmed.startsWith('{') && !trimmed.startsWith('({')) {
-      return {
-        severity: 'error',
-        message: `data-var must evaluate to an object literal. Got: "${trimmed.substring(0, 40)}..."`,
-        suggestion: `Wrap in braces: "{ ${trimmed} }"`,
-        element: el as Element,
-        expression: trimmed
-      };
-    }
-  }
-
   // General: unbalanced brackets/parens/quotes
   const balanced = checkBalanced(trimmed);
   if (balanced) {
