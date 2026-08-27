@@ -761,7 +761,6 @@ directive catalog:
 - **`data-bind`**: Two-Way & Native API Binding — synchronizes element properties (`value`, `checked`, `textContent`, form inputs) and native browser Web APIs (`window.innerWidth`, `localStorage.theme`) directly via Proxy/Reflect traps with automatic event listener attachment.
 - **`data-computed`**: Derived Signals — creates cached, read-only computed values derived from other signals or expressions with zero overhead.
 - **`data-effect`**: Reactive Side Effects — runs arbitrary logic in response to signal changes without touching the DOM, managing cleanups on re-execution or element disposal.
-- **`data-var-[name]`**: CSS Variable Sync — direct synchronization of state to CSS custom properties (`--[name]`). Essential for **Data Painting** and UI component library integration.
 - **`data-html`**: HTML Content — sets `innerHTML` for trusted content with reactive re-rendering.
 
 #### 3.6.2. Control Flow & Rendering Directives
