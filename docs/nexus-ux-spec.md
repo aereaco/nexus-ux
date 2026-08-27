@@ -1343,13 +1343,13 @@ nexus-ux/
 │   │   ├── mcp.ts            # Model Context Protocol client
 │   │   └── ...
 │   ├── modules/
-│   │   ├── attributes/       # data-* directive handlers (30 modules)
+│   │   ├── attributes/       # data-* directive handlers (29 modules)
 │   │   │   ├── assert.ts, bind.ts, build.ts, class.ts, component.ts
 │   │   │   ├── computed.ts, debug.ts, drag.ts, effect.ts, flow.ts
 │   │   │   ├── for.ts, html.ts, if.ts, import.ts, markdown.ts
 │   │   │   ├── mask.ts, on.ts, preserve.ts, pwa.ts, raf.ts
 │   │   │   ├── route.ts, router.ts, show.ts, signal.ts, style.ts
-│   │   │   ├── stylesheet.ts, switcher.ts, teleport.ts, theme.ts, var.ts
+│   │   │   ├── stylesheet.ts, switcher.ts, teleport.ts, theme.ts
 │   │   ├── sprites/          # $ sprite implementations (14 modules)
 │   │   │   ├── animate.ts, bgFetch.ts, bgSync.ts, flow.ts, gql.ts
 │   │   │   ├── mask.ts, mcp.ts, periodicSync.ts, predictive.ts, push.ts
