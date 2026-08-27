@@ -542,8 +542,9 @@ export const routerAttributeModule: AttributeModule = {
         route: r.path,
         path: r.component || r.path,
         meta: r.meta || {},
-        protected: (r as any).protected,
-        redirect: r.redirect,
+        layout: r.layout,
+      }));
+
       const resolveStaticComponent = (path: string): string => {
         const clean = path.replace(/^\/+/, '');
         if (clean.startsWith('_internal/') || clean.startsWith('_pages/')) {
