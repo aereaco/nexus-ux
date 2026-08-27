@@ -162,16 +162,12 @@ export class UniversalCacheEngine {
   ): void {
     setTimeout(async () => {
       try {
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), options.timeoutMs || 5000);
-
         const headers: Record<string, string> = {};
         if (cachedEntry.etag) {
           headers['If-None-Match'] = cachedEntry.etag;
         }
 
-        const res = await fetch(url, { signal: controller.signal, headers });
-        clearTimeout(timer);
+        const res = await fetch(url, { headers });
 
         if (res.status === 304) {
           if (typeof document !== 'undefined' && document.documentElement.hasAttribute('data-debug')) {
@@ -223,14 +219,22 @@ export class UniversalCacheEngine {
     options: CacheOptions,
     etagHeader?: string
   ): Promise<CacheEntry> {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), options.timeoutMs || 5000);
-
     const headers: Record<string, string> = {};
     if (etagHeader) headers['If-None-Match'] = etagHeader;
 
-    const res = await fetch(url, { signal: controller.signal, headers });
-    clearTimeout(timer);
+    let controller: AbortController | undefined;
+    let timer: number | undefined;
+    if (options.timeoutMs) {
+      controller = new AbortController();
+      timer = setTimeout(() => controller?.abort(), options.timeoutMs);
+    }
+
+    let res: Response;
+    try {
+      res = await fetch(url, { signal: controller?.signal, headers });
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
 
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}`);
