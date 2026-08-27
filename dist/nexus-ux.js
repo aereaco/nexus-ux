@@ -7651,8 +7651,9 @@ ${match}</ul>
               globalThis.addEventListener("popstate", onPopState);
             }
             document.addEventListener(popStateEvent, onPopState);
-            queueMicrotask(() => {
-              buildManifest();
+            queueMicrotask(async () => {
+              await buildManifest();
+              await state.discoverPages();
               updateRoute(globalThis.location.href);
               for (const r of routeList) {
                 if (r.component)
