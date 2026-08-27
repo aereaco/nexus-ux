@@ -663,23 +663,9 @@ export const routerAttributeModule: AttributeModule = {
               const cleanName = isObj ? (item.id || item.name || fname.replace(/\.(html|htm|md|markdown)$/i, '')) : fname.replace(/\.(html|htm|md|markdown)$/i, '');
               const href = isObj ? (item.route !== undefined ? item.route : (cleanName === 'home' ? '/' : `/${cleanName}`)) : ((cleanName === 'home' || cleanName === 'index') ? '/' : `/${cleanName}`);
               const compPath = isObj ? (item.path || `/${pDir}/${fname}`) : `/${pDir}/${fname}`;
-              let title = isObj ? (item.title || item.meta?.title) : '';
-              let icon = isObj ? (item.icon || item.meta?.icon) : '';
+              let title = isObj ? (item.title || item.meta?.title || '') : '';
+              let icon = isObj ? (item.icon || item.meta?.icon || '') : '';
               const order = isObj ? (item.order !== undefined ? item.order : item.meta?.order) : undefined;
-
-              if (!title || !icon) {
-                try {
-                  const res = await fetchFn(applyBase(compPath));
-                  if (res && res.ok) {
-                    const html = await res.text();
-                    const doc = new DOMParser().parseFromString(html, 'text/html');
-                    if (!title) title = doc.querySelector('title')?.textContent?.trim() || '';
-                    if (!icon) icon = doc.querySelector('meta[name="icon"]')?.getAttribute('content')?.trim() || '';
-                  }
-                } catch {
-                  /* ignore page fetch error */
-                }
-              }
 
               const defaultTitle = href === '/'
                 ? 'Home'

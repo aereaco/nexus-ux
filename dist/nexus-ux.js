@@ -6809,23 +6809,9 @@ ${match}</ul>
                     const cleanName = isObj ? item.id || item.name || fname.replace(/\.(html|htm|md|markdown)$/i, "") : fname.replace(/\.(html|htm|md|markdown)$/i, "");
                     const href = isObj ? item.route !== void 0 ? item.route : cleanName === "home" ? "/" : `/${cleanName}` : cleanName === "home" || cleanName === "index" ? "/" : `/${cleanName}`;
                     const compPath = isObj ? item.path || `/${pDir}/${fname}` : `/${pDir}/${fname}`;
-                    let title = isObj ? item.title || item.meta?.title : "";
-                    let icon = isObj ? item.icon || item.meta?.icon : "";
+                    let title = isObj ? item.title || item.meta?.title || "" : "";
+                    let icon = isObj ? item.icon || item.meta?.icon || "" : "";
                     const order = isObj ? item.order !== void 0 ? item.order : item.meta?.order : void 0;
-                    if (!title || !icon) {
-                      try {
-                        const res = await fetchFn(applyBase(compPath));
-                        if (res && res.ok) {
-                          const html = await res.text();
-                          const doc = new DOMParser().parseFromString(html, "text/html");
-                          if (!title)
-                            title = doc.querySelector("title")?.textContent?.trim() || "";
-                          if (!icon)
-                            icon = doc.querySelector('meta[name="icon"]')?.getAttribute("content")?.trim() || "";
-                        }
-                      } catch {
-                      }
-                    }
                     const defaultTitle = href === "/" ? "Home" : href.replace(/^\/+/, "").replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
                     const finalTitle = title || defaultTitle;
                     const finalIcon = icon || "material-symbols-light:article-outline";
