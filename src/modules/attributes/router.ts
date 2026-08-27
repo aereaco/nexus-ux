@@ -494,6 +494,14 @@ export const routerAttributeModule: AttributeModule = {
         // Public manifest = non-internal entries (what the app advertises).
         state.manifest = entries.filter((r) => !r.internal).slice();
         state.routes = entries.slice();
+        for (const rec of entries) {
+          if (!routeList.some((r) => r.path === rec.path && r.name === rec.name)) {
+            routeList.push(rec);
+            if ((rec as any).matcher) {
+              matchMeta.set(rec, { regex: (rec as any).matcher, keys: (rec as any).keys || [], hasWildcard: (rec as any).hasWildcard || false });
+            }
+          }
+        }
       };
 
       // Raw (non-reactive) route registry. RegExp matchers must never enter the
