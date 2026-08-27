@@ -1650,8 +1650,9 @@ export const routerAttributeModule: AttributeModule = {
       // Custom event bridge (dispatched by the history listener module).
       document.addEventListener(popStateEvent, onPopState);
 
-      queueMicrotask(() => {
-        buildManifest();
+      queueMicrotask(async () => {
+        await buildManifest();
+        await state.discoverPages();
         updateRoute(globalThis.location.href);
         // Predictive pre-warm: ahead-of-click cache of every declared route's
         // component HTML. The first (cold) navigation is then as instant as a
