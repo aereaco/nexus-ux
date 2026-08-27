@@ -547,39 +547,6 @@ export const routerAttributeModule: AttributeModule = {
         layout: r.layout
       }));
 
-      // Resolve a filesystem component URL for static/hybrid modes.
-      const resolveStaticComponent = (path: string): string => {
-        const clean = path.replace(/^\/+/, '');
-        if (clean.startsWith('_internal/') || clean.startsWith('_pages/')) {
-          const withExt = clean.endsWith('.html') ? clean : clean + '.html';
-          return applyBase('/' + withExt);
-        }
-        const dir = (routerConfig.pagesDir || pagesDir || '_pages').replace(/^\/+|\/+$/g, '');
-        const defaultIndex = routerConfig.index || cfg.index || 'home.html';
-        const rel = (path === '/' || path === '') ? `/${defaultIndex}` : (path.startsWith('/') ? path : '/' + path);
-        const withExt = rel.endsWith('.html') ? rel : rel + '.html';
-        const full = dir ? `/${dir}${withExt}` : withExt;
-        return applyBase(full);
-      };
-
-      const isAllowedStaticCandidate = (candidate: string, cleanPath: string): boolean => {
-        // 1. Declared routes are always authorized
-        if (routeList.some((r) => r.path === cleanPath || (r.component && r.component.endsWith(candidate.replace(/^\/+/, ''))))) {
-          return true;
-        }
-        // 2. Disallow path traversal
-        if (cleanPath.includes('..') || candidate.includes('..')) {
-          return false;
-        }
-        // 3. Direct URL access to non-pages directory (e.g. _components, _internal) is forbidden unless declared
-        if (cleanPath.startsWith('/_components') || cleanPath.startsWith('/_internal') || cleanPath.startsWith('_components') || cleanPath.startsWith('_internal')) {
-          return false;
-        }
-        const dir = (routerConfig.pagesDir || pagesDir || '_pages').replace(/^\/+|\/+$/g, '');
-        const cleanCandidate = candidate.replace(/^\/+/, '');
-        return cleanCandidate.startsWith(dir + '/');
-      };
-
       // Build a RouteInfo snapshot for hook consumers and matchers.
       const buildInfo = (
         route: RouteRecord | null,

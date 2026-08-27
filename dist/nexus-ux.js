@@ -6715,33 +6715,6 @@ ${match}</ul>
               redirect: r.redirect,
               layout: r.layout
             }));
-            const resolveStaticComponent = (path) => {
-              const clean = path.replace(/^\/+/, "");
-              if (clean.startsWith("_internal/") || clean.startsWith("_pages/")) {
-                const withExt2 = clean.endsWith(".html") ? clean : clean + ".html";
-                return applyBase("/" + withExt2);
-              }
-              const dir = (routerConfig.pagesDir || pagesDir || "_pages").replace(/^\/+|\/+$/g, "");
-              const defaultIndex = routerConfig.index || cfg.index || "home.html";
-              const rel = path === "/" || path === "" ? `/${defaultIndex}` : path.startsWith("/") ? path : "/" + path;
-              const withExt = rel.endsWith(".html") ? rel : rel + ".html";
-              const full = dir ? `/${dir}${withExt}` : withExt;
-              return applyBase(full);
-            };
-            const isAllowedStaticCandidate = (candidate, cleanPath) => {
-              if (routeList.some((r) => r.path === cleanPath || r.component && r.component.endsWith(candidate.replace(/^\/+/, "")))) {
-                return true;
-              }
-              if (cleanPath.includes("..") || candidate.includes("..")) {
-                return false;
-              }
-              if (cleanPath.startsWith("/_components") || cleanPath.startsWith("/_internal") || cleanPath.startsWith("_components") || cleanPath.startsWith("_internal")) {
-                return false;
-              }
-              const dir = (routerConfig.pagesDir || pagesDir || "_pages").replace(/^\/+|\/+$/g, "");
-              const cleanCandidate = candidate.replace(/^\/+/, "");
-              return cleanCandidate.startsWith(dir + "/");
-            };
             const buildInfo = (route, path, params, query, hash) => ({
               path,
               params,
