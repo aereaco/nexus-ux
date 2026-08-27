@@ -65,12 +65,13 @@ function scanDirectory(dir: string, baseWebPath: string, isInternalDefault = fal
         const content = Deno.readTextFileSync(filePath);
         const meta = parseHeadMetadata(content);
 
-        const defaultRoute = isInternalDefault ? "" : (nameWithoutExt === "home" ? "/" : `/${nameWithoutExt}`);
+        const id = meta.id || nameWithoutExt;
+        const defaultRoute = isInternalDefault ? "" : (id === "home" ? "/" : `/${id}`);
         const route = meta.route !== undefined ? meta.route : defaultRoute;
         const internal = meta.internal !== undefined ? meta.internal : (isInternalDefault ? true : undefined);
 
         const item: RouteManifestEntry = {
-          id: nameWithoutExt,
+          id,
           route,
           path: `${baseWebPath}/${entry.name}`,
         };
