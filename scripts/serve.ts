@@ -237,8 +237,8 @@ function classify(file: string, diff: string): string {
 
 function gitCommit(paths: string[]) {
   const staged = paths.filter((p) => !p.includes("/.git/") && !p.endsWith("/.git") && p !== ".git");
-  // Update page manifest when _pages is touched
-  if (staged.some((p) => p.includes("_pages"))) {
+  // Update page manifest when _pages is touched (excluding manifest.json itself)
+  if (staged.some((p) => (p.includes("_pages") || p.includes("_internal")) && !p.endsWith("manifest.json") && !p.endsWith("manifest.ts"))) {
     generateManifest();
     if (!staged.includes("site/_pages/manifest.json")) {
       staged.push("site/_pages/manifest.json");
