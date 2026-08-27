@@ -6711,10 +6711,21 @@ ${match}</ul>
               route: r.path,
               path: r.component || r.path,
               meta: r.meta || {},
-              protected: r.protected,
-              redirect: r.redirect,
               layout: r.layout
             }));
+            const resolveStaticComponent = (path) => {
+              const clean = path.replace(/^\/+/, "");
+              if (clean.startsWith("_internal/") || clean.startsWith("_pages/")) {
+                const withExt2 = clean.endsWith(".html") ? clean : clean + ".html";
+                return applyBase("/" + withExt2);
+              }
+              const dir = (routerConfig.pagesDir || pagesDir || "_pages").replace(/^\/+|\/+$/g, "");
+              const defaultIndex = routerConfig.index || cfg.index || "home.html";
+              const rel = path === "/" || path === "" ? `/${defaultIndex}` : path.startsWith("/") ? path : "/" + path;
+              const withExt = rel.endsWith(".html") ? rel : rel + ".html";
+              const full = dir ? `/${dir}${withExt}` : withExt;
+              return applyBase(full);
+            };
             const buildInfo = (route, path, params, query, hash) => ({
               path,
               params,
