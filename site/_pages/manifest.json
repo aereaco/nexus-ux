@@ -5,6 +5,11 @@
     "path": "/_pages/home.html"
   },
   {
+    "id": "drag",
+    "route": "/drag",
+    "path": "/_pages/drag.html"
+  },
+  {
     "id": "profile",
     "route": "/profile",
     "path": "/_pages/profile.html"
