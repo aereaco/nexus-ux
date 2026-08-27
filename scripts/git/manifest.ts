@@ -32,6 +32,8 @@ function parseHeadMetadata(content: string): {
   order?: number;
   internal?: boolean;
 } {
+  const idMatch = content.match(/<meta\s+[^>]*name=["']id["'][^>]*content=["']([^"']*)["']/i) ||
+    content.match(/<meta\s+[^>]*content=["']([^"']*)["'][^>]*name=["']id["']/i);
   const titleMatch = content.match(/<title[^>]*>([^<]+)<\/title>/i);
   const routeMatch = content.match(/<meta\s+[^>]*name=["']route["'][^>]*content=["']([^"']*)["']/i) ||
     content.match(/<meta\s+[^>]*content=["']([^"']*)["'][^>]*name=["']route["']/i);
@@ -42,6 +44,7 @@ function parseHeadMetadata(content: string): {
   const internalMatch = content.match(/<meta\s+[^>]*name=["']internal["'][^>]*content=["']([^"']*)["']/i) ||
     content.match(/<meta\s+[^>]*content=["']([^"']*)["'][^>]*name=["']internal["']/i);
 
+  const id = idMatch ? idMatch[1].trim() : undefined;
   const title = titleMatch ? titleMatch[1].trim() : undefined;
   const route = routeMatch ? routeMatch[1].trim() : undefined;
   const icon = iconMatch ? iconMatch[1].trim() : undefined;
@@ -49,7 +52,7 @@ function parseHeadMetadata(content: string): {
   const order = !isNaN(orderVal!) ? orderVal : undefined;
   const internal = internalMatch ? internalMatch[1].trim().toLowerCase() === "true" : undefined;
 
-  return { title, route, icon, order, internal };
+  return { id, title, route, icon, order, internal };
 }
 
 function scanDirectory(dir: string, baseWebPath: string, isInternalDefault = false): RouteManifestEntry[] {
