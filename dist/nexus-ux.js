@@ -6672,6 +6672,14 @@ ${match}</ul>
               }
               state.manifest = entries.filter((r) => !r.internal).slice();
               state.routes = entries.slice();
+              for (const rec of entries) {
+                if (!routeList.some((r) => r.path === rec.path && r.name === rec.name)) {
+                  routeList.push(rec);
+                  if (rec.matcher) {
+                    matchMeta.set(rec, { regex: rec.matcher, keys: rec.keys || [], hasWildcard: rec.hasWildcard || false });
+                  }
+                }
+              }
             };
             const routeList = [];
             const matchMeta = /* @__PURE__ */ new WeakMap();
