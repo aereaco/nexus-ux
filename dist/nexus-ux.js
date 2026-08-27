@@ -1477,14 +1477,11 @@ ${suggestion}`);
         revalidateInBackground(url, cacheKey, cachedEntry, options) {
           setTimeout(async () => {
             try {
-              const controller = new AbortController();
-              const timer = setTimeout(() => controller.abort(), options.timeoutMs || 5e3);
               const headers = {};
               if (cachedEntry.etag) {
                 headers["If-None-Match"] = cachedEntry.etag;
               }
-              const res = await fetch(url, { signal: controller.signal, headers });
-              clearTimeout(timer);
+              const res = await fetch(url, { headers });
               if (res.status === 304) {
                 if (typeof document !== "undefined" && document.documentElement.hasAttribute("data-debug")) {
                   console.log(`[Cache Engine] VERIFIED 304 (Not Modified): ${url}`);
@@ -1524,13 +1521,22 @@ ${suggestion}`);
           }, 100);
         }
         async performNetworkFetch(url, options, etagHeader) {
-          const controller = new AbortController();
-          const timer = setTimeout(() => controller.abort(), options.timeoutMs || 5e3);
           const headers = {};
           if (etagHeader)
             headers["If-None-Match"] = etagHeader;
-          const res = await fetch(url, { signal: controller.signal, headers });
-          clearTimeout(timer);
+          let controller;
+          let timer;
+          if (options.timeoutMs) {
+            controller = new AbortController();
+            timer = setTimeout(() => controller?.abort(), options.timeoutMs);
+          }
+          let res;
+          try {
+            res = await fetch(url, { signal: controller?.signal, headers });
+          } finally {
+            if (timer)
+              clearTimeout(timer);
+          }
           if (!res.ok) {
             throw new Error(`HTTP error! status: ${res.status}`);
           }
