@@ -343,9 +343,9 @@
         data-on-contextmenu:prevent="openTabContextMenu(tab, $evt)">
         <iconify-icon icon="material-symbols-light:drag-indicator"
           class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
-        <span data-class="{ 'loading loading-spinner loading-xs text-primary me-2': tab.linkedContent?.isLoading, 'hidden': !tab.linkedContent?.isLoading }"></span>
-        <iconify-icon
-          data-class="{ 'hidden': tab.linkedContent?.isLoading }"
+        <span
+          data-class="{ 'loading loading-spinner loading-xs text-primary me-2': tab.linkedContent?.isLoading, 'hidden': !tab.linkedContent?.isLoading }"></span>
+        <iconify-icon data-class="{ 'hidden': tab.linkedContent?.isLoading }"
           data-bind-icon="tab.meta?.icon || tab.linkedContent?.meta?.icon || 'material-symbols-light:article-outline'"
           class="text-lg px-2"></iconify-icon>
         <span class="pe-4 whitespace-nowrap"
@@ -410,17 +410,17 @@
         <!-- Toggle End Dock: Fades & Expands on hover -->
         <div class="relative flex items-center h-10 shrink-0 transition-opacity duration-300"
           data-class="{ 'opacity-100 flex': hovered, 'opacity-0 hidden': !hovered }">
-          <div class="join">
-            <button class="btn btn-xs join-item" data-class="{ 'btn-primary': pageTabs, 'btn-ghost': !pageTabs }"
-              data-on-click="pageTabs = !pageTabs"
-              data-on-mouseenter="pageTabToggleHovered = true" data-on-mouseleave="pageTabToggleHovered = false">
-              <iconify-icon icon="material-symbols-light:tab-outline" class="text-base"></iconify-icon>
-            </button>
-            <button class="btn btn-xs join-item btn-ghost" data-on-click="alert('Dock action')">
-              <iconify-icon icon="material-symbols-light:more-vert" class="text-base"></iconify-icon>
-            </button>
+          <span
+            class="absolute inset-y-0 -start-px h-10 w-4 bg-secondary [clip-path:_polygon(0_0,_0%_100%,_100%_50%)] rtl:rotate-180">
+          </span>
+          <div class="flex items-center h-10 pe-4 ps-6 bg-base-300 text-secondary">
+            <div class="tooltip z-100" data-tip="Toggle page tabs">
+              <button class="btn btn-xl" data-class="{ 'btn-active': pageTabs }"
+                data-on-click="pageTabs = !pageTabs; localStorage.setItem('pageTabs', pageTabs)">
+                <iconify-icon icon="material-symbols-light:tab-group-outline"></iconify-icon>
+              </button>
+            </div>
           </div>
-        </div>
       </nav>
     </div>
 
@@ -457,7 +457,8 @@
               <div class="skeleton h-64 w-full rounded-xl bg-base-300"></div>
             </div>
           </template>
-          <tab-content data-component="tab.source || tab.content" data-class="{ 'hidden': tab.linkedContent?.isLoading }"></tab-content>
+          <tab-content data-component="tab.source || tab.content"
+            data-class="{ 'hidden': tab.linkedContent?.isLoading }"></tab-content>
         </div>
       </template>
     </div>
