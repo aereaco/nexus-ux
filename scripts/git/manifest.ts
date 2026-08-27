@@ -9,10 +9,8 @@ const VALID_EXTENSIONS = [".html", ".htm", ".md", ".markdown"];
 
 export interface RouteManifestEntry {
   id: string;
-  name?: string;
   route: string;
   path: string;
-  component?: string;
   protected?: boolean;
 }
 
@@ -25,10 +23,8 @@ export function generateManifest(): RouteManifestEntry[] {
         const routePath = nameWithoutExt === "home" ? "/" : `/${nameWithoutExt}`;
         routes.push({
           id: nameWithoutExt,
-          name: nameWithoutExt,
           route: routePath,
-          path: routePath,
-          component: `/_pages/${entry.name}`,
+          path: `/_pages/${entry.name}`,
         });
       }
     }
@@ -40,22 +36,18 @@ export function generateManifest(): RouteManifestEntry[] {
       return a.id.localeCompare(b.id);
     });
 
-    // Append standard internal / protected routes
+    // Append internal / protected routes
     routes.push(
       {
         id: "admin",
-        name: "admin",
-        route: "/admin",
-        path: "/admin",
-        component: "/_internal/admin-console.html",
+        route: "",
+        path: "/_internal/admin-console.html",
         protected: true,
       },
       {
         id: "error",
-        name: "error",
         route: "/error",
-        path: "/error",
-        component: "/_internal/error.html",
+        path: "/_internal/error.html",
         protected: true,
       },
     );
