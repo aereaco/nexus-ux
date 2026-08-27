@@ -7651,11 +7651,6 @@ ${match}</ul>
               await buildManifest();
               await state.discoverPages();
               updateRoute(globalThis.location.href);
-              for (const r of routeList) {
-                if (r.component)
-                  state.prewarm(r.component);
-              }
-              state.prewarm(state.config.error ?? resolvePagesPath(void 0, "error.html"));
             });
             runtime.effect(() => {
               const activeTab = state.activePageTab;
