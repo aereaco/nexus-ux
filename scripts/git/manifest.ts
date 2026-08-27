@@ -9,8 +9,10 @@ const VALID_EXTENSIONS = [".html", ".htm", ".md", ".markdown"];
 
 export interface RouteManifestEntry {
   id: string;
+  name?: string;
   route: string;
   path: string;
+  component?: string;
   protected?: boolean;
 }
 
@@ -23,8 +25,10 @@ export function generateManifest(): RouteManifestEntry[] {
         const routePath = nameWithoutExt === "home" ? "/" : `/${nameWithoutExt}`;
         routes.push({
           id: nameWithoutExt,
+          name: nameWithoutExt,
           route: routePath,
-          path: `/_pages/${entry.name}`,
+          path: routePath,
+          component: `/_pages/${entry.name}`,
         });
       }
     }
@@ -38,8 +42,22 @@ export function generateManifest(): RouteManifestEntry[] {
 
     // Append standard internal / protected routes
     routes.push(
-      { id: "admin", route: "", path: "/_internal/admin-console.html", protected: true },
-      { id: "error", route: "/error", path: "/_internal/error.html", protected: true },
+      {
+        id: "admin",
+        name: "admin",
+        route: "/admin",
+        path: "/admin",
+        component: "/_internal/admin-console.html",
+        protected: true,
+      },
+      {
+        id: "error",
+        name: "error",
+        route: "/error",
+        path: "/error",
+        component: "/_internal/error.html",
+        protected: true,
+      },
     );
 
     Deno.writeTextFileSync(MANIFEST_PATH, JSON.stringify(routes, null, 2) + "\n");
