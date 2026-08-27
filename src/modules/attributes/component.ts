@@ -287,22 +287,36 @@ const componentModule: AttributeModule = {
         const load = async () => {
           componentState.isLoading = true;
           componentState.hasError = false;
+          if (tabObj && typeof tabObj === 'object') {
+            (tabObj as any).linkedContent = componentState;
+          }
           try {
             let html = '';
-            if (config.path.trim().startsWith('<')) {
-              html = config.path;
-            } else if (config.path.startsWith('#')) {
+            let targetPath = config.path.trim();
+            if ((targetPath.startsWith("'") && targetPath.endsWith("'")) || (targetPath.startsWith('"') && targetPath.endsWith('"'))) {
+              targetPath = targetPath.slice(1, -1).trim();
+            }
+            if (targetPath.startsWith('<')) {
+              html = targetPath;
+            } else if (targetPath.startsWith('#')) {
               const rootNode = el.getRootNode() as Document | ShadowRoot | HTMLElement;
-              const template = (rootNode?.querySelector ? rootNode.querySelector(config.path) : null) || document.querySelector(config.path);
-              if (!template) throw new Error(`Template ${config.path} not found`);
+              const template = (rootNode?.querySelector ? rootNode.querySelector(targetPath) : null) || document.querySelector(targetPath);
+              if (!template) throw new Error(`Template ${targetPath} not found`);
               html = (template as HTMLTemplateElement).innerHTML;
             } else {
-              const result = await cacheEngine.fetchWithCache(config.path, {
+              const result = await cacheEngine.fetchWithCache(targetPath, {
                 storage: 'session',
                 responseType: 'text',
                 onUpdate: (fresh) => {
                   if (typeof fresh === 'string' && fresh !== componentState.templateContent) {
                     componentState.templateContent = fresh;
+                    const extracted = extractResourceMetadata(fresh, targetPath, runtime);
+                    componentState.meta = extracted;
+                  }
+                }
+              });
+              html = typeof result === 'string' ? result : String(result);
+            }
                     const extracted = extractResourceMetadata(fresh, config.path, runtime);
                     componentState.meta = extracted;
                   }
