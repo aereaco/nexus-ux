@@ -2,43 +2,65 @@
   {
     "id": "home",
     "route": "/",
-    "path": "/_pages/home.html"
+    "path": "/_pages/home.html",
+    "title": "Home",
+    "icon": "material-symbols-light:home-outline",
+    "order": 1
   },
   {
     "id": "drag",
     "route": "/drag",
-    "path": "/_pages/drag.html"
+    "path": "/_pages/drag.html",
+    "title": "Drag and Drop",
+    "icon": "material-symbols-light:drag-indicator",
+    "order": 2
   },
   {
     "id": "flow",
     "route": "/flow",
-    "path": "/_pages/flow.html"
+    "path": "/_pages/flow.html",
+    "title": "xyFlow Spatial Canvas",
+    "icon": "material-symbols-light:schema",
+    "order": 3
   },
   {
     "id": "profile",
     "route": "/profile",
-    "path": "/_pages/profile.html"
+    "path": "/_pages/profile.html",
+    "title": "Profile",
+    "icon": "material-symbols-light:person-outline",
+    "order": 4
   },
   {
     "id": "profile2",
     "route": "/profile2",
-    "path": "/_pages/profile2.html"
+    "path": "/_pages/profile2.html",
+    "title": "Profile 2",
+    "icon": "material-symbols-light:person-outline",
+    "order": 5
   },
   {
     "id": "settings",
     "route": "/settings",
-    "path": "/_pages/settings.html"
+    "path": "/_pages/settings.html",
+    "title": "Settings",
+    "icon": "material-symbols-light:settings-outline",
+    "order": 6
   },
   {
-    "id": "admin",
+    "id": "admin-console",
     "route": "",
     "path": "/_internal/admin-console.html",
-    "protected": true
+    "title": "Admin Console",
+    "icon": "material-symbols-light:shield-lock",
+    "internal": true
   },
   {
     "id": "error",
-    "route": "/error",
+    "route": "",
     "path": "/_internal/error.html",
-    "protected": true
+    "title": "Error",
+    "icon": "material-symbols-light:error-outline",
+    "internal": true
   }
 ]
