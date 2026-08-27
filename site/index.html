@@ -3,15 +3,8 @@
         signal: 'router',
         mode: 'hybrid',
         pagesDir: '_pages',
-        error: '/_internal/error.html',
-        routes: [
-          { id: 'home', route: '/', path: '/_pages/home.html' },
-          { id: 'profile', route: '/profile', path: '/_pages/profile.html' },
-          { id: 'profile1', route: '/profile1', path: '/_pages/profile1.html' },
-          { id: 'settings', route: '/settings', path: '/_pages/settings.html' },
-          { id: 'admin', route: '', path: '/_internal/admin-console.html', protected: true },
-          { id: 'error', route: '/error', path: '/_internal/error.html', protected: true }
-        ]
+        manifest: '/_pages/manifest.json',
+        error: '/_internal/error.html'
       }" data-import="{ 
         'DaisyUI': { 
           link: [
