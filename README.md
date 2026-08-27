@@ -140,7 +140,6 @@ Nexus-UX utilizes a deterministic, token-based grammar for high-baud efficiency:
 | **`data-markdown`** | **Transpiler** | Zero-dependency markdown-to-HTML parser with Tailwind typography. |
 | **`data-mask`** | **Masking** | Visual SVG and CSS mask synchronization. |
 | **`data-preserve`** | **Shield** | Prevents node and state loss during server-driven morph reconciliation. |
-| **`data-var-[name]`** | **Data Painting** | Directly synchronizes state to CSS custom properties (`--[name]`). |
 | **`data-raf`** | **Animation** | Runs 120fps animation callbacks on every animation frame. |
 | **`data-teleport`** | **Portal** | Teleports elements to target containers while preserving reactive context. |
 | **`data-assert` / `data-debug`** | **Diagnostics** | Runtime invariant assertions and agentic self-heal inspector beacons. |
