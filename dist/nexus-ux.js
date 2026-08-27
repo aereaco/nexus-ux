@@ -6639,18 +6639,27 @@ ${match}</ul>
                   const parsed = JSON.parse(raw);
                   const list = Array.isArray(parsed) ? parsed : parsed.routes ?? [];
                   for (const entry of list) {
-                    if (!entry || typeof entry.path !== "string")
+                    if (!entry || typeof entry !== "object")
                       continue;
-                    const meta = pathToRegex(entry.path);
+                    const routePath = entry.route !== void 0 ? entry.route : entry.path || "/";
+                    const compPath = entry.path || entry.component || "";
+                    const id = entry.id || entry.name || "";
+                    const isInternal = entry.internal === true || !routePath || shadowMatch(routePath) || shadowMatch(compPath);
+                    const meta = pathToRegex(routePath || "/");
                     const rec = {
-                      path: entry.path,
+                      path: routePath,
                       element: document.documentElement,
-                      name: entry.name,
+                      name: id,
                       redirect: entry.redirect,
                       layout: entry.layout,
-                      component: entry.component,
-                      meta: entry.meta,
-                      internal: entry.internal === true || shadowMatch(entry.path),
+                      component: compPath,
+                      meta: {
+                        title: entry.title,
+                        icon: entry.icon,
+                        order: entry.order,
+                        ...entry.meta || {}
+                      },
+                      internal: isInternal,
                       source: "manifest",
                       ...meta
                     };

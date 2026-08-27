@@ -460,17 +460,26 @@ export const routerAttributeModule: AttributeModule = {
             const parsed = JSON.parse(raw);
             const list = Array.isArray(parsed) ? parsed : (parsed.routes ?? []);
             for (const entry of list) {
-              if (!entry || typeof entry.path !== 'string') continue;
-              const meta = pathToRegex(entry.path);
+              if (!entry || typeof entry !== 'object') continue;
+              const routePath = entry.route !== undefined ? entry.route : (entry.path || '/');
+              const compPath = entry.path || entry.component || '';
+              const id = entry.id || entry.name || '';
+              const isInternal = entry.internal === true || !routePath || shadowMatch(routePath) || shadowMatch(compPath);
+              const meta = pathToRegex(routePath || '/');
               const rec: RouteRecord = {
-                path: entry.path,
+                path: routePath,
                 element: document.documentElement,
-                name: entry.name,
+                name: id,
                 redirect: entry.redirect,
                 layout: entry.layout,
-                component: entry.component,
-                meta: entry.meta,
-                internal: entry.internal === true || shadowMatch(entry.path),
+                component: compPath,
+                meta: {
+                  title: entry.title,
+                  icon: entry.icon,
+                  order: entry.order,
+                  ...(entry.meta || {}),
+                },
+                internal: isInternal,
                 source: 'manifest',
                 ...meta,
               } as RouteRecord;
