@@ -1,0 +1,134 @@
+<head>
+  <title>xyFlow Spatial Canvas</title>
+  <meta name="icon" content="material-symbols-light:schema">
+</head>
+
+<div class="flex flex-col h-full w-full gap-4 p-4" data-signal="{
+    nodes: [
+        { id: '1', label: 'Start',     position: { x: 80,  y: 40  }, handles: [{ type: 'source', side: 'right' }] },
+        { id: '2', label: 'Ingest',    position: { x: 340, y: 40  }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
+        { id: '3', label: 'Validate',  position: { x: 600, y: 40  }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
+        { id: '4', label: 'Transform', position: { x: 80,  y: 240 }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
+        { id: '5', label: 'Enrich',    position: { x: 340, y: 240 }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
+        { id: '6', label: 'Route',     position: { x: 600, y: 240 }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
+        { id: '7', label: 'Store',     position: { x: 80,  y: 440 }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
+        { id: '8', label: 'Notify',    position: { x: 340, y: 440 }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
+        { id: '9', label: 'Complete',  position: { x: 600, y: 440 }, handles: [{ type: 'target', side: 'left' }] }
+    ],
+    edges: [
+        { source: '1', target: '2' },
+        { source: '2', target: '3' },
+        { source: '3', target: '6' },
+        { source: '6', target: '5' },
+        { source: '5', target: '4' },
+        { source: '4', target: '7' },
+        { source: '7', target: '8' },
+        { source: '8', target: '9' },
+        { source: '5', target: '8' }
+    ],
+    modal: { type: '', nodeId: '', draft: '' },
+    viewport: { x: 0, y: 0, zoom: 1 }
+}">
+
+  <!-- Header Toolbar -->
+  <header class="navbar bg-base-200/80 backdrop-blur border border-base-content/10 rounded-box px-6 py-2 shrink-0">
+    <div class="flex-1 flex items-center gap-3">
+      <iconify-icon icon="material-symbols-light:schema" class="text-primary text-2xl"></iconify-icon>
+      <h1 class="text-lg font-bold">xyFlow Spatial Canvas</h1>
+    </div>
+    <div class="flex items-center gap-4 text-xs opacity-70">
+      <span>Engine: <strong class="text-primary">data-flow</strong></span>
+      <span>Nodes: <strong data-bind="nodes.length"></strong></span>
+      <span>Edges: <strong data-bind="edges.length"></strong></span>
+      <button class="btn btn-primary btn-xs"
+        data-on-click="modal.type='add'; modal.draft=''; modal.nodeId=String(nodes.length + 1); document.getElementById('flow-modal-add').showModal()">
+        <iconify-icon icon="material-symbols-light:add"></iconify-icon>
+        Add Node
+      </button>
+    </div>
+  </header>
+
+  <!-- Interactive Canvas Container -->
+  <div class="flex-1 relative overflow-hidden bg-base-300 rounded-box border border-base-content/10 shadow-inner cursor-grab min-h-[600px] h-[calc(100vh-14rem)]"
+    data-flow="viewport"
+    data-flow-grid="20"
+    style="background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 20px 20px;">
+
+    <div class="nexus-flow-content w-full h-full">
+      <!-- Dynamic SVG Bezier Edges -->
+      <svg data-flow-edges="edges" class="nexus-flow-edges absolute inset-0 overflow-visible pointer-events-none text-primary">
+        <path data-for="edge in edges"
+          data-effect="viewport.tick; const na = nodes.find(n => n.id === edge.source); const nb = nodes.find(n => n.id === edge.target); const dep = (na && na.position.x + na.position.y) + (nb && nb.position.x + nb.position.y); $el.setAttribute('d', $flow.edge('node-' + edge.source, 'node-' + edge.target, { type: 'bezier' }))"
+          fill="none" stroke="currentColor" stroke-width="2" class="opacity-60"></path>
+      </svg>
+
+      <!-- Draggable Flow Nodes -->
+      <template data-for="node in nodes">
+        <div data-bind-id="`node-${node.id}`" class="absolute top-0 left-0 w-[160px]" data-flow-node="node">
+          <div class="card bg-base-100 shadow-md border border-base-content/10 w-full rounded-box cursor-grab hover:shadow-xl hover:scale-[1.03] hover:border-primary/40 transition-transform group"
+            style="touch-action: none;">
+            <div class="h-1.5 w-full bg-primary rounded-t-box"></div>
+            <div class="p-3">
+              <div class="flex items-center justify-between mb-1">
+                <div class="text-xs font-bold text-primary opacity-80">#<span data-bind="node.id"></span></div>
+                <div class="flex items-center gap-1">
+                  <!-- Edit Node -->
+                  <button data-flow-nodrag
+                    data-on-click="modal.type='edit'; modal.nodeId=node.id; modal.draft=node.label; document.getElementById('flow-modal-edit').showModal()"
+                    class="btn btn-ghost btn-xs btn-square opacity-40 hover:opacity-100 hover:text-primary"
+                    title="Edit node">
+                    <iconify-icon icon="material-symbols-light:edit" class="text-sm"></iconify-icon>
+                  </button>
+                  <!-- Delete Node -->
+                  <button data-flow-nodrag
+                    data-on-click="nodes = nodes.filter(n => n.id !== node.id); edges = edges.filter(e => e.source !== node.id && e.target !== node.id)"
+                    class="btn btn-ghost btn-xs btn-square opacity-40 hover:opacity-100 hover:text-error"
+                    title="Delete node">
+                    <iconify-icon icon="material-symbols-light:delete" class="text-sm"></iconify-icon>
+                  </button>
+                </div>
+              </div>
+              <div class="font-semibold text-sm truncate" data-bind="node.label"></div>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- Edit Node Modal -->
+  <dialog id="flow-modal-edit" class="modal">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg">Edit Node #<span data-bind="modal.nodeId"></span></h3>
+      <div class="py-4">
+        <label class="label"><span class="label-text">Node Label</span></label>
+        <input type="text" class="input input-bordered w-full" data-bind-value="modal.draft"
+          data-on-keydown="if ($evt.key === 'Enter') { const target = nodes.find(n => n.id === modal.nodeId); if (target) target.label = modal.draft; document.getElementById('flow-modal-edit').close(); }" />
+      </div>
+      <div class="modal-action">
+        <button class="btn btn-ghost" data-on-click="document.getElementById('flow-modal-edit').close()">Cancel</button>
+        <button class="btn btn-primary"
+          data-on-click="const target = nodes.find(n => n.id === modal.nodeId); if (target) target.label = modal.draft; document.getElementById('flow-modal-edit').close()">Save</button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+  </dialog>
+
+  <!-- Add Node Modal -->
+  <dialog id="flow-modal-add" class="modal">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg">Add New Pipeline Node</h3>
+      <div class="py-4">
+        <label class="label"><span class="label-text">Node Label</span></label>
+        <input type="text" class="input input-bordered w-full" data-bind-value="modal.draft" placeholder="e.g. Filter"
+          data-on-keydown="if ($evt.key === 'Enter') { nodes = [...nodes, { id: modal.nodeId, label: modal.draft || 'New Node', position: { x: 200, y: 200 }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] }]; document.getElementById('flow-modal-add').close(); }" />
+      </div>
+      <div class="modal-action">
+        <button class="btn btn-ghost" data-on-click="document.getElementById('flow-modal-add').close()">Cancel</button>
+        <button class="btn btn-primary"
+          data-on-click="nodes = [...nodes, { id: modal.nodeId, label: modal.draft || 'New Node', position: { x: 200, y: 200 }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] }]; document.getElementById('flow-modal-add').close()">Add</button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+  </dialog>
+</div>
