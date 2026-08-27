@@ -7109,35 +7109,34 @@ ${match}</ul>
                 state.routes = routeList.slice();
                 queueMicrotask(() => buildManifest());
               },
-              // Intuitive navigate: resolve a name via the manifest, else treat the
-              // target as a path. This is the friendly entrypoint for app code.
+              // Intuitive navigate: resolve an ID/name via the manifest or route registry.
               go(target, opts) {
                 if (!target)
                   return;
-                const named = routeList.find((r) => r.name === target || r.path === target);
-                if (named) {
-                  if (named.internal || !named.path) {
-                    const _activeId = opts?.tabId ?? getActiveTabId() ?? state.activePageTabId ?? state.activeTabId ?? null;
-                    if (_activeId) {
-                      const comp = named.component || named.path;
-                      const curPageTab = state.pageTabs.find((t) => t.id === _activeId);
-                      if (curPageTab) {
-                        curPageTab.source = comp;
-                        if (named.meta?.title || named.meta?.icon) {
-                          curPageTab.meta = {
-                            title: named.meta?.title || curPageTab.meta?.title || named.name,
-                            icon: named.meta?.icon || curPageTab.meta?.icon
-                          };
-                        }
-                        state.pageTabs = [...state.pageTabs];
-                      }
-                    }
-                    return;
-                  }
-                  state.navigateByName(named.name || named.path, {}, void 0, { replace: opts?.replace });
+                const named = routeList.find((r) => r.name === target || r.path === target) || (Array.isArray(state.routes) ? state.routes.find((r) => r.name === target || r.id === target || r.path === target) : null);
+                if (!named) {
+                  reportError(new Error(`router.go: no route with id "${target}"`), el);
                   return;
                 }
-                state.navigate(target, opts);
+                if (named.internal || !named.path || named.path === "") {
+                  const _activeId = opts?.tabId ?? getActiveTabId() ?? state.activePageTabId ?? state.activeTabId ?? null;
+                  if (_activeId) {
+                    const comp = named.component || named.path;
+                    const curPageTab = state.pageTabs.find((t) => t.id === _activeId);
+                    if (curPageTab) {
+                      curPageTab.source = comp;
+                      if (named.meta?.title || named.meta?.icon || named.name) {
+                        curPageTab.meta = {
+                          title: named.meta?.title || curPageTab.meta?.title || named.name,
+                          icon: named.meta?.icon || curPageTab.meta?.icon
+                        };
+                      }
+                      state.pageTabs = [...state.pageTabs];
+                    }
+                  }
+                  return;
+                }
+                state.navigate(named.path || named.route, opts);
               },
               // Match a path (default: current) and return the RouteInfo the router
               // would use — without navigating. Useful for guards/preview UI.
