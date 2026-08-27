@@ -855,7 +855,12 @@ export const routerAttributeModule: AttributeModule = {
             // 1. Sync router.pageTabs
             const curPageTab = state.pageTabs.find((t: PageTab) => t.id === _activeId);
             if (curPageTab) {
-              if (curPageTab.source !== resolvedSource) curPageTab.source = resolvedSource;
+              if (curPageTab.source !== resolvedSource) {
+                curPageTab.source = resolvedSource;
+                if (curPageTab.linkedContent) {
+                  curPageTab.linkedContent.isLoading = true;
+                }
+              }
               if (curPageTab.route !== cleanPath) curPageTab.route = cleanPath;
               state.pageTabs = [...state.pageTabs];
             }
