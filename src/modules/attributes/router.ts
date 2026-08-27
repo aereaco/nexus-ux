@@ -621,18 +621,20 @@ export const routerAttributeModule: AttributeModule = {
           const fetchFn = typeof globalThis.fetch === 'function' ? globalThis.fetch.bind(globalThis) : null;
           if (!fetchFn) return;
 
-          const pDir = pagesDir.replace(/^\/+|\/+$/g, '');
-          const manifestUrl = `/${pDir}/manifest.json`;
+          const pDir = (state.config.pagesDir || pagesDir || '_pages').replace(/^\/+|\/+$/g, '');
+          const manifestUrl = state.config.manifest || `/${pDir}/manifest.json`;
           const dirUrl = `/${pDir}/`;
-          let fileNames: string[] = [];
+          let rawList: any[] = [];
 
-          // 1. Try fetching manifest.json (fastest and universal on static hosts)
+          // 1. Try fetching manifest.json
           try {
-            const manifestRes = await fetchFn(manifestUrl);
+            const manifestRes = await fetchFn(applyBase(manifestUrl));
             if (manifestRes && manifestRes.ok) {
               const json = await manifestRes.json();
               if (Array.isArray(json)) {
-                fileNames = json;
+                rawList = json;
+              } else if (Array.isArray(json.routes)) {
+                rawList = json.routes;
               }
             }
           } catch {
@@ -640,9 +642,9 @@ export const routerAttributeModule: AttributeModule = {
           }
 
           // 2. If no manifest, try directory index
-          if (fileNames.length === 0) {
+          if (rawList.length === 0) {
             try {
-              const dirRes = await fetchFn(dirUrl);
+              const dirRes = await fetchFn(applyBase(dirUrl));
               if (dirRes && dirRes.ok) {
                 const dirHtml = await dirRes.text();
                 const doc = new DOMParser().parseFromString(dirHtml, 'text/html');
@@ -651,8 +653,8 @@ export const routerAttributeModule: AttributeModule = {
                 for (const a of links) {
                   const hrefAttr = a.getAttribute('href') || '';
                   const fname = hrefAttr.split('/').pop()?.split('?')[0] || '';
-                  if (fname && validExts.some((ext) => fname.endsWith(ext)) && !fileNames.includes(fname)) {
-                    fileNames.push(fname);
+                  if (fname && validExts.some((ext) => fname.endsWith(ext)) && !rawList.some((e) => (typeof e === 'string' ? e : e.path)?.endsWith(fname))) {
+                    rawList.push(fname);
                   }
                 }
               }
@@ -663,24 +665,33 @@ export const routerAttributeModule: AttributeModule = {
 
           const discovered: DiscoveredPage[] = [];
 
-          if (fileNames.length > 0) {
-            for (const fname of fileNames) {
-              const cleanName = fname.replace(/\.(html|htm|md|markdown)$/i, '');
-              const href = (cleanName === 'home' || cleanName === 'index') ? '/' : `/${cleanName}`;
-              const compPath = `/${pDir}/${fname}`;
-              let title = '';
-              let icon = '';
+          if (rawList.length > 0) {
+            for (const item of rawList) {
+              const isObj = typeof item === 'object' && item !== null;
+              if (isObj && (item.internal === true || item.route === '' || item.id === 'admin' || item.id === 'error')) {
+                continue;
+              }
 
-              try {
-                const res = await fetchFn(compPath);
-                if (res && res.ok) {
-                  const html = await res.text();
-                  const doc = new DOMParser().parseFromString(html, 'text/html');
-                  title = doc.querySelector('title')?.textContent?.trim() || '';
-                  icon = doc.querySelector('meta[name="icon"]')?.getAttribute('content')?.trim() || '';
+              const fname = isObj ? (item.path?.split('/').pop() || item.id || '') : item;
+              const cleanName = isObj ? (item.id || item.name || fname.replace(/\.(html|htm|md|markdown)$/i, '')) : fname.replace(/\.(html|htm|md|markdown)$/i, '');
+              const href = isObj ? (item.route !== undefined ? item.route : (cleanName === 'home' ? '/' : `/${cleanName}`)) : ((cleanName === 'home' || cleanName === 'index') ? '/' : `/${cleanName}`);
+              const compPath = isObj ? (item.path || `/${pDir}/${fname}`) : `/${pDir}/${fname}`;
+              let title = isObj ? (item.title || item.meta?.title) : '';
+              let icon = isObj ? (item.icon || item.meta?.icon) : '';
+              const order = isObj ? (item.order !== undefined ? item.order : item.meta?.order) : undefined;
+
+              if (!title || !icon) {
+                try {
+                  const res = await fetchFn(applyBase(compPath));
+                  if (res && res.ok) {
+                    const html = await res.text();
+                    const doc = new DOMParser().parseFromString(html, 'text/html');
+                    if (!title) title = doc.querySelector('title')?.textContent?.trim() || '';
+                    if (!icon) icon = doc.querySelector('meta[name="icon"]')?.getAttribute('content')?.trim() || '';
+                  }
+                } catch {
+                  /* ignore page fetch error */
                 }
-              } catch {
-                /* ignore page fetch error */
               }
 
               const defaultTitle = href === '/'
@@ -696,7 +707,7 @@ export const routerAttributeModule: AttributeModule = {
                 tabTitle: finalTitle,
                 tabIcon: finalIcon,
                 path: compPath,
-                meta: { title: finalTitle, icon: finalIcon }
+                meta: { title: finalTitle, icon: finalIcon, order }
               });
 
               // Dynamically register route in state.routes if not already present
@@ -706,10 +717,20 @@ export const routerAttributeModule: AttributeModule = {
                   path: href,
                   component: compPath,
                   name: cleanName,
-                  meta: { title: finalTitle, icon: finalIcon }
+                  meta: { title: finalTitle, icon: finalIcon, order }
                 });
               }
             }
+
+            // Sort discovered pages by declared order priority (numeric ascending), then alphabetical fallback
+            discovered.sort((a: any, b: any) => {
+              const aOrder = a.meta?.order;
+              const bOrder = b.meta?.order;
+              if (aOrder !== undefined && bOrder !== undefined) return aOrder - bOrder;
+              if (aOrder !== undefined) return -1;
+              if (bOrder !== undefined) return 1;
+              return (a.title || a.href).localeCompare(b.title || b.href);
+            });
           } else {
             // Fallback to routeList if neither manifest nor directory listing was available
             const publicRoutes = routeList.filter((r) => {
