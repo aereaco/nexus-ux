@@ -2562,24 +2562,31 @@ ${scripts}
               const load = async () => {
                 componentState.isLoading = true;
                 componentState.hasError = false;
+                if (tabObj && typeof tabObj === "object") {
+                  tabObj.linkedContent = componentState;
+                }
                 try {
                   let html = "";
-                  if (config.path.trim().startsWith("<")) {
-                    html = config.path;
-                  } else if (config.path.startsWith("#")) {
+                  let targetPath = config.path.trim();
+                  if (targetPath.startsWith("'") && targetPath.endsWith("'") || targetPath.startsWith('"') && targetPath.endsWith('"')) {
+                    targetPath = targetPath.slice(1, -1).trim();
+                  }
+                  if (targetPath.startsWith("<")) {
+                    html = targetPath;
+                  } else if (targetPath.startsWith("#")) {
                     const rootNode = el.getRootNode();
-                    const template = (rootNode?.querySelector ? rootNode.querySelector(config.path) : null) || document.querySelector(config.path);
+                    const template = (rootNode?.querySelector ? rootNode.querySelector(targetPath) : null) || document.querySelector(targetPath);
                     if (!template)
-                      throw new Error(`Template ${config.path} not found`);
+                      throw new Error(`Template ${targetPath} not found`);
                     html = template.innerHTML;
                   } else {
-                    const result = await cacheEngine.fetchWithCache(config.path, {
+                    const result = await cacheEngine.fetchWithCache(targetPath, {
                       storage: "session",
                       responseType: "text",
                       onUpdate: (fresh) => {
                         if (typeof fresh === "string" && fresh !== componentState.templateContent) {
                           componentState.templateContent = fresh;
-                          const extracted2 = extractResourceMetadata(fresh, config.path, runtime);
+                          const extracted2 = extractResourceMetadata(fresh, targetPath, runtime);
                           componentState.meta = extracted2;
                         }
                       }

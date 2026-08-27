@@ -317,13 +317,6 @@ const componentModule: AttributeModule = {
               });
               html = typeof result === 'string' ? result : String(result);
             }
-                    const extracted = extractResourceMetadata(fresh, config.path, runtime);
-                    componentState.meta = extracted;
-                  }
-                }
-              });
-              html = typeof result === 'string' ? result : String(result);
-            }
 
             if (runtime.isDevMode) {
               console.log(`[Component] Template loaded for <${el.tagName}>, length: ${html.length}`);
