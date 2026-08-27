@@ -10,6 +10,11 @@
     "path": "/_pages/drag.html"
   },
   {
+    "id": "flow",
+    "route": "/flow",
+    "path": "/_pages/flow.html"
+  },
+  {
     "id": "profile",
     "route": "/profile",
     "path": "/_pages/profile.html"
