@@ -342,10 +342,6 @@ internally:
 
 ### 2.5. Additional Essential Directives
 
-- **`data-var-[name]`**: CSS Variable Sync — maps reactive state directly to CSS custom properties (`--[name]`) for zero-layout data painting.
-  ```html
-  <div class="radial-progress" data-var-value="progressPercent"></div>
-  ```
 - **`data-html`**: Sets inner HTML reactively for trusted HTML strings.
   ```html
   <div data-html="renderedContent"></div>
@@ -812,23 +808,6 @@ Nexus-UX provides a built-in, zero-dependency Tailwind v4 (Oxide) compiler. This
 ```
 
 ---
-
-### 5.5. Bridging UI Libraries with `data-var`
-
-Modern CSS libraries (e.g., DaisyUI, Tailwind v4) utilize CSS Custom Properties for internal logic and design tokens.
-
-- **Taming DaisyUI Progress**:
-  ```html
-  <div class="radial-progress" data-var-value="percent" role="progressbar">
-    <span data-bind="percent + '%'"></span>
-  </div>
-  ```
-- **Dynamic Theming & Data Painting**:
-  ```html
-  <body data-var-primary-color="#auth.theme.primary">
-    <button class="btn btn-primary">Themed Button</button>
-  </body>
-  ```
 
 ---
 
@@ -2500,9 +2479,7 @@ power of Nexus-UX's unified architecture.
 >
   <div
     class="radial-progress text-primary"
-    data-var-value="progress"
-    data-var-size="12rem"
-    data-var-thickness="4px"
+    data-bind-style="'--value: ' + progress + '%; --size: 12rem; --thickness: 4px;'"
     role="progressbar"
   >
     <span data-bind="progress + '%'"></span>
@@ -2559,7 +2536,7 @@ power of Nexus-UX's unified architecture.
       <p>Value: <span data-bind="sensor.value"></span></p>
       <div
         class="radial-progress"
-        data-var-value="sensor.healthPercent"
+        data-bind-style="'--value: ' + sensor.healthPercent + '%;'"
         role="progressbar"
       >
         <span data-bind="sensor.healthPercent + '%'"></span>
@@ -2570,8 +2547,7 @@ power of Nexus-UX's unified architecture.
 ```
 
 _Features_: `data-for` + `data-key`, `data-style` (automatic unit appending for
-numeric `border-left-width`), `data-on-intersect` (lazy hydration), `data-var`
-(DaisyUI bridge), `$sql` (LIVE queries).
+numeric `border-left-width`), `data-on-intersect` (lazy hydration), `$sql` (LIVE queries).
 
 #### 11.2.2. The "God-Mode" Auth Gateway
 
