@@ -6771,23 +6771,25 @@ ${match}</ul>
                 const fetchFn = typeof globalThis.fetch === "function" ? globalThis.fetch.bind(globalThis) : null;
                 if (!fetchFn)
                   return;
-                const pDir = pagesDir.replace(/^\/+|\/+$/g, "");
-                const manifestUrl = `/${pDir}/manifest.json`;
+                const pDir = (state.config.pagesDir || pagesDir || "_pages").replace(/^\/+|\/+$/g, "");
+                const manifestUrl = state.config.manifest || `/${pDir}/manifest.json`;
                 const dirUrl = `/${pDir}/`;
-                let fileNames = [];
+                let rawList = [];
                 try {
-                  const manifestRes = await fetchFn(manifestUrl);
+                  const manifestRes = await fetchFn(applyBase(manifestUrl));
                   if (manifestRes && manifestRes.ok) {
                     const json = await manifestRes.json();
                     if (Array.isArray(json)) {
-                      fileNames = json;
+                      rawList = json;
+                    } else if (Array.isArray(json.routes)) {
+                      rawList = json.routes;
                     }
                   }
                 } catch {
                 }
-                if (fileNames.length === 0) {
+                if (rawList.length === 0) {
                   try {
-                    const dirRes = await fetchFn(dirUrl);
+                    const dirRes = await fetchFn(applyBase(dirUrl));
                     if (dirRes && dirRes.ok) {
                       const dirHtml = await dirRes.text();
                       const doc = new DOMParser().parseFromString(dirHtml, "text/html");
@@ -6796,8 +6798,8 @@ ${match}</ul>
                       for (const a of links) {
                         const hrefAttr = a.getAttribute("href") || "";
                         const fname = hrefAttr.split("/").pop()?.split("?")[0] || "";
-                        if (fname && validExts.some((ext) => fname.endsWith(ext)) && !fileNames.includes(fname)) {
-                          fileNames.push(fname);
+                        if (fname && validExts.some((ext) => fname.endsWith(ext)) && !rawList.some((e) => (typeof e === "string" ? e : e.path)?.endsWith(fname))) {
+                          rawList.push(fname);
                         }
                       }
                     }
@@ -6805,22 +6807,32 @@ ${match}</ul>
                   }
                 }
                 const discovered = [];
-                if (fileNames.length > 0) {
-                  for (const fname of fileNames) {
-                    const cleanName = fname.replace(/\.(html|htm|md|markdown)$/i, "");
-                    const href = cleanName === "home" || cleanName === "index" ? "/" : `/${cleanName}`;
-                    const compPath = `/${pDir}/${fname}`;
-                    let title = "";
-                    let icon = "";
-                    try {
-                      const res = await fetchFn(compPath);
-                      if (res && res.ok) {
-                        const html = await res.text();
-                        const doc = new DOMParser().parseFromString(html, "text/html");
-                        title = doc.querySelector("title")?.textContent?.trim() || "";
-                        icon = doc.querySelector('meta[name="icon"]')?.getAttribute("content")?.trim() || "";
+                if (rawList.length > 0) {
+                  for (const item of rawList) {
+                    const isObj = typeof item === "object" && item !== null;
+                    if (isObj && (item.internal === true || item.route === "" || item.id === "admin" || item.id === "error")) {
+                      continue;
+                    }
+                    const fname = isObj ? item.path?.split("/").pop() || item.id || "" : item;
+                    const cleanName = isObj ? item.id || item.name || fname.replace(/\.(html|htm|md|markdown)$/i, "") : fname.replace(/\.(html|htm|md|markdown)$/i, "");
+                    const href = isObj ? item.route !== void 0 ? item.route : cleanName === "home" ? "/" : `/${cleanName}` : cleanName === "home" || cleanName === "index" ? "/" : `/${cleanName}`;
+                    const compPath = isObj ? item.path || `/${pDir}/${fname}` : `/${pDir}/${fname}`;
+                    let title = isObj ? item.title || item.meta?.title : "";
+                    let icon = isObj ? item.icon || item.meta?.icon : "";
+                    const order = isObj ? item.order !== void 0 ? item.order : item.meta?.order : void 0;
+                    if (!title || !icon) {
+                      try {
+                        const res = await fetchFn(applyBase(compPath));
+                        if (res && res.ok) {
+                          const html = await res.text();
+                          const doc = new DOMParser().parseFromString(html, "text/html");
+                          if (!title)
+                            title = doc.querySelector("title")?.textContent?.trim() || "";
+                          if (!icon)
+                            icon = doc.querySelector('meta[name="icon"]')?.getAttribute("content")?.trim() || "";
+                        }
+                      } catch {
                       }
-                    } catch {
                     }
                     const defaultTitle = href === "/" ? "Home" : href.replace(/^\/+/, "").replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
                     const finalTitle = title || defaultTitle;
@@ -6832,7 +6844,7 @@ ${match}</ul>
                       tabTitle: finalTitle,
                       tabIcon: finalIcon,
                       path: compPath,
-                      meta: { title: finalTitle, icon: finalIcon }
+                      meta: { title: finalTitle, icon: finalIcon, order }
                     });
                     const existing = state.routes.find((r) => r.path === href);
                     if (!existing) {
@@ -6840,10 +6852,21 @@ ${match}</ul>
                         path: href,
                         component: compPath,
                         name: cleanName,
-                        meta: { title: finalTitle, icon: finalIcon }
+                        meta: { title: finalTitle, icon: finalIcon, order }
                       });
                     }
                   }
+                  discovered.sort((a, b) => {
+                    const aOrder = a.meta?.order;
+                    const bOrder = b.meta?.order;
+                    if (aOrder !== void 0 && bOrder !== void 0)
+                      return aOrder - bOrder;
+                    if (aOrder !== void 0)
+                      return -1;
+                    if (bOrder !== void 0)
+                      return 1;
+                    return (a.title || a.href).localeCompare(b.title || b.href);
+                  });
                 } else {
                   const publicRoutes = routeList.filter((r) => {
                     const p = r.path || "";
