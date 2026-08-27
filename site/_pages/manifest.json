@@ -1,44 +1,60 @@
 [
   {
     "id": "home",
+    "name": "home",
     "route": "/",
-    "path": "/_pages/home.html"
+    "path": "/",
+    "component": "/_pages/home.html"
   },
   {
     "id": "drag",
+    "name": "drag",
     "route": "/drag",
-    "path": "/_pages/drag.html"
+    "path": "/drag",
+    "component": "/_pages/drag.html"
   },
   {
     "id": "flow",
+    "name": "flow",
     "route": "/flow",
-    "path": "/_pages/flow.html"
+    "path": "/flow",
+    "component": "/_pages/flow.html"
   },
   {
     "id": "profile",
+    "name": "profile",
     "route": "/profile",
-    "path": "/_pages/profile.html"
+    "path": "/profile",
+    "component": "/_pages/profile.html"
   },
   {
     "id": "profile2",
+    "name": "profile2",
     "route": "/profile2",
-    "path": "/_pages/profile2.html"
+    "path": "/profile2",
+    "component": "/_pages/profile2.html"
   },
   {
     "id": "settings",
+    "name": "settings",
     "route": "/settings",
-    "path": "/_pages/settings.html"
+    "path": "/settings",
+    "component": "/_pages/settings.html"
   },
   {
     "id": "admin",
-    "route": "",
-    "path": "/_internal/admin-console.html",
+    "name": "admin",
+    "route": "/admin",
+    "path": "/admin",
+    "component": "/_internal/admin-console.html",
     "protected": true
   },
   {
     "id": "error",
+    "name": "error",
     "route": "/error",
-    "path": "/_internal/error.html",
+    "path": "/error",
+    "component": "/_internal/error.html",
     "protected": true
   }
 ]
