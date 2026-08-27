@@ -544,8 +544,19 @@ export const routerAttributeModule: AttributeModule = {
         meta: r.meta || {},
         protected: (r as any).protected,
         redirect: r.redirect,
-        layout: r.layout
-      }));
+      const resolveStaticComponent = (path: string): string => {
+        const clean = path.replace(/^\/+/, '');
+        if (clean.startsWith('_internal/') || clean.startsWith('_pages/')) {
+          const withExt = clean.endsWith('.html') ? clean : clean + '.html';
+          return applyBase('/' + withExt);
+        }
+        const dir = (routerConfig.pagesDir || pagesDir || '_pages').replace(/^\/+|\/+$/g, '');
+        const defaultIndex = routerConfig.index || cfg.index || 'home.html';
+        const rel = (path === '/' || path === '') ? `/${defaultIndex}` : (path.startsWith('/') ? path : '/' + path);
+        const withExt = rel.endsWith('.html') ? rel : rel + '.html';
+        const full = dir ? `/${dir}${withExt}` : withExt;
+        return applyBase(full);
+      };
 
       // Build a RouteInfo snapshot for hook consumers and matchers.
       const buildInfo = (
