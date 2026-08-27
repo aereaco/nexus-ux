@@ -2185,9 +2185,6 @@ ${scripts}
       }
     };
   }
-  function hasScope(element) {
-    return !!element[DATA_STACK_KEY];
-  }
   function registerScopeProvider(key, provider) {
     scopeProviderRegistry.set(key, provider);
   }
@@ -8373,42 +8370,6 @@ ${match}</ul>
     }
   });
 
-  // src/modules/attributes/var.ts
-  var var_exports = {};
-  __export(var_exports, {
-    default: () => var_default
-  });
-  var varModule, var_default;
-  var init_var = __esm({
-    "src/modules/attributes/var.ts"() {
-      init_scope();
-      init_debug();
-      varModule = {
-        name: "var",
-        attribute: "var",
-        handle: (el, value, runtime) => {
-          if (hasScope(el)) {
-            return () => {
-            };
-          }
-          try {
-            const initialData = runtime.evaluate(el, value);
-            if (typeof initialData === "object" && initialData !== null) {
-              const reactiveData = runtime.reactive(initialData);
-              const removeScope = addScopeToNode(el, reactiveData);
-              return removeScope;
-            } else {
-              throw new Error("data-var must evaluate to an object");
-            }
-          } catch (e) {
-            initError("var", `Failed to init var: ${e instanceof Error ? e.message : String(e)}`, el, value);
-          }
-        }
-      };
-      var_default = varModule;
-    }
-  });
-
   // src/modules/sprites/bgFetch.ts
   var bgFetch_exports = {};
   __export(bgFetch_exports, {
@@ -11268,7 +11229,6 @@ ${match}</ul>
       init_switcher();
       init_teleport();
       init_theme();
-      init_var();
       init_animate();
       init_bgFetch();
       init_bgSync();
@@ -11338,8 +11298,7 @@ ${match}</ul>
         { name: "stylesheet", module: stylesheet_exports },
         { name: "switcher", module: switcher_exports },
         { name: "teleport", module: teleport_exports },
-        { name: "theme", module: theme_exports },
-        { name: "var", module: var_exports }
+        { name: "theme", module: theme_exports }
       ];
       autoSprites = [
         { name: "animate", module: animate_exports },

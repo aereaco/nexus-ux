@@ -28,8 +28,7 @@
     "stylesheet",
     "switcher",
     "teleport",
-    "theme",
-    "var"
+    "theme"
   ],
   "sprites": [
     "animate",
