@@ -7122,9 +7122,27 @@ ${match}</ul>
               go(target, opts) {
                 if (!target)
                   return;
-                const named = routeList.find((r) => r.name === target);
+                const named = routeList.find((r) => r.name === target || r.path === target);
                 if (named) {
-                  state.navigateByName(target, {}, void 0, { replace: opts?.replace });
+                  if (named.internal || !named.path) {
+                    const _activeId = opts?.tabId ?? getActiveTabId() ?? state.activePageTabId ?? state.activeTabId ?? null;
+                    if (_activeId) {
+                      const comp = named.component || named.path;
+                      const curPageTab = state.pageTabs.find((t) => t.id === _activeId);
+                      if (curPageTab) {
+                        curPageTab.source = comp;
+                        if (named.meta?.title || named.meta?.icon) {
+                          curPageTab.meta = {
+                            title: named.meta?.title || curPageTab.meta?.title || named.name,
+                            icon: named.meta?.icon || curPageTab.meta?.icon
+                          };
+                        }
+                        state.pageTabs = [...state.pageTabs];
+                      }
+                    }
+                    return;
+                  }
+                  state.navigateByName(named.name || named.path, {}, void 0, { replace: opts?.replace });
                   return;
                 }
                 state.navigate(target, opts);
