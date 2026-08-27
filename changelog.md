@@ -206,7 +206,6 @@ const stateRef = unifiedRef<Record<string, unknown>>(initialGhostState, scopeId,
 | `data-on-signal-change` | 3.6.4 | ✅ | `modules/attributes/effect.ts` |
 | `data-style` | 3.6.4 | ✅ | `modules/attributes/style.ts` |
 | `data-class` | 3.6.4 | ✅ | `modules/attributes/class.ts` |
-| `data-var-[name]` | 3.6.4 | ✅ | `modules/attributes/var.ts` |
 | `data-preserve` | 3.6.5 | ✅ | `modules/attributes/preserve.ts` |
 | `data-component` | 3.6.5 | ✅ | `modules/attributes/component.ts` |
 | `data-cache` | 3.6.5 | ❌ | MISSING |
