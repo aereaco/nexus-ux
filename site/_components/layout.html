@@ -586,7 +586,7 @@
         </button>
       </div>
 
-      <ul class="menu w-full grow overflow-x-hidden overflow-y-auto" data-show="activeSidebarTab === 1" data-drag-container="router.pages">
+      <ul class="menu w-full grow overflow-x-hidden overflow-y-auto pb-28" data-show="activeSidebarTab === 1" data-drag-container="router.pages">
         <template data-for="item in router.pages" data-key="item.href">
           <li class="cursor-pointer" data-drag>
             <a data-bind-href="item.href" draggable="false" data-bind-data-tab-title="item.tabTitle"
@@ -602,7 +602,7 @@
       </ul>
 
       <!-- ================= Panel Favorites (tab 2) ================= -->
-      <div class="grow w-full overflow-x-hidden overflow-y-auto"
+      <div class="grow w-full overflow-x-hidden overflow-y-auto pb-28"
         data-show="activeSidebarTab === 2 && (!collapsed || hovered || sidebarOpen)">
         <div class="p-6">
           <div class="flex items-center justify-between mb-6">
@@ -639,7 +639,7 @@
       </div>
 
       <!-- ================= Panel Preferences (tab 3) ================= -->
-      <div class="grow w-full overflow-x-hidden overflow-y-auto"
+      <div class="grow w-full overflow-x-hidden overflow-y-auto pb-28"
         data-show="activeSidebarTab === 3 && (!collapsed || hovered || sidebarOpen)">
         <div class="p-6">
           <div class="mb-6 whitespace-nowrap">
