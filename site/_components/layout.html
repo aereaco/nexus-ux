@@ -381,11 +381,11 @@
     <!-- Floating Side Hover Expanding Tab | Breadcrumbs & Page Tabs Toggle (when floatingBookmarks is true) -->
     <div data-show="floatingBookmarks" class="absolute end-0 top-32 z-10" data-signal="{
               breadcrumbs: [
-                { title: 'Home', href: '/' },
-                { title: 'Long text 2', href: '/long-text-2' },
-                { title: 'Long text 3', href: '/long-text-3' },
-                { title: 'Long text 4', href: '/long-text-4' },
-                { title: 'Long text 5', href: '/long-text-5' }
+                { title: 'Home', href: '/', icon: 'material-symbols-light:home-outline' },
+                { title: 'Profile', href: '/profile', icon: 'material-symbols-light:person-outline' },
+                { title: 'Flow', href: '/flow', icon: 'material-symbols-light:account-tree-outline' },
+                { title: 'Drag & Drop', href: '/drag', icon: 'material-symbols-light:drag-indicator' },
+                { title: 'Settings', href: '/settings', icon: 'material-symbols-light:settings-outline' }
               ],
               hovered: false
             }" data-on-mouseenter="hovered = true" data-on-mouseleave="hovered = false">
@@ -400,9 +400,13 @@
           <div
             class="breadcrumbs text-sm font-semibold max-w-xs overflow-x-auto scrollbar-none transition-opacity duration-300"
             data-class="{ 'opacity-100 px-4': hovered, 'opacity-0 px-0': !hovered }">
-            <ul>
-              <li data-for="crumb in breadcrumbs" data-key="crumb.href"><a data-bind-href="crumb.href"
-                  data-bind="crumb.title"></a></li>
+            <ul class="flex items-center gap-2">
+              <li data-for="crumb in breadcrumbs" data-key="crumb.href">
+                <a data-bind-href="crumb.href" class="flex items-center gap-1">
+                  <iconify-icon data-bind-icon="crumb.icon || 'material-symbols-light:bookmark-outline'" class="text-base"></iconify-icon>
+                  <span data-bind="crumb.title"></span>
+                </a>
+              </li>
             </ul>
           </div>
         </div>
@@ -425,11 +429,6 @@
       </nav>
     </div>
 
-    <!-- CONTENT PANEL: bound to the ACTIVE TAB's own content component. This
-           lets route tabs (router drives router.route) and component tabs (the
-           new-tab launchpad, link tabs) share one outlet. A sync effect below
-           keeps the active tab's content in step with router.route for route
-           tabs, so sidebar/router navigation still updates the visible panel. -->
     <!-- CONTENT PANEL & FOOTER WRAPPER:
          When fixedHeader is active, controls scroll containment based on fixedFooter mode.
          When fixedFooter is OFF (in-flow), wrapper is flex-1 overflow-y-auto so the footer sits at the end of the content stream.
@@ -438,18 +437,34 @@
       <div class="p-6 relative grow flex flex-col" data-class="{ 'overflow-y-auto': fixedHeader && fixedFooter }">
 
         <!-- Inline Header Bar with Breadcrumbs & Page Tabs Toggle (when floatingBookmarks is false) -->
-        <div data-show="!floatingBookmarks" class="flex items-center justify-between pb-3 mb-4 border-b border-base-content/10">
-          <div class="breadcrumbs text-sm font-medium">
-            <ul>
-              <li><a href="/">Home</a></li>
-              <li data-bind="router.activePageTab?.meta?.title || router.route || 'Page'"></li>
-            </ul>
-          </div>
-          <div class="tooltip tooltip-start" data-tip="Toggle page tabs">
-            <button class="btn btn-sm btn-ghost btn-circle" data-class="{ 'btn-active text-primary': pageTabs }"
-              data-on-click="pageTabs = !pageTabs; localStorage.setItem('pageTabs', pageTabs)">
+        <div data-show="!floatingBookmarks" class="flex items-center gap-2 mb-4 w-fit max-w-full overflow-x-hidden">
+          <!-- 1. Page Tab Toggle Button at the START position -->
+          <div class="tooltip tooltip-bottom" data-tip="Toggle page tabs">
+            <button class="btn btn-sm btn-ghost btn-circle" data-class="{ 'btn-active text-primary bg-primary/10': pageTabs }"
+              data-on-click="pageTabs = !pageTabs; localStorage.setItem('pageTabs', pageTabs)"
+              aria-label="Toggle page tabs">
               <iconify-icon icon="material-symbols-light:tab-group-outline" class="text-xl"></iconify-icon>
             </button>
+          </div>
+
+          <div class="divider divider-horizontal mx-0 my-0 h-5 opacity-40"></div>
+
+          <!-- 2. Breadcrumbs with Icons and Zero Home Duplication -->
+          <div class="breadcrumbs text-sm font-medium overflow-x-auto scrollbar-none py-0">
+            <ul class="flex items-center flex-nowrap gap-1">
+              <li>
+                <a href="/" class="flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
+                  <iconify-icon icon="material-symbols-light:home-outline" class="text-lg"></iconify-icon>
+                  <span>Home</span>
+                </a>
+              </li>
+              <li data-show="router.route && router.route !== '/' && router.route !== '/_pages/home.html' && router.activePageTab?.meta?.title !== 'Home'">
+                <span class="flex items-center gap-1.5 font-semibold text-primary">
+                  <iconify-icon data-bind-icon="router.activePageTab?.meta?.icon || 'material-symbols-light:article-outline'" class="text-lg"></iconify-icon>
+                  <span data-bind="router.activePageTab?.meta?.title || router.route?.replace(/^\/_pages\//, '').replace(/\.html$/, '')"></span>
+                </span>
+              </li>
+            </ul>
           </div>
         </div>
 
