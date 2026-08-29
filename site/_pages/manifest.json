@@ -37,7 +37,8 @@
     "path": "/_pages/profile2.html",
     "title": "Profile 2",
     "icon": "material-symbols-light:person-outline",
-    "order": 5
+    "order": 5,
+    "parent": "/profile"
   },
   {
     "id": "settings",
