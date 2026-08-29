@@ -7771,14 +7771,14 @@ ${match}</ul>
       document.head.appendChild(styleEl);
     }
   }
-  function resolveDimension(val, defaultVal) {
+  function resolveDimension(val, defaultVal = "0.375rem") {
     if (val === void 0 || val === null || val === "")
       return defaultVal;
     if (typeof val === "number")
-      return `${val * 4}px`;
+      return `${val * 0.25}rem`;
     const s = String(val).trim();
     if (!isNaN(Number(s)))
-      return `${Number(s) * 4}px`;
+      return `${Number(s) * 0.25}rem`;
     return s;
   }
   function resolveDuration(val, defaultVal) {
@@ -7923,7 +7923,7 @@ ${match}</ul>
       init_stylesheet();
       SCROLLBAR_BASE_CSS = `
 /* ==========================================================================
-   1. OVERLAY SCROLLBAR SPRITE STYLES (Clean Open Standards)
+   1. OVERLAY SCROLLBAR SPRITE STYLES (Modern CSS Logical Properties & rem Units)
    ========================================================================== */
 .scrollbar-overlay-active {
   scrollbar-width: none !important;
@@ -7936,9 +7936,9 @@ ${match}</ul>
 
 .scrollbar-track-v {
   position: absolute;
-  top: 0;
-  right: 2px;
-  width: var(--scrollbar-width, 6px);
+  inset-block-start: 0;
+  inset-inline-end: 0.125rem;
+  width: var(--scrollbar-width, 0.375rem);
   pointer-events: none;
   z-index: 50;
   background: var(--scrollbar-track, transparent);
@@ -7947,8 +7947,8 @@ ${match}</ul>
 
 .scrollbar-thumb-v {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset-block-start: 0;
+  inset-inline-start: 0;
   width: 100%;
   background-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent));
   border-radius: var(--scrollbar-thumb-radius, 9999px);
@@ -7961,9 +7961,9 @@ ${match}</ul>
 
 .scrollbar-track-h {
   position: absolute;
-  top: 0;
-  left: 0;
-  height: var(--scrollbar-height, 6px);
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  height: var(--scrollbar-height, 0.375rem);
   pointer-events: none;
   z-index: 50;
   background: var(--scrollbar-track, transparent);
@@ -7972,8 +7972,8 @@ ${match}</ul>
 
 .scrollbar-thumb-h {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset-block-start: 0;
+  inset-inline-start: 0;
   height: 100%;
   background-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent));
   border-radius: var(--scrollbar-thumb-radius, 9999px);
@@ -8015,8 +8015,8 @@ ${match}</ul>
 .overflow-y-auto::-webkit-scrollbar,
 .overflow-x-auto::-webkit-scrollbar,
 .scrollbar-auto-hide::-webkit-scrollbar {
-  width: var(--scrollbar-width, 6px);
-  height: var(--scrollbar-height, 6px);
+  width: var(--scrollbar-width, 0.375rem);
+  height: var(--scrollbar-height, 0.375rem);
 }
 .overflow-auto::-webkit-scrollbar-track,
 .overflow-y-auto::-webkit-scrollbar-track,
@@ -8044,8 +8044,8 @@ ${match}</ul>
         mode: "native",
         autohide: 800,
         thin: true,
-        width: "6px",
-        height: "6px",
+        width: "0.375rem",
+        height: "0.375rem",
         fade: "0.4s",
         fadeIn: "0.2s",
         fadeOut: "0.4s",
@@ -8092,6 +8092,7 @@ ${match}</ul>
         }
         update() {
           const { clientHeight, scrollHeight, clientWidth, scrollWidth, scrollTop, scrollLeft } = this.el;
+          const isRTL = window.getComputedStyle(this.el).direction === "rtl";
           if (scrollHeight > clientHeight && clientHeight > 0) {
             this.trackV.style.display = "block";
             this.trackV.style.transform = `translate3d(0, ${scrollTop}px, 0)`;
@@ -8107,15 +8108,16 @@ ${match}</ul>
           }
           if (scrollWidth > clientWidth && clientWidth > 0) {
             this.trackH.style.display = "block";
-            const trackHeight = parseInt(this.el.style.getPropertyValue("--scrollbar-height") || "6", 10) || 6;
-            this.trackH.style.transform = `translate3d(${scrollLeft}px, ${scrollTop + clientHeight - trackHeight - 2}px, 0)`;
+            const trackHeight = 8;
+            this.trackH.style.transform = `translate3d(${scrollLeft}px, ${scrollTop + clientHeight - trackHeight}px, 0)`;
             this.trackH.style.width = `${clientWidth}px`;
             const thumbWidth = Math.max(24, clientWidth / scrollWidth * clientWidth);
             const maxScrollLeft = scrollWidth - clientWidth;
             const maxThumbLeft = clientWidth - thumbWidth;
-            const thumbLeft = maxScrollLeft > 0 ? scrollLeft / maxScrollLeft * maxThumbLeft : 0;
+            const absScrollLeft = Math.abs(scrollLeft);
+            const thumbLeft = maxScrollLeft > 0 ? absScrollLeft / maxScrollLeft * maxThumbLeft : 0;
             this.thumbH.style.width = `${thumbWidth}px`;
-            this.thumbH.style.transform = `translate3d(${thumbLeft}px, 0, 0)`;
+            this.thumbH.style.transform = `translate3d(${isRTL ? -thumbLeft : thumbLeft}px, 0, 0)`;
           } else {
             this.trackH.style.display = "none";
           }
@@ -8168,13 +8170,15 @@ ${match}</ul>
           this.thumbH.addEventListener("pointermove", (e) => {
             if (!this.isDragging || this.activeAxis !== "h")
               return;
-            const deltaX = e.clientX - this.dragStartX;
+            const isRTL = window.getComputedStyle(this.el).direction === "rtl";
+            const deltaX = isRTL ? this.dragStartX - e.clientX : e.clientX - this.dragStartX;
             const { clientWidth, scrollWidth } = this.el;
             const thumbWidth = this.thumbH.offsetWidth;
             const scrollableDist = scrollWidth - clientWidth;
             const trackDist = clientWidth - thumbWidth;
             if (trackDist > 0) {
-              this.el.scrollLeft = this.dragStartScrollLeft + deltaX / trackDist * scrollableDist;
+              const scrollDelta = deltaX / trackDist * scrollableDist;
+              this.el.scrollLeft = isRTL ? this.dragStartScrollLeft - scrollDelta : this.dragStartScrollLeft + scrollDelta;
             }
           });
           const stopDragH = (e) => {
@@ -8231,7 +8235,7 @@ ${match}</ul>
           }
           const merged = { ...globalConfig, ...config };
           const autohideMs = merged.autohide === false ? false : typeof merged.autohide === "number" ? merged.autohide : 800;
-          const width = resolveDimension(merged.width, "6px");
+          const width = resolveDimension(merged.width, "0.375rem");
           const height = resolveDimension(merged.height, width);
           const thumbColor = resolveColor(merged.thumb, "color-mix(in srgb, currentColor 30%, transparent)");
           const thumbHover = resolveColor(merged.thumbHover, "color-mix(in srgb, currentColor 50%, transparent)");
