@@ -11695,7 +11695,7 @@ ${bridge}`, {
             this._knownClasses.add(className);
             return;
           }
-          if (el && !el.closest("[data-stylesheet]")) {
+          if (el && !el.closest("[data-stylesheet]") && !el.ownerDocument?.documentElement?.hasAttribute("data-stylesheet")) {
             return;
           }
           if (!tailwindCompiler) {

@@ -428,7 +428,7 @@ class StyleSheetManager {
 
     // Boundary scope check: element must be inside a data-stylesheet container
     // for JIT compilation.
-    if (el && !el.closest('[data-stylesheet]')) {
+    if (el && !el.closest('[data-stylesheet]') && !el.ownerDocument?.documentElement?.hasAttribute('data-stylesheet')) {
       return;
     }
 
