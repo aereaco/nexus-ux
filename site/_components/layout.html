@@ -13,7 +13,6 @@
       themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset']
     }" data-class="{ 'md:grid-cols-[20rem_1fr]': !collapsed, 'md:grid-cols-[5rem_1fr]': collapsed, 'h-screen max-h-screen overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }"
   data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: zoom + 'rem' }"
-  data-effect="document.documentElement.dir = rtl ? 'rtl' : 'ltr'; document.documentElement.style.fontSize = (zoom || 1) + 'rem';"
   data-on-resize:window="isMobile = window.innerWidth < 768">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content" data-class="{ 'flex flex-col h-full overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }" data-signal:global="{
@@ -578,7 +577,7 @@
       <div class="navbar flex justify-between pe-4">
         <div class="flex flex-1 items-center">
           <a class="btn btn-ghost text-xl ps-1">
-            <svg class="w-10 h-10 scale-[0.8] emblem" data-class="{ 'hidden': !collapsed && !hovered && !sidebarOpen }">
+            <svg class="size-10 scale-[0.8] emblem" data-class="{ 'hidden': !collapsed && !hovered && !sidebarOpen }">
               <use href="_assets/images/emblem.svg"></use>
             </svg>
             <span class="logo font-bold"
@@ -670,8 +669,8 @@
                 class="btn btn-block bg-base-100 justify-between font-sans px-4 py-3 h-auto min-h-12 border border-base-content/10 shadow-sm list-none cursor-pointer"
                 data-bind-disabled="$theme.isSystem">
                 <span class="flex items-center gap-2 grow text-start">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"
-                    class="invisible h-3 w-3 shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                    class="size-4 shrink-0 invisible">
                     <path d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z"></path>
                   </svg>
                   <span class="capitalize text-sm font-semibold" data-bind="$theme.current"></span>
@@ -697,8 +696,8 @@
                       data-bind-data-theme="t">
                       <span class="grid grid-cols-5 grid-rows-3">
                         <span class="col-span-5 row-span-3 row-start-1 flex items-center gap-2 px-4 py-3">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                            fill="currentColor" class="h-3 w-3 shrink-0"
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                            fill="currentColor" class="size-4 shrink-0"
                             data-class="{ 'visible text-primary': $theme.current === t, 'invisible': $theme.current !== t }">
                             <path d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z"></path>
                           </svg>
