@@ -38,7 +38,6 @@ html[data-scrollbar-global] *,
 [data-scrollbar] {
   scrollbar-width: var(--scrollbar-width-std, thin) !important;
   scrollbar-color: transparent transparent !important;
-  transition: scrollbar-color var(--scrollbar-fade-out, 0.4s) var(--scrollbar-fade-timing, cubic-bezier(0.4, 0, 0.2, 1));
 }
 html[data-scrollbar-global] *::-webkit-scrollbar,
 .scrollbar-auto-hide::-webkit-scrollbar,
@@ -65,7 +64,6 @@ html[data-scrollbar-global] *.is-scrolling,
 .scrollbar-auto-hide.is-scrolling,
 [data-scrollbar].is-scrolling {
   scrollbar-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent)) var(--scrollbar-track, transparent) !important;
-  transition: scrollbar-color var(--scrollbar-fade-in, 0.2s) ease-out;
 }
 html[data-scrollbar-global] *.is-scrolling::-webkit-scrollbar-thumb,
 .scrollbar-auto-hide.is-scrolling::-webkit-scrollbar-thumb,
