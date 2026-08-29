@@ -3,8 +3,11 @@
     "build": "deno run -A scripts/build.ts",
     "test": "deno test -A src/",
     "setup": "git config core.hooksPath scripts/git/hooks",
-    "serve": "deno run -A https://deno.land/std@0.212.0/http/file_server.ts --reload",
-    "serve:dev": "deno run -A scripts/serve.ts --watch --autocommit",
+    "serve": "deno run -A scripts/serve.ts",
+    "serve:csr": "deno run -A scripts/serve.ts --mode csr",
+    "serve:island": "deno run -A scripts/serve.ts --mode island",
+    "serve:ssr": "deno run -A scripts/serve.ts --mode ssr",
+    "serve:progressive": "deno run -A scripts/serve.ts --mode progressive",
     "build:push": "deno run -A scripts/build.ts --minify --push"
   },
     "imports": {

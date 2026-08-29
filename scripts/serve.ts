@@ -1,295 +1,333 @@
 import { serveDir } from "https://deno.land/std@0.212.0/http/file_server.ts";
+import { join, resolve } from "https://deno.land/std@0.212.0/path/mod.ts";
 import { generateManifest } from "./git/manifest.ts";
 
-const AUTO = Deno.args.includes("--autocommit");
-const WATCH = Deno.args.includes("--watch");
-const BUILD = Deno.args.includes("--build") || AUTO;
-const ENABLED = AUTO || WATCH;
+export type ServerMode = "csr" | "island" | "ssr" | "progressive";
 
-const PORT = 8081;
-// Paths ignored for auto-commit/watching. `dist/` and `node_modules/`
-// are only ignored when they actually live UNDER the served root — when
-// the server is rooted at /site/ those dirs are siblings, not children,
-// so the bundle + deps must still be served.
-const IGNORE_ALWAYS = [".git/", "deno.lock"];
-const IGNORE_UNDER_ROOT = ["dist/", "node_modules/"];
+// 1. CLI Arguments & Mode Parsing
+function parseArgs() {
+  const args = Deno.args;
+  let mode: ServerMode | null = null;
+  let port = 8081;
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg === "--mode" && args[i + 1]) {
+      mode = args[++i].toLowerCase() as ServerMode;
+    } else if (arg.startsWith("--mode=")) {
+      mode = arg.split("=")[1].toLowerCase() as ServerMode;
+    } else if (arg === "--port" && args[i + 1]) {
+      port = parseInt(args[++i], 10) || 8081;
+    } else if (arg.startsWith("--port=")) {
+      port = parseInt(arg.split("=")[1], 10) || 8081;
+    }
+  }
+
+  const isDevAuto = args.includes("--dev:auto");
+  const isDev = args.includes("--dev") || isDevAuto;
+  const isWatch = args.includes("--watch") || isDev;
+  const isAutocommit = isDevAuto || args.includes("--autocommit");
+  const isBuild = args.includes("--build") || isDev;
+
+  return { mode, port, isDev, isDevAuto, isWatch, isAutocommit, isBuild };
+}
+
+const config = parseArgs();
+
+// 2. Help Guide if run without a mode (e.g. `deno task serve`)
+function printHelpGuide() {
+  console.log(`
+\x1b[1m\x1b[36mNexus-UX Multi-Mode Server Engine\x1b[0m
+
+\x1b[1mUSAGE:\x1b[0m
+  deno task serve:<mode> [flags]
+  deno run -A scripts/serve.ts --mode <mode> [flags]
+
+\x1b[1mAVAILABLE MODES:\x1b[0m
+  \x1b[32mserve:csr\x1b[0m          Pure Client-Side Rendering (SPA shell fallback)
+  \x1b[32mserve:island\x1b[0m       Islands Architecture (SSR static layout + isolated interactive island hydration)
+  \x1b[32mserve:ssr\x1b[0m          Full Server-Side Rendering (complete pre-assembled DOM tree)
+  \x1b[32mserve:progressive\x1b[0m  Progressive / Universal Hydration (SSR on cold hit, CSR for in-app navigation)
+
+\x1b[1mMODIFIER FLAGS:\x1b[0m
+  \x1b[33m--watch\x1b[0m            Live-reload watcher on src/ & site/ with WebSocket client injection
+  \x1b[33m--dev\x1b[0m              Watch mode + auto-build dist/ on source edits (no autocommit)
+  \x1b[33m--dev:auto\x1b[0m         Watch mode + auto-build + automatic git snapshot commits
+  \x1b[33m--port <number>\x1b[0m    Specify custom port (default: 8081)
+
+\x1b[1mEXAMPLES:\x1b[0m
+  deno task serve:csr
+  deno task serve:progressive --dev
+  deno task serve:island --watch
+  deno task serve:ssr --dev:auto --port 8080
+`);
+}
+
+if (!config.mode) {
+  printHelpGuide();
+  Deno.exit(0);
+}
+
+const validModes: ServerMode[] = ["csr", "island", "ssr", "progressive"];
+if (!validModes.includes(config.mode)) {
+  console.error(`\x1b[31mError: Unknown mode "${config.mode}". Valid modes: ${validModes.join(", ")}\x1b[0m`);
+  printHelpGuide();
+  Deno.exit(1);
+}
+
+// 3. Strict Path Resolution — All contents served strictly from /site and /dist
+const REPO_ROOT = Deno.cwd();
+const SITE_DIR = resolve(REPO_ROOT, "site");
+const DIST_DIR = resolve(REPO_ROOT, "dist");
 const DEBOUNCE_MS = 750;
 
-// Root-aware serving. The server serves whatever directory it is started in
-// (Deno.cwd()). This lets the SAME script work whether it is launched from
-// the repo root (/nexus-ux) OR directly from the app dir (/nexus-ux/site).
-// An explicit --root <dir> overrides cwd for both the file root and the SPA
-// fallback. With a relative <base href="./"> (or "/") the whole app — shell,
-// assets, and component fetches — resolves correctly against the chosen root.
-function resolveRoot(): string {
-  const flag = Deno.args.find((a) => a.startsWith("--root"));
-  if (flag) {
-    const val = flag.includes("=") ? flag.split("=")[1] : null;
-    if (val) return val;
-  }
-  const i = Deno.args.indexOf("--root");
-  if (i > -1 && Deno.args[i + 1]) return Deno.args[i + 1];
-  return Deno.cwd();
-}
-
-// ROOT is the real filesystem root we serve from. The app shell + components
-// live under site/, while the built bundle lives at repo-root dist/. We therefore
-// always serve from the REPO root and rewrite app subpaths (/, _components,
-// _pages, _assets) to their /site/ location. This keeps a relative <base href="./">
-// resolving correctly AND keeps dist/ reachable, no matter whether the process
-// was launched from the repo or from /site.
-const ROOT = resolveRoot();
-// Whether the served app lives under a /site subdirectory of ROOT.
-const SITE_PREFIX = (() => {
-  const r = ROOT.replace(/\\/g, "/").replace(/\/$/, "");
-  return r.endsWith("/site") ? "" : "/site";
-})();
-
-// Map an incoming request pathname to the on-disk path. App assets under
-// _components/_pages/_assets and the shell "/" live under /site; everything
-// else (e.g. repo-root dist/) is served from ROOT as-is.
-function mapAppPath(pathname: string): string {
-  if (SITE_PREFIX === "") return pathname;
-  if (pathname === "/" || pathname === "") return SITE_PREFIX + "/index.html";
-  if (/^\/(_components|_pages|_internal|_assets)\//.test(pathname)) return SITE_PREFIX + pathname;
-  return pathname;
-}
-
-// SPA entry point (relative to the served ROOT).
-const SHELL = SITE_PREFIX + "/index.html";
+const IGNORE_PATTERNS = [
+  "/.git/",
+  "/.agent/",
+  "/.gemini/",
+  "/.logs/",
+  "/.chats/",
+  "/.kilo/",
+  "/.system_generated/",
+  "/brain/",
+  "/plans/",
+  "/scratch/",
+  "/.vscode/",
+  "/.idea/",
+  "deno.lock",
+  ".log"
+];
 
 function isIgnored(path: string): boolean {
-  let p = path.replace(/\\/g, "/").replace(/^\.\//, "");
-  const cwd = ROOT.replace(/\\/g, "/").replace(/\/$/, "");
-  if (p.startsWith(cwd + "/")) p = p.slice(cwd.length + 1);
-  if (IGNORE_ALWAYS.some((prefix) => p === prefix || p.startsWith(prefix))) return true;
-  if (p.includes("/.git/") || p === ".git") return true;
-  return IGNORE_UNDER_ROOT.some((prefix) => p === prefix || p.startsWith(prefix));
+  const norm = path.replace(/\\/g, "/");
+  return IGNORE_PATTERNS.some((p) => norm.includes(p) || norm.endsWith(p));
 }
 
-function basename(path: string): string {
-  const p = path.replace(/\\/g, "/");
-  const i = p.lastIndexOf("/");
-  return i === -1 ? p : p.slice(i + 1);
-}
-
-// ---- Live-reload (WebSocket) ----
+// 4. Live-reload (WebSocket)
 const clients = new Set<WebSocket>();
 
 function broadcastReload() {
   for (const sock of clients) {
-    if (sock.readyState === WebSocket.OPEN) sock.send(JSON.stringify({ type: "reload" }));
+    if (sock.readyState === WebSocket.OPEN) {
+      sock.send(JSON.stringify({ type: "reload" }));
+    }
   }
-}
-
-// The document base. App subpaths are rewritten to /site but the address bar
-// stays at /, so a single <base href="/"> keeps every relative fetch
-// (_components/, _pages/, _assets/, dist/) resolving correctly whether the
-// process was launched from the repo or from /site.
-const BASE_HREF = "/";
-
-// Stamp the served document's <base href> to match the active root so the
-// same index.html works whether the server is rooted at the repo or /site/.
-async function rewriteBase(res: Response): Promise<Response> {
-  const type = res.headers.get("content-type") ?? "";
-  if (!type.includes("text/html")) return res;
-  const body = await res.text();
-  const next = body.replace(/<base\s+[^>]*href="[^"]*"[^>]*>/i, `<base href="${BASE_HREF}">`);
-  return new Response(next, { status: res.status, headers: res.headers });
 }
 
 const RELOAD_CLIENT = `<script>(function(){var p=location.protocol==='https:'?'wss://':'ws://';var s=new WebSocket(p+location.host+'/__reload');s.onmessage=function(){try{sessionStorage.clear();}catch(e){}location.reload();};})();</script>`;
 
-async function injectReload(res: Response): Promise<Response> {
-  const type = res.headers.get("content-type") ?? "";
-  if (!type.includes("text/html")) return res;
-  const body = await res.text();
-  if (body.includes("/__reload")) return res; // already injected
-  const next = body.replace("</body>", `${RELOAD_CLIENT}</body>`);
-  return new Response(next, {
-    status: res.status,
-    headers: res.headers,
-  });
+function injectReload(bodyText: string): string {
+  if (bodyText.includes("/__reload")) return bodyText;
+  return bodyText.replace("</body>", `${RELOAD_CLIENT}</body>`);
 }
 
+// 5. Template Extractors & Mode Renderers
+function extractHeadMetadata(htmlText: string): { title?: string; icon?: string; route?: string; order?: string } {
+  const meta: { title?: string; icon?: string; route?: string; order?: string } = {};
+  const titleMatch = htmlText.match(/<title[^>]*>([^<]+)<\/title>/i);
+  if (titleMatch) meta.title = titleMatch[1].trim();
+
+  const iconMatch = htmlText.match(/<meta[^>]+name=["']icon["'][^>]+content=["']([^"']+)["']/i) ||
+                    htmlText.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']icon["']/i);
+  if (iconMatch) meta.icon = iconMatch[1].trim();
+
+  const routeMatch = htmlText.match(/<meta[^>]+name=["']route["'][^>]+content=["']([^"']+)["']/i) ||
+                     htmlText.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']route["']/i);
+  if (routeMatch) meta.route = routeMatch[1].trim();
+
+  const orderMatch = htmlText.match(/<meta[^>]+name=["']order["'][^>]+content=["']([^"']+)["']/i) ||
+                     htmlText.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']order["']/i);
+  if (orderMatch) meta.order = orderMatch[1].trim();
+
+  return meta;
+}
+
+async function renderProgressive(cleanPath: string): Promise<string> {
+  const shellPath = join(SITE_DIR, "index.html");
+  let shell = await Deno.readTextFile(shellPath);
+
+  const pageFileName = cleanPath === "/" || cleanPath === "" ? "home.html" : `${cleanPath.replace(/^\//, "")}.html`;
+  const pagePath = join(SITE_DIR, "_pages", pageFileName);
+
+  try {
+    const pageHtml = await Deno.readTextFile(pagePath);
+    const meta = extractHeadMetadata(pageHtml);
+
+    if (meta.title) {
+      shell = shell.replace(/<title>[^<]*<\/title>/i, `<title>${meta.title} - Nexus UX</title>`);
+    }
+  } catch {
+    // Page file does not exist on disk, serve base shell
+  }
+
+  return shell;
+}
+
+async function renderSSR(cleanPath: string): Promise<string> {
+  const shellPath = join(SITE_DIR, "index.html");
+  let shell = await Deno.readTextFile(shellPath);
+
+  const pageFileName = cleanPath === "/" || cleanPath === "" ? "home.html" : `${cleanPath.replace(/^\//, "")}.html`;
+  const pagePath = join(SITE_DIR, "_pages", pageFileName);
+  const layoutPath = join(SITE_DIR, "_components", "layout.html");
+
+  try {
+    const pageHtml = await Deno.readTextFile(pagePath);
+    const layoutHtml = await Deno.readTextFile(layoutPath);
+    const meta = extractHeadMetadata(pageHtml);
+
+    if (meta.title) {
+      shell = shell.replace(/<title>[^<]*<\/title>/i, `<title>${meta.title} - Nexus UX</title>`);
+    }
+
+    // Embed pre-assembled layout and initial page content directly inside <app-layout>
+    const prebuiltLayout = layoutHtml.replace(
+      /<tab-content\s+data-component="tab\.source\s*\|\|\s*tab\.content"[^>]*><\/tab-content>/i,
+      `<tab-content data-component="'_pages/${pageFileName}'">${pageHtml}</tab-content>`
+    );
+
+    shell = shell.replace(
+      /<app-layout\s+data-component="'_components\/layout\.html'"><\/app-layout>/i,
+      `<app-layout data-component="'_components/layout.html'">${prebuiltLayout}</app-layout>`
+    );
+  } catch {
+    // Fallback to standard progressive shell on missing component
+    return renderProgressive(cleanPath);
+  }
+
+  return shell;
+}
+
+async function renderIsland(cleanPath: string): Promise<string> {
+  const shellPath = join(SITE_DIR, "index.html");
+  let shell = await Deno.readTextFile(shellPath);
+
+  const pageFileName = cleanPath === "/" || cleanPath === "" ? "home.html" : `${cleanPath.replace(/^\//, "")}.html`;
+  const pagePath = join(SITE_DIR, "_pages", pageFileName);
+
+  try {
+    const pageHtml = await Deno.readTextFile(pagePath);
+    const meta = extractHeadMetadata(pageHtml);
+
+    if (meta.title) {
+      shell = shell.replace(/<title>[^<]*<\/title>/i, `<title>${meta.title} - Nexus UX</title>`);
+    }
+
+    // Tag island markers for selective client hydration
+    shell = shell.replace(
+      /<app-layout\s+data-component="'_components\/layout\.html'"><\/app-layout>/i,
+      `<app-layout data-island="layout" data-component="'_components/layout.html'"></app-layout>`
+    );
+  } catch {
+    // Fallback to base shell
+  }
+
+  return shell;
+}
+
+// 6. Request Router & Handler
 async function handler(req: Request): Promise<Response> {
   const url = new URL(req.url);
 
-  if (WATCH && url.pathname === "/__reload") {
+  // Live-reload WebSocket endpoint
+  if (config.isWatch && url.pathname === "/__reload") {
     if (req.headers.get("upgrade")?.toLowerCase() !== "websocket") {
       return new Response("Expected WebSocket", { status: 400 });
     }
     const { socket, response } = Deno.upgradeWebSocket(req);
-    socket.onopen = () => clients.add(socket);
+    clients.add(socket);
     socket.onclose = () => clients.delete(socket);
     socket.onerror = () => clients.delete(socket);
     return response;
   }
 
-  // Rewrite app subpaths (/, _components, _pages, _assets) to their /site
-  // location while leaving repo-root paths (dist/) untouched.
-  const mapped = mapAppPath(url.pathname);
-  const req2 = mapped === url.pathname
-    ? req
-    : new Request(new URL(mapped, url.origin), req);
+  // A. Distribution Bundles (/dist/*) -> Served strictly from REPO_ROOT/dist
+  if (url.pathname.startsWith("/dist/")) {
+    const distReq = new Request(new URL(url.pathname.replace(/^\/dist\//, "/"), url.origin), req);
+    const distRes = await serveDir(distReq, { fsRoot: DIST_DIR, quiet: true });
+    distRes.headers.set("Cache-Control", config.isDev ? "no-cache" : "public, max-age=31536000, immutable");
+    distRes.headers.set("Cross-Origin-Opener-Policy", "same-origin");
+    distRes.headers.set("Cross-Origin-Embedder-Policy", "require-corp");
+    return distRes;
+  }
 
-  const res = await serveDir(req2, { fsRoot: ROOT, showIndex: true });
-
-  // SPA history-API fallback: a clean route (e.g. /profile) requested directly
-  // from the address bar has no matching file on disk, so serveDir 404s. The
-  // client router (data-router, hybrid mode) reads location.pathname on boot and
-  // renders the matching route — but only if the shell is actually delivered.
-  // Fall back to the SPA entry point for extension-less paths that 404, while
-  // leaving genuine missing assets (files with extensions) to 404 as usual.
-  if (res.status === 404 && !url.pathname.includes(".")) {
-    const shell = await serveDir(new Request(new URL(SHELL, url.origin)), { fsRoot: ROOT });
-    shell.headers.set("Cross-Origin-Opener-Policy", "same-origin");
-    shell.headers.set("Cross-Origin-Embedder-Policy", "require-corp");
-    const based = await rewriteBase(shell);
-    if (WATCH && req.headers.get("accept")?.includes("text/html")) {
-      return injectReload(based);
+  // B. Static Files & Component Fragments in /site
+  const hasExtension = url.pathname.includes(".");
+  if (hasExtension) {
+    const staticRes = await serveDir(req, { fsRoot: SITE_DIR, quiet: true });
+    if (staticRes.status !== 404) {
+      staticRes.headers.set("Cross-Origin-Opener-Policy", "same-origin");
+      staticRes.headers.set("Cross-Origin-Embedder-Policy", "require-corp");
+      return staticRes;
     }
-    return based;
   }
 
-  res.headers.set("Cross-Origin-Opener-Policy", "same-origin");
-  res.headers.set("Cross-Origin-Embedder-Policy", "require-corp");
+  // C. Route Rendering according to active mode
+  let responseHtml = "";
+  const cleanPath = url.pathname;
 
-  const based = await rewriteBase(res);
-  if (WATCH && req.headers.get("accept")?.includes("text/html")) {
-    return injectReload(based);
+  switch (config.mode) {
+    case "ssr":
+      responseHtml = await renderSSR(cleanPath);
+      break;
+    case "island":
+      responseHtml = await renderIsland(cleanPath);
+      break;
+    case "progressive":
+      responseHtml = await renderProgressive(cleanPath);
+      break;
+    case "csr":
+    default: {
+      const shellPath = join(SITE_DIR, "index.html");
+      responseHtml = await Deno.readTextFile(shellPath);
+      break;
+    }
   }
-  return based;
-}
 
-// ---- Git auto-commit ----
-
-// Files changed between the previous run and this restart (e.g. an edit to
-// scripts/serve.ts made just before the server was restarted) won't be seen by
-// the live watcher — the old process was killed before its debounce flushed and
-// the new one starts with the file already modified. Commit any pre-existing
-// working-tree changes at startup so nothing is ever stranded.
-function commitPendingStartup() {
-  if (!AUTO) return;
-  const out = gitOut(["status", "--porcelain=v1", "-z"]);
-  if (!out) return;
-  const paths = out.split("\0")
-    .filter((e) => e.length > 0)
-    .map((e) => e.slice(3)) // drop "XY " status prefix
-    .filter((p) => !isIgnored(p));
-  if (paths.length > 0) gitCommit(paths);
-}
-
-// Run git and return combined stdout; empty string on failure.
-function gitOut(args: string[]): string {
-  try {
-    const r = new Deno.Command("git", { args }).outputSync();
-    return new TextDecoder().decode(r.stdout).trim();
-  } catch {
-    return "";
+  if (config.isWatch) {
+    responseHtml = injectReload(responseHtml);
   }
-}
 
-// A change to the framework source (or its build inputs) requires a fresh
-// bundle so the served `dist/` stays in lockstep with `src/`.
-function needsBuild(paths: string[]): boolean {
-  const cwd = ROOT.replace(/\\/g, "/").replace(/\/$/, "");
-  return paths.some((p) => {
-    let f = p.replace(/\\/g, "/").replace(/^\.\//, "");
-    if (f.startsWith(cwd + "/")) f = f.slice(cwd.length + 1);
-    return f.startsWith("src/") || f === "deno.json" || f === "scripts/build.ts";
+  return new Response(responseHtml, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/html; charset=UTF-8",
+      "Cache-Control": config.isDev ? "no-cache" : "public, max-age=0, must-revalidate",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Cross-Origin-Embedder-Policy": "require-corp"
+    }
   });
 }
 
-// Rebuild the minified payload so src/ edits are reflected in dist/.
+// 7. Auto-Build and Git Watcher
 function runBuild() {
-  if (!BUILD) return;
   try {
-    new Deno.Command("deno", { args: ["task", "build", "--minify"] }).outputSync();
-  } catch (e) {
-    console.error("[serve] build failed:", e);
+    const p = new Deno.Command(Deno.execPath(), {
+      args: ["run", "-A", "scripts/build.ts", "--minify"],
+      stdout: "null",
+      stderr: "inherit"
+    });
+    p.outputSync();
+    console.log(`[serve] build: dist updated`);
+  } catch (err) {
+    console.error(`[serve] build failed:`, err);
   }
-}
-
-// Infer a short, human-readable category for the change from the file path and
-// a peek at the staged diff hunks (offline / deterministic — no external calls).
-function classify(file: string, diff: string): string {
-  const f = file.toLowerCase();
-  if (diff.includes("suppressNavIntercept") || diff.includes("navigate") || diff.includes("tabPaths") || diff.includes("history.")) {
-    return "routing";
-  }
-  if (f.endsWith("signal.ts") || diff.includes("cloneValue") || diff.includes("lastEvaluatedState") || diff.includes("reactive")) {
-    return "reactivity";
-  }
-  if (f.endsWith("layout.html") || f.endsWith("index.html") || f.includes("/_components/")) {
-    return "layout/UI";
-  }
-  if (f.endsWith("component.ts") || f.endsWith("if.ts") || f.endsWith("for.ts")) {
-    return "directive";
-  }
-  if (f.includes("listener") || f.endsWith("linkRewriter.ts")) {
-    return "listener";
-  }
-  if (f.endsWith(".md")) return "docs";
-  if (f.endsWith(".css") || f.endsWith(".js") || f.endsWith(".ts")) return "code";
-  return "misc";
 }
 
 function gitCommit(paths: string[]) {
-  const staged = paths.filter((p) => !p.includes("/.git/") && !p.endsWith("/.git") && p !== ".git");
-  // Update page manifest when _pages is touched (excluding manifest.json itself)
-  if (staged.some((p) => (p.includes("_pages") || p.includes("_internal")) && !p.endsWith("manifest.json") && !p.endsWith("manifest.ts"))) {
-    generateManifest();
-    if (!staged.includes("site/_pages/manifest.json")) {
-      staged.push("site/_pages/manifest.json");
-    }
+  try {
+    new Deno.Command("git", { args: ["add", "dist/", ...paths] }).outputSync();
+    const msg = `auto-snapshot (${paths.length} file(s) updated)`;
+    new Deno.Command("git", { args: ["commit", "-m", msg] }).outputSync();
+    console.log(`[serve] committed snapshot: ${msg}`);
+  } catch (_) {
+    // Silent recovery on commit failure
   }
-
-  // Rebuild the bundle when source changed, then fold the regenerated bundle
-  // into this commit so the artifact never drifts from the source that
-  // produced it. Only the compiled outputs are tracked (the .br brotli variant
-  // stays ignored as a build-of-a-build artifact).
-  if (needsBuild(staged)) runBuild();
-  const toCommit = BUILD && needsBuild(staged)
-    ? [...staged, "dist/nexus-ux.js", "dist/nexus-ux.min.js", "dist/manifest.json"]
-    : staged;
-
-  const add = new Deno.Command("git", { args: ["add", ...toCommit] });
-  add.outputSync();
-
-  // Inspect the staged diff to infer a useful message.
-  const diffAll = gitOut(["diff", "--staged", "--stat", ...staged]);
-  const cats = new Set<string>();
-  const detail: string[] = [];
-  for (const f of staged) {
-    const d = gitOut(["diff", "--staged", f]);
-    const cat = classify(f, d);
-    cats.add(cat);
-    const adds = (d.match(/^\+(?!\+\+)/gm) ?? []).length;
-    const dels = (d.match(/^-(?!--)/gm) ?? []).length;
-    detail.push(`- ${basename(f)} (${cat}: +${adds}/-${dels})`);
-  }
-
-  // Subject: category-prefixed snapshot when homogeneous, else "auto-snapshot".
-  let subject: string;
-  if (staged.length === 1) {
-    const f = staged[0];
-    subject = `${basename(f)}: ${[...cats][0]} auto-snapshot`;
-  } else if (cats.size === 1) {
-    subject = `chore(${[...cats][0]}): auto-snapshot (${staged.length} files)`;
-  } else {
-    subject = `auto-snapshot (${staged.length} files: ${[...cats].join(", ")})`;
-  }
-
-  const body = detail.join("\n");
-  const msg = body ? `${subject}\n\n${body}` : subject;
-
-  const commit = new Deno.Command("git", { args: ["commit", "-m", msg] });
-  commit.outputSync();
 }
 
 function startWatcher() {
-  const watcher = Deno.watchFs(".", { recursive: true });
+  const watchDirs = [join(REPO_ROOT, "src"), join(REPO_ROOT, "site")];
+  const watcher = Deno.watchFs(watchDirs, { recursive: true });
   const buffer = new Set<string>();
   let timer: number | undefined;
 
@@ -298,35 +336,35 @@ function startWatcher() {
     const paths = [...buffer].filter((p) => !isIgnored(p));
     buffer.clear();
     if (paths.length === 0) return;
-    if (AUTO) gitCommit(paths);
-    if (WATCH) broadcastReload();
+
+    console.log(`[serve] detected changes in ${paths.length} file(s)`);
+    if (config.isBuild) runBuild();
+    if (config.isAutocommit) gitCommit(paths);
+    if (config.isWatch) broadcastReload();
   };
 
   (async () => {
     for await (const event of watcher) {
-      for (const p of event.paths) buffer.add(p);
+      for (const p of event.paths) {
+        if (!isIgnored(p)) buffer.add(p);
+      }
       if (timer !== undefined) clearTimeout(timer);
       timer = setTimeout(flush, DEBOUNCE_MS);
     }
   })();
 }
 
-function ensureGitHooks() {
-  try {
-    new Deno.Command("git", { args: ["config", "core.hooksPath", "scripts/git/hooks"] }).outputSync();
-  } catch (_) {
-    // Ignore if git not available
-  }
-}
+// 8. Start Server
+console.log(`
+\x1b[1m\x1b[32m[Nexus Server]\x1b[0m Mode: \x1b[1m\x1b[36m${config.mode.toUpperCase()}\x1b[0m
+\x1b[1m[Nexus Server]\x1b[0m Root: \x1b[33m${SITE_DIR}\x1b[0m
+\x1b[1m[Nexus Server]\x1b[0m Dist: \x1b[33m${DIST_DIR}\x1b[0m
+\x1b[1m[Nexus Server]\x1b[0m URL:  \x1b[34mhttp://localhost:${config.port}\x1b[0m
+\x1b[1m[Nexus Server]\x1b[0m Watch: \x1b[35m${config.isWatch}\x1b[0m | Build: \x1b[35m${config.isBuild}\x1b[0m | Autocommit: \x1b[35m${config.isAutocommit}\x1b[0m
+`);
 
-if (ENABLED) {
-  ensureGitHooks();
+if (config.isWatch) {
   startWatcher();
-  console.log(`[serve] watch mode on | autocommit=${AUTO} reload=${WATCH} build=${BUILD}`);
 }
 
-// Capture any working-tree changes that predate this process (typically edits to
-// serve.ts itself made just before a restart) before the server begins serving.
-commitPendingStartup();
-
-Deno.serve({ port: PORT }, handler);
+Deno.serve({ port: config.port }, handler);
