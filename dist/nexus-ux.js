@@ -6858,17 +6858,47 @@ ${match}</ul>
                     let title = isObj ? item.title || item.meta?.title || "" : "";
                     let icon = isObj ? item.icon || item.meta?.icon || "" : "";
                     const order = isObj ? item.order !== void 0 ? item.order : item.meta?.order : void 0;
+                    const parent = isObj ? item.parent !== void 0 ? item.parent : item.meta?.parent !== void 0 ? item.meta.parent : href === "/" ? null : "/" : href === "/" ? null : "/";
                     const defaultTitle = href === "/" ? "Home" : href.replace(/^\/+/, "").replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
                     const finalTitle = title || defaultTitle;
-                    const finalIcon = icon || "material-symbols-light:article-outline";
+                    const finalIcon = icon || (parent ? void 0 : "material-symbols-light:article-outline");
+                    const children = [];
+                    if (isObj && Array.isArray(item.children)) {
+                      for (const ch of item.children) {
+                        const chObj = typeof ch === "object" && ch !== null;
+                        const chName = chObj ? ch.id || ch.name || ch.title || "" : ch;
+                        const chHref = chObj ? ch.route || `/${chName}` : `/${chName}`;
+                        const chPath = chObj ? ch.path || `/${pDir}/${chName}.html` : `/${pDir}/${chName}.html`;
+                        const chTitle = chObj ? ch.title || chName : chName;
+                        const chParent = chObj ? ch.parent || href : href;
+                        children.push({
+                          href: chHref,
+                          title: chTitle,
+                          tabTitle: chTitle,
+                          path: chPath,
+                          parent: chParent,
+                          meta: { title: chTitle, parent: chParent }
+                        });
+                        if (!state.routes.find((r) => r.path === chHref)) {
+                          state.routes.push({
+                            path: chHref,
+                            component: chPath,
+                            name: chName,
+                            meta: { title: chTitle, parent: chParent }
+                          });
+                        }
+                      }
+                    }
                     discovered.push({
                       href,
                       title: finalTitle,
-                      icon: finalIcon,
+                      icon: finalIcon || "",
                       tabTitle: finalTitle,
-                      tabIcon: finalIcon,
+                      tabIcon: finalIcon || "",
                       path: compPath,
-                      meta: { title: finalTitle, icon: finalIcon, order }
+                      parent,
+                      children: children.length > 0 ? children : void 0,
+                      meta: { title: finalTitle, icon: finalIcon, order, parent }
                     });
                     const existing = state.routes.find((r) => r.path === href);
                     if (!existing) {
@@ -6876,7 +6906,7 @@ ${match}</ul>
                         path: href,
                         component: compPath,
                         name: cleanName,
-                        meta: { title: finalTitle, icon: finalIcon, order }
+                        meta: { title: finalTitle, icon: finalIcon, order, parent }
                       });
                     }
                   }
@@ -6930,11 +6960,69 @@ ${match}</ul>
                       tabTitle: finalTitle,
                       tabIcon: finalIcon,
                       path: compPath,
-                      meta: { title: finalTitle, icon: finalIcon }
+                      parent: href === "/" ? null : "/",
+                      meta: { title: finalTitle, icon: finalIcon, parent: href === "/" ? null : "/" }
                     });
                   }
                 }
                 state.pages = discovered;
+                state.lineage = state.getLineage(state.route || state.path);
+              },
+              lineage: [],
+              getLineage(targetHref) {
+                const raw = targetHref || state.path || state.route || "/";
+                const currentHref = raw.startsWith("/_pages/") ? raw.replace("/_pages/", "/").replace(/\.html$/, "") === "/home" ? "/" : raw.replace("/_pages/", "/").replace(/\.html$/, "") : raw;
+                const chain = [];
+                const visited = /* @__PURE__ */ new Set();
+                let curr = currentHref;
+                while (curr && !visited.has(curr)) {
+                  visited.add(curr);
+                  let found = state.pages.find((p) => p.href === curr || p.path === curr);
+                  if (!found) {
+                    for (const p of state.pages) {
+                      if (p.children) {
+                        const ch = p.children.find((c) => c.href === curr || c.path === curr);
+                        if (ch) {
+                          found = ch;
+                          break;
+                        }
+                      }
+                    }
+                  }
+                  if (!found) {
+                    found = state.routes.find((r) => r.path === curr);
+                  }
+                  if (!found && curr === state.route) {
+                    found = state.activePageTab;
+                  }
+                  const title = found?.tabTitle || found?.title || found?.meta?.title || (curr === "/" ? "Home" : curr.replace(/^\/+/, "").replace(/\.html$/, "").replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
+                  const icon = found?.tabIcon || found?.icon || found?.meta?.icon || (curr === "/" ? "material-symbols-light:home-outline" : void 0);
+                  const parent = found?.parent !== void 0 ? found.parent : found?.meta?.parent !== void 0 ? found.meta.parent : curr === "/" ? null : "/";
+                  chain.unshift({ title, href: curr, icon });
+                  if (!parent || curr === "/" || parent === curr) {
+                    break;
+                  }
+                  curr = parent;
+                }
+                if (chain.length > 0 && chain[0].href !== "/") {
+                  const homePage = state.pages.find((p) => p.href === "/");
+                  chain.unshift({
+                    title: homePage?.title || "Home",
+                    href: "/",
+                    icon: homePage?.icon || "material-symbols-light:home-outline"
+                  });
+                }
+                return chain.length > 0 ? chain : [{ title: "Home", href: "/", icon: "material-symbols-light:home-outline" }];
+              },
+              setPageMeta(meta) {
+                if (state.activePageTab) {
+                  state.activePageTab.meta = { ...state.activePageTab.meta, ...meta };
+                  if (meta.title)
+                    state.activePageTab.tabTitle = meta.title;
+                  if (meta.icon)
+                    state.activePageTab.tabIcon = meta.icon;
+                }
+                state.lineage = state.getLineage(state.path);
               },
               // Declarative strategy snapshot + resolved manifest.
               config: routerConfig,
@@ -7573,6 +7661,7 @@ ${match}</ul>
               state.previous = outgoingPrevious;
               state.route = matched?.component ?? staticComponent ?? null;
               state.layout = matched?.layout ?? null;
+              state.lineage = state.getLineage(path);
               publishOutlet(state.layout ?? state.route);
               const _at = state.activePageTabId || getActiveTabId();
               if (_at) {

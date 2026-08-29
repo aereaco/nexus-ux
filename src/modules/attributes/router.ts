@@ -131,10 +131,12 @@ type RouterMode = 'signal' | 'static' | 'hybrid';
 export interface DiscoveredPage {
   href: string;
   title: string;
-  icon: string;
+  icon?: string;
   tabTitle: string;
-  tabIcon: string;
+  tabIcon?: string;
   path?: string;
+  parent?: string | null;
+  children?: DiscoveredPage[];
   meta?: Record<string, any>;
 }
 
@@ -188,6 +190,9 @@ export interface RouterState {
   routes: RouteRecord[];
   pages: DiscoveredPage[];
   discoverPages(): Promise<void>;
+  lineage: Array<{ title: string; href: string; icon?: string }>;
+  getLineage(targetHref?: string): Array<{ title: string; href: string; icon?: string }>;
+  setPageMeta(meta: { title?: string; icon?: string; parent?: string }): void;
   config: RouterConfig;
   manifest: RouteRecord[];
   match(path?: string): RouteInfo | null;
@@ -666,21 +671,56 @@ export const routerAttributeModule: AttributeModule = {
               let title = isObj ? (item.title || item.meta?.title || '') : '';
               let icon = isObj ? (item.icon || item.meta?.icon || '') : '';
               const order = isObj ? (item.order !== undefined ? item.order : item.meta?.order) : undefined;
+              const parent = isObj ? (item.parent !== undefined ? item.parent : (item.meta?.parent !== undefined ? item.meta.parent : (href === '/' ? null : '/'))) : (href === '/' ? null : '/');
 
               const defaultTitle = href === '/'
                 ? 'Home'
                 : href.replace(/^\/+/, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
               const finalTitle = title || defaultTitle;
-              const finalIcon = icon || 'material-symbols-light:article-outline';
+              const finalIcon = icon || (parent ? undefined : 'material-symbols-light:article-outline');
+
+              // Parse children if declared in manifest
+              const children: DiscoveredPage[] = [];
+              if (isObj && Array.isArray(item.children)) {
+                for (const ch of item.children) {
+                  const chObj = typeof ch === 'object' && ch !== null;
+                  const chName = chObj ? (ch.id || ch.name || ch.title || '') : ch;
+                  const chHref = chObj ? (ch.route || `/${chName}`) : `/${chName}`;
+                  const chPath = chObj ? (ch.path || `/${pDir}/${chName}.html`) : `/${pDir}/${chName}.html`;
+                  const chTitle = chObj ? (ch.title || chName) : chName;
+                  const chParent = chObj ? (ch.parent || href) : href;
+
+                  children.push({
+                    href: chHref,
+                    title: chTitle,
+                    tabTitle: chTitle,
+                    path: chPath,
+                    parent: chParent,
+                    meta: { title: chTitle, parent: chParent }
+                  } as DiscoveredPage);
+
+                  // Register route in state.routes if not already present
+                  if (!state.routes.find((r) => r.path === chHref)) {
+                    state.routes.push({
+                      path: chHref,
+                      component: chPath,
+                      name: chName,
+                      meta: { title: chTitle, parent: chParent }
+                    } as any);
+                  }
+                }
+              }
 
               discovered.push({
                 href,
                 title: finalTitle,
-                icon: finalIcon,
+                icon: finalIcon || '',
                 tabTitle: finalTitle,
-                tabIcon: finalIcon,
+                tabIcon: finalIcon || '',
                 path: compPath,
-                meta: { title: finalTitle, icon: finalIcon, order }
+                parent,
+                children: children.length > 0 ? children : undefined,
+                meta: { title: finalTitle, icon: finalIcon, order, parent }
               });
 
               // Dynamically register route in state.routes if not already present
@@ -690,8 +730,8 @@ export const routerAttributeModule: AttributeModule = {
                   path: href,
                   component: compPath,
                   name: cleanName,
-                  meta: { title: finalTitle, icon: finalIcon, order }
-                });
+                  meta: { title: finalTitle, icon: finalIcon, order, parent }
+                } as any);
               }
             }
 
@@ -745,12 +785,73 @@ export const routerAttributeModule: AttributeModule = {
                 tabTitle: finalTitle,
                 tabIcon: finalIcon,
                 path: compPath,
-                meta: { title: finalTitle, icon: finalIcon }
+                parent: href === '/' ? null : '/',
+                meta: { title: finalTitle, icon: finalIcon, parent: href === '/' ? null : '/' }
               });
             }
           }
 
           state.pages = discovered;
+          state.lineage = state.getLineage(state.route || state.path);
+        },
+
+        lineage: [] as Array<{ title: string; href: string; icon?: string }>,
+        getLineage(targetHref?: string): Array<{ title: string; href: string; icon?: string }> {
+          const raw = targetHref || state.path || state.route || '/';
+          const currentHref = raw.startsWith('/_pages/') ? (raw.replace('/_pages/', '/').replace(/\.html$/, '') === '/home' ? '/' : raw.replace('/_pages/', '/').replace(/\.html$/, '')) : raw;
+          const chain: Array<{ title: string; href: string; icon?: string }> = [];
+          const visited = new Set<string>();
+
+          let curr: string | null = currentHref;
+          while (curr && !visited.has(curr)) {
+            visited.add(curr);
+            let found: any = state.pages.find((p) => p.href === curr || p.path === curr);
+            if (!found) {
+              for (const p of state.pages) {
+                if (p.children) {
+                  const ch = p.children.find((c) => c.href === curr || c.path === curr);
+                  if (ch) { found = ch; break; }
+                }
+              }
+            }
+            if (!found) {
+              found = state.routes.find((r) => r.path === curr);
+            }
+            if (!found && curr === state.route) {
+              found = state.activePageTab;
+            }
+
+            const title = found?.tabTitle || found?.title || found?.meta?.title || (curr === '/' ? 'Home' : curr.replace(/^\/+/, '').replace(/\.html$/, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()));
+            const icon = found?.tabIcon || found?.icon || found?.meta?.icon || (curr === '/' ? 'material-symbols-light:home-outline' : undefined);
+            const parent = found?.parent !== undefined ? found.parent : (found?.meta?.parent !== undefined ? found.meta.parent : (curr === '/' ? null : '/'));
+
+            chain.unshift({ title, href: curr, icon });
+
+            if (!parent || curr === '/' || parent === curr) {
+              break;
+            }
+            curr = parent;
+          }
+
+          if (chain.length > 0 && chain[0].href !== '/') {
+            const homePage = state.pages.find((p) => p.href === '/');
+            chain.unshift({
+              title: homePage?.title || 'Home',
+              href: '/',
+              icon: homePage?.icon || 'material-symbols-light:home-outline'
+            });
+          }
+
+          return chain.length > 0 ? chain : [{ title: 'Home', href: '/', icon: 'material-symbols-light:home-outline' }];
+        },
+
+        setPageMeta(meta: { title?: string; icon?: string; parent?: string }) {
+          if (state.activePageTab) {
+            state.activePageTab.meta = { ...state.activePageTab.meta, ...meta };
+            if (meta.title) (state.activePageTab as any).tabTitle = meta.title;
+            if (meta.icon) (state.activePageTab as any).tabIcon = meta.icon;
+          }
+          state.lineage = state.getLineage(state.path);
         },
 
         // Declarative strategy snapshot + resolved manifest.
@@ -1499,6 +1600,7 @@ export const routerAttributeModule: AttributeModule = {
         // commitVisibility; outlet-model routes publish their component/layout URL.
         state.route = matched?.component ?? staticComponent ?? null;
         state.layout = matched?.layout ?? null;
+        state.lineage = state.getLineage(path);
         // Single effective outlet: prefer the layout (which contains its own
         // inner `#router.route` outlet), else render the route component directly.
         publishOutlet(state.layout ?? state.route);
