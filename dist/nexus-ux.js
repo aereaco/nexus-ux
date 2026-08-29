@@ -6945,7 +6945,8 @@ ${match}</ul>
                   id: "tab-0",
                   source: initialSource,
                   route: initialPath,
-                  meta: initialMatched?.meta || {}
+                  meta: initialMatched?.meta || {},
+                  isLoading: true
                 }
               ],
               activePageTabId: "tab-0",
@@ -6959,7 +6960,7 @@ ${match}</ul>
                 const id = "tab-" + state.tabSeq;
                 const src = source || state.config.newPageTab || "_components/tab-new.html";
                 const r = route !== void 0 ? route : src.startsWith("_components/") ? "" : src;
-                state.pageTabs = [...state.pageTabs, { id, source: src, route: r, meta: {} }];
+                state.pageTabs = [...state.pageTabs, { id, source: src, route: r, meta: {}, isLoading: true }];
                 state.activePageTabId = id;
                 state.tabPaths[id] = src.startsWith("_components/") ? "custom-component" : r || src;
                 state.setActiveTab(id);
@@ -6989,7 +6990,7 @@ ${match}</ul>
                 const source = srcTab.source;
                 const route = srcTab.route || "";
                 state.tabPaths[newId] = source.startsWith("_components/") ? "custom-component" : state.tabPaths[id] || route;
-                state.pageTabs = [...state.pageTabs, { id: newId, source, route, meta: { ...srcTab.meta || {} } }];
+                state.pageTabs = [...state.pageTabs, { id: newId, source, route, meta: { ...srcTab.meta || {} }, isLoading: true }];
                 state.activePageTabId = newId;
                 state.setActiveTab(newId);
               },
