@@ -561,7 +561,7 @@
         <template data-for="item in router.pages" data-key="item.href">
           <li class="cursor-pointer" data-bind-data-drag="item.href !== '/' ? '' : null">
             <!-- Root item WITHOUT children -->
-            <a data-if="!item.children || item.children.length === 0"
+            <a data-show="!item.children || item.children.length === 0"
               data-bind-href="item.href" draggable="false"
               data-bind-data-tab-title="item.tabTitle || item.title"
               data-bind-data-tab-icon="item.tabIcon || item.icon"
@@ -575,7 +575,7 @@
             </a>
 
             <!-- Root item WITH children (DaisyUI collapsible submenu) -->
-            <details data-if="item.children && item.children.length > 0" open>
+            <details data-show="item.children && item.children.length > 0" open>
               <summary class="flex flex-nowrap items-center whitespace-nowrap p-0 h-12 rounded-none hover:bg-base-200 transition-colors">
                 <div class="w-20 shrink-0 flex items-center justify-center">
                   <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
