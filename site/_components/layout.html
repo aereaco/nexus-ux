@@ -429,106 +429,46 @@
            new-tab launchpad, link tabs) share one outlet. A sync effect below
            keeps the active tab's content in step with router.route for route
            tabs, so sidebar/router navigation still updates the visible panel. -->
-    <div class="p-6 relative" data-class="{ 'flex-1 overflow-y-auto': fixedHeader }">
+    <!-- CONTENT PANEL & FOOTER WRAPPER:
+         When fixedHeader is active, controls scroll containment based on fixedFooter mode.
+         When fixedFooter is OFF (in-flow), wrapper is flex-1 overflow-y-auto so the footer sits at the end of the content stream.
+         When fixedFooter is ON (sticky), the inner panel is flex-1 overflow-y-auto so the footer stays pinned at the bottom. -->
+    <div class="flex-1 flex flex-col min-h-0 w-full grow" data-class="{ 'overflow-y-auto': fixedHeader && !fixedFooter }">
+      <div class="p-6 relative grow flex flex-col" data-class="{ 'overflow-y-auto': fixedHeader && fixedFooter }">
+        <!-- Retained Multi-Panel Outlets: Each tab retains its mounted DOM tree.
+             data-show toggles panel visibility instantly (display: none) without destroying nodes or resetting state. -->
+        <template data-for="tab in router.pageTabs" data-key="tab.id">
+          <div role="tabpanel" class="w-full grow flex flex-col" data-show="router.activePageTabId === tab.id">
+            <!-- Default Loading Fallback Skeleton -->
+            <div data-show="tab.isLoading !== false" class="flex flex-col gap-4 w-full p-4 animate-pulse">
+              <div class="skeleton h-8 w-1/3 rounded-lg bg-base-300"></div>
+              <div class="skeleton h-4 w-full rounded bg-base-300"></div>
+              <div class="skeleton h-4 w-5/6 rounded bg-base-300"></div>
+              <div class="skeleton h-64 w-full rounded-xl bg-base-300"></div>
+            </div>
 
-      <!-- Retained Multi-Panel Outlets: Each tab retains its mounted DOM tree.
-           data-show toggles panel visibility instantly (display: none) without destroying nodes or resetting state. -->
-      <template data-for="tab in router.pageTabs" data-key="tab.id">
-        <div role="tabpanel" class="h-full w-full" data-show="router.activePageTabId === tab.id">
-          <!-- Default Loading Fallback Skeleton -->
-          <div data-show="tab.isLoading !== false" class="flex flex-col gap-4 w-full p-4 animate-pulse">
-            <div class="skeleton h-8 w-1/3 rounded-lg bg-base-300"></div>
-            <div class="skeleton h-4 w-full rounded bg-base-300"></div>
-            <div class="skeleton h-4 w-5/6 rounded bg-base-300"></div>
-            <div class="skeleton h-64 w-full rounded-xl bg-base-300"></div>
+            <!-- Fully Loaded Route Content -->
+            <tab-content data-component="tab.source || tab.content" data-show="tab.isLoading === false" class="grow flex flex-col"></tab-content>
           </div>
+        </template>
+      </div>
 
-          <!-- Fully Loaded Route Content -->
-          <tab-content data-component="tab.source || tab.content" data-show="tab.isLoading === false"></tab-content>
+      <!-- Page Footer with Inline Diagnostics (within content drawer, not below sidebar) -->
+      <footer class="w-full px-6 py-2.5 text-xs bg-base-300/80 backdrop-blur-md border-t border-base-content/10 shrink-0 z-10 flex flex-wrap items-center justify-between gap-4 mt-auto transition-all duration-300"
+        data-class="{ 'sticky bottom-0': fixedFooter }">
+        <div class="flex flex-wrap items-center gap-x-5 gap-y-1 font-mono opacity-80">
+          <span class="inline-flex items-center gap-1.5"><span class="badge badge-xs badge-accent"></span><span data-bind="'Width: ' + window.innerWidth + 'px'"></span></span>
+          <span class="inline-flex items-center gap-1.5"><span class="badge badge-xs badge-secondary"></span><span data-bind="'Mobile: ' + isMobile"></span></span>
+          <span class="inline-flex items-center gap-1.5"><span class="badge badge-xs badge-info"></span><span data-bind="'Sidebar: ' + (collapsed ? 'Collapsed' : 'Expanded')"></span></span>
+          <span class="inline-flex items-center gap-1.5"><span class="badge badge-xs badge-success"></span><span data-bind="'Route: ' + (router.route || '/')"></span></span>
+          <span class="inline-flex items-center gap-1.5"><span class="badge badge-xs badge-warning"></span><span data-bind="'Zoom: ' + (zoom || 1) + 'x'"></span></span>
         </div>
-      </template>
+        <div class="flex items-center gap-4 text-xs opacity-60 font-sans">
+          <span>Nexus-UX Engine</span>
+          <span data-bind="'Tabs: ' + (router.pageTabs?.length || 0)"></span>
+        </div>
+      </footer>
     </div>
-
-    <!-- CONTEXT MENU (tab + link actions) -->
-    <div data-show="ctxMenu"
-      class="fixed z-50 min-w-48 rounded-box bg-base-100 shadow-2xl border border-base-300 py-1 text-sm"
-      data-bind-style="{ insetInlineStart: (ctxMenu && ctxMenu.x) + 'px', insetBlockStart: (ctxMenu && ctxMenu.y) + 'px' }"
-      data-on-click="ctxMenu = null" data-on-contextmenu:stop="ctxMenu = null">
-      <!-- TAB actions -->
-      <template data-if="ctxMenu && ctxMenu.type === 'tab'">
-        <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-          data-on-click:stop="router.pinPageTab(ctxMenu.tabId); ctxMenu = null;">
-          <iconify-icon
-            data-bind-icon="((router.pinnedPageTabs || []).includes(ctxMenu.tabId) ? 'material-symbols-light:push-pin-outline' : 'material-symbols-light:push-pin')"
-            class="text-lg"></iconify-icon>
-          <span data-bind="(router.pinnedPageTabs || []).includes(ctxMenu.tabId) ? 'Unpin' : 'Pin'"></span>
-        </button>
-        <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-          data-on-click:stop="router.duplicatePageTab(ctxMenu.tabId); ctxMenu = null;">
-          <iconify-icon icon="material-symbols-light:add" class="text-lg"></iconify-icon>
-          <span>Open in new tab</span>
-        </button>
-        <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-          data-class="{ 'hidden': (router.pinnedPageTabs || []).includes(ctxMenu.tabId) }"
-          data-on-click:stop="router.closePageTab(ctxMenu.tabId); ctxMenu = null;">
-          <iconify-icon icon="material-symbols-light:close" class="text-lg"></iconify-icon>
-          <span>Close tab</span>
-        </button>
-        <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-          data-on-click:stop="const id = ctxMenu.tabId; const idx = router.pageTabs.findIndex(t => t.id === id); router.pageTabs = router.pageTabs.filter((t, i) => i >= idx || (router.pinnedPageTabs || []).includes(t.id)); if (!router.pageTabs.find(t => t.id === router.activePageTabId)) router.switchPageTab(router.pageTabs[0]?.id); ctxMenu = null;">
-          <iconify-icon icon="material-symbols-light:chevron-left" class="text-lg"></iconify-icon>
-          <span>Close tabs to the left</span>
-        </button>
-        <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-          data-on-click:stop="const id = ctxMenu.tabId; const idx = router.pageTabs.findIndex(t => t.id === id); router.pageTabs = router.pageTabs.filter((t, i) => i <= idx || (router.pinnedPageTabs || []).includes(t.id)); if (!router.pageTabs.find(t => t.id === router.activePageTabId)) router.switchPageTab(router.pageTabs[0]?.id); ctxMenu = null;">
-          <iconify-icon icon="material-symbols-light:chevron-right" class="text-lg"></iconify-icon>
-          <span>Close tabs to the right</span>
-        </button>
-        <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-          data-on-click:stop="const id = ctxMenu.tabId; router.pageTabs = router.pageTabs.filter(t => t.id === id || (router.pinnedPageTabs || []).includes(t.id)); router.switchPageTab(id); ctxMenu = null;">
-          <iconify-icon icon="material-symbols-light:clear-all" class="text-lg"></iconify-icon>
-          <span>Close other tabs</span>
-        </button>
-        <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-          data-on-click:stop="const t = router.pageTabs.find(x => x.id === ctxMenu.tabId); if (t) { const entry = { title: (t.meta ?? t.linkedContent?.meta)?.title || 'Tab', url: t.route || t.source, icon: (t.meta ?? t.linkedContent?.meta)?.icon || 'material-symbols-light:star-outline' }; favorites = [...favorites, entry]; localStorage.favorites = favorites; } ctxMenu = null;">
-          <iconify-icon icon="material-symbols-light:star-outline" class="text-lg"></iconify-icon>
-          <span>Save to Favorites</span>
-        </button>
-      </template>
-
-      <!-- LINK actions -->
-      <template data-if="ctxMenu && ctxMenu.type === 'link'">
-        <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-          data-on-click:stop="router.createPageTab(ctxMenu.url, ctxMenu.url); ctxMenu = null;">
-          <iconify-icon icon="material-symbols-light:add" class="text-lg"></iconify-icon>
-          <span>Open in new tab</span>
-        </button>
-        <button class="btn btn-ghost btn-sm w-full justify-start rounded-none"
-          data-on-click:stop="if (ctxMenu.url) { const entry = { title: ctxMenu.title || ctxMenu.url, href: ctxMenu.url, icon: ctxMenu.icon || 'material-symbols-light:star-outline' }; favorites = [...favorites, entry]; localStorage.favorites = favorites; } ctxMenu = null;">
-          <iconify-icon icon="material-symbols-light:star-outline" class="text-lg"></iconify-icon>
-          <span>Save to Favorites</span>
-        </button>
-      </template>
-    </div>
-
-    <!-- Declarative backdrop overlay to close context menu on click-away -->
-    <div data-show="ctxMenu" class="fixed inset-0 z-40 bg-transparent" data-on-click="ctxMenu = null"></div>
-
-    <!-- Page Footer with Inline Diagnostics (within content drawer, not below sidebar) -->
-    <footer class="w-full px-6 py-2.5 text-xs bg-base-300/80 backdrop-blur-md border-t border-base-content/10 shrink-0 z-10 flex flex-wrap items-center justify-between gap-4 transition-all duration-300"
-      data-class="{ 'sticky bottom-0': fixedFooter, 'mt-auto': !fixedFooter }">
-      <div class="flex flex-wrap items-center gap-x-5 gap-y-1 font-mono opacity-80">
-        <span class="inline-flex items-center gap-1.5"><span class="badge badge-xs badge-accent"></span><span data-bind="'Width: ' + window.innerWidth + 'px'"></span></span>
-        <span class="inline-flex items-center gap-1.5"><span class="badge badge-xs badge-secondary"></span><span data-bind="'Mobile: ' + isMobile"></span></span>
-        <span class="inline-flex items-center gap-1.5"><span class="badge badge-xs badge-info"></span><span data-bind="'Sidebar: ' + (collapsed ? 'Collapsed' : 'Expanded')"></span></span>
-        <span class="inline-flex items-center gap-1.5"><span class="badge badge-xs badge-success"></span><span data-bind="'Route: ' + (router.route || '/')"></span></span>
-        <span class="inline-flex items-center gap-1.5"><span class="badge badge-xs badge-warning"></span><span data-bind="'Zoom: ' + (zoom || 1) + 'x'"></span></span>
-      </div>
-      <div class="flex items-center gap-4 text-xs opacity-60 font-sans">
-        <span>Nexus-UX Engine</span>
-        <span data-bind="'Tabs: ' + (router.pageTabs?.length || 0)"></span>
-      </div>
-    </footer>
 
     <!-- Search Modal (triggered by the navbar search button) -->
     <div class="modal modal-top sm:modal-middle" role="dialog" aria-label="Search"
@@ -573,7 +513,7 @@
   <div class="fixed inset-0 z-40 bg-black/50 transition-opacity duration-200" data-show="sidebarOpen"
     data-on-click="sidebarOpen = false; activeSidebarTab = 1"></div>
   <aside
-    class="dashboard-sidebar z-50 flex flex-col h-dvh bg-base-100/90 backdrop-blur-md transition-[width] duration-300 overflow-x-hidden"
+    class="dashboard-sidebar z-50 flex flex-col md:sticky md:top-0 md:h-dvh h-dvh bg-base-100/90 backdrop-blur-md transition-[width] duration-300 overflow-x-hidden"
     data-class="{ 'open fixed inset-y-0 start-0 w-80 shadow-2xl': sidebarOpen, 'hovered fixed inset-y-0 start-0 w-80 shadow-2xl': hovered && !sidebarOpen, 'md:w-80': !collapsed, 'w-0 md:w-20': collapsed && !hovered && !sidebarOpen }"
     data-on-mouseenter="if (collapsed && !sidebarOpen) hovered = true" data-on-mouseleave="hovered = false"
     data-effect="if (collapsed && !hovered && !sidebarOpen) { activeSidebarTab = 1; }">
