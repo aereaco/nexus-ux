@@ -206,7 +206,7 @@
         <!-- Search Button -->
         <button class="btn btn-ghost btn-circle hover:scale-102" aria-label="Open search" title="Search"
           data-on-click="searchQuery = ''; searchOpen = true">
-          <iconify-icon icon="material-symbols-light:search" style="font-size: 24px"></iconify-icon>
+          <iconify-icon icon="material-symbols-light:search" class="text-2xl"></iconify-icon>
         </button>
 
         <!-- Theme Switcher -->
@@ -219,7 +219,7 @@
         <!-- Notification Button -->
         <button class="btn btn-ghost btn-circle">
           <div class="indicator">
-            <iconify-icon icon="material-symbols-light:notifications" style="font-size: 24px"></iconify-icon>
+            <iconify-icon icon="material-symbols-light:notifications" class="text-2xl"></iconify-icon>
             <span class="badge badge-xs badge-primary indicator-item"></span>
           </div>
         </button>
@@ -373,7 +373,7 @@
 
           <button class="btn btn-circle shrink-0" data-class="{ 'hidden': !pageTabs }"
             data-on-click="router.createPageTab('_components/tab-new.html')">
-            <iconify-icon icon="material-symbols-light:add" style="font-size: 24px"></iconify-icon>
+            <iconify-icon icon="material-symbols-light:add" class="text-2xl"></iconify-icon>
           </button>
         </div>
       </div>
@@ -568,11 +568,12 @@
   <div class="fixed inset-0 z-40 bg-black/50 transition-opacity duration-200" data-show="sidebarOpen"
     data-on-click="sidebarOpen = false; activeSidebarTab = 1"></div>
   <aside
+    data-scrollbar="none"
     class="dashboard-sidebar z-50 flex flex-col h-dvh bg-base-100/90 backdrop-blur-md transition-[width] duration-300 overflow-x-hidden"
     data-class="{ 'open fixed inset-y-0 start-0 w-80 shadow-2xl': sidebarOpen, 'hovered fixed inset-y-0 start-0 w-80 shadow-2xl': hovered && !sidebarOpen, 'md:w-80': !collapsed, 'w-0 md:w-20': collapsed && !hovered && !sidebarOpen }"
     data-on-mouseenter="if (collapsed && !sidebarOpen) hovered = true" data-on-mouseleave="hovered = false"
     data-effect="if (collapsed && !hovered && !sidebarOpen) { activeSidebarTab = 1; }">
-    <div class="flex flex-col h-full w-full">
+    <div class="flex flex-col h-full w-full overflow-x-hidden">
       <div class="navbar flex justify-between pe-4">
         <div class="flex flex-1 items-center">
           <a class="btn btn-ghost text-xl ps-1">
@@ -585,7 +586,7 @@
         </div>
         <button class="btn btn-ghost btn-circle close" data-class="{ 'hidden': !sidebarOpen, 'block': sidebarOpen }"
           data-on-click="sidebarOpen = false; activeSidebarTab = 1" aria-label="close sidebar">
-          <iconify-icon icon="material-symbols-light:close" style="font-size: 24px"></iconify-icon>
+          <iconify-icon icon="material-symbols-light:close" class="text-2xl"></iconify-icon>
         </button>
       </div>
 
@@ -597,7 +598,7 @@
               class="flex flex-nowrap items-center whitespace-nowrap"
               data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
               data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
-              <iconify-icon data-bind-icon="item.icon" class="shrink-0" style="font-size: 24px"></iconify-icon>
+              <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
               <span class="whitespace-nowrap truncate font-medium" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
             </a>
           </li>
@@ -770,29 +771,29 @@
 
       <div class="dock shrink-0 overflow-hidden"
         data-class="{ 'flex': (collapsed || isMobile) && !hovered && !sidebarOpen, 'hidden': sidebarOpen || hovered || (!collapsed && !isMobile) }">
-        <iconify-icon icon="material-symbols-light:left-panel-open-outline" style="font-size: 24px"></iconify-icon>
+        <iconify-icon icon="material-symbols-light:left-panel-open-outline" class="text-2xl"></iconify-icon>
       </div>
       <div class="dock shrink-0 overflow-hidden"
         data-class="{ 'flex': sidebarOpen || hovered || (!collapsed && !isMobile), 'hidden': (collapsed || isMobile) && !hovered && !sidebarOpen }">
         <button class="tooltip tooltip-top" data-tip="Menu" data-class="{ 'dock-active': activeSidebarTab === 1 }"
           data-on-click="activeSidebarTab = 1">
-          <iconify-icon icon="material-symbols-light:list" style="font-size: 24px"></iconify-icon>
+          <iconify-icon icon="material-symbols-light:list" class="text-2xl"></iconify-icon>
         </button>
 
         <button class="tooltip tooltip-top" data-tip="Favorites" data-class="{ 'dock-active': activeSidebarTab === 2 }"
           data-on-click="activeSidebarTab = 2">
-          <iconify-icon icon="material-symbols-light:star-outline" style="font-size: 24px"></iconify-icon>
+          <iconify-icon icon="material-symbols-light:star-outline" class="text-2xl"></iconify-icon>
         </button>
 
         <button class="tooltip tooltip-top" data-tip="Preferences"
           data-class="{ 'dock-active': activeSidebarTab === 3 }" data-on-click="activeSidebarTab = 3">
-          <iconify-icon icon="material-symbols-light:tune" style="font-size: 24px"></iconify-icon>
+          <iconify-icon icon="material-symbols-light:tune" class="text-2xl"></iconify-icon>
         </button>
       </div>
 
-      <!-- DaisyUI 5 Virtual Anchor Target -->
+      <!-- Virtual Anchor Target -->
       <div id="click-anchor" class="fixed pointer-events-none"
-        style="anchor-name: --ctx-anchor; position: fixed; top: 0px; left: 0px; width: 0px; height: 0px;"></div>
+        style="anchor-name: --ctx-anchor; position: fixed; inset-block-start: 0; inset-inline-start: 0; width: 0; height: 0;"></div>
 
       <!-- Native HTML Popover API + DaisyUI 5 Menu Context Menu Template -->
       <ul id="ctx-menu-overlay" popover
