@@ -7842,9 +7842,17 @@ ${match}</ul>
   }
   function findScrollParent(el) {
     while (el && el !== document.body && el !== document.documentElement) {
+      if (el.getAttribute("data-scrollbar") === "none" || el.classList.contains("scrollbar-none")) {
+        return null;
+      }
       const s = window.getComputedStyle(el);
-      const hasScroll = s.overflowY === "auto" || s.overflowY === "scroll" || s.overflowX === "auto" || s.overflowX === "scroll";
-      if (hasScroll && (el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth)) {
+      if (s.scrollbarWidth === "none") {
+        el = el.parentElement;
+        continue;
+      }
+      const hasScrollY = (s.overflowY === "auto" || s.overflowY === "scroll") && s.overflowY !== "hidden" && el.scrollHeight > el.clientHeight;
+      const hasScrollX = (s.overflowX === "auto" || s.overflowX === "scroll") && s.overflowX !== "hidden" && el.scrollWidth > el.clientWidth;
+      if (hasScrollY || hasScrollX) {
         return el;
       }
       el = el.parentElement;
@@ -8092,8 +8100,16 @@ ${match}</ul>
         }
         update() {
           const { clientHeight, scrollHeight, clientWidth, scrollWidth, scrollTop, scrollLeft } = this.el;
-          const isRTL = window.getComputedStyle(this.el).direction === "rtl";
-          if (scrollHeight > clientHeight && clientHeight > 0) {
+          const s = window.getComputedStyle(this.el);
+          const isRTL = s.direction === "rtl";
+          if (this.el.getAttribute("data-scrollbar") === "none" || this.el.classList.contains("scrollbar-none") || s.scrollbarWidth === "none") {
+            if (this.trackV)
+              this.trackV.style.display = "none";
+            if (this.trackH)
+              this.trackH.style.display = "none";
+            return;
+          }
+          if (s.overflowY !== "hidden" && (s.overflowY === "auto" || s.overflowY === "scroll") && scrollHeight > clientHeight && clientHeight > 0) {
             this.trackV.style.display = "block";
             this.trackV.style.transform = `translate3d(0, ${scrollTop}px, 0)`;
             this.trackV.style.height = `${clientHeight}px`;
@@ -8104,9 +8120,10 @@ ${match}</ul>
             this.thumbV.style.height = `${thumbHeight}px`;
             this.thumbV.style.transform = `translate3d(0, ${thumbTop}px, 0)`;
           } else {
-            this.trackV.style.display = "none";
+            if (this.trackV)
+              this.trackV.style.display = "none";
           }
-          if (scrollWidth > clientWidth && clientWidth > 0) {
+          if (s.overflowX !== "hidden" && (s.overflowX === "auto" || s.overflowX === "scroll") && scrollWidth > clientWidth && clientWidth > 0) {
             this.trackH.style.display = "block";
             const trackHeight = 8;
             this.trackH.style.transform = `translate3d(${scrollLeft}px, ${scrollTop + clientHeight - trackHeight}px, 0)`;
@@ -8119,7 +8136,8 @@ ${match}</ul>
             this.thumbH.style.width = `${thumbWidth}px`;
             this.thumbH.style.transform = `translate3d(${isRTL ? -thumbLeft : thumbLeft}px, 0, 0)`;
           } else {
-            this.trackH.style.display = "none";
+            if (this.trackH)
+              this.trackH.style.display = "none";
           }
         }
         bindEvents() {
@@ -8217,6 +8235,8 @@ ${match}</ul>
                   config = { mode: "overlay" };
                 } else if (evaluated === "native") {
                   config = { mode: "native" };
+                } else if (evaluated === "none") {
+                  config = { mode: "none" };
                 } else if (evaluated === "auto-hide" || evaluated === "autohide") {
                   config = { autohide: 800 };
                 } else if (!isNaN(Number(evaluated))) {
@@ -8226,6 +8246,8 @@ ${match}</ul>
             } catch {
               if (value === "overlay")
                 config = { mode: "overlay" };
+              if (value === "none")
+                config = { mode: "none" };
             }
           }
           if (isGlobal) {
@@ -8234,6 +8256,10 @@ ${match}</ul>
             setupGlobalCaptureListeners(runtime);
           }
           const merged = { ...globalConfig, ...config };
+          if (merged.mode === "none") {
+            el.classList.add("scrollbar-none");
+            return;
+          }
           const autohideMs = merged.autohide === false ? false : typeof merged.autohide === "number" ? merged.autohide : 800;
           const width = resolveDimension(merged.width, "0.375rem");
           const height = resolveDimension(merged.height, width);
