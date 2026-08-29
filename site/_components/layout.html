@@ -1,6 +1,7 @@
-<div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300 min-h-screen" data-signal="{
+<div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300" data-signal="{
       collapsed: localStorage.collapsed !== 'false',
       pageTabs: localStorage.pageTabs !== 'false',
+      fixedHeader: localStorage.fixedHeader !== 'false',
       rtl: localStorage.rtl === 'true',
       zoom: localStorage.zoom ?? 1,
       hovered: false,
@@ -10,11 +11,11 @@
       searchQuery: '',
       activeSidebarTab: 1,
       themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset']
-    }" data-class="{ 'md:grid-cols-[20rem_1fr]': !collapsed, 'md:grid-cols-[5rem_1fr]': collapsed }"
+    }" data-class="{ 'md:grid-cols-[20rem_1fr]': !collapsed, 'md:grid-cols-[5rem_1fr]': collapsed, 'h-screen max-h-screen overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }"
   data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: zoom + 'rem' }"
   data-on-resize:window="isMobile = window.innerWidth < 768">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
-  <div class="drawer-content" data-signal:global="{
+  <div class="drawer-content" data-class="{ 'flex flex-col h-full overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }" data-signal:global="{
         ctxMenu: null,
         ctxMenuItems: [],
         favorites: localStorage.favorites ?? [],
