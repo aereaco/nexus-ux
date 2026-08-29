@@ -28,40 +28,63 @@ export interface ScrollbarConfig {
 }
 
 const SCROLLBAR_BASE_CSS = `
-.scrollbar-auto-hide, [data-scrollbar], [data-scrollbar-global] {
-  scrollbar-width: var(--scrollbar-width-std, thin);
-  scrollbar-color: var(--scrollbar-thumb, transparent) var(--scrollbar-track, transparent);
+/* Universal Global Auto-Hide Baseline */
+html[data-scrollbar-global] *,
+.scrollbar-auto-hide,
+[data-scrollbar] {
+  scrollbar-width: var(--scrollbar-width-std, thin) !important;
+  scrollbar-color: transparent transparent !important;
   transition: scrollbar-color 0.3s ease-out;
 }
-.scrollbar-auto-hide::-webkit-scrollbar, [data-scrollbar]::-webkit-scrollbar, [data-scrollbar-global]::-webkit-scrollbar {
+html[data-scrollbar-global] *::-webkit-scrollbar,
+.scrollbar-auto-hide::-webkit-scrollbar,
+[data-scrollbar]::-webkit-scrollbar {
   width: var(--scrollbar-width, 6px);
   height: var(--scrollbar-height, 6px);
 }
-.scrollbar-auto-hide::-webkit-scrollbar-track, [data-scrollbar]::-webkit-scrollbar-track, [data-scrollbar-global]::-webkit-scrollbar-track {
+html[data-scrollbar-global] *::-webkit-scrollbar-track,
+.scrollbar-auto-hide::-webkit-scrollbar-track,
+[data-scrollbar]::-webkit-scrollbar-track {
   background: var(--scrollbar-track, transparent);
   border-radius: var(--scrollbar-track-radius, 9999px);
 }
-.scrollbar-auto-hide::-webkit-scrollbar-thumb, [data-scrollbar]::-webkit-scrollbar-thumb, [data-scrollbar-global]::-webkit-scrollbar-thumb {
-  background-color: var(--scrollbar-thumb-init, transparent);
+html[data-scrollbar-global] *::-webkit-scrollbar-thumb,
+.scrollbar-auto-hide::-webkit-scrollbar-thumb,
+[data-scrollbar]::-webkit-scrollbar-thumb {
+  background-color: transparent !important;
   border-radius: var(--scrollbar-thumb-radius, 9999px);
   transition: background-color 0.3s ease-out;
 }
-.scrollbar-auto-hide.is-scrolling, [data-scrollbar].is-scrolling, [data-scrollbar-global].is-scrolling {
+
+/* Motion State: Only the actively scrolling container receives .is-scrolling */
+html[data-scrollbar-global] *.is-scrolling,
+.scrollbar-auto-hide.is-scrolling,
+[data-scrollbar].is-scrolling {
   scrollbar-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent)) var(--scrollbar-track, transparent) !important;
 }
-.scrollbar-auto-hide.is-scrolling::-webkit-scrollbar-thumb, [data-scrollbar].is-scrolling::-webkit-scrollbar-thumb, [data-scrollbar-global].is-scrolling::-webkit-scrollbar-thumb {
+html[data-scrollbar-global] *.is-scrolling::-webkit-scrollbar-thumb,
+.scrollbar-auto-hide.is-scrolling::-webkit-scrollbar-thumb,
+[data-scrollbar].is-scrolling::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent)) !important;
 }
-.scrollbar-auto-hide::-webkit-scrollbar-thumb:hover, [data-scrollbar]::-webkit-scrollbar-thumb:hover, [data-scrollbar-global]::-webkit-scrollbar-thumb:hover {
+html[data-scrollbar-global] *::-webkit-scrollbar-thumb:hover,
+.scrollbar-auto-hide::-webkit-scrollbar-thumb:hover,
+[data-scrollbar]::-webkit-scrollbar-thumb:hover {
   background-color: var(--scrollbar-thumb-hover, color-mix(in srgb, currentColor 50%, transparent)) !important;
 }
-.scrollbar-auto-hide::-webkit-scrollbar-thumb:active, [data-scrollbar]::-webkit-scrollbar-thumb:active, [data-scrollbar-global]::-webkit-scrollbar-thumb:active {
+html[data-scrollbar-global] *::-webkit-scrollbar-thumb:active,
+.scrollbar-auto-hide::-webkit-scrollbar-thumb:active,
+[data-scrollbar]::-webkit-scrollbar-thumb:active {
   background-color: var(--scrollbar-thumb-active, color-mix(in srgb, currentColor 70%, transparent)) !important;
 }
-.scrollbar-auto-hide::-webkit-scrollbar-button, [data-scrollbar]::-webkit-scrollbar-button, [data-scrollbar-global]::-webkit-scrollbar-button {
+html[data-scrollbar-global] *::-webkit-scrollbar-button,
+.scrollbar-auto-hide::-webkit-scrollbar-button,
+[data-scrollbar]::-webkit-scrollbar-button {
   display: var(--scrollbar-buttons, none);
 }
-.scrollbar-auto-hide::-webkit-scrollbar-corner, [data-scrollbar]::-webkit-scrollbar-corner, [data-scrollbar-global]::-webkit-scrollbar-corner {
+html[data-scrollbar-global] *::-webkit-scrollbar-corner,
+.scrollbar-auto-hide::-webkit-scrollbar-corner,
+[data-scrollbar]::-webkit-scrollbar-corner {
   background: var(--scrollbar-corner, transparent);
 }
 `;
@@ -74,7 +97,6 @@ function ensureStylesAdopted(): void {
   try {
     stylesheet.adoptCSSSync(SCROLLBAR_BASE_CSS, 'nexus-scrollbar-engine');
   } catch {
-    // Constructable stylesheet fallback
     const styleEl = document.createElement('style');
     styleEl.id = 'nexus-scrollbar-styles';
     styleEl.textContent = SCROLLBAR_BASE_CSS;
@@ -85,7 +107,7 @@ function ensureStylesAdopted(): void {
 // Dual-Value Resolvers: Native CSS vs. Tailwind Tokens
 function resolveDimension(val: string | number | undefined, defaultVal: string): string {
   if (val === undefined || val === null || val === '') return defaultVal;
-  if (typeof val === 'number') return `${val * 4}px`; // Tailwind scale (1 -> 4px, 2 -> 8px)
+  if (typeof val === 'number') return `${val * 4}px`;
   const s = String(val).trim();
   if (!isNaN(Number(s))) return `${Number(s) * 4}px`;
   return s;
@@ -113,7 +135,6 @@ function resolveColor(val: string | undefined, defaultVal: string): string {
   if (s.startsWith('#') || s.startsWith('rgb') || s.startsWith('hsl') || s.startsWith('oklch') || s.startsWith('color-mix') || s.startsWith('var(')) {
     return s;
   }
-  // DaisyUI / Tailwind Semantic Theme Variables
   const themeMap: Record<string, string> = {
     primary: 'var(--p, var(--color-primary, currentColor))',
     secondary: 'var(--s, var(--color-secondary, currentColor))',
@@ -148,6 +169,45 @@ let globalConfig: ScrollbarConfig = {
   height: '6px'
 };
 
+// Global capture listener registration state
+let globalListenerRegistered = false;
+const elementTimers = new WeakMap<Element, number>();
+
+function setupGlobalCaptureListener(runtime: RuntimeContext): void {
+  if (globalListenerRegistered || typeof document === 'undefined') return;
+  globalListenerRegistered = true;
+
+  const onGlobalScroll = (e: Event) => {
+    const target = e.target;
+    if (!(target instanceof Element)) return;
+
+    // Check if target has local autohide override
+    const autohideMs = typeof globalConfig.autohide === 'number' ? globalConfig.autohide : 800;
+    if (globalConfig.autohide === false || autohideMs <= 0) return;
+
+    target.classList.add('is-scrolling');
+
+    const existingTimer = elementTimers.get(target);
+    if (existingTimer !== undefined) clearTimeout(existingTimer);
+
+    const timer = setTimeout(() => {
+      target.classList.remove('is-scrolling');
+      elementTimers.delete(target);
+    }, autohideMs) as unknown as number;
+
+    elementTimers.set(target, timer);
+  };
+
+  document.addEventListener('scroll', onGlobalScroll, { capture: true, passive: true });
+
+  if (runtime && runtime.registerCleanup) {
+    runtime.registerCleanup(() => {
+      document.removeEventListener('scroll', onGlobalScroll, { capture: true });
+      globalListenerRegistered = false;
+    });
+  }
+}
+
 const scrollbarModule: AttributeModule = {
   name: 'scrollbar',
   attribute: 'scrollbar',
@@ -179,6 +239,7 @@ const scrollbarModule: AttributeModule = {
     if (isGlobal) {
       globalConfig = { ...globalConfig, ...config };
       el.setAttribute('data-scrollbar-global', 'true');
+      setupGlobalCaptureListener(runtime);
     }
 
     const merged = { ...globalConfig, ...config };
@@ -208,32 +269,29 @@ const scrollbarModule: AttributeModule = {
     el.style.setProperty('--scrollbar-buttons', merged.buttons ? 'block' : 'none');
     if (merged.corner) el.style.setProperty('--scrollbar-corner', resolveColor(merged.corner, 'transparent'));
 
-    if (!el.classList.contains('scrollbar-auto-hide') && !isGlobal) {
+    if (!isGlobal) {
       el.classList.add('scrollbar-auto-hide');
-    }
 
-    // Element-Scoped Motion Tracking Lifecycle (Single Observer Reactive Lifecycle)
-    if (autohideMs !== false && autohideMs > 0) {
-      let timer: number | undefined;
+      // Local explicit motion tracking
+      if (autohideMs !== false && autohideMs > 0) {
+        let timer: number | undefined;
 
-      const onScroll = () => {
-        el.classList.add('is-scrolling');
-        if (timer !== undefined) clearTimeout(timer);
-        timer = setTimeout(() => {
-          el.classList.remove('is-scrolling');
-          timer = undefined;
-        }, autohideMs) as unknown as number;
-      };
+        const onScroll = () => {
+          el.classList.add('is-scrolling');
+          if (timer !== undefined) clearTimeout(timer);
+          timer = setTimeout(() => {
+            el.classList.remove('is-scrolling');
+            timer = undefined;
+          }, autohideMs) as unknown as number;
+        };
 
-      el.addEventListener('scroll', onScroll, { passive: true });
+        el.addEventListener('scroll', onScroll, { passive: true });
 
-      return () => {
-        el.removeEventListener('scroll', onScroll);
-        if (timer !== undefined) clearTimeout(timer);
-      };
-    } else {
-      // Permanent visibility when autohide is disabled
-      el.style.setProperty('--scrollbar-thumb-init', thumbColor);
+        return () => {
+          el.removeEventListener('scroll', onScroll);
+          if (timer !== undefined) clearTimeout(timer);
+        };
+      }
     }
   }
 };
