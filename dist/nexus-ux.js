@@ -2519,10 +2519,8 @@ ${scripts}
               templateContent: "",
               meta: {}
             });
-            const ctx = {
-              element: el,
-              ...componentState
-            };
+            const ctx = componentState;
+            ctx.element = el;
             el[COMPONENT_CONTEXT_KEY] = ctx;
             let tabObj = null;
             const isTabOutlet = el.tagName.toLowerCase() === "tab-content";
@@ -2554,12 +2552,20 @@ ${scripts}
                 try {
                   config = JSON.parse(evaluated);
                 } catch {
-                  config = { path: evaluated };
+                  if (evaluated.trim().startsWith("{")) {
+                    try {
+                      config = new Function("return (" + evaluated + ")")();
+                    } catch {
+                      config = { path: evaluated };
+                    }
+                  } else {
+                    config = { path: evaluated };
+                  }
                 }
               } else {
                 return;
               }
-              if (!config.path || config.path === "none")
+              if (!config.path || config.path === "none" || config.path === "undefined" || config.path === "null")
                 return;
               if (config.path === __lastPath)
                 return;
@@ -2568,6 +2574,7 @@ ${scripts}
                 componentState.isLoading = true;
                 componentState.hasError = false;
                 if (isTabOutlet && tabObj && typeof tabObj === "object") {
+                  tabObj.isLoading = true;
                   tabObj.linkedContent = componentState;
                 }
                 try {
@@ -2593,6 +2600,9 @@ ${scripts}
                           componentState.templateContent = fresh;
                           const extracted2 = extractResourceMetadata(fresh, targetPath, runtime);
                           componentState.meta = extracted2;
+                          if (tabObj && extracted2) {
+                            tabObj.meta = { ...tabObj.meta || {}, ...extracted2 };
+                          }
                         }
                       }
                     });
@@ -2651,6 +2661,9 @@ ${scripts}
                   }
                 } finally {
                   componentState.isLoading = false;
+                  if (isTabOutlet && tabObj && typeof tabObj === "object") {
+                    tabObj.isLoading = false;
+                  }
                 }
               };
               load();
