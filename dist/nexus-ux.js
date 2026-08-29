@@ -7846,10 +7846,6 @@ ${match}</ul>
         return null;
       }
       const s = window.getComputedStyle(el);
-      if (s.scrollbarWidth === "none") {
-        el = el.parentElement;
-        continue;
-      }
       const hasScrollY = (s.overflowY === "auto" || s.overflowY === "scroll") && s.overflowY !== "hidden" && el.scrollHeight > el.clientHeight;
       const hasScrollX = (s.overflowX === "auto" || s.overflowX === "scroll") && s.overflowX !== "hidden" && el.scrollWidth > el.clientWidth;
       if (hasScrollY || hasScrollX) {
@@ -8102,7 +8098,7 @@ ${match}</ul>
           const { clientHeight, scrollHeight, clientWidth, scrollWidth, scrollTop, scrollLeft } = this.el;
           const s = window.getComputedStyle(this.el);
           const isRTL = s.direction === "rtl";
-          if (this.el.getAttribute("data-scrollbar") === "none" || this.el.classList.contains("scrollbar-none") || s.scrollbarWidth === "none") {
+          if (this.el.getAttribute("data-scrollbar") === "none" || this.el.classList.contains("scrollbar-none")) {
             if (this.trackV)
               this.trackV.style.display = "none";
             if (this.trackH)

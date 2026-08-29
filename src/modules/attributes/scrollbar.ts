@@ -244,10 +244,6 @@ function findScrollParent(el: Element | null): Element | null {
       return null;
     }
     const s = window.getComputedStyle(el);
-    if (s.scrollbarWidth === 'none') {
-      el = el.parentElement;
-      continue;
-    }
     const hasScrollY = (s.overflowY === 'auto' || s.overflowY === 'scroll') && s.overflowY !== 'hidden' && (el.scrollHeight > el.clientHeight);
     const hasScrollX = (s.overflowX === 'auto' || s.overflowX === 'scroll') && s.overflowX !== 'hidden' && (el.scrollWidth > el.clientWidth);
     if (hasScrollY || hasScrollX) {
@@ -325,8 +321,8 @@ class OverlayScrollbarInstance {
     const s = window.getComputedStyle(this.el);
     const isRTL = s.direction === 'rtl';
 
-    // Check declarative opt-out or hidden overflow
-    if (this.el.getAttribute('data-scrollbar') === 'none' || this.el.classList.contains('scrollbar-none') || s.scrollbarWidth === 'none') {
+    // Check declarative opt-out
+    if (this.el.getAttribute('data-scrollbar') === 'none' || this.el.classList.contains('scrollbar-none')) {
       if (this.trackV) this.trackV.style.display = 'none';
       if (this.trackH) this.trackH.style.display = 'none';
       return;
