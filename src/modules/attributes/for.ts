@@ -183,7 +183,7 @@ const forModule: AttributeModule = {
                 };
                 cleanClonedMarkers(n);
 
-                runtime.processElement(n, true);
+                newlyCreatedNodes.push(n);
               }
             });
             mountedMap.set(key, nodes);
@@ -229,6 +229,12 @@ const forModule: AttributeModule = {
           }
           expectedBefore = node;
         }
+
+        // Process newly created nodes AFTER they are connected to the DOM tree so
+        // engine directives (e.g. stylesheet adoptClass) find ancestor context.
+        newlyCreatedNodes.forEach(n => {
+          runtime.processElement(n, true);
+        });
       });
 
       return () => {

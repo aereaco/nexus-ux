@@ -5366,7 +5366,7 @@ ${scripts}
                         }
                       };
                       cleanClonedMarkers(n);
-                      runtime.processElement(n, true);
+                      newlyCreatedNodes.push(n);
                     }
                   });
                   mountedMap.set(key, nodes);
@@ -5405,6 +5405,9 @@ ${scripts}
                 }
                 expectedBefore = node;
               }
+              newlyCreatedNodes.forEach((n) => {
+                runtime.processElement(n, true);
+              });
             });
             return () => {
               cleanup();
