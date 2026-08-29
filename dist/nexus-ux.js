@@ -8016,9 +8016,9 @@ html[data-scrollbar-global] *::-webkit-scrollbar-corner,
           const trackHover = resolveColor(merged.trackHover, trackColor);
           const thumbRadius = resolveRadius(merged.thumbRadius || merged.radius, "9999px");
           const trackRadius = resolveRadius(merged.trackRadius || merged.radius, "9999px");
-          const fadeIn = resolveDuration(merged.fadeIn, "0.2s");
-          const fadeOut = resolveDuration(merged.fadeOut || merged.fade, "0.4s");
-          const fadeTiming = merged.fadeTiming || "cubic-bezier(0.4, 0, 0.2, 1)";
+          const fadeIn = resolveDuration(config.fadeIn || globalConfig.fadeIn, "0.2s");
+          const fadeOut = resolveDuration(config.fadeOut || config.fade || globalConfig.fadeOut || globalConfig.fade, "0.4s");
+          const fadeTiming = config.fadeTiming || globalConfig.fadeTiming || "cubic-bezier(0.4, 0, 0.2, 1)";
           el.style.setProperty("--scrollbar-width", width);
           el.style.setProperty("--scrollbar-height", height);
           el.style.setProperty("--scrollbar-thumb", thumbColor);
