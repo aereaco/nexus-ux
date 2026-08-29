@@ -6853,12 +6853,13 @@ ${match}</ul>
                     }
                     const fname = isObj ? item.path?.split("/").pop() || item.id || "" : item;
                     const cleanName = isObj ? item.id || item.name || fname.replace(/\.(html|htm|md|markdown)$/i, "") : fname.replace(/\.(html|htm|md|markdown)$/i, "");
-                    const href = isObj ? item.route !== void 0 ? item.route : cleanName === "home" ? "/" : `/${cleanName}` : cleanName === "home" || cleanName === "index" ? "/" : `/${cleanName}`;
+                    const parent = isObj ? item.parent !== void 0 ? item.parent : item.meta?.parent !== void 0 ? item.meta.parent : cleanName === "home" ? null : "/" : cleanName === "home" ? null : "/";
+                    const defaultRoute = parent && parent !== "/" ? `${parent.replace(/\/+$/, "")}/${cleanName}` : cleanName === "home" ? "/" : `/${cleanName}`;
+                    const href = isObj ? item.route !== void 0 ? item.route : defaultRoute : defaultRoute;
                     const compPath = isObj ? item.path || `/${pDir}/${fname}` : `/${pDir}/${fname}`;
                     let title = isObj ? item.title || item.meta?.title || "" : "";
                     let icon = isObj ? item.icon || item.meta?.icon || "" : "";
                     const order = isObj ? item.order !== void 0 ? item.order : item.meta?.order : void 0;
-                    const parent = isObj ? item.parent !== void 0 ? item.parent : item.meta?.parent !== void 0 ? item.meta.parent : href === "/" ? null : "/" : href === "/" ? null : "/";
                     const defaultTitle = href === "/" ? "Home" : href.replace(/^\/+/, "").replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
                     const finalTitle = title || defaultTitle;
                     const finalIcon = icon || (parent ? void 0 : "material-symbols-light:article-outline");
@@ -7589,7 +7590,21 @@ ${match}</ul>
                     }
                     if (exists) {
                       staticComponent = candidate;
-                    } else {
+                    } else if (path.includes("/")) {
+                      const leaf = path.split("/").pop() || "";
+                      const fallbackCandidate = resolveStaticComponent("/" + leaf);
+                      if (isAllowedStaticCandidate(fallbackCandidate, "/" + leaf)) {
+                        try {
+                          const fRes = await fetch(fallbackCandidate, { method: "HEAD" });
+                          if (fRes.ok || fRes.status === 405) {
+                            staticComponent = fallbackCandidate;
+                            exists = true;
+                          }
+                        } catch {
+                        }
+                      }
+                    }
+                    if (!exists) {
                       state.errorCode = 404;
                       state.navigate(cleanErrorPath, { replace: true });
                       return;
