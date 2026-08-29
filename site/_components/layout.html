@@ -594,10 +594,11 @@
           <li class="cursor-pointer" data-drag>
             <a data-bind-href="item.href" draggable="false" data-bind-data-tab-title="item.tabTitle"
               data-bind-data-tab-icon="item.tabIcon"
+              class="flex flex-nowrap items-center whitespace-nowrap"
               data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
               data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
-              <iconify-icon data-bind-icon="item.icon" style="font-size: 24px"></iconify-icon>
-              <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
+              <iconify-icon data-bind-icon="item.icon" class="shrink-0" style="font-size: 24px"></iconify-icon>
+              <span class="whitespace-nowrap truncate font-medium" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
             </a>
           </li>
         </template>
@@ -767,11 +768,11 @@
         </div>
       </div>
 
-      <div class="dock"
+      <div class="dock shrink-0 overflow-hidden"
         data-class="{ 'flex': (collapsed || isMobile) && !hovered && !sidebarOpen, 'hidden': sidebarOpen || hovered || (!collapsed && !isMobile) }">
         <iconify-icon icon="material-symbols-light:left-panel-open-outline" style="font-size: 24px"></iconify-icon>
       </div>
-      <div class="dock"
+      <div class="dock shrink-0 overflow-hidden"
         data-class="{ 'flex': sidebarOpen || hovered || (!collapsed && !isMobile), 'hidden': (collapsed || isMobile) && !hovered && !sidebarOpen }">
         <button class="tooltip tooltip-top" data-tip="Menu" data-class="{ 'dock-active': activeSidebarTab === 1 }"
           data-on-click="activeSidebarTab = 1">
