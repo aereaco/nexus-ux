@@ -5329,6 +5329,7 @@ ${scripts}
                 return;
               const currentKeys = /* @__PURE__ */ new Set();
               const nextNodes = [];
+              const newlyCreatedNodes = [];
               items.forEach((item, index) => {
                 const key = item.id ?? index;
                 currentKeys.add(key);

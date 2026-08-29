@@ -129,6 +129,7 @@ const forModule: AttributeModule = {
 
         const currentKeys = new Set();
         const nextNodes: Node[] = [];
+        const newlyCreatedNodes: ForNode[] = [];
 
         items.forEach((item, index) => {
           const key = (item as any).id ?? index;
