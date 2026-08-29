@@ -7781,6 +7781,16 @@ ${match}</ul>
       return `${Number(s) * 4}px`;
     return s;
   }
+  function resolveDuration(val, defaultVal) {
+    if (val === void 0 || val === null || val === "")
+      return defaultVal;
+    if (typeof val === "number")
+      return `${val}ms`;
+    const s = String(val).trim();
+    if (!isNaN(Number(s)))
+      return `${s}ms`;
+    return s;
+  }
   function resolveRadius(val, defaultVal = "9999px") {
     if (!val)
       return defaultVal;
@@ -7830,31 +7840,56 @@ ${match}</ul>
     }
     return `var(--color-${s}, ${s})`;
   }
-  function setupGlobalCaptureListener(runtime) {
+  function findScrollParent(el) {
+    while (el && el !== document.body && el !== document.documentElement) {
+      const s = window.getComputedStyle(el);
+      const hasScroll = s.overflowY === "auto" || s.overflowY === "scroll" || s.overflowX === "auto" || s.overflowX === "scroll";
+      if (hasScroll && (el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth)) {
+        return el;
+      }
+      el = el.parentElement;
+    }
+    return null;
+  }
+  function triggerContainerMotion(target) {
+    const autohideMs = typeof globalConfig.autohide === "number" ? globalConfig.autohide : 800;
+    if (globalConfig.autohide === false || autohideMs <= 0)
+      return;
+    target.classList.add("is-scrolling");
+    const existingTimer = elementTimers.get(target);
+    if (existingTimer !== void 0)
+      clearTimeout(existingTimer);
+    const timer = setTimeout(() => {
+      target.classList.remove("is-scrolling");
+      elementTimers.delete(target);
+    }, autohideMs);
+    elementTimers.set(target, timer);
+  }
+  function setupGlobalCaptureListeners(runtime) {
     if (globalListenerRegistered || typeof document === "undefined")
       return;
     globalListenerRegistered = true;
     const onGlobalScroll = (e) => {
       const target = e.target;
+      if (target instanceof Element) {
+        triggerContainerMotion(target);
+      }
+    };
+    const onGlobalPointerMove = (e) => {
+      const target = e.target;
       if (!(target instanceof Element))
         return;
-      const autohideMs = typeof globalConfig.autohide === "number" ? globalConfig.autohide : 800;
-      if (globalConfig.autohide === false || autohideMs <= 0)
-        return;
-      target.classList.add("is-scrolling");
-      const existingTimer = elementTimers.get(target);
-      if (existingTimer !== void 0)
-        clearTimeout(existingTimer);
-      const timer = setTimeout(() => {
-        target.classList.remove("is-scrolling");
-        elementTimers.delete(target);
-      }, autohideMs);
-      elementTimers.set(target, timer);
+      const scrollContainer = findScrollParent(target);
+      if (scrollContainer) {
+        triggerContainerMotion(scrollContainer);
+      }
     };
     document.addEventListener("scroll", onGlobalScroll, { capture: true, passive: true });
+    document.addEventListener("pointermove", onGlobalPointerMove, { capture: true, passive: true });
     if (runtime && runtime.registerCleanup) {
       runtime.registerCleanup(() => {
         document.removeEventListener("scroll", onGlobalScroll, { capture: true });
+        document.removeEventListener("pointermove", onGlobalPointerMove, { capture: true });
         globalListenerRegistered = false;
       });
     }
@@ -7864,13 +7899,13 @@ ${match}</ul>
     "src/modules/attributes/scrollbar.ts"() {
       init_stylesheet();
       SCROLLBAR_BASE_CSS = `
-/* Universal Global Auto-Hide Baseline */
+/* Universal Global Auto-Hide Baseline (Fade Out on Idle) */
 html[data-scrollbar-global] *,
 .scrollbar-auto-hide,
 [data-scrollbar] {
   scrollbar-width: var(--scrollbar-width-std, thin) !important;
   scrollbar-color: transparent transparent !important;
-  transition: scrollbar-color 0.3s ease-out;
+  transition: scrollbar-color var(--scrollbar-fade-out, 0.4s) var(--scrollbar-fade-timing, cubic-bezier(0.4, 0, 0.2, 1));
 }
 html[data-scrollbar-global] *::-webkit-scrollbar,
 .scrollbar-auto-hide::-webkit-scrollbar,
@@ -7889,19 +7924,21 @@ html[data-scrollbar-global] *::-webkit-scrollbar-thumb,
 [data-scrollbar]::-webkit-scrollbar-thumb {
   background-color: transparent !important;
   border-radius: var(--scrollbar-thumb-radius, 9999px);
-  transition: background-color 0.3s ease-out;
+  transition: background-color var(--scrollbar-fade-out, 0.4s) var(--scrollbar-fade-timing, cubic-bezier(0.4, 0, 0.2, 1));
 }
 
-/* Motion State: Only the actively scrolling container receives .is-scrolling */
+/* Motion State: Active Reveal (Fade In on Motion) */
 html[data-scrollbar-global] *.is-scrolling,
 .scrollbar-auto-hide.is-scrolling,
 [data-scrollbar].is-scrolling {
   scrollbar-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent)) var(--scrollbar-track, transparent) !important;
+  transition: scrollbar-color var(--scrollbar-fade-in, 0.2s) ease-out;
 }
 html[data-scrollbar-global] *.is-scrolling::-webkit-scrollbar-thumb,
 .scrollbar-auto-hide.is-scrolling::-webkit-scrollbar-thumb,
 [data-scrollbar].is-scrolling::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent)) !important;
+  transition: background-color var(--scrollbar-fade-in, 0.2s) ease-out;
 }
 html[data-scrollbar-global] *::-webkit-scrollbar-thumb:hover,
 .scrollbar-auto-hide::-webkit-scrollbar-thumb:hover,
@@ -7929,7 +7966,11 @@ html[data-scrollbar-global] *::-webkit-scrollbar-corner,
         autohide: 800,
         thin: true,
         width: "6px",
-        height: "6px"
+        height: "6px",
+        fade: "0.4s",
+        fadeIn: "0.2s",
+        fadeOut: "0.4s",
+        fadeTiming: "cubic-bezier(0.4, 0, 0.2, 1)"
       };
       globalListenerRegistered = false;
       elementTimers = /* @__PURE__ */ new WeakMap();
@@ -7962,7 +8003,7 @@ html[data-scrollbar-global] *::-webkit-scrollbar-corner,
           if (isGlobal) {
             globalConfig = { ...globalConfig, ...config };
             el.setAttribute("data-scrollbar-global", "true");
-            setupGlobalCaptureListener(runtime);
+            setupGlobalCaptureListeners(runtime);
           }
           const merged = { ...globalConfig, ...config };
           const autohideMs = merged.autohide === false ? false : typeof merged.autohide === "number" ? merged.autohide : 800;
@@ -7975,6 +8016,9 @@ html[data-scrollbar-global] *::-webkit-scrollbar-corner,
           const trackHover = resolveColor(merged.trackHover, trackColor);
           const thumbRadius = resolveRadius(merged.thumbRadius || merged.radius, "9999px");
           const trackRadius = resolveRadius(merged.trackRadius || merged.radius, "9999px");
+          const fadeIn = resolveDuration(merged.fadeIn, "0.2s");
+          const fadeOut = resolveDuration(merged.fadeOut || merged.fade, "0.4s");
+          const fadeTiming = merged.fadeTiming || "cubic-bezier(0.4, 0, 0.2, 1)";
           el.style.setProperty("--scrollbar-width", width);
           el.style.setProperty("--scrollbar-height", height);
           el.style.setProperty("--scrollbar-thumb", thumbColor);
@@ -7986,13 +8030,16 @@ html[data-scrollbar-global] *::-webkit-scrollbar-corner,
           el.style.setProperty("--scrollbar-track-radius", trackRadius);
           el.style.setProperty("--scrollbar-width-std", merged.thin === false ? "auto" : "thin");
           el.style.setProperty("--scrollbar-buttons", merged.buttons ? "block" : "none");
+          el.style.setProperty("--scrollbar-fade-in", fadeIn);
+          el.style.setProperty("--scrollbar-fade-out", fadeOut);
+          el.style.setProperty("--scrollbar-fade-timing", fadeTiming);
           if (merged.corner)
             el.style.setProperty("--scrollbar-corner", resolveColor(merged.corner, "transparent"));
           if (!isGlobal) {
             el.classList.add("scrollbar-auto-hide");
             if (autohideMs !== false && autohideMs > 0) {
               let timer;
-              const onScroll = () => {
+              const onMotion = () => {
                 el.classList.add("is-scrolling");
                 if (timer !== void 0)
                   clearTimeout(timer);
@@ -8001,9 +8048,11 @@ html[data-scrollbar-global] *::-webkit-scrollbar-corner,
                   timer = void 0;
                 }, autohideMs);
               };
-              el.addEventListener("scroll", onScroll, { passive: true });
+              el.addEventListener("scroll", onMotion, { passive: true });
+              el.addEventListener("pointermove", onMotion, { passive: true });
               return () => {
-                el.removeEventListener("scroll", onScroll);
+                el.removeEventListener("scroll", onMotion);
+                el.removeEventListener("pointermove", onMotion);
                 if (timer !== void 0)
                   clearTimeout(timer);
               };

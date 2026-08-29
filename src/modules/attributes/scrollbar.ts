@@ -1,9 +1,9 @@
 /**
  * Universal Native + Tailwind Scrollbar Module for Nexus-UX
  *
- * Provides full support for native HTML5/CSS property values and Tailwind
- * semantic tokens with both global (`data-scrollbar:global`) and local (`data-scrollbar`)
- * scoping, utilizing constructable stylesheets and the single-observer reactive lifecycle.
+ * Provides full support for native HTML5/CSS property values, Tailwind
+ * semantic tokens, pointer-motion reveal, declarable fade transitions, and
+ * global/local scoping with element-level interactivity isolation.
  */
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
@@ -24,17 +24,21 @@ export interface ScrollbarConfig {
   trackRadius?: string;
   buttons?: boolean;
   corner?: string;
+  fade?: number | string;
+  fadeIn?: number | string;
+  fadeOut?: number | string;
+  fadeTiming?: string;
   global?: boolean;
 }
 
 const SCROLLBAR_BASE_CSS = `
-/* Universal Global Auto-Hide Baseline */
+/* Universal Global Auto-Hide Baseline (Fade Out on Idle) */
 html[data-scrollbar-global] *,
 .scrollbar-auto-hide,
 [data-scrollbar] {
   scrollbar-width: var(--scrollbar-width-std, thin) !important;
   scrollbar-color: transparent transparent !important;
-  transition: scrollbar-color 0.3s ease-out;
+  transition: scrollbar-color var(--scrollbar-fade-out, 0.4s) var(--scrollbar-fade-timing, cubic-bezier(0.4, 0, 0.2, 1));
 }
 html[data-scrollbar-global] *::-webkit-scrollbar,
 .scrollbar-auto-hide::-webkit-scrollbar,
@@ -53,19 +57,21 @@ html[data-scrollbar-global] *::-webkit-scrollbar-thumb,
 [data-scrollbar]::-webkit-scrollbar-thumb {
   background-color: transparent !important;
   border-radius: var(--scrollbar-thumb-radius, 9999px);
-  transition: background-color 0.3s ease-out;
+  transition: background-color var(--scrollbar-fade-out, 0.4s) var(--scrollbar-fade-timing, cubic-bezier(0.4, 0, 0.2, 1));
 }
 
-/* Motion State: Only the actively scrolling container receives .is-scrolling */
+/* Motion State: Active Reveal (Fade In on Motion) */
 html[data-scrollbar-global] *.is-scrolling,
 .scrollbar-auto-hide.is-scrolling,
 [data-scrollbar].is-scrolling {
   scrollbar-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent)) var(--scrollbar-track, transparent) !important;
+  transition: scrollbar-color var(--scrollbar-fade-in, 0.2s) ease-out;
 }
 html[data-scrollbar-global] *.is-scrolling::-webkit-scrollbar-thumb,
 .scrollbar-auto-hide.is-scrolling::-webkit-scrollbar-thumb,
 [data-scrollbar].is-scrolling::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent)) !important;
+  transition: background-color var(--scrollbar-fade-in, 0.2s) ease-out;
 }
 html[data-scrollbar-global] *::-webkit-scrollbar-thumb:hover,
 .scrollbar-auto-hide::-webkit-scrollbar-thumb:hover,
@@ -110,6 +116,14 @@ function resolveDimension(val: string | number | undefined, defaultVal: string):
   if (typeof val === 'number') return `${val * 4}px`;
   const s = String(val).trim();
   if (!isNaN(Number(s))) return `${Number(s) * 4}px`;
+  return s;
+}
+
+function resolveDuration(val: string | number | undefined, defaultVal: string): string {
+  if (val === undefined || val === null || val === '') return defaultVal;
+  if (typeof val === 'number') return `${val}ms`;
+  const s = String(val).trim();
+  if (!isNaN(Number(s))) return `${s}ms`;
   return s;
 }
 
@@ -161,48 +175,78 @@ function resolveColor(val: string | undefined, defaultVal: string): string {
   return `var(--color-${s}, ${s})`;
 }
 
+function findScrollParent(el: Element | null): Element | null {
+  while (el && el !== document.body && el !== document.documentElement) {
+    const s = window.getComputedStyle(el);
+    const hasScroll = (s.overflowY === 'auto' || s.overflowY === 'scroll' || s.overflowX === 'auto' || s.overflowX === 'scroll');
+    if (hasScroll && (el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth)) {
+      return el;
+    }
+    el = el.parentElement;
+  }
+  return null;
+}
+
 // Global active configuration state
 let globalConfig: ScrollbarConfig = {
   autohide: 800,
   thin: true,
   width: '6px',
-  height: '6px'
+  height: '6px',
+  fade: '0.4s',
+  fadeIn: '0.2s',
+  fadeOut: '0.4s',
+  fadeTiming: 'cubic-bezier(0.4, 0, 0.2, 1)'
 };
 
 // Global capture listener registration state
 let globalListenerRegistered = false;
 const elementTimers = new WeakMap<Element, number>();
 
-function setupGlobalCaptureListener(runtime: RuntimeContext): void {
+function triggerContainerMotion(target: Element): void {
+  const autohideMs = typeof globalConfig.autohide === 'number' ? globalConfig.autohide : 800;
+  if (globalConfig.autohide === false || autohideMs <= 0) return;
+
+  target.classList.add('is-scrolling');
+
+  const existingTimer = elementTimers.get(target);
+  if (existingTimer !== undefined) clearTimeout(existingTimer);
+
+  const timer = setTimeout(() => {
+    target.classList.remove('is-scrolling');
+    elementTimers.delete(target);
+  }, autohideMs) as unknown as number;
+
+  elementTimers.set(target, timer);
+}
+
+function setupGlobalCaptureListeners(runtime: RuntimeContext): void {
   if (globalListenerRegistered || typeof document === 'undefined') return;
   globalListenerRegistered = true;
 
   const onGlobalScroll = (e: Event) => {
     const target = e.target;
+    if (target instanceof Element) {
+      triggerContainerMotion(target);
+    }
+  };
+
+  const onGlobalPointerMove = (e: Event) => {
+    const target = e.target;
     if (!(target instanceof Element)) return;
-
-    // Check if target has local autohide override
-    const autohideMs = typeof globalConfig.autohide === 'number' ? globalConfig.autohide : 800;
-    if (globalConfig.autohide === false || autohideMs <= 0) return;
-
-    target.classList.add('is-scrolling');
-
-    const existingTimer = elementTimers.get(target);
-    if (existingTimer !== undefined) clearTimeout(existingTimer);
-
-    const timer = setTimeout(() => {
-      target.classList.remove('is-scrolling');
-      elementTimers.delete(target);
-    }, autohideMs) as unknown as number;
-
-    elementTimers.set(target, timer);
+    const scrollContainer = findScrollParent(target);
+    if (scrollContainer) {
+      triggerContainerMotion(scrollContainer);
+    }
   };
 
   document.addEventListener('scroll', onGlobalScroll, { capture: true, passive: true });
+  document.addEventListener('pointermove', onGlobalPointerMove, { capture: true, passive: true });
 
   if (runtime && runtime.registerCleanup) {
     runtime.registerCleanup(() => {
       document.removeEventListener('scroll', onGlobalScroll, { capture: true });
+      document.removeEventListener('pointermove', onGlobalPointerMove, { capture: true });
       globalListenerRegistered = false;
     });
   }
@@ -239,7 +283,7 @@ const scrollbarModule: AttributeModule = {
     if (isGlobal) {
       globalConfig = { ...globalConfig, ...config };
       el.setAttribute('data-scrollbar-global', 'true');
-      setupGlobalCaptureListener(runtime);
+      setupGlobalCaptureListeners(runtime);
     }
 
     const merged = { ...globalConfig, ...config };
@@ -256,6 +300,11 @@ const scrollbarModule: AttributeModule = {
     const thumbRadius = resolveRadius(merged.thumbRadius || merged.radius, '9999px');
     const trackRadius = resolveRadius(merged.trackRadius || merged.radius, '9999px');
 
+    // Transitions
+    const fadeIn = resolveDuration(merged.fadeIn, '0.2s');
+    const fadeOut = resolveDuration(merged.fadeOut || merged.fade, '0.4s');
+    const fadeTiming = merged.fadeTiming || 'cubic-bezier(0.4, 0, 0.2, 1)';
+
     el.style.setProperty('--scrollbar-width', width);
     el.style.setProperty('--scrollbar-height', height);
     el.style.setProperty('--scrollbar-thumb', thumbColor);
@@ -267,6 +316,9 @@ const scrollbarModule: AttributeModule = {
     el.style.setProperty('--scrollbar-track-radius', trackRadius);
     el.style.setProperty('--scrollbar-width-std', merged.thin === false ? 'auto' : 'thin');
     el.style.setProperty('--scrollbar-buttons', merged.buttons ? 'block' : 'none');
+    el.style.setProperty('--scrollbar-fade-in', fadeIn);
+    el.style.setProperty('--scrollbar-fade-out', fadeOut);
+    el.style.setProperty('--scrollbar-fade-timing', fadeTiming);
     if (merged.corner) el.style.setProperty('--scrollbar-corner', resolveColor(merged.corner, 'transparent'));
 
     if (!isGlobal) {
@@ -276,7 +328,7 @@ const scrollbarModule: AttributeModule = {
       if (autohideMs !== false && autohideMs > 0) {
         let timer: number | undefined;
 
-        const onScroll = () => {
+        const onMotion = () => {
           el.classList.add('is-scrolling');
           if (timer !== undefined) clearTimeout(timer);
           timer = setTimeout(() => {
@@ -285,10 +337,12 @@ const scrollbarModule: AttributeModule = {
           }, autohideMs) as unknown as number;
         };
 
-        el.addEventListener('scroll', onScroll, { passive: true });
+        el.addEventListener('scroll', onMotion, { passive: true });
+        el.addEventListener('pointermove', onMotion, { passive: true });
 
         return () => {
-          el.removeEventListener('scroll', onScroll);
+          el.removeEventListener('scroll', onMotion);
+          el.removeEventListener('pointermove', onMotion);
           if (timer !== undefined) clearTimeout(timer);
         };
       }
