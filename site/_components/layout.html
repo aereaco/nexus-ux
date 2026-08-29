@@ -13,7 +13,7 @@
     }" data-class="{ 'md:grid-cols-[20rem_1fr]': !collapsed, 'md:grid-cols-[5rem_1fr]': collapsed, 'h-screen max-h-screen overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }"
   data-on-resize:window="isMobile = window.innerWidth < 768">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
-  <div class="drawer-content" data-class="{ 'flex flex-col h-full overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }" data-signal:global="{
+  <div class="drawer-content flex flex-col" data-class="{ 'h-full overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }" data-signal:global="{
         ctxMenu: null,
         ctxMenuItems: [],
         favorites: localStorage.favorites ?? [],
