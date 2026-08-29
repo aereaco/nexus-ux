@@ -748,7 +748,18 @@
               <label class="label cursor-pointer">
                 <span class="label-text">Page Tabs</span>
                 <input type="checkbox" class="toggle toggle-secondary" data-bind-checked="pageTabs"
-                  data-on-change="localStorage.setItem('pageTabs', $evt.target.checked)" />
+                  data-on-change="pageTabs = $evt.target.checked; localStorage.setItem('pageTabs', $evt.target.checked)" />
+              </label>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Fixed Header & Tabs toggle -->
+            <div class="form-control">
+              <label class="label cursor-pointer">
+                <span class="label-text">Fixed Header & Tabs</span>
+                <input type="checkbox" class="toggle toggle-primary" data-bind-checked="fixedHeader"
+                  data-on-change="fixedHeader = $evt.target.checked; localStorage.setItem('fixedHeader', $evt.target.checked)" />
               </label>
             </div>
 
