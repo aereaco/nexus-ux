@@ -15,7 +15,9 @@
         'Iconify': { 
           script: { src: 'https://cdn.jsdelivr.net/npm/iconify-icon@3.0.0/dist/iconify-icon.min.js' }
         }
-      }" data-signal="{ appReady: true }">
+      }" data-signal="{ appReady: true, rtl: localStorage.rtl === 'true', zoom: localStorage.zoom || 1 }"
+      data-bind-dir="rtl ? 'rtl' : 'ltr'"
+      data-bind-style="{ fontSize: (zoom || 1) + 'rem' }">
 
 
 <head>
