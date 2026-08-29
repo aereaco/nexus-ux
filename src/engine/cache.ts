@@ -162,8 +162,9 @@ export class UniversalCacheEngine {
   ): void {
     setTimeout(async () => {
       try {
+        const isSameOrigin = typeof location === 'undefined' || url.startsWith('/') || url.startsWith(location.origin);
         const headers: Record<string, string> = {};
-        if (cachedEntry.etag) {
+        if (cachedEntry.etag && isSameOrigin) {
           headers['If-None-Match'] = cachedEntry.etag;
         }
 
@@ -219,8 +220,9 @@ export class UniversalCacheEngine {
     options: CacheOptions,
     etagHeader?: string
   ): Promise<CacheEntry> {
+    const isSameOrigin = typeof location === 'undefined' || url.startsWith('/') || url.startsWith(location.origin);
     const headers: Record<string, string> = {};
-    if (etagHeader) headers['If-None-Match'] = etagHeader;
+    if (etagHeader && isSameOrigin) headers['If-None-Match'] = etagHeader;
 
     let controller: AbortController | undefined;
     let timer: number | undefined;

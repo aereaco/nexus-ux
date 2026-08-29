@@ -1477,8 +1477,9 @@ ${suggestion}`);
         revalidateInBackground(url, cacheKey, cachedEntry, options) {
           setTimeout(async () => {
             try {
+              const isSameOrigin = typeof location === "undefined" || url.startsWith("/") || url.startsWith(location.origin);
               const headers = {};
-              if (cachedEntry.etag) {
+              if (cachedEntry.etag && isSameOrigin) {
                 headers["If-None-Match"] = cachedEntry.etag;
               }
               const res = await fetch(url, { headers });
