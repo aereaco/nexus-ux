@@ -343,13 +343,13 @@
         data-on-contextmenu:prevent="openTabContextMenu(tab, $evt)">
         <iconify-icon icon="material-symbols-light:drag-indicator"
           class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
-        <span
-          data-class="{ 'loading loading-spinner loading-xs text-primary me-2': tab.linkedContent?.isLoading, 'hidden': !tab.linkedContent?.isLoading }"></span>
-        <iconify-icon data-class="{ 'hidden': tab.linkedContent?.isLoading }"
-          data-bind-icon="tab.meta?.icon || tab.linkedContent?.meta?.icon || 'material-symbols-light:article-outline'"
+        <span data-show="tab.isLoading !== false"
+          class="loading loading-spinner loading-xs text-primary me-2"></span>
+        <iconify-icon data-show="tab.isLoading === false"
+          data-bind-icon="tab.meta?.icon || 'material-symbols-light:article-outline'"
           class="text-lg px-2"></iconify-icon>
         <span class="pe-4 whitespace-nowrap"
-          data-bind="tab.linkedContent?.isLoading ? 'Loading...' : (tab.meta?.title || tab.linkedContent?.meta?.title || 'Tab')"></span>
+          data-bind="tab.isLoading !== false ? 'Loading...' : (tab.meta?.title || 'Tab')"></span>
         <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close tab" title="Close tab"
           data-class="{ 'hidden': (router.pinnedPageTabs || []).includes(tab.id) }"
           data-on-click:stop="router.closePageTab(tab.id)">
@@ -430,36 +430,22 @@
            new-tab launchpad, link tabs) share one outlet. A sync effect below
            keeps the active tab's content in step with router.route for route
            tabs, so sidebar/router navigation still updates the visible panel. -->
-    <div class="p-6 relative" data-on-click="
-        const a = $evt.target.closest('a[href]');
-        if (a) {
-          const href = a.getAttribute('href');
-          if (href && !href.startsWith('http') && !a.hasAttribute('download')) {
-            navigateActiveTab(href);
-          }
-        }
-      " data-on-contextmenu:stop="
-            const e = $evt;
-            const a = e.target.closest('a');
-            if (a && a.origin === location.origin && !a.hasAttribute('download') && (!a.target || a.target === '_self')) {
-              ctxMenu = { type: 'link', url: a.getAttribute('href'), title: a.textContent.trim(), icon: a.getAttribute('data-tab-icon') || '', x: e.clientX, y: e.clientY };
-            }">
-
+    <div class="p-6 relative">
 
       <!-- Retained Multi-Panel Outlets: Each tab retains its mounted DOM tree.
            data-show toggles panel visibility instantly (display: none) without destroying nodes or resetting state. -->
       <template data-for="tab in router.pageTabs" data-key="tab.id">
         <div role="tabpanel" class="h-full w-full" data-show="router.activePageTabId === tab.id">
-          <template data-if="tab.linkedContent?.isLoading">
-            <div class="flex flex-col gap-4 w-full p-4 animate-pulse">
-              <div class="skeleton h-8 w-1/3 rounded-lg bg-base-300"></div>
-              <div class="skeleton h-4 w-full rounded bg-base-300"></div>
-              <div class="skeleton h-4 w-5/6 rounded bg-base-300"></div>
-              <div class="skeleton h-64 w-full rounded-xl bg-base-300"></div>
-            </div>
-          </template>
-          <tab-content data-component="tab.source || tab.content"
-            data-class="{ 'hidden': tab.linkedContent?.isLoading }"></tab-content>
+          <!-- Default Loading Fallback Skeleton -->
+          <div data-show="tab.isLoading !== false" class="flex flex-col gap-4 w-full p-4 animate-pulse">
+            <div class="skeleton h-8 w-1/3 rounded-lg bg-base-300"></div>
+            <div class="skeleton h-4 w-full rounded bg-base-300"></div>
+            <div class="skeleton h-4 w-5/6 rounded bg-base-300"></div>
+            <div class="skeleton h-64 w-full rounded-xl bg-base-300"></div>
+          </div>
+
+          <!-- Fully Loaded Route Content -->
+          <tab-content data-component="tab.source || tab.content" data-show="tab.isLoading === false"></tab-content>
         </div>
       </template>
     </div>
