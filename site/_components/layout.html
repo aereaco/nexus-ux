@@ -454,7 +454,7 @@
     <!-- CONTEXT MENU (tab + link actions) -->
     <div data-show="ctxMenu"
       class="fixed z-50 min-w-48 rounded-box bg-base-100 shadow-2xl border border-base-300 py-1 text-sm"
-      data-bind-style="{ left: (ctxMenu && ctxMenu.x) + 'px', top: (ctxMenu && ctxMenu.y) + 'px' }"
+      data-bind-style="{ insetInlineStart: (ctxMenu && ctxMenu.x) + 'px', insetBlockStart: (ctxMenu && ctxMenu.y) + 'px' }"
       data-on-click="ctxMenu = null" data-on-contextmenu:stop="ctxMenu = null">
       <!-- TAB actions -->
       <template data-if="ctxMenu && ctxMenu.type === 'tab'">
@@ -589,7 +589,7 @@
         </button>
       </div>
 
-      <ul class="menu w-full grow" data-show="activeSidebarTab === 1" data-drag-container="router.pages">
+      <ul class="menu w-full grow overflow-x-hidden" data-show="activeSidebarTab === 1" data-drag-container="router.pages">
         <template data-for="item in router.pages" data-key="item.href">
           <li class="cursor-pointer" data-drag>
             <a data-bind-href="item.href" draggable="false" data-bind-data-tab-title="item.tabTitle"
