@@ -13,6 +13,7 @@
       themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset']
     }" data-class="{ 'md:grid-cols-[20rem_1fr]': !collapsed, 'md:grid-cols-[5rem_1fr]': collapsed, 'h-screen max-h-screen overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }"
   data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: zoom + 'rem' }"
+  data-effect="document.documentElement.dir = rtl ? 'rtl' : 'ltr'; document.documentElement.style.fontSize = (zoom || 1) + 'rem';"
   data-on-resize:window="isMobile = window.innerWidth < 768">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content" data-class="{ 'flex flex-col h-full overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }" data-signal:global="{
@@ -86,19 +87,19 @@
         <button class="btn btn-circle btn-ghost md:hidden" data-on-click="sidebarOpen = !sidebarOpen"
           aria-label="open sidebar">
           <!-- Sidebar toggle icon -->
-          <iconify-icon icon="material-symbols-light:menu" style="font-size: 24px"></iconify-icon>
+          <iconify-icon icon="material-symbols-light:menu" class="text-2xl"></iconify-icon>
         </button>
         <div class="flex-none">
           <button data-on-click="collapsed = !collapsed; localStorage.setItem('collapsed', collapsed)"
             aria-label="toggle sidebar" class="btn btn-circle btn-ghost hidden md:flex"
             data-class="{ 'scale-x-[-1]': !collapsed || hovered }">
             <!-- Sidebar collapse icon -->
-            <iconify-icon icon="material-symbols-light:double-arrow" style="font-size: 24px"></iconify-icon>
+            <iconify-icon icon="material-symbols-light:double-arrow" class="text-2xl"></iconify-icon>
           </button>
         </div>
 
       </div>
-      <div class="navbar-center flex-1 flex justify-left">
+      <div class="navbar-center flex-1 flex justify-start">
         <div class="megamenu max-md:megamenu-vertical megamenu-wide  w-full flex justify-center" id="my-megamenu-4"
           popover>
           <span class="megamenu-active"></span>
