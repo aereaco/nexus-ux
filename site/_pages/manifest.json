@@ -33,7 +33,7 @@
   },
   {
     "id": "profile2",
-    "route": "/profile2",
+    "route": "/profile/profile2",
     "path": "/_pages/profile2.html",
     "title": "Profile 2",
     "icon": "material-symbols-light:person-outline",
