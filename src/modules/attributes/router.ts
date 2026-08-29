@@ -666,12 +666,13 @@ export const routerAttributeModule: AttributeModule = {
 
               const fname = isObj ? (item.path?.split('/').pop() || item.id || '') : item;
               const cleanName = isObj ? (item.id || item.name || fname.replace(/\.(html|htm|md|markdown)$/i, '')) : fname.replace(/\.(html|htm|md|markdown)$/i, '');
-              const href = isObj ? (item.route !== undefined ? item.route : (cleanName === 'home' ? '/' : `/${cleanName}`)) : ((cleanName === 'home' || cleanName === 'index') ? '/' : `/${cleanName}`);
+              const parent = isObj ? (item.parent !== undefined ? item.parent : (item.meta?.parent !== undefined ? item.meta.parent : (cleanName === 'home' ? null : '/'))) : (cleanName === 'home' ? null : '/');
+              const defaultRoute = (parent && parent !== '/') ? `${parent.replace(/\/+$/, '')}/${cleanName}` : (cleanName === 'home' ? '/' : `/${cleanName}`);
+              const href = isObj ? (item.route !== undefined ? item.route : defaultRoute) : defaultRoute;
               const compPath = isObj ? (item.path || `/${pDir}/${fname}`) : `/${pDir}/${fname}`;
               let title = isObj ? (item.title || item.meta?.title || '') : '';
               let icon = isObj ? (item.icon || item.meta?.icon || '') : '';
               const order = isObj ? (item.order !== undefined ? item.order : item.meta?.order) : undefined;
-              const parent = isObj ? (item.parent !== undefined ? item.parent : (item.meta?.parent !== undefined ? item.meta.parent : (href === '/' ? null : '/'))) : (href === '/' ? null : '/');
 
               const defaultTitle = href === '/'
                 ? 'Home'
@@ -1529,7 +1530,22 @@ export const routerAttributeModule: AttributeModule = {
 
               if (exists) {
                 staticComponent = candidate;
-              } else {
+              } else if (path.includes('/')) {
+                // Fallback for chained routes (e.g. /profile/profile2 -> _pages/profile2.html)
+                const leaf = path.split('/').pop() || '';
+                const fallbackCandidate = resolveStaticComponent('/' + leaf);
+                if (isAllowedStaticCandidate(fallbackCandidate, '/' + leaf)) {
+                  try {
+                    const fRes = await fetch(fallbackCandidate, { method: 'HEAD' });
+                    if (fRes.ok || fRes.status === 405) {
+                      staticComponent = fallbackCandidate;
+                      exists = true;
+                    }
+                  } catch { /* ignore */ }
+                }
+              }
+              
+              if (!exists) {
                 state.errorCode = 404;
                 state.navigate(cleanErrorPath, { replace: true });
                 return;
