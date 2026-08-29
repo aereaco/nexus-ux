@@ -7875,14 +7875,20 @@ ${match}</ul>
         triggerContainerMotion(target);
       }
     };
+    let pointerRaf = null;
     const onGlobalPointerMove = (e) => {
-      const target = e.target;
-      if (!(target instanceof Element))
+      if (pointerRaf !== null)
         return;
-      const scrollContainer = findScrollParent(target);
-      if (scrollContainer) {
-        triggerContainerMotion(scrollContainer);
-      }
+      const target = e.target;
+      pointerRaf = requestAnimationFrame(() => {
+        pointerRaf = null;
+        if (target instanceof Element) {
+          const scrollContainer = findScrollParent(target);
+          if (scrollContainer) {
+            triggerContainerMotion(scrollContainer);
+          }
+        }
+      });
     };
     document.addEventListener("scroll", onGlobalScroll, { capture: true, passive: true });
     document.addEventListener("pointermove", onGlobalPointerMove, { capture: true, passive: true });
@@ -7890,6 +7896,8 @@ ${match}</ul>
       runtime.registerCleanup(() => {
         document.removeEventListener("scroll", onGlobalScroll, { capture: true });
         document.removeEventListener("pointermove", onGlobalPointerMove, { capture: true });
+        if (pointerRaf !== null)
+          cancelAnimationFrame(pointerRaf);
         globalListenerRegistered = false;
       });
     }
@@ -7899,61 +7907,89 @@ ${match}</ul>
     "src/modules/attributes/scrollbar.ts"() {
       init_stylesheet();
       SCROLLBAR_BASE_CSS = `
-/* Universal Global Auto-Hide Baseline (Fade Out on Idle) */
-html[data-scrollbar-global] *,
-.scrollbar-auto-hide,
-[data-scrollbar] {
-  scrollbar-width: var(--scrollbar-width-std, thin) !important;
-  scrollbar-color: transparent transparent !important;
-}
-html[data-scrollbar-global] *::-webkit-scrollbar,
+/* Targeted Scrollbar Containers (Zero Universal Selector Lag) */
+.overflow-auto::-webkit-scrollbar,
+.overflow-y-auto::-webkit-scrollbar,
+.overflow-x-auto::-webkit-scrollbar,
+.overflow-scroll::-webkit-scrollbar,
+.overflow-y-scroll::-webkit-scrollbar,
+.overflow-x-scroll::-webkit-scrollbar,
 .scrollbar-auto-hide::-webkit-scrollbar,
-[data-scrollbar]::-webkit-scrollbar {
+[data-scrollbar]::-webkit-scrollbar,
+[data-scrollbar-global]::-webkit-scrollbar {
   width: var(--scrollbar-width, 6px);
   height: var(--scrollbar-height, 6px);
 }
-html[data-scrollbar-global] *::-webkit-scrollbar-track,
+
+.overflow-auto::-webkit-scrollbar-track,
+.overflow-y-auto::-webkit-scrollbar-track,
+.overflow-x-auto::-webkit-scrollbar-track,
+.overflow-scroll::-webkit-scrollbar-track,
+.overflow-y-scroll::-webkit-scrollbar-track,
+.overflow-x-scroll::-webkit-scrollbar-track,
 .scrollbar-auto-hide::-webkit-scrollbar-track,
-[data-scrollbar]::-webkit-scrollbar-track {
+[data-scrollbar]::-webkit-scrollbar-track,
+[data-scrollbar-global]::-webkit-scrollbar-track {
   background: var(--scrollbar-track, transparent);
   border-radius: var(--scrollbar-track-radius, 9999px);
 }
-html[data-scrollbar-global] *::-webkit-scrollbar-thumb,
+
+/* Idle State: 100% Transparent Thumb with Smooth Cubic-Bezier Fade Out */
+.overflow-auto::-webkit-scrollbar-thumb,
+.overflow-y-auto::-webkit-scrollbar-thumb,
+.overflow-x-auto::-webkit-scrollbar-thumb,
+.overflow-scroll::-webkit-scrollbar-thumb,
+.overflow-y-scroll::-webkit-scrollbar-thumb,
+.overflow-x-scroll::-webkit-scrollbar-thumb,
 .scrollbar-auto-hide::-webkit-scrollbar-thumb,
-[data-scrollbar]::-webkit-scrollbar-thumb {
+[data-scrollbar]::-webkit-scrollbar-thumb,
+[data-scrollbar-global]::-webkit-scrollbar-thumb {
   background-color: transparent !important;
   border-radius: var(--scrollbar-thumb-radius, 9999px);
   transition: background-color var(--scrollbar-fade-out, 0.4s) var(--scrollbar-fade-timing, cubic-bezier(0.4, 0, 0.2, 1));
 }
 
-/* Motion State: Active Reveal (Fade In on Motion) */
-html[data-scrollbar-global] *.is-scrolling,
-.scrollbar-auto-hide.is-scrolling,
-[data-scrollbar].is-scrolling {
-  scrollbar-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent)) var(--scrollbar-track, transparent) !important;
-}
-html[data-scrollbar-global] *.is-scrolling::-webkit-scrollbar-thumb,
+/* Motion State: Active Reveal with Smooth Ease-Out Fade In */
+.overflow-auto.is-scrolling::-webkit-scrollbar-thumb,
+.overflow-y-auto.is-scrolling::-webkit-scrollbar-thumb,
+.overflow-x-auto.is-scrolling::-webkit-scrollbar-thumb,
+.overflow-scroll.is-scrolling::-webkit-scrollbar-thumb,
+.overflow-y-scroll.is-scrolling::-webkit-scrollbar-thumb,
+.overflow-x-scroll.is-scrolling::-webkit-scrollbar-thumb,
 .scrollbar-auto-hide.is-scrolling::-webkit-scrollbar-thumb,
-[data-scrollbar].is-scrolling::-webkit-scrollbar-thumb {
+[data-scrollbar].is-scrolling::-webkit-scrollbar-thumb,
+[data-scrollbar-global].is-scrolling::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent)) !important;
   transition: background-color var(--scrollbar-fade-in, 0.2s) ease-out;
 }
-html[data-scrollbar-global] *::-webkit-scrollbar-thumb:hover,
+
+.overflow-auto::-webkit-scrollbar-thumb:hover,
+.overflow-y-auto::-webkit-scrollbar-thumb:hover,
+.overflow-x-auto::-webkit-scrollbar-thumb:hover,
 .scrollbar-auto-hide::-webkit-scrollbar-thumb:hover,
 [data-scrollbar]::-webkit-scrollbar-thumb:hover {
   background-color: var(--scrollbar-thumb-hover, color-mix(in srgb, currentColor 50%, transparent)) !important;
 }
-html[data-scrollbar-global] *::-webkit-scrollbar-thumb:active,
+
+.overflow-auto::-webkit-scrollbar-thumb:active,
+.overflow-y-auto::-webkit-scrollbar-thumb:active,
+.overflow-x-auto::-webkit-scrollbar-thumb:active,
 .scrollbar-auto-hide::-webkit-scrollbar-thumb:active,
 [data-scrollbar]::-webkit-scrollbar-thumb:active {
   background-color: var(--scrollbar-thumb-active, color-mix(in srgb, currentColor 70%, transparent)) !important;
 }
-html[data-scrollbar-global] *::-webkit-scrollbar-button,
+
+.overflow-auto::-webkit-scrollbar-button,
+.overflow-y-auto::-webkit-scrollbar-button,
+.overflow-x-auto::-webkit-scrollbar-button,
 .scrollbar-auto-hide::-webkit-scrollbar-button,
 [data-scrollbar]::-webkit-scrollbar-button {
   display: var(--scrollbar-buttons, none);
 }
-html[data-scrollbar-global] *::-webkit-scrollbar-corner,
+
+.overflow-auto::-webkit-scrollbar-corner,
+.overflow-y-auto::-webkit-scrollbar-corner,
+.overflow-x-auto::-webkit-scrollbar-corner,
 .scrollbar-auto-hide::-webkit-scrollbar-corner,
 [data-scrollbar]::-webkit-scrollbar-corner {
   background: var(--scrollbar-corner, transparent);
@@ -8026,7 +8062,6 @@ html[data-scrollbar-global] *::-webkit-scrollbar-corner,
           el.style.setProperty("--scrollbar-track-hover", trackHover);
           el.style.setProperty("--scrollbar-thumb-radius", thumbRadius);
           el.style.setProperty("--scrollbar-track-radius", trackRadius);
-          el.style.setProperty("--scrollbar-width-std", merged.thin === false ? "auto" : "thin");
           el.style.setProperty("--scrollbar-buttons", merged.buttons ? "block" : "none");
           el.style.setProperty("--scrollbar-fade-in", fadeIn);
           el.style.setProperty("--scrollbar-fade-out", fadeOut);
