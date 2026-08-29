@@ -7851,11 +7851,23 @@ ${match}</ul>
     }
     return null;
   }
+  function ensureOverlayInstance(el) {
+    let inst = overlayInstances.get(el);
+    if (!inst) {
+      inst = new OverlayScrollbarInstance(el);
+      overlayInstances.set(el, inst);
+    }
+    return inst;
+  }
   function triggerContainerMotion(target) {
     const autohideMs = typeof globalConfig.autohide === "number" ? globalConfig.autohide : 800;
     if (globalConfig.autohide === false || autohideMs <= 0)
       return;
     target.classList.add("is-scrolling");
+    if (target instanceof HTMLElement && (globalConfig.mode === "overlay" || target.hasAttribute("data-scrollbar"))) {
+      const inst = ensureOverlayInstance(target);
+      inst.update();
+    }
     const existingTimer = elementTimers.get(target);
     if (existingTimer !== void 0)
       clearTimeout(existingTimer);
@@ -7871,7 +7883,10 @@ ${match}</ul>
     globalListenerRegistered = true;
     const onGlobalScroll = (e) => {
       const target = e.target;
-      if (target instanceof Element) {
+      if (target instanceof HTMLElement) {
+        if (globalConfig.mode === "overlay") {
+          ensureOverlayInstance(target).update();
+        }
         triggerContainerMotion(target);
       }
     };
@@ -7902,140 +7917,133 @@ ${match}</ul>
       });
     }
   }
-  var SCROLLBAR_BASE_CSS, stylesAdopted, globalConfig, globalListenerRegistered, elementTimers, scrollbarModule, scrollbar_default;
+  var SCROLLBAR_BASE_CSS, stylesAdopted, globalConfig, globalListenerRegistered, elementTimers, overlayInstances, OverlayScrollbarInstance, scrollbarModule, scrollbar_default;
   var init_scrollbar = __esm({
     "src/modules/attributes/scrollbar.ts"() {
       init_stylesheet();
       SCROLLBAR_BASE_CSS = `
-/* Targeted Scrollbar Containers: Neutralize DaisyUI's * { scrollbar-color: ... } */
-.overflow-auto,
-.overflow-y-auto,
-.overflow-x-auto,
-.overflow-scroll,
-.overflow-y-scroll,
-.overflow-x-scroll,
-.scrollbar-auto-hide,
-[data-scrollbar],
-[data-scrollbar-global] {
-  scrollbar-color: auto !important;
+/* ==========================================================================
+   1. OVERLAY SCROLLBAR SPRITE STYLES (True CSS Opacity Fade & GPU Layer)
+   ========================================================================== */
+.nx-scrollbar-overlay-active {
+  scrollbar-width: none !important;
+}
+.nx-scrollbar-overlay-active::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
-.overflow-auto::-webkit-scrollbar,
-.overflow-y-auto::-webkit-scrollbar,
-.overflow-x-auto::-webkit-scrollbar,
-.overflow-scroll::-webkit-scrollbar,
-.overflow-y-scroll::-webkit-scrollbar,
-.overflow-x-scroll::-webkit-scrollbar,
-.scrollbar-auto-hide::-webkit-scrollbar,
-[data-scrollbar]::-webkit-scrollbar,
-[data-scrollbar-global]::-webkit-scrollbar {
+.nx-scrollbar-track-v {
+  position: absolute;
+  top: 0;
+  right: 2px;
+  bottom: 0;
   width: var(--scrollbar-width, 6px);
-  height: var(--scrollbar-height, 6px);
-}
-
-.overflow-auto::-webkit-scrollbar-track,
-.overflow-y-auto::-webkit-scrollbar-track,
-.overflow-x-auto::-webkit-scrollbar-track,
-.overflow-scroll::-webkit-scrollbar-track,
-.overflow-y-scroll::-webkit-scrollbar-track,
-.overflow-x-scroll::-webkit-scrollbar-track,
-.scrollbar-auto-hide::-webkit-scrollbar-track,
-[data-scrollbar]::-webkit-scrollbar-track,
-[data-scrollbar-global]::-webkit-scrollbar-track {
+  pointer-events: none;
+  z-index: 50;
   background: var(--scrollbar-track, transparent);
   border-radius: var(--scrollbar-track-radius, 9999px);
 }
 
-/* Idle State: 100% Transparent Thumb with Hardware-Accelerated Fade Out Animation */
-.overflow-auto::-webkit-scrollbar-thumb,
-.overflow-y-auto::-webkit-scrollbar-thumb,
-.overflow-x-auto::-webkit-scrollbar-thumb,
-.overflow-scroll::-webkit-scrollbar-thumb,
-.overflow-y-scroll::-webkit-scrollbar-thumb,
-.overflow-x-scroll::-webkit-scrollbar-thumb,
-.scrollbar-auto-hide::-webkit-scrollbar-thumb,
-[data-scrollbar]::-webkit-scrollbar-thumb,
-[data-scrollbar-global]::-webkit-scrollbar-thumb {
-  background-color: transparent !important;
+.nx-scrollbar-thumb-v {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent));
   border-radius: var(--scrollbar-thumb-radius, 9999px);
-  transition: background-color var(--scrollbar-fade-out, 0.4s) var(--scrollbar-fade-timing, cubic-bezier(0.4, 0, 0.2, 1));
+  opacity: 0;
+  pointer-events: auto;
+  cursor: grab;
+  will-change: transform, opacity;
+  transition: opacity var(--scrollbar-fade-out, 0.4s) var(--scrollbar-fade-timing, cubic-bezier(0.4, 0, 0.2, 1)), background-color 0.2s ease-out;
 }
 
-/* Motion State: Active Reveal with Hardware-Accelerated Fade In Animation */
-.overflow-auto.is-scrolling::-webkit-scrollbar-thumb,
-.overflow-y-auto.is-scrolling::-webkit-scrollbar-thumb,
-.overflow-x-auto.is-scrolling::-webkit-scrollbar-thumb,
-.overflow-scroll.is-scrolling::-webkit-scrollbar-thumb,
-.overflow-y-scroll.is-scrolling::-webkit-scrollbar-thumb,
-.overflow-x-scroll.is-scrolling::-webkit-scrollbar-thumb,
-.scrollbar-auto-hide.is-scrolling::-webkit-scrollbar-thumb,
-[data-scrollbar].is-scrolling::-webkit-scrollbar-thumb,
-[data-scrollbar-global].is-scrolling::-webkit-scrollbar-thumb {
-  background-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent)) !important;
-  transition: background-color var(--scrollbar-fade-in, 0.2s) ease-out;
+.nx-scrollbar-track-h {
+  position: absolute;
+  left: 0;
+  bottom: 2px;
+  right: 0;
+  height: var(--scrollbar-height, 6px);
+  pointer-events: none;
+  z-index: 50;
+  background: var(--scrollbar-track, transparent);
+  border-radius: var(--scrollbar-track-radius, 9999px);
 }
 
-.overflow-auto::-webkit-scrollbar-thumb:hover,
-.overflow-y-auto::-webkit-scrollbar-thumb:hover,
-.overflow-x-auto::-webkit-scrollbar-thumb:hover,
-.scrollbar-auto-hide::-webkit-scrollbar-thumb:hover,
-[data-scrollbar]::-webkit-scrollbar-thumb:hover {
+.nx-scrollbar-thumb-h {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent));
+  border-radius: var(--scrollbar-thumb-radius, 9999px);
+  opacity: 0;
+  pointer-events: auto;
+  cursor: grab;
+  will-change: transform, opacity;
+  transition: opacity var(--scrollbar-fade-out, 0.4s) var(--scrollbar-fade-timing, cubic-bezier(0.4, 0, 0.2, 1)), background-color 0.2s ease-out;
+}
+
+/* Motion State: Smooth Opacity Reveal */
+.is-scrolling > .nx-scrollbar-track-v > .nx-scrollbar-thumb-v,
+.is-scrolling > .nx-scrollbar-track-h > .nx-scrollbar-thumb-h,
+.is-scrolling.nx-scrollbar-track-v > .nx-scrollbar-thumb-v,
+.is-scrolling.nx-scrollbar-track-h > .nx-scrollbar-thumb-h,
+.nx-scrollbar-thumb-v:hover,
+.nx-scrollbar-thumb-h:hover,
+.nx-scrollbar-thumb-v.is-dragging,
+.nx-scrollbar-thumb-h.is-dragging {
+  opacity: 1 !important;
+  transition: opacity var(--scrollbar-fade-in, 0.2s) ease-out, background-color 0.2s ease-out !important;
+}
+
+.nx-scrollbar-thumb-v:hover,
+.nx-scrollbar-thumb-h:hover {
   background-color: var(--scrollbar-thumb-hover, color-mix(in srgb, currentColor 50%, transparent)) !important;
 }
 
-.overflow-auto::-webkit-scrollbar-thumb:active,
-.overflow-y-auto::-webkit-scrollbar-thumb:active,
-.overflow-x-auto::-webkit-scrollbar-thumb:active,
-.scrollbar-auto-hide::-webkit-scrollbar-thumb:active,
-[data-scrollbar]::-webkit-scrollbar-thumb:active {
+.nx-scrollbar-thumb-v.is-dragging,
+.nx-scrollbar-thumb-h.is-dragging {
+  cursor: grabbing !important;
   background-color: var(--scrollbar-thumb-active, color-mix(in srgb, currentColor 70%, transparent)) !important;
 }
 
-.overflow-auto::-webkit-scrollbar-button,
-.overflow-y-auto::-webkit-scrollbar-button,
-.overflow-x-auto::-webkit-scrollbar-button,
-.scrollbar-auto-hide::-webkit-scrollbar-button,
-[data-scrollbar]::-webkit-scrollbar-button {
-  display: var(--scrollbar-buttons, none);
+/* ==========================================================================
+   2. NATIVE SCROLLBAR MODE (Fallback / Standard WebKit CSS)
+   ========================================================================== */
+.overflow-auto::-webkit-scrollbar,
+.overflow-y-auto::-webkit-scrollbar,
+.overflow-x-auto::-webkit-scrollbar,
+.scrollbar-auto-hide::-webkit-scrollbar {
+  width: var(--scrollbar-width, 6px);
+  height: var(--scrollbar-height, 6px);
 }
-
-.overflow-auto::-webkit-scrollbar-corner,
-.overflow-y-auto::-webkit-scrollbar-corner,
-.overflow-x-auto::-webkit-scrollbar-corner,
-.scrollbar-auto-hide::-webkit-scrollbar-corner,
-[data-scrollbar]::-webkit-scrollbar-corner {
-  background: var(--scrollbar-corner, transparent);
+.overflow-auto::-webkit-scrollbar-track,
+.overflow-y-auto::-webkit-scrollbar-track,
+.overflow-x-auto::-webkit-scrollbar-track,
+.scrollbar-auto-hide::-webkit-scrollbar-track {
+  background: var(--scrollbar-track, transparent);
+  border-radius: var(--scrollbar-track-radius, 9999px);
 }
-
-/* Firefox Compatibility */
-@supports (-moz-appearance: none) {
-  .overflow-auto,
-  .overflow-y-auto,
-  .overflow-x-auto,
-  .overflow-scroll,
-  .overflow-y-scroll,
-  .overflow-x-scroll,
-  .scrollbar-auto-hide,
-  [data-scrollbar],
-  [data-scrollbar-global] {
-    scrollbar-width: var(--scrollbar-width-std, thin) !important;
-    scrollbar-color: transparent transparent !important;
-  }
-  .overflow-auto.is-scrolling,
-  .overflow-y-auto.is-scrolling,
-  .overflow-x-auto.is-scrolling,
-  .overflow-scroll.is-scrolling,
-  .overflow-y-scroll.is-scrolling,
-  .overflow-x-scroll.is-scrolling,
-  .scrollbar-auto-hide.is-scrolling,
-  [data-scrollbar].is-scrolling,
-  [data-scrollbar-global].is-scrolling {
-    scrollbar-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent)) var(--scrollbar-track, transparent) !important;
-  }
+.overflow-auto::-webkit-scrollbar-thumb,
+.overflow-y-auto::-webkit-scrollbar-thumb,
+.overflow-x-auto::-webkit-scrollbar-thumb,
+.scrollbar-auto-hide::-webkit-scrollbar-thumb {
+  background-color: transparent !important;
+  border-radius: var(--scrollbar-thumb-radius, 9999px);
+}
+.overflow-auto.is-scrolling::-webkit-scrollbar-thumb,
+.overflow-y-auto.is-scrolling::-webkit-scrollbar-thumb,
+.overflow-x-auto.is-scrolling::-webkit-scrollbar-thumb,
+.scrollbar-auto-hide.is-scrolling::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent)) !important;
 }
 `;
       stylesAdopted = false;
       globalConfig = {
+        mode: "native",
         autohide: 800,
         thin: true,
         width: "6px",
@@ -8047,6 +8055,144 @@ ${match}</ul>
       };
       globalListenerRegistered = false;
       elementTimers = /* @__PURE__ */ new WeakMap();
+      overlayInstances = /* @__PURE__ */ new WeakMap();
+      OverlayScrollbarInstance = class {
+        el;
+        trackV = null;
+        thumbV = null;
+        trackH = null;
+        thumbH = null;
+        isDragging = false;
+        dragStartY = 0;
+        dragStartX = 0;
+        dragStartScrollTop = 0;
+        dragStartScrollLeft = 0;
+        activeAxis = "v";
+        constructor(el) {
+          this.el = el;
+          this.init();
+        }
+        init() {
+          if (window.getComputedStyle(this.el).position === "static") {
+            this.el.style.position = "relative";
+          }
+          this.el.classList.add("nx-scrollbar-overlay-active");
+          this.trackV = document.createElement("div");
+          this.trackV.className = "nx-scrollbar-track-v";
+          this.thumbV = document.createElement("div");
+          this.thumbV.className = "nx-scrollbar-thumb-v";
+          this.trackV.appendChild(this.thumbV);
+          this.el.appendChild(this.trackV);
+          this.trackH = document.createElement("div");
+          this.trackH.className = "nx-scrollbar-track-h";
+          this.thumbH = document.createElement("div");
+          this.thumbH.className = "nx-scrollbar-thumb-h";
+          this.trackH.appendChild(this.thumbH);
+          this.el.appendChild(this.trackH);
+          this.bindEvents();
+          this.update();
+        }
+        update() {
+          const { clientHeight, scrollHeight, clientWidth, scrollWidth, scrollTop, scrollLeft } = this.el;
+          if (scrollHeight > clientHeight && clientHeight > 0) {
+            this.trackV.style.display = "block";
+            const thumbHeight = Math.max(20, clientHeight / scrollHeight * clientHeight);
+            const maxScrollTop = scrollHeight - clientHeight;
+            const maxThumbTop = clientHeight - thumbHeight;
+            const thumbTop = maxScrollTop > 0 ? scrollTop / maxScrollTop * maxThumbTop : 0;
+            this.thumbV.style.height = `${thumbHeight}px`;
+            this.thumbV.style.transform = `translate3d(0, ${thumbTop}px, 0)`;
+          } else {
+            this.trackV.style.display = "none";
+          }
+          if (scrollWidth > clientWidth && clientWidth > 0) {
+            this.trackH.style.display = "block";
+            const thumbWidth = Math.max(20, clientWidth / scrollWidth * clientWidth);
+            const maxScrollLeft = scrollWidth - clientWidth;
+            const maxThumbLeft = clientWidth - thumbWidth;
+            const thumbLeft = maxScrollLeft > 0 ? scrollLeft / maxScrollLeft * maxThumbLeft : 0;
+            this.thumbH.style.width = `${thumbWidth}px`;
+            this.thumbH.style.transform = `translate3d(${thumbLeft}px, 0, 0)`;
+          } else {
+            this.trackH.style.display = "none";
+          }
+        }
+        bindEvents() {
+          this.thumbV.addEventListener("pointerdown", (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            this.isDragging = true;
+            this.activeAxis = "v";
+            this.dragStartY = e.clientY;
+            this.dragStartScrollTop = this.el.scrollTop;
+            this.thumbV.classList.add("is-dragging");
+            this.thumbV.setPointerCapture(e.pointerId);
+          });
+          this.thumbV.addEventListener("pointermove", (e) => {
+            if (!this.isDragging || this.activeAxis !== "v")
+              return;
+            const deltaY = e.clientY - this.dragStartY;
+            const { clientHeight, scrollHeight } = this.el;
+            const thumbHeight = this.thumbV.offsetHeight;
+            const scrollableDist = scrollHeight - clientHeight;
+            const trackDist = clientHeight - thumbHeight;
+            if (trackDist > 0) {
+              this.el.scrollTop = this.dragStartScrollTop + deltaY / trackDist * scrollableDist;
+            }
+          });
+          const stopDragV = (e) => {
+            if (this.isDragging && this.activeAxis === "v") {
+              this.isDragging = false;
+              this.thumbV.classList.remove("is-dragging");
+              try {
+                this.thumbV.releasePointerCapture(e.pointerId);
+              } catch {
+              }
+            }
+          };
+          this.thumbV.addEventListener("pointerup", stopDragV);
+          this.thumbV.addEventListener("pointercancel", stopDragV);
+          this.thumbH.addEventListener("pointerdown", (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            this.isDragging = true;
+            this.activeAxis = "h";
+            this.dragStartX = e.clientX;
+            this.dragStartScrollLeft = this.el.scrollLeft;
+            this.thumbH.classList.add("is-dragging");
+            this.thumbH.setPointerCapture(e.pointerId);
+          });
+          this.thumbH.addEventListener("pointermove", (e) => {
+            if (!this.isDragging || this.activeAxis !== "h")
+              return;
+            const deltaX = e.clientX - this.dragStartX;
+            const { clientWidth, scrollWidth } = this.el;
+            const thumbWidth = this.thumbH.offsetWidth;
+            const scrollableDist = scrollWidth - clientWidth;
+            const trackDist = clientWidth - thumbWidth;
+            if (trackDist > 0) {
+              this.el.scrollLeft = this.dragStartScrollLeft + deltaX / trackDist * scrollableDist;
+            }
+          });
+          const stopDragH = (e) => {
+            if (this.isDragging && this.activeAxis === "h") {
+              this.isDragging = false;
+              this.thumbH.classList.remove("is-dragging");
+              try {
+                this.thumbH.releasePointerCapture(e.pointerId);
+              } catch {
+              }
+            }
+          };
+          this.thumbH.addEventListener("pointerup", stopDragH);
+          this.thumbH.addEventListener("pointercancel", stopDragH);
+        }
+        destroy() {
+          this.trackV?.remove();
+          this.trackH?.remove();
+          this.el.classList.remove("nx-scrollbar-overlay-active");
+        }
+      };
       scrollbarModule = {
         name: "scrollbar",
         attribute: "scrollbar",
@@ -8059,18 +8205,20 @@ ${match}</ul>
               const evaluated = runtime.evaluate(el, value);
               if (typeof evaluated === "object" && evaluated !== null) {
                 config = evaluated;
-              } else if (typeof evaluated === "number") {
-                config = { autohide: evaluated };
               } else if (typeof evaluated === "string") {
-                if (evaluated === "auto-hide" || evaluated === "autohide") {
+                if (evaluated === "overlay") {
+                  config = { mode: "overlay" };
+                } else if (evaluated === "native") {
+                  config = { mode: "native" };
+                } else if (evaluated === "auto-hide" || evaluated === "autohide") {
                   config = { autohide: 800 };
                 } else if (!isNaN(Number(evaluated))) {
                   config = { autohide: Number(evaluated) };
                 }
               }
             } catch {
-              if (value === "auto-hide" || value === "autohide")
-                config = { autohide: 800 };
+              if (value === "overlay")
+                config = { mode: "overlay" };
             }
           }
           if (isGlobal) {
@@ -8101,34 +8249,15 @@ ${match}</ul>
           el.style.setProperty("--scrollbar-track-hover", trackHover);
           el.style.setProperty("--scrollbar-thumb-radius", thumbRadius);
           el.style.setProperty("--scrollbar-track-radius", trackRadius);
-          el.style.setProperty("--scrollbar-buttons", merged.buttons ? "block" : "none");
           el.style.setProperty("--scrollbar-fade-in", fadeIn);
           el.style.setProperty("--scrollbar-fade-out", fadeOut);
           el.style.setProperty("--scrollbar-fade-timing", fadeTiming);
-          if (merged.corner)
-            el.style.setProperty("--scrollbar-corner", resolveColor(merged.corner, "transparent"));
-          if (!isGlobal) {
-            el.classList.add("scrollbar-auto-hide");
-            if (autohideMs !== false && autohideMs > 0) {
-              let timer;
-              const onMotion = () => {
-                el.classList.add("is-scrolling");
-                if (timer !== void 0)
-                  clearTimeout(timer);
-                timer = setTimeout(() => {
-                  el.classList.remove("is-scrolling");
-                  timer = void 0;
-                }, autohideMs);
-              };
-              el.addEventListener("scroll", onMotion, { passive: true });
-              el.addEventListener("pointermove", onMotion, { passive: true });
-              return () => {
-                el.removeEventListener("scroll", onMotion);
-                el.removeEventListener("pointermove", onMotion);
-                if (timer !== void 0)
-                  clearTimeout(timer);
-              };
-            }
+          if (merged.mode === "overlay" && !isGlobal) {
+            const overlayInst = ensureOverlayInstance(el);
+            return () => {
+              overlayInst.destroy();
+              overlayInstances.delete(el);
+            };
           }
         }
       };
