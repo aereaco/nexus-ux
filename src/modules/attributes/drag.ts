@@ -1382,6 +1382,18 @@ export const dragAttribute: AttributeModule = {
           const engine = new DragReorderEngine(ctx, runtime);
           (container as any).__draggable = engine;
 
+          // Pre-register dynamic drag classes with stylesheet compiler
+          const dragClass = container.getAttribute("data-drag-class");
+          const ghostClass = container.getAttribute("data-drag-ghost-class");
+          const chosenClass = container.getAttribute("data-drag-chosen-class");
+          [dragClass, ghostClass, chosenClass].forEach(c => {
+            if (c) {
+              c.split(/\s+/).filter(Boolean).forEach(cls => {
+                stylesheet.adoptClass(cls, container, runtime);
+              });
+            }
+          });
+
           // Cleanup engine ONLY when container itself leaves DOM
           const enhancedContainer = container as any;
           if (!enhancedContainer[CLEANUP_FUNCTIONS_KEY]) {

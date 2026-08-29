@@ -3875,6 +3875,7 @@ ${scripts}
       init_animate();
       init_scope();
       init_consts();
+      init_stylesheet();
       Draggable = class _Draggable {
         static active = null;
         static ghost = null;
@@ -4817,6 +4818,16 @@ ${scripts}
                 });
                 const engine = new DragReorderEngine(ctx, runtime);
                 container.__draggable = engine;
+                const dragClass = container.getAttribute("data-drag-class");
+                const ghostClass = container.getAttribute("data-drag-ghost-class");
+                const chosenClass = container.getAttribute("data-drag-chosen-class");
+                [dragClass, ghostClass, chosenClass].forEach((c) => {
+                  if (c) {
+                    c.split(/\s+/).filter(Boolean).forEach((cls) => {
+                      stylesheet_default.adoptClass(cls, container, runtime);
+                    });
+                  }
+                });
                 const enhancedContainer = container;
                 if (!enhancedContainer[CLEANUP_FUNCTIONS_KEY]) {
                   enhancedContainer[CLEANUP_FUNCTIONS_KEY] = /* @__PURE__ */ new Map();
