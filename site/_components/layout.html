@@ -364,7 +364,7 @@
       data-class="{'hidden': !pageTabs, 'aura aura-dual text-secondary': pageTabToggleHovered }">
       <div class="card pe-2" data-class="{'bg-base-200': pageTabToggleHovered }">
         <div
-          class="flex flex-nowrap bg-base-300/20 rounded-none overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-base-content/10"
+          class="flex flex-nowrap bg-base-300/20 rounded-none overflow-x-auto pb-1 scrollbar-auto-hide"
           role="tablist" aria-orientation="horizontal" data-drag-container="router.pageTabs" data-drag-group="pageTabs"
           data-drag-direction="horizontal">
           <template data-for="tab in router.pageTabs" data-key="tab.id">
@@ -431,7 +431,9 @@
            new-tab launchpad, link tabs) share one outlet. A sync effect below
            keeps the active tab's content in step with router.route for route
            tabs, so sidebar/router navigation still updates the visible panel. -->
-    <div class="p-6 relative" data-class="{ 'flex-1 overflow-y-auto scrollbar-thin': fixedHeader }">
+    <div class="p-6 relative scrollbar-auto-hide" data-signal="{ isScrolling: false, _scrollTimer: null }"
+      data-class="{ 'flex-1 overflow-y-auto': fixedHeader, 'is-scrolling': isScrolling }"
+      data-on-scroll="isScrolling = true; clearTimeout(_scrollTimer); _scrollTimer = setTimeout(() => isScrolling = false, 800)">
 
       <!-- Retained Multi-Panel Outlets: Each tab retains its mounted DOM tree.
            data-show toggles panel visibility instantly (display: none) without destroying nodes or resetting state. -->
