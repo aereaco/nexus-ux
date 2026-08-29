@@ -735,8 +735,25 @@ export const routerAttributeModule: AttributeModule = {
               }
             }
 
-            // Sort discovered pages by declared order priority (numeric ascending), then alphabetical fallback
-            discovered.sort((a: any, b: any) => {
+            // Assemble parent-child tree hierarchy
+            const rootPages: DiscoveredPage[] = [];
+            for (const p of discovered) {
+              if (p.parent && p.parent !== '/' && p.parent !== '') {
+                const parentRoute = p.parent.startsWith('/') ? p.parent : '/' + p.parent;
+                const parentPage = discovered.find((x) => x.href === parentRoute);
+                if (parentPage) {
+                  parentPage.children = parentPage.children || [];
+                  if (!parentPage.children.some((c) => c.href === p.href)) {
+                    parentPage.children.push(p);
+                  }
+                  continue;
+                }
+              }
+              rootPages.push(p);
+            }
+
+            // Sort root pages by declared order priority (numeric ascending), then alphabetical fallback
+            rootPages.sort((a: any, b: any) => {
               const aOrder = a.meta?.order;
               const bOrder = b.meta?.order;
               if (aOrder !== undefined && bOrder !== undefined) return aOrder - bOrder;
@@ -744,6 +761,8 @@ export const routerAttributeModule: AttributeModule = {
               if (bOrder !== undefined) return 1;
               return (a.title || a.href).localeCompare(b.title || b.href);
             });
+            discovered.length = 0;
+            discovered.push(...rootPages);
           } else {
             // Fallback to routeList if neither manifest nor directory listing was available
             const publicRoutes = routeList.filter((r) => {

@@ -6910,7 +6910,22 @@ ${match}</ul>
                       });
                     }
                   }
-                  discovered.sort((a, b) => {
+                  const rootPages = [];
+                  for (const p of discovered) {
+                    if (p.parent && p.parent !== "/" && p.parent !== "") {
+                      const parentRoute = p.parent.startsWith("/") ? p.parent : "/" + p.parent;
+                      const parentPage = discovered.find((x) => x.href === parentRoute);
+                      if (parentPage) {
+                        parentPage.children = parentPage.children || [];
+                        if (!parentPage.children.some((c) => c.href === p.href)) {
+                          parentPage.children.push(p);
+                        }
+                        continue;
+                      }
+                    }
+                    rootPages.push(p);
+                  }
+                  rootPages.sort((a, b) => {
                     const aOrder = a.meta?.order;
                     const bOrder = b.meta?.order;
                     if (aOrder !== void 0 && bOrder !== void 0)
@@ -6921,6 +6936,8 @@ ${match}</ul>
                       return 1;
                     return (a.title || a.href).localeCompare(b.title || b.href);
                   });
+                  discovered.length = 0;
+                  discovered.push(...rootPages);
                 } else {
                   const publicRoutes = routeList.filter((r) => {
                     const p = r.path || "";
