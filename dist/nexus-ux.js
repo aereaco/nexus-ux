@@ -8096,7 +8096,9 @@ ${match}</ul>
           const { clientHeight, scrollHeight, clientWidth, scrollWidth, scrollTop, scrollLeft } = this.el;
           if (scrollHeight > clientHeight && clientHeight > 0) {
             this.trackV.style.display = "block";
-            const thumbHeight = Math.max(20, clientHeight / scrollHeight * clientHeight);
+            this.trackV.style.transform = `translate3d(0, ${scrollTop}px, 0)`;
+            this.trackV.style.height = `${clientHeight}px`;
+            const thumbHeight = Math.max(24, clientHeight / scrollHeight * clientHeight);
             const maxScrollTop = scrollHeight - clientHeight;
             const maxThumbTop = clientHeight - thumbHeight;
             const thumbTop = maxScrollTop > 0 ? scrollTop / maxScrollTop * maxThumbTop : 0;
@@ -8107,7 +8109,9 @@ ${match}</ul>
           }
           if (scrollWidth > clientWidth && clientWidth > 0) {
             this.trackH.style.display = "block";
-            const thumbWidth = Math.max(20, clientWidth / scrollWidth * clientWidth);
+            this.trackH.style.transform = `translate3d(${scrollLeft}px, ${scrollTop + clientHeight - 8}px, 0)`;
+            this.trackH.style.width = `${clientWidth}px`;
+            const thumbWidth = Math.max(24, clientWidth / scrollWidth * clientWidth);
             const maxScrollLeft = scrollWidth - clientWidth;
             const maxThumbLeft = clientWidth - thumbWidth;
             const thumbLeft = maxScrollLeft > 0 ? scrollLeft / maxScrollLeft * maxThumbLeft : 0;
