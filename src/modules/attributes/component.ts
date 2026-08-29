@@ -238,10 +238,8 @@ const componentModule: AttributeModule = {
         meta: {} as Record<string, string>
       });
 
-      const ctx: ComponentContext = {
-        element: el,
-        ...componentState
-      };
+      const ctx: ComponentContext = componentState as unknown as ComponentContext;
+      ctx.element = el;
 
       el[COMPONENT_CONTEXT_KEY] = ctx;
 
@@ -276,13 +274,21 @@ const componentModule: AttributeModule = {
           try {
             config = JSON.parse(evaluated);
           } catch {
-            config = { path: evaluated };
+            if (evaluated.trim().startsWith('{')) {
+              try {
+                config = (new Function('return (' + evaluated + ')'))();
+              } catch {
+                config = { path: evaluated };
+              }
+            } else {
+              config = { path: evaluated };
+            }
           }
         } else {
           return;
         }
 
-        if (!config.path || config.path === 'none') return;
+        if (!config.path || config.path === 'none' || config.path === 'undefined' || config.path === 'null') return;
 
         if (config.path === __lastPath) return;
         __lastPath = config.path;
@@ -291,6 +297,7 @@ const componentModule: AttributeModule = {
           componentState.isLoading = true;
           componentState.hasError = false;
           if (isTabOutlet && tabObj && typeof tabObj === 'object') {
+            (tabObj as any).isLoading = true;
             (tabObj as any).linkedContent = componentState;
           }
           try {
@@ -315,6 +322,9 @@ const componentModule: AttributeModule = {
                     componentState.templateContent = fresh;
                     const extracted = extractResourceMetadata(fresh, targetPath, runtime);
                     componentState.meta = extracted;
+                    if (tabObj && extracted) {
+                      tabObj.meta = { ...(tabObj.meta || {}), ...extracted };
+                    }
                   }
                 }
               });
@@ -330,7 +340,7 @@ const componentModule: AttributeModule = {
             componentState.meta = extracted;
 
             // Sync resolved metadata back to the reactive tab object so the tab
-            // header binding (tab.meta ?? tab.linkedContent?.meta) updates immediately.
+            // header binding (tab.meta?.title / tab.meta?.icon) updates immediately.
             if (tabObj && extracted && (extracted.title || extracted.icon)) {
               tabObj.meta = { ...(tabObj.meta || {}), ...extracted };
             }
@@ -384,6 +394,9 @@ const componentModule: AttributeModule = {
             }
           } finally {
             componentState.isLoading = false;
+            if (isTabOutlet && tabObj && typeof tabObj === 'object') {
+              (tabObj as any).isLoading = false;
+            }
           }
         };
 
