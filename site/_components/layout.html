@@ -379,16 +379,8 @@
     </div>
 
     <!-- Floating Side Hover Expanding Tab | Breadcrumbs & Page Tabs Toggle (when floatingBookmarks is true) -->
-    <div data-show="floatingBookmarks" class="absolute end-0 top-32 z-10" data-signal="{
-              breadcrumbs: [
-                { title: 'Home', href: '/', icon: 'material-symbols-light:home-outline' },
-                { title: 'Profile', href: '/profile', icon: 'material-symbols-light:person-outline' },
-                { title: 'Flow', href: '/flow', icon: 'material-symbols-light:account-tree-outline' },
-                { title: 'Drag & Drop', href: '/drag', icon: 'material-symbols-light:drag-indicator' },
-                { title: 'Settings', href: '/settings', icon: 'material-symbols-light:settings-outline' }
-              ],
-              hovered: false
-            }" data-on-mouseenter="hovered = true" data-on-mouseleave="hovered = false">
+    <div data-show="floatingBookmarks" class="absolute end-0 top-32 z-10" data-signal="{ hovered: false }"
+      data-on-mouseenter="hovered = true" data-on-mouseleave="hovered = false">
       <nav aria-label="Breadcrumb"
         class="flex items-center overflow-hidden rounded-ss-lg rounded-es-lg border border-base-100 bg-white text-sm text-gray-700 dark:bg-gray-800 dark:text-gray-200 transition-[max-width,width] duration-300 ease-in-out whitespace-nowrap shadow-sm"
         data-class="{ 'max-w-md w-md shadow-2xl': hovered, 'max-w-12 w-12': !hovered }">
@@ -401,9 +393,9 @@
             class="breadcrumbs text-sm font-semibold max-w-xs overflow-x-auto scrollbar-none transition-opacity duration-300"
             data-class="{ 'opacity-100 px-4': hovered, 'opacity-0 px-0': !hovered }">
             <ul class="flex items-center gap-2">
-              <li data-for="crumb in breadcrumbs" data-key="crumb.href">
+              <li data-for="crumb in router.lineage" data-key="crumb.href">
                 <a data-bind-href="crumb.href" class="flex items-center gap-1">
-                  <iconify-icon data-bind-icon="crumb.icon || 'material-symbols-light:bookmark-outline'" class="text-base"></iconify-icon>
+                  <iconify-icon data-show="crumb.icon" data-bind-icon="crumb.icon || 'material-symbols-light:bookmark-outline'" class="text-base"></iconify-icon>
                   <span data-bind="crumb.title"></span>
                 </a>
               </li>
@@ -449,21 +441,17 @@
 
           <div class="divider divider-horizontal mx-0 my-0 h-5 opacity-40"></div>
 
-          <!-- 2. Breadcrumbs with Icons and Zero Home Duplication -->
-          <div class="breadcrumbs text-sm font-medium overflow-x-auto scrollbar-none py-0">
-            <ul class="flex items-center flex-nowrap gap-1">
-              <li>
-                <a href="/" class="flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
-                  <iconify-icon icon="material-symbols-light:home-outline" class="text-lg"></iconify-icon>
-                  <span>Home</span>
-                </a>
-              </li>
-              <li data-show="router.route && router.route !== '/' && router.route !== '/_pages/home.html' && router.activePageTab?.meta?.title !== 'Home'">
-                <span class="flex items-center gap-1.5 font-semibold text-primary">
-                  <iconify-icon data-bind-icon="router.activePageTab?.meta?.icon || 'material-symbols-light:article-outline'" class="text-lg"></iconify-icon>
-                  <span data-bind="router.activePageTab?.meta?.title || router.route?.replace(/^\/_pages\//, '').replace(/\.html$/, '')"></span>
-                </span>
-              </li>
+          <!-- 2. Pure Horizontal Breadcrumbs with Icons and Lineage (zero wrap, zero vertical scroll) -->
+          <div class="breadcrumbs text-sm font-medium overflow-x-auto overflow-y-hidden scrollbar-none py-0 max-w-full">
+            <ul class="flex flex-nowrap items-center whitespace-nowrap min-w-max gap-1">
+              <template data-for="crumb in router.lineage" data-key="crumb.href">
+                <li>
+                  <a data-bind-href="crumb.href" class="flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
+                    <iconify-icon data-show="crumb.icon" data-bind-icon="crumb.icon" class="text-lg"></iconify-icon>
+                    <span data-bind="crumb.title"></span>
+                  </a>
+                </li>
+              </template>
             </ul>
           </div>
         </div>
@@ -551,34 +539,63 @@
     data-on-mouseenter="if (collapsed && !sidebarOpen) hovered = true" data-on-mouseleave="hovered = false"
     data-effect="if (collapsed && !hovered && !sidebarOpen) { activeSidebarTab = 1; }">
     <div class="flex flex-col h-full w-full overflow-x-hidden">
-      <div class="navbar flex justify-between pe-4">
+      <div class="navbar flex justify-between p-0 min-h-16">
         <div class="flex flex-1 items-center">
-          <a class="btn btn-ghost text-xl ps-1">
-            <svg class="size-10 scale-[0.8] emblem" data-class="{ 'hidden': !collapsed && !hovered && !sidebarOpen }">
-              <use href="_assets/images/emblem.svg"></use>
-            </svg>
-            <span class="logo font-bold"
-              data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen, 'block': !collapsed || hovered || sidebarOpen }">Nexus-UX</span>
+          <a class="flex items-center gap-3 w-full h-16 p-0">
+            <div class="w-20 shrink-0 flex items-center justify-center">
+              <svg class="size-10 scale-[0.8] emblem">
+                <use href="_assets/images/emblem.svg"></use>
+              </svg>
+            </div>
+            <span class="logo font-bold text-xl whitespace-nowrap"
+              data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }">Nexus-UX</span>
           </a>
         </div>
-        <button class="btn btn-ghost btn-circle close" data-class="{ 'hidden': !sidebarOpen, 'block': sidebarOpen }"
+        <button class="btn btn-ghost btn-circle close me-4" data-class="{ 'hidden': !sidebarOpen, 'block': sidebarOpen }"
           data-on-click="sidebarOpen = false; activeSidebarTab = 1" aria-label="close sidebar">
           <iconify-icon icon="material-symbols-light:close" class="text-2xl"></iconify-icon>
         </button>
       </div>
 
-      <ul class="menu w-full grow overflow-x-hidden overflow-y-auto pb-28" data-show="activeSidebarTab === 1" data-drag-container="router.pages">
+      <ul class="menu w-full p-0 grow overflow-x-hidden overflow-y-auto pb-28" data-show="activeSidebarTab === 1" data-drag-container="router.pages">
         <template data-for="item in router.pages" data-key="item.href">
-          <li class="cursor-pointer" data-drag>
-            <a data-bind-href="item.href" draggable="false" data-bind-data-tab-title="item.tabTitle"
-              data-bind-data-tab-icon="item.tabIcon"
-              class="flex flex-nowrap items-center whitespace-nowrap transition-all duration-200"
-              data-class="{ 'justify-center px-0': collapsed && !hovered && !sidebarOpen, 'justify-start gap-4 px-4': !collapsed || hovered || sidebarOpen }"
+          <li class="cursor-pointer" data-bind-data-drag="item.href !== '/' ? '' : null">
+            <!-- Root item WITHOUT children -->
+            <a data-if="!item.children || item.children.length === 0"
+              data-bind-href="item.href" draggable="false"
+              data-bind-data-tab-title="item.tabTitle || item.title"
+              data-bind-data-tab-icon="item.tabIcon || item.icon"
+              class="flex flex-nowrap items-center whitespace-nowrap p-0 h-12 rounded-none hover:bg-base-200 transition-colors"
               data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
               data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
-              <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
-              <span class="whitespace-nowrap truncate font-medium" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
+              <div class="w-20 shrink-0 flex items-center justify-center">
+                <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
+              </div>
+              <span class="whitespace-nowrap truncate font-medium pe-4" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
             </a>
+
+            <!-- Root item WITH children (DaisyUI collapsible submenu) -->
+            <details data-if="item.children && item.children.length > 0" open>
+              <summary class="flex flex-nowrap items-center whitespace-nowrap p-0 h-12 rounded-none hover:bg-base-200 transition-colors">
+                <div class="w-20 shrink-0 flex items-center justify-center">
+                  <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
+                </div>
+                <span class="whitespace-nowrap truncate font-medium pe-2" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
+              </summary>
+              <ul data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" class="ps-16 space-y-1 my-1" data-drag-container="item.children">
+                <template data-for="child in item.children" data-key="child.href">
+                  <li class="cursor-pointer" data-drag>
+                    <a data-bind-href="child.href" draggable="false"
+                      data-bind-data-tab-title="child.tabTitle || child.title"
+                      class="py-1.5 px-3 text-sm rounded-box font-medium hover:bg-base-200"
+                      data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
+                      data-on-contextmenu:prevent="openNavContextMenu(child.href, child.title, null, $evt)"
+                      data-bind="child.title">
+                    </a>
+                  </li>
+                </template>
+              </ul>
+            </details>
           </li>
         </template>
       </ul>
