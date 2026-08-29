@@ -1522,8 +1522,9 @@ ${suggestion}`);
           }, 100);
         }
         async performNetworkFetch(url, options, etagHeader) {
+          const isSameOrigin = typeof location === "undefined" || url.startsWith("/") || url.startsWith(location.origin);
           const headers = {};
-          if (etagHeader)
+          if (etagHeader && isSameOrigin)
             headers["If-None-Match"] = etagHeader;
           let controller;
           let timer;
