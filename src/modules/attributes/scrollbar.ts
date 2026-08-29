@@ -5,16 +5,16 @@
  * `mode: 'overlay'` (GPU-accelerated overlay sprite with genuine 60fps/120fps CSS
  * opacity fade transitions and interactive thumb dragging).
  *
- * Built with Modern Native Global UI/UX Standards:
+ * Built with Pure Generic Modern Native UI/UX Standards:
  * - CSS Logical Properties (`inset-inline-start/end`, `inset-block-start/end`) for seamless RTL/LTR mirroring.
  * - Relative units (`rem`/`em`) for responsive Theme Zoom and root accessibility scaling.
- * - Clean open standard naming with zero branded syntax.
+ * - Clean open standard naming with zero branded syntax and zero hardcoded application classes.
  */
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { stylesheet } from './stylesheet.ts';
 
-export type ScrollbarMode = 'native' | 'overlay';
+export type ScrollbarMode = 'native' | 'overlay' | 'none';
 
 export interface ScrollbarConfig {
   mode?: ScrollbarMode;
@@ -240,9 +240,17 @@ function resolveColor(val: string | undefined, defaultVal: string): string {
 
 function findScrollParent(el: Element | null): Element | null {
   while (el && el !== document.body && el !== document.documentElement) {
+    if (el.getAttribute('data-scrollbar') === 'none' || el.classList.contains('scrollbar-none')) {
+      return null;
+    }
     const s = window.getComputedStyle(el);
-    const hasScroll = (s.overflowY === 'auto' || s.overflowY === 'scroll' || s.overflowX === 'auto' || s.overflowX === 'scroll');
-    if (hasScroll && (el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth)) {
+    if (s.scrollbarWidth === 'none') {
+      el = el.parentElement;
+      continue;
+    }
+    const hasScrollY = (s.overflowY === 'auto' || s.overflowY === 'scroll') && s.overflowY !== 'hidden' && (el.scrollHeight > el.clientHeight);
+    const hasScrollX = (s.overflowX === 'auto' || s.overflowX === 'scroll') && s.overflowX !== 'hidden' && (el.scrollWidth > el.clientWidth);
+    if (hasScrollY || hasScrollX) {
       return el;
     }
     el = el.parentElement;
@@ -314,10 +322,18 @@ class OverlayScrollbarInstance {
 
   public update(): void {
     const { clientHeight, scrollHeight, clientWidth, scrollWidth, scrollTop, scrollLeft } = this.el;
-    const isRTL = window.getComputedStyle(this.el).direction === 'rtl';
+    const s = window.getComputedStyle(this.el);
+    const isRTL = s.direction === 'rtl';
+
+    // Check declarative opt-out or hidden overflow
+    if (this.el.getAttribute('data-scrollbar') === 'none' || this.el.classList.contains('scrollbar-none') || s.scrollbarWidth === 'none') {
+      if (this.trackV) this.trackV.style.display = 'none';
+      if (this.trackH) this.trackH.style.display = 'none';
+      return;
+    }
 
     // Vertical Update
-    if (scrollHeight > clientHeight && clientHeight > 0) {
+    if (s.overflowY !== 'hidden' && (s.overflowY === 'auto' || s.overflowY === 'scroll') && scrollHeight > clientHeight && clientHeight > 0) {
       this.trackV!.style.display = 'block';
       // Pin vertical track to visible viewport
       this.trackV!.style.transform = `translate3d(0, ${scrollTop}px, 0)`;
@@ -331,11 +347,11 @@ class OverlayScrollbarInstance {
       this.thumbV!.style.height = `${thumbHeight}px`;
       this.thumbV!.style.transform = `translate3d(0, ${thumbTop}px, 0)`;
     } else {
-      this.trackV!.style.display = 'none';
+      if (this.trackV) this.trackV.style.display = 'none';
     }
 
     // Horizontal Update
-    if (scrollWidth > clientWidth && clientWidth > 0) {
+    if (s.overflowX !== 'hidden' && (s.overflowX === 'auto' || s.overflowX === 'scroll') && scrollWidth > clientWidth && clientWidth > 0) {
       this.trackH!.style.display = 'block';
       const trackHeight = 8;
       // Pin horizontal track cleanly to bottom of visible viewport
@@ -351,7 +367,7 @@ class OverlayScrollbarInstance {
       this.thumbH!.style.width = `${thumbWidth}px`;
       this.thumbH!.style.transform = `translate3d(${isRTL ? -thumbLeft : thumbLeft}px, 0, 0)`;
     } else {
-      this.trackH!.style.display = 'none';
+      if (this.trackH) this.trackH.style.display = 'none';
     }
   }
 
@@ -527,6 +543,8 @@ const scrollbarModule: AttributeModule = {
             config = { mode: 'overlay' };
           } else if (evaluated === 'native') {
             config = { mode: 'native' };
+          } else if (evaluated === 'none') {
+            config = { mode: 'none' };
           } else if (evaluated === 'auto-hide' || evaluated === 'autohide') {
             config = { autohide: 800 };
           } else if (!isNaN(Number(evaluated))) {
@@ -535,6 +553,7 @@ const scrollbarModule: AttributeModule = {
         }
       } catch {
         if (value === 'overlay') config = { mode: 'overlay' };
+        if (value === 'none') config = { mode: 'none' };
       }
     }
 
@@ -545,6 +564,11 @@ const scrollbarModule: AttributeModule = {
     }
 
     const merged = { ...globalConfig, ...config };
+    if (merged.mode === 'none') {
+      el.classList.add('scrollbar-none');
+      return;
+    }
+
     const autohideMs = merged.autohide === false ? false : (typeof merged.autohide === 'number' ? merged.autohide : 800);
 
     // Apply Standard CSS Custom Properties with rem relative units
