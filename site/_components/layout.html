@@ -3,6 +3,7 @@
       pageTabs: localStorage.pageTabs !== 'false',
       fixedHeader: localStorage.fixedHeader !== 'false',
       fixedFooter: localStorage.fixedFooter !== 'false',
+      floatingBookmarks: localStorage.floatingBookmarks === 'true',
       hovered: false,
       sidebarOpen: false,
       isMobile: window.innerWidth < 768,
@@ -377,8 +378,8 @@
       </div>
     </div>
 
-    <!-- Floating Side Hover Expanding Tab | Breadcrumbs & Page Tabs Toggle -->
-    <div class="absolute end-0 top-32 z-10" data-signal="{
+    <!-- Floating Side Hover Expanding Tab | Breadcrumbs & Page Tabs Toggle (when floatingBookmarks is true) -->
+    <div data-show="floatingBookmarks" class="absolute end-0 top-32 z-10" data-signal="{
               breadcrumbs: [
                 { title: 'Home', href: '/' },
                 { title: 'Long text 2', href: '/long-text-2' },
@@ -435,6 +436,23 @@
          When fixedFooter is ON (sticky), the inner panel is flex-1 overflow-y-auto so the footer stays pinned at the bottom. -->
     <div class="flex-1 flex flex-col min-h-0 w-full grow" data-class="{ 'overflow-y-auto': fixedHeader && !fixedFooter }">
       <div class="p-6 relative grow flex flex-col" data-class="{ 'overflow-y-auto': fixedHeader && fixedFooter }">
+
+        <!-- Inline Header Bar with Breadcrumbs & Page Tabs Toggle (when floatingBookmarks is false) -->
+        <div data-show="!floatingBookmarks" class="flex items-center justify-between pb-3 mb-4 border-b border-base-content/10">
+          <div class="breadcrumbs text-sm font-medium">
+            <ul>
+              <li><a href="/">Home</a></li>
+              <li data-bind="router.activePageTab?.meta?.title || router.route || 'Page'"></li>
+            </ul>
+          </div>
+          <div class="tooltip tooltip-start" data-tip="Toggle page tabs">
+            <button class="btn btn-sm btn-ghost btn-circle" data-class="{ 'btn-active text-primary': pageTabs }"
+              data-on-click="pageTabs = !pageTabs; localStorage.setItem('pageTabs', pageTabs)">
+              <iconify-icon icon="material-symbols-light:tab-group-outline" class="text-xl"></iconify-icon>
+            </button>
+          </div>
+        </div>
+
         <!-- Retained Multi-Panel Outlets: Each tab retains its mounted DOM tree.
              data-show toggles panel visibility instantly (display: none) without destroying nodes or resetting state. -->
         <template data-for="tab in router.pageTabs" data-key="tab.id">
@@ -539,7 +557,8 @@
           <li class="cursor-pointer" data-drag>
             <a data-bind-href="item.href" draggable="false" data-bind-data-tab-title="item.tabTitle"
               data-bind-data-tab-icon="item.tabIcon"
-              class="flex flex-nowrap items-center whitespace-nowrap"
+              class="flex flex-nowrap items-center whitespace-nowrap transition-all duration-200"
+              data-class="{ 'justify-center px-0': collapsed && !hovered && !sidebarOpen, 'justify-start gap-4 px-4': !collapsed || hovered || sidebarOpen }"
               data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
               data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
               <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
@@ -736,6 +755,17 @@
               <label class="grid cursor-pointer place-items-center">
                 <input type="checkbox" class="toggle toggle-primary" data-bind-checked="fixedFooter"
                   data-on-change="fixedFooter = $evt.target.checked; localStorage.setItem('fixedFooter', $evt.target.checked)" />
+              </label>
+            </div>
+
+            <div class="divider my-1"></div>
+
+            <!-- Floating Bookmarks toggle -->
+            <div class="flex flex-nowrap items-center">
+              <span class="label-text grow">Floating Bookmarks</span>
+              <label class="grid cursor-pointer place-items-center">
+                <input type="checkbox" class="toggle toggle-primary" data-bind-checked="floatingBookmarks"
+                  data-on-change="floatingBookmarks = $evt.target.checked; localStorage.setItem('floatingBookmarks', $evt.target.checked)" />
               </label>
             </div>
 
