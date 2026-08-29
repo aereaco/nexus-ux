@@ -23,6 +23,7 @@ export interface RouteManifestEntry {
   icon?: string;
   order?: number;
   internal?: boolean;
+  parent?: string | null;
 }
 
 function parseHeadMetadata(content: string): {
@@ -31,6 +32,7 @@ function parseHeadMetadata(content: string): {
   icon?: string;
   order?: number;
   internal?: boolean;
+  parent?: string | null;
 } {
   const idMatch = content.match(/<meta\s+[^>]*name=["']id["'][^>]*content=["']([^"']*)["']/i) ||
     content.match(/<meta\s+[^>]*content=["']([^"']*)["'][^>]*name=["']id["']/i);
@@ -43,6 +45,8 @@ function parseHeadMetadata(content: string): {
     content.match(/<meta\s+[^>]*content=["']([^"']*)["'][^>]*name=["']order["']/i);
   const internalMatch = content.match(/<meta\s+[^>]*name=["']internal["'][^>]*content=["']([^"']*)["']/i) ||
     content.match(/<meta\s+[^>]*content=["']([^"']*)["'][^>]*name=["']internal["']/i);
+  const parentMatch = content.match(/<meta\s+[^>]*name=["']parent["'][^>]*content=["']([^"']*)["']/i) ||
+    content.match(/<meta\s+[^>]*content=["']([^"']*)["'][^>]*name=["']parent["']/i);
 
   const id = idMatch ? idMatch[1].trim() : undefined;
   const title = titleMatch ? titleMatch[1].trim() : undefined;
@@ -51,8 +55,9 @@ function parseHeadMetadata(content: string): {
   const orderVal = orderMatch ? parseInt(orderMatch[1].trim(), 10) : undefined;
   const order = !isNaN(orderVal!) ? orderVal : undefined;
   const internal = internalMatch ? internalMatch[1].trim().toLowerCase() === "true" : undefined;
+  const parent = parentMatch ? (parentMatch[1].trim() === "null" ? null : parentMatch[1].trim()) : undefined;
 
-  return { id, title, route, icon, order, internal };
+  return { id, title, route, icon, order, internal, parent };
 }
 
 function scanDirectory(dir: string, baseWebPath: string, isInternalDefault = false): RouteManifestEntry[] {
@@ -80,6 +85,7 @@ function scanDirectory(dir: string, baseWebPath: string, isInternalDefault = fal
         if (meta.icon) item.icon = meta.icon;
         if (meta.order !== undefined) item.order = meta.order;
         if (internal) item.internal = internal;
+        if (meta.parent !== undefined) item.parent = meta.parent;
 
         list.push(item);
       }
