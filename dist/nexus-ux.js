@@ -7907,7 +7907,7 @@ ${match}</ul>
     "src/modules/attributes/scrollbar.ts"() {
       init_stylesheet();
       SCROLLBAR_BASE_CSS = `
-/* Targeted Scrollbar Containers: Override DaisyUI/Framework default scrollbar-color */
+/* Targeted Scrollbar Containers: Neutralize DaisyUI's * { scrollbar-color: ... } */
 .overflow-auto,
 .overflow-y-auto,
 .overflow-x-auto,
@@ -7917,8 +7917,7 @@ ${match}</ul>
 .scrollbar-auto-hide,
 [data-scrollbar],
 [data-scrollbar-global] {
-  scrollbar-width: var(--scrollbar-width-std, thin) !important;
-  scrollbar-color: transparent transparent !important;
+  scrollbar-color: auto !important;
 }
 
 .overflow-auto::-webkit-scrollbar,
@@ -7947,7 +7946,7 @@ ${match}</ul>
   border-radius: var(--scrollbar-track-radius, 9999px);
 }
 
-/* Idle State: 100% Transparent Thumb with Smooth Fade */
+/* Idle State: 100% Transparent Thumb with Hardware-Accelerated Fade Out Animation */
 .overflow-auto::-webkit-scrollbar-thumb,
 .overflow-y-auto::-webkit-scrollbar-thumb,
 .overflow-x-auto::-webkit-scrollbar-thumb,
@@ -7962,19 +7961,7 @@ ${match}</ul>
   transition: background-color var(--scrollbar-fade-out, 0.4s) var(--scrollbar-fade-timing, cubic-bezier(0.4, 0, 0.2, 1));
 }
 
-/* Motion State: Active Reveal (Targeted .is-scrolling) */
-.overflow-auto.is-scrolling,
-.overflow-y-auto.is-scrolling,
-.overflow-x-auto.is-scrolling,
-.overflow-scroll.is-scrolling,
-.overflow-y-scroll.is-scrolling,
-.overflow-x-scroll.is-scrolling,
-.scrollbar-auto-hide.is-scrolling,
-[data-scrollbar].is-scrolling,
-[data-scrollbar-global].is-scrolling {
-  scrollbar-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent)) var(--scrollbar-track, transparent) !important;
-}
-
+/* Motion State: Active Reveal with Hardware-Accelerated Fade In Animation */
 .overflow-auto.is-scrolling::-webkit-scrollbar-thumb,
 .overflow-y-auto.is-scrolling::-webkit-scrollbar-thumb,
 .overflow-x-auto.is-scrolling::-webkit-scrollbar-thumb,
@@ -8018,6 +8005,33 @@ ${match}</ul>
 .scrollbar-auto-hide::-webkit-scrollbar-corner,
 [data-scrollbar]::-webkit-scrollbar-corner {
   background: var(--scrollbar-corner, transparent);
+}
+
+/* Firefox Compatibility */
+@supports (-moz-appearance: none) {
+  .overflow-auto,
+  .overflow-y-auto,
+  .overflow-x-auto,
+  .overflow-scroll,
+  .overflow-y-scroll,
+  .overflow-x-scroll,
+  .scrollbar-auto-hide,
+  [data-scrollbar],
+  [data-scrollbar-global] {
+    scrollbar-width: var(--scrollbar-width-std, thin) !important;
+    scrollbar-color: transparent transparent !important;
+  }
+  .overflow-auto.is-scrolling,
+  .overflow-y-auto.is-scrolling,
+  .overflow-x-auto.is-scrolling,
+  .overflow-scroll.is-scrolling,
+  .overflow-y-scroll.is-scrolling,
+  .overflow-x-scroll.is-scrolling,
+  .scrollbar-auto-hide.is-scrolling,
+  [data-scrollbar].is-scrolling,
+  [data-scrollbar-global].is-scrolling {
+    scrollbar-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent)) var(--scrollbar-track, transparent) !important;
+  }
 }
 `;
       stylesAdopted = false;
