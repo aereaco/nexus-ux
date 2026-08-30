@@ -71,7 +71,8 @@
     "title": "xyFlow Spatial Canvas",
     "icon": "material-symbols-light:flowchart-outline",
     "order": 3,
-    "parent": null
+    "parent": null,
+    "category": "General"
   },
   {
     "id": "profile3.3",
