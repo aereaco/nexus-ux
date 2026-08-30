@@ -867,12 +867,12 @@
     </main>
 
     <!-- ================= 3. Dock Section (shrink-0) ================= -->
-    <footer class="sidebar-dock shrink-0">
-      <div class="dock shrink-0 overflow-hidden"
+    <footer class="sidebar-dock relative h-16 min-h-16 shrink-0 border-t border-base-content/5">
+      <div class="dock !relative w-full h-full shrink-0 overflow-hidden"
         data-class="{ 'flex': (collapsed || isMobile) && !hovered && !sidebarOpen, 'hidden': sidebarOpen || hovered || (!collapsed && !isMobile) }">
         <iconify-icon icon="material-symbols-light:left-panel-open-outline" class="text-2xl"></iconify-icon>
       </div>
-      <div class="dock shrink-0 overflow-hidden"
+      <div class="dock !relative w-full h-full shrink-0 overflow-hidden"
         data-class="{ 'flex': sidebarOpen || hovered || (!collapsed && !isMobile), 'hidden': (collapsed || isMobile) && !hovered && !sidebarOpen }">
         <button class="tooltip tooltip-top" data-tip="Menu" data-class="{ 'dock-active': activeSidebarTab === 1 }"
           data-on-click="activeSidebarTab = 1">
