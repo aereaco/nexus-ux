@@ -681,6 +681,7 @@ export const routerAttributeModule: AttributeModule = {
               let title = isObj ? (item.title || item.meta?.title || '') : '';
               let icon = isObj ? (item.icon || item.meta?.icon || '') : '';
               const order = isObj ? (item.order !== undefined ? item.order : item.meta?.order) : undefined;
+              const category = isObj ? (item.category !== undefined ? item.category : item.meta?.category) : undefined;
 
               const defaultTitle = href === '/'
                 ? 'Home'
@@ -728,8 +729,9 @@ export const routerAttributeModule: AttributeModule = {
                 tabIcon: finalIcon || '',
                 path: compPath,
                 parent,
+                category: category || 'General',
                 children: children.length > 0 ? children : undefined,
-                meta: { title: finalTitle, icon: finalIcon, order, parent }
+                meta: { title: finalTitle, icon: finalIcon, order, parent, category }
               });
 
               // Dynamically register route in state.routes if not already present
@@ -739,7 +741,7 @@ export const routerAttributeModule: AttributeModule = {
                   path: href,
                   component: compPath,
                   name: cleanName,
-                  meta: { title: finalTitle, icon: finalIcon, order, parent }
+                  meta: { title: finalTitle, icon: finalIcon, order, parent, category }
                 } as any);
               }
             }

@@ -6869,6 +6869,7 @@ ${match}</ul>
                     let title = isObj ? item.title || item.meta?.title || "" : "";
                     let icon = isObj ? item.icon || item.meta?.icon || "" : "";
                     const order = isObj ? item.order !== void 0 ? item.order : item.meta?.order : void 0;
+                    const category = isObj ? item.category !== void 0 ? item.category : item.meta?.category : void 0;
                     const defaultTitle = href === "/" ? "Home" : href.replace(/^\/+/, "").replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
                     const finalTitle = title || defaultTitle;
                     const finalIcon = icon || (parent ? void 0 : "material-symbols-light:article-outline");
@@ -6907,8 +6908,9 @@ ${match}</ul>
                       tabIcon: finalIcon || "",
                       path: compPath,
                       parent,
+                      category: category || "General",
                       children: children.length > 0 ? children : void 0,
-                      meta: { title: finalTitle, icon: finalIcon, order, parent }
+                      meta: { title: finalTitle, icon: finalIcon, order, parent, category }
                     });
                     const existing = state.routes.find((r) => r.path === href);
                     if (!existing) {
@@ -6916,7 +6918,7 @@ ${match}</ul>
                         path: href,
                         component: compPath,
                         name: cleanName,
-                        meta: { title: finalTitle, icon: finalIcon, order, parent }
+                        meta: { title: finalTitle, icon: finalIcon, order, parent, category }
                       });
                     }
                   }
