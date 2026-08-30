@@ -33,7 +33,7 @@
     "title": "Profile 3.4.1",
     "icon": "material-symbols-light:person-outline",
     "order": 1,
-    "parent": "/profile3.4"
+    "parent": "/profiles/profile3/profile3.4"
   },
   {
     "id": "drag",
