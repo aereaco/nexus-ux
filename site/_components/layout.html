@@ -558,7 +558,7 @@
       }
     </style>-->
     <div class="flex flex-col h-full w-full overflow-x-hidden">
-      <div class="navbar flex justify-between p-0 min-h-16">
+      <div class="navbar flex justify-between p-0 min-h-16 shrink-0">
         <div class="flex flex-1 items-center">
           <a class="flex items-center w-full h-16 p-0">
             <div class="w-16 h-16 flex items-center justify-center shrink-0">
@@ -581,26 +581,25 @@
       <template id="sidebar-sub-menu-item">
         <!-- Sub Leaf Item -->
         <li data-show="!item.children || item.children.length === 0" class="cursor-pointer" data-drag>
-          <a data-bind-href="item.href" draggable="false"
-            class="whitespace-nowrap"
+          <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
             data-bind-data-tab-title="item.tabTitle || item.title"
             data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-            data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, null, $evt)"
-            data-bind="item.title">
+            data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, null, $evt)" data-bind="item.title">
           </a>
         </li>
 
         <!-- Sub Branch Item (e.g. Profile 3) -->
-        <li data-show="item.children && item.children.length > 0" class="cursor-pointer" data-drag data-signal="{ open: false }">
+        <li data-show="item.children && item.children.length > 0" class="cursor-pointer" data-drag
+          data-signal="{ open: false }">
           <div class="flex">
             <a data-bind-href="item.href" draggable="false" class="grow whitespace-nowrap"
               data-bind-data-tab-title="item.tabTitle || item.title"
               data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
               data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, null, $evt)">
-              <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" class="whitespace-nowrap" data-bind="item.title"></span>
+              <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" class="whitespace-nowrap"
+                data-bind="item.title"></span>
             </a>
-            <button class="btn btn-circle btn-xs hover:bg-accent/60 transition-transform"
-              data-on-click="open = !open"
+            <button class="btn btn-circle btn-xs hover:bg-accent/60 transition-transform" data-on-click="open = !open"
               data-class="{ 'rotate-90 bg-accent/20': open, 'hidden': collapsed && !hovered && !sidebarOpen }">
               <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-2xl"></iconify-icon>
             </button>
@@ -609,7 +608,8 @@
             data-class="{ 'menu-dropdown-show': open, 'hidden': collapsed && !hovered && !sidebarOpen }"
             data-drag-container="item.children">
             <!-- RECURSIVE TEMPLATE: Calls itself for infinite arbitrary sub-levels! -->
-            <template data-for="item in item.children" data-template="#sidebar-sub-menu-item" data-key="item.href"></template>
+            <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
+              data-key="item.href"></template>
           </ul>
         </li>
       </template>
@@ -620,14 +620,13 @@
           <!-- Root Leaf Item (No Children) -->
           <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
             data-bind-data-drag="item.href !== '/' ? '' : null">
-            <a data-bind-href="item.href" draggable="false"
-              class="whitespace-nowrap"
-              data-bind-data-tab-title="item.tabTitle || item.title"
-              data-bind-data-tab-icon="item.tabIcon || item.icon"
+            <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
+              data-bind-data-tab-title="item.tabTitle || item.title" data-bind-data-tab-icon="item.tabIcon || item.icon"
               data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
               data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
               <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
-              <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" class="whitespace-nowrap" data-bind="item.title"></span>
+              <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" class="whitespace-nowrap"
+                data-bind="item.title"></span>
             </a>
           </li>
 
@@ -641,7 +640,8 @@
                 data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                 data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
                 <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
-                <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" class="whitespace-nowrap" data-bind="item.title"></span>
+                <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" class="whitespace-nowrap"
+                  data-bind="item.title"></span>
               </a>
               <button class="btn btn-circle btn-xs hover:bg-accent/60 transition-transform" data-on-click="open = !open"
                 data-class="{ 'rotate-90 bg-accent/20': open, 'hidden': collapsed && !hovered && !sidebarOpen }">
@@ -651,7 +651,8 @@
             <ul class="menu-dropdown ms-12"
               data-class="{ 'menu-dropdown-show': open, 'hidden': collapsed && !hovered && !sidebarOpen }"
               data-drag-container="item.children">
-              <template data-for="item in item.children" data-template="#sidebar-sub-menu-item" data-key="item.href"></template>
+              <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
+                data-key="item.href"></template>
             </ul>
           </li>
         </template>
