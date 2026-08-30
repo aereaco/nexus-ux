@@ -32,6 +32,15 @@
     "order": 4
   },
   {
+    "id": "profile2 copy",
+    "route": "/profile/profile2",
+    "path": "/_pages/profile2 copy.html",
+    "title": "Profile 2",
+    "icon": "material-symbols-light:person-outline",
+    "order": 5,
+    "parent": "/profile"
+  },
+  {
     "id": "profile2",
     "route": "/profile/profile2",
     "path": "/_pages/profile2.html",
