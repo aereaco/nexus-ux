@@ -142,15 +142,29 @@ function extractHeadMetadata(htmlText: string): { title?: string; icon?: string;
   return meta;
 }
 
+function resolvePageFile(cleanPath: string): { fileName: string; filePath: string } {
+  const clean = cleanPath.replace(/^\/+/, "");
+  if (clean === "" || clean === "home") {
+    return { fileName: "home.html", filePath: join(SITE_DIR, "_pages", "home.html") };
+  }
+  const exactPath = join(SITE_DIR, "_pages", `${clean}.html`);
+  try {
+    if (Deno.statSync(exactPath).isFile) return { fileName: `${clean}.html`, filePath: exactPath };
+  } catch { /* fallback */ }
+
+  const leaf = clean.split("/").pop() || clean;
+  const leafPath = join(SITE_DIR, "_pages", `${leaf}.html`);
+  return { fileName: `${leaf}.html`, filePath: leafPath };
+}
+
 async function renderProgressive(cleanPath: string): Promise<string> {
   const shellPath = join(SITE_DIR, "index.html");
   let shell = await Deno.readTextFile(shellPath);
 
-  const pageFileName = cleanPath === "/" || cleanPath === "" ? "home.html" : `${cleanPath.replace(/^\//, "")}.html`;
-  const pagePath = join(SITE_DIR, "_pages", pageFileName);
+  const { filePath } = resolvePageFile(cleanPath);
 
   try {
-    const pageHtml = await Deno.readTextFile(pagePath);
+    const pageHtml = await Deno.readTextFile(filePath);
     const meta = extractHeadMetadata(pageHtml);
 
     if (meta.title) {
@@ -167,8 +181,7 @@ async function renderSSR(cleanPath: string): Promise<string> {
   const shellPath = join(SITE_DIR, "index.html");
   let shell = await Deno.readTextFile(shellPath);
 
-  const pageFileName = cleanPath === "/" || cleanPath === "" ? "home.html" : `${cleanPath.replace(/^\//, "")}.html`;
-  const pagePath = join(SITE_DIR, "_pages", pageFileName);
+  const { fileName: pageFileName, filePath: pagePath } = resolvePageFile(cleanPath);
   const layoutPath = join(SITE_DIR, "_components", "layout.html");
 
   try {
@@ -202,8 +215,7 @@ async function renderIsland(cleanPath: string): Promise<string> {
   const shellPath = join(SITE_DIR, "index.html");
   let shell = await Deno.readTextFile(shellPath);
 
-  const pageFileName = cleanPath === "/" || cleanPath === "" ? "home.html" : `${cleanPath.replace(/^\//, "")}.html`;
-  const pagePath = join(SITE_DIR, "_pages", pageFileName);
+  const { filePath: pagePath } = resolvePageFile(cleanPath);
 
   try {
     const pageHtml = await Deno.readTextFile(pagePath);
