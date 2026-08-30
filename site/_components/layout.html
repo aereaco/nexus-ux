@@ -662,8 +662,8 @@
                     class="shrink-0 text-2xl transition-transform" data-class="{ 'rotate-90': open}"></iconify-icon>
                 </button>
               </div>
-              <ul class="menu-dropdown ms-12 transition-all duration-300 opacity-100 block"
-                data-class="{ 'menu-dropdown-show': open, 'opacity-0 starting:hidden': collapsed && !hovered && !sidebarOpen }"
+              <ul class="menu-dropdown ms-12 transition-opacity duration-300"
+                data-class="{ 'menu-dropdown-show': open, 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
                 data-drag-container="item.children">
                 <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
                   data-key="item.href"></template>
