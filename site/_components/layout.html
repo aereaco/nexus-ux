@@ -558,7 +558,7 @@
       }
     </style>-->
     <div class="flex flex-col h-full w-full overflow-x-hidden">
-      <div class="navbar flex justify-between p-0 min-h-16">
+      <div class="navbar flex justify-between p-0 min-h-16 shrink-0">
         <div class="flex flex-1 items-center">
           <a class="flex items-center w-full h-16 p-0">
             <div class="w-16 h-16 flex items-center justify-center shrink-0">
@@ -615,7 +615,7 @@
       </template>
 
       <!-- Main Navigation Menu -->
-      <ul class="menu w-full" data-show="activeSidebarTab === 1" data-drag-container="router.pages">
+      <ul class="menu w-full grow overflow-x-hidden overflow-y-auto pb-28" data-show="activeSidebarTab === 1" data-drag-container="router.pages">
         <template data-for="item in router.pages" data-key="item.href">
           <!-- Root Leaf Item (No Children) -->
           <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
