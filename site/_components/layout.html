@@ -636,7 +636,8 @@
                 data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
                 <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
                 <span class="whitespace-nowrap transition-opacity duration-300"
-                  data-class="{ 'opacity-0': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
+                  data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
+                  data-bind="item.title"></span>
               </a>
             </li>
 
@@ -651,17 +652,18 @@
                   data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
                   <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
                   <span class="whitespace-nowrap transition-opacity duration-300"
-                    data-class="{ 'opacity-0': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
+                    data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
+                    data-bind="item.title"></span>
                 </a>
                 <button class="btn btn-circle btn-xs hover:bg-accent/60 transition-opacity duration-300"
                   data-on-click="open = !open"
-                  data-class="{ 'bg-accent/20': open, 'opacity-0': collapsed && !hovered && !sidebarOpen }">
+                  data-class="{ 'bg-accent/20': open, 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }">
                   <iconify-icon icon="material-symbols-light:chevron-forward"
                     class="shrink-0 text-2xl transition-transform" data-class="{ 'rotate-90': open}"></iconify-icon>
                 </button>
               </div>
               <ul class="menu-dropdown ms-12 transition-opacity duration-300"
-                data-class="{ 'menu-dropdown-show': open, 'opacity-0': collapsed && !hovered && !sidebarOpen }"
+                data-class="{ 'menu-dropdown-show': open, 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
                 data-drag-container="item.children">
                 <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
                   data-key="item.href"></template>
