@@ -548,69 +548,72 @@
   <div class="fixed inset-0 z-40 bg-black/50 transition-opacity duration-200" data-show="sidebarOpen"
     data-on-click="sidebarOpen = false; activeSidebarTab = 1"></div>
   <aside
-    class="dashboard-sidebar z-50 flex flex-col md:sticky md:top-0 md:h-dvh h-dvh bg-base-100/90 backdrop-blur-md transition-[width] duration-300 overflow-x-hidden"
+    class="dashboard-sidebar z-50 flex flex-col md:sticky md:top-0 md:h-dvh h-dvh bg-base-100/90 backdrop-blur-md transition-[width] duration-300 overflow-hidden"
     data-class="{ 'open fixed inset-y-0 start-0 w-80 shadow-2xl': sidebarOpen, 'hovered fixed inset-y-0 start-0 w-80 shadow-2xl': hovered && !sidebarOpen, 'md:w-80': !collapsed, 'w-0 md:w-16': collapsed && !hovered && !sidebarOpen }"
     data-on-mouseenter="if (collapsed && !sidebarOpen) hovered = true" data-on-mouseleave="hovered = false"
     data-effect="if (collapsed && !hovered && !sidebarOpen) { activeSidebarTab = 1; }">
-    <div class="flex flex-col h-full w-full overflow-x-hidden">
-      <div class="navbar flex justify-between p-0 min-h-16 shrink-0">
-        <div class="flex flex-1 items-center">
-          <a class="flex items-center w-full h-16 p-0">
-            <div class="w-16 h-16 flex items-center justify-center shrink-0">
-              <svg class="size-10 scale-[0.8] emblem">
-                <use href="_assets/images/emblem.svg"></use>
-              </svg>
-            </div>
-            <span class="logo font-bold text-xl whitespace-nowrap"
-              data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }">Nexus-UX</span>
-          </a>
-        </div>
-        <button class="btn btn-ghost btn-circle close me-4"
-          data-class="{ 'hidden': !sidebarOpen, 'block': sidebarOpen }"
-          data-on-click="sidebarOpen = false; activeSidebarTab = 1" aria-label="close sidebar">
-          <iconify-icon icon="material-symbols-light:close" class="text-2xl"></iconify-icon>
-        </button>
-      </div>
 
-      <!-- Reusable Sub-Level Template (Infinite Arbitrary Sub-Nesting) -->
-      <template id="sidebar-sub-menu-item">
-        <!-- Sub Leaf Item -->
-        <li data-show="!item.children || item.children.length === 0" class="cursor-pointer" data-drag>
-          <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
+    <!-- ================= 1. Header Section (shrink-0) ================= -->
+    <header class="navbar flex justify-between p-0 h-16 min-h-16 shrink-0">
+      <div class="flex flex-1 items-center">
+        <a class="flex items-center w-full h-16 p-0">
+          <div class="w-16 h-16 flex items-center justify-center shrink-0">
+            <svg class="size-10 scale-[0.8] emblem">
+              <use href="_assets/images/emblem.svg"></use>
+            </svg>
+          </div>
+          <span class="logo font-bold text-xl whitespace-nowrap"
+            data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }">Nexus-UX</span>
+        </a>
+      </div>
+      <button class="btn btn-ghost btn-circle close me-4"
+        data-class="{ 'hidden': !sidebarOpen, 'block': sidebarOpen }"
+        data-on-click="sidebarOpen = false; activeSidebarTab = 1" aria-label="close sidebar">
+        <iconify-icon icon="material-symbols-light:close" class="text-2xl"></iconify-icon>
+      </button>
+    </header>
+
+    <!-- Reusable Sub-Level Template (Infinite Arbitrary Sub-Nesting) -->
+    <template id="sidebar-sub-menu-item">
+      <!-- Sub Leaf Item -->
+      <li data-show="!item.children || item.children.length === 0" class="cursor-pointer" data-drag>
+        <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
+          data-bind-data-tab-title="item.tabTitle || item.title"
+          data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
+          data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, null, $evt)" data-bind="item.title">
+        </a>
+      </li>
+
+      <!-- Sub Branch Item (e.g. Profile 3) -->
+      <li data-show="item.children && item.children.length > 0" class="cursor-pointer" data-drag
+        data-signal="{ open: false }">
+        <div class="flex">
+          <a data-bind-href="item.href" draggable="false" class="grow whitespace-nowrap"
             data-bind-data-tab-title="item.tabTitle || item.title"
             data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-            data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, null, $evt)" data-bind="item.title">
+            data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, null, $evt)">
+            <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" class="whitespace-nowrap"
+              data-bind="item.title"></span>
           </a>
-        </li>
+          <button class="btn btn-circle btn-xs hover:bg-accent/60 transition-transform" data-on-click="open = !open"
+            data-class="{ 'rotate-90 bg-accent/20': open, 'hidden': collapsed && !hovered && !sidebarOpen }">
+            <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-2xl"></iconify-icon>
+          </button>
+        </div>
+        <ul class="menu-dropdown"
+          data-class="{ 'menu-dropdown-show': open, 'hidden': collapsed && !hovered && !sidebarOpen }"
+          data-drag-container="item.children">
+          <!-- RECURSIVE TEMPLATE: Calls itself for infinite arbitrary sub-levels! -->
+          <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
+            data-key="item.href"></template>
+        </ul>
+      </li>
+    </template>
 
-        <!-- Sub Branch Item (e.g. Profile 3) -->
-        <li data-show="item.children && item.children.length > 0" class="cursor-pointer" data-drag
-          data-signal="{ open: false }">
-          <div class="flex">
-            <a data-bind-href="item.href" draggable="false" class="grow whitespace-nowrap"
-              data-bind-data-tab-title="item.tabTitle || item.title"
-              data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-              data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, null, $evt)">
-              <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" class="whitespace-nowrap"
-                data-bind="item.title"></span>
-            </a>
-            <button class="btn btn-circle btn-xs hover:bg-accent/60 transition-transform" data-on-click="open = !open"
-              data-class="{ 'rotate-90 bg-accent/20': open, 'hidden': collapsed && !hovered && !sidebarOpen }">
-              <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-2xl"></iconify-icon>
-            </button>
-          </div>
-          <ul class="menu-dropdown"
-            data-class="{ 'menu-dropdown-show': open, 'hidden': collapsed && !hovered && !sidebarOpen }"
-            data-drag-container="item.children">
-            <!-- RECURSIVE TEMPLATE: Calls itself for infinite arbitrary sub-levels! -->
-            <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
-              data-key="item.href"></template>
-          </ul>
-        </li>
-      </template>
-
-      <!-- Main Navigation Menu -->
-      <div class="overflow-y-auto" data-show="activeSidebarTab === 1">
+    <!-- ================= 2. Middle Content Section (Scrollable) ================= -->
+    <main class="sidebar-content flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+      <!-- Main Navigation Menu (tab 1) -->
+      <div data-show="activeSidebarTab === 1" class="w-full">
         <ul class="menu w-full" data-drag-container="router.pages">
           <template data-for="item in router.pages" data-key="item.href">
             <!-- Root Leaf Item (No Children) -->
@@ -658,7 +661,7 @@
       </div>
 
       <!-- ================= Panel Favorites (tab 2) ================= -->
-      <div class="grow w-full overflow-x-hidden overflow-y-auto pb-28"
+      <div class="w-full"
         data-show="activeSidebarTab === 2 && (!collapsed || hovered || sidebarOpen)">
         <div class="p-6">
           <div class="flex items-center justify-between mb-6">
@@ -695,7 +698,7 @@
       </div>
 
       <!-- ================= Panel Preferences (tab 3) ================= -->
-      <div class="grow w-full overflow-x-hidden overflow-y-auto pb-28"
+      <div class="w-full"
         data-show="activeSidebarTab === 3 && (!collapsed || hovered || sidebarOpen)">
         <div class="p-6">
           <div class="mb-6 whitespace-nowrap">
@@ -861,7 +864,10 @@
           </div>
         </div>
       </div>
+    </main>
 
+    <!-- ================= 3. Dock Section (shrink-0) ================= -->
+    <footer class="sidebar-dock shrink-0">
       <div class="dock shrink-0 overflow-hidden"
         data-class="{ 'flex': (collapsed || isMobile) && !hovered && !sidebarOpen, 'hidden': sidebarOpen || hovered || (!collapsed && !isMobile) }">
         <iconify-icon icon="material-symbols-light:left-panel-open-outline" class="text-2xl"></iconify-icon>
@@ -883,6 +889,7 @@
           <iconify-icon icon="material-symbols-light:tune" class="text-2xl"></iconify-icon>
         </button>
       </div>
+    </footer>
 
       <!-- Virtual Anchor Target -->
       <div id="click-anchor" class="fixed pointer-events-none"
