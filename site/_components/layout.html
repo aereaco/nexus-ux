@@ -552,11 +552,6 @@
     data-class="{ 'open fixed inset-y-0 start-0 w-80 shadow-2xl': sidebarOpen, 'hovered fixed inset-y-0 start-0 w-80 shadow-2xl': hovered && !sidebarOpen, 'md:w-80': !collapsed, 'w-0 md:w-16': collapsed && !hovered && !sidebarOpen }"
     data-on-mouseenter="if (collapsed && !sidebarOpen) hovered = true" data-on-mouseleave="hovered = false"
     data-effect="if (collapsed && !hovered && !sidebarOpen) { activeSidebarTab = 1; }">
-    <!--<style>
-      aside:not(.hovered):not(.open) ul.menu .menu-dropdown-toggle::after {
-        display: none !important;
-      }
-    </style>-->
     <div class="flex flex-col h-full w-full overflow-x-hidden">
       <div class="navbar flex justify-between p-0 min-h-16 shrink-0">
         <div class="flex flex-1 items-center">
@@ -615,48 +610,52 @@
       </template>
 
       <!-- Main Navigation Menu -->
-      <ul class="menu w-full overflow-y-auto" data-show="activeSidebarTab === 1" data-drag-container="router.pages">
-        <template data-for="item in router.pages" data-key="item.href">
-          <!-- Root Leaf Item (No Children) -->
-          <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
-            data-bind-data-drag="item.href !== '/' ? '' : null">
-            <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
-              data-bind-data-tab-title="item.tabTitle || item.title" data-bind-data-tab-icon="item.tabIcon || item.icon"
-              data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-              data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
-              <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
-              <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" class="whitespace-nowrap"
-                data-bind="item.title"></span>
-            </a>
-          </li>
-
-          <!-- Root Branch Item (With Children) -->
-          <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
-            data-bind-data-drag="item.href !== '/' ? '' : null" data-signal="{ open: false }">
-            <div class="flex">
-              <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
+      <div class="overflow-y-auto" data-show="activeSidebarTab === 1">
+        <ul class="menu w-full" data-drag-container="router.pages">
+          <template data-for="item in router.pages" data-key="item.href">
+            <!-- Root Leaf Item (No Children) -->
+            <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
+              data-bind-data-drag="item.href !== '/' ? '' : null">
+              <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
                 data-bind-data-tab-title="item.tabTitle || item.title"
                 data-bind-data-tab-icon="item.tabIcon || item.icon"
                 data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                 data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
-                <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
+                <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
                 <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" class="whitespace-nowrap"
                   data-bind="item.title"></span>
               </a>
-              <button class="btn btn-circle btn-xs hover:bg-accent/60 transition-transform" data-on-click="open = !open"
-                data-class="{ 'rotate-90 bg-accent/20': open, 'hidden': collapsed && !hovered && !sidebarOpen }">
-                <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-2xl"></iconify-icon>
-              </button>
-            </div>
-            <ul class="menu-dropdown ms-12"
-              data-class="{ 'menu-dropdown-show': open, 'hidden': collapsed && !hovered && !sidebarOpen }"
-              data-drag-container="item.children">
-              <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
-                data-key="item.href"></template>
-            </ul>
-          </li>
-        </template>
-      </ul>
+            </li>
+
+            <!-- Root Branch Item (With Children) -->
+            <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
+              data-bind-data-drag="item.href !== '/' ? '' : null" data-signal="{ open: false }">
+              <div class="flex">
+                <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
+                  data-bind-data-tab-title="item.tabTitle || item.title"
+                  data-bind-data-tab-icon="item.tabIcon || item.icon"
+                  data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
+                  data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
+                  <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
+                  <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" class="whitespace-nowrap"
+                    data-bind="item.title"></span>
+                </a>
+                <button class="btn btn-circle btn-xs hover:bg-accent/60 transition-transform"
+                  data-on-click="open = !open"
+                  data-class="{ 'rotate-90 bg-accent/20': open, 'hidden': collapsed && !hovered && !sidebarOpen }">
+                  <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-2xl"></iconify-icon>
+                </button>
+              </div>
+              <ul class="menu-dropdown ms-12"
+                data-class="{ 'menu-dropdown-show': open, 'hidden': collapsed && !hovered && !sidebarOpen }"
+                data-drag-container="item.children">
+                <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
+                  data-key="item.href"></template>
+              </ul>
+            </li>
+          </template>
+        </ul>
+      </div>
 
       <!-- ================= Panel Favorites (tab 2) ================= -->
       <div class="grow w-full overflow-x-hidden overflow-y-auto pb-28"
