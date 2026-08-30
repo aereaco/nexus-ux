@@ -610,53 +610,66 @@
     </template>
 
     <!-- ================= 2. Middle Content Section (Scrollable) ================= -->
-    <main class="sidebar-content flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+    <main class="sidebar-content flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
+      data-signal="{
+        categories: ['General', 'Profiles', 'System']
+      }">
       <!-- Main Navigation Menu (tab 1) -->
       <div data-show="activeSidebarTab === 1" class="w-full">
-
         <ul class="menu w-full" data-drag-container="router.pages">
-          <template data-for="item in router.pages" data-key="item.href">
-            <!-- Root Leaf Item (No Children) -->
-            <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
-              data-bind-data-drag="item.href !== '/' ? '' : null">
-              <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
-                data-bind-data-tab-title="item.tabTitle || item.title"
-                data-bind-data-tab-icon="item.tabIcon || item.icon"
-                data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-                data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
-                <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
-                <span class="whitespace-nowrap transition-opacity duration-300"
-                  data-class="{ 'opacity-0': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
-              </a>
+          <template data-for="cat in categories" data-key="cat">
+            <!-- Category Title (fades on collapse) -->
+            <li class="menu-title transition-opacity duration-300"
+              data-class="{ 'opacity-0': collapsed && !hovered && !sidebarOpen }"
+              data-show="(router.pages || []).some(p => (p.category || 'General') === cat)"
+              data-bind="cat">Title
             </li>
+            <li class="mx-0 -mt-1" data-show="(router.pages || []).some(p => (p.category || 'General') === cat)"></li>
 
-            <!-- Root Branch Item (With Children) -->
-            <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
-              data-bind-data-drag="item.href !== '/' ? '' : null" data-signal="{ open: false }">
-              <div class="flex">
-                <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
+            <!-- Category Root Pages -->
+            <template data-for="item in (router.pages || []).filter(p => (p.category || 'General') === cat)" data-key="item.href">
+              <!-- Root Leaf Item (No Children) -->
+              <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
+                data-bind-data-drag="item.href !== '/' ? '' : null">
+                <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
                   data-bind-data-tab-title="item.tabTitle || item.title"
                   data-bind-data-tab-icon="item.tabIcon || item.icon"
                   data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                   data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
-                  <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
+                  <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
                   <span class="whitespace-nowrap transition-opacity duration-300"
                     data-class="{ 'opacity-0': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
                 </a>
-                <button class="btn btn-circle btn-xs hover:bg-accent/60 transition-opacity duration-300"
-                  data-on-click="open = !open"
-                  data-class="{ 'bg-accent/20': open, 'opacity-0': collapsed && !hovered && !sidebarOpen }">
-                  <iconify-icon icon="material-symbols-light:chevron-forward"
-                    class="shrink-0 text-2xl transition-transform" data-class="{ 'rotate-90': open}"></iconify-icon>
-                </button>
-              </div>
-              <ul class="menu-dropdown ms-12"
-                data-class="{ 'menu-dropdown-show': open, 'hidden': collapsed && !hovered && !sidebarOpen }"
-                data-drag-container="item.children">
-                <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
-                  data-key="item.href"></template>
-              </ul>
-            </li>
+              </li>
+
+              <!-- Root Branch Item (With Children) -->
+              <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
+                data-bind-data-drag="item.href !== '/' ? '' : null" data-signal="{ open: false }">
+                <div class="flex">
+                  <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
+                    data-bind-data-tab-title="item.tabTitle || item.title"
+                    data-bind-data-tab-icon="item.tabIcon || item.icon"
+                    data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
+                    data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
+                    <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
+                    <span class="whitespace-nowrap transition-opacity duration-300"
+                      data-class="{ 'opacity-0': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
+                  </a>
+                  <button class="btn btn-circle btn-xs hover:bg-accent/60 transition-opacity duration-300"
+                    data-on-click="open = !open"
+                    data-class="{ 'bg-accent/20': open, 'opacity-0': collapsed && !hovered && !sidebarOpen }">
+                    <iconify-icon icon="material-symbols-light:chevron-forward"
+                      class="shrink-0 text-2xl transition-transform" data-class="{ 'rotate-90': open}"></iconify-icon>
+                  </button>
+                </div>
+                <ul class="menu-dropdown ms-12"
+                  data-class="{ 'menu-dropdown-show': open, 'hidden': collapsed && !hovered && !sidebarOpen }"
+                  data-drag-container="item.children">
+                  <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
+                    data-key="item.href"></template>
+                </ul>
+              </li>
+            </template>
           </template>
         </ul>
       </div>
