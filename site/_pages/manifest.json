@@ -56,7 +56,7 @@
     "title": "Profile 3",
     "icon": "material-symbols-light:person-outline",
     "order": 5,
-    "parent": "/profile"
+    "parent": "/profiles"
   },
   {
     "id": "settings",
