@@ -71,7 +71,13 @@ function scanDirectory(dir: string, baseWebPath: string, isInternalDefault = fal
         const meta = parseHeadMetadata(content);
 
         const id = meta.id || nameWithoutExt;
-        const defaultRoute = isInternalDefault ? "" : (id === "home" ? "/" : `/${id}`);
+        const defaultRoute = isInternalDefault
+          ? ""
+          : (id === "home"
+            ? "/"
+            : (meta.parent && meta.parent !== "/"
+              ? `${meta.parent.replace(/\/+$/, "")}/${id}`
+              : `/${id}`));
         const route = meta.route !== undefined ? meta.route : defaultRoute;
         const internal = meta.internal !== undefined ? meta.internal : (isInternalDefault ? true : undefined);
 
