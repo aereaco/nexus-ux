@@ -743,21 +743,55 @@ export const routerAttributeModule: AttributeModule = {
               }
             }
 
-            // Assemble parent-child tree hierarchy
+            // Assemble parent-child tree hierarchy recursively across arbitrary depth
             const rootPages: DiscoveredPage[] = [];
-            for (const p of discovered) {
-              if (p.parent && p.parent !== '/' && p.parent !== '') {
-                const parentRoute = p.parent.startsWith('/') ? p.parent : '/' + p.parent;
-                const parentPage = discovered.find((x) => x.href === parentRoute);
-                if (parentPage) {
-                  parentPage.children = parentPage.children || [];
-                  if (!parentPage.children.some((c) => c.href === p.href)) {
-                    parentPage.children.push(p);
+
+            const attachChild = (nodes: DiscoveredPage[], item: DiscoveredPage, targetParentRoute: string): boolean => {
+              for (const node of nodes) {
+                if (node.href === targetParentRoute) {
+                  node.children = node.children || [];
+                  if (!node.children.some((c) => c.href === item.href)) {
+                    node.children.push(item);
+                    node.children.sort((a: any, b: any) => {
+                      const aOrder = a.meta?.order;
+                      const bOrder = b.meta?.order;
+                      if (aOrder !== undefined && bOrder !== undefined) return aOrder - bOrder;
+                      if (aOrder !== undefined) return -1;
+                      if (bOrder !== undefined) return 1;
+                      return (a.title || a.href).localeCompare(b.title || b.href);
+                    });
                   }
-                  continue;
+                  return true;
+                }
+                if (node.children && attachChild(node.children, item, targetParentRoute)) {
+                  return true;
                 }
               }
-              rootPages.push(p);
+              return false;
+            };
+
+            for (const p of discovered) {
+              if (!p.parent || p.parent === '/' || p.parent === '') {
+                rootPages.push(p);
+              }
+            }
+
+            let unattached = discovered.filter((p) => p.parent && p.parent !== '/' && p.parent !== '');
+            let maxPasses = 10;
+            while (unattached.length > 0 && maxPasses-- > 0) {
+              const remaining: DiscoveredPage[] = [];
+              for (const p of unattached) {
+                const parentRoute = p.parent!.startsWith('/') ? p.parent! : '/' + p.parent!;
+                const attached = attachChild(rootPages, p, parentRoute) || attachChild(discovered, p, parentRoute);
+                if (!attached) {
+                  remaining.push(p);
+                }
+              }
+              if (remaining.length === unattached.length) {
+                rootPages.push(...remaining);
+                break;
+              }
+              unattached = remaining;
             }
 
             // Sort root pages by declared order priority (numeric ascending), then alphabetical fallback
@@ -829,18 +863,21 @@ export const routerAttributeModule: AttributeModule = {
           const chain: Array<{ title: string; href: string; icon?: string }> = [];
           const visited = new Set<string>();
 
+          const findPageDeep = (pages: DiscoveredPage[], predicate: (p: DiscoveredPage) => boolean): DiscoveredPage | null => {
+            for (const p of pages) {
+              if (predicate(p)) return p;
+              if (p.children) {
+                const ch = findPageDeep(p.children, predicate);
+                if (ch) return ch;
+              }
+            }
+            return null;
+          };
+
           let curr: string | null = currentHref;
           while (curr && !visited.has(curr)) {
             visited.add(curr);
-            let found: any = state.pages.find((p) => p.href === curr || p.path === curr);
-            if (!found) {
-              for (const p of state.pages) {
-                if (p.children) {
-                  const ch = p.children.find((c) => c.href === curr || c.path === curr);
-                  if (ch) { found = ch; break; }
-                }
-              }
-            }
+            let found: any = findPageDeep(state.pages, (p) => p.href === curr || p.path === curr);
             if (!found) {
               found = state.routes.find((r) => r.path === curr);
             }
