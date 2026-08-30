@@ -11,10 +11,12 @@
       searchQuery: '',
       activeSidebarTab: 1,
       themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset']
-    }" data-class="{ 'md:grid-cols-[20rem_1fr]': !collapsed, 'md:grid-cols-[5rem_1fr]': collapsed, 'h-screen max-h-screen overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }"
+    }"
+  data-class="{ 'md:grid-cols-[20rem_1fr]': !collapsed, 'md:grid-cols-[5rem_1fr]': collapsed, 'h-screen max-h-screen overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }"
   data-on-resize:window="isMobile = window.innerWidth < 768">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
-  <div class="drawer-content flex flex-col" data-class="{ 'h-full overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }" data-signal:global="{
+  <div class="drawer-content flex flex-col"
+    data-class="{ 'h-full overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }" data-signal:global="{
         ctxMenu: null,
         ctxMenuItems: [],
         favorites: localStorage.favorites ?? [],
@@ -343,8 +345,7 @@
         data-on-contextmenu:prevent="openTabContextMenu(tab, $evt)">
         <iconify-icon icon="material-symbols-light:drag-indicator"
           class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
-        <span data-show="tab.isLoading !== false"
-          class="loading loading-spinner loading-xs text-primary me-2"></span>
+        <span data-show="tab.isLoading !== false" class="loading loading-spinner loading-xs text-primary me-2"></span>
         <iconify-icon data-show="tab.isLoading === false"
           data-bind-icon="tab.meta?.icon || 'material-symbols-light:article-outline'"
           class="text-lg px-2"></iconify-icon>
@@ -362,8 +363,7 @@
     <div data-signal:global="{pageTabToggleHovered: false }" class="shrink-0 z-20"
       data-class="{'hidden': !pageTabs, 'aura aura-dual text-secondary': pageTabToggleHovered }">
       <div class="card pe-2" data-class="{'bg-base-200': pageTabToggleHovered }">
-        <div
-          class="flex flex-nowrap bg-base-300/20 rounded-none overflow-x-auto pb-1 scrollbar-auto-hide"
+        <div class="flex flex-nowrap bg-base-300/20 rounded-none overflow-x-auto pb-1 scrollbar-auto-hide"
           role="tablist" aria-orientation="horizontal" data-drag-container="router.pageTabs" data-drag-group="pageTabs"
           data-drag-direction="horizontal">
           <template data-for="tab in router.pageTabs" data-key="tab.id">
@@ -395,7 +395,9 @@
             <ul class="flex items-center gap-2 flex-nowrap whitespace-nowrap min-w-max my-0 py-0">
               <li data-for="crumb in router.lineage" data-key="crumb.href">
                 <a data-bind-href="crumb.href" class="flex items-center gap-1">
-                  <iconify-icon data-show="crumb.icon" data-bind-icon="crumb.icon || 'material-symbols-light:bookmark-outline'" class="text-base"></iconify-icon>
+                  <iconify-icon data-show="crumb.icon"
+                    data-bind-icon="crumb.icon || 'material-symbols-light:bookmark-outline'"
+                    class="text-base"></iconify-icon>
                   <span data-bind="crumb.title"></span>
                 </a>
               </li>
@@ -425,15 +427,18 @@
          When fixedHeader is active, controls scroll containment based on fixedFooter mode.
          When fixedFooter is OFF (in-flow), wrapper is flex-1 overflow-y-auto so the footer sits at the end of the content stream.
          When fixedFooter is ON (sticky), the inner panel is flex-1 overflow-y-auto so the footer stays pinned at the bottom. -->
-    <div class="flex-1 flex flex-col min-h-0 w-full grow" data-class="{ 'overflow-y-auto': fixedHeader && !fixedFooter }">
+    <div class="flex-1 flex flex-col min-h-0 w-full grow"
+      data-class="{ 'overflow-y-auto': fixedHeader && !fixedFooter }">
       <div class="p-6 relative grow flex flex-col" data-class="{ 'overflow-y-auto': fixedHeader && fixedFooter }">
 
         <!-- Inline Header Bar with Breadcrumbs & Page Tabs Toggle (when floatingBookmarks is false) -->
-        <div data-show="!floatingBookmarks" class="flex items-center gap-2 mb-4 max-w-full overflow-x-auto overflow-y-hidden scrollbar-none py-1"
+        <div data-show="!floatingBookmarks"
+          class="flex items-center gap-2 mb-4 max-w-full overflow-x-auto overflow-y-hidden scrollbar-none py-1"
           data-on-wheel:passive="if ($evt.deltaY) { $evt.currentTarget.scrollLeft += $evt.deltaY; }">
           <!-- 1. Page Tab Toggle Button at the START position -->
           <div class="tooltip tooltip-bottom shrink-0" data-tip="Toggle page tabs">
-            <button class="btn btn-sm btn-ghost btn-circle" data-class="{ 'btn-active text-primary bg-primary/10': pageTabs }"
+            <button class="btn btn-sm btn-ghost btn-circle"
+              data-class="{ 'btn-active text-primary bg-primary/10': pageTabs }"
               data-on-click="pageTabs = !pageTabs; localStorage.setItem('pageTabs', pageTabs)"
               aria-label="Toggle page tabs">
               <iconify-icon icon="material-symbols-light:tab-group-outline" class="text-xl"></iconify-icon>
@@ -447,7 +452,8 @@
             <ul class="flex flex-nowrap items-center whitespace-nowrap gap-1 min-w-max my-0 py-0">
               <template data-for="crumb in router.lineage" data-key="crumb.href">
                 <li class="flex items-center gap-1 shrink-0">
-                  <a data-bind-href="crumb.href" class="flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
+                  <a data-bind-href="crumb.href"
+                    class="flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
                     <iconify-icon data-show="crumb.icon" data-bind-icon="crumb.icon" class="text-lg"></iconify-icon>
                     <span data-bind="crumb.title"></span>
                   </a>
@@ -470,20 +476,27 @@
             </div>
 
             <!-- Fully Loaded Route Content -->
-            <tab-content data-component="tab.source || tab.content" data-show="tab.isLoading === false" class="grow flex flex-col"></tab-content>
+            <tab-content data-component="tab.source || tab.content" data-show="tab.isLoading === false"
+              class="grow flex flex-col"></tab-content>
           </div>
         </template>
       </div>
 
       <!-- Page Footer with Inline Diagnostics (within content drawer, not below sidebar) -->
-      <footer class="w-full px-6 py-2.5 text-xs bg-base-300/80 backdrop-blur-md border-t border-base-content/10 shrink-0 z-10 flex flex-wrap items-center justify-between gap-4 mt-auto transition-all duration-300"
+      <footer
+        class="w-full px-6 py-2.5 text-xs bg-base-300/80 backdrop-blur-md border-t border-base-content/10 shrink-0 z-10 flex flex-wrap items-center justify-between gap-4 mt-auto transition-all duration-300"
         data-class="{ 'sticky bottom-0': fixedFooter }">
         <div class="flex flex-wrap items-center gap-x-5 gap-y-1 font-mono opacity-80">
-          <span class="inline-flex items-center gap-1.5"><span class="badge badge-xs badge-accent"></span><span data-bind="'Width: ' + window.innerWidth + 'px'"></span></span>
-          <span class="inline-flex items-center gap-1.5"><span class="badge badge-xs badge-secondary"></span><span data-bind="'Mobile: ' + isMobile"></span></span>
-          <span class="inline-flex items-center gap-1.5"><span class="badge badge-xs badge-info"></span><span data-bind="'Sidebar: ' + (collapsed ? 'Collapsed' : 'Expanded')"></span></span>
-          <span class="inline-flex items-center gap-1.5"><span class="badge badge-xs badge-success"></span><span data-bind="'Route: ' + (router.route || '/')"></span></span>
-          <span class="inline-flex items-center gap-1.5"><span class="badge badge-xs badge-warning"></span><span data-bind="'Zoom: ' + (zoom || 1) + 'x'"></span></span>
+          <span class="inline-flex items-center gap-1.5"><span class="badge badge-xs badge-accent"></span><span
+              data-bind="'Width: ' + window.innerWidth + 'px'"></span></span>
+          <span class="inline-flex items-center gap-1.5"><span class="badge badge-xs badge-secondary"></span><span
+              data-bind="'Mobile: ' + isMobile"></span></span>
+          <span class="inline-flex items-center gap-1.5"><span class="badge badge-xs badge-info"></span><span
+              data-bind="'Sidebar: ' + (collapsed ? 'Collapsed' : 'Expanded')"></span></span>
+          <span class="inline-flex items-center gap-1.5"><span class="badge badge-xs badge-success"></span><span
+              data-bind="'Route: ' + (router.route || '/')"></span></span>
+          <span class="inline-flex items-center gap-1.5"><span class="badge badge-xs badge-warning"></span><span
+              data-bind="'Zoom: ' + (zoom || 1) + 'x'"></span></span>
         </div>
         <div class="flex items-center gap-4 text-xs opacity-60 font-sans">
           <span>Nexus-UX Engine</span>
@@ -557,27 +570,28 @@
               data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }">Nexus-UX</span>
           </a>
         </div>
-        <button class="btn btn-ghost btn-circle close me-4" data-class="{ 'hidden': !sidebarOpen, 'block': sidebarOpen }"
+        <button class="btn btn-ghost btn-circle close me-4"
+          data-class="{ 'hidden': !sidebarOpen, 'block': sidebarOpen }"
           data-on-click="sidebarOpen = false; activeSidebarTab = 1" aria-label="close sidebar">
           <iconify-icon icon="material-symbols-light:close" class="text-2xl"></iconify-icon>
         </button>
       </div>
 
-      <ul class="menu w-full p-0 grow overflow-x-hidden overflow-y-auto pb-28" data-show="activeSidebarTab === 1" data-drag-container="router.pages">
+      <ul class="menu w-full p-0 grow overflow-x-hidden overflow-y-auto pb-28" data-show="activeSidebarTab === 1"
+        data-drag-container="router.pages">
         <template data-for="item in router.pages" data-key="item.href">
           <li class="cursor-pointer" data-bind-data-drag="item.href !== '/' ? '' : null">
             <!-- Root item WITHOUT children -->
-            <a data-show="!item.children || item.children.length === 0"
-              data-bind-href="item.href" draggable="false"
-              data-bind-data-tab-title="item.tabTitle || item.title"
-              data-bind-data-tab-icon="item.tabIcon || item.icon"
+            <a data-show="!item.children || item.children.length === 0" data-bind-href="item.href" draggable="false"
+              data-bind-data-tab-title="item.tabTitle || item.title" data-bind-data-tab-icon="item.tabIcon || item.icon"
               class="flex flex-nowrap items-center whitespace-nowrap p-0 h-12 rounded-none hover:bg-base-200 transition-colors"
               data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
               data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
               <div class="ps-7 pe-3 flex items-center shrink-0">
                 <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
               </div>
-              <span class="whitespace-nowrap truncate font-medium pe-4" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
+              <span class="whitespace-nowrap truncate font-medium pe-4"
+                data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
             </a>
 
             <!-- Root item WITH children (DaisyUI menu-dropdown) -->
@@ -587,12 +601,12 @@
               <div class="ps-7 pe-3 flex items-center shrink-0">
                 <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
               </div>
-              <span class="whitespace-nowrap truncate font-medium pe-2" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
+              <span class="whitespace-nowrap truncate font-medium pe-2"
+                data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
             </span>
             <ul data-show="item.children && item.children.length > 0"
               class="menu-dropdown menu-dropdown-show ms-[60px] ps-3 border-s border-base-content/20 space-y-1 my-1"
-              data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
-              data-drag-container="item.children">
+              data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-drag-container="item.children">
               <template data-for="child in item.children" data-key="child.href">
                 <li class="cursor-pointer" data-drag>
                   <a data-bind-href="child.href" draggable="false"
@@ -607,6 +621,17 @@
             </ul>
           </li>
         </template>
+      </ul>
+
+      <ul class="menu bg-base-200 rounded-box w-56" data-show="activeSidebarTab === 1">
+        <li><a>Item 1</a></li>
+        <li>
+          <span class="menu-dropdown-toggle menu-dropdown-show">Parent</span>
+          <ul class="menu-dropdown menu-dropdown-show">
+            <li><a>Submenu 1</a></li>
+            <li><a>Submenu 2</a></li>
+          </ul>
+        </li>
       </ul>
 
       <!-- ================= Panel Favorites (tab 2) ================= -->
@@ -700,8 +725,8 @@
                       data-bind-data-theme="t">
                       <span class="grid grid-cols-5 grid-rows-3">
                         <span class="col-span-5 row-span-3 row-start-1 flex items-center gap-2 px-4 py-3">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                            fill="currentColor" class="size-4 shrink-0"
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                            class="size-4 shrink-0"
                             data-class="{ 'visible text-primary': $theme.current === t, 'invisible': $theme.current !== t }">
                             <path d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z"></path>
                           </svg>
@@ -736,8 +761,8 @@
             <!-- Theme Zoom -->
             <div>
               <div class="label-text pb-3">Theme Zoom</div>
-              <input type="range" class="range range-primary" min="0.5" max="2" step="0.1" data-bind-value="tempZoom || zoom || 1"
-                data-on-input="tempZoom = Number($evt.target.value)"
+              <input type="range" class="range range-primary" min="0.5" max="2" step="0.1"
+                data-bind-value="tempZoom || zoom || 1" data-on-input="tempZoom = Number($evt.target.value)"
                 data-on-change="zoom = tempZoom; localStorage.setItem('zoom', zoom)" />
               <div class="flex w-full justify-between px-2 text-xs opacity-40 select-none">
                 <span>|</span>
@@ -838,7 +863,8 @@
 
       <!-- Virtual Anchor Target -->
       <div id="click-anchor" class="fixed pointer-events-none"
-        style="anchor-name: --ctx-anchor; position: fixed; inset-block-start: 0; inset-inline-start: 0; width: 0; height: 0;"></div>
+        style="anchor-name: --ctx-anchor; position: fixed; inset-block-start: 0; inset-inline-start: 0; width: 0; height: 0;">
+      </div>
 
       <!-- Native HTML Popover API + DaisyUI 5 Menu Context Menu Template -->
       <ul id="ctx-menu-overlay" popover
