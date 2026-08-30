@@ -27,7 +27,7 @@
     "id": "profiles",
     "route": "/profiles",
     "path": "/_pages/profiles.html",
-    "title": "Profile",
+    "title": "Profiles",
     "icon": "material-symbols-light:person-outline",
     "order": 4
   },
