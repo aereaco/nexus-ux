@@ -127,7 +127,8 @@
     "title": "Settings",
     "icon": "material-symbols-light:settings-outline",
     "order": 6,
-    "parent": null
+    "parent": null,
+    "category": "System"
   },
   {
     "id": "admin",
