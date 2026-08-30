@@ -42,7 +42,7 @@
   },
   {
     "id": "profile2",
-    "route": "/profile/profile2",
+    "route": "/profiles/profile2",
     "path": "/_pages/profile2.html",
     "title": "Profile 2",
     "icon": "material-symbols-light:person-outline",
