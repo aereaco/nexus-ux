@@ -650,8 +650,8 @@
                   data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                   data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
                   <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
-                  <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" class="whitespace-nowrap"
-                    data-bind="item.title"></span>
+                  <span class="whitespace-nowrap transition-opacity duration-300"
+                    data-class="{ 'opacity-0': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
                 </a>
                 <button class="btn btn-circle btn-xs hover:bg-accent/60 transition-transform"
                   data-on-click="open = !open"
