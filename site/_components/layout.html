@@ -582,8 +582,10 @@
               data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }">Home</span></a></li>
         <li data-signal="{ open: false }">
           <div class="flex">
-            <iconify-icon icon="material-symbols-light:person-outline" class="shrink-0 text-2xl"></iconify-icon>
-            <span class="grow" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }">Profile</span>
+            <a href="/profile">
+              <iconify-icon icon="material-symbols-light:person-outline" class="shrink-0 text-2xl"></iconify-icon>
+              <span class="grow" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }">Profile</span>
+            </a>
             <button class="btn btn-circle btn-xs hover:bg-accent/60 transition-transform" data-on-click="open = !open"
               data-class="{ 'rotate-90 bg-accent/20': open, 'hidden': collapsed && !hovered && !sidebarOpen }">
               <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-2xl"></iconify-icon>
