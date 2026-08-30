@@ -24,9 +24,9 @@
     "order": 3
   },
   {
-    "id": "profile",
+    "id": "profiles",
     "route": "/profile",
-    "path": "/_pages/profile.html",
+    "path": "/_pages/profiles.html",
     "title": "Profile",
     "icon": "material-symbols-light:person-outline",
     "order": 4
