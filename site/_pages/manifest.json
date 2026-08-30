@@ -17,21 +17,21 @@
     "parent": "/profiles/profile3"
   },
   {
-    "id": "profile3.2",
-    "route": "/profiles/profile3/profile3-1",
-    "path": "/_pages/profile3.2.html",
-    "title": "Profile 3.1",
-    "icon": "material-symbols-light:person-outline",
-    "order": 1,
-    "parent": "/profiles/profile3"
-  },
-  {
     "id": "drag",
     "route": "/drag",
     "path": "/_pages/drag.html",
     "title": "Drag and Drop",
     "icon": "material-symbols-light:drag-indicator",
     "order": 2
+  },
+  {
+    "id": "profile3.2",
+    "route": "/profiles/profile3/profile3.2",
+    "path": "/_pages/profile3.2.html",
+    "title": "Profile 3.2",
+    "icon": "material-symbols-light:person-outline",
+    "order": 2,
+    "parent": "/profiles/profile3"
   },
   {
     "id": "flow",
