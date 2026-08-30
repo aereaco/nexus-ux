@@ -33,9 +33,9 @@
   },
   {
     "id": "profile1",
-    "route": "/profile/profile2",
+    "route": "/profiles/profile1",
     "path": "/_pages/profile1.html",
-    "title": "Profile 2",
+    "title": "Profile 1",
     "icon": "material-symbols-light:person-outline",
     "order": 5,
     "parent": "/profile"
