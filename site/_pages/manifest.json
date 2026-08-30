@@ -6,7 +6,8 @@
     "title": "Home",
     "icon": "material-symbols-light:home-outline",
     "order": 1,
-    "parent": null
+    "parent": null,
+    "category": "General"
   },
   {
     "id": "profile1",
