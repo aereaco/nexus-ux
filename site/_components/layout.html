@@ -578,14 +578,15 @@
       </div>
 
       <ul class="menu w-full" data-show="activeSidebarTab === 1">
-        <li><a><iconify-icon icon="material-symbols-light:home-outline"
-              class="shrink-0 text-2xl"></iconify-icon>Home</a></li>
+        <li><a><iconify-icon icon="material-symbols-light:home-outline" class="shrink-0 text-2xl"></iconify-icon><span
+              data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }">Home</span></a></li>
         <li data-signal="{ open: false }">
           <div class="flex">
             <iconify-icon icon="material-symbols-light:person-outline" class="shrink-0 text-2xl"></iconify-icon>
-            <span class="grow">Profile</span>
-            <button class="btn btn-circle btn-sm hover:bg-accent/60 transition-transform" data-on-click="open = !open"
-              data-class="{ 'rotate-90 bg-accent/20': open }">
+            <span class="grow" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }">Profile</span>
+            <button
+              class="btn btn-circle btn-sm hover:bg-accent/60 transition-transform, 'hidden': collapsed && !hovered && !sidebarOpen"
+              data-on-click="open = !open" data-class="{ 'rotate-90 bg-accent/20': open }">
               <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-2xl"></iconify-icon>
             </button>
           </div>
