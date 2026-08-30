@@ -653,11 +653,11 @@
                   <span class="whitespace-nowrap transition-opacity duration-300"
                     data-class="{ 'opacity-0': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
                 </a>
-                <button class="btn btn-circle btn-xs hover:bg-accent/60 transition-transform"
+                <button
+                  class="btn btn-circle btn-xs hover:bg-accent/60 transition-[opacity,transform] [transition-duration:300ms,700ms]"
                   data-on-click="open = !open"
                   data-class="{ 'rotate-90 bg-accent/20': open, 'opacity-0': collapsed && !hovered && !sidebarOpen }">
-                  <iconify-icon icon="material-symbols-light:chevron-forward"
-                    class="shrink-0 text-2xl transition-opacity duration-300"></iconify-icon>
+                  <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-2xl"></iconify-icon>
                 </button>
               </div>
               <ul class="menu-dropdown ms-12 transition-opacity duration-300"
