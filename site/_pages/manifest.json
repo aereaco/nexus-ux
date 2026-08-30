@@ -85,6 +85,7 @@
     "route": "/profiles/profile3",
     "path": "/_pages/profile3.html",
     "title": "Profile 3",
+    "icon": "material-symbols-light:person-outline",
     "order": 3,
     "parent": "/profiles"
   },
