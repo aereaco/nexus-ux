@@ -577,6 +577,16 @@
         </button>
       </div>
 
+      <ul class="menu bg-base-200 rounded-box w-56" data-show="activeSidebarTab === 1">
+        <li><a>Item 1</a></li>
+        <li>
+          <span class="menu-dropdown-toggle menu-dropdown-show">Parent</span>
+          <ul class="menu-dropdown menu-dropdown-show">
+            <li><a>Submenu 1</a></li>
+            <li><a>Submenu 2</a></li>
+          </ul>
+        </li>
+      </ul>
       <ul class="menu w-full p-0 grow overflow-x-hidden overflow-y-auto pb-28" data-show="activeSidebarTab === 1"
         data-drag-container="router.pages">
         <template data-for="item in router.pages" data-key="item.href">
@@ -621,17 +631,6 @@
             </ul>
           </li>
         </template>
-      </ul>
-
-      <ul class="menu bg-base-200 rounded-box w-56" data-show="activeSidebarTab === 1">
-        <li><a>Item 1</a></li>
-        <li>
-          <span class="menu-dropdown-toggle menu-dropdown-show">Parent</span>
-          <ul class="menu-dropdown menu-dropdown-show">
-            <li><a>Submenu 1</a></li>
-            <li><a>Submenu 2</a></li>
-          </ul>
-        </li>
       </ul>
 
       <!-- ================= Panel Favorites (tab 2) ================= -->
