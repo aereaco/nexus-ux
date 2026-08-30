@@ -581,14 +581,16 @@
         <li><a><iconify-icon icon="material-symbols-light:home-outline" class="shrink-0 text-2xl"></iconify-icon><span
               data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }">Home</span></a></li>
         <li data-signal="{ open: false }">
-          <a href="/profile" class="flex">
-            <iconify-icon icon="material-symbols-light:person-outline" class="shrink-0 text-2xl"></iconify-icon>
-            <span class="grow" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }">Profile</span>
+          <div class="flex">
+            <a href="/profile">
+              <iconify-icon icon="material-symbols-light:person-outline" class="shrink-0 text-2xl"></iconify-icon>
+              <span class="grow" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }">Profile</span>
+            </a>
             <button class="btn btn-circle btn-xs hover:bg-accent/60 transition-transform" data-on-click="open = !open"
               data-class="{ 'rotate-90 bg-accent/20': open, 'hidden': collapsed && !hovered && !sidebarOpen }">
               <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-2xl"></iconify-icon>
             </button>
-          </a>
+          </div>
 
           <ul class="menu-dropdown ms-10"
             data-class="{ 'menu-dropdown-show': open, 'hidden': collapsed && !hovered && !sidebarOpen }">
