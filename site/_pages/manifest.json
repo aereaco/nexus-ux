@@ -32,7 +32,7 @@
     "title": "Profile 3.4.1",
     "icon": "material-symbols-light:person-outline",
     "order": 1,
-    "parent": "/profiles/profile3/profile3.4"
+    "parent": "/profile3.4"
   },
   {
     "id": "drag",
@@ -79,6 +79,14 @@
     "parent": "/profiles/profile3"
   },
   {
+    "id": "profile3",
+    "route": "/profiles/profile3",
+    "path": "/_pages/profile3.html",
+    "title": "Profile 3",
+    "order": 3,
+    "parent": "/profiles"
+  },
+  {
     "id": "profile3.4",
     "route": "/profiles/profile3/profile3.4",
     "path": "/_pages/profile3.4.html",
@@ -95,15 +103,6 @@
     "icon": "material-symbols-light:group-outline",
     "order": 4,
     "parent": null
-  },
-  {
-    "id": "profile3",
-    "route": "/profiles/profile3",
-    "path": "/_pages/profile3.html",
-    "title": "Profile 3",
-    "icon": "material-symbols-light:person-outline",
-    "order": 5,
-    "parent": "/profiles"
   },
   {
     "id": "profile4",
