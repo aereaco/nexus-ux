@@ -629,14 +629,14 @@
             <!-- Root Leaf Item (No Children) -->
             <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
               data-bind-data-drag="item.href !== '/' ? '' : null">
-              <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap transition-opacity duration-300"
-                data-class="{ 'opacity-0': collapsed && !hovered && !sidebarOpen }"
+              <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
                 data-bind-data-tab-title="item.tabTitle || item.title"
                 data-bind-data-tab-icon="item.tabIcon || item.icon"
                 data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                 data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
                 <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
-                <span class="whitespace-nowrap" data-bind="item.title"></span>
+                <span class="whitespace-nowrap transition-opacity duration-300"
+                  data-class="{ 'opacity-0': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
               </a>
             </li>
 
@@ -644,9 +644,7 @@
             <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
               data-bind-data-drag="item.href !== '/' ? '' : null" data-signal="{ open: false }">
               <div class="flex">
-                <a data-bind-href="item.href" draggable="false"
-                  class="grow flex whitespace-nowrap transition-opacity duration-300"
-                  data-class="{ 'opacity-0': collapsed && !hovered && !sidebarOpen }"
+                <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
                   data-bind-data-tab-title="item.tabTitle || item.title"
                   data-bind-data-tab-icon="item.tabIcon || item.icon"
                   data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
