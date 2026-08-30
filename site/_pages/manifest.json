@@ -103,6 +103,7 @@
     "route": "/profiles/profile4",
     "path": "/_pages/profile4.html",
     "title": "Profile 4",
+    "icon": "material-symbols-light:person-outline",
     "order": 4,
     "parent": "/profiles"
   },
