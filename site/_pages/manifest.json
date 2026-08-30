@@ -96,6 +96,14 @@
     "parent": "/profiles/profile3"
   },
   {
+    "id": "profile4",
+    "route": "/profiles/profile4",
+    "path": "/_pages/profile4.html",
+    "title": "Profile 4",
+    "order": 4,
+    "parent": "/profiles"
+  },
+  {
     "id": "profiles",
     "route": "/profiles",
     "path": "/_pages/profiles.html",
@@ -103,15 +111,6 @@
     "icon": "material-symbols-light:group-outline",
     "order": 4,
     "parent": null
-  },
-  {
-    "id": "profile4",
-    "route": "/profiles/profile4",
-    "path": "/_pages/profile4.html",
-    "title": "Profile 4",
-    "icon": "material-symbols-light:person-outline",
-    "order": 5,
-    "parent": "/profiles"
   },
   {
     "id": "settings",
