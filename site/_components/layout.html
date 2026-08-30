@@ -580,17 +580,16 @@
       <ul class="menu w-full" data-show="activeSidebarTab === 1">
         <li><a><iconify-icon icon="material-symbols-light:home-outline"
               class="shrink-0 text-2xl"></iconify-icon>Home</a></li>
-        <li>
+        <li data-signal="{ open: false }">
           <div class="flex">
             <iconify-icon icon="material-symbols-light:person-outline" class="shrink-0 text-2xl"></iconify-icon>
             <span class="grow">Profile</span>
-            <button class="btn btn-circle btn-sm">
+            <button class="btn btn-circle btn-sm" data-on-click="open = !open">
               <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-2xl"></iconify-icon>
             </button>
           </div>
 
-
-          <ul class="menu-dropdown menu-dropdown-show ms-10">
+          <ul class="menu-dropdown ms-10">
             <li><a>Profile 2</a></li>
             <li><a>Submenu 2</a></li>
           </ul>
