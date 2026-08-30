@@ -655,12 +655,13 @@
                 </a>
                 <button class="btn btn-circle btn-xs hover:bg-accent/60 transition-transform"
                   data-on-click="open = !open"
-                  data-class="{ 'rotate-90 bg-accent/20': open, 'hidden': collapsed && !hovered && !sidebarOpen }">
-                  <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-2xl"></iconify-icon>
+                  data-class="{ 'rotate-90 bg-accent/20': open, 'opacity-0': collapsed && !hovered && !sidebarOpen }">
+                  <iconify-icon icon="material-symbols-light:chevron-forward"
+                    class="shrink-0 text-2xl transition-opacity duration-300"></iconify-icon>
                 </button>
               </div>
-              <ul class="menu-dropdown ms-12"
-                data-class="{ 'menu-dropdown-show': open, 'hidden': collapsed && !hovered && !sidebarOpen }"
+              <ul class="menu-dropdown ms-12 transition-opacity duration-300"
+                data-class="{ 'menu-dropdown-show': open, 'opacity-0': collapsed && !hovered && !sidebarOpen }"
                 data-drag-container="item.children">
                 <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
                   data-key="item.href"></template>
