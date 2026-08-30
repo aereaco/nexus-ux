@@ -8,9 +8,9 @@
     "order": 1
   },
   {
-    "id": "profile3 copy",
+    "id": "profile3.1",
     "route": "/profiles/profile3/profile3-1",
-    "path": "/_pages/profile3 copy.html",
+    "path": "/_pages/profile3.1.html",
     "title": "Profile 3.1",
     "icon": "material-symbols-light:person-outline",
     "order": 1,
