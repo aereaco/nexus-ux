@@ -577,6 +577,42 @@
         </button>
       </div>
 
+      <!-- Reusable Sub-Level Template (Infinite Arbitrary Sub-Nesting) -->
+      <template id="sidebar-sub-menu-item">
+        <!-- Sub Leaf Item -->
+        <li data-show="!item.children || item.children.length === 0" class="cursor-pointer" data-drag>
+          <a data-bind-href="item.href" draggable="false"
+            data-bind-data-tab-title="item.tabTitle || item.title"
+            data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
+            data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, null, $evt)"
+            data-bind="item.title">
+          </a>
+        </li>
+
+        <!-- Sub Branch Item (e.g. Profile 3) -->
+        <li data-show="item.children && item.children.length > 0" class="cursor-pointer" data-drag data-signal="{ open: false }">
+          <div class="flex">
+            <a data-bind-href="item.href" draggable="false" class="grow"
+              data-bind-data-tab-title="item.tabTitle || item.title"
+              data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
+              data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, null, $evt)">
+              <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
+            </a>
+            <button class="btn btn-circle btn-xs hover:bg-accent/60 transition-transform"
+              data-on-click="open = !open"
+              data-class="{ 'rotate-90 bg-accent/20': open, 'hidden': collapsed && !hovered && !sidebarOpen }">
+              <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-2xl"></iconify-icon>
+            </button>
+          </div>
+          <ul class="menu-dropdown"
+            data-class="{ 'menu-dropdown-show': open, 'hidden': collapsed && !hovered && !sidebarOpen }"
+            data-drag-container="item.children">
+            <!-- RECURSIVE TEMPLATE: Calls itself for infinite arbitrary sub-levels! -->
+            <template data-for="item in item.children" data-template="#sidebar-sub-menu-item" data-key="item.href"></template>
+          </ul>
+        </li>
+      </template>
+
       <!-- Main Navigation Menu -->
       <ul class="menu w-full" data-show="activeSidebarTab === 1" data-drag-container="router.pages">
         <template data-for="item in router.pages" data-key="item.href">
@@ -613,48 +649,7 @@
             <ul class="menu-dropdown ms-12"
               data-class="{ 'menu-dropdown-show': open, 'hidden': collapsed && !hovered && !sidebarOpen }"
               data-drag-container="item.children">
-              <template data-for="child in item.children" data-key="child.href">
-                <!-- Submenu Leaf Item -->
-                <li data-show="!child.children || child.children.length === 0" class="cursor-pointer" data-drag>
-                  <a data-bind-href="child.href" draggable="false"
-                    data-bind-data-tab-title="child.tabTitle || child.title"
-                    data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-                    data-on-contextmenu:prevent="openNavContextMenu(child.href, child.title, null, $evt)"
-                    data-bind="child.title">
-                  </a>
-                </li>
-
-                <!-- Submenu Branch Item (e.g. Profile 3) -->
-                <li data-show="child.children && child.children.length > 0" class="cursor-pointer" data-drag data-signal="{ open: false }">
-                  <div class="flex">
-                    <a data-bind-href="child.href" draggable="false" class="grow"
-                      data-bind-data-tab-title="child.tabTitle || child.title"
-                      data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-                      data-on-contextmenu:prevent="openNavContextMenu(child.href, child.title, null, $evt)">
-                      <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="child.title"></span>
-                    </a>
-                    <button class="btn btn-circle btn-xs hover:bg-accent/60 transition-transform"
-                      data-on-click="open = !open"
-                      data-class="{ 'rotate-90 bg-accent/20': open, 'hidden': collapsed && !hovered && !sidebarOpen }">
-                      <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-2xl"></iconify-icon>
-                    </button>
-                  </div>
-                  <ul class="menu-dropdown"
-                    data-class="{ 'menu-dropdown-show': open, 'hidden': collapsed && !hovered && !sidebarOpen }"
-                    data-drag-container="child.children">
-                    <template data-for="sub in child.children" data-key="sub.href">
-                      <li class="cursor-pointer" data-drag>
-                        <a data-bind-href="sub.href" draggable="false"
-                          data-bind-data-tab-title="sub.tabTitle || sub.title"
-                          data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-                          data-on-contextmenu:prevent="openNavContextMenu(sub.href, sub.title, null, $evt)"
-                          data-bind="sub.title">
-                        </a>
-                      </li>
-                    </template>
-                  </ul>
-                </li>
-              </template>
+              <template data-for="item in item.children" data-template="#sidebar-sub-menu-item" data-key="item.href"></template>
             </ul>
           </li>
         </template>
