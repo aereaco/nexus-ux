@@ -581,30 +581,30 @@
             </a>
 
             <!-- Root item WITH children (DaisyUI menu-dropdown) -->
-            <div data-show="item.children && item.children.length > 0" class="w-full flex flex-col p-0">
-              <span class="menu-dropdown-toggle menu-dropdown-show flex flex-nowrap items-center whitespace-nowrap p-0 h-12 rounded-none hover:bg-base-200 transition-colors cursor-pointer"
-                data-on-click="$evt.currentTarget.classList.toggle('menu-dropdown-show'); $evt.currentTarget.nextElementSibling?.classList.toggle('menu-dropdown-show')">
-                <div class="ps-7 pe-3 flex items-center shrink-0">
-                  <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
-                </div>
-                <span class="whitespace-nowrap truncate font-medium pe-2" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
-              </span>
-              <ul class="menu-dropdown menu-dropdown-show ms-[60px] ps-3 border-s border-base-content/20 space-y-1 my-1"
-                data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
-                data-drag-container="item.children">
-                <template data-for="child in item.children" data-key="child.href">
-                  <li class="cursor-pointer" data-drag>
-                    <a data-bind-href="child.href" draggable="false"
-                      data-bind-data-tab-title="child.tabTitle || child.title"
-                      class="py-1.5 px-3 text-sm rounded-box font-medium hover:bg-base-200"
-                      data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-                      data-on-contextmenu:prevent="openNavContextMenu(child.href, child.title, null, $evt)"
-                      data-bind="child.title">
-                    </a>
-                  </li>
-                </template>
-              </ul>
-            </div>
+            <span data-show="item.children && item.children.length > 0"
+              class="menu-dropdown-toggle menu-dropdown-show flex flex-nowrap items-center whitespace-nowrap p-0 h-12 rounded-none hover:bg-base-200 transition-colors cursor-pointer"
+              data-on-click="$evt.currentTarget.classList.toggle('menu-dropdown-show'); $evt.currentTarget.nextElementSibling?.classList.toggle('menu-dropdown-show')">
+              <div class="ps-7 pe-3 flex items-center shrink-0">
+                <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
+              </div>
+              <span class="whitespace-nowrap truncate font-medium pe-2" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
+            </span>
+            <ul data-show="item.children && item.children.length > 0"
+              class="menu-dropdown menu-dropdown-show ms-[60px] ps-3 border-s border-base-content/20 space-y-1 my-1"
+              data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
+              data-drag-container="item.children">
+              <template data-for="child in item.children" data-key="child.href">
+                <li class="cursor-pointer" data-drag>
+                  <a data-bind-href="child.href" draggable="false"
+                    data-bind-data-tab-title="child.tabTitle || child.title"
+                    class="py-1.5 px-3 text-sm rounded-box font-medium hover:bg-base-200"
+                    data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
+                    data-on-contextmenu:prevent="openNavContextMenu(child.href, child.title, null, $evt)"
+                    data-bind="child.title">
+                  </a>
+                </li>
+              </template>
+            </ul>
           </li>
         </template>
       </ul>
