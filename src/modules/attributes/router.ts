@@ -138,6 +138,7 @@ export interface DiscoveredPage {
   parent?: string | null;
   children?: DiscoveredPage[];
   meta?: Record<string, any>;
+  category?: string;
 }
 
 export interface PageTab {
