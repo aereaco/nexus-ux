@@ -5301,8 +5301,10 @@ ${scripts}
         name: "for",
         attribute: "for",
         handle: (el, value, runtime) => {
-          const isTemplate = el instanceof HTMLTemplateElement;
-          const blueprint = isTemplate ? el.content : el;
+          const templateRef = el.getAttribute("data-template");
+          const targetTemplate = templateRef ? document.querySelector(templateRef) : null;
+          const isTemplate = el instanceof HTMLTemplateElement || !!targetTemplate;
+          const blueprint = targetTemplate ? targetTemplate.content : isTemplate ? el.content : el;
           let itemKey = "";
           let indexKey = void 0;
           let itemsExpr = "";

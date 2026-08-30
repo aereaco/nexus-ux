@@ -65,9 +65,10 @@ const forModule: AttributeModule = {
   attribute: 'for',
   handle: (el: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void => {
     // 1. Validation
-    // 1. Blueprint Creation
-    const isTemplate = el instanceof HTMLTemplateElement;
-    const blueprint = isTemplate ? (el as HTMLTemplateElement).content : el;
+    const templateRef = el.getAttribute('data-template');
+    const targetTemplate = templateRef ? (document.querySelector(templateRef) as HTMLTemplateElement) : null;
+    const isTemplate = el instanceof HTMLTemplateElement || !!targetTemplate;
+    const blueprint = targetTemplate ? targetTemplate.content : (isTemplate ? (el as HTMLTemplateElement).content : el);
     
     let itemKey = '';
     let indexKey: string | undefined = undefined;
