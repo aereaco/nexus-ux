@@ -50,6 +50,15 @@
     "parent": "/profiles"
   },
   {
+    "id": "profile3 copy",
+    "route": "/profiles/profile3",
+    "path": "/_pages/profile3 copy.html",
+    "title": "Profile 3",
+    "icon": "material-symbols-light:person-outline",
+    "order": 5,
+    "parent": "/profiles"
+  },
+  {
     "id": "profile3",
     "route": "/profiles/profile3",
     "path": "/_pages/profile3.html",
