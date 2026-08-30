@@ -32,9 +32,9 @@
     "order": 4
   },
   {
-    "id": "profile2 copy",
+    "id": "profile1",
     "route": "/profile/profile2",
-    "path": "/_pages/profile2 copy.html",
+    "path": "/_pages/profile1.html",
     "title": "Profile 2",
     "icon": "material-symbols-light:person-outline",
     "order": 5,
