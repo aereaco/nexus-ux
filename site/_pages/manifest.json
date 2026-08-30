@@ -8,6 +8,15 @@
     "order": 1
   },
   {
+    "id": "profile3 copy",
+    "route": "/profiles/profile3/profile3-1",
+    "path": "/_pages/profile3 copy.html",
+    "title": "Profile 3.1",
+    "icon": "material-symbols-light:person-outline",
+    "order": 1,
+    "parent": "/profiles/profile3"
+  },
+  {
     "id": "drag",
     "route": "/drag",
     "path": "/_pages/drag.html",
@@ -45,15 +54,6 @@
     "route": "/profiles/profile2",
     "path": "/_pages/profile2.html",
     "title": "Profile 2",
-    "icon": "material-symbols-light:person-outline",
-    "order": 5,
-    "parent": "/profiles"
-  },
-  {
-    "id": "profile3 copy",
-    "route": "/profiles/profile3",
-    "path": "/_pages/profile3 copy.html",
-    "title": "Profile 3",
     "icon": "material-symbols-light:person-outline",
     "order": 5,
     "parent": "/profiles"
