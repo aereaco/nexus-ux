@@ -540,7 +540,7 @@
     data-on-mouseenter="if (collapsed && !sidebarOpen) hovered = true" data-on-mouseleave="hovered = false"
     data-effect="if (collapsed && !hovered && !sidebarOpen) { activeSidebarTab = 1; }">
     <style>
-      aside:not(.hovered):not(.open) ul.menu details > summary::after {
+      aside:not(.hovered):not(.open) ul.menu .menu-dropdown-toggle::after {
         display: none !important;
       }
     </style>
@@ -580,16 +580,18 @@
               <span class="whitespace-nowrap truncate font-medium pe-4" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
             </a>
 
-            <!-- Root item WITH children (DaisyUI collapsible submenu) -->
-            <details data-show="item.children && item.children.length > 0" open>
-              <summary class="flex flex-nowrap items-center whitespace-nowrap p-0 h-12 rounded-none hover:bg-base-200 transition-colors"
-                data-class="{ '[&::after]:hidden': collapsed && !hovered && !sidebarOpen, '[&::after]:inline-block': !collapsed || hovered || sidebarOpen }">
+            <!-- Root item WITH children (DaisyUI menu-dropdown) -->
+            <div data-show="item.children && item.children.length > 0" class="w-full flex flex-col p-0">
+              <span class="menu-dropdown-toggle menu-dropdown-show flex flex-nowrap items-center whitespace-nowrap p-0 h-12 rounded-none hover:bg-base-200 transition-colors cursor-pointer"
+                data-on-click="$evt.currentTarget.classList.toggle('menu-dropdown-show'); $evt.currentTarget.nextElementSibling?.classList.toggle('menu-dropdown-show')">
                 <div class="ps-7 pe-3 flex items-center shrink-0">
                   <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
                 </div>
                 <span class="whitespace-nowrap truncate font-medium pe-2" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
-              </summary>
-              <ul data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" class="ms-[60px] ps-3 border-s border-base-content/20 space-y-1 my-1" data-drag-container="item.children">
+              </span>
+              <ul class="menu-dropdown menu-dropdown-show ms-[60px] ps-3 border-s border-base-content/20 space-y-1 my-1"
+                data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
+                data-drag-container="item.children">
                 <template data-for="child in item.children" data-key="child.href">
                   <li class="cursor-pointer" data-drag>
                     <a data-bind-href="child.href" draggable="false"
@@ -602,7 +604,7 @@
                   </li>
                 </template>
               </ul>
-            </details>
+            </div>
           </li>
         </template>
       </ul>
