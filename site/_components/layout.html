@@ -584,9 +584,8 @@
           <div class="flex">
             <iconify-icon icon="material-symbols-light:person-outline" class="shrink-0 text-2xl"></iconify-icon>
             <span class="grow">Profile</span>
-            <button class="btn btn-circle btn-sm" data-signal="{ hovered: false }" data-on-click="open = !open"
-              data-class="{ 'bg-primary': hovered, 'rotate-90': open }" data-on-mouseenter="hovered = true"
-              data-on-mouseleave="hovered = false">
+            <button class="btn btn-circle btn-sm hover:bg-primary" data-on-click="open = !open"
+              data-class="{'rotate-90': open }">
               <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-2xl"></iconify-icon>
             </button>
           </div>
