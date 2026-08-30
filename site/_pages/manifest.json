@@ -44,6 +44,14 @@
     "parent": null
   },
   {
+    "id": "profile2",
+    "route": "/profiles/profile2",
+    "path": "/_pages/profile2.html",
+    "title": "Profile 2",
+    "order": 2,
+    "parent": "/profiles"
+  },
+  {
     "id": "profile3.2",
     "route": "/profiles/profile3/profile3.2",
     "path": "/_pages/profile3.2.html",
@@ -87,15 +95,6 @@
     "icon": "material-symbols-light:group-outline",
     "order": 4,
     "parent": null
-  },
-  {
-    "id": "profile2",
-    "route": "/profiles/profile2",
-    "path": "/_pages/profile2.html",
-    "title": "Profile 2",
-    "icon": "material-symbols-light:person-outline",
-    "order": 5,
-    "parent": "/profiles"
   },
   {
     "id": "profile3",
