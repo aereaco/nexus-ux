@@ -577,53 +577,85 @@
         </button>
       </div>
 
-      <!-- Recursive Submenu Generator Template -->
-      <template id="sidebar-menu-item-template">
-        <!-- 1. Leaf Item (NO children) -->
-        <a data-show="!item.children || item.children.length === 0" data-bind-href="item.href" draggable="false"
-          data-bind-data-tab-title="item.tabTitle || item.title" data-bind-data-tab-icon="item.tabIcon || item.icon"
-          class="flex items-center"
-          data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-          data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
-          <iconify-icon data-show="item.icon" data-bind-icon="item.icon" class="shrink-0 text-2xl pe-2"></iconify-icon>
-          <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
-        </a>
-
-        <!-- 2. Branch Item (HAS children) -->
-        <div data-show="item.children && item.children.length > 0" class="flex w-full items-center">
-          <a data-bind-href="item.href" draggable="false" class="grow flex items-center"
-            data-bind-data-tab-title="item.tabTitle || item.title"
-            data-bind-data-tab-icon="item.tabIcon || item.icon"
-            data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-            data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
-            <iconify-icon data-show="item.icon" data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
-            <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
-          </a>
-          <button class="btn btn-circle btn-xs hover:bg-accent/60 transition-transform" data-on-click="open = !open"
-            data-class="{ 'rotate-90 bg-accent/20': open, 'hidden': collapsed && !hovered && !sidebarOpen }">
-            <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-2xl"></iconify-icon>
-          </button>
-        </div>
-
-        <!-- 3. Infinite Recursive Submenu Container -->
-        <ul data-show="item.children && item.children.length > 0"
-          class="menu-dropdown"
-          data-class="{ 'ms-12': item.parent === '/' || !item.parent, 'menu-dropdown-show': open, 'hidden': collapsed && !hovered && !sidebarOpen }"
-          data-drag-container="item.children">
-          <template data-for="child in item.children" data-key="child.href">
-            <li class="cursor-pointer" data-drag data-signal="{ open: false, item: child }">
-              <div data-component="'#sidebar-menu-item-template'"></div>
-            </li>
-          </template>
-        </ul>
-      </template>
-
       <!-- Main Navigation Menu -->
-      <ul class="menu w-full p-0 grow overflow-x-hidden overflow-y-auto pb-28" data-show="activeSidebarTab === 1"
-        data-drag-container="router.pages">
-        <template data-for="rootItem in router.pages" data-key="rootItem.href">
-          <li class="cursor-pointer" data-bind-data-drag="rootItem.href !== '/' ? '' : null" data-signal="{ open: false, item: rootItem }">
-            <div data-component="'#sidebar-menu-item-template'"></div>
+      <ul class="menu w-full" data-show="activeSidebarTab === 1" data-drag-container="router.pages">
+        <template data-for="item in router.pages" data-key="item.href">
+          <!-- Root Leaf Item (No Children) -->
+          <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
+            data-bind-data-drag="item.href !== '/' ? '' : null">
+            <a data-bind-href="item.href" draggable="false"
+              data-bind-data-tab-title="item.tabTitle || item.title"
+              data-bind-data-tab-icon="item.tabIcon || item.icon"
+              data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
+              data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
+              <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
+              <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
+            </a>
+          </li>
+
+          <!-- Root Branch Item (With Children) -->
+          <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
+            data-bind-data-drag="item.href !== '/' ? '' : null" data-signal="{ open: false }">
+            <div class="flex">
+              <a data-bind-href="item.href" draggable="false" class="grow flex"
+                data-bind-data-tab-title="item.tabTitle || item.title"
+                data-bind-data-tab-icon="item.tabIcon || item.icon"
+                data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
+                data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
+                <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
+                <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
+              </a>
+              <button class="btn btn-circle btn-xs hover:bg-accent/60 transition-transform" data-on-click="open = !open"
+                data-class="{ 'rotate-90 bg-accent/20': open, 'hidden': collapsed && !hovered && !sidebarOpen }">
+                <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-2xl"></iconify-icon>
+              </button>
+            </div>
+            <ul class="menu-dropdown ms-12"
+              data-class="{ 'menu-dropdown-show': open, 'hidden': collapsed && !hovered && !sidebarOpen }"
+              data-drag-container="item.children">
+              <template data-for="child in item.children" data-key="child.href">
+                <!-- Submenu Leaf Item -->
+                <li data-show="!child.children || child.children.length === 0" class="cursor-pointer" data-drag>
+                  <a data-bind-href="child.href" draggable="false"
+                    data-bind-data-tab-title="child.tabTitle || child.title"
+                    data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
+                    data-on-contextmenu:prevent="openNavContextMenu(child.href, child.title, null, $evt)"
+                    data-bind="child.title">
+                  </a>
+                </li>
+
+                <!-- Submenu Branch Item (e.g. Profile 3) -->
+                <li data-show="child.children && child.children.length > 0" class="cursor-pointer" data-drag data-signal="{ open: false }">
+                  <div class="flex">
+                    <a data-bind-href="child.href" draggable="false" class="grow"
+                      data-bind-data-tab-title="child.tabTitle || child.title"
+                      data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
+                      data-on-contextmenu:prevent="openNavContextMenu(child.href, child.title, null, $evt)">
+                      <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" data-bind="child.title"></span>
+                    </a>
+                    <button class="btn btn-circle btn-xs hover:bg-accent/60 transition-transform"
+                      data-on-click="open = !open"
+                      data-class="{ 'rotate-90 bg-accent/20': open, 'hidden': collapsed && !hovered && !sidebarOpen }">
+                      <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-2xl"></iconify-icon>
+                    </button>
+                  </div>
+                  <ul class="menu-dropdown"
+                    data-class="{ 'menu-dropdown-show': open, 'hidden': collapsed && !hovered && !sidebarOpen }"
+                    data-drag-container="child.children">
+                    <template data-for="sub in child.children" data-key="sub.href">
+                      <li class="cursor-pointer" data-drag>
+                        <a data-bind-href="sub.href" draggable="false"
+                          data-bind-data-tab-title="sub.tabTitle || sub.title"
+                          data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
+                          data-on-contextmenu:prevent="openNavContextMenu(sub.href, sub.title, null, $evt)"
+                          data-bind="sub.title">
+                        </a>
+                      </li>
+                    </template>
+                  </ul>
+                </li>
+              </template>
+            </ul>
           </li>
         </template>
       </ul>
