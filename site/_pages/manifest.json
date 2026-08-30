@@ -67,7 +67,7 @@
     "route": "/flow",
     "path": "/_pages/flow.html",
     "title": "xyFlow Spatial Canvas",
-    "icon": "material-symbols-light:schema",
+    "icon": "material-symbols-light:flowchart-outline",
     "order": 3,
     "parent": null
   },

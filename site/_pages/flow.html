@@ -1,7 +1,7 @@
 <head>
   <title>xyFlow Spatial Canvas</title>
   <meta name="route" content="/flow">
-  <meta name="icon" content="material-symbols-light:schema">
+  <meta name="icon" content="material-symbols-light:flowchart-outline">
   <meta name="order" content="3">
 </head>
 
@@ -51,14 +51,15 @@
   </header>
 
   <!-- Interactive Canvas Container -->
-  <div class="flex-1 relative overflow-hidden bg-base-300 rounded-box border border-base-content/10 shadow-inner cursor-grab min-h-[37.5rem] h-[calc(100vh-14rem)]"
-    data-flow="viewport"
-    data-flow-grid="20"
+  <div
+    class="flex-1 relative overflow-hidden bg-base-300 rounded-box border border-base-content/10 shadow-inner cursor-grab min-h-[37.5rem] h-[calc(100vh-14rem)]"
+    data-flow="viewport" data-flow-grid="20"
     style="background-image: linear-gradient(rgba(255,255,255,0.05) 0.0625rem, transparent 0.0625rem), linear-gradient(90deg, rgba(255,255,255,0.05) 0.0625rem, transparent 0.0625rem); background-size: 1.25rem 1.25rem;">
 
     <div class="nexus-flow-content w-full h-full">
       <!-- Dynamic SVG Bezier Edges -->
-      <svg data-flow-edges="edges" class="nexus-flow-edges absolute inset-0 overflow-visible pointer-events-none text-primary">
+      <svg data-flow-edges="edges"
+        class="nexus-flow-edges absolute inset-0 overflow-visible pointer-events-none text-primary">
         <path data-for="edge in edges"
           data-effect="viewport.tick; const na = nodes.find(n => n.id === edge.source); const nb = nodes.find(n => n.id === edge.target); const dep = (na && na.position.x + na.position.y) + (nb && nb.position.x + nb.position.y); $el.setAttribute('d', $flow.edge('node-' + edge.source, 'node-' + edge.target, { type: 'bezier' }))"
           fill="none" stroke="currentColor" stroke-width="2" class="opacity-60"></path>
@@ -66,8 +67,10 @@
 
       <!-- Draggable Flow Nodes -->
       <template data-for="node in nodes">
-        <div data-bind-id="`node-${node.id}`" class="absolute inset-block-start-0 inset-inline-start-0 w-[10rem]" data-flow-node="node">
-          <div class="card bg-base-100 shadow-md border border-base-content/10 w-full rounded-box cursor-grab hover:shadow-xl hover:scale-[1.03] hover:border-primary/40 transition-transform group"
+        <div data-bind-id="`node-${node.id}`" class="absolute inset-block-start-0 inset-inline-start-0 w-[10rem]"
+          data-flow-node="node">
+          <div
+            class="card bg-base-100 shadow-md border border-base-content/10 w-full rounded-box cursor-grab hover:shadow-xl hover:scale-[1.03] hover:border-primary/40 transition-transform group"
             style="touch-action: none;">
             <div class="h-1.5 w-full bg-primary rounded-t-box"></div>
             <div class="p-3">
