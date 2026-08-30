@@ -28,7 +28,7 @@
     "route": "/profiles",
     "path": "/_pages/profiles.html",
     "title": "Profiles",
-    "icon": "material-symbols-light:person-outline",
+    "icon": "material-symbols-light:group-outline",
     "order": 4
   },
   {
