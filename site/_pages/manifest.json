@@ -42,21 +42,21 @@
     "order": 3
   },
   {
-    "id": "profile3.3 copy",
-    "route": "/profiles/profile3/profile3.3",
-    "path": "/_pages/profile3.3 copy.html",
-    "title": "Profile 3.3",
-    "icon": "material-symbols-light:person-outline",
-    "order": 3,
-    "parent": "/profiles/profile3"
-  },
-  {
     "id": "profile3.3",
     "route": "/profiles/profile3/profile3.3",
     "path": "/_pages/profile3.3.html",
     "title": "Profile 3.3",
     "icon": "material-symbols-light:person-outline",
     "order": 3,
+    "parent": "/profiles/profile3"
+  },
+  {
+    "id": "profile3.3 copy",
+    "route": "/profiles/profile3/profile3.4",
+    "path": "/_pages/profile3.3 copy.html",
+    "title": "Profile 3.4",
+    "icon": "material-symbols-light:person-outline",
+    "order": 4,
     "parent": "/profiles/profile3"
   },
   {
