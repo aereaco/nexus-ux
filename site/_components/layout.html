@@ -636,8 +636,7 @@
                 data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
                 <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
                 <span class="whitespace-nowrap transition-opacity duration-300"
-                  data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
-                  data-bind="item.title"></span>
+                  data-class="{ 'opacity-0': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
               </a>
             </li>
 
@@ -652,8 +651,7 @@
                   data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
                   <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
                   <span class="whitespace-nowrap transition-opacity duration-300"
-                    data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
-                    data-bind="item.title"></span>
+                    data-class="{ 'opacity-0': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
                 </a>
                 <button class="btn btn-circle btn-xs hover:bg-accent/60 transition-opacity duration-300"
                   data-on-click="open = !open"
