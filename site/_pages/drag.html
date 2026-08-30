@@ -1,13 +1,14 @@
 <head>
   <title>Drag and Drop</title>
   <meta name="route" content="/drag">
-  <meta name="icon" content="material-symbols-light:drag-indicator">
+  <meta name="icon" content="material-symbols-light:move-selection-down-outline">
   <meta name="order" content="2">
 </head>
 
 <div class="max-w-[1400px] mx-auto w-full p-4 flex flex-col gap-8">
   <header class="text-center py-4">
-    <h1 class="text-4xl font-black bg-gradient-to-r from-base-content to-base-content/50 bg-clip-text text-transparent mb-2">
+    <h1
+      class="text-4xl font-black bg-gradient-to-r from-base-content to-base-content/50 bg-clip-text text-transparent mb-2">
       Nexus-UX | Drag and Drop
     </h1>
     <p class="text-sm opacity-60">Complete 14-Pattern Native Drag &amp; Drop Engine Suite</p>
@@ -45,8 +46,8 @@
         </div>
         <div class="grid grid-cols-2 gap-4"
           data-signal="{ list1: [{id: 'A1', n: 'Item 1'}, {id: 'A2', n: 'Item 2'}, {id: 'A3', n: 'Item 3'}], list2: [{id: 'B1', n: 'Item 4'}, {id: 'B2', n: 'Item 5'}] }">
-          <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box"
-            data-drag-container="list1" data-drag-group="shared">
+          <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box" data-drag-container="list1"
+            data-drag-group="shared">
             <template data-for="item in list1">
               <div data-drag
                 class="flex items-center gap-2 p-3 bg-base-100 rounded-box cursor-grab hover:bg-base-300 active:bg-base-300 transition-colors text-sm item">
@@ -55,8 +56,8 @@
               </div>
             </template>
           </div>
-          <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box"
-            data-drag-container="list2" data-drag-group="shared">
+          <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box" data-drag-container="list2"
+            data-drag-group="shared">
             <template data-for="item in list2">
               <div data-drag
                 class="flex items-center gap-2 p-3 bg-base-100 rounded-box cursor-grab hover:bg-base-300 active:bg-base-300 transition-colors text-sm item">
@@ -79,7 +80,8 @@
           data-signal="{ cloneSource: [{id: 'C1', n: 'Source 1'}, {id: 'C2', n: 'Source 2'}], cloneTarget: [] }">
           <div>
             <div class="text-[0.65rem] opacity-40 mb-2 font-bold tracking-wider">SOURCE</div>
-            <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box border border-dashed border-base-content/20"
+            <div
+              class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box border border-dashed border-base-content/20"
               data-drag-container="cloneSource" data-drag-clone data-drag-group="clone" data-drag-put="false">
               <template data-for="item in cloneSource">
                 <div data-drag
@@ -92,8 +94,8 @@
           </div>
           <div>
             <div class="text-[0.65rem] opacity-40 mb-2 font-bold tracking-wider">TARGET</div>
-            <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box"
-              data-drag-container="cloneTarget" data-drag-group="clone" data-drag-pull="false">
+            <div class="flex flex-col gap-2 min-h-[50px] p-2 bg-base-300 rounded-box" data-drag-container="cloneTarget"
+              data-drag-group="clone" data-drag-pull="false">
               <template data-for="item in cloneTarget">
                 <div data-drag
                   class="flex items-center gap-2 p-3 bg-base-100 rounded-box cursor-grab hover:bg-base-300 active:bg-base-300 transition-colors text-sm item">
@@ -116,7 +118,8 @@
             data-bind="disabledSorting ? 'DISABLED' : 'ENABLED'"
             data-bind-class="disabledSorting ? 'badge badge-error badge-outline badge-sm' : 'badge badge-success badge-outline badge-sm'"></span>
         </div>
-        <button data-on-click="disabledSorting = !disabledSorting" class="btn btn-sm btn-outline mb-4">Toggle State</button>
+        <button data-on-click="disabledSorting = !disabledSorting" class="btn btn-sm btn-outline mb-4">Toggle
+          State</button>
         <div class="flex flex-col gap-2 min-h-[50px]" data-drag-container="sortToggleList">
           <template data-for="item in sortToggleList">
             <div data-drag data-bind-draggable="!disabledSorting"
@@ -142,7 +145,8 @@
             <div
               class="flex items-center gap-4 p-4 bg-base-100 rounded-box border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item"
               data-drag>
-              <div class="handle cursor-grab bg-base-300 hover:bg-primary/20 p-2 rounded flex items-center justify-center transition-colors">
+              <div
+                class="handle cursor-grab bg-base-300 hover:bg-primary/20 p-2 rounded flex items-center justify-center transition-colors">
                 <iconify-icon icon="material-symbols-light:drag-indicator" class="text-xl"></iconify-icon>
               </div>
               <span data-bind="item.n" class="font-medium"></span>
@@ -167,7 +171,8 @@
               <iconify-icon icon="material-symbols-light:drag-indicator" class="text-base-content/30"
                 data-bind-class="item.filtered ? 'hidden' : 'text-base-content/30'"></iconify-icon>
               <span data-bind="item.n" class="font-medium"></span>
-              <iconify-icon data-if="item.filtered" icon="material-symbols-light:lock" class="text-error ml-auto text-xl"></iconify-icon>
+              <iconify-icon data-if="item.filtered" icon="material-symbols-light:lock"
+                class="text-error ml-auto text-xl"></iconify-icon>
             </div>
           </template>
         </div>
@@ -187,7 +192,8 @@
           <template data-for="item in multiList">
             <div data-drag
               data-bind-class="item.selected ? 'flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item draggable-selected' : 'flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item'">
-              <input type="checkbox" data-bind-checked="item.selected" class="checkbox checkbox-primary pointer-events-auto" />
+              <input type="checkbox" data-bind-checked="item.selected"
+                class="checkbox checkbox-primary pointer-events-auto" />
               <span data-bind="item.n" class="font-medium"></span>
             </div>
           </template>
@@ -215,8 +221,7 @@
     </div>
 
     <!-- 09. Nested (Infinite Recursive Hierarchy Parity with vue.draggable.next) -->
-    <div class="card bg-base-200 shadow-xl border border-base-content/5 lg:col-span-2"
-      data-stylesheet="
+    <div class="card bg-base-200 shadow-xl border border-base-content/5 lg:col-span-2" data-stylesheet="
         .nested-dropzone:not(:has([data-drag]:not([data-for]))){min-height:2.75rem;position:relative;border-style:dashed}
         .nested-dropzone:not(:has([data-drag]:not([data-for])))::after{content:'Drop items here';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:0.75rem;opacity:0.3;pointer-events:none;color:var(--bc)}
         .nested-dropzone[data-dropzone-state='docked']{outline:2px solid var(--fallback-p,oklch(var(--p)));outline-offset:2px;border-radius:0.5rem}
@@ -237,8 +242,7 @@
             { id: 'N2', n: 'Object B', sub: [
               { id: 'S3', n: 'Object B.1', sub: [] }
             ]}
-          ] }"
-          data-drag-container="nestedList" data-drag-group="nested" data-drag-fallback-on-body="true"
+          ] }" data-drag-container="nestedList" data-drag-group="nested" data-drag-fallback-on-body="true"
           data-drag-swap-threshold="0.65">
 
           <template data-for="item in nestedList">
@@ -261,7 +265,8 @@
       </div>
 
       <!-- Nested Container -->
-      <div class="flex flex-col gap-2 p-2 bg-base-300/50 rounded-box border border-dashed border-base-content/10 nested-dropzone"
+      <div
+        class="flex flex-col gap-2 p-2 bg-base-300/50 rounded-box border border-dashed border-base-content/10 nested-dropzone"
         data-drag-container="item.sub" data-drag-group="nested">
         <template data-for="item in item.sub">
           <div data-drag
@@ -281,14 +286,16 @@
         <div class="flex flex-col gap-6">
           <div>
             <div class="text-[0.65rem] opacity-40 mb-2 font-bold tracking-wider">VERTICAL AUTO-SCROLL</div>
-            <div class="max-h-[16.25rem] overflow-y-auto p-4 bg-base-300 rounded-box border border-base-content/10 shadow-inner">
+            <div
+              class="max-h-[16.25rem] overflow-y-auto p-4 bg-base-300 rounded-box border border-base-content/10 shadow-inner">
               <div class="flex flex-col gap-2 min-h-[3.125rem]"
                 data-signal="{ scrollList: [{id: 'SC1', n: 'Scroll 1'}, {id: 'SC2', n: 'Scroll 2'}, {id: 'SC3', n: 'Scroll 3'}, {id: 'SC4', n: 'Scroll 4'}, {id: 'SC5', n: 'Scroll 5'}, {id: 'SC6', n: 'Scroll 6'}, {id: 'SC7', n: 'Scroll 7'}, {id: 'SC8', n: 'Scroll 8'}] }"
                 data-drag-container="scrollList">
                 <template data-for="item in scrollList">
                   <div data-drag
                     class="flex items-center gap-4 p-3 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item text-sm">
-                    <iconify-icon icon="material-symbols-light:format-list-bulleted" class="text-base-content/50"></iconify-icon>
+                    <iconify-icon icon="material-symbols-light:format-list-bulleted"
+                      class="text-base-content/50"></iconify-icon>
                     <span data-bind="item.n" class="font-medium"></span>
                   </div>
                 </template>
@@ -342,14 +349,17 @@
           </div>
           <div class="flex items-center gap-3">
             <span class="text-xs opacity-60 w-8">A:</span>
-            <input type="range" min="0" max="1" step="0.05" data-bind-value="ghostOpacity" class="range range-xs flex-1">
+            <input type="range" min="0" max="1" step="0.05" data-bind-value="ghostOpacity"
+              class="range range-xs flex-1">
             <span class="text-xs opacity-60 w-8 text-end" data-bind="ghostOpacity"></span>
           </div>
           <div class="flex items-center gap-3">
             <span class="text-xs opacity-60">Preview:</span>
             <div class="size-10 rounded-box border border-base-content/20"
-              data-bind-style="'background-color:rgba(' + ghostR + ',' + ghostG + ',' + ghostB + ',' + ghostOpacity + ')'"></div>
-            <span class="text-xs opacity-60" data-bind="'rgba(' + ghostR + ',' + ghostG + ',' + ghostB + ',' + ghostOpacity + ')'"></span>
+              data-bind-style="'background-color:rgba(' + ghostR + ',' + ghostG + ',' + ghostB + ',' + ghostOpacity + ')'">
+            </div>
+            <span class="text-xs opacity-60"
+              data-bind="'rgba(' + ghostR + ',' + ghostG + ',' + ghostB + ',' + ghostOpacity + ')'"></span>
           </div>
         </div>
         <div class="flex flex-col gap-2 min-h-[3.125rem]" data-drag-container="ghostList">
@@ -367,8 +377,7 @@
 
     <!-- 12. Direction (Horizontal) -->
     <div class="card bg-base-200 shadow-xl border border-base-content/5 lg:col-span-2">
-      <div class="card-body p-6"
-        data-signal="{ horzList: [{id: 'D1', n: 'H1'}, {id: 'D2', n: 'H2'}, {id: 'D3', n: 'H3'}, {id: 'D4', n: 'H4'}], horzListLarge: [{id: 'L1', n: 'Large 1'}, {id: 'L2', n: 'Large 2'}, {id: 'L3', n: 'Large 3'}], horzListSquare: [
+      <div class="card-body p-6" data-signal="{ horzList: [{id: 'D1', n: 'H1'}, {id: 'D2', n: 'H2'}, {id: 'D3', n: 'H3'}, {id: 'D4', n: 'H4'}], horzListLarge: [{id: 'L1', n: 'Large 1'}, {id: 'L2', n: 'Large 2'}, {id: 'L3', n: 'Large 3'}], horzListSquare: [
           {id: 'SQ1', color: 'rgba(68, 68, 68, 0.7)'},
           {id: 'SQ2', color: 'rgba(14, 165, 233, 0.7)'},
           {id: 'SQ3', color: 'rgba(34, 197, 94, 0.7)'},
@@ -379,8 +388,8 @@
         <div class="card-title text-xs uppercase tracking-widest opacity-50 mb-4 flex justify-between">
           12. Direction <span class="badge badge-outline badge-sm">Horizontal</span>
         </div>
-        <div class="flex flex-row gap-4 min-h-[3.75rem] overflow-x-auto pb-2"
-          data-drag-container="horzList" data-drag-direction="horizontal">
+        <div class="flex flex-row gap-4 min-h-[3.75rem] overflow-x-auto pb-2" data-drag-container="horzList"
+          data-drag-direction="horizontal">
           <template data-for="item in horzList">
             <div data-drag
               class="min-w-[7.5rem] flex items-center justify-center gap-2 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item shrink-0">
@@ -389,8 +398,8 @@
             </div>
           </template>
         </div>
-        <div class="flex flex-row gap-4 min-h-[5rem] overflow-x-auto pb-2 mt-4"
-          data-drag-container="horzListLarge" data-drag-direction="horizontal">
+        <div class="flex flex-row gap-4 min-h-[5rem] overflow-x-auto pb-2 mt-4" data-drag-container="horzListLarge"
+          data-drag-direction="horizontal">
           <template data-for="item in horzListLarge">
             <div data-drag
               class="min-w-[12.5rem] flex items-center justify-center gap-3 p-6 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item shrink-0">
@@ -399,8 +408,8 @@
             </div>
           </template>
         </div>
-        <div class="flex flex-row gap-4 min-h-[6.25rem] overflow-x-auto pb-2 mt-4"
-          data-drag-container="horzListSquare" data-drag-direction="horizontal">
+        <div class="flex flex-row gap-4 min-h-[6.25rem] overflow-x-auto pb-2 mt-4" data-drag-container="horzListSquare"
+          data-drag-direction="horizontal">
           <template data-for="item in horzListSquare">
             <div data-drag
               class="min-w-[7.5rem] min-h-[7.5rem] flex items-center justify-center p-4 rounded-box cursor-grab border border-base-content/5 transition-colors item shrink-0"
@@ -451,15 +460,15 @@
                   class="range range-xs range-primary flex-1">
               </div>
               <div class="flex flex-col gap-2 min-h-[50px] p-4 bg-base-300 rounded-box"
-                data-drag-container="thresholdList"
-                data-bind-data-drag-swap-threshold="verticalThresholdVal">
+                data-drag-container="thresholdList" data-bind-data-drag-swap-threshold="verticalThresholdVal">
                 <template data-for="item in thresholdList">
                   <div data-drag
                     class="relative overflow-hidden flex items-center gap-4 p-4 bg-base-100 rounded-box cursor-grab border border-base-content/5 hover:bg-base-300 active:bg-base-300 transition-colors item font-semibold text-sm">
                     <div class="absolute inset-x-0 bg-primary/20 pointer-events-none"
                       data-bind-style="{ height: (verticalThresholdVal * 100) + '%', top: ((1 - verticalThresholdVal) * 50) + '%' }">
                     </div>
-                    <iconify-icon icon="material-symbols-light:drag-indicator" class="text-base-content/30 z-10"></iconify-icon>
+                    <iconify-icon icon="material-symbols-light:drag-indicator"
+                      class="text-base-content/30 z-10"></iconify-icon>
                     <span data-bind="item.n" class="z-10"></span>
                   </div>
                 </template>
@@ -495,7 +504,8 @@
 
   </div>
 
-  <footer class="mt-8 py-4 border-t border-base-content/10 text-center opacity-40 text-xs font-bold tracking-widest uppercase">
+  <footer
+    class="mt-8 py-4 border-t border-base-content/10 text-center opacity-40 text-xs font-bold tracking-widest uppercase">
     Nexus-UX | Drag Engine | 14/14 Verification Patterns
   </footer>
 </div>

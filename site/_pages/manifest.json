@@ -40,7 +40,7 @@
     "route": "/drag",
     "path": "/_pages/drag.html",
     "title": "Drag and Drop",
-    "icon": "material-symbols-light:drag-indicator",
+    "icon": "material-symbols-light:move-selection-down-outline",
     "order": 2,
     "parent": null
   },
