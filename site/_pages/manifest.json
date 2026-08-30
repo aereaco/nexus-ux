@@ -117,7 +117,8 @@
     "title": "Profiles",
     "icon": "material-symbols-light:group-outline",
     "order": 4,
-    "parent": null
+    "parent": null,
+    "category": "Profiles"
   },
   {
     "id": "settings",
