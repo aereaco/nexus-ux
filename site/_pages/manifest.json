@@ -51,9 +51,9 @@
   },
   {
     "id": "profile3",
-    "route": "/profile/profile2",
+    "route": "/profiles/profile3",
     "path": "/_pages/profile3.html",
-    "title": "Profile 2",
+    "title": "Profile 3",
     "icon": "material-symbols-light:person-outline",
     "order": 5,
     "parent": "/profile"
