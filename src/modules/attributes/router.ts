@@ -558,9 +558,16 @@ export const routerAttributeModule: AttributeModule = {
         }
         const dir = (routerConfig.pagesDir || pagesDir || '_pages').replace(/^\/+|\/+$/g, '');
         const defaultIndex = routerConfig.index || cfg.index || 'home.html';
-        const rel = (path === '/' || path === '') ? `/${defaultIndex}` : (path.startsWith('/') ? path : '/' + path);
-        const withExt = rel.endsWith('.html') ? rel : rel + '.html';
-        const full = dir ? `/${dir}${withExt}` : withExt;
+        if (path === '/' || path === '') {
+          return applyBase(`/${dir}/${defaultIndex}`);
+        }
+        const matchedRec = routeList.find((r) => r.path === path || r.path === '/' + clean);
+        if (matchedRec?.component) {
+          return applyBase(matchedRec.component);
+        }
+        const leaf = clean.split('/').pop() || clean;
+        const withExt = leaf.endsWith('.html') ? leaf : leaf + '.html';
+        const full = dir ? `/${dir}/${withExt}` : '/' + withExt;
         return applyBase(full);
       };
 
