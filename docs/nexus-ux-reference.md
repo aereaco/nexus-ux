@@ -575,7 +575,16 @@ Binds native and custom DOM events to reactive expressions.
 | Modifier | Execution Role | Practical Example |
 | :--- | :--- | :--- |
 | **`_debounce.[ms]`** | Delays execution until silence threshold passes | `data-on-input_debounce.300ms="search()"` |
+| **`_debounce.cancel`** | Cancels pending debounced execution on element | `data-on-mouseleave_debounce.cancel="isOpen = false"` |
+| **`_debounce.cancel(sel)`** | Cancels pending debounce on targeted element(s) | `data-on-click_debounce.cancel(#search-box)="clear()"` |
+| **`_debounce.flush`** | Immediately invokes pending debounced callback | `data-on-blur_debounce.flush=""` |
 | **`_throttle.[ms]`** | Limits execution frequency to rate interval | `data-on-scroll_throttle.100ms="checkPosition()"` |
+| **`_throttle.reset`** | Clears rate-limit cooldown timestamp | `data-on-click_throttle.reset="refresh()"` |
+| **`_delay.[ms]`** | Delays event handler execution | `data-on-mouseenter_delay.200ms="showTooltip()"` |
+| **`_delay.cancel`** | Cancels scheduled delay on element | `data-on-mouseleave_delay.cancel="hideTooltip()"` |
+| **`_delay.cancel(sel)`** | Cancels scheduled delay on targeted element(s) | `data-on-click_delay.cancel(^.card)="dismiss()"` |
+| **`_hold.[ms]`** | Triggers upon continuous press-and-hold | `data-on-pointerdown_hold.500ms="showContextMenu()"` |
+| **`_hold.cancel`** | Aborts active press-and-hold gesture | `data-on-pointermove_hold.cancel=""` |
 | **`_prevent`** | Calls `event.preventDefault()` | `data-on-submit_prevent="handleSubmit()"` |
 | **`_stop`** | Calls `event.stopPropagation()` | `data-on-click_stop="handleClick()"` |
 | **`_once`** | Executes handler only once then unbinds | `data-on-click_once="initAnalytics()"` |
@@ -584,8 +593,6 @@ Binds native and custom DOM events to reactive expressions.
 | **`_window`** | Attaches event listener to `window` | `data-on-keydown_window="handleKey($event)"` |
 | **`_document`** | Attaches event listener to `document` | `data-on-visibilitychange_document="handleVisibility()"` |
 | **`_keys.[key]`** | Filters keydown events to specific key combinations | `data-on-keydown_keys.enter="submit()"` |
-| **`_hold.[ms]`** | Triggers upon continuous press-and-hold | `data-on-pointerdown_hold.500ms="showContextMenu()"` |
-| **`_delay.[ms]`** | Delays event handler execution | `data-on-mouseenter_delay.200ms="showTooltip()"` |
 | **`_morph`** | Morphs asynchronous response into DOM | `data-on-click_morph="fetchNewCard()"` |
 | **`_drag`** | Augments drag events with delta math | `data-on-pointermove_drag="updatePosition($event)"` |
 | **`_zoom`** | Augments wheel events with zoom factor | `data-on-wheel_zoom="handleZoom($event)"` |
