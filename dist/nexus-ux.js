@@ -21,7 +21,7 @@ var UX = (() => {
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
   // src/engine/consts.ts
-  var ROOT_SELECTOR, STATE, ATTRIBUTE_PREFIX, CUSTOM_EVENT_PREFIX, DATA_PRESERVE_ATTR, NEG_TOKENS, MODIFIER_DELIMITER, DATA_STACK_KEY, COMPONENT_CONTEXT_KEY, CLEANUP_FUNCTIONS_KEY, EFFECT_RUNNERS_KEY, RUN_EFFECT_RUNNERS_KEY, MARKER_KEY, IS_TEMPLATE_KEY, DEFAULT_DEBOUNCE_TIME, DEFAULT_THROTTLE_TIME;
+  var ROOT_SELECTOR, STATE, ATTRIBUTE_PREFIX, CUSTOM_EVENT_PREFIX, DATA_PRESERVE_ATTR, NEG_TOKENS, MODIFIER_DELIMITER, DATA_STACK_KEY, COMPONENT_CONTEXT_KEY, CLEANUP_FUNCTIONS_KEY, EFFECT_RUNNERS_KEY, RUN_EFFECT_RUNNERS_KEY, MARKER_KEY, IS_TEMPLATE_KEY, TIMER_MAP_KEY, DEFAULT_DEBOUNCE_TIME, DEFAULT_THROTTLE_TIME;
   var init_consts = __esm({
     "src/engine/consts.ts"() {
       ROOT_SELECTOR = "[data-init], [data-ux-init], [data-signal], [data-router], [data-import], [data-stylesheet], [data-ux-theme], body";
@@ -49,6 +49,7 @@ var UX = (() => {
       RUN_EFFECT_RUNNERS_KEY = Symbol.for("__run_effect_runners__");
       MARKER_KEY = Symbol.for("__nexus_marker__");
       IS_TEMPLATE_KEY = Symbol.for("__nexus_is_template__");
+      TIMER_MAP_KEY = Symbol.for("__nexus_timer_map__");
       DEFAULT_DEBOUNCE_TIME = 250;
       DEFAULT_THROTTLE_TIME = 250;
     }
