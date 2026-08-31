@@ -729,9 +729,9 @@ export const routerAttributeModule: AttributeModule = {
                 tabIcon: finalIcon || '',
                 path: compPath,
                 parent,
-                category: category || 'General',
+                category: category || undefined,
                 children: children.length > 0 ? children : undefined,
-                meta: { title: finalTitle, icon: finalIcon, order, parent, category }
+                meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || undefined }
               });
 
               // Dynamically register route in state.routes if not already present
@@ -741,7 +741,7 @@ export const routerAttributeModule: AttributeModule = {
                   path: href,
                   component: compPath,
                   name: cleanName,
-                  meta: { title: finalTitle, icon: finalIcon, order, parent, category }
+                  meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || undefined }
                 } as any);
               }
             }
