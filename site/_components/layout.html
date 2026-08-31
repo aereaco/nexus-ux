@@ -600,8 +600,9 @@
             <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-2xl"></iconify-icon>
           </button>
         </div>
-        <ul class="menu-dropdown overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
-          data-class="{ 'menu-dropdown-show max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
+        <ul
+          class="menu-dropdown menu-dropdown-show overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
+          data-class="{ 'max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
           data-drag-container="item.children">
           <!-- RECURSIVE TEMPLATE: Calls itself for infinite arbitrary sub-levels! -->
           <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
@@ -658,8 +659,9 @@
                     class="shrink-0 text-2xl transition-transform" data-class="{ 'rotate-90': open}"></iconify-icon>
                 </button>
               </div>
-              <ul class="menu-dropdown ms-12 overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
-                data-class="{ 'menu-dropdown-show max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
+              <ul
+                class="menu-dropdown menu-dropdown-show ms-12 overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
+                data-class="{ 'max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
                 data-drag-container="item.children">
                 <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
                   data-key="item.href"></template>
@@ -670,7 +672,8 @@
           <!-- 2. Categorized Sections (Rendered Below Uncategorized Items) -->
           <template data-for="cat in categories" data-key="cat">
             <!-- Category Title (fades and collapses smoothly on collapse) -->
-            <li class="menu-title overflow-hidden transition-[opacity,max-height,margin,padding] duration-300 ease-in-out"
+            <li
+              class="menu-title overflow-hidden transition-[opacity,max-height,margin,padding] duration-300 ease-in-out"
               data-class="{ 'max-h-0 opacity-0 !my-0 !py-0 pointer-events-none': collapsed && !hovered && !sidebarOpen, 'max-h-12 opacity-100 mt-4': !collapsed || hovered || sidebarOpen }"
               data-show="(router.pages || []).some(p => p.category === cat)" data-bind="cat">Title
             </li>
@@ -718,8 +721,9 @@
                       class="shrink-0 text-2xl transition-transform" data-class="{ 'rotate-90': open}"></iconify-icon>
                   </button>
                 </div>
-                <ul class="menu-dropdown ms-12 overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
-                  data-class="{ 'menu-dropdown-show max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
+                <ul
+                  class="menu-dropdown menu-dropdown-show ms-12 overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
+                  data-class="{ 'max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
                   data-drag-container="item.children">
                   <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
                     data-key="item.href"></template>

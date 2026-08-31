@@ -8094,6 +8094,31 @@ ${match}</ul>
       init_stylesheet();
       SCROLLBAR_BASE_CSS = `
 /* ==========================================================================
+   Zero-Flash Native Scrollbar Suppression for Overlay Mode
+   ========================================================================== */
+.overflow-auto,
+.overflow-y-auto,
+.overflow-x-auto,
+.overflow-scroll,
+.overflow-y-scroll,
+.overflow-x-scroll,
+[data-scrollbar] {
+  scrollbar-width: none !important;
+}
+
+.overflow-auto::-webkit-scrollbar,
+.overflow-y-auto::-webkit-scrollbar,
+.overflow-x-auto::-webkit-scrollbar,
+.overflow-scroll::-webkit-scrollbar,
+.overflow-y-scroll::-webkit-scrollbar,
+.overflow-x-scroll::-webkit-scrollbar,
+[data-scrollbar]::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* ==========================================================================
    1. OVERLAY SCROLLBAR SPRITE STYLES (Modern CSS Logical Properties & rem Units)
    ========================================================================== */
 .scrollbar-overlay-active {

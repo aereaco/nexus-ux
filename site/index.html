@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" data-init data-debug data-stylesheet data-scrollbar:global="{ mode: 'overlay', autohide: 800, fade: '0.4s' }" data-theme="{ default: 'auto' }" data-router="{
+<html lang="en" data-init data-stylesheet data-scrollbar:global="{ mode: 'overlay', autohide: 800, fade: '0.4s' }"
+  data-theme="{ default: 'auto' }" data-router="{
         signal: 'router',
         mode: 'hybrid',
         pagesDir: '_pages',
@@ -15,9 +16,9 @@
         'Iconify': { 
           script: { src: 'https://cdn.jsdelivr.net/npm/iconify-icon@3.0.0/dist/iconify-icon.min.js' }
         }
-      }" data-signal="{ appReady: true, rtl: localStorage.rtl === 'true', zoom: Number(localStorage.zoom) || 1, tempZoom: Number(localStorage.zoom) || 1 }"
-      data-bind-dir="rtl ? 'rtl' : 'ltr'"
-      data-bind-style="{ fontSize: (zoom || 1) + 'rem' }">
+      }"
+  data-signal="{ appReady: true, rtl: localStorage.rtl === 'true', zoom: Number(localStorage.zoom) || 1, tempZoom: Number(localStorage.zoom) || 1 }"
+  data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: (zoom || 1) + 'rem' }">
 
 
 <head>
@@ -66,28 +67,6 @@
     main.nx-main {
       opacity: 1;
       transition: opacity 0.5s ease-in;
-    }
-
-    /* Zero-Flash Native Scrollbar Suppression for Overlay Mode */
-    .overflow-auto,
-    .overflow-y-auto,
-    .overflow-x-auto,
-    .overflow-scroll,
-    .overflow-y-scroll,
-    .overflow-x-scroll,
-    [data-scrollbar] {
-      scrollbar-width: none !important;
-    }
-    .overflow-auto::-webkit-scrollbar,
-    .overflow-y-auto::-webkit-scrollbar,
-    .overflow-x-auto::-webkit-scrollbar,
-    .overflow-scroll::-webkit-scrollbar,
-    .overflow-y-scroll::-webkit-scrollbar,
-    .overflow-x-scroll::-webkit-scrollbar,
-    [data-scrollbar]::-webkit-scrollbar {
-      display: none !important;
-      width: 0 !important;
-      height: 0 !important;
     }
   </style>
 </head>
