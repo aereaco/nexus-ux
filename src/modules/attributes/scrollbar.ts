@@ -71,10 +71,9 @@ const SCROLLBAR_BASE_CSS = `
    1. OVERLAY SCROLLBAR SPRITE STYLES (Modern CSS Logical Properties & rem Units)
    ========================================================================== */
 .scrollbar-track-v {
-  position: sticky;
+  position: absolute;
   inset-block-start: 0;
   inset-inline-end: 0.125rem;
-  float: inline-end;
   width: var(--scrollbar-width, 0.375rem);
   height: 0;
   overflow: visible;
@@ -97,8 +96,8 @@ const SCROLLBAR_BASE_CSS = `
 }
 
 .scrollbar-track-h {
-  position: sticky;
-  inset-block-start: 100%;
+  position: absolute;
+  inset-block-start: 0;
   inset-inline-start: 0;
   width: 0;
   height: 0;
@@ -109,7 +108,7 @@ const SCROLLBAR_BASE_CSS = `
 
 .scrollbar-thumb-h {
   position: absolute;
-  inset-block-start: calc(-1 * var(--scrollbar-height, 0.375rem) - 0.125rem);
+  inset-block-start: 0;
   inset-inline-start: 0;
   height: var(--scrollbar-height, 0.375rem);
   background-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent));
