@@ -380,7 +380,7 @@
 
     <!-- Floating Side Hover Expanding Tab | Breadcrumbs & Page Tabs Toggle (when floatingBookmarks is true) -->
     <div data-show="floatingBookmarks" class="absolute end-0 top-32 z-10" data-signal="{ hovered: false }"
-      data-on-mouseenter:delay-150="hovered = true" data-on-mouseleave="hovered = false">
+      data-on-mouseenter:debounce.150="hovered = true" data-on-mouseleave="hovered = false">
       <nav aria-label="Breadcrumb"
         class="flex items-center overflow-hidden rounded-ss-lg rounded-es-lg border border-base-content/10 bg-base-100 text-base-content transition-[max-width,width] duration-300 ease-in-out whitespace-nowrap shadow-sm"
         data-class="{ 'max-w-md w-auto shadow-2xl': hovered, 'max-w-12 w-12': !hovered }">
