@@ -78,10 +78,10 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
     const isEnd = i === len;
     const char = isEnd ? '' : rest[i];
 
-    // `:` or `.` ALWAYS transitions to MODIFIER state
-    // `-` transitions from DIRECTIVE to ARGUMENT state
-    const isModifierDelim = char === MODIFIER_DELIMITER || char === '.';
-    const isArgDelim = char === '-';
+    // `_` (standard) or `:` (compat) ALWAYS transitions to MODIFIER state
+    // `-` transitions from DIRECTIVE to ARGUMENT state (only when before modifier state)
+    const isModifierDelim = char === MODIFIER_DELIMITER || char === ':' || char === '_';
+    const isArgDelim = char === '-' && state < 2;
     const isDelim = isModifierDelim || isArgDelim;
 
     if (isDelim || isEnd) {
@@ -102,14 +102,12 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
 
       if (isDelim) {
         if (isModifierDelim) {
-          // `:` ALWAYS moves to modifier state regardless of current state
+          // `_` or `:` ALWAYS moves to modifier state
           state = 2;
         } else if (isArgDelim && state === 0) {
           // `-` after directive introduces the argument
           state = 1;
         }
-        // `-` while already in ARGUMENT state: we concatenate (e.g., `data-on-signal-change` → argument = "signal-change")
-        // `-` while in MODIFIER state: part of modifier token (e.g., debounce-500ms)
       }
       
       currentTokenStart = i + 1;
@@ -128,15 +126,16 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
 
 /**
  * Helper to find all attributes on an element that match a specific directive.
- * Supports data-directive, data-directive:arg, and data-directive-arg formats.
+ * Supports data-directive, data-directive_modifier, data-directive:arg, and data-directive-arg formats.
  */
 export function matchAttributes(el: HTMLElement, directive: string, value?: string): Attr[] {
+  const prefixUnderscore = `data-${directive}_`;
   const prefixColon = `data-${directive}:`;
   const prefixDash = `data-${directive}-`;
   const exact = `data-${directive}`;
   
   return Array.from(el.attributes).filter(a => {
-    const isMatch = a.name === exact || a.name.startsWith(prefixColon) || a.name.startsWith(prefixDash);
+    const isMatch = a.name === exact || a.name.startsWith(prefixUnderscore) || a.name.startsWith(prefixColon) || a.name.startsWith(prefixDash);
     if (!isMatch) return false;
     if (value !== undefined && a.value !== value) return false;
     return true;

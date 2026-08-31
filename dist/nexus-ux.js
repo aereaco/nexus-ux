@@ -13581,8 +13581,8 @@ ${bridge}`, {
     for (let i = 0; i <= len; i++) {
       const isEnd = i === len;
       const char = isEnd ? "" : rest[i];
-      const isModifierDelim = char === MODIFIER_DELIMITER || char === ".";
-      const isArgDelim = char === "-";
+      const isModifierDelim = char === MODIFIER_DELIMITER || char === ":" || char === "_";
+      const isArgDelim = char === "-" && state < 2;
       const isDelim = isModifierDelim || isArgDelim;
       if (isDelim || isEnd) {
         if (i > currentTokenStart) {
