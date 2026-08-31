@@ -11250,6 +11250,27 @@ ${match}</ul>
     default: () => delay_default,
     delayModifier: () => delayModifier
   });
+  function getTimerMap2(el) {
+    let map = el[TIMER_MAP_KEY];
+    if (!map) {
+      map = /* @__PURE__ */ new Map();
+      el[TIMER_MAP_KEY] = map;
+    }
+    return map;
+  }
+  function parseCommandArg2(arg) {
+    if (!arg)
+      return {};
+    const trimmed = arg.trim();
+    const match = trimmed.match(/^cancel(?:\((.*)\))?$/i);
+    if (match) {
+      return {
+        command: "cancel",
+        targetSelector: match[1]?.trim()
+      };
+    }
+    return {};
+  }
   function resolveDelay(runtime, el, arg) {
     if (!arg)
       return DEFAULT_DEBOUNCE_TIME;
@@ -11264,19 +11285,67 @@ ${match}</ul>
   var init_delay = __esm({
     "src/modules/modifiers/delay.ts"() {
       init_consts();
+      init_selector();
       delayModifier = {
         name: "delay",
         handle: (payload, el, arg, runtime) => {
+          const cmd = parseCommandArg2(arg);
+          if (cmd.command === "cancel") {
+            if (typeof payload === "function") {
+              return (e) => {
+                const targets = resolveTargetElements(el, cmd.targetSelector);
+                targets.forEach((target) => {
+                  const map = getTimerMap2(target);
+                  const rec = map.get("delay");
+                  if (rec) {
+                    clearTimeout(rec.timer);
+                    map.delete("delay");
+                  }
+                });
+                return payload(e);
+              };
+            }
+            return (...args) => {
+              const targets = resolveTargetElements(el, cmd.targetSelector);
+              targets.forEach((target) => {
+                const map = getTimerMap2(target);
+                const rec = map.get("delay");
+                if (rec) {
+                  clearTimeout(rec.timer);
+                  map.delete("delay");
+                }
+              });
+              return typeof payload === "function" ? payload(...args) : payload;
+            };
+          }
           if (typeof payload === "function") {
             return (e) => {
-              setTimeout(() => payload(e), resolveDelay(runtime, el, arg));
+              const wait = resolveDelay(runtime, el, arg);
+              const map = getTimerMap2(el);
+              const existing = map.get("delay");
+              if (existing)
+                clearTimeout(existing.timer);
+              const runner = () => {
+                map.delete("delay");
+                payload(e);
+              };
+              const timer = setTimeout(runner, wait);
+              map.set("delay", { timer, fn: runner });
             };
           }
           return (...args) => {
             return new Promise((resolve) => {
-              setTimeout(() => {
+              const wait = resolveDelay(runtime, el, arg);
+              const map = getTimerMap2(el);
+              const existing = map.get("delay");
+              if (existing)
+                clearTimeout(existing.timer);
+              const runner = () => {
+                map.delete("delay");
                 resolve(typeof payload === "function" ? payload(...args) : payload);
-              }, resolveDelay(runtime, el, arg));
+              };
+              const timer = setTimeout(runner, wait);
+              map.set("delay", { timer, fn: runner });
             });
           };
         }
