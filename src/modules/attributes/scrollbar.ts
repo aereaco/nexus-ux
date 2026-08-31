@@ -364,7 +364,7 @@ class OverlayScrollbarInstance {
       this.trackV!.style.display = 'block';
       // Pin vertical track to visible viewport
       this.trackV!.style.transform = `translate3d(0, ${scrollTop}px, 0)`;
-      this.trackV!.style.height = `${clientHeight}px`;
+      this.trackV!.style.height = '0px';
 
       const thumbHeight = Math.max(24, (clientHeight / scrollHeight) * clientHeight);
       const maxScrollTop = scrollHeight - clientHeight;
@@ -383,7 +383,8 @@ class OverlayScrollbarInstance {
       const trackHeight = 8;
       // Pin horizontal track cleanly to bottom of visible viewport
       this.trackH!.style.transform = `translate3d(${scrollLeft}px, ${scrollTop + clientHeight - trackHeight}px, 0)`;
-      this.trackH!.style.width = `${clientWidth}px`;
+      this.trackH!.style.width = '0px';
+      this.trackH!.style.height = '0px';
 
       const thumbWidth = Math.max(24, (clientWidth / scrollWidth) * clientWidth);
       const maxScrollLeft = scrollWidth - clientWidth;
