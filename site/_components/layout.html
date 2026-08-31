@@ -562,8 +562,8 @@
               <use href="_assets/images/emblem.svg"></use>
             </svg>
           </div>
-          <span class="logo font-bold text-xl whitespace-nowrap transition-opacity duration-300"
-            data-class="{ 'opacity-0': collapsed && !hovered && !sidebarOpen }">Nexus-UX</span>
+          <span class="logo font-bold text-xl whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
+            data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }">Nexus-UX</span>
         </a>
       </div>
       <button class="btn btn-ghost btn-circle close me-4" data-class="{ 'hidden': !sidebarOpen, 'block': sidebarOpen }"
@@ -627,8 +627,8 @@
                 data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                 data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
                 <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
-                <span class="whitespace-nowrap transition-opacity duration-300"
-                  data-class="{ 'opacity-0': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
+                <span class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
+                  data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
               </a>
             </li>
 
@@ -642,12 +642,12 @@
                   data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                   data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
                   <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
-                  <span class="whitespace-nowrap transition-opacity duration-300"
-                    data-class="{ 'opacity-0': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
+                  <span class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
+                    data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
                 </a>
-                <button class="btn btn-circle btn-xs hover:bg-accent/60 transition-opacity duration-300"
+                <button class="btn btn-circle btn-xs hover:bg-accent/60 transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
                   data-on-click="open = !open"
-                  data-class="{ 'bg-accent/20': open, 'opacity-0': collapsed && !hovered && !sidebarOpen }">
+                  data-class="{ 'bg-accent/20': open, 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }">
                   <iconify-icon icon="material-symbols-light:chevron-forward"
                     class="shrink-0 text-2xl transition-transform" data-class="{ 'rotate-90': open}"></iconify-icon>
                 </button>
@@ -664,8 +664,8 @@
           <!-- 2. Categorized Sections (Rendered Below Uncategorized Items) -->
           <template data-for="cat in categories" data-key="cat">
             <!-- Category Title (fades on collapse) -->
-            <li class="menu-title transition-opacity duration-300"
-              data-class="{ 'opacity-0': collapsed && !hovered && !sidebarOpen }"
+            <li class="menu-title transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
+              data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
               data-show="(router.pages || []).some(p => p.category === cat)" data-bind="cat">Title
             </li>
             <li class="mx-0 -mt-1" data-show="(router.pages || []).some(p => p.category === cat)"></li>
@@ -681,8 +681,8 @@
                   data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                   data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
                   <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
-                  <span class="whitespace-nowrap transition-opacity duration-300"
-                    data-class="{ 'opacity-0': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
+                  <span class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
+                    data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
                 </a>
               </li>
 
@@ -696,12 +696,12 @@
                     data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                     data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
                     <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
-                    <span class="whitespace-nowrap transition-opacity duration-300"
-                      data-class="{ 'opacity-0': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
+                    <span class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
+                      data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }" data-bind="item.title"></span>
                   </a>
-                  <button class="btn btn-circle btn-xs hover:bg-accent/60 transition-opacity duration-300"
+                  <button class="btn btn-circle btn-xs hover:bg-accent/60 transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
                     data-on-click="open = !open"
-                    data-class="{ 'bg-accent/20': open, 'opacity-0': collapsed && !hovered && !sidebarOpen }">
+                    data-class="{ 'bg-accent/20': open, 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }">
                     <iconify-icon icon="material-symbols-light:chevron-forward"
                       class="shrink-0 text-2xl transition-transform" data-class="{ 'rotate-90': open}"></iconify-icon>
                   </button>
