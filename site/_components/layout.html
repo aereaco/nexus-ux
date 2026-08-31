@@ -612,7 +612,9 @@
     </template>
 
     <!-- ================= 2. Middle Content Section (Scrollable) ================= -->
-    <main class="sidebar-content flex-1 min-h-0 overflow-y-auto overflow-x-hidden" data-signal="{
+    <main class="sidebar-content flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
+      data-effect="if (collapsed && !hovered && !sidebarOpen) { $el.scrollTo({ top: 0, behavior: 'smooth' }); }"
+      data-signal="{
         categories: ['Apps', 'Profiles', 'System']
       }">
       <!-- Main Navigation Menu (tab 1) -->
