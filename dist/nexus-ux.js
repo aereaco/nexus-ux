@@ -11108,6 +11108,27 @@ ${match}</ul>
     debounceModifier: () => debounceModifier,
     default: () => debounce_default
   });
+  function getTimerMap(el) {
+    let map = el[TIMER_MAP_KEY];
+    if (!map) {
+      map = /* @__PURE__ */ new Map();
+      el[TIMER_MAP_KEY] = map;
+    }
+    return map;
+  }
+  function parseCommandArg(arg) {
+    if (!arg)
+      return {};
+    const trimmed = arg.trim();
+    const match = trimmed.match(/^(cancel|flush)(?:\((.*)\))?$/i);
+    if (match) {
+      return {
+        command: match[1].toLowerCase(),
+        targetSelector: match[2]?.trim()
+      };
+    }
+    return {};
+  }
   function resolveDebounce(runtime, el, arg) {
     if (!arg)
       return DEFAULT_DEBOUNCE_TIME;
@@ -11122,25 +11143,99 @@ ${match}</ul>
   var init_debounce = __esm({
     "src/modules/modifiers/debounce.ts"() {
       init_consts();
+      init_selector();
       debounceModifier = {
         name: "debounce",
         handle: (payload, el, arg, runtime) => {
-          const wait = resolveDebounce(runtime, el, arg);
-          let timeout;
+          const cmd = parseCommandArg(arg);
+          if (cmd.command === "cancel") {
+            if (typeof payload === "function") {
+              return (e) => {
+                const targets = resolveTargetElements(el, cmd.targetSelector);
+                targets.forEach((target) => {
+                  const map = getTimerMap(target);
+                  const rec = map.get("debounce");
+                  if (rec) {
+                    clearTimeout(rec.timer);
+                    map.delete("debounce");
+                  }
+                });
+                return payload(e);
+              };
+            }
+            return (...args) => {
+              const targets = resolveTargetElements(el, cmd.targetSelector);
+              targets.forEach((target) => {
+                const map = getTimerMap(target);
+                const rec = map.get("debounce");
+                if (rec) {
+                  clearTimeout(rec.timer);
+                  map.delete("debounce");
+                }
+              });
+              return typeof payload === "function" ? payload(...args) : payload;
+            };
+          }
+          if (cmd.command === "flush") {
+            if (typeof payload === "function") {
+              return (e) => {
+                const targets = resolveTargetElements(el, cmd.targetSelector);
+                targets.forEach((target) => {
+                  const map = getTimerMap(target);
+                  const rec = map.get("debounce");
+                  if (rec) {
+                    clearTimeout(rec.timer);
+                    map.delete("debounce");
+                    if (rec.fn)
+                      rec.fn();
+                  }
+                });
+                return payload(e);
+              };
+            }
+            return (...args) => {
+              const targets = resolveTargetElements(el, cmd.targetSelector);
+              targets.forEach((target) => {
+                const map = getTimerMap(target);
+                const rec = map.get("debounce");
+                if (rec) {
+                  clearTimeout(rec.timer);
+                  map.delete("debounce");
+                  if (rec.fn)
+                    rec.fn();
+                }
+              });
+              return typeof payload === "function" ? payload(...args) : payload;
+            };
+          }
           if (typeof payload === "function") {
             return (e) => {
-              const wait2 = resolveDebounce(runtime, el, arg);
-              clearTimeout(timeout);
-              timeout = setTimeout(() => payload(e), wait2);
+              const wait = resolveDebounce(runtime, el, arg);
+              const map = getTimerMap(el);
+              const existing = map.get("debounce");
+              if (existing)
+                clearTimeout(existing.timer);
+              const runner = () => {
+                map.delete("debounce");
+                payload(e);
+              };
+              const timer = setTimeout(runner, wait);
+              map.set("debounce", { timer, fn: runner });
             };
           }
           return (...args) => {
             return new Promise((resolve) => {
-              const wait2 = resolveDebounce(runtime, el, arg);
-              clearTimeout(timeout);
-              timeout = setTimeout(() => {
+              const wait = resolveDebounce(runtime, el, arg);
+              const map = getTimerMap(el);
+              const existing = map.get("debounce");
+              if (existing)
+                clearTimeout(existing.timer);
+              const runner = () => {
+                map.delete("debounce");
                 resolve(typeof payload === "function" ? payload(...args) : payload);
-              }, wait2);
+              };
+              const timer = setTimeout(runner, wait);
+              map.set("debounce", { timer, fn: runner });
             });
           };
         }
