@@ -8131,24 +8131,23 @@ ${match}</ul>
 }
 
 .scrollbar-track-v {
-  position: absolute;
+  position: sticky;
   inset-block-start: 0;
   inset-inline-end: 0.125rem;
-  width: var(--scrollbar-width, 0.375rem);
+  float: inline-end;
+  width: 0;
   height: 0;
   overflow: visible;
   contain: size layout paint;
   pointer-events: none;
   z-index: 50;
-  background: var(--scrollbar-track, transparent);
-  border-radius: var(--scrollbar-track-radius, 9999px);
 }
 
 .scrollbar-thumb-v {
   position: absolute;
   inset-block-start: 0;
-  inset-inline-start: 0;
-  width: 100%;
+  inset-inline-end: 0.125rem;
+  width: var(--scrollbar-width, 0.375rem);
   background-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent));
   border-radius: var(--scrollbar-thumb-radius, 9999px);
   opacity: 0;
@@ -8159,8 +8158,8 @@ ${match}</ul>
 }
 
 .scrollbar-track-h {
-  position: absolute;
-  inset-block-start: 0;
+  position: sticky;
+  inset-block-start: 100%;
   inset-inline-start: 0;
   width: 0;
   height: 0;
@@ -8168,8 +8167,6 @@ ${match}</ul>
   contain: size layout paint;
   pointer-events: none;
   z-index: 50;
-  background: var(--scrollbar-track, transparent);
-  border-radius: var(--scrollbar-track-radius, 9999px);
 }
 
 .scrollbar-thumb-h {
