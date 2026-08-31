@@ -11429,30 +11429,89 @@ ${match}</ul>
     default: () => hold_default,
     holdModifier: () => holdModifier
   });
+  function getHoldMap(el) {
+    let map = el[TIMER_MAP_KEY];
+    if (!map) {
+      map = /* @__PURE__ */ new Map();
+      el[TIMER_MAP_KEY] = map;
+    }
+    return map;
+  }
+  function parseCommandArg3(arg) {
+    if (!arg)
+      return {};
+    const trimmed = arg.trim();
+    const match = trimmed.match(/^cancel(?:\((.*)\))?$/i);
+    if (match) {
+      return {
+        command: "cancel",
+        targetSelector: match[1]?.trim()
+      };
+    }
+    return {};
+  }
   var holdModifier, hold_default;
   var init_hold = __esm({
     "src/modules/modifiers/hold.ts"() {
+      init_consts();
+      init_selector();
       holdModifier = {
         name: "hold",
-        handle: (payload, _el, arg, _runtime) => {
+        handle: (payload, el, arg, _runtime) => {
+          const cmd = parseCommandArg3(arg);
+          if (cmd.command === "cancel") {
+            if (typeof payload === "function") {
+              return (e) => {
+                const targets = resolveTargetElements(el, cmd.targetSelector);
+                targets.forEach((target) => {
+                  const map = getHoldMap(target);
+                  const rec = map.get("hold");
+                  if (rec && rec.cleanup) {
+                    rec.cleanup();
+                    map.delete("hold");
+                  }
+                });
+                return payload(e);
+              };
+            }
+            return (...args) => {
+              const targets = resolveTargetElements(el, cmd.targetSelector);
+              targets.forEach((target) => {
+                const map = getHoldMap(target);
+                const rec = map.get("hold");
+                if (rec && rec.cleanup) {
+                  rec.cleanup();
+                  map.delete("hold");
+                }
+              });
+              return typeof payload === "function" ? payload(...args) : payload;
+            };
+          }
           const wait = parseInt(arg, 10) || 500;
           if (typeof payload === "function") {
             return (e) => {
-              let timer = setTimeout(() => {
-                cleanup();
-                payload(e);
-              }, wait);
+              const map = getHoldMap(el);
+              const existing = map.get("hold");
+              if (existing && existing.cleanup)
+                existing.cleanup();
+              let timer = null;
               const cleanup = () => {
                 if (timer) {
                   clearTimeout(timer);
                   timer = null;
                 }
+                map.delete("hold");
                 window.removeEventListener("pointerup", cleanup);
                 window.removeEventListener("pointercancel", cleanup);
                 window.removeEventListener("pointerleave", cleanup);
                 window.removeEventListener("touchend", cleanup);
                 window.removeEventListener("touchcancel", cleanup);
               };
+              timer = setTimeout(() => {
+                cleanup();
+                payload(e);
+              }, wait);
+              map.set("hold", { timer, cleanup });
               window.addEventListener("pointerup", cleanup, { once: true });
               window.addEventListener("pointercancel", cleanup, { once: true });
               window.addEventListener("pointerleave", cleanup, { once: true });
@@ -11726,7 +11785,7 @@ ${match}</ul>
     }
     return map;
   }
-  function parseCommandArg3(arg) {
+  function parseCommandArg4(arg) {
     if (!arg)
       return {};
     const trimmed = arg.trim();
@@ -11757,7 +11816,7 @@ ${match}</ul>
       throttleModifier = {
         name: "throttle",
         handle: (payload, el, arg, runtime) => {
-          const cmd = parseCommandArg3(arg);
+          const cmd = parseCommandArg4(arg);
           if (cmd.command === "cancel" || cmd.command === "reset") {
             if (typeof payload === "function") {
               return (e) => {
