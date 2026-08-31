@@ -610,9 +610,8 @@
     </template>
 
     <!-- ================= 2. Middle Content Section (Scrollable) ================= -->
-    <main class="sidebar-content flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
-      data-signal="{
-        categories: ['General', 'Profiles', 'System']
+    <main class="sidebar-content flex-1 min-h-0 overflow-y-auto overflow-x-hidden" data-signal="{
+        categories: ['Apps', 'Profiles', 'System']
       }">
       <!-- Main Navigation Menu (tab 1) -->
       <div data-show="activeSidebarTab === 1" class="w-full">
@@ -667,8 +666,7 @@
             <!-- Category Title (fades on collapse) -->
             <li class="menu-title transition-opacity duration-300"
               data-class="{ 'opacity-0': collapsed && !hovered && !sidebarOpen }"
-              data-show="(router.pages || []).some(p => p.category === cat)"
-              data-bind="cat">Title
+              data-show="(router.pages || []).some(p => p.category === cat)" data-bind="cat">Title
             </li>
             <li class="mx-0 -mt-1" data-show="(router.pages || []).some(p => p.category === cat)"></li>
 
