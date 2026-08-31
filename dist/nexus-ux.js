@@ -33,7 +33,7 @@ var UX = (() => {
         INTENT: "-",
         PATH: ".",
         GLOBAL: "#",
-        MODIFIER: ":",
+        MODIFIER: "_",
         LOGIC: "$",
         RULE: "@",
         CONTEXT: "&",

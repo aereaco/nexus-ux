@@ -37,7 +37,7 @@ export const NEG_TOKENS = {
   INTENT: '-',
   PATH: '.',
   GLOBAL: '#',
-  MODIFIER: ':',
+  MODIFIER: '_',
   LOGIC: '$',
   RULE: '@',
   CONTEXT: '&',
