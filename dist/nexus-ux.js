@@ -6908,9 +6908,9 @@ ${match}</ul>
                       tabIcon: finalIcon || "",
                       path: compPath,
                       parent,
-                      category: category || "General",
+                      category: category || void 0,
                       children: children.length > 0 ? children : void 0,
-                      meta: { title: finalTitle, icon: finalIcon, order, parent, category }
+                      meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || void 0 }
                     });
                     const existing = state.routes.find((r) => r.path === href);
                     if (!existing) {
@@ -6918,7 +6918,7 @@ ${match}</ul>
                         path: href,
                         component: compPath,
                         name: cleanName,
-                        meta: { title: finalTitle, icon: finalIcon, order, parent, category }
+                        meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || void 0 }
                       });
                     }
                   }
