@@ -6174,7 +6174,17 @@ ${match}</ul>
             const targetModifiers = /* @__PURE__ */ new Set(["window", "document", "outside"]);
             const optionModifiers = /* @__PURE__ */ new Set(["passive", "capture"]);
             modifiers.forEach((mod) => {
-              const [modName, fullArg] = mod.includes("-") ? [mod.slice(0, mod.indexOf("-")), mod.slice(mod.indexOf("-") + 1)] : [mod, ""];
+              const dotIdx = mod.indexOf(".");
+              const dashIdx = mod.indexOf("-");
+              let modName = mod;
+              let fullArg = "";
+              if (dotIdx !== -1) {
+                modName = mod.slice(0, dotIdx);
+                fullArg = mod.slice(dotIdx + 1);
+              } else if (dashIdx !== -1) {
+                modName = mod.slice(0, dashIdx);
+                fullArg = mod.slice(dashIdx + 1);
+              }
               if (targetModifiers.has(modName)) {
                 if (modName === "window")
                   target = window;
