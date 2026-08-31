@@ -373,9 +373,8 @@ class OverlayScrollbarInstance {
       const thumbLeft = maxScrollLeft > 0 ? (absScrollLeft / maxScrollLeft) * maxThumbLeft : 0;
 
       const thumbX = isRTL ? (scrollLeft - thumbLeft) : (scrollLeft + thumbLeft);
-      const thumbY = scrollTop + clientHeight - (this.thumbH!.offsetHeight || 6) - 2;
       this.thumbH!.style.width = `${thumbWidth}px`;
-      this.thumbH!.style.transform = `translate3d(${thumbX}px, ${thumbY}px, 0)`;
+      this.thumbH!.style.transform = `translate3d(${thumbX}px, 0, 0)`;
     } else {
       if (this.trackH) this.trackH.style.display = 'none';
     }
