@@ -349,15 +349,15 @@ class OverlayScrollbarInstance {
     // Vertical Update
     if (s.overflowY !== 'hidden' && (s.overflowY === 'auto' || s.overflowY === 'scroll') && scrollHeight > clientHeight && clientHeight > 0) {
       this.trackV!.style.display = 'block';
-      this.trackV!.style.transform = 'none';
 
       const thumbHeight = Math.max(24, (clientHeight / scrollHeight) * clientHeight);
       const maxScrollTop = scrollHeight - clientHeight;
       const maxThumbTop = clientHeight - thumbHeight;
       const thumbTop = maxScrollTop > 0 ? (scrollTop / maxScrollTop) * maxThumbTop : 0;
 
+      const thumbY = scrollTop + thumbTop;
       this.thumbV!.style.height = `${thumbHeight}px`;
-      this.thumbV!.style.transform = `translate3d(0, ${thumbTop}px, 0)`;
+      this.thumbV!.style.transform = `translate3d(0, ${thumbY}px, 0)`;
     } else {
       if (this.trackV) this.trackV.style.display = 'none';
     }
@@ -365,7 +365,6 @@ class OverlayScrollbarInstance {
     // Horizontal Update
     if (s.overflowX !== 'hidden' && (s.overflowX === 'auto' || s.overflowX === 'scroll') && scrollWidth > clientWidth && clientWidth > 0) {
       this.trackH!.style.display = 'block';
-      this.trackH!.style.transform = 'none';
 
       const thumbWidth = Math.max(24, (clientWidth / scrollWidth) * clientWidth);
       const maxScrollLeft = scrollWidth - clientWidth;
@@ -373,8 +372,10 @@ class OverlayScrollbarInstance {
       const absScrollLeft = Math.abs(scrollLeft);
       const thumbLeft = maxScrollLeft > 0 ? (absScrollLeft / maxScrollLeft) * maxThumbLeft : 0;
 
+      const thumbX = isRTL ? (scrollLeft - thumbLeft) : (scrollLeft + thumbLeft);
+      const thumbY = scrollTop + clientHeight - (this.thumbH!.offsetHeight || 6) - 2;
       this.thumbH!.style.width = `${thumbWidth}px`;
-      this.thumbH!.style.transform = `translate3d(${isRTL ? -thumbLeft : thumbLeft}px, 0, 0)`;
+      this.thumbH!.style.transform = `translate3d(${thumbX}px, ${thumbY}px, 0)`;
     } else {
       if (this.trackH) this.trackH.style.display = 'none';
     }
