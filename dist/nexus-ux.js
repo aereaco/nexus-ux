@@ -8302,8 +8302,7 @@ ${match}</ul>
           }
           if (s.overflowY !== "hidden" && (s.overflowY === "auto" || s.overflowY === "scroll") && scrollHeight > clientHeight && clientHeight > 0) {
             this.trackV.style.display = "block";
-            this.trackV.style.transform = `translate3d(0, ${scrollTop}px, 0)`;
-            this.trackV.style.height = "0px";
+            this.trackV.style.transform = "none";
             const thumbHeight = Math.max(24, clientHeight / scrollHeight * clientHeight);
             const maxScrollTop = scrollHeight - clientHeight;
             const maxThumbTop = clientHeight - thumbHeight;
@@ -8316,10 +8315,7 @@ ${match}</ul>
           }
           if (s.overflowX !== "hidden" && (s.overflowX === "auto" || s.overflowX === "scroll") && scrollWidth > clientWidth && clientWidth > 0) {
             this.trackH.style.display = "block";
-            const trackHeight = 8;
-            this.trackH.style.transform = `translate3d(${scrollLeft}px, ${scrollTop + clientHeight - trackHeight}px, 0)`;
-            this.trackH.style.width = "0px";
-            this.trackH.style.height = "0px";
+            this.trackH.style.transform = "none";
             const thumbWidth = Math.max(24, clientWidth / scrollWidth * clientWidth);
             const maxScrollLeft = scrollWidth - clientWidth;
             const maxThumbLeft = clientWidth - thumbWidth;
