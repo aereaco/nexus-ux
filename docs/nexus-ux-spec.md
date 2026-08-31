@@ -775,7 +775,7 @@ directive catalog:
 
 - **`data-drag`**: Drag & Drop Engine — full-featured interactive drag-and-drop supporting sorting, shared groups (`data-drag-group`), element cloning, handle constraints (`data-drag-handle`), multi-drag selection (`data-drag-multi`), swap thresholds, auto-scrolling, and packed CSS classes (`.draggable-ghost`, `.draggable-drag`, `.drop-target-before/after`).
 - **`data-flow`**: Spatial Canvas & Flow Layout — orchestrates a virtual interactive canvas with pan and zoom controls, coordinate mapping, and reactive spatial state `{ x, y, zoom }`.
-- **`data-on`**: Event Handlers — responds to user interactions with NEG pipeline modifiers (e.g. `data-on-click:once:prevent`, `data-on-input:debounce.200ms`).
+- **`data-on`**: Event Handlers — responds to user interactions with NEG pipeline modifiers (e.g. `data-on-click_once_prevent`, `data-on-input_debounce.200ms`).
 - **`data-raf`**: Animation Frame Scheduler — runs logic on every `requestAnimationFrame` tick with `$time` and `$delta` for 120fps smooth animations.
 
 #### 3.6.4. Styling, Themes & Adopted StyleSheets

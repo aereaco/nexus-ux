@@ -566,7 +566,7 @@ The flow engine exposes reactive spatial state `{ x, y, zoom, minZoom, maxZoom }
 
 ### 4.1. `data-on` — Event Handlers
 
-**Syntax**: `data-on-EVENT:MODIFIER="expression"`
+**Syntax**: `data-on-EVENT_MODIFIER="expression"`
 
 Binds native and custom DOM events to reactive expressions.
 
@@ -574,21 +574,21 @@ Binds native and custom DOM events to reactive expressions.
 
 | Modifier | Execution Role | Practical Example |
 | :--- | :--- | :--- |
-| **`:debounce.[ms]`** | Delays execution until silence threshold passes | `data-on-input:debounce.300ms="search()"` |
-| **`:throttle.[ms]`** | Limits execution frequency to rate interval | `data-on-scroll:throttle.100ms="checkPosition()"` |
-| **`:prevent`** | Calls `event.preventDefault()` | `data-on-submit:prevent="handleSubmit()"` |
-| **`:stop`** | Calls `event.stopPropagation()` | `data-on-click:stop="handleClick()"` |
-| **`:once`** | Executes handler only once then unbinds | `data-on-click:once="initAnalytics()"` |
-| **`:outside`** | Triggers when click occurs outside the element | `data-on-click:outside="dropdownOpen = false"` |
-| **`:self`** | Triggers only if `event.target === $el` | `data-on-click:self="closeModal()"` |
-| **`:window`** | Attaches event listener to `window` | `data-on-keydown:window="handleKey($event)"` |
-| **`:document`** | Attaches event listener to `document` | `data-on-visibilitychange:document="handleVisibility()"` |
-| **`:keys.[key]`** | Filters keydown events to specific key combinations | `data-on-keydown:keys.enter="submit()"` |
-| **`:hold.[ms]`** | Triggers upon continuous press-and-hold | `data-on-pointerdown:hold.500ms="showContextMenu()"` |
-| **`:delay.[ms]`** | Delays event handler execution | `data-on-mouseenter:delay.200ms="showTooltip()"` |
-| **`:morph`** | Morphs asynchronous response into DOM | `data-on-click:morph="fetchNewCard()"` |
-| **`:drag`** | Augments drag events with delta math | `data-on-pointermove:drag="updatePosition($event)"` |
-| **`:zoom`** | Augments wheel events with zoom factor | `data-on-wheel:zoom="handleZoom($event)"` |
+| **`_debounce.[ms]`** | Delays execution until silence threshold passes | `data-on-input_debounce.300ms="search()"` |
+| **`_throttle.[ms]`** | Limits execution frequency to rate interval | `data-on-scroll_throttle.100ms="checkPosition()"` |
+| **`_prevent`** | Calls `event.preventDefault()` | `data-on-submit_prevent="handleSubmit()"` |
+| **`_stop`** | Calls `event.stopPropagation()` | `data-on-click_stop="handleClick()"` |
+| **`_once`** | Executes handler only once then unbinds | `data-on-click_once="initAnalytics()"` |
+| **`_outside`** | Triggers when click occurs outside the element | `data-on-click_outside="dropdownOpen = false"` |
+| **`_self`** | Triggers only if `event.target === $el` | `data-on-click_self="closeModal()"` |
+| **`_window`** | Attaches event listener to `window` | `data-on-keydown_window="handleKey($event)"` |
+| **`_document`** | Attaches event listener to `document` | `data-on-visibilitychange_document="handleVisibility()"` |
+| **`_keys.[key]`** | Filters keydown events to specific key combinations | `data-on-keydown_keys.enter="submit()"` |
+| **`_hold.[ms]`** | Triggers upon continuous press-and-hold | `data-on-pointerdown_hold.500ms="showContextMenu()"` |
+| **`_delay.[ms]`** | Delays event handler execution | `data-on-mouseenter_delay.200ms="showTooltip()"` |
+| **`_morph`** | Morphs asynchronous response into DOM | `data-on-click_morph="fetchNewCard()"` |
+| **`_drag`** | Augments drag events with delta math | `data-on-pointermove_drag="updatePosition($event)"` |
+| **`_zoom`** | Augments wheel events with zoom factor | `data-on-wheel_zoom="handleZoom($event)"` |
 
 ---
 
