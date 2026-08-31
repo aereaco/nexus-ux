@@ -13,10 +13,10 @@
       themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset']
     }"
   data-class="{ 'md:grid-cols-[20rem_1fr]': !collapsed, 'md:grid-cols-[4rem_1fr]': collapsed, 'h-screen max-h-screen overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }"
-  data-on-resize:window="isMobile = window.innerWidth < 768">
+  data-on-resize_window="isMobile = window.innerWidth < 768">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content flex flex-col"
-    data-class="{ 'h-full overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }" data-signal:global="{
+    data-class="{ 'h-full overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }" data-signal_global="{
         ctxMenu: null,
         ctxMenuItems: [],
         favorites: localStorage.favorites ?? [],
@@ -342,7 +342,7 @@
         data-class="{'tab-active border-b border-primary text-primary': router.activePageTabId === tab.id }"
         data-on-click="router.switchPageTab(tab.id)"
         data-on-auxclick="if ($evt.button === 1) router.closePageTab(tab.id)"
-        data-on-contextmenu:prevent="openTabContextMenu(tab, $evt)">
+        data-on-contextmenu_prevent="openTabContextMenu(tab, $evt)">
         <iconify-icon icon="material-symbols-light:drag-indicator"
           class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
         <span data-show="tab.isLoading !== false" class="loading loading-spinner loading-xs text-primary me-2"></span>
@@ -353,14 +353,14 @@
           data-bind="tab.isLoading !== false ? 'Loading...' : (tab.meta?.title || 'Tab')"></span>
         <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close tab" title="Close tab"
           data-class="{ 'hidden': (router.pinnedPageTabs || []).includes(tab.id) }"
-          data-on-click:stop="router.closePageTab(tab.id)">
+          data-on-click_stop="router.closePageTab(tab.id)">
           <iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
         </button>
       </div>
     </template>
 
     <!-- TAB BAR -->
-    <div data-signal:global="{pageTabToggleHovered: false }" class="shrink-0 z-20"
+    <div data-signal_global="{pageTabToggleHovered: false }" class="shrink-0 z-20"
       data-class="{'hidden': !pageTabs, 'aura aura-dual text-secondary': pageTabToggleHovered }">
       <div class="card pe-2" data-class="{'bg-base-200': pageTabToggleHovered }">
         <div class="flex flex-nowrap bg-base-300/20 rounded-none overflow-x-auto pb-1 scrollbar-auto-hide"
@@ -380,7 +380,7 @@
 
     <!-- Floating Side Hover Expanding Tab | Breadcrumbs & Page Tabs Toggle (when floatingBookmarks is true) -->
     <div data-show="floatingBookmarks" class="absolute end-0 top-32 z-10" data-signal="{ hovered: false }"
-      data-on-mouseenter="hovered = true" data-on-mouseleave="hovered = false">
+      data-on-mouseenter_delay.150ms="hovered = true" data-on-mouseleave="hovered = false">
       <nav aria-label="Breadcrumb"
         class="flex items-center overflow-hidden rounded-ss-lg rounded-es-lg border border-base-content/10 bg-base-100 text-base-content transition-[max-width,width] duration-300 ease-in-out whitespace-nowrap shadow-sm"
         data-class="{ 'max-w-md w-auto shadow-2xl': hovered, 'max-w-12 w-12': !hovered }">
@@ -415,7 +415,7 @@
             <div class="tooltip z-100" data-tip="Toggle page tabs">
               <button class="btn btn-sm btn-ghost btn-circle"
                 data-class="{ 'btn-active text-primary bg-primary/10': pageTabs }"
-                data-on-mouseenter:delay.5000ms="pageTabToggleHovered = true"
+                data-on-mouseenter_delay.150ms="pageTabToggleHovered = true"
                 data-on-mouseleave="pageTabToggleHovered = false"
                 data-on-click="pageTabs = !pageTabs; localStorage.setItem('pageTabs', pageTabs)">
                 <iconify-icon icon="material-symbols-light:tab-group-outline" class="text-xl"></iconify-icon>
@@ -437,7 +437,7 @@
         <!-- Inline Header Bar with Breadcrumbs & Page Tabs Toggle (when floatingBookmarks is false) -->
         <div data-show="!floatingBookmarks"
           class="flex items-center gap-2 mb-4 max-w-full shrink-0 min-h-[2.5rem] overflow-x-auto overflow-y-hidden scrollbar-none py-1"
-          data-on-wheel:passive="if ($evt.deltaY) { $evt.currentTarget.scrollLeft += $evt.deltaY; }">
+          data-on-wheel_passive="if ($evt.deltaY) { $evt.currentTarget.scrollLeft += $evt.deltaY; }">
           <!-- 1. Page Tab Toggle Button at the START position -->
           <div class="tooltip tooltip-bottom shrink-0" data-tip="Toggle page tabs">
             <button class="btn btn-sm btn-ghost btn-circle"
@@ -517,7 +517,7 @@
           <iconify-icon icon="material-symbols-light:search" class="text-2xl opacity-60"></iconify-icon>
           <input type="text" class="input input-ghost w-full text-lg focus:outline-none border-0 focus:border-0 px-0"
             placeholder="Search Nexus-UX…" data-bind-value="searchQuery"
-            data-effect="if (searchOpen && $el) { $el.focus(); }" data-on-keydown:escape="searchOpen = false" />
+            data-effect="if (searchOpen && $el) { $el.focus(); }" data-on-keydown_escape="searchOpen = false" />
           <kbd class="kbd kbd-sm opacity-60 max-sm:hidden">Esc</kbd>
           <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close search" data-on-click="searchOpen = false">
             <iconify-icon icon="material-symbols-light:close" class="text-lg"></iconify-icon>
@@ -583,7 +583,7 @@
         <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
           data-bind-data-tab-title="item.tabTitle || item.title"
           data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-          data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, null, $evt)" data-bind="item.title">
+          data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, null, $evt)" data-bind="item.title">
         </a>
       </li>
 
@@ -594,7 +594,7 @@
           <a data-bind-href="item.href" draggable="false" class="grow whitespace-nowrap"
             data-bind-data-tab-title="item.tabTitle || item.title"
             data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-            data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, null, $evt)">
+            data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, null, $evt)">
             <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" class="whitespace-nowrap"
               data-bind="item.title"></span>
           </a>
@@ -632,7 +632,7 @@
                 data-bind-data-tab-title="item.tabTitle || item.title"
                 data-bind-data-tab-icon="item.tabIcon || item.icon"
                 data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-                data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
+                data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
                 <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
                 <span
                   class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
@@ -649,7 +649,7 @@
                   data-bind-data-tab-title="item.tabTitle || item.title"
                   data-bind-data-tab-icon="item.tabIcon || item.icon"
                   data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-                  data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
+                  data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
                   <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
                   <span
                     class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
@@ -694,7 +694,7 @@
                   data-bind-data-tab-title="item.tabTitle || item.title"
                   data-bind-data-tab-icon="item.tabIcon || item.icon"
                   data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-                  data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
+                  data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
                   <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
                   <span
                     class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
@@ -711,7 +711,7 @@
                     data-bind-data-tab-title="item.tabTitle || item.title"
                     data-bind-data-tab-icon="item.tabIcon || item.icon"
                     data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-                    data-on-contextmenu:prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
+                    data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
                     <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
                     <span
                       class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
@@ -762,7 +762,7 @@
                 <button type="button"
                   class="btn btn-ghost btn-xs btn-circle text-error opacity-0 group-hover:opacity-100 transition-opacity me-2"
                   title="Remove Favorite"
-                  data-on-click:stop="pendingDeleteId = fav.id || fav; $('#fav-delete-modal').showModal();">
+                  data-on-click_stop="pendingDeleteId = fav.id || fav; $('#fav-delete-modal').showModal();">
                   <iconify-icon icon="material-symbols-light:delete-outline" class="text-base"></iconify-icon>
                 </button>
               </li>
@@ -795,7 +795,7 @@
             </div>
 
             <!-- Theme Chooser Dropdown Trigger & Options List (DaisyUI 5: Native details/summary) -->
-            <details class="dropdown w-full relative" data-on-click:outside="$(this).removeAttribute('open')"
+            <details class="dropdown w-full relative" data-on-click_outside="$(this).removeAttribute('open')"
               data-on-toggle="if ($evt.target.open) { setTimeout(() => { const activeEl = $evt.target.querySelector('[data-active-option=true]'); activeEl?.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 50); }">
               <summary
                 class="btn btn-block bg-base-100 justify-between font-sans px-4 py-3 h-auto min-h-12 border border-base-content/10 shadow-sm list-none cursor-pointer"
@@ -1009,7 +1009,7 @@
     </ul>
 
     <!-- Add / Edit Favorite Modal -->
-    <dialog id="fav-modal" class="modal modal-bottom sm:modal-middle" data-on-keydown:escape="$('#fav-modal').close()">
+    <dialog id="fav-modal" class="modal modal-bottom sm:modal-middle" data-on-keydown_escape="$('#fav-modal').close()">
       <div class="modal-box bg-base-100 border border-base-content/10 shadow-2xl">
         <h3 class="font-bold text-lg flex items-center gap-2">
           <iconify-icon icon="material-symbols-light:star-outline" class="text-warning text-2xl"></iconify-icon>
@@ -1057,7 +1057,7 @@
 
     <!-- Delete Favorite Confirmation Modal -->
     <dialog id="fav-delete-modal" class="modal modal-bottom sm:modal-middle"
-      data-on-keydown:escape="$('#fav-delete-modal').close()">
+      data-on-keydown_escape="$('#fav-delete-modal').close()">
       <div class="modal-box bg-base-100 border border-base-content/10 shadow-2xl">
         <h3 class="font-bold text-lg text-error flex items-center gap-2">
           <iconify-icon icon="material-symbols-light:warning-outline" class="text-2xl"></iconify-icon>
