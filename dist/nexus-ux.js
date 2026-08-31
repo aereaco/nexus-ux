@@ -14018,12 +14018,16 @@ ${bridge}`, {
                       scopedRuntime = { ...this.runtimeContext };
                       let currentEvaluate = scopedRuntime.evaluate;
                       parsedAttr.modifiers.forEach((modFull) => {
+                        const dotIdx = modFull.indexOf(".");
+                        const dashIdx = modFull.indexOf("-");
                         let modName = modFull;
                         let modArg = "";
-                        const dashIdx = modFull.indexOf("-");
-                        if (dashIdx !== -1) {
-                          modName = modFull.substring(0, dashIdx);
-                          modArg = modFull.substring(dashIdx + 1);
+                        if (dotIdx !== -1) {
+                          modName = modFull.slice(0, dotIdx);
+                          modArg = modFull.slice(dotIdx + 1);
+                        } else if (dashIdx !== -1) {
+                          modName = modFull.slice(0, dashIdx);
+                          modArg = modFull.slice(dashIdx + 1);
                         }
                         const modModule = this.modifierModules.get(modName);
                         if (modModule && typeof modModule.interceptPipeline === "function") {
