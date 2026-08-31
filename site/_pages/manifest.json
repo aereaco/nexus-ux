@@ -117,7 +117,7 @@
     "icon": "material-symbols-light:group-outline",
     "order": 4,
     "parent": null,
-    "category": "Profiles"
+    "category": "System"
   },
   {
     "id": "settings",
