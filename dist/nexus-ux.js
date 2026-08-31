@@ -8102,7 +8102,8 @@ ${match}</ul>
 .overflow-scroll,
 .overflow-y-scroll,
 .overflow-x-scroll,
-[data-scrollbar] {
+[data-scrollbar],
+.scrollbar-overlay-active {
   scrollbar-width: none !important;
 }
 
@@ -8112,7 +8113,8 @@ ${match}</ul>
 .overflow-scroll::-webkit-scrollbar,
 .overflow-y-scroll::-webkit-scrollbar,
 .overflow-x-scroll::-webkit-scrollbar,
-[data-scrollbar]::-webkit-scrollbar {
+[data-scrollbar]::-webkit-scrollbar,
+.scrollbar-overlay-active::-webkit-scrollbar {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
@@ -8121,24 +8123,14 @@ ${match}</ul>
 /* ==========================================================================
    1. OVERLAY SCROLLBAR SPRITE STYLES (Modern CSS Logical Properties & rem Units)
    ========================================================================== */
-.scrollbar-overlay-active {
-  scrollbar-width: none !important;
-}
-.scrollbar-overlay-active::-webkit-scrollbar {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-}
-
 .scrollbar-track-v {
   position: sticky;
   inset-block-start: 0;
   inset-inline-end: 0.125rem;
   float: inline-end;
-  width: 0;
+  width: var(--scrollbar-width, 0.375rem);
   height: 0;
   overflow: visible;
-  contain: size layout paint;
   pointer-events: none;
   z-index: 50;
 }
@@ -8146,8 +8138,8 @@ ${match}</ul>
 .scrollbar-thumb-v {
   position: absolute;
   inset-block-start: 0;
-  inset-inline-end: 0.125rem;
-  width: var(--scrollbar-width, 0.375rem);
+  inset-inline-start: 0;
+  width: 100%;
   background-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent));
   border-radius: var(--scrollbar-thumb-radius, 9999px);
   opacity: 0;
@@ -8164,16 +8156,15 @@ ${match}</ul>
   width: 0;
   height: 0;
   overflow: visible;
-  contain: size layout paint;
   pointer-events: none;
   z-index: 50;
 }
 
 .scrollbar-thumb-h {
   position: absolute;
-  inset-block-start: 0;
+  inset-block-start: calc(-1 * var(--scrollbar-height, 0.375rem) - 0.125rem);
   inset-inline-start: 0;
-  height: 100%;
+  height: var(--scrollbar-height, 0.375rem);
   background-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent));
   border-radius: var(--scrollbar-thumb-radius, 9999px);
   opacity: 0;
