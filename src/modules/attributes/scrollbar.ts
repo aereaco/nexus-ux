@@ -97,10 +97,10 @@ const SCROLLBAR_BASE_CSS = `
 
 .scrollbar-track-h {
   position: absolute;
-  inset-block-start: 0;
+  inset-block-end: 0.125rem;
   inset-inline-start: 0;
   width: 0;
-  height: 0;
+  height: var(--scrollbar-height, 0.375rem);
   overflow: visible;
   pointer-events: none;
   z-index: 50;
@@ -110,7 +110,7 @@ const SCROLLBAR_BASE_CSS = `
   position: absolute;
   inset-block-start: 0;
   inset-inline-start: 0;
-  height: var(--scrollbar-height, 0.375rem);
+  height: 100%;
   background-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent));
   border-radius: var(--scrollbar-thumb-radius, 9999px);
   opacity: 0;
