@@ -11718,6 +11718,27 @@ ${match}</ul>
     default: () => throttle_default,
     throttleModifier: () => throttleModifier
   });
+  function getThrottleMap(el) {
+    let map = el[TIMER_MAP_KEY];
+    if (!map) {
+      map = /* @__PURE__ */ new Map();
+      el[TIMER_MAP_KEY] = map;
+    }
+    return map;
+  }
+  function parseCommandArg3(arg) {
+    if (!arg)
+      return {};
+    const trimmed = arg.trim();
+    const match = trimmed.match(/^(cancel|reset)(?:\((.*)\))?$/i);
+    if (match) {
+      return {
+        command: match[1].toLowerCase(),
+        targetSelector: match[2]?.trim()
+      };
+    }
+    return {};
+  }
   function resolveThrottle(runtime, el, arg) {
     if (!arg)
       return DEFAULT_THROTTLE_TIME;
@@ -11732,26 +11753,52 @@ ${match}</ul>
   var init_throttle = __esm({
     "src/modules/modifiers/throttle.ts"() {
       init_consts();
+      init_selector();
       throttleModifier = {
         name: "throttle",
         handle: (payload, el, arg, runtime) => {
-          const wait = resolveThrottle(runtime, el, arg);
-          let last = 0;
+          const cmd = parseCommandArg3(arg);
+          if (cmd.command === "cancel" || cmd.command === "reset") {
+            if (typeof payload === "function") {
+              return (e) => {
+                const targets = resolveTargetElements(el, cmd.targetSelector);
+                targets.forEach((target) => {
+                  const map = getThrottleMap(target);
+                  map.delete("throttle");
+                });
+                return payload(e);
+              };
+            }
+            return (...args) => {
+              const targets = resolveTargetElements(el, cmd.targetSelector);
+              targets.forEach((target) => {
+                const map = getThrottleMap(target);
+                map.delete("throttle");
+              });
+              return typeof payload === "function" ? payload(...args) : payload;
+            };
+          }
           if (typeof payload === "function") {
             return (e) => {
-              const wait2 = resolveThrottle(runtime, el, arg);
+              const wait = resolveThrottle(runtime, el, arg);
+              const map = getThrottleMap(el);
+              const rec = map.get("throttle") || { last: 0 };
               const now = performance.now();
-              if (now - last > wait2) {
-                last = now;
+              if (now - rec.last > wait) {
+                rec.last = now;
+                map.set("throttle", rec);
                 return payload(e);
               }
             };
           }
           return (...args) => {
-            const wait2 = resolveThrottle(runtime, el, arg);
+            const wait = resolveThrottle(runtime, el, arg);
+            const map = getThrottleMap(el);
+            const rec = map.get("throttle") || { last: 0 };
             const now = performance.now();
-            if (now - last > wait2) {
-              last = now;
+            if (now - rec.last > wait) {
+              rec.last = now;
+              map.set("throttle", rec);
               return typeof payload === "function" ? payload(...args) : payload;
             }
           };
