@@ -178,3 +178,19 @@ function createReactiveElementProxy(el: HTMLElement): any {
     }
   });
 }
+
+/**
+ * Resolves one or more raw HTMLElements from a context element and optional selector.
+ * Reuses resolveSelector to support combinators (^, ~, +, -, >) and standard CSS queries.
+ */
+export function resolveTargetElements(contextEl: HTMLElement, selector?: string): HTMLElement[] {
+  if (!selector || !selector.trim()) return [contextEl];
+  const clean = selector.trim();
+  const res = resolveSelector(contextEl, clean);
+  if (!res) return [];
+  if (Array.isArray(res)) {
+    return res.map(item => (item && typeof item === 'object' && item.nodeType ? item : (item?.$el || item))).filter(Boolean) as HTMLElement[];
+  }
+  const raw = (res as any)?.$el || res;
+  return raw && raw.nodeType ? [raw as HTMLElement] : [];
+}

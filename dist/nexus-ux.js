@@ -3507,7 +3507,8 @@ ${scripts}
   // src/modules/sprites/selector.ts
   var selector_exports = {};
   __export(selector_exports, {
-    resolveSelector: () => resolveSelector
+    resolveSelector: () => resolveSelector,
+    resolveTargetElements: () => resolveTargetElements
   });
   function resolveSelector(contextEl, selector) {
     if (!selector)
@@ -3646,6 +3647,19 @@ ${scripts}
         return true;
       }
     });
+  }
+  function resolveTargetElements(contextEl, selector) {
+    if (!selector || !selector.trim())
+      return [contextEl];
+    const clean = selector.trim();
+    const res = resolveSelector(contextEl, clean);
+    if (!res)
+      return [];
+    if (Array.isArray(res)) {
+      return res.map((item) => item && typeof item === "object" && item.nodeType ? item : item?.$el || item).filter(Boolean);
+    }
+    const raw = res?.$el || res;
+    return raw && raw.nodeType ? [raw] : [];
   }
   var init_selector = __esm({
     "src/modules/sprites/selector.ts"() {
