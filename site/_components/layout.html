@@ -415,7 +415,7 @@
             <div class="tooltip z-100" data-tip="Toggle page tabs">
               <button class="btn btn-sm btn-ghost btn-circle"
                 data-class="{ 'btn-active text-primary bg-primary/10': pageTabs }"
-                data-on-mouseenter_debounce.5000ms="pageTabToggleHovered = true"
+                data-on-mouseenter_debounce.2000ms="pageTabToggleHovered = true"
                 data-on-mouseleave="pageTabToggleHovered = false"
                 data-on-click="pageTabs = !pageTabs; localStorage.setItem('pageTabs', pageTabs)">
                 <iconify-icon icon="material-symbols-light:tab-group-outline" class="text-xl"></iconify-icon>
