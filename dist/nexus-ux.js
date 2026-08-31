@@ -8135,6 +8135,9 @@ ${match}</ul>
   inset-block-start: 0;
   inset-inline-end: 0.125rem;
   width: var(--scrollbar-width, 0.375rem);
+  height: 0;
+  overflow: visible;
+  contain: size layout paint;
   pointer-events: none;
   z-index: 50;
   background: var(--scrollbar-track, transparent);
@@ -8159,7 +8162,10 @@ ${match}</ul>
   position: absolute;
   inset-block-start: 0;
   inset-inline-start: 0;
-  height: var(--scrollbar-height, 0.375rem);
+  width: 0;
+  height: 0;
+  overflow: visible;
+  contain: size layout paint;
   pointer-events: none;
   z-index: 50;
   background: var(--scrollbar-track, transparent);
