@@ -360,13 +360,9 @@
     </template>
 
     <!-- TAB BAR -->
-    <div data-signal_global="{pageTabToggleHovered: false }" class="shrink-0 z-20 relative"
-      data-class="{'hidden': !pageTabs}">
-      <!-- Smooth Aura Expansion & Glow Layer -->
-      <div class="absolute -inset-1 rounded-box aura aura-dual text-secondary pointer-events-none transition-all duration-500 ease-out -z-10"
-        data-class="{ 'opacity-100 scale-100': pageTabToggleHovered, 'opacity-0 scale-95': !pageTabToggleHovered }">
-      </div>
-      <div class="card pe-2 transition-colors duration-500" data-class="{'bg-base-200': pageTabToggleHovered }">
+    <div data-signal_global="{pageTabToggleHovered: false }" class="shrink-0 z-20 transition-all duration-300 ease-in-out"
+      data-class="{'hidden': !pageTabs, 'aura aura-dual text-secondary': pageTabToggleHovered }">
+      <div class="card pe-2 transition-all duration-300 ease-in-out" data-class="{'bg-base-200': pageTabToggleHovered }">
         <div class="flex flex-nowrap bg-base-300/20 rounded-none overflow-x-auto pb-1 scrollbar-auto-hide"
           role="tablist" aria-orientation="horizontal" data-drag-container="router.pageTabs" data-drag-group="pageTabs"
           data-drag-direction="horizontal">
