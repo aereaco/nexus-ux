@@ -781,16 +781,17 @@
         <div data-drag-container="categories">
           <template data-for="cat in categories" data-key="cat">
             <div data-drag data-show="(cat === 'Apps' ? appsPages : cat === 'Profiles' ? profilesPages : systemPages).length > 0">
-              <!-- Category Title (fades and collapses smoothly on collapse) -->
-              <div
-                class="menu-title overflow-hidden transition-[opacity,max-height,margin,padding] duration-300 ease-in-out cursor-grab px-4"
-                data-class="{ 'max-h-0 opacity-0 !my-0 !py-0 pointer-events-none': collapsed && !hovered && !sidebarOpen, 'max-h-12 opacity-100 mt-4': !collapsed || hovered || sidebarOpen }"
-                data-show="(cat === 'Apps' ? appsPages : cat === 'Profiles' ? profilesPages : systemPages).length > 0"
-                data-bind="cat">Title
-              </div>
-              <div class="h-px bg-base-content/10 mx-4 my-1 transition-opacity duration-300"
-                data-class="{ 'opacity-0': collapsed && !hovered && !sidebarOpen, 'opacity-100': !collapsed || hovered || sidebarOpen }"
-                data-show="(cat === 'Apps' ? appsPages : cat === 'Profiles' ? profilesPages : systemPages).length > 0"></div>
+              <!-- Category Header (Title + Separator Line) -->
+              <ul class="menu w-full py-0">
+                <li
+                  class="menu-title overflow-hidden transition-[opacity,max-height,margin,padding] duration-300 ease-in-out cursor-grab"
+                  data-class="{ 'max-h-0 opacity-0 !my-0 !py-0 pointer-events-none': collapsed && !hovered && !sidebarOpen, 'max-h-12 opacity-100 mt-4': !collapsed || hovered || sidebarOpen }"
+                  data-show="(cat === 'Apps' ? appsPages : cat === 'Profiles' ? profilesPages : systemPages).length > 0"
+                  data-bind="cat">Title
+                </li>
+                <li class="w-full mx-0" data-class="{ 'opacity-6': collapsed && !hovered && !sidebarOpen }"
+                  data-show="(cat === 'Apps' ? appsPages : cat === 'Profiles' ? profilesPages : systemPages).length > 0"></li>
+              </ul>
 
               <!-- Apps List -->
               <template data-if="cat === 'Apps'">
