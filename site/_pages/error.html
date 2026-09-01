@@ -1,17 +1,15 @@
 <head>
   <title>Error</title>
-  <meta name="route" content="">
-  <meta name="internal" content="true">
+  <meta name="route" content="/error">
   <meta name="icon" content="material-symbols-light:error-outline">
 </head>
 
 <!-- Single error-handling page for ALL errors — 404 and 5xx alike.
      There is no separate 404 page: `router.errorCode` carries the code
      ('404' for not-found, '500'/'502'/'503'/'504'… for server
-     errors) and this one page switches its icon/title/copy by code.
-     `pagesDir` is declared in data-router; nothing is hardcoded. -->
-<div class="flex flex-col items-center justify-center min-h-dvh gap-4 text-center p-8"
-     data-signal="{ code: (#router.errorCode || '404') }">
+     errors) and this one page switches its icon/title/copy by code. -->
+<div class="flex flex-col items-center justify-center min-h-[60vh] gap-4 text-center p-8"
+     data-signal="{ code: (router.errorCode || '404') }">
   <iconify-icon
     data-bind-icon="code === '404' ? 'material-symbols-light:search-check-outline' :
                    (code === '503' ? 'material-symbols-light:hourglass-top-outline' :

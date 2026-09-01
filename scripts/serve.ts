@@ -272,6 +272,7 @@ async function handler(req: Request): Promise<Response> {
       staticRes.headers.set("Cross-Origin-Embedder-Policy", "require-corp");
       return staticRes;
     }
+    return new Response("404 Not Found", { status: 404, headers: { "Content-Type": "text/plain" } });
   }
 
   // C. Route Rendering according to active mode

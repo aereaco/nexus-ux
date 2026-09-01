@@ -130,20 +130,19 @@
     "category": "System"
   },
   {
+    "id": "error",
+    "route": "/error",
+    "path": "/_pages/error.html",
+    "title": "Error",
+    "icon": "material-symbols-light:error-outline",
+    "parent": null
+  },
+  {
     "id": "admin",
     "route": "",
     "path": "/_internal/admin-console.html",
     "title": "Admin Console",
     "icon": "material-symbols-light:shield-lock",
-    "internal": true,
-    "parent": null
-  },
-  {
-    "id": "error",
-    "route": "",
-    "path": "/_internal/error.html",
-    "title": "Error",
-    "icon": "material-symbols-light:error-outline",
     "internal": true,
     "parent": null
   }

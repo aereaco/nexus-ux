@@ -331,6 +331,10 @@ const componentModule: AttributeModule = {
               html = typeof result === 'string' ? result : String(result);
             }
 
+            if (html.includes('<!DOCTYPE') || (html.includes('data-init') && el.tagName.toLowerCase() !== 'html')) {
+              throw new Error(`Invalid component fragment returned for "${targetPath}": received full HTML shell.`);
+            }
+
             if (runtime.isDevMode) {
               console.log(`[Component] Template loaded for <${el.tagName}>, length: ${html.length}`);
             }

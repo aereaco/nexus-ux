@@ -572,6 +572,11 @@ export const routerAttributeModule: AttributeModule = {
         return applyBase(full);
       };
 
+      const isAllowedStaticCandidate = (candidate: string, path: string): boolean => {
+        if (!candidate || path.includes('..') || candidate.includes('..')) return false;
+        return true;
+      };
+
       // Build a RouteInfo snapshot for hook consumers and matchers.
       const buildInfo = (
         route: RouteRecord | null,
@@ -1528,8 +1533,11 @@ export const routerAttributeModule: AttributeModule = {
           const isDirectAddressBarNav = !suppressNavIntercept && typeof globalThis.location !== 'undefined' &&
             stripBase(globalThis.location.pathname) === matched.path;
           if (isDirectAddressBarNav) {
-            state.navigate('/error', { replace: true });
-            return;
+            state.errorCode = 404;
+            staticComponent = errorPage;
+            if (typeof globalThis.history !== 'undefined') {
+              try { globalThis.history.replaceState(null, '', applyBase(cleanErrorPath)); } catch {}
+            }
           }
         }
 
@@ -1594,20 +1602,32 @@ export const routerAttributeModule: AttributeModule = {
               
               if (!exists) {
                 state.errorCode = 404;
-                state.navigate(cleanErrorPath, { replace: true });
-                return;
+                path = cleanErrorPath;
+                matched = routeList.find((r) => r.path === cleanErrorPath) || null;
+                staticComponent = matched?.component || errorPage;
+                if (typeof globalThis.history !== 'undefined') {
+                  try { globalThis.history.replaceState(null, '', applyBase(cleanErrorPath)); } catch {}
+                }
               }
             } else {
               // Forbidden/disallowed path traversal or non-pagesDir directory -> 404 error page.
               state.errorCode = 404;
-              state.navigate(cleanErrorPath, { replace: true });
-              return;
+              path = cleanErrorPath;
+              matched = routeList.find((r) => r.path === cleanErrorPath) || null;
+              staticComponent = matched?.component || errorPage;
+              if (typeof globalThis.history !== 'undefined') {
+                try { globalThis.history.replaceState(null, '', applyBase(cleanErrorPath)); } catch {}
+              }
             }
           } else if (!alreadyOnError) {
             // signal-only mode (or already on an error page) with no match => /error.
             state.errorCode = 404;
-            state.navigate(cleanErrorPath, { replace: true });
-            return;
+            path = cleanErrorPath;
+            matched = routeList.find((r) => r.path === cleanErrorPath) || null;
+            staticComponent = matched?.component || errorPage;
+            if (typeof globalThis.history !== 'undefined') {
+              try { globalThis.history.replaceState(null, '', applyBase(cleanErrorPath)); } catch {}
+            }
           }
         }
 
@@ -1780,7 +1800,7 @@ export const routerAttributeModule: AttributeModule = {
           return;
         }
 
-        const url = new URL(globalThis.location.origin + normalizeHref(e.destination.url));
+        const url = new URL(e.destination.url);
         if (url.origin !== globalThis.location.origin) return;
 
         // Per-tab history: the destination entry carries its owning tabId. If it

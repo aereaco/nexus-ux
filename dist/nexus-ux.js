@@ -2609,6 +2609,9 @@ ${scripts}
                     });
                     html = typeof result === "string" ? result : String(result);
                   }
+                  if (html.includes("<!DOCTYPE") || html.includes("data-init") && el.tagName.toLowerCase() !== "html") {
+                    throw new Error(`Invalid component fragment returned for "${targetPath}": received full HTML shell.`);
+                  }
                   if (runtime.isDevMode) {
                     console.log(`[Component] Template loaded for <${el.tagName}>, length: ${html.length}`);
                   }
@@ -6806,6 +6809,11 @@ ${match}</ul>
               const full = dir ? `/${dir}/${withExt}` : "/" + withExt;
               return applyBase(full);
             };
+            const isAllowedStaticCandidate = (candidate, path) => {
+              if (!candidate || path.includes("..") || candidate.includes(".."))
+                return false;
+              return true;
+            };
             const buildInfo = (route, path, params, query, hash) => ({
               path,
               params,
@@ -7630,8 +7638,14 @@ ${match}</ul>
               if (matched && matched.internal && path !== "/") {
                 const isDirectAddressBarNav = !suppressNavIntercept && typeof globalThis.location !== "undefined" && stripBase(globalThis.location.pathname) === matched.path;
                 if (isDirectAddressBarNav) {
-                  state.navigate("/error", { replace: true });
-                  return;
+                  state.errorCode = 404;
+                  staticComponent = errorPage2;
+                  if (typeof globalThis.history !== "undefined") {
+                    try {
+                      globalThis.history.replaceState(null, "", applyBase(cleanErrorPath));
+                    } catch {
+                    }
+                  }
                 }
               }
               if (matched && matched.redirect) {
@@ -7677,18 +7691,39 @@ ${match}</ul>
                     }
                     if (!exists) {
                       state.errorCode = 404;
-                      state.navigate(cleanErrorPath, { replace: true });
-                      return;
+                      path = cleanErrorPath;
+                      matched = routeList.find((r) => r.path === cleanErrorPath) || null;
+                      staticComponent = matched?.component || errorPage2;
+                      if (typeof globalThis.history !== "undefined") {
+                        try {
+                          globalThis.history.replaceState(null, "", applyBase(cleanErrorPath));
+                        } catch {
+                        }
+                      }
                     }
                   } else {
                     state.errorCode = 404;
-                    state.navigate(cleanErrorPath, { replace: true });
-                    return;
+                    path = cleanErrorPath;
+                    matched = routeList.find((r) => r.path === cleanErrorPath) || null;
+                    staticComponent = matched?.component || errorPage2;
+                    if (typeof globalThis.history !== "undefined") {
+                      try {
+                        globalThis.history.replaceState(null, "", applyBase(cleanErrorPath));
+                      } catch {
+                      }
+                    }
                   }
                 } else if (!alreadyOnError) {
                   state.errorCode = 404;
-                  state.navigate(cleanErrorPath, { replace: true });
-                  return;
+                  path = cleanErrorPath;
+                  matched = routeList.find((r) => r.path === cleanErrorPath) || null;
+                  staticComponent = matched?.component || errorPage2;
+                  if (typeof globalThis.history !== "undefined") {
+                    try {
+                      globalThis.history.replaceState(null, "", applyBase(cleanErrorPath));
+                    } catch {
+                    }
+                  }
                 }
               }
               const toInfo = buildInfo(matched, path, params, query, url.hash);
@@ -7842,7 +7877,7 @@ ${match}</ul>
               if (!e.canIntercept || e.hashChange || e.downloadRequest !== null) {
                 return;
               }
-              const url = new URL(globalThis.location.origin + normalizeHref(e.destination.url));
+              const url = new URL(e.destination.url);
               if (url.origin !== globalThis.location.origin)
                 return;
               const destState = e.destination?.state;
