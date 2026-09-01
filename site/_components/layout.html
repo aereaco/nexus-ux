@@ -361,12 +361,8 @@
 
     <!-- TAB BAR -->
     <div data-signal_global="{pageTabToggleHovered: false }"
-      class="shrink-0 z-20 overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
-      data-class="{
-        'max-h-20 opacity-100': pageTabs,
-        'max-h-0 opacity-0 pointer-events-none': !pageTabs,
-        'aura aura-dual text-secondary': pageTabToggleHovered
-      }">
+      class="shrink-0 z-20 transition-padding duration-300 ease-in-out"
+      data-class="{ 'max-h-20 opacity-100': pageTabs, 'max-h-0 opacity-0 overflow-hidden pointer-events-none': !pageTabs, 'aura aura-dual text-secondary': pageTabToggleHovered }">
       <div class="card pe-2" data-class="{'bg-base-200': pageTabToggleHovered }">
         <div class="flex flex-nowrap bg-base-300/20 rounded-none overflow-x-auto pb-1 scrollbar-auto-hide"
           role="tablist" aria-orientation="horizontal" data-drag-container="router.pageTabs" data-drag-group="pageTabs"
@@ -375,7 +371,7 @@
             <tab-header data-component="'#tab-header-template'" data-drag></tab-header>
           </template>
 
-          <button class="btn btn-circle shrink-0"
+          <button class="btn btn-circle shrink-0" data-class="{ 'hidden': !pageTabs }"
             data-on-click="router.createPageTab('_components/tab-new.html')">
             <iconify-icon icon="material-symbols-light:add" class="text-2xl"></iconify-icon>
           </button>
