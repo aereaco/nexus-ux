@@ -780,67 +780,186 @@
         <!-- 2. Categorized Sections (Draggable Category Groups & Dedicated Item Lists) -->
         <div data-drag-container="categories">
           <template data-for="cat in categories" data-key="cat">
-            <ul class="menu w-full py-0" data-drag data-show="(cat === 'Apps' ? appsPages : cat === 'Profiles' ? profilesPages : systemPages).length > 0"
-              data-bind-data-drag-container="cat === 'Apps' ? 'appsPages' : cat === 'Profiles' ? 'profilesPages' : 'systemPages'">
+            <div data-drag data-show="(cat === 'Apps' ? appsPages : cat === 'Profiles' ? profilesPages : systemPages).length > 0">
               <!-- Category Title (fades and collapses smoothly on collapse) -->
-              <li
-                class="menu-title overflow-hidden transition-[opacity,max-height,margin,padding] duration-300 ease-in-out cursor-grab"
+              <div
+                class="menu-title overflow-hidden transition-[opacity,max-height,margin,padding] duration-300 ease-in-out cursor-grab px-4"
                 data-class="{ 'max-h-0 opacity-0 !my-0 !py-0 pointer-events-none': collapsed && !hovered && !sidebarOpen, 'max-h-12 opacity-100 mt-4': !collapsed || hovered || sidebarOpen }"
+                data-show="(cat === 'Apps' ? appsPages : cat === 'Profiles' ? profilesPages : systemPages).length > 0"
                 data-bind="cat">Title
-              </li>
-              <li class="w-full mx-0" data-class="{ 'opacity-6': collapsed && !hovered && !sidebarOpen }"></li>
+              </div>
+              <div class="h-px bg-base-content/10 mx-4 my-1 transition-opacity duration-300"
+                data-class="{ 'opacity-0': collapsed && !hovered && !sidebarOpen, 'opacity-100': !collapsed || hovered || sidebarOpen }"
+                data-show="(cat === 'Apps' ? appsPages : cat === 'Profiles' ? profilesPages : systemPages).length > 0"></div>
 
-              <!-- Category Items Loop -->
-              <template data-for="item in (cat === 'Apps' ? appsPages : cat === 'Profiles' ? profilesPages : systemPages)" data-key="item.href">
-                <!-- Root Leaf Item (No Children) -->
-                <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
-                  data-bind-data-drag="item.href !== '/' ? '' : null">
-                  <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
-                    data-bind-data-tab-title="item.tabTitle || item.title"
-                    data-bind-data-tab-icon="item.tabIcon || item.icon"
-                    data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-                    data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
-                    <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
-                    <span
-                      class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
-                      data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
-                      data-bind="item.title"></span>
-                  </a>
-                </li>
+              <!-- Apps List -->
+              <template data-if="cat === 'Apps'">
+                <ul class="menu w-full" data-drag-container="appsPages"
+                  data-effect="if (appsPages && appsPages.length > 0) { try { localStorage.setItem('sidebar_order_Apps', JSON.stringify(appsPages.map(p => p.href))); } catch {} }">
+                  <template data-for="item in appsPages" data-key="item.href">
+                    <!-- Root Leaf Item (No Children) -->
+                    <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
+                      data-bind-data-drag="item.href !== '/' ? '' : null">
+                      <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
+                        data-bind-data-tab-title="item.tabTitle || item.title"
+                        data-bind-data-tab-icon="item.tabIcon || item.icon"
+                        data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
+                        data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
+                        <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
+                        <span
+                          class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
+                          data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
+                          data-bind="item.title"></span>
+                      </a>
+                    </li>
 
-                <!-- Root Branch Item (With Children) -->
-                <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
-                  data-bind-data-drag="item.href !== '/' ? '' : null" data-signal="{ open: false }">
-                  <div class="flex">
-                    <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
-                      data-bind-data-tab-title="item.tabTitle || item.title"
-                      data-bind-data-tab-icon="item.tabIcon || item.icon"
-                      data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-                      data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
-                      <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
-                      <span
-                        class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
-                        data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
-                        data-bind="item.title"></span>
-                    </a>
-                    <button
-                      class="btn btn-circle btn-xs hover:bg-accent/60 transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
-                      data-on-click="open = !open"
-                      data-class="{ 'bg-accent/20': open, 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }">
-                      <iconify-icon icon="material-symbols-light:chevron-forward"
-                        class="shrink-0 text-2xl transition-transform" data-class="{ 'rotate-90': open}"></iconify-icon>
-                    </button>
-                  </div>
-                  <ul
-                    class="menu-dropdown menu-dropdown-show ms-12 overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
-                    data-class="{ 'max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
-                    data-drag-container="item.children">
-                    <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
-                      data-key="item.href"></template>
-                  </ul>
-                </li>
+                    <!-- Root Branch Item (With Children) -->
+                    <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
+                      data-bind-data-drag="item.href !== '/' ? '' : null" data-signal="{ open: false }">
+                      <div class="flex">
+                        <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
+                          data-bind-data-tab-title="item.tabTitle || item.title"
+                          data-bind-data-tab-icon="item.tabIcon || item.icon"
+                          data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
+                          data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
+                          <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
+                          <span
+                            class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
+                            data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
+                            data-bind="item.title"></span>
+                        </a>
+                        <button
+                          class="btn btn-circle btn-xs hover:bg-accent/60 transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
+                          data-on-click="open = !open"
+                          data-class="{ 'bg-accent/20': open, 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }">
+                          <iconify-icon icon="material-symbols-light:chevron-forward"
+                            class="shrink-0 text-2xl transition-transform" data-class="{ 'rotate-90': open}"></iconify-icon>
+                        </button>
+                      </div>
+                      <ul
+                        class="menu-dropdown menu-dropdown-show ms-12 overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
+                        data-class="{ 'max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
+                        data-drag-container="item.children">
+                        <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
+                          data-key="item.href"></template>
+                      </ul>
+                    </li>
+                  </template>
+                </ul>
               </template>
-            </ul>
+
+              <!-- Profiles List -->
+              <template data-if="cat === 'Profiles'">
+                <ul class="menu w-full" data-drag-container="profilesPages"
+                  data-effect="if (profilesPages && profilesPages.length > 0) { try { localStorage.setItem('sidebar_order_Profiles', JSON.stringify(profilesPages.map(p => p.href))); } catch {} }">
+                  <template data-for="item in profilesPages" data-key="item.href">
+                    <!-- Root Leaf Item (No Children) -->
+                    <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
+                      data-bind-data-drag="item.href !== '/' ? '' : null">
+                      <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
+                        data-bind-data-tab-title="item.tabTitle || item.title"
+                        data-bind-data-tab-icon="item.tabIcon || item.icon"
+                        data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
+                        data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
+                        <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
+                        <span
+                          class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
+                          data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
+                          data-bind="item.title"></span>
+                      </a>
+                    </li>
+
+                    <!-- Root Branch Item (With Children) -->
+                    <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
+                      data-bind-data-drag="item.href !== '/' ? '' : null" data-signal="{ open: false }">
+                      <div class="flex">
+                        <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
+                          data-bind-data-tab-title="item.tabTitle || item.title"
+                          data-bind-data-tab-icon="item.tabIcon || item.icon"
+                          data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
+                          data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
+                          <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
+                          <span
+                            class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
+                            data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
+                            data-bind="item.title"></span>
+                        </a>
+                        <button
+                          class="btn btn-circle btn-xs hover:bg-accent/60 transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
+                          data-on-click="open = !open"
+                          data-class="{ 'bg-accent/20': open, 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }">
+                          <iconify-icon icon="material-symbols-light:chevron-forward"
+                            class="shrink-0 text-2xl transition-transform" data-class="{ 'rotate-90': open}"></iconify-icon>
+                        </button>
+                      </div>
+                      <ul
+                        class="menu-dropdown menu-dropdown-show ms-12 overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
+                        data-class="{ 'max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
+                        data-drag-container="item.children">
+                        <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
+                          data-key="item.href"></template>
+                      </ul>
+                    </li>
+                  </template>
+                </ul>
+              </template>
+
+              <!-- System List -->
+              <template data-if="cat === 'System'">
+                <ul class="menu w-full" data-drag-container="systemPages"
+                  data-effect="if (systemPages && systemPages.length > 0) { try { localStorage.setItem('sidebar_order_System', JSON.stringify(systemPages.map(p => p.href))); } catch {} }">
+                  <template data-for="item in systemPages" data-key="item.href">
+                    <!-- Root Leaf Item (No Children) -->
+                    <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
+                      data-bind-data-drag="item.href !== '/' ? '' : null">
+                      <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
+                        data-bind-data-tab-title="item.tabTitle || item.title"
+                        data-bind-data-tab-icon="item.tabIcon || item.icon"
+                        data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
+                        data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
+                        <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
+                        <span
+                          class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
+                          data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
+                          data-bind="item.title"></span>
+                      </a>
+                    </li>
+
+                    <!-- Root Branch Item (With Children) -->
+                    <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
+                      data-bind-data-drag="item.href !== '/' ? '' : null" data-signal="{ open: false }">
+                      <div class="flex">
+                        <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
+                          data-bind-data-tab-title="item.tabTitle || item.title"
+                          data-bind-data-tab-icon="item.tabIcon || item.icon"
+                          data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
+                          data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
+                          <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
+                          <span
+                            class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
+                            data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
+                            data-bind="item.title"></span>
+                        </a>
+                        <button
+                          class="btn btn-circle btn-xs hover:bg-accent/60 transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
+                          data-on-click="open = !open"
+                          data-class="{ 'bg-accent/20': open, 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }">
+                          <iconify-icon icon="material-symbols-light:chevron-forward"
+                            class="shrink-0 text-2xl transition-transform" data-class="{ 'rotate-90': open}"></iconify-icon>
+                        </button>
+                      </div>
+                      <ul
+                        class="menu-dropdown menu-dropdown-show ms-12 overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
+                        data-class="{ 'max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
+                        data-drag-container="item.children">
+                        <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
+                          data-key="item.href"></template>
+                      </ul>
+                    </li>
+                  </template>
+                </ul>
+              </template>
+            </div>
           </template>
         </div>
       </div>
