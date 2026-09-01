@@ -2126,6 +2126,7 @@ ${scripts}
   var init_class = __esm({
     "src/modules/attributes/class.ts"() {
       init_debug();
+      init_stylesheet();
       classModule = {
         name: "class",
         attribute: "class",
@@ -2138,6 +2139,7 @@ ${scripts}
               const result = runtime.evaluate(el, value);
               if (parsed.argument) {
                 if (result) {
+                  stylesheet.adoptClass(parsed.argument, el, runtime);
                   el.classList.add(parsed.argument);
                 } else {
                   el.classList.remove(parsed.argument);
@@ -2466,6 +2468,7 @@ ${scripts}
       init_consts();
       init_cache();
       init_debug();
+      init_stylesheet();
       ElementBase = typeof HTMLElement !== "undefined" ? HTMLElement : class {
       };
       BaseComponent = class extends ElementBase {
@@ -2636,6 +2639,7 @@ ${scripts}
                     }
                     shadow[DATA_STACK_KEY] = [shadowScope];
                     runtime.morphDOM(shadow, html);
+                    stylesheet.adoptElementSubtree(shadow);
                     Array.from(shadow.children).forEach((child) => {
                       if (child instanceof HTMLElement || child instanceof SVGElement) {
                         runtime.processElement(child);
@@ -2643,6 +2647,7 @@ ${scripts}
                     });
                   } else {
                     runtime.morphDOM(el, html);
+                    stylesheet.adoptElementSubtree(el);
                     Array.from(el.children).forEach((child) => {
                       if (child instanceof HTMLElement || child instanceof SVGElement) {
                         runtime.processElement(child);
@@ -12693,14 +12698,21 @@ ${bridge}`, {
           }
           this._preflightEmitted = true;
           if (rootEl) {
-            rootEl.classList.forEach((cls) => this.adoptClass(cls, rootEl));
-            const all = rootEl.querySelectorAll("*");
-            all.forEach((el) => {
-              if (el instanceof HTMLElement) {
-                el.classList.forEach((cls) => this.adoptClass(cls, el));
-              }
-            });
+            this.adoptElementSubtree(rootEl);
           }
+        }
+        adoptElementSubtree(rootEl) {
+          if (!rootEl || typeof document === "undefined")
+            return;
+          if ("classList" in rootEl && rootEl.classList) {
+            rootEl.classList.forEach((cls) => this.adoptClass(cls, rootEl));
+          }
+          const all = rootEl.querySelectorAll ? rootEl.querySelectorAll("*") : [];
+          all.forEach((el) => {
+            if (el instanceof HTMLElement && el.classList) {
+              el.classList.forEach((cls) => this.adoptClass(cls, el));
+            }
+          });
         }
         adoptClass(className, el, runtime) {
           if (!className || className.trim() === "")
@@ -13218,8 +13230,8 @@ ${bridge}`, {
     });
     toAdd.forEach((cls) => {
       if (!el.classList.contains(cls)) {
-        el.classList.add(cls);
         stylesheet.adoptClass(cls, el);
+        el.classList.add(cls);
       }
       currentAdded.add(cls);
     });

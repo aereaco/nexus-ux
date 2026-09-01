@@ -28,6 +28,7 @@ import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { initError } from '../../engine/debug.ts';
 import { ParsedAttribute } from '../../engine/attributeParser.ts';
+import { stylesheet } from './stylesheet.ts';
 
 const classModule: AttributeModule = {
   name: 'class',
@@ -43,6 +44,7 @@ const classModule: AttributeModule = {
         if (parsed.argument) {
            // Handle suffixed class binding (e.g. data-class-active="isActive")
            if (result) {
+             stylesheet.adoptClass(parsed.argument, el, runtime);
              el.classList.add(parsed.argument);
            } else {
              el.classList.remove(parsed.argument);

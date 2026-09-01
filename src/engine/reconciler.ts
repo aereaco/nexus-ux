@@ -462,11 +462,11 @@ export function reconcileClass(el: HTMLElement, value: unknown): void {
     }
   });
 
-  // Add new classes
+  // Add new classes: adopt rules into stylesheet BEFORE mutating DOM classList
   toAdd.forEach(cls => {
     if (!el.classList.contains(cls)) {
-      el.classList.add(cls);
       stylesheet.adoptClass(cls, el);
+      el.classList.add(cls);
     }
     currentAdded.add(cls);
   });

@@ -5,6 +5,7 @@ import { COMPONENT_CONTEXT_KEY, DATA_STACK_KEY } from '../../engine/consts.ts';
 import { cacheEngine } from '../../engine/cache.ts';
 import type { NexusEnhancedElement } from '../../engine/reactivity.ts';
 import { initError } from '../../engine/debug.ts';
+import { stylesheet } from './stylesheet.ts';
 
 export interface ComponentConfig {
   path: string;
@@ -368,6 +369,7 @@ const componentModule: AttributeModule = {
               (shadow as unknown as NexusEnhancedElement)[DATA_STACK_KEY] = [shadowScope];
 
               runtime.morphDOM(shadow as unknown as HTMLElement, html);
+              stylesheet.adoptElementSubtree(shadow);
               Array.from(shadow.children).forEach((child) => {
                 if (child instanceof HTMLElement || child instanceof SVGElement) {
                   runtime.processElement(child as unknown as HTMLElement);
@@ -375,6 +377,7 @@ const componentModule: AttributeModule = {
               });
             } else {
               runtime.morphDOM(el, html);
+              stylesheet.adoptElementSubtree(el);
               Array.from(el.children).forEach((child) => {
                 if (child instanceof HTMLElement || child instanceof SVGElement) {
                   runtime.processElement(child as unknown as HTMLElement);

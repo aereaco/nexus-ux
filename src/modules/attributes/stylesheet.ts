@@ -401,14 +401,21 @@ class StyleSheetManager {
 
     // Passive scan of classes within the target root element (if provided)
     if (rootEl) {
-      rootEl.classList.forEach((cls) => this.adoptClass(cls, rootEl));
-      const all = rootEl.querySelectorAll('*');
-      all.forEach((el) => {
-        if (el instanceof HTMLElement) {
-          el.classList.forEach((cls) => this.adoptClass(cls, el));
-        }
-      });
+      this.adoptElementSubtree(rootEl);
     }
+  }
+
+  public adoptElementSubtree(rootEl?: HTMLElement | Element | ShadowRoot): void {
+    if (!rootEl || typeof document === 'undefined') return;
+    if ('classList' in rootEl && rootEl.classList) {
+      rootEl.classList.forEach((cls) => this.adoptClass(cls, rootEl as HTMLElement));
+    }
+    const all = rootEl.querySelectorAll ? rootEl.querySelectorAll('*') : [];
+    all.forEach((el) => {
+      if (el instanceof HTMLElement && el.classList) {
+        el.classList.forEach((cls) => this.adoptClass(cls, el));
+      }
+    });
   }
 
   adoptClass(className: string, el?: HTMLElement, runtime?: RuntimeContext): void {
