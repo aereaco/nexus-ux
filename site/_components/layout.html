@@ -360,9 +360,9 @@
     </template>
 
     <!-- TAB BAR -->
-    <div data-signal_global="{pageTabToggleHovered: false }" class="shrink-0 z-20 transition-all duration-300 ease-in-out"
+    <div data-signal_global="{pageTabToggleHovered: false }" class="shrink-0 z-20"
       data-class="{'hidden': !pageTabs, 'aura aura-dual text-secondary': pageTabToggleHovered }">
-      <div class="card pe-2 transition-all duration-300 ease-in-out" data-class="{'bg-base-200': pageTabToggleHovered }">
+      <div class="card pe-2" data-class="{'bg-base-200': pageTabToggleHovered }">
         <div class="flex flex-nowrap bg-base-300/20 rounded-none overflow-x-auto pb-1 scrollbar-auto-hide"
           role="tablist" aria-orientation="horizontal" data-drag-container="router.pageTabs" data-drag-group="pageTabs"
           data-drag-direction="horizontal">
@@ -442,8 +442,6 @@
           <div class="tooltip tooltip-bottom shrink-0" data-tip="Toggle page tabs">
             <button class="btn btn-sm btn-ghost btn-circle"
               data-class="{ 'btn-active text-primary bg-primary/10': pageTabs }"
-              data-on-mouseenter_debounce.2000ms="pageTabToggleHovered = true"
-              data-on-mouseleave_debounce.cancel="pageTabToggleHovered = false"
               data-on-click="pageTabs = !pageTabs; localStorage.setItem('pageTabs', pageTabs)"
               aria-label="Toggle page tabs">
               <iconify-icon icon="material-symbols-light:tab-group-outline" class="text-xl"></iconify-icon>
