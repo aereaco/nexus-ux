@@ -6809,11 +6809,6 @@ ${match}</ul>
               const full = dir ? `/${dir}/${withExt}` : "/" + withExt;
               return applyBase(full);
             };
-            const isAllowedStaticCandidate = (candidate, path) => {
-              if (!candidate || path.includes("..") || candidate.includes(".."))
-                return false;
-              return true;
-            };
             const buildInfo = (route, path, params, query, hash) => ({
               path,
               params,
@@ -7429,9 +7424,9 @@ ${match}</ul>
                     break;
                   }
                 }
-                let staticComponent = null;
+                let staticComponent2 = null;
                 if (!matched && (mode === "static" || mode === "hybrid")) {
-                  staticComponent = resolveStaticComponent(switchPath);
+                  staticComponent2 = resolveStaticComponent(switchPath);
                 }
                 state.path = switchPath;
                 state.hash = fakeUrl.hash;
@@ -7440,7 +7435,7 @@ ${match}</ul>
                 state.currentRoute = matched;
                 state.meta = matched?.meta ?? {};
                 state.name = matched?.name ?? null;
-                state.route = matched?.component ?? staticComponent ?? null;
+                state.route = matched?.component ?? staticComponent2 ?? null;
                 state.layout = matched?.layout ?? null;
                 publishOutlet(state.layout ?? state.route);
                 state.error = null;
@@ -7652,84 +7647,29 @@ ${match}</ul>
                 state.navigate(matched.redirect, { replace: true });
                 return;
               }
-              let staticComponent = null;
               const errorPage2 = state.config.error ?? resolvePagesPath(void 0, "error.html");
               const cleanErrorPath = "/error";
-              const alreadyOnError = path === cleanErrorPath || url.pathname === applyBase(cleanErrorPath);
               if (!matched) {
-                if (!alreadyOnError && (mode === "static" || mode === "hybrid")) {
-                  const candidate = resolveStaticComponent(path);
-                  if (isAllowedStaticCandidate(candidate, path)) {
-                    let exists = false;
-                    try {
-                      const res = await fetch(candidate, { method: "HEAD" });
-                      if (res.ok) {
-                        exists = true;
-                      } else if (res.status === 405) {
-                        const getRes = await fetch(candidate, { method: "GET" });
-                        if (getRes.ok)
-                          exists = true;
-                      }
-                    } catch {
-                      exists = false;
-                    }
-                    if (exists) {
-                      staticComponent = candidate;
-                    } else if (path.includes("/")) {
-                      const leaf = path.split("/").pop() || "";
-                      const fallbackCandidate = resolveStaticComponent("/" + leaf);
-                      if (isAllowedStaticCandidate(fallbackCandidate, "/" + leaf)) {
-                        try {
-                          const fRes = await fetch(fallbackCandidate, { method: "HEAD" });
-                          if (fRes.ok || fRes.status === 405) {
-                            staticComponent = fallbackCandidate;
-                            exists = true;
-                          }
-                        } catch {
-                        }
-                      }
-                    }
-                    if (!exists) {
-                      state.errorCode = 404;
-                      path = cleanErrorPath;
-                      matched = routeList.find((r) => r.path === cleanErrorPath) || null;
-                      staticComponent = matched?.component || errorPage2;
-                      if (typeof globalThis.history !== "undefined") {
-                        try {
-                          globalThis.history.replaceState(null, "", applyBase(cleanErrorPath));
-                        } catch {
-                        }
-                      }
-                    }
-                  } else {
-                    state.errorCode = 404;
-                    path = cleanErrorPath;
-                    matched = routeList.find((r) => r.path === cleanErrorPath) || null;
-                    staticComponent = matched?.component || errorPage2;
-                    if (typeof globalThis.history !== "undefined") {
-                      try {
-                        globalThis.history.replaceState(null, "", applyBase(cleanErrorPath));
-                      } catch {
-                      }
-                    }
-                  }
-                } else if (!alreadyOnError) {
-                  state.errorCode = 404;
-                  path = cleanErrorPath;
-                  matched = routeList.find((r) => r.path === cleanErrorPath) || null;
-                  staticComponent = matched?.component || errorPage2;
-                  if (typeof globalThis.history !== "undefined") {
-                    try {
-                      globalThis.history.replaceState(null, "", applyBase(cleanErrorPath));
-                    } catch {
-                    }
+                matched = routeList.find((r) => r.path === cleanErrorPath) || {
+                  path: cleanErrorPath,
+                  name: "error",
+                  component: errorPage2,
+                  meta: { title: "Error", icon: "material-symbols-light:error-outline" },
+                  source: "declared"
+                };
+                state.errorCode = 404;
+                path = cleanErrorPath;
+                if (typeof globalThis.history !== "undefined") {
+                  try {
+                    globalThis.history.replaceState(null, "", applyBase(cleanErrorPath));
+                  } catch {
                   }
                 }
               }
               const toInfo = buildInfo(matched, path, params, query, url.hash);
               const fromRoute = state.currentRoute;
               const fromInfo = previousInfo;
-              const resolvedComponent = matched?.component ?? staticComponent ?? null;
+              const resolvedComponent = matched?.component ?? null;
               state.route = resolvedComponent;
               state.layout = matched?.layout ?? null;
               publishOutlet(state.layout ?? state.route);
@@ -7797,7 +7737,7 @@ ${match}</ul>
               state.meta = matched?.meta ?? {};
               state.name = matched?.name ?? null;
               state.previous = outgoingPrevious;
-              state.route = matched?.component ?? staticComponent ?? null;
+              state.route = matched?.component ?? null;
               state.layout = matched?.layout ?? null;
               state.lineage = state.getLineage(path);
               publishOutlet(state.layout ?? state.route);
@@ -7806,7 +7746,7 @@ ${match}</ul>
                 const isCustomComp = state.tabPaths[_at] === "custom-component";
                 if (!isCustomComp) {
                   state.tabPaths[_at] = path;
-                  const resolvedSource = matched?.component ?? staticComponent ?? null;
+                  const resolvedSource = matched?.component ?? null;
                   if (resolvedSource) {
                     const curPageTab = state.pageTabs.find((t) => t.id === _at);
                     if (curPageTab) {

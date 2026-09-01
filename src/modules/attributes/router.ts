@@ -572,11 +572,6 @@ export const routerAttributeModule: AttributeModule = {
         return applyBase(full);
       };
 
-      const isAllowedStaticCandidate = (candidate: string, path: string): boolean => {
-        if (!candidate || path.includes('..') || candidate.includes('..')) return false;
-        return true;
-      };
-
       // Build a RouteInfo snapshot for hook consumers and matchers.
       const buildInfo = (
         route: RouteRecord | null,
@@ -1547,87 +1542,22 @@ export const routerAttributeModule: AttributeModule = {
           return;
         }
 
-        // No signal match: try filesystem resolution in static/hybrid modes,
-        // else fall back to the declaratively configured error pages. Shadow
-        // paths resolve the same way (the router's internal fetch can reach
-        // them); they are simply excluded from the public manifest so the
-        // client has no discoverable URL.
-        let staticComponent: string | null = null;
-        // Single dynamic error page (404 + 5xx alike). It is a NORMAL
-        // route (/error -> _pages/error.html) so any unresolved path
-        // routes to it exactly like any other route — the address bar
-        // shows the clean /error URL and the page reads #router.errorCode
-        // to present 404/500/… copy. No leaked _pages/ path, no special
-        // 404 branch in the bar.
         const errorPage = state.config.error ?? resolvePagesPath(undefined, 'error.html');
         const cleanErrorPath = '/error';
-        const alreadyOnError = path === cleanErrorPath
-          || url.pathname === applyBase(cleanErrorPath);
 
+        // Direct Catch-All for unmatched routes: fall through to declared /error route
         if (!matched) {
-          if (!alreadyOnError && (mode === 'static' || mode === 'hybrid')) {
-            // Try to resolve a real page under `pagesDir` for this clean path.
-            const candidate = resolveStaticComponent(path);
-            if (isAllowedStaticCandidate(candidate, path)) {
-              let exists = false;
-              try {
-                const res = await fetch(candidate, { method: 'HEAD' });
-                if (res.ok) {
-                  exists = true;
-                } else if (res.status === 405) {
-                  // Fallback for servers that reject HEAD
-                  const getRes = await fetch(candidate, { method: 'GET' });
-                  if (getRes.ok) exists = true;
-                }
-              } catch {
-                exists = false;
-              }
-
-              if (exists) {
-                staticComponent = candidate;
-              } else if (path.includes('/')) {
-                // Fallback for chained routes (e.g. /profile/profile2 -> _pages/profile2.html)
-                const leaf = path.split('/').pop() || '';
-                const fallbackCandidate = resolveStaticComponent('/' + leaf);
-                if (isAllowedStaticCandidate(fallbackCandidate, '/' + leaf)) {
-                  try {
-                    const fRes = await fetch(fallbackCandidate, { method: 'HEAD' });
-                    if (fRes.ok || fRes.status === 405) {
-                      staticComponent = fallbackCandidate;
-                      exists = true;
-                    }
-                  } catch { /* ignore */ }
-                }
-              }
-              
-              if (!exists) {
-                state.errorCode = 404;
-                path = cleanErrorPath;
-                matched = routeList.find((r) => r.path === cleanErrorPath) || null;
-                staticComponent = matched?.component || errorPage;
-                if (typeof globalThis.history !== 'undefined') {
-                  try { globalThis.history.replaceState(null, '', applyBase(cleanErrorPath)); } catch {}
-                }
-              }
-            } else {
-              // Forbidden/disallowed path traversal or non-pagesDir directory -> 404 error page.
-              state.errorCode = 404;
-              path = cleanErrorPath;
-              matched = routeList.find((r) => r.path === cleanErrorPath) || null;
-              staticComponent = matched?.component || errorPage;
-              if (typeof globalThis.history !== 'undefined') {
-                try { globalThis.history.replaceState(null, '', applyBase(cleanErrorPath)); } catch {}
-              }
-            }
-          } else if (!alreadyOnError) {
-            // signal-only mode (or already on an error page) with no match => /error.
-            state.errorCode = 404;
-            path = cleanErrorPath;
-            matched = routeList.find((r) => r.path === cleanErrorPath) || null;
-            staticComponent = matched?.component || errorPage;
-            if (typeof globalThis.history !== 'undefined') {
-              try { globalThis.history.replaceState(null, '', applyBase(cleanErrorPath)); } catch {}
-            }
+          matched = routeList.find((r) => r.path === cleanErrorPath) || {
+            path: cleanErrorPath,
+            name: 'error',
+            component: errorPage,
+            meta: { title: 'Error', icon: 'material-symbols-light:error-outline' },
+            source: 'declared',
+          } as RouteRecord;
+          state.errorCode = 404;
+          path = cleanErrorPath;
+          if (typeof globalThis.history !== 'undefined') {
+            try { globalThis.history.replaceState(null, '', applyBase(cleanErrorPath)); } catch {}
           }
         }
 
@@ -1643,7 +1573,7 @@ export const routerAttributeModule: AttributeModule = {
         // parallel `outletContent` signal is written here — the header and
         // body read the SAME source and update on the same tick. Lifecycle
         // hooks below only govern navigation control (abort / redirect).
-        const resolvedComponent = matched?.component ?? staticComponent ?? null;
+        const resolvedComponent = matched?.component ?? null;
         state.route = resolvedComponent;
         state.layout = matched?.layout ?? null;
         publishOutlet(state.layout ?? state.route);
@@ -1700,7 +1630,7 @@ export const routerAttributeModule: AttributeModule = {
         // Publish outlet-driving signals.
         // Section-model routes (no data-component) leave `route` null and rely on
         // commitVisibility; outlet-model routes publish their component/layout URL.
-        state.route = matched?.component ?? staticComponent ?? null;
+        state.route = matched?.component ?? null;
         state.layout = matched?.layout ?? null;
         state.lineage = state.getLineage(path);
         // Single effective outlet: prefer the layout (which contains its own
@@ -1714,7 +1644,7 @@ export const routerAttributeModule: AttributeModule = {
           const isCustomComp = state.tabPaths[_at] === 'custom-component';
           if (!isCustomComp) {
             state.tabPaths[_at] = path;
-            const resolvedSource = matched?.component ?? staticComponent ?? null;
+            const resolvedSource = matched?.component ?? null;
             if (resolvedSource) {
               // 1. Sync first-class router.pageTabs
               const curPageTab = state.pageTabs.find((t) => t.id === _at);
