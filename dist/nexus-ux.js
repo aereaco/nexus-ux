@@ -13244,9 +13244,9 @@ ${bridge}`, {
     toAdd.forEach((cls) => {
       if (!el.classList.contains(cls)) {
         el.classList.add(cls);
-        currentAdded.add(cls);
         stylesheet.adoptClass(cls, el);
       }
+      currentAdded.add(cls);
     });
     if (currentAdded.size > 0)
       nexusClassMap.set(el, currentAdded);
