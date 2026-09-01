@@ -1,4 +1,4 @@
-<div class="grid grid-cols-[0rem_1fr]" data-signal="{
+<div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300" data-signal="{
       collapsed: localStorage.collapsed !== 'false',
       pageTabs: localStorage.pageTabs !== 'false',
       fixedHeader: localStorage.fixedHeader !== 'false',
@@ -12,7 +12,7 @@
       activeSidebarTab: 1,
       themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset']
     }"
-  data-class="{ 'md:grid-cols-[max-content_1fr]': !hovered, 'md:grid-cols-[4rem_1fr]': collapsed && hovered, 'h-screen max-h-screen overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }"
+  data-class="{ 'md:grid-cols-[20rem_1fr]': !collapsed, 'md:grid-cols-[4rem_1fr]': collapsed, 'h-screen max-h-screen overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }"
   data-on-resize_window="isMobile = window.innerWidth < 768">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content flex flex-col"
