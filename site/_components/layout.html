@@ -617,15 +617,116 @@
 
     <!-- ================= 2. Middle Content Section (Scrollable) ================= -->
     <main class="sidebar-content flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
-      data-effect="if (collapsed && !hovered && !sidebarOpen) { $el.scrollTo({ top: 0, behavior: 'smooth' }); }"
       data-signal="{
-        categories: ['Apps', 'Profiles', 'System']
-      }">
+        categories: (() => {
+          try {
+            const saved = JSON.parse(localStorage.getItem('sidebar_categories') || 'null');
+            if (Array.isArray(saved) && saved.length > 0) return saved;
+          } catch {}
+          return ['Apps', 'Profiles', 'System'];
+        })(),
+        uncatPages: [],
+        appsPages: [],
+        profilesPages: [],
+        systemPages: []
+      }"
+      data-effect="
+        if (collapsed && !hovered && !sidebarOpen && $el) { 
+          $el.scrollTo({ top: 0, behavior: 'smooth' }); 
+        }
+
+        const all = router.pages;
+        if (!all || all.length === 0) return;
+
+        // 1. Uncategorized items
+        const uncat = all.filter(p => !p.category);
+        try {
+          const savedUncat = JSON.parse(localStorage.getItem('sidebar_order_uncategorized') || 'null');
+          if (Array.isArray(savedUncat) && savedUncat.length > 0) {
+            uncat.sort((a, b) => {
+              const idxA = savedUncat.indexOf(a.href);
+              const idxB = savedUncat.indexOf(b.href);
+              if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+              if (idxA !== -1) return -1;
+              if (idxB !== -1) return 1;
+              return 0;
+            });
+          }
+        } catch {}
+        if (uncatPages.length === 0 || uncatPages.length !== uncat.length) {
+          uncatPages = uncat;
+        }
+
+        // 2. Apps items
+        const apps = all.filter(p => p.category === 'Apps');
+        try {
+          const savedApps = JSON.parse(localStorage.getItem('sidebar_order_Apps') || 'null');
+          if (Array.isArray(savedApps) && savedApps.length > 0) {
+            apps.sort((a, b) => {
+              const idxA = savedApps.indexOf(a.href);
+              const idxB = savedApps.indexOf(b.href);
+              if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+              if (idxA !== -1) return -1;
+              if (idxB !== -1) return 1;
+              return 0;
+            });
+          }
+        } catch {}
+        if (appsPages.length === 0 || appsPages.length !== apps.length) {
+          appsPages = apps;
+        }
+
+        // 3. Profiles items
+        const profs = all.filter(p => p.category === 'Profiles');
+        try {
+          const savedProfs = JSON.parse(localStorage.getItem('sidebar_order_Profiles') || 'null');
+          if (Array.isArray(savedProfs) && savedProfs.length > 0) {
+            profs.sort((a, b) => {
+              const idxA = savedProfs.indexOf(a.href);
+              const idxB = savedProfs.indexOf(b.href);
+              if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+              if (idxA !== -1) return -1;
+              if (idxB !== -1) return 1;
+              return 0;
+            });
+          }
+        } catch {}
+        if (profilesPages.length === 0 || profilesPages.length !== profs.length) {
+          profilesPages = profs;
+        }
+
+        // 4. System items
+        const sys = all.filter(p => p.category === 'System');
+        try {
+          const savedSys = JSON.parse(localStorage.getItem('sidebar_order_System') || 'null');
+          if (Array.isArray(savedSys) && savedSys.length > 0) {
+            sys.sort((a, b) => {
+              const idxA = savedSys.indexOf(a.href);
+              const idxB = savedSys.indexOf(b.href);
+              if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+              if (idxA !== -1) return -1;
+              if (idxB !== -1) return 1;
+              return 0;
+            });
+          }
+        } catch {}
+        if (systemPages.length === 0 || systemPages.length !== sys.length) {
+          systemPages = sys;
+        }
+
+        // 5. Persist categories order
+        try {
+          if (categories && categories.length > 0) {
+            localStorage.setItem('sidebar_categories', JSON.stringify(categories));
+          }
+        } catch {}
+      ">
       <!-- Main Navigation Menu (tab 1) -->
       <div data-show="activeSidebarTab === 1" class="w-full">
-        <ul class="menu w-full" data-drag-container="router.pages">
-          <!-- 1. Top-Level Uncategorized Items (No Category Header) -->
-          <template data-for="item in (router.pages || []).filter(p => !p.category)" data-key="item.href">
+        <!-- 1. Top-Level Uncategorized Items (Dedicated <ul>) -->
+        <ul class="menu w-full" data-drag-container="uncatPages"
+          data-effect="if (uncatPages && uncatPages.length > 0) { try { localStorage.setItem('sidebar_order_uncategorized', JSON.stringify(uncatPages.map(p => p.href))); } catch {} }">
+          <template data-for="item in uncatPages" data-key="item.href">
             <!-- Root Leaf Item (No Children) -->
             <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
               data-bind-data-drag="item.href !== '/' ? '' : null">
@@ -674,70 +775,192 @@
               </ul>
             </li>
           </template>
-
-          <!-- 2. Categorized Sections (Rendered Below Uncategorized Items) -->
-          <template data-for="cat in categories" data-key="cat">
-            <!-- Category Title (fades and collapses smoothly on collapse) -->
-            <li
-              class="menu-title overflow-hidden transition-[opacity,max-height,margin,padding] duration-300 ease-in-out"
-              data-class="{ 'max-h-0 opacity-0 !my-0 !py-0 pointer-events-none': collapsed && !hovered && !sidebarOpen, 'max-h-12 opacity-100 mt-4': !collapsed || hovered || sidebarOpen }"
-              data-show="(router.pages || []).some(p => p.category === cat)" data-bind="cat">Title
-            </li>
-            <li class="w-full mx-0" data-class="{ 'opacity-6': collapsed && !hovered && !sidebarOpen }"
-              data-show="(router.pages || []).some(p => p.category === cat)"></li>
-
-            <!-- Category Root Pages -->
-            <template data-for="item in (router.pages || []).filter(p => p.category === cat)" data-key="item.href">
-              <!-- Root Leaf Item (No Children) -->
-              <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
-                data-bind-data-drag="item.href !== '/' ? '' : null">
-                <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
-                  data-bind-data-tab-title="item.tabTitle || item.title"
-                  data-bind-data-tab-icon="item.tabIcon || item.icon"
-                  data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-                  data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
-                  <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
-                  <span
-                    class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
-                    data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
-                    data-bind="item.title"></span>
-                </a>
-              </li>
-
-              <!-- Root Branch Item (With Children) -->
-              <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
-                data-bind-data-drag="item.href !== '/' ? '' : null" data-signal="{ open: false }">
-                <div class="flex">
-                  <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
-                    data-bind-data-tab-title="item.tabTitle || item.title"
-                    data-bind-data-tab-icon="item.tabIcon || item.icon"
-                    data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-                    data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
-                    <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
-                    <span
-                      class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
-                      data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
-                      data-bind="item.title"></span>
-                  </a>
-                  <button
-                    class="btn btn-circle btn-xs hover:bg-accent/60 transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
-                    data-on-click="open = !open"
-                    data-class="{ 'bg-accent/20': open, 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }">
-                    <iconify-icon icon="material-symbols-light:chevron-forward"
-                      class="shrink-0 text-2xl transition-transform" data-class="{ 'rotate-90': open}"></iconify-icon>
-                  </button>
-                </div>
-                <ul
-                  class="menu-dropdown menu-dropdown-show ms-12 overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
-                  data-class="{ 'max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
-                  data-drag-container="item.children">
-                  <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
-                    data-key="item.href"></template>
-                </ul>
-              </li>
-            </template>
-          </template>
         </ul>
+
+        <!-- 2. Categorized Sections (Draggable Category Groups & Dedicated Item Lists) -->
+        <div data-drag-container="categories">
+          <template data-for="cat in categories" data-key="cat">
+            <div data-drag data-show="(cat === 'Apps' ? appsPages : cat === 'Profiles' ? profilesPages : systemPages).length > 0">
+              <!-- Category Title (fades and collapses smoothly on collapse) -->
+              <li
+                class="menu-title overflow-hidden transition-[opacity,max-height,margin,padding] duration-300 ease-in-out cursor-grab"
+                data-class="{ 'max-h-0 opacity-0 !my-0 !py-0 pointer-events-none': collapsed && !hovered && !sidebarOpen, 'max-h-12 opacity-100 mt-4': !collapsed || hovered || sidebarOpen }"
+                data-show="(cat === 'Apps' ? appsPages : cat === 'Profiles' ? profilesPages : systemPages).length > 0"
+                data-bind="cat">Title
+              </li>
+              <li class="w-full mx-0" data-class="{ 'opacity-6': collapsed && !hovered && !sidebarOpen }"
+                data-show="(cat === 'Apps' ? appsPages : cat === 'Profiles' ? profilesPages : systemPages).length > 0"></li>
+
+              <!-- Apps List -->
+              <template data-if="cat === 'Apps'">
+                <ul class="menu w-full" data-drag-container="appsPages"
+                  data-effect="if (appsPages && appsPages.length > 0) { try { localStorage.setItem('sidebar_order_Apps', JSON.stringify(appsPages.map(p => p.href))); } catch {} }">
+                  <template data-for="item in appsPages" data-key="item.href">
+                    <!-- Root Leaf Item (No Children) -->
+                    <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
+                      data-bind-data-drag="item.href !== '/' ? '' : null">
+                      <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
+                        data-bind-data-tab-title="item.tabTitle || item.title"
+                        data-bind-data-tab-icon="item.tabIcon || item.icon"
+                        data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
+                        data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
+                        <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
+                        <span
+                          class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
+                          data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
+                          data-bind="item.title"></span>
+                      </a>
+                    </li>
+
+                    <!-- Root Branch Item (With Children) -->
+                    <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
+                      data-bind-data-drag="item.href !== '/' ? '' : null" data-signal="{ open: false }">
+                      <div class="flex">
+                        <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
+                          data-bind-data-tab-title="item.tabTitle || item.title"
+                          data-bind-data-tab-icon="item.tabIcon || item.icon"
+                          data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
+                          data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
+                          <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
+                          <span
+                            class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
+                            data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
+                            data-bind="item.title"></span>
+                        </a>
+                        <button
+                          class="btn btn-circle btn-xs hover:bg-accent/60 transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
+                          data-on-click="open = !open"
+                          data-class="{ 'bg-accent/20': open, 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }">
+                          <iconify-icon icon="material-symbols-light:chevron-forward"
+                            class="shrink-0 text-2xl transition-transform" data-class="{ 'rotate-90': open}"></iconify-icon>
+                        </button>
+                      </div>
+                      <ul
+                        class="menu-dropdown menu-dropdown-show ms-12 overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
+                        data-class="{ 'max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
+                        data-drag-container="item.children">
+                        <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
+                          data-key="item.href"></template>
+                      </ul>
+                    </li>
+                  </template>
+                </ul>
+              </template>
+
+              <!-- Profiles List -->
+              <template data-if="cat === 'Profiles'">
+                <ul class="menu w-full" data-drag-container="profilesPages"
+                  data-effect="if (profilesPages && profilesPages.length > 0) { try { localStorage.setItem('sidebar_order_Profiles', JSON.stringify(profilesPages.map(p => p.href))); } catch {} }">
+                  <template data-for="item in profilesPages" data-key="item.href">
+                    <!-- Root Leaf Item (No Children) -->
+                    <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
+                      data-bind-data-drag="item.href !== '/' ? '' : null">
+                      <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
+                        data-bind-data-tab-title="item.tabTitle || item.title"
+                        data-bind-data-tab-icon="item.tabIcon || item.icon"
+                        data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
+                        data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
+                        <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
+                        <span
+                          class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
+                          data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
+                          data-bind="item.title"></span>
+                      </a>
+                    </li>
+
+                    <!-- Root Branch Item (With Children) -->
+                    <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
+                      data-bind-data-drag="item.href !== '/' ? '' : null" data-signal="{ open: false }">
+                      <div class="flex">
+                        <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
+                          data-bind-data-tab-title="item.tabTitle || item.title"
+                          data-bind-data-tab-icon="item.tabIcon || item.icon"
+                          data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
+                          data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
+                          <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
+                          <span
+                            class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
+                            data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
+                            data-bind="item.title"></span>
+                        </a>
+                        <button
+                          class="btn btn-circle btn-xs hover:bg-accent/60 transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
+                          data-on-click="open = !open"
+                          data-class="{ 'bg-accent/20': open, 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }">
+                          <iconify-icon icon="material-symbols-light:chevron-forward"
+                            class="shrink-0 text-2xl transition-transform" data-class="{ 'rotate-90': open}"></iconify-icon>
+                        </button>
+                      </div>
+                      <ul
+                        class="menu-dropdown menu-dropdown-show ms-12 overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
+                        data-class="{ 'max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
+                        data-drag-container="item.children">
+                        <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
+                          data-key="item.href"></template>
+                      </ul>
+                    </li>
+                  </template>
+                </ul>
+              </template>
+
+              <!-- System List -->
+              <template data-if="cat === 'System'">
+                <ul class="menu w-full" data-drag-container="systemPages"
+                  data-effect="if (systemPages && systemPages.length > 0) { try { localStorage.setItem('sidebar_order_System', JSON.stringify(systemPages.map(p => p.href))); } catch {} }">
+                  <template data-for="item in systemPages" data-key="item.href">
+                    <!-- Root Leaf Item (No Children) -->
+                    <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
+                      data-bind-data-drag="item.href !== '/' ? '' : null">
+                      <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
+                        data-bind-data-tab-title="item.tabTitle || item.title"
+                        data-bind-data-tab-icon="item.tabIcon || item.icon"
+                        data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
+                        data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
+                        <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
+                        <span
+                          class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
+                          data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
+                          data-bind="item.title"></span>
+                      </a>
+                    </li>
+
+                    <!-- Root Branch Item (With Children) -->
+                    <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
+                      data-bind-data-drag="item.href !== '/' ? '' : null" data-signal="{ open: false }">
+                      <div class="flex">
+                        <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
+                          data-bind-data-tab-title="item.tabTitle || item.title"
+                          data-bind-data-tab-icon="item.tabIcon || item.icon"
+                          data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
+                          data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
+                          <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
+                          <span
+                            class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
+                            data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
+                            data-bind="item.title"></span>
+                        </a>
+                        <button
+                          class="btn btn-circle btn-xs hover:bg-accent/60 transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
+                          data-on-click="open = !open"
+                          data-class="{ 'bg-accent/20': open, 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }">
+                          <iconify-icon icon="material-symbols-light:chevron-forward"
+                            class="shrink-0 text-2xl transition-transform" data-class="{ 'rotate-90': open}"></iconify-icon>
+                        </button>
+                      </div>
+                      <ul
+                        class="menu-dropdown menu-dropdown-show ms-12 overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
+                        data-class="{ 'max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
+                        data-drag-container="item.children">
+                        <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
+                          data-key="item.href"></template>
+                      </ul>
+                    </li>
+                  </template>
+                </ul>
+              </template>
+            </div>
+          </template>
+        </div>
       </div>
 
       <!-- ================= Panel Favorites (tab 2) ================= -->
