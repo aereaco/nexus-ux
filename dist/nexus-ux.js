@@ -12152,6 +12152,7 @@ ${match}</ul>
       init_reactivity();
       init_debug();
       init_consts();
+      init_stylesheet();
       movedNodes = /* @__PURE__ */ new WeakSet();
       movedNodeTimers = /* @__PURE__ */ new Map();
       mutationObserverModule = {
@@ -12173,6 +12174,7 @@ ${match}</ul>
                       if (isExternalOverlay(node))
                         return;
                       addedThisBatch.add(node);
+                      stylesheet.adoptElementSubtree(node);
                     }
                   });
                 }
@@ -12704,13 +12706,42 @@ ${bridge}`, {
         adoptElementSubtree(rootEl) {
           if (!rootEl || typeof document === "undefined")
             return;
-          if ("classList" in rootEl && rootEl.classList) {
-            rootEl.classList.forEach((cls) => this.adoptClass(cls, rootEl));
+          const processElement = (el) => {
+            if (el.classList) {
+              el.classList.forEach((cls) => this.adoptClass(cls, el));
+            }
+            const dataClass = el.getAttribute("data-class");
+            if (dataClass) {
+              const matches = dataClass.match(/['"]([^'"]+)['"]/g);
+              if (matches) {
+                matches.forEach((m) => {
+                  const raw = m.slice(1, -1);
+                  raw.split(/\s+/).filter(Boolean).forEach((cls) => {
+                    this.adoptClass(cls, el);
+                  });
+                });
+              }
+            }
+            if (el.attributes) {
+              Array.from(el.attributes).forEach((attr) => {
+                if (attr.name.startsWith("data-class-")) {
+                  const cls = attr.name.slice(11);
+                  if (cls)
+                    this.adoptClass(cls, el);
+                }
+              });
+            }
+            if (el instanceof HTMLTemplateElement && el.content) {
+              this.adoptElementSubtree(el.content);
+            }
+          };
+          if ("getAttribute" in rootEl && rootEl.getAttribute) {
+            processElement(rootEl);
           }
           const all = rootEl.querySelectorAll ? rootEl.querySelectorAll("*") : [];
           all.forEach((el) => {
-            if (el instanceof HTMLElement && el.classList) {
-              el.classList.forEach((cls) => this.adoptClass(cls, el));
+            if (el instanceof Element) {
+              processElement(el);
             }
           });
         }

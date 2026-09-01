@@ -3,6 +3,7 @@ import { RuntimeContext } from './composition.ts';
 import { NexusEnhancedElement, ownership } from './reactivity.ts';
 import { reportError } from './debug.ts';
 import { CLEANUP_FUNCTIONS_KEY, RUN_EFFECT_RUNNERS_KEY, MARKER_KEY } from './consts.ts';
+import { stylesheet } from '../modules/attributes/stylesheet.ts';
 
 // Module-level state for cross-batch move detection
 const movedNodes = new WeakSet<HTMLElement>();
@@ -39,6 +40,7 @@ const mutationObserverModule: ObserverModule = {
               if (node instanceof HTMLElement) {
                 if (isExternalOverlay(node)) return;
                 addedThisBatch.add(node);
+                stylesheet.adoptElementSubtree(node);
               }
             });
           }
