@@ -361,9 +361,9 @@
 
     <!-- TAB BAR -->
     <div data-signal_global="{pageTabToggleHovered: false }"
-      class="shrink-0 z-20 transition-[padding,background-color,color,opacity] duration-[300ms,500ms,500ms,500ms] delay-[0ms,150ms,150ms,150ms] ease-in-out"
+      class="shrink-0 z-20 transition-[opacity,max-height,padding] duration-300 ease-in-out"
       data-class="{ 'max-h-20 opacity-100': pageTabs, 'max-h-0 opacity-0 overflow-hidden pointer-events-none': !pageTabs, 'aura aura-dual text-secondary': pageTabToggleHovered }">
-      <div class="card pe-2 transition-colors duration-500 delay-150" data-class="{'bg-base-200': pageTabToggleHovered }">
+      <div class="card pe-2" data-class="{'bg-base-200': pageTabToggleHovered }">
         <div class="flex flex-nowrap bg-base-300/20 rounded-none overflow-x-auto pb-1 scrollbar-auto-hide"
           role="tablist" aria-orientation="horizontal" data-drag-container="router.pageTabs" data-drag-group="pageTabs"
           data-drag-direction="horizontal">
@@ -616,8 +616,7 @@
     </template>
 
     <!-- ================= 2. Middle Content Section (Scrollable) ================= -->
-    <main class="sidebar-content flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
-      data-signal="{
+    <main class="sidebar-content flex-1 min-h-0 overflow-y-auto overflow-x-hidden" data-signal="{
         categories: (() => {
           try {
             const saved = JSON.parse(localStorage.getItem('sidebar_categories') || 'null');
@@ -629,8 +628,7 @@
         appsPages: [],
         profilesPages: [],
         systemPages: []
-      }"
-      data-effect="
+      }" data-effect="
         if (collapsed && !hovered && !sidebarOpen && $el) { 
           $el.scrollTo({ top: 0, behavior: 'smooth' }); 
         }
@@ -780,7 +778,8 @@
         <!-- 2. Categorized Sections (Draggable Category Groups & Dedicated Item Lists) -->
         <div data-drag-container="categories">
           <template data-for="cat in categories" data-key="cat">
-            <div data-drag data-show="(cat === 'Apps' ? appsPages : cat === 'Profiles' ? profilesPages : systemPages).length > 0">
+            <div data-drag
+              data-show="(cat === 'Apps' ? appsPages : cat === 'Profiles' ? profilesPages : systemPages).length > 0">
               <!-- Category Header (Title + Separator Line) -->
               <ul class="menu w-full py-0">
                 <li
@@ -790,7 +789,8 @@
                   data-bind="cat">Title
                 </li>
                 <li class="w-full mx-0" data-class="{ 'opacity-6': collapsed && !hovered && !sidebarOpen }"
-                  data-show="(cat === 'Apps' ? appsPages : cat === 'Profiles' ? profilesPages : systemPages).length > 0"></li>
+                  data-show="(cat === 'Apps' ? appsPages : cat === 'Profiles' ? profilesPages : systemPages).length > 0">
+                </li>
               </ul>
 
               <!-- Apps List -->
@@ -834,7 +834,8 @@
                           data-on-click="open = !open"
                           data-class="{ 'bg-accent/20': open, 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }">
                           <iconify-icon icon="material-symbols-light:chevron-forward"
-                            class="shrink-0 text-2xl transition-transform" data-class="{ 'rotate-90': open}"></iconify-icon>
+                            class="shrink-0 text-2xl transition-transform"
+                            data-class="{ 'rotate-90': open}"></iconify-icon>
                         </button>
                       </div>
                       <ul
@@ -890,7 +891,8 @@
                           data-on-click="open = !open"
                           data-class="{ 'bg-accent/20': open, 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }">
                           <iconify-icon icon="material-symbols-light:chevron-forward"
-                            class="shrink-0 text-2xl transition-transform" data-class="{ 'rotate-90': open}"></iconify-icon>
+                            class="shrink-0 text-2xl transition-transform"
+                            data-class="{ 'rotate-90': open}"></iconify-icon>
                         </button>
                       </div>
                       <ul
@@ -946,7 +948,8 @@
                           data-on-click="open = !open"
                           data-class="{ 'bg-accent/20': open, 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }">
                           <iconify-icon icon="material-symbols-light:chevron-forward"
-                            class="shrink-0 text-2xl transition-transform" data-class="{ 'rotate-90': open}"></iconify-icon>
+                            class="shrink-0 text-2xl transition-transform"
+                            data-class="{ 'rotate-90': open}"></iconify-icon>
                         </button>
                       </div>
                       <ul
