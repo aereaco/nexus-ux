@@ -1,3 +1,54 @@
+<script>
+  window.favStore = {
+    db: null,
+    async getDB() {
+      if (this.db) return this.db;
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open('nexus-store', 1);
+        req.onupgradeneeded = () => {
+          const db = req.result;
+          if (!db.objectStoreNames.contains('favorites')) {
+            db.createObjectStore('favorites', { keyPath: 'id' });
+          }
+        };
+        req.onsuccess = () => {
+          this.db = req.result;
+          resolve(this.db);
+        };
+        req.onerror = () => reject(req.error);
+      });
+    },
+    async load() {
+      try {
+        const db = await this.getDB();
+        return new Promise((resolve) => {
+          const tx = db.transaction('favorites', 'readonly');
+          const store = tx.objectStore('favorites');
+          const req = store.getAll();
+          req.onsuccess = () => resolve(req.result || []);
+          req.onerror = () => resolve([]);
+        });
+      } catch {
+        return [];
+      }
+    },
+    async save(item) {
+      try {
+        const db = await this.getDB();
+        const tx = db.transaction('favorites', 'readwrite');
+        tx.objectStore('favorites').put(item);
+      } catch {}
+    },
+    async remove(id) {
+      try {
+        const db = await this.getDB();
+        const tx = db.transaction('favorites', 'readwrite');
+        tx.objectStore('favorites').delete(id);
+      } catch {}
+    }
+  };
+</script>
+
 <div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300" data-signal_global="{
       collapsed: localStorage.collapsed !== 'false',
       pageTabs: localStorage.pageTabs !== 'false',
@@ -13,14 +64,7 @@
       ctxMenu: null,
       ctxMenuItems: [],
       ctxMenuTarget: 'body',
-      favorites: (() => {
-        try {
-          const f = JSON.parse(localStorage.favorites);
-          return Array.isArray(f) ? f : [];
-        } catch {
-          return [];
-        }
-      })(),
+      favorites: [],
       favForm: { id: null, title: '', href: '', icon: 'material-symbols-light:star-outline' },
       pendingDeleteId: null,
       themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset'],
@@ -55,19 +99,20 @@
             existing.href = href;
             existing.icon = icon;
             favorites = [...favorites];
+            if (window.favStore) window.favStore.save(existing);
           }
         } else {
           const newFav = { id: 'fav-' + (window.Date ? window.Date.now() : Math.floor(Math.random() * 1000000)), title, href, icon };
           favorites = [...(favorites || []), newFav];
+          if (window.favStore) window.favStore.save(newFav);
         }
 
-        localStorage.setItem('favorites', JSON.stringify(favorites));
         const modal = document.getElementById('fav-modal');
         if (modal && modal.close) modal.close();
       },
       deleteFavorite(targetId) {
         favorites = (favorites || []).filter(f => (f.id || f.href || f) !== targetId);
-        localStorage.setItem('favorites', JSON.stringify(favorites));
+        if (window.favStore) window.favStore.remove(targetId);
         pendingDeleteId = null;
         const modal = document.getElementById('fav-delete-modal');
         if (modal && modal.close) modal.close();
@@ -105,7 +150,10 @@
         const allTabs = router.pageTabs || [];
         const idx = allTabs.findIndex(t => t.id === tid);
         const pinned = router.pinnedPageTabs || [];
-        const tabHref = tab.url || tab.source || tab.route || '/';
+        const tabHref = tab.route || (tab.source?.startsWith('_components/') ? '/' : tab.source?.replace(/^\/_pages/, '')?.replace(/\.html$/, '') || '/');
+        const matchedPage = (router.pages || []).find(p => p.href === tabHref || p.href === tab.route);
+        const title = tab.meta?.title || matchedPage?.title || (tabHref === '/' ? 'Home' : tabHref.replace(/^\//, '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
+        const icon = tab.meta?.icon || matchedPage?.icon || 'material-symbols-light:star-outline';
         const isTabFav = (favorites || []).some(f => (f.href || f) === tabHref);
 
         const hasLeft = allTabs.some((t, i) => i < idx && !pinned.includes(t.id));
@@ -128,9 +176,9 @@
             icon: isTabFav ? 'material-symbols-light:edit-outline' : 'material-symbols-light:star-outline',
             action: () => {
               const favObj = (favorites || []).find(f => (f.href || f) === tabHref) || {
-                title: tab.title || tab.tabTitle || 'Tab',
+                title,
                 href: tabHref,
-                icon: tab.icon || tab.tabIcon || 'material-symbols-light:tab'
+                icon
               };
               openFavModal(favObj);
             }
@@ -254,6 +302,7 @@
       }
     }"
   data-class="{ 'md:grid-cols-[max-content_1fr]': !collapsed, 'md:grid-cols-[4rem_1fr]': collapsed, 'h-screen max-h-screen overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }"
+  data-effect="if (window.favStore && (!favorites || favorites.length === 0)) { window.favStore.load().then(items => { if (items && items.length) favorites = items; }); }"
   data-on-resize_window="isMobile = window.innerWidth < 768">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content flex flex-col"
@@ -1181,8 +1230,9 @@
       class="dropdown menu w-56 rounded-box bg-base-100 shadow-2xl border border-base-content/10 p-2 m-0 fixed z-[9999]"
       data-style="{ top: (ctxMenu?.y || 0) + 'px', left: (ctxMenu?.x || 0) + 'px' }">
       <template data-for="item in ctxMenuItems" data-key="item.label">
-        <li data-class="{ 'divider my-1': item.isDivider }">
-          <button type="button" data-show="!item.isDivider"
+        <li data-show="item.isDivider"></li>
+        <li data-show="!item.isDivider">
+          <button type="button"
             data-class="{ 'text-error hover:bg-error/10': item.danger }"
             data-on-click="executeAction(item)">
             <iconify-icon data-bind-icon="item.icon" class="text-lg"></iconify-icon>

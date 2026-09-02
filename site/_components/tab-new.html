@@ -24,12 +24,13 @@
       No favorites yet. Right-click a tab or link and choose <span class="font-medium">Save to Favorites</span>.
     </div>
     <ul class="menu w-full rounded-box bg-base-100/50" data-show="favorites && favorites.length > 0">
-      <template data-for="fav in favorites" data-key="fav.url">
+      <template data-for="fav in favorites" data-key="fav.id || fav.href || fav">
         <li>
-          <a data-bind-href="fav.url" data-bind-title="fav.title"
-             data-bind-data-tab-title="fav.title" data-bind-data-tab-icon="fav.icon || 'material-symbols-light:article-outline'">
-            <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:article-outline'" class="text-xl"></iconify-icon>
-            <span data-bind="fav.title"></span>
+          <a data-bind-href="fav.href || fav.url || fav" data-bind-title="fav.title || fav"
+             data-bind-data-tab-title="fav.title || fav" data-bind-data-tab-icon="fav.icon || 'material-symbols-light:star-outline'"
+             data-on-contextmenu_prevent="openFavContextMenu(fav, $evt)">
+            <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:star-outline'" class="text-xl"></iconify-icon>
+            <span data-bind="fav.title || fav"></span>
           </a>
         </li>
       </template>
