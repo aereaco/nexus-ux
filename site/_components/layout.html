@@ -361,11 +361,11 @@
 
     <!-- TAB BAR -->
     <div data-signal_global="{pageTabToggleHovered: false}"
-      data-class="{'aura aura text-secondary': pageTabToggleHovered }" data-style="{
+      data-class="{'aura aura-dual text-secondary': pageTabToggleHovered }" data-style="{
         padding: pageTabToggleHovered ? '2px' : '0px',
         transition: pageTabToggleHovered 
-          ? 'padding 300ms ease-in-out, opacity 500ms 150ms ease-in-out'
-          : 'padding 300ms ease-in-out, opacity 200ms ease-in-out'
+          ? 'padding 200ms ease-in-out, opacity 500ms 150ms ease-in-out'
+          : 'padding 200ms ease-in-out, opacity 200ms ease-in-out'
       }">
       <div class="shrink-0 z-20 transition-[opacity,max-height] duration-300 ease-in-out"
         data-class="{ 'max-h-20 opacity-100': pageTabs, 'max-h-0 opacity-0 overflow-hidden pointer-events-none': !pageTabs }">
@@ -450,6 +450,8 @@
           <div class="tooltip tooltip-bottom shrink-0" data-tip="Toggle page tabs">
             <button class="btn btn-sm btn-ghost btn-circle"
               data-class="{ 'btn-active text-primary bg-primary/10': pageTabs }"
+              data-on-mouseenter_debounce.2000ms="pageTabToggleHovered = true"
+              data-on-mouseleave_debounce.cancel="pageTabToggleHovered = false"
               data-on-click="pageTabs = !pageTabs; localStorage.setItem('pageTabs', pageTabs)"
               aria-label="Toggle page tabs">
               <iconify-icon icon="material-symbols-light:tab-group-outline" class="text-xl"></iconify-icon>
