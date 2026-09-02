@@ -1044,92 +1044,92 @@
         </button>
       </div>
     </footer>
+  </aside>
 
-    <!-- Native HTML Popover Context Menu -->
-    <ul id="ctx-menu-overlay" popover
-      class="dropdown menu w-56 rounded-box bg-base-100 shadow-2xl border border-base-content/10 p-2 m-0 fixed z-[9999]"
-      data-style="{ top: (ctxMenu?.y || 0) + 'px', left: (ctxMenu?.x || 0) + 'px' }">
-      <template data-for="item in ctxMenuItems" data-key="item.label">
-        <li data-class="{ 'divider my-1': item.isDivider }">
-          <button type="button" data-show="!item.isDivider"
-            data-class="{ 'text-error hover:bg-error/10': item.danger }"
-            data-on-click="if (item.action) { item.action(); } const p = document.getElementById('ctx-menu-overlay'); if (p && p.hidePopover) p.hidePopover();">
-            <iconify-icon data-bind-icon="item.icon" class="text-lg"></iconify-icon>
-            <span data-bind="item.label"></span>
-          </button>
-        </li>
-      </template>
-    </ul>
+  <!-- Native HTML Popover Context Menu -->
+  <ul id="ctx-menu-overlay" popover
+    class="dropdown menu w-56 rounded-box bg-base-100 shadow-2xl border border-base-content/10 p-2 m-0 fixed z-[9999]"
+    data-style="{ top: (ctxMenu?.y || 0) + 'px', left: (ctxMenu?.x || 0) + 'px' }">
+    <template data-for="item in ctxMenuItems" data-key="item.label">
+      <li data-class="{ 'divider my-1': item.isDivider }">
+        <button type="button" data-show="!item.isDivider"
+          data-class="{ 'text-error hover:bg-error/10': item.danger }"
+          data-on-click="if (item.action) { item.action(); } const p = document.getElementById('ctx-menu-overlay'); if (p && p.hidePopover) p.hidePopover();">
+          <iconify-icon data-bind-icon="item.icon" class="text-lg"></iconify-icon>
+          <span data-bind="item.label"></span>
+        </button>
+      </li>
+    </template>
+  </ul>
 
-    <!-- Add / Edit Favorite Modal -->
-    <dialog id="fav-modal" class="modal modal-bottom sm:modal-middle" data-on-keydown_escape="$('#fav-modal').close()">
-      <div class="modal-box bg-base-100 border border-base-content/10 shadow-2xl">
-        <h3 class="font-bold text-lg flex items-center gap-2">
-          <iconify-icon icon="material-symbols-light:star-outline" class="text-warning text-2xl"></iconify-icon>
-          Add to Favorites
-        </h3>
-        <p class="py-2 text-sm opacity-70">Customize the title and icon for your bookmark.</p>
-        <div class="form-control w-full space-y-4 my-2">
-          <div>
-            <label class="label"><span class="label-text font-semibold">Title</span></label>
-            <input type="text" class="input input-bordered w-full" data-bind-value="favForm.title"
-              data-on-input="favForm.title = $evt.target.value" placeholder="Title" />
-          </div>
-          <div>
-            <label class="label"><span class="label-text font-semibold">Destination URL / Page</span></label>
-            <input type="text" class="input input-bordered w-full" data-bind-value="favForm.href"
-              data-on-input="favForm.href = $evt.target.value" placeholder="URL" />
-          </div>
-          <div>
-            <label class="label"><span class="label-text font-semibold">Icon</span></label>
-            <div class="flex items-center gap-2">
-              <input type="text" class="input input-bordered grow" data-bind-value="favForm.icon"
-                data-on-input="favForm.icon = $evt.target.value" placeholder="material-symbols-light:star" />
-              <div class="avatar placeholder">
-                <div
-                  class="bg-base-200 text-base-content rounded-box size-10 flex items-center justify-center border border-base-content/10">
-                  <iconify-icon data-bind-icon="favForm.icon || 'material-symbols-light:star'"
-                    class="text-xl"></iconify-icon>
-                </div>
+  <!-- Add / Edit Favorite Modal -->
+  <dialog id="fav-modal" class="modal modal-bottom sm:modal-middle" data-on-keydown_escape="$('#fav-modal').close()">
+    <div class="modal-box bg-base-100 border border-base-content/10 shadow-2xl">
+      <h3 class="font-bold text-lg flex items-center gap-2">
+        <iconify-icon icon="material-symbols-light:star-outline" class="text-warning text-2xl"></iconify-icon>
+        Add to Favorites
+      </h3>
+      <p class="py-2 text-sm opacity-70">Customize the title and icon for your bookmark.</p>
+      <div class="form-control w-full space-y-4 my-2">
+        <div>
+          <label class="label"><span class="label-text font-semibold">Title</span></label>
+          <input type="text" class="input input-bordered w-full" data-bind-value="favForm.title"
+            data-on-input="favForm.title = $evt.target.value" placeholder="Title" />
+        </div>
+        <div>
+          <label class="label"><span class="label-text font-semibold">Destination URL / Page</span></label>
+          <input type="text" class="input input-bordered w-full" data-bind-value="favForm.href"
+            data-on-input="favForm.href = $evt.target.value" placeholder="URL" />
+        </div>
+        <div>
+          <label class="label"><span class="label-text font-semibold">Icon</span></label>
+          <div class="flex items-center gap-2">
+            <input type="text" class="input input-bordered grow" data-bind-value="favForm.icon"
+              data-on-input="favForm.icon = $evt.target.value" placeholder="material-symbols-light:star" />
+            <div class="avatar placeholder">
+              <div
+                class="bg-base-200 text-base-content rounded-box size-10 flex items-center justify-center border border-base-content/10">
+                <iconify-icon data-bind-icon="favForm.icon || 'material-symbols-light:star'"
+                  class="text-xl"></iconify-icon>
               </div>
             </div>
           </div>
         </div>
-        <div class="modal-action">
-          <button type="button" class="btn btn-ghost" data-on-click="$('#fav-modal').close()">Cancel</button>
-          <button type="button" class="btn btn-primary"
-            data-on-click="const newFav = { id: 'fav-' + Date.now(), title: favForm.title || 'Bookmark', href: favForm.href || '/', icon: favForm.icon || 'material-symbols-light:star-outline' }; localStorage.setItem('favorites', [...(favorites || []), newFav]); $('#fav-modal').close();">
-            Save Favorite
-          </button>
-        </div>
       </div>
-      <form method="dialog" class="modal-backdrop bg-base-900/40">
-        <button>close</button>
-      </form>
-    </dialog>
+      <div class="modal-action">
+        <button type="button" class="btn btn-ghost" data-on-click="$('#fav-modal').close()">Cancel</button>
+        <button type="button" class="btn btn-primary"
+          data-on-click="const newFav = { id: 'fav-' + Date.now(), title: favForm.title || 'Bookmark', href: favForm.href || '/', icon: favForm.icon || 'material-symbols-light:star-outline' }; localStorage.setItem('favorites', [...(favorites || []), newFav]); $('#fav-modal').close();">
+          Save Favorite
+        </button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop bg-base-900/40">
+      <button>close</button>
+    </form>
+  </dialog>
 
-    <!-- Delete Favorite Confirmation Modal -->
-    <dialog id="fav-delete-modal" class="modal modal-bottom sm:modal-middle"
-      data-on-keydown_escape="$('#fav-delete-modal').close()">
-      <div class="modal-box bg-base-100 border border-base-content/10 shadow-2xl">
-        <h3 class="font-bold text-lg text-error flex items-center gap-2">
-          <iconify-icon icon="material-symbols-light:warning-outline" class="text-2xl"></iconify-icon>
-          Remove Favorite?
-        </h3>
-        <p class="py-4 text-sm opacity-80">Are you sure you want to remove this item from your favorites? This action
-          cannot be undone.</p>
-        <div class="modal-action">
-          <button type="button" class="btn btn-ghost"
-            data-on-click="pendingDeleteId = null; $('#fav-delete-modal').close()">Cancel</button>
-          <button type="button" class="btn btn-error"
-            data-on-click="localStorage.setItem('favorites', (favorites || []).filter(f => (f.id || f) !== pendingDeleteId)); pendingDeleteId = null; $('#fav-delete-modal').close();">
-            Remove
-          </button>
-        </div>
+  <!-- Delete Favorite Confirmation Modal -->
+  <dialog id="fav-delete-modal" class="modal modal-bottom sm:modal-middle"
+    data-on-keydown_escape="$('#fav-delete-modal').close()">
+    <div class="modal-box bg-base-100 border border-base-content/10 shadow-2xl">
+      <h3 class="font-bold text-lg text-error flex items-center gap-2">
+        <iconify-icon icon="material-symbols-light:warning-outline" class="text-2xl"></iconify-icon>
+        Remove Favorite?
+      </h3>
+      <p class="py-4 text-sm opacity-80">Are you sure you want to remove this item from your favorites? This action
+        cannot be undone.</p>
+      <div class="modal-action">
+        <button type="button" class="btn btn-ghost"
+          data-on-click="pendingDeleteId = null; $('#fav-delete-modal').close()">Cancel</button>
+        <button type="button" class="btn btn-error"
+          data-on-click="localStorage.setItem('favorites', (favorites || []).filter(f => (f.id || f) !== pendingDeleteId)); pendingDeleteId = null; $('#fav-delete-modal').close();">
+          Remove
+        </button>
       </div>
-      <form method="dialog" class="modal-backdrop bg-base-900/40">
-        <button>close</button>
-      </form>
-    </dialog>
-  </aside>
+    </div>
+    <form method="dialog" class="modal-backdrop bg-base-900/40">
+      <button>close</button>
+    </form>
+  </dialog>
 </div>
