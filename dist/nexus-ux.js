@@ -8784,6 +8784,7 @@ ${match}</ul>
   var init_teleport = __esm({
     "src/modules/attributes/teleport.ts"() {
       init_consts();
+      init_scope();
       teleportAttribute = {
         name: "teleport",
         attribute: "teleport",
@@ -8909,34 +8910,89 @@ ${match}</ul>
           if (element.tagName.toLowerCase() !== "template") {
             runtime.warn?.("[Teleport] DOM teleportation should be used on <template> tags.", element);
           }
-          const targetSelector = value.trim();
-          if (!targetSelector)
-            return;
-          let clone;
-          if (element.tagName.toLowerCase() === "template") {
-            clone = element.content.cloneNode(true).firstElementChild;
+          let clone = null;
+          if (element instanceof HTMLTemplateElement || element.tagName.toLowerCase() === "template") {
+            const templateEl = element;
+            let targetChild = null;
+            if (templateEl.content) {
+              targetChild = templateEl.content.firstElementChild || templateEl.content.children && templateEl.content.children[0];
+              if (!targetChild && templateEl.content.childNodes) {
+                for (let i = 0; i < templateEl.content.childNodes.length; i++) {
+                  const node = templateEl.content.childNodes[i];
+                  if (node instanceof HTMLElement || node.nodeType === 1) {
+                    targetChild = node;
+                    break;
+                  }
+                }
+              }
+            }
+            if (!targetChild) {
+              targetChild = templateEl.firstElementChild || templateEl.children && templateEl.children[0];
+            }
+            if (!targetChild && templateEl.innerHTML && templateEl.innerHTML.trim()) {
+              const temp = document.createElement("div");
+              temp.innerHTML = templateEl.innerHTML.trim();
+              targetChild = temp.firstElementChild;
+            }
+            if (targetChild instanceof HTMLElement) {
+              clone = targetChild.cloneNode(true);
+            }
           } else {
             clone = element.cloneNode(true);
             clone.removeAttribute("data-teleport");
           }
-          if (element[DATA_STACK_KEY]) {
-            clone[DATA_STACK_KEY] = element[DATA_STACK_KEY];
+          if (!clone)
+            return;
+          const stack = element[DATA_STACK_KEY] || getDataStack(element);
+          if (stack && stack.length) {
+            clone[DATA_STACK_KEY] = stack;
           }
-          const placeInDom = () => {
+          let isInitialized = false;
+          const resolveTargetSelector = () => {
+            try {
+              const evaluated = runtime.evaluate(element, value);
+              if (typeof evaluated === "string" && evaluated.trim()) {
+                return evaluated.trim();
+              }
+            } catch {
+            }
+            const raw = value.trim();
+            if (raw && typeof document !== "undefined") {
+              try {
+                if (document.querySelector(raw))
+                  return raw;
+              } catch {
+              }
+            }
+            return "body";
+          };
+          const updateTarget = () => {
+            const targetSelector = resolveTargetSelector();
+            if (!targetSelector)
+              return;
             const target = document.querySelector(targetSelector);
             if (!target) {
               runtime.warn?.(`[Teleport] Target "${targetSelector}" not found.`);
               return;
             }
-            if (modifiers.includes("prepend")) {
-              target.insertBefore(clone, target.firstChild);
-            } else {
-              target.appendChild(clone);
+            if (clone.parentNode !== target) {
+              if (modifiers.includes("prepend")) {
+                target.insertBefore(clone, target.firstChild);
+              } else {
+                target.appendChild(clone);
+              }
+            }
+            if (!isInitialized) {
+              isInitialized = true;
+              runtime.processElement?.(clone);
             }
           };
-          placeInDom();
-          runtime.processElement?.(clone);
+          updateTarget();
+          const [_runner, effectCleanup] = runtime.elementBoundEffect(element, updateTarget);
           return () => {
+            if (typeof effectCleanup === "function") {
+              effectCleanup();
+            }
             if (clone.parentNode) {
               clone.parentNode.removeChild(clone);
             }

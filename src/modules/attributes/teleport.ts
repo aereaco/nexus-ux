@@ -2,6 +2,7 @@ import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { ParsedAttribute } from '../../engine/attributeParser.ts';
 import { DATA_STACK_KEY, IS_TEMPLATE_KEY } from '../../engine/consts.ts';
+import { getDataStack } from '../../engine/scope.ts';
 import { DragReorderEngine, buildReorderContext } from './drag.ts';
 
 /**
@@ -181,43 +182,100 @@ export const teleportAttribute: AttributeModule = {
       runtime.warn?.('[Teleport] DOM teleportation should be used on <template> tags.', element);
     }
 
-    const targetSelector = value.trim();
-    if (!targetSelector) return;
-
     // Clone the element/template content
-    let clone: HTMLElement;
-    if (element.tagName.toLowerCase() === 'template') {
-      clone = ((element as HTMLTemplateElement).content.cloneNode(true) as DocumentFragment).firstElementChild as HTMLElement;
+    let clone: HTMLElement | null = null;
+    if (element instanceof HTMLTemplateElement || element.tagName.toLowerCase() === 'template') {
+      const templateEl = element as HTMLTemplateElement;
+      let targetChild: Element | null = null;
+      if (templateEl.content) {
+        targetChild = templateEl.content.firstElementChild || (templateEl.content.children && templateEl.content.children[0]);
+        if (!targetChild && templateEl.content.childNodes) {
+          for (let i = 0; i < templateEl.content.childNodes.length; i++) {
+            const node = templateEl.content.childNodes[i];
+            if (node instanceof HTMLElement || (node as any).nodeType === 1) {
+              targetChild = node as HTMLElement;
+              break;
+            }
+          }
+        }
+      }
+      if (!targetChild) {
+        targetChild = templateEl.firstElementChild || (templateEl.children && templateEl.children[0]);
+      }
+      if (!targetChild && templateEl.innerHTML && templateEl.innerHTML.trim()) {
+        const temp = document.createElement('div');
+        temp.innerHTML = templateEl.innerHTML.trim();
+        targetChild = temp.firstElementChild;
+      }
+      if (targetChild instanceof HTMLElement) {
+        clone = targetChild.cloneNode(true) as HTMLElement;
+      }
     } else {
       clone = element.cloneNode(true) as HTMLElement;
       clone.removeAttribute('data-teleport');
     }
 
+    if (!clone) return;
+
     // Pass data stack reference for ZCZS scope continuity
-    if ((element as any)[DATA_STACK_KEY]) {
-      (clone as any)[DATA_STACK_KEY] = (element as any)[DATA_STACK_KEY];
+    const stack = (element as any)[DATA_STACK_KEY] || getDataStack(element);
+    if (stack && stack.length) {
+      (clone as any)[DATA_STACK_KEY] = stack;
     }
 
-    const placeInDom = () => {
+    let isInitialized = false;
+
+    const resolveTargetSelector = (): string => {
+      try {
+        const evaluated = runtime.evaluate(element, value);
+        if (typeof evaluated === 'string' && evaluated.trim()) {
+          return evaluated.trim();
+        }
+      } catch {}
+
+      const raw = value.trim();
+      if (raw && typeof document !== 'undefined') {
+        try {
+          if (document.querySelector(raw)) return raw;
+        } catch {}
+      }
+
+      return 'body';
+    };
+
+    const updateTarget = () => {
+      const targetSelector = resolveTargetSelector();
+      if (!targetSelector) return;
+
       const target = document.querySelector(targetSelector);
       if (!target) {
         runtime.warn?.(`[Teleport] Target "${targetSelector}" not found.`);
         return;
       }
 
-      if (modifiers.includes('prepend')) {
-        target.insertBefore(clone, target.firstChild);
-      } else {
-        target.appendChild(clone);
+      if (clone.parentNode !== target) {
+        if (modifiers.includes('prepend')) {
+          target.insertBefore(clone, target.firstChild);
+        } else {
+          target.appendChild(clone);
+        }
+      }
+
+      if (!isInitialized) {
+        isInitialized = true;
+        // Initialize reactive directives on the teleported clone
+        runtime.processElement?.(clone);
       }
     };
 
-    placeInDom();
+    updateTarget();
 
-    // Initialize reactive directives on the teleported clone
-    runtime.processElement?.(clone);
+    const [_runner, effectCleanup] = runtime.elementBoundEffect(element, updateTarget);
 
     return () => {
+      if (typeof effectCleanup === 'function') {
+        effectCleanup();
+      }
       if (clone.parentNode) {
         clone.parentNode.removeChild(clone);
       }

@@ -1,4 +1,4 @@
-<div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300" data-signal="{
+<div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300" data-signal_global="{
       collapsed: localStorage.collapsed !== 'false',
       pageTabs: localStorage.pageTabs !== 'false',
       fixedHeader: localStorage.fixedHeader !== 'false',
@@ -10,183 +10,184 @@
       searchOpen: false,
       searchQuery: '',
       activeSidebarTab: 1,
-      themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset']
+      ctxMenu: null,
+      ctxMenuItems: [],
+      ctxMenuTarget: 'body',
+      favorites: localStorage.favorites ?? [],
+      favForm: { title: '', href: '', icon: 'material-symbols-light:star-outline' },
+      pendingDeleteId: null,
+      themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset'],
+      executeAction(item) {
+        if (item && item.action) {
+          try { item.action(); } catch (e) { console.error(e); }
+        }
+        const popover = document.getElementById('ctx-menu-overlay');
+        if (popover && popover.hidePopover) {
+          try { popover.hidePopover(); } catch {}
+        }
+      },
+      showContextMenu(items, evt, target = 'body') {
+        if (evt && evt.preventDefault) evt.preventDefault();
+        ctxMenuItems = items || [];
+        ctxMenuTarget = target;
+        const rawX = evt ? (evt.clientX || evt.pageX || 100) : 100;
+        const rawY = evt ? (evt.clientY || evt.pageY || 100) : 100;
+        const menuWidth = 224;
+        const menuHeight = (items?.length || 3) * 40 + 20;
+        const posX = (rawX + menuWidth > window.innerWidth) ? Math.max(10, rawX - menuWidth) : rawX;
+        const posY = (rawY + menuHeight > window.innerHeight) ? Math.max(10, rawY - menuHeight) : rawY;
+        ctxMenu = { x: posX, y: posY };
+        const popover = document.getElementById('ctx-menu-overlay');
+        if (popover && popover.showPopover) {
+          try { popover.showPopover(); } catch {}
+        }
+      },
+      openTabContextMenu(tab, evt) {
+        const tid = tab.id;
+        const isPinned = (router.pinnedPageTabs || []).includes(tid);
+        const allTabs = router.pageTabs || [];
+        const idx = allTabs.findIndex(t => t.id === tid);
+        const pinned = router.pinnedPageTabs || [];
+
+        const hasLeft = allTabs.some((t, i) => i < idx && !pinned.includes(t.id));
+        const hasRight = allTabs.some((t, i) => i > idx && !pinned.includes(t.id));
+        const hasOthers = allTabs.some(t => t.id !== tid && !pinned.includes(t.id));
+
+        const items = [
+          {
+            label: isPinned ? 'Unpin Tab' : 'Pin Tab',
+            icon: isPinned ? 'material-symbols-light:keep-off-outline' : 'material-symbols-light:keep-outline',
+            action: () => router.pinPageTab(tid)
+          },
+          {
+            label: 'Duplicate Tab',
+            icon: 'material-symbols-light:content-copy',
+            action: () => router.duplicatePageTab(tid)
+          },
+          { isDivider: true, label: 'divider-close-group' }
+        ];
+
+        if (!isPinned) {
+          items.push({
+            label: 'Close Tab',
+            icon: 'material-symbols-light:close',
+            danger: true,
+            action: () => router.closePageTab(tid)
+          });
+        }
+
+        if (hasOthers) {
+          items.push({
+            label: 'Close Other Tabs',
+            icon: 'material-symbols-light:tab-close-outline',
+            danger: true,
+            action: () => {
+              const keep = (router.pageTabs || []).filter(t => t.id === tid || (router.pinnedPageTabs || []).includes(t.id));
+              router.pageTabs = keep;
+              if (!keep.some(t => t.id === router.activePageTabId)) router.switchPageTab(tid);
+            }
+          });
+        }
+
+        if (hasRight) {
+          items.push({
+            label: 'Close Tabs to Right',
+            icon: 'material-symbols-light:arrow-forward',
+            danger: true,
+            action: () => {
+              const curIdx = (router.pageTabs || []).findIndex(t => t.id === tid);
+              const keep = (router.pageTabs || []).filter((t, i) => i <= curIdx || (router.pinnedPageTabs || []).includes(t.id));
+              router.pageTabs = keep;
+              if (!keep.some(t => t.id === router.activePageTabId)) router.switchPageTab(tid);
+            }
+          });
+        }
+
+        if (hasLeft) {
+          items.push({
+            label: 'Close Tabs to Left',
+            icon: 'material-symbols-light:arrow-back',
+            danger: true,
+            action: () => {
+              const curIdx = (router.pageTabs || []).findIndex(t => t.id === tid);
+              const keep = (router.pageTabs || []).filter((t, i) => i >= curIdx || (router.pinnedPageTabs || []).includes(t.id));
+              router.pageTabs = keep;
+              if (!keep.some(t => t.id === router.activePageTabId)) router.switchPageTab(tid);
+            }
+          });
+        }
+
+        showContextMenu(items, evt, 'body');
+      },
+      openNavContextMenu(item, evt) {
+        const href = typeof item === 'string' ? item : item.href;
+        const title = (typeof item === 'object' && item.title) ? item.title : href;
+        const icon = (typeof item === 'object' && item.icon) ? item.icon : 'material-symbols-light:star-outline';
+        const isFav = (favorites || []).some(f => (f.href || f) === href);
+        const items = [
+          {
+            label: 'Open in New Tab',
+            icon: 'material-symbols-light:open-in-new',
+            action: () => router.createPageTab(href, href)
+          },
+          {
+            label: isFav ? 'Remove Favorite' : 'Add to Favorites',
+            icon: isFav ? 'material-symbols-light:star' : 'material-symbols-light:star-outline',
+            action: () => {
+              if (isFav) {
+                favorites = (favorites || []).filter(f => (f.href || f) !== href);
+              } else {
+                favorites = [...(favorites || []), { id: 'fav-' + Date.now(), title, href, icon }];
+              }
+              localStorage.setItem('favorites', JSON.stringify(favorites));
+            }
+          },
+          {
+            label: 'Copy Link Address',
+            icon: 'material-symbols-light:content-copy',
+            action: () => {
+              if (navigator.clipboard) navigator.clipboard.writeText(window.location.origin + href);
+            }
+          }
+        ];
+        showContextMenu(items, evt, 'aside.dashboard-sidebar');
+      },
+      openFavContextMenu(fav, evt) {
+        const fhref = fav.href || fav;
+        const targetId = fav.id || fav;
+        const items = [
+          {
+            label: 'Open in New Tab',
+            icon: 'material-symbols-light:open-in-new',
+            action: () => router.createPageTab(fhref, fhref)
+          },
+          {
+            label: 'Add as Pinned Tab',
+            icon: 'material-symbols-light:keep-outline',
+            action: () => {
+              router.createPageTab(fhref, fhref);
+              router.pinPageTab(router.activePageTabId);
+            }
+          },
+          {
+            label: 'Remove Favorite',
+            icon: 'material-symbols-light:delete-outline',
+            danger: true,
+            action: () => {
+              pendingDeleteId = targetId;
+              const modal = document.getElementById('fav-delete-modal');
+              if (modal && modal.showModal) modal.showModal();
+            }
+          }
+        ];
+        showContextMenu(items, evt, 'aside.dashboard-sidebar');
+      }
     }"
   data-class="{ 'md:grid-cols-[max-content_1fr]': !collapsed, 'md:grid-cols-[4rem_1fr]': collapsed, 'h-screen max-h-screen overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }"
   data-on-resize_window="isMobile = window.innerWidth < 768">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content flex flex-col"
-    data-class="{ 'h-full overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }" data-signal_global="{
-        ctxMenu: null,
-        ctxMenuItems: [],
-        favorites: localStorage.favorites ?? [],
-        favForm: { title: '', href: '', icon: 'material-symbols-light:star-outline' },
-        pendingDeleteId: null,
-        themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset'],
-        executeAction(item) {
-          if (item && item.action) {
-            try { item.action(); } catch (e) { console.error(e); }
-          }
-          const popover = document.getElementById('ctx-menu-overlay');
-          if (popover && popover.hidePopover) {
-            try { popover.hidePopover(); } catch {}
-          }
-        },
-        showContextMenu(items, evt) {
-          if (evt && evt.preventDefault) evt.preventDefault();
-          ctxMenuItems = items || [];
-          const rawX = evt ? (evt.clientX || evt.pageX || 100) : 100;
-          const rawY = evt ? (evt.clientY || evt.pageY || 100) : 100;
-          const menuWidth = 224;
-          const menuHeight = (items?.length || 3) * 40 + 20;
-          const posX = (rawX + menuWidth > window.innerWidth) ? Math.max(10, rawX - menuWidth) : rawX;
-          const posY = (rawY + menuHeight > window.innerHeight) ? Math.max(10, rawY - menuHeight) : rawY;
-          ctxMenu = { x: posX, y: posY };
-          const popover = document.getElementById('ctx-menu-overlay');
-          if (popover && popover.showPopover) {
-            try { popover.showPopover(); } catch {}
-          }
-        },
-        openTabContextMenu(tab, evt) {
-          const tid = tab.id;
-          const isPinned = (router.pinnedPageTabs || []).includes(tid);
-          const allTabs = router.pageTabs || [];
-          const idx = allTabs.findIndex(t => t.id === tid);
-          const pinned = router.pinnedPageTabs || [];
-
-          const hasLeft = allTabs.some((t, i) => i < idx && !pinned.includes(t.id));
-          const hasRight = allTabs.some((t, i) => i > idx && !pinned.includes(t.id));
-          const hasOthers = allTabs.some(t => t.id !== tid && !pinned.includes(t.id));
-
-          const items = [
-            {
-              label: isPinned ? 'Unpin Tab' : 'Pin Tab',
-              icon: isPinned ? 'material-symbols-light:keep-off-outline' : 'material-symbols-light:keep-outline',
-              action: () => router.pinPageTab(tid)
-            },
-            {
-              label: 'Duplicate Tab',
-              icon: 'material-symbols-light:content-copy',
-              action: () => router.duplicatePageTab(tid)
-            },
-            { isDivider: true, label: 'divider-close-group' }
-          ];
-
-          if (!isPinned) {
-            items.push({
-              label: 'Close Tab',
-              icon: 'material-symbols-light:close',
-              danger: true,
-              action: () => router.closePageTab(tid)
-            });
-          }
-
-          if (hasOthers) {
-            items.push({
-              label: 'Close Other Tabs',
-              icon: 'material-symbols-light:tab-close-outline',
-              danger: true,
-              action: () => {
-                const keep = (router.pageTabs || []).filter(t => t.id === tid || (router.pinnedPageTabs || []).includes(t.id));
-                router.pageTabs = keep;
-                if (!keep.some(t => t.id === router.activePageTabId)) router.switchPageTab(tid);
-              }
-            });
-          }
-
-          if (hasRight) {
-            items.push({
-              label: 'Close Tabs to Right',
-              icon: 'material-symbols-light:arrow-forward',
-              danger: true,
-              action: () => {
-                const curIdx = (router.pageTabs || []).findIndex(t => t.id === tid);
-                const keep = (router.pageTabs || []).filter((t, i) => i <= curIdx || (router.pinnedPageTabs || []).includes(t.id));
-                router.pageTabs = keep;
-                if (!keep.some(t => t.id === router.activePageTabId)) router.switchPageTab(tid);
-              }
-            });
-          }
-
-          if (hasLeft) {
-            items.push({
-              label: 'Close Tabs to Left',
-              icon: 'material-symbols-light:arrow-back',
-              danger: true,
-              action: () => {
-                const curIdx = (router.pageTabs || []).findIndex(t => t.id === tid);
-                const keep = (router.pageTabs || []).filter((t, i) => i >= curIdx || (router.pinnedPageTabs || []).includes(t.id));
-                router.pageTabs = keep;
-                if (!keep.some(t => t.id === router.activePageTabId)) router.switchPageTab(tid);
-              }
-            });
-          }
-
-          showContextMenu(items, evt);
-        },
-        openNavContextMenu(item, evt) {
-          const href = typeof item === 'string' ? item : item.href;
-          const title = (typeof item === 'object' && item.title) ? item.title : href;
-          const icon = (typeof item === 'object' && item.icon) ? item.icon : 'material-symbols-light:star-outline';
-          const isFav = (favorites || []).some(f => (f.href || f) === href);
-          const items = [
-            {
-              label: 'Open in New Tab',
-              icon: 'material-symbols-light:open-in-new',
-              action: () => router.createPageTab(href, href)
-            },
-            {
-              label: isFav ? 'Remove Favorite' : 'Add to Favorites',
-              icon: isFav ? 'material-symbols-light:star' : 'material-symbols-light:star-outline',
-              action: () => {
-                if (isFav) {
-                  favorites = (favorites || []).filter(f => (f.href || f) !== href);
-                } else {
-                  favorites = [...(favorites || []), { id: 'fav-' + Date.now(), title, href, icon }];
-                }
-                localStorage.setItem('favorites', JSON.stringify(favorites));
-              }
-            },
-            {
-              label: 'Copy Link Address',
-              icon: 'material-symbols-light:content-copy',
-              action: () => {
-                if (navigator.clipboard) navigator.clipboard.writeText(window.location.origin + href);
-              }
-            }
-          ];
-          showContextMenu(items, evt);
-        },
-        openFavContextMenu(fav, evt) {
-          const fhref = fav.href || fav;
-          const targetId = fav.id || fav;
-          const items = [
-            {
-              label: 'Open in New Tab',
-              icon: 'material-symbols-light:open-in-new',
-              action: () => router.createPageTab(fhref, fhref)
-            },
-            {
-              label: 'Add as Pinned Tab',
-              icon: 'material-symbols-light:keep-outline',
-              action: () => {
-                router.createPageTab(fhref, fhref);
-                router.pinPageTab(router.activePageTabId);
-              }
-            },
-            {
-              label: 'Remove Favorite',
-              icon: 'material-symbols-light:delete-outline',
-              danger: true,
-              action: () => {
-                favorites = (favorites || []).filter(f => (f.id || f) !== targetId);
-                localStorage.setItem('favorites', JSON.stringify(favorites));
-              }
-            }
-          ];
-          showContextMenu(items, evt);
-        }
-      }">
+    data-class="{ 'h-full overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }">
     <!-- Signal-Based Routes configured on <html> via data-route="{ routes: [...] }" -->
 
 
@@ -1109,21 +1110,23 @@
     </footer>
   </aside>
 
-  <!-- Native HTML Popover Context Menu -->
-  <ul id="ctx-menu-overlay" popover
-    class="dropdown menu w-56 rounded-box bg-base-100 shadow-2xl border border-base-content/10 p-2 m-0 fixed z-[9999]"
-    data-style="{ top: (ctxMenu?.y || 0) + 'px', left: (ctxMenu?.x || 0) + 'px' }">
-    <template data-for="item in ctxMenuItems" data-key="item.label">
-      <li data-class="{ 'divider my-1': item.isDivider }">
-        <button type="button" data-show="!item.isDivider"
-          data-class="{ 'text-error hover:bg-error/10': item.danger }"
-          data-on-click="executeAction(item)">
-          <iconify-icon data-bind-icon="item.icon" class="text-lg"></iconify-icon>
-          <span data-bind="item.label"></span>
-        </button>
-      </li>
-    </template>
-  </ul>
+  <!-- Declaratively Teleported Context Menu -->
+  <template data-teleport="ctxMenuTarget">
+    <ul id="ctx-menu-overlay" popover
+      class="dropdown menu w-56 rounded-box bg-base-100 shadow-2xl border border-base-content/10 p-2 m-0 fixed z-[9999]"
+      data-style="{ top: (ctxMenu?.y || 0) + 'px', left: (ctxMenu?.x || 0) + 'px' }">
+      <template data-for="item in ctxMenuItems" data-key="item.label">
+        <li data-class="{ 'divider my-1': item.isDivider }">
+          <button type="button" data-show="!item.isDivider"
+            data-class="{ 'text-error hover:bg-error/10': item.danger }"
+            data-on-click="executeAction(item)">
+            <iconify-icon data-bind-icon="item.icon" class="text-lg"></iconify-icon>
+            <span data-bind="item.label"></span>
+          </button>
+        </li>
+      </template>
+    </ul>
+  </template>
 
   <!-- Add / Edit Favorite Modal -->
   <dialog id="fav-modal" class="modal modal-bottom sm:modal-middle" data-on-keydown_escape="$('#fav-modal').close()">
