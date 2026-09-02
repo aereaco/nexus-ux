@@ -23,13 +23,25 @@
         favForm: { title: '', href: '', icon: 'material-symbols-light:star-outline' },
         pendingDeleteId: null,
         themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset'],
+        showContextMenu(items, evt) {
+          if (evt && evt.preventDefault) evt.preventDefault();
+          ctxMenuItems = items || [];
+          const rawX = evt ? (evt.clientX || evt.pageX || 100) : 100;
+          const rawY = evt ? (evt.clientY || evt.pageY || 100) : 100;
+          const menuWidth = 224;
+          const menuHeight = (items?.length || 3) * 40 + 20;
+          const posX = (rawX + menuWidth > window.innerWidth) ? Math.max(10, rawX - menuWidth) : rawX;
+          const posY = (rawY + menuHeight > window.innerHeight) ? Math.max(10, rawY - menuHeight) : rawY;
+          ctxMenu = { x: posX, y: posY };
+          const popover = document.getElementById('ctx-menu-overlay');
+          if (popover && popover.showPopover) {
+            try { popover.showPopover(); } catch {}
+          }
+        },
         openTabContextMenu(tab, evt) {
-          const e = evt;
-          const rawX = e.clientX || e.pageX || 100;
-          const rawY = e.clientY || e.pageY || 100;
           const tid = tab.id;
           const isPinned = (router.pinnedPageTabs || []).includes(tid);
-          this.ctxMenuItems = [
+          const items = [
             {
               label: isPinned ? 'Unpin Tab' : 'Pin Tab',
               icon: isPinned ? 'material-symbols-light:keep-off-outline' : 'material-symbols-light:keep-outline',
@@ -47,36 +59,71 @@
               action: () => router.closePageTab(tid)
             }
           ];
-          const menuWidth = 224;
-          const menuHeight = 220;
-          const posX = (rawX + menuWidth > window.innerWidth) ? (rawX - menuWidth) : rawX;
-          const posY = (rawY + menuHeight > window.innerHeight) ? (rawY - menuHeight) : rawY;
-          this.ctxMenu = { type: 'tab', tabId: tid, x: posX, y: posY };
+          showContextMenu(items, evt);
         },
-        openNavContextMenu(href, title, icon, evt) {
-          const e = evt;
-          const rawX = e.clientX || 100;
-          const rawY = e.clientY || 100;
-          this.ctxMenuItems = [
+        openNavContextMenu(item, evt) {
+          const href = typeof item === 'string' ? item : item.href;
+          const title = (typeof item === 'object' && item.title) ? item.title : href;
+          const icon = (typeof item === 'object' && item.icon) ? item.icon : 'material-symbols-light:star-outline';
+          const isFav = (favorites || []).some(f => (f.href || f) === href);
+          const items = [
             {
               label: 'Open in New Tab',
-              icon: 'material-symbols-light:add',
+              icon: 'material-symbols-light:open-in-new',
               action: () => router.createPageTab(href, href)
+            },
+            {
+              label: isFav ? 'Remove Favorite' : 'Add to Favorites',
+              icon: isFav ? 'material-symbols-light:star' : 'material-symbols-light:star-outline',
+              action: () => {
+                if (isFav) {
+                  favorites = (favorites || []).filter(f => (f.href || f) !== href);
+                } else {
+                  favorites = [...(favorites || []), { id: 'fav-' + Date.now(), title, href, icon }];
+                }
+                localStorage.setItem('favorites', JSON.stringify(favorites));
+              }
             },
             {
               label: 'Copy Link Address',
               icon: 'material-symbols-light:content-copy',
               action: () => {
-                if (navigator.clipboard) navigator.clipboard.writeText(href);
+                if (navigator.clipboard) navigator.clipboard.writeText(window.location.origin + href);
               }
             }
           ];
-          const menuWidth = 224;
-          const menuHeight = 120;
-          const posX = (rawX + menuWidth > window.innerWidth) ? (rawX - menuWidth) : rawX;
-          const posY = (rawY + menuHeight > window.innerHeight) ? (rawY - menuHeight) : rawY;
-          this.ctxMenu = { type: 'nav', url: href, x: posX, y: posY };
-        } }">
+          showContextMenu(items, evt);
+        },
+        openFavContextMenu(fav, evt) {
+          const fhref = fav.href || fav;
+          const targetId = fav.id || fav;
+          const items = [
+            {
+              label: 'Open in New Tab',
+              icon: 'material-symbols-light:open-in-new',
+              action: () => router.createPageTab(fhref, fhref)
+            },
+            {
+              label: 'Add as Pinned Tab',
+              icon: 'material-symbols-light:keep-outline',
+              action: () => {
+                router.createPageTab(fhref, fhref);
+                router.pinPageTab(router.activePageTabId);
+              }
+            },
+            {
+              label: 'Remove Favorite',
+              icon: 'material-symbols-light:delete-outline',
+              danger: true,
+              action: () => {
+                favorites = (favorites || []).filter(f => (f.id || f) !== targetId);
+                localStorage.setItem('favorites', JSON.stringify(favorites));
+              }
+            }
+          ];
+          showContextMenu(items, evt);
+        }
+      }">
     <!-- Signal-Based Routes configured on <html> via data-route="{ routes: [...] }" -->
 
 
@@ -593,7 +640,7 @@
         <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
           data-bind-data-tab-title="item.tabTitle || item.title"
           data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-          data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, null, $evt)" data-bind="item.title">
+          data-on-contextmenu_prevent="openNavContextMenu(item, $evt)" data-bind="item.title">
         </a>
       </li>
 
@@ -604,7 +651,7 @@
           <a data-bind-href="item.href" draggable="false" class="grow whitespace-nowrap"
             data-bind-data-tab-title="item.tabTitle || item.title"
             data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-            data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, null, $evt)">
+            data-on-contextmenu_prevent="openNavContextMenu(item, $evt)">
             <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" class="whitespace-nowrap"
               data-bind="item.title"></span>
           </a>
@@ -642,7 +689,7 @@
                 data-bind-data-tab-title="item.tabTitle || item.title"
                 data-bind-data-tab-icon="item.tabIcon || item.icon"
                 data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-                data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
+                data-on-contextmenu_prevent="openNavContextMenu(item, $evt)">
                 <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
                 <span
                   class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
@@ -659,7 +706,7 @@
                   data-bind-data-tab-title="item.tabTitle || item.title"
                   data-bind-data-tab-icon="item.tabIcon || item.icon"
                   data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-                  data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
+                  data-on-contextmenu_prevent="openNavContextMenu(item, $evt)">
                   <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
                   <span
                     class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
@@ -709,7 +756,7 @@
                       data-bind-data-tab-title="item.tabTitle || item.title"
                       data-bind-data-tab-icon="item.tabIcon || item.icon"
                       data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-                      data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
+                      data-on-contextmenu_prevent="openNavContextMenu(item, $evt)">
                       <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
                       <span
                         class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
@@ -726,7 +773,7 @@
                         data-bind-data-tab-title="item.tabTitle || item.title"
                         data-bind-data-tab-icon="item.tabIcon || item.icon"
                         data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-                        data-on-contextmenu_prevent="openNavContextMenu(item.href, item.title, item.icon, $evt)">
+                        data-on-contextmenu_prevent="openNavContextMenu(item, $evt)">
                         <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
                         <span
                           class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
@@ -771,8 +818,20 @@
             <template data-for="fav in favorites" data-key="fav.id || fav">
               <li class="flex flex-row items-center justify-between group rounded-box hover:bg-base-200">
                 <a data-bind-href="fav.href || fav" class="grow flex items-center gap-3 py-2 px-3"
-                  data-on-pointerdown="if ($evt.button === 2 || $evt.buttons === 2 || $evt.which === 3) { const rawX = $evt.clientX || $evt.pageX || 100; const rawY = $evt.clientY || $evt.pageY || 100; if (window.__secHoldTimer) clearTimeout(window.__secHoldTimer); window.__secHoldTimer = setTimeout(() => { const ftitle = fav.title || fav; const fhref = fav.href || fav; const ficon = fav.icon || 'material-symbols-light:star-outline'; const targetId = (fav.id || fav); ctxMenuItems = [{ label: 'Open in New Tab', icon: 'material-symbols-light:open-in-new', action: () => { router.createPageTab(fhref, fhref); } }, { label: 'Add as Pinned Tab', icon: 'material-symbols-light:keep-outline', action: () => { router.createPageTab(fhref, fhref); router.pinPageTab(router.activePageTabId); } }, { label: 'Remove Favorite', icon: 'material-symbols-light:delete-outline', danger: true, action: () => { favorites = (favorites || []).filter(f => (f.id || f) !== targetId); } }]; const menuWidth = 224; const menuHeight = 180; const posX = (rawX + menuWidth > window.innerWidth) ? (rawX - menuWidth) : rawX; const posY = (rawY + menuHeight > window.innerHeight) ? (rawY - menuHeight) : rawY; const a = document.getElementById('click-anchor'); if (a) { a.style.top = posY + 'px'; a.style.left = posX + 'px'; } const m = document.getElementById('ctx-menu-overlay'); if (m && m.showPopover) m.showPopover(); const cancelNative = (e) => { e.preventDefault(); e.stopPropagation(); window.removeEventListener('contextmenu', cancelNative, true); }; window.addEventListener('contextmenu', cancelNative, true); }, 500); }"
-                  data-on-pointerup="if (window.__secHoldTimer) { clearTimeout(window.__secHoldTimer); window.__secHoldTimer = null; }">
+                  data-on-contextmenu_prevent="openFavContextMenu(fav, $evt)">
+                  <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:star'"
+                    class="text-warning text-xl shrink-0"></iconify-icon>
+                  <span class="break-words font-medium text-sm" data-bind="fav.title || fav"></span>
+                </a>
+                <button type="button"
+                  class="btn btn-ghost btn-xs btn-circle text-error opacity-0 group-hover:opacity-100 transition-opacity me-2"
+                  title="Remove Favorite"
+                  data-on-click_stop="pendingDeleteId = fav.id || fav; $('#fav-delete-modal').showModal();">
+                  <iconify-icon icon="material-symbols-light:delete-outline" class="text-base"></iconify-icon>
+                </button>
+              </li>
+            </template>
+          </ul>
                   <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:star'"
                     class="text-warning text-xl shrink-0"></iconify-icon>
                   <span class="break-words font-medium text-sm" data-bind="fav.title || fav"></span>
@@ -986,42 +1045,18 @@
       </div>
     </footer>
 
-    <!-- Virtual Anchor Target -->
-    <div id="click-anchor" class="fixed pointer-events-none"
-      style="anchor-name: --ctx-anchor; position: fixed; inset-block-start: 0; inset-inline-start: 0; width: 0; height: 0;">
-    </div>
-
-    <!-- Native HTML Popover API + DaisyUI 5 Menu Context Menu Template -->
+    <!-- Native HTML Popover Context Menu -->
     <ul id="ctx-menu-overlay" popover
-      class="dropdown menu w-56 rounded-box bg-base-100 shadow-sm border border-base-200 p-2 m-0"
-      style="position-anchor: --ctx-anchor; top: anchor(bottom); inset-inline-start: anchor(start); margin: 0;">
+      class="dropdown menu w-56 rounded-box bg-base-100 shadow-2xl border border-base-content/10 p-2 m-0 fixed z-[9999]"
+      data-style="{ top: (ctxMenu?.y || 0) + 'px', left: (ctxMenu?.x || 0) + 'px' }">
       <template data-for="item in ctxMenuItems" data-key="item.label">
         <li data-class="{ 'divider my-1': item.isDivider }">
-          <button type="button" data-show="!item.isDivider && (!item.submenu || item.submenu.length === 0)"
+          <button type="button" data-show="!item.isDivider"
             data-class="{ 'text-error hover:bg-error/10': item.danger }"
             data-on-click="if (item.action) { item.action(); } const p = document.getElementById('ctx-menu-overlay'); if (p && p.hidePopover) p.hidePopover();">
             <iconify-icon data-bind-icon="item.icon" class="text-lg"></iconify-icon>
             <span data-bind="item.label"></span>
           </button>
-
-          <!-- Nested Submenu Details (e.g. Close >) -->
-          <details data-show="item.submenu && item.submenu.length > 0">
-            <summary>
-              <iconify-icon data-bind-icon="item.icon || 'material-symbols-light:close'" class="text-lg"></iconify-icon>
-              <span data-bind="item.label"></span>
-            </summary>
-            <ul>
-              <template data-for="sub in item.submenu" data-key="sub.label">
-                <li>
-                  <button type="button" data-class="{ 'text-error hover:bg-error/10': sub.danger }"
-                    data-on-click="if (sub.action) { sub.action(); } const p = document.getElementById('ctx-menu-overlay'); if (p && p.hidePopover) p.hidePopover();">
-                    <iconify-icon data-bind-icon="sub.icon" class="text-lg"></iconify-icon>
-                    <span data-bind="sub.label"></span>
-                  </button>
-                </li>
-              </template>
-            </ul>
-          </details>
         </li>
       </template>
     </ul>
