@@ -13,10 +13,65 @@
       ctxMenu: null,
       ctxMenuItems: [],
       ctxMenuTarget: 'body',
-      favorites: localStorage.favorites ?? [],
-      favForm: { title: '', href: '', icon: 'material-symbols-light:star-outline' },
+      favorites: (() => {
+        try {
+          const f = JSON.parse(localStorage.favorites);
+          return Array.isArray(f) ? f : [];
+        } catch {
+          return [];
+        }
+      })(),
+      favForm: { id: null, title: '', href: '', icon: 'material-symbols-light:star-outline' },
       pendingDeleteId: null,
       themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset'],
+      openFavModal(item) {
+        const href = typeof item === 'string' ? item : (item?.href || router.route || '/');
+        const title = (typeof item === 'object' && (item.title || item.tabTitle)) 
+          ? (item.title || item.tabTitle) 
+          : (href === '/' ? 'Home' : href.replace(/^\//, '').split('/')[0].replace(/^\w/, c => c.toUpperCase()));
+        const icon = (typeof item === 'object' && (item.icon || item.tabIcon)) 
+          ? (item.icon || item.tabIcon) 
+          : 'material-symbols-light:star-outline';
+        
+        favForm = {
+          id: (typeof item === 'object' && item.id && String(item.id).startsWith('fav-')) ? item.id : null,
+          title,
+          href,
+          icon
+        };
+
+        const modal = document.getElementById('fav-modal');
+        if (modal && modal.showModal) modal.showModal();
+      },
+      saveFavorite() {
+        const title = (favForm.title || '').trim() || 'Bookmark';
+        const href = (favForm.href || '').trim() || '/';
+        const icon = (favForm.icon || '').trim() || 'material-symbols-light:star-outline';
+
+        if (favForm.id) {
+          const existing = (favorites || []).find(f => (f.id || f) === favForm.id);
+          if (existing) {
+            existing.title = title;
+            existing.href = href;
+            existing.icon = icon;
+            favorites = [...favorites];
+          }
+        } else {
+          const newFav = { id: 'fav-' + (window.Date ? window.Date.now() : Math.floor(Math.random() * 1000000)), title, href, icon };
+          favorites = [...(favorites || []), newFav];
+        }
+
+        localStorage.setItem('favorites', JSON.stringify(favorites));
+        const modal = document.getElementById('fav-modal');
+        if (modal && modal.close) modal.close();
+      },
+      deleteFavorite(targetId) {
+        favorites = (favorites || []).filter(f => (f.id || f.href || f) !== targetId);
+        localStorage.setItem('favorites', JSON.stringify(favorites));
+        pendingDeleteId = null;
+        const modal = document.getElementById('fav-delete-modal');
+        if (modal && modal.close) modal.close();
+      },
       executeAction(item) {
         if (item && item.action) {
           try { item.action(); } catch (e) { console.error(e); }
@@ -50,6 +105,8 @@
         const allTabs = router.pageTabs || [];
         const idx = allTabs.findIndex(t => t.id === tid);
         const pinned = router.pinnedPageTabs || [];
+        const tabHref = tab.url || tab.source || tab.route || '/';
+        const isTabFav = (favorites || []).some(f => (f.href || f) === tabHref);
 
         const hasLeft = allTabs.some((t, i) => i < idx && !pinned.includes(t.id));
         const hasRight = allTabs.some((t, i) => i > idx && !pinned.includes(t.id));
@@ -65,6 +122,18 @@
             label: 'Duplicate Tab',
             icon: 'material-symbols-light:content-copy',
             action: () => router.duplicatePageTab(tid)
+          },
+          {
+            label: isTabFav ? 'Edit Favorite' : 'Save to Favorites',
+            icon: isTabFav ? 'material-symbols-light:edit-outline' : 'material-symbols-light:star-outline',
+            action: () => {
+              const favObj = (favorites || []).find(f => (f.href || f) === tabHref) || {
+                title: tab.title || tab.tabTitle || 'Tab',
+                href: tabHref,
+                icon: tab.icon || tab.tabIcon || 'material-symbols-light:tab'
+              };
+              openFavModal(favObj);
+            }
           },
           { isDivider: true, label: 'divider-close-group' }
         ];
@@ -123,8 +192,6 @@
       },
       openNavContextMenu(item, evt) {
         const href = typeof item === 'string' ? item : item.href;
-        const title = (typeof item === 'object' && item.title) ? item.title : href;
-        const icon = (typeof item === 'object' && item.icon) ? item.icon : 'material-symbols-light:star-outline';
         const isFav = (favorites || []).some(f => (f.href || f) === href);
         const items = [
           {
@@ -133,15 +200,11 @@
             action: () => router.createPageTab(href, href)
           },
           {
-            label: isFav ? 'Remove Favorite' : 'Add to Favorites',
-            icon: isFav ? 'material-symbols-light:star' : 'material-symbols-light:star-outline',
+            label: isFav ? 'Edit Favorite' : 'Add to Favorites',
+            icon: isFav ? 'material-symbols-light:edit-outline' : 'material-symbols-light:star-outline',
             action: () => {
-              if (isFav) {
-                favorites = (favorites || []).filter(f => (f.href || f) !== href);
-              } else {
-                favorites = [...(favorites || []), { id: 'fav-' + Date.now(), title, href, icon }];
-              }
-              localStorage.setItem('favorites', JSON.stringify(favorites));
+              const favObj = (favorites || []).find(f => (f.href || f) === href) || item;
+              openFavModal(favObj);
             }
           },
           {
@@ -170,6 +233,11 @@
               router.createPageTab(fhref, fhref);
               router.pinPageTab(router.activePageTabId);
             }
+          },
+          {
+            label: 'Edit Favorite',
+            icon: 'material-symbols-light:edit-outline',
+            action: () => openFavModal(fav)
           },
           {
             label: 'Remove Favorite',
@@ -876,7 +944,7 @@
           <div class="flex items-center justify-between mb-6">
             <h1 class="text-lg font-bold">Favorites</h1>
             <button type="button" class="btn btn-ghost btn-xs btn-circle" title="Add Favorite"
-              data-on-click="favForm = { title: 'New Favorite', href: router.route || '/', icon: 'material-symbols-light:star-outline' }; $('#fav-modal').showModal();">
+              data-on-click="openFavModal()">
               <iconify-icon icon="material-symbols-light:add" class="text-lg"></iconify-icon>
             </button>
           </div>
@@ -889,25 +957,20 @@
                     class="text-warning text-xl shrink-0"></iconify-icon>
                   <span class="break-words font-medium text-sm" data-bind="fav.title || fav"></span>
                 </a>
-                <button type="button"
-                  class="btn btn-ghost btn-xs btn-circle text-error opacity-0 group-hover:opacity-100 transition-opacity me-2"
-                  title="Remove Favorite"
-                  data-on-click_stop="pendingDeleteId = fav.id || fav; $('#fav-delete-modal').showModal();">
-                  <iconify-icon icon="material-symbols-light:delete-outline" class="text-base"></iconify-icon>
-                </button>
-              </li>
-            </template>
-          </ul>
-                  <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:star'"
-                    class="text-warning text-xl shrink-0"></iconify-icon>
-                  <span class="break-words font-medium text-sm" data-bind="fav.title || fav"></span>
-                </a>
-                <button type="button"
-                  class="btn btn-ghost btn-xs btn-circle text-error opacity-0 group-hover:opacity-100 transition-opacity me-2"
-                  title="Remove Favorite"
-                  data-on-click_stop="pendingDeleteId = fav.id || fav; $('#fav-delete-modal').showModal();">
-                  <iconify-icon icon="material-symbols-light:delete-outline" class="text-base"></iconify-icon>
-                </button>
+                <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity me-2">
+                  <button type="button"
+                    class="btn btn-ghost btn-xs btn-circle text-base-content/70 hover:text-base-content"
+                    title="Edit Favorite"
+                    data-on-click_stop="openFavModal(fav)">
+                    <iconify-icon icon="material-symbols-light:edit-outline" class="text-base"></iconify-icon>
+                  </button>
+                  <button type="button"
+                    class="btn btn-ghost btn-xs btn-circle text-error"
+                    title="Remove Favorite"
+                    data-on-click_stop="pendingDeleteId = fav.id || fav; $('#fav-delete-modal').showModal();">
+                    <iconify-icon icon="material-symbols-light:delete-outline" class="text-base"></iconify-icon>
+                  </button>
+                </div>
               </li>
             </template>
           </ul>
@@ -1134,8 +1197,9 @@
   <dialog id="fav-modal" class="modal modal-bottom sm:modal-middle" data-on-keydown_escape="$('#fav-modal').close()">
     <div class="modal-box bg-base-100 border border-base-content/10 shadow-2xl">
       <h3 class="font-bold text-lg flex items-center gap-2">
-        <iconify-icon icon="material-symbols-light:star-outline" class="text-warning text-2xl"></iconify-icon>
-        Add to Favorites
+        <iconify-icon data-bind-icon="favForm.id ? 'material-symbols-light:edit-outline' : 'material-symbols-light:star-outline'"
+          class="text-warning text-2xl"></iconify-icon>
+        <span data-bind="favForm.id ? 'Edit Favorite' : 'Add to Favorites'"></span>
       </h3>
       <p class="py-2 text-sm opacity-70">Customize the title and icon for your bookmark.</p>
       <div class="form-control w-full space-y-4 my-2">
@@ -1166,9 +1230,8 @@
       </div>
       <div class="modal-action">
         <button type="button" class="btn btn-ghost" data-on-click="$('#fav-modal').close()">Cancel</button>
-        <button type="button" class="btn btn-primary"
-          data-on-click="const newFav = { id: 'fav-' + Date.now(), title: favForm.title || 'Bookmark', href: favForm.href || '/', icon: favForm.icon || 'material-symbols-light:star-outline' }; localStorage.setItem('favorites', [...(favorites || []), newFav]); $('#fav-modal').close();">
-          Save Favorite
+        <button type="button" class="btn btn-primary" data-on-click="saveFavorite()">
+          <span data-bind="favForm.id ? 'Update Favorite' : 'Save Favorite'"></span>
         </button>
       </div>
     </div>
@@ -1190,8 +1253,7 @@
       <div class="modal-action">
         <button type="button" class="btn btn-ghost"
           data-on-click="pendingDeleteId = null; $('#fav-delete-modal').close()">Cancel</button>
-        <button type="button" class="btn btn-error"
-          data-on-click="localStorage.setItem('favorites', (favorites || []).filter(f => (f.id || f) !== pendingDeleteId)); pendingDeleteId = null; $('#fav-delete-modal').close();">
+        <button type="button" class="btn btn-error" data-on-click="deleteFavorite(pendingDeleteId)">
           Remove
         </button>
       </div>
