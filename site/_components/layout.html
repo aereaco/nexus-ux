@@ -361,9 +361,9 @@
 
     <!-- TAB BAR -->
     <div data-signal_global="{pageTabToggleHovered: false }"
-      class="shrink-0 z-20 transition-padding duration-300 ease-in-out"
+      class="shrink-0 z-20 transition-[padding,background-color,color,opacity] duration-[300ms,500ms,500ms,500ms] delay-[0ms,150ms,150ms,150ms] ease-in-out"
       data-class="{ 'max-h-20 opacity-100': pageTabs, 'max-h-0 opacity-0 overflow-hidden pointer-events-none': !pageTabs, 'aura aura-dual text-secondary': pageTabToggleHovered }">
-      <div class="card pe-2" data-class="{'bg-base-200': pageTabToggleHovered }">
+      <div class="card pe-2 transition-colors duration-500 delay-150" data-class="{'bg-base-200': pageTabToggleHovered }">
         <div class="flex flex-nowrap bg-base-300/20 rounded-none overflow-x-auto pb-1 scrollbar-auto-hide"
           role="tablist" aria-orientation="horizontal" data-drag-container="router.pageTabs" data-drag-group="pageTabs"
           data-drag-direction="horizontal">
