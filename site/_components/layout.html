@@ -37,10 +37,12 @@
         const posX = (rawX + menuWidth > window.innerWidth) ? Math.max(10, rawX - menuWidth) : rawX;
         const posY = (rawY + menuHeight > window.innerHeight) ? Math.max(10, rawY - menuHeight) : rawY;
         ctxMenu = { x: posX, y: posY };
-        const popover = document.getElementById('ctx-menu-overlay');
-        if (popover && popover.showPopover) {
-          try { popover.showPopover(); } catch {}
-        }
+        queueMicrotask(() => {
+          const popover = document.getElementById('ctx-menu-overlay');
+          if (popover && popover.showPopover) {
+            try { popover.showPopover(); } catch {}
+          }
+        });
       },
       openTabContextMenu(tab, evt) {
         const tid = tab.id;

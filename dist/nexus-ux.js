@@ -8976,10 +8976,17 @@ ${match}</ul>
               return;
             }
             if (clone.parentNode !== target) {
+              const wasOpen = typeof clone.matches === "function" && clone.matches(":popover-open");
               if (modifiers.includes("prepend")) {
                 target.insertBefore(clone, target.firstChild);
               } else {
                 target.appendChild(clone);
+              }
+              if (wasOpen && typeof clone.showPopover === "function") {
+                try {
+                  clone.showPopover();
+                } catch {
+                }
               }
             }
             if (!isInitialized) {

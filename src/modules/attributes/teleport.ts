@@ -254,10 +254,16 @@ export const teleportAttribute: AttributeModule = {
       }
 
       if (clone.parentNode !== target) {
+        const wasOpen = typeof clone.matches === 'function' && clone.matches(':popover-open');
         if (modifiers.includes('prepend')) {
           target.insertBefore(clone, target.firstChild);
         } else {
           target.appendChild(clone);
+        }
+        if (wasOpen && typeof (clone as any).showPopover === 'function') {
+          try {
+            (clone as any).showPopover();
+          } catch {}
         }
       }
 
