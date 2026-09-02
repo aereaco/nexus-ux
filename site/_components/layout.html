@@ -361,8 +361,7 @@
 
     <!-- TAB BAR -->
     <div data-signal_global="{pageTabToggleHovered: false}"
-      data-class="{'aura aura-dual text-secondary': pageTabToggleHovered }"
-      data-style="{
+      data-class="{'aura aura text-secondary': pageTabToggleHovered }" data-style="{
         padding: pageTabToggleHovered ? '2px' : '0px',
         transition: pageTabToggleHovered 
           ? 'padding 300ms ease-in-out, opacity 500ms 150ms ease-in-out'
@@ -613,7 +612,7 @@
           </button>
         </div>
         <ul
-            class="menu-dropdown menu-dropdown-show overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
+          class="menu-dropdown menu-dropdown-show overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
           data-class="{ 'max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
           data-drag-container="item.children">
           <!-- RECURSIVE TEMPLATE: Calls itself for infinite arbitrary sub-levels! -->
@@ -687,8 +686,7 @@
         <!-- 2. Categorized Sections (Draggable Category Groups & Dedicated Item Lists) -->
         <div data-drag-container="categories">
           <template data-for="cat in categories" data-key="cat">
-            <div data-drag
-              data-show="(router.pages || []).filter(p => p.category === cat).length > 0">
+            <div data-drag data-show="(router.pages || []).filter(p => p.category === cat).length > 0">
               <!-- Category Header (Title + Separator Line) -->
               <ul class="menu w-full py-0">
                 <li
