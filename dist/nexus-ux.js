@@ -1895,933 +1895,6 @@ ${suggestion}`);
     }
   });
 
-  // src/engine/utils/idb.ts
-  async function openDB(version) {
-    return new Promise((resolve, reject) => {
-      const request = version ? indexedDB.open(DB_NAME2, version) : indexedDB.open(DB_NAME2);
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-      request.onupgradeneeded = (event) => {
-        const db = event.target.result;
-        DEFAULT_STORES.forEach((store) => {
-          if (!db.objectStoreNames.contains(store)) {
-            db.createObjectStore(store);
-          }
-        });
-      };
-    });
-  }
-  async function writeIDB(storeName, key, data) {
-    let db = await openDB();
-    if (!db.objectStoreNames.contains(storeName)) {
-      const nextVersion = db.version + 1;
-      db.close();
-      db = await new Promise((resolve, reject) => {
-        const req = indexedDB.open(DB_NAME2, nextVersion);
-        req.onupgradeneeded = (e) => {
-          const udb = e.target.result;
-          if (!udb.objectStoreNames.contains(storeName)) {
-            udb.createObjectStore(storeName);
-          }
-        };
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
-      });
-    }
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(storeName, "readwrite");
-      const store = tx.objectStore(storeName);
-      store.put(data, key);
-      tx.oncomplete = () => {
-        db.close();
-        resolve();
-      };
-      tx.onerror = () => {
-        db.close();
-        reject(tx.error);
-      };
-    });
-  }
-  var DB_NAME2, DEFAULT_STORES;
-  var init_idb = __esm({
-    "src/engine/utils/idb.ts"() {
-      DB_NAME2 = "nexus-store";
-      DEFAULT_STORES = ["files", "builds", "patterns", "components", "themes"];
-    }
-  });
-
-  // src/modules/attributes/build.ts
-  var build_exports = {};
-  __export(build_exports, {
-    default: () => build_default
-  });
-  async function writeToIDB(key, data, meta) {
-    await writeIDB(BUILD_STORE, key, { data, meta, updatedAt: Date.now() });
-  }
-  function minifyCSS(css) {
-    return css.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\s+/g, " ").replace(/\s*([{}:;,])\s*/g, "$1").replace(/;}/g, "}").trim();
-  }
-  function minifyJS(js) {
-    return js.replace(/\/\/.*$/gm, "").replace(/\/\*[\s\S]*?\*\//g, "").replace(/\s+/g, " ").trim();
-  }
-  function collectStyles(root, shouldMinify) {
-    const sheets = [];
-    const managedRules = stylesheet.collectRules();
-    if (managedRules)
-      sheets.push(managedRules);
-    document.querySelectorAll("head style").forEach((style) => {
-      if (style.textContent)
-        sheets.push(style.textContent);
-    });
-    root.querySelectorAll("style").forEach((style) => {
-      if (style.textContent)
-        sheets.push(style.textContent);
-    });
-    const combined = sheets.join("\n\n");
-    return shouldMinify ? minifyCSS(combined) : combined;
-  }
-  function collectScripts(root, shouldMinify) {
-    const scripts = [];
-    root.querySelectorAll("script:not([src])").forEach((script) => {
-      if (script.textContent)
-        scripts.push(script.textContent);
-    });
-    const combined = scripts.join("\n\n");
-    return shouldMinify ? minifyJS(combined) : combined;
-  }
-  function serializeDOM(root) {
-    const clone = root.cloneNode(true);
-    clone.querySelectorAll("[data-nexus-loading]").forEach((el) => el.removeAttribute("data-nexus-loading"));
-    clone.querySelectorAll("[data-nexus-ready]").forEach((el) => el.removeAttribute("data-nexus-ready"));
-    clone.querySelectorAll(".nexus-loading").forEach((el) => el.classList.remove("nexus-loading"));
-    clone.querySelectorAll(".nexus-ready").forEach((el) => el.classList.remove("nexus-ready"));
-    clone.querySelectorAll('[class=""]').forEach((el) => el.removeAttribute("class"));
-    return clone.innerHTML;
-  }
-  function buildStandaloneDocument(htmlContent, styles, scripts, config, title) {
-    const nexusSrc = config.nexusSrc || "https://cdn.nexus-ux.dev/nexus-ux.js";
-    return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${title}</title>
-    <script type="module" src="${nexusSrc}"><\/script>
-${styles ? `    <style>
-${styles}
-    </style>` : ""}
-</head>
-<body data-init>
-${htmlContent}
-${scripts ? `<script>
-${scripts}
-<\/script>` : ""}
-</body>
-</html>`;
-  }
-  var BUILD_STORE, buildModule, build_default;
-  var init_build = __esm({
-    "src/modules/attributes/build.ts"() {
-      init_debug();
-      init_idb();
-      init_stylesheet();
-      BUILD_STORE = "builds";
-      buildModule = {
-        name: "build",
-        attribute: "build",
-        handle: (el, expression, runtime) => {
-          const doBuild = async () => {
-            let config;
-            try {
-              const evaluated = runtime.evaluate(el, expression);
-              if (typeof evaluated === "string") {
-                config = { target: evaluated };
-              } else if (typeof evaluated === "object" && evaluated !== null) {
-                config = evaluated;
-              } else {
-                throw new Error("Invalid build configuration");
-              }
-            } catch (e) {
-              reportError(new Error(`Build: Failed to evaluate configuration: ${e}`), el);
-              return { success: false, error: String(e) };
-            }
-            if (!config.target) {
-              reportError(new Error("Build: Missing target URI"), el);
-              return { success: false, error: "Missing target URI" };
-            }
-            const shouldMinify = config.minify ?? false;
-            const includeStyles = config.includeStyles ?? true;
-            const includeScripts = config.includeScripts ?? true;
-            const standalone = config.standalone ?? true;
-            try {
-              const scopeSelector = config.scope || "html";
-              const scopeRoot = scopeSelector === "html" ? document.documentElement : document.querySelector(scopeSelector) || document.documentElement;
-              const htmlContent = serializeDOM(scopeRoot);
-              const styles = includeStyles ? collectStyles(scopeRoot, shouldMinify) : "";
-              const scripts = includeScripts ? collectScripts(scopeRoot, shouldMinify) : "";
-              let output;
-              if (standalone) {
-                const title = document.title || "Nexus-UX Application";
-                output = buildStandaloneDocument(htmlContent, styles, scripts, config, title);
-              } else {
-                output = htmlContent;
-              }
-              const targetKey = config.target.replace(/^idb:\/\//, "");
-              await writeToIDB(targetKey, output, {
-                builtAt: Date.now(),
-                scope: config.scope || "html",
-                minified: shouldMinify,
-                standalone,
-                size: output.length
-              });
-              runtime.log(`Nexus Build: Bundle written to ${config.target} (${output.length} bytes)`);
-              return {
-                success: true,
-                target: config.target,
-                size: output.length,
-                timestamp: Date.now()
-              };
-            } catch (e) {
-              const msg = e instanceof Error ? e.message : String(e);
-              reportError(new Error(`Build failed: ${msg}`), el);
-              return { success: false, error: msg };
-            }
-          };
-          runtime.setGlobalSignal("$build", doBuild);
-          return () => {
-          };
-        }
-      };
-      build_default = buildModule;
-    }
-  });
-
-  // src/modules/attributes/class.ts
-  var class_exports = {};
-  __export(class_exports, {
-    default: () => class_default
-  });
-  var classModule, class_default;
-  var init_class = __esm({
-    "src/modules/attributes/class.ts"() {
-      init_debug();
-      init_stylesheet();
-      classModule = {
-        name: "class",
-        attribute: "class",
-        handle: (el, value, runtime, parsedAttr) => {
-          const parsed = parsedAttr || runtime.parseAttribute("data-class", runtime, el);
-          if (!parsed)
-            return;
-          try {
-            const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
-              const result = runtime.evaluate(el, value);
-              if (parsed.argument) {
-                if (result) {
-                  stylesheet.adoptClass(parsed.argument, el, runtime);
-                  el.classList.add(parsed.argument);
-                } else {
-                  el.classList.remove(parsed.argument);
-                }
-              } else {
-                runtime.reconcileClass(el, result);
-              }
-            });
-            return cleanup;
-          } catch (e) {
-            initError("class", `Failed to reconcile class: ${e instanceof Error ? e.message : String(e)}`, el, value);
-          }
-        }
-      };
-      class_default = classModule;
-    }
-  });
-
-  // src/engine/scope.ts
-  function getDataStack(element) {
-    const node = element;
-    if (node[DATA_STACK_KEY]) {
-      return node[DATA_STACK_KEY];
-    }
-    if (typeof ShadowRoot !== "undefined" && node instanceof ShadowRoot) {
-      return getDataStack(node.host);
-    }
-    const parent = node.parentElement || node.parentNode;
-    if (!parent) {
-      return [];
-    }
-    if (typeof ShadowRoot !== "undefined" && parent instanceof ShadowRoot) {
-      const shadow = parent;
-      if (shadow[DATA_STACK_KEY]) {
-        return shadow[DATA_STACK_KEY];
-      }
-      return [];
-    }
-    if (parent instanceof DocumentFragment) {
-      return [];
-    }
-    if (parent instanceof Element) {
-      return getDataStack(parent);
-    }
-    return [];
-  }
-  function addScopeToNode(element, data, referenceNode) {
-    const node = element;
-    const parentStack = getDataStack(referenceNode || element);
-    node[DATA_STACK_KEY] = [data, ...parentStack];
-    return () => {
-      if (node[DATA_STACK_KEY]) {
-        node[DATA_STACK_KEY] = node[DATA_STACK_KEY].filter((item) => item !== data);
-      }
-    };
-  }
-  function registerScopeProvider(key, provider) {
-    scopeProviderRegistry.set(key, provider);
-  }
-  function hasScopeProvider(key) {
-    return scopeProviderRegistry.has(key);
-  }
-  function resolveScopeProvider(key, el, runtime) {
-    const provider = scopeProviderRegistry.get(key);
-    return provider ? provider(el, runtime) : void 0;
-  }
-  function parseGhostKeys(expression) {
-    const ghostKeys = [];
-    const typeHints = {};
-    const trimmed = expression.trim();
-    if (!trimmed.startsWith("{") && !trimmed.startsWith("({"))
-      return { ghostKeys, typeHints };
-    const start = trimmed.indexOf("{");
-    let i = start + 1;
-    const len = trimmed.length;
-    while (i < len) {
-      while (i < len && /\s/.test(trimmed[i]))
-        i++;
-      let key = "";
-      if (trimmed[i] === '"' || trimmed[i] === "'") {
-        const quote = trimmed[i++];
-        while (i < len && trimmed[i] !== quote)
-          key += trimmed[i++];
-        i++;
-      } else {
-        while (i < len && /[\w$]/.test(trimmed[i]))
-          key += trimmed[i++];
-      }
-      if (!key)
-        break;
-      while (i < len && /[\s:]/.test(trimmed[i]))
-        i++;
-      let value = "";
-      let depth = 0;
-      let inString = null;
-      while (i < len) {
-        const ch = trimmed[i];
-        if (inString) {
-          if (ch === "\\") {
-            value += ch + (trimmed[i + 1] || "");
-            i += 2;
-            continue;
-          }
-          if (ch === inString)
-            inString = null;
-          value += ch;
-          i++;
-          continue;
-        }
-        if (ch === '"' || ch === "'" || ch === "`") {
-          inString = ch;
-          value += ch;
-          i++;
-          continue;
-        }
-        if (ch === "{" || ch === "[" || ch === "(") {
-          depth++;
-          value += ch;
-          i++;
-          continue;
-        }
-        if (ch === "}" || ch === "]" || ch === ")") {
-          if (depth === 0)
-            break;
-          depth--;
-          value += ch;
-          i++;
-          continue;
-        }
-        if (ch === "," && depth === 0) {
-          i++;
-          break;
-        }
-        value += ch;
-        i++;
-      }
-      const valToken = value.trim();
-      if (key) {
-        ghostKeys.push(key);
-        if (valToken.startsWith("true") || valToken.startsWith("false"))
-          typeHints[key] = "boolean";
-        else if (/^-?\d/.test(valToken))
-          typeHints[key] = "number";
-        else if (/^['"`]/.test(valToken))
-          typeHints[key] = "string";
-        else if (valToken.startsWith("[") || valToken.startsWith("{"))
-          typeHints[key] = "object";
-      }
-    }
-    return { ghostKeys, typeHints };
-  }
-  function createScopeProxy(stateRef, onSet, onTrigger) {
-    return new Proxy({}, {
-      has(_, key) {
-        const target = stateRef.value;
-        if (typeof key === "string")
-          track(target, key);
-        return Reflect.has(target, key);
-      },
-      get(_, key) {
-        const target = stateRef.value;
-        if (typeof key === "string")
-          track(target, key);
-        return Reflect.get(target, key);
-      },
-      set(_, key, value) {
-        const target = stateRef.value;
-        const res = Reflect.set(target, key, value);
-        if (typeof key === "string")
-          trigger(target, key);
-        if (onSet)
-          onSet(key, value);
-        if (onTrigger)
-          onTrigger();
-        return res;
-      },
-      ownKeys() {
-        const target = stateRef.value;
-        track(target, Symbol.for("iterate"));
-        return Reflect.ownKeys(target);
-      },
-      getOwnPropertyDescriptor(_, key) {
-        const target = stateRef.value;
-        return Reflect.getOwnPropertyDescriptor(target, key);
-      }
-    });
-  }
-  var scopeProviderRegistry;
-  var init_scope = __esm({
-    "src/engine/scope.ts"() {
-      init_consts();
-      init_reactivity();
-      scopeProviderRegistry = /* @__PURE__ */ new Map();
-    }
-  });
-
-  // src/modules/attributes/component.ts
-  var component_exports = {};
-  __export(component_exports, {
-    BaseComponent: () => BaseComponent,
-    default: () => component_default
-  });
-  function extractResourceMetadata(htmlText, path, runtime) {
-    const meta = {};
-    if (!htmlText || typeof htmlText !== "string")
-      return meta;
-    try {
-      const parser = new DOMParser();
-      const parsedDoc = parser.parseFromString(htmlText, "text/html");
-      const titles = Array.from(parsedDoc.querySelectorAll("title"));
-      const titleEl = titles.find((t) => !t.closest("svg"));
-      if (titleEl && titleEl.textContent) {
-        meta.title = titleEl.textContent.trim();
-      }
-      parsedDoc.querySelectorAll("meta").forEach((metaEl) => {
-        const key = metaEl.getAttribute("name") || metaEl.getAttribute("property");
-        const content = metaEl.getAttribute("content");
-        if (key && content) {
-          meta[key] = content.trim();
-        }
-      });
-      const globals = runtime.globalSignals ? runtime.globalSignals() : {};
-      if (globals) {
-        const norm = path.startsWith("/") ? path : "/" + path;
-        const unnorm = path.startsWith("/") ? path.slice(1) : path;
-        const curMeta = globals.meta || {};
-        const nextMeta = {
-          ...curMeta,
-          [path]: meta,
-          [norm]: meta,
-          [unnorm]: meta
-        };
-        if (runtime.setGlobalSignal) {
-          runtime.setGlobalSignal("meta", nextMeta);
-        }
-        const routerState = globals.router || globals.appRouter;
-        if (routerState) {
-          routerState.meta = nextMeta;
-          if (Array.isArray(routerState.routes)) {
-            const routeRecord = routerState.routes.find((r) => r.path === path || r.path === norm || r.path === unnorm);
-            if (routeRecord) {
-              routeRecord.meta = { ...routeRecord.meta || {}, ...meta };
-            }
-          }
-        }
-      }
-    } catch (e) {
-      console.error(`[Component] Failed to extract metadata for ${path}:`, e);
-    }
-    return meta;
-  }
-  function ensureCustomElementRegistered(tagName) {
-    if (typeof customElements === "undefined")
-      return;
-    const tag = tagName.toLowerCase();
-    if (tag.includes("-") && !customElements.get(tag)) {
-      try {
-        customElements.define(
-          tag,
-          class extends BaseComponent {
-            constructor() {
-              super();
-            }
-          }
-        );
-      } catch {
-      }
-    }
-  }
-  function createInheritedShadowScope(host, ctx) {
-    return new Proxy(ctx, {
-      has(target, key) {
-        if (key in target)
-          return true;
-        return getDataStack(host).some((scope) => key in scope);
-      },
-      get(target, key) {
-        if (key in target)
-          return Reflect.get(target, key);
-        const stack = getDataStack(host);
-        for (const scope of stack) {
-          if (key in scope)
-            return scope[key];
-        }
-        return void 0;
-      },
-      set(target, key, value) {
-        const stack = getDataStack(host);
-        for (const scope of stack) {
-          if (key in scope) {
-            scope[key] = value;
-            return true;
-          }
-        }
-        return Reflect.set(target, key, value);
-      },
-      ownKeys(target) {
-        const keys = new Set(Reflect.ownKeys(target));
-        for (const scope of getDataStack(host)) {
-          for (const k of Object.keys(scope))
-            keys.add(k);
-        }
-        return Array.from(keys);
-      },
-      getOwnPropertyDescriptor(target, key) {
-        if (key in target)
-          return Reflect.getOwnPropertyDescriptor(target, key);
-        for (const scope of getDataStack(host)) {
-          if (key in scope) {
-            return {
-              configurable: true,
-              enumerable: true,
-              writable: true,
-              value: scope[key]
-            };
-          }
-        }
-        return void 0;
-      }
-    });
-  }
-  var ElementBase, BaseComponent, componentModule, component_default;
-  var init_component = __esm({
-    "src/modules/attributes/component.ts"() {
-      init_scope();
-      init_consts();
-      init_cache();
-      init_debug();
-      init_stylesheet();
-      ElementBase = typeof HTMLElement !== "undefined" ? HTMLElement : class {
-      };
-      BaseComponent = class extends ElementBase {
-        root;
-        internals;
-        _templateContent;
-        _styles;
-        _scripts;
-        _cleanupFunctions = [];
-        _componentSrc = null;
-        _isRendered = false;
-        constructor(isShadowDOM) {
-          super();
-          if (isShadowDOM) {
-            this.root = this.attachShadow({ mode: "open" });
-          } else {
-            this.root = this;
-          }
-          if (typeof this.attachInternals === "function") {
-            try {
-              this.internals = this.attachInternals();
-            } catch {
-            }
-          }
-        }
-        connectedCallback() {
-          this._isRendered = true;
-        }
-        disconnectedCallback() {
-          this._cleanupFunctions.forEach((fn) => fn());
-          this._cleanupFunctions = [];
-        }
-        registerCleanup(fn) {
-          this._cleanupFunctions.push(fn);
-        }
-      };
-      componentModule = {
-        name: "component",
-        attribute: "component",
-        handle: (el, value, runtime) => {
-          try {
-            if (el.hasAttribute("data-route"))
-              return;
-            if (el.hasAttribute("data-nx-cmp-done"))
-              return;
-            ensureCustomElementRegistered(el.tagName);
-            const componentState = runtime.reactive({
-              isConnected: false,
-              isLoading: false,
-              hasError: false,
-              errorMessage: "",
-              templateContent: "",
-              meta: {}
-            });
-            const ctx = componentState;
-            ctx.element = el;
-            el[COMPONENT_CONTEXT_KEY] = ctx;
-            let tabObj = null;
-            const isTabOutlet = el.tagName.toLowerCase() === "tab-content";
-            if (isTabOutlet) {
-              const dataStack = getDataStack(el);
-              for (const scope of dataStack) {
-                if (scope && typeof scope === "object" && "tab" in scope) {
-                  const t = scope.tab;
-                  if (t && typeof t === "object") {
-                    tabObj = t;
-                    tabObj.linkedContent = componentState;
-                  }
-                  break;
-                }
-              }
-            }
-            let scopeAttached = false;
-            let __lastPath;
-            runtime.effect(() => {
-              let config;
-              const evaluated = runtime.evaluate(el, value);
-              if (!scopeAttached) {
-                addScopeToNode(el, ctx);
-                scopeAttached = true;
-              }
-              if (typeof evaluated === "object" && evaluated !== null) {
-                config = evaluated;
-              } else if (typeof evaluated === "string") {
-                try {
-                  config = JSON.parse(evaluated);
-                } catch {
-                  if (evaluated.trim().startsWith("{")) {
-                    try {
-                      config = new Function("return (" + evaluated + ")")();
-                    } catch {
-                      config = { path: evaluated };
-                    }
-                  } else {
-                    config = { path: evaluated };
-                  }
-                }
-              } else {
-                return;
-              }
-              if (!config.path || config.path === "none" || config.path === "undefined" || config.path === "null")
-                return;
-              if (config.path === __lastPath)
-                return;
-              __lastPath = config.path;
-              const load = async () => {
-                componentState.isLoading = true;
-                componentState.hasError = false;
-                if (isTabOutlet && tabObj && typeof tabObj === "object") {
-                  tabObj.isLoading = true;
-                  tabObj.linkedContent = componentState;
-                }
-                try {
-                  let html = "";
-                  let targetPath = config.path.trim();
-                  if (targetPath.startsWith("'") && targetPath.endsWith("'") || targetPath.startsWith('"') && targetPath.endsWith('"')) {
-                    targetPath = targetPath.slice(1, -1).trim();
-                  }
-                  if (targetPath.startsWith("<")) {
-                    html = targetPath;
-                  } else if (targetPath.startsWith("#")) {
-                    const rootNode = el.getRootNode();
-                    const template = (rootNode?.querySelector ? rootNode.querySelector(targetPath) : null) || document.querySelector(targetPath);
-                    if (!template)
-                      throw new Error(`Template ${targetPath} not found`);
-                    html = template.innerHTML;
-                  } else {
-                    const result = await cacheEngine.fetchWithCache(targetPath, {
-                      storage: "session",
-                      responseType: "text",
-                      onUpdate: (fresh) => {
-                        if (typeof fresh === "string" && fresh !== componentState.templateContent) {
-                          componentState.templateContent = fresh;
-                          const extracted2 = extractResourceMetadata(fresh, targetPath, runtime);
-                          componentState.meta = extracted2;
-                          if (tabObj && extracted2) {
-                            tabObj.meta = { ...tabObj.meta || {}, ...extracted2 };
-                          }
-                        }
-                      }
-                    });
-                    html = typeof result === "string" ? result : String(result);
-                  }
-                  if (html.includes("<!DOCTYPE") || html.includes("data-init") && el.tagName.toLowerCase() !== "html") {
-                    throw new Error(`Invalid component fragment returned for "${targetPath}": received full HTML shell.`);
-                  }
-                  if (runtime.isDevMode) {
-                    console.log(`[Component] Template loaded for <${el.tagName}>, length: ${html.length}`);
-                  }
-                  componentState.templateContent = html;
-                  const extracted = extractResourceMetadata(html, config.path, runtime);
-                  componentState.meta = extracted;
-                  if (tabObj && extracted && (extracted.title || extracted.icon)) {
-                    tabObj.meta = { ...tabObj.meta || {}, ...extracted };
-                  }
-                  if (config.shadowrootmode) {
-                    if (!el.shadowRoot)
-                      el.attachShadow({ mode: config.shadowrootmode });
-                    const shadow = el.shadowRoot;
-                    const scopeExpr = el.getAttribute("data-scope");
-                    let shadowScope;
-                    if (scopeExpr && scopeExpr.trim()) {
-                      const declared = runtime.evaluate(el, scopeExpr);
-                      const declaredObj = declared && typeof declared === "object" ? declared : {};
-                      shadowScope = Object.assign(/* @__PURE__ */ Object.create(null), ctx, declaredObj);
-                    } else {
-                      shadowScope = createInheritedShadowScope(el, ctx);
-                    }
-                    shadow[DATA_STACK_KEY] = [shadowScope];
-                    runtime.morphDOM(shadow, html);
-                    stylesheet.adoptElementSubtree(shadow);
-                    Array.from(shadow.children).forEach((child) => {
-                      if (child instanceof HTMLElement || child instanceof SVGElement) {
-                        runtime.processElement(child);
-                      }
-                    });
-                  } else {
-                    runtime.morphDOM(el, html);
-                    stylesheet.adoptElementSubtree(el);
-                    Array.from(el.children).forEach((child) => {
-                      if (child instanceof HTMLElement || child instanceof SVGElement) {
-                        runtime.processElement(child);
-                      }
-                    });
-                    el.setAttribute("data-nx-cmp-done", "true");
-                    runtime.processElement(el);
-                  }
-                  const focusable = (config.shadowrootmode ? el.shadowRoot : el)?.querySelector("[autofocus], [data-autofocus]");
-                  if (focusable instanceof HTMLElement) {
-                    focusable.focus();
-                  }
-                } catch (e) {
-                  componentState.hasError = true;
-                  componentState.errorMessage = e instanceof Error ? e.message : String(e);
-                  initError("component", componentState.errorMessage, el, value);
-                  if (config.fallback) {
-                    const fb = runtime.evaluate(el, config.fallback);
-                    runtime.morphDOM(el, String(fb));
-                  }
-                } finally {
-                  componentState.isLoading = false;
-                  if (isTabOutlet && tabObj && typeof tabObj === "object") {
-                    tabObj.isLoading = false;
-                  }
-                }
-              };
-              load();
-            });
-            return () => {
-              if (el instanceof BaseComponent) {
-                el.disconnectedCallback();
-              }
-            };
-          } catch (e) {
-            initError(
-              "component",
-              `Failed to init component: ${e instanceof Error ? e.message : String(e)}`,
-              el,
-              value
-            );
-          }
-        }
-      };
-      component_default = componentModule;
-    }
-  });
-
-  // src/modules/attributes/computed.ts
-  var computed_exports = {};
-  __export(computed_exports, {
-    default: () => computed_default
-  });
-  var computedModule, computed_default;
-  var init_computed = __esm({
-    "src/modules/attributes/computed.ts"() {
-      init_scope();
-      init_reactivity();
-      computedModule = {
-        name: "computed",
-        attribute: "computed",
-        metadata: { after: ["signal"] },
-        handle: (el, value, runtime) => {
-          const computedCleanup = [];
-          const isGlobal = el.hasAttribute("data-computed:global");
-          const { ghostKeys } = parseGhostKeys(value);
-          const initialGhostState = {};
-          ghostKeys.forEach((key) => initialGhostState[key] = void 0);
-          const stateRef = unifiedRef(initialGhostState);
-          const scopeId = el.id || `computed_${Math.random().toString(36).slice(2)}`;
-          if (el.hasAttribute("data-computed")) {
-            const scopeProxy = createScopeProxy(stateRef);
-            const addCleanup = addScopeToNode(el, scopeProxy);
-            computedCleanup.push(addCleanup);
-            const [_runner, effectCleanup] = runtime.elementBoundEffect(el, () => {
-              const computedDefs = runtime.evaluate(el, value || "{}");
-              if (typeof computedDefs === "object" && computedDefs !== null) {
-                Object.entries(computedDefs).forEach(([propName, getter]) => {
-                  if (typeof getter !== "function")
-                    return;
-                  const computedVal = unifiedComputed(() => {
-                    try {
-                      return getter();
-                    } catch (e) {
-                      if (runtime.isDevMode)
-                        runtime.warn(`[Computed Error] Failed to evaluate getter for "${propName}":`, e);
-                      return null;
-                    }
-                  }, propName);
-                  const stop2 = runtime.watch(computedVal, (val) => {
-                    stateRef.value[propName] = val;
-                  }, { immediate: true });
-                  computedCleanup.push(stop2);
-                });
-              }
-            });
-            computedCleanup.push(effectCleanup);
-          }
-          const attrs = Array.from(el.attributes).filter((a) => a.name.startsWith("data-computed-"));
-          if (attrs.length > 0) {
-            const attrStateRef = unifiedRef({}, `computed_${scopeId}`);
-            const scopeProxy = new Proxy({}, {
-              has(_, key) {
-                return Reflect.has(attrStateRef.value, key);
-              },
-              get(_, key) {
-                return Reflect.get(attrStateRef.value, key);
-              },
-              set(_, key, value2) {
-                return Reflect.set(attrStateRef.value, key, value2);
-              },
-              ownKeys() {
-                return Reflect.ownKeys(attrStateRef.value);
-              },
-              getOwnPropertyDescriptor(_, key) {
-                return Reflect.getOwnPropertyDescriptor(attrStateRef.value, key);
-              }
-            });
-            let addCleanup;
-            if (!isGlobal) {
-              addCleanup = addScopeToNode(el, scopeProxy);
-              computedCleanup.push(addCleanup);
-            }
-            attrs.forEach((attr) => {
-              const propName = attr.name.substring("data-computed-".length);
-              if (!propName)
-                return;
-              const [_runner, effectCleanup] = runtime.elementBoundEffect(el, () => {
-                const expression = attr.value;
-                const computedVal = runtime.computed(() => {
-                  try {
-                    return runtime.evaluate(el, expression);
-                  } catch (e) {
-                    if (runtime.isDevMode)
-                      runtime.warn(`[Computed Error] Failed to evaluate expression for "${propName}":`, e);
-                    return null;
-                  }
-                });
-                if (isGlobal || !addCleanup) {
-                  const stop2 = runtime.watch(computedVal, (val) => {
-                    runtime.setGlobalSignal(propName, val);
-                  }, { immediate: true });
-                  computedCleanup.push(stop2);
-                } else {
-                  const stop2 = runtime.watch(computedVal, (val) => {
-                    attrStateRef.value[propName] = val;
-                  }, { immediate: true });
-                  computedCleanup.push(stop2);
-                }
-              });
-              computedCleanup.push(effectCleanup);
-            });
-          }
-          return () => {
-            computedCleanup.forEach((c) => c());
-          };
-        }
-      };
-      computed_default = computedModule;
-    }
-  });
-
-  // src/modules/attributes/debug.ts
-  var debug_exports = {};
-  __export(debug_exports, {
-    default: () => debug_default
-  });
-  var debugModule, debug_default;
-  var init_debug2 = __esm({
-    "src/modules/attributes/debug.ts"() {
-      init_scope();
-      debugModule = {
-        name: "debug",
-        attribute: "debug",
-        handle: (el, value, runtime) => {
-          const stack = getDataStack(el);
-          console.group(`[Nexus Debug] Element:`, el);
-          console.log("Value:", value);
-          console.log("Data Stack:", stack);
-          console.log("Global Signals:", runtime.globalSignals());
-          console.groupEnd();
-          if (value) {
-            try {
-              const result = runtime.evaluate(el, value);
-              console.log(`[Nexus Debug] Expression "${value}" result:`, result);
-            } catch (e) {
-              console.error(`[Nexus Debug] Evaluation failed:`, e);
-            }
-          }
-        }
-      };
-      debug_default = debugModule;
-    }
-  });
-
   // src/engine/topology.ts
   var TIER_CONFIGS, EngineTopology, topology;
   var init_topology = __esm({
@@ -3488,6 +2561,1331 @@ ${scripts}
         }
       };
       agentInstance = null;
+    }
+  });
+
+  // src/engine/scope.ts
+  function getDataStack(element) {
+    const node = element;
+    if (node[DATA_STACK_KEY]) {
+      return node[DATA_STACK_KEY];
+    }
+    if (typeof ShadowRoot !== "undefined" && node instanceof ShadowRoot) {
+      return getDataStack(node.host);
+    }
+    const parent = node.parentElement || node.parentNode;
+    if (!parent) {
+      return [];
+    }
+    if (typeof ShadowRoot !== "undefined" && parent instanceof ShadowRoot) {
+      const shadow = parent;
+      if (shadow[DATA_STACK_KEY]) {
+        return shadow[DATA_STACK_KEY];
+      }
+      return [];
+    }
+    if (parent instanceof DocumentFragment) {
+      return [];
+    }
+    if (parent instanceof Element) {
+      return getDataStack(parent);
+    }
+    return [];
+  }
+  function addScopeToNode(element, data, referenceNode) {
+    const node = element;
+    const parentStack = getDataStack(referenceNode || element);
+    node[DATA_STACK_KEY] = [data, ...parentStack];
+    return () => {
+      if (node[DATA_STACK_KEY]) {
+        node[DATA_STACK_KEY] = node[DATA_STACK_KEY].filter((item) => item !== data);
+      }
+    };
+  }
+  function registerScopeProvider(key, provider) {
+    scopeProviderRegistry.set(key, provider);
+  }
+  function hasScopeProvider(key) {
+    return scopeProviderRegistry.has(key);
+  }
+  function resolveScopeProvider(key, el, runtime) {
+    const provider = scopeProviderRegistry.get(key);
+    return provider ? provider(el, runtime) : void 0;
+  }
+  function parseGhostKeys(expression) {
+    const ghostKeys = [];
+    const typeHints = {};
+    const trimmed = expression.trim();
+    if (!trimmed.startsWith("{") && !trimmed.startsWith("({"))
+      return { ghostKeys, typeHints };
+    const start = trimmed.indexOf("{");
+    let i = start + 1;
+    const len = trimmed.length;
+    while (i < len) {
+      while (i < len && /\s/.test(trimmed[i]))
+        i++;
+      let key = "";
+      if (trimmed[i] === '"' || trimmed[i] === "'") {
+        const quote = trimmed[i++];
+        while (i < len && trimmed[i] !== quote)
+          key += trimmed[i++];
+        i++;
+      } else {
+        while (i < len && /[\w$]/.test(trimmed[i]))
+          key += trimmed[i++];
+      }
+      if (!key)
+        break;
+      while (i < len && /[\s:]/.test(trimmed[i]))
+        i++;
+      let value = "";
+      let depth = 0;
+      let inString = null;
+      while (i < len) {
+        const ch = trimmed[i];
+        if (inString) {
+          if (ch === "\\") {
+            value += ch + (trimmed[i + 1] || "");
+            i += 2;
+            continue;
+          }
+          if (ch === inString)
+            inString = null;
+          value += ch;
+          i++;
+          continue;
+        }
+        if (ch === '"' || ch === "'" || ch === "`") {
+          inString = ch;
+          value += ch;
+          i++;
+          continue;
+        }
+        if (ch === "{" || ch === "[" || ch === "(") {
+          depth++;
+          value += ch;
+          i++;
+          continue;
+        }
+        if (ch === "}" || ch === "]" || ch === ")") {
+          if (depth === 0)
+            break;
+          depth--;
+          value += ch;
+          i++;
+          continue;
+        }
+        if (ch === "," && depth === 0) {
+          i++;
+          break;
+        }
+        value += ch;
+        i++;
+      }
+      const valToken = value.trim();
+      if (key) {
+        ghostKeys.push(key);
+        if (valToken.startsWith("true") || valToken.startsWith("false"))
+          typeHints[key] = "boolean";
+        else if (/^-?\d/.test(valToken))
+          typeHints[key] = "number";
+        else if (/^['"`]/.test(valToken))
+          typeHints[key] = "string";
+        else if (valToken.startsWith("[") || valToken.startsWith("{"))
+          typeHints[key] = "object";
+      }
+    }
+    return { ghostKeys, typeHints };
+  }
+  function createScopeProxy(stateRef, onSet, onTrigger) {
+    return new Proxy({}, {
+      has(_, key) {
+        const target = stateRef.value;
+        if (typeof key === "string")
+          track(target, key);
+        return Reflect.has(target, key);
+      },
+      get(_, key) {
+        const target = stateRef.value;
+        if (typeof key === "string")
+          track(target, key);
+        return Reflect.get(target, key);
+      },
+      set(_, key, value) {
+        const target = stateRef.value;
+        const res = Reflect.set(target, key, value);
+        if (typeof key === "string")
+          trigger(target, key);
+        if (onSet)
+          onSet(key, value);
+        if (onTrigger)
+          onTrigger();
+        return res;
+      },
+      ownKeys() {
+        const target = stateRef.value;
+        track(target, Symbol.for("iterate"));
+        return Reflect.ownKeys(target);
+      },
+      getOwnPropertyDescriptor(_, key) {
+        const target = stateRef.value;
+        return Reflect.getOwnPropertyDescriptor(target, key);
+      }
+    });
+  }
+  var scopeProviderRegistry;
+  var init_scope = __esm({
+    "src/engine/scope.ts"() {
+      init_consts();
+      init_reactivity();
+      scopeProviderRegistry = /* @__PURE__ */ new Map();
+    }
+  });
+
+  // src/engine/evaluator.ts
+  async function openAndEnsureStore(storeName) {
+    if (typeof indexedDB === "undefined") {
+      throw new Error("IndexedDB is not supported in this environment");
+    }
+    const db = await new Promise((resolve, reject) => {
+      const req = indexedDB.open(DEFAULT_IDB_DATABASE);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+      req.onupgradeneeded = (e) => {
+        const udb = e.target.result;
+        if (!udb.objectStoreNames.contains(storeName)) {
+          udb.createObjectStore(storeName, { keyPath: "id" });
+        }
+      };
+    });
+    if (db.objectStoreNames.contains(storeName)) {
+      return db;
+    }
+    const nextVersion = db.version + 1;
+    db.close();
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(DEFAULT_IDB_DATABASE, nextVersion);
+      req.onupgradeneeded = (e) => {
+        const udb = e.target.result;
+        if (!udb.objectStoreNames.contains(storeName)) {
+          udb.createObjectStore(storeName, { keyPath: "id" });
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+  function createStoreOperations(storeName) {
+    return {
+      async all() {
+        const db = await openAndEnsureStore(storeName);
+        return new Promise((resolve) => {
+          try {
+            const tx = db.transaction(storeName, "readonly");
+            const store = tx.objectStore(storeName);
+            const req = store.getAll();
+            req.onsuccess = () => {
+              db.close();
+              resolve(req.result || []);
+            };
+            req.onerror = () => {
+              db.close();
+              resolve([]);
+            };
+          } catch {
+            db.close();
+            resolve([]);
+          }
+        });
+      },
+      async get(key) {
+        const db = await openAndEnsureStore(storeName);
+        return new Promise((resolve) => {
+          try {
+            const tx = db.transaction(storeName, "readonly");
+            const store = tx.objectStore(storeName);
+            const req = store.get(key);
+            req.onsuccess = () => {
+              db.close();
+              resolve(req.result ?? null);
+            };
+            req.onerror = () => {
+              db.close();
+              resolve(null);
+            };
+          } catch {
+            db.close();
+            resolve(null);
+          }
+        });
+      },
+      async put(item, key) {
+        const db = await openAndEnsureStore(storeName);
+        return new Promise((resolve, reject) => {
+          try {
+            const tx = db.transaction(storeName, "readwrite");
+            const store = tx.objectStore(storeName);
+            if (store.keyPath) {
+              if (key !== void 0 && typeof item === "object" && item !== null && !(store.keyPath in item)) {
+                item[store.keyPath] = key;
+              }
+              store.put(item);
+            } else {
+              store.put(item, key);
+            }
+            tx.oncomplete = () => {
+              db.close();
+              resolve();
+            };
+            tx.onerror = () => {
+              db.close();
+              reject(tx.error);
+            };
+          } catch (e) {
+            db.close();
+            reject(e);
+          }
+        });
+      },
+      async delete(key) {
+        const db = await openAndEnsureStore(storeName);
+        return new Promise((resolve, reject) => {
+          try {
+            const tx = db.transaction(storeName, "readwrite");
+            const store = tx.objectStore(storeName);
+            store.delete(key);
+            tx.oncomplete = () => {
+              db.close();
+              resolve();
+            };
+            tx.onerror = () => {
+              db.close();
+              reject(tx.error);
+            };
+          } catch (e) {
+            db.close();
+            reject(e);
+          }
+        });
+      },
+      async clear() {
+        const db = await openAndEnsureStore(storeName);
+        return new Promise((resolve, reject) => {
+          try {
+            const tx = db.transaction(storeName, "readwrite");
+            const store = tx.objectStore(storeName);
+            store.clear();
+            tx.oncomplete = () => {
+              db.close();
+              resolve();
+            };
+            tx.onerror = () => {
+              db.close();
+              reject(tx.error);
+            };
+          } catch (e) {
+            db.close();
+            reject(e);
+          }
+        });
+      }
+    };
+  }
+  function getIndexedDBProxy() {
+    if (cachedIDBProxy)
+      return cachedIDBProxy;
+    if (typeof indexedDB === "undefined")
+      return globalThis.indexedDB;
+    const storeOpsCache = /* @__PURE__ */ new Map();
+    cachedIDBProxy = new Proxy(globalThis.indexedDB, {
+      get(target, prop) {
+        if (typeof prop === "symbol" || prop in target) {
+          const val = target[prop];
+          return typeof val === "function" ? val.bind(target) : val;
+        }
+        if (typeof prop === "string") {
+          if (!storeOpsCache.has(prop)) {
+            storeOpsCache.set(prop, createStoreOperations(prop));
+          }
+          return storeOpsCache.get(prop);
+        }
+        return void 0;
+      }
+    });
+    return cachedIDBProxy;
+  }
+  function evaluate(el, expression, runtime, extras = {}) {
+    if (typeof expression !== "string" || !expression || expression.trim() === "")
+      return {};
+    const runner = evaluateLater(el, expression, runtime);
+    let res;
+    runner((v) => res = v, extras);
+    return res;
+  }
+  function preProcessExpression(expression) {
+    let processed = expression;
+    if (processed.includes("@")) {
+      processed = processed.replace(/@(\w+)\s*\((.*?)\)\s*\{([^}]*)\}/g, (_match, name, arg, body) => {
+        const safeArg = arg.trim().replace(/`/g, "\\`");
+        return `_scopes.${name}(\`${safeArg}\`, () => { return ${body.trim()} })`;
+      });
+    }
+    if (processed.includes("#")) {
+      processed = processed.replace(/(^|[^a-zA-Z0-9_$'"`])#([a-zA-Z_$][\w$]*)/g, "$1__global.$2");
+    }
+    return processed;
+  }
+  function checkBalanced(expr) {
+    const stack = [];
+    const pairs = { "{": "}", "[": "]", "(": ")" };
+    let inString = null;
+    let escape = false;
+    for (let i = 0; i < expr.length; i++) {
+      const char = expr[i];
+      if (escape) {
+        escape = false;
+        continue;
+      }
+      if (char === "\\") {
+        escape = true;
+        continue;
+      }
+      if (inString) {
+        if (char === inString)
+          inString = null;
+        continue;
+      }
+      if (char === '"' || char === "'" || char === "`") {
+        inString = char;
+        continue;
+      }
+      if (pairs[char]) {
+        stack.push({ char, pos: i });
+      } else if (char === "}" || char === "]" || char === ")") {
+        const last = stack.pop();
+        if (!last || pairs[last.char] !== char) {
+          return { type: "bracket", expected: last ? pairs[last.char] : "none", position: i };
+        }
+      }
+    }
+    if (inString) {
+      return { type: "quote", expected: inString, position: expr.length };
+    }
+    if (stack.length > 0) {
+      const last = stack[stack.length - 1];
+      return { type: "bracket", expected: pairs[last.char], position: last.pos };
+    }
+    return null;
+  }
+  function validateExpression(expression, el) {
+    const trimmed = expression.trim();
+    let attrName = "";
+    if (el instanceof Element) {
+      for (const attr of Array.from(el.attributes)) {
+        if (attr.value === expression) {
+          attrName = attr.name;
+          break;
+        }
+      }
+    }
+    if (attrName === "data-for") {
+      if (!trimmed.includes(" in ")) {
+        return {
+          severity: "error",
+          message: `Invalid data-for syntax: "${trimmed}". Expected "item in items".`,
+          suggestion: trimmed.includes(" of ") ? `Replace 'of' with 'in': "${trimmed.replace(" of ", " in ")}"` : `Use pattern: "(item, index) in list"`,
+          element: el,
+          expression: trimmed
+        };
+      }
+    }
+    const balanced = checkBalanced(trimmed);
+    if (balanced) {
+      return {
+        severity: "error",
+        message: `Unbalanced ${balanced.type} in expression: "${trimmed.substring(0, 60)}..."`,
+        suggestion: `Check for missing closing '${balanced.expected}' near position ${balanced.position}`,
+        element: el,
+        expression: trimmed
+      };
+    }
+    return null;
+  }
+  function evaluateLater(el, expression, runtime, initialExtras = {}) {
+    const processedExpression = preProcessExpression(expression);
+    const baseScope = {
+      ...runtime,
+      ...initialExtras
+    };
+    const scope = new Proxy(baseScope, {
+      has(target, key) {
+        if (key === Symbol.unscopables)
+          return false;
+        if (typeof key === "string") {
+          return true;
+        }
+        return false;
+      },
+      get(target, key) {
+        if (key === Symbol.unscopables)
+          return void 0;
+        if (typeof key === "string") {
+          if (hasScopeProvider(key))
+            return resolveScopeProvider(key, el, runtime);
+          const dataStack = getDataStack(el);
+          for (const data of dataStack) {
+            if (key in data) {
+              const val = data[key];
+              return runtime.unref(val);
+            }
+          }
+          const globalSignals = runtime.globalSignals();
+          if (key in globalSignals) {
+            const val = globalSignals[key];
+            return runtime.unref(val);
+          }
+          const globalActions = runtime.globalActions();
+          if (key in globalActions) {
+            return globalActions[key];
+          }
+          if (key === "indexedDB" && typeof indexedDB !== "undefined") {
+            return getIndexedDBProxy();
+          }
+          if (key in globalThis) {
+            const val = globalThis[key];
+            return typeof val === "function" ? val.bind(globalThis) : val;
+          }
+        }
+        return void 0;
+      },
+      set(target, key, value) {
+        if (typeof key === "string") {
+          const dataStack = getDataStack(el);
+          for (const data of dataStack) {
+            if (key in data) {
+              data[key] = value;
+              return true;
+            }
+          }
+          const globalSignals = runtime.globalSignals();
+          if (key in globalSignals) {
+            globalSignals[key] = value;
+            return true;
+          }
+          if (dataStack.length > 0) {
+            dataStack[0][key] = value;
+            return true;
+          }
+          if (key in target) {
+            target[key] = value;
+            return true;
+          }
+          globalSignals[key] = value;
+          return true;
+        }
+        return false;
+      }
+    });
+    const diagnostic = validateExpression(expression, el);
+    if (diagnostic) {
+      syntaxError(
+        diagnostic.element ? diagnostic.element.tagName.toLowerCase() : "unknown",
+        expression,
+        `${diagnostic.message}
+\u{1F4A1} Suggestion: ${diagnostic.suggestion}`,
+        el instanceof HTMLElement ? el : void 0
+      );
+    }
+    let func;
+    try {
+      func = new Function("scope", `with (scope) { return (${processedExpression}) }`);
+    } catch (e) {
+      if (e instanceof SyntaxError) {
+        try {
+          func = new Function("scope", `with (scope) { ${processedExpression} }`);
+        } catch (e2) {
+          if (e2 instanceof SyntaxError) {
+            syntaxError("eval", expression, e2.message, el instanceof HTMLElement ? el : void 0);
+          }
+          throw e2;
+        }
+      } else {
+        throw e;
+      }
+    }
+    return (receiver, callExtras = {}) => {
+      if (currentEvalDepth > MAX_EVAL_DEPTH) {
+        console.warn(`[Nexus Loop Guard] Stopped runaway evaluation at depth ${currentEvalDepth} for expression: "${expression}"`);
+        receiver(void 0);
+        return;
+      }
+      currentEvalDepth++;
+      try {
+        const currentScope = new Proxy(callExtras, {
+          has(target, key) {
+            if (key === Symbol.unscopables)
+              return false;
+            if (typeof key === "string")
+              return key in target || key in scope;
+            return key in target;
+          },
+          get(target, key) {
+            if (key === Symbol.unscopables)
+              return void 0;
+            if (typeof key === "string") {
+              if (key in target)
+                return target[key];
+              return scope[key];
+            }
+            return void 0;
+          },
+          set(target, key, value) {
+            if (typeof key === "string") {
+              if (key in target) {
+                target[key] = value;
+                return true;
+              }
+              scope[key] = value;
+              return true;
+            }
+            return false;
+          }
+        });
+        const result = func.call(el, currentScope);
+        if (shouldAutoEvaluateFunctions && typeof result === "function") {
+          receiver(result.call(el, currentScope));
+        } else {
+          receiver(result);
+        }
+      } catch (e) {
+        if (e instanceof Promise)
+          throw e;
+        if (e instanceof TypeError && e.message.includes("Cannot read properties of") || e instanceof ReferenceError) {
+          if (runtime.isDevMode) {
+            try {
+              getSelfHealAgent().reportResolutionFailure("expression", expression, {
+                error: e.message,
+                node: el
+              });
+            } catch (_err) {
+            }
+          }
+          receiver(void 0);
+        } else {
+          console.error(`[Evaluator Error] Expression "${expression}" failed:`, e);
+          evaluationError(expression, e instanceof Error ? e : new Error(String(e)), el);
+        }
+      } finally {
+        currentEvalDepth--;
+      }
+    };
+  }
+  var shouldAutoEvaluateFunctions, currentEvalDepth, MAX_EVAL_DEPTH, DEFAULT_IDB_DATABASE, cachedIDBProxy;
+  var init_evaluator = __esm({
+    "src/engine/evaluator.ts"() {
+      init_agent();
+      init_debug();
+      init_scope();
+      registerScopeProvider("__global", (_, runtime) => runtime.globalSignals());
+      shouldAutoEvaluateFunctions = true;
+      currentEvalDepth = 0;
+      MAX_EVAL_DEPTH = 50;
+      DEFAULT_IDB_DATABASE = "nexus-store";
+      cachedIDBProxy = null;
+    }
+  });
+
+  // src/modules/attributes/build.ts
+  var build_exports = {};
+  __export(build_exports, {
+    default: () => build_default
+  });
+  async function writeToIDB(key, data, meta) {
+    await getIndexedDBProxy()[BUILD_STORE].put({ id: key, data, meta, updatedAt: Date.now() }, key);
+  }
+  function minifyCSS(css) {
+    return css.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\s+/g, " ").replace(/\s*([{}:;,])\s*/g, "$1").replace(/;}/g, "}").trim();
+  }
+  function minifyJS(js) {
+    return js.replace(/\/\/.*$/gm, "").replace(/\/\*[\s\S]*?\*\//g, "").replace(/\s+/g, " ").trim();
+  }
+  function collectStyles(root, shouldMinify) {
+    const sheets = [];
+    const managedRules = stylesheet.collectRules();
+    if (managedRules)
+      sheets.push(managedRules);
+    document.querySelectorAll("head style").forEach((style) => {
+      if (style.textContent)
+        sheets.push(style.textContent);
+    });
+    root.querySelectorAll("style").forEach((style) => {
+      if (style.textContent)
+        sheets.push(style.textContent);
+    });
+    const combined = sheets.join("\n\n");
+    return shouldMinify ? minifyCSS(combined) : combined;
+  }
+  function collectScripts(root, shouldMinify) {
+    const scripts = [];
+    root.querySelectorAll("script:not([src])").forEach((script) => {
+      if (script.textContent)
+        scripts.push(script.textContent);
+    });
+    const combined = scripts.join("\n\n");
+    return shouldMinify ? minifyJS(combined) : combined;
+  }
+  function serializeDOM(root) {
+    const clone = root.cloneNode(true);
+    clone.querySelectorAll("[data-nexus-loading]").forEach((el) => el.removeAttribute("data-nexus-loading"));
+    clone.querySelectorAll("[data-nexus-ready]").forEach((el) => el.removeAttribute("data-nexus-ready"));
+    clone.querySelectorAll(".nexus-loading").forEach((el) => el.classList.remove("nexus-loading"));
+    clone.querySelectorAll(".nexus-ready").forEach((el) => el.classList.remove("nexus-ready"));
+    clone.querySelectorAll('[class=""]').forEach((el) => el.removeAttribute("class"));
+    return clone.innerHTML;
+  }
+  function buildStandaloneDocument(htmlContent, styles, scripts, config, title) {
+    const nexusSrc = config.nexusSrc || "https://cdn.nexus-ux.dev/nexus-ux.js";
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title}</title>
+    <script type="module" src="${nexusSrc}"><\/script>
+${styles ? `    <style>
+${styles}
+    </style>` : ""}
+</head>
+<body data-init>
+${htmlContent}
+${scripts ? `<script>
+${scripts}
+<\/script>` : ""}
+</body>
+</html>`;
+  }
+  var BUILD_STORE, buildModule, build_default;
+  var init_build = __esm({
+    "src/modules/attributes/build.ts"() {
+      init_debug();
+      init_evaluator();
+      init_stylesheet();
+      BUILD_STORE = "builds";
+      buildModule = {
+        name: "build",
+        attribute: "build",
+        handle: (el, expression, runtime) => {
+          const doBuild = async () => {
+            let config;
+            try {
+              const evaluated = runtime.evaluate(el, expression);
+              if (typeof evaluated === "string") {
+                config = { target: evaluated };
+              } else if (typeof evaluated === "object" && evaluated !== null) {
+                config = evaluated;
+              } else {
+                throw new Error("Invalid build configuration");
+              }
+            } catch (e) {
+              reportError(new Error(`Build: Failed to evaluate configuration: ${e}`), el);
+              return { success: false, error: String(e) };
+            }
+            if (!config.target) {
+              reportError(new Error("Build: Missing target URI"), el);
+              return { success: false, error: "Missing target URI" };
+            }
+            const shouldMinify = config.minify ?? false;
+            const includeStyles = config.includeStyles ?? true;
+            const includeScripts = config.includeScripts ?? true;
+            const standalone = config.standalone ?? true;
+            try {
+              const scopeSelector = config.scope || "html";
+              const scopeRoot = scopeSelector === "html" ? document.documentElement : document.querySelector(scopeSelector) || document.documentElement;
+              const htmlContent = serializeDOM(scopeRoot);
+              const styles = includeStyles ? collectStyles(scopeRoot, shouldMinify) : "";
+              const scripts = includeScripts ? collectScripts(scopeRoot, shouldMinify) : "";
+              let output;
+              if (standalone) {
+                const title = document.title || "Nexus-UX Application";
+                output = buildStandaloneDocument(htmlContent, styles, scripts, config, title);
+              } else {
+                output = htmlContent;
+              }
+              const targetKey = config.target.replace(/^idb:\/\//, "");
+              await writeToIDB(targetKey, output, {
+                builtAt: Date.now(),
+                scope: config.scope || "html",
+                minified: shouldMinify,
+                standalone,
+                size: output.length
+              });
+              runtime.log(`Nexus Build: Bundle written to ${config.target} (${output.length} bytes)`);
+              return {
+                success: true,
+                target: config.target,
+                size: output.length,
+                timestamp: Date.now()
+              };
+            } catch (e) {
+              const msg = e instanceof Error ? e.message : String(e);
+              reportError(new Error(`Build failed: ${msg}`), el);
+              return { success: false, error: msg };
+            }
+          };
+          runtime.setGlobalSignal("$build", doBuild);
+          return () => {
+          };
+        }
+      };
+      build_default = buildModule;
+    }
+  });
+
+  // src/modules/attributes/class.ts
+  var class_exports = {};
+  __export(class_exports, {
+    default: () => class_default
+  });
+  var classModule, class_default;
+  var init_class = __esm({
+    "src/modules/attributes/class.ts"() {
+      init_debug();
+      init_stylesheet();
+      classModule = {
+        name: "class",
+        attribute: "class",
+        handle: (el, value, runtime, parsedAttr) => {
+          const parsed = parsedAttr || runtime.parseAttribute("data-class", runtime, el);
+          if (!parsed)
+            return;
+          try {
+            const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
+              const result = runtime.evaluate(el, value);
+              if (parsed.argument) {
+                if (result) {
+                  stylesheet.adoptClass(parsed.argument, el, runtime);
+                  el.classList.add(parsed.argument);
+                } else {
+                  el.classList.remove(parsed.argument);
+                }
+              } else {
+                runtime.reconcileClass(el, result);
+              }
+            });
+            return cleanup;
+          } catch (e) {
+            initError("class", `Failed to reconcile class: ${e instanceof Error ? e.message : String(e)}`, el, value);
+          }
+        }
+      };
+      class_default = classModule;
+    }
+  });
+
+  // src/modules/attributes/component.ts
+  var component_exports = {};
+  __export(component_exports, {
+    BaseComponent: () => BaseComponent,
+    default: () => component_default
+  });
+  function extractResourceMetadata(htmlText, path, runtime) {
+    const meta = {};
+    if (!htmlText || typeof htmlText !== "string")
+      return meta;
+    try {
+      const parser = new DOMParser();
+      const parsedDoc = parser.parseFromString(htmlText, "text/html");
+      const titles = Array.from(parsedDoc.querySelectorAll("title"));
+      const titleEl = titles.find((t) => !t.closest("svg"));
+      if (titleEl && titleEl.textContent) {
+        meta.title = titleEl.textContent.trim();
+      }
+      parsedDoc.querySelectorAll("meta").forEach((metaEl) => {
+        const key = metaEl.getAttribute("name") || metaEl.getAttribute("property");
+        const content = metaEl.getAttribute("content");
+        if (key && content) {
+          meta[key] = content.trim();
+        }
+      });
+      const globals = runtime.globalSignals ? runtime.globalSignals() : {};
+      if (globals) {
+        const norm = path.startsWith("/") ? path : "/" + path;
+        const unnorm = path.startsWith("/") ? path.slice(1) : path;
+        const curMeta = globals.meta || {};
+        const nextMeta = {
+          ...curMeta,
+          [path]: meta,
+          [norm]: meta,
+          [unnorm]: meta
+        };
+        if (runtime.setGlobalSignal) {
+          runtime.setGlobalSignal("meta", nextMeta);
+        }
+        const routerState = globals.router || globals.appRouter;
+        if (routerState) {
+          routerState.meta = nextMeta;
+          if (Array.isArray(routerState.routes)) {
+            const routeRecord = routerState.routes.find((r) => r.path === path || r.path === norm || r.path === unnorm);
+            if (routeRecord) {
+              routeRecord.meta = { ...routeRecord.meta || {}, ...meta };
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.error(`[Component] Failed to extract metadata for ${path}:`, e);
+    }
+    return meta;
+  }
+  function ensureCustomElementRegistered(tagName) {
+    if (typeof customElements === "undefined")
+      return;
+    const tag = tagName.toLowerCase();
+    if (tag.includes("-") && !customElements.get(tag)) {
+      try {
+        customElements.define(
+          tag,
+          class extends BaseComponent {
+            constructor() {
+              super();
+            }
+          }
+        );
+      } catch {
+      }
+    }
+  }
+  function createInheritedShadowScope(host, ctx) {
+    return new Proxy(ctx, {
+      has(target, key) {
+        if (key in target)
+          return true;
+        return getDataStack(host).some((scope) => key in scope);
+      },
+      get(target, key) {
+        if (key in target)
+          return Reflect.get(target, key);
+        const stack = getDataStack(host);
+        for (const scope of stack) {
+          if (key in scope)
+            return scope[key];
+        }
+        return void 0;
+      },
+      set(target, key, value) {
+        const stack = getDataStack(host);
+        for (const scope of stack) {
+          if (key in scope) {
+            scope[key] = value;
+            return true;
+          }
+        }
+        return Reflect.set(target, key, value);
+      },
+      ownKeys(target) {
+        const keys = new Set(Reflect.ownKeys(target));
+        for (const scope of getDataStack(host)) {
+          for (const k of Object.keys(scope))
+            keys.add(k);
+        }
+        return Array.from(keys);
+      },
+      getOwnPropertyDescriptor(target, key) {
+        if (key in target)
+          return Reflect.getOwnPropertyDescriptor(target, key);
+        for (const scope of getDataStack(host)) {
+          if (key in scope) {
+            return {
+              configurable: true,
+              enumerable: true,
+              writable: true,
+              value: scope[key]
+            };
+          }
+        }
+        return void 0;
+      }
+    });
+  }
+  var ElementBase, BaseComponent, componentModule, component_default;
+  var init_component = __esm({
+    "src/modules/attributes/component.ts"() {
+      init_scope();
+      init_consts();
+      init_cache();
+      init_debug();
+      init_stylesheet();
+      ElementBase = typeof HTMLElement !== "undefined" ? HTMLElement : class {
+      };
+      BaseComponent = class extends ElementBase {
+        root;
+        internals;
+        _templateContent;
+        _styles;
+        _scripts;
+        _cleanupFunctions = [];
+        _componentSrc = null;
+        _isRendered = false;
+        constructor(isShadowDOM) {
+          super();
+          if (isShadowDOM) {
+            this.root = this.attachShadow({ mode: "open" });
+          } else {
+            this.root = this;
+          }
+          if (typeof this.attachInternals === "function") {
+            try {
+              this.internals = this.attachInternals();
+            } catch {
+            }
+          }
+        }
+        connectedCallback() {
+          this._isRendered = true;
+        }
+        disconnectedCallback() {
+          this._cleanupFunctions.forEach((fn) => fn());
+          this._cleanupFunctions = [];
+        }
+        registerCleanup(fn) {
+          this._cleanupFunctions.push(fn);
+        }
+      };
+      componentModule = {
+        name: "component",
+        attribute: "component",
+        handle: (el, value, runtime) => {
+          try {
+            if (el.hasAttribute("data-route"))
+              return;
+            if (el.hasAttribute("data-nx-cmp-done"))
+              return;
+            ensureCustomElementRegistered(el.tagName);
+            const componentState = runtime.reactive({
+              isConnected: false,
+              isLoading: false,
+              hasError: false,
+              errorMessage: "",
+              templateContent: "",
+              meta: {}
+            });
+            const ctx = componentState;
+            ctx.element = el;
+            el[COMPONENT_CONTEXT_KEY] = ctx;
+            let tabObj = null;
+            const isTabOutlet = el.tagName.toLowerCase() === "tab-content";
+            if (isTabOutlet) {
+              const dataStack = getDataStack(el);
+              for (const scope of dataStack) {
+                if (scope && typeof scope === "object" && "tab" in scope) {
+                  const t = scope.tab;
+                  if (t && typeof t === "object") {
+                    tabObj = t;
+                    tabObj.linkedContent = componentState;
+                  }
+                  break;
+                }
+              }
+            }
+            let scopeAttached = false;
+            let __lastPath;
+            runtime.effect(() => {
+              let config;
+              const evaluated = runtime.evaluate(el, value);
+              if (!scopeAttached) {
+                addScopeToNode(el, ctx);
+                scopeAttached = true;
+              }
+              if (typeof evaluated === "object" && evaluated !== null) {
+                config = evaluated;
+              } else if (typeof evaluated === "string") {
+                try {
+                  config = JSON.parse(evaluated);
+                } catch {
+                  if (evaluated.trim().startsWith("{")) {
+                    try {
+                      config = new Function("return (" + evaluated + ")")();
+                    } catch {
+                      config = { path: evaluated };
+                    }
+                  } else {
+                    config = { path: evaluated };
+                  }
+                }
+              } else {
+                return;
+              }
+              if (!config.path || config.path === "none" || config.path === "undefined" || config.path === "null")
+                return;
+              if (config.path === __lastPath)
+                return;
+              __lastPath = config.path;
+              const load = async () => {
+                componentState.isLoading = true;
+                componentState.hasError = false;
+                if (isTabOutlet && tabObj && typeof tabObj === "object") {
+                  tabObj.isLoading = true;
+                  tabObj.linkedContent = componentState;
+                }
+                try {
+                  let html = "";
+                  let targetPath = config.path.trim();
+                  if (targetPath.startsWith("'") && targetPath.endsWith("'") || targetPath.startsWith('"') && targetPath.endsWith('"')) {
+                    targetPath = targetPath.slice(1, -1).trim();
+                  }
+                  if (targetPath.startsWith("<")) {
+                    html = targetPath;
+                  } else if (targetPath.startsWith("#")) {
+                    const rootNode = el.getRootNode();
+                    const template = (rootNode?.querySelector ? rootNode.querySelector(targetPath) : null) || document.querySelector(targetPath);
+                    if (!template)
+                      throw new Error(`Template ${targetPath} not found`);
+                    html = template.innerHTML;
+                  } else {
+                    const result = await cacheEngine.fetchWithCache(targetPath, {
+                      storage: "session",
+                      responseType: "text",
+                      onUpdate: (fresh) => {
+                        if (typeof fresh === "string" && fresh !== componentState.templateContent) {
+                          componentState.templateContent = fresh;
+                          const extracted2 = extractResourceMetadata(fresh, targetPath, runtime);
+                          componentState.meta = extracted2;
+                          if (tabObj && extracted2) {
+                            tabObj.meta = { ...tabObj.meta || {}, ...extracted2 };
+                          }
+                        }
+                      }
+                    });
+                    html = typeof result === "string" ? result : String(result);
+                  }
+                  if (html.includes("<!DOCTYPE") || html.includes("data-init") && el.tagName.toLowerCase() !== "html") {
+                    throw new Error(`Invalid component fragment returned for "${targetPath}": received full HTML shell.`);
+                  }
+                  if (runtime.isDevMode) {
+                    console.log(`[Component] Template loaded for <${el.tagName}>, length: ${html.length}`);
+                  }
+                  componentState.templateContent = html;
+                  const extracted = extractResourceMetadata(html, config.path, runtime);
+                  componentState.meta = extracted;
+                  if (tabObj && extracted && (extracted.title || extracted.icon)) {
+                    tabObj.meta = { ...tabObj.meta || {}, ...extracted };
+                  }
+                  if (config.shadowrootmode) {
+                    if (!el.shadowRoot)
+                      el.attachShadow({ mode: config.shadowrootmode });
+                    const shadow = el.shadowRoot;
+                    const scopeExpr = el.getAttribute("data-scope");
+                    let shadowScope;
+                    if (scopeExpr && scopeExpr.trim()) {
+                      const declared = runtime.evaluate(el, scopeExpr);
+                      const declaredObj = declared && typeof declared === "object" ? declared : {};
+                      shadowScope = Object.assign(/* @__PURE__ */ Object.create(null), ctx, declaredObj);
+                    } else {
+                      shadowScope = createInheritedShadowScope(el, ctx);
+                    }
+                    shadow[DATA_STACK_KEY] = [shadowScope];
+                    runtime.morphDOM(shadow, html);
+                    stylesheet.adoptElementSubtree(shadow);
+                    Array.from(shadow.children).forEach((child) => {
+                      if (child instanceof HTMLElement || child instanceof SVGElement) {
+                        runtime.processElement(child);
+                      }
+                    });
+                  } else {
+                    runtime.morphDOM(el, html);
+                    stylesheet.adoptElementSubtree(el);
+                    Array.from(el.children).forEach((child) => {
+                      if (child instanceof HTMLElement || child instanceof SVGElement) {
+                        runtime.processElement(child);
+                      }
+                    });
+                    el.setAttribute("data-nx-cmp-done", "true");
+                    runtime.processElement(el);
+                  }
+                  const focusable = (config.shadowrootmode ? el.shadowRoot : el)?.querySelector("[autofocus], [data-autofocus]");
+                  if (focusable instanceof HTMLElement) {
+                    focusable.focus();
+                  }
+                } catch (e) {
+                  componentState.hasError = true;
+                  componentState.errorMessage = e instanceof Error ? e.message : String(e);
+                  initError("component", componentState.errorMessage, el, value);
+                  if (config.fallback) {
+                    const fb = runtime.evaluate(el, config.fallback);
+                    runtime.morphDOM(el, String(fb));
+                  }
+                } finally {
+                  componentState.isLoading = false;
+                  if (isTabOutlet && tabObj && typeof tabObj === "object") {
+                    tabObj.isLoading = false;
+                  }
+                }
+              };
+              load();
+            });
+            return () => {
+              if (el instanceof BaseComponent) {
+                el.disconnectedCallback();
+              }
+            };
+          } catch (e) {
+            initError(
+              "component",
+              `Failed to init component: ${e instanceof Error ? e.message : String(e)}`,
+              el,
+              value
+            );
+          }
+        }
+      };
+      component_default = componentModule;
+    }
+  });
+
+  // src/modules/attributes/computed.ts
+  var computed_exports = {};
+  __export(computed_exports, {
+    default: () => computed_default
+  });
+  var computedModule, computed_default;
+  var init_computed = __esm({
+    "src/modules/attributes/computed.ts"() {
+      init_scope();
+      init_reactivity();
+      computedModule = {
+        name: "computed",
+        attribute: "computed",
+        metadata: { after: ["signal"] },
+        handle: (el, value, runtime) => {
+          const computedCleanup = [];
+          const isGlobal = el.hasAttribute("data-computed:global");
+          const { ghostKeys } = parseGhostKeys(value);
+          const initialGhostState = {};
+          ghostKeys.forEach((key) => initialGhostState[key] = void 0);
+          const stateRef = unifiedRef(initialGhostState);
+          const scopeId = el.id || `computed_${Math.random().toString(36).slice(2)}`;
+          if (el.hasAttribute("data-computed")) {
+            const scopeProxy = createScopeProxy(stateRef);
+            const addCleanup = addScopeToNode(el, scopeProxy);
+            computedCleanup.push(addCleanup);
+            const [_runner, effectCleanup] = runtime.elementBoundEffect(el, () => {
+              const computedDefs = runtime.evaluate(el, value || "{}");
+              if (typeof computedDefs === "object" && computedDefs !== null) {
+                Object.entries(computedDefs).forEach(([propName, getter]) => {
+                  if (typeof getter !== "function")
+                    return;
+                  const computedVal = unifiedComputed(() => {
+                    try {
+                      return getter();
+                    } catch (e) {
+                      if (runtime.isDevMode)
+                        runtime.warn(`[Computed Error] Failed to evaluate getter for "${propName}":`, e);
+                      return null;
+                    }
+                  }, propName);
+                  const stop2 = runtime.watch(computedVal, (val) => {
+                    stateRef.value[propName] = val;
+                  }, { immediate: true });
+                  computedCleanup.push(stop2);
+                });
+              }
+            });
+            computedCleanup.push(effectCleanup);
+          }
+          const attrs = Array.from(el.attributes).filter((a) => a.name.startsWith("data-computed-"));
+          if (attrs.length > 0) {
+            const attrStateRef = unifiedRef({}, `computed_${scopeId}`);
+            const scopeProxy = new Proxy({}, {
+              has(_, key) {
+                return Reflect.has(attrStateRef.value, key);
+              },
+              get(_, key) {
+                return Reflect.get(attrStateRef.value, key);
+              },
+              set(_, key, value2) {
+                return Reflect.set(attrStateRef.value, key, value2);
+              },
+              ownKeys() {
+                return Reflect.ownKeys(attrStateRef.value);
+              },
+              getOwnPropertyDescriptor(_, key) {
+                return Reflect.getOwnPropertyDescriptor(attrStateRef.value, key);
+              }
+            });
+            let addCleanup;
+            if (!isGlobal) {
+              addCleanup = addScopeToNode(el, scopeProxy);
+              computedCleanup.push(addCleanup);
+            }
+            attrs.forEach((attr) => {
+              const propName = attr.name.substring("data-computed-".length);
+              if (!propName)
+                return;
+              const [_runner, effectCleanup] = runtime.elementBoundEffect(el, () => {
+                const expression = attr.value;
+                const computedVal = runtime.computed(() => {
+                  try {
+                    return runtime.evaluate(el, expression);
+                  } catch (e) {
+                    if (runtime.isDevMode)
+                      runtime.warn(`[Computed Error] Failed to evaluate expression for "${propName}":`, e);
+                    return null;
+                  }
+                });
+                if (isGlobal || !addCleanup) {
+                  const stop2 = runtime.watch(computedVal, (val) => {
+                    runtime.setGlobalSignal(propName, val);
+                  }, { immediate: true });
+                  computedCleanup.push(stop2);
+                } else {
+                  const stop2 = runtime.watch(computedVal, (val) => {
+                    attrStateRef.value[propName] = val;
+                  }, { immediate: true });
+                  computedCleanup.push(stop2);
+                }
+              });
+              computedCleanup.push(effectCleanup);
+            });
+          }
+          return () => {
+            computedCleanup.forEach((c) => c());
+          };
+        }
+      };
+      computed_default = computedModule;
+    }
+  });
+
+  // src/modules/attributes/debug.ts
+  var debug_exports = {};
+  __export(debug_exports, {
+    default: () => debug_default
+  });
+  var debugModule, debug_default;
+  var init_debug2 = __esm({
+    "src/modules/attributes/debug.ts"() {
+      init_scope();
+      debugModule = {
+        name: "debug",
+        attribute: "debug",
+        handle: (el, value, runtime) => {
+          const stack = getDataStack(el);
+          console.group(`[Nexus Debug] Element:`, el);
+          console.log("Value:", value);
+          console.log("Data Stack:", stack);
+          console.log("Global Signals:", runtime.globalSignals());
+          console.groupEnd();
+          if (value) {
+            try {
+              const result = runtime.evaluate(el, value);
+              console.log(`[Nexus Debug] Expression "${value}" result:`, result);
+            } catch (e) {
+              console.error(`[Nexus Debug] Evaluation failed:`, e);
+            }
+          }
+        }
+      };
+      debug_default = debugModule;
     }
   });
 
@@ -5583,459 +5981,6 @@ ${scripts}
         }
       };
       if_default = ifModule;
-    }
-  });
-
-  // src/engine/evaluator.ts
-  async function openAndEnsureStore(storeName) {
-    if (typeof indexedDB === "undefined") {
-      throw new Error("IndexedDB is not supported in this environment");
-    }
-    const db = await new Promise((resolve, reject) => {
-      const req = indexedDB.open(DEFAULT_IDB_DATABASE);
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-      req.onupgradeneeded = (e) => {
-        const udb = e.target.result;
-        if (!udb.objectStoreNames.contains(storeName)) {
-          udb.createObjectStore(storeName, { keyPath: "id" });
-        }
-      };
-    });
-    if (db.objectStoreNames.contains(storeName)) {
-      return db;
-    }
-    const nextVersion = db.version + 1;
-    db.close();
-    return new Promise((resolve, reject) => {
-      const req = indexedDB.open(DEFAULT_IDB_DATABASE, nextVersion);
-      req.onupgradeneeded = (e) => {
-        const udb = e.target.result;
-        if (!udb.objectStoreNames.contains(storeName)) {
-          udb.createObjectStore(storeName, { keyPath: "id" });
-        }
-      };
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-  }
-  function createStoreOperations(storeName) {
-    return {
-      async all() {
-        const db = await openAndEnsureStore(storeName);
-        return new Promise((resolve) => {
-          try {
-            const tx = db.transaction(storeName, "readonly");
-            const store = tx.objectStore(storeName);
-            const req = store.getAll();
-            req.onsuccess = () => {
-              db.close();
-              resolve(req.result || []);
-            };
-            req.onerror = () => {
-              db.close();
-              resolve([]);
-            };
-          } catch {
-            db.close();
-            resolve([]);
-          }
-        });
-      },
-      async get(key) {
-        const db = await openAndEnsureStore(storeName);
-        return new Promise((resolve) => {
-          try {
-            const tx = db.transaction(storeName, "readonly");
-            const store = tx.objectStore(storeName);
-            const req = store.get(key);
-            req.onsuccess = () => {
-              db.close();
-              resolve(req.result ?? null);
-            };
-            req.onerror = () => {
-              db.close();
-              resolve(null);
-            };
-          } catch {
-            db.close();
-            resolve(null);
-          }
-        });
-      },
-      async put(item, key) {
-        const db = await openAndEnsureStore(storeName);
-        return new Promise((resolve, reject) => {
-          try {
-            const tx = db.transaction(storeName, "readwrite");
-            const store = tx.objectStore(storeName);
-            if (store.keyPath) {
-              if (key !== void 0 && typeof item === "object" && item !== null && !(store.keyPath in item)) {
-                item[store.keyPath] = key;
-              }
-              store.put(item);
-            } else {
-              store.put(item, key);
-            }
-            tx.oncomplete = () => {
-              db.close();
-              resolve();
-            };
-            tx.onerror = () => {
-              db.close();
-              reject(tx.error);
-            };
-          } catch (e) {
-            db.close();
-            reject(e);
-          }
-        });
-      },
-      async delete(key) {
-        const db = await openAndEnsureStore(storeName);
-        return new Promise((resolve, reject) => {
-          try {
-            const tx = db.transaction(storeName, "readwrite");
-            const store = tx.objectStore(storeName);
-            store.delete(key);
-            tx.oncomplete = () => {
-              db.close();
-              resolve();
-            };
-            tx.onerror = () => {
-              db.close();
-              reject(tx.error);
-            };
-          } catch (e) {
-            db.close();
-            reject(e);
-          }
-        });
-      },
-      async clear() {
-        const db = await openAndEnsureStore(storeName);
-        return new Promise((resolve, reject) => {
-          try {
-            const tx = db.transaction(storeName, "readwrite");
-            const store = tx.objectStore(storeName);
-            store.clear();
-            tx.oncomplete = () => {
-              db.close();
-              resolve();
-            };
-            tx.onerror = () => {
-              db.close();
-              reject(tx.error);
-            };
-          } catch (e) {
-            db.close();
-            reject(e);
-          }
-        });
-      }
-    };
-  }
-  function getIndexedDBProxy() {
-    if (cachedIDBProxy)
-      return cachedIDBProxy;
-    if (typeof indexedDB === "undefined")
-      return globalThis.indexedDB;
-    const storeOpsCache = /* @__PURE__ */ new Map();
-    cachedIDBProxy = new Proxy(globalThis.indexedDB, {
-      get(target, prop) {
-        if (typeof prop === "symbol" || prop in target) {
-          const val = target[prop];
-          return typeof val === "function" ? val.bind(target) : val;
-        }
-        if (typeof prop === "string") {
-          if (!storeOpsCache.has(prop)) {
-            storeOpsCache.set(prop, createStoreOperations(prop));
-          }
-          return storeOpsCache.get(prop);
-        }
-        return void 0;
-      }
-    });
-    return cachedIDBProxy;
-  }
-  function evaluate(el, expression, runtime, extras = {}) {
-    if (typeof expression !== "string" || !expression || expression.trim() === "")
-      return {};
-    const runner = evaluateLater(el, expression, runtime);
-    let res;
-    runner((v) => res = v, extras);
-    return res;
-  }
-  function preProcessExpression(expression) {
-    let processed = expression;
-    if (processed.includes("@")) {
-      processed = processed.replace(/@(\w+)\s*\((.*?)\)\s*\{([^}]*)\}/g, (_match, name, arg, body) => {
-        const safeArg = arg.trim().replace(/`/g, "\\`");
-        return `_scopes.${name}(\`${safeArg}\`, () => { return ${body.trim()} })`;
-      });
-    }
-    if (processed.includes("#")) {
-      processed = processed.replace(/(^|[^a-zA-Z0-9_$'"`])#([a-zA-Z_$][\w$]*)/g, "$1__global.$2");
-    }
-    return processed;
-  }
-  function checkBalanced(expr) {
-    const stack = [];
-    const pairs = { "{": "}", "[": "]", "(": ")" };
-    let inString = null;
-    let escape = false;
-    for (let i = 0; i < expr.length; i++) {
-      const char = expr[i];
-      if (escape) {
-        escape = false;
-        continue;
-      }
-      if (char === "\\") {
-        escape = true;
-        continue;
-      }
-      if (inString) {
-        if (char === inString)
-          inString = null;
-        continue;
-      }
-      if (char === '"' || char === "'" || char === "`") {
-        inString = char;
-        continue;
-      }
-      if (pairs[char]) {
-        stack.push({ char, pos: i });
-      } else if (char === "}" || char === "]" || char === ")") {
-        const last = stack.pop();
-        if (!last || pairs[last.char] !== char) {
-          return { type: "bracket", expected: last ? pairs[last.char] : "none", position: i };
-        }
-      }
-    }
-    if (inString) {
-      return { type: "quote", expected: inString, position: expr.length };
-    }
-    if (stack.length > 0) {
-      const last = stack[stack.length - 1];
-      return { type: "bracket", expected: pairs[last.char], position: last.pos };
-    }
-    return null;
-  }
-  function validateExpression(expression, el) {
-    const trimmed = expression.trim();
-    let attrName = "";
-    if (el instanceof Element) {
-      for (const attr of Array.from(el.attributes)) {
-        if (attr.value === expression) {
-          attrName = attr.name;
-          break;
-        }
-      }
-    }
-    if (attrName === "data-for") {
-      if (!trimmed.includes(" in ")) {
-        return {
-          severity: "error",
-          message: `Invalid data-for syntax: "${trimmed}". Expected "item in items".`,
-          suggestion: trimmed.includes(" of ") ? `Replace 'of' with 'in': "${trimmed.replace(" of ", " in ")}"` : `Use pattern: "(item, index) in list"`,
-          element: el,
-          expression: trimmed
-        };
-      }
-    }
-    const balanced = checkBalanced(trimmed);
-    if (balanced) {
-      return {
-        severity: "error",
-        message: `Unbalanced ${balanced.type} in expression: "${trimmed.substring(0, 60)}..."`,
-        suggestion: `Check for missing closing '${balanced.expected}' near position ${balanced.position}`,
-        element: el,
-        expression: trimmed
-      };
-    }
-    return null;
-  }
-  function evaluateLater(el, expression, runtime, initialExtras = {}) {
-    const processedExpression = preProcessExpression(expression);
-    const baseScope = {
-      ...runtime,
-      ...initialExtras
-    };
-    const scope = new Proxy(baseScope, {
-      has(target, key) {
-        if (key === Symbol.unscopables)
-          return false;
-        if (typeof key === "string") {
-          return true;
-        }
-        return false;
-      },
-      get(target, key) {
-        if (key === Symbol.unscopables)
-          return void 0;
-        if (typeof key === "string") {
-          if (hasScopeProvider(key))
-            return resolveScopeProvider(key, el, runtime);
-          const dataStack = getDataStack(el);
-          for (const data of dataStack) {
-            if (key in data) {
-              const val = data[key];
-              return runtime.unref(val);
-            }
-          }
-          const globalSignals = runtime.globalSignals();
-          if (key in globalSignals) {
-            const val = globalSignals[key];
-            return runtime.unref(val);
-          }
-          const globalActions = runtime.globalActions();
-          if (key in globalActions) {
-            return globalActions[key];
-          }
-          if (key === "indexedDB" && typeof indexedDB !== "undefined") {
-            return getIndexedDBProxy();
-          }
-          if (key in globalThis) {
-            const val = globalThis[key];
-            return typeof val === "function" ? val.bind(globalThis) : val;
-          }
-        }
-        return void 0;
-      },
-      set(target, key, value) {
-        if (typeof key === "string") {
-          const dataStack = getDataStack(el);
-          for (const data of dataStack) {
-            if (key in data) {
-              data[key] = value;
-              return true;
-            }
-          }
-          const globalSignals = runtime.globalSignals();
-          if (key in globalSignals) {
-            globalSignals[key] = value;
-            return true;
-          }
-          if (dataStack.length > 0) {
-            dataStack[0][key] = value;
-            return true;
-          }
-          if (key in target) {
-            target[key] = value;
-            return true;
-          }
-          globalSignals[key] = value;
-          return true;
-        }
-        return false;
-      }
-    });
-    const diagnostic = validateExpression(expression, el);
-    if (diagnostic) {
-      syntaxError(
-        diagnostic.element ? diagnostic.element.tagName.toLowerCase() : "unknown",
-        expression,
-        `${diagnostic.message}
-\u{1F4A1} Suggestion: ${diagnostic.suggestion}`,
-        el instanceof HTMLElement ? el : void 0
-      );
-    }
-    let func;
-    try {
-      func = new Function("scope", `with (scope) { return (${processedExpression}) }`);
-    } catch (e) {
-      if (e instanceof SyntaxError) {
-        try {
-          func = new Function("scope", `with (scope) { ${processedExpression} }`);
-        } catch (e2) {
-          if (e2 instanceof SyntaxError) {
-            syntaxError("eval", expression, e2.message, el instanceof HTMLElement ? el : void 0);
-          }
-          throw e2;
-        }
-      } else {
-        throw e;
-      }
-    }
-    return (receiver, callExtras = {}) => {
-      if (currentEvalDepth > MAX_EVAL_DEPTH) {
-        console.warn(`[Nexus Loop Guard] Stopped runaway evaluation at depth ${currentEvalDepth} for expression: "${expression}"`);
-        receiver(void 0);
-        return;
-      }
-      currentEvalDepth++;
-      try {
-        const currentScope = new Proxy(callExtras, {
-          has(target, key) {
-            if (key === Symbol.unscopables)
-              return false;
-            if (typeof key === "string")
-              return key in target || key in scope;
-            return key in target;
-          },
-          get(target, key) {
-            if (key === Symbol.unscopables)
-              return void 0;
-            if (typeof key === "string") {
-              if (key in target)
-                return target[key];
-              return scope[key];
-            }
-            return void 0;
-          },
-          set(target, key, value) {
-            if (typeof key === "string") {
-              if (key in target) {
-                target[key] = value;
-                return true;
-              }
-              scope[key] = value;
-              return true;
-            }
-            return false;
-          }
-        });
-        const result = func.call(el, currentScope);
-        if (shouldAutoEvaluateFunctions && typeof result === "function") {
-          receiver(result.call(el, currentScope));
-        } else {
-          receiver(result);
-        }
-      } catch (e) {
-        if (e instanceof Promise)
-          throw e;
-        if (e instanceof TypeError && e.message.includes("Cannot read properties of") || e instanceof ReferenceError) {
-          if (runtime.isDevMode) {
-            try {
-              getSelfHealAgent().reportResolutionFailure("expression", expression, {
-                error: e.message,
-                node: el
-              });
-            } catch (_err) {
-            }
-          }
-          receiver(void 0);
-        } else {
-          console.error(`[Evaluator Error] Expression "${expression}" failed:`, e);
-          evaluationError(expression, e instanceof Error ? e : new Error(String(e)), el);
-        }
-      } finally {
-        currentEvalDepth--;
-      }
-    };
-  }
-  var shouldAutoEvaluateFunctions, currentEvalDepth, MAX_EVAL_DEPTH, DEFAULT_IDB_DATABASE, cachedIDBProxy;
-  var init_evaluator = __esm({
-    "src/engine/evaluator.ts"() {
-      init_agent();
-      init_debug();
-      init_scope();
-      registerScopeProvider("__global", (_, runtime) => runtime.globalSignals());
-      shouldAutoEvaluateFunctions = true;
-      currentEvalDepth = 0;
-      MAX_EVAL_DEPTH = 50;
-      DEFAULT_IDB_DATABASE = "nexus-store";
-      cachedIDBProxy = null;
     }
   });
 
