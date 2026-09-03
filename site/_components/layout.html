@@ -273,7 +273,7 @@
       }
     }"
   data-class="{ 'md:grid-cols-[max-content_1fr]': !collapsed, 'md:grid-cols-[4rem_1fr]': collapsed, 'h-screen max-h-screen overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }"
-  data-effect="if (window.favStore && (!favorites || favorites.length === 0)) { window.favStore.load().then(items => { if (items && items.length) { favorites = items; syncFavoriteGroups(); } }); }"
+  data-effect="if (indexedDB?.favorites && (!favorites || favorites.length === 0)) { indexedDB.favorites.all().then(items => { if (items && items.length) { favorites = items; syncFavoriteGroups(); } }); }"
   data-on-resize_window="isMobile = window.innerWidth < 768">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content flex flex-col"
