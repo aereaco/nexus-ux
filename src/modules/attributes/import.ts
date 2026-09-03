@@ -1,7 +1,7 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { reportError } from '../../engine/debug.ts';
-import { readIDB } from '../../engine/utils/idb.ts';
+import { getIndexedDBProxy } from '../../engine/evaluator.ts';
 import { stylesheet, discoverColorTokens, buildTailwindThemeBridge, markExternalStylesSettled } from './stylesheet.ts';
 import { cacheEngine } from '../../engine/cache.ts';
 
@@ -11,7 +11,7 @@ import { cacheEngine } from '../../engine/cache.ts';
  */
 async function readFromIDB(key: string): Promise<string | null> {
   const storeName = key.split('/')[0] || 'files';
-  const result = await readIDB(storeName, key);
+  const result = await getIndexedDBProxy()[storeName].get(key);
   
   if (!result) return null;
   if (typeof result === 'string') return result;
