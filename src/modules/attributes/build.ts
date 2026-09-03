@@ -1,7 +1,7 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { reportError } from '../../engine/debug.ts';
-import { writeIDB } from '../../engine/utils/idb.ts';
+import { getIndexedDBProxy } from '../../engine/evaluator.ts';
 import { stylesheet } from './stylesheet.ts';
 
 /**
@@ -11,7 +11,7 @@ import { stylesheet } from './stylesheet.ts';
 const BUILD_STORE = 'builds';
 
 async function writeToIDB(key: string, data: string, meta?: Record<string, unknown>): Promise<void> {
-  await writeIDB(BUILD_STORE, key, { data, meta, updatedAt: Date.now() });
+  await getIndexedDBProxy()[BUILD_STORE].put({ id: key, data, meta, updatedAt: Date.now() }, key);
 }
 
 /**
