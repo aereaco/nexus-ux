@@ -62,7 +62,7 @@
             existing.group = group;
             favorites = [...favorites];
             syncFavoriteGroups();
-            if (window.favStore) window.favStore.save(existing);
+            if (indexedDB?.favorites) indexedDB.favorites.put(existing);
           }
         } else {
           const newFav = {
@@ -74,7 +74,7 @@
           };
           favorites = [...(favorites || []), newFav];
           syncFavoriteGroups();
-          if (window.favStore) window.favStore.save(newFav);
+          if (indexedDB?.favorites) indexedDB.favorites.put(newFav);
         }
 
         const modal = document.getElementById('fav-modal');
@@ -83,7 +83,7 @@
       deleteFavorite(targetId) {
         favorites = (favorites || []).filter(f => (f.id || f.href || f) !== targetId);
         syncFavoriteGroups();
-        if (window.favStore) window.favStore.remove(targetId);
+        if (indexedDB?.favorites) indexedDB.favorites.delete(targetId);
         pendingDeleteId = null;
         const modal = document.getElementById('fav-delete-modal');
         if (modal && modal.close) modal.close();
