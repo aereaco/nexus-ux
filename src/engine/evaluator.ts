@@ -461,7 +461,11 @@ export function evaluateLater(
           return (globalActions as any)[key];
         }
 
-        // 6. GlobalThis Fallback
+        // 6. Native IndexedDB Proxy & GlobalThis Fallback
+        if (key === 'indexedDB' && typeof indexedDB !== 'undefined') {
+          return getIndexedDBProxy();
+        }
+
         if (key in globalThis) {
           const val = (globalThis as any)[key];
           return typeof val === 'function' ? val.bind(globalThis) : val;
