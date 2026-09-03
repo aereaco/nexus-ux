@@ -64,6 +64,206 @@ export function dontAutoEvaluateFunctions<R>(callback: () => R): R {
   }
 }
 
+// ============================================================================
+// Unified Native IndexedDB Reactive Proxy
+// ============================================================================
+
+const DEFAULT_IDB_DATABASE = 'nexus-store';
+
+export interface IndexedDBStoreOperations {
+  all(): Promise<any[]>;
+  get(key: string | number): Promise<any>;
+  put(item: any, key?: string | number): Promise<void>;
+  delete(key: string | number): Promise<void>;
+  clear(): Promise<void>;
+}
+
+async function openAndEnsureStore(storeName: string): Promise<IDBDatabase> {
+  if (typeof indexedDB === 'undefined') {
+    throw new Error('IndexedDB is not supported in this environment');
+  }
+
+  const db = await new Promise<IDBDatabase>((resolve, reject) => {
+    const req = indexedDB.open(DEFAULT_IDB_DATABASE);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+    req.onupgradeneeded = (e) => {
+      const udb = (e.target as IDBOpenDBRequest).result;
+      if (!udb.objectStoreNames.contains(storeName)) {
+        udb.createObjectStore(storeName, { keyPath: 'id' });
+      }
+    };
+  });
+
+  if (db.objectStoreNames.contains(storeName)) {
+    return db;
+  }
+
+  const nextVersion = db.version + 1;
+  db.close();
+
+  return new Promise<IDBDatabase>((resolve, reject) => {
+    const req = indexedDB.open(DEFAULT_IDB_DATABASE, nextVersion);
+    req.onupgradeneeded = (e) => {
+      const udb = (e.target as IDBOpenDBRequest).result;
+      if (!udb.objectStoreNames.contains(storeName)) {
+        udb.createObjectStore(storeName, { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function createStoreOperations(storeName: string): IndexedDBStoreOperations {
+  return {
+    async all(): Promise<any[]> {
+      const db = await openAndEnsureStore(storeName);
+      return new Promise((resolve) => {
+        try {
+          const tx = db.transaction(storeName, 'readonly');
+          const store = tx.objectStore(storeName);
+          const req = store.getAll();
+          req.onsuccess = () => {
+            db.close();
+            resolve(req.result || []);
+          };
+          req.onerror = () => {
+            db.close();
+            resolve([]);
+          };
+        } catch {
+          db.close();
+          resolve([]);
+        }
+      });
+    },
+
+    async get(key: string | number): Promise<any> {
+      const db = await openAndEnsureStore(storeName);
+      return new Promise((resolve) => {
+        try {
+          const tx = db.transaction(storeName, 'readonly');
+          const store = tx.objectStore(storeName);
+          const req = store.get(key);
+          req.onsuccess = () => {
+            db.close();
+            resolve(req.result ?? null);
+          };
+          req.onerror = () => {
+            db.close();
+            resolve(null);
+          };
+        } catch {
+          db.close();
+          resolve(null);
+        }
+      });
+    },
+
+    async put(item: any, key?: string | number): Promise<void> {
+      const db = await openAndEnsureStore(storeName);
+      return new Promise((resolve, reject) => {
+        try {
+          const tx = db.transaction(storeName, 'readwrite');
+          const store = tx.objectStore(storeName);
+          if (store.keyPath) {
+            if (key !== undefined && typeof item === 'object' && item !== null && !(store.keyPath in item)) {
+              item[store.keyPath as string] = key;
+            }
+            store.put(item);
+          } else {
+            store.put(item, key);
+          }
+          tx.oncomplete = () => {
+            db.close();
+            resolve();
+          };
+          tx.onerror = () => {
+            db.close();
+            reject(tx.error);
+          };
+        } catch (e) {
+          db.close();
+          reject(e);
+        }
+      });
+    },
+
+    async delete(key: string | number): Promise<void> {
+      const db = await openAndEnsureStore(storeName);
+      return new Promise((resolve, reject) => {
+        try {
+          const tx = db.transaction(storeName, 'readwrite');
+          const store = tx.objectStore(storeName);
+          store.delete(key);
+          tx.oncomplete = () => {
+            db.close();
+            resolve();
+          };
+          tx.onerror = () => {
+            db.close();
+            reject(tx.error);
+          };
+        } catch (e) {
+          db.close();
+          reject(e);
+        }
+      });
+    },
+
+    async clear(): Promise<void> {
+      const db = await openAndEnsureStore(storeName);
+      return new Promise((resolve, reject) => {
+        try {
+          const tx = db.transaction(storeName, 'readwrite');
+          const store = tx.objectStore(storeName);
+          store.clear();
+          tx.oncomplete = () => {
+            db.close();
+            resolve();
+          };
+          tx.onerror = () => {
+            db.close();
+            reject(tx.error);
+          };
+        } catch (e) {
+          db.close();
+          reject(e);
+        }
+      });
+    }
+  };
+}
+
+let cachedIDBProxy: any = null;
+
+export function getIndexedDBProxy(): any {
+  if (cachedIDBProxy) return cachedIDBProxy;
+  if (typeof indexedDB === 'undefined') return globalThis.indexedDB;
+
+  const storeOpsCache = new Map<string, IndexedDBStoreOperations>();
+
+  cachedIDBProxy = new Proxy(globalThis.indexedDB, {
+    get(target, prop: string | symbol) {
+      if (typeof prop === 'symbol' || prop in target) {
+        const val = (target as any)[prop];
+        return typeof val === 'function' ? val.bind(target) : val;
+      }
+      if (typeof prop === 'string') {
+        if (!storeOpsCache.has(prop)) {
+          storeOpsCache.set(prop, createStoreOperations(prop));
+        }
+        return storeOpsCache.get(prop)!;
+      }
+      return undefined;
+    }
+  });
+
+  return cachedIDBProxy;
+}
+
+
 export function evaluate(
   el: Element | Text | Comment,
   expression: string,
