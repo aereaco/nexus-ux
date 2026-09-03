@@ -65,8 +65,17 @@
       ctxMenuItems: [],
       ctxMenuTarget: 'body',
       favorites: [],
-      favForm: { id: null, title: '', href: '', icon: 'material-symbols-light:star-outline' },
+      favoriteGroups: [],
+      favViewMode: localStorage.favViewMode || 'list',
+      favForm: { id: null, title: '', href: '', icon: 'material-symbols-light:star-outline', group: '' },
       pendingDeleteId: null,
+      syncFavoriteGroups() {
+        const set = new Set();
+        (favorites || []).forEach(f => {
+          if (f && f.group && f.group.trim()) set.add(f.group.trim());
+        });
+        favoriteGroups = [...set];
+      },
       themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset'],
       openFavModal(item) {
         const href = typeof item === 'string' ? item : (item?.href || router.route || '/');
@@ -76,12 +85,14 @@
         const icon = (typeof item === 'object' && (item.icon || item.tabIcon)) 
           ? (item.icon || item.tabIcon) 
           : 'material-symbols-light:star-outline';
+        const group = (typeof item === 'object' && item.group) ? item.group : '';
         
         favForm = {
           id: (typeof item === 'object' && item.id && String(item.id).startsWith('fav-')) ? item.id : null,
           title,
           href,
-          icon
+          icon,
+          group
         };
 
         const modal = document.getElementById('fav-modal');
@@ -91,6 +102,7 @@
         const title = (favForm.title || '').trim() || 'Bookmark';
         const href = (favForm.href || '').trim() || '/';
         const icon = (favForm.icon || '').trim() || 'material-symbols-light:star-outline';
+        const group = (favForm.group || '').trim();
 
         if (favForm.id) {
           const existing = (favorites || []).find(f => (f.id || f) === favForm.id);
@@ -98,12 +110,21 @@
             existing.title = title;
             existing.href = href;
             existing.icon = icon;
+            existing.group = group;
             favorites = [...favorites];
+            syncFavoriteGroups();
             if (window.favStore) window.favStore.save(existing);
           }
         } else {
-          const newFav = { id: 'fav-' + (window.Date ? window.Date.now() : Math.floor(Math.random() * 1000000)), title, href, icon };
+          const newFav = {
+            id: 'fav-' + (window.Date ? window.Date.now() : Math.floor(Math.random() * 1000000)),
+            title,
+            href,
+            icon,
+            group
+          };
           favorites = [...(favorites || []), newFav];
+          syncFavoriteGroups();
           if (window.favStore) window.favStore.save(newFav);
         }
 
@@ -112,6 +133,7 @@
       },
       deleteFavorite(targetId) {
         favorites = (favorites || []).filter(f => (f.id || f.href || f) !== targetId);
+        syncFavoriteGroups();
         if (window.favStore) window.favStore.remove(targetId);
         pendingDeleteId = null;
         const modal = document.getElementById('fav-delete-modal');
@@ -302,7 +324,7 @@
       }
     }"
   data-class="{ 'md:grid-cols-[max-content_1fr]': !collapsed, 'md:grid-cols-[4rem_1fr]': collapsed, 'h-screen max-h-screen overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }"
-  data-effect="if (window.favStore && (!favorites || favorites.length === 0)) { window.favStore.load().then(items => { if (items && items.length) favorites = items; }); }"
+  data-effect="if (window.favStore && (!favorites || favorites.length === 0)) { window.favStore.load().then(items => { if (items && items.length) { favorites = items; syncFavoriteGroups(); } }); }"
   data-on-resize_window="isMobile = window.innerWidth < 768">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content flex flex-col"
@@ -989,44 +1011,153 @@
 
       <!-- ================= Panel Favorites (tab 2) ================= -->
       <div class="w-full" data-show="activeSidebarTab === 2 && (!collapsed || hovered || sidebarOpen)">
-        <div class="p-6">
-          <div class="flex items-center justify-between mb-6">
-            <h1 class="text-lg font-bold">Favorites</h1>
-            <button type="button" class="btn btn-ghost btn-xs btn-circle" title="Add Favorite"
+        <!-- Favorites Toolbar -->
+        <div class="px-4 pt-4 pb-2 flex items-center justify-between">
+          <span class="text-xs font-bold uppercase tracking-wider opacity-60">Favorites</span>
+          <div class="flex items-center gap-1.5">
+            <!-- View Mode Switcher: List / Grid (inspired by todo.html) -->
+            <div class="join bg-base-200 p-0.5 rounded-box shadow-inner">
+              <button type="button" class="join-item btn btn-xs btn-ghost gap-1"
+                data-class="{ 'btn-active': favViewMode === 'list' }"
+                data-on-click="favViewMode = 'list'; localStorage.favViewMode = 'list'"
+                title="List View">
+                <iconify-icon icon="material-symbols-light:view-list" class="text-base"></iconify-icon>
+                <span class="text-xs font-normal">List</span>
+              </button>
+              <button type="button" class="join-item btn btn-xs btn-ghost gap-1"
+                data-class="{ 'btn-active': favViewMode === 'grid' }"
+                data-on-click="favViewMode = 'grid'; localStorage.favViewMode = 'grid'"
+                title="Grid View">
+                <iconify-icon icon="material-symbols-light:grid-view" class="text-base"></iconify-icon>
+                <span class="text-xs font-normal">Grid</span>
+              </button>
+            </div>
+            <!-- Add Favorite button -->
+            <button type="button" class="btn btn-ghost btn-xs btn-circle ms-0.5" title="Add Favorite"
               data-on-click="openFavModal()">
               <iconify-icon icon="material-symbols-light:add" class="text-lg"></iconify-icon>
             </button>
           </div>
-          <ul class="menu w-full p-0 space-y-1" data-show="favorites && favorites.length > 0">
-            <template data-for="fav in favorites" data-key="fav.id || fav">
-              <li class="flex flex-row items-center justify-between group rounded-box hover:bg-base-200">
-                <a data-bind-href="fav.href || fav" class="grow flex items-center gap-3 py-2 px-3"
-                  data-on-contextmenu_prevent="openFavContextMenu(fav, $evt)">
-                  <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:star'"
-                    class="text-warning text-xl shrink-0"></iconify-icon>
-                  <span class="break-words font-medium text-sm" data-bind="fav.title || fav"></span>
-                </a>
-                <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity me-2">
-                  <button type="button"
-                    class="btn btn-ghost btn-xs btn-circle text-base-content/70 hover:text-base-content"
-                    title="Edit Favorite"
-                    data-on-click_stop="openFavModal(fav)">
-                    <iconify-icon icon="material-symbols-light:edit-outline" class="text-base"></iconify-icon>
-                  </button>
-                  <button type="button"
-                    class="btn btn-ghost btn-xs btn-circle text-error"
-                    title="Remove Favorite"
-                    data-on-click_stop="pendingDeleteId = fav.id || fav; $('#fav-delete-modal').showModal();">
-                    <iconify-icon icon="material-symbols-light:delete-outline" class="text-base"></iconify-icon>
-                  </button>
-                </div>
-              </li>
-            </template>
-          </ul>
-          <div data-show="!favorites || favorites.length === 0" class="text-center py-8">
-            <iconify-icon icon="material-symbols-light:star-outline" class="text-4xl opacity-30 mb-2"></iconify-icon>
-            <p class="text-sm opacity-60">No favorites saved yet.</p>
-          </div>
+        </div>
+
+        <!-- 1. Top-Level Ungrouped Items -->
+        <div class="transition-all duration-300 w-full"
+          data-class="{
+            'grid grid-cols-2 gap-2 px-3 py-1': favViewMode === 'grid',
+            'flex flex-col gap-1.5 px-3 py-1': favViewMode === 'list'
+          }"
+          data-show="(favorites || []).filter(f => !f.group || !f.group.trim()).length > 0"
+          data-drag-container="(favorites || []).filter(f => !f.group || !f.group.trim())"
+          data-drag-group="favorites"
+          data-drag-class="!opacity-100 !shadow-[0_15px_30px_-8px_rgba(0,0,0,0.25)] scale-105 cursor-grabbing z-[9999]"
+          data-drag-ghost-class="opacity-40 bg-base-200 border-2 border-dashed border-base-content/20">
+          <template data-for="fav in (favorites || []).filter(f => !f.group || !f.group.trim())" data-key="fav.id || fav.href">
+            <div data-drag
+              class="rounded-xl transition-all duration-300 flex border border-transparent min-w-0 cursor-move relative group"
+              data-class="{
+                'p-3 flex-col items-center justify-center text-center h-28 bg-base-200/70 hover:bg-base-200': favViewMode === 'grid',
+                'p-2 items-center gap-3 text-sm bg-base-200/50 hover:bg-base-200': favViewMode === 'list'
+              }">
+              <!-- Main Clickable Area -->
+              <a data-bind-href="fav.href || fav" class="flex-1 flex min-w-0 overflow-hidden"
+                data-class="{
+                  'flex-col items-center w-full': favViewMode === 'grid',
+                  'items-center gap-3': favViewMode === 'list'
+                }"
+                data-on-contextmenu_prevent="openFavContextMenu(fav, $evt)">
+                <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:star'"
+                  class="text-warning shrink-0"
+                  data-class="{
+                    'text-3xl mb-1': favViewMode === 'grid',
+                    'text-xl': favViewMode === 'list'
+                  }"></iconify-icon>
+                <span class="font-medium leading-tight select-none text-base-content truncate w-full"
+                  data-bind="fav.title || fav"></span>
+              </a>
+
+              <!-- Inline Action Buttons (todo.html design) -->
+              <div class="flex items-center gap-0.5 transition-opacity opacity-0 group-hover:opacity-100 shrink-0"
+                data-on-click:stop="" data-class="{ 'absolute top-2 right-2': favViewMode === 'grid' }">
+                <button class="btn btn-circle btn-ghost btn-xs text-base-content/60 hover:text-base-content hover:bg-base-300 transition-all"
+                  title="Edit Favorite" data-on-click="openFavModal(fav)">
+                  <iconify-icon icon="material-symbols-light:edit-outline" class="text-sm"></iconify-icon>
+                </button>
+                <button class="btn btn-circle btn-ghost btn-xs text-error/60 hover:text-error hover:bg-error/10 transition-all"
+                  title="Remove Favorite" data-on-click="pendingDeleteId = fav.id || fav; $('#fav-delete-modal').showModal();">
+                  <iconify-icon icon="material-symbols-light:delete-outline" class="text-sm"></iconify-icon>
+                </button>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <!-- 2. Categorized / Grouped Favorites (Draggable Whole Groups) -->
+        <div data-drag-container="favoriteGroups">
+          <template data-for="grp in favoriteGroups" data-key="grp">
+            <div data-drag data-show="(favorites || []).filter(f => (f.group || '').trim() === grp).length > 0">
+              <!-- Group Header (Title + Separator Line) -->
+              <ul class="menu w-full py-0">
+                <li class="menu-title cursor-grab font-bold text-xs uppercase tracking-wider opacity-60 mt-3" data-bind="grp"></li>
+                <li class="w-full mx-0 opacity-6"></li>
+              </ul>
+
+              <!-- Group Items in Dual-Mode Container -->
+              <div class="transition-all duration-300 w-full"
+                data-class="{
+                  'grid grid-cols-2 gap-2 px-3 py-1': favViewMode === 'grid',
+                  'flex flex-col gap-1.5 px-3 py-1': favViewMode === 'list'
+                }"
+                data-drag-container="(favorites || []).filter(f => (f.group || '').trim() === grp)"
+                data-drag-group="favorites"
+                data-drag-class="!opacity-100 !shadow-[0_15px_30px_-8px_rgba(0,0,0,0.25)] scale-105 cursor-grabbing z-[9999]"
+                data-drag-ghost-class="opacity-40 bg-base-200 border-2 border-dashed border-base-content/20">
+                <template data-for="fav in (favorites || []).filter(f => (f.group || '').trim() === grp)" data-key="fav.id || fav.href">
+                  <div data-drag
+                    class="rounded-xl transition-all duration-300 flex border border-transparent min-w-0 cursor-move relative group"
+                    data-class="{
+                      'p-3 flex-col items-center justify-center text-center h-28 bg-base-200/70 hover:bg-base-200': favViewMode === 'grid',
+                      'p-2 items-center gap-3 text-sm bg-base-200/50 hover:bg-base-200': favViewMode === 'list'
+                    }">
+                    <!-- Main Clickable Area -->
+                    <a data-bind-href="fav.href || fav" class="flex-1 flex min-w-0 overflow-hidden"
+                      data-class="{
+                        'flex-col items-center w-full': favViewMode === 'grid',
+                        'items-center gap-3': favViewMode === 'list'
+                      }"
+                      data-on-contextmenu_prevent="openFavContextMenu(fav, $evt)">
+                      <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:star'"
+                        class="text-warning shrink-0"
+                        data-class="{
+                          'text-3xl mb-1': favViewMode === 'grid',
+                          'text-xl': favViewMode === 'list'
+                        }"></iconify-icon>
+                      <span class="font-medium leading-tight select-none text-base-content truncate w-full"
+                        data-bind="fav.title || fav"></span>
+                    </a>
+
+                    <!-- Inline Action Buttons (todo.html design) -->
+                    <div class="flex items-center gap-0.5 transition-opacity opacity-0 group-hover:opacity-100 shrink-0"
+                      data-on-click:stop="" data-class="{ 'absolute top-2 right-2': favViewMode === 'grid' }">
+                      <button class="btn btn-circle btn-ghost btn-xs text-base-content/60 hover:text-base-content hover:bg-base-300 transition-all"
+                        title="Edit Favorite" data-on-click="openFavModal(fav)">
+                        <iconify-icon icon="material-symbols-light:edit-outline" class="text-sm"></iconify-icon>
+                      </button>
+                      <button class="btn btn-circle btn-ghost btn-xs text-error/60 hover:text-error hover:bg-error/10 transition-all"
+                        title="Delete Favorite" data-on-click="pendingDeleteId = fav.id || fav; $('#fav-delete-modal').showModal();">
+                        <iconify-icon icon="material-symbols-light:delete-outline" class="text-sm"></iconify-icon>
+                      </button>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <!-- Empty State -->
+        <div data-show="!favorites || favorites.length === 0" class="text-center py-12 px-4">
+          <iconify-icon icon="material-symbols-light:star-outline" class="text-4xl opacity-30 mb-2"></iconify-icon>
+          <p class="text-sm opacity-60">No favorites saved yet.</p>
         </div>
       </div>
 
@@ -1276,6 +1407,17 @@
               </div>
             </div>
           </div>
+        </div>
+        <div>
+          <label class="label"><span class="label-text font-semibold">Group / Folder (Optional)</span></label>
+          <input type="text" class="input input-bordered w-full" list="fav-groups-datalist"
+            data-bind-value="favForm.group" data-on-input="favForm.group = $evt.target.value"
+            placeholder="e.g. Work, Tools, Personal..." />
+          <datalist id="fav-groups-datalist">
+            <template data-for="grp in favoriteGroups" data-key="grp">
+              <option data-bind-value="grp"></option>
+            </template>
+          </datalist>
         </div>
       </div>
       <div class="modal-action">
