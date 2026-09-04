@@ -540,7 +540,8 @@
     <!-- Reusable Sub-Level Template (Infinite Arbitrary Sub-Nesting) -->
     <template id="sidebar-sub-menu-item">
       <!-- Sub Leaf Item -->
-      <li data-show="!item.children || item.children.length === 0" class="cursor-pointer" data-drag>
+      <li data-show="!item.children || item.children.length === 0" class="cursor-pointer" data-drag
+        data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
         <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
           data-bind-data-tab-title="item.tabTitle || item.title"
           data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
@@ -550,7 +551,8 @@
 
       <!-- Sub Branch Item (e.g. Profile 3) -->
       <li data-show="item.children && item.children.length > 0" class="cursor-pointer" data-drag
-        data-signal="{ open: false }">
+        data-signal="{ open: false }"
+        data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
         <div class="flex">
           <a data-bind-href="item.href" draggable="false" class="grow whitespace-nowrap"
             data-bind-data-tab-title="item.tabTitle || item.title"
@@ -588,7 +590,8 @@
           <template data-for="item in (router.pages || []).filter(p => !p.category)" data-key="item.href">
             <!-- Root Leaf Item (No Children) -->
             <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
-              data-bind-data-drag="item.href !== '/' ? '' : null">
+              data-bind-data-drag="item.href !== '/' ? '' : null"
+              data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
               <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
                 data-bind-data-tab-title="item.tabTitle || item.title"
                 data-bind-data-tab-icon="item.tabIcon || item.icon"
@@ -604,7 +607,8 @@
 
             <!-- Root Branch Item (With Children) -->
             <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
-              data-bind-data-drag="item.href !== '/' ? '' : null" data-signal="{ open: false }">
+              data-bind-data-drag="item.href !== '/' ? '' : null" data-signal="{ open: false }"
+              data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
               <div class="flex">
                 <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
                   data-bind-data-tab-title="item.tabTitle || item.title"
