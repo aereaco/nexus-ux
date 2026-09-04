@@ -745,7 +745,7 @@
             'flex flex-col gap-1.5 px-3 py-1': favViewMode === 'list'
           }"
           data-show="(favorites || []).filter(f => !f.group || !f.group.trim()).length > 0"
-          data-drag-container="(favorites || []).filter(f => !f.group || !f.group.trim())"
+          data-drag-container="favorites"
           data-drag-group="favorites"
           data-drag-class="!opacity-100 !shadow-[0_15px_30px_-8px_rgba(0,0,0,0.25)] scale-105 cursor-grabbing z-[9999]"
           data-drag-ghost-class="opacity-40 bg-base-200 border-2 border-dashed border-base-content/20">
@@ -805,7 +805,10 @@
                   'grid grid-cols-2 gap-2 px-3 py-1': favViewMode === 'grid',
                   'flex flex-col gap-1.5 px-3 py-1': favViewMode === 'list'
                 }"
-                data-drag-container="(favorites || []).filter(f => (f.group || '').trim() === grp)"
+                data-drag-container="favorites"
+                data-drag-group="favorites"
+                data-drag-class="!opacity-100 !shadow-[0_15px_30px_-8px_rgba(0,0,0,0.25)] scale-105 cursor-grabbing z-[9999]"
+                data-drag-ghost-class="opacity-40 bg-base-200 border-2 border-dashed border-base-content/20">
                 data-drag-group="favorites"
                 data-drag-class="!opacity-100 !shadow-[0_15px_30px_-8px_rgba(0,0,0,0.25)] scale-105 cursor-grabbing z-[9999]"
                 data-drag-ghost-class="opacity-40 bg-base-200 border-2 border-dashed border-base-content/20">
