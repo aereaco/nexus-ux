@@ -781,15 +781,15 @@
     </div>
 
     <!-- Search Modal (triggered by the navbar search button) -->
-    <div class="modal modal-top sm:modal-middle" role="dialog" aria-label="Search" data-preserve
-      data-class="{ 'modal-open': searchOpen }">
+    <div class="modal modal-top sm:modal-middle" role="dialog" aria-label="Search"
+      data-class-modal-open="searchOpen" data-on-keydown:escape:window="searchOpen = false">
       <div class="modal-box bg-base-100 shadow-2xl border border-base-300 p-0 overflow-hidden flex flex-col max-w-2xl">
         <!-- Search Input Row -->
         <div class="flex items-center gap-3 px-4 py-3 border-b border-base-200">
           <iconify-icon icon="material-symbols-light:search" class="text-2xl opacity-60"></iconify-icon>
-          <input type="text" class="input input-ghost w-full text-lg focus:outline-none border-0 focus:border-0 px-0"
+          <input id="search-modal-input" type="text" class="input input-ghost w-full text-lg focus:outline-none border-0 focus:border-0 px-0"
             placeholder="Search pages and features…" data-bind-value="searchQuery"
-            data-effect="if (searchOpen && $el) { $el.focus(); }" data-on-keydown_escape="searchOpen = false" />
+            data-on-keydown_escape="searchOpen = false" />
           <kbd class="kbd kbd-sm opacity-60 max-sm:hidden">Esc</kbd>
           <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close search" data-on-click="searchOpen = false">
             <iconify-icon icon="material-symbols-light:close" class="text-lg"></iconify-icon>
