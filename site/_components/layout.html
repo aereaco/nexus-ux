@@ -819,6 +819,7 @@
                 data-drag-ghost-class="opacity-40 bg-base-200 border-2 border-dashed border-base-content/20">
                 <template data-for="fav in (favorites || []).filter(f => (f.group || '').trim() === grp)" data-key="fav.id || fav.href">
                   <div data-drag
+                    data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'fav', target: fav }"
                     class="rounded-xl transition-all duration-300 flex border border-transparent min-w-0 cursor-move relative group"
                     data-class="{
                       'p-3 flex-col items-center justify-center text-center h-28 bg-base-200/70 hover:bg-base-200': favViewMode === 'grid',
