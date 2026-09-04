@@ -11,6 +11,7 @@
       searchQuery: '',
       activeSidebarTab: 1,
       ctxMenu: { open: false, x: 0, y: 0, type: null, target: null },
+      toasts: [],
       favorites: [],
       favoriteGroups: [],
       favHydrated: false,
@@ -23,7 +24,16 @@
     }"
   data-class="{ 'md:grid-cols-[max-content_1fr]': !collapsed, 'md:grid-cols-[4rem_1fr]': collapsed, 'h-screen max-h-screen overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }"
   data-effect="if (!favHydrated && indexedDB?.favorites) { favHydrated = true; indexedDB.favorites.all().then(items => { if (items && items.length) { favorites = items; favoriteGroups = [...new Set(items.map(f => (f?.group || '').trim()).filter(Boolean))]; } }); }"
-  data-on-resize_window="isMobile = window.innerWidth < 768">
+  data-on-resize_window="isMobile = window.innerWidth < 768"
+  data-on-toast_window="
+    const tMsg = $evt.detail?.message || $evt.detail;
+    if (tMsg) {
+      const tId = 'toast-' + (window.Date ? window.Date.now() : Math.random()) + '-' + Math.floor(Math.random() * 1000);
+      const tDur = $evt.detail?.duration || 3500;
+      toasts = [...(toasts || []), { id: tId, message: tMsg, type: $evt.detail?.type || 'success', icon: $evt.detail?.icon, duration: tDur }];
+      setTimeout(() => { toasts = (toasts || []).filter(t => t.id !== tId); }, tDur);
+    }
+  ">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content flex flex-col"
     data-class="{ 'h-full overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }">
