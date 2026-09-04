@@ -733,7 +733,7 @@
             </div>
             <!-- Add Favorite button -->
             <button type="button" class="btn btn-ghost btn-xs btn-circle ms-0.5" title="Add Favorite"
-              data-on-click="openFavModal()">
+              data-on-click="favForm = { id: null, title: router.activePageTab?.meta?.title || 'Home', href: router.route || '/', icon: 'material-symbols-light:star-outline', group: '' }; favModalOpen = true">
               <iconify-icon icon="material-symbols-light:add" class="text-lg"></iconify-icon>
             </button>
           </div>
@@ -763,7 +763,7 @@
                   'flex-col items-center w-full': favViewMode === 'grid',
                   'items-center gap-3': favViewMode === 'list'
                 }"
-                data-on-contextmenu_prevent="openFavContextMenu(fav, $evt)">
+                data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'fav', target: fav }">
                 <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:star'"
                   class="text-warning shrink-0"
                   data-class="{
@@ -778,11 +778,11 @@
               <div class="flex items-center gap-0.5 transition-opacity opacity-0 group-hover:opacity-100 shrink-0"
                 data-on-click:stop="" data-class="{ 'absolute top-2 right-2': favViewMode === 'grid' }">
                 <button class="btn btn-circle btn-ghost btn-xs text-base-content/60 hover:text-base-content hover:bg-base-300 transition-all"
-                  title="Edit Favorite" data-on-click="openFavModal(fav)">
+                  title="Edit Favorite" data-on-click="favForm = { id: fav.id, title: fav.title, href: fav.href, icon: fav.icon, group: fav.group || '' }; favModalOpen = true">
                   <iconify-icon icon="material-symbols-light:edit-outline" class="text-sm"></iconify-icon>
                 </button>
                 <button class="btn btn-circle btn-ghost btn-xs text-error/60 hover:text-error hover:bg-error/10 transition-all"
-                  title="Remove Favorite" data-on-click="pendingDeleteId = fav.id || fav; $('#fav-delete-modal').showModal();">
+                  title="Remove Favorite" data-on-click="pendingDeleteId = (fav.id || fav); favDeleteModalOpen = true">
                   <iconify-icon icon="material-symbols-light:delete-outline" class="text-sm"></iconify-icon>
                 </button>
               </div>
@@ -823,7 +823,7 @@
                         'flex-col items-center w-full': favViewMode === 'grid',
                         'items-center gap-3': favViewMode === 'list'
                       }"
-                      data-on-contextmenu_prevent="openFavContextMenu(fav, $evt)">
+                      data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'fav', target: fav }">
                       <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:star'"
                         class="text-warning shrink-0"
                         data-class="{
@@ -838,11 +838,11 @@
                     <div class="flex items-center gap-0.5 transition-opacity opacity-0 group-hover:opacity-100 shrink-0"
                       data-on-click:stop="" data-class="{ 'absolute top-2 right-2': favViewMode === 'grid' }">
                       <button class="btn btn-circle btn-ghost btn-xs text-base-content/60 hover:text-base-content hover:bg-base-300 transition-all"
-                        title="Edit Favorite" data-on-click="openFavModal(fav)">
+                        title="Edit Favorite" data-on-click="favForm = { id: fav.id, title: fav.title, href: fav.href, icon: fav.icon, group: fav.group || '' }; favModalOpen = true">
                         <iconify-icon icon="material-symbols-light:edit-outline" class="text-sm"></iconify-icon>
                       </button>
                       <button class="btn btn-circle btn-ghost btn-xs text-error/60 hover:text-error hover:bg-error/10 transition-all"
-                        title="Delete Favorite" data-on-click="pendingDeleteId = fav.id || fav; $('#fav-delete-modal').showModal();">
+                        title="Delete Favorite" data-on-click="pendingDeleteId = (fav.id || fav); favDeleteModalOpen = true">
                         <iconify-icon icon="material-symbols-light:delete-outline" class="text-sm"></iconify-icon>
                       </button>
                     </div>
