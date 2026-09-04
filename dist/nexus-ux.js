@@ -14646,13 +14646,6 @@ ${bridge}`, {
       });
       registerScopeProvider("$global", (_el, runtime) => runtime.globalSignals());
       registerScopeProvider("$actions", (_el, runtime) => runtime.globalActions());
-      registerScopeProvider("$toast", () => (messageOrOpts, type = "success", duration = 3500) => {
-        const opts = typeof messageOrOpts === "string" ? { message: messageOrOpts, type, duration } : { type: "success", duration: 3500, ...messageOrOpts };
-        if (typeof window !== "undefined") {
-          window.dispatchEvent(new CustomEvent("toast", { detail: opts, bubbles: true, cancelable: true }));
-        }
-        return opts;
-      });
       this.coordinator.registerActionModule("$id", {
         name: "$id",
         handle: (_el, ...args) => $id(...args)
