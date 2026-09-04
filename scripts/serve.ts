@@ -94,6 +94,11 @@ const IGNORE_PATTERNS = [
   "/scratch/",
   "/.vscode/",
   "/.idea/",
+  "/dist/",
+  ".tempmediaStorage",
+  "src/manifest.ts",
+  "site/_pages/manifest.json",
+  "site/_pages/manifest.ts",
   "deno.lock",
   ".log"
 ];
@@ -330,9 +335,15 @@ function runBuild() {
 function gitCommit(paths: string[]) {
   try {
     new Deno.Command("git", { args: ["add", "dist/", ...paths] }).outputSync();
+    const diffCheck = new Deno.Command("git", { args: ["diff", "--staged", "--quiet"] }).outputSync();
+    if (diffCheck.code === 0) {
+      return; // No staged changes
+    }
     const msg = `auto-snapshot (${paths.length} file(s) updated)`;
-    new Deno.Command("git", { args: ["commit", "-m", msg] }).outputSync();
-    console.log(`[serve] committed snapshot: ${msg}`);
+    const commitResult = new Deno.Command("git", { args: ["commit", "-m", msg] }).outputSync();
+    if (commitResult.success) {
+      console.log(`[serve] committed snapshot: ${msg}`);
+    }
   } catch (_) {
     // Silent recovery on commit failure
   }
@@ -358,9 +369,11 @@ function startWatcher() {
 
   (async () => {
     for await (const event of watcher) {
+      if (event.kind === "access") continue;
       for (const p of event.paths) {
         if (!isIgnored(p)) buffer.add(p);
       }
+      if (buffer.size === 0) continue;
       if (timer !== undefined) clearTimeout(timer);
       timer = setTimeout(flush, DEBOUNCE_MS);
     }
