@@ -115,7 +115,10 @@ function applyBindingResult(result: unknown, el: HTMLElement): void {
         } else if (el.type === 'radio') {
           el.checked = (el.value === String(result));
         } else {
-          el.value = result !== undefined && result !== null ? String(result) : '';
+          const strVal = result !== undefined && result !== null ? String(result) : '';
+          if (el.value !== strVal) {
+            el.value = strVal;
+          }
         }
       } else if (el instanceof HTMLSelectElement) {
         const targetValue = result !== undefined && result !== null ? String(result) : '';
@@ -127,9 +130,15 @@ function applyBindingResult(result: unknown, el: HTMLElement): void {
           }
         }
       } else if (el instanceof HTMLTextAreaElement) {
-        el.value = result !== undefined && result !== null ? String(result) : '';
+        const strVal = result !== undefined && result !== null ? String(result) : '';
+        if (el.value !== strVal) {
+          el.value = strVal;
+        }
       } else {
-        el.textContent = result !== undefined && result !== null ? String(result) : '';
+        const strVal = result !== undefined && result !== null ? String(result) : '';
+        if (el.textContent !== strVal) {
+          el.textContent = strVal;
+        }
       }
     }
   }

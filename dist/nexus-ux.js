@@ -1677,7 +1677,10 @@ ${suggestion}`);
           } else if (el.type === "radio") {
             el.checked = el.value === String(result);
           } else {
-            el.value = result !== void 0 && result !== null ? String(result) : "";
+            const strVal = result !== void 0 && result !== null ? String(result) : "";
+            if (el.value !== strVal) {
+              el.value = strVal;
+            }
           }
         } else if (el instanceof HTMLSelectElement) {
           const targetValue = result !== void 0 && result !== null ? String(result) : "";
@@ -1689,9 +1692,15 @@ ${suggestion}`);
             }
           }
         } else if (el instanceof HTMLTextAreaElement) {
-          el.value = result !== void 0 && result !== null ? String(result) : "";
+          const strVal = result !== void 0 && result !== null ? String(result) : "";
+          if (el.value !== strVal) {
+            el.value = strVal;
+          }
         } else {
-          el.textContent = result !== void 0 && result !== null ? String(result) : "";
+          const strVal = result !== void 0 && result !== null ? String(result) : "";
+          if (el.textContent !== strVal) {
+            el.textContent = strVal;
+          }
         }
       }
     }
