@@ -293,7 +293,7 @@
         data-class="{'tab-active border-b border-primary text-primary': router.activePageTabId === tab.id }"
         data-on-click="router.switchPageTab(tab.id)"
         data-on-auxclick="if ($evt.button === 1) router.closePageTab(tab.id)"
-        data-on-contextmenu_prevent="openTabContextMenu(tab, $evt)">
+        data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'tab', target: tab }">
         <iconify-icon icon="material-symbols-light:drag-indicator"
           class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
         <span data-show="tab.isLoading !== false" class="loading loading-spinner loading-xs text-primary me-2"></span>
