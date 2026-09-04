@@ -1495,7 +1495,7 @@
         </button>
       </li>
       <li data-show="ctxMenu.type === 'fav' && ctxMenu.target">
-        <button type="button" data-on-click="favForm = { id: ctxMenu.target?.id || null, title: ctxMenu.target?.title || '', href: ctxMenu.target?.href || '/', icon: ctxMenu.target?.icon || 'material-symbols-light:star-outline', group: ctxMenu.target?.group || '' }; favModalOpen = true; ctxMenu.open = false">
+        <button type="button" data-on-click="searchOpen = false; favForm = { id: ctxMenu.target?.id || null, title: ctxMenu.target?.title || '', href: ctxMenu.target?.href || '/', icon: ctxMenu.target?.icon || 'material-symbols-light:star-outline', group: ctxMenu.target?.group || '' }; favModalOpen = true; ctxMenu.open = false; $nextTick(() => $('#fav-modal-title')?.focus())">
           <iconify-icon icon="material-symbols-light:edit-outline" class="text-lg"></iconify-icon>
           <span>Edit Favorite</span>
         </button>
