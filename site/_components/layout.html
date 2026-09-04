@@ -1273,14 +1273,21 @@
   <div class="toast toast-end toast-bottom z-[99999] pointer-events-none p-4 flex flex-col gap-2"
     data-show="(toasts || []).length > 0">
     <template data-for="toast in toasts" data-key="toast.id">
-      <div class="alert shadow-2xl pointer-events-auto transition-all duration-300 flex items-center gap-3 text-sm py-2.5 px-4 rounded-box border border-base-content/10"
+      <div class="alert shadow-2xl pointer-events-auto transition-all duration-300 flex items-center gap-3 text-sm py-2.5 px-4 rounded-box bg-base-100/95 backdrop-blur-md text-base-content border"
         data-class="{
-          'alert-success bg-success/20 text-success-content border-success/30': toast.type === 'success',
-          'alert-info bg-info/20 text-info-content border-info/30': toast.type === 'info',
-          'alert-warning bg-warning/20 text-warning-content border-warning/30': toast.type === 'warning',
-          'alert-error bg-error/20 text-error-content border-error/30': toast.type === 'error'
+          'border-success/40 shadow-success/10': toast.type === 'success',
+          'border-info/40 shadow-info/10': toast.type === 'info',
+          'border-warning/40 shadow-warning/10': toast.type === 'warning',
+          'border-error/40 shadow-error/10': toast.type === 'error'
         }">
-        <iconify-icon data-bind-icon="toast.icon || (toast.type === 'success' ? 'material-symbols-light:check-circle-outline' : toast.type === 'error' ? 'material-symbols-light:error-outline' : toast.type === 'warning' ? 'material-symbols-light:warning-outline' : 'material-symbols-light:info-outline')" class="text-xl shrink-0"></iconify-icon>
+        <iconify-icon data-bind-icon="toast.icon || (toast.type === 'success' ? 'material-symbols-light:check-circle-outline' : toast.type === 'error' ? 'material-symbols-light:error-outline' : toast.type === 'warning' ? 'material-symbols-light:warning-outline' : 'material-symbols-light:info-outline')"
+          class="text-xl shrink-0"
+          data-class="{
+            'text-success': toast.type === 'success',
+            'text-info': toast.type === 'info',
+            'text-warning': toast.type === 'warning',
+            'text-error': toast.type === 'error'
+          }"></iconify-icon>
         <span class="font-medium" data-bind="toast.message"></span>
         <button type="button" class="btn btn-ghost btn-xs btn-circle ms-auto opacity-70 hover:opacity-100"
           data-on-click="toasts = (toasts || []).filter(t => t.id !== toast.id)">
