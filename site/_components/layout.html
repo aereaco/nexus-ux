@@ -1510,7 +1510,7 @@
   </template>
 
   <!-- Add / Edit Favorite Modal -->
-  <div class="modal modal-bottom sm:modal-middle" data-preserve data-class-modal-open="favModalOpen" data-on-keydown:escape:window="favModalOpen = false">
+  <div class="modal modal-bottom sm:modal-middle" data-class-modal-open="favModalOpen" data-on-keydown:escape:window="favModalOpen = false">
     <div class="modal-box bg-base-100 border border-base-content/10 shadow-2xl">
       <h3 class="font-bold text-lg flex items-center gap-2">
         <iconify-icon data-bind-icon="favForm.id ? 'material-symbols-light:edit-outline' : 'material-symbols-light:star-outline'"
@@ -1521,11 +1521,11 @@
       <div class="form-control w-full space-y-4 my-2">
         <div>
           <label class="label"><span class="label-text font-semibold">Title</span></label>
-          <input type="text" class="input input-bordered w-full" data-bind="favForm.title" placeholder="Title" />
+          <input id="fav-modal-title" type="text" class="input input-bordered w-full" data-bind="favForm.title" placeholder="Title" />
         </div>
         <div>
           <label class="label"><span class="label-text font-semibold">Destination URL / Page</span></label>
-          <input type="text" class="input input-bordered w-full" data-bind="favForm.href" placeholder="URL" />
+          <input id="fav-modal-href" type="text" class="input input-bordered w-full" data-bind="favForm.href" placeholder="URL" />
         </div>
         <div>
           <label class="label"><span class="label-text font-semibold">Icon</span></label>
@@ -1594,7 +1594,7 @@
   </div>
 
   <!-- Delete Favorite Confirmation Modal -->
-  <div class="modal modal-bottom sm:modal-middle" data-preserve data-class-modal-open="favDeleteModalOpen" data-on-keydown:escape:window="favDeleteModalOpen = false">
+  <div class="modal modal-bottom sm:modal-middle" data-class-modal-open="favDeleteModalOpen" data-on-keydown:escape:window="favDeleteModalOpen = false">
     <div class="modal-box bg-base-100 border border-base-content/10 shadow-2xl">
       <h3 class="font-bold text-lg text-error flex items-center gap-2">
         <iconify-icon icon="material-symbols-light:warning-outline" class="text-2xl"></iconify-icon>
