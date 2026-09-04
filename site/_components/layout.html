@@ -1071,89 +1071,83 @@
       data-on-keydown:escape:window="ctxMenu.open = false">
       
       <!-- 1. Tab Context Menu Items -->
-      <template data-if="ctxMenu.type === 'tab' && ctxMenu.target">
-        <li>
-          <button type="button" data-on-click="router.pinPageTab(ctxMenu.target.id); ctxMenu.open = false">
-            <iconify-icon data-bind-icon="(router.pinnedPageTabs || []).includes(ctxMenu.target.id) ? 'material-symbols-light:keep-off-outline' : 'material-symbols-light:keep-outline'" class="text-lg"></iconify-icon>
-            <span data-bind="(router.pinnedPageTabs || []).includes(ctxMenu.target.id) ? 'Unpin Tab' : 'Pin Tab'"></span>
-          </button>
-        </li>
-        <li>
-          <button type="button" data-on-click="router.duplicatePageTab(ctxMenu.target.id); ctxMenu.open = false">
-            <iconify-icon icon="material-symbols-light:content-copy" class="text-lg"></iconify-icon>
-            <span>Duplicate Tab</span>
-          </button>
-        </li>
-        <li>
-          <button type="button" data-on-click="favForm = { id: null, title: ctxMenu.target.meta?.title || 'Tab', href: ctxMenu.target.route || '/', icon: ctxMenu.target.meta?.icon || 'material-symbols-light:star-outline', group: '' }; favModalOpen = true; ctxMenu.open = false">
-            <iconify-icon icon="material-symbols-light:star-outline" class="text-lg"></iconify-icon>
-            <span>Save to Favorites</span>
-          </button>
-        </li>
-        <li class="divider my-1"></li>
-        <li data-show="!(router.pinnedPageTabs || []).includes(ctxMenu.target.id)">
-          <button type="button" class="text-error hover:bg-error/10" data-on-click="router.closePageTab(ctxMenu.target.id); ctxMenu.open = false">
-            <iconify-icon icon="material-symbols-light:close" class="text-lg"></iconify-icon>
-            <span>Close Tab</span>
-          </button>
-        </li>
-        <li data-show="(router.pageTabs || []).some(t => t.id !== ctxMenu.target.id && !(router.pinnedPageTabs || []).includes(t.id))">
-          <button type="button" class="text-error hover:bg-error/10" data-on-click="router.pageTabs = (router.pageTabs || []).filter(t => t.id === ctxMenu.target.id || (router.pinnedPageTabs || []).includes(t.id)); ctxMenu.open = false">
-            <iconify-icon icon="material-symbols-light:tab-close-outline" class="text-lg"></iconify-icon>
-            <span>Close Other Tabs</span>
-          </button>
-        </li>
-      </template>
+      <li data-show="ctxMenu.type === 'tab' && ctxMenu.target">
+        <button type="button" data-on-click="router.pinPageTab(ctxMenu.target?.id); ctxMenu.open = false">
+          <iconify-icon data-bind-icon="(router.pinnedPageTabs || []).includes(ctxMenu.target?.id) ? 'material-symbols-light:keep-off-outline' : 'material-symbols-light:keep-outline'" class="text-lg"></iconify-icon>
+          <span data-bind="(router.pinnedPageTabs || []).includes(ctxMenu.target?.id) ? 'Unpin Tab' : 'Pin Tab'"></span>
+        </button>
+      </li>
+      <li data-show="ctxMenu.type === 'tab' && ctxMenu.target">
+        <button type="button" data-on-click="router.duplicatePageTab(ctxMenu.target?.id); ctxMenu.open = false">
+          <iconify-icon icon="material-symbols-light:content-copy" class="text-lg"></iconify-icon>
+          <span>Duplicate Tab</span>
+        </button>
+      </li>
+      <li data-show="ctxMenu.type === 'tab' && ctxMenu.target">
+        <button type="button" data-on-click="favForm = { id: null, title: ctxMenu.target?.meta?.title || 'Tab', href: ctxMenu.target?.route || '/', icon: ctxMenu.target?.meta?.icon || 'material-symbols-light:star-outline', group: '' }; favModalOpen = true; ctxMenu.open = false">
+          <iconify-icon icon="material-symbols-light:star-outline" class="text-lg"></iconify-icon>
+          <span>Save to Favorites</span>
+        </button>
+      </li>
+      <li class="divider my-1" data-show="ctxMenu.type === 'tab' && ctxMenu.target"></li>
+      <li data-show="ctxMenu.type === 'tab' && ctxMenu.target && !(router.pinnedPageTabs || []).includes(ctxMenu.target?.id)">
+        <button type="button" class="text-error hover:bg-error/10" data-on-click="router.closePageTab(ctxMenu.target?.id); ctxMenu.open = false">
+          <iconify-icon icon="material-symbols-light:close" class="text-lg"></iconify-icon>
+          <span>Close Tab</span>
+        </button>
+      </li>
+      <li data-show="ctxMenu.type === 'tab' && ctxMenu.target && (router.pageTabs || []).some(t => t.id !== ctxMenu.target?.id && !(router.pinnedPageTabs || []).includes(t.id))">
+        <button type="button" class="text-error hover:bg-error/10" data-on-click="router.pageTabs = (router.pageTabs || []).filter(t => t.id === ctxMenu.target?.id || (router.pinnedPageTabs || []).includes(t.id)); ctxMenu.open = false">
+          <iconify-icon icon="material-symbols-light:tab-close-outline" class="text-lg"></iconify-icon>
+          <span>Close Other Tabs</span>
+        </button>
+      </li>
 
       <!-- 2. Nav Context Menu Items -->
-      <template data-if="ctxMenu.type === 'nav' && ctxMenu.target">
-        <li>
-          <button type="button" data-on-click="router.createPageTab(ctxMenu.target.href || ctxMenu.target, ctxMenu.target.href || ctxMenu.target); ctxMenu.open = false">
-            <iconify-icon icon="material-symbols-light:open-in-new" class="text-lg"></iconify-icon>
-            <span>Open in New Tab</span>
-          </button>
-        </li>
-        <li>
-          <button type="button" data-on-click="favForm = { id: null, title: ctxMenu.target.title || ctxMenu.target.tabTitle || 'Page', href: ctxMenu.target.href || ctxMenu.target, icon: ctxMenu.target.icon || 'material-symbols-light:star-outline', group: '' }; favModalOpen = true; ctxMenu.open = false">
-            <iconify-icon icon="material-symbols-light:star-outline" class="text-lg"></iconify-icon>
-            <span>Add to Favorites</span>
-          </button>
-        </li>
-        <li>
-          <button type="button" data-on-click="if (navigator.clipboard) navigator.clipboard.writeText(window.location.origin + (ctxMenu.target.href || ctxMenu.target)); ctxMenu.open = false">
-            <iconify-icon icon="material-symbols-light:content-copy" class="text-lg"></iconify-icon>
-            <span>Copy Link Address</span>
-          </button>
-        </li>
-      </template>
+      <li data-show="ctxMenu.type === 'nav' && ctxMenu.target">
+        <button type="button" data-on-click="router.createPageTab(ctxMenu.target?.href || ctxMenu.target, ctxMenu.target?.href || ctxMenu.target); ctxMenu.open = false">
+          <iconify-icon icon="material-symbols-light:open-in-new" class="text-lg"></iconify-icon>
+          <span>Open in New Tab</span>
+        </button>
+      </li>
+      <li data-show="ctxMenu.type === 'nav' && ctxMenu.target">
+        <button type="button" data-on-click="favForm = { id: null, title: ctxMenu.target?.title || ctxMenu.target?.tabTitle || 'Page', href: ctxMenu.target?.href || ctxMenu.target, icon: ctxMenu.target?.icon || 'material-symbols-light:star-outline', group: '' }; favModalOpen = true; ctxMenu.open = false">
+          <iconify-icon icon="material-symbols-light:star-outline" class="text-lg"></iconify-icon>
+          <span>Add to Favorites</span>
+        </button>
+      </li>
+      <li data-show="ctxMenu.type === 'nav' && ctxMenu.target">
+        <button type="button" data-on-click="if (navigator.clipboard) navigator.clipboard.writeText(window.location.origin + (ctxMenu.target?.href || ctxMenu.target)); ctxMenu.open = false">
+          <iconify-icon icon="material-symbols-light:content-copy" class="text-lg"></iconify-icon>
+          <span>Copy Link Address</span>
+        </button>
+      </li>
 
       <!-- 3. Favorite Context Menu Items -->
-      <template data-if="ctxMenu.type === 'fav' && ctxMenu.target">
-        <li>
-          <button type="button" data-on-click="router.createPageTab(ctxMenu.target.href || ctxMenu.target, ctxMenu.target.href || ctxMenu.target); ctxMenu.open = false">
-            <iconify-icon icon="material-symbols-light:open-in-new" class="text-lg"></iconify-icon>
-            <span>Open in New Tab</span>
-          </button>
-        </li>
-        <li>
-          <button type="button" data-on-click="router.createPageTab(ctxMenu.target.href || ctxMenu.target, ctxMenu.target.href || ctxMenu.target); router.pinPageTab(router.activePageTabId); ctxMenu.open = false">
-            <iconify-icon icon="material-symbols-light:keep-outline" class="text-lg"></iconify-icon>
-            <span>Add as Pinned Tab</span>
-          </button>
-        </li>
-        <li>
-          <button type="button" data-on-click="favForm = { id: ctxMenu.target.id || null, title: ctxMenu.target.title || '', href: ctxMenu.target.href || '/', icon: ctxMenu.target.icon || 'material-symbols-light:star-outline', group: ctxMenu.target.group || '' }; favModalOpen = true; ctxMenu.open = false">
-            <iconify-icon icon="material-symbols-light:edit-outline" class="text-lg"></iconify-icon>
-            <span>Edit Favorite</span>
-          </button>
-        </li>
-        <li>
-          <button type="button" class="text-error hover:bg-error/10" data-on-click="pendingDeleteId = (ctxMenu.target.id || ctxMenu.target); favDeleteModalOpen = true; ctxMenu.open = false">
-            <iconify-icon icon="material-symbols-light:delete-outline" class="text-lg"></iconify-icon>
-            <span>Remove Favorite</span>
-          </button>
-        </li>
-      </template>
+      <li data-show="ctxMenu.type === 'fav' && ctxMenu.target">
+        <button type="button" data-on-click="router.createPageTab(ctxMenu.target?.href || ctxMenu.target, ctxMenu.target?.href || ctxMenu.target); ctxMenu.open = false">
+          <iconify-icon icon="material-symbols-light:open-in-new" class="text-lg"></iconify-icon>
+          <span>Open in New Tab</span>
+        </button>
+      </li>
+      <li data-show="ctxMenu.type === 'fav' && ctxMenu.target">
+        <button type="button" data-on-click="router.createPageTab(ctxMenu.target?.href || ctxMenu.target, ctxMenu.target?.href || ctxMenu.target); router.pinPageTab(router.activePageTabId); ctxMenu.open = false">
+          <iconify-icon icon="material-symbols-light:keep-outline" class="text-lg"></iconify-icon>
+          <span>Add as Pinned Tab</span>
+        </button>
+      </li>
+      <li data-show="ctxMenu.type === 'fav' && ctxMenu.target">
+        <button type="button" data-on-click="favForm = { id: ctxMenu.target?.id || null, title: ctxMenu.target?.title || '', href: ctxMenu.target?.href || '/', icon: ctxMenu.target?.icon || 'material-symbols-light:star-outline', group: ctxMenu.target?.group || '' }; favModalOpen = true; ctxMenu.open = false">
+          <iconify-icon icon="material-symbols-light:edit-outline" class="text-lg"></iconify-icon>
+          <span>Edit Favorite</span>
+        </button>
+      </li>
+      <li data-show="ctxMenu.type === 'fav' && ctxMenu.target">
+        <button type="button" class="text-error hover:bg-error/10" data-on-click="pendingDeleteId = (ctxMenu.target?.id || ctxMenu.target); favDeleteModalOpen = true; ctxMenu.open = false">
+          <iconify-icon icon="material-symbols-light:delete-outline" class="text-lg"></iconify-icon>
+          <span>Remove Favorite</span>
+        </button>
+      </li>
     </ul>
   </template>
 
