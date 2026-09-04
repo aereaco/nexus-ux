@@ -52,6 +52,32 @@ export class UX {
     });
     registerScopeProvider('$global', (_el, runtime) => runtime.globalSignals());
     registerScopeProvider('$actions', (_el, runtime) => runtime.globalActions());
+    registerScopeProvider('$toast', (_el, runtime) => (
+      messageOrOpts: string | { message: string; type?: 'success' | 'info' | 'warning' | 'error'; duration?: number; icon?: string },
+      type: 'success' | 'info' | 'warning' | 'error' = 'success',
+      duration = 3500
+    ) => {
+      const opts = typeof messageOrOpts === 'string'
+        ? { message: messageOrOpts, type, duration }
+        : { type: 'success', duration: 3500, ...messageOrOpts };
+      const globals = runtime.globalSignals();
+      if (!globals.toasts) globals.toasts = [];
+      const id = 'toast-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+      const newToast = {
+        id,
+        message: opts.message,
+        type: opts.type || 'success',
+        duration: opts.duration || 3500,
+        icon: opts.icon
+      };
+      globals.toasts = [...globals.toasts, newToast];
+      setTimeout(() => {
+        if (globals.toasts) {
+          globals.toasts = globals.toasts.filter((t: any) => t.id !== id);
+        }
+      }, opts.duration || 3500);
+      return newToast;
+    });
 
     // Inline actions
     this.coordinator.registerActionModule('$id', {
