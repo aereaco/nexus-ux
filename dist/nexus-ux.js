@@ -10490,7 +10490,7 @@ ${match}</ul>
             }
           };
           const onFocusIn = (e) => {
-            if (e.target instanceof HTMLElement) {
+            if (e.target instanceof HTMLElement && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement)) {
               this.prewarmElement(e.target);
             }
           };
