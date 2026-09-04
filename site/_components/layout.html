@@ -1143,7 +1143,7 @@
               <div class="flex items-center gap-0.5 transition-opacity opacity-0 group-hover:opacity-100 shrink-0"
                 data-on-click:stop="" data-class="{ 'absolute top-2 right-2': favViewMode === 'grid' }">
                 <button class="btn btn-circle btn-ghost btn-xs text-base-content/60 hover:text-base-content hover:bg-base-300 transition-all"
-                  title="Edit Favorite" data-on-click="favForm = { id: fav.id, title: fav.title, href: fav.href, icon: fav.icon, group: fav.group || '' }; favModalOpen = true">
+                  title="Edit Favorite" data-on-click="searchOpen = false; favForm = { id: fav.id, title: fav.title, href: fav.href, icon: fav.icon, group: fav.group || '' }; favModalOpen = true; $nextTick(() => $('#fav-modal-title')?.focus())">
                   <iconify-icon icon="material-symbols-light:edit-outline" class="text-sm"></iconify-icon>
                 </button>
                 <button class="btn btn-circle btn-ghost btn-xs text-error/60 hover:text-error hover:bg-error/10 transition-all"
