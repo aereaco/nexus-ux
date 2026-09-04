@@ -335,7 +335,7 @@
     </nav>
 
     <!-- Composite Navbar Dropdown (Notifications, Mail, Cart, Profile) -->
-    <div class="dropdown-content bg-base-100/95 backdrop-blur-xl border border-base-content/10 rounded-2xl z-[100] mt-1 w-96 max-w-[calc(100vw-2rem)] h-[32rem] shadow-2xl flex overflow-hidden fixed top-14 right-4 transition-all duration-200"
+    <div class="dropdown-content bg-base-100/95 backdrop-blur-xl border border-base-content/10 rounded-2xl z-[100] mt-1 w-96 max-w-[calc(100vw-2rem)] h-[32rem] shadow-2xl flex overflow-hidden fixed top-14 end-4 transition-all duration-200"
       data-show="headerDropdownOpen"
       data-on-click:outside="headerDropdownOpen = false"
       data-on-keydown:escape:window="headerDropdownOpen = false">
@@ -355,7 +355,7 @@
             data-on-click="headerDropdownTab = 'notifications'" title="Notifications">
             <iconify-icon icon="material-symbols-light:notifications-outline" class="text-xl"></iconify-icon>
             <span data-show="(notifications || []).filter(n => !n.read).length > 0"
-              class="badge badge-xs badge-primary absolute top-1 right-1 size-2 p-0"></span>
+              class="badge badge-xs badge-primary absolute top-1 end-1 size-2 p-0"></span>
           </button>
         </li>
         <li>
@@ -364,7 +364,7 @@
             data-on-click="headerDropdownTab = 'mail'" title="Messages">
             <iconify-icon icon="material-symbols-light:mail-outline" class="text-xl"></iconify-icon>
             <span data-show="(mailMessages || []).filter(m => m.unread).length > 0"
-              class="badge badge-xs badge-info absolute top-1 right-1 size-2 p-0"></span>
+              class="badge badge-xs badge-info absolute top-1 end-1 size-2 p-0"></span>
           </button>
         </li>
         <li>
@@ -373,7 +373,7 @@
             data-on-click="headerDropdownTab = 'cart'" title="Shopping Cart">
             <iconify-icon icon="material-symbols-light:shopping-cart-outline" class="text-xl"></iconify-icon>
             <span data-show="(cartItems || []).reduce((acc, i) => acc + i.qty, 0) > 0"
-              class="badge badge-xs badge-warning absolute top-1 right-1 size-2 p-0"></span>
+              class="badge badge-xs badge-warning absolute top-1 end-1 size-2 p-0"></span>
           </button>
         </li>
       </ul>
