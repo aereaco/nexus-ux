@@ -15,10 +15,7 @@
       headerDropdownTab: 'notifications',
       notificationFilter: 'all',
       toasts: [],
-      notifications: [
-        { id: 'notif-1', title: 'System Initialized', message: 'Nexus-UX engine loaded successfully.', type: 'info', priority: 'normal', time: 'Just now', read: false },
-        { id: 'notif-2', title: 'Offline Storage', message: 'Service worker ready for offline caching.', type: 'success', priority: 'low', time: '5m ago', read: false }
-      ],
+      notifications: [],
       mailMessages: [
         { id: 'm-1', from: 'System Bot', subject: 'Welcome to Aerea Dashboard', snippet: 'Explore your customized dashboard...', time: '10m ago', unread: true },
         { id: 'm-2', from: 'Dev Team', subject: 'Nexus-UX v2.1 Released', snippet: 'Check out the new declarative updates...', time: '1h ago', unread: false }
@@ -27,7 +24,7 @@
         { id: 'c-1', name: 'Cloud Tier 1 Subscription', price: 29.00, qty: 1 },
         { id: 'c-2', name: 'Developer Add-on Pack', price: 15.00, qty: 2 }
       ],
-      notify: (titleOrMsg, message = '', type = 'success', priority = 'normal', dur = 4000) => {
+      notify: (titleOrMsg, message = '', type = 'success', priority = 'normal', dur = 7000) => {
         const actualTitle = message ? titleOrMsg : (type.charAt(0).toUpperCase() + type.slice(1));
         const actualMsg = message || titleOrMsg;
         const id = 'notif-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
