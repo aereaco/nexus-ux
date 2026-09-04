@@ -3,7 +3,7 @@
       pageTabs: localStorage.pageTabs !== 'false',
       fixedHeader: localStorage.fixedHeader !== 'false',
       fixedFooter: localStorage.fixedFooter !== 'false',
-      floatingBookmarks: localStorage.floatingBookmarks === 'true',
+      floatingBookmarks: localStorage.floatingBookmarks !== 'false',
       hovered: false,
       sidebarOpen: false,
       isMobile: window.innerWidth < 768,
@@ -259,9 +259,11 @@
         </button>
 
         <!-- User Avatar Button -->
-        <button type="button" class="btn btn-ghost btn-circle avatar placeholder" aria-label="User Profile" title="User Profile"
+        <button type="button" class="btn btn-ghost btn-circle avatar placeholder" aria-label="User Profile"
+          title="User Profile"
           data-on-click:stop="headerDropdownTab = 'profile'; headerDropdownOpen = (headerDropdownOpen && headerDropdownTab === 'profile') ? false : true">
-          <div class="w-8 rounded-full bg-base-200 text-base-content ring-1 ring-base-content/20 flex items-center justify-center">
+          <div
+            class="w-8 rounded-full bg-base-200 text-base-content ring-1 ring-base-content/20 flex items-center justify-center">
             <iconify-icon icon="material-symbols-light:person" class="text-xl"></iconify-icon>
           </div>
         </button>
@@ -372,13 +374,14 @@
     </nav>
 
     <!-- Composite Navbar Dropdown (Notifications, Mail, Cart, Profile) -->
-    <div class="dropdown-content bg-base-100/95 backdrop-blur-xl border border-base-content/10 rounded-2xl z-[100] mt-1 w-96 max-w-[calc(100vw-2rem)] h-[32rem] shadow-2xl flex overflow-hidden fixed top-14 end-4 transition-all duration-200"
-      data-show="headerDropdownOpen"
-      data-on-click:outside="headerDropdownOpen = false"
+    <div
+      class="dropdown-content bg-base-100/95 backdrop-blur-xl border border-base-content/10 rounded-2xl z-[100] mt-1 w-96 max-w-[calc(100vw-2rem)] h-[32rem] shadow-2xl flex overflow-hidden fixed top-14 end-4 transition-all duration-200"
+      data-show="headerDropdownOpen" data-on-click:outside="headerDropdownOpen = false"
       data-on-keydown:escape:window="headerDropdownOpen = false">
 
       <!-- Left Icon Rail (from test/index.html) -->
-      <ul class="menu bg-base-200/60 p-2 gap-1.5 border-e border-base-content/10 shrink-0 flex flex-col items-center w-14">
+      <ul
+        class="menu bg-base-200/60 p-2 gap-1.5 border-e border-base-content/10 shrink-0 flex flex-col items-center w-14">
         <li>
           <button type="button" class="btn btn-ghost btn-sm btn-circle"
             data-class="{ 'btn-active bg-primary/20 text-primary': headerDropdownTab === 'profile' }"
@@ -434,13 +437,13 @@
                 Mark all read
               </button>
               <button type="button" class="btn btn-ghost btn-xs text-xs text-error/80 hover:text-error"
-                data-show="(notifications || []).length > 0"
-                data-on-click="notifications = []">
+                data-show="(notifications || []).length > 0" data-on-click="notifications = []">
                 Clear
               </button>
             </div>
           </div>
-          <div class="px-3 py-1.5 border-b border-base-content/5 flex items-center gap-2 shrink-0 bg-base-200/30 text-xs">
+          <div
+            class="px-3 py-1.5 border-b border-base-content/5 flex items-center gap-2 shrink-0 bg-base-200/30 text-xs">
             <button type="button" class="btn btn-xs rounded-full"
               data-class="{ 'btn-primary': notificationFilter === 'all', 'btn-ghost': notificationFilter !== 'all' }"
               data-on-click="notificationFilter = 'all'">
@@ -453,23 +456,27 @@
             </button>
           </div>
           <div class="flex-1 overflow-y-auto p-2 space-y-1.5">
-            <div data-show="(notifications || []).length === 0 || (notificationFilter === 'unread' && (notifications || []).filter(n => !n.read).length === 0)"
+            <div
+              data-show="(notifications || []).length === 0 || (notificationFilter === 'unread' && (notifications || []).filter(n => !n.read).length === 0)"
               class="flex flex-col items-center justify-center h-48 text-base-content/40 text-sm gap-2">
               <iconify-icon icon="material-symbols-light:notifications-off-outline" class="text-4xl"></iconify-icon>
               <span>No notifications</span>
             </div>
-            <template data-for="item in (notificationFilter === 'unread' ? (notifications || []).filter(n => !n.read) : (notifications || []))" data-key="item.id">
-              <div class="alert alert-soft p-2.5 rounded-xl flex items-start gap-2.5 relative group cursor-pointer transition-all"
+            <template
+              data-for="item in (notificationFilter === 'unread' ? (notifications || []).filter(n => !n.read) : (notifications || []))"
+              data-key="item.id">
+              <div
+                class="alert alert-soft p-2.5 rounded-xl flex items-start gap-2.5 relative group cursor-pointer transition-all"
                 data-class="{
                   'alert-error': item.type === 'error' || item.priority === 'urgent',
                   'alert-warning': item.type === 'warning' || item.priority === 'high',
                   'alert-success': item.type === 'success' || item.priority === 'normal',
                   'alert-info': item.type === 'info' || item.priority === 'low',
                   'opacity-60': item.read
-                }"
-                data-on-click="item.read = true">
+                }" data-on-click="item.read = true">
                 <!-- Type Icon -->
-                <iconify-icon data-bind-icon="item.type === 'error' ? 'material-symbols-light:error-outline' : item.type === 'warning' ? 'material-symbols-light:warning-outline' : item.type === 'success' ? 'material-symbols-light:check-circle-outline' : 'material-symbols-light:info-outline'"
+                <iconify-icon
+                  data-bind-icon="item.type === 'error' ? 'material-symbols-light:error-outline' : item.type === 'warning' ? 'material-symbols-light:warning-outline' : item.type === 'success' ? 'material-symbols-light:check-circle-outline' : 'material-symbols-light:info-outline'"
                   class="text-xl shrink-0 mt-0.5"></iconify-icon>
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center justify-between gap-1">
@@ -479,7 +486,8 @@
                   <p class="text-xs opacity-80 line-clamp-2 mt-0.5 leading-snug" data-bind="item.message"></p>
                 </div>
                 <!-- Delete Button -->
-                <button type="button" class="btn btn-ghost btn-xs btn-circle opacity-0 group-hover:opacity-100 transition-opacity shrink-0 hover:bg-base-content/10"
+                <button type="button"
+                  class="btn btn-ghost btn-xs btn-circle opacity-0 group-hover:opacity-100 transition-opacity shrink-0 hover:bg-base-content/10"
                   title="Dismiss"
                   data-on-click:stop="notifications = (notifications || []).filter(n => n.id !== item.id)">
                   <iconify-icon icon="material-symbols-light:close" class="text-sm"></iconify-icon>
@@ -494,20 +502,22 @@
           <div class="p-3 border-b border-base-content/10 flex items-center justify-between shrink-0">
             <div class="flex items-center gap-2">
               <span class="font-bold text-sm">Inbox</span>
-              <span data-show="(mailMessages || []).filter(m => m.unread).length > 0"
-                class="badge badge-info badge-sm"
+              <span data-show="(mailMessages || []).filter(m => m.unread).length > 0" class="badge badge-info badge-sm"
                 data-bind="(mailMessages || []).filter(m => m.unread).length + ' new'"></span>
             </div>
-            <button type="button" class="btn btn-ghost btn-xs text-primary" data-on-click="mailMessages = (mailMessages || []).map(m => ({ ...m, unread: false }))">
+            <button type="button" class="btn btn-ghost btn-xs text-primary"
+              data-on-click="mailMessages = (mailMessages || []).map(m => ({ ...m, unread: false }))">
               Mark all read
             </button>
           </div>
           <div class="flex-1 overflow-y-auto p-2 space-y-1">
             <template data-for="mail in mailMessages" data-key="mail.id">
-              <div class="p-2.5 rounded-xl transition-colors flex items-start gap-2.5 cursor-pointer hover:bg-base-200/50"
+              <div
+                class="p-2.5 rounded-xl transition-colors flex items-start gap-2.5 cursor-pointer hover:bg-base-200/50"
                 data-class="{ 'bg-base-200/60 font-semibold': mail.unread, 'bg-base-100 opacity-80': !mail.unread }"
                 data-on-click="mail.unread = false">
-                <div class="size-8 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 text-xs font-bold"
+                <div
+                  class="size-8 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 text-xs font-bold"
                   data-bind="(mail.from || 'U').slice(0, 1)"></div>
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center justify-between">
@@ -530,23 +540,28 @@
           <div class="p-3 border-b border-base-content/10 flex items-center justify-between shrink-0">
             <div class="flex items-center gap-2">
               <span class="font-bold text-sm">Shopping Cart</span>
-              <span class="badge badge-warning badge-sm" data-bind="(cartItems || []).reduce((acc, i) => acc + i.qty, 0) + ' items'"></span>
+              <span class="badge badge-warning badge-sm"
+                data-bind="(cartItems || []).reduce((acc, i) => acc + i.qty, 0) + ' items'"></span>
             </div>
-            <button type="button" class="btn btn-ghost btn-xs text-error/80" data-on-click="cartItems = []">Clear</button>
+            <button type="button" class="btn btn-ghost btn-xs text-error/80"
+              data-on-click="cartItems = []">Clear</button>
           </div>
           <div class="flex-1 overflow-y-auto p-2 space-y-2">
-            <div data-show="(cartItems || []).length === 0" class="flex flex-col items-center justify-center h-48 text-base-content/40 text-sm gap-2">
+            <div data-show="(cartItems || []).length === 0"
+              class="flex flex-col items-center justify-center h-48 text-base-content/40 text-sm gap-2">
               <iconify-icon icon="material-symbols-light:shopping-cart-outline" class="text-4xl"></iconify-icon>
               <span>Your cart is empty</span>
             </div>
             <template data-for="item in cartItems" data-key="item.id">
               <div class="p-2 rounded-xl bg-base-200/40 border border-base-content/5 flex items-center gap-2.5">
                 <div class="size-9 rounded-lg bg-base-300 flex items-center justify-center shrink-0">
-                  <iconify-icon icon="material-symbols-light:package-2-outline" class="text-lg opacity-70"></iconify-icon>
+                  <iconify-icon icon="material-symbols-light:package-2-outline"
+                    class="text-lg opacity-70"></iconify-icon>
                 </div>
                 <div class="flex-1 min-w-0">
                   <div class="text-xs font-medium truncate" data-bind="item.name"></div>
-                  <div class="text-[0.7rem] opacity-60" data-bind="'$' + item.price.toFixed(2) + ' x ' + item.qty"></div>
+                  <div class="text-[0.7rem] opacity-60" data-bind="'$' + item.price.toFixed(2) + ' x ' + item.qty">
+                  </div>
                 </div>
                 <div class="font-bold text-xs shrink-0" data-bind="'$' + (item.price * item.qty).toFixed(2)"></div>
               </div>
@@ -555,7 +570,8 @@
           <div class="p-3 border-t border-base-content/10 flex flex-col gap-2 shrink-0 bg-base-200/20">
             <div class="flex items-center justify-between text-xs font-semibold">
               <span>Subtotal:</span>
-              <span data-bind="'$' + (cartItems || []).reduce((acc, i) => acc + (i.price * i.qty), 0).toFixed(2)"></span>
+              <span
+                data-bind="'$' + (cartItems || []).reduce((acc, i) => acc + (i.price * i.qty), 0).toFixed(2)"></span>
             </div>
             <button type="button" class="btn btn-warning btn-sm w-full text-xs font-semibold"
               data-on-click="notify('Order placed successfully!', 'success'); cartItems = []; headerDropdownOpen = false">
@@ -568,7 +584,8 @@
         <div class="flex-1 flex flex-col min-w-0 overflow-y-auto p-3" data-show="headerDropdownTab === 'profile'">
           <div class="flex items-center gap-3 p-2 bg-base-200/50 rounded-xl mb-3">
             <div class="avatar online placeholder">
-              <div class="w-11 rounded-full bg-base-200 text-base-content ring ring-primary ring-offset-base-100 ring-offset-2 flex items-center justify-center">
+              <div
+                class="w-11 rounded-full bg-base-200 text-base-content ring ring-primary ring-offset-base-100 ring-offset-2 flex items-center justify-center">
                 <iconify-icon icon="material-symbols-light:person" class="text-2xl"></iconify-icon>
               </div>
             </div>
@@ -579,12 +596,23 @@
             </div>
           </div>
           <ul class="menu menu-sm p-0 space-y-0.5 text-xs">
-            <li><a data-on-click="router.createPageTab('/_pages/profile.html', '/profile'); headerDropdownOpen = false"><iconify-icon icon="material-symbols-light:account-circle-outline" class="text-base"></iconify-icon>My Profile</a></li>
-            <li><a data-on-click="router.createPageTab('/_pages/settings.html', '/settings'); headerDropdownOpen = false"><iconify-icon icon="material-symbols-light:settings-outline" class="text-base"></iconify-icon>Account Settings</a></li>
-            <li><a data-on-click="activeSidebarTab = 2; headerDropdownOpen = false"><iconify-icon icon="material-symbols-light:star-outline" class="text-base"></iconify-icon>Bookmarks & Favorites</a></li>
-            <li><a><iconify-icon icon="material-symbols-light:keyboard-outline" class="text-base"></iconify-icon>Keyboard Shortcuts</a></li>
+            <li><a
+                data-on-click="router.createPageTab('/_pages/profile.html', '/profile'); headerDropdownOpen = false"><iconify-icon
+                  icon="material-symbols-light:account-circle-outline" class="text-base"></iconify-icon>My Profile</a>
+            </li>
+            <li><a
+                data-on-click="router.createPageTab('/_pages/settings.html', '/settings'); headerDropdownOpen = false"><iconify-icon
+                  icon="material-symbols-light:settings-outline" class="text-base"></iconify-icon>Account Settings</a>
+            </li>
+            <li><a data-on-click="activeSidebarTab = 2; headerDropdownOpen = false"><iconify-icon
+                  icon="material-symbols-light:star-outline" class="text-base"></iconify-icon>Bookmarks & Favorites</a>
+            </li>
+            <li><a><iconify-icon icon="material-symbols-light:keyboard-outline"
+                  class="text-base"></iconify-icon>Keyboard Shortcuts</a></li>
             <div class="divider my-1"></div>
-            <li><a class="text-error hover:bg-error/10" data-on-click="notify('Signed out successfully', 'info'); headerDropdownOpen = false"><iconify-icon icon="material-symbols-light:logout" class="text-base"></iconify-icon>Sign Out</a></li>
+            <li><a class="text-error hover:bg-error/10"
+                data-on-click="notify('Signed out successfully', 'info'); headerDropdownOpen = false"><iconify-icon
+                  icon="material-symbols-light:logout" class="text-base"></iconify-icon>Sign Out</a></li>
           </ul>
         </div>
 
@@ -781,13 +809,14 @@
     </div>
 
     <!-- Search Modal (triggered by the navbar search button) -->
-    <div class="modal modal-top sm:modal-middle" role="dialog" aria-label="Search"
-      data-class-modal-open="searchOpen" data-on-keydown:escape:window="searchOpen = false">
+    <div class="modal modal-top sm:modal-middle" role="dialog" aria-label="Search" data-class-modal-open="searchOpen"
+      data-on-keydown:escape:window="searchOpen = false">
       <div class="modal-box bg-base-100 shadow-2xl border border-base-300 p-0 overflow-hidden flex flex-col max-w-2xl">
         <!-- Search Input Row -->
         <div class="flex items-center gap-3 px-4 py-3 border-b border-base-200">
           <iconify-icon icon="material-symbols-light:search" class="text-2xl opacity-60"></iconify-icon>
-          <input id="search-modal-input" type="text" class="input input-ghost w-full text-lg focus:outline-none border-0 focus:border-0 px-0"
+          <input id="search-modal-input" type="text"
+            class="input input-ghost w-full text-lg focus:outline-none border-0 focus:border-0 px-0"
             placeholder="Search pages and features…" data-bind-value="searchQuery"
             data-on-keydown_escape="searchOpen = false" />
           <kbd class="kbd kbd-sm opacity-60 max-sm:hidden">Esc</kbd>
@@ -799,27 +828,31 @@
         <!-- Results Area -->
         <div class="p-3 max-h-[60vh] overflow-y-auto">
           <!-- State 1: Empty Query & No Recent Searches -->
-          <div data-show="!searchQuery.trim() && !(recentSearches && recentSearches.length)" class="px-4 py-12 text-center text-base-content/50">
+          <div data-show="!searchQuery.trim() && !(recentSearches && recentSearches.length)"
+            class="px-4 py-12 text-center text-base-content/50">
             <iconify-icon icon="material-symbols-light:search" class="text-4xl opacity-40"></iconify-icon>
             <p class="mt-2 text-sm">Start typing to search…</p>
           </div>
 
           <!-- State 2: Empty Query & Has Recent Searches -->
           <div data-show="!searchQuery.trim() && (recentSearches && recentSearches.length > 0)" class="w-full">
-            <div class="flex items-center justify-between px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/50">
+            <div
+              class="flex items-center justify-between px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/50">
               <span>Recent Searches</span>
               <button class="btn btn-ghost btn-xs text-xs lowercase font-normal opacity-60 hover:opacity-100"
                 data-on-click="recentSearches = []">Clear</button>
             </div>
             <ul class="menu menu-sm w-full p-0">
               <template data-for="recent in (recentSearches || [])">
-                <li class="flex flex-row items-center justify-between group rounded-xl hover:bg-base-200/60 transition-colors">
-                  <a class="flex items-center gap-2.5 flex-1 min-w-0 py-2 px-3"
-                    data-on-click="searchQuery = recent">
-                    <iconify-icon icon="material-symbols-light:history" class="text-lg opacity-60 shrink-0"></iconify-icon>
+                <li
+                  class="flex flex-row items-center justify-between group rounded-xl hover:bg-base-200/60 transition-colors">
+                  <a class="flex items-center gap-2.5 flex-1 min-w-0 py-2 px-3" data-on-click="searchQuery = recent">
+                    <iconify-icon icon="material-symbols-light:history"
+                      class="text-lg opacity-60 shrink-0"></iconify-icon>
                     <span class="truncate font-medium" data-bind="recent"></span>
                   </a>
-                  <button class="btn btn-ghost btn-xs btn-circle opacity-0 group-hover:opacity-60 hover:!opacity-100 me-2"
+                  <button
+                    class="btn btn-ghost btn-xs btn-circle opacity-0 group-hover:opacity-60 hover:!opacity-100 me-2"
                     aria-label="Remove search" title="Remove"
                     data-on-click:stop="recentSearches = (recentSearches || []).filter(s => s !== recent)">
                     <iconify-icon icon="material-symbols-light:close" class="text-sm"></iconify-icon>
@@ -833,7 +866,8 @@
           <div data-show="searchQuery.trim() && hasSearchResults(searchQuery)" class="space-y-4">
             <template data-for="cat in (searchCategories || ['Apps', 'Navigation', 'Profiles', 'System'])">
               <div data-show="getSearchResults(searchQuery, cat).length > 0" class="w-full">
-                <div class="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-base-content/50" data-bind="cat"></div>
+                <div class="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-base-content/50"
+                  data-bind="cat"></div>
                 <ul class="menu menu-sm w-full p-0">
                   <template data-for="item in getSearchResults(searchQuery, cat)" data-key="item.path">
                     <li>
@@ -844,10 +878,12 @@
                           searchOpen = false;
                         ">
                         <div class="flex items-center gap-2.5 min-w-0">
-                          <iconify-icon data-bind-icon="item.meta?.icon || 'material-symbols-light:description-outline'" class="text-xl shrink-0 opacity-70"></iconify-icon>
+                          <iconify-icon data-bind-icon="item.meta?.icon || 'material-symbols-light:description-outline'"
+                            class="text-xl shrink-0 opacity-70"></iconify-icon>
                           <span class="font-medium text-sm truncate" data-bind="item.meta?.title || item.name"></span>
                         </div>
-                        <span class="badge badge-sm badge-ghost font-mono opacity-50 shrink-0" data-bind="item.path"></span>
+                        <span class="badge badge-sm badge-ghost font-mono opacity-50 shrink-0"
+                          data-bind="item.path"></span>
                       </a>
                     </li>
                   </template>
@@ -857,9 +893,11 @@
           </div>
 
           <!-- State 4: Active Query & Zero Matches -->
-          <div data-show="searchQuery.trim() && !hasSearchResults(searchQuery)" class="px-4 py-12 text-center text-base-content/50">
+          <div data-show="searchQuery.trim() && !hasSearchResults(searchQuery)"
+            class="px-4 py-12 text-center text-base-content/50">
             <iconify-icon icon="material-symbols-light:search-off" class="text-4xl opacity-40"></iconify-icon>
-            <p class="mt-2 text-sm">No results found for &quot;<span class="font-semibold text-base-content" data-bind="searchQuery"></span>&quot;</p>
+            <p class="mt-2 text-sm">No results found for &quot;<span class="font-semibold text-base-content"
+                data-bind="searchQuery"></span>&quot;</p>
           </div>
         </div>
       </div>
@@ -903,7 +941,8 @@
         <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
           data-bind-data-tab-title="item.tabTitle || item.title"
           data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-          data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }" data-bind="item.title">
+          data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }"
+          data-bind="item.title">
         </a>
       </li>
 
@@ -1082,15 +1121,13 @@
             <div class="join bg-base-200 p-0.5 rounded-box shadow-inner">
               <button type="button" class="join-item btn btn-xs btn-ghost gap-1"
                 data-class="{ 'btn-active': favViewMode === 'list' }"
-                data-on-click="favViewMode = 'list'; localStorage.favViewMode = 'list'"
-                title="List View">
+                data-on-click="favViewMode = 'list'; localStorage.favViewMode = 'list'" title="List View">
                 <iconify-icon icon="material-symbols-light:view-list" class="text-base"></iconify-icon>
                 <span class="text-xs font-normal">List</span>
               </button>
               <button type="button" class="join-item btn btn-xs btn-ghost gap-1"
                 data-class="{ 'btn-active': favViewMode === 'grid' }"
-                data-on-click="favViewMode = 'grid'; localStorage.favViewMode = 'grid'"
-                title="Grid View">
+                data-on-click="favViewMode = 'grid'; localStorage.favViewMode = 'grid'" title="Grid View">
                 <iconify-icon icon="material-symbols-light:grid-view" class="text-base"></iconify-icon>
                 <span class="text-xs font-normal">Grid</span>
               </button>
@@ -1104,17 +1141,15 @@
         </div>
 
         <!-- 1. Top-Level Ungrouped Items -->
-        <div class="transition-all duration-300 w-full"
-          data-class="{
+        <div class="transition-all duration-300 w-full" data-class="{
             'grid grid-cols-2 gap-2 px-3 py-1': favViewMode === 'grid',
             'flex flex-col gap-1.5 px-3 py-1': favViewMode === 'list'
-          }"
-          data-show="(favorites || []).filter(f => !f.group || !f.group.trim()).length > 0"
-          data-drag-container="favorites"
-          data-drag-group="favorites"
+          }" data-show="(favorites || []).filter(f => !f.group || !f.group.trim()).length > 0"
+          data-drag-container="favorites" data-drag-group="favorites"
           data-drag-class="!opacity-100 !shadow-[0_15px_30px_-8px_rgba(0,0,0,0.25)] scale-105 cursor-grabbing z-[9999]"
           data-drag-ghost-class="opacity-40 bg-base-200 border-2 border-dashed border-base-content/20">
-          <template data-for="fav in (favorites || []).filter(f => !f.group || !f.group.trim())" data-key="fav.id || fav.href">
+          <template data-for="fav in (favorites || []).filter(f => !f.group || !f.group.trim())"
+            data-key="fav.id || fav.href">
             <div data-drag
               data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'fav', target: fav }"
               class="rounded-xl transition-all duration-300 flex border border-transparent min-w-0 cursor-move relative group"
@@ -1123,14 +1158,12 @@
                 'p-2 items-center gap-3 text-sm bg-base-200/50 hover:bg-base-200': favViewMode === 'list'
               }">
               <!-- Main Clickable Area -->
-              <a data-bind-href="fav.href || fav" class="flex-1 flex min-w-0 overflow-hidden"
-                data-class="{
+              <a data-bind-href="fav.href || fav" class="flex-1 flex min-w-0 overflow-hidden" data-class="{
                   'flex-col items-center w-full': favViewMode === 'grid',
                   'items-center gap-3': favViewMode === 'list'
                 }"
                 data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'fav', target: fav }">
-                <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:star'"
-                  class="text-warning shrink-0"
+                <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:star'" class="text-warning shrink-0"
                   data-class="{
                     'text-3xl mb-1': favViewMode === 'grid',
                     'text-xl': favViewMode === 'list'
@@ -1142,11 +1175,14 @@
               <!-- Inline Action Buttons (todo.html design) -->
               <div class="flex items-center gap-0.5 transition-opacity opacity-0 group-hover:opacity-100 shrink-0"
                 data-on-click:stop="" data-class="{ 'absolute top-2 right-2': favViewMode === 'grid' }">
-                <button class="btn btn-circle btn-ghost btn-xs text-base-content/60 hover:text-base-content hover:bg-base-300 transition-all"
-                  title="Edit Favorite" data-on-click="searchOpen = false; favForm = { id: fav.id, title: fav.title, href: fav.href, icon: fav.icon, group: fav.group || '' }; favModalOpen = true; $nextTick(() => $('#fav-modal-title')?.focus())">
+                <button
+                  class="btn btn-circle btn-ghost btn-xs text-base-content/60 hover:text-base-content hover:bg-base-300 transition-all"
+                  title="Edit Favorite"
+                  data-on-click="searchOpen = false; favForm = { id: fav.id, title: fav.title, href: fav.href, icon: fav.icon, group: fav.group || '' }; favModalOpen = true; $nextTick(() => $('#fav-modal-title')?.focus())">
                   <iconify-icon icon="material-symbols-light:edit-outline" class="text-sm"></iconify-icon>
                 </button>
-                <button class="btn btn-circle btn-ghost btn-xs text-error/60 hover:text-error hover:bg-error/10 transition-all"
+                <button
+                  class="btn btn-circle btn-ghost btn-xs text-error/60 hover:text-error hover:bg-error/10 transition-all"
                   title="Remove Favorite" data-on-click="pendingDeleteId = (fav.id || fav); favDeleteModalOpen = true">
                   <iconify-icon icon="material-symbols-light:delete-outline" class="text-sm"></iconify-icon>
                 </button>
@@ -1161,21 +1197,20 @@
             <div data-drag data-show="(favorites || []).filter(f => (f.group || '').trim() === grp).length > 0">
               <!-- Group Header (Title + Separator Line) -->
               <ul class="menu w-full py-0">
-                <li class="menu-title cursor-grab font-bold text-xs uppercase tracking-wider opacity-60 mt-3" data-bind="grp"></li>
+                <li class="menu-title cursor-grab font-bold text-xs uppercase tracking-wider opacity-60 mt-3"
+                  data-bind="grp"></li>
                 <li class="w-full mx-0 opacity-6"></li>
               </ul>
 
               <!-- Group Items in Dual-Mode Container -->
-              <div class="transition-all duration-300 w-full"
-                data-class="{
+              <div class="transition-all duration-300 w-full" data-class="{
                   'grid grid-cols-2 gap-2 px-3 py-1': favViewMode === 'grid',
                   'flex flex-col gap-1.5 px-3 py-1': favViewMode === 'list'
-                }"
-                data-drag-container="favorites"
-                data-drag-group="favorites"
+                }" data-drag-container="favorites" data-drag-group="favorites"
                 data-drag-class="!opacity-100 !shadow-[0_15px_30px_-8px_rgba(0,0,0,0.25)] scale-105 cursor-grabbing z-[9999]"
                 data-drag-ghost-class="opacity-40 bg-base-200 border-2 border-dashed border-base-content/20">
-                <template data-for="fav in (favorites || []).filter(f => (f.group || '').trim() === grp)" data-key="fav.id || fav.href">
+                <template data-for="fav in (favorites || []).filter(f => (f.group || '').trim() === grp)"
+                  data-key="fav.id || fav.href">
                   <div data-drag
                     data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'fav', target: fav }"
                     class="rounded-xl transition-all duration-300 flex border border-transparent min-w-0 cursor-move relative group"
@@ -1184,15 +1219,13 @@
                       'p-2 items-center gap-3 text-sm bg-base-200/50 hover:bg-base-200': favViewMode === 'list'
                     }">
                     <!-- Main Clickable Area -->
-                    <a data-bind-href="fav.href || fav" class="flex-1 flex min-w-0 overflow-hidden"
-                      data-class="{
+                    <a data-bind-href="fav.href || fav" class="flex-1 flex min-w-0 overflow-hidden" data-class="{
                         'flex-col items-center w-full': favViewMode === 'grid',
                         'items-center gap-3': favViewMode === 'list'
                       }"
                       data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'fav', target: fav }">
                       <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:star'"
-                        class="text-warning shrink-0"
-                        data-class="{
+                        class="text-warning shrink-0" data-class="{
                           'text-3xl mb-1': favViewMode === 'grid',
                           'text-xl': favViewMode === 'list'
                         }"></iconify-icon>
@@ -1203,12 +1236,16 @@
                     <!-- Inline Action Buttons (todo.html design) -->
                     <div class="flex items-center gap-0.5 transition-opacity opacity-0 group-hover:opacity-100 shrink-0"
                       data-on-click:stop="" data-class="{ 'absolute top-2 right-2': favViewMode === 'grid' }">
-                      <button class="btn btn-circle btn-ghost btn-xs text-base-content/60 hover:text-base-content hover:bg-base-300 transition-all"
-                        title="Edit Favorite" data-on-click="favForm = { id: fav.id, title: fav.title, href: fav.href, icon: fav.icon, group: fav.group || '' }; favModalOpen = true">
+                      <button
+                        class="btn btn-circle btn-ghost btn-xs text-base-content/60 hover:text-base-content hover:bg-base-300 transition-all"
+                        title="Edit Favorite"
+                        data-on-click="favForm = { id: fav.id, title: fav.title, href: fav.href, icon: fav.icon, group: fav.group || '' }; favModalOpen = true">
                         <iconify-icon icon="material-symbols-light:edit-outline" class="text-sm"></iconify-icon>
                       </button>
-                      <button class="btn btn-circle btn-ghost btn-xs text-error/60 hover:text-error hover:bg-error/10 transition-all"
-                        title="Delete Favorite" data-on-click="pendingDeleteId = (fav.id || fav); favDeleteModalOpen = true">
+                      <button
+                        class="btn btn-circle btn-ghost btn-xs text-error/60 hover:text-error hover:bg-error/10 transition-all"
+                        title="Delete Favorite"
+                        data-on-click="pendingDeleteId = (fav.id || fav); favDeleteModalOpen = true">
                         <iconify-icon icon="material-symbols-light:delete-outline" class="text-sm"></iconify-icon>
                       </button>
                     </div>
@@ -1425,13 +1462,14 @@
     <ul data-show="ctxMenu.open"
       class="menu w-56 rounded-box bg-base-100 shadow-2xl border border-base-content/10 p-2 m-0 fixed z-[9999]"
       data-style="{ top: (ctxMenu?.y || 0) + 'px', left: (ctxMenu?.x || 0) + 'px' }"
-      data-on-click:outside="ctxMenu.open = false"
-      data-on-keydown:escape:window="ctxMenu.open = false">
-      
+      data-on-click:outside="ctxMenu.open = false" data-on-keydown:escape:window="ctxMenu.open = false">
+
       <!-- 1. Tab Context Menu Items -->
       <li data-show="ctxMenu.type === 'tab' && ctxMenu.target">
         <button type="button" data-on-click="router.pinPageTab(ctxMenu.target?.id); ctxMenu.open = false">
-          <iconify-icon data-bind-icon="(router.pinnedPageTabs || []).includes(ctxMenu.target?.id) ? 'material-symbols-light:keep-off-outline' : 'material-symbols-light:keep-outline'" class="text-lg"></iconify-icon>
+          <iconify-icon
+            data-bind-icon="(router.pinnedPageTabs || []).includes(ctxMenu.target?.id) ? 'material-symbols-light:keep-off-outline' : 'material-symbols-light:keep-outline'"
+            class="text-lg"></iconify-icon>
           <span data-bind="(router.pinnedPageTabs || []).includes(ctxMenu.target?.id) ? 'Unpin Tab' : 'Pin Tab'"></span>
         </button>
       </li>
@@ -1442,20 +1480,25 @@
         </button>
       </li>
       <li data-show="ctxMenu.type === 'tab' && ctxMenu.target">
-        <button type="button" data-on-click="favForm = { id: null, title: ctxMenu.target?.meta?.title || 'Tab', href: ctxMenu.target?.route || '/', icon: ctxMenu.target?.meta?.icon || 'material-symbols-light:star-outline', group: '' }; favModalOpen = true; ctxMenu.open = false">
+        <button type="button"
+          data-on-click="favForm = { id: null, title: ctxMenu.target?.meta?.title || 'Tab', href: ctxMenu.target?.route || '/', icon: ctxMenu.target?.meta?.icon || 'material-symbols-light:star-outline', group: '' }; favModalOpen = true; ctxMenu.open = false">
           <iconify-icon icon="material-symbols-light:star-outline" class="text-lg"></iconify-icon>
           <span>Save to Favorites</span>
         </button>
       </li>
       <li data-show="ctxMenu.type === 'tab' && ctxMenu.target"></li>
-      <li data-show="ctxMenu.type === 'tab' && ctxMenu.target && !(router.pinnedPageTabs || []).includes(ctxMenu.target?.id)">
-        <button type="button" class="text-error hover:bg-error/10" data-on-click="router.closePageTab(ctxMenu.target?.id); ctxMenu.open = false">
+      <li
+        data-show="ctxMenu.type === 'tab' && ctxMenu.target && !(router.pinnedPageTabs || []).includes(ctxMenu.target?.id)">
+        <button type="button" class="text-error hover:bg-error/10"
+          data-on-click="router.closePageTab(ctxMenu.target?.id); ctxMenu.open = false">
           <iconify-icon icon="material-symbols-light:close" class="text-lg"></iconify-icon>
           <span>Close Tab</span>
         </button>
       </li>
-      <li data-show="ctxMenu.type === 'tab' && ctxMenu.target && (router.pageTabs || []).some(t => t.id !== ctxMenu.target?.id && !(router.pinnedPageTabs || []).includes(t.id))">
-        <button type="button" class="text-error hover:bg-error/10" data-on-click="router.pageTabs = (router.pageTabs || []).filter(t => t.id === ctxMenu.target?.id || (router.pinnedPageTabs || []).includes(t.id)); ctxMenu.open = false">
+      <li
+        data-show="ctxMenu.type === 'tab' && ctxMenu.target && (router.pageTabs || []).some(t => t.id !== ctxMenu.target?.id && !(router.pinnedPageTabs || []).includes(t.id))">
+        <button type="button" class="text-error hover:bg-error/10"
+          data-on-click="router.pageTabs = (router.pageTabs || []).filter(t => t.id === ctxMenu.target?.id || (router.pinnedPageTabs || []).includes(t.id)); ctxMenu.open = false">
           <iconify-icon icon="material-symbols-light:tab-close-outline" class="text-lg"></iconify-icon>
           <span>Close Other Tabs</span>
         </button>
@@ -1463,19 +1506,22 @@
 
       <!-- 2. Nav Context Menu Items -->
       <li data-show="ctxMenu.type === 'nav' && ctxMenu.target">
-        <button type="button" data-on-click="router.createPageTab(ctxMenu.target?.href || ctxMenu.target, ctxMenu.target?.href || ctxMenu.target); ctxMenu.open = false">
+        <button type="button"
+          data-on-click="router.createPageTab(ctxMenu.target?.href || ctxMenu.target, ctxMenu.target?.href || ctxMenu.target); ctxMenu.open = false">
           <iconify-icon icon="material-symbols-light:open-in-new" class="text-lg"></iconify-icon>
           <span>Open in New Tab</span>
         </button>
       </li>
       <li data-show="ctxMenu.type === 'nav' && ctxMenu.target">
-        <button type="button" data-on-click="favForm = { id: null, title: ctxMenu.target?.title || ctxMenu.target?.tabTitle || 'Page', href: ctxMenu.target?.href || ctxMenu.target, icon: ctxMenu.target?.icon || 'material-symbols-light:star-outline', group: '' }; favModalOpen = true; ctxMenu.open = false">
+        <button type="button"
+          data-on-click="favForm = { id: null, title: ctxMenu.target?.title || ctxMenu.target?.tabTitle || 'Page', href: ctxMenu.target?.href || ctxMenu.target, icon: ctxMenu.target?.icon || 'material-symbols-light:star-outline', group: '' }; favModalOpen = true; ctxMenu.open = false">
           <iconify-icon icon="material-symbols-light:star-outline" class="text-lg"></iconify-icon>
           <span>Add to Favorites</span>
         </button>
       </li>
       <li data-show="ctxMenu.type === 'nav' && ctxMenu.target">
-        <button type="button" data-on-click="if (navigator.clipboard) navigator.clipboard.writeText(window.location.origin + (ctxMenu.target?.href || ctxMenu.target)); ctxMenu.open = false">
+        <button type="button"
+          data-on-click="if (navigator.clipboard) navigator.clipboard.writeText(window.location.origin + (ctxMenu.target?.href || ctxMenu.target)); ctxMenu.open = false">
           <iconify-icon icon="material-symbols-light:content-copy" class="text-lg"></iconify-icon>
           <span>Copy Link Address</span>
         </button>
@@ -1483,25 +1529,29 @@
 
       <!-- 3. Favorite Context Menu Items -->
       <li data-show="ctxMenu.type === 'fav' && ctxMenu.target">
-        <button type="button" data-on-click="router.createPageTab(ctxMenu.target?.href || ctxMenu.target, ctxMenu.target?.href || ctxMenu.target); ctxMenu.open = false">
+        <button type="button"
+          data-on-click="router.createPageTab(ctxMenu.target?.href || ctxMenu.target, ctxMenu.target?.href || ctxMenu.target); ctxMenu.open = false">
           <iconify-icon icon="material-symbols-light:open-in-new" class="text-lg"></iconify-icon>
           <span>Open in New Tab</span>
         </button>
       </li>
       <li data-show="ctxMenu.type === 'fav' && ctxMenu.target">
-        <button type="button" data-on-click="router.createPageTab(ctxMenu.target?.href || ctxMenu.target, ctxMenu.target?.href || ctxMenu.target); router.pinPageTab(router.activePageTabId); ctxMenu.open = false">
+        <button type="button"
+          data-on-click="router.createPageTab(ctxMenu.target?.href || ctxMenu.target, ctxMenu.target?.href || ctxMenu.target); router.pinPageTab(router.activePageTabId); ctxMenu.open = false">
           <iconify-icon icon="material-symbols-light:keep-outline" class="text-lg"></iconify-icon>
           <span>Add as Pinned Tab</span>
         </button>
       </li>
       <li data-show="ctxMenu.type === 'fav' && ctxMenu.target">
-        <button type="button" data-on-click="searchOpen = false; favForm = { id: ctxMenu.target?.id || null, title: ctxMenu.target?.title || '', href: ctxMenu.target?.href || '/', icon: ctxMenu.target?.icon || 'material-symbols-light:star-outline', group: ctxMenu.target?.group || '' }; favModalOpen = true; ctxMenu.open = false; $nextTick(() => $('#fav-modal-title')?.focus())">
+        <button type="button"
+          data-on-click="searchOpen = false; favForm = { id: ctxMenu.target?.id || null, title: ctxMenu.target?.title || '', href: ctxMenu.target?.href || '/', icon: ctxMenu.target?.icon || 'material-symbols-light:star-outline', group: ctxMenu.target?.group || '' }; favModalOpen = true; ctxMenu.open = false; $nextTick(() => $('#fav-modal-title')?.focus())">
           <iconify-icon icon="material-symbols-light:edit-outline" class="text-lg"></iconify-icon>
           <span>Edit Favorite</span>
         </button>
       </li>
       <li data-show="ctxMenu.type === 'fav' && ctxMenu.target">
-        <button type="button" class="text-error hover:bg-error/10" data-on-click="pendingDeleteId = (ctxMenu.target?.id || ctxMenu.target); favDeleteModalOpen = true; ctxMenu.open = false">
+        <button type="button" class="text-error hover:bg-error/10"
+          data-on-click="pendingDeleteId = (ctxMenu.target?.id || ctxMenu.target); favDeleteModalOpen = true; ctxMenu.open = false">
           <iconify-icon icon="material-symbols-light:delete-outline" class="text-lg"></iconify-icon>
           <span>Remove Favorite</span>
         </button>
@@ -1510,10 +1560,12 @@
   </template>
 
   <!-- Add / Edit Favorite Modal -->
-  <div class="modal modal-bottom sm:modal-middle" data-class-modal-open="favModalOpen" data-on-keydown:escape:window="favModalOpen = false">
+  <div class="modal modal-bottom sm:modal-middle" data-class-modal-open="favModalOpen"
+    data-on-keydown:escape:window="favModalOpen = false">
     <div class="modal-box bg-base-100 border border-base-content/10 shadow-2xl">
       <h3 class="font-bold text-lg flex items-center gap-2">
-        <iconify-icon data-bind-icon="favForm.id ? 'material-symbols-light:edit-outline' : 'material-symbols-light:star-outline'"
+        <iconify-icon
+          data-bind-icon="favForm.id ? 'material-symbols-light:edit-outline' : 'material-symbols-light:star-outline'"
           class="text-warning text-2xl"></iconify-icon>
         <span data-bind="favForm.id ? 'Edit Favorite' : 'Add to Favorites'"></span>
       </h3>
@@ -1521,16 +1573,19 @@
       <div class="form-control w-full space-y-4 my-2">
         <div>
           <label class="label"><span class="label-text font-semibold">Title</span></label>
-          <input id="fav-modal-title" type="text" class="input input-bordered w-full" data-bind="favForm.title" placeholder="Title" />
+          <input id="fav-modal-title" type="text" class="input input-bordered w-full" data-bind="favForm.title"
+            placeholder="Title" />
         </div>
         <div>
           <label class="label"><span class="label-text font-semibold">Destination URL / Page</span></label>
-          <input id="fav-modal-href" type="text" class="input input-bordered w-full" data-bind="favForm.href" placeholder="URL" />
+          <input id="fav-modal-href" type="text" class="input input-bordered w-full" data-bind="favForm.href"
+            placeholder="URL" />
         </div>
         <div>
           <label class="label"><span class="label-text font-semibold">Icon</span></label>
           <div class="flex items-center gap-2">
-            <input type="text" class="input input-bordered grow" data-bind="favForm.icon" placeholder="material-symbols-light:star" />
+            <input type="text" class="input input-bordered grow" data-bind="favForm.icon"
+              placeholder="material-symbols-light:star" />
             <div class="avatar placeholder">
               <div
                 class="bg-base-200 text-base-content rounded-box size-10 flex items-center justify-center border border-base-content/10">
@@ -1542,8 +1597,8 @@
         </div>
         <div>
           <label class="label"><span class="label-text font-semibold">Group / Folder (Optional)</span></label>
-          <input type="text" class="input input-bordered w-full" list="fav-groups-datalist"
-            data-bind="favForm.group" placeholder="e.g. Work, Tools, Personal..." />
+          <input type="text" class="input input-bordered w-full" list="fav-groups-datalist" data-bind="favForm.group"
+            placeholder="e.g. Work, Tools, Personal..." />
           <datalist id="fav-groups-datalist">
             <template data-for="grp in favoriteGroups" data-key="grp">
               <option data-bind-value="grp"></option>
@@ -1553,8 +1608,7 @@
       </div>
       <div class="modal-action">
         <button type="button" class="btn btn-ghost" data-on-click="favModalOpen = false">Cancel</button>
-        <button type="button" class="btn btn-primary"
-          data-on-click="if (favForm.id) {
+        <button type="button" class="btn btn-primary" data-on-click="if (favForm.id) {
             const item = (favorites || []).find(f => (f.id || f) === favForm.id);
             if (item) {
               item.title = (favForm.title || '').trim() || 'Bookmark';
@@ -1594,17 +1648,19 @@
   </div>
 
   <!-- Delete Favorite Confirmation Modal -->
-  <div class="modal modal-bottom sm:modal-middle" data-class-modal-open="favDeleteModalOpen" data-on-keydown:escape:window="favDeleteModalOpen = false">
+  <div class="modal modal-bottom sm:modal-middle" data-class-modal-open="favDeleteModalOpen"
+    data-on-keydown:escape:window="favDeleteModalOpen = false">
     <div class="modal-box bg-base-100 border border-base-content/10 shadow-2xl">
       <h3 class="font-bold text-lg text-error flex items-center gap-2">
         <iconify-icon icon="material-symbols-light:warning-outline" class="text-2xl"></iconify-icon>
         Remove Favorite?
       </h3>
-      <p class="py-4 text-sm opacity-80">Are you sure you want to remove this item from your favorites? This action cannot be undone.</p>
+      <p class="py-4 text-sm opacity-80">Are you sure you want to remove this item from your favorites? This action
+        cannot be undone.</p>
       <div class="modal-action">
-        <button type="button" class="btn btn-ghost" data-on-click="pendingDeleteId = null; favDeleteModalOpen = false">Cancel</button>
-        <button type="button" class="btn btn-error"
-          data-on-click="if (pendingDeleteId) {
+        <button type="button" class="btn btn-ghost"
+          data-on-click="pendingDeleteId = null; favDeleteModalOpen = false">Cancel</button>
+        <button type="button" class="btn btn-error" data-on-click="if (pendingDeleteId) {
             favorites = (favorites || []).filter(f => (f.id || f.href || f) !== pendingDeleteId);
             favoriteGroups = [...new Set(favorites.map(f => (f?.group || '').trim()).filter(Boolean))];
             if (indexedDB?.favorites) indexedDB.favorites.delete(pendingDeleteId);
@@ -1626,16 +1682,17 @@
   <div class="toast toast-end toast-bottom z-[99999] pointer-events-none p-4 flex flex-col gap-2"
     data-show="(toasts || []).length > 0">
     <template data-for="toast in toasts" data-key="toast.id">
-      <div class="alert shadow-2xl pointer-events-auto transition-all duration-300 flex items-center gap-3 text-sm py-2.5 px-4 rounded-box bg-base-100/95 backdrop-blur-md text-base-content border"
+      <div
+        class="alert shadow-2xl pointer-events-auto transition-all duration-300 flex items-center gap-3 text-sm py-2.5 px-4 rounded-box bg-base-100/95 backdrop-blur-md text-base-content border"
         data-class="{
           'border-success/40 shadow-success/10': toast.type === 'success',
           'border-info/40 shadow-info/10': toast.type === 'info',
           'border-warning/40 shadow-warning/10': toast.type === 'warning',
           'border-error/40 shadow-error/10': toast.type === 'error'
         }">
-        <iconify-icon data-bind-icon="toast.icon || (toast.type === 'success' ? 'material-symbols-light:check-circle-outline' : toast.type === 'error' ? 'material-symbols-light:error-outline' : toast.type === 'warning' ? 'material-symbols-light:warning-outline' : 'material-symbols-light:info-outline')"
-          class="text-xl shrink-0"
-          data-class="{
+        <iconify-icon
+          data-bind-icon="toast.icon || (toast.type === 'success' ? 'material-symbols-light:check-circle-outline' : toast.type === 'error' ? 'material-symbols-light:error-outline' : toast.type === 'warning' ? 'material-symbols-light:warning-outline' : 'material-symbols-light:info-outline')"
+          class="text-xl shrink-0" data-class="{
             'text-success': toast.type === 'success',
             'text-info': toast.type === 'info',
             'text-warning': toast.type === 'warning',
