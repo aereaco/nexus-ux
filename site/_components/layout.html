@@ -259,10 +259,10 @@
         </button>
 
         <!-- User Avatar Button -->
-        <button type="button" class="btn btn-ghost btn-circle avatar" aria-label="User Profile" title="User Profile"
+        <button type="button" class="btn btn-ghost btn-circle avatar placeholder" aria-label="User Profile" title="User Profile"
           data-on-click:stop="headerDropdownTab = 'profile'; headerDropdownOpen = (headerDropdownOpen && headerDropdownTab === 'profile') ? false : true">
-          <div class="w-8 rounded-full ring-1 ring-base-content/20">
-            <img alt="User avatar" src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
+          <div class="w-8 rounded-full bg-base-200 text-base-content ring-1 ring-base-content/20 flex items-center justify-center">
+            <iconify-icon icon="material-symbols-light:person" class="text-xl"></iconify-icon>
           </div>
         </button>
 
@@ -567,9 +567,9 @@
         <!-- 4. PROFILE TAB (Mock Visuals) -->
         <div class="flex-1 flex flex-col min-w-0 overflow-y-auto p-3" data-show="headerDropdownTab === 'profile'">
           <div class="flex items-center gap-3 p-2 bg-base-200/50 rounded-xl mb-3">
-            <div class="avatar online">
-              <div class="w-11 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                <img src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" alt="User avatar" />
+            <div class="avatar online placeholder">
+              <div class="w-11 rounded-full bg-base-200 text-base-content ring ring-primary ring-offset-base-100 ring-offset-2 flex items-center justify-center">
+                <iconify-icon icon="material-symbols-light:person" class="text-2xl"></iconify-icon>
               </div>
             </div>
             <div class="flex-1 min-w-0">
