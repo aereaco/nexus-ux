@@ -9,6 +9,42 @@
       isMobile: window.innerWidth < 768,
       searchOpen: false,
       searchQuery: '',
+      recentSearches: [],
+      searchCategories: ['Apps', 'Navigation', 'Profiles', 'System'],
+      searchKeywords: {
+        '/': 'welcome overview dashboard home console',
+        '/drag': 'kanban sortable cards reorder draggable flip swap spatial collision 14-pattern suite',
+        '/flow': 'canvas nodes edges flowchart graph connectors spatial xyflow',
+        '/profiles': 'user account identity team members personal avatars',
+        '/settings': 'preferences theme configuration options setup appearance'
+      },
+      getRouteCategory: (r) => {
+        if (['/drag', '/flow'].includes(r?.path)) return 'Apps';
+        if (r?.path?.startsWith('/profiles')) return 'Profiles';
+        if (r?.path === '/') return 'Navigation';
+        return 'System';
+      },
+      getSearchResults: (query, cat = null) => {
+        const q = (query || '').trim().toLowerCase();
+        if (!q) return [];
+        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
+        const kwMap = g.searchKeywords || {};
+        const getCat = g.getRouteCategory || (() => 'General');
+        return (g.router?.routes || [])
+          .filter(r => r.path !== '/error' && r.path !== '' && !r.internal)
+          .filter(r => {
+            const c = getCat(r);
+            if (cat && c !== cat) return false;
+            const title = (r.meta?.title || r.name || '').toLowerCase();
+            const path = (r.path || '').toLowerCase();
+            const kw = (kwMap[r.path] || (r.path?.startsWith('/profiles') ? kwMap['/profiles'] : '') || '').toLowerCase();
+            return title.includes(q) || path.includes(q) || kw.includes(q) || c.toLowerCase().includes(q);
+          });
+      },
+      hasSearchResults: (query) => {
+        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
+        return (g.getSearchResults ? g.getSearchResults(query) : []).length > 0;
+      },
       activeSidebarTab: 1,
       ctxMenu: { open: false, x: 0, y: 0, type: null, target: null },
       headerDropdownOpen: false,
