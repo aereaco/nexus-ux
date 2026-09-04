@@ -1097,7 +1097,7 @@
             </div>
             <!-- Add Favorite button -->
             <button type="button" class="btn btn-ghost btn-xs btn-circle ms-0.5" title="Add Favorite"
-              data-on-click="favForm = { id: null, title: router.activePageTab?.meta?.title || 'Home', href: router.route || '/', icon: 'material-symbols-light:star-outline', group: '' }; favModalOpen = true">
+              data-on-click="searchOpen = false; favForm = { id: null, title: router.activePageTab?.meta?.title || 'Home', href: router.route || '/', icon: 'material-symbols-light:star-outline', group: '' }; favModalOpen = true; $nextTick(() => $('#fav-modal-title')?.focus())">
               <iconify-icon icon="material-symbols-light:add" class="text-lg"></iconify-icon>
             </button>
           </div>
