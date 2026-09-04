@@ -1099,7 +1099,7 @@
           <span>Save to Favorites</span>
         </button>
       </li>
-      <li class="divider my-1" data-show="ctxMenu.type === 'tab' && ctxMenu.target"></li>
+      <li data-show="ctxMenu.type === 'tab' && ctxMenu.target"></li>
       <li data-show="ctxMenu.type === 'tab' && ctxMenu.target && !(router.pinnedPageTabs || []).includes(ctxMenu.target?.id)">
         <button type="button" class="text-error hover:bg-error/10" data-on-click="router.closePageTab(ctxMenu.target?.id); ctxMenu.open = false">
           <iconify-icon icon="material-symbols-light:close" class="text-lg"></iconify-icon>
