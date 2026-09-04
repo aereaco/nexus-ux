@@ -48,7 +48,7 @@ const onModule: AttributeModule = {
         if (targetModifiers.has(modName)) {
           if (modName === 'window') target = window;
           if (modName === 'document' || modName === 'outside') target = document;
-          return;
+          if (modName !== 'outside') return;
         }
 
         if (optionModifiers.has(modName)) {

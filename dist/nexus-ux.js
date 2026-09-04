@@ -6590,7 +6590,8 @@ ${match}</ul>
                   target = window;
                 if (modName === "document" || modName === "outside")
                   target = document;
-                return;
+                if (modName !== "outside")
+                  return;
               }
               if (optionModifiers.has(modName)) {
                 if (modName === "passive")
