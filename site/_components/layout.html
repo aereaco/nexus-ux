@@ -29,7 +29,7 @@
     const tMsg = $evt.detail?.message || $evt.detail;
     if (tMsg) {
       const tId = 'toast-' + (window.Date ? window.Date.now() : Math.random()) + '-' + Math.floor(Math.random() * 1000);
-      const tDur = $evt.detail?.duration || 3500;
+      const tDur = $evt.detail?.duration || 4500;
       toasts = [...(toasts || []), { id: tId, message: tMsg, type: $evt.detail?.type || 'success', icon: $evt.detail?.icon, duration: tDur }];
       setTimeout(() => { toasts = (toasts || []).filter(t => t.id !== tId); }, tDur);
     }
