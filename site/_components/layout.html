@@ -191,11 +191,44 @@
           <iconify-icon data-bind-icon="$themeIcon" class="text-2xl transition-all duration-300"></iconify-icon>
         </button>
 
-        <!-- Notification Button -->
-        <button class="btn btn-ghost btn-circle">
+        <!-- Mail Button -->
+        <button type="button" class="btn btn-ghost btn-circle" aria-label="Messages" title="Messages"
+          data-on-click="headerDropdownTab = 'mail'; headerDropdownOpen = (headerDropdownOpen && headerDropdownTab === 'mail') ? false : true">
           <div class="indicator">
-            <iconify-icon icon="material-symbols-light:notifications" class="text-2xl"></iconify-icon>
-            <span class="badge badge-xs badge-primary indicator-item"></span>
+            <iconify-icon icon="material-symbols-light:mail-outline" class="text-2xl"></iconify-icon>
+            <span data-show="(mailMessages || []).filter(m => m.unread).length > 0"
+              class="badge badge-xs badge-info indicator-item"
+              data-bind="(mailMessages || []).filter(m => m.unread).length"></span>
+          </div>
+        </button>
+
+        <!-- Cart Button -->
+        <button type="button" class="btn btn-ghost btn-circle" aria-label="Shopping Cart" title="Shopping Cart"
+          data-on-click="headerDropdownTab = 'cart'; headerDropdownOpen = (headerDropdownOpen && headerDropdownTab === 'cart') ? false : true">
+          <div class="indicator">
+            <iconify-icon icon="material-symbols-light:shopping-cart-outline" class="text-2xl"></iconify-icon>
+            <span data-show="(cartItems || []).reduce((acc, i) => acc + i.qty, 0) > 0"
+              class="badge badge-xs badge-warning indicator-item"
+              data-bind="(cartItems || []).reduce((acc, i) => acc + i.qty, 0)"></span>
+          </div>
+        </button>
+
+        <!-- Notification Bell Button -->
+        <button type="button" class="btn btn-ghost btn-circle" aria-label="Notifications" title="Notifications"
+          data-on-click="headerDropdownTab = 'notifications'; headerDropdownOpen = (headerDropdownOpen && headerDropdownTab === 'notifications') ? false : true">
+          <div class="indicator">
+            <iconify-icon icon="material-symbols-light:notifications-outline" class="text-2xl"></iconify-icon>
+            <span data-show="(notifications || []).filter(n => !n.read).length > 0"
+              class="badge badge-xs badge-primary indicator-item"
+              data-bind="(notifications || []).filter(n => !n.read).length"></span>
+          </div>
+        </button>
+
+        <!-- User Avatar Button -->
+        <button type="button" class="btn btn-ghost btn-circle avatar" aria-label="User Profile" title="User Profile"
+          data-on-click="headerDropdownTab = 'profile'; headerDropdownOpen = (headerDropdownOpen && headerDropdownTab === 'profile') ? false : true">
+          <div class="w-8 rounded-full ring-1 ring-base-content/20">
+            <img alt="User avatar" src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
           </div>
         </button>
 
