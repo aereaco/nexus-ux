@@ -337,6 +337,227 @@
       </div>
     </nav>
 
+    <!-- Composite Navbar Dropdown (Notifications, Mail, Cart, Profile) -->
+    <div class="dropdown-content bg-base-100/95 backdrop-blur-xl border border-base-content/10 rounded-2xl z-[100] mt-1 w-96 max-w-[calc(100vw-2rem)] h-[32rem] shadow-2xl flex overflow-hidden fixed top-14 right-4 transition-all duration-200"
+      data-show="headerDropdownOpen"
+      data-on-click:outside="headerDropdownOpen = false"
+      data-on-keydown:escape:window="headerDropdownOpen = false">
+
+      <!-- Left Icon Rail (from test/index.html) -->
+      <ul class="menu bg-base-200/60 p-2 gap-1.5 border-e border-base-content/10 shrink-0 flex flex-col items-center w-14">
+        <li>
+          <button type="button" class="btn btn-ghost btn-sm btn-circle"
+            data-class="{ 'btn-active bg-primary/20 text-primary': headerDropdownTab === 'profile' }"
+            data-on-click="headerDropdownTab = 'profile'" title="Profile">
+            <iconify-icon icon="material-symbols-light:person-outline" class="text-xl"></iconify-icon>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="btn btn-ghost btn-sm btn-circle relative"
+            data-class="{ 'btn-active bg-primary/20 text-primary': headerDropdownTab === 'notifications' }"
+            data-on-click="headerDropdownTab = 'notifications'" title="Notifications">
+            <iconify-icon icon="material-symbols-light:notifications-outline" class="text-xl"></iconify-icon>
+            <span data-show="(notifications || []).filter(n => !n.read).length > 0"
+              class="badge badge-xs badge-primary absolute top-1 right-1 size-2 p-0"></span>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="btn btn-ghost btn-sm btn-circle relative"
+            data-class="{ 'btn-active bg-primary/20 text-primary': headerDropdownTab === 'mail' }"
+            data-on-click="headerDropdownTab = 'mail'" title="Messages">
+            <iconify-icon icon="material-symbols-light:mail-outline" class="text-xl"></iconify-icon>
+            <span data-show="(mailMessages || []).filter(m => m.unread).length > 0"
+              class="badge badge-xs badge-info absolute top-1 right-1 size-2 p-0"></span>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="btn btn-ghost btn-sm btn-circle relative"
+            data-class="{ 'btn-active bg-primary/20 text-primary': headerDropdownTab === 'cart' }"
+            data-on-click="headerDropdownTab = 'cart'" title="Shopping Cart">
+            <iconify-icon icon="material-symbols-light:shopping-cart-outline" class="text-xl"></iconify-icon>
+            <span data-show="(cartItems || []).reduce((acc, i) => acc + i.qty, 0) > 0"
+              class="badge badge-xs badge-warning absolute top-1 right-1 size-2 p-0"></span>
+          </button>
+        </li>
+      </ul>
+
+      <!-- Right Panel -->
+      <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-base-100">
+
+        <!-- 1. NOTIFICATIONS TAB -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden" data-show="headerDropdownTab === 'notifications'">
+          <div class="p-3 border-b border-base-content/10 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-sm">Notifications</span>
+              <span data-show="(notifications || []).filter(n => !n.read).length > 0"
+                class="badge badge-primary badge-sm"
+                data-bind="(notifications || []).filter(n => !n.read).length + ' unread'"></span>
+            </div>
+            <div class="flex items-center gap-1">
+              <button type="button" class="btn btn-ghost btn-xs text-xs"
+                data-show="(notifications || []).filter(n => !n.read).length > 0"
+                data-on-click="notifications = (notifications || []).map(n => ({ ...n, read: true }))">
+                Mark all read
+              </button>
+              <button type="button" class="btn btn-ghost btn-xs text-xs text-error/80 hover:text-error"
+                data-show="(notifications || []).length > 0"
+                data-on-click="notifications = []">
+                Clear
+              </button>
+            </div>
+          </div>
+          <div class="px-3 py-1.5 border-b border-base-content/5 flex items-center gap-2 shrink-0 bg-base-200/30 text-xs">
+            <button type="button" class="btn btn-xs rounded-full"
+              data-class="{ 'btn-primary': notificationFilter === 'all', 'btn-ghost': notificationFilter !== 'all' }"
+              data-on-click="notificationFilter = 'all'">
+              All (<span data-bind="(notifications || []).length"></span>)
+            </button>
+            <button type="button" class="btn btn-xs rounded-full"
+              data-class="{ 'btn-primary': notificationFilter === 'unread', 'btn-ghost': notificationFilter !== 'unread' }"
+              data-on-click="notificationFilter = 'unread'">
+              Unread (<span data-bind="(notifications || []).filter(n => !n.read).length"></span>)
+            </button>
+          </div>
+          <div class="flex-1 overflow-y-auto p-2 space-y-1.5">
+            <div data-show="(notifications || []).length === 0 || (notificationFilter === 'unread' && (notifications || []).filter(n => !n.read).length === 0)"
+              class="flex flex-col items-center justify-center h-48 text-base-content/40 text-sm gap-2">
+              <iconify-icon icon="material-symbols-light:notifications-off-outline" class="text-4xl"></iconify-icon>
+              <span>No notifications</span>
+            </div>
+            <template data-for="item in (notificationFilter === 'unread' ? (notifications || []).filter(n => !n.read) : (notifications || []))" data-key="item.id">
+              <div class="p-2.5 rounded-xl transition-colors flex items-start gap-2.5 relative group border border-transparent hover:border-base-content/10 cursor-pointer"
+                data-class="{ 'bg-base-200/60 font-medium': !item.read, 'bg-base-100 opacity-75': item.read }"
+                data-on-click="item.read = true">
+                <!-- Priority / Type Icon -->
+                <div class="size-7 rounded-lg shrink-0 flex items-center justify-center mt-0.5"
+                  data-class="{
+                    'bg-error/20 text-error': item.type === 'error' || item.priority === 'urgent',
+                    'bg-warning/20 text-warning': item.type === 'warning' || item.priority === 'high',
+                    'bg-success/20 text-success': item.type === 'success' || item.priority === 'normal',
+                    'bg-info/20 text-info': item.type === 'info' || item.priority === 'low'
+                  }">
+                  <iconify-icon data-bind-icon="item.type === 'error' ? 'material-symbols-light:error-outline' : item.type === 'warning' ? 'material-symbols-light:warning-outline' : item.type === 'success' ? 'material-symbols-light:check-circle-outline' : 'material-symbols-light:info-outline'" class="text-base"></iconify-icon>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="text-xs font-semibold truncate" data-bind="item.title || 'Notification'"></span>
+                    <span class="text-[0.65rem] opacity-50 shrink-0" data-bind="item.time || 'Just now'"></span>
+                  </div>
+                  <p class="text-xs opacity-75 line-clamp-2 mt-0.5 leading-snug" data-bind="item.message"></p>
+                </div>
+                <!-- Delete Button -->
+                <button type="button" class="btn btn-ghost btn-xs btn-circle opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-base-content/50 hover:text-error"
+                  title="Dismiss"
+                  data-on-click:stop="notifications = (notifications || []).filter(n => n.id !== item.id)">
+                  <iconify-icon icon="material-symbols-light:close" class="text-sm"></iconify-icon>
+                </button>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- 2. MAIL TAB (Mock Visuals) -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden" data-show="headerDropdownTab === 'mail'">
+          <div class="p-3 border-b border-base-content/10 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-sm">Inbox</span>
+              <span data-show="(mailMessages || []).filter(m => m.unread).length > 0"
+                class="badge badge-info badge-sm"
+                data-bind="(mailMessages || []).filter(m => m.unread).length + ' new'"></span>
+            </div>
+            <button type="button" class="btn btn-ghost btn-xs text-primary" data-on-click="mailMessages = (mailMessages || []).map(m => ({ ...m, unread: false }))">
+              Mark all read
+            </button>
+          </div>
+          <div class="flex-1 overflow-y-auto p-2 space-y-1">
+            <template data-for="mail in mailMessages" data-key="mail.id">
+              <div class="p-2.5 rounded-xl transition-colors flex items-start gap-2.5 cursor-pointer hover:bg-base-200/50"
+                data-class="{ 'bg-base-200/60 font-semibold': mail.unread, 'bg-base-100 opacity-80': !mail.unread }"
+                data-on-click="mail.unread = false">
+                <div class="size-8 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 text-xs font-bold"
+                  data-bind="(mail.from || 'U').slice(0, 1)"></div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs truncate" data-bind="mail.from"></span>
+                    <span class="text-[0.65rem] opacity-50 shrink-0" data-bind="mail.time"></span>
+                  </div>
+                  <div class="text-xs truncate text-base-content" data-bind="mail.subject"></div>
+                  <p class="text-[0.7rem] opacity-60 truncate" data-bind="mail.snippet"></p>
+                </div>
+              </div>
+            </template>
+          </div>
+          <div class="p-2 border-t border-base-content/10 text-center shrink-0">
+            <button type="button" class="btn btn-ghost btn-xs w-full text-xs text-primary">View all in Inbox</button>
+          </div>
+        </div>
+
+        <!-- 3. CART TAB (Mock Visuals) -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden" data-show="headerDropdownTab === 'cart'">
+          <div class="p-3 border-b border-base-content/10 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-sm">Shopping Cart</span>
+              <span class="badge badge-warning badge-sm" data-bind="(cartItems || []).reduce((acc, i) => acc + i.qty, 0) + ' items'"></span>
+            </div>
+            <button type="button" class="btn btn-ghost btn-xs text-error/80" data-on-click="cartItems = []">Clear</button>
+          </div>
+          <div class="flex-1 overflow-y-auto p-2 space-y-2">
+            <div data-show="(cartItems || []).length === 0" class="flex flex-col items-center justify-center h-48 text-base-content/40 text-sm gap-2">
+              <iconify-icon icon="material-symbols-light:shopping-cart-outline" class="text-4xl"></iconify-icon>
+              <span>Your cart is empty</span>
+            </div>
+            <template data-for="item in cartItems" data-key="item.id">
+              <div class="p-2 rounded-xl bg-base-200/40 border border-base-content/5 flex items-center gap-2.5">
+                <div class="size-9 rounded-lg bg-base-300 flex items-center justify-center shrink-0">
+                  <iconify-icon icon="material-symbols-light:package-2-outline" class="text-lg opacity-70"></iconify-icon>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-xs font-medium truncate" data-bind="item.name"></div>
+                  <div class="text-[0.7rem] opacity-60" data-bind="'$' + item.price.toFixed(2) + ' x ' + item.qty"></div>
+                </div>
+                <div class="font-bold text-xs shrink-0" data-bind="'$' + (item.price * item.qty).toFixed(2)"></div>
+              </div>
+            </template>
+          </div>
+          <div class="p-3 border-t border-base-content/10 flex flex-col gap-2 shrink-0 bg-base-200/20">
+            <div class="flex items-center justify-between text-xs font-semibold">
+              <span>Subtotal:</span>
+              <span data-bind="'$' + (cartItems || []).reduce((acc, i) => acc + (i.price * i.qty), 0).toFixed(2)"></span>
+            </div>
+            <button type="button" class="btn btn-warning btn-sm w-full text-xs font-semibold"
+              data-on-click="notify('Order placed successfully!', 'success'); cartItems = []; headerDropdownOpen = false">
+              Checkout
+            </button>
+          </div>
+        </div>
+
+        <!-- 4. PROFILE TAB (Mock Visuals) -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-y-auto p-3" data-show="headerDropdownTab === 'profile'">
+          <div class="flex items-center gap-3 p-2 bg-base-200/50 rounded-xl mb-3">
+            <div class="avatar online">
+              <div class="w-11 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                <img src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" alt="User avatar" />
+              </div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-bold text-sm truncate">Admin User</div>
+              <div class="text-xs opacity-60 truncate">admin@aerea.co</div>
+              <span class="badge badge-primary badge-xs mt-1">Administrator</span>
+            </div>
+          </div>
+          <ul class="menu menu-sm p-0 space-y-0.5 text-xs">
+            <li><a data-on-click="router.createPageTab('/_pages/profile.html', '/profile'); headerDropdownOpen = false"><iconify-icon icon="material-symbols-light:account-circle-outline" class="text-base"></iconify-icon>My Profile</a></li>
+            <li><a data-on-click="router.createPageTab('/_pages/settings.html', '/settings'); headerDropdownOpen = false"><iconify-icon icon="material-symbols-light:settings-outline" class="text-base"></iconify-icon>Account Settings</a></li>
+            <li><a data-on-click="activeSidebarTab = 2; headerDropdownOpen = false"><iconify-icon icon="material-symbols-light:star-outline" class="text-base"></iconify-icon>Bookmarks & Favorites</a></li>
+            <li><a><iconify-icon icon="material-symbols-light:keyboard-outline" class="text-base"></iconify-icon>Keyboard Shortcuts</a></li>
+            <div class="divider my-1"></div>
+            <li><a class="text-error hover:bg-error/10" data-on-click="notify('Signed out successfully', 'info'); headerDropdownOpen = false"><iconify-icon icon="material-symbols-light:logout" class="text-base"></iconify-icon>Sign Out</a></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
     <!-- name of each tab group should be unique -->
     <!-- Tab state lives in the global signal declared on `drawer-content`
          (data-signal:global), so the bar and panels share one scope. -->
