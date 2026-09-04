@@ -8910,25 +8910,11 @@ ${match}</ul>
   __export(signal_exports, {
     default: () => signal_default
   });
-  function cloneValue(val) {
-    if (Array.isArray(val)) {
-      return val.map(cloneValue);
-    }
-    if (val !== null && typeof val === "object") {
-      const res = {};
-      for (const key of Object.keys(val)) {
-        res[key] = cloneValue(val[key]);
-      }
-      return res;
-    }
-    return val;
-  }
   var signalModule, signal_default;
   var init_signal = __esm({
     "src/modules/attributes/signal.ts"() {
       init_scope();
       init_reactivity();
-      init_reconciler();
       signalModule = {
         name: "signal",
         attribute: "signal",
@@ -8962,87 +8948,31 @@ ${match}</ul>
             () => runtime.triggerRef(stateRef)
           );
           let addCleanup;
-          let lastEvaluatedState = null;
-          let isEvaluating = false;
-          const [_runner, effectCleanup] = runtime.elementBoundEffect(el, () => {
-            if (isEvaluating)
-              return;
-            isEvaluating = true;
-            try {
-              let newState;
-              try {
-                newState = runtime.evaluate(el, expression);
-              } catch (e) {
-                runtime.reportError(e instanceof Error ? e : new Error(String(e)), el, expression);
-                return;
+          try {
+            const newState = runtime.evaluate(el, expression);
+            if (typeof newState === "object" && newState !== null) {
+              if (isGlobal) {
+                const globals = runtime.globalSignals();
+                Object.keys(newState).forEach((key) => {
+                  if (!(key in globals)) {
+                    globals[key] = newState[key];
+                  }
+                });
+                stateRef.value = globals;
+              } else {
+                stateRef.value = newState;
               }
-              if (typeof newState === "object" && newState !== null) {
-                if (!lastEvaluatedState) {
-                  const seeded = {};
-                  if (isGlobal) {
-                    const globals = runtime.globalSignals();
-                    Object.keys(newState).forEach((key) => {
-                      if (!(key in globals)) {
-                        globals[key] = newState[key];
-                      }
-                      seeded[key] = cloneValue(globals[key]);
-                    });
-                    lastEvaluatedState = seeded;
-                    stateRef.value = globals;
-                  } else {
-                    lastEvaluatedState = cloneValue(newState);
-                    stateRef.value = newState;
-                  }
-                } else {
-                  const currentEval = newState;
-                  let hasChanges = false;
-                  if (isGlobal) {
-                    const globals = runtime.globalSignals();
-                    Object.keys(currentEval).forEach((key) => {
-                      const curVal = currentEval[key];
-                      const lastVal = lastEvaluatedState[key];
-                      let changed = curVal !== lastVal;
-                      if (changed && typeof curVal === "object" && curVal !== null) {
-                        changed = !deepEqual(curVal, lastVal);
-                      }
-                      if (changed) {
-                        globals[key] = curVal;
-                        lastEvaluatedState[key] = cloneValue(curVal);
-                        hasChanges = true;
-                      }
-                    });
-                  } else {
-                    const value2 = stateRef.value;
-                    Object.keys(currentEval).forEach((key) => {
-                      const curVal = currentEval[key];
-                      const lastVal = lastEvaluatedState[key];
-                      let changed = curVal !== lastVal;
-                      if (changed && typeof curVal === "object" && curVal !== null) {
-                        changed = !deepEqual(curVal, lastVal);
-                      }
-                      if (changed) {
-                        value2[key] = curVal;
-                        lastEvaluatedState[key] = cloneValue(curVal);
-                        hasChanges = true;
-                      }
-                    });
-                  }
-                  if (hasChanges) {
-                    runtime.triggerRef(stateRef);
-                  }
-                }
-              }
-            } finally {
-              isEvaluating = false;
             }
-          });
+          } catch (e) {
+            runtime.reportError(e instanceof Error ? e : new Error(String(e)), el, expression);
+            return;
+          }
           if (!isGlobal) {
             addCleanup = addScopeToNode(el, scopeProxy);
           }
           return () => {
             if (addCleanup)
               addCleanup();
-            effectCleanup();
           };
         }
       };
@@ -13762,34 +13692,6 @@ ${bridge}`, {
     });
     if (currentAdded.size > 0)
       nexusStyleMap.set(el, currentAdded);
-  }
-  function deepEqual(a, b) {
-    if (a === b)
-      return true;
-    if (typeof a !== "object" || a === null || typeof b !== "object" || b === null)
-      return false;
-    if (Array.isArray(a)) {
-      if (!Array.isArray(b) || a.length !== b.length)
-        return false;
-      for (let i = 0; i < a.length; i++) {
-        if (!deepEqual(a[i], b[i]))
-          return false;
-      }
-      return true;
-    }
-    if (Array.isArray(b))
-      return false;
-    const keysA = Object.keys(a);
-    const keysB = Object.keys(b);
-    if (keysA.length !== keysB.length)
-      return false;
-    for (let i = 0; i < keysA.length; i++) {
-      const key = keysA[i];
-      if (!Object.prototype.hasOwnProperty.call(b, key) || !deepEqual(a[key], b[key])) {
-        return false;
-      }
-    }
-    return true;
   }
   var noOp, defaults, nexusClassMap, nexusStyleMap;
   var init_reconciler = __esm({

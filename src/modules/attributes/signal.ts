@@ -100,91 +100,27 @@ const signalModule: AttributeModule = {
     );
     
     let addCleanup: (() => void) | undefined;
-    let lastEvaluatedState: Record<string, unknown> | null = null;
-    let isEvaluating = false;
 
-    const [_runner, effectCleanup] = runtime.elementBoundEffect(el, () => {
-      if (isEvaluating) return;
-      isEvaluating = true;
-
-      try {
-        // 4. Evaluate to get Initial State
-        let newState: unknown;
-        try {
-        newState = runtime.evaluate(el, expression);
-      } catch (e) {
-        runtime.reportError(e instanceof Error ? e : new Error(String(e)), el, expression);
-        return;
-      }
-
+    // 4. Evaluate once to seed initial state (without wrapping in a reactive loop that clobbers live state)
+    try {
+      const newState = runtime.evaluate(el, expression);
       if (typeof newState === 'object' && newState !== null) {
-          if (!lastEvaluatedState) {
-            // First run: seed globals. For GLOBAL signals, live state is
-            // authoritative — only initialize keys that do not already exist.
-            // Re-running (fresh closure) must never clobber existing global state.
-            const seeded = {} as Record<string, unknown>;
-            if (isGlobal) {
-              const globals = runtime.globalSignals() as Record<string, unknown>;
-              Object.keys(newState as object).forEach(key => {
-                if (!(key in globals)) {
-                  globals[key] = (newState as Record<string, unknown>)[key];
-                }
-                seeded[key] = cloneValue(globals[key]);
-              });
-              lastEvaluatedState = seeded;
-              stateRef.value = globals;
-            } else {
-              lastEvaluatedState = cloneValue(newState) as Record<string, unknown>;
-              stateRef.value = newState as Record<string, unknown>;
+        if (isGlobal) {
+          const globals = runtime.globalSignals() as Record<string, unknown>;
+          Object.keys(newState as object).forEach(key => {
+            if (!(key in globals)) {
+              globals[key] = (newState as Record<string, unknown>)[key];
             }
-          } else {
-          // Subsequent run: only sync keys that CHANGED from the last EVALUATED state
-          const currentEval = newState as Record<string, unknown>;
-          let hasChanges = false;
-          if (isGlobal) {
-            const globals = runtime.globalSignals() as Record<string, unknown>;
-            Object.keys(currentEval).forEach(key => {
-              const curVal = currentEval[key];
-              const lastVal = lastEvaluatedState![key];
-              
-              let changed = curVal !== lastVal;
-              if (changed && typeof curVal === 'object' && curVal !== null) {
-                 changed = !deepEqual(curVal, lastVal);
-              }
-              
-              if (changed) {
-                globals[key] = curVal;
-                lastEvaluatedState![key] = cloneValue(curVal);
-                hasChanges = true;
-              }
-            });
-          } else {
-            const value = stateRef.value;
-            Object.keys(currentEval).forEach(key => {
-              const curVal = currentEval[key];
-              const lastVal = lastEvaluatedState![key];
-              
-              let changed = curVal !== lastVal;
-              if (changed && typeof curVal === 'object' && curVal !== null) {
-                 changed = !deepEqual(curVal, lastVal);
-              }
-              
-              if (changed) {
-                value[key] = curVal;
-                lastEvaluatedState![key] = cloneValue(curVal);
-                hasChanges = true;
-              }
-            });
-          }
-          if (hasChanges) {
-            runtime.triggerRef(stateRef);
-          }
+          });
+          stateRef.value = globals;
+        } else {
+          stateRef.value = newState as Record<string, unknown>;
         }
       }
-      } finally {
-        isEvaluating = false;
-      }
-    });
+    } catch (e) {
+      runtime.reportError(e instanceof Error ? e : new Error(String(e)), el, expression);
+      return;
+    }
 
     if (!isGlobal) {
       addCleanup = addScopeToNode(el, scopeProxy);
@@ -192,9 +128,6 @@ const signalModule: AttributeModule = {
 
     return () => {
       if (addCleanup) addCleanup();
-      effectCleanup();
-      // Ownership is released when the ref is garbage collected
-      // (tracked via Symbol ownership in the unifiedRef closure)
     };
   }
 };
