@@ -1862,8 +1862,21 @@ ${suggestion}`);
                       el.value = attrValue;
                   }
                 } else if ("value" in el) {
-                  if (el.value !== attrValue)
-                    el.value = attrValue;
+                  const targetEl = el;
+                  if (targetEl.value !== attrValue) {
+                    const isFocused = typeof document !== "undefined" && document.activeElement === targetEl;
+                    if (isFocused && typeof targetEl.selectionStart === "number" && typeof targetEl.selectionEnd === "number") {
+                      const start = targetEl.selectionStart;
+                      const end = targetEl.selectionEnd;
+                      targetEl.value = attrValue;
+                      try {
+                        targetEl.setSelectionRange(start, end);
+                      } catch (_) {
+                      }
+                    } else {
+                      targetEl.value = attrValue;
+                    }
+                  }
                 }
               } else if (target === "text") {
                 if (el.textContent !== attrValue)
