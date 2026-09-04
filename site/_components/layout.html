@@ -660,7 +660,7 @@
                       data-bind-data-tab-title="item.tabTitle || item.title"
                       data-bind-data-tab-icon="item.tabIcon || item.icon"
                       data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-                      data-on-contextmenu_prevent="openNavContextMenu(item, $evt)">
+                      data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                       <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
                       <span
                         class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
@@ -677,7 +677,7 @@
                         data-bind-data-tab-title="item.tabTitle || item.title"
                         data-bind-data-tab-icon="item.tabIcon || item.icon"
                         data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-                        data-on-contextmenu_prevent="openNavContextMenu(item, $evt)">
+                        data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                         <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
                         <span
                           class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
