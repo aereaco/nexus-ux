@@ -1220,6 +1220,7 @@
               favorites = [...favorites];
               favoriteGroups = [...new Set(favorites.map(f => (f?.group || '').trim()).filter(Boolean))];
               if (indexedDB?.favorites) indexedDB.favorites.put(item);
+              $toast('Favorite updated successfully', 'success');
             }
           } else {
             const newFav = {
@@ -1232,6 +1233,7 @@
             favorites = [...(favorites || []), newFav];
             favoriteGroups = [...new Set(favorites.map(f => (f?.group || '').trim()).filter(Boolean))];
             if (indexedDB?.favorites) indexedDB.favorites.put(newFav);
+            $toast('Favorite added to bookmarks', 'success');
           };
           favModalOpen = false">
           <span data-bind="favForm.id ? 'Update Favorite' : 'Save Favorite'"></span>
@@ -1257,6 +1259,7 @@
             favoriteGroups = [...new Set(favorites.map(f => (f?.group || '').trim()).filter(Boolean))];
             if (indexedDB?.favorites) indexedDB.favorites.delete(pendingDeleteId);
             pendingDeleteId = null;
+            $toast('Favorite removed', 'info');
           };
           favDeleteModalOpen = false">
           Remove
@@ -1265,4 +1268,25 @@
     </div>
     <div class="modal-backdrop bg-base-900/40" data-on-click="favDeleteModalOpen = false"></div>
   </dialog>
+
+  <!-- App-Wide Declarative Toaster Notifications -->
+  <div class="toast toast-end toast-bottom z-[99999] pointer-events-none p-4 flex flex-col gap-2"
+    data-show="(toasts || []).length > 0">
+    <template data-for="toast in toasts" data-key="toast.id">
+      <div class="alert shadow-2xl pointer-events-auto transition-all duration-300 flex items-center gap-3 text-sm py-2.5 px-4 rounded-box border border-base-content/10"
+        data-class="{
+          'alert-success bg-success/20 text-success-content border-success/30': toast.type === 'success',
+          'alert-info bg-info/20 text-info-content border-info/30': toast.type === 'info',
+          'alert-warning bg-warning/20 text-warning-content border-warning/30': toast.type === 'warning',
+          'alert-error bg-error/20 text-error-content border-error/30': toast.type === 'error'
+        }">
+        <iconify-icon data-bind-icon="toast.icon || (toast.type === 'success' ? 'material-symbols-light:check-circle-outline' : toast.type === 'error' ? 'material-symbols-light:error-outline' : toast.type === 'warning' ? 'material-symbols-light:warning-outline' : 'material-symbols-light:info-outline')" class="text-xl shrink-0"></iconify-icon>
+        <span class="font-medium" data-bind="toast.message"></span>
+        <button type="button" class="btn btn-ghost btn-xs btn-circle ms-auto opacity-70 hover:opacity-100"
+          data-on-click="toasts = (toasts || []).filter(t => t.id !== toast.id)">
+          <iconify-icon icon="material-symbols-light:close" class="text-base"></iconify-icon>
+        </button>
+      </div>
+    </template>
+  </div>
 </div>
