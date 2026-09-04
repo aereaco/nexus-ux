@@ -781,14 +781,14 @@
     </div>
 
     <!-- Search Modal (triggered by the navbar search button) -->
-    <div class="modal modal-top sm:modal-middle" role="dialog" aria-label="Search"
+    <div class="modal modal-top sm:modal-middle" role="dialog" aria-label="Search" data-preserve
       data-class="{ 'modal-open': searchOpen }">
       <div class="modal-box bg-base-100 shadow-2xl border border-base-300 p-0 overflow-hidden flex flex-col max-w-2xl">
         <!-- Search Input Row -->
         <div class="flex items-center gap-3 px-4 py-3 border-b border-base-200">
           <iconify-icon icon="material-symbols-light:search" class="text-2xl opacity-60"></iconify-icon>
           <input type="text" class="input input-ghost w-full text-lg focus:outline-none border-0 focus:border-0 px-0"
-            placeholder="Search Nexus-UX…" data-bind-value="searchQuery"
+            placeholder="Search pages and features…" data-bind-value="searchQuery"
             data-effect="if (searchOpen && $el) { $el.focus(); }" data-on-keydown_escape="searchOpen = false" />
           <kbd class="kbd kbd-sm opacity-60 max-sm:hidden">Esc</kbd>
           <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close search" data-on-click="searchOpen = false">
@@ -797,23 +797,70 @@
         </div>
 
         <!-- Results Area -->
-        <div class="p-2 max-h-[50vh] overflow-y-auto">
-          <!-- Empty state (no query yet) -->
-          <div data-show="!searchQuery.trim()" class="px-4 py-10 text-center text-base-content/50">
+        <div class="p-3 max-h-[60vh] overflow-y-auto">
+          <!-- State 1: Empty Query & No Recent Searches -->
+          <div data-show="!searchQuery.trim() && !(recentSearches && recentSearches.length)" class="px-4 py-12 text-center text-base-content/50">
             <iconify-icon icon="material-symbols-light:search" class="text-4xl opacity-40"></iconify-icon>
             <p class="mt-2 text-sm">Start typing to search…</p>
           </div>
 
-          <!-- Query echo / placeholder result list -->
-          <ul data-show="searchQuery.trim()" class="menu w-full">
-            <li class="menu-title" data-bind="'Results for &quot;' + searchQuery + '&quot;'"></li>
-            <li>
-              <a data-on-click="searchOpen = false">
-                <iconify-icon icon="material-symbols-light:description-outline" class="text-xl"></iconify-icon>
-                <span data-bind="searchQuery"></span>
-              </a>
-            </li>
-          </ul>
+          <!-- State 2: Empty Query & Has Recent Searches -->
+          <div data-show="!searchQuery.trim() && (recentSearches && recentSearches.length > 0)" class="w-full">
+            <div class="flex items-center justify-between px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/50">
+              <span>Recent Searches</span>
+              <button class="btn btn-ghost btn-xs text-xs lowercase font-normal opacity-60 hover:opacity-100"
+                data-on-click="recentSearches = []">Clear</button>
+            </div>
+            <ul class="menu menu-sm w-full p-0">
+              <template data-for="recent in (recentSearches || [])">
+                <li class="flex flex-row items-center justify-between group rounded-xl hover:bg-base-200/60 transition-colors">
+                  <a class="flex items-center gap-2.5 flex-1 min-w-0 py-2 px-3"
+                    data-on-click="searchQuery = recent">
+                    <iconify-icon icon="material-symbols-light:history" class="text-lg opacity-60 shrink-0"></iconify-icon>
+                    <span class="truncate font-medium" data-bind="recent"></span>
+                  </a>
+                  <button class="btn btn-ghost btn-xs btn-circle opacity-0 group-hover:opacity-60 hover:!opacity-100 me-2"
+                    aria-label="Remove search" title="Remove"
+                    data-on-click:stop="recentSearches = (recentSearches || []).filter(s => s !== recent)">
+                    <iconify-icon icon="material-symbols-light:close" class="text-sm"></iconify-icon>
+                  </button>
+                </li>
+              </template>
+            </ul>
+          </div>
+
+          <!-- State 3: Active Query & Has Results (Grouped by Category) -->
+          <div data-show="searchQuery.trim() && hasSearchResults(searchQuery)" class="space-y-4">
+            <template data-for="cat in (searchCategories || ['Apps', 'Navigation', 'Profiles', 'System'])">
+              <div data-show="getSearchResults(searchQuery, cat).length > 0" class="w-full">
+                <div class="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-base-content/50" data-bind="cat"></div>
+                <ul class="menu menu-sm w-full p-0">
+                  <template data-for="item in getSearchResults(searchQuery, cat)" data-key="item.path">
+                    <li>
+                      <a class="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-base-200/60 transition-colors"
+                        data-on-click="
+                          if (searchQuery.trim()) { recentSearches = [searchQuery.trim(), ...(recentSearches || []).filter(s => s !== searchQuery.trim())].slice(0, 6); }
+                          router.createPageTab(item.component, item.path);
+                          searchOpen = false;
+                        ">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                          <iconify-icon data-bind-icon="item.meta?.icon || 'material-symbols-light:description-outline'" class="text-xl shrink-0 opacity-70"></iconify-icon>
+                          <span class="font-medium text-sm truncate" data-bind="item.meta?.title || item.name"></span>
+                        </div>
+                        <span class="badge badge-sm badge-ghost font-mono opacity-50 shrink-0" data-bind="item.path"></span>
+                      </a>
+                    </li>
+                  </template>
+                </ul>
+              </div>
+            </template>
+          </div>
+
+          <!-- State 4: Active Query & Zero Matches -->
+          <div data-show="searchQuery.trim() && !hasSearchResults(searchQuery)" class="px-4 py-12 text-center text-base-content/50">
+            <iconify-icon icon="material-symbols-light:search-off" class="text-4xl opacity-40"></iconify-icon>
+            <p class="mt-2 text-sm">No results found for &quot;<span class="font-semibold text-base-content" data-bind="searchQuery"></span>&quot;</p>
+          </div>
         </div>
       </div>
       <div class="modal-backdrop bg-black/60 backdrop-blur-sm" data-on-click="searchOpen = false"></div>
