@@ -1484,11 +1484,12 @@
               favorites = [...favorites];
               favoriteGroups = [...new Set(favorites.map(f => (f?.group || '').trim()).filter(Boolean))];
               if (indexedDB?.favorites) indexedDB.favorites.put(item);
-              notify('Favorite updated successfully', 'success');
+              notifications = [{ id: 'notif-' + Math.floor(Math.random() * 1000000), title: 'Favorite Updated', message: item.title + ' updated', type: 'success', priority: 'normal', time: 'Just now', read: false }, ...(notifications || [])];
+              toasts = [...(toasts || []), { id: 'toast-' + Math.floor(Math.random() * 1000000), message: 'Favorite updated successfully', type: 'success' }];
             }
           } else {
             const newFav = {
-              id: 'fav-' + (window.Date ? window.Date.now() : Math.floor(Math.random() * 1000000)),
+              id: 'fav-' + Math.floor(Math.random() * 1000000000),
               title: (favForm.title || '').trim() || 'Bookmark',
               href: (favForm.href || '').trim() || '/',
               icon: (favForm.icon || '').trim() || 'material-symbols-light:star-outline',
@@ -1497,7 +1498,8 @@
             favorites = [...(favorites || []), newFav];
             favoriteGroups = [...new Set(favorites.map(f => (f?.group || '').trim()).filter(Boolean))];
             if (indexedDB?.favorites) indexedDB.favorites.put(newFav);
-            notify('Favorite added to bookmarks', 'success');
+            notifications = [{ id: 'notif-' + Math.floor(Math.random() * 1000000), title: 'Favorite Added', message: newFav.title + ' saved to bookmarks', type: 'success', priority: 'normal', time: 'Just now', read: false }, ...(notifications || [])];
+            toasts = [...(toasts || []), { id: 'toast-' + Math.floor(Math.random() * 1000000), message: 'Favorite added to bookmarks', type: 'success' }];
           };
           favModalOpen = false">
           <span data-bind="favForm.id ? 'Update Favorite' : 'Save Favorite'"></span>
@@ -1523,7 +1525,8 @@
             favoriteGroups = [...new Set(favorites.map(f => (f?.group || '').trim()).filter(Boolean))];
             if (indexedDB?.favorites) indexedDB.favorites.delete(pendingDeleteId);
             pendingDeleteId = null;
-            notify('Favorite removed', 'info');
+            notifications = [{ id: 'notif-' + Math.floor(Math.random() * 1000000), title: 'Favorite Removed', message: 'Bookmark removed', type: 'info', priority: 'normal', time: 'Just now', read: false }, ...(notifications || [])];
+            toasts = [...(toasts || []), { id: 'toast-' + Math.floor(Math.random() * 1000000), message: 'Favorite removed', type: 'info' }];
           };
           favDeleteModalOpen = false">
           Remove
