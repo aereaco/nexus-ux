@@ -659,7 +659,8 @@
                 <template data-for="item in (router.pages || []).filter(p => p.category === cat)" data-key="item.href">
                   <!-- Root Leaf Item (No Children) -->
                   <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
-                    data-bind-data-drag="item.href !== '/' ? '' : null">
+                    data-bind-data-drag="item.href !== '/' ? '' : null"
+                    data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                     <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
                       data-bind-data-tab-title="item.tabTitle || item.title"
                       data-bind-data-tab-icon="item.tabIcon || item.icon"
@@ -675,7 +676,8 @@
 
                   <!-- Root Branch Item (With Children) -->
                   <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
-                    data-bind-data-drag="item.href !== '/' ? '' : null" data-signal="{ open: false }">
+                    data-bind-data-drag="item.href !== '/' ? '' : null" data-signal="{ open: false }"
+                    data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                     <div class="flex">
                       <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
                         data-bind-data-tab-title="item.tabTitle || item.title"
