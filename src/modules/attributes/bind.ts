@@ -300,7 +300,18 @@ const bindModule: AttributeModule = {
               if (el.value !== attrValue) el.value = attrValue;
             }
           } else if ('value' in el) {
-            if ((el as HTMLInputElement).value !== attrValue) (el as HTMLInputElement).value = attrValue;
+            const targetEl = el as HTMLInputElement;
+            if (targetEl.value !== attrValue) {
+              const isFocused = typeof document !== 'undefined' && document.activeElement === targetEl;
+              if (isFocused && typeof targetEl.selectionStart === 'number' && typeof targetEl.selectionEnd === 'number') {
+                const start = targetEl.selectionStart;
+                const end = targetEl.selectionEnd;
+                targetEl.value = attrValue;
+                try { targetEl.setSelectionRange(start, end); } catch (_) {}
+              } else {
+                targetEl.value = attrValue;
+              }
+            }
           }
         } else if (target === 'text') {
           if (el.textContent !== attrValue) el.textContent = attrValue;
