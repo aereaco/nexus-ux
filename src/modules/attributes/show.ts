@@ -13,7 +13,15 @@ const showModule: AttributeModule = {
     try {
       const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
         const show = Boolean(runtime.evaluate(el, value));
-        reconcileStyle(el, { display: show ? (originalDisplay || '') : 'none' });
+        if (show) {
+          if (originalDisplay) {
+            el.style.display = originalDisplay;
+          } else {
+            el.style.removeProperty('display');
+          }
+        } else {
+          el.style.display = 'none';
+        }
       });
       return cleanup;
     } catch (e) {

@@ -8867,7 +8867,6 @@ ${match}</ul>
   var init_show = __esm({
     "src/modules/attributes/show.ts"() {
       init_debug();
-      init_reconciler();
       showModule = {
         name: "show",
         attribute: "show",
@@ -8876,7 +8875,15 @@ ${match}</ul>
           try {
             const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
               const show = Boolean(runtime.evaluate(el, value));
-              reconcileStyle(el, { display: show ? originalDisplay || "" : "none" });
+              if (show) {
+                if (originalDisplay) {
+                  el.style.display = originalDisplay;
+                } else {
+                  el.style.removeProperty("display");
+                }
+              } else {
+                el.style.display = "none";
+              }
             });
             return cleanup;
           } catch (e) {
