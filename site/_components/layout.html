@@ -1205,6 +1205,7 @@
               item.icon = (favForm.icon || '').trim() || 'material-symbols-light:star-outline';
               item.group = (favForm.group || '').trim();
               favorites = [...favorites];
+              favoriteGroups = [...new Set(favorites.map(f => (f?.group || '').trim()).filter(Boolean))];
               if (indexedDB?.favorites) indexedDB.favorites.put(item);
             }
           } else {
@@ -1216,6 +1217,7 @@
               group: (favForm.group || '').trim()
             };
             favorites = [...(favorites || []), newFav];
+            favoriteGroups = [...new Set(favorites.map(f => (f?.group || '').trim()).filter(Boolean))];
             if (indexedDB?.favorites) indexedDB.favorites.put(newFav);
           };
           favModalOpen = false">
@@ -1239,6 +1241,7 @@
         <button type="button" class="btn btn-error"
           data-on-click="if (pendingDeleteId) {
             favorites = (favorites || []).filter(f => (f.id || f.href || f) !== pendingDeleteId);
+            favoriteGroups = [...new Set(favorites.map(f => (f?.group || '').trim()).filter(Boolean))];
             if (indexedDB?.favorites) indexedDB.favorites.delete(pendingDeleteId);
             pendingDeleteId = null;
           };
