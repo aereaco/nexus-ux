@@ -117,7 +117,15 @@ function applyBindingResult(result: unknown, el: HTMLElement): void {
         } else {
           const strVal = result !== undefined && result !== null ? String(result) : '';
           if (el.value !== strVal) {
-            el.value = strVal;
+            const isFocused = typeof document !== 'undefined' && document.activeElement === el;
+            if (isFocused && typeof el.selectionStart === 'number' && typeof el.selectionEnd === 'number') {
+              const start = el.selectionStart;
+              const end = el.selectionEnd;
+              el.value = strVal;
+              try { el.setSelectionRange(start, end); } catch (_) {}
+            } else {
+              el.value = strVal;
+            }
           }
         }
       } else if (el instanceof HTMLSelectElement) {
@@ -132,7 +140,15 @@ function applyBindingResult(result: unknown, el: HTMLElement): void {
       } else if (el instanceof HTMLTextAreaElement) {
         const strVal = result !== undefined && result !== null ? String(result) : '';
         if (el.value !== strVal) {
-          el.value = strVal;
+          const isFocused = typeof document !== 'undefined' && document.activeElement === el;
+          if (isFocused && typeof el.selectionStart === 'number' && typeof el.selectionEnd === 'number') {
+            const start = el.selectionStart;
+            const end = el.selectionEnd;
+            el.value = strVal;
+            try { el.setSelectionRange(start, end); } catch (_) {}
+          } else {
+            el.value = strVal;
+          }
         }
       } else {
         const strVal = result !== undefined && result !== null ? String(result) : '';
