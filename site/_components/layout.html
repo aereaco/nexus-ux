@@ -1430,7 +1430,7 @@
   </template>
 
   <!-- Add / Edit Favorite Modal -->
-  <dialog class="modal modal-bottom sm:modal-middle" data-class="{ 'modal-open': favModalOpen }" data-on-keydown:escape:window="favModalOpen = false">
+  <div class="modal modal-bottom sm:modal-middle" data-class="{ 'modal-open': favModalOpen }" data-on-keydown:escape:window="favModalOpen = false">
     <div class="modal-box bg-base-100 border border-base-content/10 shadow-2xl">
       <h3 class="font-bold text-lg flex items-center gap-2">
         <iconify-icon data-bind-icon="favForm.id ? 'material-symbols-light:edit-outline' : 'material-symbols-light:star-outline'"
@@ -1441,19 +1441,16 @@
       <div class="form-control w-full space-y-4 my-2">
         <div>
           <label class="label"><span class="label-text font-semibold">Title</span></label>
-          <input type="text" class="input input-bordered w-full" data-bind-value="favForm.title"
-            data-on-input="favForm.title = $evt.target.value" placeholder="Title" />
+          <input type="text" class="input input-bordered w-full" data-bind="favForm.title" placeholder="Title" />
         </div>
         <div>
           <label class="label"><span class="label-text font-semibold">Destination URL / Page</span></label>
-          <input type="text" class="input input-bordered w-full" data-bind-value="favForm.href"
-            data-on-input="favForm.href = $evt.target.value" placeholder="URL" />
+          <input type="text" class="input input-bordered w-full" data-bind="favForm.href" placeholder="URL" />
         </div>
         <div>
           <label class="label"><span class="label-text font-semibold">Icon</span></label>
           <div class="flex items-center gap-2">
-            <input type="text" class="input input-bordered grow" data-bind-value="favForm.icon"
-              data-on-input="favForm.icon = $evt.target.value" placeholder="material-symbols-light:star" />
+            <input type="text" class="input input-bordered grow" data-bind="favForm.icon" placeholder="material-symbols-light:star" />
             <div class="avatar placeholder">
               <div
                 class="bg-base-200 text-base-content rounded-box size-10 flex items-center justify-center border border-base-content/10">
@@ -1466,8 +1463,7 @@
         <div>
           <label class="label"><span class="label-text font-semibold">Group / Folder (Optional)</span></label>
           <input type="text" class="input input-bordered w-full" list="fav-groups-datalist"
-            data-bind-value="favForm.group" data-on-input="favForm.group = $evt.target.value"
-            placeholder="e.g. Work, Tools, Personal..." />
+            data-bind="favForm.group" placeholder="e.g. Work, Tools, Personal..." />
           <datalist id="fav-groups-datalist">
             <template data-for="grp in favoriteGroups" data-key="grp">
               <option data-bind-value="grp"></option>
@@ -1488,7 +1484,7 @@
               favorites = [...favorites];
               favoriteGroups = [...new Set(favorites.map(f => (f?.group || '').trim()).filter(Boolean))];
               if (indexedDB?.favorites) indexedDB.favorites.put(item);
-              $toast('Favorite updated successfully', 'success');
+              notify('Favorite updated successfully', 'success');
             }
           } else {
             const newFav = {
@@ -1501,7 +1497,7 @@
             favorites = [...(favorites || []), newFav];
             favoriteGroups = [...new Set(favorites.map(f => (f?.group || '').trim()).filter(Boolean))];
             if (indexedDB?.favorites) indexedDB.favorites.put(newFav);
-            $toast('Favorite added to bookmarks', 'success');
+            notify('Favorite added to bookmarks', 'success');
           };
           favModalOpen = false">
           <span data-bind="favForm.id ? 'Update Favorite' : 'Save Favorite'"></span>
@@ -1509,10 +1505,10 @@
       </div>
     </div>
     <div class="modal-backdrop bg-base-900/40" data-on-click="favModalOpen = false"></div>
-  </dialog>
+  </div>
 
   <!-- Delete Favorite Confirmation Modal -->
-  <dialog class="modal modal-bottom sm:modal-middle" data-class="{ 'modal-open': favDeleteModalOpen }" data-on-keydown:escape:window="favDeleteModalOpen = false">
+  <div class="modal modal-bottom sm:modal-middle" data-class="{ 'modal-open': favDeleteModalOpen }" data-on-keydown:escape:window="favDeleteModalOpen = false">
     <div class="modal-box bg-base-100 border border-base-content/10 shadow-2xl">
       <h3 class="font-bold text-lg text-error flex items-center gap-2">
         <iconify-icon icon="material-symbols-light:warning-outline" class="text-2xl"></iconify-icon>
@@ -1527,7 +1523,7 @@
             favoriteGroups = [...new Set(favorites.map(f => (f?.group || '').trim()).filter(Boolean))];
             if (indexedDB?.favorites) indexedDB.favorites.delete(pendingDeleteId);
             pendingDeleteId = null;
-            $toast('Favorite removed', 'info');
+            notify('Favorite removed', 'info');
           };
           favDeleteModalOpen = false">
           Remove
@@ -1535,7 +1531,7 @@
       </div>
     </div>
     <div class="modal-backdrop bg-base-900/40" data-on-click="favDeleteModalOpen = false"></div>
-  </dialog>
+  </div>
 
   <!-- App-Wide Declarative Toaster Notifications -->
   <div class="toast toast-end toast-bottom z-[99999] pointer-events-none p-4 flex flex-col gap-2"
