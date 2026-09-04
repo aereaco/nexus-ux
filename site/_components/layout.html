@@ -423,28 +423,27 @@
               <span>No notifications</span>
             </div>
             <template data-for="item in (notificationFilter === 'unread' ? (notifications || []).filter(n => !n.read) : (notifications || []))" data-key="item.id">
-              <div class="p-2.5 rounded-xl transition-colors flex items-start gap-2.5 relative group border border-transparent hover:border-base-content/10 cursor-pointer"
-                data-class="{ 'bg-base-200/60 font-medium': !item.read, 'bg-base-100 opacity-75': item.read }"
+              <div class="alert alert-soft p-2.5 rounded-xl flex items-start gap-2.5 relative group cursor-pointer transition-all"
+                data-class="{
+                  'alert-error': item.type === 'error' || item.priority === 'urgent',
+                  'alert-warning': item.type === 'warning' || item.priority === 'high',
+                  'alert-success': item.type === 'success' || item.priority === 'normal',
+                  'alert-info': item.type === 'info' || item.priority === 'low',
+                  'opacity-60': item.read
+                }"
                 data-on-click="item.read = true">
-                <!-- Priority / Type Icon -->
-                <div class="size-7 rounded-lg shrink-0 flex items-center justify-center mt-0.5"
-                  data-class="{
-                    'bg-error/20 text-error': item.type === 'error' || item.priority === 'urgent',
-                    'bg-warning/20 text-warning': item.type === 'warning' || item.priority === 'high',
-                    'bg-success/20 text-success': item.type === 'success' || item.priority === 'normal',
-                    'bg-info/20 text-info': item.type === 'info' || item.priority === 'low'
-                  }">
-                  <iconify-icon data-bind-icon="item.type === 'error' ? 'material-symbols-light:error-outline' : item.type === 'warning' ? 'material-symbols-light:warning-outline' : item.type === 'success' ? 'material-symbols-light:check-circle-outline' : 'material-symbols-light:info-outline'" class="text-base"></iconify-icon>
-                </div>
+                <!-- Type Icon -->
+                <iconify-icon data-bind-icon="item.type === 'error' ? 'material-symbols-light:error-outline' : item.type === 'warning' ? 'material-symbols-light:warning-outline' : item.type === 'success' ? 'material-symbols-light:check-circle-outline' : 'material-symbols-light:info-outline'"
+                  class="text-xl shrink-0 mt-0.5"></iconify-icon>
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center justify-between gap-1">
                     <span class="text-xs font-semibold truncate" data-bind="item.title || 'Notification'"></span>
-                    <span class="text-[0.65rem] opacity-50 shrink-0" data-bind="item.time || 'Just now'"></span>
+                    <span class="text-[0.65rem] opacity-60 shrink-0" data-bind="item.time || 'Just now'"></span>
                   </div>
-                  <p class="text-xs opacity-75 line-clamp-2 mt-0.5 leading-snug" data-bind="item.message"></p>
+                  <p class="text-xs opacity-80 line-clamp-2 mt-0.5 leading-snug" data-bind="item.message"></p>
                 </div>
                 <!-- Delete Button -->
-                <button type="button" class="btn btn-ghost btn-xs btn-circle opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-base-content/50 hover:text-error"
+                <button type="button" class="btn btn-ghost btn-xs btn-circle opacity-0 group-hover:opacity-100 transition-opacity shrink-0 hover:bg-base-content/10"
                   title="Dismiss"
                   data-on-click:stop="notifications = (notifications || []).filter(n => n.id !== item.id)">
                   <iconify-icon icon="material-symbols-light:close" class="text-sm"></iconify-icon>
