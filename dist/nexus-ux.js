@@ -10571,8 +10571,14 @@ ${match}</ul>
           if (srcset)
             urls.push(...this.parseSrcset(srcset));
           const comp = el.getAttribute("data-component") || el.getAttribute("data-component-path");
-          if (comp && !el.hasAttribute("data-route"))
-            urls.push(comp);
+          if (comp && !el.hasAttribute("data-route")) {
+            const trimmed = comp.trim();
+            if (trimmed.startsWith("'") && trimmed.endsWith("'") || trimmed.startsWith('"') && trimmed.endsWith('"')) {
+              urls.push(trimmed.slice(1, -1).trim());
+            } else if (!trimmed.includes(" ") && !trimmed.includes("||") && !trimmed.includes("&&") && (trimmed.startsWith("/") || trimmed.endsWith(".html") || trimmed.endsWith(".md"))) {
+              urls.push(trimmed);
+            }
+          }
           const routeLink = el.getAttribute("data-route-link");
           if (routeLink)
             urls.push(routeLink);
