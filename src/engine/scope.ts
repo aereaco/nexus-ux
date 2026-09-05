@@ -83,7 +83,7 @@ export function getDataStack(element: HTMLElement | Text | Comment | Element): R
 /**
  * Adds a new data scope to a node's data stack.
  */
-export function addScopeToNode(element: HTMLElement, data: Record<string, unknown>, referenceNode?: HTMLElement): () => void {
+export function addScopeToNode(element: Element, data: Record<string, unknown>, referenceNode?: Element): () => void {
   const node = element as NexusEnhancedElement;
   const parentStack = getDataStack(referenceNode || element);
   node[DATA_STACK_KEY] = [data, ...parentStack];
