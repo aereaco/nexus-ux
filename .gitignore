@@ -10,4 +10,5 @@ node_modules/
 .system_generated/
 .kilocodemodes
 .playwright/
+.plans/
 dist/*.br
