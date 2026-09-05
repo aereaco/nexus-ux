@@ -1305,7 +1305,13 @@
     <main class="sidebar-content flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
       data-effect="if (collapsed && !hovered && !sidebarOpen && $el) { $el.scrollTo({ top: 0, behavior: 'smooth' }); }"
       data-signal="{
-        categories: ['Apps', 'Profiles', 'System']
+        categories: [
+          { name: 'Apps', itemsDraggable: true, icon: 'material-symbols-light:apps' },
+          { name: 'Docs', itemsDraggable: false, icon: 'material-symbols-light:menu-book-outline' },
+          { name: 'Labs', itemsDraggable: false, icon: 'material-symbols-light:science-outline' },
+          { name: 'Profiles', itemsDraggable: true, icon: 'material-symbols-light:person-outline' },
+          { name: 'System', itemsDraggable: true, icon: 'material-symbols-light:settings-outline' }
+        ]
       }">
       <!-- Main Navigation Menu (tab 1) -->
       <div data-show="activeSidebarTab === 1" class="w-full">
@@ -1366,24 +1372,25 @@
 
         <!-- 2. Categorized Sections (Draggable Category Groups & Dedicated Item Lists) -->
         <div data-drag-container="categories">
-          <template data-for="cat in categories" data-key="cat">
-            <div data-drag data-show="(router.pages || []).filter(p => p.category === cat).length > 0">
+          <template data-for="cat in categories" data-key="cat.name">
+            <div data-drag data-show="(router.pages || []).filter(p => (p.category || p.meta?.category) === cat.name).length > 0">
               <!-- Category Header (Title + Separator Line) -->
               <ul class="menu w-full py-0">
                 <li
-                  class="menu-title overflow-hidden transition-[opacity,max-height,margin,padding] duration-300 ease-in-out cursor-grab"
-                  data-class="{ 'max-h-0 opacity-0 !my-0 !py-0 pointer-events-none': collapsed && !hovered && !sidebarOpen, 'max-h-12 opacity-100 mt-4': !collapsed || hovered || sidebarOpen }"
-                  data-bind="cat">Title
+                  class="menu-title overflow-hidden transition-[opacity,max-height,margin,padding] duration-300 ease-in-out cursor-grab flex items-center gap-2"
+                  data-class="{ 'max-h-0 opacity-0 !my-0 !py-0 pointer-events-none': collapsed && !hovered && !sidebarOpen, 'max-h-12 opacity-100 mt-4': !collapsed || hovered || sidebarOpen }">
+                  <iconify-icon data-bind-icon="cat.icon" class="text-base opacity-70"></iconify-icon>
+                  <span data-bind="cat.name">Title</span>
                 </li>
                 <li class="w-full mx-0" data-class="{ 'opacity-6': collapsed && !hovered && !sidebarOpen }"></li>
               </ul>
 
               <!-- Dynamic Category Item List (Zero Hardcoding, Zero Duplication) -->
-              <ul class="menu w-full" data-drag-container="(router.pages || []).filter(p => p.category === cat)">
-                <template data-for="item in (router.pages || []).filter(p => p.category === cat)" data-key="item.href">
+              <ul class="menu w-full" data-bind-data-drag-container="cat.itemsDraggable ? ('cat-' + cat.name.toLowerCase()) : null">
+                <template data-for="item in (router.pages || []).filter(p => (p.category || p.meta?.category) === cat.name)" data-key="item.href || item.id">
                   <!-- Root Leaf Item (No Children) -->
                   <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
-                    data-bind-data-drag="item.href !== '/' ? '' : null"
+                    data-bind-data-drag="cat.itemsDraggable && item.href !== '/' ? '' : null"
                     data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                     <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
                       data-bind-data-tab-title="item.tabTitle || item.title"
@@ -1398,9 +1405,9 @@
                     </a>
                   </li>
 
-                  <!-- Root Branch Item (With Children) -->
-                  <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
-                    data-bind-data-drag="item.href !== '/' ? '' : null" data-signal="{ open: false }"
+                  <!-- Case A: Branch Item with Route (dual-action: click title navigates, chevron toggles) -->
+                  <li data-show="item.children && item.children.length > 0 && !item.meta?.isSubmenu && item.href" class="cursor-pointer"
+                    data-bind-data-drag="cat.itemsDraggable && item.href !== '/' ? '' : null" data-signal="{ open: false }"
                     data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                     <div class="flex">
                       <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
@@ -1426,9 +1433,32 @@
                     <ul
                       class="menu-dropdown menu-dropdown-show ms-12 overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
                       data-class="{ 'max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
-                      data-drag-container="item.children">
+                      data-bind-data-drag-container="cat.itemsDraggable ? ('sub-' + item.id) : null">
                       <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
-                        data-key="item.href"></template>
+                        data-key="item.href || item.id"></template>
+                    </ul>
+                  </li>
+
+                  <!-- Case B: Routeless Submenu (DaisyUI collapsible submenu row: clicking row toggles children, no navigation) -->
+                  <li data-show="item.children && item.children.length > 0 && (item.meta?.isSubmenu || !item.href)" class="cursor-pointer"
+                    data-signal="{ open: false }">
+                    <div class="flex items-center justify-between py-1.5 px-3 rounded-lg hover:bg-base-200/60" data-on-click="open = !open">
+                      <div class="flex items-center gap-2">
+                        <iconify-icon data-bind-icon="item.icon || 'material-symbols-light:folder-outline'" class="shrink-0 text-xl opacity-70"></iconify-icon>
+                        <span
+                          class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300 font-medium"
+                          data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
+                          data-bind="item.title"></span>
+                      </div>
+                      <iconify-icon icon="material-symbols-light:chevron-forward"
+                        class="shrink-0 text-xl transition-transform" data-class="{ 'rotate-90': open, 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"></iconify-icon>
+                    </div>
+                    <ul
+                      class="menu-dropdown menu-dropdown-show ms-6 overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
+                      data-class="{ 'max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
+                      data-bind-data-drag-container="cat.itemsDraggable ? ('sub-' + item.id) : null">
+                      <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
+                        data-key="item.href || item.id"></template>
                     </ul>
                   </li>
                 </template>
