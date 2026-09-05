@@ -7301,7 +7301,7 @@ ${match}</ul>
               previous: null,
               scrollPosition: { x: 0, y: 0 },
               currentRoute: initialMatched || null,
-              routes: initialRoutes,
+              routes: routeList,
               pages: [],
               async discoverPages() {
                 const fetchFn = typeof globalThis.fetch === "function" ? globalThis.fetch.bind(globalThis) : null;

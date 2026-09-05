@@ -105,7 +105,7 @@ type RouteHook = (to: RouteInfo, from: RouteInfo | null) => unknown;
 
 interface RouteRecord {
   path: string;
-  element: HTMLElement;
+  element?: HTMLElement;
   name?: string;
   redirect?: string;
   layout?: string;
@@ -169,6 +169,8 @@ export interface RouterConfig {
   // Declarative directory that clean routes resolve into (no hardcoded path).
   // e.g. '_pages' => '/profile' -> '_pages/profile.html'. Defaults to '_pages'.
   pagesDir?: string;
+  // Internal shadow routes excluded from public manifest
+  shadow?: string | string[];
   // Single error-handling page for ALL errors (404 + 5xx…).
   error?: string;
 }
@@ -337,11 +339,13 @@ export const routerAttributeModule: AttributeModule = {
         dynamic?: boolean;
         shadow?: string | string[];
         error?: string;
+        index?: string;
         routes?: Array<{
           id?: string;
           name?: string;
           route?: string;
           path?: string;
+          component?: string;
           protected?: boolean;
           redirect?: string;
           layout?: string;
@@ -619,7 +623,7 @@ export const routerAttributeModule: AttributeModule = {
         previous: null,
         scrollPosition: { x: 0, y: 0 },
         currentRoute: initialMatched || null,
-        routes: initialRoutes,
+        routes: routeList,
         pages: [] as DiscoveredPage[],
 
         async discoverPages() {
@@ -831,8 +835,8 @@ export const routerAttributeModule: AttributeModule = {
             for (const r of publicRoutes) {
               const href = r.path || '/';
               const compPath = r.component || (href === '/' ? `/${pDir}/home.html` : `/${pDir}/${href.replace(/^\/+/, '')}.html`);
-              let title = r.meta?.title;
-              let icon = r.meta?.icon;
+              let title = (r.meta as any)?.title;
+              let icon = (r.meta as any)?.icon;
 
               try {
                 const res = await fetchFn(compPath);
@@ -900,7 +904,7 @@ export const routerAttributeModule: AttributeModule = {
 
             const title = found?.tabTitle || found?.title || found?.meta?.title || (curr === '/' ? 'Home' : curr.replace(/^\/+/, '').replace(/\.html$/, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()));
             const icon = found?.tabIcon || found?.icon || found?.meta?.icon || (curr === '/' ? 'material-symbols-light:home-outline' : undefined);
-            const parent = found?.parent !== undefined ? found.parent : (found?.meta?.parent !== undefined ? found.meta.parent : (curr === '/' ? null : '/'));
+            const parent: string | null = (found as any)?.parent !== undefined ? (found as any).parent : ((found as any)?.meta?.parent !== undefined ? (found as any).meta.parent : (curr === '/' ? null : '/'));
 
             chain.unshift({ title, href: curr, icon });
 
