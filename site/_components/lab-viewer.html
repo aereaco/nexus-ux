@@ -1,0 +1,156 @@
+<!-- =========================================================================
+     Nexus-UX Universal Lab Viewer Component
+     Renders interactive playground sandboxes for framework directives,
+     modifiers, scopes, and sprites.
+     ========================================================================= -->
+<div class="p-6 max-w-6xl mx-auto space-y-6" data-signal="{
+    activeLabTab: 'playground',
+    copied: false,
+    copySyntax() {
+      if (doc?.Syntax) {
+        navigator.clipboard.writeText(doc.Syntax);
+        this.copied = true;
+        setTimeout(() => { this.copied = false; }, 2000);
+      }
+    },
+    askCopilot() {
+      if (window.Nexus?.coordinator?.runtimeContext?.globalSignals) {
+        const g = window.Nexus.coordinator.runtimeContext.globalSignals();
+        g.openSession('session-copilot');
+        g.newChatMessage = '@Nexus Copilot Can you explain how ' + (doc?.Title || 'this directive') + ' works and show an advanced example?';
+      }
+    }
+  }">
+
+  <!-- 1. Header Toolbar -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-base-content/10">
+    <div>
+      <div class="flex items-center gap-2 mb-1">
+        <span class="badge badge-primary badge-sm font-semibold uppercase tracking-wider" data-bind="doc.Category || 'Lab'"></span>
+        <span class="badge badge-ghost badge-sm font-mono opacity-70" data-bind="doc.ModulePath"></span>
+      </div>
+      <h1 class="text-3xl font-extrabold tracking-tight text-base-content flex items-center gap-3">
+        <iconify-icon data-bind-icon="doc.Icon || 'material-symbols-light:science-outline'" class="text-primary text-3xl"></iconify-icon>
+        <span data-bind="doc.Title"></span>
+      </h1>
+      <p class="text-base text-base-content/70 mt-1 max-w-3xl leading-relaxed" data-bind="doc.Description"></p>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="flex items-center gap-2 shrink-0">
+      <button class="btn btn-sm btn-outline btn-primary gap-2" data-on-click="askCopilot()">
+        <iconify-icon icon="material-symbols-light:robot-2-outline" class="text-lg"></iconify-icon>
+        <span>Ask AI</span>
+      </button>
+      <button class="btn btn-sm btn-ghost gap-2" data-on-click="copySyntax()">
+        <iconify-icon data-bind-icon="copied ? 'material-symbols-light:check' : 'material-symbols-light:content-copy'" class="text-lg"></iconify-icon>
+        <span data-bind="copied ? 'Copied!' : 'Copy Syntax'"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 2. Navigation Tabs (Playground, Syntax & API, Specifications) -->
+  <div class="tabs tabs-boxed bg-base-200/50 p-1 w-fit">
+    <button class="tab tab-sm font-medium transition-colors"
+      data-class="{ 'tab-active bg-primary text-primary-content': activeLabTab === 'playground' }"
+      data-on-click="activeLabTab = 'playground'">
+      <iconify-icon icon="material-symbols-light:play-circle-outline" class="text-lg me-1.5"></iconify-icon>
+      Interactive Playground
+    </button>
+    <button class="tab tab-sm font-medium transition-colors"
+      data-class="{ 'tab-active bg-primary text-primary-content': activeLabTab === 'syntax' }"
+      data-on-click="activeLabTab = 'syntax'">
+      <iconify-icon icon="material-symbols-light:code" class="text-lg me-1.5"></iconify-icon>
+      Syntax & Parameters
+    </button>
+    <button class="tab tab-sm font-medium transition-colors"
+      data-class="{ 'tab-active bg-primary text-primary-content': activeLabTab === 'spec' }"
+      data-on-click="activeLabTab = 'spec'">
+      <iconify-icon icon="material-symbols-light:description-outline" class="text-lg me-1.5"></iconify-icon>
+      Deep-Dive Specs
+    </button>
+  </div>
+
+  <!-- Tab Pane 1: Interactive Playground -->
+  <div data-show="activeLabTab === 'playground'" class="space-y-4">
+    <!-- Live Sandbox Container -->
+    <div class="card bg-base-100 border border-base-content/10 shadow-sm overflow-hidden">
+      <div class="card-header bg-base-200/40 px-4 py-2.5 border-b border-base-content/10 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-success"></span>
+          <span class="text-xs font-bold uppercase tracking-wider opacity-70">Live Reactive DOM Mount</span>
+        </div>
+        <span class="text-xs font-mono opacity-50">ZCZS Reactive Ownership</span>
+      </div>
+      <div class="p-6" id="lab-sandbox-mount">
+        <!-- Render snippet HTML dynamically -->
+        <div data-html="doc.Snippet"></div>
+      </div>
+    </div>
+
+    <!-- Code Preview Accordion -->
+    <div class="collapse collapse-arrow bg-base-200/30 border border-base-content/10 rounded-xl">
+      <input type="checkbox" checked />
+      <div class="collapse-title text-sm font-bold flex items-center gap-2">
+        <iconify-icon icon="material-symbols-light:code-blocks-outline" class="text-primary text-lg"></iconify-icon>
+        Declarative HTML Markup (Source)
+      </div>
+      <div class="collapse-content">
+        <pre class="bg-base-300 p-4 rounded-xl overflow-x-auto text-sm font-mono border border-base-content/10 text-base-content"><code data-bind="doc.Snippet"></code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Pane 2: Syntax & Parameters -->
+  <div data-show="activeLabTab === 'syntax'" class="space-y-4">
+    <!-- Syntax Block -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 shadow-sm space-y-3">
+      <h3 class="text-sm font-bold uppercase tracking-wider text-base-content/60">NEG Expression Grammar</h3>
+      <div class="bg-base-300 p-4 rounded-xl font-mono text-sm border border-base-content/10 text-primary font-semibold overflow-x-auto"
+        data-bind="doc.Syntax"></div>
+    </div>
+
+    <!-- Parameters Table -->
+    <div class="card bg-base-100 border border-base-content/10 overflow-hidden shadow-sm">
+      <div class="px-5 py-3 bg-base-200/40 border-b border-base-content/10 font-bold text-sm">
+        Parameters & Modifiers
+      </div>
+      <div class="overflow-x-auto">
+        <table class="table table-zebra table-sm w-full">
+          <thead>
+            <tr>
+              <th>Argument / Modifier</th>
+              <th>Type</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template data-for="param in (doc.Params || [])" data-key="param.name">
+              <tr>
+                <td class="font-mono text-primary font-bold" data-bind="param.name"></td>
+                <td class="font-mono text-xs opacity-70" data-bind="param.type"></td>
+                <td class="font-mono text-xs opacity-60" data-bind="param.default || '-'"></td>
+                <td data-bind="param.description"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Pane 3: Deep-Dive Specifications -->
+  <div data-show="activeLabTab === 'spec'" class="space-y-4">
+    <div class="card bg-base-100 border border-base-content/10 p-6 shadow-sm space-y-4">
+      <h3 class="text-lg font-bold text-base-content">Engine Implementation & Lifecycle</h3>
+      <div class="prose max-w-none text-base-content/80 text-sm leading-relaxed" data-html="doc.Extensibility"></div>
+
+      <div class="pt-4 border-t border-base-content/10 flex items-center justify-between text-xs text-base-content/60">
+        <span>Engine Source: <code class="font-mono text-primary" data-bind="doc.ModulePath"></code></span>
+        <span>Framework Contract: Engine owns API primitives; Modules schedule directives.</span>
+      </div>
+    </div>
+  </div>
+
+</div>
