@@ -1823,7 +1823,7 @@
                     <ul
                       class="menu-dropdown menu-dropdown-show ms-12 overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
                       data-class="{ 'max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
-                      data-drag-container="item.children">
+                      data-bind-data-drag-container="cat.itemsDraggable !== false ? item.children : null">
                       <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
                         data-key="item.href"></template>
                     </ul>
