@@ -1288,6 +1288,149 @@
           <span data-bind="'Tabs: ' + (router.pageTabs?.length || 0)"></span>
         </div>
       </footer>
+
+      <!-- Reverse Quake Terminal / CLI HUD -->
+      <div id="terminal-hud-container"
+        data-show="terminalOpen"
+        class="flex flex-col bg-neutral-950/95 text-neutral-content backdrop-blur-xl transition-[height] duration-300 ease-in-out overflow-hidden select-none font-mono text-xs"
+        data-class="{
+          'relative w-full shrink-0 border-t border-primary/20': terminalDocked,
+          'absolute inset-x-0 bottom-0 z-30 shadow-2xl border-t-2 border-primary/50': !terminalDocked,
+          'h-96 md:h-[50vh]': terminalMaximized,
+          'h-64 md:h-72': !terminalMaximized
+        }">
+
+        <!-- 1. Terminal Chrome / Tab Bar Header -->
+        <div class="flex items-center justify-between px-3 py-1.5 bg-neutral-900 border-b border-neutral-800 text-neutral-content shrink-0 gap-2">
+          <!-- Start: Title & Tabs -->
+          <div class="flex items-center gap-1.5 min-w-0 overflow-x-auto scrollbar-none">
+            <!-- Terminal Indicator / Status -->
+            <div class="flex items-center gap-1.5 px-2 py-1 rounded bg-neutral-800/80 text-primary font-semibold tracking-wider text-[11px] uppercase shrink-0">
+              <span class="size-2 rounded-full bg-success animate-pulse"></span>
+              <iconify-icon icon="material-symbols-light:terminal" class="text-sm"></iconify-icon>
+              <span class="max-sm:hidden">Nexus HUD</span>
+            </div>
+
+            <!-- Terminal Tabs -->
+            <template data-for="tab in (terminalTabs || [])" data-key="tab.id">
+              <div class="flex items-center gap-1 px-2.5 py-1 rounded cursor-pointer transition-colors shrink-0 text-xs"
+                data-class="{
+                  'bg-neutral-800 text-primary font-medium shadow-sm border border-primary/20': terminalActiveTab === tab.id,
+                  'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50': terminalActiveTab !== tab.id
+                }"
+                data-on-click="terminalActiveTab = tab.id">
+                <iconify-icon data-bind-icon="tab.icon" class="text-sm"></iconify-icon>
+                <span data-bind="tab.name"></span>
+                <button data-show="terminalTabs.length > 1" type="button"
+                  class="btn btn-ghost btn-xs size-4 min-h-0 p-0 hover:text-error opacity-60 hover:opacity-100"
+                  aria-label="Close Tab"
+                  data-on-click:stop="closeTerminalTab(tab.id)">
+                  <iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
+                </button>
+              </div>
+            </template>
+
+            <!-- New Tab (+) Button -->
+            <button type="button"
+              class="btn btn-ghost btn-xs size-6 min-h-0 p-0 text-neutral-400 hover:text-primary hover:bg-neutral-800 rounded shrink-0"
+              aria-label="New Terminal Tab" title="New Tab"
+              data-on-click="createTerminalTab()">
+              <iconify-icon icon="material-symbols-light:add" class="text-base"></iconify-icon>
+            </button>
+          </div>
+
+          <!-- End: Action Controls (Clear, Maximize, Dock/Float, Close) -->
+          <div class="flex items-center gap-1 shrink-0">
+            <!-- Clear Buffer Button -->
+            <button type="button"
+              class="btn btn-ghost btn-xs size-7 min-h-0 p-0 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded"
+              aria-label="Clear Buffer" title="Clear Buffer"
+              data-on-click="clearTerminalTab(terminalActiveTab)">
+              <iconify-icon icon="material-symbols-light:ink-eraser-outline" class="text-base"></iconify-icon>
+            </button>
+
+            <!-- Maximize / Restore Toggle Button -->
+            <button type="button"
+              class="btn btn-ghost btn-xs size-7 min-h-0 p-0 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded"
+              aria-label="Toggle Maximize"
+              data-bind-title="terminalMaximized ? 'Restore Height' : 'Maximize Height'"
+              data-on-click="toggleTerminalMax()">
+              <iconify-icon data-bind-icon="terminalMaximized ? 'material-symbols-light:collapse-content' : 'material-symbols-light:expand-content'" class="text-base"></iconify-icon>
+            </button>
+
+            <!-- Dock / Float Toggle Button -->
+            <button type="button"
+              class="btn btn-ghost btn-xs size-7 min-h-0 p-0 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded"
+              aria-label="Toggle Docking"
+              data-bind-title="terminalDocked ? 'Float over content' : 'Dock below footer'"
+              data-class="{ 'text-secondary bg-secondary/10': terminalDocked }"
+              data-on-click="toggleTerminalDock()">
+              <iconify-icon icon="material-symbols-light:keep" class="text-base transition-transform duration-200"
+                data-class="{ 'rotate-45': terminalDocked }"></iconify-icon>
+            </button>
+
+            <!-- Close Button -->
+            <button type="button"
+              class="btn btn-ghost btn-xs size-7 min-h-0 p-0 text-neutral-400 hover:text-error hover:bg-neutral-800 rounded"
+              aria-label="Close Terminal HUD" title="Close HUD"
+              data-on-click="closeTerminalHud()">
+              <iconify-icon icon="material-symbols-light:close" class="text-base"></iconify-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Terminal Output Stream Area -->
+        <div class="flex-1 min-h-0 overflow-y-auto p-3 space-y-1 select-text scrollbar-thin scrollbar-thumb-neutral-700"
+          id="terminal-message-stream"
+          data-effect="if (terminalOpen) { $nextTick(() => { const el = document.getElementById('terminal-message-stream'); if (el) el.scrollTop = el.scrollHeight; }); }">
+          <template data-for="line in ((terminalBuffers || {})[terminalActiveTab] || [])">
+            <div class="leading-relaxed flex items-start gap-2">
+              <span data-show="line.time" class="text-neutral-500 shrink-0 text-[10px]" data-bind="line.time"></span>
+              
+              <!-- Badge by type -->
+              <span data-show="line.type === 'system'" class="badge badge-xs badge-info font-mono shrink-0">SYS</span>
+              <span data-show="line.type === 'ok'" class="badge badge-xs badge-success font-mono shrink-0">OK</span>
+              <span data-show="line.type === 'warn'" class="badge badge-xs badge-warning font-mono shrink-0">WARN</span>
+              <span data-show="line.type === 'error'" class="badge badge-xs badge-error font-mono shrink-0">ERR</span>
+              <span data-show="line.type === 'heap'" class="badge badge-xs badge-secondary font-mono shrink-0">HEAP</span>
+              <span data-show="line.type === 'worker'" class="badge badge-xs badge-accent font-mono shrink-0">WORKER</span>
+              <span data-show="line.type === 'build'" class="badge badge-xs badge-primary font-mono shrink-0">BUILD</span>
+              <span data-show="line.type === 'db'" class="badge badge-xs badge-warning font-mono shrink-0">SURREAL</span>
+              <span data-show="line.type === 'user'" class="text-primary font-bold shrink-0">nexus-ux &gt;</span>
+
+              <span data-class="{
+                'text-neutral-400': line.type === 'dim',
+                'text-primary font-medium': line.type === 'info',
+                'text-success': line.type === 'ok',
+                'text-warning': line.type === 'warn' || line.type === 'db',
+                'text-error': line.type === 'error',
+                'text-secondary font-mono': line.type === 'heap',
+                'text-accent': line.type === 'worker',
+                'text-neutral-200': line.type === 'system' || line.type === 'user' || line.type === 'build' || line.type === 'help' || !line.type
+              }" data-bind="line.text" class="break-all whitespace-pre-wrap"></span>
+            </div>
+          </template>
+        </div>
+
+        <!-- 3. Terminal Interactive CLI Prompt Bar -->
+        <div class="px-3 py-2 bg-neutral-900/90 border-t border-neutral-800/80 flex items-center gap-2 shrink-0">
+          <span class="text-primary font-bold shrink-0 flex items-center gap-1">
+            <span>nexus-ux</span>
+            <span class="text-neutral-500 font-normal">&gt;</span>
+          </span>
+          <input id="terminal-cli-input" type="text"
+            class="input input-ghost input-xs flex-1 text-neutral-100 font-mono focus:outline-none border-0 focus:border-0 px-1 placeholder:text-neutral-600"
+            placeholder="Type 'help' for commands (status, routes, theme, clear, topology)..."
+            data-bind-value="terminalInputText"
+            data-on-keydown:enter:prevent="runTerminalCommand()" />
+          <button type="button"
+            class="btn btn-primary btn-xs font-mono h-6 min-h-0 px-2.5 rounded text-[11px]"
+            aria-label="Execute Command"
+            data-on-click="runTerminalCommand()">
+            Run ↵
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Search Modal (triggered by the navbar search button or Ctrl+K) -->
