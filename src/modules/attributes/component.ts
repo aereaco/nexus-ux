@@ -270,7 +270,7 @@ const componentModule: AttributeModule = {
           if (scope && typeof scope === 'object' && 'tab' in scope) {
             const t = (scope as any).tab;
             if (t && typeof t === 'object') {
-              tabObj = t;
+              tabObj = t as Record<string, unknown>;
               tabObj.linkedContent = componentState;
             }
             break;
