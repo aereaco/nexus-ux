@@ -6455,7 +6455,10 @@ ${scripts}
               );
               return id;
             });
-            html = html.replace(/`([^`]+)`/g, '<code data-ignore class="bg-base-200 text-primary px-1.5 py-0.5 rounded font-mono text-sm">$1</code>');
+            html = html.replace(/`([^`]+)`/g, (_m, code) => {
+              const escaped = code.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+              return `<code data-ignore class="bg-base-200 text-primary px-1.5 py-0.5 rounded font-mono text-sm">${escaped}</code>`;
+            });
             html = html.replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold mt-6 mb-3 text-base-content">$1</h3>');
             html = html.replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold mt-8 mb-4 border-b border-base-300 pb-2 border-opacity-50 text-base-content">$1</h2>');
             html = html.replace(/^# (.*$)/gim, '<h1 class="text-4xl font-extrabold mt-10 mb-6 tracking-tight text-base-content">$1</h1>');
