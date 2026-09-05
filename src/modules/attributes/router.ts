@@ -828,11 +828,38 @@ export const routerAttributeModule: AttributeModule = {
                 const res = await fetchFn(compPath);
                 if (res && res.ok) {
                   const html = await res.text();
-                  const doc = new DOMParser().parseFromString(html, 'text/html');
-                  const t = doc.querySelector('title')?.textContent?.trim();
-                  const ic = doc.querySelector('meta[name="icon"]')?.getAttribute('content')?.trim();
-                  if (t) title = t;
-                  if (ic) icon = ic;
+                  // Check frontmatter first for .md files
+                  const fmMatch = html.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+                  let fmTitle: string | undefined;
+                  let fmIcon: string | undefined;
+                  if (fmMatch) {
+                    const lines = fmMatch[1].split(/\r?\n/);
+                    for (const l of lines) {
+                      const idx = l.indexOf(':');
+                      if (idx > 0) {
+                        const k = l.substring(0, idx).trim().toLowerCase();
+                        const v = l.substring(idx + 1).trim().replace(/^['"]|['"]$/g, '');
+                        if (k === 'title') fmTitle = v;
+                        if (k === 'icon') fmIcon = v;
+                      }
+                    }
+                  }
+
+                  if (fmTitle) {
+                    title = fmTitle;
+                  } else {
+                    const doc = new DOMParser().parseFromString(html, 'text/html');
+                    const t = doc.querySelector('title')?.textContent?.trim();
+                    if (t) title = t;
+                  }
+
+                  if (fmIcon) {
+                    icon = fmIcon;
+                  } else {
+                    const doc = new DOMParser().parseFromString(html, 'text/html');
+                    const ic = doc.querySelector('meta[name="icon"]')?.getAttribute('content')?.trim();
+                    if (ic) icon = ic;
+                  }
                 }
               } catch {
                 /* ignore */
