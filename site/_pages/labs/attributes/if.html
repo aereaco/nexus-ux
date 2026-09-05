@@ -1,0 +1,25 @@
+<title>data-if</title>
+<meta name="id" content="lab-attr-if">
+<meta name="route" content="/labs/attributes/if">
+<meta name="icon" content="material-symbols-light:call-split">
+<meta name="order" content="4">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/attributes">
+
+<div data-signal="{
+  doc: {
+    Title: 'data-if',
+    Category: 'Attributes',
+    Icon: 'material-symbols-light:call-split',
+    ModulePath: 'src/modules/attributes/if.ts',
+    Description: 'Physical conditional rendering. Morphs elements into the DOM with an anchor comment when true and deterministically tears down subtrees and attached effects when false.',
+    Syntax: '<template data-if=\"isLoggedIn\">\n  <div class=\"user-dashboard\">...</div>\n</template>',
+    Params: [
+      { name: 'data-if', type: 'Boolean Expression', default: 'false', description: 'Condition controlling physical DOM presence.' }
+    ],
+    Extensibility: '<p>Unlike <code>data-show</code> which toggles CSS visibility, <code>data-if</code> completely mounts or unmounts the DOM subtree. When unmounted, all attached <code>elementBoundEffect</code> runners and event listeners are cleanly terminated.</p>',
+    Snippet: '<div data-signal=\"{ isReady: false }\" class=\"space-y-4 p-4 bg-base-200/50 rounded-xl border border-base-content/10\">\n  <button class=\"btn btn-sm\" data-class=\"{ \'btn-success\': isReady, \'btn-neutral\': !isReady }\" data-on-click=\"isReady = !isReady\">\n    Toggle DOM Presence: <span class=\"font-mono font-bold ms-1\" data-bind=\"isReady ? \'TRUE (Mounted)\' : \'FALSE (Unmounted)\'\"></span>\n  </button>\n  <template data-if=\"isReady\">\n    <div class=\"alert alert-success shadow-sm\">\n      <iconify-icon icon=\"material-symbols-light:check-circle\" class=\"text-2xl\"></iconify-icon>\n      <div>\n        <h4 class=\"font-bold\">Element Physically Mounted in DOM!</h4>\n        <p class=\"text-xs opacity-80\">Inspect elements in devtools to verify presence.</p>\n      </div>\n    </div>\n  </template>\n</div>'
+  }
+}">
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

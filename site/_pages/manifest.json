@@ -192,6 +192,16 @@
     "category": "Docs"
   },
   {
+    "id": "lab-attr-if",
+    "route": "/labs/attributes/if",
+    "path": "/_pages/labs/attributes/if.html",
+    "title": "data-if",
+    "icon": "material-symbols-light:call-split",
+    "order": 4,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
     "id": "labs-sprites",
     "route": "/labs/sprites",
     "path": "/_pages/labs/sprites.html",
