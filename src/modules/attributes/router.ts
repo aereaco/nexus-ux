@@ -146,6 +146,11 @@ export interface PageTab {
   source: string;
   route?: string;
   meta?: Record<string, any>;
+  title?: string;
+  tabTitle?: string;
+  icon?: string;
+  tabIcon?: string;
+  isLoading?: boolean;
   linkedContent?: any;
 }
 
