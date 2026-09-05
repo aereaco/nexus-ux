@@ -162,6 +162,16 @@
     "category": "Docs"
   },
   {
+    "id": "labs-sprites",
+    "route": "/labs/sprites",
+    "path": "/_pages/labs/sprites.html",
+    "title": "Sprites",
+    "icon": "material-symbols-light:magic-button",
+    "order": 4,
+    "parent": null,
+    "category": "Labs"
+  },
+  {
     "id": "profile3.4",
     "route": "/profiles/profile3/profile3.4",
     "path": "/_pages/profile3.4.html",
