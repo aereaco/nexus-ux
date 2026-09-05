@@ -1,0 +1,36 @@
+<title>data-component</title>
+<meta name="id" content="lab-attr-component">
+<meta name="route" content="/labs/attributes/component">
+<meta name="icon" content="material-symbols-light:web-asset">
+<meta name="order" content="11">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/attributes">
+
+<div data-signal='{
+  "doc": {
+    "Title": "data-component",
+    "Category": "Attributes",
+    "Icon": "material-symbols-light:web-asset",
+    "ModulePath": "src/modules/attributes/component.ts",
+    "Description": "Asynchronously fetches, caches, and compiles external HTML or Markdown component files into Light or Shadow DOM.",
+    "Syntax": "<div data-component=\"&#39;_components/header.html&#39;\"></div>",
+    "Params": [
+      {
+        "name": "data-component",
+        "type": "URL String",
+        "default": "&#39;&#39;",
+        "description": "Relative or absolute path to the HTML fragment or Markdown document to mount."
+      },
+      {
+        "name": "data-component:shadow",
+        "type": "Modifier",
+        "default": "false",
+        "description": "Mounts the template inside an isolated ShadowRoot with encapsulated styles."
+      }
+    ],
+    "Extensibility": "<p>The <code>component</code> loader implements deduplicated HTTP request streaming, constructable stylesheet extraction, and seamless Markdown rendering via <code>data-markdown</code>.</p>",
+    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-2\">\n  <p class=\"text-xs font-bold text-accent\">Dynamic Component Host:</p>\n  <div data-component=\"&#39;_components/tab-new.html&#39;\" class=\"border border-base-content/10 rounded-lg p-2 max-h-48 overflow-y-auto\"></div>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

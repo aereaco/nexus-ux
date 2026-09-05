@@ -1,0 +1,23 @@
+<title>:once</title>
+<meta name="id" content="lab-mod-once">
+<meta name="route" content="/labs/modifiers/once">
+<meta name="icon" content="material-symbols-light:looks-one-outline">
+<meta name="order" content="5">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/modifiers">
+
+<div data-signal='{
+  "doc": {
+    "Title": ":once",
+    "Category": "Modifiers",
+    "Icon": "material-symbols-light:looks-one-outline",
+    "ModulePath": "src/modules/modifiers/once.ts",
+    "Description": "Executes event listener exactly once, automatically unbinding itself afterwards.",
+    "Syntax": "<button data-on-click:once=\"runInit()\">Initialize</button>",
+    "Params": [],
+    "Extensibility": "<p>Passes { once: true } to addEventListener.</p>",
+    "Snippet": "<div data-signal=\"{ fired: 0 }\" class=\"p-4 bg-base-200/50 rounded-xl space-y-2\">\n  <button data-on-click:once=\"fired++\" class=\"btn btn-sm btn-secondary\">Click Me (:once)</button>\n  <span class=\"text-xs ms-2 font-mono\">Fired times: <span data-bind=\"fired\" class=\"font-bold text-primary\">0</span> (max 1)</span>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

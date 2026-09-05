@@ -1,0 +1,42 @@
+<title>data-drag</title>
+<meta name="id" content="lab-attr-drag">
+<meta name="route" content="/labs/attributes/drag">
+<meta name="icon" content="material-symbols-light:drag-pan">
+<meta name="order" content="14">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/attributes">
+
+<div data-signal='{
+  "doc": {
+    "Title": "data-drag",
+    "Category": "Attributes",
+    "Icon": "material-symbols-light:drag-pan",
+    "ModulePath": "src/modules/attributes/drag.ts",
+    "Description": "Zero-configuration drag-and-drop list and Kanban reordering engine with 60fps FLIP animations and spatial collision detection.",
+    "Syntax": "<div data-drag-container=\"items\"><div data-drag>...</div></div>",
+    "Params": [
+      {
+        "name": "data-drag-container",
+        "type": "Expression",
+        "default": "undefined",
+        "description": "Array or collection to mutate upon drag completion."
+      },
+      {
+        "name": "data-drag",
+        "type": "Boolean / String",
+        "default": "true",
+        "description": "Declares an element as a draggable item inside a container."
+      },
+      {
+        "name": "data-drag-group",
+        "type": "String",
+        "default": "&#39;&#39;",
+        "description": "Optional group identifier allowing cross-container dragging."
+      }
+    ],
+    "Extensibility": "<p>Powered by native pointer events and GPU-accelerated Web Animations API FLIP calculations. Mutates underlying reactive arrays without serialization.</p>",
+    "Snippet": "<div data-signal=\"{ tasks: [&#39;Architecture review&#39;, &#39;Performance audit&#39;, &#39;Release bundle&#39;] }\" class=\"p-4 bg-base-200/50 rounded-xl space-y-2\">\n  <p class=\"text-xs font-bold opacity-70\">Drag items to reorder:</p>\n  <div data-drag-container=\"tasks\" class=\"space-y-2\">\n    <template data-for=\"t in tasks\" data-key=\"t\">\n      <div data-drag class=\"p-2.5 bg-base-100 rounded-lg shadow-sm border border-base-content/10 flex items-center justify-between cursor-grab active:cursor-grabbing\">\n        <span class=\"text-sm font-medium\" data-bind=\"t\"></span>\n        <iconify-icon icon=\"material-symbols-light:drag-indicator\" class=\"text-xl opacity-40\"></iconify-icon>\n      </div>\n    </template>\n  </div>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

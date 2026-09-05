@@ -1,0 +1,30 @@
+<title>data-markdown</title>
+<meta name="id" content="lab-attr-markdown">
+<meta name="route" content="/labs/attributes/markdown">
+<meta name="icon" content="material-symbols-light:markdown-outline">
+<meta name="order" content="19">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/attributes">
+
+<div data-signal='{
+  "doc": {
+    "Title": "data-markdown",
+    "Category": "Attributes",
+    "Icon": "material-symbols-light:markdown-outline",
+    "ModulePath": "src/modules/attributes/markdown.ts",
+    "Description": "Inlines a zero-dependency streaming Markdown parser into the DOM, formatting markdown text into Tailwind prose typography.",
+    "Syntax": "<article data-markdown=\"docContent\" class=\"prose\"></article>",
+    "Params": [
+      {
+        "name": "data-markdown",
+        "type": "Expression / Text",
+        "default": "undefined",
+        "description": "Markdown text string or binding to parse into formatted HTML."
+      }
+    ],
+    "Extensibility": "<p>Supports GFM tables, alerts (<code>[!NOTE]</code>, <code>[!TIP]</code>, <code>[!WARNING]</code>), code blocks, and syntax tokens without external heavyweight libraries.</p>",
+    "Snippet": "<div data-signal=\"{ mdText: &#39;### Interactive Markdown\\n- Fast **zero-dependency** parsing\\n- Tailwind *prose* styling\\n- Live reactive updates!&#39; }\"\n     class=\"p-4 bg-base-200/50 rounded-xl space-y-3\">\n  <textarea data-bind-value=\"mdText\" class=\"textarea textarea-bordered w-full h-24 font-mono text-xs\"></textarea>\n  <div class=\"divider my-1 text-xs\">Preview</div>\n  <article data-markdown=\"mdText\" class=\"prose max-w-none text-sm\"></article>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

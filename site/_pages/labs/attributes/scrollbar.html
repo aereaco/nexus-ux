@@ -1,0 +1,30 @@
+<title>data-scrollbar</title>
+<meta name="id" content="lab-attr-scrollbar">
+<meta name="route" content="/labs/attributes/scrollbar">
+<meta name="icon" content="material-symbols-light:view-stream-outline">
+<meta name="order" content="26">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/attributes">
+
+<div data-signal='{
+  "doc": {
+    "Title": "data-scrollbar",
+    "Category": "Attributes",
+    "Icon": "material-symbols-light:view-stream-outline",
+    "ModulePath": "src/modules/attributes/scrollbar.ts",
+    "Description": "GPU-accelerated overlay scrollbar engine with smooth inertia physics, auto-hide fading, and custom styling.",
+    "Syntax": "<div data-scrollbar=\"{ mode: &#39;overlay&#39;, autoHide: true }\">...</div>",
+    "Params": [
+      {
+        "name": "data-scrollbar",
+        "type": "Object",
+        "default": "{ mode: &#39;overlay&#39; }",
+        "description": "Configures scrollbar mode, autoHide behavior, and thumb sizes."
+      }
+    ],
+    "Extensibility": "<p>Eliminates layout shifts caused by native platform scrollbars while maintaining full accessibility and touch compatibility.</p>",
+    "Snippet": "<div data-scrollbar class=\"h-32 overflow-y-auto p-4 bg-base-200/50 rounded-xl space-y-2 border border-base-content/10\">\n  <p class=\"text-xs font-bold opacity-70\">Custom Overlay Scrollbar Demo:</p>\n  <div class=\"space-y-2 text-sm font-mono opacity-80\">\n    <p>Scroll down to inspect smooth inertia physics...</p>\n    <p>Item 1 - High performance non-blocking scrolling</p>\n    <p>Item 2 - Clean modern aesthetic</p>\n    <p>Item 3 - Full touch &amp; mouse wheel support</p>\n    <p>Item 4 - Zero layout shift</p>\n  </div>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

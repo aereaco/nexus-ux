@@ -1,0 +1,30 @@
+<title>data-import</title>
+<meta name="id" content="lab-attr-import">
+<meta name="route" content="/labs/attributes/import">
+<meta name="icon" content="material-symbols-light:download-for-offline-outline">
+<meta name="order" content="18">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/attributes">
+
+<div data-signal='{
+  "doc": {
+    "Title": "data-import",
+    "Category": "Attributes",
+    "Icon": "material-symbols-light:download-for-offline-outline",
+    "ModulePath": "src/modules/attributes/import.ts",
+    "Description": "Universal declarative asset loader for external JavaScript modules, constructable stylesheets, and Iconify font libraries.",
+    "Syntax": "<div data-import=\"{ script: &#39;https://cdn.example.com/lib.js&#39; }\">...</div>",
+    "Params": [
+      {
+        "name": "data-import",
+        "type": "Object / String",
+        "default": "{}",
+        "description": "Manifest of external scripts or stylesheet links to load and cache."
+      }
+    ],
+    "Extensibility": "<p>Manages deduplicated script loading, global symbol injection, and link stylesheet compilation with Promise-based completion signals.</p>",
+    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-2\">\n  <div class=\"badge badge-info\">Universal Import Active</div>\n  <p class=\"text-sm\">Loads scripts, stylesheets, and icons declaratively on-demand.</p>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

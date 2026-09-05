@@ -1,0 +1,23 @@
+<title>:outside</title>
+<meta name="id" content="lab-mod-outside">
+<meta name="route" content="/labs/modifiers/outside">
+<meta name="icon" content="material-symbols-light:open-in-new">
+<meta name="order" content="4">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/modifiers">
+
+<div data-signal='{
+  "doc": {
+    "Title": ":outside",
+    "Category": "Modifiers",
+    "Icon": "material-symbols-light:open-in-new",
+    "ModulePath": "src/modules/modifiers/outside.ts",
+    "Description": "Fires handler only when a pointer click occurs outside the target element boundary.",
+    "Syntax": "<div data-on-click:outside=\"dropdownOpen = false\">...</div>",
+    "Params": [],
+    "Extensibility": "<p>Listens on window or document and verifies event target containment.</p>",
+    "Snippet": "<div data-signal=\"{ open: false }\" class=\"p-4 bg-base-200/50 rounded-xl space-y-2\">\n  <button class=\"btn btn-sm btn-primary\" data-on-click=\"open = !open\">Toggle Dropdown</button>\n  <div data-show=\"open\" data-on-click:outside=\"open = false\" class=\"p-3 bg-base-100 rounded-lg shadow-lg border border-base-content/10 max-w-xs\">\n    <p class=\"text-xs font-bold\">Click anywhere outside to close me!</p>\n  </div>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

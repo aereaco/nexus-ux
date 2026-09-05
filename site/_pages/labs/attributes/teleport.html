@@ -1,0 +1,30 @@
+<title>data-teleport</title>
+<meta name="id" content="lab-attr-teleport">
+<meta name="route" content="/labs/attributes/teleport">
+<meta name="icon" content="material-symbols-light:move-group">
+<meta name="order" content="29">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/attributes">
+
+<div data-signal='{
+  "doc": {
+    "Title": "data-teleport",
+    "Category": "Attributes",
+    "Icon": "material-symbols-light:move-group",
+    "ModulePath": "src/modules/attributes/teleport.ts",
+    "Description": "Transports DOM subtrees to another target selector or defines native drag-and-drop drop zones.",
+    "Syntax": "<div data-teleport=\"body\">...</div>",
+    "Params": [
+      {
+        "name": "data-teleport",
+        "type": "Target CSS Selector",
+        "default": "&#39;body&#39;",
+        "description": "Target element selector where the DOM subtree should be appended."
+      }
+    ],
+    "Extensibility": "<p>Maintains full reactive scope continuity: teleported elements retain access to their original parent data stack and signals.</p>",
+    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-2\">\n  <div class=\"badge badge-info\">DOM Teleportation</div>\n  <p class=\"text-sm\">Renders modals, popovers, and tooltips at root level without breaking reactive signal ancestry.</p>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

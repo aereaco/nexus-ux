@@ -39,6 +39,36 @@
     "category": "Labs"
   },
   {
+    "id": "lab-mod-prevent",
+    "route": "/labs/modifiers/prevent",
+    "path": "/_pages/labs/modifiers/prevent.html",
+    "title": ":prevent",
+    "icon": "material-symbols-light:block",
+    "order": 1,
+    "parent": "/labs/modifiers",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-scope-media",
+    "route": "/labs/scopes/media",
+    "path": "/_pages/labs/scopes/media.html",
+    "title": "@media",
+    "icon": "material-symbols-light:devices",
+    "order": 1,
+    "parent": "/labs/scopes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-sprite-el",
+    "route": "/labs/sprites/el",
+    "path": "/_pages/labs/sprites/el.html",
+    "title": "$el",
+    "icon": "material-symbols-light:code-blocks",
+    "order": 1,
+    "parent": "/labs/sprites",
+    "category": "Labs"
+  },
+  {
     "id": "profile1",
     "route": "/profiles/profile1",
     "path": "/_pages/profile1.html",
@@ -96,6 +126,16 @@
     "category": "Labs"
   },
   {
+    "id": "lab-mod-stop",
+    "route": "/labs/modifiers/stop",
+    "path": "/_pages/labs/modifiers/stop.html",
+    "title": ":stop",
+    "icon": "material-symbols-light:stop-circle-outline",
+    "order": 2,
+    "parent": "/labs/modifiers",
+    "category": "Labs"
+  },
+  {
     "id": "labs-modifiers",
     "route": "/labs/modifiers",
     "path": "/_pages/labs/modifiers.html",
@@ -103,6 +143,26 @@
     "icon": "material-symbols-light:tune",
     "order": 2,
     "parent": null,
+    "category": "Labs"
+  },
+  {
+    "id": "lab-scope-container",
+    "route": "/labs/scopes/container",
+    "path": "/_pages/labs/scopes/container.html",
+    "title": "@container",
+    "icon": "material-symbols-light:aspect-ratio",
+    "order": 2,
+    "parent": "/labs/scopes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-sprite-selector",
+    "route": "/labs/sprites/selector",
+    "path": "/_pages/labs/sprites/selector.html",
+    "title": "$(selector)",
+    "icon": "material-symbols-light:search",
+    "order": 2,
+    "parent": "/labs/sprites",
     "category": "Labs"
   },
   {
@@ -154,6 +214,26 @@
     "category": "Labs"
   },
   {
+    "id": "lab-mod-self",
+    "route": "/labs/modifiers/self",
+    "path": "/_pages/labs/modifiers/self.html",
+    "title": ":self",
+    "icon": "material-symbols-light:person-pin-circle-outline",
+    "order": 3,
+    "parent": "/labs/modifiers",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-scope-auth",
+    "route": "/labs/scopes/auth",
+    "path": "/_pages/labs/scopes/auth.html",
+    "title": "@auth",
+    "icon": "material-symbols-light:lock",
+    "order": 3,
+    "parent": "/labs/scopes",
+    "category": "Labs"
+  },
+  {
     "id": "labs-scopes",
     "route": "/labs/scopes",
     "path": "/_pages/labs/scopes.html",
@@ -161,6 +241,16 @@
     "icon": "material-symbols-light:aspect-ratio",
     "order": 3,
     "parent": null,
+    "category": "Labs"
+  },
+  {
+    "id": "lab-sprite-dispatch",
+    "route": "/labs/sprites/dispatch",
+    "path": "/_pages/labs/sprites/dispatch.html",
+    "title": "$dispatch",
+    "icon": "material-symbols-light:send",
+    "order": 3,
+    "parent": "/labs/sprites",
     "category": "Labs"
   },
   {
@@ -199,6 +289,36 @@
     "icon": "material-symbols-light:call-split",
     "order": 4,
     "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-mod-outside",
+    "route": "/labs/modifiers/outside",
+    "path": "/_pages/labs/modifiers/outside.html",
+    "title": ":outside",
+    "icon": "material-symbols-light:open-in-new",
+    "order": 4,
+    "parent": "/labs/modifiers",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-scope-os",
+    "route": "/labs/scopes/os",
+    "path": "/_pages/labs/scopes/os.html",
+    "title": "@os",
+    "icon": "material-symbols-light:computer",
+    "order": 4,
+    "parent": "/labs/scopes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-sprite-animate",
+    "route": "/labs/sprites/animate",
+    "path": "/_pages/labs/sprites/animate.html",
+    "title": "$animate",
+    "icon": "material-symbols-light:animation",
+    "order": 4,
+    "parent": "/labs/sprites",
     "category": "Labs"
   },
   {
@@ -260,6 +380,36 @@
     "category": "Labs"
   },
   {
+    "id": "lab-mod-once",
+    "route": "/labs/modifiers/once",
+    "path": "/_pages/labs/modifiers/once.html",
+    "title": ":once",
+    "icon": "material-symbols-light:looks-one-outline",
+    "order": 5,
+    "parent": "/labs/modifiers",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-scope-view",
+    "route": "/labs/scopes/view",
+    "path": "/_pages/labs/scopes/view.html",
+    "title": "@view",
+    "icon": "material-symbols-light:crop",
+    "order": 5,
+    "parent": "/labs/scopes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-sprite-sql",
+    "route": "/labs/sprites/sql",
+    "path": "/_pages/labs/sprites/sql.html",
+    "title": "$sql",
+    "icon": "material-symbols-light:database",
+    "order": 5,
+    "parent": "/labs/sprites",
+    "category": "Labs"
+  },
+  {
     "id": "lab-attr-on",
     "route": "/labs/attributes/on",
     "path": "/_pages/labs/attributes/on.html",
@@ -267,6 +417,35 @@
     "icon": "material-symbols-light:touch-app",
     "order": 6,
     "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-mod-debounce",
+    "route": "/labs/modifiers/debounce",
+    "path": "/_pages/labs/modifiers/debounce.html",
+    "icon": "material-symbols-light:hourglass-empty",
+    "order": 6,
+    "parent": "/labs/modifiers",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-scope-native",
+    "route": "/labs/scopes/native",
+    "path": "/_pages/labs/scopes/native.html",
+    "title": "@native",
+    "icon": "material-symbols-light:mobile-friendly",
+    "order": 6,
+    "parent": "/labs/scopes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-sprite-gql",
+    "route": "/labs/sprites/gql",
+    "path": "/_pages/labs/sprites/gql.html",
+    "title": "$gql",
+    "icon": "material-symbols-light:schema",
+    "order": 6,
+    "parent": "/labs/sprites",
     "category": "Labs"
   },
   {
@@ -290,12 +469,399 @@
     "category": "Labs"
   },
   {
+    "id": "lab-mod-throttle",
+    "route": "/labs/modifiers/throttle",
+    "path": "/_pages/labs/modifiers/throttle.html",
+    "icon": "material-symbols-light:speed",
+    "order": 7,
+    "parent": "/labs/modifiers",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-sprite-sw",
+    "route": "/labs/sprites/sw",
+    "path": "/_pages/labs/sprites/sw.html",
+    "title": "$sw",
+    "icon": "material-symbols-light:offline-bolt",
+    "order": 7,
+    "parent": "/labs/sprites",
+    "category": "Labs"
+  },
+  {
     "id": "lab-attr-style",
     "route": "/labs/attributes/style",
     "path": "/_pages/labs/attributes/style.html",
     "title": "data-style",
     "icon": "material-symbols-light:format-paint",
     "order": 8,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-mod-hold",
+    "route": "/labs/modifiers/hold",
+    "path": "/_pages/labs/modifiers/hold.html",
+    "icon": "material-symbols-light:touch-app",
+    "order": 8,
+    "parent": "/labs/modifiers",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-sprite-push",
+    "route": "/labs/sprites/push",
+    "path": "/_pages/labs/sprites/push.html",
+    "title": "$push",
+    "icon": "material-symbols-light:notifications-active",
+    "order": 8,
+    "parent": "/labs/sprites",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-assert",
+    "route": "/labs/attributes/assert",
+    "path": "/_pages/labs/attributes/assert.html",
+    "title": "data-assert",
+    "icon": "material-symbols-light:rule-settings-outline",
+    "order": 9,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-mod-window",
+    "route": "/labs/modifiers/window",
+    "path": "/_pages/labs/modifiers/window.html",
+    "title": ":window",
+    "icon": "material-symbols-light:fullscreen",
+    "order": 9,
+    "parent": "/labs/modifiers",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-sprite-bgfetch",
+    "route": "/labs/sprites/bgfetch",
+    "path": "/_pages/labs/sprites/bgfetch.html",
+    "title": "$bgFetch",
+    "icon": "material-symbols-light:cloud-download",
+    "order": 9,
+    "parent": "/labs/sprites",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-build",
+    "route": "/labs/attributes/build",
+    "path": "/_pages/labs/attributes/build.html",
+    "title": "data-build",
+    "icon": "material-symbols-light:package-2-outline",
+    "order": 10,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-mod-document",
+    "route": "/labs/modifiers/document",
+    "path": "/_pages/labs/modifiers/document.html",
+    "title": ":document",
+    "icon": "material-symbols-light:description",
+    "order": 10,
+    "parent": "/labs/modifiers",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-sprite-bgsync",
+    "route": "/labs/sprites/bgsync",
+    "path": "/_pages/labs/sprites/bgsync.html",
+    "title": "$bgSync",
+    "icon": "material-symbols-light:sync",
+    "order": 10,
+    "parent": "/labs/sprites",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-component",
+    "route": "/labs/attributes/component",
+    "path": "/_pages/labs/attributes/component.html",
+    "title": "data-component",
+    "icon": "material-symbols-light:web-asset",
+    "order": 11,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-mod-keys",
+    "route": "/labs/modifiers/keys",
+    "path": "/_pages/labs/modifiers/keys.html",
+    "title": ":enter / :escape / :ctrl",
+    "icon": "material-symbols-light:keyboard",
+    "order": 11,
+    "parent": "/labs/modifiers",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-sprite-periodicsync",
+    "route": "/labs/sprites/periodicsync",
+    "path": "/_pages/labs/sprites/periodicsync.html",
+    "title": "$periodicSync",
+    "icon": "material-symbols-light:update",
+    "order": 11,
+    "parent": "/labs/sprites",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-computed",
+    "route": "/labs/attributes/computed",
+    "path": "/_pages/labs/attributes/computed.html",
+    "title": "data-computed",
+    "icon": "material-symbols-light:calculate-outline",
+    "order": 12,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-mod-morph",
+    "route": "/labs/modifiers/morph",
+    "path": "/_pages/labs/modifiers/morph.html",
+    "title": ":morph",
+    "icon": "material-symbols-light:autorenew",
+    "order": 12,
+    "parent": "/labs/modifiers",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-sprite-mask",
+    "route": "/labs/sprites/mask",
+    "path": "/_pages/labs/sprites/mask.html",
+    "title": "$mask",
+    "icon": "material-symbols-light:tag",
+    "order": 12,
+    "parent": "/labs/sprites",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-debug",
+    "route": "/labs/attributes/debug",
+    "path": "/_pages/labs/attributes/debug.html",
+    "title": "data-debug",
+    "icon": "material-symbols-light:bug-report-outline",
+    "order": 13,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-mod-zoom",
+    "route": "/labs/modifiers/zoom",
+    "path": "/_pages/labs/modifiers/zoom.html",
+    "title": ":zoom",
+    "icon": "material-symbols-light:zoom-in",
+    "order": 13,
+    "parent": "/labs/modifiers",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-sprite-svg",
+    "route": "/labs/sprites/svg",
+    "path": "/_pages/labs/sprites/svg.html",
+    "title": "$svg",
+    "icon": "material-symbols-light:polyline",
+    "order": 13,
+    "parent": "/labs/sprites",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-drag",
+    "route": "/labs/attributes/drag",
+    "path": "/_pages/labs/attributes/drag.html",
+    "title": "data-drag",
+    "icon": "material-symbols-light:drag-pan",
+    "order": 14,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-mod-drag",
+    "route": "/labs/modifiers/drag",
+    "path": "/_pages/labs/modifiers/drag.html",
+    "title": ":drag",
+    "icon": "material-symbols-light:open-with",
+    "order": 14,
+    "parent": "/labs/modifiers",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-sprite-mcp",
+    "route": "/labs/sprites/mcp",
+    "path": "/_pages/labs/sprites/mcp.html",
+    "title": "$mcp",
+    "icon": "material-symbols-light:smart-toy",
+    "order": 14,
+    "parent": "/labs/sprites",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-effect",
+    "route": "/labs/attributes/effect",
+    "path": "/_pages/labs/attributes/effect.html",
+    "title": "data-effect",
+    "icon": "material-symbols-light:auto-awesome-outline",
+    "order": 15,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-mod-delay",
+    "route": "/labs/modifiers/delay",
+    "path": "/_pages/labs/modifiers/delay.html",
+    "icon": "material-symbols-light:timer",
+    "order": 15,
+    "parent": "/labs/modifiers",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-flow",
+    "route": "/labs/attributes/flow",
+    "path": "/_pages/labs/attributes/flow.html",
+    "title": "data-flow",
+    "icon": "material-symbols-light:account-tree-outline",
+    "order": 16,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-html",
+    "route": "/labs/attributes/html",
+    "path": "/_pages/labs/attributes/html.html",
+    "title": "data-html",
+    "icon": "material-symbols-light:code",
+    "order": 17,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-import",
+    "route": "/labs/attributes/import",
+    "path": "/_pages/labs/attributes/import.html",
+    "title": "data-import",
+    "icon": "material-symbols-light:download-for-offline-outline",
+    "order": 18,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-markdown",
+    "route": "/labs/attributes/markdown",
+    "path": "/_pages/labs/attributes/markdown.html",
+    "title": "data-markdown",
+    "icon": "material-symbols-light:markdown-outline",
+    "order": 19,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-mask",
+    "route": "/labs/attributes/mask",
+    "path": "/_pages/labs/attributes/mask.html",
+    "title": "data-mask",
+    "icon": "material-symbols-light:pin-outline",
+    "order": 20,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-preserve",
+    "route": "/labs/attributes/preserve",
+    "path": "/_pages/labs/attributes/preserve.html",
+    "title": "data-preserve",
+    "icon": "material-symbols-light:shield-outline",
+    "order": 21,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-pwa",
+    "route": "/labs/attributes/pwa",
+    "path": "/_pages/labs/attributes/pwa.html",
+    "title": "data-pwa",
+    "icon": "material-symbols-light:install-desktop",
+    "order": 22,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-raf",
+    "route": "/labs/attributes/raf",
+    "path": "/_pages/labs/attributes/raf.html",
+    "title": "data-on-raf",
+    "icon": "material-symbols-light:speed-outline",
+    "order": 23,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-route",
+    "route": "/labs/attributes/route",
+    "path": "/_pages/labs/attributes/route.html",
+    "title": "data-route",
+    "icon": "material-symbols-light:alt-route",
+    "order": 24,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-router",
+    "route": "/labs/attributes/router",
+    "path": "/_pages/labs/attributes/router.html",
+    "title": "data-router",
+    "icon": "material-symbols-light:route",
+    "order": 25,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-scrollbar",
+    "route": "/labs/attributes/scrollbar",
+    "path": "/_pages/labs/attributes/scrollbar.html",
+    "title": "data-scrollbar",
+    "icon": "material-symbols-light:view-stream-outline",
+    "order": 26,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-stylesheet",
+    "route": "/labs/attributes/stylesheet",
+    "path": "/_pages/labs/attributes/stylesheet.html",
+    "title": "data-stylesheet",
+    "icon": "material-symbols-light:css",
+    "order": 27,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-switcher",
+    "route": "/labs/attributes/switcher",
+    "path": "/_pages/labs/attributes/switcher.html",
+    "title": "data-switcher",
+    "icon": "material-symbols-light:toggle-on-outline",
+    "order": 28,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-teleport",
+    "route": "/labs/attributes/teleport",
+    "path": "/_pages/labs/attributes/teleport.html",
+    "title": "data-teleport",
+    "icon": "material-symbols-light:move-group",
+    "order": 29,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-theme",
+    "route": "/labs/attributes/theme",
+    "path": "/_pages/labs/attributes/theme.html",
+    "title": "data-theme",
+    "icon": "material-symbols-light:palette-outline",
+    "order": 30,
     "parent": "/labs/attributes",
     "category": "Labs"
   },

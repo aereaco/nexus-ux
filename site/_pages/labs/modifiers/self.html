@@ -1,0 +1,23 @@
+<title>:self</title>
+<meta name="id" content="lab-mod-self">
+<meta name="route" content="/labs/modifiers/self">
+<meta name="icon" content="material-symbols-light:person-pin-circle-outline">
+<meta name="order" content="3">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/modifiers">
+
+<div data-signal='{
+  "doc": {
+    "Title": ":self",
+    "Category": "Modifiers",
+    "Icon": "material-symbols-light:person-pin-circle-outline",
+    "ModulePath": "src/modules/modifiers/self.ts",
+    "Description": "Executes handler only if event.target is the element itself, ignoring child bubbled events.",
+    "Syntax": "<div data-on-click:self=\"close()\">...</div>",
+    "Params": [],
+    "Extensibility": "<p>Standard pattern for modal backdrop dismissals.</p>",
+    "Snippet": "<div data-signal=\"{ selfClicks: 0 }\" data-on-click:self=\"selfClicks++\" class=\"p-6 bg-base-200/50 rounded-xl border border-dashed border-base-content/20 text-center space-y-2 cursor-pointer\">\n  <p class=\"text-xs font-bold\">Click outside the inner box (:self trigger only)</p>\n  <div class=\"inline-block p-3 bg-base-100 rounded-lg shadow pointer-events-auto cursor-default\">\n    <span class=\"text-xs\">Inner element (clicks here won&#39;t trigger :self)</span>\n  </div>\n  <div class=\"text-xs font-mono\">Self clicks: <span data-bind=\"selfClicks\" class=\"font-bold text-primary\"></span></div>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

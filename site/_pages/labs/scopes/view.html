@@ -1,0 +1,23 @@
+<title>@view</title>
+<meta name="id" content="lab-scope-view">
+<meta name="route" content="/labs/scopes/view">
+<meta name="icon" content="material-symbols-light:crop">
+<meta name="order" content="5">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/scopes">
+
+<div data-signal='{
+  "doc": {
+    "Title": "@view",
+    "Category": "Scopes",
+    "Icon": "material-symbols-light:crop",
+    "ModulePath": "src/modules/scopes/view.ts",
+    "Description": "Live viewport dimensions and orientation tracking ($view.width, $view.height, $view.isPortrait).",
+    "Syntax": "@view.width > 1024",
+    "Params": [],
+    "Extensibility": "<p>Reactive viewport dimensions without manual resize listeners.</p>",
+    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-1\">\n  <div class=\"badge badge-success\">@view Geometry</div>\n  <p class=\"text-xs opacity-70\">Provides live width, height, and orientation metrics.</p>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

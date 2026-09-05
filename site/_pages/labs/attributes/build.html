@@ -1,0 +1,30 @@
+<title>data-build</title>
+<meta name="id" content="lab-attr-build">
+<meta name="route" content="/labs/attributes/build">
+<meta name="icon" content="material-symbols-light:package-2-outline">
+<meta name="order" content="10">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/attributes">
+
+<div data-signal='{
+  "doc": {
+    "Title": "data-build",
+    "Category": "Attributes",
+    "Icon": "material-symbols-light:package-2-outline",
+    "ModulePath": "src/modules/attributes/build.ts",
+    "Description": "In-browser bundler and asset packager compiling live DOM elements into IndexedDB binary payloads.",
+    "Syntax": "<div data-build=\"idb://my-app-bundle\">...</div>",
+    "Params": [
+      {
+        "name": "data-build",
+        "type": "URI String",
+        "default": "idb://default",
+        "description": "Target IndexedDB namespace for in-browser serialized tree packaging."
+      }
+    ],
+    "Extensibility": "<p>The <code>build</code> directive executes ZCZS binary serialization to cache pre-compiled component trees offline without JSON serialization overhead.</p>",
+    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-2\">\n  <div class=\"badge badge-primary\">data-build Active</div>\n  <p class=\"text-sm\">Serializes element subtrees into high-performance binary memory storage.</p>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

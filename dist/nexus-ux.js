@@ -8110,25 +8110,32 @@ ${match}</ul>
                   break;
                 }
               }
-              if (matched && matched.internal && path !== "/") {
-                const isDirectAddressBarNav = !suppressNavIntercept && typeof globalThis.location !== "undefined" && stripBase(globalThis.location.pathname) === matched.path;
-                if (isDirectAddressBarNav) {
-                  state.errorCode = 404;
-                  staticComponent = errorPage2;
-                  if (typeof globalThis.history !== "undefined") {
-                    try {
-                      globalThis.history.replaceState(null, "", applyBase(cleanErrorPath));
-                    } catch {
-                    }
-                  }
+              if (!matched && state.routes) {
+                const dynRoute = state.routes.find((r) => r.path === path || r.route === path);
+                if (dynRoute) {
+                  matched = {
+                    path: dynRoute.path || dynRoute.route,
+                    name: dynRoute.name || dynRoute.id,
+                    component: dynRoute.component || dynRoute.path,
+                    meta: dynRoute.meta || {},
+                    source: "manifest"
+                  };
                 }
-              }
-              if (matched && matched.redirect) {
-                state.navigate(matched.redirect, { replace: true });
-                return;
               }
               const errorPage2 = state.config.error ?? resolvePagesPath(void 0, "error.html");
               const cleanErrorPath = "/error";
+              if (!matched && path !== cleanErrorPath) {
+                const resolvedStatic = resolveStaticComponent(path);
+                if (resolvedStatic && !resolvedStatic.endsWith("/error.html")) {
+                  matched = {
+                    path,
+                    name: path.replace(/^\/+/, ""),
+                    component: resolvedStatic,
+                    meta: {},
+                    source: "static"
+                  };
+                }
+              }
               if (!matched) {
                 matched = routeList.find((r) => r.path === cleanErrorPath) || {
                   path: cleanErrorPath,

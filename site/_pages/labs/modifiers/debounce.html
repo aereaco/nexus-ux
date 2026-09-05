@@ -1,0 +1,23 @@
+<title>:debounce.<ms></title>
+<meta name="id" content="lab-mod-debounce">
+<meta name="route" content="/labs/modifiers/debounce">
+<meta name="icon" content="material-symbols-light:hourglass-empty">
+<meta name="order" content="6">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/modifiers">
+
+<div data-signal='{
+  "doc": {
+    "Title": ":debounce.<ms>",
+    "Category": "Modifiers",
+    "Icon": "material-symbols-light:hourglass-empty",
+    "ModulePath": "src/modules/modifiers/debounce.ts",
+    "Description": "Delays execution until specified milliseconds have elapsed since the last invocation.",
+    "Syntax": "<input data-on-input:debounce.300=\"search($newValue)\" />",
+    "Params": [],
+    "Extensibility": "<p>Caches timer handle per element, clearing previous pending calls.</p>",
+    "Snippet": "<div data-signal=\"{ query: &#39;&#39;, runs: 0 }\" class=\"p-4 bg-base-200/50 rounded-xl space-y-2\">\n  <input type=\"text\" data-on-input:debounce.400=\"runs++; query = $newValue\" placeholder=\"Type fast...\" class=\"input input-bordered input-sm w-48 font-mono\" />\n  <p class=\"text-xs font-mono\">Debounced handler runs: <span class=\"font-bold text-primary\" data-bind=\"runs\"></span> | Value: <span data-bind=\"query\"></span></p>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

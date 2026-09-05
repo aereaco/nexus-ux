@@ -1,0 +1,30 @@
+<title>data-computed</title>
+<meta name="id" content="lab-attr-computed">
+<meta name="route" content="/labs/attributes/computed">
+<meta name="icon" content="material-symbols-light:calculate-outline">
+<meta name="order" content="12">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/attributes">
+
+<div data-signal='{
+  "doc": {
+    "Title": "data-computed",
+    "Category": "Attributes",
+    "Icon": "material-symbols-light:calculate-outline",
+    "ModulePath": "src/modules/attributes/computed.ts",
+    "Description": "Declares memoized derived getters using unifiedComputed and fine-grained reactive dependency tracking.",
+    "Syntax": "<div data-computed=\"{ double: () => count * 2 }\">...</div>",
+    "Params": [
+      {
+        "name": "data-computed",
+        "type": "Object Literal",
+        "default": "{}",
+        "description": "Dictionary of getter functions that re-evaluate only when their reactive dependencies change."
+      }
+    ],
+    "Extensibility": "<p>Computed values evaluate lazily and are cached using Vue 3-compatible dependency sets. They bridge directly into the element&#39;s local data stack.</p>",
+    "Snippet": "<div data-signal=\"{ price: 25, quantity: 2 }\"\n     data-computed=\"{ total: () => price * quantity, tax: () => price * quantity * 0.08 }\"\n     class=\"p-4 bg-base-200/50 rounded-xl space-y-3\">\n  <div class=\"flex gap-4\">\n    <div><span class=\"text-xs opacity-70\">Price:</span> <input type=\"number\" data-bind-value=\"price\" class=\"input input-bordered input-xs w-20\" /></div>\n    <div><span class=\"text-xs opacity-70\">Qty:</span> <input type=\"number\" data-bind-value=\"quantity\" class=\"input input-bordered input-xs w-20\" /></div>\n  </div>\n  <div class=\"stat bg-base-100 rounded-lg p-3 border border-base-content/10\">\n    <div class=\"stat-title text-xs\">Total with Tax</div>\n    <div class=\"stat-value text-primary text-xl font-mono\">$<span data-bind=\"(total + tax).toFixed(2)\"></span></div>\n    <div class=\"stat-desc text-xs font-mono\">Subtotal: $<span data-bind=\"total\"></span> | Tax: $<span data-bind=\"tax.toFixed(2)\"></span></div>\n  </div>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

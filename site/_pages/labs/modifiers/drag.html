@@ -1,0 +1,23 @@
+<title>:drag</title>
+<meta name="id" content="lab-mod-drag">
+<meta name="route" content="/labs/modifiers/drag">
+<meta name="icon" content="material-symbols-light:open-with">
+<meta name="order" content="14">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/modifiers">
+
+<div data-signal='{
+  "doc": {
+    "Title": ":drag",
+    "Category": "Modifiers",
+    "Icon": "material-symbols-light:open-with",
+    "ModulePath": "src/modules/modifiers/drag.ts",
+    "Description": "Injects delta movement coordinates ($drag) into pointer handlers.",
+    "Syntax": "<div data-on-pointermove:drag=\"x += $drag.dx; y += $drag.dy\">...</div>",
+    "Params": [],
+    "Extensibility": "<p>Tracks pointer delta movement across frames.</p>",
+    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-1\">\n  <div class=\"badge badge-accent\">:drag</div>\n  <p class=\"text-xs opacity-70\">Injects $drag coordinates into pointer handlers.</p>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

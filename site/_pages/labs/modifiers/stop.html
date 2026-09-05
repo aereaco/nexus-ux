@@ -1,0 +1,23 @@
+<title>:stop</title>
+<meta name="id" content="lab-mod-stop">
+<meta name="route" content="/labs/modifiers/stop">
+<meta name="icon" content="material-symbols-light:stop-circle-outline">
+<meta name="order" content="2">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/modifiers">
+
+<div data-signal='{
+  "doc": {
+    "Title": ":stop",
+    "Category": "Modifiers",
+    "Icon": "material-symbols-light:stop-circle-outline",
+    "ModulePath": "src/modules/modifiers/stop.ts",
+    "Description": "Calls event.stopPropagation() to prevent event bubbling up the DOM tree.",
+    "Syntax": "<button data-on-click:stop=\"handleClick()\">...</button>",
+    "Params": [],
+    "Extensibility": "<p>Isolates inner interactive controls inside clickable cards or container rows.</p>",
+    "Snippet": "<div data-signal=\"{ parentClicked: 0, childClicked: 0 }\" data-on-click=\"parentClicked++\" class=\"p-4 bg-base-200/50 rounded-xl space-y-2 cursor-pointer\">\n  <div class=\"text-xs\">Parent clicks: <span data-bind=\"parentClicked\" class=\"font-bold\"></span></div>\n  <button data-on-click:stop=\"childClicked++\" class=\"btn btn-sm btn-accent\">Child Button (:stop)</button>\n  <span class=\"text-xs ms-2\">Child clicks: <span data-bind=\"childClicked\" class=\"font-bold\"></span></span>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

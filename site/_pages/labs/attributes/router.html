@@ -1,0 +1,30 @@
+<title>data-router</title>
+<meta name="id" content="lab-attr-router">
+<meta name="route" content="/labs/attributes/router">
+<meta name="icon" content="material-symbols-light:route">
+<meta name="order" content="25">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/attributes">
+
+<div data-signal='{
+  "doc": {
+    "Title": "data-router",
+    "Category": "Attributes",
+    "Icon": "material-symbols-light:route",
+    "ModulePath": "src/modules/attributes/router.ts",
+    "Description": "Comprehensive SPA routing engine with multi-tab workspaces, automatic page discovery, and browser history synchronization.",
+    "Syntax": "<html data-router=\"{ mode: &#39;hybrid&#39;, pagesDir: &#39;_pages&#39; }\">",
+    "Params": [
+      {
+        "name": "data-router",
+        "type": "Object Literal",
+        "default": "{}",
+        "description": "Router configuration object supporting mode, pagesDir, manifest, and error route."
+      }
+    ],
+    "Extensibility": "<p>Exposes #router reactive state app-wide with pageTabs, navigate(), createPageTab(), switchPageTab(), and lineage breadcrumb helpers.</p>",
+    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-2\">\n  <p class=\"text-xs font-bold opacity-70\">Active Route:</p>\n  <div class=\"font-mono text-primary text-sm font-bold\" data-bind=\"router.path\">/labs/attributes/router</div>\n  <div class=\"text-xs opacity-70 font-mono\">Open tabs: <span data-bind=\"router.pageTabs.length\">1</span></div>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

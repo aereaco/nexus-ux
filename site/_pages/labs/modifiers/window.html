@@ -1,0 +1,23 @@
+<title>:window</title>
+<meta name="id" content="lab-mod-window">
+<meta name="route" content="/labs/modifiers/window">
+<meta name="icon" content="material-symbols-light:fullscreen">
+<meta name="order" content="9">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/modifiers">
+
+<div data-signal='{
+  "doc": {
+    "Title": ":window",
+    "Category": "Modifiers",
+    "Icon": "material-symbols-light:fullscreen",
+    "ModulePath": "src/modules/modifiers/window.ts",
+    "Description": "Attaches event listener to window rather than the local HTMLElement.",
+    "Syntax": "<div data-on-resize:window=\"onResize()\">...</div>",
+    "Params": [],
+    "Extensibility": "<p>Allows declarative handling of global window resize and scroll events.</p>",
+    "Snippet": "<div data-signal=\"{ width: window.innerWidth }\" data-on-resize:window=\"width = window.innerWidth\" class=\"p-4 bg-base-200/50 rounded-xl space-y-1\">\n  <p class=\"text-xs font-mono\">Window width: <span class=\"font-bold text-accent\" data-bind=\"width\"></span>px (resize browser to test)</p>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

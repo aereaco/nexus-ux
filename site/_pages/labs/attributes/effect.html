@@ -1,0 +1,30 @@
+<title>data-effect</title>
+<meta name="id" content="lab-attr-effect">
+<meta name="route" content="/labs/attributes/effect">
+<meta name="icon" content="material-symbols-light:auto-awesome-outline">
+<meta name="order" content="15">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/attributes">
+
+<div data-signal='{
+  "doc": {
+    "Title": "data-effect",
+    "Category": "Attributes",
+    "Icon": "material-symbols-light:auto-awesome-outline",
+    "ModulePath": "src/modules/attributes/effect.ts",
+    "Description": "Executes an automatic reactive side effect that automatically tracks accessed signal dependencies and re-executes on mutations.",
+    "Syntax": "<div data-effect=\"console.log(&#39;Count changed:&#39;, count)\">...</div>",
+    "Params": [
+      {
+        "name": "data-effect",
+        "type": "Expression",
+        "default": "undefined",
+        "description": "JavaScript expression containing signals to track and execute as side-effects."
+      }
+    ],
+    "Extensibility": "<p>Tied directly to element lifecycle via <code>elementBoundEffect</code>. Deterministically disposed when the host element leaves the DOM.</p>",
+    "Snippet": "<div data-signal=\"{ msg: &#39;Hello&#39;, logs: [] }\"\n     data-effect=\"logs = [...logs.slice(-3), &#39;Updated: &#39; + msg]\"\n     class=\"p-4 bg-base-200/50 rounded-xl space-y-3\">\n  <div class=\"flex items-center gap-2\">\n    <input type=\"text\" data-bind-value=\"msg\" class=\"input input-bordered input-sm font-mono\" />\n  </div>\n  <div class=\"text-xs font-mono space-y-1\">\n    <div class=\"font-bold opacity-70\">Recent Reactive Runs:</div>\n    <template data-for=\"l in logs\" data-key=\"l\">\n      <div class=\"badge badge-sm badge-outline font-mono\" data-bind=\"l\"></div>\n    </template>\n  </div>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

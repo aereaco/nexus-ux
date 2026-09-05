@@ -1,0 +1,30 @@
+<title>data-debug</title>
+<meta name="id" content="lab-attr-debug">
+<meta name="route" content="/labs/attributes/debug">
+<meta name="icon" content="material-symbols-light:bug-report-outline">
+<meta name="order" content="13">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/attributes">
+
+<div data-signal='{
+  "doc": {
+    "Title": "data-debug",
+    "Category": "Attributes",
+    "Icon": "material-symbols-light:bug-report-outline",
+    "ModulePath": "src/modules/attributes/debug.ts",
+    "Description": "Enables verbose diagnostic telemetry, lifecycle profiling, and Model Context Protocol (MCP) auto-repair logging on an element.",
+    "Syntax": "<div data-debug>...</div>",
+    "Params": [
+      {
+        "name": "data-debug",
+        "type": "Boolean / String",
+        "default": "true",
+        "description": "Activates diagnostic logs and inspects property resolutions across the DOM stack."
+      }
+    ],
+    "Extensibility": "<p>Directly interfaces with the browser DevTools Console and engine diagnostics tracker for real-time reactivity introspection.</p>",
+    "Snippet": "<div data-debug class=\"p-4 bg-base-200/50 rounded-xl space-y-2 border border-warning/30\">\n  <div class=\"badge badge-warning text-xs font-bold\">Debug Mode Active</div>\n  <p class=\"text-xs font-mono opacity-80\">Element lifecycle changes, state diffs, and evaluations are logged to the console.</p>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

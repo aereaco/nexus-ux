@@ -1,0 +1,30 @@
+<title>data-on-raf</title>
+<meta name="id" content="lab-attr-raf">
+<meta name="route" content="/labs/attributes/raf">
+<meta name="icon" content="material-symbols-light:speed-outline">
+<meta name="order" content="23">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/attributes">
+
+<div data-signal='{
+  "doc": {
+    "Title": "data-on-raf",
+    "Category": "Attributes",
+    "Icon": "material-symbols-light:speed-outline",
+    "ModulePath": "src/modules/attributes/raf.ts",
+    "Description": "High-frequency animation loop callback injecting $time and $delta timestamps synchronized with screen refresh rates.",
+    "Syntax": "<div data-on-raf=\"angle += $delta * 0.1\">...</div>",
+    "Params": [
+      {
+        "name": "data-on-raf",
+        "type": "Expression",
+        "default": "undefined",
+        "description": "Expression evaluated every animation frame. Injects $time and $delta."
+      }
+    ],
+    "Extensibility": "<p>Automatically halts when the host element becomes hidden or leaves the DOM to avoid unnecessary battery drain.</p>",
+    "Snippet": "<div data-signal=\"{ rotation: 0 }\"\n     data-on-raf=\"rotation = (rotation + 2) % 360\"\n     class=\"p-4 bg-base-200/50 rounded-xl flex items-center gap-4\">\n  <div class=\"w-12 h-12 rounded-xl bg-gradient-to-tr from-primary to-accent flex items-center justify-center text-primary-content shadow-lg\"\n       data-bind-style=\"&#39;transform: rotate(&#39; + rotation + &#39;deg);&#39;\">\n    <iconify-icon icon=\"material-symbols-light:refresh\" class=\"text-2xl\"></iconify-icon>\n  </div>\n  <div>\n    <div class=\"text-sm font-bold\">60fps RAF Loop</div>\n    <div class=\"text-xs font-mono opacity-70\">Rotation: <span data-bind=\"Math.round(rotation)\"></span>°</div>\n  </div>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

@@ -1,0 +1,23 @@
+<title>:hold.<ms></title>
+<meta name="id" content="lab-mod-hold">
+<meta name="route" content="/labs/modifiers/hold">
+<meta name="icon" content="material-symbols-light:touch-app">
+<meta name="order" content="8">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/modifiers">
+
+<div data-signal='{
+  "doc": {
+    "Title": ":hold.<ms>",
+    "Category": "Modifiers",
+    "Icon": "material-symbols-light:touch-app",
+    "ModulePath": "src/modules/modifiers/hold.ts",
+    "Description": "Fires only when user presses and holds the pointer for the specified duration.",
+    "Syntax": "<button data-on-pointerdown:hold.500=\"confirmAction()\">Hold to Delete</button>",
+    "Params": [],
+    "Extensibility": "<p>Monitors pointerdown and pointerup/cancel to trigger press-and-hold gestures.</p>",
+    "Snippet": "<div data-signal=\"{ confirmed: false }\" class=\"p-4 bg-base-200/50 rounded-xl space-y-2\">\n  <button data-on-pointerdown:hold.600=\"confirmed = true\" class=\"btn btn-sm btn-error\">Press &amp; Hold for 600ms</button>\n  <span data-show=\"confirmed\" class=\"badge badge-success ms-2 font-mono\">Action confirmed!</span>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

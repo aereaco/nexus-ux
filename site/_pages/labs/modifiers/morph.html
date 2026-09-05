@@ -1,0 +1,23 @@
+<title>:morph</title>
+<meta name="id" content="lab-mod-morph">
+<meta name="route" content="/labs/modifiers/morph">
+<meta name="icon" content="material-symbols-light:autorenew">
+<meta name="order" content="12">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/modifiers">
+
+<div data-signal='{
+  "doc": {
+    "Title": ":morph",
+    "Category": "Modifiers",
+    "Icon": "material-symbols-light:autorenew",
+    "ModulePath": "src/modules/modifiers/morph.ts",
+    "Description": "Morphs return string from evaluation directly into the element using morphDOM.",
+    "Syntax": "<button data-on-click:morph=\"fetchNext()\">Next</button>",
+    "Params": [],
+    "Extensibility": "<p>Diffs new DOM nodes while preserving focus and scroll positions.</p>",
+    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-1\">\n  <div class=\"badge badge-primary\">:morph</div>\n  <p class=\"text-xs opacity-70\">Executes morphDOM reconciliation on return string.</p>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

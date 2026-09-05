@@ -1,0 +1,30 @@
+<title>data-flow</title>
+<meta name="id" content="lab-attr-flow">
+<meta name="route" content="/labs/attributes/flow">
+<meta name="icon" content="material-symbols-light:account-tree-outline">
+<meta name="order" content="16">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/attributes">
+
+<div data-signal='{
+  "doc": {
+    "Title": "data-flow",
+    "Category": "Attributes",
+    "Icon": "material-symbols-light:account-tree-outline",
+    "ModulePath": "src/modules/attributes/flow.ts",
+    "Description": "Reactive node-graph workspace canvas featuring zoom, pan, node dragging, and dynamic SVG Bezier edge connections.",
+    "Syntax": "<div data-flow=\"viewport\">...</div>",
+    "Params": [
+      {
+        "name": "data-flow",
+        "type": "String / Object",
+        "default": "&#39;viewport&#39;",
+        "description": "Configures graph viewport parameters, minimum/maximum zoom scale, and node snapping."
+      }
+    ],
+    "Extensibility": "<p>Zero-dependency xyflow-inspired engine built natively into the declarative runtime. Uses GPU CSS transforms for 120fps infinite canvas panning.</p>",
+    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-2\">\n  <div class=\"badge badge-accent\">Node Canvas Host</div>\n  <p class=\"text-sm\">Embeds interactive state machine and topology workflows directly into HTML.</p>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

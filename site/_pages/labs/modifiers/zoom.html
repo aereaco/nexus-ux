@@ -1,0 +1,23 @@
+<title>:zoom</title>
+<meta name="id" content="lab-mod-zoom">
+<meta name="route" content="/labs/modifiers/zoom">
+<meta name="icon" content="material-symbols-light:zoom-in">
+<meta name="order" content="13">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/modifiers">
+
+<div data-signal='{
+  "doc": {
+    "Title": ":zoom",
+    "Category": "Modifiers",
+    "Icon": "material-symbols-light:zoom-in",
+    "ModulePath": "src/modules/modifiers/zoom.ts",
+    "Description": "Injects normalized delta zoom coordinate ($zoom) into wheel and pinch handlers.",
+    "Syntax": "<div data-on-wheel:zoom=\"zoomScale += $zoom\">...</div>",
+    "Params": [],
+    "Extensibility": "<p>Normalizes trackpad pinch gestures and mouse wheel tick deltas.</p>",
+    "Snippet": "<div data-signal=\"{ scale: 1 }\" data-on-wheel:zoom:prevent=\"scale = Math.max(0.5, Math.min(2, scale + $zoom * 0.1))\" class=\"p-6 bg-base-200/50 rounded-xl text-center space-y-2 cursor-zoom-in\">\n  <p class=\"text-xs font-bold\">Scroll mouse wheel here to zoom (:zoom)</p>\n  <div class=\"inline-block p-2 bg-primary text-primary-content rounded-lg font-mono text-sm\" data-bind-style=\"&#39;transform: scale(&#39; + scale + &#39;);&#39;\">Scale: <span data-bind=\"scale.toFixed(2)\"></span>x</div>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

@@ -1,0 +1,23 @@
+<title>:throttle.<ms></title>
+<meta name="id" content="lab-mod-throttle">
+<meta name="route" content="/labs/modifiers/throttle">
+<meta name="icon" content="material-symbols-light:speed">
+<meta name="order" content="7">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/modifiers">
+
+<div data-signal='{
+  "doc": {
+    "Title": ":throttle.<ms>",
+    "Category": "Modifiers",
+    "Icon": "material-symbols-light:speed",
+    "ModulePath": "src/modules/modifiers/throttle.ts",
+    "Description": "Enforces a maximum execution rate, firing at most once per specified millisecond window.",
+    "Syntax": "<div data-on-scroll:throttle.100=\"onScroll()\">...</div>",
+    "Params": [],
+    "Extensibility": "<p>Ensures smooth high-frequency interactions during resize and scroll.</p>",
+    "Snippet": "<div data-signal=\"{ count: 0 }\" data-on-mousemove:throttle.250=\"count++\" class=\"p-6 bg-base-200/50 rounded-xl text-center space-y-1 cursor-crosshair\">\n  <p class=\"text-xs font-bold\">Move mouse over this box (:throttle.250ms)</p>\n  <p class=\"text-xs font-mono text-primary font-bold\">Throttled calls: <span data-bind=\"count\">0</span></p>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

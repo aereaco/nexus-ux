@@ -1555,27 +1555,34 @@ export const routerAttributeModule: AttributeModule = {
           }
         }
 
-        // Direct URL access protection for wallgarden shadow routes
-        if (matched && matched.internal && path !== '/') {
-          const isDirectAddressBarNav = !suppressNavIntercept && typeof globalThis.location !== 'undefined' &&
-            stripBase(globalThis.location.pathname) === matched.path;
-          if (isDirectAddressBarNav) {
-            state.errorCode = 404;
-            staticComponent = errorPage;
-            if (typeof globalThis.history !== 'undefined') {
-              try { globalThis.history.replaceState(null, '', applyBase(cleanErrorPath)); } catch {}
-            }
+        if (!matched && state.routes) {
+          const dynRoute = (state.routes as any[]).find((r: any) => r.path === path || r.route === path);
+          if (dynRoute) {
+            matched = {
+              path: dynRoute.path || dynRoute.route,
+              name: dynRoute.name || dynRoute.id,
+              component: dynRoute.component || dynRoute.path,
+              meta: dynRoute.meta || {},
+              source: 'manifest',
+            } as RouteRecord;
           }
-        }
-
-        // Declarative redirect: follow route.redirect before committing.
-        if (matched && matched.redirect) {
-          state.navigate(matched.redirect, { replace: true });
-          return;
         }
 
         const errorPage = state.config.error ?? resolvePagesPath(undefined, 'error.html');
         const cleanErrorPath = '/error';
+
+        if (!matched && path !== cleanErrorPath) {
+          const resolvedStatic = resolveStaticComponent(path);
+          if (resolvedStatic && !resolvedStatic.endsWith('/error.html')) {
+            matched = {
+              path,
+              name: path.replace(/^\/+/, ''),
+              component: resolvedStatic,
+              meta: {},
+              source: 'static',
+            } as RouteRecord;
+          }
+        }
 
         // Direct Catch-All for unmatched routes: fall through to declared /error route
         if (!matched) {

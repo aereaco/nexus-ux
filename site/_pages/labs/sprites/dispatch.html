@@ -1,0 +1,23 @@
+<title>$dispatch</title>
+<meta name="id" content="lab-sprite-dispatch">
+<meta name="route" content="/labs/sprites/dispatch">
+<meta name="icon" content="material-symbols-light:send">
+<meta name="order" content="3">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/sprites">
+
+<div data-signal='{
+  "doc": {
+    "Title": "$dispatch",
+    "Category": "Sprites",
+    "Icon": "material-symbols-light:send",
+    "ModulePath": "src/modules/sprites/selector.ts",
+    "Description": "Dispatches bubbling CustomEvent with custom payload.",
+    "Syntax": "$dispatch(&#39;my-event&#39;, { id: 123 })",
+    "Params": [],
+    "Extensibility": "<p>Bubbles through DOM hierarchy and notifies registered listeners.</p>",
+    "Snippet": "<div data-signal=\"{ received: &#39;&#39; }\" data-on-custom-ping=\"received = $evt.detail\" class=\"p-4 bg-base-200/50 rounded-xl space-y-2\">\n  <button class=\"btn btn-sm btn-accent\" data-on-click=\"$dispatch(&#39;custom-ping&#39;, &#39;Hello from $dispatch!&#39;)\">Dispatch Ping Event</button>\n  <p class=\"text-xs font-mono text-success\" data-bind=\"received\"></p>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

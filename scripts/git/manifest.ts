@@ -49,6 +49,21 @@ function parseHeadMetadata(content: string): {
   parent?: string | null;
   category?: string;
 } {
+  // Support YAML frontmatter for .md documents
+  const frontmatterMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  const fmMaps: Record<string, string> = {};
+  if (frontmatterMatch) {
+    const lines = frontmatterMatch[1].split(/\r?\n/);
+    for (const l of lines) {
+      const idx = l.indexOf(":");
+      if (idx > 0) {
+        const k = l.substring(0, idx).trim().toLowerCase();
+        const v = l.substring(idx + 1).trim().replace(/^['"]|['"]$/g, "");
+        fmMaps[k] = v;
+      }
+    }
+  }
+
   const idMatch = content.match(/<meta\s+[^>]*name=["']id["'][^>]*content=["']([^"']*)["']/i) ||
     content.match(/<meta\s+[^>]*content=["']([^"']*)["'][^>]*name=["']id["']/i);
   const titleMatch = content.match(/<title[^>]*>([^<]+)<\/title>/i);
@@ -65,15 +80,16 @@ function parseHeadMetadata(content: string): {
   const categoryMatch = content.match(/<meta\s+[^>]*name=["']category["'][^>]*content=["']([^"']*)["']/i) ||
     content.match(/<meta\s+[^>]*content=["']([^"']*)["'][^>]*name=["']category["']/i);
 
-  const id = idMatch ? idMatch[1].trim() : undefined;
-  const title = titleMatch ? titleMatch[1].trim() : undefined;
-  const route = routeMatch ? routeMatch[1].trim() : undefined;
-  const icon = iconMatch ? iconMatch[1].trim() : undefined;
-  const orderVal = orderMatch ? parseInt(orderMatch[1].trim(), 10) : undefined;
+  const id = fmMaps["id"] || (idMatch ? idMatch[1].trim() : undefined);
+  const title = fmMaps["title"] || (titleMatch ? titleMatch[1].trim() : (content.match(/^#\s+(.+)$/m)?.[1]?.trim()));
+  const route = fmMaps["route"] || (routeMatch ? routeMatch[1].trim() : undefined);
+  const icon = fmMaps["icon"] || (iconMatch ? iconMatch[1].trim() : undefined);
+  const orderVal = fmMaps["order"] ? parseInt(fmMaps["order"], 10) : (orderMatch ? parseInt(orderMatch[1].trim(), 10) : undefined);
   const order = !isNaN(orderVal!) ? orderVal : undefined;
-  const internal = internalMatch ? internalMatch[1].trim().toLowerCase() === "true" : undefined;
-  const parent = parentMatch ? (parentMatch[1].trim() === "null" ? null : parentMatch[1].trim()) : undefined;
-  const category = categoryMatch ? categoryMatch[1].trim() : undefined;
+  const internal = fmMaps["internal"] ? fmMaps["internal"].toLowerCase() === "true" : (internalMatch ? internalMatch[1].trim().toLowerCase() === "true" : undefined);
+  const parentRaw = fmMaps["parent"] || (parentMatch ? parentMatch[1].trim() : undefined);
+  const parent = parentRaw ? (parentRaw === "null" ? null : parentRaw) : undefined;
+  const category = fmMaps["category"] || (categoryMatch ? categoryMatch[1].trim() : undefined);
 
   return { id, title, route, icon, order, internal, parent, category };
 }
@@ -82,7 +98,11 @@ function scanDirectory(dir: string, baseWebPath: string, isInternalDefault = fal
   const list: RawManifestEntry[] = [];
   try {
     for (const entry of Deno.readDirSync(dir)) {
-      if (entry.isFile && VALID_EXTENSIONS.some((ext) => entry.name.endsWith(ext))) {
+      if (entry.isDirectory) {
+        // Recursively scan subdirectories (e.g. site/_pages/docs, site/_pages/labs)
+        const subList = scanDirectory(`${dir}/${entry.name}`, `${baseWebPath}/${entry.name}`, isInternalDefault);
+        list.push(...subList);
+      } else if (entry.isFile && VALID_EXTENSIONS.some((ext) => entry.name.endsWith(ext))) {
         const nameWithoutExt = entry.name.replace(/\.[^.]+$/, "");
         const filePath = `${dir}/${entry.name}`;
         const content = Deno.readTextFileSync(filePath);

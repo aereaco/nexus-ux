@@ -1,0 +1,30 @@
+<title>data-theme</title>
+<meta name="id" content="lab-attr-theme">
+<meta name="route" content="/labs/attributes/theme">
+<meta name="icon" content="material-symbols-light:palette-outline">
+<meta name="order" content="30">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/attributes">
+
+<div data-signal='{
+  "doc": {
+    "Title": "data-theme",
+    "Category": "Attributes",
+    "Icon": "material-symbols-light:palette-outline",
+    "ModulePath": "src/modules/attributes/theme.ts",
+    "Description": "Manages DaisyUI and Tailwind CSS theme states, exposing $theme, $themeIcon, $switchTheme(), and $setTheme().",
+    "Syntax": "<html data-theme=\"{ default: &#39;dark&#39; }\">",
+    "Params": [
+      {
+        "name": "data-theme",
+        "type": "Object / String",
+        "default": "&#39;dark&#39;",
+        "description": "Initial theme and available theme palette declarations."
+      }
+    ],
+    "Extensibility": "<p>Persists theme selections to localStorage automatically and updates data-theme on documentElement without layout thrashing.</p>",
+    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-3\">\n  <div class=\"flex items-center gap-2\">\n    <button class=\"btn btn-sm btn-outline\" data-on-click=\"document.documentElement.setAttribute(&#39;data-theme&#39;, &#39;synthwave&#39;)\">Synthwave</button>\n    <button class=\"btn btn-sm btn-outline\" data-on-click=\"document.documentElement.setAttribute(&#39;data-theme&#39;, &#39;luxury&#39;)\">Luxury</button>\n    <button class=\"btn btn-sm btn-outline\" data-on-click=\"document.documentElement.setAttribute(&#39;data-theme&#39;, &#39;dark&#39;)\">Dark</button>\n  </div>\n  <p class=\"text-xs opacity-70\">Click above to dynamically test theme switching.</p>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

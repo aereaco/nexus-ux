@@ -1,0 +1,30 @@
+<title>data-mask</title>
+<meta name="id" content="lab-attr-mask">
+<meta name="route" content="/labs/attributes/mask">
+<meta name="icon" content="material-symbols-light:pin-outline">
+<meta name="order" content="20">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/attributes">
+
+<div data-signal='{
+  "doc": {
+    "Title": "data-mask",
+    "Category": "Attributes",
+    "Icon": "material-symbols-light:pin-outline",
+    "ModulePath": "src/modules/attributes/mask.ts",
+    "Description": "Real-time input pattern masking for telephone numbers, currency, credit cards, dates, and postal codes.",
+    "Syntax": "<input data-mask=\"&#39;(999) 999-9999&#39;\" />",
+    "Params": [
+      {
+        "name": "data-mask",
+        "type": "Pattern String",
+        "default": "&#39;&#39;",
+        "description": "Mask template using 9 (digit), a (letter), * (alphanumeric)."
+      }
+    ],
+    "Extensibility": "<p>Intercepts native input events, preserves cursor position, and seamlessly writes clean unmasked or masked values to the bound signal.</p>",
+    "Snippet": "<div data-signal=\"{ phone: &#39;&#39; }\" class=\"p-4 bg-base-200/50 rounded-xl space-y-3\">\n  <label class=\"text-xs font-bold opacity-70\">Phone Number Mask:</label>\n  <input type=\"text\" data-mask=\"&#39;(999) 999-9999&#39;\" data-bind-value=\"phone\" placeholder=\"(555) 000-0000\" class=\"input input-bordered input-sm font-mono w-48\" />\n  <p class=\"text-xs font-mono\">Bound state: <span class=\"font-bold text-primary\" data-bind=\"phone\"></span></p>\n</div>"
+  }
+}'>
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

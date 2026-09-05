@@ -152,14 +152,23 @@ function resolvePageFile(cleanPath: string): { fileName: string; filePath: strin
   if (clean === "" || clean === "home") {
     return { fileName: "home.html", filePath: join(SITE_DIR, "_pages", "home.html") };
   }
-  const exactPath = join(SITE_DIR, "_pages", `${clean}.html`);
-  try {
-    if (Deno.statSync(exactPath).isFile) return { fileName: `${clean}.html`, filePath: exactPath };
-  } catch { /* fallback */ }
+
+  for (const ext of [".html", ".md", ".htm", ".markdown"]) {
+    const exactPath = join(SITE_DIR, "_pages", `${clean}${ext}`);
+    try {
+      if (Deno.statSync(exactPath).isFile) return { fileName: `${clean}${ext}`, filePath: exactPath };
+    } catch { /* fallback */ }
+  }
 
   const leaf = clean.split("/").pop() || clean;
-  const leafPath = join(SITE_DIR, "_pages", `${leaf}.html`);
-  return { fileName: `${leaf}.html`, filePath: leafPath };
+  for (const ext of [".html", ".md", ".htm", ".markdown"]) {
+    const leafPath = join(SITE_DIR, "_pages", `${leaf}${ext}`);
+    try {
+      if (Deno.statSync(leafPath).isFile) return { fileName: `${leaf}${ext}`, filePath: leafPath };
+    } catch { /* fallback */ }
+  }
+
+  return { fileName: `${leaf}.html`, filePath: join(SITE_DIR, "_pages", `${leaf}.html`) };
 }
 
 async function renderProgressive(cleanPath: string): Promise<string> {
@@ -266,6 +275,17 @@ async function handler(req: Request): Promise<Response> {
     distRes.headers.set("Cross-Origin-Opener-Policy", "same-origin");
     distRes.headers.set("Cross-Origin-Embedder-Policy", "require-corp");
     return distRes;
+  }
+
+  // A2. Root Documentation & Markdown Files
+  if (url.pathname.startsWith("/docs/") && url.pathname.includes(".")) {
+    const docReq = new Request(new URL(url.pathname.replace(/^\/docs\//, "/"), url.origin), req);
+    const docRes = await serveDir(docReq, { fsRoot: join(REPO_ROOT, "docs"), quiet: true });
+    if (docRes.status !== 404) return docRes;
+  }
+  if (["/README.md", "/changelog.md", "/LICENSE"].includes(url.pathname)) {
+    const rootRes = await serveDir(req, { fsRoot: REPO_ROOT, quiet: true });
+    if (rootRes.status !== 404) return rootRes;
   }
 
   // B. Static Files & Component Fragments in /site
