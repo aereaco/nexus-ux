@@ -1,0 +1,96 @@
+<title>Attributes</title>
+<meta name="id" content="labs-attributes">
+<meta name="route" content="/labs/attributes">
+<meta name="icon" content="material-symbols-light:code-blocks-outline">
+<meta name="order" content="1">
+<meta name="category" content="Labs">
+
+<div class="p-6 max-w-5xl mx-auto space-y-6">
+  <div class="border-b border-base-content/10 pb-4">
+    <div class="flex items-center gap-2 mb-1">
+      <span class="badge badge-primary badge-sm font-semibold uppercase tracking-wider">Labs Category</span>
+      <span class="badge badge-ghost badge-sm">30 Active Directives</span>
+    </div>
+    <h1 class="text-3xl font-extrabold tracking-tight text-base-content flex items-center gap-3">
+      <iconify-icon icon="material-symbols-light:code-blocks-outline" class="text-primary text-3xl"></iconify-icon>
+      Reactive Attributes & Directives
+    </h1>
+    <p class="text-base text-base-content/70 mt-1 leading-relaxed">
+      Declarative HTML directives governing state initialization, two-way bindings, physical and visual rendering, keyed loops, and lifecycle hooks.
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-colors shadow-sm">
+      <div class="flex items-center justify-between mb-2">
+        <span class="font-mono font-bold text-primary">data-signal</span>
+        <span class="badge badge-xs badge-ghost">State</span>
+      </div>
+      <p class="text-xs text-base-content/70 mb-4 leading-relaxed">Declares local fine-grained reactive state blocks directly in the DOM namespace.</p>
+      <a href="/labs/attributes/signal" class="btn btn-xs btn-outline btn-primary self-start">Open Lab &rarr;</a>
+    </div>
+
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-colors shadow-sm">
+      <div class="flex items-center justify-between mb-2">
+        <span class="font-mono font-bold text-primary">data-bind</span>
+        <span class="badge badge-xs badge-ghost">Binding</span>
+      </div>
+      <p class="text-xs text-base-content/70 mb-4 leading-relaxed">Two-way native browser API binding and HTML attribute synchronization.</p>
+      <a href="/labs/attributes/bind" class="btn btn-xs btn-outline btn-primary self-start">Open Lab &rarr;</a>
+    </div>
+
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-colors shadow-sm">
+      <div class="flex items-center justify-between mb-2">
+        <span class="font-mono font-bold text-primary">data-for</span>
+        <span class="badge badge-xs badge-ghost">Loop</span>
+      </div>
+      <p class="text-xs text-base-content/70 mb-4 leading-relaxed">Zero-allocation keyed list rendering with in-place DOM morphing.</p>
+      <a href="/labs/attributes/for" class="btn btn-xs btn-outline btn-primary self-start">Open Lab &rarr;</a>
+    </div>
+
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-colors shadow-sm">
+      <div class="flex items-center justify-between mb-2">
+        <span class="font-mono font-bold text-primary">data-if</span>
+        <span class="badge badge-xs badge-ghost">Conditional</span>
+      </div>
+      <p class="text-xs text-base-content/70 mb-4 leading-relaxed">Physical conditional DOM mounting with anchor comments and teardown.</p>
+      <a href="/labs/attributes/if" class="btn btn-xs btn-outline btn-primary self-start">Open Lab &rarr;</a>
+    </div>
+
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-colors shadow-sm">
+      <div class="flex items-center justify-between mb-2">
+        <span class="font-mono font-bold text-primary">data-show</span>
+        <span class="badge badge-xs badge-ghost">Toggle</span>
+      </div>
+      <p class="text-xs text-base-content/70 mb-4 leading-relaxed">Visual visibility toggle via display styles without structural DOM teardown.</p>
+      <a href="/labs/attributes/show" class="btn btn-xs btn-outline btn-primary self-start">Open Lab &rarr;</a>
+    </div>
+
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-colors shadow-sm">
+      <div class="flex items-center justify-between mb-2">
+        <span class="font-mono font-bold text-primary">data-on</span>
+        <span class="badge badge-xs badge-ghost">Events</span>
+      </div>
+      <p class="text-xs text-base-content/70 mb-4 leading-relaxed">Declarative event handling with modifiers, $evt, and pipeline execution.</p>
+      <a href="/labs/attributes/on" class="btn btn-xs btn-outline btn-primary self-start">Open Lab &rarr;</a>
+    </div>
+
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-colors shadow-sm">
+      <div class="flex items-center justify-between mb-2">
+        <span class="font-mono font-bold text-primary">data-class</span>
+        <span class="badge badge-xs badge-ghost">Styling</span>
+      </div>
+      <p class="text-xs text-base-content/70 mb-4 leading-relaxed">Reconciles dynamic Tailwind / DaisyUI class lists or boolean toggles.</p>
+      <a href="/labs/attributes/class" class="btn btn-xs btn-outline btn-primary self-start">Open Lab &rarr;</a>
+    </div>
+
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-colors shadow-sm">
+      <div class="flex items-center justify-between mb-2">
+        <span class="font-mono font-bold text-primary">data-style</span>
+        <span class="badge badge-xs badge-ghost">Styling</span>
+      </div>
+      <p class="text-xs text-base-content/70 mb-4 leading-relaxed">Reconciles dynamic inline styles with unit formatting and camelCase support.</p>
+      <a href="/labs/attributes/style" class="btn btn-xs btn-outline btn-primary self-start">Open Lab &rarr;</a>
+    </div>
+  </div>
+</div>

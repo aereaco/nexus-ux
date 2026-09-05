@@ -19,6 +19,16 @@
     "parent": null
   },
   {
+    "id": "labs-attributes",
+    "route": "/labs/attributes",
+    "path": "/_pages/labs/attributes.html",
+    "title": "Attributes",
+    "icon": "material-symbols-light:code-blocks-outline",
+    "order": 1,
+    "parent": null,
+    "category": "Labs"
+  },
+  {
     "id": "profile1",
     "route": "/profiles/profile1",
     "path": "/_pages/profile1.html",
