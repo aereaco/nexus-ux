@@ -1032,7 +1032,8 @@ export const routerAttributeModule: AttributeModule = {
           const target = applyBase(url);
           const tabId = opts?.tabId ?? getActiveTabId() ?? state.activePageTabId ?? state.activeTabId ?? null;
           const cleanPath = stripBase(target);
-          const matched = routeList.find((r) => r.path === cleanPath || r.path === url);
+          const matched = routeList.find((r) => r.path === cleanPath || r.path === url) ||
+            (state?.routes as any[])?.find((r) => r.path === cleanPath || r.path === url);
           const isShadow = matched?.internal || shadowMatch(cleanPath);
 
           // Track this tab's current path + metadata so switching the active

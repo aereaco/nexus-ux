@@ -7673,7 +7673,7 @@ ${match}</ul>
                 const target = applyBase(url);
                 const tabId = opts?.tabId ?? getActiveTabId() ?? state.activePageTabId ?? state.activeTabId ?? null;
                 const cleanPath = stripBase(target);
-                const matched = routeList.find((r) => r.path === cleanPath || r.path === url);
+                const matched = routeList.find((r) => r.path === cleanPath || r.path === url) || state?.routes?.find((r) => r.path === cleanPath || r.path === url);
                 const isShadow = matched?.internal || shadowMatch(cleanPath);
                 if (tabId) {
                   state.tabPaths[tabId] = cleanPath;
