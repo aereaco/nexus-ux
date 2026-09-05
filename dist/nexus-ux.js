@@ -3719,14 +3719,23 @@ ${scripts}
                     });
                     html = typeof result === "string" ? result : String(result);
                   }
-                  if (html.includes("<!DOCTYPE") || html.includes("data-init") && el.tagName.toLowerCase() !== "html") {
+                  const rawText = html;
+                  const isMarkdown = targetPath.endsWith(".md") || targetPath.endsWith(".markdown");
+                  if (isMarkdown) {
+                    const fmMatch = rawText.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+                    let cleanMd = rawText;
+                    if (fmMatch) {
+                      cleanMd = rawText.slice(fmMatch[0].length).trim();
+                    }
+                    html = `<div class="p-6 max-w-5xl mx-auto"><article data-markdown class="prose max-w-none">${cleanMd}</article></div>`;
+                  } else if (rawText.includes("<!DOCTYPE") || rawText.includes("data-init") && el.tagName.toLowerCase() !== "html") {
                     throw new Error(`Invalid component fragment returned for "${targetPath}": received full HTML shell.`);
                   }
                   if (runtime.isDevMode) {
                     console.log(`[Component] Template loaded for <${el.tagName}>, length: ${html.length}`);
                   }
                   componentState.templateContent = html;
-                  const extracted = extractResourceMetadata(html, config.path, runtime);
+                  const extracted = extractResourceMetadata(rawText, config.path, runtime);
                   componentState.meta = extracted;
                   if (tabObj && extracted && (extracted.title || extracted.icon)) {
                     tabObj.meta = { ...tabObj.meta || {}, ...extracted };
@@ -3761,7 +3770,6 @@ ${scripts}
                       }
                     });
                     el.setAttribute("data-nx-cmp-done", "true");
-                    runtime.processElement(el);
                   }
                   const focusable = (config.shadowrootmode ? el.shadowRoot : el)?.querySelector("[autofocus], [data-autofocus]");
                   if (focusable instanceof HTMLElement) {
@@ -3779,6 +3787,12 @@ ${scripts}
                   componentState.isLoading = false;
                   if (isTabOutlet && tabObj && typeof tabObj === "object") {
                     tabObj.isLoading = false;
+                    if (componentState.meta?.title && (!tabObj.meta || !tabObj.meta.title)) {
+                      tabObj.meta = Object.assign(tabObj.meta || {}, { title: componentState.meta.title });
+                    }
+                    if (componentState.meta?.icon && (!tabObj.meta || !tabObj.meta.icon)) {
+                      tabObj.meta = Object.assign(tabObj.meta || {}, { icon: componentState.meta.icon });
+                    }
                   }
                 }
               };
