@@ -77,6 +77,20 @@ function extractResourceMetadata(
   if (!htmlText || typeof htmlText !== 'string') return meta;
 
   try {
+    // Check YAML frontmatter for .md components
+    const fmMatch = htmlText.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+    if (fmMatch) {
+      const lines = fmMatch[1].split(/\r?\n/);
+      for (const l of lines) {
+        const idx = l.indexOf(':');
+        if (idx > 0) {
+          const k = l.substring(0, idx).trim().toLowerCase();
+          const v = l.substring(idx + 1).trim().replace(/^['"]|['"]$/g, '');
+          meta[k] = v;
+        }
+      }
+    }
+
     const parser = new DOMParser();
     const parsedDoc = parser.parseFromString(htmlText, 'text/html');
 
