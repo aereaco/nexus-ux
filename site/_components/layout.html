@@ -2365,8 +2365,8 @@
   </div>
 
   <!-- ================= Collaborative Chat FAB & Speed Dial ================= -->
-  <!-- Speed Dial Action Pills: Stacks upward when chatFabOpen is true, hides when chatbarOpen -->
-  <div data-show="chatFabOpen && !chatbarOpen"
+  <!-- Speed Dial Action Pills: Stacks upward when chatFabOpen is true, hides when chatbarOpen or terminalOpen -->
+  <div data-show="chatFabOpen && !chatbarOpen && !terminalOpen"
     class="fixed bottom-24 end-6 z-30 flex flex-col items-end gap-3 transition-all duration-300">
     <!-- "New Conversation" Action -->
     <div class="flex items-center gap-2.5">
