@@ -1303,7 +1303,7 @@ export function buildReorderContext<T>(
           const prop = parts.pop()!;
           const targetObj = runtime.evaluate(container, parts.join('.'));
           if (targetObj && typeof targetObj === 'object') {
-            targetObj[prop] = [...list];
+            (targetObj as Record<string, unknown>)[prop] = [...list];
           }
         } else {
           const stack = getDataStack(container);
