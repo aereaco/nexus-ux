@@ -18,17 +18,17 @@ const markdownModule: AttributeModule = {
 
       // 1. Isolate and Preserve Code Blocks
       //    (Prevents internal syntax from triggering other regex rules)
-      html = html.replace(/```([a-z]*)\n([\s\S]*?)```/gim, (_match, lang, code) => {
+      html = html.replace(/```([a-z0-9_-]*)\r?\n([\s\S]*?)```/gim, (_match, lang, code) => {
          const id = `__CODE_BLOCK_${codeBlocks.length}__`;
          const escaped = code.replace(/</g, '&lt;').replace(/>/g, '&gt;').trim();
          codeBlocks.push(
-           `<pre class="bg-base-300 p-4 rounded-xl overflow-x-auto text-sm my-4 border border-base-200 font-mono shadow-inner text-base-content" data-lang="${lang}"><code>${escaped}</code></pre>`
+           `<pre data-ignore class="bg-base-300 p-4 rounded-xl overflow-x-auto text-sm my-4 border border-base-200 font-mono shadow-inner text-base-content" data-lang="${lang}"><code data-ignore>${escaped}</code></pre>`
          );
          return id;
       });
 
       // 2. Transpile Formatting
-      html = html.replace(/`([^`]+)`/g, '<code class="bg-base-200 text-primary px-1.5 py-0.5 rounded font-mono text-sm">$1</code>');
+      html = html.replace(/`([^`]+)`/g, '<code data-ignore class="bg-base-200 text-primary px-1.5 py-0.5 rounded font-mono text-sm">$1</code>');
       html = html.replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold mt-6 mb-3 text-base-content">$1</h3>');
       html = html.replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold mt-8 mb-4 border-b border-base-300 pb-2 border-opacity-50 text-base-content">$1</h2>');
       html = html.replace(/^# (.*$)/gim, '<h1 class="text-4xl font-extrabold mt-10 mb-6 tracking-tight text-base-content">$1</h1>');
@@ -69,7 +69,7 @@ const markdownModule: AttributeModule = {
        if (el.innerHTML !== transpiled) {
            // We deploy morphDOM here conceptually, but a hard innerHTML drop avoids mutating parsed text bounds
            el.innerHTML = transpiled;
-           runtime.processElement(el);
+           runtime.processElement(el, false, 'ux');
        }
     };
 

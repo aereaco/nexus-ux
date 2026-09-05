@@ -3642,7 +3642,6 @@ ${scripts}
                   const t = scope.tab;
                   if (t && typeof t === "object") {
                     tabObj = t;
-                    tabObj.linkedContent = componentState;
                   }
                   break;
                 }
@@ -3686,7 +3685,6 @@ ${scripts}
                 componentState.hasError = false;
                 if (isTabOutlet && tabObj && typeof tabObj === "object") {
                   tabObj.isLoading = true;
-                  tabObj.linkedContent = componentState;
                 }
                 try {
                   let html = "";
@@ -3712,30 +3710,31 @@ ${scripts}
                           const extracted2 = extractResourceMetadata(fresh, targetPath, runtime);
                           componentState.meta = extracted2;
                           if (tabObj && extracted2) {
-                            tabObj.meta = { ...tabObj.meta || {}, ...extracted2 };
+                            tabObj.meta = Object.assign(tabObj.meta || {}, extracted2);
                           }
                         }
                       }
                     });
                     html = typeof result === "string" ? result : String(result);
                   }
+                  const rawText = html;
+                  const extracted = extractResourceMetadata(rawText, config.path, runtime);
+                  componentState.meta = extracted;
                   const isMarkdown = targetPath.endsWith(".md") || targetPath.endsWith(".markdown");
                   if (isMarkdown) {
-                    const fmMatch = html.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-                    let cleanMd = html;
+                    const fmMatch = rawText.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+                    let cleanMd = rawText;
                     if (fmMatch) {
-                      cleanMd = html.slice(fmMatch[0].length).trim();
+                      cleanMd = rawText.slice(fmMatch[0].length).trim();
                     }
                     html = `<div class="p-6 max-w-5xl mx-auto"><article data-markdown class="prose max-w-none">${cleanMd}</article></div>`;
-                  } else if (html.includes("<!DOCTYPE") || html.includes("data-init") && el.tagName.toLowerCase() !== "html") {
+                  } else if (rawText.includes("<!DOCTYPE") || rawText.includes("data-init") && el.tagName.toLowerCase() !== "html") {
                     throw new Error(`Invalid component fragment returned for "${targetPath}": received full HTML shell.`);
                   }
                   if (runtime.isDevMode) {
                     console.log(`[Component] Template loaded for <${el.tagName}>, length: ${html.length}`);
                   }
                   componentState.templateContent = html;
-                  const extracted = extractResourceMetadata(html, config.path, runtime);
-                  componentState.meta = extracted;
                   if (tabObj && extracted && (extracted.title || extracted.icon)) {
                     tabObj.meta = { ...tabObj.meta || {}, ...extracted };
                   }
@@ -3748,13 +3747,13 @@ ${scripts}
                     if (scopeExpr && scopeExpr.trim()) {
                       const declared = runtime.evaluate(el, scopeExpr);
                       const declaredObj = declared && typeof declared === "object" ? declared : {};
-                      shadowScope = Object.assign(/* @__PURE__ */ Object.create(null), ctx, declaredObj);
+                      shadowScope = createInheritedShadowScope(el, declaredObj);
                     } else {
                       shadowScope = createInheritedShadowScope(el, ctx);
                     }
                     shadow[DATA_STACK_KEY] = [shadowScope];
                     runtime.morphDOM(shadow, html);
-                    stylesheet.adoptElementSubtree(shadow);
+                    stylesheet.adoptShadowSubtree(shadow);
                     Array.from(shadow.children).forEach((child) => {
                       if (child instanceof HTMLElement || child instanceof SVGElement) {
                         runtime.processElement(child);
@@ -3787,6 +3786,12 @@ ${scripts}
                   componentState.isLoading = false;
                   if (isTabOutlet && tabObj && typeof tabObj === "object") {
                     tabObj.isLoading = false;
+                    if (componentState.meta?.title && (!tabObj.meta || !tabObj.meta.title)) {
+                      tabObj.meta = Object.assign(tabObj.meta || {}, { title: componentState.meta.title });
+                    }
+                    if (componentState.meta?.icon && (!tabObj.meta || !tabObj.meta.icon)) {
+                      tabObj.meta = Object.assign(tabObj.meta || {}, { icon: componentState.meta.icon });
+                    }
                   }
                 }
               };
@@ -5306,7 +5311,7 @@ ${scripts}
                 [dragClass, ghostClass, chosenClass].forEach((c) => {
                   if (c) {
                     c.split(/\s+/).filter(Boolean).forEach((cls) => {
-                      stylesheet_default.adoptClass(cls, container, runtime);
+                      stylesheet.adoptClass(cls, container, runtime);
                     });
                   }
                 });
@@ -6441,15 +6446,15 @@ ${scripts}
           const parseMarkdown = (md) => {
             let html = md || "";
             const codeBlocks = [];
-            html = html.replace(/```([a-z]*)\n([\s\S]*?)```/gim, (_match, lang, code) => {
+            html = html.replace(/```([a-z0-9_-]*)\r?\n([\s\S]*?)```/gim, (_match, lang, code) => {
               const id = `__CODE_BLOCK_${codeBlocks.length}__`;
               const escaped = code.replace(/</g, "&lt;").replace(/>/g, "&gt;").trim();
               codeBlocks.push(
-                `<pre class="bg-base-300 p-4 rounded-xl overflow-x-auto text-sm my-4 border border-base-200 font-mono shadow-inner text-base-content" data-lang="${lang}"><code>${escaped}</code></pre>`
+                `<pre data-ignore class="bg-base-300 p-4 rounded-xl overflow-x-auto text-sm my-4 border border-base-200 font-mono shadow-inner text-base-content" data-lang="${lang}"><code data-ignore>${escaped}</code></pre>`
               );
               return id;
             });
-            html = html.replace(/`([^`]+)`/g, '<code class="bg-base-200 text-primary px-1.5 py-0.5 rounded font-mono text-sm">$1</code>');
+            html = html.replace(/`([^`]+)`/g, '<code data-ignore class="bg-base-200 text-primary px-1.5 py-0.5 rounded font-mono text-sm">$1</code>');
             html = html.replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold mt-6 mb-3 text-base-content">$1</h3>');
             html = html.replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold mt-8 mb-4 border-b border-base-300 pb-2 border-opacity-50 text-base-content">$1</h2>');
             html = html.replace(/^# (.*$)/gim, '<h1 class="text-4xl font-extrabold mt-10 mb-6 tracking-tight text-base-content">$1</h1>');
@@ -6480,7 +6485,7 @@ ${match}</ul>
             const transpiled = parseMarkdown(mdText);
             if (el.innerHTML !== transpiled) {
               el.innerHTML = transpiled;
-              runtime.processElement(el);
+              runtime.processElement(el, false, "ux");
             }
           };
           if (value) {
@@ -7153,64 +7158,14 @@ ${match}</ul>
               const globs = Array.isArray(shadows) ? shadows : [shadows];
               return globs.some((g) => globToRegex(g).test(path));
             };
-            const buildManifest = async () => {
-              const entries = routeList.slice();
-              const manifestUrl = state.config.manifest;
-              if (manifestUrl) {
-                try {
-                  let raw;
-                  if (runtime.fetch) {
-                    raw = await runtime.fetch.request(applyBase(manifestUrl), { responseType: "text" }, el);
-                  } else {
-                    raw = await (await fetch(applyBase(manifestUrl))).text();
-                  }
-                  const parsed = JSON.parse(raw);
-                  const list = Array.isArray(parsed) ? parsed : parsed.routes ?? [];
-                  for (const entry of list) {
-                    if (!entry || typeof entry !== "object")
-                      continue;
-                    const routePath = entry.route !== void 0 ? entry.route : entry.path || "/";
-                    const compPath = entry.path || entry.component || "";
-                    const id = entry.id || entry.name || "";
-                    const isInternal = entry.internal === true || !routePath || shadowMatch(routePath) || shadowMatch(compPath);
-                    const meta = pathToRegex(routePath || "/");
-                    const rec = {
-                      path: routePath,
-                      element: document.documentElement,
-                      name: id,
-                      redirect: entry.redirect,
-                      layout: entry.layout,
-                      component: compPath,
-                      meta: {
-                        title: entry.title,
-                        icon: entry.icon,
-                        order: entry.order,
-                        ...entry.meta || {}
-                      },
-                      internal: isInternal,
-                      source: "manifest",
-                      ...meta
-                    };
-                    rec.matcher = meta.regex;
-                    entries.push(rec);
-                  }
-                } catch (e) {
-                  reportError(new Error(`router: failed to load manifest "${manifestUrl}": ${e}`), el);
-                }
-              }
-              state.manifest = entries.filter((r) => !r.internal).slice();
-              state.routes = entries.slice();
-              for (const rec of entries) {
-                if (!routeList.some((r) => r.path === rec.path && r.name === rec.name)) {
-                  routeList.push(rec);
-                  if (rec.matcher) {
-                    matchMeta.set(rec, { regex: rec.matcher, keys: rec.keys || [], hasWildcard: rec.hasWildcard || false });
-                  }
-                }
-              }
-            };
             const routeList = [];
             const matchMeta = /* @__PURE__ */ new WeakMap();
+            const buildManifest = () => {
+              if (state) {
+                state.manifest = routeList.filter((r) => !r.internal).slice();
+                state.routes = routeList.slice();
+              }
+            };
             if (Array.isArray(cfg.routes)) {
               for (const r of cfg.routes) {
                 if (r && (r.route || r.path)) {
@@ -7372,13 +7327,18 @@ ${match}</ul>
                           parent: chParent,
                           meta: { title: chTitle, parent: chParent }
                         });
-                        if (!state.routes.find((r) => r.path === chHref)) {
-                          state.routes.push({
+                        const existingCh = routeList.find((r) => r.path === chHref);
+                        if (!existingCh) {
+                          const chRec = {
                             path: chHref,
-                            component: chPath,
                             name: chName,
-                            meta: { title: chTitle, parent: chParent }
-                          });
+                            component: chPath,
+                            meta: { title: chTitle, parent: chParent },
+                            source: "manifest"
+                          };
+                          const chMeta = pathToRegex(chHref);
+                          matchMeta.set(chRec, chMeta);
+                          routeList.push(chRec);
                         }
                       }
                     }
@@ -7394,14 +7354,18 @@ ${match}</ul>
                       children: children.length > 0 ? children : void 0,
                       meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || void 0 }
                     });
-                    const existing = state.routes.find((r) => r.path === href);
+                    const existing = routeList.find((r) => r.path === href);
                     if (!existing) {
-                      state.routes.push({
+                      const rec = {
                         path: href,
-                        component: compPath,
                         name: cleanName,
-                        meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || void 0 }
-                      });
+                        component: compPath,
+                        meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || void 0 },
+                        source: "manifest"
+                      };
+                      const rMeta = pathToRegex(href);
+                      matchMeta.set(rec, rMeta);
+                      routeList.push(rec);
                     }
                   }
                   const rootPages = [];
@@ -7537,6 +7501,8 @@ ${match}</ul>
                   }
                 }
                 state.pages = discovered;
+                state.routes = routeList.slice();
+                state.manifest = routeList.filter((r) => !r.internal).slice();
                 state.lineage = state.getLineage(state.route || state.path);
               },
               lineage: [],
@@ -7692,13 +7658,19 @@ ${match}</ul>
                   if (curPageTab) {
                     if (curPageTab.source !== resolvedSource) {
                       curPageTab.source = resolvedSource;
-                      if (curPageTab.linkedContent) {
-                        curPageTab.linkedContent.isLoading = true;
-                      }
+                      curPageTab.isLoading = true;
                     }
                     if (curPageTab.route !== cleanPath)
                       curPageTab.route = cleanPath;
-                    state.pageTabs = [...state.pageTabs];
+                    const meta = matched?.meta || {};
+                    const title = opts?.title || meta.title || matched?.name;
+                    const icon = opts?.icon || meta.icon;
+                    curPageTab.meta = {
+                      ...curPageTab.meta || {},
+                      ...meta,
+                      ...title ? { title } : {},
+                      ...icon ? { icon } : {}
+                    };
                   }
                   const _tabs = (runtime.globalSignals ? runtime.globalSignals() : {}).tabs;
                   if (Array.isArray(_tabs)) {
@@ -7995,7 +7967,6 @@ ${match}</ul>
               pendingRoutes.forEach((rec) => state.addRoute(rec));
               runtime._pendingDeclaredRoutes = [];
             }
-            state.discoverPages();
             const globals = runtime.globalSignals();
             const getActiveTabId = () => typeof globals.activePageTabId === "string" && globals.activePageTabId || typeof globals.activeTabId === "string" && globals.activeTabId || null;
             const setActiveTabId = (id) => {
@@ -8245,7 +8216,6 @@ ${match}</ul>
                       if (routeMeta?.title || routeMeta?.icon) {
                         curPageTab.meta = { ...curPageTab.meta || {}, ...routeMeta };
                       }
-                      state.pageTabs = [...state.pageTabs];
                     }
                     const tabs = globals.tabs || [];
                     const atIdx = tabs.findIndex((t) => t.id === _at);
@@ -8353,7 +8323,6 @@ ${match}</ul>
             }
             document.addEventListener(popStateEvent, onPopState);
             queueMicrotask(async () => {
-              await buildManifest();
               await state.discoverPages();
               updateRoute(globalThis.location.href);
             });

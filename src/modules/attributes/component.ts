@@ -271,7 +271,6 @@ const componentModule: AttributeModule = {
             const t = (scope as any).tab;
             if (t && typeof t === 'object') {
               tabObj = t;
-              tabObj.linkedContent = componentState;
             }
             break;
           }
@@ -317,7 +316,6 @@ const componentModule: AttributeModule = {
           componentState.hasError = false;
           if (isTabOutlet && tabObj && typeof tabObj === 'object') {
             (tabObj as any).isLoading = true;
-            (tabObj as any).linkedContent = componentState;
           }
           try {
             let html = '';
@@ -342,7 +340,7 @@ const componentModule: AttributeModule = {
                     const extracted = extractResourceMetadata(fresh, targetPath, runtime);
                     componentState.meta = extracted;
                     if (tabObj && extracted) {
-                      tabObj.meta = { ...(tabObj.meta || {}), ...extracted };
+                      tabObj.meta = Object.assign(tabObj.meta || {}, extracted);
                     }
                   }
                 }
@@ -350,15 +348,19 @@ const componentModule: AttributeModule = {
               html = typeof result === 'string' ? result : String(result);
             }
 
+            const rawText = html;
+            const extracted = extractResourceMetadata(rawText, config.path, runtime);
+            componentState.meta = extracted;
+
             const isMarkdown = targetPath.endsWith('.md') || targetPath.endsWith('.markdown');
             if (isMarkdown) {
-              const fmMatch = html.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-              let cleanMd = html;
+              const fmMatch = rawText.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+              let cleanMd = rawText;
               if (fmMatch) {
-                cleanMd = html.slice(fmMatch[0].length).trim();
+                cleanMd = rawText.slice(fmMatch[0].length).trim();
               }
               html = `<div class="p-6 max-w-5xl mx-auto"><article data-markdown class="prose max-w-none">${cleanMd}</article></div>`;
-            } else if (html.includes('<!DOCTYPE') || (html.includes('data-init') && el.tagName.toLowerCase() !== 'html')) {
+            } else if (rawText.includes('<!DOCTYPE') || (rawText.includes('data-init') && el.tagName.toLowerCase() !== 'html')) {
               throw new Error(`Invalid component fragment returned for "${targetPath}": received full HTML shell.`);
             }
 
@@ -367,8 +369,6 @@ const componentModule: AttributeModule = {
             }
 
             componentState.templateContent = html;
-            const extracted = extractResourceMetadata(html, config.path, runtime);
-            componentState.meta = extracted;
 
             // Sync resolved metadata back to the reactive tab object so the tab
             // header binding (tab.meta?.title / tab.meta?.icon) updates immediately.
@@ -388,14 +388,14 @@ const componentModule: AttributeModule = {
                   declared && typeof declared === 'object'
                     ? (declared as Record<string, unknown>)
                     : {};
-                shadowScope = Object.assign(Object.create(null), ctx, declaredObj);
+                shadowScope = createInheritedShadowScope(el, declaredObj as ComponentContext);
               } else {
                 shadowScope = createInheritedShadowScope(el, ctx);
               }
               (shadow as unknown as NexusEnhancedElement)[DATA_STACK_KEY] = [shadowScope];
 
               runtime.morphDOM(shadow as unknown as HTMLElement, html);
-              stylesheet.adoptElementSubtree(shadow);
+              stylesheet.adoptShadowSubtree(shadow);
               Array.from(shadow.children).forEach((child) => {
                 if (child instanceof HTMLElement || child instanceof SVGElement) {
                   runtime.processElement(child as unknown as HTMLElement);
@@ -429,6 +429,12 @@ const componentModule: AttributeModule = {
             componentState.isLoading = false;
             if (isTabOutlet && tabObj && typeof tabObj === 'object') {
               (tabObj as any).isLoading = false;
+              if (componentState.meta?.title && (!tabObj.meta || !(tabObj.meta as any).title)) {
+                tabObj.meta = Object.assign(tabObj.meta || {}, { title: componentState.meta.title });
+              }
+              if (componentState.meta?.icon && (!tabObj.meta || !(tabObj.meta as any).icon)) {
+                tabObj.meta = Object.assign(tabObj.meta || {}, { icon: componentState.meta.icon });
+              }
             }
           }
         };

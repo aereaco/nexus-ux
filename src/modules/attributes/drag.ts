@@ -3,7 +3,7 @@ import { RuntimeContext } from "../../engine/composition.ts";
 import { flip } from "../sprites/animate.ts";
 import { getDataStack } from "../../engine/scope.ts";
 import { CLEANUP_FUNCTIONS_KEY, MARKER_KEY, DATA_STACK_KEY, IS_TEMPLATE_KEY } from "../../engine/consts.ts";
-import stylesheet from "./stylesheet.ts";
+import { stylesheet } from "./stylesheet.ts";
 
 // Helper to find scrollable parent container
 function getScrollParent(el: HTMLElement): HTMLElement {

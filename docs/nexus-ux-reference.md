@@ -800,6 +800,8 @@ Nexus-UX provides a built-in, zero-dependency Tailwind v4 (Oxide) compiler. This
   <input type="color" data-bind="dynamicColor" class="mt-4">
   <input type="text" data-bind="paddingSize" class="mt-4 border rounded">
 </div>
+```
+
 ### 5.4. `data-stylesheet` — Adopted StyleSheets & Constructable CSS
 
 **Syntax**: `data-stylesheet="cssStringOrUrl"`

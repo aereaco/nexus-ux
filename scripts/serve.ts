@@ -129,6 +129,24 @@ function injectReload(bodyText: string): string {
 // 5. Template Extractors & Mode Renderers
 function extractHeadMetadata(htmlText: string): { title?: string; icon?: string; route?: string; order?: string } {
   const meta: { title?: string; icon?: string; route?: string; order?: string } = {};
+
+  // Parse YAML frontmatter if present
+  if (htmlText.startsWith("---")) {
+    const end = htmlText.indexOf("---", 3);
+    if (end > 3) {
+      const yaml = htmlText.slice(3, end);
+      const titleMatch = yaml.match(/^title:\s*["']?([^"'\r\n]+)["']?/m);
+      if (titleMatch) meta.title = titleMatch[1].trim();
+      const iconMatch = yaml.match(/^icon:\s*["']?([^"'\r\n]+)["']?/m);
+      if (iconMatch) meta.icon = iconMatch[1].trim();
+      const routeMatch = yaml.match(/^route:\s*["']?([^"'\r\n]+)["']?/m);
+      if (routeMatch) meta.route = routeMatch[1].trim();
+      const orderMatch = yaml.match(/^order:\s*["']?([^"'\r\n]+)["']?/m);
+      if (orderMatch) meta.order = orderMatch[1].trim();
+      return meta;
+    }
+  }
+
   const titleMatch = htmlText.match(/<title[^>]*>([^<]+)<\/title>/i);
   if (titleMatch) meta.title = titleMatch[1].trim();
 

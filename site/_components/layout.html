@@ -1640,26 +1640,32 @@
     <template id="sidebar-sub-menu-item">
       <!-- Sub Leaf Item -->
       <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
-        data-bind-data-drag="cat?.itemsDraggable !== false && item.href !== '/' ? '' : null"
+        data-bind-data-drag="cat.itemsDraggable && item.href !== '/' ? '' : null"
         data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
         <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
           data-bind-data-tab-title="item.tabTitle || item.title"
+          data-bind-data-tab-icon="item.tabIcon || item.icon"
+          data-class="{ 'active': router.path === item.href }"
           data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-          data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }"
-          data-bind="item.title">
+          data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
+          <iconify-icon data-show="item.icon" data-bind-icon="item.icon" class="shrink-0 text-xl pe-1"></iconify-icon>
+          <span data-bind="item.title"></span>
         </a>
       </li>
 
       <!-- Sub Branch Item (e.g. Profile 3) -->
       <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
-        data-bind-data-drag="cat?.itemsDraggable !== false && item.href !== '/' ? '' : null"
+        data-bind-data-drag="cat.itemsDraggable && item.href !== '/' ? '' : null"
         data-signal="{ open: false }"
         data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
         <div class="flex">
-          <a data-bind-href="item.href" draggable="false" class="grow whitespace-nowrap"
+          <a data-bind-href="item.href" draggable="false" class="grow flex items-center whitespace-nowrap"
             data-bind-data-tab-title="item.tabTitle || item.title"
+            data-bind-data-tab-icon="item.tabIcon || item.icon"
+            data-class="{ 'active': router.path === item.href }"
             data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
             data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
+            <iconify-icon data-show="item.icon" data-bind-icon="item.icon" class="shrink-0 text-xl pe-1"></iconify-icon>
             <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" class="whitespace-nowrap"
               data-bind="item.title"></span>
           </a>
@@ -1670,8 +1676,8 @@
         </div>
         <ul
           class="menu-dropdown menu-dropdown-show overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
-          data-class="{ 'max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
-          data-bind-data-drag-container="cat?.itemsDraggable !== false ? item.children : null">
+          data-class="{ 'max-h-[3000px] opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
+          data-bind-data-drag-container="cat.itemsDraggable ? item.children : null">
           <!-- RECURSIVE TEMPLATE: Calls itself for infinite arbitrary sub-levels! -->
           <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
             data-key="item.href"></template>
@@ -1694,8 +1700,8 @@
       <!-- Main Navigation Menu (tab 1) -->
       <div data-show="activeSidebarTab === 1" class="w-full">
         <!-- 1. Top-Level Uncategorized Items (Dedicated <ul>) -->
-        <ul class="menu w-full" data-drag-container="(router.pages || []).filter(p => !p.category)">
-          <template data-for="item in (router.pages || []).filter(p => !p.category)" data-key="item.href">
+        <ul class="menu w-full" data-drag-container="router.groupedPages?.['Uncategorized'] || []">
+          <template data-for="item in (router.groupedPages?.['Uncategorized'] || [])" data-key="item.href">
             <!-- Root Leaf Item (No Children) -->
             <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
               data-bind-data-drag="item.href !== '/' ? '' : null"
@@ -1703,6 +1709,7 @@
               <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
                 data-bind-data-tab-title="item.tabTitle || item.title"
                 data-bind-data-tab-icon="item.tabIcon || item.icon"
+                data-class="{ 'active': router.path === item.href }"
                 data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                 data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                 <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
@@ -1721,6 +1728,7 @@
                 <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
                   data-bind-data-tab-title="item.tabTitle || item.title"
                   data-bind-data-tab-icon="item.tabIcon || item.icon"
+                  data-class="{ 'active': router.path === item.href }"
                   data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                   data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                   <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
@@ -1737,54 +1745,43 @@
                     class="shrink-0 text-2xl transition-transform" data-class="{ 'rotate-90': open}"></iconify-icon>
                 </button>
               </div>
-              <ul class="menu-dropdown w-full" data-show="open"
+              <ul
+                class="menu-dropdown menu-dropdown-show ms-12 overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
+                data-class="{ 'max-h-[3000px] opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
                 data-drag-container="item.children">
-                <template data-for="child in item.children" data-key="child.href">
-                  <li data-drag class="cursor-pointer"
-                    data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: child }">
-                    <a data-bind-href="child.href" draggable="false" class="whitespace-nowrap"
-                      data-bind-data-tab-title="child.tabTitle || child.title"
-                      data-bind-data-tab-icon="child.tabIcon || child.icon"
-                      data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-                      data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: child }">
-                      <iconify-icon data-bind-icon="child.icon" class="shrink-0 text-2xl"></iconify-icon>
-                      <span
-                        class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
-                        data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
-                        data-bind="child.title"></span>
-                    </a>
-                  </li>
-                </template>
+                <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
+                  data-key="item.href"></template>
               </ul>
             </li>
           </template>
         </ul>
 
         <!-- 2. Categorized Sections (Draggable Category Groups & Dedicated Item Lists) -->
-        <div data-drag-container="categories">
-          <template data-for="cat in categories" data-key="cat.id || cat">
-            <div data-drag data-show="(router.pages || []).filter(p => p.category === (cat.id || cat)).length > 0">
+        <div data-drag-container="categories" data-drag-handle=".menu-title">
+          <template data-for="cat in categories" data-key="cat.id">
+            <div data-drag data-show="!router.pages || router.pages.length === 0 || (router.groupedPages?.[cat.id] || []).length > 0">
               <!-- Category Header (Title + Separator Line) -->
               <ul class="menu w-full py-0">
                 <li
                   class="menu-title overflow-hidden transition-[opacity,max-height,margin,padding] duration-300 ease-in-out cursor-grab"
                   data-class="{ 'max-h-0 opacity-0 !my-0 !py-0 pointer-events-none': collapsed && !hovered && !sidebarOpen, 'max-h-12 opacity-100 mt-4': !collapsed || hovered || sidebarOpen }"
-                  data-bind="cat.name || cat">Title
+                  data-bind="cat.name">Title
                 </li>
                 <li class="w-full mx-0" data-class="{ 'opacity-6': collapsed && !hovered && !sidebarOpen }"></li>
               </ul>
 
-              <!-- Dynamic Category Item List (Zero Hardcoding, Zero Duplication) -->
+              <!-- Dynamic Category Item List (Zero Hardcoding, Zero Duplication, ZERO Flashing) -->
               <ul class="menu w-full"
-                data-bind-data-drag-container="cat.itemsDraggable !== false ? (router.pages || []).filter(p => p.category === (cat.id || cat)) : null">
-                <template data-for="item in (router.pages || []).filter(p => p.category === (cat.id || cat))" data-key="item.href">
+                data-bind-data-drag-container="cat.itemsDraggable ? (router.groupedPages?.[cat.id] || []) : null">
+                <template data-for="item in (router.groupedPages?.[cat.id] || [])" data-key="item.href">
                   <!-- Root Leaf Item (No Children) -->
                   <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
-                    data-bind-data-drag="cat.itemsDraggable !== false && item.href !== '/' ? '' : null"
+                    data-bind-data-drag="cat.itemsDraggable && item.href !== '/' ? '' : null"
                     data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                     <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
                       data-bind-data-tab-title="item.tabTitle || item.title"
                       data-bind-data-tab-icon="item.tabIcon || item.icon"
+                      data-class="{ 'active': router.path === item.href }"
                       data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                       data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                       <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
@@ -1797,12 +1794,13 @@
 
                   <!-- Root Branch Item (With Children) -->
                   <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
-                    data-bind-data-drag="cat.itemsDraggable !== false && item.href !== '/' ? '' : null" data-signal="{ open: false }"
+                    data-bind-data-drag="cat.itemsDraggable && item.href !== '/' ? '' : null" data-signal="{ open: false }"
                     data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                     <div class="flex">
                       <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
                         data-bind-data-tab-title="item.tabTitle || item.title"
                         data-bind-data-tab-icon="item.tabIcon || item.icon"
+                        data-class="{ 'active': router.path === item.href }"
                         data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                         data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                         <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
@@ -1822,8 +1820,8 @@
                     </div>
                     <ul
                       class="menu-dropdown menu-dropdown-show ms-12 overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
-                      data-class="{ 'max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
-                      data-bind-data-drag-container="cat.itemsDraggable !== false ? item.children : null">
+                      data-class="{ 'max-h-[3000px] opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
+                      data-bind-data-drag-container="cat.itemsDraggable ? item.children : null">
                       <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
                         data-key="item.href"></template>
                     </ul>

@@ -6,21 +6,158 @@
 <meta name="category" content="Labs">
 <meta name="parent" content="/labs/attributes">
 
-<div data-signal="{
-  doc: {
-    Title: 'data-signal',
-    Category: 'Attributes',
-    Icon: 'material-symbols-light:code-blocks-outline',
-    ModulePath: 'src/modules/attributes/signal.ts',
-    Description: 'Declares local or global fine-grained reactive state blocks directly in the DOM namespace, mapping JSON literals to the AST Memory Engine.',
-    Syntax: '<div data-signal=\"{ count: 0, title: \'Nexus\' }\">...</div>',
-    Params: [
-      { name: 'data-signal', type: 'JSON Literal / Expression', default: '{}', description: 'Local reactive state scope bound to element and descendants.' },
-      { name: 'data-signal_global', type: 'JSON Literal / Expression', default: '{}', description: 'Global reactive state accessible app-wide via #prefix or __global.' }
-    ],
-    Extensibility: '<p>The <code>signal</code> directive parses JSON object literals into Vue 3-compatible reactive state scopes combined with <code>SignalHeap</code> (SharedArrayBuffer-backed storage) and Rust-inspired borrow validation. Signals cascade hierarchically via the DOM data stack.</p>',
-    Snippet: '<div data-signal=\"{ count: 0, step: 1 }\" class=\"space-y-4 p-4 bg-base-200/50 rounded-xl border border-base-content/10\">\n  <div class=\"flex items-center gap-4\">\n    <div class=\"stat bg-base-100 rounded-lg p-3 shadow-sm border border-base-content/10\">\n      <div class=\"stat-title text-xs font-bold\">Counter Value</div>\n      <div class=\"stat-value text-primary text-2xl font-mono\" data-bind=\"count\">0</div>\n    </div>\n    <div class=\"flex flex-col gap-2\">\n      <button class=\"btn btn-sm btn-primary\" data-on-click=\"count += step\">Increment (+<span data-bind=\"step\"></span>)</button>\n      <button class=\"btn btn-sm btn-outline btn-error\" data-on-click=\"count = 0\">Reset</button>\n    </div>\n  </div>\n  <div class=\"flex items-center gap-2\">\n    <span class=\"text-xs font-bold opacity-70\">Step Size:</span>\n    <input type=\"number\" data-bind-value=\"step\" min=\"1\" max=\"10\" class=\"input input-bordered input-xs w-20 font-mono\" />\n  </div>\n</div>'
-  }
-}">
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="p-6 max-w-5xl mx-auto space-y-6" data-signal="{
+    activeTab: 'playground',
+    copied: false
+  }">
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-base-content/10">
+    <div>
+      <div class="flex items-center gap-2 mb-1">
+        <span class="badge badge-primary badge-sm font-semibold uppercase tracking-wider">Attributes</span>
+        <span class="badge badge-ghost badge-sm font-mono opacity-70">src/modules/attributes/signal.ts</span>
+      </div>
+      <h1 class="text-3xl font-extrabold tracking-tight text-base-content flex items-center gap-3">
+        <iconify-icon icon="material-symbols-light:code-blocks-outline" class="text-primary text-3xl"></iconify-icon>
+        <span>data-signal</span>
+      </h1>
+      <p class="text-base text-base-content/70 mt-1 max-w-3xl leading-relaxed">
+        Declares local or global fine-grained reactive state blocks directly in the DOM namespace, mapping JSON literals to the AST Memory Engine.
+      </p>
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+      <button class="btn btn-sm btn-ghost gap-2"
+        data-on-click="navigator.clipboard.writeText('<div data-signal=\'{ count: 0 }\'>...</div>'); copied = true; setTimeout(() => copied = false, 2000)">
+        <iconify-icon data-bind-icon="copied ? 'material-symbols-light:check' : 'material-symbols-light:content-copy'" class="text-lg"></iconify-icon>
+        <span data-bind="copied ? 'Copied!' : 'Copy Syntax'"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="tabs tabs-boxed bg-base-200/50 p-1 w-fit">
+    <button class="tab tab-sm font-medium transition-colors"
+      data-class="{ 'tab-active bg-primary text-primary-content': activeTab === 'playground' }"
+      data-on-click="activeTab = 'playground'">
+      <iconify-icon icon="material-symbols-light:play-circle-outline" class="text-lg me-1.5"></iconify-icon>
+      Interactive Playground
+    </button>
+    <button class="tab tab-sm font-medium transition-colors"
+      data-class="{ 'tab-active bg-primary text-primary-content': activeTab === 'syntax' }"
+      data-on-click="activeTab = 'syntax'">
+      <iconify-icon icon="material-symbols-light:code" class="text-lg me-1.5"></iconify-icon>
+      Syntax & Parameters
+    </button>
+    <button class="tab tab-sm font-medium transition-colors"
+      data-class="{ 'tab-active bg-primary text-primary-content': activeTab === 'spec' }"
+      data-on-click="activeTab = 'spec'">
+      <iconify-icon icon="material-symbols-light:description-outline" class="text-lg me-1.5"></iconify-icon>
+      Deep-Dive Specs
+    </button>
+  </div>
+
+  <!-- Tab 1: Interactive Playground (Native Live DOM Mount) -->
+  <div data-show="activeTab === 'playground'" class="space-y-4">
+    <div class="card bg-base-100 border border-base-content/10 shadow-sm overflow-hidden">
+      <div class="card-header bg-base-200/40 px-4 py-2.5 border-b border-base-content/10 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-success"></span>
+          <span class="text-xs font-bold uppercase tracking-wider opacity-70">Live Reactive DOM Mount</span>
+        </div>
+        <span class="text-xs font-mono opacity-50">ZCZS SignalHeap</span>
+      </div>
+      <div class="p-6">
+        <!-- Live Demo Container with Real Reactive Directives -->
+        <div data-signal="{ count: 0, step: 1 }" class="space-y-4 p-6 bg-base-200/50 rounded-xl border border-base-content/10">
+          <div class="flex flex-wrap items-center gap-4">
+            <div class="stat bg-base-100 rounded-lg p-4 shadow-sm border border-base-content/10 w-fit">
+              <div class="stat-title text-xs font-bold">Counter Value</div>
+              <div class="stat-value text-primary text-3xl font-mono" data-bind="count">0</div>
+            </div>
+            <div class="flex flex-col gap-2">
+              <button class="btn btn-sm btn-primary gap-1" data-on-click="count += step">
+                <iconify-icon icon="material-symbols-light:add" class="text-lg"></iconify-icon>
+                <span>Increment (+<span data-bind="step">1</span>)</span>
+              </button>
+              <button class="btn btn-sm btn-outline btn-error gap-1" data-on-click="count = 0">
+                <iconify-icon icon="material-symbols-light:restart-alt" class="text-lg"></iconify-icon>
+                <span>Reset</span>
+              </button>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 pt-2">
+            <span class="text-xs font-bold opacity-70">Step Size:</span>
+            <input type="number" data-bind-value="step" min="1" max="10" class="input input-bordered input-xs w-20 font-mono" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Markup Source Preview -->
+    <div class="collapse collapse-arrow bg-base-200/30 border border-base-content/10 rounded-xl">
+      <input type="checkbox" checked />
+      <div class="collapse-title text-sm font-bold flex items-center gap-2">
+        <iconify-icon icon="material-symbols-light:code-blocks-outline" class="text-primary text-lg"></iconify-icon>
+        Declarative HTML Markup (Source)
+      </div>
+      <div class="collapse-content">
+        <pre class="bg-base-300 p-4 rounded-xl overflow-x-auto text-xs font-mono border border-base-content/10 text-base-content"><code>&lt;div data-signal="{ count: 0, step: 1 }" class="space-y-4"&gt;
+  &lt;div class="stat-value text-primary" data-bind="count"&gt;0&lt;/div&gt;
+  &lt;button class="btn btn-primary" data-on-click="count += step"&gt;
+    Increment (+&lt;span data-bind="step"&gt;&lt;/span&gt;)
+  &lt;/button&gt;
+  &lt;button class="btn btn-outline btn-error" data-on-click="count = 0"&gt;Reset&lt;/button&gt;
+  &lt;input type="number" data-bind-value="step" min="1" max="10" /&gt;
+&lt;/div&gt;</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 2: Syntax & Grammar -->
+  <div data-show="activeTab === 'syntax'" class="space-y-4">
+    <div class="card bg-base-100 border border-base-content/10 shadow-sm p-6 space-y-4">
+      <h3 class="text-lg font-bold">Nexus Expression Grammar (NEG) Syntax</h3>
+      <div class="overflow-x-auto">
+        <table class="table table-sm w-full font-mono text-xs">
+          <thead>
+            <tr class="bg-base-200">
+              <th>Attribute</th>
+              <th>Type</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-primary font-bold">data-signal</td>
+              <td>JSON Literal / Expression</td>
+              <td>{}</td>
+              <td class="font-sans">Local reactive state scope bound to element and descendants.</td>
+            </tr>
+            <tr>
+              <td class="text-primary font-bold">data-signal_global</td>
+              <td>JSON Literal / Expression</td>
+              <td>{}</td>
+              <td class="font-sans">Global reactive state accessible app-wide via #prefix or __global.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 3: Architecture Spec -->
+  <div data-show="activeTab === 'spec'" class="space-y-4">
+    <div class="card bg-base-100 border border-base-content/10 shadow-sm p-6 space-y-4">
+      <h3 class="text-lg font-bold">Engine Architecture & Memory Pattern</h3>
+      <p class="text-sm leading-relaxed text-base-content/80">
+        Located in <code>src/modules/attributes/signal.ts</code>, the <code>signal</code> directive parses JSON object literals into Vue 3-compatible fine-grained reactive state scopes combined with <code>SignalHeap</code> (SharedArrayBuffer-backed storage) and Rust-inspired borrow validation.
+      </p>
+      <ul class="list-disc list-inside text-sm space-y-1 text-base-content/80">
+        <li><strong>Zero-Copy Zero-Serialization (ZCZS):</strong> Direct references to live signals without serialization boundary overhead.</li>
+        <li><strong>Hierarchical DOM Cascading:</strong> Properties resolve hierarchically from immediate element &rarr; parent elements &rarr; shadow hosts &rarr; #global.</li>
+        <li><strong>Deterministic Teardown:</strong> State runners are bound to DOM lifetime and automatically dereferenced when the element unmounts.</li>
+      </ul>
+    </div>
+  </div>
 </div>
