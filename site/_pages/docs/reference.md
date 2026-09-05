@@ -1,0 +1,3175 @@
+---
+id: doc-reference
+title: Technical Reference
+route: /docs/reference
+icon: material-symbols-light:menu-book-outline
+order: 1
+category: Docs
+---
+
+# Nexus-UX: The Exhaustive Technical Reference
+
+**The Practical Manual: From Syntax to Practice**
+
+> "Theory is knowing how it works. Practice is making it work. This document
+> bridges both."
+
+This guide is the definitive practical reference for developers and AI agents
+building with Nexus-UX. It is the core "Toolkit" for rapid development, focused
+on outcomes and practical implementation patterns. Built on the **Omni-State
+(DOM-as-State)** philosophy, it demonstrates how to use Nexus-UX as the
+"Functional Soul" for modern web components.
+
+> [!IMPORTANT]
+> **Contributing & Compliance**: All development on Nexus-UX — by human
+> contributors and AI agents alike — must adhere to the workspace directives
+> defined in `.agent/rules/directives.md`. This includes the ZCZS mandate,
+> ownership tracking patterns, the engine-vs-module architectural contract,
+> MutationObserver policy, DDD workflow, and granular version control. See
+> [Spec §1B](nexus-ux-spec.md#chapter-1b-architecture-contract--development-compliance)
+> for the full contract.
+
+---
+
+## Table of Contents
+
+1. [Preface: Quick Start](#preface-quick-start)
+2. [Chapter 1: The Language (NEG Grammar & Fundamentals)](#chapter-1-the-language-neg-grammar--fundamentals)
+3. [Chapter 2: Essential Directives (State & Binding)](#chapter-2-essential-directives-state--binding)
+4. [Chapter 3: Control Flow & Rendering](#chapter-3-control-flow--rendering)
+5. [Chapter 4: Events & Behavioral Pipelines](#chapter-4-events--behavioral-pipelines)
+6. [Chapter 5: Styling, Classes & Dynamic Theming](#chapter-5-styling-classes--dynamic-theming)
+7. [Chapter 6: Advanced Orchestration (Effects, Custom)](#chapter-6-advanced-orchestration-effects-custom)
+8. [Chapter 7: Sprites ($) & Data Integration](#chapter-7-sprites--data-integration)
+9. [Chapter 8: Advanced Patterns & Real-World](#chapter-8-advanced-patterns--real-world)
+10. [Chapter 9: Routing & Navigation](#chapter-9-routing--navigation)
+11. [Chapter 10: Component System](#chapter-10-component-system)
+12. [Chapter 11: Advanced Orchestration Gallery](#chapter-11-advanced-orchestration-gallery)
+13. [Chapter 12: Developer Experience & Performance](#chapter-12-developer-experience--performance)
+14. [Chapter 13: Deployment](#chapter-13-deployment)
+15. [Chapter 14: Premium Assets & Themes](#chapter-14-premium-assets--themes)
+
+---
+
+## Preface: Quick Start
+
+### Your First Nexus-UX App
+
+**Step 1: Include the Runtime**
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>My Nexus App</title>
+    <!-- Nexus-UX runtime -->
+    <script src="https://cdn.nexus.io/ux/v1.0.0/nexus-ux.min.js"></script>
+  </head>
+  <body>
+    <!-- Your app goes here -->
+  </body>
+</html>
+```
+
+**Step 2: Connect to SurrealDB**
+
+```html
+<script>
+  // Initialize Nexus-UX runtime
+  $nexus.connect({
+    endpoint: "ws://localhost:8000/rpc", // SurrealDB WebSocket
+    namespace: "myapp",
+    database: "production",
+    auth: {
+      scope: "locker", // Use Nexus Locker authentication
+      email: "user@example.com",
+      password: "your_password",
+    },
+  });
+</script>
+```
+
+**Step 3: Build Your UI**
+
+```html
+<div data-signal="{ users: $sql('LIVE SELECT * FROM user') }">
+  <h1>Users ({users.length})</h1>
+  <ul>
+    <li data-for="user in users">{user.name} ({user.email})</li>
+  </ul>
+</div>
+```
+
+**That's it.** No build step, no npm, no webpack. Just HTML + data bindings.
+
+---
+
+## Chapter 1: The Language (NEG Grammar & Fundamentals)
+
+The **Nexus Expression Grammar (NEG)** is a high-performance, deterministic,
+token-based system designed for zero-allocation execution. Built on the **ESSL**
+(Element-Scope-Signal-Logic) standard, it eliminates the "Magic Parsing" tax of
+legacy frameworks by utilizing direct token-to-function mapping.
+
+### 1.1. Symbol Reference (The Token Set)
+
+| Symbol | Designation | Technical Role | Practical Example |
+| :--- | :--- | :--- | :--- |
+| **`-`** | **Intent / Argument** | **Directive Delimiter**. Separates directive name from its intent/argument (what it acts on). | `<div data-ignore-ux></div>`, `<div data-route-layout></div>` |
+| **`:`** | **Modifier** | **Pipeline Anchor**. Defines interceptors, wrappers, and execution behavior. | `<button data-on-click:once="save()"></button>` |
+| **`.`** | **Native Access** | **Reactive Property Traversal**. Standard property access through reactive proxy for native APIs (window, localStorage, etc.). | `<div data-bind="window.innerWidth"></div>` |
+| **`#`** | **Global Signal** | **Reactive Source**. Accesses user-defined Global Signals managed by the Shared Memory Heap. | `<div data-bind="#auth.user"></div>` |
+| **`$`** | **Logic / Selector** | **Sprite / Command**. Framework tools and the Unified Selector engine for spatial queries. | `<button data-on-click="$(^form).save()"></button>` |
+| **`@`** | **Scope Rule** | **Boundary Rule**. Site-aware CSS-like scope boundaries, media, or container rules. | `<div data-bind="@media(min-width: 1024px) { 'Desktop' }"></div>` |
+| **`&`** | **Context Reference** | **Parent / Local Context**. References current execution context or parent scope. | `<div data-bind="&.parent.title"></div>` |
+| **`!`** | **Override / Force** | **Value Override**. Forces value or execution behavior, overriding defaults. | `<button data-bind="!disabled"></button>` |
+| **`::`** | **Pseudo Selector** | **DOM Pseudo Binding**. Target pseudo-elements or pseudo-classes. | `<div data-style="::before { content: '*' }"></div>` |
+| **`||`** | **Grid / Parallel** | **Parallel Execution**. Evaluates parallel or grid-based expressions. | `<div data-signal="|| expr1 || expr2"></div>` |
+
+### 1.2. The Unified Reactive Selector $(path)
+
+Nexus-UX treats the DOM as a queryable state graph. The `$(...)` engine enables
+**Lateral State Traversal**, allowing components to communicate across the DOM
+without centralized stores.
+
+#### 1.2.1. Combinator Registry
+
+| Combinator | Name             | Technical Intent                                      | Example       |
+| :--------- | :--------------- | :---------------------------------------------------- | :------------ |
+| `^`        | **Ancestor**     | Moves up to the nearest parent matching the selector. | `$(^section)` |
+| `-`        | **Prev Sibling** | Selects the immediate previous matching sibling.      | `$(- .item)`  |
+| `+`        | **Next Sibling** | Selects the immediate next matching sibling.          | `$(+ .item)`  |
+| `~`        | **Siblings**     | Selects all siblings matching the selector.           | `$(~ .btn)`   |
+| `>`        | **Child**        | Selects direct child nodes matching the selector.     | `$(> .card)`  |
+| `*`        | **Global Scan**  | Escapes current scoping to find a globally unique ID. | `$(* #main)`  |
+
+> [!IMPORTANT]
+> **State Discovery**: Targets returned by `$(...)` are live Reactive Node
+> Proxies. You can read, write, or inject actions directly. _Example_:
+> `$(^card).count++` increments state on a parent without "lifting" logic.
+
+### 1.3. Native JS-Native Transforms
+
+Nexus-UX bypasses custom parsers by treating directive values as native JS
+template strings. This allows for zero-overhead visual logic.
+
+- **Dynamic Properties**: `data-style="{ width: percent + '%' }"`
+- **Logical Branching**: `data-class="{ active: status === 'ready' }"`
+- **Complex Templates**:
+  `data-style="{ background: \`linear-gradient(\${angle}deg, #f06, #4a9)\` }"`
+
+### 1.4. Scope Rules (@)
+
+Scope Rules define logical boundaries and environment awareness within the
+reactive context, mirroring CSS syntax for familiar structure.
+
+#### 1.4.1. The Scope Rule Registry (ESSL)
+
+| Rule           | Behavioral Outcome | Typical Use Case                                     |
+| :------------- | :----------------- | :--------------------------------------------------- |
+| **@media**     | Env Logic          | Responding to viewport dimensions.                   |
+| **@container** | Contextual Logic   | Component-specific responsiveness.                   |
+| **@os(plat)**  | Host Awareness     | Native platform logic (e.g., Mac vs Linux).          |
+| **@native**    | Native API Sync    | Interoperating with Nexus-IO runtime signals.        |
+| **@auth**      | Security Scope     | UI-gating based on active permission signals.        |
+| **@view**      | Transition Link    | Hooking into the View Transitions API during morphs. |
+
+### 1.5. The `data-*` / `dataset` Foundation
+
+Nexus-UX directives are standard HTML `data-*` attributes. The browser natively
+provides a bidirectional JavaScript API — the `dataset` property — to read and
+write them. This is the operational primitive of the entire framework.
+
+#### 1.5.1. Declarative vs. Imperative Patterns
+
+| Pattern                 | Syntax                                        | When to Use                                                |
+| :---------------------- | :-------------------------------------------- | :--------------------------------------------------------- |
+| **Declarative (HTML)**  | `<input data-bind="name">`                    | Defining the UI structure and binding map                  |
+| **Imperative Read**     | `el.dataset.bindValue`                        | Inspecting a directive's expression at runtime             |
+| **Imperative Write**    | `el.dataset.bindValue = "email"`              | Dynamically reassigning a binding (triggers re-evaluation) |
+| **Raw Attribute Read**  | `el.getAttribute('data-bind-value')`          | High-frequency reads where marginal perf matters           |
+| **Raw Attribute Write** | `el.setAttribute('data-bind-value', 'email')` | Equivalent to `dataset` write; updates both sides          |
+
+#### 1.5.2. Naming Convention: Automatic Kebab ↔ CamelCase
+
+The browser converts `data-*` kebab-case to `dataset` camelCase automatically:
+
+```javascript
+// HTML: <div data-signal="{ count: 0 }" data-on-click="count++">
+const el = document.querySelector("div");
+el.dataset.signal; // "{ count: 0 }"
+el.dataset.onClick; // "count++"
+el.dataset.bindValue; // corresponds to data-bind-value
+```
+
+#### 1.5.3. Data Type Handling
+
+All `data-*` attribute values are **strings**. Nexus-UX handles type conversion
+internally:
+
+```html
+<!-- These are string values in the DOM attribute... -->
+<div data-signal="{ count: 0, items: ['a','b'], user: { name: 'Ada' } }">
+```
+
+```javascript
+// ...but Nexus-UX parses them once into reactive values:
+// count → number (0) — stored in binary signal heap (Float64Array)
+// items → array (['a','b']) — stored as custom reactive Proxy
+// user  → object ({ name: 'Ada' }) — stored as custom reactive Proxy
+```
+
+> [!IMPORTANT]
+> **Zero-Copy Performance**: Once parsed at initialization, signal values are
+> **never serialized back** to `data-*` attribute strings. The HTML attribute is
+> the declaration; the reactive signal heap is the runtime truth. DOM updates
+> flow directly from signal values to element properties (`el.textContent`,
+> `el.style`, `el.className`) — never through attribute serialization. This is
+> the foundation of Nexus-UX's zero-allocation reactive loop.
+
+---
+
+## Chapter 2: Essential Directives (State & Binding)
+
+### 2.1. `data-signal` — Declare Reactive State
+
+**Syntax**: `data-signal="{ signalName: initialValue, ... }"`  
+**Modifiers**: `:global` / `data-signal-global` (attaches to `#` global signal heap), `:deep` (enforces deep cloning for mutable structures)
+
+**Purpose**: Creates a reactive scope on a DOM element. In Nexus-UX, `data-signal` is an active `elementBoundEffect` — **not a static one-time JSON initializer**. It runs during initial synchronous hydration and continuously re-evaluates whenever its reactive dependencies (including native browser APIs) change.
+
+**Lifecycle & Execution Flow**:
+1. **Ghost Key Pre-Allocation**: `parseGhostKeys(expression)` extracts property keys and type hints, pre-allocating slots on the continuous typed SignalHeap (`Float64Array`, `Int32Array`, `Uint8Array`).
+2. **Synchronous Runner Assignment**: The effect runner wrapper (`runSelf`) is assigned to `activeNativeApiRunner` **before** calling `effect()`, ensuring initial reads of native browser globals (`window.innerWidth`, `localStorage.collapsed`, `scrollY`) immediately attach system event listeners on the first synchronous pass.
+3. **Continuous Dependency Notification**: When evaluated signal properties mutate on subsequent runs, `signalModule` calls `runtime.triggerRef(stateRef)`, instantly dispatching change notifications to all downstream directives (`data-bind`, `data-class`, `data-if`).
+
+**Examples**:
+
+```html
+<!-- Primitive values with automatic heap slot allocation -->
+<div data-signal="{ count: 0, title: 'Counter' }">
+  <p data-bind="title"></p>: <span data-bind="count"></span>
+  <button data-on-click="count++">+1</button>
+</div>
+
+<!-- Native API Reactive Binding directly inside Signal -->
+<div data-signal="{
+  isMobile: window.innerWidth < 768,
+  collapsed: localStorage.collapsed ?? true,
+  scrollY: window.scrollY
+}">
+  <p data-bind="'Mobile View: ' + isMobile"></p>
+  <p data-bind="'Scroll Position: ' + scrollY"></p>
+</div>
+
+<!-- Live query (SurrealDB Real-Time Sync) -->
+<div data-signal="{ todos: $sql('LIVE SELECT * FROM todo WHERE owner = auth.id') }">
+  <p>Active Todos: <span data-bind="todos.length"></span></p>
+</div>
+```
+
+---
+
+### 2.2. `data-bind` — Unified Property, Form & Native API Binding
+
+**Syntax**:
+- **Auto-Detect**: `data-bind="expression"` (binds to `value`, `checked`, or `textContent` based on element type)
+- **Sub-Directive**: `data-bind-attribute="expression"` (e.g. `data-bind-title="tooltip"`, `data-bind-disabled="isLoading"`)
+- **Native API**: `data-bind="window.innerWidth"`, `data-bind="localStorage.theme"`
+
+**Purpose**: Provides bidirectional and one-way synchronization between reactive state and DOM elements or browser Web APIs.
+
+**Supported Modes**:
+1. **Form Input Auto-Detection**:
+   - `<input type="text" data-bind="username">`: Bidirectional sync with `input` event (or `change` if `data-bind:lazy`).
+   - `<input type="checkbox" data-bind="isActive">`: Bidirectional sync with `checked` boolean state.
+   - `<input type="radio" value="dark" data-bind="theme">`: Syncs radio group state.
+   - `<select data-bind="selectedCategory">`: Syncs dropdown selection (single or multi).
+   - `<textarea data-bind="notes">`: Bidirectional text synchronization.
+2. **Text Content & Attributes**:
+   - `<div>` / `<span>`: Syncs to `textContent`.
+   - `data-bind-href="user.profileUrl"`: Sets HTML attribute dynamically.
+   - `data-bind-disabled="isSubmitting"`: Toggles boolean attribute.
+3. **Direct Native API Binding**:
+   - Intercepts property reads (`window.innerWidth`, `localStorage.theme`) and writes (`localStorage.setItem(...)`) via Proxy/Reflect traps without requiring wrapper modules or `_` prefixes.
+
+**Examples**:
+
+```html
+<!-- Form Two-Way Binding -->
+<div data-signal="{ form: { name: '', email: '', agree: false } }">
+  <input type="text" placeholder="Name" data-bind="form.name">
+  <input type="email" placeholder="Email" data-bind="form.email">
+  <input type="checkbox" data-bind="form.agree">
+  <button data-bind-disabled="!form.agree || !form.name">Submit</button>
+</div>
+
+<!-- Live Window Width & Storage Reactivity -->
+<div data-signal="{ width: window.innerWidth }">
+  <span data-bind="window.innerWidth"></span>
+  <span data-bind="'Window Width: ' + window.innerWidth"></span>
+</div>
+```
+
+---
+
+### 2.3. `data-computed` — Derived Reactive Computations
+
+**Syntax**: `data-computed="{ derivedKey: expression, ... }"`
+
+**Purpose**: Declares read-only computed properties derived from other signals or state expressions, caching results until dependencies mutate.
+
+```html
+<div data-signal="{ items: [10, 20, 30], taxRate: 0.08 }">
+  <div data-computed="{
+    subtotal: items.reduce((acc, n) => acc + n, 0),
+    total: subtotal * (1 + taxRate)
+  }">
+    <p>Subtotal: $<span data-bind="subtotal"></span></p>
+    <p>Total: $<span data-bind="total.toFixed(2)"></span></p>
+  </div>
+</div>
+```
+
+---
+
+### 2.4. `data-effect` — Element-Bound Reactive Side Effects
+
+**Syntax**: `data-effect="expressionOrStatement"`
+
+**Purpose**: Runs arbitrary JavaScript logic whenever reactive dependencies mutate. Cleanups registered via `onEffectCleanup` run automatically prior to re-execution or when the element is removed from the DOM.
+
+```html
+<div data-signal="{ count: 0 }">
+  <div data-effect="document.title = 'Count: ' + count"></div>
+  <button data-on-click="count++">Increment</button>
+</div>
+```
+
+---
+
+### 2.5. Additional Essential Directives
+
+- **`data-html`**: Sets inner HTML reactively for trusted HTML strings.
+  ```html
+  <div data-html="renderedContent"></div>
+  ```
+- **`data-import`**: Asynchronously imports scripts, stylesheets, and remote VFS components into the Constructable StyleSheet registry.
+  ```html
+  <html data-import="{ chartJs: { script: '/assets/chart.js' } }">
+  ```
+- **`data-markdown`**: Zero-dependency inline markdown-to-HTML parser using native Tailwind classes and code block syntax preservation.
+  ```html
+  <div data-markdown="doc.Description"></div>
+  ```
+- **`data-mask`**: Applies dynamic SVG/CSS clipping masks.
+  ```html
+  <div data-mask="radial-gradient(circle, black 50%, transparent 100%)"></div>
+  ```
+- **`data-pwa`**: PWA orchestrator managing service worker registration, offline state, and install prompts via `$pwa`.
+  ```html
+  <div data-pwa data-show="$pwa.canInstall">
+    <button data-on-click="$pwa.install()">Install App</button>
+  </div>
+  ```
+- **`data-raf`**: Runs high-frequency 120fps animation frame callbacks with `$time` and `$delta`.
+  ```html
+  <div data-raf="rotation = ($time / 10) % 360" data-style="{ transform: 'rotate(' + rotation + 'deg)' }"></div>
+  ```
+- **`data-preserve`**: Structural shield that prevents elements and their subtrees from being replaced or lost during server-driven morphs.
+  ```html
+  <div data-preserve id="persistent-player"></div>
+  ```
+- **`data-assert`**: Development-mode assertion that warns when invariants are violated.
+  ```html
+  <div data-assert="items.length > 0"></div>
+  ```
+- **`data-build`**: In-browser bundler that serializes the current DOM state into IndexedDB.
+
+---
+
+## Chapter 3: Control Flow & Interactive Layouts
+
+### 3.1. `data-if` & `data-show` — Conditional Rendering
+
+| Directive | Mechanism | Use Case |
+| :--- | :--- | :--- |
+| **`data-if`** | Physical DOM insertion & removal with morph diffing | Heavy components, tabs, conditional subtrees |
+| **`data-show`** | Visual toggle via `display: none` | Frequent toggles (dropdowns, tooltips, modals) |
+
+```html
+<!-- Physical DOM insertion/removal -->
+<div data-signal="{ authenticated: false }">
+  <template data-if="authenticated">
+    <div class="user-profile">Welcome back!</div>
+  </template>
+</div>
+
+<!-- Visual display toggle -->
+<div data-signal="{ open: false }">
+  <button data-on-click="open = !open">Menu</button>
+  <ul data-show="open" class="dropdown-menu">
+    <li>Profile</li>
+    <li>Settings</li>
+  </ul>
+</div>
+```
+
+---
+
+### 3.2. `data-for` — Zero-Allocation List Rendering
+
+**Syntax**: `data-for="item in items"` or `data-for="(item, index) in items"`  
+**Companion Attribute**: `data-key="item.id"`
+
+Repeats the element or template for each array item, using keyed diffing for minimal DOM mutations:
+
+```html
+<div data-signal="{ users: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }] }">
+  <ul>
+    <li data-for="user in users" data-key="user.id">
+      <span data-bind="user.name"></span>
+    </li>
+  </ul>
+</div>
+```
+
+---
+
+### 3.3. `data-switcher` — Multi-State Iteration
+
+**Syntax**: `data-switcher="stateSignal"`  
+**Companion Attribute**: `data-switcher-options="['light', 'dark', 'system']"`
+
+Cycles through an array of states on user click:
+
+```html
+<button data-switcher="theme" data-switcher-options="['light', 'dark', 'system']">
+  Theme: <span data-bind="theme"></span>
+</button>
+```
+
+---
+
+### 3.4. `data-teleport` — DOM Portals & Teleportation
+
+**Syntax**: `data-teleport="targetSelector"`
+
+Teleports elements into target DOM containers (such as `body` or modal backdrops) while preserving their reactive context:
+
+```html
+<div data-signal="{ modalOpen: false }">
+  <button data-on-click="modalOpen = true">Open Modal</button>
+  <template data-if="modalOpen">
+    <div data-teleport="body" class="modal-backdrop">
+      <div class="modal-card">
+        <h3>Modal Dialog</h3>
+        <button data-on-click="modalOpen = false">Close</button>
+      </div>
+    </div>
+  </template>
+</div>
+```
+
+---
+
+### 3.5. `data-drag` — Drag & Drop Engine (Deep Dive)
+
+**Syntax**: `data-drag-container="listExpression"` (on container), `data-drag` (on draggable items)
+
+Nexus-UX provides a comprehensive native Drag & Drop engine supporting sorting, shared groups, cloning, multi-drag, handles, and custom swap thresholds.
+
+#### Drag Directives & Attributes
+
+| Attribute | Scope | Description |
+| :--- | :--- | :--- |
+| **`data-drag-container`** | Container | Binds a reactive array to the draggable list container. |
+| **`data-drag`** | Item | Marks an element as draggable. |
+| **`data-drag-group`** | Container | Assigns containers to a shared transfer group for cross-list drag-and-drop. |
+| **`data-drag-handle`** | Item / Container | Restricts dragging activation to elements matching the selector (e.g. `.handle`). |
+| **`data-drag-clone`** | Container | Enables element cloning from source container to target container. |
+| **`data-drag-multi`** | Container | Enables multi-item selection (`Cmd`/`Ctrl` + Click) and batch drag. |
+| **`data-drag-swap`** | Container | Enables swap mode (items swap positions instead of inserting). |
+| **`data-drag-direction`** | Container | Forces layout direction: `'vertical'` or `'horizontal'`. |
+| **`data-drag-threshold`** | Container | Floating swap sensitivity threshold (e.g. `0.5`). |
+| **`data-drag-autoscroll`** | Container | Enables automatic viewport/container scrolling near boundaries. |
+
+#### Packed CSS Drag Classes
+The engine injects optimized drag styles automatically:
+- `.draggable-chosen`: Applied to the active drag item at drag start.
+- `.draggable-drag`: Applied during dragging motion.
+- `.draggable-ghost`: Applied to the placeholder position in the list.
+- `.draggable-selected`: Applied to items selected during multi-drag.
+- `.draggable-swap-highlight`: Applied to hover target in swap mode.
+- `.drop-target-before` / `.drop-target-after`: Indicator gradient bars for precise drop positioning.
+
+#### Example: Shared Group with Handles & Multi-Drag
+
+```html
+<div class="grid grid-cols-2 gap-4" data-signal="{ todo: ['Task 1', 'Task 2'], done: ['Task 3'] }">
+  <!-- Container 1 -->
+  <div class="card p-4 bg-base-200"
+       data-drag-container="todo"
+       data-drag-group="'tasks'"
+       data-drag-handle="'.handle'"
+       data-drag-multi>
+    <h3>To Do</h3>
+    <div data-for="item in todo" data-drag class="p-3 bg-base-100 rounded my-2 flex items-center gap-2">
+      <span class="handle cursor-grab">⠿</span>
+      <span data-bind="item"></span>
+    </div>
+  </div>
+
+  <!-- Container 2 -->
+  <div class="card p-4 bg-base-200"
+       data-drag-container="done"
+       data-drag-group="'tasks'"
+       data-drag-handle="'.handle'"
+       data-drag-multi>
+    <h3>Done</h3>
+    <div data-for="item in done" data-drag class="p-3 bg-base-100 rounded my-2 flex items-center gap-2">
+      <span class="handle cursor-grab">⠿</span>
+      <span data-bind="item"></span>
+    </div>
+  </div>
+</div>
+```
+
+---
+
+### 3.6. `data-flow` — Spatial Canvas & Flow Layout (Deep Dive)
+
+**Syntax**: `data-flow="flowOptions"`
+
+**Purpose**: Orchestrates interactive infinite-canvas viewports, diagramming surfaces, and gesture-driven spatial layouts with built-in pan, zoom, and coordinate transform math.
+
+#### Flow Properties & State
+The flow engine exposes reactive spatial state `{ x, y, zoom, minZoom, maxZoom }`:
+- **Pan Navigation**: Click-and-drag panning on the canvas background.
+- **Wheel Zoom**: Smooth mouse wheel zooming anchored to the cursor focal point.
+- **Pinch Zoom**: Multi-touch pinch zoom support on mobile/touch screens.
+- **Spatial Node Coordinates**: Child nodes with `data-flow-node` or `data-spatial` automatically translate relative to the canvas coordinate matrix.
+
+#### Example: Interactive Infinite Canvas
+
+```html
+<div data-signal="{ canvas: { x: 0, y: 0, zoom: 1 } }">
+  <div data-flow="{ state: canvas, minZoom: 0.2, maxZoom: 3 }"
+       class="w-full h-[600px] overflow-hidden bg-base-300 relative cursor-grab">
+    <div class="flow-viewport" data-style="{ transform: 'translate(' + canvas.x + 'px, ' + canvas.y + 'px) scale(' + canvas.zoom + ')' }">
+      <div class="flow-node absolute p-4 bg-primary text-white rounded-xl shadow-lg" style="left: 100px; top: 150px">
+        Node A
+      </div>
+      <div class="flow-node absolute p-4 bg-secondary text-white rounded-xl shadow-lg" style="left: 400px; top: 250px">
+        Node B
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+---
+
+## Chapter 4: Events & Behavioral Pipelines
+
+### 4.1. `data-on` — Event Handlers
+
+**Syntax**: `data-on-EVENT_MODIFIER="expression"`
+
+Binds native and custom DOM events to reactive expressions.
+
+### 4.2. Complete NEG Modifiers Registry (15 Modules)
+
+| Modifier | Execution Role | Practical Example |
+| :--- | :--- | :--- |
+| **`_debounce.[ms]`** | Delays execution until silence threshold passes | `data-on-input_debounce.300ms="search()"` |
+| **`_debounce.cancel`** | Cancels pending debounced execution on element | `data-on-mouseleave_debounce.cancel="isOpen = false"` |
+| **`_debounce.cancel(sel)`** | Cancels pending debounce on targeted element(s) | `data-on-click_debounce.cancel(#search-box)="clear()"` |
+| **`_debounce.flush`** | Immediately invokes pending debounced callback | `data-on-blur_debounce.flush=""` |
+| **`_throttle.[ms]`** | Limits execution frequency to rate interval | `data-on-scroll_throttle.100ms="checkPosition()"` |
+| **`_throttle.reset`** | Clears rate-limit cooldown timestamp | `data-on-click_throttle.reset="refresh()"` |
+| **`_delay.[ms]`** | Delays event handler execution | `data-on-mouseenter_delay.200ms="showTooltip()"` |
+| **`_delay.cancel`** | Cancels scheduled delay on element | `data-on-mouseleave_delay.cancel="hideTooltip()"` |
+| **`_delay.cancel(sel)`** | Cancels scheduled delay on targeted element(s) | `data-on-click_delay.cancel(^.card)="dismiss()"` |
+| **`_hold.[ms]`** | Triggers upon continuous press-and-hold | `data-on-pointerdown_hold.500ms="showContextMenu()"` |
+| **`_hold.cancel`** | Aborts active press-and-hold gesture | `data-on-pointermove_hold.cancel=""` |
+| **`_prevent`** | Calls `event.preventDefault()` | `data-on-submit_prevent="handleSubmit()"` |
+| **`_stop`** | Calls `event.stopPropagation()` | `data-on-click_stop="handleClick()"` |
+| **`_once`** | Executes handler only once then unbinds | `data-on-click_once="initAnalytics()"` |
+| **`_outside`** | Triggers when click occurs outside the element | `data-on-click_outside="dropdownOpen = false"` |
+| **`_self`** | Triggers only if `event.target === $el` | `data-on-click_self="closeModal()"` |
+| **`_window`** | Attaches event listener to `window` | `data-on-keydown_window="handleKey($event)"` |
+| **`_document`** | Attaches event listener to `document` | `data-on-visibilitychange_document="handleVisibility()"` |
+| **`_keys.[key]`** | Filters keydown events to specific key combinations | `data-on-keydown_keys.enter="submit()"` |
+| **`_morph`** | Morphs asynchronous response into DOM | `data-on-click_morph="fetchNewCard()"` |
+| **`_drag`** | Augments drag events with delta math | `data-on-pointermove_drag="updatePosition($event)"` |
+| **`_zoom`** | Augments wheel events with zoom factor | `data-on-wheel_zoom="handleZoom($event)"` |
+
+---
+
+## Chapter 5: Styling, Classes & Dynamic Theming
+
+### 5.1. `data-style` — Dynamic Styles
+
+**Syntax**: `data-style="{ property: expression, ... }"`
+
+**Purpose**: Dynamically bind CSS properties to signal values using object
+mapping. Suffix-based binding (e.g. `data-style-color`) is deprecated in favor
+of the unified object syntax.
+
+**Examples**:
+
+```html
+<!-- Background color -->
+<div data-signal="{ color: 'red' }">
+  <div data-style-background-color="color" style="width: 100px; height: 100px">
+  </div>
+  <button data-on-click="color = 'blue'">Make Blue</button>
+</div>
+
+<!-- Width/height (Object syntax) -->
+<div data-signal="{ width: 50 }">
+  <div
+    data-style="{ width: width + '%' }"
+    style="background: blue; height: 50px"
+  >
+  </div>
+  <input type="range" min="0" max="100" data-bind-value="width">
+</div>
+
+<!-- Conditional styles -->
+<div data-signal="{ active: false }">
+  <button
+    data-style-background-color="active ? 'green' : 'gray'"
+    data-on-click="active = !active"
+  >
+    {active ? 'Active' : 'Inactive'}
+  </button>
+</div>
+
+<!-- Multiple style properties (Cleanest Pattern) -->
+<div data-signal="{ theme: { bg: '#222', fg: '#fff', size: '16px' } }">
+  <div
+    data-style="{
+      backgroundColor: theme.bg,
+      color: theme.fg,
+      fontSize: theme.size
+    }"
+  >
+    Themed content
+  </div>
+</div>
+```
+
+**Units**: Nexus-UX automatically adds `px` for numeric values on properties
+that need units (width, height, padding, margin, etc.).
+
+```html
+<!-- These are equivalent -->
+<div data-style-width="100">...</div>
+<div data-style-width="'100px'">...</div>
+```
+
+**Logical Styles**:
+
+```html
+<div
+  data-style-margin-block-start="spacing + 'px'"
+  data-style-opacity="isPending ? 0.5 : 1"
+>
+</div>
+```
+
+### 5.2. `data-class` — Dynamic CSS Classes
+
+**Syntax**: `data-class="{ 'className': booleanExpression, ... }"`
+
+**Purpose**: Reactively toggle one or more CSS classes based on boolean conditions.
+The value must be a **JavaScript object literal** where each key is a class name
+(quoted string) and each value is a boolean expression.
+
+> [!IMPORTANT]
+> **Only the object-map form is supported.** The dash-suffix variant
+> (`data-class-{name}`) is parsed differently by the attribute grammar — the
+> class name becomes the directive *argument*, which works for simple
+> alphanumeric names but **breaks** for any class containing `:` (Tailwind
+> variants like `hover:`, `focus:`), `/` (opacity modifiers like `bg-base-200/60`),
+> or `[` (arbitrary values like `h-[140px]`). The object-map form handles all of
+> these correctly because the keys are JavaScript strings, not HTML attribute names.
+
+**Examples**:
+
+```html
+<!-- Single class toggle -->
+<div data-signal="{ active: false }">
+  <button
+    data-class="{ 'active': active }"
+    data-on-click="active = !active"
+  >
+    Toggle
+  </button>
+</div>
+
+<!-- Multiple exclusive state classes -->
+<div data-signal="{ status: 'warning' }">
+  <div
+    class="alert"
+    data-class="{
+      'alert-success': status === 'success',
+      'alert-warning': status === 'warning',
+      'alert-error':   status === 'error'
+    }"
+  >
+    Status indicator
+  </div>
+</div>
+
+<!-- Works with ALL Tailwind class forms -->
+<div data-signal="{ compact: false, hasError: false }">
+  <input
+    class="input"
+    data-class="{
+      'input-sm': compact,
+      'input-lg': !compact,
+      'border-red-500 focus:border-red-600 bg-red-50': hasError,
+      'border-slate-300 focus:border-blue-500': !hasError,
+      'opacity-50': compact && hasError
+    }"
+  >
+</div>
+
+<!-- Layout branch pattern: exclusive conditions group cleanly -->
+<div
+  data-class="{
+    'grid grid-cols-2 gap-4': layout === 'grid',
+    'flex flex-col gap-3':    layout === 'list',
+    'flex flex-col gap-1.5':  layout === 'compact'
+  }"
+></div>
+```
+
+**Multiple `data-class` attributes on one element**: Each `data-class` attribute
+is processed independently, so you can split unrelated class groups across
+multiple attributes:
+
+```html
+<!-- Layout classes and state classes as separate concerns -->
+<div
+  data-class="{ 'grid grid-cols-2': isGrid, 'flex flex-col': !isGrid }"
+  data-class="{ 'opacity-50 pointer-events-none': disabled }"
+></div>
+```
+
+> [!NOTE]
+> When using Tailwind with Nexus-UX, classes referenced in `data-class` are
+> automatically detected by the JIT engine and compiled in-memory — no build
+> step required.
+
+### 5.3. Native Tailwind JIT (Oxide Parity)
+
+Nexus-UX provides a built-in, zero-dependency Tailwind v4 (Oxide) compiler. This eliminates the need for external build steps (like the Tailwind CLI or PostCSS) or runtime libraries (like `@tailwindcss/browser` PlayCDN).
+
+**Key Features:**
+
+- **Automatic Class Discovery**: Any Tailwind class used in the DOM (`<div class="bg-blue-500 hover:scale-105">`) is automatically detected by the `ModuleCoordinator` and compiled in-memory.
+- **Dynamic Class Generation**: Tailwind classes bound via `data-class` are compiled JIT and injected synchronously.
+- **Native Theme & Utility Directives**: The engine supports importing CSS files containing `@theme`, `@utility`, and `@variant` directives via the `data-import` module, seamlessly updating the framework's internal design system.
+
+**Examples:**
+
+```html
+<!-- Native PlayCDN Parity (No external scripts required) -->
+<div class="flex items-center justify-center min-h-screen bg-slate-900 text-white">
+  <div class="p-8 max-w-md w-full bg-slate-800 rounded-xl shadow-lg border border-slate-700">
+    <h1 class="text-2xl font-bold mb-4 text-blue-400">Tailwind Engine</h1>
+    <button class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-md transition-colors">
+      Action
+    </button>
+  </div>
+</div>
+
+<!-- Dynamic Signal-Bound Classes -->
+<div data-signal="{ hasError: false }">
+  <input 
+    type="text" 
+    class="border rounded px-3 py-2 outline-none transition-colors"
+    data-class="{ 'border-red-500 focus:border-red-600 bg-red-50': hasError, 'border-slate-300 focus:border-blue-500': !hasError }"
+  >
+  <button data-on-click="hasError = !hasError" class="ml-2 px-3 py-2 bg-slate-200 rounded">Toggle State</button>
+</div>
+
+<!-- Signals within Tailwind Arbitrary Values -->
+<div data-signal="{ dynamicColor: '#8b5cf6', paddingSize: '2rem' }">
+  <!-- Use string interpolation to dynamically generate JIT classes on the fly -->
+  <div data-class="[`bg-[${dynamicColor}]`, `p-[${paddingSize}]`, 'text-white', 'rounded-lg']">
+     Highly Dynamic Tailwind (Generates: bg-[#8b5cf6] p-[2rem])
+  </div>
+  
+  <input type="color" data-bind="dynamicColor" class="mt-4">
+  <input type="text" data-bind="paddingSize" class="mt-4 border rounded">
+</div>
+### 5.4. `data-stylesheet` — Adopted StyleSheets & Constructable CSS
+
+**Syntax**: `data-stylesheet="cssStringOrUrl"`
+
+**Purpose**: Bridges dynamic styles into `document.adoptedStyleSheets` or component Shadow DOMs with zero DOM pollution and instant CSSOM parsing.
+
+- **Tailwind Theme Bridge**: Synchronizes theme tokens, DaisyUI styles, and custom variables into adopted stylesheets (`buildTailwindThemeBridge`).
+- **Dynamic Token Discovery**: Automatically extracts declared `--color-*` tokens and provides reactive palette adjustments without modifying HTML `<style>` nodes.
+
+```html
+<!-- Injects constructable stylesheet directly into document.adoptedStyleSheets -->
+<div data-stylesheet="':root { --brand-primary: #3b82f6; }'"></div>
+```
+
+---
+
+---
+
+### 5.6. `data-theme` / `data-ux-theme` — Intelligent Theme Orchestration
+
+**Syntax**: `data-theme="{ default: 'auto', modes: { auto: { ... }, light: { theme: 'cupcake' }, dark: { theme: 'synthwave' } } }"`
+
+**Purpose**: Automates color-mode switching, system preference listening (`prefers-color-scheme`), and synchronizes the resolved theme mapping (e.g., `'cupcake'`) to the root HTML `data-theme` attribute for DaisyUI / Tailwind compatibility.
+
+**Exposed State & Helpers**:
+- `#theme.current`: Active theme key (`'cupcake'`, `'synthwave'`, etc.).
+- `#theme.mode`: Active mode (`'auto'`, `'light'`, `'dark'`).
+- `$switchTheme()`: Toggles between available theme modes.
+- `$themeIcon`: Current mode indicator icon string.
+- `$activeMode`: Resolved boolean state.
+
+**Example**:
+
+```html
+<html data-theme="{
+    default: 'auto',
+    modes: {
+        auto: { icon: 'auto-icon' },
+        light: { icon: 'sun-icon', theme: 'cupcake' },
+        dark: { icon: 'moon-icon', theme: 'synthwave' }
+    }
+}">
+  <body>
+    <!-- Theme Switcher Button -->
+    <button data-on-click="$switchTheme()">
+      <span data-bind="$themeIcon"></span>
+      <span data-bind="#theme.current"></span>
+    </button>
+  </body>
+</html>
+```
+
+---
+
+## Chapter 6: Advanced Orchestration (Effects, Custom)
+
+### 6.1. `data-effect` — Side Effects
+
+**Syntax**: `data-effect="expression"`
+
+**Purpose**: Run code whenever signals change (similar to React's `useEffect`).
+
+**Examples**:
+
+```html
+<!-- Log to console when signal changes -->
+<div data-signal="{ count: 0 }">
+  <div data-effect="console.log('Count changed:', count)"></div>
+  <button data-on-click="count++">Increment</button>
+</div>
+
+<!-- Update document title -->
+<div data-signal="{ pageTitle: 'Home' }">
+  <div data-effect="document.title = 'My App - ' + pageTitle"></div>
+  <input type="text" data-bind-value="pageTitle">
+</div>
+
+<!-- Save to localStorage -->
+<div data-signal="{ settings: { theme: 'dark', fontSize: 14 } }">
+  <div
+    data-effect="localStorage.setItem('settings', JSON.stringify(settings))"
+  >
+  </div>
+  <select data-bind-value="settings.theme">
+    <option value="light">Light</option>
+    <option value="dark">Dark</option>
+  </select>
+</div>
+
+<!-- Auto-scroll chat to bottom -->
+<div data-signal="{ messages: $sql('LIVE SELECT * FROM message') }">
+  <div data-for="msg in messages">{msg.text}</div>
+</div>
+```
+
+**Cleanup**: Effects run after DOM updates. For cleanup logic (e.g., removing
+event listeners), return a cleanup function:
+
+```html
+<div
+  data-effect="
+  const handler = () => console.log('Resized');
+  window.addEventListener('resize', handler);
+  return () => window.removeEventListener('resize', handler);
+"
+>
+</div>
+```
+
+---
+
+## Chapter 7: Sprites (`$`) & Native API Binding
+
+Nexus-UX provides two complementary namespaces for imperative and reactive operations:
+
+- **Sprites (`$`)** — Framework-level commands and value-add integrations (SurrealDB,
+  GraphQL, animation, selector engine, etc.). These remain as explicit sprite modules.
+- **Native API Binding** — Direct reactive access to browser APIs through `data-signal` and `data-bind`. No `_` prefix or mirror registration required. Standard JS property access (`window.innerWidth`, `localStorage.collapsed`) automatically becomes reactive through Proxy/Reflect traps.
+
+> **⚠️ Native API Binding Policy**: For all browser-native functionality, use standard
+> JS property access in `data-signal` and `data-bind`. The framework automatically
+> tracks reads and writes through Proxy/Reflect traps. Legacy sprite wrappers like
+> `$fetch`, `$clipboard`, `$cache`, `$notification`, `$payment`, `$ws`, `$download`,
+> `$http` are deprecated in favor of direct native API access. See [§2.6](#26-native-api-signal-binding).
+
+### Native API Binding Pattern
+
+Native API binding uses standard JS property access in signals and bindings. The framework intercepts reads/writes via Proxy/Reflect and automatically:
+- Registers native listeners (resize, scroll, storage) on first read
+- Pushes updates back into the signal reactively
+- Persists writes to writable APIs (localStorage, sessionStorage) immediately
+
+```html
+<div data-signal="{
+      collapsed: localStorage.collapsed ?? true,
+      pageTabs: localStorage.pageTabs ?? true,
+      rtl: localStorage.rtl ?? false,
+      zoom: localStorage.zoom ?? 1
+    }">
+  <button data-on-click="localStorage.setItem('collapsed', !localStorage.collapsed)"
+          data-class="{ 'scale-x-[-1]': !collapsed }">
+</div>
+```
+- **Signal Declaration:** Declaratively seed signals directly from native API expressions with explicit nullish defaults (`??`).
+- **Action Directives:** Execute native browser API calls directly (`localStorage.setItem(...)`). The reactive binding pushes updates to watching signals automatically—no duplicate manual signal mutations are needed!
+- **Template View Directives:** HTML elements observe short, clean signal names (`collapsed`, `pageTabs`), keeping templates non-verbose.
+
+```html
+<div class="grid grid-cols-[0rem_1fr]" data-signal="{
+      collapsed: localStorage.collapsed ?? true,
+      pageTabs: localStorage.pageTabs ?? true,
+      rtl: localStorage.rtl ?? false,
+      zoom: localStorage.zoom ?? 1
+    }" data-class="{ 'md:grid-cols-[5rem_1fr]': collapsed }"
+    data-bind-dir="rtl ? 'rtl' : 'ltr'">
+
+  <!-- Pure Web API Action Directive (Mutates native storage directly) -->
+  <button data-on-click="localStorage.setItem('collapsed', !localStorage.collapsed)"
+          data-class="{ 'scale-x-[-1]': !collapsed }">
+    Toggle Sidebar
+  </button>
+</div>
+```
+
+- **1. Signal Declaration:** Declaratively seed signals directly from native API expressions with explicit nullish defaults (`??`).
+- **2. Pure Web API Action Directives:** Action handlers call native browser APIs directly (`localStorage.setItem(...)`). The reactive binding pushes updates to watching signals automatically—no duplicate manual signal mutations are needed!
+- **3. Concise Template View Directives:** HTML elements observe short, readable signal names (`collapsed`, `pageTabs`, `rtl`), eliminating template code bloat.
+
+### Quick Migration Reference
+
+| Deprecated Sprite | Native Equivalent | Migration |
+| :---------------- | :---------------- | :-------- |
+| `$fetch(url, opts)` | `fetch(url, opts)` | Use native `fetch` directly |
+| `$get(url, opts)` | `fetch(url, { method: 'GET' })` | Replace `$get(...)` with native `fetch` |
+| `$post(url, body, opts)` | `fetch(url, { method: 'POST', body: JSON.stringify(body) })` | Replace `$post(...)` with native `fetch` |
+| `$put(url, body, opts)` | `fetch(url, { method: 'PUT', body: JSON.stringify(body) })` | Replace `$put(...)` with native `fetch` |
+| `$patch(url, body, opts)` | `fetch(url, { method: 'PATCH', body: JSON.stringify(body) })` | Replace `$patch(...)` with native `fetch` |
+| `$delete(url, opts)` | `fetch(url, { method: 'DELETE' })` | Replace `$delete(...)` with native `fetch` |
+| `$clipboard.write(text)` | `navigator.clipboard.writeText(text)` | Use native Clipboard API directly |
+| `$clipboard.read()` | `navigator.clipboard.readText()` | Use native Clipboard API directly |
+| `$cache.put(name, url, res)` | `caches.default.put(url, res)` | Use native Cache Storage API directly |
+| `$cache.match(name, url)` | `caches.default.match(url)` | Returns `Response` or `null` |
+| `$cache.delete(name, url)` | `caches.default.delete(url)` | |
+| `$cache.keys(name)` | `caches.default.keys()` | |
+| `$notification.send(title, opts)` | `new Notification(title, opts)` | Use native Notification API directly |
+| `$notification.permission` | `Notification.permission` | Read-only reactive string |
+| `$notification.requestPermission()` | `Notification.requestPermission()` | Returns `Promise<string>` |
+| `$payment.request(methods, details)` | `new PaymentRequest(methods, details)` | Use native Payment Request API directly |
+| `$payment.canMakePayment(methods)` | `PaymentRequest.canMakePayment(methods)` | |
+| `$ws(url)` | `new WebSocket(url)` | Use native WebSocket directly |
+| `$download(filename, content, mime)` | `URL.createObjectURL(new Blob([content], { type: mime }))` | Use native Blob/URL API directly |
+| `$store(name, initial)` | `#name` via global signals | Use `data-signal-global` and `#storeName` |
+| `$watch(expr, cb)` | `watch(() => expr, cb)` | Use reactivity engine's `watch()` directly in `data-effect` |
+
+> **Note**: Legacy sprite wrappers are **removed** from the codebase. Direct Native API Binding provides identical functionality with zero wrapper overhead. All 14 framework sprites (`$sql`, `$gql`, `$animate`, `$selector`, `$flow`, `$sw`, `$mcp`, `$predictive`, `$push`, `$bgFetch`, `$bgSync`, `$periodicSync`, `$mask`, `$svg`) and 5 auto-injected utilities (`$el`, `$id`, `$dispatch`, `$global`, `$nextTick`) are retained for specialized capabilities.
+
+---
+
+### 7.1. `$sql()` Function
+
+**Syntax**: `$sql(queryString, [bindings])`
+
+**Purpose**: Execute SurrealDB queries from Nexus-UX.
+
+**Examples**:
+
+```html
+<!-- Simple SELECT -->
+<div data-signal="{ users: $sql('SELECT * FROM user') }">
+  <p>{users.length} users</p>
+</div>
+
+<!-- Parameterized query -->
+<div data-signal="{ userId: 'user:123' }">
+  <div
+    data-signal="{ user: $sql('SELECT * FROM userId', { userId: userId }) }"
+  >
+    <p>{user.name}</p>
+  </div>
+</div>
+
+<!-- INSERT on button click -->
+<div data-signal="{ name: '' }">
+  <input type="text" data-bind-value="name">
+  <button
+    data-on-click="$sql('CREATE user CONTENT { name: name, created_at: time::now() }')"
+  >
+    Add User
+  </button>
+</div>
+
+<!-- UPDATE -->
+<div data-signal="{ user: $sql('SELECT * FROM user:auth.id') }">
+  <input type="text" data-bind-value="user.email">
+  <button data-on-click="$sql('UPDATE user:auth.id SET email = user.email')">
+    Save
+  </button>
+</div>
+
+<!-- DELETE -->
+<button data-on-click="$sql('DELETE user:userId'); window.location.reload()">
+  Delete User
+</button>
+```
+
+**Async behavior**: `$sql()` returns a Promise. Use `data-signal` to handle
+loading state:
+
+```html
+<div data-signal="{ loading: false }">
+  <div data-signal="{ users: [] }">
+    <button
+      data-on-click="loading = true; $sql('SELECT * FROM user').then(r => { users = r; loading = false; })"
+    >
+      Load Users
+    </button>
+    <p data-if="loading">Loading...</p>
+    <ul data-if="!loading">
+      <li data-for="user in users">{user.name}</li>
+    </ul>
+  </div>
+</div>
+```
+
+### 7.2. LIVE Queries (Real-Time)
+
+**Syntax**: `$sql('LIVE SELECT ...')`
+
+**Purpose**: Subscribe to real-time updates from SurrealDB.
+
+**How it works**:
+
+1. Browser opens WebSocket to SurrealDB
+2. `LIVE SELECT` creates a server-side subscription
+3. When table rows change, server pushes **diffs** (not full data)
+4. Nexus-UX applies diffs to signal automatically
+
+**Examples**:
+
+```html
+<!-- Real-time user list -->
+<div data-signal="{ users: $sql('LIVE SELECT * FROM user') }">
+  <ul>
+    <li data-for="user in users">{user.name}</li>
+  </ul>
+</div>
+
+<!-- Filtered live query -->
+<div
+  data-signal="{ myTodos: $sql('LIVE SELECT * FROM todo WHERE owner = auth.id AND completed = false') }"
+>
+  <p>You have {myTodos.length} active todos</p>
+</div>
+
+<!-- Multi-user chat -->
+<div
+  data-signal="{ messages: $sql('LIVE SELECT * FROM message WHERE room = roomId ORDER BY timestamp DESC LIMIT 50') }"
+>
+  <div data-for="msg in messages">
+    <strong>{msg.author.name}:</strong> {msg.text}
+  </div>
+</div>
+```
+
+**Performance**: LIVE queries are highly efficient because:
+
+- Server sends only **diffs** (e.g., "row with id X was updated, field Y changed
+  to Z")
+- No polling (WebSocket is persistent)
+- SurrealDB indexes ensure fast change detection
+
+### 7.3. Parameterized Queries
+
+**Why**: Prevent SQL injection and make queries reusable.
+
+```html
+<!-- ❌ BAD (vulnerable to injection) -->
+<div data-signal="{ search: '' }">
+  <input type="text" data-bind-value="search">
+  <div
+    data-signal="{ results: $sql('SELECT * FROM product WHERE name CONTAINS ' + search) }"
+  >
+    <!-- If user types: '; DELETE FROM product; -- -->
+  </div>
+</div>
+
+<!-- ✅ GOOD (safe parameterized query) -->
+<div data-signal="{ search: '' }">
+  <input type="text" data-bind-value="search">
+  <div
+    data-signal="{ results: $sql('SELECT * FROM product WHERE name CONTAINS search', { search: search }) }"
+  >
+    <div data-for="product in results">{product.name}</div>
+  </div>
+</div>
+```
+
+**Built-in parameters**:
+
+- `auth.id` - Current user's locker ID
+- `auth.email` - Current user's email
+- `auth.role` - Current user's role
+
+### 7.4. External APIs — DEPRECATED
+
+> **⚠️ DEPRECATED**: Use native browser APIs directly. The `$fetch`, `$http`, `$clipboard`,
+> `$cache`, `$notification`, `$payment`, `$ws`, and `$download` sprites are legacy
+> compatibility wrappers. Native browser APIs provide identical functionality with
+> zero wrapper overhead. See [§2.6](#26-native-api-signal-binding).
+
+**Deprecated Syntax**: `$fetch(url, options)`
+
+**Modern Equivalent**: `fetch(url, options)`
+
+```html
+<!-- DEPRECATED -->
+<div data-signal="{ weather: null }">
+  <button
+    data-on-click="$fetch('https://api.weather.com/v1/london').then(res => res.json()).then(data => weather = data)"
+  >
+    Get Weather
+  </button>
+</div>
+
+<!-- ✅ RECOMMENDED -->
+<div data-signal="{ weather: null }">
+  <button
+    data-on-click="weather = (await fetch('https://api.weather.com/v1/london')).json()"
+  >
+    Get Weather
+  </button>
+</div>
+```
+
+### 7.7. WebSocket (`$ws`) — DEPRECATED
+
+> **⚠️ DEPRECATED**: Use native `WebSocket` directly. `$ws` provided
+> custom reconnection logic and state wrapping, but the native `WebSocket` API
+> now offers identical reactive multiplexing with auto-cleanup. See [§2.6](#26-native-api-signal-binding).
+
+**Deprecated Syntax**: `$ws(url, [protocols])`
+
+**Modern Equivalent**: `WebSocket(url, protocols)`
+
+```html
+<!-- DEPRECATED -->
+<div data-signal="{ socket: null, messages: [] }">
+  <button data-on-click="socket = $ws('wss://chat.example.com')">Connect</button>
+  <p data-bind="socket?.state"></p>
+</div>
+
+<!-- ✅ RECOMMENDED (identical API surface) -->
+<div data-signal="{ socket: null, messages: [] }">
+  <button data-on-click="socket = WebSocket('wss://chat.example.com')">Connect</button>
+  <p data-bind="socket?.state"></p>
+</div>
+```
+
+The native `WebSocket` API returns a reactive proxy with:
+- `.state` — `'connecting' | 'open' | 'closing' | 'closed'`
+- `.lastMessage` — last received message
+- `.send(data)` — send data
+- `.close()` — close connection
+- Auto-reconnects with exponential backoff (bare invocation multiplexing)
+- Auto-cleanup when owning element unmounts
+
+### 7.8. GraphQL (`$gql`)
+
+**Syntax**: `$gql(query, [variables])`
+
+**Purpose**: Execute GraphQL queries and mutations against a configured
+endpoint.
+
+```html
+<!-- Query -->
+<div
+  data-signal="{ users: [] }"
+  data-on-load="users = (await $gql('query { users { id name email } }')).data.users"
+>
+  <div data-for="user in users">{user.name} ({user.email})</div>
+</div>
+
+<!-- Mutation -->
+<div data-signal="{ name: '', email: '' }">
+  <input data-bind-value="name" placeholder="Name">
+  <input data-bind-value="email" placeholder="Email">
+  <button
+    data-on-click="
+    await $gql('mutation(name: String!, email: String!) { createUser(name: name, email: email) { id } }', { name: name, email: email });
+    name = ''; email = '';
+  "
+  >
+    Create User
+  </button>
+</div>
+
+<!-- With variables -->
+<div
+  data-signal="{ userId: 'user:1', profile: null }"
+  data-on-load="profile = (await $gql('query(id: ID!) { user(id: id) { name avatar bio } }', { id: userId })).data.user"
+>
+  <h2 data-bind="profile?.name"></h2>
+  <p data-bind="profile?.bio"></p>
+</div>
+```
+
+**Returns**: `Promise<{ data: T, errors?: GraphQLError[] }>`
+
+**Configuration**: The GraphQL endpoint is configured via
+`$nexus.config.graphql.endpoint` or set per-call with
+`$gql(query, variables, { endpoint: '...' })`.
+
+### 7.9. HTTP Convenience Methods — DEPRECATED
+
+> **⚠️ DEPRECATED**: Use native `fetch` directly. `$get`, `$post`,
+> `$put`, `$patch`, `$delete` are thin wrappers around `fetch` with identical
+> semantics. See [§2.6](#26-native-api-signal-binding) for migration.
+
+**Legacy**:
+- `$get(url, [options])`
+- `$post(url, body, [options])`
+- `$put(url, body, [options])`
+- `$patch(url, body, [options])`
+- `$delete(url, [options])`
+
+**Modern equivalents** (native fetch):
+
+```html
+<!-- DEPRECATED -->
+<div data-on-load="users = await $get('/api/users')"></div>
+<button data-on-click="await $post('/api/users', { name })"></button>
+
+<!-- ✅ RECOMMENDED -->
+<div data-on-load="users = await fetch('/api/users')"></div>
+<button data-on-click="await fetch('/api/users', { method: 'POST', body: JSON.stringify({ name }) })"></button>
+```
+
+**Common options** (all HTTP sprites):
+
+- `headers`: Object of additional headers
+- `timeout`: Request timeout in ms (default: 30000)
+- `signal`: AbortSignal for cancellation
+
+### 7.10. DOM Sprites
+
+#### 7.10.1. `$el`
+
+Reference to the current element the directive is attached to.
+
+```html
+<input data-on-focus="$el.classList.add('ring')" data-on-blur="$el.classList.remove('ring')">
+<div data-on-load="$el.style.opacity = '1'">
+```
+
+#### 7.10.2. `$nextTick([callback])`
+
+Schedules execution after the current reactive flush completes and the DOM has
+updated.
+
+```html
+<!-- Wait for DOM to update, then log -->
+<button
+  data-on-click="messages = [...messages, msg]; $nextTick(() => console.log('DOM updated, messages count:', messages.length))"
+>
+  Send
+</button>
+
+<!-- Promise form -->
+<button
+  data-on-click="count++; await $nextTick(); console.log('DOM updated, count is now:', count)"
+>
+  Increment
+</button>
+```
+
+#### 7.10.3. `$dispatch(eventName, [detail])`
+
+Dispatches a `CustomEvent` on the current element. Bubbles by default.
+
+```html
+<!-- Child dispatches event -->
+<button data-on-click="$dispatch('item-selected', { id: itemId })">
+  Select
+</button>
+
+<!-- Parent listens -->
+<div data-on-item-selected="handleSelection(event.detail.id)">
+  <!-- child buttons here -->
+</div>
+```
+
+### 7.11. State Sprites — DEPRECATED
+
+#### 7.11.1. `$store(name, [initialValue])` — DEPRECATED
+
+> **⚠️ DEPRECATED**: Use global signals with `data-signal-global` or the `#`
+> namespace instead. `$store` was a convenience for cross-component state; global
+> signals (`#myStore`) are now the recommended pattern.
+
+**Migration**:
+
+```html
+<!-- DEPRECATED -->
+<div data-signal="{ cart: $store('cart', []) }"></div>
+
+<!-- ✅ RECOMMENDED: Use global signals -->
+<body data-signal-global="appState">
+  <div data-signal="{ cart: appState.cart || [] }"></div>
+</body>
+```
+
+#### 7.11.2. `$watch(expression, callback)` — DEPRECATED
+
+> **⚠️ DEPRECATED**: Use the reactive `watch()` function directly inside a
+> `data-effect`. The `watch()` API is available from the reactivity system.
+
+**Migration**:
+
+```html
+<!-- DEPRECATED -->
+<div data-on-load="$watch('searchQuery', (n, o) => results = $get('/api?q=' + n))"></div>
+
+<!-- ✅ RECOMMENDED -->
+<div data-effect="watch(() => searchQuery, (n, o) => results = fetch('/api?q=' + n))"></div>
+```
+
+### 7.12. Utility Sprites — ALL DEPRECATED
+
+> **⚠️ ALL DEPRECATED**: These utility sprites have been replaced by native
+> browser APIs. See [§2.6](#26-native-api-signal-binding) for the modern equivalents.
+
+#### 7.12.1. `$clipboard` — DEPRECATED
+
+**DEPRECATED**: Use native Clipboard API directly.
+
+**Legacy**: `$clipboard.write(text)`, `$clipboard.read()`
+**Modern**: `navigator.clipboard.writeText(text)`, `navigator.clipboard.readText()`
+
+```html
+<!-- DEPRECATED -->
+<button data-on-click="$clipboard.write(code)">Copy</button>
+
+<!-- ✅ RECOMMENDED -->
+<button data-on-click="navigator.clipboard.writeText(code)">Copy</button>
+```
+
+#### 7.12.2. `$download` — DEPRECATED
+
+**STATUS**: Removed. Use native Blob/URL API directly:
+`URL.createObjectURL(new Blob([content], { type: mime }))`
+
+```html
+<button data-on-click="const url = URL.createObjectURL(new Blob([csvData], { type: 'text/csv' })); const a = document.createElement('a'); a.href = url; a.download = 'report.csv'; a.click(); URL.revokeObjectURL(url)">
+  Export CSV
+</button>
+```
+
+#### 7.12.3. `$cache` — DEPRECATED
+
+**DEPRECATED**: Use the native Cache API directly.
+
+**Legacy**: `$cache.put(name, url, res)`, `$cache.match(name, url)`, etc.
+**Modern**: `caches.default.put(url, response)`, `caches.default.match(url)`, etc.
+
+```html
+<!-- DEPRECATED -->
+<button data-on-click="cache.put('assets', '/api/data')">Cache</button>
+
+<!-- ✅ RECOMMENDED -->
+<button data-on-click="caches.default.put('/api/data', response)">Cache</button>
+```
+
+> **Note**: The native Cache API uses `Cache` objects directly. Use
+> `caches.open(name)`, `put()`, `match()`, `delete()`, `keys()`, `clear()`.
+
+#### 7.12.4. `$notification` → `Notification`
+
+**DEPRECATED**: Use the native `Notification` constructor and `.permission`
+property directly.
+
+**Legacy**: `$notification.send(title, opts)`, `$notification.permission`,
+`$notification.requestPermission()`
+**Modern**:
+- `new Notification(title, options)` — show notification
+- `Notification.permission` — reactive permission state
+- `Notification.requestPermission()` — request access
+
+```html
+<!-- DEPRECATED -->
+<button data-on-click="$notification.send('Hello!')">Notify</button>
+
+<!-- ✅ RECOMMENDED -->
+<button data-on-click="new Notification('Hello!')">Notify</button>
+```
+
+#### 7.12.5. `$payment` → `PaymentRequest`
+
+**DEPRECATED**: Use `new PaymentRequest(methods, details)` directly.
+
+```html
+<!-- DEPRECATED -->
+<button data-on-click="payment.request(methods, details)">Pay</button>
+
+<!-- ✅ RECOMMENDED -->
+<button data-on-click="new PaymentRequest(methods, details).show()">Pay</button>
+```
+
+### 7.13. Cache Sprites — DEPRECATED
+
+> **⚠️ DEPRECATED**: Use the native Cache API directly.
+
+**Legacy sprite**: `$cache` — Cache Storage API wrapper.
+**Modern**: `caches` — direct access to the native Cache API.
+
+```html
+<!-- DEPRECATED -->
+<button data-on-click="cache.put('assets', '/api/config')">Cache Config</button>
+
+<!-- ✅ RECOMMENDED -->
+<button
+  data-on-click="
+    fetch('/api/config').then(res => caches.default.put('/api/config', res))
+  "
+>Cache Config</button>
+```
+
+The native Cache API exposes:
+- `caches.default` — default Cache object
+- `.put(url, response)` — cache a Response
+- `.match(url)` — returns `Response | null`
+- `.delete(url)` — remove entry
+- `.keys()` — iterator of cached URLs
+- `.clear()` — empty the cache
+
+### 7.14. Application & Background Sprites
+
+#### 7.14.1. `sw` — Service Worker Sprite (RETAINED)
+
+Service Worker lifecycle management — a value-add integration over the raw
+`_ServiceWorker` API.
+
+```html
+<div data-on-load="sw.register('/sw.js')">
+  <span data-bind="'SW: ' + sw.status"></span>
+  <button data-show="sw.updateAvailable" data-on-click="sw.skipWaiting()">
+    Update Available — Reload
+  </button>
+</div>
+```
+
+**Properties**: `sw.status` (reactive), `sw.controller`, `sw.updateAvailable`
+**Methods**: `.register(url, opts)`, `.update()`, `.unregister()`,
+`.postMessage(data)`, `.skipWaiting()`
+
+#### 7.14.2. `notification` — DEPRECATED
+
+> **⚠️ DEPRECATED**: Use `Notification` mirror directly.
+
+Replaced by the native `Notification` constructor. See [§7.12.4](#71243-notification---Notification).
+
+```html
+<!-- DEPRECATED -->
+<button data-on-click="$notification.send('Hello!')">Notify</button>
+
+<!-- ✅ RECOMMENDED -->
+<button data-on-click="new Notification('Hello!')">Notify</button>
+```
+---
+
+#### 7.14.3. `push`
+
+Push Messaging subscription management.
+
+```html
+<button data-on-click="push.subscribe(vapidPublicKey)">Enable Push</button>
+<button
+  data-show="push.status === 'active'"
+  data-on-click="push.unsubscribe()"
+>
+  Disable Push
+</button>
+```
+
+**Properties**: `push.subscription` (reactive), `push.status` **Methods**:
+`.subscribe(vapidKey)`, `.unsubscribe()`
+
+#### 7.14.4. `bgFetch`
+
+Background Fetch for large downloads.
+
+**Methods**: `.fetch(id, urls, opts)`, `.get(id)`, `.abort(id)`
+
+#### 7.14.5. `bgSync`
+
+One-time Background Sync.
+
+**Methods**: `.register(tag)` — returns `{ status, error }` **Properties**:
+`.tags` — returns `{ data: string[], status, error }`
+
+#### 7.14.6. `periodicSync`
+
+Periodic Background Sync.
+
+**Methods**: `.register(tag, { minInterval })`, `.unregister(tag)`
+**Properties**: `.tags` — returns `{ data: string[], status, error }`
+
+#### 7.14.7. `payment` — DEPRECATED
+
+> **⚠️ DEPRECATED**: Use `new PaymentRequest(methods, details)` directly.
+
+Payment Request API replaced by native browser API.
+
+```html
+<!-- DEPRECATED -->
+<button data-on-click="result = payment.request(methods, details)">Pay Now</button>
+
+<!-- ✅ RECOMMENDED -->
+<button data-on-click="result = (new PaymentRequest(methods, details)).show()">
+  Pay Now
+</button>
+```
+
+---
+
+## Chapter 7.5: native APIs (`_`) — The Unified JIT Proxy
+
+Mirrors are **reactive wrappers** mapped directly to the `globalThis.window`
+object. They use the `_` prefix, triggering the framework's lazy JIT proxy
+engine that directly binds browser capabilities to visual state without
+requiring static module wrappers or framework updates for novel browser APIs.
+
+- **Lazy Reactivity Allocation (ZCZS)**: Memory for synchronization (like
+  `resize`, `storage`, or `hashchange` event listeners) is only allocated to the
+  runtime heap if an HTML template explicitly registers a read dependency on
+  that property. If your application never accesses `_localStorage`, no tracking
+  payload or system listener is booted.
+
+### 7.5.1. `_window` (read-write)
+
+Because `_` proxies `window` natively, any global state point is directly
+accessible without specialized syntax.
+
+```html
+<!-- Read: responsive layout info tracked lazily on native 'resize' -->
+<p data-bind="'Viewport: ' + window.innerWidth + 'x' + window.innerHeight">
+</p>
+
+<!-- Read: scroll-linked animation wrapped securely around native scroll properties -->
+<div data-style-opacity="Math.max(0, 1 - window.scrollY / 300)">
+  Hero Content
+</div>
+
+<!-- Write: update native document title directly -->
+<div
+  data-effect="window.document.title = 'Dashboard (' + notifications.length + ')'"
+>
+</div>
+```
+
+### 7.5.2. `_localStorage` (read-write)
+
+Because `window.localStorage` is globally accessible, `_localStorage` maps to it
+seamlessly. Reads are reactive, and writes persist immediately while syncing
+across tabs via dynamic JIT `storage` event bindings.
+
+```html
+<!-- Read: initialize from stored value -->
+<div data-signal="{ theme: localStorage.theme || 'light' }">
+  <button data-on-click="theme = theme === 'light' ? 'dark' : 'light'">
+    Toggle Theme ({theme})
+  </button>
+</div>
+
+<!-- Write: persist directly -->
+<button data-on-click="localStorage.theme = 'dark'">Force Dark Mode</button>
+```
+
+### 7.5.3. `_sessionStorage` (read-write)
+
+Functions exactly like `_localStorage`, mapping dynamically to `sessionStorage`.
+Values do not sync across tabs and are cleared when the tab closes.
+
+```html
+<!-- Persist draft state across page reloads (within the same tab) -->
+<div
+  data-signal="{ draft: '' }"
+  data-on-load="draft = _sessionStorage['editor:draft'] || ''"
+>
+  <textarea
+    data-bind="draft"
+    data-on-input="_sessionStorage['editor:draft'] = draft"
+  >
+  </textarea>
+</div>
+```
+
+### 7.5.4. Future-Proof Forward Compatibility
+
+Because the `_` identifier resolves universally to the `globalThis.window`
+object, **literally any Global API (existing or future) is supported instantly
+without framework updates.**
+
+If the W3C releases a new `window.ai` Native LLM API tomorrow, Nexus-UX natively
+supports declarative tracking of it today.
+
+```html
+<!-- Experimental or custom properties exposed by plugins / host OS -->
+<div data-bind="_experimentalAPI.status"></div>
+```
+
+---
+
+## Chapter 8: Advanced Patterns & Real-World
+
+### 8.1. Form Handling
+
+**Basic form**:
+
+```html
+<div data-signal="{ formData: { email: '', password: '' } }">
+  <form
+    data-on-submit:prevent="$sql('CREATE session CONTENT { user: formData.email, password: formData.password }').then(r => window.location = '/dashboard')"
+  >
+    <input type="email" data-bind-value="formData.email" required>
+    <input type="password" data-bind-value="formData.password" required>
+    <button type="submit">Log In</button>
+  </form>
+</div>
+```
+
+**Form with validation**:
+
+```html
+<div data-signal="{ form: { email: '', password: '', errors: {} } }">
+  <form
+    data-on-submit:prevent="
+    form.errors = {};
+    if (!form.email.includes('@')) form.errors.email = 'Invalid email';
+    if (form.password.length < 8) form.errors.password = 'Password too short';
+    if (Object.keys(form.errors).length === 0) {
+      $sql('CREATE user CONTENT form').then(() => alert('Registered!'));
+    }
+  "
+  >
+    <div>
+      <input type="email" data-bind-value="form.email">
+      <p data-if="form.errors.email" style="color: red">
+        {form.errors.email}
+      </p>
+    </div>
+    <div>
+      <input type="password" data-bind-value="form.password">
+      <p data-if="form.errors.password" style="color: red">
+        {form.errors.password}
+      </p>
+    </div>
+    <button type="submit">Register</button>
+  </form>
+</div>
+```
+
+### 8.2. Pagination
+
+**Client-side pagination** (all data loaded):
+
+```html
+<div data-signal="{ page: 1 }">
+  <div data-signal="{ pageSize: 10 }">
+    <div data-signal="{ users: $sql('SELECT * FROM user') }">
+      <div
+        data-signal="{ paginatedUsers: users.slice((page - 1) * pageSize, page * pageSize) }"
+      >
+        <ul>
+          <li data-for="user in paginatedUsers">{user.name}</li>
+        </ul>
+        <button data-on-click="page--" data-bind-disabled="page === 1">
+          Previous
+        </button>
+        <span>Page {page} of {Math.ceil(users.length / pageSize)}</span>
+        <button
+          data-on-click="page++"
+          data-bind-disabled="page >= Math.ceil(users.length / pageSize)"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+**Server-side pagination** (fetch only current page):
+
+```html
+<div data-signal="{ page: 1 }">
+  <div data-signal="{ pageSize: 10 }">
+    <div
+      data-signal="{ users: $sql('SELECT * FROM user LIMIT pageSize START (page - 1) * pageSize', { page: page, pageSize: pageSize }) }"
+    >
+      <ul>
+        <li data-for="user in users">{user.name}</li>
+      </ul>
+      <button data-on-click="page--; users = $sql('SELECT...')">
+        Previous
+      </button>
+      <button data-on-click="page++; users = $sql('SELECT...')">Next</button>
+    </div>
+  </div>
+</div>
+```
+
+### 8.3. Infinite Scroll
+
+```html
+<div data-signal="{ page: 1, users: [], loading: false }">
+  <div data-for="user in users">{user.name}</div>
+  <button
+    data-on-click="
+      loading = true;
+      $sql('SELECT * FROM user LIMIT 20 START page * 20', { page: page }).then(newUsers => {
+        users = users.concat(newUsers);
+        page++;
+        loading = false;
+      });
+    "
+    data-bind-disabled="loading"
+  >
+    <span data-if="loading">Loading...</span>
+    <span data-if="!loading">Load More</span>
+  </button>
+</div>
+```
+
+### 8.4. Modals / Dialogs
+
+```html
+<div data-signal="{ showModal: false }">
+  <button data-on-click="showModal = true">Open Modal</button>
+
+  <dialog data-bind-open="showModal">
+    <h2>Modal Title</h2>
+    <p>Modal content goes here</p>
+    <button data-on-click="showModal = false">Close</button>
+  </dialog>
+</div>
+```
+
+**Styled modal with backdrop**:
+
+```html
+<div data-signal="{ showModal: false }">
+  <button data-on-click="showModal = true">Open</button>
+
+  <!-- Backdrop -->
+  <div
+    data-if="showModal"
+    data-on-click="showModal = false"
+    style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 999"
+  >
+  </div>
+
+  <!-- Modal -->
+  <div
+    data-if="showModal"
+    style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 8px; z-index: 1000"
+  >
+    <h2>Modal Title</h2>
+    <p>Content</p>
+    <button data-on-click="showModal = false">Close</button>
+  </div>
+</div>
+```
+
+### 8.5. Tabs
+
+```html
+<div data-signal="{ activeTab: 'profile' }">
+  <!-- Tab headers -->
+  <div class="tab-headers">
+    <button
+      data-class="{ 'active': activeTab === 'profile' }"
+      data-on-click="activeTab = 'profile'"
+    >
+      Profile
+    </button>
+    <button
+      data-class="{ 'active': activeTab === 'settings' }"
+      data-on-click="activeTab = 'settings'"
+    >
+      Settings
+    </button>
+    <button
+      data-class="{ 'active': activeTab === 'billing' }"
+      data-on-click="activeTab = 'billing'"
+    >
+      Billing
+    </button>
+  </div>
+
+  <!-- Tab content -->
+  <div class="tab-content">
+    <div data-if="activeTab === 'profile'">
+      <h2>Profile</h2>
+      <p>Profile content...</p>
+    </div>
+    <div data-if="activeTab === 'settings'">
+      <h2>Settings</h2>
+      <p>Settings content...</p>
+    </div>
+    <div data-if="activeTab === 'billing'">
+      <h2>Billing</h2>
+      <p>Billing content...</p>
+    </div>
+  </div>
+</div>
+```
+
+### 8.6. Virtual Scrolling (Large Lists)
+
+For lists with 10,000+ items, render only visible items:
+
+```html
+<div data-signal="{ allItems: $sql('SELECT * FROM product') }">
+  <div data-signal="{ scrollTop: 0 }">
+    <div data-signal="{ itemHeight: 50 }">
+      <div data-signal="{ containerHeight: 500 }">
+        <div
+          data-signal="{ visibleItems: (() => {
+    const start = Math.floor(scrollTop / itemHeight);
+    const end = start + Math.ceil(containerHeight / itemHeight) + 1;
+    return allItems.slice(start, end).map((item, i) => ({ ...item, index: start + i }));
+  })() }"
+        >
+            <div
+              data-on-scroll="scrollTop = $el.scrollTop"
+              data-style-height="containerHeight + 'px'"
+              style="overflow-y: auto; position: relative"
+            >
+            <!-- Spacer for scroll height -->
+            <div data-style-height="(allItems.length * itemHeight) + 'px'">
+            </div>
+
+            <!-- Visible items -->
+            <div
+              data-for="item in visibleItems"
+              data-style-transform="'translateY(' + (item.index * itemHeight) + 'px)'"
+              style="position: absolute; width: 100%"
+            >
+              {item.name}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+### 8.7. Debouncing (Search Input)
+
+```html
+<div data-signal="{ searchQuery: '' }">
+  <div data-signal="{ searchResults: [] }">
+    <div data-signal="{ debounceTimer: null }">
+      <input
+        type="text"
+        data-bind-value="searchQuery"
+        data-on-input="
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        $sql('SELECT * FROM product WHERE name CONTAINS q', { q: searchQuery })
+          .then(r => searchResults = r);
+      }, 300);
+    "
+      >
+      <ul>
+        <li data-for="result in searchResults">{result.name}</li>
+      </ul>
+    </div>
+  </div>
+</div>
+```
+
+### 8.8. Memoization (Expensive Computations)
+
+```html
+<div data-signal="{ numbers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] }">
+  <div
+    data-signal="{ memoizedSum: (() => {
+  const cache = {};
+  return (arr) => {
+    const key = arr.join(',');
+    if (!cache[key]) {
+      console.log('Computing sum...');
+      cache[key] = arr.reduce((a, b) => a + b, 0);
+    }
+    return cache[key];
+  };
+})() }"
+  >
+    <p>Sum: {memoizedSum(numbers)}</p>
+    <button data-on-click="numbers.push(11)">Add Number</button>
+  </div>
+</div>
+```
+
+---
+
+## Chapter 9: Routing & Navigation
+
+Nexus-UX provides a declarative, HTML-first client-side routing system built on
+the History API. Routes are defined as `data-*` attributes, and the entire
+navigation state is exposed as a reactive `$router` signal.
+
+### 9.1. `data-router` — Router Initialization
+
+Place `data-router` on the `<html>` element to initialize the routing system.
+This creates the global `$router` signal and sets up History API management.
+
+```html
+<html data-router>
+  <!-- Or with configuration: -->
+  <html data-router="{ mode: 'hybrid', default: '/home' }">
+```
+
+#### 9.1.1. The `$router` Signal
+
+Once initialized, the `$router` signal contains the full navigation state:
+
+| Property                 | Type             | Description                                     |
+| :----------------------- | :--------------- | :---------------------------------------------- |
+| `$router.path`           | `string`         | Current path (e.g., `/user/42`)                 |
+| `$router.params`         | `object`         | Parameterized values (e.g., `{ id: '42' }`)     |
+| `$router.query`          | `object`         | URL search params (e.g., `{ tab: 'settings' }`) |
+| `$router.hash`           | `string`         | URL hash fragment                               |
+| `$router.loading`        | `boolean`        | `true` while a route is resolving               |
+| `$router.error`          | `object \| null` | Error state (`{ type: '404', message: '...' }`) |
+| `$router.previous`       | `object`         | Previous route's `path` and `meta`              |
+| `$router.layout`         | `string \| null` | Current layout component URL                    |
+| `$router.route`          | `string \| null` | Current route component URL                     |
+| `$router.outlet`         | `string \| null` | Effective outlet URL: `layout` if set, else `route`. Bind one static outlet to this |
+| `$router.name`           | `string \| null` | Matched route name (for `navigateByName`)       |
+| `$router.meta`           | `object`         | Route metadata                                  |
+| `$router.scrollPosition` | `object`         | `{ x, y }` scroll coordinates                   |
+| `$router.routes`         | `array`          | Registered route definitions                    |
+| `$router.mode`           | `string`         | `'signal'`, `'static'`, or `'hybrid'`           |
+| `$router.basePath`       | `string`         | Auto-detected or manually configured base path  |
+| `$router.config`        | `object`         | Reactive routing strategy (`mode`, `default`, `basePath`, `manifest`, `dynamic`, `shadow`, `notFound`) |
+| `$router.manifest`       | `array`          | Resolved public route manifest (declared + manifest file + dynamic); shadow routes excluded |
+| `$router.match(path?)`   | `function`       | Returns the `RouteInfo` the router *would* match for a path (no navigation) |
+| `$router.go(target, opts?)` | `function`   | Intuitive navigate: by route name (→ `navigateByName`) or path (→ `navigate`) |
+
+#### 9.1.2. Routing Modes
+
+| Mode                   | Behavior                                                                                   |
+| :--------------------- | :----------------------------------------------------------------------------------------- |
+| **`signal`** (default) | Only matches routes registered via `data-route` elements; unmatched paths fall through to 404 |
+| **`static`**           | Resolves routes by fetching HTML files from the filesystem (e.g., `/about` → `about.html`) |
+| **`hybrid`**           | Tries signal routes first, falls back to filesystem resolution, then 404                    |
+
+#### 9.1.3. Declarative Routing Strategy
+
+The routing strategy is declared as an object on `data-router` and exposed
+reactively as `$router.config`. Changing any key re-resolves routes without
+tearing down the DOM.
+
+```html
+<html data-router="{
+  mode: 'hybrid',
+  default: '/home',
+  basePath: '/site/',
+  manifest: '/routes.json',   // static auto-route manifest (JSON array)
+  dynamic: true,              // fold runtime-discovered routes into $router.manifest
+  shadow: '/_internal/**',    // glob(s): shadow/internal routes
+  notFound: '/404.html'       // override 404 component
+}">
+```
+
+| Key           | Type               | Description                                                                 |
+| :------------ | :----------------- | :-------------------------------------------------------------------------- |
+| `mode`        | `string`           | `signal` \| `static` \| `hybrid` (see table above).                        |
+| `default`     | `string \| null`   | Path the base `/` redirects to.                                            |
+| `basePath`    | `string`           | Base path prepended to outgoing / stripped from incoming navigations.      |
+| `manifest`    | `string`           | URL of a static auto-route manifest (JSON array of route descriptors).     |
+| `dynamic`     | `boolean`          | When true, fold runtime-discovered routes into `$router.manifest`.         |
+| `shadow`      | `string \| string[]` | Glob(s) marking internal routes (e.g. `'/_internal/**'`).                 |
+| `notFound`    | `string`           | Override the 404 component path (default `/404.html`).                     |
+
+#### 9.1.3. Automatic Link Interception
+
+The router automatically intercepts clicks on `<a>` tags with same-origin `href`
+attributes, converting them to client-side navigations. Links with
+`target="_blank"` or `data-native` are excluded:
+
+```html
+<!-- Client-side navigation (intercepted) -->
+<a href="/about">About</a>
+
+<!-- Full page reload (excluded) -->
+<a href="/about" data-native>About (full reload)</a>
+<a href="https://external.com">External</a>
+```
+
+#### 9.1.4. Programmatic Navigation
+
+The `$router` signal provides imperative navigation:
+
+```html
+<button data-on-click="$router.navigate('/dashboard')">Go to Dashboard</button>
+<button data-on-click="$router.navigate('/login', { replace: true })">
+  Login (no history)
+</button>
+```
+
+The intuitive entrypoint is `$router.go(target, opts?)` — it accepts a **route
+name** (resolved via `navigateByName`) or a **path** (resolved via `navigate`):
+
+```html
+<button data-on-click="$router.go('dashboard')">Go to Dashboard (by name)</button>
+<button data-on-click="$router.go('/dashboard')">Go to Dashboard (by path)</button>
+```
+
+`$router.match(path?)` returns the `RouteInfo` the router *would* match for a
+path (default: the current path) **without** navigating — handy for guards and
+preview UI.
+
+### 9.2. `data-route` — Route Definition
+
+Define routes declaratively by placing `data-route` on elements. Routes are
+automatically registered with `$router.routes` and cleaned up when the element
+is removed.
+
+```html
+<html data-router>
+  <body>
+    <!-- Route definitions -->
+    <div data-route="/home" data-component="/pages/home.html"></div>
+    <div
+      data-route="/user/:id"
+      data-component="/pages/user.html"
+      data-route-meta="{ title: 'User Profile', requiresAuth: true }"
+    >
+    </div>
+    <div
+      data-route="/admin/*"
+      data-component="/pages/admin.html"
+      data-route-before-enter="async (ctx) => ctx.signals.value('auth.role') === 'admin'"
+    >
+    </div>
+
+    <!-- Route outlet (renders the matched component) -->
+    <main data-component="$router.route"></main>
+
+    <!-- Loading indicator -->
+    <div data-if="$router.loading">Loading...</div>
+
+    <!-- 404 handler -->
+    <div data-if="$router.error?.type === '404'">Page not found</div>
+  </body>
+</html>
+```
+
+#### 9.2.1. Route Patterns
+
+| Pattern        | Example      | Matches                                                     |
+| :------------- | :----------- | :---------------------------------------------------------- |
+| Static         | `/about`     | `/about` only                                               |
+| Parameterized  | `/user/:id`  | `/user/42` → `params.id = '42'`                             |
+| Optional param | `/user/:id?` | `/user` or `/user/42`                                       |
+| Wildcard       | `/docs/*`    | `/docs/anything/here` → `params.wildcard = 'anything/here'` |
+
+#### 9.2.2. Route Configuration Attributes
+
+| Attribute                 | Purpose                                                         | Value                             |
+| :------------------------ | :-------------------------------------------------------------- | :-------------------------------- |
+| `data-route-handler`      | Expression executed when route matches                          | JS expression string              |
+| `data-route-meta`         | Arbitrary metadata object                                       | `"{ title: 'Page', auth: true }"` |
+| `data-route-redirect`     | Redirect to another path                                        | `"/login"`                        |
+| `data-route-layout`       | Layout component URL                                            | `"/layouts/main.html"`            |
+| `data-route-before-enter` | Navigation guard (return `false` to cancel, string to redirect) | Async function string             |
+| `data-route-after-enter`  | Post-navigation hook                                            | Async function string             |
+| `data-route-before-leave` | Exit guard (return `false` to cancel, string to redirect)      | Async function string             |
+| `data-route-after-leave`  | Post-exit hook                                                 | Async function string             |
+| `data-route-shadow`       | Mark route as internal/shadow (excluded from `$router.manifest`) | `""` or `"true"` or `"shadow"`  |
+
+#### 9.2.3. Navigation Guards Example
+
+```html
+<!-- Protected route with auth guard -->
+<div
+  data-route="/dashboard"
+  data-component="/pages/dashboard.html"
+  data-route-before-enter="async (ctx) => {
+       if (!ctx.signals.value('auth.user')) return '/login';
+       return true;
+     }"
+  data-route-before-leave="async (ctx) => {
+       if (ctx.signals.value('hasUnsavedChanges')) {
+         return confirm('Discard changes?');
+       }
+       return true;
+     }"
+  data-route-meta="{ title: 'Dashboard', requiresAuth: true }"
+>
+</div>
+```
+
+### 9.3. Scroll Restoration
+
+The router automatically saves and restores scroll positions during navigation:
+
+- **Back/forward**: Restores the exact `scrollY` from `history.state`
+- **Hash navigation**: Scrolls to the element matching the hash `#id`
+- **New navigation**: Scrolls to top
+
+### 9.3.1. Shadow Internal Routing
+
+A **shadow route** is a route the application can render but does *not* advertise
+to the client. Mark any `data-route` with `data-route-shadow` (or match the
+config's `shadow` glob) and the router will:
+
+- Resolve and render the route's `data-component` through its internal fetch
+  (so the page renders normally), but
+- **exclude it from `$router.manifest`**, so the public route list has no
+  discoverable URL, and
+- treat matching paths as internal in the `manifest` file merge as well.
+
+This lets a site browse internal files (admin consoles, drafts, system panels)
+while keeping them out of the client-facing manifest. Shadow resolution is
+**router-only** — no server-side enforcement is applied; the underlying file is
+still fetchable by the router's component loader.
+
+```html
+<!-- Declared shadow route: renders, but absent from $router.manifest -->
+<div data-route="/_internal/admin"
+     data-component="/_pages/_internal/admin.html"
+     data-route-shadow></div>
+
+<button data-on-click="$router.go('admin')">Open Internal Console</button>
+```
+
+### 9.4. Complete Routing Example
+
+```html
+<html data-router="{ mode: 'hybrid', default: '/home' }">
+  <body data-signal="{ auth: { user: null, role: 'guest' } }">
+    <!-- Navigation -->
+    <nav>
+      <a href="/home">Home</a>
+      <a href="/products">Products</a>
+      <a href="/account" data-if="auth.user">Account</a>
+      <a href="/login" data-if="!auth.user">Login</a>
+    </nav>
+
+    <!-- Route definitions -->
+    <div data-route="/home" data-component="/pages/home.html"></div>
+    <div data-route="/products" data-component="/pages/products.html"></div>
+    <div data-route="/products/:id" data-component="/pages/product-detail.html">
+    </div>
+    <div
+      data-route="/login"
+      data-component="/pages/login.html"
+      data-route-before-enter="async (ctx) => ctx.signals.value('auth.user') ? '/account' : true"
+    >
+    </div>
+    <div
+      data-route="/account"
+      data-component="/pages/account.html"
+      data-route-before-enter="async (ctx) => ctx.signals.value('auth.user') ? true : '/login'"
+    >
+    </div>
+
+    <!-- Route outlet -->
+    <main data-component="$router.route"></main>
+
+    <!-- Loading state -->
+    <div data-if="$router.loading" class="loading-overlay">Loading...</div>
+  </body>
+</html>
+```
+
+---
+
+## Chapter 10: Component System
+
+Nexus-UX components are **Custom Elements** powered by `data-component`. They
+combine HTML templates, scoped styles, isolated scripts, and reactive props into
+reusable, encapsulated units.
+
+### 10.1. `data-component` — Component Declaration
+
+The `data-component` attribute defines a Custom Element by specifying its
+template source:
+
+```html
+<!-- From URL -->
+<my-counter data-component="/_components/counter.html"></my-counter>
+
+<!-- From same-page template -->
+<my-card data-component="#card-template"></my-card>
+
+<!-- Dynamic source (signal-driven) -->
+<dynamic-view data-component="$router.route"></dynamic-view>
+```
+
+#### 10.1.1. Template Sources
+
+| Source Type      | Syntax              | Example                                              |
+| :--------------- | :------------------ | :--------------------------------------------------- |
+| **URL**          | Path string         | `data-component="/_components/nav.html"`             |
+| **Same-page ID** | `#id` reference     | `data-component="#my-template"`                      |
+| **Inline**       | `<template>` string | `data-component="<template><p>Hello</p></template>"` |
+| **Data URI**     | `data:` URL         | `data-component="data:text/html;base64,..."`         |
+| **Signal**       | `signal` expression | `data-component="currentView"`                       |
+
+### 10.2. Component Template Structure
+
+A component template file (`/_components/counter.html`):
+
+```html
+<template>
+  <style>
+    :host {
+      display: block;
+      padding: 1rem;
+    }
+    .count {
+      font-size: 2rem;
+      font-weight: bold;
+    }
+  </style>
+
+  <div data-signal="{ count: 0 }">
+    <p class="count">{count}</p>
+    <button data-on-click="count++">Increment</button>
+    <button data-on-click="count--">Decrement</button>
+  </div>
+
+  <script>
+    // Script executes with component context
+    console.log("Counter component loaded");
+    registerCleanup(() => console.log("Counter destroyed"));
+  </script>
+</template>
+```
+
+### 10.3. Shadow DOM Support
+
+Add `shadowrootmode="open"` to the `<template>` tag for Shadow DOM
+encapsulation:
+
+```html
+<template shadowrootmode="open">
+  <style>
+    /* Styles are fully encapsulated — no leaking */
+    p {
+      color: red;
+    }
+  </style>
+  <p>This style won't affect anything outside this component.</p>
+</template>
+```
+
+**Light DOM** (default): Styles use the component's tag name instead of `:host`.
+The engine automatically rewrites `:host` → `my-component` in Light DOM mode.
+
+**Shadow DOM**: Uses Constructable Stylesheets (`adoptedStyleSheets`) for
+optimal performance when available.
+
+### 10.4. Signal Inheritance
+
+Nexus-UX follows a **Zero-Copy Signal Inheritance** model. Components
+automatically inherit the reactive scope of their parent. There is no need for
+explicit "Props" or complex state passing.
+
+```html
+<!-- Parent -->
+<div data-signal="{ userName: 'Ada', userAge: 30 }">
+  <!-- component inherits userName and userAge automatically -->
+  <user-card data-component="/_components/user-card.html"></user-card>
+</div>
+```
+
+```html
+<!-- /_components/user-card.html -->
+<template>
+  <div>
+    <h2 data-bind="userName"></h2>
+    <p>Age: <span data-bind="userAge"></span></p>
+  </div>
+</template>
+```
+
+**Two-Way Flow**: Because signals are shared by reference, a component can
+modify a parent's signal directly (if permitted by the scope), enabling
+seamless, zero-serialization orchestration.
+
+### 10.5. Script Isolation & Context
+
+Inline `<script>` blocks execute as ES modules with an injected component
+context:
+
+| Context Variable         | Description                                              |
+| :----------------------- | :------------------------------------------------------- |
+| `componentInstance`      | The Custom Element instance (`this` equivalent)          |
+| `ds`                     | The Nexus-UX runtime context                             |
+| `signals`                | Proxy for reading scoped signals (e.g., `signals.count`) |
+| `props`                  | Reactive props passed via `data-signals-*`               |
+| `emit(name, detail)`     | Dispatch a custom event (bubbles, composed)              |
+| `registerCleanup(fn)`    | Register a function to run on component disconnect       |
+| `generateScopedId(base)` | Generate a unique, instance-scoped ID                    |
+| `actions`                | Object populated with exported functions from the script |
+
+```html
+<template>
+  <button data-on-click="actions.handleClick()">
+    Click me
+  </button>
+
+  <script>
+    export function handleClick() {
+      emit("button-clicked", { timestamp: Date.now() });
+    }
+
+    registerCleanup(() => {
+      console.log("Component cleanup");
+    });
+  </script>
+</template>
+```
+
+### 10.6. Lifecycle Hooks
+
+| Hook                          | When                                     | Usage                                              |
+| :---------------------------- | :--------------------------------------- | :------------------------------------------------- |
+| `connectedCallback`           | Element enters the DOM                   | Auto-handled; triggers template render             |
+| `disconnectedCallback`        | Element leaves the DOM                   | Auto-handled; runs cleanup functions               |
+| `contentReadyCallback()`      | Template + styles + scripts fully loaded | Override in component script for post-render logic |
+| `data-component-connected`    | Declarative connected hook               | `data-component-connected="onConnect()"`           |
+| `data-component-disconnected` | Declarative disconnected hook            | `data-component-disconnected="onDisconnect()"`     |
+
+### 10.7. Form-Associated Components
+
+Components can participate in HTML forms by adding
+`data-component-formAssociated`:
+
+```html
+<custom-input
+  data-component="/_components/input.html"
+  data-component-formAssociated
+>
+</custom-input>
+```
+
+This enables `ElementInternals` access via `this.internals` inside the
+component, allowing custom form validation, value reporting, and form submission
+participation.
+
+### 10.8. Dynamic Components
+
+The component source can be a reactive signal, enabling dynamic view switching:
+
+```html
+<div data-signal="{ currentView: '/_components/dashboard.html' }">
+  <nav>
+    <button data-on-click="currentView = '/_components/dashboard.html'">
+      Dashboard
+    </button>
+    <button data-on-click="currentView = '/_components/settings.html'">
+      Settings
+    </button>
+  </nav>
+
+  <!-- Component re-renders when currentView changes -->
+  <dynamic-page data-component="currentView"></dynamic-page>
+</div>
+```
+
+### 10.9. Router + Component Integration
+
+The router and component systems integrate naturally — `$router.route` drives a
+dynamic component outlet:
+
+```html
+<html data-router="{ mode: 'hybrid', default: '/home' }">
+  <body>
+    <div data-route="/home" data-component="/pages/home.html"></div>
+    <div data-route="/about" data-component="/pages/about.html"></div>
+
+    <!-- The route outlet: renders whichever component $router.route points to -->
+    <main data-component="$router.route"></main>
+  </body>
+</html>
+```
+
+Router params are automatically injected into the component's props, so within
+`/pages/user.html` rendered by route `/user/:id`, `props.id` is available.
+
+#### 10.9.1. Layouts (nested outlets)
+
+When routes declare a `data-route-layout`, bind a **single** outlet to
+`$router.outlet` (which resolves to the layout when present, else the route). The
+layout template contains its own inner `$router.route` outlet where the page
+renders:
+
+```html
+<main data-router="{ mode: 'hybrid', default: '/home' }">
+  <div data-route="/home"
+       data-route-layout="/layouts/main.html"
+       data-component="/pages/home.html"></div>
+
+  <!-- Single outlet: renders the layout (with its nested route outlet), or the
+       route component directly when a route has no layout. -->
+  <main data-component="$router.outlet"></main>
+</main>
+```
+
+```html
+<!-- /layouts/main.html -->
+<div class="shell">
+  <nav>…</nav>
+  <main data-component="$router.route"></main> <!-- inner page outlet -->
+</div>
+```
+
+> Prefer `data-show` over `data-if` for a `$router.loading` indicator: `data-if`
+> on a non-`<template>` element can fail to re-hide during rapid route toggles.
+
+---
+
+## Chapter 11: Advanced Orchestration Gallery
+
+This chapter showcases advanced, real-world patterns that demonstrate the full
+power of Nexus-UX's unified architecture.
+
+### 11.1. DaisyUI Integration Gallery
+
+#### 11.1.1. Reactive Radial Progress
+
+```html
+<div
+  data-signal="{ progress: 0 }"
+  data-on-load="setInterval(() => { progress = Math.min(100, progress + 1) }, 50)"
+>
+  <div
+    class="radial-progress text-primary"
+    data-bind-style="'--value: ' + progress + '%; --size: 12rem; --thickness: 4px;'"
+    role="progressbar"
+  >
+    <span data-bind="progress + '%'"></span>
+  </div>
+</div>
+```
+
+#### 11.1.2. Dynamic Loading Banners
+
+```html
+<div data-signal="{ status: 'loading' }">
+  <div
+    data-on-load="
+    setTimeout(() => status = 'processing', 2000);
+    setTimeout(() => status = 'complete', 4000);
+  "
+  >
+    <div
+      class="alert"
+      data-class="{
+        'alert-info':    status === 'loading',
+        'alert-warning': status === 'processing',
+        'alert-success': status === 'complete'
+      }"
+    >
+      <span
+        data-bind="
+        status === 'loading' ? '⏳ Loading data...' :
+        status === 'processing' ? '⚙️ Processing...' :
+        '✅ Complete!'
+      "
+      ></span>
+    </div>
+  </div>
+</div>
+```
+
+### 11.2. Advanced Showcases
+
+#### 11.2.1. Infinite Logic Virtualization with Proximity Dashboard
+
+```html
+<div
+  data-signal="{ activeSensors: $sql('LIVE SELECT * FROM sensor WHERE active = true') }"
+>
+  <div data-for="sensor in activeSensors" data-key="sensor.id">
+    <div
+      class="card bg-base-200 shadow-lg"
+      data-style-border-left-width="4"
+      data-style-border-left-color="sensor.status === 'ok' ? 'green' : 'red'"
+      data-on-intersect:once="$sql('UPDATE sensor SET last_viewed = time::now() WHERE id = sensor.id')"
+    >
+      <h3 data-bind="sensor.name"></h3>
+      <p>Value: <span data-bind="sensor.value"></span></p>
+      <div
+        class="radial-progress"
+        data-bind-style="'--value: ' + sensor.healthPercent + '%;'"
+        role="progressbar"
+      >
+        <span data-bind="sensor.healthPercent + '%'"></span>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+_Features_: `data-for` + `data-key`, `data-style` (automatic unit appending for
+numeric `border-left-width`), `data-on-intersect` (lazy hydration), `$sql` (LIVE queries).
+
+#### 11.2.2. The "God-Mode" Auth Gateway
+
+```html
+<div data-signal-global="appAuth">
+  <!-- Public View -->
+  <section data-bind="'Welcome, ' + (#appAuth.user?.name || 'Guest')"></section>
+
+  <!-- User-Tier View -->
+  <section data-if="#appAuth.role === 'user' || #appAuth.role === 'admin'">
+    <h2>Dashboard</h2>
+    <div data-signal="{ myDocs: $sql('SELECT * FROM document WHERE owner = auth.id') }">
+      <div data-for="doc in myDocs" data-bind="doc.title"></div>
+    </div>
+  </section>
+
+  <!-- Admin-Only: "God Mode" Panel -->
+  <section data-if="#appAuth.role === 'admin'">
+    <h2>⚡ Admin Control Panel</h2>
+    <div data-signal="{ allUsers: $sql('LIVE SELECT * FROM user') }">
+      <table>
+        <tr data-for="u in allUsers" data-key="u.id">
+          <td data-bind="u.name"></td>
+          <td data-bind="u.email"></td>
+          <td>
+            <button data-on-click:confirm('Are you sure?')="$sql('DELETE user WHERE id = u.id')">Delete</button>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </section>
+</div>
+```
+
+_Features_: Global signals (`data-signal-global`), reactive UI gating
+(`data-if`), SurrealDB permissions, `:confirm` interceptor.
+
+---
+
+## Chapter 12: Developer Experience & Performance
+
+### 12.1. In-DOM Assertions
+
+```html
+<div data-signal="{ count: 5 }">
+  <div data-assert="count > 0" data-assert-msg="Count must be positive!"></div>
+</div>
+```
+
+### 12.2. Configuration
+
+| Config Key       | Default        | Description                                                                        |
+| :--------------- | :------------- | :--------------------------------------------------------------------------------- |
+| `nexus.debug`    | `false`        | Enables verbose console logging for signal updates.                                |
+| `nexus.mode`     | `'production'` | Sets the environment. `'development'` enables assertions.                          |
+| `nexus.tickRate` | `'raf'`        | Controls the scheduler tick. `'raf'` = requestAnimationFrame, `'mic'` = microtask. |
+
+### 12.3. In-DOM Debugging
+
+```html
+<div data-signal="{ count: 0 }">
+  <div data-debug></div>
+  <!-- Prints state to console on every change -->
+</div>
+```
+
+### 12.4. Debugging Signals from Console
+
+```javascript
+$nexus.debug.signals; // View all signals
+$nexus.debug.getSignal("users"); // Get specific signal
+$nexus.debug.setSignal("count", 42); // Set signal value
+$nexus.debug.watchSignal("users", (oldValue, newValue) => {
+  console.log("Users changed:", oldValue, "->", newValue);
+});
+```
+
+### 12.5. Performance Profiling
+
+```javascript
+$nexus.debug.enableProfiling();
+// Logs: Signal update time, DOM update time, WebSocket latency
+$nexus.debug.disableProfiling();
+```
+
+### 12.6. Unit Testing
+
+```javascript
+import { $nexus } from "nexus-ux";
+
+test("counter increments", () => {
+  const signal = $nexus.signal("count", 0);
+  expect(signal.value).toBe(0);
+  signal.value++;
+  expect(signal.value).toBe(1);
+});
+
+test("computed signals update", () => {
+  const firstName = $nexus.signal("firstName", "John");
+  const lastName = $nexus.signal("lastName", "Doe");
+  const fullName = $nexus.computed(() =>
+    `${firstName.value} ${lastName.value}`
+  );
+  expect(fullName.value).toBe("John Doe");
+  firstName.value = "Jane";
+  expect(fullName.value).toBe("Jane Doe");
+});
+```
+
+### 12.7. E2E Testing (Playwright)
+
+```javascript
+import { expect, test } from "@playwright/test";
+
+test("can add and delete todos", async ({ page }) => {
+  await page.goto("http://localhost:3000");
+  await page.fill('input[data-bind\\:value="newTodo"]', "Buy milk");
+  await page.click('button:has-text("Add")');
+  await expect(page.locator('li:has-text("Buy milk")')).toBeVisible();
+  await page.click('li:has-text("Buy milk") button:has-text("Delete")');
+  await expect(page.locator('li:has-text("Buy milk")')).not.toBeVisible();
+});
+```
+
+### 12.8. Performance Patterns vs. Anti-Patterns
+
+| Pattern              | ✅ Correct                               | ❌ Anti-Pattern                       | Reasoning                                               |
+| :------------------- | :--------------------------------------- | :------------------------------------ | :------------------------------------------------------ |
+| **Numeric Sync**     | `data-style-top="v"`                     | `data-style-top="v + 'px'"`           | Naked numeric signals trigger automatic unit appending. |
+| **Signal Targeting** | `$(^form .field)`                        | `document.querySelector('.field')`    | Selector is scoped and reactive.                        |
+| **Iteration Source** | `data-for="item in items"`               | `data-for="item in [...items]"`       | Direct reference avoids shallow copy allocation.        |
+| **Async State**      | `data-on-load="state = await $get(...)"` | `data-on-load="fetch(...).then(...)"` | `await` keeps the pipeline synchronous and predictable. |
+
+### 12.9. Tiered Environments
+
+| Tier           | Config Key            | Behavior                                               |
+| :------------- | :-------------------- | :----------------------------------------------------- |
+| **Dev**        | `mode: 'development'` | Assertions active, verbose logging, zero minification. |
+| **Staging**    | `mode: 'staging'`     | Assertions active, production-level performance.       |
+| **Production** | `mode: 'production'`  | All assertions stripped, full engine optimization.     |
+
+> [!TIP]
+> **Production Pro-Tip**: Always ensure `nexus.mode = 'production'` in
+> production. Development mode includes ~15KB of debugging infrastructure.
+
+---
+
+## Chapter 13: Deployment
+
+### 13.1. Universal Deployment with Nexus-IO
+
+```bash
+nexus build --app my-app --platforms all
+```
+
+**Output (8+ platforms)**: Server (Linux/Windows/macOS binaries), Desktop
+(`.exe`, `.app`, `.deb`), Mobile (`.ipa`, `.apk`), Web (PWA), TV, Watch, VR/AR.
+
+**Selective builds**:
+
+```bash
+nexus build --app my-app --platforms desktop
+nexus build --app my-app --platforms mobile
+nexus build --app my-app --platform ios
+```
+
+### 13.2. Platform-Specific Features
+
+```html
+<div data-if="$nexus.platform.isDesktop">
+  <button data-on-click="$nexus.systray.show()">Minimize to Tray</button>
+</div>
+<div data-if="$nexus.platform.isMobile">
+  <button data-on-click="nexus.camera.capture()">Take Photo</button>
+</div>
+<div data-if="$nexus.platform.isVR">
+  <a-scene><a-entity camera look-controls></a-entity><a-box
+      position="0 1 -3"
+    ></a-box></a-scene>
+</div>
+<div data-if="$nexus.platform.isWatch">
+  <button data-on-click="$nexus.haptic.pulse('success')">Done</button>
+</div>
+```
+
+**Platform detection**:
+
+```javascript
+$nexus.platform = {
+  type: "mobile" | "desktop" | "web" | "tv" | "watch" | "vr",
+  os: "ios" | "android" | "windows" | "macos" | "linux",
+  hasCamera: boolean,
+  hasGPS: boolean,
+  hasHaptic: boolean,
+  screenSize: { width: number, height: number },
+};
+```
+
+### 13.3. Publishing to Sovereign App Store
+
+```bash
+nexus publish my-app --all-platforms
+# Cross-platform sync via Garage
+# 70% revenue to developer, 30% to platform
+# Buy once, install on all devices
+```
+
+---
+
+## Conclusion: From Theory to Practice
+
+This reference guide covered:
+
+- ✅ All 8 core directives (`data-signal`, `data-bind`, `data-if`, `data-for`,
+  `data-on`, `data-style`, `data-class`, `data-effect`)
+- ✅ NEG Grammar fundamentals (token set, selectors, scope rules, pipelines)
+- ✅ SurrealDB integration (`$sql()`, LIVE queries, parameterized queries)
+- ✅ Advanced patterns (forms, pagination, modals, tabs, infinite scroll)
+- ✅ Routing & Navigation (`data-router`, `data-route`, navigation guards,
+  hybrid routing)
+- ✅ Component System (`data-component`, Shadow DOM, reactive props, script
+  isolation)
+- ✅ Performance optimization (virtual scrolling, debouncing, memoization)
+- ✅ Automatic unit appending & Zero-Allocation engineering
+- ✅ Advanced orchestration showcases
+- ✅ Testing & debugging strategies
+- ✅ Universal deployment
+
+**The Nexus-UX advantage**: You just learned an entire frontend framework in <30
+minutes. Compare that to the weeks it takes to master React/Vue.
+
+Why? Because **Nexus-UX isn't trying to be clever—it's trying to be
+inevitable.**
+
+---
+
+## Chapter 14: Premium Assets & Themes
+
+This chapter covers the advanced orchestration of external resources and visual
+styling using the `data-import` and `data-theme` systems.
+
+### 14.1. `data-import` — Asset Lifecycle Orchestration
+
+The `data-import` directive manages 3rd party scripts and stylesheets, ensuring
+the page remains hidden via `nexus-loading` until all assets are resolved.
+
+**Example**:
+
+```html
+<html
+  data-import='{
+  "daisy": { "link": "href=\"https://cdn.jsdelivr.net/npm/daisyui@4/dist/full.min.css\" rel=\"stylesheet\" crossorigin=\"anonymous\"" },
+  "tailwind": { "script": "src=\"https://cdn.tailwindcss.com\" crossorigin=\"anonymous\"" }
+}'
+>
+  <head>
+    <style>
+      html.nexus-loading {
+        visibility: hidden !important;
+        opacity: 0 !important;
+      }
+      html.nexus-ready {
+        visibility: visible !important;
+        opacity: 1 !important;
+        transition: opacity 0.3s ease-in;
+      }
+    </style>
+  </head>
+  <body class="nexus-loading">
+    ...
+  </body>
+</html>
+```
+
+### 14.2. `data-theme` & `data-switcher` — Reactive Themes
+
+Nexus-UX provides a dedicated theme switching protocol that bridges user
+preference, system settings, and UI library tokens.
+
+**Example**:
+
+```html
+<body data-theme="ux_theme">
+  <button
+    data-switcher="ux_theme"
+    data-switcher-options="{
+      modes: ['light', 'dark', 'auto'],
+      icons: { light: 'sun', dark: 'moon', auto: 'settings' }
+    }"
+  >
+  </button>
+</body>
+```
+
+### 8.3. Progressive Web Apps (data-pwa)
+
+**Syntax**:
+`data-pwa="{ sw: '/sw.js', manifest: '/manifest.json', themeColor: '#570df8', icon: '/icon.png' }"`
+
+**Purpose**: Automates the heavy lifting of PWA integration, including dynamic
+manifest and icon injection, alongside ServiceWorker orchestration.
+
+**Global Signal: `$pwa`** The directive initializes a reactive `$pwa` signal
+accessible anywhere in your application:
+
+- `$pwa.isOnline`: Live connectivity status.
+- `$pwa.isInstalled`: True if the app is installed as a PWA.
+- `$pwa.updateAvailable`: True when a new Service Worker is waiting.
+- `$pwa.install()`: Async method. Triggers the browser's "Add to Homescreen"
+  prompt and returns `true` if accepted.
+- `$pwa.update()`: Method. Instructs the waiting ServiceWorker to take control
+  and automatically reloads the page.
+
+**Example: Install & Update UI**
+
+```html
+<div data-if="!$pwa.isInstalled && $pwa.deferredPrompt">
+  <button data-on-click="$pwa.install()">Install App</button>
+</div>
+
+<div data-if="$pwa.updateAvailable">
+  <button data-on-click="$pwa.update()">
+    Update Available - Click to Reload
+  </button>
+</div>
+```
+
+---
+
+## Chapter 15: Debugging & Architecture Contract
+
+### 15.1. The `data-debug` Directive
+
+**Syntax**: `data-debug` or `data-debug="{ mcp: '<endpoint>' }"`
+
+**Purpose**: Activates the Nexus-UX Sanitizing Engine — a crash-isolated debug
+layer scoped to the target element's subtree.
+
+**Activation modes**:
+
+```html
+<!-- Production: No debug attribute. Zero overhead. -->
+<div data-signal="{ count: 0 }">
+  <p data-bind="count"></p>
+</div>
+
+<!-- Development: Full debug engine scoped to this subtree -->
+<div data-signal="{ count: 0 }" data-debug>
+  <p data-bind="count"></p>
+</div>
+
+<!-- Development + AI Diagnostics via MCP -->
+<div data-signal="{ count: 0 }" data-debug="{ mcp: 'http://localhost:3001/mcp' }">
+  <p data-bind="count"></p>
+</div>
+```
+
+**What activates**:
+
+| Feature | Without `data-debug` | With `data-debug` |
+|:---|:---|:---|
+| Error reporting | Basic `console.error` | Full crash beacons with element + expression context |
+| Logging | Silent | Verbose `[Nexus Debug]` output |
+| DevTools surface | None | `element.nexus.effectRunners` introspection |
+| MutationObserver | Framework only | Framework + Sanitizing (crash-isolated) |
+| MCP diagnostics | None | AI-assisted repair suggestions (if endpoint configured) |
+
+### 15.2. DevTools Introspection & Effect Runner Mastery
+
+When `data-debug` is active, enhanced elements expose a `.nexus.effectRunners` property — a live `Set` of the reactive effect runners powering their directives. This is your window into the framework's reactive graph.
+
+**Basic inspection**:
+```javascript
+const el = document.querySelector('[data-bind]');
+console.log(el.nexus.effectRunners);
+// Set(2) [ƒ boundEffect, ƒ eventListenerCleanup]
+```
+
+**Practical techniques**:
+
+- **Count active directives**: `el.nexus.effectRunners.size`
+- **Manually trigger re-evaluation**:
+  ```javascript
+  const runners = Array.from(el.nexus.effectRunners);
+  runners[0](); // Force the first effect to run immediately
+  ```
+- **Filter by directive name** (approximate):
+  ```javascript
+  const bindRunner = [...el.nexus.effectRunners].find(r =>
+    r.toString().includes('bindModule')
+  );
+  ```
+- **Audit all directive-heavy elements**:
+  ```javascript
+  document.querySelectorAll('[data-bind], [data-for], [data-on]').forEach(el => {
+    if (el.nexus?.effectRunners) {
+      console.log(`<${el.tagName}> → ${el.nexus.effectRunners.size} active effects`);
+    }
+  });
+  ```
+
+**Lifecycle at a glance**:
+- **Registration**: Each directive's `elementBoundEffect` adds a runner to the set.
+- **Mirroring**: The set is mirrored to `el.nexus.effectRunners` for console access.
+- **Disposal**: When a directive's cleanup runs, its runner is removed. The property deletes itself once empty.
+
+This introspection surface is crucial for understanding why a binding isn't updating, or tracing which directives are active on an element.
+
+### 15.3. The Engine-vs-Module Architectural Contract (Deep Dive)
+
+All Nexus-UX source files follow a strict architectural boundary. Violations cause memory leaks, duplicate observers, and lost reactivity.
+
+#### The Single-Framework-Observer Guarantee
+
+Only two `MutationObserver` instances can ever exist:
+1. **Framework Observer** (`src/engine/observers/mutation.ts`) — handles all reactive needs.
+2. **Sanitizing Observer** (`src/engine/debug.ts`) — crash-isolated diagnostics.
+
+Module-level code must **never** create its own observer.
+
+#### Violation Example: The `intersect` Modifier (Before Refactor)
+
+```typescript
+// ❌ BEFORE: Direct IntersectionObserver in a module file
+export const intersectModifier: ModifierModule = {
+  handle: (payload, el, arg, runtime) => {
+    if (typeof payload === 'function') {
+      return () => {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) payload(entry);
+          });
+        });
+        observer.observe(el);
+        return () => observer.disconnect();
+      };
+    }
+
+    // Pipeline mode also created a fresh observer each call
+    return (evalEl, expr, extras) => new Promise(resolve => {
+      const observer = new IntersectionObserver(entries => {
+        if (entries[0].isIntersecting) resolve(runtime.evaluate(evalEl, expr, extras));
+      });
+      observer.observe(el);
+    });
+  }
+};
+```
+
+**Why this is catastrophic**:
+- Each directive instance creates a new `IntersectionObserver` → memory explosion.
+- No shared lifecycle; observers are disconnected only when the element's directive cleanup runs, which may be skipped if the element is moved.
+- Bypasses the ownership tracking system entirely → parent effects not pulsed correctly.
+- No crash isolation; an observer exception leaks into the module scope.
+
+#### Correct Pattern: Engine Delegation (After Refactor)
+
+```typescript
+// ✅ AFTER: Delegates to centralized observer
+import { attachObserver } from '../../engine/observers';
+
+export const intersectModifier: ModifierModule = {
+  handle: (payload, el, arg, runtime) => {
+    const triggerOnLeave = arg === 'leave';
+    const triggerOnce = arg === 'once';
+
+    // 1. Hand off observation to engine (single shared observer per element)
+    const observerCleanup = attachObserver('intersection', el, runtime);
+
+    const shouldTrigger = (isIntersecting: boolean) =>
+      (!triggerOnLeave && isIntersecting) || (triggerOnLeave && !isIntersecting);
+
+    // 2. Event-wrapper mode
+    if (typeof payload === 'function') {
+      const handler = (e: Event) => {
+        const detail = (e as CustomEvent).detail;
+        if (shouldTrigger(detail.isIntersecting)) {
+          if (triggerOnce) cleanup();
+          payload(e, detail);
+        }
+      };
+      el.addEventListener('ux-intersection', handler);
+      return () => {
+        el.removeEventListener('ux-intersection', handler);
+        observerCleanup?.();
+      };
+    }
+
+    // 3. Pipeline-interceptor mode
+    return (evalEl, expr, extras) => new Promise(resolve => {
+      const handler = (e: Event) => {
+        const detail = (e as CustomEvent).detail;
+        if (shouldTrigger(detail.isIntersecting)) {
+          if (triggerOnce) observerCleanup?.();
+          else el.removeEventListener('ux-intersection', handler);
+          resolve(runtime.evaluate(evalEl, expr, extras));
+        }
+      };
+      el.addEventListener('ux-intersection', handler);
+    });
+  }
+};
+```
+
+**Benefits of the correct pattern**:
+- **Single observer per element** managed by engine.
+- **Automatic cleanup** tied to element lifecycle (`CLEANUP_FUNCTIONS_KEY`).
+- **Event bubbling** via `ux-intersection` — consistent with the framework's observer architecture.
+- **Crash isolation** — the intersection observer lives in engine code with its own try/catch.
+
+#### Quick Checklist
+
+- ❌ **NEVER** write `new MutationObserver()`, `new IntersectionObserver()`, `new ResizeObserver()` in `src/modules/`.
+- ✅ **DO** import `attachObserver`, `registerObserver` from `engine/observers.ts`.
+- ✅ **DO** listen for custom events like `ux-intersection` that the engine emits.
+- ✅ **DO** rely on `(target as NexusEnhancedElement)[RUN_EFFECT_RUNNERS_KEY]()` to propagate DOM changes.
+
+### 15.4. Listening to `ux-error` for In-App Diagnostics
+
+All framework errors emit a bubble `ux-error` event. Catch it at `document` to integrate with Sentry, LogRocket, or custom dashboards:
+
+```javascript
+document.addEventListener('ux-error', (e) => {
+  const { message, element, expression, originalError } = e.detail;
+  console.error('Captured Nexus error:', { message, element, expression });
+
+  // Example: send to Sentry with context
+  Sentry.captureException(originalError, {
+    tags: {
+      nexus_directive: expression,
+      element_tag: element?.tagName,
+    },
+    extra: { element_html: element?.outerHTML?.slice(0, 500) }
+  });
+});
+```
+
+This works whether or not `data-debug` is present — the sanitizing engine and the framework observer both fire this event on errors.
+
+---
+
+## Appendix: Running Changes (Intentional Divergences)
+
+This section documents intentional divergences between the original Nexus-UX
+documentation and the current implementation. These are deliberate architectural
+decisions, not bugs.
+
+### RC-1: Legacy Sprite Elimination
+
+All legacy browser-API sprites (`$fetch`, `$clipboard`, `$cache`, `$notification`,
+`$payment`, `$ws`, `$download`, `$http`, `$get`, `$post`, `$put`, `$patch`,
+`$delete`, `$store`, `$watch`, `$device`, `$fs`) have been **removed** from the
+codebase. Standard JS property access via Native API Binding provides identical functionality without separate mirror modules or `_` prefixes.
+
+### RC-2: `data-text` and `data-model` Absorption
+
+Both directives have been **absorbed** into `data-bind`. The bind module
+auto-detects the target property based on element type.
+
+### RC-3: `data-ref` Removal
+
+`data-ref` and `$refs` have been **removed**. No replacement is currently
+provided.
+
+### RC-4: `$router` as Signal
+
+`$router` is a **reactive signal** created by `data-router`, not a sprite module.
+
+### RC-5: Missing Attribute Documentation
+
+The following attribute modules exist in the codebase but were missing or
+under-documented in earlier versions of this reference:
+`data-spatial`, `data-flow`, `data-preserve`, `data-raf`, `data-build`,
+`data-teleport`, `data-assert`, `data-markdown`, `data-mask`.
+
+### RC-6: Build System
+
+Production builds use esbuild + SWC minification + Brotli-11 compression, with
+AOT Tailwind compilation generating `PACKED_THEME_CSS` at build time.
+
+### RC-7: Native API Binding System
+
+Direct JS property access (`window.innerWidth`, `localStorage.collapsed`) automatically creates Proxy/Reflect tracking proxies that register native event listeners (`resize`, `scroll`, `storage`) on read and push updates to dependent signals and DOM elements in real-time.
+
+---
+
+## Chapter 16: Living Development Roadmap & Active TODO List
+
+Per Nexus-UX **Documentation-Driven Development (DDD)** directives, documentation stays ahead of codebase implementation as the single source of truth for architectural direction.
+
+### Active TODO List
+
+- [x] **Native API Auto-Tracking Proxy**: Generic Proxy/Reflect tracking for `window`, `localStorage`, `sessionStorage`, `document`, `screen`.
+- [x] **Initial Boot Timing Alignment**: Synchronous `runSelf` initialization in `elementBoundEffect` so initial hydration reads capture dependencies.
+- [x] **Real-Time Signal Property Re-Evaluation**: Trigger `stateRef` subscribers when evaluated signal properties mutate on window/storage events.
+- [x] **Zero-Mirror Cleanup**: Removal of legacy `_` prefix mirrors in favor of direct property access.
+- [ ] **Nexus-UX Official SPA Site**: Complete port of dashboard shell (`layout.html`, `documentation.html`, `router.html`) into single-page application architecture under `site/`.
+- [ ] **Dev Server SPA Fallback**: Add History API index fallback in `scripts/serve.ts` for clean SPA route navigation (`hybrid` mode).
+- [ ] **IndexedDB Engine Diagnostics Integration**: Connect live CodeMirror playground state in `documentation.html` to runtime SelfHeal agent.
+
+---
+
+**Nexus-UX Technical Reference v2026.08.08**\
+**Maintained by**: Aerea Co.\
+**See Also**:
+[nexus-ux-spec.md](nexus-ux-spec.md),
+[.agent/rules/directives.md](.agent/rules/directives.md)\
+**Contact**: support@aerea.co
+

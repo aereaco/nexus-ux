@@ -1,5 +1,15 @@
 [
   {
+    "id": "doc-reference",
+    "route": "/docs/reference",
+    "path": "/_pages/docs/reference.md",
+    "title": "My Nexus App",
+    "icon": "material-symbols-light:menu-book-outline",
+    "order": 1,
+    "parent": null,
+    "category": "Docs"
+  },
+  {
     "id": "home",
     "route": "/",
     "path": "/_pages/home.html",
@@ -36,6 +46,16 @@
     "parent": "/profiles/profile3/profile3.4"
   },
   {
+    "id": "doc-spec",
+    "route": "/docs/spec",
+    "path": "/_pages/docs/spec.md",
+    "title": "Nexus Todo App",
+    "icon": "material-symbols-light:architecture",
+    "order": 2,
+    "parent": null,
+    "category": "Docs"
+  },
+  {
     "id": "drag",
     "route": "/drag",
     "path": "/_pages/drag.html",
@@ -62,6 +82,16 @@
     "icon": "material-symbols-light:person-outline",
     "order": 2,
     "parent": "/profiles/profile3"
+  },
+  {
+    "id": "doc-changelog",
+    "route": "/docs/changelog",
+    "path": "/_pages/docs/changelog.md",
+    "title": "Changelog",
+    "icon": "material-symbols-light:history",
+    "order": 3,
+    "parent": null,
+    "category": "Docs"
   },
   {
     "id": "flow",
@@ -92,6 +122,16 @@
     "parent": "/profiles"
   },
   {
+    "id": "doc-readme",
+    "route": "/docs/readme",
+    "path": "/_pages/docs/readme.md",
+    "title": "Nexus-UX: Hello World",
+    "icon": "material-symbols-light:info-outline",
+    "order": 4,
+    "parent": null,
+    "category": "Docs"
+  },
+  {
     "id": "profile3.4",
     "route": "/profiles/profile3/profile3.4",
     "path": "/_pages/profile3.4.html",
@@ -118,6 +158,16 @@
     "order": 4,
     "parent": null,
     "category": "System"
+  },
+  {
+    "id": "doc-license",
+    "route": "/docs/license",
+    "path": "/_pages/docs/license.md",
+    "title": "License",
+    "icon": "material-symbols-light:verified-user-outline",
+    "order": 5,
+    "parent": null,
+    "category": "Docs"
   },
   {
     "id": "settings",
