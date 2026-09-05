@@ -18,13 +18,13 @@
         const routes = (g.router?.routes || []).filter(r => r.path && r.path !== '/error' && !r.internal && r.component);
         const idx = { ...(g.pageContentIndex || {}) };
         let updated = false;
-        await Promise.all(routes.map(async (r) => {
+        await window.Promise.all(routes.map(async (r) => {
           if (idx[r.path]) return;
           try {
             const res = await fetch(r.component);
             if (!res.ok) return;
             const html = await res.text();
-            const parser = new DOMParser();
+            const parser = new window.DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
             doc.querySelectorAll('style, script, svg').forEach(el => el.remove());
             const text = (doc.body?.textContent || '').replace(/\s+/g, ' ').trim();
