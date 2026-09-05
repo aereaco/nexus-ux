@@ -7892,9 +7892,9 @@ ${match}</ul>
                     break;
                   }
                 }
-                let staticComponent2 = null;
+                let staticComponent = null;
                 if (!matched && (mode === "static" || mode === "hybrid")) {
-                  staticComponent2 = resolveStaticComponent(switchPath);
+                  staticComponent = resolveStaticComponent(switchPath);
                 }
                 state.path = switchPath;
                 state.hash = fakeUrl.hash;
@@ -7903,7 +7903,7 @@ ${match}</ul>
                 state.currentRoute = matched;
                 state.meta = matched?.meta ?? {};
                 state.name = matched?.name ?? null;
-                state.route = matched?.component ?? staticComponent2 ?? null;
+                state.route = matched?.component ?? staticComponent ?? null;
                 state.layout = matched?.layout ?? null;
                 publishOutlet(state.layout ?? state.route);
                 state.error = null;
@@ -8098,10 +8098,13 @@ ${match}</ul>
                   break;
                 }
               }
+              const errorPage2 = state.config.error ?? resolvePagesPath(void 0, "error.html");
+              const cleanErrorPath = "/error";
+              let staticComponent = null;
               if (matched && matched.internal && path !== "/") {
                 const isDirectAddressBarNav = !suppressNavIntercept && typeof globalThis.location !== "undefined" && stripBase(globalThis.location.pathname) === matched.path;
                 if (isDirectAddressBarNav) {
-                  state.errorCode = 404;
+                  state.errorCode = "404";
                   staticComponent = errorPage2;
                   if (typeof globalThis.history !== "undefined") {
                     try {
@@ -8115,8 +8118,6 @@ ${match}</ul>
                 state.navigate(matched.redirect, { replace: true });
                 return;
               }
-              const errorPage2 = state.config.error ?? resolvePagesPath(void 0, "error.html");
-              const cleanErrorPath = "/error";
               if (!matched) {
                 matched = routeList.find((r) => r.path === cleanErrorPath) || {
                   path: cleanErrorPath,
@@ -8125,7 +8126,7 @@ ${match}</ul>
                   meta: { title: "Error", icon: "material-symbols-light:error-outline" },
                   source: "declared"
                 };
-                state.errorCode = 404;
+                state.errorCode = "404";
                 path = cleanErrorPath;
                 if (typeof globalThis.history !== "undefined") {
                   try {

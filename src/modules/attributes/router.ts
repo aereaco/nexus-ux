@@ -1534,12 +1534,16 @@ export const routerAttributeModule: AttributeModule = {
           }
         }
 
+        const errorPage = state.config.error ?? resolvePagesPath(undefined, 'error.html');
+        const cleanErrorPath = '/error';
+        let staticComponent: string | null = null;
+
         // Direct URL access protection for wallgarden shadow routes
         if (matched && matched.internal && path !== '/') {
           const isDirectAddressBarNav = !suppressNavIntercept && typeof globalThis.location !== 'undefined' &&
             stripBase(globalThis.location.pathname) === matched.path;
           if (isDirectAddressBarNav) {
-            state.errorCode = 404;
+            state.errorCode = '404';
             staticComponent = errorPage;
             if (typeof globalThis.history !== 'undefined') {
               try { globalThis.history.replaceState(null, '', applyBase(cleanErrorPath)); } catch {}
@@ -1553,9 +1557,6 @@ export const routerAttributeModule: AttributeModule = {
           return;
         }
 
-        const errorPage = state.config.error ?? resolvePagesPath(undefined, 'error.html');
-        const cleanErrorPath = '/error';
-
         // Direct Catch-All for unmatched routes: fall through to declared /error route
         if (!matched) {
           matched = routeList.find((r) => r.path === cleanErrorPath) || {
@@ -1565,7 +1566,7 @@ export const routerAttributeModule: AttributeModule = {
             meta: { title: 'Error', icon: 'material-symbols-light:error-outline' },
             source: 'declared',
           } as RouteRecord;
-          state.errorCode = 404;
+          state.errorCode = '404';
           path = cleanErrorPath;
           if (typeof globalThis.history !== 'undefined') {
             try { globalThis.history.replaceState(null, '', applyBase(cleanErrorPath)); } catch {}
