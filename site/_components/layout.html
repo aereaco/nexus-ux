@@ -1700,8 +1700,8 @@
       <!-- Main Navigation Menu (tab 1) -->
       <div data-show="activeSidebarTab === 1" class="w-full">
         <!-- 1. Top-Level Uncategorized Items (Dedicated <ul>) -->
-        <ul class="menu w-full" data-drag-container="router.groupedPages?.['Uncategorized'] || []">
-          <template data-for="item in (router.groupedPages?.['Uncategorized'] || [])" data-key="item.href">
+        <ul class="menu w-full" data-drag-container="(router.pages || []).filter(p => !p.category && !p.meta?.category)">
+          <template data-for="item in (router.pages || []).filter(p => !p.category && !p.meta?.category)" data-key="item.href">
             <!-- Root Leaf Item (No Children) -->
             <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
               data-bind-data-drag="item.href !== '/' ? '' : null"
@@ -1759,7 +1759,7 @@
         <!-- 2. Categorized Sections (Draggable Category Groups & Dedicated Item Lists) -->
         <div data-drag-container="categories" data-drag-handle=".menu-title">
           <template data-for="cat in categories" data-key="cat.id">
-            <div data-drag data-show="!router.pages || router.pages.length === 0 || (router.groupedPages?.[cat.id] || []).length > 0">
+            <div data-drag data-show="(router.pages || []).filter(p => (p.category || p.meta?.category) === cat.id).length > 0">
               <!-- Category Header (Title + Separator Line) -->
               <ul class="menu w-full py-0">
                 <li
@@ -1772,8 +1772,8 @@
 
               <!-- Dynamic Category Item List (Zero Hardcoding, Zero Duplication, ZERO Flashing) -->
               <ul class="menu w-full"
-                data-bind-data-drag-container="cat.itemsDraggable ? (router.groupedPages?.[cat.id] || []) : null">
-                <template data-for="item in (router.groupedPages?.[cat.id] || [])" data-key="item.href">
+                data-bind-data-drag-container="cat.itemsDraggable ? (router.pages || []).filter(p => (p.category || p.meta?.category) === cat.id) : null">
+                <template data-for="item in (router.pages || []).filter(p => (p.category || p.meta?.category) === cat.id)" data-key="item.href">
                   <!-- Root Leaf Item (No Children) -->
                   <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
                     data-bind-data-drag="cat.itemsDraggable && item.href !== '/' ? '' : null"
