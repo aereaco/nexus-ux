@@ -541,7 +541,7 @@
           g.terminalOpen = false;
           curBuf.push({ type: 'dim', text: 'Terminal closed.' });
         } else {
-          curBuf.push({ type: 'error', text: 'Command not recognized: "' + cmd + '". Type "help" for a list of commands.' });
+          curBuf.push({ type: 'error', text: 'Command not recognized: ' + cmd + '. Type help for a list of commands.' });
         }
         
         g.terminalBuffers = { ...(g.terminalBuffers || {}), [tab]: curBuf };
