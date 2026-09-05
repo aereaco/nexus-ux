@@ -346,7 +346,15 @@ const componentModule: AttributeModule = {
               html = typeof result === 'string' ? result : String(result);
             }
 
-            if (html.includes('<!DOCTYPE') || (html.includes('data-init') && el.tagName.toLowerCase() !== 'html')) {
+            const isMarkdown = targetPath.endsWith('.md') || targetPath.endsWith('.markdown');
+            if (isMarkdown) {
+              const fmMatch = html.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+              let cleanMd = html;
+              if (fmMatch) {
+                cleanMd = html.slice(fmMatch[0].length).trim();
+              }
+              html = `<div class="p-6 max-w-5xl mx-auto"><article data-markdown class="prose max-w-none">${cleanMd}</article></div>`;
+            } else if (html.includes('<!DOCTYPE') || (html.includes('data-init') && el.tagName.toLowerCase() !== 'html')) {
               throw new Error(`Invalid component fragment returned for "${targetPath}": received full HTML shell.`);
             }
 
