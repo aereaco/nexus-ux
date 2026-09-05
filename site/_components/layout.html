@@ -1,4 +1,6 @@
-<div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300" data-signal_global="{
+<div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300"
+  data-on-keydown:window="if (($evt.ctrlKey || $evt.metaKey) && ($evt.key === 'k' || $evt.key === 'K')) { $evt.preventDefault(); favModalOpen = false; favDeleteModalOpen = false; searchQuery = ''; searchOpen = true; if (typeof indexPageContents === 'function') { indexPageContents(); } $nextTick(() => document.getElementById('search-modal-input')?.focus()); }"
+  data-signal_global="{
       collapsed: localStorage.collapsed !== 'false',
       pageTabs: localStorage.pageTabs !== 'false',
       fixedHeader: localStorage.fixedHeader !== 'false',
@@ -10,13 +12,35 @@
       searchOpen: false,
       searchQuery: '',
       recentSearches: [],
-      searchCategories: ['Apps', 'Navigation', 'Profiles', 'System'],
-      searchKeywords: {
-        '/': 'welcome overview dashboard home console',
-        '/drag': 'kanban sortable cards reorder draggable flip swap spatial collision 14-pattern suite',
-        '/flow': 'canvas nodes edges flowchart graph connectors spatial xyflow',
-        '/profiles': 'user account identity team members personal avatars',
-        '/settings': 'preferences theme configuration options setup appearance'
+      pageContentIndex: {},
+      indexPageContents: async () => {
+        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
+        const routes = (g.router?.routes || []).filter(r => r.path && r.path !== '/error' && !r.internal && r.component);
+        const idx = { ...(g.pageContentIndex || {}) };
+        let updated = false;
+        await Promise.all(routes.map(async (r) => {
+          if (idx[r.path]) return;
+          try {
+            const res = await fetch(r.component);
+            if (!res.ok) return;
+            const html = await res.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            doc.querySelectorAll('style, script, svg').forEach(el => el.remove());
+            const text = (doc.body?.textContent || '').replace(/\s+/g, ' ').trim();
+            if (text) {
+              idx[r.path] = text;
+              updated = true;
+            }
+          } catch {
+            // silent catch on background fetch
+          }
+        }));
+        if (updated) {
+          const rt = window.Nexus?.coordinator?.runtimeContext;
+          if (rt?.setGlobalSignal) rt.setGlobalSignal('pageContentIndex', idx);
+          else g.pageContentIndex = idx;
+        }
       },
       getRouteCategory: (r) => {
         if (['/drag', '/flow'].includes(r?.path)) return 'Apps';
@@ -24,26 +48,82 @@
         if (r?.path === '/') return 'Navigation';
         return 'System';
       },
-      getSearchResults: (query, cat = null) => {
+      searchResultGroups: (query) => {
         const q = (query || '').trim().toLowerCase();
         if (!q) return [];
         const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
-        const kwMap = g.searchKeywords || {};
         const getCat = g.getRouteCategory || (() => 'General');
-        return (g.router?.routes || [])
-          .filter(r => r.path !== '/error' && r.path !== '' && !r.internal)
-          .filter(r => {
-            const c = getCat(r);
-            if (cat && c !== cat) return false;
-            const title = (r.meta?.title || r.name || '').toLowerCase();
-            const path = (r.path || '').toLowerCase();
-            const kw = (kwMap[r.path] || (r.path?.startsWith('/profiles') ? kwMap['/profiles'] : '') || '').toLowerCase();
-            return title.includes(q) || path.includes(q) || kw.includes(q) || c.toLowerCase().includes(q);
+        const contentIdx = g.pageContentIndex || {};
+        const allRoutes = (g.router?.routes || []).filter(r => r.path !== '/error' && r.path !== '' && !r.internal);
+
+        const navMatches = [];
+        const contentMatches = [];
+        const seenNavPaths = new Set();
+
+        for (const r of allRoutes) {
+          const title = (r.meta?.title || r.name || '').toLowerCase();
+          const path = (r.path || '').toLowerCase();
+          const cat = getCat(r).toLowerCase();
+          if (title.includes(q) || path.includes(q) || cat.includes(q)) {
+            navMatches.push({
+              path: r.path,
+              component: r.component,
+              name: r.name,
+              meta: r.meta,
+              category: getCat(r)
+            });
+            seenNavPaths.add(r.path);
+          }
+        }
+
+        for (const r of allRoutes) {
+          if (seenNavPaths.has(r.path)) continue;
+          const text = contentIdx[r.path] || '';
+          if (!text) continue;
+          const pos = text.toLowerCase().indexOf(q);
+          if (pos !== -1) {
+            const start = Math.max(0, pos - 35);
+            const end = Math.min(text.length, pos + q.length + 35);
+            let snippet = text.slice(start, end).trim();
+            if (start > 0) snippet = '…' + snippet;
+            if (end < text.length) snippet = snippet + '…';
+
+            contentMatches.push({
+              path: r.path,
+              component: r.component,
+              name: r.name,
+              meta: r.meta,
+              category: getCat(r),
+              snippet: snippet
+            });
+          }
+        }
+
+        const groups = [];
+        if (navMatches.length > 0) {
+          groups.push({
+            type: 'nav',
+            title: 'Pages & Navigation',
+            icon: 'material-symbols-light:navigation-outline',
+            items: navMatches
           });
+        }
+        if (contentMatches.length > 0) {
+          groups.push({
+            type: 'content',
+            title: 'Page Content Matches',
+            icon: 'material-symbols-light:description-outline',
+            items: contentMatches
+          });
+        }
+        return groups;
       },
       hasSearchResults: (query) => {
         const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
-        return (g.getSearchResults ? g.getSearchResults(query) : []).length > 0;
+        const fn = g.searchResultGroups;
+        if (!fn) return false;
+        const groups = fn(query);
+        return groups.some(grp => grp.items && grp.items.length > 0);
       },
       activeSidebarTab: 1,
       ctxMenu: { open: false, x: 0, y: 0, type: null, target: null },
@@ -213,8 +293,8 @@
       <div class="flex-1 justify-end flex gap-2">
 
         <!-- Search Button -->
-        <button class="btn btn-ghost btn-circle hover:scale-102" aria-label="Open search" title="Search"
-          data-on-click="favModalOpen = false; favDeleteModalOpen = false; searchQuery = ''; searchOpen = true; $nextTick(() => $('#search-modal-input')?.focus())">
+        <button class="btn btn-ghost btn-circle hover:scale-102" aria-label="Open search (Ctrl+K)" title="Search (Ctrl+K)"
+          data-on-click="favModalOpen = false; favDeleteModalOpen = false; searchQuery = ''; searchOpen = true; if (typeof indexPageContents === 'function') { indexPageContents(); } $nextTick(() => document.getElementById('search-modal-input')?.focus())">
           <iconify-icon icon="material-symbols-light:search" class="text-2xl"></iconify-icon>
         </button>
 
@@ -808,9 +888,10 @@
       </footer>
     </div>
 
-    <!-- Search Modal (triggered by the navbar search button) -->
+    <!-- Search Modal (triggered by the navbar search button or Ctrl+K) -->
     <div class="modal modal-top sm:modal-middle" role="dialog" aria-label="Search" data-class-modal-open="searchOpen"
-      data-on-keydown:escape:window="searchOpen = false">
+      data-on-keydown:escape:window="searchOpen = false"
+      data-effect="if (searchOpen && Object.keys(pageContentIndex || {}).length === 0 && typeof indexPageContents === 'function') { indexPageContents(); }">
       <div class="modal-box bg-base-100 shadow-2xl border border-base-300 p-0 overflow-hidden flex flex-col max-w-2xl">
         <!-- Search Input Row -->
         <div class="flex items-center gap-3 px-4 py-3 border-b border-base-200">
@@ -831,7 +912,8 @@
           <div data-show="!searchQuery.trim() && !(recentSearches && recentSearches.length)"
             class="px-4 py-12 text-center text-base-content/50">
             <iconify-icon icon="material-symbols-light:search" class="text-4xl opacity-40"></iconify-icon>
-            <p class="mt-2 text-sm">Start typing to search…</p>
+            <p class="mt-2 text-sm">Start typing to search pages &amp; content…</p>
+            <kbd class="kbd kbd-sm mt-3 opacity-60">Ctrl + K</kbd>
           </div>
 
           <!-- State 2: Empty Query & Has Recent Searches -->
@@ -862,28 +944,39 @@
             </ul>
           </div>
 
-          <!-- State 3: Active Query & Has Results (Grouped by Category) -->
+          <!-- State 3: Active Query & Has Results (Grouped by Pages & Navigation vs Page Content Matches) -->
           <div data-show="searchQuery.trim() && hasSearchResults(searchQuery)" class="space-y-4">
-            <template data-for="cat in (searchCategories || ['Apps', 'Navigation', 'Profiles', 'System'])">
-              <div data-show="getSearchResults(searchQuery, cat).length > 0" class="w-full">
-                <div class="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-base-content/50"
-                  data-bind="cat"></div>
+            <template data-for="group in searchResultGroups(searchQuery)" data-key="group.type">
+              <div class="w-full">
+                <div class="flex items-center justify-between px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/50">
+                  <div class="flex items-center gap-1.5">
+                    <iconify-icon data-bind-icon="group.icon" class="text-base opacity-70"></iconify-icon>
+                    <span data-bind="group.title"></span>
+                  </div>
+                  <span class="badge badge-xs badge-ghost opacity-60" data-bind="(group.items || []).length"></span>
+                </div>
                 <ul class="menu menu-sm w-full p-0">
-                  <template data-for="item in getSearchResults(searchQuery, cat)" data-key="item.path">
+                  <template data-for="item in (group.items || [])" data-key="item.path">
                     <li>
-                      <a class="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-base-200/60 transition-colors"
+                      <a class="flex flex-col items-start gap-1 py-2 px-3 rounded-xl hover:bg-base-200/60 transition-colors"
                         data-on-click="
                           if (searchQuery.trim()) { recentSearches = [searchQuery.trim(), ...(recentSearches || []).filter(s => s !== searchQuery.trim())].slice(0, 6); }
                           router.createPageTab(item.component, item.path);
                           searchOpen = false;
                         ">
-                        <div class="flex items-center gap-2.5 min-w-0">
-                          <iconify-icon data-bind-icon="item.meta?.icon || 'material-symbols-light:description-outline'"
-                            class="text-xl shrink-0 opacity-70"></iconify-icon>
-                          <span class="font-medium text-sm truncate" data-bind="item.meta?.title || item.name"></span>
+                        <div class="flex items-center justify-between w-full">
+                          <div class="flex items-center gap-2.5 min-w-0">
+                            <iconify-icon data-bind-icon="item.meta?.icon || 'material-symbols-light:description-outline'"
+                              class="text-xl shrink-0 opacity-70"></iconify-icon>
+                            <span class="font-medium text-sm truncate" data-bind="item.meta?.title || item.name"></span>
+                            <span class="badge badge-xs badge-ghost opacity-60" data-bind="item.category"></span>
+                          </div>
+                          <span class="badge badge-sm badge-ghost font-mono opacity-50 shrink-0"
+                            data-bind="item.path"></span>
                         </div>
-                        <span class="badge badge-sm badge-ghost font-mono opacity-50 shrink-0"
-                          data-bind="item.path"></span>
+                        <div data-show="item.snippet" class="text-xs text-base-content/60 ps-7 font-sans line-clamp-1 w-full text-start">
+                          <span class="opacity-80 font-mono" data-bind="item.snippet"></span>
+                        </div>
                       </a>
                     </li>
                   </template>
