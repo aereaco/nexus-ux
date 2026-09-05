@@ -12636,6 +12636,8 @@ ${match}</ul>
                     if (node instanceof HTMLElement) {
                       if (isExternalOverlay(node))
                         return;
+                      if (node.closest && (node.closest("[data-ignore]") || node.closest("pre") || node.closest("code")))
+                        return;
                       addedThisBatch.add(node);
                       stylesheet.adoptElementSubtree(node);
                     }
@@ -12662,6 +12664,8 @@ ${match}</ul>
                         if (node instanceof HTMLElement) {
                           if (isExternalOverlay(node))
                             return;
+                          if (node.closest && (node.closest("[data-ignore]") || node.closest("pre") || node.closest("code")))
+                            return;
                           const enhancedTarget = node;
                           if (enhancedTarget[MARKER_KEY] && enhancedTarget[CLEANUP_FUNCTIONS_KEY])
                             return;
@@ -12686,6 +12690,8 @@ ${match}</ul>
                   } else if (mutation.type === "attributes") {
                     const target = mutation.target;
                     if (!target)
+                      return;
+                    if (target.closest && (target.closest("[data-ignore]") || target.closest("pre") || target.closest("code")))
                       return;
                     const attrName = mutation.attributeName;
                     if (attrName === "class" || attrName === "data-theme") {

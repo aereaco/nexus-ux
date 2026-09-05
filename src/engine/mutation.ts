@@ -39,6 +39,7 @@ const mutationObserverModule: ObserverModule = {
             mutation.addedNodes.forEach(node => {
               if (node instanceof HTMLElement) {
                 if (isExternalOverlay(node)) return;
+                if (node.closest && (node.closest('[data-ignore]') || node.closest('pre') || node.closest('code'))) return;
                 addedThisBatch.add(node);
                 stylesheet.adoptElementSubtree(node);
               }
@@ -67,6 +68,7 @@ const mutationObserverModule: ObserverModule = {
                 mutation.addedNodes.forEach(node => {
                   if (node instanceof HTMLElement) {
                     if (isExternalOverlay(node)) return;
+                    if (node.closest && (node.closest('[data-ignore]') || node.closest('pre') || node.closest('code'))) return;
                     const enhancedTarget = node as NexusEnhancedElement;
                     if (enhancedTarget[MARKER_KEY] && enhancedTarget[CLEANUP_FUNCTIONS_KEY]) return;
                     context.processElement(node as HTMLElement);
@@ -98,6 +100,7 @@ const mutationObserverModule: ObserverModule = {
             } else if (mutation.type === 'attributes') {
               const target = mutation.target as HTMLElement;
               if (!target) return;
+              if (target.closest && (target.closest('[data-ignore]') || target.closest('pre') || target.closest('code'))) return;
               const attrName = mutation.attributeName;
 
               if (attrName === 'class' || attrName === 'data-theme') {
