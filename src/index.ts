@@ -231,7 +231,7 @@ if (isWorker) {
 }
 
 if (typeof window !== 'undefined' && Nexus) {
-  globalThis.Nexus = Nexus;
-  globalThis.Nexus.selfHeal = { getHistory: getBeaconHistory };
-  globalThis._NEXUS_RUNTIME = (Nexus as any).coordinator.runtimeContext;
+  (globalThis as any).Nexus = Nexus;
+  (globalThis as any).Nexus.selfHeal = { getHistory: getBeaconHistory };
+  (globalThis as any)._NEXUS_RUNTIME = (Nexus as any).coordinator.runtimeContext;
 }
