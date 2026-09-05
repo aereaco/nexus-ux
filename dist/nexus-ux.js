@@ -86,9 +86,9 @@ var UX = (() => {
                   this.onConnectCallback();
                 resolve();
               };
-              this.eventSource.onerror = (err2) => {
+              this.eventSource.onerror = (err) => {
                 reportError(new Error(`MCP Connection failed: ${this.url}`));
-                reject(err2);
+                reject(err);
               };
               this.eventSource.onmessage = (event) => {
                 try {
@@ -127,9 +127,9 @@ var UX = (() => {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body
-            }).catch((err2) => {
+            }).catch((err) => {
               this.pendingRequests.delete(id);
-              reject(err2);
+              reject(err);
             });
           });
         }
@@ -882,17 +882,17 @@ ${suggestion}`);
         effectCallback();
         consecutiveFailures = 0;
         lastErrorMessage = "";
-      } catch (err2) {
-        if (err2 instanceof Promise) {
-          if (pendingPromises.has(err2))
+      } catch (err) {
+        if (err instanceof Promise) {
+          if (pendingPromises.has(err))
             return;
           if (window._nexusDebug)
             console.debug(`[Nexus Suspense] <${el.tagName}> suspended pending network resolution.`);
           pendingCount++;
-          pendingPromises.add(err2);
-          err2.finally(() => {
+          pendingPromises.add(err);
+          err.finally(() => {
             pendingCount--;
-            pendingPromises.delete(err2);
+            pendingPromises.delete(err);
             if (window._nexusDebug)
               console.debug(`[Nexus Suspense] <${el.tagName}> resumed.`);
             if (runner) {
@@ -911,7 +911,7 @@ ${suggestion}`);
             }
           });
         } else {
-          const msg = err2 instanceof Error ? err2.message : String(err2);
+          const msg = err instanceof Error ? err.message : String(err);
           if (msg === lastErrorMessage)
             consecutiveFailures++;
           else {
@@ -919,8 +919,8 @@ ${suggestion}`);
             lastErrorMessage = msg;
           }
           if (consecutiveFailures >= 3) {
-            console.error(`[Nexus Diagnostic] Persistent error on <${el.tagName}> (${consecutiveFailures}x):`, err2);
-            reportError(err2 instanceof Error ? err2 : new Error(msg), el, `Persistent failure (${consecutiveFailures}x) \u2014 effect quarantined`);
+            console.error(`[Nexus Diagnostic] Persistent error on <${el.tagName}> (${consecutiveFailures}x):`, err);
+            reportError(err instanceof Error ? err : new Error(msg), el, `Persistent failure (${consecutiveFailures}x) \u2014 effect quarantined`);
             stop(runner);
             const enhanced = el;
             enhanced[EFFECT_RUNNERS_KEY]?.delete(runner);
@@ -964,9 +964,9 @@ ${suggestion}`);
         for (const r of enhancedEl[EFFECT_RUNNERS_KEY]) {
           try {
             r();
-          } catch (err2) {
-            console.error(`[Nexus Isolation] Effect failed on <${enhancedEl.tagName}>, isolated from ${enhancedEl[EFFECT_RUNNERS_KEY].size - 1} sibling effects:`, err2);
-            reportError(err2 instanceof Error ? err2 : new Error(String(err2)), enhancedEl, "Isolated effect failure");
+          } catch (err) {
+            console.error(`[Nexus Isolation] Effect failed on <${enhancedEl.tagName}>, isolated from ${enhancedEl[EFFECT_RUNNERS_KEY].size - 1} sibling effects:`, err);
+            reportError(err instanceof Error ? err : new Error(String(err)), enhancedEl, "Isolated effect failure");
           }
         }
       };
@@ -5332,8 +5332,8 @@ ${scripts}
                 } else if (Array.isArray(containerCleanups)) {
                   containerCleanups.push(cleanupFn);
                 }
-              } catch (err2) {
-                runtime.reportError(err2 instanceof Error ? err2 : new Error(String(err2)), container, "drag-init");
+              } catch (err) {
+                runtime.reportError(err instanceof Error ? err : new Error(String(err)), container, "drag-init");
               }
             }
             const engineNow = container.__draggable;
@@ -6801,7 +6801,7 @@ ${match}</ul>
                   };
                 }
               };
-            }).catch((err2) => reportError(new Error(`PWA: ServiceWorker registration failed: ${err2}`), el));
+            }).catch((err) => reportError(new Error(`PWA: ServiceWorker registration failed: ${err}`), el));
             let refreshing = false;
             const onControllerChange = () => {
               if (!refreshing) {
@@ -9280,8 +9280,8 @@ ${match}</ul>
                         }
                       }
                     }
-                  } catch (err2) {
-                    runtime.reportError(err2 instanceof Error ? err2 : new Error(String(err2)), element, "teleport-mutate");
+                  } catch (err) {
+                    runtime.reportError(err instanceof Error ? err : new Error(String(err)), element, "teleport-mutate");
                   }
                 };
                 if ("startViewTransition" in document && doMutate) {
@@ -9297,8 +9297,8 @@ ${match}</ul>
                   mode,
                   item: targetList[toIndex]
                 };
-              } catch (err2) {
-                runtime.reportError(err2 instanceof Error ? err2 : new Error(String(err2)), element, "teleport-drop");
+              } catch (err) {
+                runtime.reportError(err instanceof Error ? err : new Error(String(err)), element, "teleport-drop");
               }
             };
             element.addEventListener("dragover", onDragOver);
@@ -10099,9 +10099,9 @@ ${match}</ul>
         result.data = response.data;
         result.errors = response.errors || null;
         result.status = response.errors ? "error" : "success";
-      } catch (err2) {
+      } catch (err) {
         result.errors = [{
-          message: err2 instanceof Error ? err2.message : String(err2)
+          message: err instanceof Error ? err.message : String(err)
         }];
         result.status = "error";
       } finally {
@@ -11125,8 +11125,8 @@ ${match}</ul>
           result.data = queryResult;
           result.status = "ready";
         }
-      } catch (err2) {
-        result.error = err2 instanceof Error ? err2.message : String(err2);
+      } catch (err) {
+        result.error = err instanceof Error ? err.message : String(err);
         result.status = "error";
       }
       return result;
@@ -12711,10 +12711,10 @@ ${match}</ul>
                       const borrower = borrow.borrower;
                       try {
                         borrower[RUN_EFFECT_RUNNERS_KEY]?.();
-                      } catch (err2) {
+                      } catch (err) {
                         console.error(
                           `[Nexus Isolation] Borrower <${borrower.tagName}> failed during ownership pulse from <${target.tagName}>:`,
-                          err2
+                          err
                         );
                       }
                     });
@@ -12955,8 +12955,8 @@ ${match}</ul>
         const escaped = imp.href.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         const targetRegex = new RegExp(`@import\\s+(?:url\\()?['"]?${escaped}['"]?\\)?[^;]*;`, "g");
         resolved = resolved.replace(targetRegex, wrapper);
-      } catch (err2) {
-        console.warn(`[NexusStyleSheet] Failed to resolve import "${imp.href}" relative to "${currentBase}":`, err2);
+      } catch (err) {
+        console.warn(`[NexusStyleSheet] Failed to resolve import "${imp.href}" relative to "${currentBase}":`, err);
       }
     }
     return resolved;
@@ -13026,10 +13026,10 @@ ${decls}
         const { className, el, runtime } = pendingClasses.shift();
         stylesheet.adoptClass(className, el, runtime);
       }
-    })().catch((err2) => {
+    })().catch((err) => {
       compilerReadyPromise = null;
-      console.error("[Nexus] Tailwind JIT init failed:", err2);
-      throw err2;
+      console.error("[Nexus] Tailwind JIT init failed:", err);
+      throw err;
     });
     return compilerReadyPromise;
   }
@@ -13049,8 +13049,8 @@ ${bridge}`, {
       });
       const compiledCSS = tailwindCompiler.build(Array.from(compiledClassesSet));
       jitSheet.replaceSync(compiledCSS);
-    } catch (err2) {
-      console.error("[Nexus] Theme bridge refresh failed:", err2);
+    } catch (err) {
+      console.error("[Nexus] Theme bridge refresh failed:", err);
     } finally {
       _rebuildingBridge = false;
     }
@@ -13074,12 +13074,12 @@ ${bridge}`, {
     if (_isJitEngineBooted)
       return;
     _isJitEngineBooted = true;
-    ensureCompiler().catch((err2) => console.error("[Nexus] JIT init failed:", err2));
+    ensureCompiler().catch((err) => console.error("[Nexus] JIT init failed:", err));
   }
   function markExternalStylesSettled() {
     externalStylesSettled = true;
     if (compilerReadyPromise) {
-      refreshThemeBridge().catch((err2) => console.error("[Nexus] bridge refresh failed:", err2));
+      refreshThemeBridge().catch((err) => console.error("[Nexus] bridge refresh failed:", err));
     }
   }
   var PREFLIGHT_CSS, NexusStyleSheet, jitSheet, compileFn, coreCss, tailwindCompiler, compilerReadyPromise, externalStylesSettled, _rebuildingBridge, compiledClassesSet, pendingClasses, StyleSheetManager, stylesheet, _isJitEngineBooted, stylesheetModule, stylesheet_default;
@@ -13113,7 +13113,7 @@ ${bridge}`, {
           if (typeof super.replaceSync === "function") {
             try {
               super.replaceSync(cssText);
-            } catch {
+            } catch (err) {
               if (!hasImports)
                 throw err;
             }
@@ -13122,16 +13122,16 @@ ${bridge}`, {
             resolveImports(cssText, void 0, async () => {
               const freshResolved = await resolveImports(this._rawCSSText);
               if (typeof super.replace === "function") {
-                super.replace(freshResolved).catch((err2) => console.error(err2));
+                super.replace(freshResolved).catch((err) => console.error(err));
               }
             }).then((resolved) => {
               if (typeof super.replace === "function") {
-                super.replace(resolved).catch((err2) => {
-                  console.error("[NexusStyleSheet] Dynamic replace of resolved imports failed:", err2);
+                super.replace(resolved).catch((err) => {
+                  console.error("[NexusStyleSheet] Dynamic replace of resolved imports failed:", err);
                 });
               }
-            }).catch((err2) => {
-              console.error("[NexusStyleSheet] Failed to resolve imports in background:", err2);
+            }).catch((err) => {
+              console.error("[NexusStyleSheet] Failed to resolve imports in background:", err);
             });
           }
         }
@@ -13233,7 +13233,7 @@ ${bridge}`, {
           }
           if (!tailwindCompiler) {
             pendingClasses.push({ className, el, runtime });
-            ensureCompiler().catch((err2) => console.error("[Nexus] JIT init failed:", err2));
+            ensureCompiler().catch((err) => console.error("[Nexus] JIT init failed:", err));
             return;
           }
           try {
@@ -13244,8 +13244,8 @@ ${bridge}`, {
             const compiledCSS = tailwindCompiler.build(Array.from(compiledClassesSet));
             jitSheet.replaceSync(compiledCSS);
             this._knownClasses.add(className);
-          } catch (err2) {
-            console.debug(`Nexus-UX JIT compile check: "${className}":`, err2);
+          } catch (err) {
+            console.debug(`Nexus-UX JIT compile check: "${className}":`, err);
           }
         }
         adoptSignalBinding(el, signalName, runtime) {
@@ -13966,9 +13966,9 @@ ${bridge}`, {
           isResolved = true;
           result = res;
         },
-        (err2) => {
+        (err) => {
           isRejected = true;
-          error = err2;
+          error = err;
         }
       );
       return new Proxy(promise, {
@@ -14269,7 +14269,7 @@ ${bridge}`, {
         adoptStyle: (el) => el.classList.forEach((cls) => stylesheet.adoptClass(cls, el)),
         parseAttribute,
         scheduler,
-        reportError: (err2, el, expr) => logger.error(this.runtimeContext, err2.message, el, expr),
+        reportError: (err, el, expr) => logger.error(this.runtimeContext, err.message, el, expr),
         $: (selector) => {
           if (typeof document === "undefined")
             return null;
@@ -14516,8 +14516,8 @@ ${bridge}`, {
                 });
               }
             }
-          } catch (err2) {
-            logger.warn(`[Directive Isolation] Fault in attribute parse for '${attr.name}' on <${element.tagName}>:`, err2);
+          } catch (err) {
+            logger.warn(`[Directive Isolation] Fault in attribute parse for '${attr.name}' on <${element.tagName}>:`, err);
           }
         });
         handlersToExecute.sort((a, b) => {
@@ -14547,8 +14547,8 @@ ${bridge}`, {
               }
               elRemovals.set(hashKey, cleanup);
             }
-          } catch (err2) {
-            logger.warn(`[Directive Isolation] Fault in execution of directive '${fullAttrName}' on <${element.tagName}>:`, err2);
+          } catch (err) {
+            logger.warn(`[Directive Isolation] Fault in execution of directive '${fullAttrName}' on <${element.tagName}>:`, err);
           }
         });
       }

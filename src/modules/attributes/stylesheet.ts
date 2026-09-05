@@ -154,7 +154,7 @@ export class NexusStyleSheet extends (typeof CSSStyleSheet !== 'undefined' ? CSS
     if (typeof super.replaceSync === 'function') {
       try {
         super.replaceSync(cssText);
-      } catch {
+      } catch (err) {
         // @import rules are not allowed in replaceSync per spec (construct-stylesheets).
         // Swallow: the background resolver below inlines them instead.
         if (!hasImports) throw err;
@@ -288,6 +288,7 @@ async function ensureCompiler(): Promise<void> {
     URL.revokeObjectURL(blobUrl);
 
     compileFn = mod.compile;
+    if (!compileFn) throw new Error('Failed to load Tailwind compile function');
 
     tailwindCompiler = await compileFn(`@import "tailwindcss";`, {
       base: '/',
