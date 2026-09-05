@@ -551,10 +551,12 @@ export const routerAttributeModule: AttributeModule = {
         layout: r.layout,
       }));
 
+      let state: RouterState;
+
       const resolveStaticComponent = (path: string): string => {
         const clean = path.replace(/^\/+/, '');
         if (clean.startsWith('_internal/') || clean.startsWith('_pages/')) {
-          const withExt = clean.endsWith('.html') ? clean : clean + '.html';
+          const withExt = (clean.endsWith('.html') || clean.endsWith('.md')) ? clean : clean + '.html';
           return applyBase('/' + withExt);
         }
         const dir = (routerConfig.pagesDir || pagesDir || '_pages').replace(/^\/+|\/+$/g, '');
@@ -562,12 +564,14 @@ export const routerAttributeModule: AttributeModule = {
         if (path === '/' || path === '') {
           return applyBase(`/${dir}/${defaultIndex}`);
         }
-        const matchedRec = routeList.find((r) => r.path === path || r.path === '/' + clean);
+        const matchedRec = routeList.find((r) => r.path === path || r.path === '/' + clean) ||
+          (state?.routes as any[])?.find((r) => r.path === path || r.path === '/' + clean);
         if (matchedRec?.component) {
           return applyBase(matchedRec.component);
         }
-        const leaf = clean.split('/').pop() || clean;
-        const withExt = leaf.endsWith('.html') ? leaf : leaf + '.html';
+        const isDoc = clean.startsWith('docs/') || ['README', 'changelog', 'LICENSE'].some(k => clean.toLowerCase().includes(k.toLowerCase()));
+        const ext = isDoc ? '.md' : '.html';
+        const withExt = (clean.endsWith('.html') || clean.endsWith('.md')) ? clean : clean + ext;
         const full = dir ? `/${dir}/${withExt}` : '/' + withExt;
         return applyBase(full);
       };
@@ -596,7 +600,7 @@ export const routerAttributeModule: AttributeModule = {
 
       // 1. Create Reactive State
       // shallowReactive prevents deep proxying of HTMLElements held in routes.
-      const state: RouterState = runtime.shallowReactive<RouterState>({
+      state = runtime.shallowReactive<RouterState>({
         path: initialPath,
         params: {},
         query: {},

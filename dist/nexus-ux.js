@@ -7241,10 +7241,11 @@ ${match}</ul>
               meta: r.meta || {},
               layout: r.layout
             }));
+            let state;
             const resolveStaticComponent = (path) => {
               const clean = path.replace(/^\/+/, "");
               if (clean.startsWith("_internal/") || clean.startsWith("_pages/")) {
-                const withExt2 = clean.endsWith(".html") ? clean : clean + ".html";
+                const withExt2 = clean.endsWith(".html") || clean.endsWith(".md") ? clean : clean + ".html";
                 return applyBase("/" + withExt2);
               }
               const dir = (routerConfig.pagesDir || pagesDir || "_pages").replace(/^\/+|\/+$/g, "");
@@ -7252,12 +7253,13 @@ ${match}</ul>
               if (path === "/" || path === "") {
                 return applyBase(`/${dir}/${defaultIndex}`);
               }
-              const matchedRec = routeList.find((r) => r.path === path || r.path === "/" + clean);
+              const matchedRec = routeList.find((r) => r.path === path || r.path === "/" + clean) || state?.routes?.find((r) => r.path === path || r.path === "/" + clean);
               if (matchedRec?.component) {
                 return applyBase(matchedRec.component);
               }
-              const leaf = clean.split("/").pop() || clean;
-              const withExt = leaf.endsWith(".html") ? leaf : leaf + ".html";
+              const isDoc = clean.startsWith("docs/") || ["README", "changelog", "LICENSE"].some((k) => clean.toLowerCase().includes(k.toLowerCase()));
+              const ext = isDoc ? ".md" : ".html";
+              const withExt = clean.endsWith(".html") || clean.endsWith(".md") ? clean : clean + ext;
               const full = dir ? `/${dir}/${withExt}` : "/" + withExt;
               return applyBase(full);
             };
@@ -7274,7 +7276,7 @@ ${match}</ul>
             const initialPath = stripBase(globalThis.location.pathname) || "/";
             const initialMatched = routeList.find((r) => r.path === initialPath);
             const initialSource = initialMatched?.component || resolveStaticComponent(initialPath);
-            const state = runtime.shallowReactive({
+            state = runtime.shallowReactive({
               path: initialPath,
               params: {},
               query: {},
