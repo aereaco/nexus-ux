@@ -12,9 +12,9 @@ export const predictive = corePredictiveEngine;
 export const predictiveModule: SpriteModule = {
   name: 'predictive',
   key: '$predictive',
-  sprites: (context: RuntimeContext) => {
+  sprites: (context: RuntimeContext): Record<string, unknown> => {
     (context as any).predictive = corePredictiveEngine;
-    return corePredictiveEngine;
+    return corePredictiveEngine as unknown as Record<string, unknown>;
   },
 };
 
