@@ -390,11 +390,173 @@
       favViewMode: localStorage.favViewMode || 'list',
       favForm: { id: null, title: '', href: '', icon: 'material-symbols-light:star-outline', group: '' },
       pendingDeleteId: null,
-      themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset']
+      themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset'],
+      terminalOpen: false,
+      terminalDocked: localStorage.getItem('terminalDocked') === 'true',
+      terminalMaximized: false,
+      terminalActiveTab: 'cli',
+      terminalTabs: [
+        { id: 'cli', name: 'CLI / Sh', icon: 'material-symbols-light:terminal' },
+        { id: 'runtime', name: 'Nexus Runtime', icon: 'material-symbols-light:memory' },
+        { id: 'build', name: 'Build & AOT', icon: 'material-symbols-light:build' },
+        { id: 'surreal', name: 'SurrealDB / REPL', icon: 'material-symbols-light:database' }
+      ],
+      terminalBuffers: {
+        cli: [
+          { type: 'info', text: 'Nexus-UX Interactive Shell v2.4 (Tier 3 Sovereign Engine)' },
+          { type: 'dim', text: 'Type "help" for available commands, "status" for runtime diagnostics.' },
+          { type: 'system', text: '[SYSTEM] Shell initialized at /workspace/nexus-ux. Ready for input.' }
+        ],
+        runtime: [
+          { type: 'system', text: '[Nexus Topology] Boot: Detected 8 cores, SAB: true, Tier 3 Quad-Thread' },
+          { type: 'heap', text: '[SignalHeap] Attached SharedArrayBuffer (Capacity: 1,048,576 slots)' },
+          { type: 'worker', text: '[Worker-1] Logic pipeline thread running (4-phase atomic cycle: 60fps)' },
+          { type: 'worker', text: '[Worker-2] DOM reconciliation diff thread active' },
+          { type: 'worker', text: '[Worker-3] JIT CSS / Theme token generator active' }
+        ],
+        build: [
+          { type: 'build', text: '[AOT Compiler] Compiling constructable stylesheets… OK' },
+          { type: 'build', text: '[Packer] Inlining DaisyUI v5 & Tailwind v4 theme tokens: 32 themes cached' },
+          { type: 'build', text: '[Router] Synchronized 16 routes from manifest.json' },
+          { type: 'ok', text: '[Bundle] Zero-copy bundle payload ready: 48.2 KB (brotli)' }
+        ],
+        surreal: [
+          { type: 'db', text: 'Connected to surreal://localhost:8000 (Namespace: nexus, Database: erp)' },
+          { type: 'db', text: 'Live tables: [customer, invoice, order, inventory_item, telemetry_event]' },
+          { type: 'dim', text: 'Ready for SurrealQL queries. Type "SELECT * FROM invoice;" or "help".' }
+        ]
+      },
+      terminalInputText: '',
+      toggleTerminalHud: () => {
+        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
+        g.terminalOpen = !g.terminalOpen;
+        if (g.terminalOpen) {
+          window.Nexus?.coordinator?.runtimeContext?.$nextTick?.(() => {
+            document.getElementById('terminal-cli-input')?.focus();
+            const stream = document.getElementById('terminal-message-stream');
+            if (stream) stream.scrollTop = stream.scrollHeight;
+          });
+        }
+      },
+      closeTerminalHud: () => {
+        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
+        g.terminalOpen = false;
+      },
+      toggleTerminalDock: () => {
+        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
+        g.terminalDocked = !g.terminalDocked;
+        localStorage.setItem('terminalDocked', g.terminalDocked);
+      },
+      toggleTerminalMax: () => {
+        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
+        g.terminalMaximized = !g.terminalMaximized;
+      },
+      clearTerminalTab: (tabId) => {
+        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
+        const id = tabId || g.terminalActiveTab || 'cli';
+        const buffers = { ...(g.terminalBuffers || {}) };
+        buffers[id] = [{ type: 'dim', text: 'Buffer cleared.' }];
+        g.terminalBuffers = buffers;
+      },
+      createTerminalTab: () => {
+        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
+        const count = (g.terminalTabs || []).length + 1;
+        const newId = 'custom-' + window.Date.now();
+        const newTab = { id: newId, name: 'Term #' + count, icon: 'material-symbols-light:terminal' };
+        g.terminalTabs = [...(g.terminalTabs || []), newTab];
+        g.terminalBuffers = {
+          ...(g.terminalBuffers || {}),
+          [newId]: [{ type: 'info', text: 'Custom terminal session created.' }]
+        };
+        g.terminalActiveTab = newId;
+      },
+      closeTerminalTab: (tabId) => {
+        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
+        const tabs = (g.terminalTabs || []).filter(t => t.id !== tabId);
+        g.terminalTabs = tabs;
+        if (g.terminalActiveTab === tabId && tabs.length > 0) {
+          g.terminalActiveTab = tabs[0].id;
+        }
+      },
+      runTerminalCommand: () => {
+        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
+        const input = (g.terminalInputText || '').trim();
+        if (!input) return;
+        const tab = g.terminalActiveTab || 'cli';
+        const curBuf = [...((g.terminalBuffers || {})[tab] || [])];
+        
+        curBuf.push({ type: 'user', text: input, time: new window.Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) });
+        
+        const parts = input.split(' ');
+        const cmd = parts[0].toLowerCase();
+        const arg = parts.slice(1).join(' ').trim();
+        
+        if (cmd === 'help') {
+          curBuf.push({ type: 'help', text: 'Available CLI commands:' });
+          curBuf.push({ type: 'dim', text: '  status           - View live topology, tier, and heap status' });
+          curBuf.push({ type: 'dim', text: '  topology         - View multi-threaded Web Worker allocation' });
+          curBuf.push({ type: 'dim', text: '  routes           - List all available SPA application routes' });
+          curBuf.push({ type: 'dim', text: '  theme <name>     - Switch DaisyUI theme (e.g. dark, synthwave)' });
+          curBuf.push({ type: 'dim', text: '  tabs             - List open page tabs in the workspace' });
+          curBuf.push({ type: 'dim', text: '  chat             - Open the collaborative AI chatbar' });
+          curBuf.push({ type: 'dim', text: '  dock             - Toggle HUD docking below footer' });
+          curBuf.push({ type: 'dim', text: '  clear            - Clear current terminal buffer' });
+          curBuf.push({ type: 'dim', text: '  exit / close     - Dismiss Terminal HUD' });
+        } else if (cmd === 'clear') {
+          curBuf.length = 0;
+          curBuf.push({ type: 'dim', text: 'Buffer cleared.' });
+        } else if (cmd === 'status' || cmd === 'info') {
+          curBuf.push({ type: 'system', text: '[SYSTEM DIAGNOSTICS]' });
+          curBuf.push({ type: 'ok', text: '  Framework: Nexus-UX v2.4 (HTML Declarative Reactive Architecture)' });
+          curBuf.push({ type: 'ok', text: '  Reactive Engine: Vue 3 Fine-Grained with SharedArrayBuffer SignalHeap' });
+          curBuf.push({ type: 'info', text: '  Active Theme: ' + (document.documentElement.getAttribute('data-theme') || 'dark') });
+          curBuf.push({ type: 'info', text: '  Active Page Tabs: ' + (g.router?.pageTabs?.length || 1) });
+          curBuf.push({ type: 'info', text: '  Active Chat Sessions: ' + (g.chatSessions?.length || 0) });
+        } else if (cmd === 'topology') {
+          curBuf.push({ type: 'system', text: '[NEXUS TOPOLOGY METRICS]' });
+          curBuf.push({ type: 'ok', text: '  Tier: Tier 3 (Quad-Thread Sovereign Autoscale)' });
+          curBuf.push({ type: 'ok', text: '  Dedicated Web Workers: 3 active (Logic, Diff, JIT)' });
+          curBuf.push({ type: 'info', text: '  Frame Budget: 8.0ms (4-phase atomic execution loop: 60fps)' });
+        } else if (cmd === 'routes') {
+          const rList = (g.router?.routes || []).map(r => r.path).filter(Boolean);
+          curBuf.push({ type: 'info', text: 'Available Routes (' + rList.length + '): ' + rList.join(', ') });
+        } else if (cmd === 'tabs') {
+          const tList = (g.router?.pageTabs || []).map(t => t.title || t.path || 'Tab').join(', ');
+          curBuf.push({ type: 'info', text: 'Workspace Tabs: ' + (tList || 'None open') });
+        } else if (cmd === 'chat') {
+          g.chatbarOpen = true;
+          curBuf.push({ type: 'ok', text: 'Collaborative AI Chatbar opened.' });
+        } else if (cmd === 'dock') {
+          g.toggleTerminalDock();
+          curBuf.push({ type: 'ok', text: 'Terminal docking toggled: ' + (g.terminalDocked ? 'Docked below footer' : 'Floating over content') });
+        } else if (cmd === 'theme') {
+          if (arg) {
+            document.documentElement.setAttribute('data-theme', arg);
+            localStorage.setItem('theme', arg);
+            curBuf.push({ type: 'ok', text: 'Theme switched to: ' + arg });
+          } else {
+            curBuf.push({ type: 'warn', text: 'Usage: theme <name> (e.g. theme synthwave, theme luxury, theme dark)' });
+          }
+        } else if (cmd === 'exit' || cmd === 'close') {
+          g.terminalOpen = false;
+          curBuf.push({ type: 'dim', text: 'Terminal closed.' });
+        } else {
+          curBuf.push({ type: 'error', text: 'Command not recognized: "' + cmd + '". Type "help" for a list of commands.' });
+        }
+        
+        g.terminalBuffers = { ...(g.terminalBuffers || {}), [tab]: curBuf };
+        g.terminalInputText = '';
+        
+        window.Nexus?.coordinator?.runtimeContext?.$nextTick?.(() => {
+          const stream = document.getElementById('terminal-message-stream');
+          if (stream) stream.scrollTop = stream.scrollHeight;
+        });
+      }
     }"
   data-class="{ 'md:grid-cols-[max-content_1fr]': !collapsed, 'md:grid-cols-[4rem_1fr]': collapsed, 'h-screen max-h-screen overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }"
   data-effect="if (!favHydrated && indexedDB?.favorites) { favHydrated = true; indexedDB.favorites.all().then(items => { if (items && items.length) { favorites = items; favoriteGroups = [...new Set(items.map(f => (f?.group || '').trim()).filter(Boolean))]; } }); }"
-  data-on-resize_window="isMobile = window.innerWidth < 768">
+  data-on-resize_window="isMobile = window.innerWidth < 768"
+  data-on-keydown_window="if ($evt.ctrlKey && ($evt.key === '`' || $evt.key === '~')) { $evt.preventDefault(); toggleTerminalHud(); }">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content flex flex-col transition-[padding] duration-300 ease-in-out"
     data-class="{ 'h-full overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader, 'md:pe-96': chatbarDocked && chatbarOpen, 'pe-0': !chatbarDocked || !chatbarOpen }">
