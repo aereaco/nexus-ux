@@ -19,6 +19,16 @@
     "parent": null
   },
   {
+    "id": "lab-attr-signal",
+    "route": "/labs/attributes/signal",
+    "path": "/_pages/labs/attributes/signal.html",
+    "title": "data-signal",
+    "icon": "material-symbols-light:code-blocks-outline",
+    "order": 1,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
     "id": "labs-attributes",
     "route": "/labs/attributes",
     "path": "/_pages/labs/attributes.html",

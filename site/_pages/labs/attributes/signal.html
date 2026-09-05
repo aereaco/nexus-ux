@@ -1,0 +1,26 @@
+<title>data-signal</title>
+<meta name="id" content="lab-attr-signal">
+<meta name="route" content="/labs/attributes/signal">
+<meta name="icon" content="material-symbols-light:code-blocks-outline">
+<meta name="order" content="1">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/attributes">
+
+<div data-signal="{
+  doc: {
+    Title: 'data-signal',
+    Category: 'Attributes',
+    Icon: 'material-symbols-light:code-blocks-outline',
+    ModulePath: 'src/modules/attributes/signal.ts',
+    Description: 'Declares local or global fine-grained reactive state blocks directly in the DOM namespace, mapping JSON literals to the AST Memory Engine.',
+    Syntax: '<div data-signal=\"{ count: 0, title: \'Nexus\' }\">...</div>',
+    Params: [
+      { name: 'data-signal', type: 'JSON Literal / Expression', default: '{}', description: 'Local reactive state scope bound to element and descendants.' },
+      { name: 'data-signal_global', type: 'JSON Literal / Expression', default: '{}', description: 'Global reactive state accessible app-wide via #prefix or __global.' }
+    ],
+    Extensibility: '<p>The <code>signal</code> directive parses JSON object literals into Vue 3-compatible reactive state scopes combined with <code>SignalHeap</code> (SharedArrayBuffer-backed storage) and Rust-inspired borrow validation. Signals cascade hierarchically via the DOM data stack.</p>',
+    Snippet: '<div data-signal=\"{ count: 0, step: 1 }\" class=\"space-y-4 p-4 bg-base-200/50 rounded-xl border border-base-content/10\">\n  <div class=\"flex items-center gap-4\">\n    <div class=\"stat bg-base-100 rounded-lg p-3 shadow-sm border border-base-content/10\">\n      <div class=\"stat-title text-xs font-bold\">Counter Value</div>\n      <div class=\"stat-value text-primary text-2xl font-mono\" data-bind=\"count\">0</div>\n    </div>\n    <div class=\"flex flex-col gap-2\">\n      <button class=\"btn btn-sm btn-primary\" data-on-click=\"count += step\">Increment (+<span data-bind=\"step\"></span>)</button>\n      <button class=\"btn btn-sm btn-outline btn-error\" data-on-click=\"count = 0\">Reset</button>\n    </div>\n  </div>\n  <div class=\"flex items-center gap-2\">\n    <span class=\"text-xs font-bold opacity-70\">Step Size:</span>\n    <input type=\"number\" data-bind-value=\"step\" min=\"1\" max=\"10\" class=\"input input-bordered input-xs w-20 font-mono\" />\n  </div>\n</div>'
+  }
+}">
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>
