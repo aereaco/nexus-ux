@@ -1698,8 +1698,8 @@ export const routerAttributeModule: AttributeModule = {
           if (path && path !== '/index.html' && path !== errorPage && !path.startsWith('/_internal/')) {
             const recent = (globals.recent as any[]) || [];
             const curTab = state.pageTabs.find((t) => t.id === _at);
-            const routeTitle = curTab?.meta?.title || (curTab?.linkedContent?.meta)?.title || matched?.meta?.title || path.replace(/^\//, '').replace(/-/g, ' ');
-            const routeIcon = curTab?.meta?.icon || (curTab?.linkedContent?.meta)?.icon || (matched?.meta as any)?.icon || 'material-symbols-light:article-outline';
+            const routeTitle = (curTab?.meta as any)?.title || (curTab?.linkedContent?.meta as any)?.title || (matched?.meta as any)?.title || path.replace(/^\//, '').replace(/-/g, ' ');
+            const routeIcon = (curTab?.meta as any)?.icon || (curTab?.linkedContent?.meta as any)?.icon || (matched?.meta as any)?.icon || 'material-symbols-light:article-outline';
             const entry = { path, title: routeTitle, icon: routeIcon };
             const next = [entry, ...recent.filter((r: any) => r.path !== path && r.path !== '/index.html')].slice(0, 5);
             runtime.setGlobalSignal('recent', next);
