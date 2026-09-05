@@ -260,6 +260,16 @@
     "category": "Labs"
   },
   {
+    "id": "lab-attr-on",
+    "route": "/labs/attributes/on",
+    "path": "/_pages/labs/attributes/on.html",
+    "title": "data-on",
+    "icon": "material-symbols-light:touch-app",
+    "order": 6,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
     "id": "settings",
     "route": "/settings",
     "path": "/_pages/settings.html",

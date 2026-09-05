@@ -1,0 +1,26 @@
+<title>data-on</title>
+<meta name="id" content="lab-attr-on">
+<meta name="route" content="/labs/attributes/on">
+<meta name="icon" content="material-symbols-light:touch-app">
+<meta name="order" content="6">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/attributes">
+
+<div data-signal="{
+  doc: {
+    Title: 'data-on',
+    Category: 'Attributes',
+    Icon: 'material-symbols-light:touch-app',
+    ModulePath: 'src/modules/attributes/on.ts',
+    Description: 'Declarative event handling with support for shorthand (@event), pipeline modifiers (:prevent, :stop, :outside, :debounce), and automatic parameter injection ($evt, $newValue).',
+    Syntax: '<button data-on-click=\"count++\">Increment</button>\n<input @input:debounce.250=\"search($newValue)\" />',
+    Params: [
+      { name: 'data-on-<event>', type: 'Handler Expression', default: '-', description: 'Listens for specified native DOM event.' },
+      { name: ':<modifier>', type: 'Event Modifier', default: '-', description: 'Pipes behavior (:prevent, :stop, :outside, :debounce.<ms>, :throttle.<ms>, :once).' }
+    ],
+    Extensibility: '<p>The <code>on</code> directive attaches listeners to DOM elements and auto-cleans them when the element is removed from the DOM tree. Expressive variables like <code>$evt</code> and <code>$newValue</code> are injected directly into the evaluation scope.</p>',
+    Snippet: '<div data-signal=\"{ lastKey: \'None\', clicks: 0 }\" class=\"space-y-4 p-4 bg-base-200/50 rounded-xl border border-base-content/10\">\n  <div class=\"flex items-center gap-4\">\n    <button class=\"btn btn-sm btn-primary\" data-on-click=\"clicks++\">Click Count: <span data-bind=\"clicks\" class=\"font-mono ms-1\"></span></button>\n    <button class=\"btn btn-sm btn-ghost\" data-on-click=\"clicks = 0\">Reset</button>\n  </div>\n  <div class=\"form-control\">\n    <label class=\"label\"><span class=\"label-text font-bold text-xs\">Type in input (tracks keys via :enter and keydown):</span></label>\n    <input type=\"text\" placeholder=\"Press Enter...\" data-on-keydown:enter=\"lastKey = \'Enter pressed at \' + new Date().toLocaleTimeString()\" class=\"input input-bordered input-sm max-w-md\" />\n    <span class=\"text-xs opacity-60 mt-1\" data-bind=\"\'Last Status: \' + lastKey\"></span>\n  </div>\n</div>'
+  }
+}">
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>
