@@ -358,7 +358,11 @@ const componentModule: AttributeModule = {
               if (fmMatch) {
                 cleanMd = rawText.slice(fmMatch[0].length).trim();
               }
-              html = `<div class="p-6 max-w-5xl mx-auto"><article data-markdown class="prose max-w-none">${cleanMd}</article></div>`;
+              const escapedMd = cleanMd
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+              html = `<div class="p-6 max-w-5xl mx-auto"><article data-markdown class="prose max-w-none">${escapedMd}</article></div>`;
             } else if (rawText.includes('<!DOCTYPE') || (rawText.includes('data-init') && el.tagName.toLowerCase() !== 'html')) {
               throw new Error(`Invalid component fragment returned for "${targetPath}": received full HTML shell.`);
             }

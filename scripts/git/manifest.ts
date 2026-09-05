@@ -49,6 +49,21 @@ function parseHeadMetadata(content: string): {
   parent?: string | null;
   category?: string;
 } {
+  // Support YAML frontmatter for .md documents
+  const frontmatterMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  const fmMaps: Record<string, string> = {};
+  if (frontmatterMatch) {
+    const lines = frontmatterMatch[1].split(/\r?\n/);
+    for (const l of lines) {
+      const idx = l.indexOf(":");
+      if (idx > 0) {
+        const k = l.substring(0, idx).trim().toLowerCase();
+        const v = l.substring(idx + 1).trim().replace(/^['"]|['"]$/g, "");
+        fmMaps[k] = v;
+      }
+    }
+  }
+
   const idMatch = content.match(/<meta\s+[^>]*name=["']id["'][^>]*content=["']([^"']*)["']/i) ||
     content.match(/<meta\s+[^>]*content=["']([^"']*)["'][^>]*name=["']id["']/i);
   const titleMatch = content.match(/<title[^>]*>([^<]+)<\/title>/i);
@@ -65,24 +80,36 @@ function parseHeadMetadata(content: string): {
   const categoryMatch = content.match(/<meta\s+[^>]*name=["']category["'][^>]*content=["']([^"']*)["']/i) ||
     content.match(/<meta\s+[^>]*content=["']([^"']*)["'][^>]*name=["']category["']/i);
 
-  const id = idMatch ? idMatch[1].trim() : undefined;
-  const title = titleMatch ? titleMatch[1].trim() : undefined;
-  const route = routeMatch ? routeMatch[1].trim() : undefined;
-  const icon = iconMatch ? iconMatch[1].trim() : undefined;
-  const orderVal = orderMatch ? parseInt(orderMatch[1].trim(), 10) : undefined;
+  const id = fmMaps["id"] || (idMatch ? idMatch[1].trim() : undefined);
+  const title = fmMaps["title"] || (titleMatch ? titleMatch[1].trim() : (content.match(/^#\s+(.+)$/m)?.[1]?.trim()));
+  const route = fmMaps["route"] || (routeMatch ? routeMatch[1].trim() : undefined);
+  const icon = fmMaps["icon"] || (iconMatch ? iconMatch[1].trim() : undefined);
+  const orderVal = fmMaps["order"] ? parseInt(fmMaps["order"], 10) : (orderMatch ? parseInt(orderMatch[1].trim(), 10) : undefined);
   const order = !isNaN(orderVal!) ? orderVal : undefined;
-  const internal = internalMatch ? internalMatch[1].trim().toLowerCase() === "true" : undefined;
-  const parent = parentMatch ? (parentMatch[1].trim() === "null" ? null : parentMatch[1].trim()) : undefined;
-  const category = categoryMatch ? categoryMatch[1].trim() : undefined;
+  const internal = fmMaps["internal"] ? fmMaps["internal"].toLowerCase() === "true" : (internalMatch ? internalMatch[1].trim().toLowerCase() === "true" : undefined);
+  const parentRaw = fmMaps["parent"] || (parentMatch ? parentMatch[1].trim() : undefined);
+  const parent = parentRaw ? (parentRaw === "null" ? null : parentRaw) : undefined;
+  const category = fmMaps["category"] || (categoryMatch ? categoryMatch[1].trim() : undefined);
 
   return { id, title, route, icon, order, internal, parent, category };
 }
 
-function scanDirectory(dir: string, baseWebPath: string, isInternalDefault = false): RawManifestEntry[] {
+function scanDirectory(
+  dir: string,
+  baseWebPath: string,
+  isInternalDefault = false,
+  parentRoute?: string,
+  inheritedCategory?: string
+): RawManifestEntry[] {
   const list: RawManifestEntry[] = [];
   try {
-    for (const entry of Deno.readDirSync(dir)) {
-      if (entry.isFile && VALID_EXTENSIONS.some((ext) => entry.name.endsWith(ext))) {
+    const entries = Array.from(Deno.readDirSync(dir));
+    const fileEntries = entries.filter((e) => e.isFile);
+    const dirEntries = entries.filter((e) => e.isDirectory);
+
+    // 1. Process files in current directory
+    for (const entry of fileEntries) {
+      if (VALID_EXTENSIONS.some((ext) => entry.name.endsWith(ext))) {
         const nameWithoutExt = entry.name.replace(/\.[^.]+$/, "");
         const filePath = `${dir}/${entry.name}`;
         const content = Deno.readTextFileSync(filePath);
@@ -90,6 +117,13 @@ function scanDirectory(dir: string, baseWebPath: string, isInternalDefault = fal
 
         const id = meta.id || nameWithoutExt;
         const internal = meta.internal !== undefined ? meta.internal : (isInternalDefault ? true : undefined);
+
+        // Derive category if not explicitly declared
+        let category = meta.category || inheritedCategory;
+        if (!category) {
+          if (baseWebPath.includes("/docs")) category = "Docs";
+          else if (baseWebPath.includes("/labs")) category = "Labs";
+        }
 
         const item: RawManifestEntry = {
           id,
@@ -102,10 +136,62 @@ function scanDirectory(dir: string, baseWebPath: string, isInternalDefault = fal
         if (meta.order !== undefined) item.order = meta.order;
         if (internal) item.internal = internal;
         if (meta.parent !== undefined) item.parent = meta.parent;
-        if (meta.category !== undefined) item.category = meta.category;
+        else if (parentRoute && nameWithoutExt !== "index") item.parent = parentRoute;
+        if (category) item.category = category;
 
         list.push(item);
       }
+    }
+
+    // 2. Process subdirectories (Filesystem Hierarchy)
+    for (const subDir of dirEntries) {
+      const subDirPath = `${dir}/${subDir.name}`;
+      const subWebPath = `${baseWebPath}/${subDir.name}`;
+      const subEntries = Array.from(Deno.readDirSync(subDirPath));
+
+      // Determine default category for subdirectory
+      const isTopCategoryDir = dir === PAGES_DIR && (subDir.name === "docs" || subDir.name === "labs");
+      let subCategory = inheritedCategory;
+      if (isTopCategoryDir) {
+        subCategory = subDir.name === "docs" ? "Docs" : "Labs";
+      }
+
+      // Check if folder contains index.html / index.md (Case A)
+      const hasIndex = subEntries.some((e) => e.isFile && (e.name === "index.html" || e.name === "index.md"));
+      // Or if parent folder has a matching page file (e.g. attributes.html alongside attributes/ folder)
+      const hasMatchingRootFile = fileEntries.some((e) => e.isFile && e.name.replace(/\.[^.]+$/, "") === subDir.name);
+
+      let currentDirRoute: string | undefined = undefined;
+
+      if (isTopCategoryDir) {
+        // Top-level category folder: items inside are direct children of the category
+        currentDirRoute = undefined;
+      } else if (!hasIndex && !hasMatchingRootFile && subCategory !== undefined) {
+        // Case B: Nested directory WITHOUT index.html -> Emit routeless DaisyUI collapsible submenu
+        const submenuId = `${subDir.name}-menu`;
+        const submenuTitle = subDir.name.charAt(0).toUpperCase() + subDir.name.slice(1);
+        list.push({
+          id: submenuId,
+          explicitRoute: "",
+          path: "",
+          title: submenuTitle,
+          icon: "material-symbols-light:folder-outline",
+          parent: parentRoute || null,
+          category: subCategory,
+        });
+        currentDirRoute = submenuId;
+      } else if (hasMatchingRootFile) {
+        // Current directory has a sibling page representing its root (e.g. attributes.html -> /labs/attributes)
+        const rootEntry = fileEntries.find((e) => e.name.replace(/\.[^.]+$/, "") === subDir.name);
+        const rootMeta = rootEntry ? parseHeadMetadata(Deno.readTextFileSync(`${dir}/${rootEntry.name}`)) : {};
+        currentDirRoute = rootMeta.route || (parentRoute ? `${parentRoute}/${subDir.name}` : `/${subDir.name}`);
+      } else {
+        currentDirRoute = parentRoute ? `${parentRoute}/${subDir.name}` : `/${subDir.name}`;
+      }
+
+      // Recursively scan subfolder
+      const subList = scanDirectory(subDirPath, subWebPath, isInternalDefault, currentDirRoute, subCategory);
+      list.push(...subList);
     }
   } catch (err) {
     console.warn(`[manifest] Could not scan directory ${dir}:`, err);
@@ -114,7 +200,7 @@ function scanDirectory(dir: string, baseWebPath: string, isInternalDefault = fal
 }
 
 function resolveLineage(item: RawManifestEntry, rawMap: Map<string, RawManifestEntry>): { route: string; parent: string | null } {
-  if (item.internal) return { route: "", parent: null };
+  if (item.internal || item.path === "") return { route: "", parent: item.parent ?? null };
 
   // Explicit route override always takes absolute precedence
   if (item.explicitRoute) {

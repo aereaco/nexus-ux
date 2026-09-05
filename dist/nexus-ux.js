@@ -3727,7 +3727,8 @@ ${scripts}
                     if (fmMatch) {
                       cleanMd = rawText.slice(fmMatch[0].length).trim();
                     }
-                    html = `<div class="p-6 max-w-5xl mx-auto"><article data-markdown class="prose max-w-none">${cleanMd}</article></div>`;
+                    const escapedMd = cleanMd.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    html = `<div class="p-6 max-w-5xl mx-auto"><article data-markdown class="prose max-w-none">${escapedMd}</article></div>`;
                   } else if (rawText.includes("<!DOCTYPE") || rawText.includes("data-init") && el.tagName.toLowerCase() !== "html") {
                     throw new Error(`Invalid component fragment returned for "${targetPath}": received full HTML shell.`);
                   }
@@ -6481,7 +6482,7 @@ ${match}</ul>
             return html;
           };
           const render = () => {
-            const content = value ? runtime.evaluate(el, value) : el.innerHTML || el.innerText;
+            const content = value ? runtime.evaluate(el, value) : el.textContent || el.innerText;
             const mdText = String(content || "").trim();
             if (!el.classList.contains("nexus-markdown-body")) {
               el.classList.add("nexus-markdown-body", "font-sans", "antialiased");
@@ -6489,7 +6490,6 @@ ${match}</ul>
             const transpiled = parseMarkdown(mdText);
             if (el.innerHTML !== transpiled) {
               el.innerHTML = transpiled;
-              runtime.processElement(el, false, "ux");
             }
           };
           if (value) {
@@ -7250,10 +7250,11 @@ ${match}</ul>
               meta: r.meta || {},
               layout: r.layout
             }));
+            let state;
             const resolveStaticComponent = (path) => {
               const clean = path.replace(/^\/+/, "");
               if (clean.startsWith("_internal/") || clean.startsWith("_pages/")) {
-                const withExt2 = clean.endsWith(".html") ? clean : clean + ".html";
+                const withExt2 = clean.endsWith(".html") || clean.endsWith(".md") ? clean : clean + ".html";
                 return applyBase("/" + withExt2);
               }
               const dir = (routerConfig.pagesDir || pagesDir || "_pages").replace(/^\/+|\/+$/g, "");
@@ -7261,14 +7262,23 @@ ${match}</ul>
               if (path === "/" || path === "") {
                 return applyBase(`/${dir}/${defaultIndex}`);
               }
-              const matchedRec = routeList.find((r) => r.path === path || r.path === "/" + clean);
+              const allRoutes = state && state.routes ? state.routes : routeList;
+              const matchedRec = allRoutes.find((r) => r.path === path || r.path === "/" + clean);
               if (matchedRec?.component) {
                 return applyBase(matchedRec.component);
               }
-              const leaf = clean.split("/").pop() || clean;
-              const withExt = leaf.endsWith(".html") ? leaf : leaf + ".html";
-              const full = dir ? `/${dir}/${withExt}` : "/" + withExt;
-              return applyBase(full);
+              if (state && state.pages) {
+                const matchedPage = state.pages.find((p) => p.href === path || p.href === "/" + clean);
+                if (matchedPage?.path) {
+                  return applyBase(matchedPage.path);
+                }
+              }
+              if (clean.startsWith("docs/")) {
+                const withExt2 = clean.endsWith(".md") ? clean : clean + ".md";
+                return applyBase(`/${dir}/${withExt2}`);
+              }
+              const withExt = clean.endsWith(".html") || clean.endsWith(".md") ? clean : clean + ".html";
+              return applyBase(`/${dir}/${withExt}`);
             };
             const buildInfo = (route, path, params, query, hash) => ({
               path,
@@ -7283,7 +7293,7 @@ ${match}</ul>
             const initialPath = stripBase(globalThis.location.pathname) || "/";
             const initialMatched = routeList.find((r) => r.path === initialPath);
             const initialSource = initialMatched?.component || resolveStaticComponent(initialPath);
-            const state = runtime.shallowReactive({
+            state = runtime.shallowReactive({
               path: initialPath,
               params: {},
               query: {},
@@ -7524,6 +7534,30 @@ ${match}</ul>
                 }
                 state.pages = discovered;
                 state.lineage = state.getLineage(state.route || state.path);
+                const activeTab = state.pageTabs.find((t) => t.id === state.activePageTabId);
+                if (activeTab && activeTab.route) {
+                  const findDeep = (pages) => {
+                    for (const p of pages) {
+                      if (p.href === activeTab.route)
+                        return p;
+                      if (p.children) {
+                        const ch = findDeep(p.children);
+                        if (ch)
+                          return ch;
+                      }
+                    }
+                    return null;
+                  };
+                  const resolvedPage = findDeep(state.pages);
+                  if (resolvedPage && resolvedPage.path && activeTab.source !== resolvedPage.path) {
+                    activeTab.source = resolvedPage.path;
+                    if (resolvedPage.title && !activeTab.title)
+                      activeTab.title = resolvedPage.title;
+                    if (resolvedPage.icon && !activeTab.icon)
+                      activeTab.icon = resolvedPage.icon;
+                    state.pageTabs = [...state.pageTabs];
+                  }
+                }
               },
               lineage: [],
               getLineage(targetHref) {
@@ -8101,6 +8135,18 @@ ${match}</ul>
               const errorPage2 = state.config.error ?? resolvePagesPath(void 0, "error.html");
               const cleanErrorPath = "/error";
               let staticComponent = null;
+              if (!matched && (mode === "static" || mode === "hybrid")) {
+                staticComponent = resolveStaticComponent(path);
+                if (staticComponent) {
+                  matched = {
+                    path,
+                    component: staticComponent,
+                    name: path.replace(/^\/+/, "").replace(/[-_]/g, " "),
+                    meta: {},
+                    source: "dynamic"
+                  };
+                }
+              }
               if (matched && matched.internal && path !== "/") {
                 const isDirectAddressBarNav = !suppressNavIntercept && typeof globalThis.location !== "undefined" && stripBase(globalThis.location.pathname) === matched.path;
                 if (isDirectAddressBarNav) {
@@ -13577,6 +13623,8 @@ ${bridge}`, {
           if (newNode instanceof HTMLElement) {
             const scripts = newNode.querySelectorAll("script");
             scripts.forEach((script) => {
+              if (script.closest("[data-ignore], [data-markdown], pre, code"))
+                return;
               const activeScript = document.createElement("script");
               Array.from(script.attributes).forEach((attr) => activeScript.setAttribute(attr.name, attr.value));
               activeScript.textContent = script.textContent;

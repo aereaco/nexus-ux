@@ -61,7 +61,7 @@ const markdownModule: AttributeModule = {
 
     const render = () => {
        // Evaluate if value exists, else parse internal HTML
-       const content = value ? runtime.evaluate(el, value) : (el.innerHTML || el.innerText);
+       const content = value ? runtime.evaluate(el, value) : (el.textContent || el.innerText);
        const mdText = String(content || '').trim();
        
        if (!el.classList.contains('nexus-markdown-body')) {
@@ -72,7 +72,6 @@ const markdownModule: AttributeModule = {
        if (el.innerHTML !== transpiled) {
            // We deploy morphDOM here conceptually, but a hard innerHTML drop avoids mutating parsed text bounds
            el.innerHTML = transpiled;
-           runtime.processElement(el, false, 'ux');
        }
     };
 

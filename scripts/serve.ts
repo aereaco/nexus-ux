@@ -129,37 +129,68 @@ function injectReload(bodyText: string): string {
 // 5. Template Extractors & Mode Renderers
 function extractHeadMetadata(htmlText: string): { title?: string; icon?: string; route?: string; order?: string } {
   const meta: { title?: string; icon?: string; route?: string; order?: string } = {};
+
+  // Support YAML frontmatter for .md documents
+  if (htmlText.startsWith("---")) {
+    const end = htmlText.indexOf("---", 3);
+    if (end > 3) {
+      const yaml = htmlText.slice(3, end);
+      const titleMatch = yaml.match(/^title:\s*["']?([^"'\r\n]+)["']?/m);
+      if (titleMatch) meta.title = titleMatch[1].trim();
+      const iconMatch = yaml.match(/^icon:\s*["']?([^"'\r\n]+)["']?/m);
+      if (iconMatch) meta.icon = iconMatch[1].trim();
+      const routeMatch = yaml.match(/^route:\s*["']?([^"'\r\n]+)["']?/m);
+      if (routeMatch) meta.route = routeMatch[1].trim();
+      const orderMatch = yaml.match(/^order:\s*["']?([^"'\r\n]+)["']?/m);
+      if (orderMatch) meta.order = orderMatch[1].trim();
+      return meta;
+    }
+  }
+
   const titleMatch = htmlText.match(/<title[^>]*>([^<]+)<\/title>/i);
   if (titleMatch) meta.title = titleMatch[1].trim();
 
-  const iconMatch = htmlText.match(/<meta[^>]+name=["']icon["'][^>]+content=["']([^"']+)["']/i) ||
-                    htmlText.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']icon["']/i);
+  const iconMatch = htmlText.match(/<meta\s+[^>]*name=["']icon["'][^>]*content=["']([^"']*)["']/i) ||
+    htmlText.match(/<meta\s+[^>]*content=["']([^"']*)["'][^>]*name=["']icon["']/i);
   if (iconMatch) meta.icon = iconMatch[1].trim();
 
-  const routeMatch = htmlText.match(/<meta[^>]+name=["']route["'][^>]+content=["']([^"']+)["']/i) ||
-                     htmlText.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']route["']/i);
+  const routeMatch = htmlText.match(/<meta\s+[^>]*name=["']route["'][^>]*content=["']([^"']*)["']/i) ||
+    htmlText.match(/<meta\s+[^>]*content=["']([^"']*)["'][^>]*name=["']route["']/i);
   if (routeMatch) meta.route = routeMatch[1].trim();
 
-  const orderMatch = htmlText.match(/<meta[^>]+name=["']order["'][^>]+content=["']([^"']+)["']/i) ||
-                     htmlText.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']order["']/i);
+  const orderMatch = htmlText.match(/<meta\s+[^>]*name=["']order["'][^>]*content=["']([^"']*)["']/i) ||
+    htmlText.match(/<meta\s+[^>]*content=["']([^"']*)["'][^>]*name=["']order["']/i);
   if (orderMatch) meta.order = orderMatch[1].trim();
 
   return meta;
 }
 
 function resolvePageFile(cleanPath: string): { fileName: string; filePath: string } {
-  const clean = cleanPath.replace(/^\/+/, "");
+  const clean = cleanPath.replace(/^\/+|\/+$/g, "");
   if (clean === "" || clean === "home") {
     return { fileName: "home.html", filePath: join(SITE_DIR, "_pages", "home.html") };
   }
-  const exactPath = join(SITE_DIR, "_pages", `${clean}.html`);
-  try {
-    if (Deno.statSync(exactPath).isFile) return { fileName: `${clean}.html`, filePath: exactPath };
-  } catch { /* fallback */ }
+
+  for (const ext of [".html", ".md", ".htm", ".markdown"]) {
+    const exactPath = join(SITE_DIR, "_pages", `${clean}${ext}`);
+    try {
+      if (Deno.statSync(exactPath).isFile) return { fileName: `${clean}${ext}`, filePath: exactPath };
+    } catch { /* fallback */ }
+    const indexPath = join(SITE_DIR, "_pages", clean, `index${ext}`);
+    try {
+      if (Deno.statSync(indexPath).isFile) return { fileName: `${clean}/index${ext}`, filePath: indexPath };
+    } catch { /* fallback */ }
+  }
 
   const leaf = clean.split("/").pop() || clean;
-  const leafPath = join(SITE_DIR, "_pages", `${leaf}.html`);
-  return { fileName: `${leaf}.html`, filePath: leafPath };
+  for (const ext of [".html", ".md", ".htm", ".markdown"]) {
+    const leafPath = join(SITE_DIR, "_pages", `${leaf}${ext}`);
+    try {
+      if (Deno.statSync(leafPath).isFile) return { fileName: `${leaf}${ext}`, filePath: leafPath };
+    } catch { /* fallback */ }
+  }
+
+  return { fileName: `${leaf}.html`, filePath: join(SITE_DIR, "_pages", `${leaf}.html`) };
 }
 
 async function renderProgressive(cleanPath: string): Promise<string> {
@@ -268,15 +299,21 @@ async function handler(req: Request): Promise<Response> {
     return distRes;
   }
 
-  // B. Static Files & Component Fragments in /site
-  const hasExtension = url.pathname.includes(".");
-  if (hasExtension) {
-    const staticRes = await serveDir(req, { fsRoot: SITE_DIR, quiet: true });
-    if (staticRes.status !== 404) {
-      staticRes.headers.set("Cross-Origin-Opener-Policy", "same-origin");
-      staticRes.headers.set("Cross-Origin-Embedder-Policy", "require-corp");
-      return staticRes;
-    }
+  // B. Physical Static File Check (SITE_DIR)
+  // Let serveDir check if this exact file physically exists on disk in /site
+  const staticRes = await serveDir(req, { fsRoot: SITE_DIR, quiet: true });
+  if (staticRes.status !== 404) {
+    staticRes.headers.set("Cross-Origin-Opener-Policy", "same-origin");
+    staticRes.headers.set("Cross-Origin-Embedder-Policy", "require-corp");
+    return staticRes;
+  }
+
+  // C. Fallback: Industry-Standard try_files / Vite connect-history-api-fallback
+  // If the physical file does not exist on disk:
+  // - If the path ends with a known static asset extension (js, css, png, etc.), return 404 Not Found.
+  // - Otherwise (HTML request, clean route, or dotted application route like profile3.1), serve SPA shell.
+  const ASSET_EXT_REGEX = /\.(js|mjs|ts|jsx|tsx|css|json|png|jpg|jpeg|gif|svg|ico|webp|avif|woff|woff2|ttf|eot|otf|wasm|map|br|gz)$/i;
+  if (ASSET_EXT_REGEX.test(url.pathname)) {
     return new Response("404 Not Found", { status: 404, headers: { "Content-Type": "text/plain" } });
   }
 

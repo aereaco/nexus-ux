@@ -1263,7 +1263,8 @@
     <!-- Reusable Sub-Level Template (Infinite Arbitrary Sub-Nesting) -->
     <template id="sidebar-sub-menu-item">
       <!-- Sub Leaf Item -->
-      <li data-show="!item.children || item.children.length === 0" class="cursor-pointer" data-drag
+      <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
+        data-bind-data-drag="cat?.itemsDraggable ? '' : null"
         data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
         <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
           data-bind-data-tab-title="item.tabTitle || item.title"
@@ -1274,7 +1275,8 @@
       </li>
 
       <!-- Sub Branch Item (e.g. Profile 3) -->
-      <li data-show="item.children && item.children.length > 0" class="cursor-pointer" data-drag
+      <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
+        data-bind-data-drag="cat?.itemsDraggable ? '' : null"
         data-signal="{ open: false }"
         data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
         <div class="flex">
@@ -1293,7 +1295,7 @@
         <ul
           class="menu-dropdown menu-dropdown-show overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
           data-class="{ 'max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
-          data-drag-container="item.children">
+          data-bind-data-drag-container="cat?.itemsDraggable ? item.children : null">
           <!-- RECURSIVE TEMPLATE: Calls itself for infinite arbitrary sub-levels! -->
           <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
             data-key="item.href"></template>

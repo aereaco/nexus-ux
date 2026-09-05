@@ -560,10 +560,12 @@ export const routerAttributeModule: AttributeModule = {
         layout: r.layout,
       }));
 
+      let state: RouterState;
+
       const resolveStaticComponent = (path: string): string => {
         const clean = path.replace(/^\/+/, '');
         if (clean.startsWith('_internal/') || clean.startsWith('_pages/')) {
-          const withExt = clean.endsWith('.html') ? clean : clean + '.html';
+          const withExt = (clean.endsWith('.html') || clean.endsWith('.md')) ? clean : clean + '.html';
           return applyBase('/' + withExt);
         }
         const dir = (routerConfig.pagesDir || pagesDir || '_pages').replace(/^\/+|\/+$/g, '');
@@ -571,14 +573,23 @@ export const routerAttributeModule: AttributeModule = {
         if (path === '/' || path === '') {
           return applyBase(`/${dir}/${defaultIndex}`);
         }
-        const matchedRec = routeList.find((r) => r.path === path || r.path === '/' + clean);
+        const allRoutes = (state && state.routes) ? state.routes : routeList;
+        const matchedRec = allRoutes.find((r) => r.path === path || r.path === '/' + clean);
         if (matchedRec?.component) {
           return applyBase(matchedRec.component);
         }
-        const leaf = clean.split('/').pop() || clean;
-        const withExt = leaf.endsWith('.html') ? leaf : leaf + '.html';
-        const full = dir ? `/${dir}/${withExt}` : '/' + withExt;
-        return applyBase(full);
+        if (state && state.pages) {
+          const matchedPage = state.pages.find((p) => p.href === path || p.href === '/' + clean);
+          if (matchedPage?.path) {
+            return applyBase(matchedPage.path);
+          }
+        }
+        if (clean.startsWith('docs/')) {
+          const withExt = clean.endsWith('.md') ? clean : clean + '.md';
+          return applyBase(`/${dir}/${withExt}`);
+        }
+        const withExt = (clean.endsWith('.html') || clean.endsWith('.md')) ? clean : clean + '.html';
+        return applyBase(`/${dir}/${withExt}`);
       };
 
       // Build a RouteInfo snapshot for hook consumers and matchers.
@@ -605,7 +616,7 @@ export const routerAttributeModule: AttributeModule = {
 
       // 1. Create Reactive State
       // shallowReactive prevents deep proxying of HTMLElements held in routes.
-      const state: RouterState = runtime.shallowReactive<RouterState>({
+      state = runtime.shallowReactive<RouterState>({
         path: initialPath,
         params: {},
         query: {},
@@ -871,6 +882,28 @@ export const routerAttributeModule: AttributeModule = {
 
           state.pages = discovered;
           state.lineage = state.getLineage(state.route || state.path);
+
+          // Re-sync initial pageTab source if resolved from discovered manifest
+          const activeTab = state.pageTabs.find((t) => t.id === state.activePageTabId);
+          if (activeTab && activeTab.route) {
+            const findDeep = (pages: DiscoveredPage[]): DiscoveredPage | null => {
+              for (const p of pages) {
+                if (p.href === activeTab.route) return p;
+                if (p.children) {
+                  const ch = findDeep(p.children);
+                  if (ch) return ch;
+                }
+              }
+              return null;
+            };
+            const resolvedPage = findDeep(state.pages);
+            if (resolvedPage && resolvedPage.path && activeTab.source !== resolvedPage.path) {
+              activeTab.source = resolvedPage.path;
+              if (resolvedPage.title && !activeTab.title) activeTab.title = resolvedPage.title;
+              if (resolvedPage.icon && !activeTab.icon) activeTab.icon = resolvedPage.icon;
+              state.pageTabs = [...state.pageTabs];
+            }
+          }
         },
 
         lineage: [] as Array<{ title: string; href: string; icon?: string }>,
@@ -1541,6 +1574,19 @@ export const routerAttributeModule: AttributeModule = {
         const errorPage = state.config.error ?? resolvePagesPath(undefined, 'error.html');
         const cleanErrorPath = '/error';
         let staticComponent: string | null = null;
+
+        if (!matched && (mode === 'static' || mode === 'hybrid')) {
+          staticComponent = resolveStaticComponent(path);
+          if (staticComponent) {
+            matched = {
+              path,
+              component: staticComponent,
+              name: path.replace(/^\/+/, '').replace(/[-_]/g, ' '),
+              meta: {},
+              source: 'dynamic',
+            } as RouteRecord;
+          }
+        }
 
         // Direct URL access protection for wallgarden shadow routes
         if (matched && matched.internal && path !== '/') {

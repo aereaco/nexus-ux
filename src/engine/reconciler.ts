@@ -259,6 +259,7 @@ function morphChildren(fromParent: HTMLElement, toParent: HTMLElement, config: a
         if (newNode instanceof HTMLElement) {
           const scripts = newNode.querySelectorAll('script');
           scripts.forEach(script => {
+            if (script.closest('[data-ignore], [data-markdown], pre, code')) return;
             const activeScript = document.createElement('script');
             Array.from(script.attributes).forEach(attr => activeScript.setAttribute(attr.name, attr.value));
             activeScript.textContent = script.textContent;
