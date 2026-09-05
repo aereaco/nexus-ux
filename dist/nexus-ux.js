@@ -13017,6 +13017,8 @@ ${decls}
       const mod = await import(blobUrl);
       URL.revokeObjectURL(blobUrl);
       compileFn = mod.compile;
+      if (!compileFn)
+        throw new Error("Failed to load Tailwind compile function");
       tailwindCompiler = await compileFn(`@import "tailwindcss";`, {
         base: "/",
         loadStylesheet: coreLoadStylesheet
