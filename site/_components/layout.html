@@ -149,6 +149,187 @@
         g.toasts = [...(g.toasts || []), { id, title: actualTitle, message: actualMsg, type, duration: dur }];
         setTimeout(() => { g.toasts = (g.toasts || []).filter(t => t.id !== id); }, dur);
       },
+      chatbarOpen: false,
+      chatbarDocked: localStorage.chatbarDocked === 'true',
+      chatFabOpen: false,
+      activeSessionId: 'session-erp',
+      chatInputText: '',
+      chatSessions: [
+        {
+          id: 'session-erp',
+          name: 'Executive ERP & Strategy',
+          icon: 'material-symbols-light:groups',
+          unread: 1,
+          type: 'group',
+          description: 'Quarterly review & vendor approvals',
+          members: [
+            { name: 'Vernon', role: 'Managing Director', isAgent: false },
+            { name: 'Finance Agent', role: 'Autonomous AI', isAgent: true, icon: 'material-symbols-light:finance-mode' },
+            { name: 'Sarah Chen', role: 'VP Operations', isAgent: false }
+          ]
+        },
+        {
+          id: 'session-copilot',
+          name: 'Nexus AI Copilot',
+          icon: 'material-symbols-light:smart-toy-outline',
+          unread: 0,
+          type: 'agent',
+          description: 'Framework assistant & runtime diagnostics',
+          members: [
+            { name: 'Nexus Copilot', role: 'System Orchestrator', isAgent: true }
+          ]
+        },
+        {
+          id: 'session-supply',
+          name: 'Supply Chain & Logistics',
+          icon: 'material-symbols-light:local-shipping-outline',
+          unread: 0,
+          type: 'group',
+          description: 'Live inventory tracking & delivery queues',
+          members: [
+            { name: 'Logistics Bot', role: 'Inventory Monitor', isAgent: true },
+            { name: 'Marcus Miller', role: 'Procurement Manager', isAgent: false }
+          ]
+        }
+      ],
+      chatMessages: {
+        'session-erp': [
+          {
+            id: 'msg-1',
+            sender: 'Vernon',
+            isAgent: false,
+            time: '10:14 AM',
+            text: '@Finance Agent could you pull the Q3 supplier variances and prepare a purchase order draft?'
+          },
+          {
+            id: 'msg-2',
+            sender: 'Finance Agent',
+            isAgent: true,
+            time: '10:15 AM',
+            text: 'Analyzing recent inventory runs across Tier 1 suppliers. Here is the generated PO draft for review:',
+            artifact: {
+              type: 'invoice_draft',
+              title: 'PO #2026-Q3-088 (Acme Industrial Logistics)',
+              amount: '$14,250.00',
+              status: 'Pending Review',
+              items: [
+                { sku: 'NEX-884', desc: 'Hydraulic Actuators', qty: 20, cost: '$8,400.00' },
+                { sku: 'NEX-102', desc: 'Telemetry Sensor Pack', qty: 50, cost: '$5,850.00' }
+              ]
+            }
+          },
+          {
+            id: 'msg-3',
+            sender: 'Sarah Chen',
+            isAgent: false,
+            time: '10:18 AM',
+            text: 'Looks solid. Approved the actuator count based on our current Kanban queue in the drag module.'
+          }
+        ],
+        'session-copilot': [
+          {
+            id: 'cp-1',
+            sender: 'Nexus Copilot',
+            isAgent: true,
+            time: '09:00 AM',
+            text: 'Good morning! All 14 framework pages and declarative runtime directives are running at Tier 3 quad-threaded capacity. Ready for queries or code synthesis.'
+          }
+        ],
+        'session-supply': [
+          {
+            id: 'sp-1',
+            sender: 'Logistics Bot',
+            isAgent: true,
+            time: 'Yesterday',
+            text: 'Alert: Stock replenishment triggered for Sensor Packs. Delivery ETA: Tomorrow 08:00.'
+          },
+          {
+            id: 'sp-2',
+            sender: 'Marcus Miller',
+            isAgent: false,
+            time: 'Yesterday',
+            text: 'Acknowledged, warehouse bay 3 prepared.'
+          }
+        ]
+      },
+      getActiveSession: () => {
+        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
+        const id = g.activeSessionId || 'session-erp';
+        return (g.chatSessions || []).find(s => s.id === id) || (g.chatSessions || [])[0] || {};
+      },
+      getActiveMessages: () => {
+        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
+        const id = g.activeSessionId || 'session-erp';
+        return (g.chatMessages || {})[id] || [];
+      },
+      openSession: (id) => {
+        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
+        g.activeSessionId = id;
+        g.chatbarOpen = true;
+        g.chatFabOpen = false;
+        const sess = (g.chatSessions || []).find(s => s.id === id);
+        if (sess) sess.unread = 0;
+        window.Nexus?.coordinator?.runtimeContext?.$nextTick?.(() => {
+          document.getElementById('chat-composer-input')?.focus();
+        });
+      },
+      closeChatbar: () => {
+        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
+        g.chatbarOpen = false;
+        g.chatFabOpen = false;
+      },
+      toggleChatDock: () => {
+        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
+        g.chatbarDocked = !g.chatbarDocked;
+        localStorage.setItem('chatbarDocked', g.chatbarDocked);
+      },
+      sendChatMessage: () => {
+        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
+        const txt = (g.chatInputText || '').trim();
+        if (!txt) return;
+        const sId = g.activeSessionId || 'session-erp';
+        const msgs = [...((g.chatMessages || {})[sId] || [])];
+        const newMsgId = 'msg-' + window.Date.now();
+        const now = new window.Date();
+        const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        msgs.push({
+          id: newMsgId,
+          sender: 'Vernon',
+          isAgent: false,
+          time: timeStr,
+          text: txt
+        });
+        
+        g.chatMessages = { ...g.chatMessages, [sId]: msgs };
+        g.chatInputText = '';
+        
+        window.Nexus?.coordinator?.runtimeContext?.$nextTick?.(() => {
+          const el = document.getElementById('chat-message-stream');
+          if (el) el.scrollTop = el.scrollHeight;
+        });
+
+        if (sId === 'session-copilot' || txt.toLowerCase().includes('@finance') || txt.toLowerCase().includes('@agent') || txt.toLowerCase().includes('po') || txt.toLowerCase().includes('status')) {
+          setTimeout(() => {
+            const curMsgs = [...((g.chatMessages || {})[sId] || [])];
+            const agentName = sId === 'session-copilot' ? 'Nexus Copilot' : 'Finance Agent';
+            curMsgs.push({
+              id: 'agent-' + window.Date.now(),
+              sender: agentName,
+              isAgent: true,
+              time: new window.Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              text: sId === 'session-copilot'
+                ? 'Understood. Processing your request against active Nexus-UX reactive scope and ERP datasets. Operation dispatched successfully.'
+                : 'Variance report updated and synchronized with inventory ledger. Purchase order #2026-Q3-088 status: Verified.'
+            });
+            g.chatMessages = { ...g.chatMessages, [sId]: curMsgs };
+            window.Nexus?.coordinator?.runtimeContext?.$nextTick?.(() => {
+              const el = document.getElementById('chat-message-stream');
+              if (el) el.scrollTop = el.scrollHeight;
+            });
+          }, 800);
+        }
+      },
       favorites: [],
       favoriteGroups: [],
       favHydrated: false,
@@ -163,8 +344,8 @@
   data-effect="if (!favHydrated && indexedDB?.favorites) { favHydrated = true; indexedDB.favorites.all().then(items => { if (items && items.length) { favorites = items; favoriteGroups = [...new Set(items.map(f => (f?.group || '').trim()).filter(Boolean))]; } }); }"
   data-on-resize_window="isMobile = window.innerWidth < 768">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
-  <div class="drawer-content flex flex-col"
-    data-class="{ 'h-full overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }">
+  <div class="drawer-content flex flex-col transition-[padding] duration-300 ease-in-out"
+    data-class="{ 'h-full overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader, 'md:pe-96': chatbarDocked && chatbarOpen, 'pe-0': !chatbarDocked || !chatbarOpen }">
     <!-- Signal-Based Routes configured on <html> via data-route="{ routes: [...] }" -->
 
 
@@ -1799,4 +1980,248 @@
       </div>
     </template>
   </div>
+
+  <!-- ================= Collaborative Chat FAB & Speed Dial ================= -->
+  <!-- Speed Dial Action Pills: Stacks upward when chatFabOpen is true, hides when chatbarOpen -->
+  <div data-show="chatFabOpen && !chatbarOpen"
+    class="fixed bottom-24 end-6 z-30 flex flex-col items-end gap-3 transition-all duration-300">
+    <!-- "New Conversation" Action -->
+    <div class="flex items-center gap-2.5">
+      <span class="badge badge-neutral shadow-lg font-medium text-xs py-2 px-3">New Conversation</span>
+      <button type="button" class="btn btn-circle btn-sm btn-secondary shadow-xl hover:scale-110 active:scale-95 transition-transform"
+        aria-label="New Conversation"
+        data-on-click="
+          const newId = 'session-' + window.Date.now();
+          chatSessions = [...(chatSessions || []), { id: newId, name: 'Project Space #' + (chatSessions?.length + 1), icon: 'material-symbols-light:chat-bubble-outline', unread: 0, type: 'group', description: 'Fresh collaboration thread', members: [{ name: 'Vernon', role: 'Owner', isAgent: false }, { name: 'Nexus Copilot', role: 'AI Agent', isAgent: true }] }];
+          openSession(newId);
+        ">
+        <iconify-icon icon="material-symbols-light:add" class="text-lg"></iconify-icon>
+      </button>
+    </div>
+
+    <!-- Speed Dial Session Pills (Correlate to chatSessions) -->
+    <template data-for="session in (chatSessions || [])" data-key="session.id">
+      <div class="flex items-center gap-2.5">
+        <span class="badge badge-neutral shadow-lg font-medium text-xs py-2 px-3 max-w-xs truncate cursor-pointer hover:bg-neutral-focus transition-colors"
+          data-bind="session.name"
+          data-on-click="openSession(session.id)"></span>
+        <button type="button"
+          class="btn btn-circle btn-md btn-primary shadow-xl hover:scale-110 active:scale-95 transition-transform relative"
+          aria-label="Open Session"
+          data-on-click="openSession(session.id)">
+          <iconify-icon data-bind-icon="session.icon" class="text-xl"></iconify-icon>
+          <span data-show="session.unread > 0"
+            class="badge badge-xs badge-error indicator-item absolute -top-1 -end-1 shadow-sm"
+            data-bind="session.unread"></span>
+        </button>
+      </div>
+    </template>
+  </div>
+
+  <!-- Primary Floating Action Button (FAB): Auto-hides when chatbarOpen is true -->
+  <div data-show="!chatbarOpen" class="fixed bottom-6 end-6 z-30 transition-all duration-300">
+    <button type="button"
+      class="btn btn-circle btn-lg btn-primary shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-primary-content/20 flex items-center justify-center relative"
+      aria-label="Toggle Collaboration Speed Dial"
+      data-on-click="chatFabOpen = !chatFabOpen">
+      <!-- Main Chat Icon (when speed dial closed) -->
+      <iconify-icon icon="material-symbols-light:chat" class="text-3xl transition-transform duration-300"
+        data-class="{ 'rotate-90 opacity-0 scale-50 hidden': chatFabOpen, 'rotate-0 opacity-100 scale-100 block': !chatFabOpen }"></iconify-icon>
+      <!-- Close (✕) Icon (when speed dial open) -->
+      <iconify-icon icon="material-symbols-light:close" class="text-3xl transition-transform duration-300"
+        data-class="{ 'rotate-0 opacity-100 scale-100 block': chatFabOpen, '-rotate-90 opacity-0 scale-50 hidden': !chatFabOpen }"></iconify-icon>
+      <!-- Global unread indicator -->
+      <span data-show="!chatFabOpen && (chatSessions || []).some(s => s.unread > 0)"
+        class="badge badge-xs badge-error absolute top-0 end-0 size-3 rounded-full border-2 border-base-100"></span>
+    </button>
+  </div>
+
+  <!-- ================= Right-Side Collaborative Chatbar ================= -->
+  <aside id="chatbar-container"
+    class="fixed inset-y-0 end-0 z-40 w-96 max-w-[calc(100vw-2.5rem)] flex flex-row bg-base-100 border-s border-base-300 shadow-2xl transition-transform duration-300 ease-in-out overflow-hidden"
+    data-class="{
+      'translate-x-0': chatbarOpen,
+      'translate-x-full rtl:-translate-x-full': !chatbarOpen,
+      'border-s-primary/20': chatbarDocked
+    }">
+
+    <!-- 1. Left Start-Rail: Vertical Session Icon Buttons -->
+    <div class="w-14 shrink-0 bg-base-300/80 backdrop-blur-md border-e border-base-content/10 flex flex-col items-center py-3 gap-2 select-none">
+      <!-- New Chat Action on Rail -->
+      <div class="tooltip tooltip-right" data-tip="New Chat">
+        <button type="button"
+          class="btn btn-ghost btn-circle btn-sm hover:bg-base-content/10 text-base-content/70 hover:text-base-content"
+          data-on-click="
+            const newId = 'session-' + window.Date.now();
+            chatSessions = [...(chatSessions || []), { id: newId, name: 'Project Space #' + (chatSessions?.length + 1), icon: 'material-symbols-light:chat-bubble-outline', unread: 0, type: 'group', description: 'Fresh collaboration thread', members: [{ name: 'Vernon', role: 'Owner', isAgent: false }, { name: 'Nexus Copilot', role: 'AI Agent', isAgent: true }] }];
+            openSession(newId);
+          ">
+          <iconify-icon icon="material-symbols-light:add" class="text-xl"></iconify-icon>
+        </button>
+      </div>
+
+      <div class="divider my-0.5 w-8 opacity-30"></div>
+
+      <!-- Vertical Rail Session Buttons (Correlate to speed dial sessions) -->
+      <div class="flex-1 w-full flex flex-col items-center gap-2 overflow-y-auto scrollbar-none">
+        <template data-for="session in (chatSessions || [])" data-key="session.id">
+          <div class="tooltip tooltip-right" data-bind-attr-data-tip="session.name">
+            <button type="button"
+              class="btn btn-ghost btn-circle btn-sm relative transition-all duration-200"
+              data-class="{
+                'btn-active bg-primary/20 text-primary shadow-sm': activeSessionId === session.id,
+                'text-base-content/60 hover:text-base-content hover:bg-base-content/10': activeSessionId !== session.id
+              }"
+              data-on-click="openSession(session.id)">
+              <iconify-icon data-bind-icon="session.icon" class="text-lg"></iconify-icon>
+              <span data-show="session.unread > 0"
+                class="badge badge-xs badge-error absolute -top-0.5 -end-0.5 size-2 rounded-full p-0"></span>
+            </button>
+          </div>
+        </template>
+      </div>
+
+      <!-- Bottom Rail: Active Dock Mode Indicator -->
+      <div class="tooltip tooltip-right" data-bind-attr-data-tip="chatbarDocked ? 'Docked to Layout' : 'Floating Overlay'">
+        <div class="size-2 rounded-full transition-colors"
+          data-class="{ 'bg-primary animate-pulse': chatbarDocked, 'bg-base-content/30': !chatbarDocked }"></div>
+      </div>
+    </div>
+
+    <!-- 2. Main Chat Session Body -->
+    <div class="flex-1 flex flex-col min-w-0 bg-base-100 overflow-hidden">
+      <!-- Header -->
+      <div class="h-16 px-4 border-b border-base-200 flex items-center justify-between shrink-0 bg-base-100/90 backdrop-blur-sm">
+        <div class="flex items-center gap-2.5 min-w-0 flex-1">
+          <div class="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <iconify-icon data-bind-icon="getActiveSession().icon || 'material-symbols-light:chat'" class="text-xl"></iconify-icon>
+          </div>
+          <div class="min-w-0 flex-1">
+            <h3 class="font-semibold text-sm truncate" data-bind="getActiveSession().name || 'Conversation'"></h3>
+            <div class="flex items-center gap-1.5 text-xs text-base-content/50 truncate">
+              <span class="badge badge-xs badge-primary badge-outline text-[10px]" data-bind="getActiveSession().type === 'agent' ? 'AI Copilot' : 'Team Channel'"></span>
+              <span class="truncate" data-bind="getActiveSession().description || ''"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Header Actions: Attach/Pin & Close -->
+        <div class="flex items-center gap-1 shrink-0">
+          <!-- Pin / Attach Toggle Button -->
+          <div class="tooltip tooltip-bottom" data-bind-attr-data-tip="chatbarDocked ? 'Unpin (Float over content)' : 'Attach to Layout (Shift content)'">
+            <button type="button" class="btn btn-ghost btn-xs btn-circle transition-colors"
+              data-class="{ 'text-primary bg-primary/10': chatbarDocked, 'opacity-60 hover:opacity-100': !chatbarDocked }"
+              data-on-click="toggleChatDock()">
+              <iconify-icon icon="material-symbols-light:keep" class="text-lg"></iconify-icon>
+            </button>
+          </div>
+
+          <!-- Close Button (✕) -->
+          <button type="button" class="btn btn-ghost btn-xs btn-circle opacity-70 hover:opacity-100"
+            aria-label="Close Chatbar"
+            data-on-click="closeChatbar()">
+            <iconify-icon icon="material-symbols-light:close" class="text-lg"></iconify-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Participants Quick Strip (if group channel) -->
+      <div data-show="getActiveSession().members && getActiveSession().members.length > 1"
+        class="px-4 py-1.5 bg-base-200/50 border-b border-base-200 text-xs flex items-center gap-2 overflow-x-auto scrollbar-none shrink-0">
+        <span class="text-base-content/50 text-[11px] font-medium shrink-0">Members:</span>
+        <template data-for="m in (getActiveSession().members || [])">
+          <span class="badge badge-sm gap-1 py-1 text-[11px]"
+            data-class="{ 'badge-primary badge-outline': m.isAgent, 'badge-ghost': !m.isAgent }">
+            <iconify-icon data-show="m.isAgent" icon="material-symbols-light:smart-toy-outline" class="text-xs"></iconify-icon>
+            <span data-bind="m.name"></span>
+          </span>
+        </template>
+      </div>
+
+      <!-- 3. Message Stream -->
+      <div id="chat-message-stream" class="flex-1 p-4 overflow-y-auto space-y-4">
+        <template data-for="msg in getActiveMessages()" data-key="msg.id">
+          <div class="flex flex-col gap-1 w-full"
+            data-class="{ 'items-end': !msg.isAgent && msg.sender === 'Vernon', 'items-start': msg.isAgent || msg.sender !== 'Vernon' }">
+            
+            <!-- Sender & Time Label -->
+            <div class="flex items-center gap-2 text-[11px] text-base-content/50 px-1">
+              <span class="font-medium" data-bind="msg.sender"></span>
+              <span data-show="msg.isAgent" class="badge badge-xs badge-primary text-[9px] py-0 px-1">AI Agent</span>
+              <span data-bind="msg.time"></span>
+            </div>
+
+            <!-- Chat Bubble -->
+            <div class="rounded-2xl px-3.5 py-2.5 max-w-[88%] text-sm leading-relaxed shadow-sm font-sans"
+              data-class="{
+                'bg-primary text-primary-content rounded-br-none': !msg.isAgent && msg.sender === 'Vernon',
+                'bg-base-200 text-base-content rounded-bl-none border border-base-300': msg.isAgent || msg.sender !== 'Vernon'
+              }">
+              <p data-bind="msg.text" class="whitespace-pre-wrap"></p>
+
+              <!-- Interactive Artifact Card (if message contains an artifact) -->
+              <div data-show="msg.artifact" class="mt-2.5 p-3 rounded-xl bg-base-100 text-base-content border border-base-300 shadow-md">
+                <div class="flex items-center justify-between pb-2 border-b border-base-200 mb-2">
+                  <div class="flex items-center gap-1.5 font-semibold text-xs">
+                    <iconify-icon icon="material-symbols-light:receipt-long" class="text-primary text-base"></iconify-icon>
+                    <span data-bind="msg.artifact?.title"></span>
+                  </div>
+                  <span class="badge badge-xs badge-warning" data-bind="msg.artifact?.status"></span>
+                </div>
+
+                <!-- Line Items -->
+                <div class="space-y-1.5 text-xs">
+                  <template data-for="item in (msg.artifact?.items || [])">
+                    <div class="flex justify-between items-center text-base-content/70">
+                      <span><strong data-bind="item.qty + 'x'"></strong> <span data-bind="item.desc"></span></span>
+                      <span class="font-mono" data-bind="item.cost"></span>
+                    </div>
+                  </template>
+                </div>
+
+                <!-- Total & Action Buttons -->
+                <div class="mt-3 pt-2 border-t border-base-200 flex items-center justify-between">
+                  <span class="text-xs font-semibold">Total: <span class="font-mono text-primary" data-bind="msg.artifact?.amount"></span></span>
+                  <div class="flex gap-1.5">
+                    <button type="button" class="btn btn-xs btn-primary font-normal"
+                      data-on-click="notify('PO Approved', 'PO #2026-Q3-088 approved and synced with ERP', 'success')">
+                      Approve PO
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- 4. Composer / Input Bar -->
+      <div class="p-3 border-t border-base-200 bg-base-100/95 shrink-0">
+        <!-- Quick @mention Suggestion Pills -->
+        <div class="flex items-center gap-1.5 mb-2 overflow-x-auto scrollbar-none text-[11px]">
+          <button type="button" class="badge badge-sm badge-ghost gap-1 opacity-70 hover:opacity-100 hover:badge-primary transition-all cursor-pointer"
+            data-on-click="chatInputText = (chatInputText ? chatInputText + ' ' : '') + '@Finance Agent '">
+            <span>@Finance Agent</span>
+          </button>
+          <button type="button" class="badge badge-sm badge-ghost gap-1 opacity-70 hover:opacity-100 hover:badge-primary transition-all cursor-pointer"
+            data-on-click="chatInputText = (chatInputText ? chatInputText + ' ' : '') + '@Nexus Copilot '">
+            <span>@Nexus Copilot</span>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <input id="chat-composer-input" type="text"
+            class="input input-bordered input-sm flex-1 focus:input-primary text-sm"
+            placeholder="Message team or @agent… (Enter to send)"
+            data-bind-value="chatInputText"
+            data-on-keydown:enter="sendChatMessage()" />
+          <button type="button" class="btn btn-primary btn-sm btn-circle shrink-0"
+            aria-label="Send message"
+            data-on-click="sendChatMessage()">
+            <iconify-icon icon="material-symbols-light:send" class="text-lg"></iconify-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  </aside>
 </div>
