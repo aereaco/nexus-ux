@@ -541,7 +541,7 @@ export class ModuleCoordinator {
             }
           }
         } catch (err) {
-          logger.warn(`[Directive Isolation] Fault in attribute parse for '${attr.name}' on <${element.tagName}>:`, err);
+          logger.warn(this.runtimeContext, `[Directive Isolation] Fault in attribute parse for '${attr.name}' on <${element.tagName}>:`, err);
         }
       });
 
@@ -573,7 +573,7 @@ export class ModuleCoordinator {
             elRemovals.set(hashKey, cleanup);
           }
         } catch (err) {
-          logger.warn(`[Directive Isolation] Fault in execution of directive '${fullAttrName}' on <${element.tagName}>:`, err);
+          logger.warn(this.runtimeContext, `[Directive Isolation] Fault in execution of directive '${fullAttrName}' on <${element.tagName}>:`, err);
         }
       });
     }
