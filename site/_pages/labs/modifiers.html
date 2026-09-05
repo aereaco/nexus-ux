@@ -1,0 +1,49 @@
+<title>Modifiers</title>
+<meta name="id" content="labs-modifiers">
+<meta name="route" content="/labs/modifiers">
+<meta name="icon" content="material-symbols-light:tune">
+<meta name="order" content="2">
+<meta name="category" content="Labs">
+
+<div class="p-6 max-w-5xl mx-auto space-y-6">
+  <div class="border-b border-base-content/10 pb-4">
+    <div class="flex items-center gap-2 mb-1">
+      <span class="badge badge-secondary badge-sm font-semibold uppercase tracking-wider">Labs Category</span>
+      <span class="badge badge-ghost badge-sm">15 Event Modifiers</span>
+    </div>
+    <h1 class="text-3xl font-extrabold tracking-tight text-base-content flex items-center gap-3">
+      <iconify-icon icon="material-symbols-light:tune" class="text-secondary text-3xl"></iconify-icon>
+      Event Modifiers & Filters
+    </h1>
+    <p class="text-base text-base-content/70 mt-1 leading-relaxed">
+      Pipeline event modifiers that attach directly to event directives (e.g. <code>data-on-click:outside</code> or <code>@input:debounce.250</code>) to intercept, throttle, filter, and coordinate interactions.
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-colors shadow-sm">
+      <span class="font-mono font-bold text-secondary mb-1">:outside</span>
+      <p class="text-xs text-base-content/70 leading-relaxed">Fires handler only when pointer click/tap occurs outside element bounds.</p>
+    </div>
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-colors shadow-sm">
+      <span class="font-mono font-bold text-secondary mb-1">:debounce.&lt;ms&gt;</span>
+      <p class="text-xs text-base-content/70 leading-relaxed">Delays execution until specified idle duration elapses.</p>
+    </div>
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-colors shadow-sm">
+      <span class="font-mono font-bold text-secondary mb-1">:throttle.&lt;ms&gt;</span>
+      <p class="text-xs text-base-content/70 leading-relaxed">Limits execution rate to once per specified millisecond budget.</p>
+    </div>
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-colors shadow-sm">
+      <span class="font-mono font-bold text-secondary mb-1">:prevent &amp; :stop</span>
+      <p class="text-xs text-base-content/70 leading-relaxed">Calls <code>e.preventDefault()</code> and <code>e.stopPropagation()</code> respectively.</p>
+    </div>
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-colors shadow-sm">
+      <span class="font-mono font-bold text-secondary mb-1">:hold.&lt;ms&gt;</span>
+      <p class="text-xs text-base-content/70 leading-relaxed">Triggers handler only after press-and-holding for specified milliseconds.</p>
+    </div>
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-colors shadow-sm">
+      <span class="font-mono font-bold text-secondary mb-1">Key Filters (:enter, :escape)</span>
+      <p class="text-xs text-base-content/70 leading-relaxed">Restricts keyboard events to specific keys or modifier combinations.</p>
+    </div>
+  </div>
+</div>

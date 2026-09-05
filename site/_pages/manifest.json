@@ -76,6 +76,16 @@
     "category": "Apps"
   },
   {
+    "id": "labs-modifiers",
+    "route": "/labs/modifiers",
+    "path": "/_pages/labs/modifiers.html",
+    "title": "Modifiers",
+    "icon": "material-symbols-light:tune",
+    "order": 2,
+    "parent": null,
+    "category": "Labs"
+  },
+  {
     "id": "profile2",
     "route": "/profiles/profile2",
     "path": "/_pages/profile2.html",
