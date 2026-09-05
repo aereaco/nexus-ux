@@ -1,0 +1,25 @@
+<title>data-show</title>
+<meta name="id" content="lab-attr-show">
+<meta name="route" content="/labs/attributes/show">
+<meta name="icon" content="material-symbols-light:visibility">
+<meta name="order" content="5">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/attributes">
+
+<div data-signal="{
+  doc: {
+    Title: 'data-show',
+    Category: 'Attributes',
+    Icon: 'material-symbols-light:visibility',
+    ModulePath: 'src/modules/attributes/show.ts',
+    Description: 'Visual visibility toggle that manipulates the display CSS property without modifying the DOM hierarchy. Ideal for modals, dropdowns, and tab panels.',
+    Syntax: '<div data-show=\"isOpen\" class=\"modal\">...</div>',
+    Params: [
+      { name: 'data-show', type: 'Boolean Expression', default: 'true', description: 'Toggles display: none when false, restoring original display when true.' }
+    ],
+    Extensibility: '<p>The <code>show</code> directive preserves the element\'s internal state, form focus, and scroll position while quickly hiding or revealing it on the screen.</p>',
+    Snippet: '<div data-signal=\"{ visible: true }\" class=\"space-y-4 p-4 bg-base-200/50 rounded-xl border border-base-content/10\">\n  <button class=\"btn btn-sm btn-primary\" data-on-click=\"visible = !visible\">\n    Toggle Visibility: <span class=\"font-mono ms-1\" data-bind=\"visible ? \'Visible\' : \'Hidden\'\"></span>\n  </button>\n  <div data-show=\"visible\" class=\"p-4 bg-info/10 text-info border border-info/20 rounded-xl\">\n    <p class=\"text-sm font-semibold\">This panel preserves its DOM identity and internal state across visibility toggles.</p>\n  </div>\n</div>'
+  }
+}">
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>

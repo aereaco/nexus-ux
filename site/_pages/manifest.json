@@ -250,6 +250,16 @@
     "category": "Docs"
   },
   {
+    "id": "lab-attr-show",
+    "route": "/labs/attributes/show",
+    "path": "/_pages/labs/attributes/show.html",
+    "title": "data-show",
+    "icon": "material-symbols-light:visibility",
+    "order": 5,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
     "id": "settings",
     "route": "/settings",
     "path": "/_pages/settings.html",
