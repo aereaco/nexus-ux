@@ -86,6 +86,16 @@
     "category": "Apps"
   },
   {
+    "id": "lab-attr-bind",
+    "route": "/labs/attributes/bind",
+    "path": "/_pages/labs/attributes/bind.html",
+    "title": "data-bind",
+    "icon": "material-symbols-light:link",
+    "order": 2,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
     "id": "labs-modifiers",
     "route": "/labs/modifiers",
     "path": "/_pages/labs/modifiers.html",
