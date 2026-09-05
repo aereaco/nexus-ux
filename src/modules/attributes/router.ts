@@ -947,6 +947,7 @@ export const routerAttributeModule: AttributeModule = {
           return (this as any).pageTabs?.find((t: PageTab) => t && t.id === (this as any).activePageTabId) || null;
         },
         createPageTab(source?: string, route?: string) {
+          if (!source && !route) return;
           state.tabSeq++;
           const id = 'tab-' + state.tabSeq;
           const src = source || state.config.newPageTab || '_components/tab-new.html';

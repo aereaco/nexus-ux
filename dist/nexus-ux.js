@@ -7568,6 +7568,8 @@ ${match}</ul>
                 return this.pageTabs?.find((t) => t && t.id === this.activePageTabId) || null;
               },
               createPageTab(source, route) {
+                if (!source && !route)
+                  return;
                 state.tabSeq++;
                 const id = "tab-" + state.tabSeq;
                 const src = source || state.config.newPageTab || "_components/tab-new.html";
