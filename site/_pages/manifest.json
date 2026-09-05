@@ -280,6 +280,16 @@
     "category": "System"
   },
   {
+    "id": "lab-attr-class",
+    "route": "/labs/attributes/class",
+    "path": "/_pages/labs/attributes/class.html",
+    "title": "data-class",
+    "icon": "material-symbols-light:palette",
+    "order": 7,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
     "id": "error",
     "route": "/error",
     "path": "/_pages/error.html",

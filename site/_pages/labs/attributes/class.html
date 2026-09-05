@@ -1,0 +1,26 @@
+<title>data-class</title>
+<meta name="id" content="lab-attr-class">
+<meta name="route" content="/labs/attributes/class">
+<meta name="icon" content="material-symbols-light:palette">
+<meta name="order" content="7">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/attributes">
+
+<div data-signal="{
+  doc: {
+    Title: 'data-class',
+    Category: 'Attributes',
+    Icon: 'material-symbols-light:palette',
+    ModulePath: 'src/modules/attributes/class.ts',
+    Description: 'Reconciles dynamic Tailwind and DaisyUI classes via object toggles or direct string expressions with high-performance CSSOM diffing.',
+    Syntax: '<div data-class=\"{ \'bg-primary text-white\': isActive, \'opacity-50\': isDisabled }\"></div>\n<div data-class-active=\"isActive\"></div>',
+    Params: [
+      { name: 'data-class', type: 'Object / String Expression', default: '{}', description: 'Object of className: boolean mappings or space-separated class string.' },
+      { name: 'data-class-<name>', type: 'Boolean Expression', default: '-', description: 'Toggles a single class name conditionally.' }
+    ],
+    Extensibility: '<p>The <code>class</code> directive integrates with the framework\'s JIT compiler. Classes are reconciled without thrashing the DOM or clearing static classes defined in the initial HTML markup.</p>',
+    Snippet: '<div data-signal=\"{ themeMode: \'primary\', isRounded: true }\" class=\"space-y-4 p-4 bg-base-200/50 rounded-xl border border-base-content/10\">\n  <div class=\"flex flex-wrap gap-2\">\n    <button class=\"btn btn-xs\" data-class=\"{ \'btn-primary\': themeMode === \'primary\' }\" data-on-click=\"themeMode = \'primary\'\">Primary</button>\n    <button class=\"btn btn-xs\" data-class=\"{ \'btn-secondary\': themeMode === \'secondary\' }\" data-on-click=\"themeMode = \'secondary\'\">Secondary</button>\n    <button class=\"btn btn-xs\" data-class=\"{ \'btn-accent\': themeMode === \'accent\' }\" data-on-click=\"themeMode = \'accent\'\">Accent</button>\n    <button class=\"btn btn-xs btn-outline\" data-on-click=\"isRounded = !isRounded\">Toggle Full Round</button>\n  </div>\n  <div class=\"p-6 text-center text-white font-bold transition-all duration-300 shadow-md\"\n    data-class=\"{\n      \'bg-primary\': themeMode === \'primary\',\n      \'bg-secondary\': themeMode === \'secondary\',\n      \'bg-accent\': themeMode === \'accent\',\n      \'rounded-full\': isRounded,\n      \'rounded-lg\': !isRounded\n    }\">\n    Dynamic Reconciled Component\n  </div>\n</div>'
+  }
+}">
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>
