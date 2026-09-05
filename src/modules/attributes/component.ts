@@ -77,22 +77,40 @@ function extractResourceMetadata(
   if (!htmlText || typeof htmlText !== 'string') return meta;
 
   try {
-    const parser = new DOMParser();
-    const parsedDoc = parser.parseFromString(htmlText, 'text/html');
-
-    const titles = Array.from(parsedDoc.querySelectorAll('title'));
-    const titleEl = titles.find((t) => !t.closest('svg'));
-    if (titleEl && titleEl.textContent) {
-      meta.title = titleEl.textContent.trim();
+    // Support YAML frontmatter for .md components
+    const fmMatch = htmlText.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+    let hasFmTitle = false;
+    if (fmMatch) {
+      const lines = fmMatch[1].split(/\r?\n/);
+      for (const l of lines) {
+        const idx = l.indexOf(':');
+        if (idx > 0) {
+          const k = l.substring(0, idx).trim().toLowerCase();
+          const v = l.substring(idx + 1).trim().replace(/^['"]|['"]$/g, '');
+          meta[k] = v;
+          if (k === 'title') hasFmTitle = true;
+        }
+      }
     }
 
-    parsedDoc.querySelectorAll('meta').forEach((metaEl) => {
-      const key = metaEl.getAttribute('name') || metaEl.getAttribute('property');
-      const content = metaEl.getAttribute('content');
-      if (key && content) {
-        meta[key] = content.trim();
+    if (!hasFmTitle) {
+      const parser = new DOMParser();
+      const parsedDoc = parser.parseFromString(htmlText, 'text/html');
+
+      const titles = Array.from(parsedDoc.querySelectorAll('title'));
+      const titleEl = titles.find((t) => !t.closest('svg'));
+      if (titleEl && titleEl.textContent) {
+        meta.title = titleEl.textContent.trim();
       }
-    });
+
+      parsedDoc.querySelectorAll('meta').forEach((metaEl) => {
+        const key = metaEl.getAttribute('name') || metaEl.getAttribute('property');
+        const content = metaEl.getAttribute('content');
+        if (key && content && !meta[key]) {
+          meta[key] = content.trim();
+        }
+      });
+    }
 
     const globals = runtime.globalSignals ? runtime.globalSignals() : {};
     if (globals) {
