@@ -124,6 +124,16 @@
     "category": "Apps"
   },
   {
+    "id": "labs-scopes",
+    "route": "/labs/scopes",
+    "path": "/_pages/labs/scopes.html",
+    "title": "Scopes",
+    "icon": "material-symbols-light:aspect-ratio",
+    "order": 3,
+    "parent": null,
+    "category": "Labs"
+  },
+  {
     "id": "profile3.3",
     "route": "/profiles/profile3/profile3.3",
     "path": "/_pages/profile3.3.html",
