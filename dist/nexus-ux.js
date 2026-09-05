@@ -7312,20 +7312,21 @@ ${match}</ul>
                 if (rawList.length > 0) {
                   for (const item of rawList) {
                     const isObj = typeof item === "object" && item !== null;
-                    if (isObj && (item.internal === true || item.route === "" || item.id === "admin" || item.id === "error")) {
+                    if (isObj && (item.internal === true || item.id === "admin" || item.id === "error")) {
                       continue;
                     }
+                    const isSubmenu = isObj && (item.isSubmenu || item.path === "" || item.route === "");
                     const fname = isObj ? item.path?.split("/").pop() || item.id || "" : item;
                     const cleanName = isObj ? item.id || item.name || fname.replace(/\.(html|htm|md|markdown)$/i, "") : fname.replace(/\.(html|htm|md|markdown)$/i, "");
                     const parent = isObj ? item.parent !== void 0 ? item.parent : item.meta?.parent !== void 0 ? item.meta.parent : cleanName === "home" ? null : "/" : cleanName === "home" ? null : "/";
                     const defaultRoute = parent && parent !== "/" ? `${parent.replace(/\/+$/, "")}/${cleanName}` : cleanName === "home" ? "/" : `/${cleanName}`;
-                    const href = isObj ? item.route !== void 0 ? item.route : defaultRoute : defaultRoute;
-                    const compPath = isObj ? item.path || `/${pDir}/${fname}` : `/${pDir}/${fname}`;
+                    const href = isSubmenu ? "" : isObj ? item.route !== void 0 ? item.route : defaultRoute : defaultRoute;
+                    const compPath = isSubmenu ? "" : isObj ? item.path || `/${pDir}/${fname}` : `/${pDir}/${fname}`;
                     let title = isObj ? item.title || item.meta?.title || "" : "";
                     let icon = isObj ? item.icon || item.meta?.icon || "" : "";
                     const order = isObj ? item.order !== void 0 ? item.order : item.meta?.order : void 0;
                     const category = isObj ? item.category !== void 0 ? item.category : item.meta?.category : void 0;
-                    const defaultTitle = href === "/" ? "Home" : href.replace(/^\/+/, "").replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+                    const defaultTitle = href === "/" ? "Home" : href ? href.replace(/^\/+/, "").replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : cleanName;
                     const finalTitle = title || defaultTitle;
                     const finalIcon = icon || (parent ? void 0 : "material-symbols-light:article-outline");
                     const children = [];
@@ -7338,6 +7339,7 @@ ${match}</ul>
                         const chTitle = chObj ? ch.title || chName : chName;
                         const chParent = chObj ? ch.parent || href : href;
                         children.push({
+                          id: chName,
                           href: chHref,
                           title: chTitle,
                           tabTitle: chTitle,
@@ -7345,7 +7347,7 @@ ${match}</ul>
                           parent: chParent,
                           meta: { title: chTitle, parent: chParent }
                         });
-                        if (!state.routes.find((r) => r.path === chHref)) {
+                        if (chHref && !state.routes.find((r) => r.path === chHref)) {
                           state.routes.push({
                             path: chHref,
                             component: chPath,
@@ -7356,6 +7358,7 @@ ${match}</ul>
                       }
                     }
                     discovered.push({
+                      id: item.id || cleanName,
                       href,
                       title: finalTitle,
                       icon: finalIcon || "",
@@ -7365,24 +7368,26 @@ ${match}</ul>
                       parent,
                       category: category || void 0,
                       children: children.length > 0 ? children : void 0,
-                      meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || void 0 }
+                      meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || void 0, isSubmenu }
                     });
-                    const existing = state.routes.find((r) => r.path === href);
-                    if (!existing) {
-                      state.routes.push({
-                        path: href,
-                        component: compPath,
-                        name: cleanName,
-                        meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || void 0 }
-                      });
+                    if (href) {
+                      const existing = state.routes.find((r) => r.path === href);
+                      if (!existing) {
+                        state.routes.push({
+                          path: href,
+                          component: compPath,
+                          name: cleanName,
+                          meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || void 0 }
+                        });
+                      }
                     }
                   }
                   const rootPages = [];
                   const attachChild = (nodes, item, targetParentRoute) => {
                     for (const node of nodes) {
-                      if (node.href === targetParentRoute) {
+                      if (node.href === targetParentRoute || node.id === targetParentRoute) {
                         node.children = node.children || [];
-                        if (!node.children.some((c) => c.href === item.href)) {
+                        if (!node.children.some((c) => c.href && c.href === item.href || c.id === item.id)) {
                           node.children.push(item);
                           node.children.sort((a, b) => {
                             const aOrder = a.meta?.order;

@@ -668,16 +668,17 @@ export const routerAttributeModule: AttributeModule = {
           if (rawList.length > 0) {
             for (const item of rawList) {
               const isObj = typeof item === 'object' && item !== null;
-              if (isObj && (item.internal === true || item.route === '' || item.id === 'admin' || item.id === 'error')) {
+              if (isObj && (item.internal === true || item.id === 'admin' || item.id === 'error')) {
                 continue;
               }
 
+              const isSubmenu = isObj && (item.isSubmenu || item.path === '' || item.route === '');
               const fname = isObj ? (item.path?.split('/').pop() || item.id || '') : item;
               const cleanName = isObj ? (item.id || item.name || fname.replace(/\.(html|htm|md|markdown)$/i, '')) : fname.replace(/\.(html|htm|md|markdown)$/i, '');
               const parent = isObj ? (item.parent !== undefined ? item.parent : (item.meta?.parent !== undefined ? item.meta.parent : (cleanName === 'home' ? null : '/'))) : (cleanName === 'home' ? null : '/');
               const defaultRoute = (parent && parent !== '/') ? `${parent.replace(/\/+$/, '')}/${cleanName}` : (cleanName === 'home' ? '/' : `/${cleanName}`);
-              const href = isObj ? (item.route !== undefined ? item.route : defaultRoute) : defaultRoute;
-              const compPath = isObj ? (item.path || `/${pDir}/${fname}`) : `/${pDir}/${fname}`;
+              const href = isSubmenu ? '' : (isObj ? (item.route !== undefined ? item.route : defaultRoute) : defaultRoute);
+              const compPath = isSubmenu ? '' : (isObj ? (item.path || `/${pDir}/${fname}`) : `/${pDir}/${fname}`);
               let title = isObj ? (item.title || item.meta?.title || '') : '';
               let icon = isObj ? (item.icon || item.meta?.icon || '') : '';
               const order = isObj ? (item.order !== undefined ? item.order : item.meta?.order) : undefined;
@@ -685,7 +686,7 @@ export const routerAttributeModule: AttributeModule = {
 
               const defaultTitle = href === '/'
                 ? 'Home'
-                : href.replace(/^\/+/, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+                : (href ? href.replace(/^\/+/, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) : cleanName);
               const finalTitle = title || defaultTitle;
               const finalIcon = icon || (parent ? undefined : 'material-symbols-light:article-outline');
 
@@ -701,6 +702,7 @@ export const routerAttributeModule: AttributeModule = {
                   const chParent = chObj ? (ch.parent || href) : href;
 
                   children.push({
+                    id: chName,
                     href: chHref,
                     title: chTitle,
                     tabTitle: chTitle,
@@ -710,7 +712,7 @@ export const routerAttributeModule: AttributeModule = {
                   } as DiscoveredPage);
 
                   // Register route in state.routes if not already present
-                  if (!state.routes.find((r) => r.path === chHref)) {
+                  if (chHref && !state.routes.find((r) => r.path === chHref)) {
                     state.routes.push({
                       path: chHref,
                       component: chPath,
@@ -722,6 +724,7 @@ export const routerAttributeModule: AttributeModule = {
               }
 
               discovered.push({
+                id: item.id || cleanName,
                 href,
                 title: finalTitle,
                 icon: finalIcon || '',
@@ -731,18 +734,20 @@ export const routerAttributeModule: AttributeModule = {
                 parent,
                 category: category || undefined,
                 children: children.length > 0 ? children : undefined,
-                meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || undefined }
-              });
+                meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || undefined, isSubmenu }
+              } as any);
 
               // Dynamically register route in state.routes if not already present
-              const existing = state.routes.find((r) => r.path === href);
-              if (!existing) {
-                state.routes.push({
-                  path: href,
-                  component: compPath,
-                  name: cleanName,
-                  meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || undefined }
-                } as any);
+              if (href) {
+                const existing = state.routes.find((r) => r.path === href);
+                if (!existing) {
+                  state.routes.push({
+                    path: href,
+                    component: compPath,
+                    name: cleanName,
+                    meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || undefined }
+                  } as any);
+                }
               }
             }
 
@@ -751,9 +756,9 @@ export const routerAttributeModule: AttributeModule = {
 
             const attachChild = (nodes: DiscoveredPage[], item: DiscoveredPage, targetParentRoute: string): boolean => {
               for (const node of nodes) {
-                if (node.href === targetParentRoute) {
+                if (node.href === targetParentRoute || (node as any).id === targetParentRoute) {
                   node.children = node.children || [];
-                  if (!node.children.some((c) => c.href === item.href)) {
+                  if (!node.children.some((c) => (c.href && c.href === item.href) || (c as any).id === (item as any).id)) {
                     node.children.push(item);
                     node.children.sort((a: any, b: any) => {
                       const aOrder = a.meta?.order;
