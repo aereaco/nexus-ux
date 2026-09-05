@@ -2410,8 +2410,8 @@
     </div>
   </div>
 
-  <!-- Primary Floating Action Button (FAB): Auto-hides when chatbarOpen is true -->
-  <div data-show="!chatbarOpen" class="fixed bottom-6 end-6 z-30 transition-all duration-300">
+  <!-- Primary Floating Action Button (FAB): Auto-hides when chatbarOpen or terminalOpen is true -->
+  <div data-show="!chatbarOpen && !terminalOpen" class="fixed bottom-6 end-6 z-30 transition-all duration-300">
     <button type="button"
       class="btn btn-circle btn-lg btn-primary shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-primary-content/20 flex items-center justify-center relative"
       aria-label="Toggle Collaboration Speed Dial"
