@@ -262,8 +262,8 @@ function findScrollParent(el: Element | null): Element | null {
       return null;
     }
     const s = window.getComputedStyle(el);
-    const hasScrollY = (s.overflowY === 'auto' || s.overflowY === 'scroll') && s.overflowY !== 'hidden' && (el.scrollHeight > el.clientHeight);
-    const hasScrollX = (s.overflowX === 'auto' || s.overflowX === 'scroll') && s.overflowX !== 'hidden' && (el.scrollWidth > el.clientWidth);
+    const hasScrollY = (s.overflowY === 'auto' || s.overflowY === 'scroll') && (el.scrollHeight > el.clientHeight);
+    const hasScrollX = (s.overflowX === 'auto' || s.overflowX === 'scroll') && (el.scrollWidth > el.clientWidth);
     if (hasScrollY || hasScrollX) {
       return el;
     }
@@ -523,8 +523,8 @@ function setupGlobalCaptureListeners(runtime: RuntimeContext): void {
   document.addEventListener('scroll', onGlobalScroll, { capture: true, passive: true });
   document.addEventListener('pointermove', onGlobalPointerMove, { capture: true, passive: true });
 
-  if (runtime && runtime.registerCleanup) {
-    runtime.registerCleanup(() => {
+  if (runtime && (runtime as any).registerCleanup) {
+    (runtime as any).registerCleanup(() => {
       document.removeEventListener('scroll', onGlobalScroll, { capture: true });
       document.removeEventListener('pointermove', onGlobalPointerMove, { capture: true });
       if (pointerRaf !== null) cancelAnimationFrame(pointerRaf);

@@ -8482,8 +8482,8 @@ ${match}</ul>
         return null;
       }
       const s = window.getComputedStyle(el);
-      const hasScrollY = (s.overflowY === "auto" || s.overflowY === "scroll") && s.overflowY !== "hidden" && el.scrollHeight > el.clientHeight;
-      const hasScrollX = (s.overflowX === "auto" || s.overflowX === "scroll") && s.overflowX !== "hidden" && el.scrollWidth > el.clientWidth;
+      const hasScrollY = (s.overflowY === "auto" || s.overflowY === "scroll") && el.scrollHeight > el.clientHeight;
+      const hasScrollX = (s.overflowX === "auto" || s.overflowX === "scroll") && el.scrollWidth > el.clientWidth;
       if (hasScrollY || hasScrollX) {
         return el;
       }
