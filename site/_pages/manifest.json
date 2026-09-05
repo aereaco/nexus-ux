@@ -290,6 +290,16 @@
     "category": "Labs"
   },
   {
+    "id": "lab-attr-style",
+    "route": "/labs/attributes/style",
+    "path": "/_pages/labs/attributes/style.html",
+    "title": "data-style",
+    "icon": "material-symbols-light:format-paint",
+    "order": 8,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
     "id": "error",
     "route": "/error",
     "path": "/_pages/error.html",

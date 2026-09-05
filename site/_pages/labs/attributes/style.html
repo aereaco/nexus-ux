@@ -1,0 +1,25 @@
+<title>data-style</title>
+<meta name="id" content="lab-attr-style">
+<meta name="route" content="/labs/attributes/style">
+<meta name="icon" content="material-symbols-light:format-paint">
+<meta name="order" content="8">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/attributes">
+
+<div data-signal="{
+  doc: {
+    Title: 'data-style',
+    Category: 'Attributes',
+    Icon: 'material-symbols-light:format-paint',
+    ModulePath: 'src/modules/attributes/style.ts',
+    Description: 'Reconciles dynamic inline CSS styles directly on the HTMLElement with support for camelCase and kebab-case style properties.',
+    Syntax: '<div data-style=\"{ transform: \'translateX(\' + x + \'px)\', opacity: alpha }\"></div>',
+    Params: [
+      { name: 'data-style', type: 'Object / String Expression', default: '{}', description: 'CSS property-value map or style string.' }
+    ],
+    Extensibility: '<p>The <code>style</code> directive uses CSSStyleDeclaration direct assignments, bypassing string serialization and recalculating only modified CSS properties.</p>',
+    Snippet: '<div data-signal=\"{ barWidth: 65, barColor: \'#570df8\' }\" class=\"space-y-4 p-4 bg-base-200/50 rounded-xl border border-base-content/10\">\n  <div class=\"flex items-center gap-4 max-w-md\">\n    <span class=\"text-xs font-bold\">Width (%):</span>\n    <input type=\"range\" min=\"10\" max=\"100\" data-bind-value=\"barWidth\" class=\"range range-xs range-primary\" />\n    <span class=\"font-mono text-xs font-bold w-12\" data-bind=\"barWidth + \'%\'\"></span>\n  </div>\n  <div class=\"w-full bg-base-300 h-6 rounded-full overflow-hidden p-1 border border-base-content/10\">\n    <div class=\"h-full rounded-full transition-[width] duration-150 ease-out\"\n      data-style=\"{ width: barWidth + \'%\', backgroundColor: barColor }\"></div>\n  </div>\n</div>'
+  }
+}">
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>
