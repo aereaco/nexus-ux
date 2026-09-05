@@ -937,60 +937,61 @@
       </div>
     </div>
 
-    <!-- Floating Side Hover Expanding Tab | Breadcrumbs & Page Tabs Toggle (when floatingBookmarks is true) -->
-    <div data-show="floatingBookmarks" class="absolute end-0 top-32 z-10" data-signal="{ hovered: false }"
-      data-on-mouseenter_delay.150ms="hovered = true" data-on-mouseleave="hovered = false">
-      <nav aria-label="Breadcrumb"
-        class="flex items-center overflow-hidden rounded-ss-lg rounded-es-lg border border-base-content/10 bg-base-100 text-base-content transition-[max-width,width] duration-300 ease-in-out whitespace-nowrap shadow-sm"
-        data-class="{ 'max-w-md w-auto shadow-2xl': hovered, 'max-w-12 w-12': !hovered }">
-
-        <!-- Anchored Header / Icon (Always present, never destroyed) -->
-        <div class="flex items-center h-10 px-3 shrink-0 bg-secondary text-secondary-content cursor-pointer">
-          <iconify-icon icon="material-symbols-light:bookmark-outline" class="text-2xl"></iconify-icon>
-          <!-- Breadcrumbs: Fades & Expands on hover -->
-          <div
-            class="breadcrumbs text-sm font-semibold max-w-xs overflow-x-auto scrollbar-none transition-all duration-300 flex items-center shrink-0 w-auto"
-            data-class="{ 'opacity-100 max-w-xs px-4': hovered, 'opacity-0 max-w-0 px-0': !hovered }">
-            <ul class="flex items-center flex-nowrap whitespace-nowrap min-w-max my-0 py-0">
-              <template data-for="crumb in router.lineage" data-key="crumb.href">
-                <li class="flex items-center gap-1 shrink-0">
-                  <a data-bind-href="crumb.href" class="flex items-center gap-1">
-                    <iconify-icon data-show="crumb.icon" data-bind-icon="crumb.icon" class="text-base"></iconify-icon>
-                    <span data-bind="crumb.title"></span>
-                  </a>
-                </li>
-              </template>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Toggle End Dock: Fades & Expands on hover -->
-        <div class="relative flex items-center h-10 shrink-0 transition-opacity duration-300"
-          data-class="{ 'opacity-100 flex': hovered, 'opacity-0 hidden': !hovered }">
-          <span
-            class="absolute inset-y-0 -start-px h-10 w-4 bg-secondary [clip-path:_polygon(0_0,_0%_100%,_100%_50%)] rtl:rotate-180">
-          </span>
-          <div class="flex items-center h-10 pe-4 ps-6 bg-base-300 text-secondary">
-            <div class="tooltip z-100" data-tip="Toggle page tabs">
-              <button class="btn btn-sm btn-ghost btn-circle"
-                data-class="{ 'btn-active text-primary bg-primary/10': pageTabs }"
-                data-on-mouseenter_debounce.2000ms="pageTabToggleHovered = true"
-                data-on-mouseleave_debounce.cancel="pageTabToggleHovered = false"
-                data-on-click="pageTabs = !pageTabs; localStorage.setItem('pageTabs', pageTabs)">
-                <iconify-icon icon="material-symbols-light:tab-group-outline" class="text-xl"></iconify-icon>
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
-    </div>
-
     <!-- CONTENT PANEL & FOOTER WRAPPER:
          When fixedHeader is active, controls scroll containment based on fixedFooter mode.
          When fixedFooter is OFF (in-flow), wrapper is flex-1 overflow-y-auto so the footer sits at the end of the content stream.
          When fixedFooter is ON (sticky), the inner panel is flex-1 overflow-y-auto so the footer stays pinned at the bottom. -->
-    <div class="flex-1 flex flex-col min-h-0 w-full grow"
+    <div class="flex-1 flex flex-col min-h-0 w-full grow relative"
       data-class="{ 'overflow-y-auto': fixedHeader && !fixedFooter }">
+
+      <!-- Floating Side Hover Expanding Tab | Breadcrumbs & Page Tabs Toggle (when floatingBookmarks is true) -->
+      <div data-show="floatingBookmarks" class="absolute end-0 top-6 z-20" data-signal="{ hovered: false }"
+        data-on-mouseenter_delay.150ms="hovered = true" data-on-mouseleave="hovered = false">
+        <nav aria-label="Breadcrumb"
+          class="flex items-center overflow-hidden rounded-ss-lg rounded-es-lg border border-base-content/10 bg-base-100 text-base-content transition-[max-width,width] duration-300 ease-in-out whitespace-nowrap shadow-sm"
+          data-class="{ 'max-w-md w-auto shadow-2xl': hovered, 'max-w-12 w-12': !hovered }">
+
+          <!-- Anchored Header / Icon (Always present, never destroyed) -->
+          <div class="flex items-center h-10 px-3 shrink-0 bg-secondary text-secondary-content cursor-pointer">
+            <iconify-icon icon="material-symbols-light:bookmark-outline" class="text-2xl"></iconify-icon>
+            <!-- Breadcrumbs: Fades & Expands on hover -->
+            <div
+              class="breadcrumbs text-sm font-semibold max-w-xs overflow-x-auto scrollbar-none transition-all duration-300 flex items-center shrink-0 w-auto"
+              data-class="{ 'opacity-100 max-w-xs px-4': hovered, 'opacity-0 max-w-0 px-0': !hovered }">
+              <ul class="flex items-center flex-nowrap whitespace-nowrap min-w-max my-0 py-0">
+                <template data-for="crumb in router.lineage" data-key="crumb.href">
+                  <li class="flex items-center gap-1 shrink-0">
+                    <a data-bind-href="crumb.href" class="flex items-center gap-1">
+                      <iconify-icon data-show="crumb.icon" data-bind-icon="crumb.icon" class="text-base"></iconify-icon>
+                      <span data-bind="crumb.title"></span>
+                    </a>
+                  </li>
+                </template>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Toggle End Dock: Fades & Expands on hover -->
+          <div class="relative flex items-center h-10 shrink-0 transition-opacity duration-300"
+            data-class="{ 'opacity-100 flex': hovered, 'opacity-0 hidden': !hovered }">
+            <span
+              class="absolute inset-y-0 -start-px h-10 w-4 bg-secondary [clip-path:_polygon(0_0,_0%_100%,_100%_50%)] rtl:rotate-180">
+            </span>
+            <div class="flex items-center h-10 pe-4 ps-6 bg-base-300 text-secondary">
+              <div class="tooltip z-100" data-tip="Toggle page tabs">
+                <button class="btn btn-sm btn-ghost btn-circle"
+                  data-class="{ 'btn-active text-primary bg-primary/10': pageTabs }"
+                  data-on-mouseenter_debounce.2000ms="pageTabToggleHovered = true"
+                  data-on-mouseleave_debounce.cancel="pageTabToggleHovered = false"
+                  data-on-click="pageTabs = !pageTabs; localStorage.setItem('pageTabs', pageTabs)">
+                  <iconify-icon icon="material-symbols-light:tab-group-outline" class="text-xl"></iconify-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </div>
+
       <div class="p-6 relative grow flex flex-col" data-class="{ 'overflow-y-auto': fixedHeader && fixedFooter }">
 
         <!-- Inline Header Bar with Breadcrumbs & Page Tabs Toggle (when floatingBookmarks is false) -->
