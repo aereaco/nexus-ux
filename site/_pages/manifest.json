@@ -144,6 +144,16 @@
     "category": "Apps"
   },
   {
+    "id": "lab-attr-for",
+    "route": "/labs/attributes/for",
+    "path": "/_pages/labs/attributes/for.html",
+    "title": "data-for",
+    "icon": "material-symbols-light:repeat",
+    "order": 3,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
     "id": "labs-scopes",
     "route": "/labs/scopes",
     "path": "/_pages/labs/scopes.html",

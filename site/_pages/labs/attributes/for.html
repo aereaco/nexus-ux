@@ -1,0 +1,26 @@
+<title>data-for</title>
+<meta name="id" content="lab-attr-for">
+<meta name="route" content="/labs/attributes/for">
+<meta name="icon" content="material-symbols-light:repeat">
+<meta name="order" content="3">
+<meta name="category" content="Labs">
+<meta name="parent" content="/labs/attributes">
+
+<div data-signal="{
+  doc: {
+    Title: 'data-for',
+    Category: 'Attributes',
+    Icon: 'material-symbols-light:repeat',
+    ModulePath: 'src/modules/attributes/for.ts',
+    Description: 'Zero-allocation keyed list rendering on template or standard elements with support for tuple destructuring and in-place DOM morph diffing.',
+    Syntax: '<template data-for=\"item in items\" data-key=\"item.id\">\n  <li data-bind=\"item.name\"></li>\n</template>',
+    Params: [
+      { name: 'data-for', type: 'Expression', default: '-', description: 'Iterates over arrays or iterables using \"item in items\" or \"(item, index) in items\".' },
+      { name: 'data-key', type: 'Expression', default: '-', description: 'Unique identifier key for optimal DOM reconciliation and diffing.' }
+    ],
+    Extensibility: '<p>The <code>for</code> directive utilizes fine-grained keyed caching. When list order changes or items are inserted, DOM morphing preserves node focus, selection states, and transitions while avoiding full subtree demolitions.</p>',
+    Snippet: '<div data-signal=\"{ items: [\'Alpha Core\', \'Beta Gateway\', \'Gamma Engine\'], newItem: \'\' }\" class=\"space-y-4 p-4 bg-base-200/50 rounded-xl border border-base-content/10\">\n  <div class=\"flex gap-2 max-w-md\">\n    <input type=\"text\" placeholder=\"Add item...\" data-bind-value=\"newItem\" class=\"input input-bordered input-sm grow\" />\n    <button class=\"btn btn-sm btn-primary\" data-on-click=\"if (newItem.trim()) { items = [...items, newItem.trim()]; newItem = \'\'; }\">Add</button>\n  </div>\n  <ul class=\"space-y-2\">\n    <template data-for=\"(item, idx) in items\" data-key=\"item\">\n      <li class=\"flex items-center justify-between p-2.5 bg-base-100 rounded-lg border border-base-content/10 text-sm\">\n        <span class=\"font-medium\"><span class=\"opacity-50 font-mono me-2\">#{{idx + 1}}</span>{{item}}</span>\n        <button class=\"btn btn-ghost btn-xs text-error\" data-on-click=\"items = items.filter((_, i) => i !== idx)\">Remove</button>\n      </li>\n    </template>\n  </ul>\n</div>'
+  }
+}">
+  <div data-component="'_components/lab-viewer.html'"></div>
+</div>
