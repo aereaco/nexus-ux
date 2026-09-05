@@ -2870,7 +2870,7 @@ ${suggestion}`);
             const tx = db.transaction(storeName, "readwrite");
             const store = tx.objectStore(storeName);
             if (store.keyPath) {
-              if (key !== void 0 && typeof item === "object" && item !== null && !(store.keyPath in item)) {
+              if (key !== void 0 && typeof item === "object" && item !== null && typeof store.keyPath === "string" && !(store.keyPath in item)) {
                 item[store.keyPath] = key;
               }
               store.put(item);

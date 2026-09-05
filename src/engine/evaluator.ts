@@ -168,8 +168,8 @@ function createStoreOperations(storeName: string): IndexedDBStoreOperations {
           const tx = db.transaction(storeName, 'readwrite');
           const store = tx.objectStore(storeName);
           if (store.keyPath) {
-            if (key !== undefined && typeof item === 'object' && item !== null && !(store.keyPath in item)) {
-              item[store.keyPath as string] = key;
+            if (key !== undefined && typeof item === 'object' && item !== null && typeof store.keyPath === 'string' && !(store.keyPath in item)) {
+              item[store.keyPath] = key;
             }
             store.put(item);
           } else {
