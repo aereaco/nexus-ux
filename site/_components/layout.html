@@ -685,7 +685,13 @@
           </div>
         </div>
       </div>
-      <div class="flex-1 justify-end flex gap-2">
+        <!-- Terminal HUD Button -->
+        <button type="button" class="btn btn-ghost btn-circle hover:scale-105 transition-all"
+          aria-label="Toggle Terminal HUD (Ctrl+` or Click)" title="Terminal HUD (Ctrl+`)"
+          data-class="{ 'text-primary bg-primary/10 ring-1 ring-primary/30': terminalOpen }"
+          data-on-click="toggleTerminalHud()">
+          <iconify-icon icon="material-symbols-light:terminal" class="text-2xl"></iconify-icon>
+        </button>
 
         <!-- Search Button -->
         <button class="btn btn-ghost btn-circle hover:scale-102" aria-label="Open search (Ctrl+K)" title="Search (Ctrl+K)"
