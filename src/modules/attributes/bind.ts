@@ -42,7 +42,7 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { initError } from '../../engine/debug.ts';
-import { matchAttributes } from '../../engine/attributeParser.ts';
+import { matchAttributes, ParsedAttribute } from '../../engine/attributeParser.ts';
 
 const NATIVE_API_PATTERNS = [
   /\bwindow\.(\w+)/g,
