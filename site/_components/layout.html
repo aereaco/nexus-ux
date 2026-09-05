@@ -390,173 +390,11 @@
       favViewMode: localStorage.favViewMode || 'list',
       favForm: { id: null, title: '', href: '', icon: 'material-symbols-light:star-outline', group: '' },
       pendingDeleteId: null,
-      themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset'],
-      terminalOpen: false,
-      terminalDocked: localStorage.getItem('terminalDocked') === 'true',
-      terminalMaximized: false,
-      terminalActiveTab: 'cli',
-      terminalTabs: [
-        { id: 'cli', name: 'CLI / Sh', icon: 'material-symbols-light:terminal' },
-        { id: 'runtime', name: 'Nexus Runtime', icon: 'material-symbols-light:memory' },
-        { id: 'build', name: 'Build & AOT', icon: 'material-symbols-light:build' },
-        { id: 'surreal', name: 'SurrealDB / REPL', icon: 'material-symbols-light:database' }
-      ],
-      terminalBuffers: {
-        cli: [
-          { type: 'info', text: 'Nexus-UX Interactive Shell v2.4 (Tier 3 Sovereign Engine)' },
-          { type: 'dim', text: 'Type help for available commands, status for runtime diagnostics.' },
-          { type: 'system', text: '[SYSTEM] Shell initialized at /workspace/nexus-ux. Ready for input.' }
-        ],
-        runtime: [
-          { type: 'system', text: '[Nexus Topology] Boot: Detected 8 cores, SAB: true, Tier 3 Quad-Thread' },
-          { type: 'heap', text: '[SignalHeap] Attached SharedArrayBuffer (Capacity: 1,048,576 slots)' },
-          { type: 'worker', text: '[Worker-1] Logic pipeline thread running (4-phase atomic cycle: 60fps)' },
-          { type: 'worker', text: '[Worker-2] DOM reconciliation diff thread active' },
-          { type: 'worker', text: '[Worker-3] JIT CSS / Theme token generator active' }
-        ],
-        build: [
-          { type: 'build', text: '[AOT Compiler] Compiling constructable stylesheets… OK' },
-          { type: 'build', text: '[Packer] Inlining DaisyUI v5 & Tailwind v4 theme tokens: 32 themes cached' },
-          { type: 'build', text: '[Router] Synchronized 16 routes from manifest.json' },
-          { type: 'ok', text: '[Bundle] Zero-copy bundle payload ready: 48.2 KB (brotli)' }
-        ],
-        surreal: [
-          { type: 'db', text: 'Connected to surreal://localhost:8000 (Namespace: nexus, Database: erp)' },
-          { type: 'db', text: 'Live tables: [customer, invoice, order, inventory_item, telemetry_event]' },
-          { type: 'dim', text: 'Ready for SurrealQL queries. Type SELECT * FROM invoice; or help.' }
-        ]
-      },
-      terminalInputText: '',
-      toggleTerminalHud: () => {
-        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
-        g.terminalOpen = !g.terminalOpen;
-        if (g.terminalOpen) {
-          window.Nexus?.coordinator?.runtimeContext?.$nextTick?.(() => {
-            document.getElementById('terminal-cli-input')?.focus();
-            const stream = document.getElementById('terminal-message-stream');
-            if (stream) stream.scrollTop = stream.scrollHeight;
-          });
-        }
-      },
-      closeTerminalHud: () => {
-        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
-        g.terminalOpen = false;
-      },
-      toggleTerminalDock: () => {
-        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
-        g.terminalDocked = !g.terminalDocked;
-        localStorage.setItem('terminalDocked', g.terminalDocked);
-      },
-      toggleTerminalMax: () => {
-        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
-        g.terminalMaximized = !g.terminalMaximized;
-      },
-      clearTerminalTab: (tabId) => {
-        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
-        const id = tabId || g.terminalActiveTab || 'cli';
-        const buffers = { ...(g.terminalBuffers || {}) };
-        buffers[id] = [{ type: 'dim', text: 'Buffer cleared.' }];
-        g.terminalBuffers = buffers;
-      },
-      createTerminalTab: () => {
-        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
-        const count = (g.terminalTabs || []).length + 1;
-        const newId = 'custom-' + window.Date.now();
-        const newTab = { id: newId, name: 'Term #' + count, icon: 'material-symbols-light:terminal' };
-        g.terminalTabs = [...(g.terminalTabs || []), newTab];
-        g.terminalBuffers = {
-          ...(g.terminalBuffers || {}),
-          [newId]: [{ type: 'info', text: 'Custom terminal session created.' }]
-        };
-        g.terminalActiveTab = newId;
-      },
-      closeTerminalTab: (tabId) => {
-        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
-        const tabs = (g.terminalTabs || []).filter(t => t.id !== tabId);
-        g.terminalTabs = tabs;
-        if (g.terminalActiveTab === tabId && tabs.length > 0) {
-          g.terminalActiveTab = tabs[0].id;
-        }
-      },
-      runTerminalCommand: () => {
-        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
-        const input = (g.terminalInputText || '').trim();
-        if (!input) return;
-        const tab = g.terminalActiveTab || 'cli';
-        const curBuf = [...((g.terminalBuffers || {})[tab] || [])];
-        
-        curBuf.push({ type: 'user', text: input, time: new window.Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) });
-        
-        const parts = input.split(' ');
-        const cmd = parts[0].toLowerCase();
-        const arg = parts.slice(1).join(' ').trim();
-        
-        if (cmd === 'help') {
-          curBuf.push({ type: 'help', text: 'Available CLI commands:' });
-          curBuf.push({ type: 'dim', text: '  status           - View live topology, tier, and heap status' });
-          curBuf.push({ type: 'dim', text: '  topology         - View multi-threaded Web Worker allocation' });
-          curBuf.push({ type: 'dim', text: '  routes           - List all available SPA application routes' });
-          curBuf.push({ type: 'dim', text: '  theme <name>     - Switch DaisyUI theme (e.g. dark, synthwave)' });
-          curBuf.push({ type: 'dim', text: '  tabs             - List open page tabs in the workspace' });
-          curBuf.push({ type: 'dim', text: '  chat             - Open the collaborative AI chatbar' });
-          curBuf.push({ type: 'dim', text: '  dock             - Toggle HUD docking below footer' });
-          curBuf.push({ type: 'dim', text: '  clear            - Clear current terminal buffer' });
-          curBuf.push({ type: 'dim', text: '  exit / close     - Dismiss Terminal HUD' });
-        } else if (cmd === 'clear') {
-          curBuf.length = 0;
-          curBuf.push({ type: 'dim', text: 'Buffer cleared.' });
-        } else if (cmd === 'status' || cmd === 'info') {
-          curBuf.push({ type: 'system', text: '[SYSTEM DIAGNOSTICS]' });
-          curBuf.push({ type: 'ok', text: '  Framework: Nexus-UX v2.4 (HTML Declarative Reactive Architecture)' });
-          curBuf.push({ type: 'ok', text: '  Reactive Engine: Vue 3 Fine-Grained with SharedArrayBuffer SignalHeap' });
-          curBuf.push({ type: 'info', text: '  Active Theme: ' + (document.documentElement.getAttribute('data-theme') || 'dark') });
-          curBuf.push({ type: 'info', text: '  Active Page Tabs: ' + (g.router?.pageTabs?.length || 1) });
-          curBuf.push({ type: 'info', text: '  Active Chat Sessions: ' + (g.chatSessions?.length || 0) });
-        } else if (cmd === 'topology') {
-          curBuf.push({ type: 'system', text: '[NEXUS TOPOLOGY METRICS]' });
-          curBuf.push({ type: 'ok', text: '  Tier: Tier 3 (Quad-Thread Sovereign Autoscale)' });
-          curBuf.push({ type: 'ok', text: '  Dedicated Web Workers: 3 active (Logic, Diff, JIT)' });
-          curBuf.push({ type: 'info', text: '  Frame Budget: 8.0ms (4-phase atomic execution loop: 60fps)' });
-        } else if (cmd === 'routes') {
-          const rList = (g.router?.routes || []).map(r => r.path).filter(Boolean);
-          curBuf.push({ type: 'info', text: 'Available Routes (' + rList.length + '): ' + rList.join(', ') });
-        } else if (cmd === 'tabs') {
-          const tList = (g.router?.pageTabs || []).map(t => t.title || t.path || 'Tab').join(', ');
-          curBuf.push({ type: 'info', text: 'Workspace Tabs: ' + (tList || 'None open') });
-        } else if (cmd === 'chat') {
-          g.chatbarOpen = true;
-          curBuf.push({ type: 'ok', text: 'Collaborative AI Chatbar opened.' });
-        } else if (cmd === 'dock') {
-          g.toggleTerminalDock();
-          curBuf.push({ type: 'ok', text: 'Terminal docking toggled: ' + (g.terminalDocked ? 'Docked below footer' : 'Floating over content') });
-        } else if (cmd === 'theme') {
-          if (arg) {
-            document.documentElement.setAttribute('data-theme', arg);
-            localStorage.setItem('theme', arg);
-            curBuf.push({ type: 'ok', text: 'Theme switched to: ' + arg });
-          } else {
-            curBuf.push({ type: 'warn', text: 'Usage: theme <name> (e.g. theme synthwave, theme luxury, theme dark)' });
-          }
-        } else if (cmd === 'exit' || cmd === 'close') {
-          g.terminalOpen = false;
-          curBuf.push({ type: 'dim', text: 'Terminal closed.' });
-        } else {
-          curBuf.push({ type: 'error', text: 'Command not recognized: ' + cmd + '. Type help for a list of commands.' });
-        }
-        
-        g.terminalBuffers = { ...(g.terminalBuffers || {}), [tab]: curBuf };
-        g.terminalInputText = '';
-        
-        window.Nexus?.coordinator?.runtimeContext?.$nextTick?.(() => {
-          const stream = document.getElementById('terminal-message-stream');
-          if (stream) stream.scrollTop = stream.scrollHeight;
-        });
-      }
+      themes: ['light','dark','cupcake','bumblebee','emerald','corporate','synthwave','retro','cyberpunk','valentine','halloween','garden','forest','aqua','lofi','pastel','fantasy','wireframe','black','luxury','dracula','cmyk','autumn','business','acid','lemonade','night','coffee','winter','dim','nord','sunset']
     }"
   data-class="{ 'md:grid-cols-[max-content_1fr]': !collapsed, 'md:grid-cols-[4rem_1fr]': collapsed, 'h-screen max-h-screen overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }"
   data-effect="if (!favHydrated && indexedDB?.favorites) { favHydrated = true; indexedDB.favorites.all().then(items => { if (items && items.length) { favorites = items; favoriteGroups = [...new Set(items.map(f => (f?.group || '').trim()).filter(Boolean))]; } }); }"
-  data-on-resize_window="isMobile = window.innerWidth < 768"
-  data-on-keydown_window="if ($evt.ctrlKey && ($evt.key === '`' || $evt.key === '~')) { $evt.preventDefault(); toggleTerminalHud(); }">
+  data-on-resize_window="isMobile = window.innerWidth < 768">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content flex flex-col transition-[padding] duration-300 ease-in-out"
     data-class="{ 'h-full overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader, 'md:pe-96': chatbarDocked && chatbarOpen, 'pe-0': !chatbarDocked || !chatbarOpen }">
@@ -686,13 +524,6 @@
         </div>
       </div>
       <div class="flex-1 justify-end flex gap-2">
-        <!-- Terminal HUD Button -->
-        <button type="button" class="btn btn-ghost btn-circle hover:scale-105 transition-all"
-          aria-label="Toggle Terminal HUD (Ctrl+` or Click)" title="Terminal HUD (Ctrl+`)"
-          data-class="{ 'text-primary bg-primary/10 ring-1 ring-primary/30': terminalOpen }"
-          data-on-click="toggleTerminalHud()">
-          <iconify-icon icon="material-symbols-light:terminal" class="text-2xl"></iconify-icon>
-        </button>
 
         <!-- Search Button -->
         <button class="btn btn-ghost btn-circle hover:scale-102" aria-label="Open search (Ctrl+K)" title="Search (Ctrl+K)"
@@ -1266,70 +1097,6 @@
               class="grow flex flex-col"></tab-content>
           </div>
         </template>
-
-        <!-- ================= Collaborative Chat FAB & Speed Dial (Anchored to Content Wrapper) ================= -->
-        <!-- Speed Dial Action Pills: Stacks upward when chatFabOpen is true, hides when chatbarOpen -->
-        <div data-show="chatFabOpen && !chatbarOpen"
-          class="absolute bottom-24 end-6 z-30 flex flex-col items-end gap-3 transition-all duration-300">
-          <!-- "New Conversation" Action -->
-          <div class="flex items-center gap-2.5">
-            <span class="badge badge-neutral shadow-lg font-medium text-xs py-2 px-3">New Conversation</span>
-            <button type="button" class="btn btn-circle btn-sm btn-secondary shadow-xl hover:scale-110 active:scale-95 transition-transform"
-              aria-label="New Conversation"
-              data-on-click="createChatSession()">
-              <iconify-icon icon="material-symbols-light:add" class="text-lg"></iconify-icon>
-            </button>
-          </div>
-
-          <!-- Speed Dial Session Pills (Correlate to chatSessions, draggable & contextmenu pinnable) -->
-          <div class="flex flex-col items-end gap-3 w-full"
-            data-drag-container="chatSessions" data-drag-group="chatSessions" data-drag-direction="vertical">
-            <template data-for="session in (chatSessions || [])" data-key="session.id">
-              <div data-drag
-                class="flex items-center gap-2.5 cursor-grab active:cursor-grabbing select-none"
-                data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'chatSession', target: session }">
-                <span class="badge badge-neutral shadow-lg font-medium text-xs py-2 px-3 max-w-xs truncate cursor-pointer hover:bg-neutral-focus transition-colors flex items-center gap-1.5"
-                  data-on-click="openSession(session.id)">
-                  <iconify-icon data-show="session.pinned" icon="material-symbols-light:keep" class="text-xs text-secondary shrink-0"></iconify-icon>
-                  <span data-bind="session.name"></span>
-                </span>
-                <button type="button"
-                  class="btn btn-circle btn-md btn-primary shadow-xl hover:scale-110 active:scale-95 transition-transform relative"
-                  aria-label="Open Session"
-                  data-on-click="openSession(session.id)">
-                  <iconify-icon data-bind-icon="session.icon" class="text-xl"></iconify-icon>
-                  <!-- Pinned Indicator Badge -->
-                  <span data-show="session.pinned"
-                    class="badge badge-xs badge-secondary absolute -top-1 -start-1 size-4 p-0 flex items-center justify-center shadow-sm">
-                    <iconify-icon icon="material-symbols-light:keep" class="text-[10px]"></iconify-icon>
-                  </span>
-                  <!-- Unread Badge -->
-                  <span data-show="session.unread > 0"
-                    class="badge badge-xs badge-error indicator-item absolute -top-1 -end-1 shadow-sm"
-                    data-bind="session.unread"></span>
-                </button>
-              </div>
-            </template>
-          </div>
-        </div>
-
-        <!-- Primary Floating Action Button (FAB): Floating at bottom-end of content wrapper, auto-hides when chatbarOpen -->
-        <div data-show="!chatbarOpen" class="absolute bottom-6 end-6 z-30 transition-all duration-300">
-          <button type="button"
-            class="btn btn-circle btn-lg btn-primary shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-primary-content/20 flex items-center justify-center relative"
-            aria-label="Toggle Collaboration Speed Dial"
-            data-on-click="chatFabOpen = !chatFabOpen">
-            <!-- Main Chat Icon (when speed dial closed) -->
-            <iconify-icon icon="material-symbols-light:chat" class="text-3xl transition-transform duration-300"
-              data-class="{ 'rotate-90 opacity-0 scale-50 hidden': chatFabOpen, 'rotate-0 opacity-100 scale-100 block': !chatFabOpen }"></iconify-icon>
-            <!-- Close (✕) Icon (when speed dial open) -->
-            <iconify-icon icon="material-symbols-light:close" class="text-3xl transition-transform duration-300"
-              data-class="{ 'rotate-0 opacity-100 scale-100 block': chatFabOpen, '-rotate-90 opacity-0 scale-50 hidden': !chatFabOpen }"></iconify-icon>
-            <!-- Global unread indicator -->
-            <span data-show="!chatFabOpen && (chatSessions || []).some(s => s.unread > 0)"
-              class="badge badge-xs badge-error absolute top-0 end-0 size-3 rounded-full border-2 border-base-100"></span>
-          </button>
-        </div>
       </div>
 
       <!-- Page Footer with Inline Diagnostics (within content drawer, not below sidebar) -->
@@ -1353,149 +1120,6 @@
           <span data-bind="'Tabs: ' + (router.pageTabs?.length || 0)"></span>
         </div>
       </footer>
-
-      <!-- Reverse Quake Terminal / CLI HUD -->
-      <div id="terminal-hud-container"
-        data-show="terminalOpen"
-        class="flex flex-col bg-neutral-950/95 text-neutral-content backdrop-blur-xl transition-[height] duration-300 ease-in-out overflow-hidden select-none font-mono text-xs"
-        data-class="{
-          'relative w-full shrink-0 border-t border-primary/20': terminalDocked,
-          'absolute inset-x-0 bottom-0 z-30 shadow-2xl border-t-2 border-primary/50': !terminalDocked,
-          'h-96 md:h-[50vh]': terminalMaximized,
-          'h-64 md:h-72': !terminalMaximized
-        }">
-
-        <!-- 1. Terminal Chrome / Tab Bar Header -->
-        <div class="flex items-center justify-between px-3 py-1.5 bg-neutral-900 border-b border-neutral-800 text-neutral-content shrink-0 gap-2">
-          <!-- Start: Title & Tabs -->
-          <div class="flex items-center gap-1.5 min-w-0 overflow-x-auto scrollbar-none">
-            <!-- Terminal Indicator / Status -->
-            <div class="flex items-center gap-1.5 px-2 py-1 rounded bg-neutral-800/80 text-primary font-semibold tracking-wider text-[11px] uppercase shrink-0">
-              <span class="size-2 rounded-full bg-success animate-pulse"></span>
-              <iconify-icon icon="material-symbols-light:terminal" class="text-sm"></iconify-icon>
-              <span class="max-sm:hidden">Nexus HUD</span>
-            </div>
-
-            <!-- Terminal Tabs -->
-            <template data-for="tab in (terminalTabs || [])" data-key="tab.id">
-              <div class="flex items-center gap-1 px-2.5 py-1 rounded cursor-pointer transition-colors shrink-0 text-xs"
-                data-class="{
-                  'bg-neutral-800 text-primary font-medium shadow-sm border border-primary/20': terminalActiveTab === tab.id,
-                  'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50': terminalActiveTab !== tab.id
-                }"
-                data-on-click="terminalActiveTab = tab.id">
-                <iconify-icon data-bind-icon="tab.icon" class="text-sm"></iconify-icon>
-                <span data-bind="tab.name"></span>
-                <button data-show="terminalTabs.length > 1" type="button"
-                  class="btn btn-ghost btn-xs size-4 min-h-0 p-0 hover:text-error opacity-60 hover:opacity-100"
-                  aria-label="Close Tab"
-                  data-on-click:stop="closeTerminalTab(tab.id)">
-                  <iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
-                </button>
-              </div>
-            </template>
-
-            <!-- New Tab (+) Button -->
-            <button type="button"
-              class="btn btn-ghost btn-xs size-6 min-h-0 p-0 text-neutral-400 hover:text-primary hover:bg-neutral-800 rounded shrink-0"
-              aria-label="New Terminal Tab" title="New Tab"
-              data-on-click="createTerminalTab()">
-              <iconify-icon icon="material-symbols-light:add" class="text-base"></iconify-icon>
-            </button>
-          </div>
-
-          <!-- End: Action Controls (Clear, Maximize, Dock/Float, Close) -->
-          <div class="flex items-center gap-1 shrink-0">
-            <!-- Clear Buffer Button -->
-            <button type="button"
-              class="btn btn-ghost btn-xs size-7 min-h-0 p-0 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded"
-              aria-label="Clear Buffer" title="Clear Buffer"
-              data-on-click="clearTerminalTab(terminalActiveTab)">
-              <iconify-icon icon="material-symbols-light:ink-eraser-outline" class="text-base"></iconify-icon>
-            </button>
-
-            <!-- Maximize / Restore Toggle Button -->
-            <button type="button"
-              class="btn btn-ghost btn-xs size-7 min-h-0 p-0 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded"
-              aria-label="Toggle Maximize"
-              data-bind-title="terminalMaximized ? 'Restore Height' : 'Maximize Height'"
-              data-on-click="toggleTerminalMax()">
-              <iconify-icon data-bind-icon="terminalMaximized ? 'material-symbols-light:collapse-content' : 'material-symbols-light:expand-content'" class="text-base"></iconify-icon>
-            </button>
-
-            <!-- Dock / Float Toggle Button -->
-            <button type="button"
-              class="btn btn-ghost btn-xs size-7 min-h-0 p-0 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded"
-              aria-label="Toggle Docking"
-              data-bind-title="terminalDocked ? 'Float over content' : 'Dock below footer'"
-              data-class="{ 'text-secondary bg-secondary/10': terminalDocked }"
-              data-on-click="toggleTerminalDock()">
-              <iconify-icon icon="material-symbols-light:keep" class="text-base transition-transform duration-200"
-                data-class="{ 'rotate-45': terminalDocked }"></iconify-icon>
-            </button>
-
-            <!-- Close Button -->
-            <button type="button"
-              class="btn btn-ghost btn-xs size-7 min-h-0 p-0 text-neutral-400 hover:text-error hover:bg-neutral-800 rounded"
-              aria-label="Close Terminal HUD" title="Close HUD"
-              data-on-click="closeTerminalHud()">
-              <iconify-icon icon="material-symbols-light:close" class="text-base"></iconify-icon>
-            </button>
-          </div>
-        </div>
-
-        <!-- 2. Terminal Output Stream Area -->
-        <div class="flex-1 min-h-0 overflow-y-auto p-3 space-y-1 select-text scrollbar-thin scrollbar-thumb-neutral-700"
-          id="terminal-message-stream"
-          data-effect="if (terminalOpen) { $nextTick(() => { const el = document.getElementById('terminal-message-stream'); if (el) el.scrollTop = el.scrollHeight; }); }">
-          <template data-for="line in ((terminalBuffers || {})[terminalActiveTab] || [])">
-            <div class="leading-relaxed flex items-start gap-2">
-              <span data-show="line.time" class="text-neutral-500 shrink-0 text-[10px]" data-bind="line.time"></span>
-              
-              <!-- Badge by type -->
-              <span data-show="line.type === 'system'" class="badge badge-xs badge-info font-mono shrink-0">SYS</span>
-              <span data-show="line.type === 'ok'" class="badge badge-xs badge-success font-mono shrink-0">OK</span>
-              <span data-show="line.type === 'warn'" class="badge badge-xs badge-warning font-mono shrink-0">WARN</span>
-              <span data-show="line.type === 'error'" class="badge badge-xs badge-error font-mono shrink-0">ERR</span>
-              <span data-show="line.type === 'heap'" class="badge badge-xs badge-secondary font-mono shrink-0">HEAP</span>
-              <span data-show="line.type === 'worker'" class="badge badge-xs badge-accent font-mono shrink-0">WORKER</span>
-              <span data-show="line.type === 'build'" class="badge badge-xs badge-primary font-mono shrink-0">BUILD</span>
-              <span data-show="line.type === 'db'" class="badge badge-xs badge-warning font-mono shrink-0">SURREAL</span>
-              <span data-show="line.type === 'user'" class="text-primary font-bold shrink-0">nexus-ux &gt;</span>
-
-              <span data-class="{
-                'text-neutral-400': line.type === 'dim',
-                'text-primary font-medium': line.type === 'info',
-                'text-success': line.type === 'ok',
-                'text-warning': line.type === 'warn' || line.type === 'db',
-                'text-error': line.type === 'error',
-                'text-secondary font-mono': line.type === 'heap',
-                'text-accent': line.type === 'worker',
-                'text-neutral-200': line.type === 'system' || line.type === 'user' || line.type === 'build' || line.type === 'help' || !line.type
-              }" data-bind="line.text" class="break-all whitespace-pre-wrap"></span>
-            </div>
-          </template>
-        </div>
-
-        <!-- 3. Terminal Interactive CLI Prompt Bar -->
-        <div class="px-3 py-2 bg-neutral-900/90 border-t border-neutral-800/80 flex items-center gap-2 shrink-0">
-          <span class="text-primary font-bold shrink-0 flex items-center gap-1">
-            <span>nexus-ux</span>
-            <span class="text-neutral-500 font-normal">&gt;</span>
-          </span>
-          <input id="terminal-cli-input" type="text"
-            class="input input-ghost input-xs flex-1 text-neutral-100 font-mono focus:outline-none border-0 focus:border-0 px-1 placeholder:text-neutral-600"
-            placeholder="Type 'help' for commands (status, routes, theme, clear, topology)..."
-            data-bind-value="terminalInputText"
-            data-on-keydown:enter:prevent="runTerminalCommand()" />
-          <button type="button"
-            class="btn btn-primary btn-xs font-mono h-6 min-h-0 px-2.5 rounded text-[11px]"
-            aria-label="Execute Command"
-            data-on-click="runTerminalCommand()">
-            Run ↵
-          </button>
-        </div>
-      </div>
     </div>
 
     <!-- Search Modal (triggered by the navbar search button or Ctrl+K) -->
@@ -1639,33 +1263,25 @@
     <!-- Reusable Sub-Level Template (Infinite Arbitrary Sub-Nesting) -->
     <template id="sidebar-sub-menu-item">
       <!-- Sub Leaf Item -->
-      <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
-        data-bind-data-drag="cat.itemsDraggable && item.href !== '/' ? '' : null"
+      <li data-show="!item.children || item.children.length === 0" class="cursor-pointer" data-drag
         data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
         <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
           data-bind-data-tab-title="item.tabTitle || item.title"
-          data-bind-data-tab-icon="item.tabIcon || item.icon"
-          data-class="{ 'active': router.path === item.href }"
           data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-          data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
-          <iconify-icon data-show="item.icon" data-bind-icon="item.icon" class="shrink-0 text-xl pe-1"></iconify-icon>
-          <span data-bind="item.title"></span>
+          data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }"
+          data-bind="item.title">
         </a>
       </li>
 
       <!-- Sub Branch Item (e.g. Profile 3) -->
-      <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
-        data-bind-data-drag="cat.itemsDraggable && item.href !== '/' ? '' : null"
+      <li data-show="item.children && item.children.length > 0" class="cursor-pointer" data-drag
         data-signal="{ open: false }"
         data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
         <div class="flex">
-          <a data-bind-href="item.href" draggable="false" class="grow flex items-center whitespace-nowrap"
+          <a data-bind-href="item.href" draggable="false" class="grow whitespace-nowrap"
             data-bind-data-tab-title="item.tabTitle || item.title"
-            data-bind-data-tab-icon="item.tabIcon || item.icon"
-            data-class="{ 'active': router.path === item.href }"
             data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
             data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
-            <iconify-icon data-show="item.icon" data-bind-icon="item.icon" class="shrink-0 text-xl pe-1"></iconify-icon>
             <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" class="whitespace-nowrap"
               data-bind="item.title"></span>
           </a>
@@ -1676,8 +1292,8 @@
         </div>
         <ul
           class="menu-dropdown menu-dropdown-show overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
-          data-class="{ 'max-h-[3000px] opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
-          data-bind-data-drag-container="cat.itemsDraggable ? item.children : null">
+          data-class="{ 'max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
+          data-drag-container="item.children">
           <!-- RECURSIVE TEMPLATE: Calls itself for infinite arbitrary sub-levels! -->
           <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
             data-key="item.href"></template>
@@ -1689,19 +1305,13 @@
     <main class="sidebar-content flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
       data-effect="if (collapsed && !hovered && !sidebarOpen && $el) { $el.scrollTo({ top: 0, behavior: 'smooth' }); }"
       data-signal="{
-        categories: [
-          { id: 'Apps', name: 'Apps', itemsDraggable: true, icon: 'material-symbols-light:apps' },
-          { id: 'Docs', name: 'Docs', itemsDraggable: false, icon: 'material-symbols-light:menu-book-outline' },
-          { id: 'Labs', name: 'Labs', itemsDraggable: false, icon: 'material-symbols-light:science-outline' },
-          { id: 'Profiles', name: 'Profiles', itemsDraggable: true, icon: 'material-symbols-light:person-outline' },
-          { id: 'System', name: 'System', itemsDraggable: true, icon: 'material-symbols-light:settings-outline' }
-        ]
+        categories: ['Apps', 'Profiles', 'System']
       }">
       <!-- Main Navigation Menu (tab 1) -->
       <div data-show="activeSidebarTab === 1" class="w-full">
         <!-- 1. Top-Level Uncategorized Items (Dedicated <ul>) -->
-        <ul class="menu w-full" data-drag-container="(router.pages || []).filter(p => !p.category && !p.meta?.category)">
-          <template data-for="item in (router.pages || []).filter(p => !p.category && !p.meta?.category)" data-key="item.href">
+        <ul class="menu w-full" data-drag-container="(router.pages || []).filter(p => !p.category)">
+          <template data-for="item in (router.pages || []).filter(p => !p.category)" data-key="item.href">
             <!-- Root Leaf Item (No Children) -->
             <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
               data-bind-data-drag="item.href !== '/' ? '' : null"
@@ -1709,7 +1319,6 @@
               <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
                 data-bind-data-tab-title="item.tabTitle || item.title"
                 data-bind-data-tab-icon="item.tabIcon || item.icon"
-                data-class="{ 'active': router.path === item.href }"
                 data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                 data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                 <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
@@ -1728,7 +1337,6 @@
                 <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
                   data-bind-data-tab-title="item.tabTitle || item.title"
                   data-bind-data-tab-icon="item.tabIcon || item.icon"
-                  data-class="{ 'active': router.path === item.href }"
                   data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                   data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                   <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
@@ -1747,7 +1355,7 @@
               </div>
               <ul
                 class="menu-dropdown menu-dropdown-show ms-12 overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
-                data-class="{ 'max-h-[3000px] opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
+                data-class="{ 'max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
                 data-drag-container="item.children">
                 <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
                   data-key="item.href"></template>
@@ -1757,31 +1365,29 @@
         </ul>
 
         <!-- 2. Categorized Sections (Draggable Category Groups & Dedicated Item Lists) -->
-        <div data-drag-container="categories" data-drag-handle=".menu-title">
-          <template data-for="cat in categories" data-key="cat.id">
-            <div data-drag data-show="(router.pages || []).filter(p => (p.category || p.meta?.category) === cat.id).length > 0">
+        <div data-drag-container="categories">
+          <template data-for="cat in categories" data-key="cat">
+            <div data-drag data-show="(router.pages || []).filter(p => p.category === cat).length > 0">
               <!-- Category Header (Title + Separator Line) -->
               <ul class="menu w-full py-0">
                 <li
                   class="menu-title overflow-hidden transition-[opacity,max-height,margin,padding] duration-300 ease-in-out cursor-grab"
                   data-class="{ 'max-h-0 opacity-0 !my-0 !py-0 pointer-events-none': collapsed && !hovered && !sidebarOpen, 'max-h-12 opacity-100 mt-4': !collapsed || hovered || sidebarOpen }"
-                  data-bind="cat.name">Title
+                  data-bind="cat">Title
                 </li>
                 <li class="w-full mx-0" data-class="{ 'opacity-6': collapsed && !hovered && !sidebarOpen }"></li>
               </ul>
 
-              <!-- Dynamic Category Item List (Zero Hardcoding, Zero Duplication, ZERO Flashing) -->
-              <ul class="menu w-full"
-                data-bind-data-drag-container="cat.itemsDraggable ? (router.pages || []).filter(p => (p.category || p.meta?.category) === cat.id) : null">
-                <template data-for="item in (router.pages || []).filter(p => (p.category || p.meta?.category) === cat.id)" data-key="item.href">
+              <!-- Dynamic Category Item List (Zero Hardcoding, Zero Duplication) -->
+              <ul class="menu w-full" data-drag-container="(router.pages || []).filter(p => p.category === cat)">
+                <template data-for="item in (router.pages || []).filter(p => p.category === cat)" data-key="item.href">
                   <!-- Root Leaf Item (No Children) -->
                   <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
-                    data-bind-data-drag="cat.itemsDraggable && item.href !== '/' ? '' : null"
+                    data-bind-data-drag="item.href !== '/' ? '' : null"
                     data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                     <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
                       data-bind-data-tab-title="item.tabTitle || item.title"
                       data-bind-data-tab-icon="item.tabIcon || item.icon"
-                      data-class="{ 'active': router.path === item.href }"
                       data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                       data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                       <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
@@ -1794,13 +1400,12 @@
 
                   <!-- Root Branch Item (With Children) -->
                   <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
-                    data-bind-data-drag="cat.itemsDraggable && item.href !== '/' ? '' : null" data-signal="{ open: false }"
+                    data-bind-data-drag="item.href !== '/' ? '' : null" data-signal="{ open: false }"
                     data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                     <div class="flex">
                       <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
                         data-bind-data-tab-title="item.tabTitle || item.title"
                         data-bind-data-tab-icon="item.tabIcon || item.icon"
-                        data-class="{ 'active': router.path === item.href }"
                         data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                         data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                         <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
@@ -1820,8 +1425,8 @@
                     </div>
                     <ul
                       class="menu-dropdown menu-dropdown-show ms-12 overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
-                      data-class="{ 'max-h-[3000px] opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
-                      data-bind-data-drag-container="cat.itemsDraggable ? item.children : null">
+                      data-class="{ 'max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
+                      data-drag-container="item.children">
                       <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
                         data-key="item.href"></template>
                     </ul>
@@ -2445,6 +2050,70 @@
         </button>
       </div>
     </template>
+  </div>
+
+  <!-- ================= Collaborative Chat FAB & Speed Dial ================= -->
+  <!-- Speed Dial Action Pills: Stacks upward when chatFabOpen is true, hides when chatbarOpen -->
+  <div data-show="chatFabOpen && !chatbarOpen"
+    class="fixed bottom-24 end-6 z-30 flex flex-col items-end gap-3 transition-all duration-300">
+    <!-- "New Conversation" Action -->
+    <div class="flex items-center gap-2.5">
+      <span class="badge badge-neutral shadow-lg font-medium text-xs py-2 px-3">New Conversation</span>
+      <button type="button" class="btn btn-circle btn-sm btn-secondary shadow-xl hover:scale-110 active:scale-95 transition-transform"
+        aria-label="New Conversation"
+        data-on-click="createChatSession()">
+        <iconify-icon icon="material-symbols-light:add" class="text-lg"></iconify-icon>
+      </button>
+    </div>
+
+    <!-- Speed Dial Session Pills (Correlate to chatSessions, draggable & contextmenu pinnable) -->
+    <div class="flex flex-col items-end gap-3 w-full"
+      data-drag-container="chatSessions" data-drag-group="chatSessions" data-drag-direction="vertical">
+      <template data-for="session in (chatSessions || [])" data-key="session.id">
+        <div data-drag
+          class="flex items-center gap-2.5 cursor-grab active:cursor-grabbing select-none"
+          data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'chatSession', target: session }">
+          <span class="badge badge-neutral shadow-lg font-medium text-xs py-2 px-3 max-w-xs truncate cursor-pointer hover:bg-neutral-focus transition-colors flex items-center gap-1.5"
+            data-on-click="openSession(session.id)">
+            <iconify-icon data-show="session.pinned" icon="material-symbols-light:keep" class="text-xs text-secondary shrink-0"></iconify-icon>
+            <span data-bind="session.name"></span>
+          </span>
+          <button type="button"
+            class="btn btn-circle btn-md btn-primary shadow-xl hover:scale-110 active:scale-95 transition-transform relative"
+            aria-label="Open Session"
+            data-on-click="openSession(session.id)">
+            <iconify-icon data-bind-icon="session.icon" class="text-xl"></iconify-icon>
+            <!-- Pinned Indicator Badge -->
+            <span data-show="session.pinned"
+              class="badge badge-xs badge-secondary absolute -top-1 -start-1 size-4 p-0 flex items-center justify-center shadow-sm">
+              <iconify-icon icon="material-symbols-light:keep" class="text-[10px]"></iconify-icon>
+            </span>
+            <!-- Unread Badge -->
+            <span data-show="session.unread > 0"
+              class="badge badge-xs badge-error indicator-item absolute -top-1 -end-1 shadow-sm"
+              data-bind="session.unread"></span>
+          </button>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- Primary Floating Action Button (FAB): Auto-hides when chatbarOpen is true -->
+  <div data-show="!chatbarOpen" class="fixed bottom-6 end-6 z-30 transition-all duration-300">
+    <button type="button"
+      class="btn btn-circle btn-lg btn-primary shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-primary-content/20 flex items-center justify-center relative"
+      aria-label="Toggle Collaboration Speed Dial"
+      data-on-click="chatFabOpen = !chatFabOpen">
+      <!-- Main Chat Icon (when speed dial closed) -->
+      <iconify-icon icon="material-symbols-light:chat" class="text-3xl transition-transform duration-300"
+        data-class="{ 'rotate-90 opacity-0 scale-50 hidden': chatFabOpen, 'rotate-0 opacity-100 scale-100 block': !chatFabOpen }"></iconify-icon>
+      <!-- Close (✕) Icon (when speed dial open) -->
+      <iconify-icon icon="material-symbols-light:close" class="text-3xl transition-transform duration-300"
+        data-class="{ 'rotate-0 opacity-100 scale-100 block': chatFabOpen, '-rotate-90 opacity-0 scale-50 hidden': !chatFabOpen }"></iconify-icon>
+      <!-- Global unread indicator -->
+      <span data-show="!chatFabOpen && (chatSessions || []).some(s => s.unread > 0)"
+        class="badge badge-xs badge-error absolute top-0 end-0 size-3 rounded-full border-2 border-base-100"></span>
+    </button>
   </div>
 
   <!-- ================= Right-Side Collaborative Chatbar ================= -->

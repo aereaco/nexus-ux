@@ -3437,37 +3437,20 @@ ${scripts}
     if (!htmlText || typeof htmlText !== "string")
       return meta;
     try {
-      const fmMatch = htmlText.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-      let hasFmTitle = false;
-      if (fmMatch) {
-        const lines = fmMatch[1].split(/\r?\n/);
-        for (const l of lines) {
-          const idx = l.indexOf(":");
-          if (idx > 0) {
-            const k = l.substring(0, idx).trim().toLowerCase();
-            const v = l.substring(idx + 1).trim().replace(/^['"]|['"]$/g, "");
-            meta[k] = v;
-            if (k === "title")
-              hasFmTitle = true;
-          }
-        }
+      const parser = new DOMParser();
+      const parsedDoc = parser.parseFromString(htmlText, "text/html");
+      const titles = Array.from(parsedDoc.querySelectorAll("title"));
+      const titleEl = titles.find((t) => !t.closest("svg"));
+      if (titleEl && titleEl.textContent) {
+        meta.title = titleEl.textContent.trim();
       }
-      if (!hasFmTitle) {
-        const parser = new DOMParser();
-        const parsedDoc = parser.parseFromString(htmlText, "text/html");
-        const titles = Array.from(parsedDoc.querySelectorAll("title"));
-        const titleEl = titles.find((t) => !t.closest("svg"));
-        if (titleEl && titleEl.textContent) {
-          meta.title = titleEl.textContent.trim();
+      parsedDoc.querySelectorAll("meta").forEach((metaEl) => {
+        const key = metaEl.getAttribute("name") || metaEl.getAttribute("property");
+        const content = metaEl.getAttribute("content");
+        if (key && content) {
+          meta[key] = content.trim();
         }
-        parsedDoc.querySelectorAll("meta").forEach((metaEl) => {
-          const key = metaEl.getAttribute("name") || metaEl.getAttribute("property");
-          const content = metaEl.getAttribute("content");
-          if (key && content && !meta[key]) {
-            meta[key] = content.trim();
-          }
-        });
-      }
+      });
       const globals = runtime.globalSignals ? runtime.globalSignals() : {};
       if (globals) {
         const norm = path.startsWith("/") ? path : "/" + path;
@@ -3642,6 +3625,7 @@ ${scripts}
                   const t = scope.tab;
                   if (t && typeof t === "object") {
                     tabObj = t;
+                    tabObj.linkedContent = componentState;
                   }
                   break;
                 }
@@ -3685,6 +3669,7 @@ ${scripts}
                 componentState.hasError = false;
                 if (isTabOutlet && tabObj && typeof tabObj === "object") {
                   tabObj.isLoading = true;
+                  tabObj.linkedContent = componentState;
                 }
                 try {
                   let html = "";
@@ -3710,31 +3695,22 @@ ${scripts}
                           const extracted2 = extractResourceMetadata(fresh, targetPath, runtime);
                           componentState.meta = extracted2;
                           if (tabObj && extracted2) {
-                            tabObj.meta = Object.assign(tabObj.meta || {}, extracted2);
+                            tabObj.meta = { ...tabObj.meta || {}, ...extracted2 };
                           }
                         }
                       }
                     });
                     html = typeof result === "string" ? result : String(result);
                   }
-                  const rawText = html;
-                  const extracted = extractResourceMetadata(rawText, config.path, runtime);
-                  componentState.meta = extracted;
-                  const isMarkdown = targetPath.endsWith(".md") || targetPath.endsWith(".markdown");
-                  if (isMarkdown) {
-                    const fmMatch = rawText.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-                    let cleanMd = rawText;
-                    if (fmMatch) {
-                      cleanMd = rawText.slice(fmMatch[0].length).trim();
-                    }
-                    html = `<div class="p-6 max-w-5xl mx-auto"><article data-markdown class="prose max-w-none">${cleanMd}</article></div>`;
-                  } else if (rawText.includes("<!DOCTYPE") || rawText.includes("data-init") && el.tagName.toLowerCase() !== "html") {
+                  if (html.includes("<!DOCTYPE") || html.includes("data-init") && el.tagName.toLowerCase() !== "html") {
                     throw new Error(`Invalid component fragment returned for "${targetPath}": received full HTML shell.`);
                   }
                   if (runtime.isDevMode) {
                     console.log(`[Component] Template loaded for <${el.tagName}>, length: ${html.length}`);
                   }
                   componentState.templateContent = html;
+                  const extracted = extractResourceMetadata(html, config.path, runtime);
+                  componentState.meta = extracted;
                   if (tabObj && extracted && (extracted.title || extracted.icon)) {
                     tabObj.meta = { ...tabObj.meta || {}, ...extracted };
                   }
@@ -3747,13 +3723,13 @@ ${scripts}
                     if (scopeExpr && scopeExpr.trim()) {
                       const declared = runtime.evaluate(el, scopeExpr);
                       const declaredObj = declared && typeof declared === "object" ? declared : {};
-                      shadowScope = createInheritedShadowScope(el, declaredObj);
+                      shadowScope = Object.assign(/* @__PURE__ */ Object.create(null), ctx, declaredObj);
                     } else {
                       shadowScope = createInheritedShadowScope(el, ctx);
                     }
                     shadow[DATA_STACK_KEY] = [shadowScope];
                     runtime.morphDOM(shadow, html);
-                    stylesheet.adoptShadowSubtree(shadow);
+                    stylesheet.adoptElementSubtree(shadow);
                     Array.from(shadow.children).forEach((child) => {
                       if (child instanceof HTMLElement || child instanceof SVGElement) {
                         runtime.processElement(child);
@@ -3786,12 +3762,6 @@ ${scripts}
                   componentState.isLoading = false;
                   if (isTabOutlet && tabObj && typeof tabObj === "object") {
                     tabObj.isLoading = false;
-                    if (componentState.meta?.title && (!tabObj.meta || !tabObj.meta.title)) {
-                      tabObj.meta = Object.assign(tabObj.meta || {}, { title: componentState.meta.title });
-                    }
-                    if (componentState.meta?.icon && (!tabObj.meta || !tabObj.meta.icon)) {
-                      tabObj.meta = Object.assign(tabObj.meta || {}, { icon: componentState.meta.icon });
-                    }
                   }
                 }
               };
@@ -7158,14 +7128,64 @@ ${match}</ul>
               const globs = Array.isArray(shadows) ? shadows : [shadows];
               return globs.some((g) => globToRegex(g).test(path));
             };
-            const routeList = [];
-            const matchMeta = /* @__PURE__ */ new WeakMap();
-            const buildManifest = () => {
-              if (state) {
-                state.manifest = routeList.filter((r) => !r.internal).slice();
-                state.routes = routeList.slice();
+            const buildManifest = async () => {
+              const entries = routeList.slice();
+              const manifestUrl = state.config.manifest;
+              if (manifestUrl) {
+                try {
+                  let raw;
+                  if (runtime.fetch) {
+                    raw = await runtime.fetch.request(applyBase(manifestUrl), { responseType: "text" }, el);
+                  } else {
+                    raw = await (await fetch(applyBase(manifestUrl))).text();
+                  }
+                  const parsed = JSON.parse(raw);
+                  const list = Array.isArray(parsed) ? parsed : parsed.routes ?? [];
+                  for (const entry of list) {
+                    if (!entry || typeof entry !== "object")
+                      continue;
+                    const routePath = entry.route !== void 0 ? entry.route : entry.path || "/";
+                    const compPath = entry.path || entry.component || "";
+                    const id = entry.id || entry.name || "";
+                    const isInternal = entry.internal === true || !routePath || shadowMatch(routePath) || shadowMatch(compPath);
+                    const meta = pathToRegex(routePath || "/");
+                    const rec = {
+                      path: routePath,
+                      element: document.documentElement,
+                      name: id,
+                      redirect: entry.redirect,
+                      layout: entry.layout,
+                      component: compPath,
+                      meta: {
+                        title: entry.title,
+                        icon: entry.icon,
+                        order: entry.order,
+                        ...entry.meta || {}
+                      },
+                      internal: isInternal,
+                      source: "manifest",
+                      ...meta
+                    };
+                    rec.matcher = meta.regex;
+                    entries.push(rec);
+                  }
+                } catch (e) {
+                  reportError(new Error(`router: failed to load manifest "${manifestUrl}": ${e}`), el);
+                }
+              }
+              state.manifest = entries.filter((r) => !r.internal).slice();
+              state.routes = entries.slice();
+              for (const rec of entries) {
+                if (!routeList.some((r) => r.path === rec.path && r.name === rec.name)) {
+                  routeList.push(rec);
+                  if (rec.matcher) {
+                    matchMeta.set(rec, { regex: rec.matcher, keys: rec.keys || [], hasWildcard: rec.hasWildcard || false });
+                  }
+                }
               }
             };
+            const routeList = [];
+            const matchMeta = /* @__PURE__ */ new WeakMap();
             if (Array.isArray(cfg.routes)) {
               for (const r of cfg.routes) {
                 if (r && (r.route || r.path)) {
@@ -7196,11 +7216,10 @@ ${match}</ul>
               meta: r.meta || {},
               layout: r.layout
             }));
-            let state;
             const resolveStaticComponent = (path) => {
               const clean = path.replace(/^\/+/, "");
               if (clean.startsWith("_internal/") || clean.startsWith("_pages/")) {
-                const withExt2 = clean.endsWith(".html") || clean.endsWith(".md") ? clean : clean + ".html";
+                const withExt2 = clean.endsWith(".html") ? clean : clean + ".html";
                 return applyBase("/" + withExt2);
               }
               const dir = (routerConfig.pagesDir || pagesDir || "_pages").replace(/^\/+|\/+$/g, "");
@@ -7208,13 +7227,12 @@ ${match}</ul>
               if (path === "/" || path === "") {
                 return applyBase(`/${dir}/${defaultIndex}`);
               }
-              const matchedRec = routeList.find((r) => r.path === path || r.path === "/" + clean) || state?.routes?.find((r) => r.path === path || r.path === "/" + clean);
+              const matchedRec = routeList.find((r) => r.path === path || r.path === "/" + clean);
               if (matchedRec?.component) {
                 return applyBase(matchedRec.component);
               }
-              const isDoc = clean.startsWith("docs/") || ["README", "changelog", "LICENSE"].some((k) => clean.toLowerCase().includes(k.toLowerCase()));
-              const ext = isDoc ? ".md" : ".html";
-              const withExt = clean.endsWith(".html") || clean.endsWith(".md") ? clean : clean + ext;
+              const leaf = clean.split("/").pop() || clean;
+              const withExt = leaf.endsWith(".html") ? leaf : leaf + ".html";
               const full = dir ? `/${dir}/${withExt}` : "/" + withExt;
               return applyBase(full);
             };
@@ -7231,7 +7249,7 @@ ${match}</ul>
             const initialPath = stripBase(globalThis.location.pathname) || "/";
             const initialMatched = routeList.find((r) => r.path === initialPath);
             const initialSource = initialMatched?.component || resolveStaticComponent(initialPath);
-            state = runtime.shallowReactive({
+            const state = runtime.shallowReactive({
               path: initialPath,
               params: {},
               query: {},
@@ -7327,18 +7345,13 @@ ${match}</ul>
                           parent: chParent,
                           meta: { title: chTitle, parent: chParent }
                         });
-                        const existingCh = routeList.find((r) => r.path === chHref);
-                        if (!existingCh) {
-                          const chRec = {
+                        if (!state.routes.find((r) => r.path === chHref)) {
+                          state.routes.push({
                             path: chHref,
-                            name: chName,
                             component: chPath,
-                            meta: { title: chTitle, parent: chParent },
-                            source: "manifest"
-                          };
-                          const chMeta = pathToRegex(chHref);
-                          matchMeta.set(chRec, chMeta);
-                          routeList.push(chRec);
+                            name: chName,
+                            meta: { title: chTitle, parent: chParent }
+                          });
                         }
                       }
                     }
@@ -7354,18 +7367,14 @@ ${match}</ul>
                       children: children.length > 0 ? children : void 0,
                       meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || void 0 }
                     });
-                    const existing = routeList.find((r) => r.path === href);
+                    const existing = state.routes.find((r) => r.path === href);
                     if (!existing) {
-                      const rec = {
+                      state.routes.push({
                         path: href,
-                        name: cleanName,
                         component: compPath,
-                        meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || void 0 },
-                        source: "manifest"
-                      };
-                      const rMeta = pathToRegex(href);
-                      matchMeta.set(rec, rMeta);
-                      routeList.push(rec);
+                        name: cleanName,
+                        meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || void 0 }
+                      });
                     }
                   }
                   const rootPages = [];
@@ -7449,39 +7458,13 @@ ${match}</ul>
                       const res = await fetchFn(compPath);
                       if (res && res.ok) {
                         const html = await res.text();
-                        const fmMatch = html.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-                        let fmTitle;
-                        let fmIcon;
-                        if (fmMatch) {
-                          const lines = fmMatch[1].split(/\r?\n/);
-                          for (const l of lines) {
-                            const idx = l.indexOf(":");
-                            if (idx > 0) {
-                              const k = l.substring(0, idx).trim().toLowerCase();
-                              const v = l.substring(idx + 1).trim().replace(/^['"]|['"]$/g, "");
-                              if (k === "title")
-                                fmTitle = v;
-                              if (k === "icon")
-                                fmIcon = v;
-                            }
-                          }
-                        }
-                        if (fmTitle) {
-                          title = fmTitle;
-                        } else {
-                          const doc = new DOMParser().parseFromString(html, "text/html");
-                          const t = doc.querySelector("title")?.textContent?.trim();
-                          if (t)
-                            title = t;
-                        }
-                        if (fmIcon) {
-                          icon = fmIcon;
-                        } else {
-                          const doc = new DOMParser().parseFromString(html, "text/html");
-                          const ic = doc.querySelector('meta[name="icon"]')?.getAttribute("content")?.trim();
-                          if (ic)
-                            icon = ic;
-                        }
+                        const doc = new DOMParser().parseFromString(html, "text/html");
+                        const t = doc.querySelector("title")?.textContent?.trim();
+                        const ic = doc.querySelector('meta[name="icon"]')?.getAttribute("content")?.trim();
+                        if (t)
+                          title = t;
+                        if (ic)
+                          icon = ic;
                       }
                     } catch {
                     }
@@ -7501,8 +7484,6 @@ ${match}</ul>
                   }
                 }
                 state.pages = discovered;
-                state.routes = routeList.slice();
-                state.manifest = routeList.filter((r) => !r.internal).slice();
                 state.lineage = state.getLineage(state.route || state.path);
               },
               lineage: [],
@@ -7639,7 +7620,7 @@ ${match}</ul>
                 const target = applyBase(url);
                 const tabId = opts?.tabId ?? getActiveTabId() ?? state.activePageTabId ?? state.activeTabId ?? null;
                 const cleanPath = stripBase(target);
-                const matched = routeList.find((r) => r.path === cleanPath || r.path === url) || state?.routes?.find((r) => r.path === cleanPath || r.path === url);
+                const matched = routeList.find((r) => r.path === cleanPath || r.path === url);
                 const isShadow = matched?.internal || shadowMatch(cleanPath);
                 if (tabId) {
                   state.tabPaths[tabId] = cleanPath;
@@ -7658,19 +7639,13 @@ ${match}</ul>
                   if (curPageTab) {
                     if (curPageTab.source !== resolvedSource) {
                       curPageTab.source = resolvedSource;
-                      curPageTab.isLoading = true;
+                      if (curPageTab.linkedContent) {
+                        curPageTab.linkedContent.isLoading = true;
+                      }
                     }
                     if (curPageTab.route !== cleanPath)
                       curPageTab.route = cleanPath;
-                    const meta = matched?.meta || {};
-                    const title = opts?.title || meta.title || matched?.name;
-                    const icon = opts?.icon || meta.icon;
-                    curPageTab.meta = {
-                      ...curPageTab.meta || {},
-                      ...meta,
-                      ...title ? { title } : {},
-                      ...icon ? { icon } : {}
-                    };
+                    state.pageTabs = [...state.pageTabs];
                   }
                   const _tabs = (runtime.globalSignals ? runtime.globalSignals() : {}).tabs;
                   if (Array.isArray(_tabs)) {
@@ -7967,6 +7942,7 @@ ${match}</ul>
               pendingRoutes.forEach((rec) => state.addRoute(rec));
               runtime._pendingDeclaredRoutes = [];
             }
+            state.discoverPages();
             const globals = runtime.globalSignals();
             const getActiveTabId = () => typeof globals.activePageTabId === "string" && globals.activePageTabId || typeof globals.activeTabId === "string" && globals.activeTabId || null;
             const setActiveTabId = (id) => {
@@ -8081,32 +8057,25 @@ ${match}</ul>
                   break;
                 }
               }
-              if (!matched && state.routes) {
-                const dynRoute = state.routes.find((r) => r.path === path || r.route === path);
-                if (dynRoute) {
-                  matched = {
-                    path: dynRoute.path || dynRoute.route,
-                    name: dynRoute.name || dynRoute.id,
-                    component: dynRoute.component || dynRoute.path,
-                    meta: dynRoute.meta || {},
-                    source: "manifest"
-                  };
+              if (matched && matched.internal && path !== "/") {
+                const isDirectAddressBarNav = !suppressNavIntercept && typeof globalThis.location !== "undefined" && stripBase(globalThis.location.pathname) === matched.path;
+                if (isDirectAddressBarNav) {
+                  state.errorCode = 404;
+                  staticComponent = errorPage2;
+                  if (typeof globalThis.history !== "undefined") {
+                    try {
+                      globalThis.history.replaceState(null, "", applyBase(cleanErrorPath));
+                    } catch {
+                    }
+                  }
                 }
+              }
+              if (matched && matched.redirect) {
+                state.navigate(matched.redirect, { replace: true });
+                return;
               }
               const errorPage2 = state.config.error ?? resolvePagesPath(void 0, "error.html");
               const cleanErrorPath = "/error";
-              if (!matched && path !== cleanErrorPath) {
-                const resolvedStatic = resolveStaticComponent(path);
-                if (resolvedStatic && !resolvedStatic.endsWith("/error.html")) {
-                  matched = {
-                    path,
-                    name: path.replace(/^\/+/, ""),
-                    component: resolvedStatic,
-                    meta: {},
-                    source: "static"
-                  };
-                }
-              }
               if (!matched) {
                 matched = routeList.find((r) => r.path === cleanErrorPath) || {
                   path: cleanErrorPath,
@@ -8216,6 +8185,7 @@ ${match}</ul>
                       if (routeMeta?.title || routeMeta?.icon) {
                         curPageTab.meta = { ...curPageTab.meta || {}, ...routeMeta };
                       }
+                      state.pageTabs = [...state.pageTabs];
                     }
                     const tabs = globals.tabs || [];
                     const atIdx = tabs.findIndex((t) => t.id === _at);
@@ -8323,6 +8293,7 @@ ${match}</ul>
             }
             document.addEventListener(popStateEvent, onPopState);
             queueMicrotask(async () => {
+              await buildManifest();
               await state.discoverPages();
               updateRoute(globalThis.location.href);
             });

@@ -129,24 +129,6 @@ function injectReload(bodyText: string): string {
 // 5. Template Extractors & Mode Renderers
 function extractHeadMetadata(htmlText: string): { title?: string; icon?: string; route?: string; order?: string } {
   const meta: { title?: string; icon?: string; route?: string; order?: string } = {};
-
-  // Parse YAML frontmatter if present
-  if (htmlText.startsWith("---")) {
-    const end = htmlText.indexOf("---", 3);
-    if (end > 3) {
-      const yaml = htmlText.slice(3, end);
-      const titleMatch = yaml.match(/^title:\s*["']?([^"'\r\n]+)["']?/m);
-      if (titleMatch) meta.title = titleMatch[1].trim();
-      const iconMatch = yaml.match(/^icon:\s*["']?([^"'\r\n]+)["']?/m);
-      if (iconMatch) meta.icon = iconMatch[1].trim();
-      const routeMatch = yaml.match(/^route:\s*["']?([^"'\r\n]+)["']?/m);
-      if (routeMatch) meta.route = routeMatch[1].trim();
-      const orderMatch = yaml.match(/^order:\s*["']?([^"'\r\n]+)["']?/m);
-      if (orderMatch) meta.order = orderMatch[1].trim();
-      return meta;
-    }
-  }
-
   const titleMatch = htmlText.match(/<title[^>]*>([^<]+)<\/title>/i);
   if (titleMatch) meta.title = titleMatch[1].trim();
 
@@ -170,23 +152,14 @@ function resolvePageFile(cleanPath: string): { fileName: string; filePath: strin
   if (clean === "" || clean === "home") {
     return { fileName: "home.html", filePath: join(SITE_DIR, "_pages", "home.html") };
   }
-
-  for (const ext of [".html", ".md", ".htm", ".markdown"]) {
-    const exactPath = join(SITE_DIR, "_pages", `${clean}${ext}`);
-    try {
-      if (Deno.statSync(exactPath).isFile) return { fileName: `${clean}${ext}`, filePath: exactPath };
-    } catch { /* fallback */ }
-  }
+  const exactPath = join(SITE_DIR, "_pages", `${clean}.html`);
+  try {
+    if (Deno.statSync(exactPath).isFile) return { fileName: `${clean}.html`, filePath: exactPath };
+  } catch { /* fallback */ }
 
   const leaf = clean.split("/").pop() || clean;
-  for (const ext of [".html", ".md", ".htm", ".markdown"]) {
-    const leafPath = join(SITE_DIR, "_pages", `${leaf}${ext}`);
-    try {
-      if (Deno.statSync(leafPath).isFile) return { fileName: `${leaf}${ext}`, filePath: leafPath };
-    } catch { /* fallback */ }
-  }
-
-  return { fileName: `${leaf}.html`, filePath: join(SITE_DIR, "_pages", `${leaf}.html`) };
+  const leafPath = join(SITE_DIR, "_pages", `${leaf}.html`);
+  return { fileName: `${leaf}.html`, filePath: leafPath };
 }
 
 async function renderProgressive(cleanPath: string): Promise<string> {
@@ -293,17 +266,6 @@ async function handler(req: Request): Promise<Response> {
     distRes.headers.set("Cross-Origin-Opener-Policy", "same-origin");
     distRes.headers.set("Cross-Origin-Embedder-Policy", "require-corp");
     return distRes;
-  }
-
-  // A2. Root Documentation & Markdown Files
-  if (url.pathname.startsWith("/docs/") && url.pathname.includes(".")) {
-    const docReq = new Request(new URL(url.pathname.replace(/^\/docs\//, "/"), url.origin), req);
-    const docRes = await serveDir(docReq, { fsRoot: join(REPO_ROOT, "docs"), quiet: true });
-    if (docRes.status !== 404) return docRes;
-  }
-  if (["/README.md", "/changelog.md", "/LICENSE"].includes(url.pathname)) {
-    const rootRes = await serveDir(req, { fsRoot: REPO_ROOT, quiet: true });
-    if (rootRes.status !== 404) return rootRes;
   }
 
   // B. Static Files & Component Fragments in /site

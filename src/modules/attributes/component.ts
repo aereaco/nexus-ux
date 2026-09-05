@@ -77,40 +77,22 @@ function extractResourceMetadata(
   if (!htmlText || typeof htmlText !== 'string') return meta;
 
   try {
-    // Check YAML frontmatter for .md components
-    const fmMatch = htmlText.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-    let hasFmTitle = false;
-    if (fmMatch) {
-      const lines = fmMatch[1].split(/\r?\n/);
-      for (const l of lines) {
-        const idx = l.indexOf(':');
-        if (idx > 0) {
-          const k = l.substring(0, idx).trim().toLowerCase();
-          const v = l.substring(idx + 1).trim().replace(/^['"]|['"]$/g, '');
-          meta[k] = v;
-          if (k === 'title') hasFmTitle = true;
-        }
-      }
+    const parser = new DOMParser();
+    const parsedDoc = parser.parseFromString(htmlText, 'text/html');
+
+    const titles = Array.from(parsedDoc.querySelectorAll('title'));
+    const titleEl = titles.find((t) => !t.closest('svg'));
+    if (titleEl && titleEl.textContent) {
+      meta.title = titleEl.textContent.trim();
     }
 
-    if (!hasFmTitle) {
-      const parser = new DOMParser();
-      const parsedDoc = parser.parseFromString(htmlText, 'text/html');
-
-      const titles = Array.from(parsedDoc.querySelectorAll('title'));
-      const titleEl = titles.find((t) => !t.closest('svg'));
-      if (titleEl && titleEl.textContent) {
-        meta.title = titleEl.textContent.trim();
+    parsedDoc.querySelectorAll('meta').forEach((metaEl) => {
+      const key = metaEl.getAttribute('name') || metaEl.getAttribute('property');
+      const content = metaEl.getAttribute('content');
+      if (key && content) {
+        meta[key] = content.trim();
       }
-
-      parsedDoc.querySelectorAll('meta').forEach((metaEl) => {
-        const key = metaEl.getAttribute('name') || metaEl.getAttribute('property');
-        const content = metaEl.getAttribute('content');
-        if (key && content && !meta[key]) {
-          meta[key] = content.trim();
-        }
-      });
-    }
+    });
 
     const globals = runtime.globalSignals ? runtime.globalSignals() : {};
     if (globals) {
@@ -271,6 +253,7 @@ const componentModule: AttributeModule = {
             const t = (scope as any).tab;
             if (t && typeof t === 'object') {
               tabObj = t;
+              tabObj.linkedContent = componentState;
             }
             break;
           }
@@ -316,6 +299,7 @@ const componentModule: AttributeModule = {
           componentState.hasError = false;
           if (isTabOutlet && tabObj && typeof tabObj === 'object') {
             (tabObj as any).isLoading = true;
+            (tabObj as any).linkedContent = componentState;
           }
           try {
             let html = '';
@@ -340,7 +324,7 @@ const componentModule: AttributeModule = {
                     const extracted = extractResourceMetadata(fresh, targetPath, runtime);
                     componentState.meta = extracted;
                     if (tabObj && extracted) {
-                      tabObj.meta = Object.assign(tabObj.meta || {}, extracted);
+                      tabObj.meta = { ...(tabObj.meta || {}), ...extracted };
                     }
                   }
                 }
@@ -348,19 +332,7 @@ const componentModule: AttributeModule = {
               html = typeof result === 'string' ? result : String(result);
             }
 
-            const rawText = html;
-            const extracted = extractResourceMetadata(rawText, config.path, runtime);
-            componentState.meta = extracted;
-
-            const isMarkdown = targetPath.endsWith('.md') || targetPath.endsWith('.markdown');
-            if (isMarkdown) {
-              const fmMatch = rawText.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-              let cleanMd = rawText;
-              if (fmMatch) {
-                cleanMd = rawText.slice(fmMatch[0].length).trim();
-              }
-              html = `<div class="p-6 max-w-5xl mx-auto"><article data-markdown class="prose max-w-none">${cleanMd}</article></div>`;
-            } else if (rawText.includes('<!DOCTYPE') || (rawText.includes('data-init') && el.tagName.toLowerCase() !== 'html')) {
+            if (html.includes('<!DOCTYPE') || (html.includes('data-init') && el.tagName.toLowerCase() !== 'html')) {
               throw new Error(`Invalid component fragment returned for "${targetPath}": received full HTML shell.`);
             }
 
@@ -369,6 +341,8 @@ const componentModule: AttributeModule = {
             }
 
             componentState.templateContent = html;
+            const extracted = extractResourceMetadata(html, config.path, runtime);
+            componentState.meta = extracted;
 
             // Sync resolved metadata back to the reactive tab object so the tab
             // header binding (tab.meta?.title / tab.meta?.icon) updates immediately.
@@ -388,14 +362,14 @@ const componentModule: AttributeModule = {
                   declared && typeof declared === 'object'
                     ? (declared as Record<string, unknown>)
                     : {};
-                shadowScope = createInheritedShadowScope(el, declaredObj as ComponentContext);
+                shadowScope = Object.assign(Object.create(null), ctx, declaredObj);
               } else {
                 shadowScope = createInheritedShadowScope(el, ctx);
               }
               (shadow as unknown as NexusEnhancedElement)[DATA_STACK_KEY] = [shadowScope];
 
               runtime.morphDOM(shadow as unknown as HTMLElement, html);
-              stylesheet.adoptShadowSubtree(shadow);
+              stylesheet.adoptElementSubtree(shadow);
               Array.from(shadow.children).forEach((child) => {
                 if (child instanceof HTMLElement || child instanceof SVGElement) {
                   runtime.processElement(child as unknown as HTMLElement);
@@ -429,12 +403,6 @@ const componentModule: AttributeModule = {
             componentState.isLoading = false;
             if (isTabOutlet && tabObj && typeof tabObj === 'object') {
               (tabObj as any).isLoading = false;
-              if (componentState.meta?.title && (!tabObj.meta || !(tabObj.meta as any).title)) {
-                tabObj.meta = Object.assign(tabObj.meta || {}, { title: componentState.meta.title });
-              }
-              if (componentState.meta?.icon && (!tabObj.meta || !(tabObj.meta as any).icon)) {
-                tabObj.meta = Object.assign(tabObj.meta || {}, { icon: componentState.meta.icon });
-              }
             }
           }
         };

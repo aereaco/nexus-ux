@@ -448,6 +448,68 @@ export const routerAttributeModule: AttributeModule = {
         return globs.some((g) => globToRegex(g).test(path));
       };
 
+      // Build the resolved manifest: declared data-route entries + optional static
+      // manifest file + dynamic scan. Internal (shadow) routes are tagged and kept
+      // out of the *public* array.
+      const buildManifest = async () => {
+        const entries: RouteRecord[] = routeList.slice();
+
+        const manifestUrl = state.config.manifest;
+        if (manifestUrl) {
+          try {
+            let raw: string;
+            if (runtime.fetch) {
+              raw = (await runtime.fetch.request(applyBase(manifestUrl), { responseType: 'text' }, el)) as string;
+            } else {
+              raw = await (await fetch(applyBase(manifestUrl))).text();
+            }
+            const parsed = JSON.parse(raw);
+            const list = Array.isArray(parsed) ? parsed : (parsed.routes ?? []);
+            for (const entry of list) {
+              if (!entry || typeof entry !== 'object') continue;
+              const routePath = entry.route !== undefined ? entry.route : (entry.path || '/');
+              const compPath = entry.path || entry.component || '';
+              const id = entry.id || entry.name || '';
+              const isInternal = entry.internal === true || !routePath || shadowMatch(routePath) || shadowMatch(compPath);
+              const meta = pathToRegex(routePath || '/');
+              const rec: RouteRecord = {
+                path: routePath,
+                element: document.documentElement,
+                name: id,
+                redirect: entry.redirect,
+                layout: entry.layout,
+                component: compPath,
+                meta: {
+                  title: entry.title,
+                  icon: entry.icon,
+                  order: entry.order,
+                  ...(entry.meta || {}),
+                },
+                internal: isInternal,
+                source: 'manifest',
+                ...meta,
+              } as RouteRecord;
+              (rec as any).matcher = meta.regex;
+              entries.push(rec);
+            }
+          } catch (e) {
+            reportError(new Error(`router: failed to load manifest "${manifestUrl}": ${e}`), el);
+          }
+        }
+
+        // Public manifest = non-internal entries (what the app advertises).
+        state.manifest = entries.filter((r) => !r.internal).slice();
+        state.routes = entries.slice();
+        for (const rec of entries) {
+          if (!routeList.some((r) => r.path === rec.path && r.name === rec.name)) {
+            routeList.push(rec);
+            if ((rec as any).matcher) {
+              matchMeta.set(rec, { regex: (rec as any).matcher, keys: (rec as any).keys || [], hasWildcard: (rec as any).hasWildcard || false });
+            }
+          }
+        }
+      };
+
       // Raw (non-reactive) route registry. RegExp matchers must never enter the
       // reactive graph, or `path.match(proxiedRegExp)` throws
       // "RegExp.prototype.hasIndices getter called on non-RegExp object".
@@ -456,14 +518,6 @@ export const routerAttributeModule: AttributeModule = {
         RouteRecord,
         { regex: RegExp; keys: string[]; hasWildcard: boolean }
       >();
-
-      // Synchronize public manifest and routes from registered routeList
-      const buildManifest = () => {
-        if (state) {
-          state.manifest = routeList.filter((r) => !r.internal).slice();
-          state.routes = routeList.slice();
-        }
-      };
 
       if (Array.isArray(cfg.routes)) {
         for (const r of cfg.routes) {
@@ -497,12 +551,10 @@ export const routerAttributeModule: AttributeModule = {
         layout: r.layout,
       }));
 
-      let state: RouterState;
-
       const resolveStaticComponent = (path: string): string => {
         const clean = path.replace(/^\/+/, '');
         if (clean.startsWith('_internal/') || clean.startsWith('_pages/')) {
-          const withExt = (clean.endsWith('.html') || clean.endsWith('.md')) ? clean : clean + '.html';
+          const withExt = clean.endsWith('.html') ? clean : clean + '.html';
           return applyBase('/' + withExt);
         }
         const dir = (routerConfig.pagesDir || pagesDir || '_pages').replace(/^\/+|\/+$/g, '');
@@ -510,14 +562,12 @@ export const routerAttributeModule: AttributeModule = {
         if (path === '/' || path === '') {
           return applyBase(`/${dir}/${defaultIndex}`);
         }
-        const matchedRec = routeList.find((r) => r.path === path || r.path === '/' + clean) ||
-          (state?.routes as any[])?.find((r) => r.path === path || r.path === '/' + clean);
+        const matchedRec = routeList.find((r) => r.path === path || r.path === '/' + clean);
         if (matchedRec?.component) {
           return applyBase(matchedRec.component);
         }
-        const isDoc = clean.startsWith('docs/') || ['README', 'changelog', 'LICENSE'].some(k => clean.toLowerCase().includes(k.toLowerCase()));
-        const ext = isDoc ? '.md' : '.html';
-        const withExt = (clean.endsWith('.html') || clean.endsWith('.md')) ? clean : clean + ext;
+        const leaf = clean.split('/').pop() || clean;
+        const withExt = leaf.endsWith('.html') ? leaf : leaf + '.html';
         const full = dir ? `/${dir}/${withExt}` : '/' + withExt;
         return applyBase(full);
       };
@@ -546,7 +596,7 @@ export const routerAttributeModule: AttributeModule = {
 
       // 1. Create Reactive State
       // shallowReactive prevents deep proxying of HTMLElements held in routes.
-      state = runtime.shallowReactive<RouterState>({
+      const state: RouterState = runtime.shallowReactive<RouterState>({
         path: initialPath,
         params: {},
         query: {},
@@ -659,19 +709,14 @@ export const routerAttributeModule: AttributeModule = {
                     meta: { title: chTitle, parent: chParent }
                   } as DiscoveredPage);
 
-                  // Register route in routeList & matchMeta if not already present
-                  const existingCh = routeList.find((r) => r.path === chHref);
-                  if (!existingCh) {
-                    const chRec = {
+                  // Register route in state.routes if not already present
+                  if (!state.routes.find((r) => r.path === chHref)) {
+                    state.routes.push({
                       path: chHref,
-                      name: chName,
                       component: chPath,
-                      meta: { title: chTitle, parent: chParent },
-                      source: 'manifest',
-                    } as RouteRecord;
-                    const chMeta = pathToRegex(chHref);
-                    matchMeta.set(chRec, chMeta);
-                    routeList.push(chRec);
+                      name: chName,
+                      meta: { title: chTitle, parent: chParent }
+                    } as any);
                   }
                 }
               }
@@ -689,19 +734,15 @@ export const routerAttributeModule: AttributeModule = {
                 meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || undefined }
               });
 
-              // Dynamically register route in routeList & matchMeta if not already present
-              const existing = routeList.find((r) => r.path === href);
+              // Dynamically register route in state.routes if not already present
+              const existing = state.routes.find((r) => r.path === href);
               if (!existing) {
-                const rec = {
+                state.routes.push({
                   path: href,
-                  name: cleanName,
                   component: compPath,
-                  meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || undefined },
-                  source: 'manifest',
-                } as RouteRecord;
-                const rMeta = pathToRegex(href);
-                matchMeta.set(rec, rMeta);
-                routeList.push(rec);
+                  name: cleanName,
+                  meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || undefined }
+                } as any);
               }
             }
 
@@ -787,38 +828,11 @@ export const routerAttributeModule: AttributeModule = {
                 const res = await fetchFn(compPath);
                 if (res && res.ok) {
                   const html = await res.text();
-                  // Check frontmatter first for .md files
-                  const fmMatch = html.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-                  let fmTitle: string | undefined;
-                  let fmIcon: string | undefined;
-                  if (fmMatch) {
-                    const lines = fmMatch[1].split(/\r?\n/);
-                    for (const l of lines) {
-                      const idx = l.indexOf(':');
-                      if (idx > 0) {
-                        const k = l.substring(0, idx).trim().toLowerCase();
-                        const v = l.substring(idx + 1).trim().replace(/^['"]|['"]$/g, '');
-                        if (k === 'title') fmTitle = v;
-                        if (k === 'icon') fmIcon = v;
-                      }
-                    }
-                  }
-
-                  if (fmTitle) {
-                    title = fmTitle;
-                  } else {
-                    const doc = new DOMParser().parseFromString(html, 'text/html');
-                    const t = doc.querySelector('title')?.textContent?.trim();
-                    if (t) title = t;
-                  }
-
-                  if (fmIcon) {
-                    icon = fmIcon;
-                  } else {
-                    const doc = new DOMParser().parseFromString(html, 'text/html');
-                    const ic = doc.querySelector('meta[name="icon"]')?.getAttribute('content')?.trim();
-                    if (ic) icon = ic;
-                  }
+                  const doc = new DOMParser().parseFromString(html, 'text/html');
+                  const t = doc.querySelector('title')?.textContent?.trim();
+                  const ic = doc.querySelector('meta[name="icon"]')?.getAttribute('content')?.trim();
+                  if (t) title = t;
+                  if (ic) icon = ic;
                 }
               } catch {
                 /* ignore */
@@ -842,8 +856,6 @@ export const routerAttributeModule: AttributeModule = {
           }
 
           state.pages = discovered;
-          state.routes = routeList.slice();
-          state.manifest = routeList.filter((r) => !r.internal).slice();
           state.lineage = state.getLineage(state.route || state.path);
         },
 
@@ -989,8 +1001,7 @@ export const routerAttributeModule: AttributeModule = {
           const target = applyBase(url);
           const tabId = opts?.tabId ?? getActiveTabId() ?? state.activePageTabId ?? state.activeTabId ?? null;
           const cleanPath = stripBase(target);
-          const matched = routeList.find((r) => r.path === cleanPath || r.path === url) ||
-            (state?.routes as any[])?.find((r) => r.path === cleanPath || r.path === url);
+          const matched = routeList.find((r) => r.path === cleanPath || r.path === url);
           const isShadow = matched?.internal || shadowMatch(cleanPath);
 
           // Track this tab's current path + metadata so switching the active
@@ -1015,18 +1026,12 @@ export const routerAttributeModule: AttributeModule = {
             if (curPageTab) {
               if (curPageTab.source !== resolvedSource) {
                 curPageTab.source = resolvedSource;
-                curPageTab.isLoading = true;
+                if (curPageTab.linkedContent) {
+                  curPageTab.linkedContent.isLoading = true;
+                }
               }
               if (curPageTab.route !== cleanPath) curPageTab.route = cleanPath;
-              const meta = (matched?.meta as Record<string, any>) || {};
-              const title = opts?.title || meta.title || matched?.name;
-              const icon = opts?.icon || meta.icon;
-              curPageTab.meta = {
-                ...(curPageTab.meta || {}),
-                ...meta,
-                ...(title ? { title } : {}),
-                ...(icon ? { icon } : {})
-              };
+              state.pageTabs = [...state.pageTabs];
             }
 
             // 2. Sync globals.tabs (backward compatibility)
@@ -1350,6 +1355,8 @@ export const routerAttributeModule: AttributeModule = {
         (runtime as any)._pendingDeclaredRoutes = [];
       }
 
+      // Automatically discover public pages and extract metadata
+      state.discoverPages();
 
       // --- Per-tab history: active tab is owned by the layout's global signal.
       // The router reads/writes `activePageTabId` there so the tab bar + panels
@@ -1516,34 +1523,27 @@ export const routerAttributeModule: AttributeModule = {
           }
         }
 
-        if (!matched && state.routes) {
-          const dynRoute = (state.routes as any[]).find((r: any) => r.path === path || r.route === path);
-          if (dynRoute) {
-            matched = {
-              path: dynRoute.path || dynRoute.route,
-              name: dynRoute.name || dynRoute.id,
-              component: dynRoute.component || dynRoute.path,
-              meta: dynRoute.meta || {},
-              source: 'manifest',
-            } as RouteRecord;
+        // Direct URL access protection for wallgarden shadow routes
+        if (matched && matched.internal && path !== '/') {
+          const isDirectAddressBarNav = !suppressNavIntercept && typeof globalThis.location !== 'undefined' &&
+            stripBase(globalThis.location.pathname) === matched.path;
+          if (isDirectAddressBarNav) {
+            state.errorCode = 404;
+            staticComponent = errorPage;
+            if (typeof globalThis.history !== 'undefined') {
+              try { globalThis.history.replaceState(null, '', applyBase(cleanErrorPath)); } catch {}
+            }
           }
+        }
+
+        // Declarative redirect: follow route.redirect before committing.
+        if (matched && matched.redirect) {
+          state.navigate(matched.redirect, { replace: true });
+          return;
         }
 
         const errorPage = state.config.error ?? resolvePagesPath(undefined, 'error.html');
         const cleanErrorPath = '/error';
-
-        if (!matched && path !== cleanErrorPath) {
-          const resolvedStatic = resolveStaticComponent(path);
-          if (resolvedStatic && !resolvedStatic.endsWith('/error.html')) {
-            matched = {
-              path,
-              name: path.replace(/^\/+/, ''),
-              component: resolvedStatic,
-              meta: {},
-              source: 'static',
-            } as RouteRecord;
-          }
-        }
 
         // Direct Catch-All for unmatched routes: fall through to declared /error route
         if (!matched) {
@@ -1655,6 +1655,7 @@ export const routerAttributeModule: AttributeModule = {
                 if (routeMeta?.title || routeMeta?.icon) {
                   curPageTab.meta = { ...(curPageTab.meta || {}), ...routeMeta };
                 }
+                state.pageTabs = [...state.pageTabs];
               }
 
               // 2. Backward compatibility: sync globals.tabs
@@ -1788,6 +1789,7 @@ export const routerAttributeModule: AttributeModule = {
       document.addEventListener(popStateEvent, onPopState);
 
       queueMicrotask(async () => {
+        await buildManifest();
         await state.discoverPages();
         updateRoute(globalThis.location.href);
       });
