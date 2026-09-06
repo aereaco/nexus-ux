@@ -1765,7 +1765,7 @@
               </ul>
 
               <!-- Dynamic Category Item List (Zero Hardcoding, Zero Duplication) -->
-              <ul class="menu w-full" data-bind-data-drag-container="cat.itemsDraggable ? ('cat-' + cat.name.toLowerCase()) : null">
+              <ul class="menu w-full" data-drag-container="(router.pages || []).filter(p => (p.category || p.meta?.category) === cat.name)">
                 <template data-for="item in (router.pages || []).filter(p => (p.category || p.meta?.category) === cat.name)" data-key="item.href || item.id">
                   <!-- Root Leaf Item (No Children) -->
                   <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
@@ -1812,7 +1812,7 @@
                     <ul
                       class="menu-dropdown menu-dropdown-show ms-12 overflow-hidden [interpolate-size:allow-keywords] transition-[height,opacity] duration-300 ease-in-out"
                       data-class="{ 'h-auto opacity-100': open && (!collapsed || hovered || sidebarOpen), 'h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
-                      data-bind-data-drag-container="cat.itemsDraggable ? item.children : null">
+                      data-drag-container="item.children">
                       <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
                         data-key="item.href || item.id"></template>
                     </ul>
@@ -1836,7 +1836,7 @@
                     <ul
                       class="menu-dropdown menu-dropdown-show ms-6 overflow-hidden [interpolate-size:allow-keywords] transition-[height,opacity] duration-300 ease-in-out"
                       data-class="{ 'h-auto opacity-100': open && (!collapsed || hovered || sidebarOpen), 'h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
-                      data-bind-data-drag-container="cat.itemsDraggable ? item.children : null">
+                      data-drag-container="item.children">
                       <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
                         data-key="item.href || item.id"></template>
                     </ul>
