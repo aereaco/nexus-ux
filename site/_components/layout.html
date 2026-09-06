@@ -1671,11 +1671,11 @@
         </div>
         <ul
           class="menu-dropdown menu-dropdown-show overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
-          data-class="{ 'max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
+          data-class="{ 'max-h-[3000px] opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
           data-bind-data-drag-container="cat?.itemsDraggable ? item.children : null">
           <!-- RECURSIVE TEMPLATE: Calls itself for infinite arbitrary sub-levels! -->
           <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
-            data-key="item.href"></template>
+            data-key="item.href || item.id"></template>
         </ul>
       </li>
     </template>
@@ -1708,8 +1708,8 @@
                 data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                 <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
                 <span
-                  class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
-                  data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
+                  class="whitespace-nowrap transition-opacity duration-200"
+                  data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
                   data-bind="item.title"></span>
               </a>
             </li>
@@ -1726,24 +1726,24 @@
                   data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                   <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
                   <span
-                    class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
-                    data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
+                    class="whitespace-nowrap transition-opacity duration-200"
+                    data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
                     data-bind="item.title"></span>
                 </a>
                 <button
-                  class="btn btn-circle btn-xs hover:bg-accent/60 transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
+                  class="btn btn-circle btn-xs hover:bg-accent/60 transition-transform"
                   data-on-click="open = !open"
-                  data-class="{ 'bg-accent/20': open, 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }">
+                  data-class="{ 'bg-accent/20': open, 'hidden': collapsed && !hovered && !sidebarOpen }">
                   <iconify-icon icon="material-symbols-light:chevron-forward"
                     class="shrink-0 text-2xl transition-transform" data-class="{ 'rotate-90': open}"></iconify-icon>
                 </button>
               </div>
               <ul
                 class="menu-dropdown menu-dropdown-show ms-12 overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
-                data-class="{ 'max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
+                data-class="{ 'max-h-[3000px] opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
                 data-drag-container="item.children">
                 <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
-                  data-key="item.href"></template>
+                  data-key="item.href || item.id"></template>
               </ul>
             </li>
           </template>
@@ -1778,8 +1778,8 @@
                       data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                       <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
                       <span
-                        class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
-                        data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
+                        class="whitespace-nowrap transition-opacity duration-200"
+                        data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
                         data-bind="item.title"></span>
                     </a>
                   </li>
@@ -1796,14 +1796,14 @@
                         data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                         <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
                         <span
-                          class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
-                          data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
+                          class="whitespace-nowrap transition-opacity duration-200"
+                          data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
                           data-bind="item.title"></span>
                       </a>
                       <button
-                        class="btn btn-circle btn-xs hover:bg-accent/60 transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
+                        class="btn btn-circle btn-xs hover:bg-accent/60 transition-transform"
                         data-on-click="open = !open"
-                        data-class="{ 'bg-accent/20': open, 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }">
+                        data-class="{ 'bg-accent/20': open, 'hidden': collapsed && !hovered && !sidebarOpen }">
                         <iconify-icon icon="material-symbols-light:chevron-forward"
                           class="shrink-0 text-2xl transition-transform"
                           data-class="{ 'rotate-90': open}"></iconify-icon>
@@ -1811,7 +1811,7 @@
                     </div>
                     <ul
                       class="menu-dropdown menu-dropdown-show ms-12 overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
-                      data-class="{ 'max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
+                      data-class="{ 'max-h-[3000px] opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
                       data-bind-data-drag-container="cat.itemsDraggable ? ('sub-' + item.id) : null">
                       <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
                         data-key="item.href || item.id"></template>
@@ -1825,16 +1825,16 @@
                       <div class="flex items-center gap-2">
                         <iconify-icon data-bind-icon="item.icon || 'material-symbols-light:folder-outline'" class="shrink-0 text-xl opacity-70"></iconify-icon>
                         <span
-                          class="whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300 font-medium"
-                          data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"
+                          class="whitespace-nowrap font-medium transition-opacity duration-200"
+                          data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
                           data-bind="item.title"></span>
                       </div>
                       <iconify-icon icon="material-symbols-light:chevron-forward"
-                        class="shrink-0 text-xl transition-transform" data-class="{ 'rotate-90': open, 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }"></iconify-icon>
+                        class="shrink-0 text-xl transition-transform" data-class="{ 'rotate-90': open, 'hidden': collapsed && !hovered && !sidebarOpen }"></iconify-icon>
                     </div>
                     <ul
                       class="menu-dropdown menu-dropdown-show ms-6 overflow-hidden transition-[opacity,max-height] duration-300 ease-in-out"
-                      data-class="{ 'max-h-96 opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
+                      data-class="{ 'max-h-[3000px] opacity-100': open && (!collapsed || hovered || sidebarOpen), 'max-h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
                       data-bind-data-drag-container="cat.itemsDraggable ? ('sub-' + item.id) : null">
                       <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
                         data-key="item.href || item.id"></template>

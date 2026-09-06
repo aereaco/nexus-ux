@@ -476,11 +476,11 @@ export const routerAttributeModule: AttributeModule = {
             const list = Array.isArray(parsed) ? parsed : (parsed.routes ?? []);
             for (const entry of list) {
               if (!entry || typeof entry !== 'object') continue;
-              const routePath = entry.route !== undefined ? entry.route : (entry.path || '/');
+              const routePath = entry.route !== undefined ? entry.route : (entry.path || '');
               const compPath = entry.path || entry.component || '';
               const id = entry.id || entry.name || '';
               const isInternal = entry.internal === true || !routePath || shadowMatch(routePath) || shadowMatch(compPath);
-              const meta = pathToRegex(routePath || '/');
+              const meta = routePath ? pathToRegex(routePath) : null;
               const rec: RouteRecord = {
                 path: routePath,
                 element: document.documentElement,
@@ -496,9 +496,11 @@ export const routerAttributeModule: AttributeModule = {
                 },
                 internal: isInternal,
                 source: 'manifest',
-                ...meta,
+                ...(meta || {}),
               } as RouteRecord;
-              (rec as any).matcher = meta.regex;
+              if (meta) {
+                (rec as any).matcher = meta.regex;
+              }
               entries.push(rec);
             }
           } catch (e) {
@@ -510,10 +512,15 @@ export const routerAttributeModule: AttributeModule = {
         state.manifest = entries.filter((r) => !r.internal).slice();
         state.routes = entries.slice();
         for (const rec of entries) {
-          if (!routeList.some((r) => r.path === rec.path && r.name === rec.name)) {
+          const existing = routeList.find((r) => r.name === rec.name || (rec.path && r.path === rec.path));
+          if (!existing) {
             routeList.push(rec);
             if ((rec as any).matcher) {
               matchMeta.set(rec, { regex: (rec as any).matcher, keys: (rec as any).keys || [], hasWildcard: (rec as any).hasWildcard || false });
+            }
+          } else {
+            if ((rec as any).matcher && !matchMeta.has(existing)) {
+              matchMeta.set(existing, { regex: (rec as any).matcher, keys: (rec as any).keys || [], hasWildcard: (rec as any).hasWildcard || false });
             }
           }
         }
@@ -634,7 +641,7 @@ export const routerAttributeModule: AttributeModule = {
         previous: null,
         scrollPosition: { x: 0, y: 0 },
         currentRoute: initialMatched || null,
-        routes: routeList,
+        routes: initialRoutes,
         pages: [] as DiscoveredPage[],
 
         async discoverPages() {
@@ -1221,15 +1228,22 @@ export const routerAttributeModule: AttributeModule = {
         // would use — without navigating. Useful for guards/preview UI.
         match(path?: string): RouteInfo | null {
           const p = path ? stripBase(path) : state.path;
+          const exact = routeList.find((r) => !r.internal && r.path && r.path === p);
+          if (exact) {
+            return buildInfo(exact, p, {}, state.query, state.hash);
+          }
           for (const route of routeList) {
+            if (route.internal || !route.path) continue;
             const meta = matchMeta.get(route);
             if (!meta) continue;
-            const m = p.match(meta.regex);
-            if (m) {
-              const params: Record<string, string> = {};
-              meta.keys.forEach((key: string, i: number) => { params[key] = m[i + 1] || ''; });
-              if (meta.hasWildcard) params.wildcard = m[meta.keys.length + 1] || '';
-              return buildInfo(route, p, params, state.query, state.hash);
+            if (meta.keys.length > 0 || meta.hasWildcard) {
+              const m = p.match(meta.regex);
+              if (m) {
+                const params: Record<string, string> = {};
+                meta.keys.forEach((key: string, i: number) => { params[key] = m[i + 1] || ''; });
+                if (meta.hasWildcard) params.wildcard = m[meta.keys.length + 1] || '';
+                return buildInfo(route, p, params, state.query, state.hash);
+              }
             }
           }
           if (mode === 'static' || mode === 'hybrid') {
@@ -1277,17 +1291,22 @@ export const routerAttributeModule: AttributeModule = {
           fakeUrl.searchParams.forEach((val, key) => (query[key] = val));
 
           // Match a route record synchronously.
-          let matched: RouteRecord | null = null;
+          let matched: RouteRecord | null = routeList.find((r) => !r.internal && r.path && r.path === switchPath) || null;
           const params: Record<string, string> = {};
-          for (const route of routeList) {
-            const meta = matchMeta.get(route);
-            if (!meta) continue;
-            const m = switchPath.match(meta.regex);
-            if (m) {
-              matched = route;
-              meta.keys.forEach((key: string, i: number) => { params[key] = m[i + 1] || ''; });
-              if (meta.hasWildcard) params.wildcard = m[meta.keys.length + 1] || '';
-              break;
+          if (!matched) {
+            for (const route of routeList) {
+              if (route.internal || !route.path) continue;
+              const meta = matchMeta.get(route);
+              if (!meta) continue;
+              if (meta.keys.length > 0 || meta.hasWildcard) {
+                const m = switchPath.match(meta.regex);
+                if (m) {
+                  matched = route;
+                  meta.keys.forEach((key: string, i: number) => { params[key] = m[i + 1] || ''; });
+                  if (meta.hasWildcard) params.wildcard = m[meta.keys.length + 1] || '';
+                  break;
+                }
+              }
             }
           }
 
@@ -1402,9 +1421,6 @@ export const routerAttributeModule: AttributeModule = {
         pendingRoutes.forEach((rec) => state.addRoute(rec));
         (runtime as any)._pendingDeclaredRoutes = [];
       }
-
-      // Automatically discover public pages and extract metadata
-      state.discoverPages();
 
       // --- Per-tab history: active tab is owned by the layout's global signal.
       // The router reads/writes `activePageTabId` there so the tab bar + panels
@@ -1551,23 +1567,30 @@ export const routerAttributeModule: AttributeModule = {
         url.searchParams.forEach((val, key) => (query[key] = val));
 
         // Match a signal route.
-        let matched: RouteRecord | null = null;
+        // 1. Vite/NGINX style: Exact canonical match first
+        let matched: RouteRecord | null = routeList.find((r) => !r.internal && r.path && r.path === path) || null;
         const params: Record<string, string> = {};
 
-        for (const route of routeList) {
-          const meta = matchMeta.get(route);
-          if (!meta) continue;
-          const match = path.match(meta.regex);
-          if (match) {
-            runtime.debug(`Matched route: ${route.path} via path ${path}`);
-            matched = route;
-            meta.keys.forEach((key: string, i: number) => {
-              params[key] = match[i + 1] || '';
-            });
-            if (meta.hasWildcard) {
-              params.wildcard = match[meta.keys.length + 1] || '';
+        // 2. Parameterized / dynamic regex fallback
+        if (!matched) {
+          for (const route of routeList) {
+            if (route.internal || !route.path) continue;
+            const meta = matchMeta.get(route);
+            if (!meta) continue;
+            if (meta.keys.length > 0 || meta.hasWildcard) {
+              const match = path.match(meta.regex);
+              if (match) {
+                runtime.debug(`Matched route: ${route.path} via path ${path}`);
+                matched = route;
+                meta.keys.forEach((key: string, i: number) => {
+                  params[key] = match[i + 1] || '';
+                });
+                if (meta.hasWildcard) {
+                  params.wildcard = match[meta.keys.length + 1] || '';
+                }
+                break;
+              }
             }
-            break;
           }
         }
 

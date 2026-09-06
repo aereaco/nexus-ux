@@ -7178,11 +7178,11 @@ ${match}</ul>
                   for (const entry of list) {
                     if (!entry || typeof entry !== "object")
                       continue;
-                    const routePath = entry.route !== void 0 ? entry.route : entry.path || "/";
+                    const routePath = entry.route !== void 0 ? entry.route : entry.path || "";
                     const compPath = entry.path || entry.component || "";
                     const id = entry.id || entry.name || "";
                     const isInternal = entry.internal === true || !routePath || shadowMatch(routePath) || shadowMatch(compPath);
-                    const meta = pathToRegex(routePath || "/");
+                    const meta = routePath ? pathToRegex(routePath) : null;
                     const rec = {
                       path: routePath,
                       element: document.documentElement,
@@ -7198,9 +7198,11 @@ ${match}</ul>
                       },
                       internal: isInternal,
                       source: "manifest",
-                      ...meta
+                      ...meta || {}
                     };
-                    rec.matcher = meta.regex;
+                    if (meta) {
+                      rec.matcher = meta.regex;
+                    }
                     entries.push(rec);
                   }
                 } catch (e) {
@@ -7210,10 +7212,15 @@ ${match}</ul>
               state.manifest = entries.filter((r) => !r.internal).slice();
               state.routes = entries.slice();
               for (const rec of entries) {
-                if (!routeList.some((r) => r.path === rec.path && r.name === rec.name)) {
+                const existing = routeList.find((r) => r.name === rec.name || rec.path && r.path === rec.path);
+                if (!existing) {
                   routeList.push(rec);
                   if (rec.matcher) {
                     matchMeta.set(rec, { regex: rec.matcher, keys: rec.keys || [], hasWildcard: rec.hasWildcard || false });
+                  }
+                } else {
+                  if (rec.matcher && !matchMeta.has(existing)) {
+                    matchMeta.set(existing, { regex: rec.matcher, keys: rec.keys || [], hasWildcard: rec.hasWildcard || false });
                   }
                 }
               }
@@ -7311,7 +7318,7 @@ ${match}</ul>
               previous: null,
               scrollPosition: { x: 0, y: 0 },
               currentRoute: initialMatched || null,
-              routes: routeList,
+              routes: initialRoutes,
               pages: [],
               async discoverPages() {
                 const fetchFn = typeof globalThis.fetch === "function" ? globalThis.fetch.bind(globalThis) : null;
@@ -7861,19 +7868,27 @@ ${match}</ul>
               // would use — without navigating. Useful for guards/preview UI.
               match(path) {
                 const p = path ? stripBase(path) : state.path;
+                const exact = routeList.find((r) => !r.internal && r.path && r.path === p);
+                if (exact) {
+                  return buildInfo(exact, p, {}, state.query, state.hash);
+                }
                 for (const route of routeList) {
+                  if (route.internal || !route.path)
+                    continue;
                   const meta = matchMeta.get(route);
                   if (!meta)
                     continue;
-                  const m = p.match(meta.regex);
-                  if (m) {
-                    const params = {};
-                    meta.keys.forEach((key, i) => {
-                      params[key] = m[i + 1] || "";
-                    });
-                    if (meta.hasWildcard)
-                      params.wildcard = m[meta.keys.length + 1] || "";
-                    return buildInfo(route, p, params, state.query, state.hash);
+                  if (meta.keys.length > 0 || meta.hasWildcard) {
+                    const m = p.match(meta.regex);
+                    if (m) {
+                      const params = {};
+                      meta.keys.forEach((key, i) => {
+                        params[key] = m[i + 1] || "";
+                      });
+                      if (meta.hasWildcard)
+                        params.wildcard = m[meta.keys.length + 1] || "";
+                      return buildInfo(route, p, params, state.query, state.hash);
+                    }
                   }
                 }
                 if (mode === "static" || mode === "hybrid") {
@@ -7909,21 +7924,27 @@ ${match}</ul>
                 const switchPath = path;
                 const query = {};
                 fakeUrl.searchParams.forEach((val, key) => query[key] = val);
-                let matched = null;
+                let matched = routeList.find((r) => !r.internal && r.path && r.path === switchPath) || null;
                 const params = {};
-                for (const route of routeList) {
-                  const meta = matchMeta.get(route);
-                  if (!meta)
-                    continue;
-                  const m = switchPath.match(meta.regex);
-                  if (m) {
-                    matched = route;
-                    meta.keys.forEach((key, i) => {
-                      params[key] = m[i + 1] || "";
-                    });
-                    if (meta.hasWildcard)
-                      params.wildcard = m[meta.keys.length + 1] || "";
-                    break;
+                if (!matched) {
+                  for (const route of routeList) {
+                    if (route.internal || !route.path)
+                      continue;
+                    const meta = matchMeta.get(route);
+                    if (!meta)
+                      continue;
+                    if (meta.keys.length > 0 || meta.hasWildcard) {
+                      const m = switchPath.match(meta.regex);
+                      if (m) {
+                        matched = route;
+                        meta.keys.forEach((key, i) => {
+                          params[key] = m[i + 1] || "";
+                        });
+                        if (meta.hasWildcard)
+                          params.wildcard = m[meta.keys.length + 1] || "";
+                        break;
+                      }
+                    }
                   }
                 }
                 let staticComponent = null;
@@ -8017,7 +8038,6 @@ ${match}</ul>
               pendingRoutes.forEach((rec) => state.addRoute(rec));
               runtime._pendingDeclaredRoutes = [];
             }
-            state.discoverPages();
             const globals = runtime.globalSignals();
             const getActiveTabId = () => typeof globals.activePageTabId === "string" && globals.activePageTabId || typeof globals.activeTabId === "string" && globals.activeTabId || null;
             const setActiveTabId = (id) => {
@@ -8113,23 +8133,29 @@ ${match}</ul>
               }
               const query = {};
               url.searchParams.forEach((val, key) => query[key] = val);
-              let matched = null;
+              let matched = routeList.find((r) => !r.internal && r.path && r.path === path) || null;
               const params = {};
-              for (const route of routeList) {
-                const meta = matchMeta.get(route);
-                if (!meta)
-                  continue;
-                const match = path.match(meta.regex);
-                if (match) {
-                  runtime.debug(`Matched route: ${route.path} via path ${path}`);
-                  matched = route;
-                  meta.keys.forEach((key, i) => {
-                    params[key] = match[i + 1] || "";
-                  });
-                  if (meta.hasWildcard) {
-                    params.wildcard = match[meta.keys.length + 1] || "";
+              if (!matched) {
+                for (const route of routeList) {
+                  if (route.internal || !route.path)
+                    continue;
+                  const meta = matchMeta.get(route);
+                  if (!meta)
+                    continue;
+                  if (meta.keys.length > 0 || meta.hasWildcard) {
+                    const match = path.match(meta.regex);
+                    if (match) {
+                      runtime.debug(`Matched route: ${route.path} via path ${path}`);
+                      matched = route;
+                      meta.keys.forEach((key, i) => {
+                        params[key] = match[i + 1] || "";
+                      });
+                      if (meta.hasWildcard) {
+                        params.wildcard = match[meta.keys.length + 1] || "";
+                      }
+                      break;
+                    }
                   }
-                  break;
                 }
               }
               const errorPage2 = state.config.error ?? resolvePagesPath(void 0, "error.html");
