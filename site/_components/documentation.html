@@ -289,7 +289,6 @@
                         <span data-bind="doc.Title"></span>
                         <span class="badge badge-primary badge-sm font-semibold uppercase tracking-wider ms-1" data-bind="doc.Category || 'Attributes'"></span>
                     </h1>
-                    <p class="text-base text-base-content/70 mt-1 max-w-3xl leading-relaxed" data-markdown="doc.Description"></p>
                 </div>
 
                 <!-- Quick Action: Ask AI -->
@@ -327,6 +326,8 @@
                 </div>
 
                 <div class="p-6 flex-1 overflow-y-auto min-h-0">
+                    <!-- Module Description -->
+                    <p class="text-sm text-base-content/70 mb-6 leading-relaxed border-b border-base-content/10 pb-4" data-markdown="doc.Description"></p>
                     <!-- Sub-Tab 1: Syntax & API Usage -->
                     <div data-show="specTab === 'usage'" class="space-y-6">
                         <div>
