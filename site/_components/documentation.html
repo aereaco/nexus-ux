@@ -278,9 +278,9 @@
     </script>
 
     <!-- ═══════════ TWO-COLUMN FULL PAGE LAYOUT ═══════════ -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full lg:items-stretch lg:h-[calc(100vh-var(--navbar-height,4rem)-3rem)]">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full items-start">
         <!-- ──── LEFT COLUMN: HEADER & MODULE SPECIFICATION ──── -->
-        <div class="space-y-6 w-full lg:flex lg:flex-col">
+        <div class="space-y-6 w-full">
             <!-- 1. HEADER TOOLBAR -->
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-base-content/10" data-if="doc">
                 <div>
@@ -302,7 +302,7 @@
             </div>
 
             <!-- 2. TAB GROUP 1: MODULE SPECIFICATION -->
-            <div class="card bg-base-100 border border-base-content/10 shadow-sm overflow-hidden lg:flex-1 lg:flex lg:flex-col lg:min-h-0" data-if="doc">
+            <div class="card bg-base-100 border border-base-content/10 shadow-sm overflow-hidden lg:sticky lg:top-6 lg:max-h-[calc(100vh-5rem)] lg:flex lg:flex-col" data-if="doc">
                 <div class="card-header bg-base-200/40 px-6 py-3 border-b border-base-content/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div class="flex items-center gap-2">
                         <iconify-icon icon="material-symbols-light:menu-book-outline" class="text-primary text-xl"></iconify-icon>
@@ -410,7 +410,7 @@
         <!-- ──── RIGHT COLUMN: INTERACTIVE SANDBOX ──── -->
         <div class="space-y-6 w-full lg:flex lg:flex-col">
             <!-- 3. TAB GROUP 2: INTERACTIVE SANDBOX -->
-            <div class="card bg-base-100 border border-base-content/10 shadow-sm overflow-hidden lg:flex-1 lg:flex lg:flex-col lg:min-h-0" data-if="doc.Snippet || doc.Examples">
+            <div class="card bg-base-100 border border-base-content/10 shadow-sm overflow-hidden lg:sticky lg:top-6 lg:max-h-[calc(100vh-5rem)] lg:flex lg:flex-col" data-if="doc.Snippet || doc.Examples">
                 <div class="card-header bg-base-200/40 px-6 py-3 border-b border-base-content/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div class="flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-success animate-pulse"></span>
