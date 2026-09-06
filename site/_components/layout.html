@@ -696,7 +696,8 @@
         </button>
 
         <!-- Search Button -->
-        <button class="btn btn-ghost btn-circle hover:scale-102" aria-label="Open search (Ctrl+K)" title="Search (Ctrl+K)"
+        <button class="btn btn-ghost btn-circle hover:scale-102" aria-label="Open search (Ctrl+K)"
+          title="Search (Ctrl+K)"
           data-on-click="favModalOpen = false; favDeleteModalOpen = false; searchQuery = ''; searchOpen = true; if (typeof indexPageContents === 'function') { indexPageContents(); } $nextTick(() => document.getElementById('search-modal-input')?.focus())">
           <iconify-icon icon="material-symbols-light:search" class="text-2xl"></iconify-icon>
         </button>
@@ -1270,34 +1271,34 @@
 
         <!-- ================= Collaborative Chat FAB & Speed Dial (Anchored to Content Wrapper) ================= -->
         <!-- Speed Dial Action Pills: Stacks upward when chatFabOpen is true, hides when chatbarOpen or terminalOpen -->
-        <div data-show="chatFabOpen && !chatbarOpen && !terminalOpen"
+        <div data-show="chatFabOpen && !chatbarOpen"
           class="absolute bottom-24 end-6 z-30 flex flex-col items-end gap-3 transition-all duration-300">
           <!-- "New Conversation" Action -->
           <div class="flex items-center gap-2.5">
             <span class="badge badge-neutral shadow-lg font-medium text-xs py-2 px-3">New Conversation</span>
-            <button type="button" class="btn btn-circle btn-sm btn-secondary shadow-xl hover:scale-110 active:scale-95 transition-transform"
-              aria-label="New Conversation"
-              data-on-click="createChatSession()">
+            <button type="button"
+              class="btn btn-circle btn-sm btn-secondary shadow-xl hover:scale-110 active:scale-95 transition-transform"
+              aria-label="New Conversation" data-on-click="createChatSession()">
               <iconify-icon icon="material-symbols-light:add" class="text-lg"></iconify-icon>
             </button>
           </div>
 
           <!-- Speed Dial Session Pills (Correlate to chatSessions, draggable & contextmenu pinnable) -->
-          <div class="flex flex-col items-end gap-3 w-full"
-            data-drag-container="chatSessions" data-drag-group="chatSessions" data-drag-direction="vertical">
+          <div class="flex flex-col items-end gap-3 w-full" data-drag-container="chatSessions"
+            data-drag-group="chatSessions" data-drag-direction="vertical">
             <template data-for="session in (chatSessions || [])" data-key="session.id">
-              <div data-drag
-                class="flex items-center gap-2.5 cursor-grab active:cursor-grabbing select-none"
+              <div data-drag class="flex items-center gap-2.5 cursor-grab active:cursor-grabbing select-none"
                 data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'chatSession', target: session }">
-                <span class="badge badge-neutral shadow-lg font-medium text-xs py-2 px-3 max-w-xs truncate cursor-pointer hover:bg-neutral-focus transition-colors flex items-center gap-1.5"
+                <span
+                  class="badge badge-neutral shadow-lg font-medium text-xs py-2 px-3 max-w-xs truncate cursor-pointer hover:bg-neutral-focus transition-colors flex items-center gap-1.5"
                   data-on-click="openSession(session.id)">
-                  <iconify-icon data-show="session.pinned" icon="material-symbols-light:keep" class="text-xs text-secondary shrink-0"></iconify-icon>
+                  <iconify-icon data-show="session.pinned" icon="material-symbols-light:keep"
+                    class="text-xs text-secondary shrink-0"></iconify-icon>
                   <span data-bind="session.name"></span>
                 </span>
                 <button type="button"
                   class="btn btn-circle btn-md btn-primary shadow-xl hover:scale-110 active:scale-95 transition-transform relative"
-                  aria-label="Open Session"
-                  data-on-click="openSession(session.id)">
+                  aria-label="Open Session" data-on-click="openSession(session.id)">
                   <iconify-icon data-bind-icon="session.icon" class="text-xl"></iconify-icon>
                   <!-- Pinned Indicator Badge -->
                   <span data-show="session.pinned"
@@ -1315,11 +1316,10 @@
         </div>
 
         <!-- Primary Floating Action Button (FAB): Floating at bottom-end of content wrapper, auto-hides when chatbarOpen or terminalOpen -->
-        <div data-show="!chatbarOpen && !terminalOpen" class="absolute bottom-6 end-6 z-30 transition-all duration-300">
+        <div data-show="!chatbarOpen" class="absolute bottom-6 end-6 z-30 transition-all duration-300">
           <button type="button"
             class="btn btn-circle btn-lg btn-primary shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-primary-content/20 flex items-center justify-center relative"
-            aria-label="Toggle Collaboration Speed Dial"
-            data-on-click="chatFabOpen = !chatFabOpen">
+            aria-label="Toggle Collaboration Speed Dial" data-on-click="chatFabOpen = !chatFabOpen">
             <!-- Main Chat Icon (when speed dial closed) -->
             <iconify-icon icon="material-symbols-light:chat" class="text-3xl transition-transform duration-300"
               data-class="{ 'rotate-90 opacity-0 scale-50 hidden': chatFabOpen, 'rotate-0 opacity-100 scale-100 block': !chatFabOpen }"></iconify-icon>
@@ -1356,8 +1356,7 @@
       </footer>
 
       <!-- Reverse Quake Terminal / CLI HUD -->
-      <div id="terminal-hud-container"
-        data-show="terminalOpen"
+      <div id="terminal-hud-container" data-show="terminalOpen"
         class="flex flex-col bg-neutral-950/95 text-neutral-content backdrop-blur-xl transition-[height] duration-300 ease-in-out overflow-hidden select-none font-mono text-xs"
         data-class="{
           'relative w-full shrink-0 border-t border-primary/20': terminalDocked,
@@ -1367,11 +1366,13 @@
         }">
 
         <!-- 1. Terminal Chrome / Tab Bar Header -->
-        <div class="flex items-center justify-between px-3 py-1.5 bg-neutral-900 border-b border-neutral-800 text-neutral-content shrink-0 gap-2">
+        <div
+          class="flex items-center justify-between px-3 py-1.5 bg-neutral-900 border-b border-neutral-800 text-neutral-content shrink-0 gap-2">
           <!-- Start: Title & Tabs -->
           <div class="flex items-center gap-1.5 min-w-0 overflow-x-auto scrollbar-none">
             <!-- Terminal Indicator / Status -->
-            <div class="flex items-center gap-1.5 px-2 py-1 rounded bg-neutral-800/80 text-primary font-semibold tracking-wider text-[11px] uppercase shrink-0">
+            <div
+              class="flex items-center gap-1.5 px-2 py-1 rounded bg-neutral-800/80 text-primary font-semibold tracking-wider text-[11px] uppercase shrink-0">
               <span class="size-2 rounded-full bg-success animate-pulse"></span>
               <iconify-icon icon="material-symbols-light:terminal" class="text-sm"></iconify-icon>
               <span class="max-sm:hidden">Nexus HUD</span>
@@ -1383,14 +1384,12 @@
                 data-class="{
                   'bg-neutral-800 text-primary font-medium shadow-sm border border-primary/20': terminalActiveTab === tab.id,
                   'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50': terminalActiveTab !== tab.id
-                }"
-                data-on-click="terminalActiveTab = tab.id">
+                }" data-on-click="terminalActiveTab = tab.id">
                 <iconify-icon data-bind-icon="tab.icon" class="text-sm"></iconify-icon>
                 <span data-bind="tab.name"></span>
                 <button data-show="terminalTabs.length > 1" type="button"
                   class="btn btn-ghost btn-xs size-4 min-h-0 p-0 hover:text-error opacity-60 hover:opacity-100"
-                  aria-label="Close Tab"
-                  data-on-click:stop="closeTerminalTab(tab.id)">
+                  aria-label="Close Tab" data-on-click:stop="closeTerminalTab(tab.id)">
                   <iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
                 </button>
               </div>
@@ -1399,8 +1398,7 @@
             <!-- New Tab (+) Button -->
             <button type="button"
               class="btn btn-ghost btn-xs size-6 min-h-0 p-0 text-neutral-400 hover:text-primary hover:bg-neutral-800 rounded shrink-0"
-              aria-label="New Terminal Tab" title="New Tab"
-              data-on-click="createTerminalTab()">
+              aria-label="New Terminal Tab" title="New Tab" data-on-click="createTerminalTab()">
               <iconify-icon icon="material-symbols-light:add" class="text-base"></iconify-icon>
             </button>
           </div>
@@ -1410,27 +1408,25 @@
             <!-- Clear Buffer Button -->
             <button type="button"
               class="btn btn-ghost btn-xs size-7 min-h-0 p-0 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded"
-              aria-label="Clear Buffer" title="Clear Buffer"
-              data-on-click="clearTerminalTab(terminalActiveTab)">
+              aria-label="Clear Buffer" title="Clear Buffer" data-on-click="clearTerminalTab(terminalActiveTab)">
               <iconify-icon icon="material-symbols-light:ink-eraser-outline" class="text-base"></iconify-icon>
             </button>
 
             <!-- Maximize / Restore Toggle Button -->
             <button type="button"
               class="btn btn-ghost btn-xs size-7 min-h-0 p-0 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded"
-              aria-label="Toggle Maximize"
-              data-bind-title="terminalMaximized ? 'Restore Height' : 'Maximize Height'"
+              aria-label="Toggle Maximize" data-bind-title="terminalMaximized ? 'Restore Height' : 'Maximize Height'"
               data-on-click="toggleTerminalMax()">
-              <iconify-icon data-bind-icon="terminalMaximized ? 'material-symbols-light:collapse-content' : 'material-symbols-light:expand-content'" class="text-base"></iconify-icon>
+              <iconify-icon
+                data-bind-icon="terminalMaximized ? 'material-symbols-light:collapse-content' : 'material-symbols-light:expand-content'"
+                class="text-base"></iconify-icon>
             </button>
 
             <!-- Dock / Float Toggle Button -->
             <button type="button"
               class="btn btn-ghost btn-xs size-7 min-h-0 p-0 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded"
-              aria-label="Toggle Docking"
-              data-bind-title="terminalDocked ? 'Float over content' : 'Dock below footer'"
-              data-class="{ 'text-secondary bg-secondary/10': terminalDocked }"
-              data-on-click="toggleTerminalDock()">
+              aria-label="Toggle Docking" data-bind-title="terminalDocked ? 'Float over content' : 'Dock below footer'"
+              data-class="{ 'text-secondary bg-secondary/10': terminalDocked }" data-on-click="toggleTerminalDock()">
               <iconify-icon icon="material-symbols-light:keep" class="text-base transition-transform duration-200"
                 data-class="{ 'rotate-45': terminalDocked }"></iconify-icon>
             </button>
@@ -1438,8 +1434,7 @@
             <!-- Close Button -->
             <button type="button"
               class="btn btn-ghost btn-xs size-7 min-h-0 p-0 text-neutral-400 hover:text-error hover:bg-neutral-800 rounded"
-              aria-label="Close Terminal HUD" title="Close HUD"
-              data-on-click="closeTerminalHud()">
+              aria-label="Close Terminal HUD" title="Close HUD" data-on-click="closeTerminalHud()">
               <iconify-icon icon="material-symbols-light:close" class="text-base"></iconify-icon>
             </button>
           </div>
@@ -1452,16 +1447,20 @@
           <template data-for="line in ((terminalBuffers || {})[terminalActiveTab] || [])">
             <div class="leading-relaxed flex items-start gap-2">
               <span data-show="line.time" class="text-neutral-500 shrink-0 text-[10px]" data-bind="line.time"></span>
-              
+
               <!-- Badge by type -->
               <span data-show="line.type === 'system'" class="badge badge-xs badge-info font-mono shrink-0">SYS</span>
               <span data-show="line.type === 'ok'" class="badge badge-xs badge-success font-mono shrink-0">OK</span>
               <span data-show="line.type === 'warn'" class="badge badge-xs badge-warning font-mono shrink-0">WARN</span>
               <span data-show="line.type === 'error'" class="badge badge-xs badge-error font-mono shrink-0">ERR</span>
-              <span data-show="line.type === 'heap'" class="badge badge-xs badge-secondary font-mono shrink-0">HEAP</span>
-              <span data-show="line.type === 'worker'" class="badge badge-xs badge-accent font-mono shrink-0">WORKER</span>
-              <span data-show="line.type === 'build'" class="badge badge-xs badge-primary font-mono shrink-0">BUILD</span>
-              <span data-show="line.type === 'db'" class="badge badge-xs badge-warning font-mono shrink-0">SURREAL</span>
+              <span data-show="line.type === 'heap'"
+                class="badge badge-xs badge-secondary font-mono shrink-0">HEAP</span>
+              <span data-show="line.type === 'worker'"
+                class="badge badge-xs badge-accent font-mono shrink-0">WORKER</span>
+              <span data-show="line.type === 'build'"
+                class="badge badge-xs badge-primary font-mono shrink-0">BUILD</span>
+              <span data-show="line.type === 'db'"
+                class="badge badge-xs badge-warning font-mono shrink-0">SURREAL</span>
               <span data-show="line.type === 'user'" class="text-primary font-bold shrink-0">nexus-ux &gt;</span>
 
               <span data-class="{
@@ -1487,12 +1486,9 @@
           <input id="terminal-cli-input" type="text"
             class="input input-ghost input-xs flex-1 text-neutral-100 font-mono focus:outline-none border-0 focus:border-0 px-1 placeholder:text-neutral-600"
             placeholder="Type 'help' for commands (status, routes, theme, clear, topology)..."
-            data-bind-value="terminalInputText"
-            data-on-keydown:enter:prevent="runTerminalCommand()" />
-          <button type="button"
-            class="btn btn-primary btn-xs font-mono h-6 min-h-0 px-2.5 rounded text-[11px]"
-            aria-label="Execute Command"
-            data-on-click="runTerminalCommand()">
+            data-bind-value="terminalInputText" data-on-keydown:enter:prevent="runTerminalCommand()" />
+          <button type="button" class="btn btn-primary btn-xs font-mono h-6 min-h-0 px-2.5 rounded text-[11px]"
+            aria-label="Execute Command" data-on-click="runTerminalCommand()">
             Run ↵
           </button>
         </div>
@@ -1559,7 +1555,8 @@
           <div data-show="searchQuery.trim() && hasSearchResults(searchQuery)" class="space-y-4">
             <template data-for="group in searchResultGroups(searchQuery)" data-key="group.type">
               <div class="w-full">
-                <div class="flex items-center justify-between px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/50">
+                <div
+                  class="flex items-center justify-between px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/50">
                   <div class="flex items-center gap-1.5">
                     <iconify-icon data-bind-icon="group.icon" class="text-base opacity-70"></iconify-icon>
                     <span data-bind="group.title"></span>
@@ -1577,7 +1574,8 @@
                         ">
                         <div class="flex items-center justify-between w-full">
                           <div class="flex items-center gap-2.5 min-w-0">
-                            <iconify-icon data-bind-icon="item.meta?.icon || 'material-symbols-light:description-outline'"
+                            <iconify-icon
+                              data-bind-icon="item.meta?.icon || 'material-symbols-light:description-outline'"
                               class="text-xl shrink-0 opacity-70"></iconify-icon>
                             <span class="font-medium text-sm truncate" data-bind="item.meta?.title || item.name"></span>
                             <span class="badge badge-xs badge-ghost opacity-60" data-bind="item.category"></span>
@@ -1585,7 +1583,8 @@
                           <span class="badge badge-sm badge-ghost font-mono opacity-50 shrink-0"
                             data-bind="item.path"></span>
                         </div>
-                        <div data-show="item.snippet" class="text-xs text-base-content/60 ps-7 font-sans line-clamp-1 w-full text-start">
+                        <div data-show="item.snippet"
+                          class="text-xs text-base-content/60 ps-7 font-sans line-clamp-1 w-full text-start">
                           <span class="opacity-80 font-mono" data-bind="item.snippet"></span>
                         </div>
                       </a>
@@ -1653,16 +1652,14 @@
 
       <!-- Sub Branch Item (e.g. Profile 3) -->
       <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
-        data-bind-data-drag="cat?.itemsDraggable ? '' : null"
-        data-signal="{ open: false }"
+        data-bind-data-drag="cat?.itemsDraggable ? '' : null" data-signal="{ open: false }"
         data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
         <div class="flex">
           <a data-bind-href="item.href" draggable="false" class="grow whitespace-nowrap"
             data-bind-data-tab-title="item.tabTitle || item.title"
             data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
             data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
-            <span class="whitespace-nowrap"
-              data-bind="item.title"></span>
+            <span class="whitespace-nowrap" data-bind="item.title"></span>
           </a>
           <button class="btn btn-circle btn-xs hover:bg-accent/60" data-on-click="open = !open"
             data-class="{ 'rotate-90 bg-accent/20': open }">
@@ -1707,9 +1704,7 @@
                 data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                 data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                 <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
-                <span
-                  class="whitespace-nowrap"
-                  data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
+                <span class="whitespace-nowrap" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
                   data-bind="item.title"></span>
               </a>
             </li>
@@ -1725,17 +1720,13 @@
                   data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                   data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                   <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
-                  <span
-                    class="whitespace-nowrap"
-                    data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
+                  <span class="whitespace-nowrap" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
                     data-bind="item.title"></span>
                 </a>
-                <button
-                  class="btn btn-circle btn-xs hover:bg-accent/60"
-                  data-on-click="open = !open"
+                <button class="btn btn-circle btn-xs hover:bg-accent/60" data-on-click="open = !open"
                   data-class="{ 'bg-accent/20': open, 'hidden': collapsed && !hovered && !sidebarOpen }">
-                  <iconify-icon icon="material-symbols-light:chevron-forward"
-                    class="shrink-0 text-2xl" data-class="{ 'rotate-90': open}"></iconify-icon>
+                  <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-2xl"
+                    data-class="{ 'rotate-90': open}"></iconify-icon>
                 </button>
               </div>
               <ul
@@ -1752,7 +1743,8 @@
         <!-- 2. Categorized Sections (Draggable Category Groups & Dedicated Item Lists) -->
         <div data-drag-container="categories" data-drag-handle=".menu-title">
           <template data-for="cat in categories" data-key="cat.name">
-            <div data-drag data-show="(router.pages || []).filter(p => (p.category || p.meta?.category) === cat.name).length > 0">
+            <div data-drag
+              data-show="(router.pages || []).filter(p => (p.category || p.meta?.category) === cat.name).length > 0">
               <!-- Category Header (Title + Separator Line) -->
               <ul class="menu w-full py-0">
                 <li
@@ -1765,8 +1757,11 @@
               </ul>
 
               <!-- Dynamic Category Item List (Zero Hardcoding, Zero Duplication) -->
-              <ul class="menu w-full" data-drag-container="(router.pages || []).filter(p => (p.category || p.meta?.category) === cat.name)">
-                <template data-for="item in (router.pages || []).filter(p => (p.category || p.meta?.category) === cat.name)" data-key="item.href || item.id">
+              <ul class="menu w-full"
+                data-drag-container="(router.pages || []).filter(p => (p.category || p.meta?.category) === cat.name)">
+                <template
+                  data-for="item in (router.pages || []).filter(p => (p.category || p.meta?.category) === cat.name)"
+                  data-key="item.href || item.id">
                   <!-- Root Leaf Item (No Children) -->
                   <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
                     data-bind-data-drag="cat.itemsDraggable && item.href !== '/' ? '' : null"
@@ -1777,16 +1772,15 @@
                       data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                       data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                       <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
-                      <span
-                        class="whitespace-nowrap"
-                        data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
+                      <span class="whitespace-nowrap" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
                         data-bind="item.title"></span>
                     </a>
                   </li>
 
                   <!-- Case A: Branch Item with Route (dual-action: click title navigates, chevron toggles) -->
-                  <li data-show="item.children && item.children.length > 0 && !item.meta?.isSubmenu && item.href" class="cursor-pointer"
-                    data-bind-data-drag="cat.itemsDraggable && item.href !== '/' ? '' : null" data-signal="{ open: false }"
+                  <li data-show="item.children && item.children.length > 0 && !item.meta?.isSubmenu && item.href"
+                    class="cursor-pointer" data-bind-data-drag="cat.itemsDraggable && item.href !== '/' ? '' : null"
+                    data-signal="{ open: false }"
                     data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                     <div class="flex">
                       <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
@@ -1795,17 +1789,12 @@
                         data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                         data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                         <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
-                        <span
-                          class="whitespace-nowrap"
-                          data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
+                        <span class="whitespace-nowrap" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
                           data-bind="item.title"></span>
                       </a>
-                      <button
-                        class="btn btn-circle btn-xs hover:bg-accent/60"
-                        data-on-click="open = !open"
+                      <button class="btn btn-circle btn-xs hover:bg-accent/60" data-on-click="open = !open"
                         data-class="{ 'bg-accent/20': open, 'hidden': collapsed && !hovered && !sidebarOpen }">
-                        <iconify-icon icon="material-symbols-light:chevron-forward"
-                          class="shrink-0 text-2xl"
+                        <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-2xl"
                           data-class="{ 'rotate-90': open}"></iconify-icon>
                       </button>
                     </div>
@@ -1819,19 +1808,20 @@
                   </li>
 
                   <!-- Case B: Routeless Submenu (DaisyUI collapsible submenu row: clicking row toggles children, no navigation) -->
-                  <li data-show="item.children && item.children.length > 0 && (item.meta?.isSubmenu || !item.href)" class="cursor-pointer"
-                    data-bind-data-drag="cat.itemsDraggable && item.href !== '/' ? '' : null"
+                  <li data-show="item.children && item.children.length > 0 && (item.meta?.isSubmenu || !item.href)"
+                    class="cursor-pointer" data-bind-data-drag="cat.itemsDraggable && item.href !== '/' ? '' : null"
                     data-signal="{ open: false }">
-                    <div class="flex items-center justify-between py-1.5 px-3 rounded-lg hover:bg-base-200/60" data-on-click="open = !open">
+                    <div class="flex items-center justify-between py-1.5 px-3 rounded-lg hover:bg-base-200/60"
+                      data-on-click="open = !open">
                       <div class="flex items-center gap-2">
-                        <iconify-icon data-bind-icon="item.icon || 'material-symbols-light:folder-outline'" class="shrink-0 text-xl opacity-70"></iconify-icon>
-                        <span
-                          class="whitespace-nowrap font-medium"
+                        <iconify-icon data-bind-icon="item.icon || 'material-symbols-light:folder-outline'"
+                          class="shrink-0 text-xl opacity-70"></iconify-icon>
+                        <span class="whitespace-nowrap font-medium"
                           data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
                           data-bind="item.title"></span>
                       </div>
-                      <iconify-icon icon="material-symbols-light:chevron-forward"
-                        class="shrink-0 text-xl" data-class="{ 'rotate-90': open, 'hidden': collapsed && !hovered && !sidebarOpen }"></iconify-icon>
+                      <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-xl"
+                        data-class="{ 'rotate-90': open, 'hidden': collapsed && !hovered && !sidebarOpen }"></iconify-icon>
                     </div>
                     <ul
                       class="menu-dropdown menu-dropdown-show ms-6 overflow-hidden [interpolate-size:allow-keywords] transition-[height,opacity] duration-300 ease-in-out"
@@ -2296,8 +2286,7 @@
 
       <!-- 4. Chat Session Context Menu Items -->
       <li data-show="ctxMenu.type === 'chatSession' && ctxMenu.target">
-        <button type="button"
-          data-on-click="togglePinSession(ctxMenu.target?.id); ctxMenu.open = false">
+        <button type="button" data-on-click="togglePinSession(ctxMenu.target?.id); ctxMenu.open = false">
           <iconify-icon
             data-bind-icon="ctxMenu.target?.pinned ? 'material-symbols-light:keep-off-outline' : 'material-symbols-light:keep-outline'"
             class="text-lg"></iconify-icon>
@@ -2472,7 +2461,8 @@
     }">
 
     <!-- 1. Left Start-Rail: Vertical Session Icon Buttons -->
-    <div class="w-14 shrink-0 bg-base-300/80 backdrop-blur-md border-e border-base-content/10 flex flex-col items-center py-3 gap-2 select-none">
+    <div
+      class="w-14 shrink-0 bg-base-300/80 backdrop-blur-md border-e border-base-content/10 flex flex-col items-center py-3 gap-2 select-none">
       <!-- New Chat Action on Rail -->
       <div class="tooltip tooltip-right" data-tip="New Chat">
         <button type="button"
@@ -2488,17 +2478,14 @@
       <div class="flex-1 w-full flex flex-col items-center gap-2 overflow-y-auto scrollbar-none"
         data-drag-container="chatSessions" data-drag-group="chatSessions" data-drag-direction="vertical">
         <template data-for="session in (chatSessions || [])" data-key="session.id">
-          <div data-drag
-            class="tooltip tooltip-right relative cursor-grab active:cursor-grabbing select-none"
+          <div data-drag class="tooltip tooltip-right relative cursor-grab active:cursor-grabbing select-none"
             data-bind-attr-data-tip="session.name + (session.pinned ? ' (Pinned)' : '')"
             data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'chatSession', target: session }">
-            <button type="button"
-              class="btn btn-ghost btn-circle btn-sm relative transition-all duration-200"
+            <button type="button" class="btn btn-ghost btn-circle btn-sm relative transition-all duration-200"
               data-class="{
                 'btn-active bg-primary/20 text-primary shadow-sm': activeSessionId === session.id,
                 'text-base-content/60 hover:text-base-content hover:bg-base-content/10': activeSessionId !== session.id
-              }"
-              data-on-click="openSession(session.id)">
+              }" data-on-click="openSession(session.id)">
               <iconify-icon data-bind-icon="session.icon" class="text-lg"></iconify-icon>
               <!-- Pin Indicator Badge -->
               <span data-show="session.pinned"
@@ -2514,7 +2501,8 @@
       </div>
 
       <!-- Bottom Rail: Active Dock Mode Indicator -->
-      <div class="tooltip tooltip-right" data-bind-attr-data-tip="chatbarDocked ? 'Docked to Layout' : 'Floating Overlay'">
+      <div class="tooltip tooltip-right"
+        data-bind-attr-data-tip="chatbarDocked ? 'Docked to Layout' : 'Floating Overlay'">
         <div class="size-2 rounded-full transition-colors"
           data-class="{ 'bg-primary animate-pulse': chatbarDocked, 'bg-base-content/30': !chatbarDocked }"></div>
       </div>
@@ -2523,15 +2511,18 @@
     <!-- 2. Main Chat Session Body -->
     <div class="flex-1 flex flex-col min-w-0 bg-base-100 overflow-hidden">
       <!-- Header -->
-      <div class="h-16 px-4 border-b border-base-200 flex items-center justify-between shrink-0 bg-base-100/90 backdrop-blur-sm">
+      <div
+        class="h-16 px-4 border-b border-base-200 flex items-center justify-between shrink-0 bg-base-100/90 backdrop-blur-sm">
         <div class="flex items-center gap-2.5 min-w-0 flex-1">
           <div class="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-            <iconify-icon data-bind-icon="getActiveSession().icon || 'material-symbols-light:chat'" class="text-xl"></iconify-icon>
+            <iconify-icon data-bind-icon="getActiveSession().icon || 'material-symbols-light:chat'"
+              class="text-xl"></iconify-icon>
           </div>
           <div class="min-w-0 flex-1">
             <h3 class="font-semibold text-sm truncate" data-bind="getActiveSession().name || 'Conversation'"></h3>
             <div class="flex items-center gap-1.5 text-xs text-base-content/50 truncate">
-              <span class="badge badge-xs badge-primary badge-outline text-[10px]" data-bind="getActiveSession().type === 'agent' ? 'AI Copilot' : 'Team Channel'"></span>
+              <span class="badge badge-xs badge-primary badge-outline text-[10px]"
+                data-bind="getActiveSession().type === 'agent' ? 'AI Copilot' : 'Team Channel'"></span>
               <span class="truncate" data-bind="getActiveSession().description || ''"></span>
             </div>
           </div>
@@ -2540,16 +2531,20 @@
         <!-- Header Actions: Pin Conversation, Attach/Dock & Close -->
         <div class="flex items-center gap-1 shrink-0">
           <!-- Pin / Unpin Conversation Toggle -->
-          <div class="tooltip tooltip-bottom" data-bind-attr-data-tip="getActiveSession().pinned ? 'Unpin Conversation' : 'Pin Conversation'">
+          <div class="tooltip tooltip-bottom"
+            data-bind-attr-data-tip="getActiveSession().pinned ? 'Unpin Conversation' : 'Pin Conversation'">
             <button type="button" class="btn btn-ghost btn-xs btn-circle transition-colors"
               data-class="{ 'text-secondary bg-secondary/10': getActiveSession().pinned, 'opacity-60 hover:opacity-100': !getActiveSession().pinned }"
               data-on-click="togglePinSession(activeSessionId)">
-              <iconify-icon data-bind-icon="getActiveSession().pinned ? 'material-symbols-light:bookmark' : 'material-symbols-light:bookmark-outline'" class="text-lg"></iconify-icon>
+              <iconify-icon
+                data-bind-icon="getActiveSession().pinned ? 'material-symbols-light:bookmark' : 'material-symbols-light:bookmark-outline'"
+                class="text-lg"></iconify-icon>
             </button>
           </div>
 
           <!-- Pin / Attach Toggle Button -->
-          <div class="tooltip tooltip-bottom" data-bind-attr-data-tip="chatbarDocked ? 'Unpin (Float over content)' : 'Attach to Layout (Shift content)'">
+          <div class="tooltip tooltip-bottom"
+            data-bind-attr-data-tip="chatbarDocked ? 'Unpin (Float over content)' : 'Attach to Layout (Shift content)'">
             <button type="button" class="btn btn-ghost btn-xs btn-circle transition-colors"
               data-class="{ 'text-primary bg-primary/10': chatbarDocked, 'opacity-60 hover:opacity-100': !chatbarDocked }"
               data-on-click="toggleChatDock()">
@@ -2559,8 +2554,7 @@
 
           <!-- Close Button (✕) -->
           <button type="button" class="btn btn-ghost btn-xs btn-circle opacity-70 hover:opacity-100"
-            aria-label="Close Chatbar"
-            data-on-click="closeChatbar()">
+            aria-label="Close Chatbar" data-on-click="closeChatbar()">
             <iconify-icon icon="material-symbols-light:close" class="text-lg"></iconify-icon>
           </button>
         </div>
@@ -2573,7 +2567,8 @@
         <template data-for="m in (getActiveSession().members || [])">
           <span class="badge badge-sm gap-1 py-1 text-[11px]"
             data-class="{ 'badge-primary badge-outline': m.isAgent, 'badge-ghost': !m.isAgent }">
-            <iconify-icon data-show="m.isAgent" icon="material-symbols-light:smart-toy-outline" class="text-xs"></iconify-icon>
+            <iconify-icon data-show="m.isAgent" icon="material-symbols-light:smart-toy-outline"
+              class="text-xs"></iconify-icon>
             <span data-bind="m.name"></span>
           </span>
         </template>
@@ -2584,7 +2579,7 @@
         <template data-for="msg in getActiveMessages()" data-key="msg.id">
           <div class="flex flex-col gap-1 w-full"
             data-class="{ 'items-end': !msg.isAgent && msg.sender === 'Vernon', 'items-start': msg.isAgent || msg.sender !== 'Vernon' }">
-            
+
             <!-- Sender & Time Label -->
             <div class="flex items-center gap-2 text-[11px] text-base-content/50 px-1">
               <span class="font-medium" data-bind="msg.sender"></span>
@@ -2593,18 +2588,19 @@
             </div>
 
             <!-- Chat Bubble -->
-            <div class="rounded-2xl px-3.5 py-2.5 max-w-[88%] text-sm leading-relaxed shadow-sm font-sans"
-              data-class="{
+            <div class="rounded-2xl px-3.5 py-2.5 max-w-[88%] text-sm leading-relaxed shadow-sm font-sans" data-class="{
                 'bg-primary text-primary-content rounded-br-none': !msg.isAgent && msg.sender === 'Vernon',
                 'bg-base-200 text-base-content rounded-bl-none border border-base-300': msg.isAgent || msg.sender !== 'Vernon'
               }">
               <p data-bind="msg.text" class="whitespace-pre-wrap"></p>
 
               <!-- Interactive Artifact Card (if message contains an artifact) -->
-              <div data-show="msg.artifact" class="mt-2.5 p-3 rounded-xl bg-base-100 text-base-content border border-base-300 shadow-md">
+              <div data-show="msg.artifact"
+                class="mt-2.5 p-3 rounded-xl bg-base-100 text-base-content border border-base-300 shadow-md">
                 <div class="flex items-center justify-between pb-2 border-b border-base-200 mb-2">
                   <div class="flex items-center gap-1.5 font-semibold text-xs">
-                    <iconify-icon icon="material-symbols-light:receipt-long" class="text-primary text-base"></iconify-icon>
+                    <iconify-icon icon="material-symbols-light:receipt-long"
+                      class="text-primary text-base"></iconify-icon>
                     <span data-bind="msg.artifact?.title"></span>
                   </div>
                   <span class="badge badge-xs badge-warning" data-bind="msg.artifact?.status"></span>
@@ -2622,7 +2618,8 @@
 
                 <!-- Total & Action Buttons -->
                 <div class="mt-3 pt-2 border-t border-base-200 flex items-center justify-between">
-                  <span class="text-xs font-semibold">Total: <span class="font-mono text-primary" data-bind="msg.artifact?.amount"></span></span>
+                  <span class="text-xs font-semibold">Total: <span class="font-mono text-primary"
+                      data-bind="msg.artifact?.amount"></span></span>
                   <div class="flex gap-1.5">
                     <button type="button" class="btn btn-xs btn-primary font-normal"
                       data-on-click="notify('PO Approved', 'PO #2026-Q3-088 approved and synced with ERP', 'success')">
@@ -2640,11 +2637,13 @@
       <div class="p-3 border-t border-base-200 bg-base-100/95 shrink-0">
         <!-- Quick @mention Suggestion Pills -->
         <div class="flex items-center gap-1.5 mb-2 overflow-x-auto scrollbar-none text-[11px]">
-          <button type="button" class="badge badge-sm badge-ghost gap-1 opacity-70 hover:opacity-100 hover:badge-primary transition-all cursor-pointer"
+          <button type="button"
+            class="badge badge-sm badge-ghost gap-1 opacity-70 hover:opacity-100 hover:badge-primary transition-all cursor-pointer"
             data-on-click="chatInputText = (chatInputText ? chatInputText + ' ' : '') + '@Finance Agent '">
             <span>@Finance Agent</span>
           </button>
-          <button type="button" class="badge badge-sm badge-ghost gap-1 opacity-70 hover:opacity-100 hover:badge-primary transition-all cursor-pointer"
+          <button type="button"
+            class="badge badge-sm badge-ghost gap-1 opacity-70 hover:opacity-100 hover:badge-primary transition-all cursor-pointer"
             data-on-click="chatInputText = (chatInputText ? chatInputText + ' ' : '') + '@Nexus Copilot '">
             <span>@Nexus Copilot</span>
           </button>
@@ -2653,11 +2652,9 @@
         <div class="flex items-center gap-2">
           <input id="chat-composer-input" type="text"
             class="input input-bordered input-sm flex-1 focus:input-primary text-sm"
-            placeholder="Message team or @agent… (Enter to send)"
-            data-bind-value="chatInputText"
+            placeholder="Message team or @agent… (Enter to send)" data-bind-value="chatInputText"
             data-on-keydown:enter="sendChatMessage()" />
-          <button type="button" class="btn btn-primary btn-sm btn-circle shrink-0"
-            aria-label="Send message"
+          <button type="button" class="btn btn-primary btn-sm btn-circle shrink-0" aria-label="Send message"
             data-on-click="sendChatMessage()">
             <iconify-icon icon="material-symbols-light:send" class="text-lg"></iconify-icon>
           </button>
