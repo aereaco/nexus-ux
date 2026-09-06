@@ -442,7 +442,7 @@
         </div>
 
         <div class="p-6">
-            <div class="grid grid-cols-1 gap-6" data-class-md:grid-cols-2="labTab === 'split'">
+            <div class="grid grid-cols-1 gap-6" data-class="{ 'md:grid-cols-2': labTab === 'split' }">
                 <!-- Interactive Lab Live Execution Panel -->
                 <div data-show="labTab === 'preview' || labTab === 'split'" class="w-full h-full">
                     <div class="bg-base-200/50 rounded-xl p-6 min-h-[220px] h-full border border-base-content/10"
@@ -451,7 +451,7 @@
                 </div>
 
                 <!-- Lab Source CodeMirror Editor Panel -->
-                <div data-show="labTab === 'source' || labTab === 'split'" style="display:none;" class="w-full h-full">
+                <div data-show="labTab === 'source' || labTab === 'split'" class="w-full h-full">
                     <div class="nx-editor-container border border-base-content/10 rounded-xl overflow-hidden h-full min-h-[380px]" style="width: 100%;">
                         <div id="snippet-editor" class="nx-editor"></div>
                     </div>
