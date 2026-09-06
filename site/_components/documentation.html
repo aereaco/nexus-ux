@@ -1,4 +1,4 @@
-<div class="dashboard-fragment w-full p-6 space-y-8"
+<div class="dashboard-fragment w-full flex flex-col grow min-h-0 gap-8"
     data-signal="{ 
         toastMsg: '', 
         toastType: 'info', 
@@ -278,9 +278,9 @@
     </script>
 
     <!-- ═══════════ TWO-COLUMN FULL PAGE LAYOUT ═══════════ -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full items-start">
+    <div class="flex flex-col lg:flex-row gap-8 w-full flex-1 min-h-0">
         <!-- ──── LEFT COLUMN: HEADER & MODULE SPECIFICATION ──── -->
-        <div class="space-y-6 w-full">
+        <div class="flex flex-col gap-6 min-h-0">
             <!-- 1. HEADER TOOLBAR -->
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-base-content/10" data-if="doc">
                 <div>
@@ -302,7 +302,7 @@
             </div>
 
             <!-- 2. TAB GROUP 1: MODULE SPECIFICATION -->
-            <div class="card bg-base-100 border border-base-content/10 shadow-sm overflow-hidden lg:sticky lg:top-6 lg:max-h-[calc(100vh-5rem)] lg:flex lg:flex-col" data-if="doc">
+            <div class="card bg-base-100 border border-base-content/10 shadow-sm overflow-hidden flex-1 min-h-0 flex flex-col" data-if="doc">
                 <div class="card-header bg-base-200/40 px-6 py-3 border-b border-base-content/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div class="flex items-center gap-2">
                         <iconify-icon icon="material-symbols-light:menu-book-outline" class="text-primary text-xl"></iconify-icon>
@@ -326,7 +326,7 @@
                     </div>
                 </div>
 
-                <div class="p-6 lg:flex-1 lg:overflow-y-auto">
+                <div class="p-6 flex-1 overflow-y-auto min-h-0">
                     <!-- Sub-Tab 1: Syntax & API Usage -->
                     <div data-show="specTab === 'usage'" class="space-y-6">
                         <div>
@@ -369,7 +369,7 @@
                     </div>
 
                     <!-- Sub-Tab 2: Module Source -->
-                    <div data-show="specTab === 'source'" style="display:none;" class="space-y-4 h-full">
+                    <div data-show="specTab === 'source'" style="display:none;" class="space-y-4">
                         <div class="nx-editor-container border border-base-content/10 rounded-xl overflow-hidden" style="width: 100%;">
                             <div id="source-editor" class="nx-editor"></div>
                         </div>
@@ -408,9 +408,9 @@
         </div>
 
         <!-- ──── RIGHT COLUMN: INTERACTIVE SANDBOX ──── -->
-        <div class="space-y-6 w-full">
+        <div class="flex flex-col min-h-0">
             <!-- 3. TAB GROUP 2: INTERACTIVE SANDBOX -->
-            <div class="card bg-base-100 border border-base-content/10 shadow-sm overflow-hidden lg:sticky lg:top-6 lg:max-h-[calc(100vh-5rem)] lg:flex lg:flex-col" data-if="doc.Snippet || doc.Examples">
+            <div class="card bg-base-100 border border-base-content/10 shadow-sm overflow-hidden flex-1 min-h-0 flex flex-col" data-if="doc.Snippet || doc.Examples">
                 <div class="card-header bg-base-200/40 px-6 py-3 border-b border-base-content/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div class="flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-success animate-pulse"></span>
@@ -441,7 +441,7 @@
                     </div>
                 </div>
 
-                <div class="p-6 space-y-6 lg:flex-1 lg:overflow-y-auto">
+                <div class="p-6 space-y-6 flex-1 overflow-y-auto min-h-0">
                     <!-- Interactive Lab Live Execution Panel (TOP) -->
                     <div data-show="labTab === 'preview' || labTab === 'split'" class="w-full">
                         <div class="bg-base-200/50 rounded-xl p-6 min-h-[220px] border border-base-content/10"
