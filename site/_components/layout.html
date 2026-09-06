@@ -1672,7 +1672,7 @@
         <ul
           class="menu-dropdown menu-dropdown-show overflow-hidden [interpolate-size:allow-keywords] transition-[height,opacity] duration-300 ease-in-out"
           data-class="{ 'h-auto opacity-100': open && (!collapsed || hovered || sidebarOpen), 'h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
-          data-bind-data-drag-container="cat?.itemsDraggable ? item.children : null">
+          data-drag-container="item.children">
           <!-- RECURSIVE TEMPLATE: Calls itself for infinite arbitrary sub-levels! -->
           <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
             data-key="item.href || item.id"></template>
