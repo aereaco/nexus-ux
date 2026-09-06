@@ -1661,24 +1661,22 @@
             data-bind-data-tab-title="item.tabTitle || item.title"
             data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
             data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
-            <span data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }" class="whitespace-nowrap"
+            <span class="whitespace-nowrap"
               data-bind="item.title"></span>
           </a>
           <button class="btn btn-circle btn-xs hover:bg-accent/60 transition-transform" data-on-click="open = !open"
-            data-class="{ 'rotate-90 bg-accent/20': open, 'hidden': collapsed && !hovered && !sidebarOpen }">
+            data-class="{ 'rotate-90 bg-accent/20': open }">
             <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-2xl"></iconify-icon>
           </button>
         </div>
-        <div class="!p-0 !m-0 grid transition-[grid-template-rows,opacity] duration-300 ease-in-out"
-          data-class="{ 'grid-rows-[1fr] opacity-100': open && (!collapsed || hovered || sidebarOpen), 'grid-rows-[0fr] opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }">
-          <ul
-            class="menu-dropdown menu-dropdown-show overflow-hidden min-h-0"
-            data-bind-data-drag-container="cat?.itemsDraggable ? item.children : null">
-            <!-- RECURSIVE TEMPLATE: Calls itself for infinite arbitrary sub-levels! -->
-            <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
-              data-key="item.href || item.id"></template>
-          </ul>
-        </div>
+        <ul
+          class="menu-dropdown transition-opacity duration-200 overflow-hidden"
+          data-class="{ 'menu-dropdown-show opacity-100': open && (!collapsed || hovered || sidebarOpen), 'opacity-0 pointer-events-none': !open || (collapsed && !hovered && !sidebarOpen) }"
+          data-bind-data-drag-container="cat?.itemsDraggable ? item.children : null">
+          <!-- RECURSIVE TEMPLATE: Calls itself for infinite arbitrary sub-levels! -->
+          <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
+            data-key="item.href || item.id"></template>
+        </ul>
       </li>
     </template>
 
@@ -1710,8 +1708,8 @@
                 data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                 <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
                 <span
-                  class="whitespace-nowrap transition-opacity duration-200"
-                  data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
+                  class="whitespace-nowrap transition-[opacity,max-width] duration-200 overflow-hidden inline-block"
+                  data-class="{ 'opacity-0 max-w-0 pointer-events-none': collapsed && !hovered && !sidebarOpen, 'opacity-100 max-w-xs': !collapsed || hovered || sidebarOpen }"
                   data-bind="item.title"></span>
               </a>
             </li>
@@ -1728,8 +1726,8 @@
                   data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                   <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
                   <span
-                    class="whitespace-nowrap transition-opacity duration-200"
-                    data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
+                    class="whitespace-nowrap transition-[opacity,max-width] duration-200 overflow-hidden inline-block"
+                    data-class="{ 'opacity-0 max-w-0 pointer-events-none': collapsed && !hovered && !sidebarOpen, 'opacity-100 max-w-xs': !collapsed || hovered || sidebarOpen }"
                     data-bind="item.title"></span>
                 </a>
                 <button
@@ -1740,15 +1738,13 @@
                     class="shrink-0 text-2xl transition-transform" data-class="{ 'rotate-90': open}"></iconify-icon>
                 </button>
               </div>
-              <div class="!p-0 !m-0 grid transition-[grid-template-rows,opacity] duration-300 ease-in-out"
-                data-class="{ 'grid-rows-[1fr] opacity-100': open && (!collapsed || hovered || sidebarOpen), 'grid-rows-[0fr] opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }">
-                <ul
-                  class="menu-dropdown menu-dropdown-show ms-12 overflow-hidden min-h-0"
-                  data-drag-container="item.children">
-                  <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
-                    data-key="item.href || item.id"></template>
-                </ul>
-              </div>
+              <ul
+                class="menu-dropdown transition-opacity duration-200 ms-12 overflow-hidden"
+                data-class="{ 'menu-dropdown-show opacity-100': open && (!collapsed || hovered || sidebarOpen), 'opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
+                data-drag-container="item.children">
+                <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
+                  data-key="item.href || item.id"></template>
+              </ul>
             </li>
           </template>
         </ul>
@@ -1760,12 +1756,12 @@
               <!-- Category Header (Title + Separator Line) -->
               <ul class="menu w-full py-0">
                 <li
-                  class="menu-title !flex !flex-row items-center justify-between w-full ps-1 pe-1 py-1 overflow-hidden transition-[opacity,max-height,margin,padding] duration-300 ease-in-out cursor-grab"
+                  class="menu-title !flex !flex-row items-center justify-between w-full ps-1 pe-1 py-1 overflow-hidden transition-[opacity,max-height,margin,padding] duration-200 ease-in-out cursor-grab"
                   data-class="{ 'max-h-0 opacity-0 !my-0 !py-0 pointer-events-none': collapsed && !hovered && !sidebarOpen, 'max-h-12 opacity-100 mt-4': !collapsed || hovered || sidebarOpen }">
                   <span data-bind="cat.name" class="font-semibold text-xs tracking-wider uppercase">Title</span>
                   <iconify-icon data-bind-icon="cat.icon" class="text-base opacity-70 shrink-0"></iconify-icon>
                 </li>
-                <li class="w-full mx-0" data-class="{ 'opacity-6': collapsed && !hovered && !sidebarOpen }"></li>
+                <li class="w-full h-px bg-base-content/10 my-1"></li>
               </ul>
 
               <!-- Dynamic Category Item List (Zero Hardcoding, Zero Duplication) -->
@@ -1782,8 +1778,8 @@
                       data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                       <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
                       <span
-                        class="whitespace-nowrap transition-opacity duration-200"
-                        data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
+                        class="whitespace-nowrap transition-[opacity,max-width] duration-200 overflow-hidden inline-block"
+                        data-class="{ 'opacity-0 max-w-0 pointer-events-none': collapsed && !hovered && !sidebarOpen, 'opacity-100 max-w-xs': !collapsed || hovered || sidebarOpen }"
                         data-bind="item.title"></span>
                     </a>
                   </li>
@@ -1800,8 +1796,8 @@
                         data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                         <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
                         <span
-                          class="whitespace-nowrap transition-opacity duration-200"
-                          data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
+                          class="whitespace-nowrap transition-[opacity,max-width] duration-200 overflow-hidden inline-block"
+                          data-class="{ 'opacity-0 max-w-0 pointer-events-none': collapsed && !hovered && !sidebarOpen, 'opacity-100 max-w-xs': !collapsed || hovered || sidebarOpen }"
                           data-bind="item.title"></span>
                       </a>
                       <button
@@ -1813,15 +1809,13 @@
                           data-class="{ 'rotate-90': open}"></iconify-icon>
                       </button>
                     </div>
-                    <div class="!p-0 !m-0 grid transition-[grid-template-rows,opacity] duration-300 ease-in-out"
-                      data-class="{ 'grid-rows-[1fr] opacity-100': open && (!collapsed || hovered || sidebarOpen), 'grid-rows-[0fr] opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }">
-                      <ul
-                        class="menu-dropdown menu-dropdown-show ms-12 overflow-hidden min-h-0"
-                        data-bind-data-drag-container="cat.itemsDraggable ? ('sub-' + item.id) : null">
-                        <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
-                          data-key="item.href || item.id"></template>
-                      </ul>
-                    </div>
+                    <ul
+                      class="menu-dropdown transition-opacity duration-200 ms-12 overflow-hidden"
+                      data-class="{ 'menu-dropdown-show opacity-100': open && (!collapsed || hovered || sidebarOpen), 'opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
+                      data-bind-data-drag-container="cat.itemsDraggable ? ('sub-' + item.id) : null">
+                      <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
+                        data-key="item.href || item.id"></template>
+                    </ul>
                   </li>
 
                   <!-- Case B: Routeless Submenu (DaisyUI collapsible submenu row: clicking row toggles children, no navigation) -->
@@ -1831,22 +1825,20 @@
                       <div class="flex items-center gap-2">
                         <iconify-icon data-bind-icon="item.icon || 'material-symbols-light:folder-outline'" class="shrink-0 text-xl opacity-70"></iconify-icon>
                         <span
-                          class="whitespace-nowrap font-medium transition-opacity duration-200"
-                          data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
+                          class="whitespace-nowrap font-medium transition-[opacity,max-width] duration-200 overflow-hidden inline-block"
+                          data-class="{ 'opacity-0 max-w-0 pointer-events-none': collapsed && !hovered && !sidebarOpen, 'opacity-100 max-w-xs': !collapsed || hovered || sidebarOpen }"
                           data-bind="item.title"></span>
                       </div>
                       <iconify-icon icon="material-symbols-light:chevron-forward"
                         class="shrink-0 text-xl transition-transform" data-class="{ 'rotate-90': open, 'hidden': collapsed && !hovered && !sidebarOpen }"></iconify-icon>
                     </div>
-                    <div class="!p-0 !m-0 grid transition-[grid-template-rows,opacity] duration-300 ease-in-out"
-                      data-class="{ 'grid-rows-[1fr] opacity-100': open && (!collapsed || hovered || sidebarOpen), 'grid-rows-[0fr] opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }">
-                      <ul
-                        class="menu-dropdown menu-dropdown-show ms-6 overflow-hidden min-h-0"
-                        data-bind-data-drag-container="cat.itemsDraggable ? ('sub-' + item.id) : null">
-                        <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
-                          data-key="item.href || item.id"></template>
-                      </ul>
-                    </div>
+                    <ul
+                      class="menu-dropdown transition-opacity duration-200 ms-6 overflow-hidden"
+                      data-class="{ 'menu-dropdown-show opacity-100': open && (!collapsed || hovered || sidebarOpen), 'opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
+                      data-bind-data-drag-container="cat.itemsDraggable ? ('sub-' + item.id) : null">
+                      <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
+                        data-key="item.href || item.id"></template>
+                    </ul>
                   </li>
                 </template>
               </ul>
