@@ -314,7 +314,7 @@
     "route": "/labs/sprites",
     "path": "/_pages/labs/sprites.html",
     "title": "Sprites",
-    "icon": "material-symbols-light:magic-button",
+    "icon": "material-symbols-light:attach-money",
     "order": 4,
     "parent": null,
     "category": "Labs"

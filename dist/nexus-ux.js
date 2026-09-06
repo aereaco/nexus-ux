@@ -459,7 +459,7 @@ ${suggestion}`);
             Atomics.store(sharedState, PHASE_CURRENT, 1);
             await this.runQueueWithYielding(this.captureQueue);
             Atomics.store(sharedState, PHASE_CURRENT, 2);
-            await this.runQueueWithYielding(this.evaluateQueue);
+            this.runQueueSync(this.evaluateQueue);
             this.evaluateSet.clear();
             Atomics.store(sharedState, PHASE_CURRENT, 3);
             await this.runQueueWithYielding(this.resolveQueue);
@@ -521,7 +521,7 @@ ${suggestion}`);
         async runQueueWithYielding(queue) {
           if (queue.length === 0)
             return;
-          const startTime = performance.now();
+          let startTime = performance.now();
           let iterations = 0;
           while (queue.length > 0) {
             if (++iterations > _Scheduler.MAX_QUEUE_ITERATIONS) {
@@ -540,6 +540,7 @@ ${suggestion}`);
             if (performance.now() - startTime > this.stallBudget) {
               this.syncSharedState();
               await yieldToBrowser();
+              startTime = performance.now();
             }
           }
           this.syncSharedState();

@@ -227,9 +227,9 @@ class Scheduler {
       Atomics.store(sharedState, PHASE_CURRENT, 1);
       await this.runQueueWithYielding(this.captureQueue);
 
-      // Phase 2: Evaluate (may yield if expensive)
+      // Phase 2: Evaluate (synchronous microtask execution per Atomic Frame Spec §5.4)
       Atomics.store(sharedState, PHASE_CURRENT, 2);
-      await this.runQueueWithYielding(this.evaluateQueue);
+      this.runQueueSync(this.evaluateQueue);
       // Clear the dedup set after the evaluate phase completes
       this.evaluateSet.clear();
 
@@ -306,7 +306,7 @@ class Scheduler {
   private async runQueueWithYielding(queue: Job[]): Promise<void> {
     if (queue.length === 0) return;
 
-    const startTime = performance.now();
+    let startTime = performance.now();
     let iterations = 0;
     
     while (queue.length > 0) {
@@ -330,7 +330,8 @@ class Scheduler {
       if (performance.now() - startTime > this.stallBudget) {
         this.syncSharedState();
         await yieldToBrowser();
-        // Continue processing remaining jobs after yielding
+        // Continue processing remaining jobs with a fresh time slice
+        startTime = performance.now();
       }
     }
 
