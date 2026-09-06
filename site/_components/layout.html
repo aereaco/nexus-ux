@@ -1670,8 +1670,8 @@
           </button>
         </div>
         <ul
-          class="menu-dropdown transition-opacity duration-200 overflow-hidden"
-          data-class="{ 'menu-dropdown-show opacity-100': open && (!collapsed || hovered || sidebarOpen), 'opacity-0 pointer-events-none': !open || (collapsed && !hovered && !sidebarOpen) }"
+          class="menu-dropdown overflow-hidden"
+          data-class="{ 'menu-dropdown-show': open && (!collapsed || hovered || sidebarOpen) }"
           data-bind-data-drag-container="cat?.itemsDraggable ? item.children : null">
           <!-- RECURSIVE TEMPLATE: Calls itself for infinite arbitrary sub-levels! -->
           <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
@@ -1739,8 +1739,8 @@
                 </button>
               </div>
               <ul
-                class="menu-dropdown transition-opacity duration-200 ms-12 overflow-hidden"
-                data-class="{ 'menu-dropdown-show opacity-100': open && (!collapsed || hovered || sidebarOpen), 'opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
+                class="menu-dropdown ms-12 overflow-hidden"
+                data-class="{ 'menu-dropdown-show': open && (!collapsed || hovered || sidebarOpen) }"
                 data-drag-container="item.children">
                 <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
                   data-key="item.href || item.id"></template>
@@ -1810,8 +1810,8 @@
                       </button>
                     </div>
                     <ul
-                      class="menu-dropdown transition-opacity duration-200 ms-12 overflow-hidden"
-                      data-class="{ 'menu-dropdown-show opacity-100': open && (!collapsed || hovered || sidebarOpen), 'opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
+                      class="menu-dropdown ms-12 overflow-hidden"
+                      data-class="{ 'menu-dropdown-show': open && (!collapsed || hovered || sidebarOpen) }"
                       data-bind-data-drag-container="cat.itemsDraggable ? ('sub-' + item.id) : null">
                       <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
                         data-key="item.href || item.id"></template>
@@ -1833,8 +1833,8 @@
                         class="shrink-0 text-xl transition-transform" data-class="{ 'rotate-90': open, 'hidden': collapsed && !hovered && !sidebarOpen }"></iconify-icon>
                     </div>
                     <ul
-                      class="menu-dropdown transition-opacity duration-200 ms-6 overflow-hidden"
-                      data-class="{ 'menu-dropdown-show opacity-100': open && (!collapsed || hovered || sidebarOpen), 'opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
+                      class="menu-dropdown ms-6 overflow-hidden"
+                      data-class="{ 'menu-dropdown-show': open && (!collapsed || hovered || sidebarOpen) }"
                       data-bind-data-drag-container="cat.itemsDraggable ? ('sub-' + item.id) : null">
                       <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
                         data-key="item.href || item.id"></template>
