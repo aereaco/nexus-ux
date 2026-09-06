@@ -278,18 +278,16 @@
     </script>
 
     <!-- ═══════════ TWO-COLUMN FULL PAGE LAYOUT ═══════════ -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full items-start">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full lg:items-stretch lg:h-[calc(100vh-var(--navbar-height,4rem)-3rem)]">
         <!-- ──── LEFT COLUMN: HEADER & MODULE SPECIFICATION ──── -->
-        <div class="space-y-6 w-full">
+        <div class="space-y-6 w-full lg:flex lg:flex-col">
             <!-- 1. HEADER TOOLBAR -->
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-base-content/10" data-if="doc">
                 <div>
-                    <div class="flex items-center gap-2 mb-1.5">
-                        <span class="badge badge-primary badge-sm font-semibold uppercase tracking-wider" data-bind="doc.Category || 'Attributes'"></span>
-                    </div>
                     <h1 class="text-3xl font-extrabold tracking-tight text-base-content flex items-center gap-3">
                         <iconify-icon data-bind-icon="doc.Icon || 'material-symbols-light:code-blocks-outline'" class="text-primary text-3xl"></iconify-icon>
                         <span data-bind="doc.Title"></span>
+                        <span class="badge badge-primary badge-sm font-semibold uppercase tracking-wider ms-1" data-bind="doc.Category || 'Attributes'"></span>
                     </h1>
                     <p class="text-base text-base-content/70 mt-1 max-w-3xl leading-relaxed" data-markdown="doc.Description"></p>
                 </div>
@@ -304,26 +302,20 @@
             </div>
 
             <!-- 2. TAB GROUP 1: MODULE SPECIFICATION -->
-            <div class="card bg-base-100 border border-base-content/10 shadow-sm overflow-hidden" data-if="doc">
+            <div class="card bg-base-100 border border-base-content/10 shadow-sm overflow-hidden lg:flex-1 lg:flex lg:flex-col lg:min-h-0" data-if="doc">
                 <div class="card-header bg-base-200/40 px-6 py-3 border-b border-base-content/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div class="flex items-center gap-2">
                         <iconify-icon icon="material-symbols-light:menu-book-outline" class="text-primary text-xl"></iconify-icon>
                         <h2 class="font-bold text-sm uppercase tracking-wider text-base-content/80">Module Specification</h2>
                     </div>
 
-                    <!-- Tabs: [ Syntax & API Usage ] [ Extensibility Notes ] [ Module Source ] -->
+                    <!-- Tabs: [ Syntax & API Usage ] [ Module Source ] -->
                     <div class="tabs tabs-boxed bg-base-200/60 p-1">
                         <button class="tab tab-sm font-medium transition-colors"
                             data-class="{ 'tab-active bg-primary text-primary-content': specTab === 'usage' }"
                             data-on-click="specTab = 'usage'">
                             <iconify-icon icon="material-symbols-light:code" class="text-base me-1"></iconify-icon>
                             Syntax &amp; API Usage
-                        </button>
-                        <button class="tab tab-sm font-medium transition-colors"
-                            data-class="{ 'tab-active bg-primary text-primary-content': specTab === 'extensibility' }"
-                            data-on-click="specTab = 'extensibility'">
-                            <iconify-icon icon="material-symbols-light:description-outline" class="text-base me-1"></iconify-icon>
-                            Extensibility Notes
                         </button>
                         <button class="tab tab-sm font-medium transition-colors"
                             data-class="{ 'tab-active bg-primary text-primary-content': specTab === 'source' }"
@@ -334,7 +326,7 @@
                     </div>
                 </div>
 
-                <div class="p-6">
+                <div class="p-6 lg:flex-1 lg:overflow-y-auto">
                     <!-- Sub-Tab 1: Syntax & API Usage -->
                     <div data-show="specTab === 'usage'" class="space-y-6">
                         <div>
@@ -368,15 +360,16 @@
                                 </table>
                             </div>
                         </div>
+
+                        <!-- Extensibility Notes (inline below params) -->
+                        <div data-show="doc.Extensibility" class="space-y-2">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/60 mb-2">Extensibility Notes</h3>
+                            <div class="prose max-w-none text-base-content/80 text-sm leading-relaxed" data-html="doc.Extensibility || ''"></div>
+                        </div>
                     </div>
 
-                    <!-- Sub-Tab 2: Extensibility Notes -->
-                    <div data-show="specTab === 'extensibility'" style="display:none;" class="space-y-4">
-                        <div class="prose max-w-none text-base-content/80 text-sm leading-relaxed" data-html="doc.Extensibility || ''"></div>
-                    </div>
-
-                    <!-- Sub-Tab 3: Module Source -->
-                    <div data-show="specTab === 'source'" style="display:none;" class="space-y-4">
+                    <!-- Sub-Tab 2: Module Source -->
+                    <div data-show="specTab === 'source'" style="display:none;" class="space-y-4 h-full">
                         <div class="nx-editor-container border border-base-content/10 rounded-xl overflow-hidden" style="width: 100%;">
                             <div id="source-editor" class="nx-editor"></div>
                         </div>
@@ -415,9 +408,9 @@
         </div>
 
         <!-- ──── RIGHT COLUMN: INTERACTIVE SANDBOX ──── -->
-        <div class="space-y-6 w-full">
+        <div class="space-y-6 w-full lg:flex lg:flex-col">
             <!-- 3. TAB GROUP 2: INTERACTIVE SANDBOX -->
-            <div class="card bg-base-100 border border-base-content/10 shadow-sm overflow-hidden" data-if="doc.Snippet || doc.Examples">
+            <div class="card bg-base-100 border border-base-content/10 shadow-sm overflow-hidden lg:flex-1 lg:flex lg:flex-col lg:min-h-0" data-if="doc.Snippet || doc.Examples">
                 <div class="card-header bg-base-200/40 px-6 py-3 border-b border-base-content/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div class="flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-success animate-pulse"></span>
@@ -448,7 +441,7 @@
                     </div>
                 </div>
 
-                <div class="p-6 space-y-6">
+                <div class="p-6 space-y-6 lg:flex-1 lg:overflow-y-auto">
                     <!-- Interactive Lab Live Execution Panel (TOP) -->
                     <div data-show="labTab === 'preview' || labTab === 'split'" class="w-full">
                         <div class="bg-base-200/50 rounded-xl p-6 min-h-[220px] border border-base-content/10"
