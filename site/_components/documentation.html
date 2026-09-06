@@ -113,14 +113,6 @@
                         }),
                         parent: sourceEl
                     });
-
-                    $watch(() => forkCode, (code) => {
-                        if (code !== undefined && window._sourceEditor && window._sourceEditor.state.doc.toString() !== code) {
-                            window._sourceEditor.dispatch({
-                                 changes: { from: 0, to: window._sourceEditor.state.doc.length, insert: code || '' }
-                            });
-                        }
-                    });
                 }
 
                 // 2. Lab Snippet Editor (Live Editable)
@@ -144,26 +136,6 @@
                         }),
                         parent: snippetEl
                     });
-
-                    $watch(() => snippetCode, (code) => {
-                        if (code !== undefined && window._snippetEditor && window._snippetEditor.state.doc.toString() !== code) {
-                            window._snippetEditor.dispatch({
-                                 changes: { from: 0, to: window._snippetEditor.state.doc.length, insert: code || '' }
-                            });
-                        }
-                    });
-
-                    $watch(() => activeSnippet, (snippet) => {
-                        if (doc.Examples && doc.Examples[snippet]) {
-                            snippetCode = doc.Examples[snippet];
-                        } else if (snippet === (doc.DefaultSnippetName || 'Default')) {
-                            snippetCode = doc.Snippet;
-                        } else if (window._indexedDB?.snippets && doc.SnippetModule) {
-                            window._indexedDB.snippets.get(doc.SnippetModule + '_' + snippet).then(val => {
-                                if (val) snippetCode = val;
-                            });
-                        }
-                    });
                 }
             };
 
@@ -175,9 +147,30 @@
                 $el._cmListenerRegistered = true;
                 window.addEventListener('nexus:cm-ready', () => $el._mountEditors?.(), { once: true });
             }
+        }
 
-            $watch(() => specTab, () => setTimeout(() => $el._mountEditors?.(), 50));
-            $watch(() => labTab, () => setTimeout(() => $el._mountEditors?.(), 50));
+        // Reactive synchronization via native data-effect:
+        if (initComplete) {
+            // Mount when switching to source or split
+            if (specTab === 'source' || labTab === 'source' || labTab === 'split') {
+                setTimeout(() => $el._mountEditors?.(), 40);
+            }
+
+            // Sync snippet code to editor when changed externally
+            if (window._snippetEditor && snippetCode !== undefined) {
+                const cur = window._snippetEditor.state.doc.toString();
+                if (cur !== snippetCode) {
+                    window._snippetEditor.dispatch({ changes: { from: 0, to: cur.length, insert: snippetCode || '' } });
+                }
+            }
+
+            // Sync source code to editor when changed externally
+            if (window._sourceEditor && forkCode !== undefined) {
+                const cur = window._sourceEditor.state.doc.toString();
+                if (cur !== forkCode) {
+                    window._sourceEditor.dispatch({ changes: { from: 0, to: cur.length, insert: forkCode || '' } });
+                }
+            }
         }
     ">
     <script type="module">
