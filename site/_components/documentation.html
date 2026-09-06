@@ -3,15 +3,24 @@
         toastMsg: '', 
         toastType: 'info', 
         showToast: false,
-        copied: false,
         specTab: 'usage',
-        labTab: 'preview',
+        labTab: 'split',
         activeFork: 'Default',
         activeSnippet: 'Default',
         forkSource: '',
         forkCode: '',
         snippetCode: '',
         baseSnippets: [],
+        snippets: [],
+        snippetsLoaded: false,
+        showSnippetModal: false,
+        snippetName: '',
+        snippetError: '',
+        showRenameSnippetModal: false,
+        showDeleteSnippetModal: false,
+        manageTarget: '',
+        newName: '',
+        manageError: '',
         initComplete: false,
         askCopilot() {
             if (window.Nexus?.coordinator?.runtimeContext?.globalSignals) {
@@ -44,6 +53,14 @@
             }
 
             if (activeFork === 'Default' && forkSource && !forkCode) forkCode = forkSource;
+
+            // Initialize saved snippets list from IndexedDB
+            if (window._indexedDB?.snippets && !snippetsLoaded && doc.SnippetModule) {
+                snippetsLoaded = true;
+                window._indexedDB.snippets.list(doc.SnippetModule + '_').then(keys => {
+                    snippets = keys.map(k => k.substring(doc.SnippetModule.length + 1));
+                });
+            }
 
             // Fetch framework module source directly from GitHub
             if (!forkSource && doc.SourceModule) {
@@ -106,7 +123,7 @@
                     });
                 }
 
-                // 2. Lab Snippet Editor
+                // 2. Lab Snippet Editor (Live Editable)
                 const snippetEl = document.getElementById('snippet-editor');
                 if (snippetEl && (doc?.Snippet || doc?.Examples) && !window._snippetEditor) {
                     window._snippetEditor = new EditorView({
@@ -141,6 +158,10 @@
                             snippetCode = doc.Examples[snippet];
                         } else if (snippet === (doc.DefaultSnippetName || 'Default')) {
                             snippetCode = doc.Snippet;
+                        } else if (window._indexedDB?.snippets && doc.SnippetModule) {
+                            window._indexedDB.snippets.get(doc.SnippetModule + '_' + snippet).then(val => {
+                                if (val) snippetCode = val;
+                            });
                         }
                     });
                 }
@@ -160,6 +181,83 @@
         }
     ">
     <script type="module">
+        // IndexedDB Store Proxy Helper for Lab Snippet Persistence
+        if (!window._indexedDB) {
+            const DB_NAME = 'nexus-store';
+            const openDB = (store) => new Promise((resolve, reject) => {
+                const req = indexedDB.open(DB_NAME);
+                req.onsuccess = () => {
+                    const db = req.result;
+                    if (db.objectStoreNames.contains(store)) return resolve(db);
+                    const v = db.version + 1;
+                    db.close();
+                    const upReq = indexedDB.open(DB_NAME, v);
+                    upReq.onupgradeneeded = (e) => {
+                        const udb = e.target.result;
+                        if (!udb.objectStoreNames.contains(store)) udb.createObjectStore(store);
+                    };
+                    upReq.onsuccess = () => resolve(upReq.result);
+                    upReq.onerror = () => reject(upReq.error);
+                };
+                req.onerror = () => reject(req.error);
+                req.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains(store)) db.createObjectStore(store);
+                };
+            });
+
+            const createStore = (storeName) => ({
+                list(prefix) {
+                    return openDB(storeName).then(db => new Promise(res => {
+                        const tx = db.transaction(storeName, 'readonly');
+                        const req = tx.objectStore(storeName).getAllKeys();
+                        req.onsuccess = () => {
+                            db.close();
+                            const keys = (req.result || []).map(String);
+                            res(prefix ? keys.filter(k => k.startsWith(prefix)) : keys);
+                        };
+                        req.onerror = () => { db.close(); res([]); };
+                    })).catch(() => []);
+                },
+                get(key) {
+                    return openDB(storeName).then(db => new Promise(res => {
+                        const tx = db.transaction(storeName, 'readonly');
+                        const req = tx.objectStore(storeName).get(key);
+                        req.onsuccess = () => { db.close(); res(req.result); };
+                        req.onerror = () => { db.close(); res(null); };
+                    })).catch(() => null);
+                },
+                delete(key) {
+                    return openDB(storeName).then(db => new Promise(res => {
+                        const tx = db.transaction(storeName, 'readwrite');
+                        tx.objectStore(storeName).delete(key);
+                        tx.oncomplete = () => { db.close(); res(); };
+                        tx.onerror = () => { db.close(); res(); };
+                    })).catch(() => {});
+                }
+            });
+
+            window._indexedDB = new Proxy({}, {
+                get(t, storeName) {
+                    if (typeof storeName !== 'string') return undefined;
+                    if (!t[storeName]) {
+                        const s = createStore(storeName);
+                        t[storeName] = new Proxy(s, {
+                            set(_, key, val) {
+                                openDB(storeName).then(db => {
+                                    const tx = db.transaction(storeName, 'readwrite');
+                                    tx.objectStore(storeName).put(val, key);
+                                    tx.oncomplete = () => db.close();
+                                });
+                                return true;
+                            }
+                        });
+                    }
+                    return t[storeName];
+                }
+            });
+        }
+
         // CDN-based single-instance CodeMirror 6 bundle via esm.sh
         if (!window.CM && !window._cmLoading) {
             window._cmLoading = true;
@@ -182,27 +280,15 @@
                     oneDark: theme.oneDark
                 };
                 window.dispatchEvent(new CustomEvent('nexus:cm-ready'));
-            }).catch(err => {
-                window._cmLoading = false;
-                console.error('Failed to load CodeMirror from CDN:', err);
-            });
+            }).catch(err => console.error('Failed to load CodeMirror 6 CDN:', err));
         }
     </script>
-
-    <style>
-        /* Editor Styles - CM6 auto-height until max, then scroll */
-        .nx-editor-container { position: relative; min-height: 380px; width: 100%; }
-        .nx-editor { position: absolute; top: 0; left: 0; right: 0; bottom: 0; font-family: 'Fira Code', 'Cascadia Code', monospace; font-size: 14px; }
-        .nx-editor .cm-editor { height: 100%; max-height: 520px; }
-        .nx-editor .cm-scroller { overflow: auto; }
-    </style>
 
     <!-- ═══════════ 1. HEADER TOOLBAR ═══════════ -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-base-content/10" data-if="doc">
         <div>
             <div class="flex items-center gap-2 mb-1.5">
                 <span class="badge badge-primary badge-sm font-semibold uppercase tracking-wider" data-bind="doc.Category || 'Attributes'"></span>
-                <span class="badge badge-ghost badge-sm font-mono opacity-70" data-bind="doc.SourceModule || ''"></span>
             </div>
             <h1 class="text-3xl font-extrabold tracking-tight text-base-content flex items-center gap-3">
                 <iconify-icon data-bind-icon="doc.Icon || 'material-symbols-light:code-blocks-outline'" class="text-primary text-3xl"></iconify-icon>
@@ -211,20 +297,11 @@
             <p class="text-base text-base-content/70 mt-1 max-w-3xl leading-relaxed" data-markdown="doc.Description"></p>
         </div>
 
-        <!-- Quick Action Pills -->
+        <!-- Quick Action: Ask AI -->
         <div class="flex items-center gap-2 shrink-0">
             <button class="btn btn-sm btn-outline btn-primary gap-2" data-on-click="askCopilot()">
                 <iconify-icon icon="material-symbols-light:robot-2-outline" class="text-lg"></iconify-icon>
                 <span>Ask AI</span>
-            </button>
-            <button class="btn btn-sm btn-ghost border border-base-content/10 gap-2"
-                data-on-click="
-                    navigator.clipboard.writeText(doc.Syntax || '');
-                    copied = true;
-                    setTimeout(() => copied = false, 2000);
-                ">
-                <iconify-icon data-bind-icon="copied ? 'material-symbols-light:check' : 'material-symbols-light:content-copy'" class="text-lg"></iconify-icon>
-                <span data-bind="copied ? 'Copied!' : 'Copy Syntax'"></span>
             </button>
         </div>
     </div>
@@ -337,12 +414,6 @@
                 </button>
             </div>
         </div>
-
-        <!-- Framework Contract Footer -->
-        <div class="px-6 py-3 bg-base-200/20 border-t border-base-content/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-base-content/60">
-            <span>Module Path: <code class="font-mono text-primary font-semibold" data-bind="doc.SourceModule || ''"></code></span>
-            <span>Framework Contract: Engine owns API primitives; Modules schedule directives.</span>
-        </div>
     </div>
 
     <!-- ═══════════ 3. TAB GROUP 2: INTERACTIVE SANDBOX ═══════════ -->
@@ -393,48 +464,76 @@
                     </div>
                 </div>
             </div>
-
-
         </div>
 
         <!-- Command bar for Interactive Sandbox -->
         <div class="flex flex-wrap items-center justify-between px-6 py-3 bg-base-200/40 border-t border-base-content/10 gap-3 text-xs">
+            <!-- Left: Snippets Dropdown + New Snippet Button -->
             <div class="flex items-center gap-2">
-                <div class="dropdown dropdown-top sm:dropdown-bottom" data-show="baseSnippets.length > 1">
-                    <div tabindex="0" role="button" class="btn btn-ghost btn-xs border border-base-content/10 font-bold">
-                        <span data-bind="activeSnippet" class="truncate max-w-[140px]"></span>
-                        <iconify-icon icon="material-symbols-light:arrow-drop-down" class="text-base"></iconify-icon>
+                <div class="dropdown dropdown-top sm:dropdown-bottom">
+                    <div tabindex="0" role="button"
+                        class="btn btn-outline btn-xs w-44 justify-between bg-base-100 font-bold overflow-hidden"
+                        data-bind="{ disabled: (baseSnippets.length + snippets.length) <= 1 }"
+                        data-class-btn-disabled="(baseSnippets.length + snippets.length) <= 1">
+                        <span data-bind="activeSnippet" class="truncate me-2"></span>
+                        <iconify-icon icon="material-symbols-light:arrow-drop-down" class="text-base opacity-60"></iconify-icon>
                     </div>
-                    <ul tabindex="0" class="dropdown-content z-[100] menu menu-xs p-2 shadow-xl bg-base-100 rounded-box w-52 border border-base-content/10">
+                    <ul tabindex="0" class="dropdown-content z-[100] menu menu-xs p-2 shadow-2xl bg-base-100 rounded-box w-56 border border-base-content/10">
                         <template data-for="bs in baseSnippets">
                             <li><a data-on-click="activeSnippet = bs; if (document.activeElement instanceof HTMLElement) document.activeElement.blur()"
                                    data-class-active="activeSnippet === bs" class="font-bold" data-bind="bs"></a></li>
                         </template>
+                        <div class="divider my-1 opacity-20" data-show="snippets.length > 0"></div>
+                        <template data-for="s in snippets">
+                            <li class="group flex flex-row items-center justify-between">
+                                <a data-on-click="activeSnippet = s; if (document.activeElement instanceof HTMLElement) document.activeElement.blur()"
+                                   data-class-active="activeSnippet === s"
+                                   class="flex-1 flex items-center justify-between">
+                                    <span data-bind="s" class="truncate"></span>
+                                    <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button class="btn btn-ghost btn-xs text-info p-0.5 h-auto min-h-0"
+                                            data-on-click="$evt.stopPropagation(); manageTarget = s; newName = s; showRenameSnippetModal = true"
+                                            title="Rename">
+                                            <iconify-icon icon="material-symbols-light:edit-outline" class="text-sm"></iconify-icon>
+                                        </button>
+                                        <button class="btn btn-ghost btn-xs text-error p-0.5 h-auto min-h-0"
+                                            data-on-click="$evt.stopPropagation(); manageTarget = s; showDeleteSnippetModal = true"
+                                            title="Delete">
+                                            <iconify-icon icon="material-symbols-light:delete-outline" class="text-sm"></iconify-icon>
+                                        </button>
+                                    </div>
+                                </a>
+                            </li>
+                        </template>
                     </ul>
                 </div>
-                <button class="btn btn-xs btn-ghost border border-base-content/10 gap-1"
-                    data-on-click="
-                        if (doc.Examples && doc.Examples[activeSnippet]) snippetCode = doc.Examples[activeSnippet];
-                        else if (doc.Snippet) snippetCode = doc.Snippet;
-                        toastMsg = 'Snippet reset to default'; toastType = 'info'; showToast = true;
-                    ">
-                    <iconify-icon icon="material-symbols-light:restart-alt" class="text-sm"></iconify-icon> Reset
+                <button class="btn btn-xs btn-secondary btn-outline" title="New Lab Snippet"
+                    data-on-click="showSnippetModal = true; snippetName = ''; snippetError = ''">
+                    <iconify-icon icon="material-symbols-light:add" class="text-sm"></iconify-icon>
                 </button>
+                <span class="badge badge-primary badge-xs opacity-50" data-show="snippets.length > 0" data-bind="snippets.length"></span>
             </div>
 
+            <!-- Center: Download + Copy Actions -->
             <div class="join">
                 <button class="btn btn-xs btn-ghost border border-base-content/10 gap-1"
+                    title="Download snippet as HTML"
                     data-on-click="
-                        const blob = new Blob([snippetCode], { type: 'text/html' });
+                        let code = snippetCode;
+                        if (activeSnippet === (doc.DefaultSnippetName || 'Default')) code = doc.Snippet;
+                        else if (doc.Examples && doc.Examples[activeSnippet]) code = doc.Examples[activeSnippet];
+                        const blob = new Blob([code], { type: 'text/html' });
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement('a');
                         a.href = url;
-                        a.download = (doc.Title || 'snippet').toLowerCase().replace(/[^a-z0-9]/g, '-') + '.html';
+                        const modName = (doc.Title || 'snippet').toLowerCase().replace(/[^a-z0-9]/g, '-');
+                        a.download = modName + '_' + activeSnippet.toLowerCase() + '.html';
                         a.click();
                     ">
                     <iconify-icon icon="material-symbols-light:download" class="text-sm"></iconify-icon> Download .html
                 </button>
                 <button class="btn btn-xs btn-ghost border border-base-content/10 gap-1"
+                    title="Copy snippet code"
                     data-on-click="
                         navigator.clipboard.writeText(snippetCode);
                         toastMsg = 'Lab snippet copied to clipboard'; toastType = 'info'; showToast = true;
@@ -442,10 +541,136 @@
                     <iconify-icon icon="material-symbols-light:content-copy" class="text-sm"></iconify-icon> Copy
                 </button>
             </div>
+
+            <!-- Right: Save + Reset Actions -->
+            <div class="flex items-center gap-2">
+                <button class="btn btn-xs btn-ghost text-secondary border border-secondary/20 hover:bg-secondary/10 gap-1"
+                    data-on-click="
+                        if (!baseSnippets.includes(activeSnippet)) {
+                            window._indexedDB.snippets[doc.SnippetModule + '_' + activeSnippet] = snippetCode;
+                            toastMsg = 'Snippet saved: ' + activeSnippet; toastType = 'success'; showToast = true;
+                        } else {
+                            showSnippetModal = true; snippetName = ''; snippetError = '';
+                        }
+                    ">
+                    <iconify-icon icon="material-symbols-light:save" class="text-sm"></iconify-icon> Save
+                </button>
+                <button class="btn btn-xs btn-ghost text-error border border-error/20 hover:bg-error/10 gap-1"
+                    data-on-click="
+                        if (!baseSnippets.includes(activeSnippet)) {
+                            window._indexedDB.snippets.get(doc.SnippetModule + '_' + activeSnippet).then(val => {
+                                snippetCode = val || (doc.Examples && doc.Examples[activeSnippet]) || doc.Snippet || '';
+                                toastMsg = 'Reset complete'; toastType = 'success'; showToast = true;
+                            });
+                        } else {
+                            snippetCode = (doc.Examples && doc.Examples[activeSnippet]) || doc.Snippet;
+                            toastMsg = 'Reverted to document source'; toastType = 'success'; showToast = true;
+                        }
+                    ">
+                    <iconify-icon icon="material-symbols-light:restart-alt" class="text-sm"></iconify-icon> Reset
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- Toast Feedback -->
+    <!-- ═══════════ 4. MODALS (PORTED FROM ORIGINAL) ═══════════ -->
+    <!-- Save Lab Modal -->
+    <template data-if="showSnippetModal">
+        <div class="fixed inset-0 bg-black/60 z-[9998] flex items-center justify-center p-4">
+            <div class="card bg-base-100 shadow-2xl border border-base-content/10 max-w-md w-full">
+                <div class="card-body p-6">
+                    <h3 class="card-title text-base font-bold text-secondary flex items-center gap-2">
+                        <iconify-icon icon="material-symbols-light:save" class="text-lg"></iconify-icon>
+                        Save Lab Snippet
+                    </h3>
+                    <p class="py-1 text-xs text-base-content/70">Save this live lab configuration to IndexedDB:</p>
+                    <input type="text" class="input input-bordered input-sm input-secondary w-full font-mono text-xs"
+                        data-bind-value="snippetName" placeholder="my-custom-test">
+                    <p data-show="snippetError !== ''" class="text-error text-xs mt-1" data-bind="snippetError" style="display:none;"></p>
+                    <div class="card-actions justify-end mt-4 gap-2">
+                        <button class="btn btn-ghost btn-xs" data-on-click="showSnippetModal = false">Cancel</button>
+                        <button class="btn btn-secondary btn-xs" data-on-click="
+                            const name = snippetName.trim();
+                            if (!name) { snippetError = 'Name is required'; return; }
+                            if (baseSnippets.includes(name)) { snippetError = 'Reserved name'; return; }
+                            if (snippets.indexOf(name) !== -1) { snippetError = 'Already exists'; return; }
+                            window._indexedDB.snippets[doc.SnippetModule + '_' + name] = snippetCode;
+                            snippets.push(name);
+                            activeSnippet = name;
+                            showSnippetModal = false;
+                            toastMsg = 'Lab saved: ' + name; toastType = 'success'; showToast = true;
+                        ">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Rename Lab Modal -->
+    <template data-if="showRenameSnippetModal">
+        <div class="fixed inset-0 bg-black/60 z-[9998] flex items-center justify-center p-4">
+            <div class="card bg-base-100 shadow-2xl border border-base-content/10 max-w-md w-full">
+                <div class="card-body p-6">
+                    <h3 class="card-title text-base font-bold text-info flex items-center gap-2">
+                        <iconify-icon icon="material-symbols-light:edit-outline" class="text-lg"></iconify-icon>
+                        Rename Snippet
+                    </h3>
+                    <p class="py-1 text-xs text-base-content/70">Enter new name for <span class="font-bold font-mono text-primary" data-bind="manageTarget"></span>:</p>
+                    <input type="text" class="input input-bordered input-sm input-info w-full font-mono text-xs"
+                        data-bind-value="newName" placeholder="new-name">
+                    <p data-show="manageError !== ''" class="text-error text-xs mt-1" data-bind="manageError" style="display:none;"></p>
+                    <div class="card-actions justify-end mt-4 gap-2">
+                        <button class="btn btn-ghost btn-xs" data-on-click="showRenameSnippetModal = false">Cancel</button>
+                        <button class="btn btn-info btn-xs" data-on-click="
+                            const target = manageTarget;
+                            const name = newName.trim();
+                            if (!name) { manageError = 'Name is required'; return; }
+                            if (baseSnippets.includes(name)) { manageError = 'Reserved name'; return; }
+                            if (snippets.indexOf(name) !== -1 && name !== target) { manageError = 'Already exists'; return; }
+                            window._indexedDB.snippets.get(doc.SnippetModule + '_' + target).then(val => {
+                                window._indexedDB.snippets[doc.SnippetModule + '_' + name] = val || snippetCode;
+                                window._indexedDB.snippets.delete(doc.SnippetModule + '_' + target);
+                                const idx = snippets.indexOf(target);
+                                if (idx !== -1) snippets[idx] = name;
+                                if (activeSnippet === target) activeSnippet = name;
+                                showRenameSnippetModal = false;
+                                toastMsg = 'Renamed to: ' + name; toastType = 'success'; showToast = true;
+                            });
+                        ">Rename</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Delete Lab Modal -->
+    <template data-if="showDeleteSnippetModal">
+        <div class="fixed inset-0 bg-black/60 z-[9998] flex items-center justify-center p-4">
+            <div class="card bg-base-100 shadow-2xl border border-base-content/10 max-w-md w-full">
+                <div class="card-body p-6">
+                    <h3 class="card-title text-base font-bold text-error flex items-center gap-2">
+                        <iconify-icon icon="material-symbols-light:delete-outline" class="text-lg"></iconify-icon>
+                        Delete Snippet
+                    </h3>
+                    <p class="py-1 text-xs text-base-content/70">Are you sure you want to delete <span class="font-bold font-mono text-error" data-bind="manageTarget"></span>? This cannot be undone.</p>
+                    <div class="card-actions justify-end mt-4 gap-2">
+                        <button class="btn btn-ghost btn-xs" data-on-click="showDeleteSnippetModal = false">Cancel</button>
+                        <button class="btn btn-error btn-xs" data-on-click="
+                            const target = manageTarget;
+                            window._indexedDB.snippets.delete(doc.SnippetModule + '_' + target);
+                            const idx = snippets.indexOf(target);
+                            if (idx !== -1) snippets.splice(idx, 1);
+                            if (activeSnippet === target) activeSnippet = baseSnippets[0] || 'Default';
+                            showDeleteSnippetModal = false;
+                            toastMsg = 'Deleted: ' + target; toastType = 'info'; showToast = true;
+                        ">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- ═══════════ 5. TOAST FEEDBACK ═══════════ -->
     <div data-show="showToast" class="fixed bottom-6 end-6 z-[9999] shadow-2xl" style="display:none;"
         data-effect="if (showToast) setTimeout(() => showToast = false, 3000)">
         <div class="alert shadow-lg" data-class-alert-success="toastType === 'success'"
