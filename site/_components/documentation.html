@@ -1,5 +1,4 @@
-<div class="dashboard-fragment w-full"
-    data-signal="{ 
+<div class="dashboard-fragment w-full" data-signal="{ 
         toastMsg: '', 
         toastType: 'info', 
         showToast: false,
@@ -226,7 +225,7 @@
                         tx.objectStore(storeName).delete(key);
                         tx.oncomplete = () => { db.close(); res(); };
                         tx.onerror = () => { db.close(); res(); };
-                    })).catch(() => {});
+                    })).catch(() => { });
                 }
             });
 
@@ -278,16 +277,19 @@
     </script>
 
     <!-- ═══════════ TWO-COLUMN FULL PAGE LAYOUT ═══════════ -->
-    <div class="flex flex-col lg:flex-row gap-6 w-full" style="height: calc(100dvh - 8rem); min-height: 0;">
+    <div class="flex flex-col lg:flex-row gap-6 w-full" style="height: calc(100dvh - 10rem); min-height: 0;">
         <!-- ──── LEFT COLUMN: HEADER & MODULE SPECIFICATION ──── -->
         <div class="flex flex-col gap-4 min-h-0 overflow-hidden flex-1">
             <!-- 1. HEADER TOOLBAR -->
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-base-content/10" data-if="doc">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-base-content/10"
+                data-if="doc">
                 <div>
                     <h1 class="text-3xl font-extrabold tracking-tight text-base-content flex items-center gap-3">
-                        <iconify-icon data-bind-icon="doc.Icon || 'material-symbols-light:code-blocks-outline'" class="text-primary text-3xl"></iconify-icon>
+                        <iconify-icon data-bind-icon="doc.Icon || 'material-symbols-light:code-blocks-outline'"
+                            class="text-primary text-3xl"></iconify-icon>
                         <span data-bind="doc.Title"></span>
-                        <span class="badge badge-primary badge-sm font-semibold uppercase tracking-wider ms-1" data-bind="doc.Category || 'Attributes'"></span>
+                        <span class="badge badge-primary badge-sm font-semibold uppercase tracking-wider ms-1"
+                            data-bind="doc.Category || 'Attributes'"></span>
                     </h1>
                 </div>
 
@@ -301,11 +303,15 @@
             </div>
 
             <!-- 2. TAB GROUP 1: MODULE SPECIFICATION -->
-            <div class="card bg-base-100 border border-base-content/10 shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden" data-if="doc">
-                <div class="card-header bg-base-200/40 px-6 py-3 border-b border-base-content/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="card bg-base-100 border border-base-content/10 shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden"
+                data-if="doc">
+                <div
+                    class="card-header bg-base-200/40 px-6 py-3 border-b border-base-content/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div class="flex items-center gap-2">
-                        <iconify-icon icon="material-symbols-light:menu-book-outline" class="text-primary text-xl"></iconify-icon>
-                        <h2 class="font-bold text-sm uppercase tracking-wider text-base-content/80">Module Specification</h2>
+                        <iconify-icon icon="material-symbols-light:menu-book-outline"
+                            class="text-primary text-xl"></iconify-icon>
+                        <h2 class="font-bold text-sm uppercase tracking-wider text-base-content/80">Module Specification
+                        </h2>
                     </div>
 
                     <!-- Tabs: [ Syntax & API Usage ] [ Module Source ] -->
@@ -327,17 +333,21 @@
 
                 <div class="p-6 flex-1 overflow-y-auto min-h-0">
                     <!-- Module Description -->
-                    <p class="text-sm text-base-content/70 mb-6 leading-relaxed border-b border-base-content/10 pb-4" data-markdown="doc.Description"></p>
+                    <p class="text-sm text-base-content/70 mb-6 leading-relaxed border-b border-base-content/10 pb-4"
+                        data-markdown="doc.Description"></p>
                     <!-- Sub-Tab 1: Syntax & API Usage -->
                     <div data-show="specTab === 'usage'" class="space-y-6">
                         <div>
-                            <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/60 mb-2">NEG Expression Grammar</h3>
-                            <pre class="mockup-code bg-neutral text-neutral-content p-4 font-mono text-sm w-full overflow-x-auto"><code data-bind="doc.Syntax || ''"></code></pre>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/60 mb-2">NEG
+                                Expression Grammar</h3>
+                            <pre
+                                class="mockup-code bg-neutral text-neutral-content p-4 font-mono text-sm w-full overflow-x-auto"><code data-bind="doc.Syntax || ''"></code></pre>
                         </div>
 
                         <!-- Parameters Table with Zebra Styling -->
                         <div data-show="doc.Params && doc.Params.length > 0">
-                            <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/60 mb-2">Parameters &amp; Modifiers</h3>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/60 mb-2">Parameters
+                                &amp; Modifiers</h3>
                             <div class="overflow-x-auto border border-base-content/10 rounded-xl">
                                 <table class="table table-zebra table-sm w-full">
                                     <thead>
@@ -351,9 +361,11 @@
                                     <tbody>
                                         <template data-for="param in (doc.Params || [])" data-key="param.name">
                                             <tr>
-                                                <td class="font-mono text-primary font-bold text-xs" data-bind="param.name"></td>
+                                                <td class="font-mono text-primary font-bold text-xs"
+                                                    data-bind="param.name"></td>
                                                 <td class="font-mono text-xs opacity-70" data-bind="param.type"></td>
-                                                <td class="font-mono text-xs opacity-60" data-bind="param.default || '-'"></td>
+                                                <td class="font-mono text-xs opacity-60"
+                                                    data-bind="param.default || '-'"></td>
                                                 <td class="text-xs" data-bind="param.description"></td>
                                             </tr>
                                         </template>
@@ -364,28 +376,33 @@
 
                         <!-- Extensibility Notes (inline below params) -->
                         <div data-show="doc.Extensibility" class="space-y-2">
-                            <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/60 mb-2">Extensibility Notes</h3>
-                            <div class="prose max-w-none text-base-content/80 text-sm leading-relaxed" data-html="doc.Extensibility || ''"></div>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/60 mb-2">
+                                Extensibility Notes</h3>
+                            <div class="prose max-w-none text-base-content/80 text-sm leading-relaxed"
+                                data-html="doc.Extensibility || ''"></div>
                         </div>
                     </div>
 
                     <!-- Sub-Tab 2: Module Source -->
-                    <div data-show="specTab === 'source'" style="display:none;" class="space-y-4 h-full flex flex-col min-h-0">
-                        <div class="nx-editor-container border border-base-content/10 rounded-xl overflow-y-auto flex-1 min-h-0" style="max-height: calc(100dvh - 22rem);">
+                    <div data-show="specTab === 'source'" style="display:none;"
+                        class="space-y-4 h-full flex flex-col min-h-0">
+                        <div class="nx-editor-container border border-base-content/10 rounded-xl overflow-y-auto flex-1 min-h-0"
+                            style="max-height: calc(100dvh - 22rem);">
                             <div id="source-editor" class="nx-editor h-full"></div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Command bar for Module Source (visible when source tab active) -->
-                <div data-show="specTab === 'source'" class="flex items-center justify-between px-6 py-3 bg-base-200/40 border-t border-base-content/10 text-xs">
+                <div data-show="specTab === 'source'"
+                    class="flex items-center justify-between px-6 py-3 bg-base-200/40 border-t border-base-content/10 text-xs">
                     <div class="flex items-center gap-2">
-                        <iconify-icon icon="material-symbols-light:folder-outline" class="text-base opacity-60"></iconify-icon>
+                        <iconify-icon icon="material-symbols-light:folder-outline"
+                            class="text-base opacity-60"></iconify-icon>
                         <span class="font-mono opacity-60" data-bind="doc.SourceModule || ''"></span>
                     </div>
                     <div class="join">
-                        <button class="btn btn-xs btn-ghost border border-base-content/10 gap-1"
-                            data-on-click="
+                        <button class="btn btn-xs btn-ghost border border-base-content/10 gap-1" data-on-click="
                                 const blob = new Blob([forkCode || forkSource], { type: 'text/plain' });
                                 const url = URL.createObjectURL(blob);
                                 const a = document.createElement('a');
@@ -394,14 +411,15 @@
                                 a.download = mod;
                                 a.click();
                             ">
-                            <iconify-icon icon="material-symbols-light:download" class="text-sm"></iconify-icon> Download .ts
+                            <iconify-icon icon="material-symbols-light:download" class="text-sm"></iconify-icon>
+                            Download .ts
                         </button>
-                        <button class="btn btn-xs btn-ghost border border-base-content/10 gap-1"
-                            data-on-click="
+                        <button class="btn btn-xs btn-ghost border border-base-content/10 gap-1" data-on-click="
                                 navigator.clipboard.writeText(forkCode || forkSource);
                                 toastMsg = 'Module source copied to clipboard'; toastType = 'info'; showToast = true;
                             ">
-                            <iconify-icon icon="material-symbols-light:content-copy" class="text-sm"></iconify-icon> Copy
+                            <iconify-icon icon="material-symbols-light:content-copy" class="text-sm"></iconify-icon>
+                            Copy
                         </button>
                     </div>
                 </div>
@@ -411,12 +429,17 @@
         <!-- ──── RIGHT COLUMN: INTERACTIVE SANDBOX ──── -->
         <div class="flex flex-col min-h-0 overflow-hidden flex-1">
             <!-- 3. TAB GROUP 2: INTERACTIVE SANDBOX -->
-            <div class="card bg-base-100 border border-base-content/10 shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden" data-if="doc.Snippet || doc.Examples">
-                <div class="card-header bg-base-200/40 px-6 py-3 border-b border-base-content/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="card bg-base-100 border border-base-content/10 shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden"
+                data-if="doc.Snippet || doc.Examples">
+                <div
+                    class="card-header bg-base-200/40 px-6 py-3 border-b border-base-content/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div class="flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-success animate-pulse"></span>
-                        <h2 class="font-bold text-sm uppercase tracking-wider text-base-content/80">Interactive Sandbox</h2>
-                        <span class="badge badge-success badge-xs gap-1 py-0.5 px-2 font-mono text-[10px] font-semibold">LIVE REACTIVE DOM</span>
+                        <h2 class="font-bold text-sm uppercase tracking-wider text-base-content/80">Interactive Sandbox
+                        </h2>
+                        <span
+                            class="badge badge-success badge-xs gap-1 py-0.5 px-2 font-mono text-[10px] font-semibold">LIVE
+                            REACTIVE DOM</span>
                     </div>
 
                     <!-- Tabs: [ Interactive Lab ] [ Lab Source ] [ Split View ] -->
@@ -424,7 +447,8 @@
                         <button class="tab tab-sm font-medium transition-colors"
                             data-class="{ 'tab-active bg-secondary text-secondary-content': labTab === 'preview' }"
                             data-on-click="labTab = 'preview'">
-                            <iconify-icon icon="material-symbols-light:play-circle-outline" class="text-base me-1"></iconify-icon>
+                            <iconify-icon icon="material-symbols-light:play-circle-outline"
+                                class="text-base me-1"></iconify-icon>
                             Interactive Lab
                         </button>
                         <button class="tab tab-sm font-medium transition-colors"
@@ -436,7 +460,8 @@
                         <button class="tab tab-sm font-medium transition-colors"
                             data-class="{ 'tab-active bg-secondary text-secondary-content': labTab === 'split' }"
                             data-on-click="labTab = 'split'">
-                            <iconify-icon icon="material-symbols-light:view-column-outline" class="text-base me-1"></iconify-icon>
+                            <iconify-icon icon="material-symbols-light:view-column-outline"
+                                class="text-base me-1"></iconify-icon>
                             Split View
                         </button>
                     </div>
@@ -446,21 +471,22 @@
                     <!-- Interactive Lab Live Execution Panel (TOP) -->
                     <div data-show="labTab === 'preview' || labTab === 'split'" class="w-full">
                         <div class="bg-base-200/50 rounded-xl p-6 min-h-[220px] border border-base-content/10"
-                             data-html="snippetCode">
+                            data-html="snippetCode">
                         </div>
                     </div>
 
                     <!-- Lab Source CodeMirror Editor Panel (BELOW PREVIEW) -->
                     <div data-show="labTab === 'source' || labTab === 'split'" class="w-full flex flex-col min-h-0">
                         <div class="nx-editor-container border border-base-content/10 rounded-xl overflow-y-auto"
-                             data-style="{ maxHeight: labTab === 'split' ? 'calc(100dvh - 42rem)' : 'calc(100dvh - 22rem)' }">
+                            data-style="{ maxHeight: labTab === 'split' ? 'calc(100dvh - 42rem)' : 'calc(100dvh - 22rem)' }">
                             <div id="snippet-editor" class="nx-editor"></div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Command bar for Interactive Sandbox -->
-                <div class="flex flex-wrap items-center justify-between px-6 py-3 bg-base-200/40 border-t border-base-content/10 gap-3 text-xs">
+                <div
+                    class="flex flex-wrap items-center justify-between px-6 py-3 bg-base-200/40 border-t border-base-content/10 gap-3 text-xs">
                     <!-- Left: Snippets Dropdown + New Snippet Button -->
                     <div class="flex items-center gap-2">
                         <div class="dropdown dropdown-top sm:dropdown-bottom">
@@ -469,30 +495,36 @@
                                 data-bind="{ disabled: (baseSnippets.length + snippets.length) <= 1 }"
                                 data-class-btn-disabled="(baseSnippets.length + snippets.length) <= 1">
                                 <span data-bind="activeSnippet" class="truncate me-2"></span>
-                                <iconify-icon icon="material-symbols-light:arrow-drop-down" class="text-base opacity-60"></iconify-icon>
+                                <iconify-icon icon="material-symbols-light:arrow-drop-down"
+                                    class="text-base opacity-60"></iconify-icon>
                             </div>
-                            <ul tabindex="0" class="dropdown-content z-[100] menu menu-xs p-2 shadow-2xl bg-base-100 rounded-box w-56 border border-base-content/10">
+                            <ul tabindex="0"
+                                class="dropdown-content z-[100] menu menu-xs p-2 shadow-2xl bg-base-100 rounded-box w-56 border border-base-content/10">
                                 <template data-for="bs in baseSnippets">
                                     <li><a data-on-click="activeSnippet = bs; if (document.activeElement instanceof HTMLElement) document.activeElement.blur()"
-                                           data-class-active="activeSnippet === bs" class="font-bold" data-bind="bs"></a></li>
+                                            data-class-active="activeSnippet === bs" class="font-bold"
+                                            data-bind="bs"></a></li>
                                 </template>
                                 <div class="divider my-1 opacity-20" data-show="snippets.length > 0"></div>
                                 <template data-for="s in snippets">
                                     <li class="group flex flex-row items-center justify-between">
                                         <a data-on-click="activeSnippet = s; if (document.activeElement instanceof HTMLElement) document.activeElement.blur()"
-                                           data-class-active="activeSnippet === s"
-                                           class="flex-1 flex items-center justify-between">
+                                            data-class-active="activeSnippet === s"
+                                            class="flex-1 flex items-center justify-between">
                                             <span data-bind="s" class="truncate"></span>
-                                            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div
+                                                class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <button class="btn btn-ghost btn-xs text-info p-0.5 h-auto min-h-0"
                                                     data-on-click="$evt.stopPropagation(); manageTarget = s; newName = s; showRenameSnippetModal = true"
                                                     title="Rename">
-                                                    <iconify-icon icon="material-symbols-light:edit-outline" class="text-sm"></iconify-icon>
+                                                    <iconify-icon icon="material-symbols-light:edit-outline"
+                                                        class="text-sm"></iconify-icon>
                                                 </button>
                                                 <button class="btn btn-ghost btn-xs text-error p-0.5 h-auto min-h-0"
                                                     data-on-click="$evt.stopPropagation(); manageTarget = s; showDeleteSnippetModal = true"
                                                     title="Delete">
-                                                    <iconify-icon icon="material-symbols-light:delete-outline" class="text-sm"></iconify-icon>
+                                                    <iconify-icon icon="material-symbols-light:delete-outline"
+                                                        class="text-sm"></iconify-icon>
                                                 </button>
                                             </div>
                                         </a>
@@ -504,14 +536,14 @@
                             data-on-click="showSnippetModal = true; snippetName = ''; snippetError = ''">
                             <iconify-icon icon="material-symbols-light:add" class="text-sm"></iconify-icon>
                         </button>
-                        <span class="badge badge-primary badge-xs opacity-50" data-show="snippets.length > 0" data-bind="snippets.length"></span>
+                        <span class="badge badge-primary badge-xs opacity-50" data-show="snippets.length > 0"
+                            data-bind="snippets.length"></span>
                     </div>
 
                     <!-- Center: Download + Copy Actions -->
                     <div class="join">
                         <button class="btn btn-xs btn-ghost border border-base-content/10 gap-1"
-                            title="Download snippet as HTML"
-                            data-on-click="
+                            title="Download snippet as HTML" data-on-click="
                                 let code = snippetCode;
                                 if (activeSnippet === (doc.DefaultSnippetName || 'Default')) code = doc.Snippet;
                                 else if (doc.Examples && doc.Examples[activeSnippet]) code = doc.Examples[activeSnippet];
@@ -523,21 +555,23 @@
                                 a.download = modName + '_' + activeSnippet.toLowerCase() + '.html';
                                 a.click();
                             ">
-                            <iconify-icon icon="material-symbols-light:download" class="text-sm"></iconify-icon> Download .html
+                            <iconify-icon icon="material-symbols-light:download" class="text-sm"></iconify-icon>
+                            Download .html
                         </button>
                         <button class="btn btn-xs btn-ghost border border-base-content/10 gap-1"
-                            title="Copy snippet code"
-                            data-on-click="
+                            title="Copy snippet code" data-on-click="
                                 navigator.clipboard.writeText(snippetCode);
                                 toastMsg = 'Lab snippet copied to clipboard'; toastType = 'info'; showToast = true;
                             ">
-                            <iconify-icon icon="material-symbols-light:content-copy" class="text-sm"></iconify-icon> Copy
+                            <iconify-icon icon="material-symbols-light:content-copy" class="text-sm"></iconify-icon>
+                            Copy
                         </button>
                     </div>
 
                     <!-- Right: Save + Reset Actions -->
                     <div class="flex items-center gap-2">
-                        <button class="btn btn-xs btn-ghost text-secondary border border-secondary/20 hover:bg-secondary/10 gap-1"
+                        <button
+                            class="btn btn-xs btn-ghost text-secondary border border-secondary/20 hover:bg-secondary/10 gap-1"
                             data-on-click="
                                 if (!baseSnippets.includes(activeSnippet)) {
                                     window._indexedDB.snippets[doc.SnippetModule + '_' + activeSnippet] = snippetCode;
@@ -560,7 +594,8 @@
                                     toastMsg = 'Reverted to document source'; toastType = 'success'; showToast = true;
                                 }
                             ">
-                            <iconify-icon icon="material-symbols-light:restart-alt" class="text-sm"></iconify-icon> Reset
+                            <iconify-icon icon="material-symbols-light:restart-alt" class="text-sm"></iconify-icon>
+                            Reset
                         </button>
                     </div>
                 </div>
@@ -581,7 +616,8 @@
                     <p class="py-1 text-xs text-base-content/70">Save this live lab configuration to IndexedDB:</p>
                     <input type="text" class="input input-bordered input-sm input-secondary w-full font-mono text-xs"
                         data-bind-value="snippetName" placeholder="my-custom-test">
-                    <p data-show="snippetError !== ''" class="text-error text-xs mt-1" data-bind="snippetError" style="display:none;"></p>
+                    <p data-show="snippetError !== ''" class="text-error text-xs mt-1" data-bind="snippetError"
+                        style="display:none;"></p>
                     <div class="card-actions justify-end mt-4 gap-2">
                         <button class="btn btn-ghost btn-xs" data-on-click="showSnippetModal = false">Cancel</button>
                         <button class="btn btn-secondary btn-xs" data-on-click="
@@ -610,12 +646,15 @@
                         <iconify-icon icon="material-symbols-light:edit-outline" class="text-lg"></iconify-icon>
                         Rename Snippet
                     </h3>
-                    <p class="py-1 text-xs text-base-content/70">Enter new name for <span class="font-bold font-mono text-primary" data-bind="manageTarget"></span>:</p>
+                    <p class="py-1 text-xs text-base-content/70">Enter new name for <span
+                            class="font-bold font-mono text-primary" data-bind="manageTarget"></span>:</p>
                     <input type="text" class="input input-bordered input-sm input-info w-full font-mono text-xs"
                         data-bind-value="newName" placeholder="new-name">
-                    <p data-show="manageError !== ''" class="text-error text-xs mt-1" data-bind="manageError" style="display:none;"></p>
+                    <p data-show="manageError !== ''" class="text-error text-xs mt-1" data-bind="manageError"
+                        style="display:none;"></p>
                     <div class="card-actions justify-end mt-4 gap-2">
-                        <button class="btn btn-ghost btn-xs" data-on-click="showRenameSnippetModal = false">Cancel</button>
+                        <button class="btn btn-ghost btn-xs"
+                            data-on-click="showRenameSnippetModal = false">Cancel</button>
                         <button class="btn btn-info btn-xs" data-on-click="
                             const target = manageTarget;
                             const name = newName.trim();
@@ -647,9 +686,12 @@
                         <iconify-icon icon="material-symbols-light:delete-outline" class="text-lg"></iconify-icon>
                         Delete Snippet
                     </h3>
-                    <p class="py-1 text-xs text-base-content/70">Are you sure you want to delete <span class="font-bold font-mono text-error" data-bind="manageTarget"></span>? This cannot be undone.</p>
+                    <p class="py-1 text-xs text-base-content/70">Are you sure you want to delete <span
+                            class="font-bold font-mono text-error" data-bind="manageTarget"></span>? This cannot be
+                        undone.</p>
                     <div class="card-actions justify-end mt-4 gap-2">
-                        <button class="btn btn-ghost btn-xs" data-on-click="showDeleteSnippetModal = false">Cancel</button>
+                        <button class="btn btn-ghost btn-xs"
+                            data-on-click="showDeleteSnippetModal = false">Cancel</button>
                         <button class="btn btn-error btn-xs" data-on-click="
                             const target = manageTarget;
                             window._indexedDB.snippets.delete(doc.SnippetModule + '_' + target);
