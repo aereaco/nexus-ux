@@ -12,7 +12,14 @@
         forkCode: '',
         snippetCode: '',
         baseSnippets: [],
-        initComplete: false
+        initComplete: false,
+        askCopilot() {
+            if (window.Nexus?.coordinator?.runtimeContext?.globalSignals) {
+                const g = window.Nexus.coordinator.runtimeContext.globalSignals();
+                if (typeof g.openSession === 'function') g.openSession('session-copilot');
+                g.newChatMessage = '@Nexus Copilot Can you explain how ' + (doc?.Title || 'this directive') + ' works and show an advanced example?';
+            }
+        }
      }" data-effect="
         if (!initComplete && doc) {
             initComplete = true;
@@ -190,7 +197,7 @@
         .nx-editor .cm-scroller { overflow: auto; }
     </style>
 
-    <!-- ═══════════ HEADER TOOLBAR ═══════════ -->
+    <!-- ═══════════ 1. HEADER TOOLBAR ═══════════ -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-base-content/10" data-if="doc">
         <div>
             <div class="flex items-center gap-2 mb-1.5">
@@ -204,7 +211,12 @@
             <p class="text-base text-base-content/70 mt-1 max-w-3xl leading-relaxed" data-markdown="doc.Description"></p>
         </div>
 
+        <!-- Quick Action Pills -->
         <div class="flex items-center gap-2 shrink-0">
+            <button class="btn btn-sm btn-outline btn-primary gap-2" data-on-click="askCopilot()">
+                <iconify-icon icon="material-symbols-light:robot-2-outline" class="text-lg"></iconify-icon>
+                <span>Ask AI</span>
+            </button>
             <button class="btn btn-sm btn-ghost border border-base-content/10 gap-2"
                 data-on-click="
                     navigator.clipboard.writeText(doc.Syntax || '');
@@ -217,7 +229,7 @@
         </div>
     </div>
 
-    <!-- ═══════════ TAB GROUP 1: MODULE SPECIFICATION ═══════════ -->
+    <!-- ═══════════ 2. TAB GROUP 1: MODULE SPECIFICATION ═══════════ -->
     <div class="card bg-base-100 border border-base-content/10 shadow-sm overflow-hidden" data-if="doc">
         <div class="card-header bg-base-200/40 px-6 py-3 border-b border-base-content/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center gap-2">
@@ -256,11 +268,11 @@
                     <pre class="mockup-code bg-neutral text-neutral-content p-4 font-mono text-sm w-full overflow-x-auto"><code data-bind="doc.Syntax || ''"></code></pre>
                 </div>
 
-                <!-- Parameters Table -->
+                <!-- Parameters Table with Zebra Styling -->
                 <div data-show="doc.Params && doc.Params.length > 0">
                     <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/60 mb-2">Parameters &amp; Modifiers</h3>
                     <div class="overflow-x-auto border border-base-content/10 rounded-xl">
-                        <table class="table table-sm w-full">
+                        <table class="table table-zebra table-sm w-full">
                             <thead>
                                 <tr class="bg-base-200/50 text-xs">
                                     <th>Parameter / Modifier</th>
@@ -325,17 +337,21 @@
                 </button>
             </div>
         </div>
+
+        <!-- Framework Contract Footer -->
+        <div class="px-6 py-3 bg-base-200/20 border-t border-base-content/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-base-content/60">
+            <span>Module Path: <code class="font-mono text-primary font-semibold" data-bind="doc.SourceModule || ''"></code></span>
+            <span>Framework Contract: Engine owns API primitives; Modules schedule directives.</span>
+        </div>
     </div>
 
-    <!-- ═══════════ TAB GROUP 2: INTERACTIVE SANDBOX ═══════════ -->
+    <!-- ═══════════ 3. TAB GROUP 2: INTERACTIVE SANDBOX ═══════════ -->
     <div class="card bg-base-100 border border-base-content/10 shadow-sm overflow-hidden" data-if="doc.Snippet || doc.Examples">
         <div class="card-header bg-base-200/40 px-6 py-3 border-b border-base-content/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center gap-2">
-                <iconify-icon icon="material-symbols-light:science-outline" class="text-secondary text-xl"></iconify-icon>
+                <span class="w-2.5 h-2.5 rounded-full bg-success animate-pulse"></span>
                 <h2 class="font-bold text-sm uppercase tracking-wider text-base-content/80">Interactive Sandbox</h2>
-                <span class="badge badge-success badge-xs gap-1 py-1 px-2 font-mono text-[10px]">
-                    <span class="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span> LIVE
-                </span>
+                <span class="badge badge-success badge-xs gap-1 py-0.5 px-2 font-mono text-[10px] font-semibold">LIVE REACTIVE DOM</span>
             </div>
 
             <!-- Tabs: [ Interactive Lab ] [ Lab Source ] [ Split View ] -->
@@ -375,6 +391,18 @@
                     <div class="nx-editor-container border border-base-content/10 rounded-xl overflow-hidden h-full min-h-[380px]" style="width: 100%;">
                         <div id="snippet-editor" class="nx-editor"></div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Collapsible Declarative HTML Markup Preview -->
+            <div class="collapse collapse-arrow bg-base-200/30 border border-base-content/10 rounded-xl mt-6">
+                <input type="checkbox" />
+                <div class="collapse-title text-xs font-bold flex items-center gap-2">
+                    <iconify-icon icon="material-symbols-light:code-blocks-outline" class="text-primary text-base"></iconify-icon>
+                    Declarative HTML Markup (Read-Only Source)
+                </div>
+                <div class="collapse-content">
+                    <pre class="bg-base-300 p-4 rounded-xl overflow-x-auto text-xs font-mono border border-base-content/10 text-base-content"><code data-bind="snippetCode"></code></pre>
                 </div>
             </div>
         </div>
