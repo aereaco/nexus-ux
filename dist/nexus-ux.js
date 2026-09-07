@@ -5713,8 +5713,6 @@ ${scripts}
 
 .flow-minimap {
   position: absolute;
-  bottom: 1rem;
-  left: 1rem;
   width: 12rem;
   height: 8rem;
   background: color-mix(in srgb, var(--color-base-100, #1e293b) 85%, transparent);
