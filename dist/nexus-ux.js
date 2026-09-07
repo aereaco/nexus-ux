@@ -6118,9 +6118,12 @@ ${scripts}
                       const stack = enhanced[Symbol.for("__data_stack__")] || enhanced["__data_stack__"];
                       if (stack && stack.length > 0) {
                         const scope = stack[0];
-                        scope[itemKey] = item;
-                        if (indexKey)
+                        if (scope[itemKey] !== item) {
+                          scope[itemKey] = item;
+                        }
+                        if (indexKey && scope[indexKey] !== index) {
                           scope[indexKey] = index;
+                        }
                       } else {
                         const scope = { [itemKey]: item };
                         if (indexKey)

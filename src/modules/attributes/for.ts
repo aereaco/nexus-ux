@@ -198,8 +198,12 @@ const forModule: AttributeModule = {
                 if (stack && stack.length > 0) {
                   // Mutate existing proxy to trigger bound effects
                   const scope = stack[0];
-                  scope[itemKey] = item;
-                  if (indexKey) scope[indexKey] = index;
+                  if (scope[itemKey] !== item) {
+                    scope[itemKey] = item;
+                  }
+                  if (indexKey && scope[indexKey] !== index) {
+                    scope[indexKey] = index;
+                  }
                 } else {
                   // Fallback if scope was somehow lost
                   const scope: Record<string, any> = { [itemKey]: item };
