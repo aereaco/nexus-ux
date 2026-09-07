@@ -53,7 +53,7 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
   let state = 0;
   let rest = rawName;
 
-  const hyphenated = ['ux-theme', 'on-raf', 'flow-viewport', 'flow-node', 'flow-handle', 'flow-edges', 'flow-grid', 'flow-nodrag', 'flow-side', 'flow-snap'].find(h =>
+  const hyphenated = ['ux-theme', 'on-raf', 'flow-viewport', 'flow-node', 'flow-handle', 'flow-edges', 'flow-grid', 'flow-nodrag', 'flow-side', 'flow-snap', 'flow-minimap', 'flow-resizer', 'flow-reconnect', 'flow-label'].find(h =>
     rawName === h || rawName.startsWith(h + '-') || rawName.startsWith(h + ':')
   );
 
