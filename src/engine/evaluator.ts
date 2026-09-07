@@ -308,6 +308,29 @@ export function getIndexedDBProxy(): any {
   return cachedIDBProxy;
 }
 
+const globalFnProxyCache = new WeakMap<Function, Function>();
+
+function wrapGlobalFunction(fn: Function, globalContext: any, scopeObj: any): Function {
+  let proxy = globalFnProxyCache.get(fn);
+  if (!proxy) {
+    proxy = new Proxy(fn, {
+      apply(target, thisArg, args) {
+        const receiver = (thisArg === undefined || thisArg === null || thisArg === scopeObj) ? globalContext : thisArg;
+        return Reflect.apply(target, receiver, args);
+      },
+      construct(target, args, newTarget) {
+        return Reflect.construct(target, args, newTarget);
+      },
+      get(target, prop, receiver) {
+        const val = Reflect.get(target, prop, receiver);
+        return typeof val === 'function' ? val.bind(target) : val;
+      }
+    });
+    globalFnProxyCache.set(fn, proxy);
+  }
+  return proxy;
+}
+
 
 export function evaluate(
   el: Element | Text | Comment,
