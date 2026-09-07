@@ -249,6 +249,16 @@
     "category": "Labs"
   },
   {
+    "id": "lab-scope-native",
+    "route": "/labs/scopes/native",
+    "path": "/_pages/labs/scopes/native.html",
+    "title": "@native",
+    "icon": "material-symbols-light:phone-android",
+    "order": 4,
+    "parent": "/labs/scopes",
+    "category": "Labs"
+  },
+  {
     "id": "lab-scope-os",
     "route": "/labs/scopes/os",
     "path": "/_pages/labs/scopes/os.html",
@@ -336,16 +346,6 @@
     "icon": "material-symbols-light:keyboard",
     "order": 6,
     "parent": "/labs/modifiers",
-    "category": "Labs"
-  },
-  {
-    "id": "lab-scope-native",
-    "route": "/labs/scopes/native",
-    "path": "/_pages/labs/scopes/native.html",
-    "title": "@native",
-    "icon": "material-symbols-light:mobile-friendly",
-    "order": 6,
-    "parent": "/labs/scopes",
     "category": "Labs"
   },
   {

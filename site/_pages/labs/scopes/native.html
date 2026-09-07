@@ -1,23 +1,28 @@
-<title>@native</title>
-<meta name="id" content="lab-scope-native">
-<meta name="route" content="/labs/scopes/native">
-<meta name="icon" content="material-symbols-light:mobile-friendly">
-<meta name="order" content="6">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/scopes">
+<head>
+  <title>@native</title>
+  <meta name="id" content="lab-scope-native">
+  <meta name="route" content="/labs/scopes/native">
+  <meta name="icon" content="material-symbols-light:phone-android">
+  <meta name="order" content="4">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/scopes">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "@native",
-    "Category": "Scopes",
-    "Icon": "material-symbols-light:mobile-friendly",
-    "ModulePath": "src/modules/scopes/native.ts",
-    "Description": "Checks for native app shell bridges (Capacitor, Electron, WebKit message handlers).",
-    "Syntax": "@native ? &#39;App&#39; : &#39;Browser&#39;",
-    "Params": [],
-    "Extensibility": "<p>Bridges web runtime with native host capabilities.</p>",
-    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-1\">\n  <div class=\"badge badge-outline\">@native Bridge Check</div>\n  <p class=\"text-xs opacity-70\">Verifies native mobile/desktop container existence.</p>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: '@native',
+      Category: 'Scopes',
+      Icon: 'material-symbols-light:phone-android',
+      Description: 'Scoped environment check detecting whether the application is running inside a native desktop shell, Cordova/Capacitor webview, or standard browser window.',
+      Syntax: '&lt;div data-show=\&quot;@native\&quot;&gt;Native App Title Bar&lt;/div&gt;',
+      Params: [
+        { name: '@native', type: 'Boolean Scope Property', default: '-', description: 'Returns true when native app bridge interfaces (Tauri, Capacitor, Electron) are present.' }
+      ],
+      SourceModule: '/modules/scopes/native.ts',
+      SnippetModule: '/_pages/labs/scopes/native.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/scopes/native.ts&lt;/code&gt;, this scope rule inspects host bridge objects (&lt;code&gt;window.__TAURI__&lt;/code&gt;, &lt;code&gt;window.Capacitor&lt;/code&gt;, &lt;code&gt;window.electron&lt;/code&gt;) to tailor UI for hybrid native deployments.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Hybrid Shell Awareness&lt;/strong&gt; — Conditionally render custom window drag bars and native file picker buttons&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Adaptive Layouts&lt;/strong&gt; — Adapt safe-area insets when running inside mobile webviews&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ simulatedBridge: false }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4 max-w-md\&quot;&gt;\n        &lt;div class=\&quot;flex items-center justify-between\&quot;&gt;\n            &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Native Shell Bridge Scope&lt;/h4&gt;\n            &lt;button class=\&quot;btn btn-xs btn-outline font-bold\&quot; data-on-click=\&quot;simulatedBridge = !simulatedBridge\&quot;&gt;\n                Simulate Native Bridge\n            &lt;/button&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;p-4 rounded-xl border font-mono text-xs space-y-2 transition-all\&quot;\n             data-class=\&quot;{ \'bg-success/10 border-success/30\': simulatedBridge, \'bg-base-200/50 border-base-content/10\': !simulatedBridge }\&quot;&gt;\n            &lt;div class=\&quot;flex justify-between items-center\&quot;&gt;\n                &lt;span&gt;Execution Target:&lt;/span&gt;\n                &lt;span class=\&quot;badge badge-sm font-bold font-mono\&quot; data-class=\&quot;{ \'badge-success\': simulatedBridge, \'badge-neutral\': !simulatedBridge }\&quot; data-bind=\&quot;simulatedBridge ? \'NATIVE HYBRID SHELL\' : \'STANDARD WEB BROWSER\'\&quot;&gt;&lt;/span&gt;\n            &lt;/div&gt;\n            &lt;div class=\&quot;text-[11px] opacity-70\&quot; data-bind=\&quot;simulatedBridge ? \'Native hardware APIs (Bluetooth, NFC, Biometrics) available.\' : \'Running in sandboxed browser DOM.\'\&quot;&gt;&lt;/div&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
