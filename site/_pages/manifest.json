@@ -685,22 +685,22 @@
     "category": "Labs"
   },
   {
-    "id": "lab-attr-markdown",
-    "route": "/labs/attributes/markdown",
-    "path": "/_pages/labs/attributes/markdown.html",
-    "title": "data-markdown",
-    "icon": "material-symbols-light:markdown-outline",
-    "order": 19,
-    "parent": "/labs/attributes",
-    "category": "Labs"
-  },
-  {
     "id": "lab-attr-teleport",
     "route": "/labs/attributes/teleport",
     "path": "/_pages/labs/attributes/teleport.html",
     "title": "data-teleport",
     "icon": "material-symbols-light:move-item",
     "order": 19,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-markdown",
+    "route": "/labs/attributes/markdown",
+    "path": "/_pages/labs/attributes/markdown.html",
+    "title": "data-markdown",
+    "icon": "material-symbols-light:markdown",
+    "order": 20,
     "parent": "/labs/attributes",
     "category": "Labs"
   },
