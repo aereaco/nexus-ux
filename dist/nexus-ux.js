@@ -5662,7 +5662,11 @@ ${scripts}
       flowAttribute = {
         name: "flow",
         attribute: "flow",
-        handle: (element, value, runtime) => {
+        handle: (element, value, runtime, parsedAttr) => {
+          if (element.hasAttribute("data-flow-viewport") || parsedAttr?.argument === "viewport") {
+            ensureFlowStyles(element.getRootNode());
+            return;
+          }
           ensureFlowStyles(element.getRootNode());
           const evaluated = runtime.evaluate(element, value);
           const isViewport = evaluated && typeof evaluated === "object" && !Array.isArray(evaluated) && ("zoom" in evaluated || "x" in evaluated || "y" in evaluated);
@@ -5673,15 +5677,7 @@ ${scripts}
             state.x = 0;
           if (state.y === void 0)
             state.y = 0;
-          let content = element.querySelector('[data-flow-viewport], [data-flow="viewport"], .flow-viewport, .nexus-flow-content');
-          if (!content) {
-            content = document.createElement("div");
-            content.setAttribute("data-flow-viewport", "");
-            while (element.firstChild) {
-              content.appendChild(element.firstChild);
-            }
-            element.appendChild(content);
-          }
+          const content = element.querySelector("[data-flow-viewport], .flow-viewport, .nexus-flow-content") || element.firstElementChild || element;
           element.__flowViewport = state;
           element.__nexusFlowViewport = state;
           const gridAttr = element.getAttribute("data-flow-grid");
@@ -5745,14 +5741,18 @@ ${scripts}
           element.addEventListener("wheel", onWheel, { passive: false });
           if (state.tick === void 0)
             state.tick = 0;
-          requestAnimationFrame(() => {
+          let settleFrames = 0;
+          const settle = () => {
             state.tick++;
-          });
+            if (++settleFrames < 24)
+              requestAnimationFrame(settle);
+          };
+          requestAnimationFrame(settle);
           const stop2 = runtime.effect(() => {
             const zoom = state.zoom || 1;
             const x = state.x || 0;
             const y = state.y || 0;
-            if (!content.hasAttribute("data-flow-viewport")) {
+            if (content !== element && !content.hasAttribute("data-flow-viewport")) {
               content.setAttribute("data-flow-viewport", "");
             }
             content.style.transformOrigin = "0 0";

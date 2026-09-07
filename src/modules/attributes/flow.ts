@@ -151,7 +151,13 @@ export const flowViewportAttribute: AttributeModule = {
 export const flowAttribute: AttributeModule = {
   name: 'flow',
   attribute: 'flow',
-  handle: (element: FlowElement, value: string, runtime: RuntimeContext) => {
+  handle: (element: FlowElement, value: string, runtime: RuntimeContext, parsedAttr?: any) => {
+    // Re-entrancy guard: if invoked on an inner viewport pane, ensure styles and exit
+    if (element.hasAttribute('data-flow-viewport') || parsedAttr?.argument === 'viewport') {
+      ensureFlowStyles(element.getRootNode() as Document | ShadowRoot);
+      return;
+    }
+
     ensureFlowStyles(element.getRootNode() as Document | ShadowRoot);
 
     // Resolve viewport state. If the expression already yields a viewport-like
@@ -167,17 +173,10 @@ export const flowAttribute: AttributeModule = {
     if (state.x === undefined) state.x = 0;
     if (state.y === undefined) state.y = 0;
 
-    // Viewport resolution: locate existing viewport or auto-wrap canvas children
-    // so the directive alone provides everything needed without mandatory classes.
-    let content = element.querySelector('[data-flow-viewport], [data-flow="viewport"], .flow-viewport, .nexus-flow-content') as HTMLElement | null;
-    if (!content) {
-      content = document.createElement('div');
-      content.setAttribute('data-flow-viewport', '');
-      while (element.firstChild) {
-        content.appendChild(element.firstChild);
-      }
-      element.appendChild(content);
-    }
+    // Viewport resolution: locate existing viewport or first child container
+    const content = (element.querySelector('[data-flow-viewport], .flow-viewport, .nexus-flow-content') as HTMLElement | null)
+      || (element.firstElementChild as HTMLElement | null)
+      || element;
 
     // Publish for descendant directives ($flow, nodes, handles) so they read
     // the SAME live object instead of re-evaluating the attribute expression.
@@ -248,15 +247,17 @@ export const flowAttribute: AttributeModule = {
     element.addEventListener('pointerup', onPointerUp);
     element.addEventListener('wheel', onWheel, { passive: false });
 
-    // Post-layout settle: edge paths are measured from node/handle DOM, which is
-    // not fully laid out on first paint (handles depend on async utility-class
-    // styling). Bumping a reactive `tick` on the viewport across several frames
+    // Post-layout settle: edge paths are measured from node/handle DOM.
+    // Bumping a reactive `tick` on the viewport across several initial frames
     // lets edge effects (which read viewport.tick) recompute once real geometry
-    // is available. A ResizeObserver keeps edges correct through late reflows.
+    // is available. Bounded to 24 frames so no infinite loop can occur.
     if ((state as any).tick === undefined) (state as any).tick = 0;
-    requestAnimationFrame(() => {
+    let settleFrames = 0;
+    const settle = () => {
       (state as any).tick++;
-    });
+      if (++settleFrames < 24) requestAnimationFrame(settle);
+    };
+    requestAnimationFrame(settle);
 
     const stop = runtime.effect(() => {
       const zoom = state.zoom || 1;
@@ -265,7 +266,7 @@ export const flowAttribute: AttributeModule = {
 
       // The viewport: ONE transformed layer holding nodes + edges, so both
       // scale together automatically (xyflow Viewport.svelte).
-      if (!content.hasAttribute('data-flow-viewport')) {
+      if (content !== element && !content.hasAttribute('data-flow-viewport')) {
         content.setAttribute('data-flow-viewport', '');
       }
       content.style.transformOrigin = '0 0';
