@@ -309,6 +309,78 @@ async function importScript(
   await Promise.all(tasks);
 }
 
+/**
+ * module: — Dynamically imports ES modules from CDNs directly via native import().
+ * Merges exported symbols onto window[id] and dispatches completion events:
+ *   - nexus:${id.toLowerCase()}-ready
+ *   - nexus:cm-ready (when id is CM or codemirror)
+ */
+async function importModule(
+  id: string,
+  payload: string | Record<string, string> | Array<string>,
+  cleanupFns: Array<() => void>,
+  runtime: RuntimeContext,
+  el: HTMLElement
+): Promise<void> {
+  const globalWin = globalThis as any;
+  const targetObj: Record<string, any> = globalWin[id] || {};
+  globalWin[id] = targetObj;
+
+  try {
+    if (Array.isArray(payload)) {
+      const modules = await Promise.all(
+        payload.map(async (url) => {
+          try {
+            return await import(/* @vite-ignore */ url);
+          } catch (err) {
+            reportError(new Error(`Nexus Import [${id}]: Failed to import module ${url}: ${err}`), el);
+            return {};
+          }
+        })
+      );
+      modules.forEach((mod) => {
+        Object.assign(targetObj, mod);
+      });
+    } else if (typeof payload === 'object' && payload !== null) {
+      const entries = Object.entries(payload);
+      await Promise.all(
+        entries.map(async ([key, url]) => {
+          try {
+            const mod = await import(/* @vite-ignore */ url);
+            targetObj[key] = mod[key] !== undefined ? mod[key] : (mod.default || mod);
+          } catch (err) {
+            reportError(new Error(`Nexus Import [${id}]: Failed to import module ${url}: ${err}`), el);
+          }
+        })
+      );
+    } else if (typeof payload === 'string') {
+      try {
+        const mod = await import(/* @vite-ignore */ payload);
+        Object.assign(targetObj, mod);
+      } catch (err) {
+        reportError(new Error(`Nexus Import [${id}]: Failed to import module ${payload}: ${err}`), el);
+      }
+    }
+
+    // Cleanup hook
+    cleanupFns.push(() => {
+      // Retain module singleton across fast re-renders if needed
+    });
+
+    // Dispatch lifecycle events
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent(`nexus:${id.toLowerCase()}-ready`, { detail: targetObj }));
+      if (id.toLowerCase() === 'cm' || id.toLowerCase() === 'codemirror') {
+        window.dispatchEvent(new CustomEvent('nexus:cm-ready', { detail: targetObj }));
+      }
+    }
+    runtime.log(`Nexus Import [${id}]: ES module(s) imported into window.${id}`);
+  } catch (err) {
+    reportError(new Error(`Nexus Import [${id}]: Module import error: ${err}`), el);
+  }
+}
+
+
 async function importStyle(
   id: string,
   payload: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>,
