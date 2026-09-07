@@ -233,7 +233,7 @@
     "route": "/labs/attributes/if",
     "path": "/_pages/labs/attributes/if.html",
     "title": "data-if",
-    "icon": "material-symbols-light:call-split",
+    "icon": "material-symbols-light:splitscreen-top",
     "order": 4,
     "parent": "/labs/attributes",
     "category": "Labs"

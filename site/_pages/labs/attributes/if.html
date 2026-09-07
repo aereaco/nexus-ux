@@ -1,25 +1,28 @@
-<title>data-if</title>
-<meta name="id" content="lab-attr-if">
-<meta name="route" content="/labs/attributes/if">
-<meta name="icon" content="material-symbols-light:call-split">
-<meta name="order" content="4">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/attributes">
+<head>
+  <title>data-if</title>
+  <meta name="id" content="lab-attr-if">
+  <meta name="route" content="/labs/attributes/if">
+  <meta name="icon" content="material-symbols-light:splitscreen-top">
+  <meta name="order" content="4">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/attributes">
+</head>
 
-<div data-signal="{
-  doc: {
-    Title: 'data-if',
-    Category: 'Attributes',
-    Icon: 'material-symbols-light:call-split',
-    ModulePath: 'src/modules/attributes/if.ts',
-    Description: 'Physical conditional rendering. Morphs elements into the DOM with an anchor comment when true and deterministically tears down subtrees and attached effects when false.',
-    Syntax: '<template data-if=\"isLoggedIn\">\n  <div class=\"user-dashboard\">...</div>\n</template>',
-    Params: [
-      { name: 'data-if', type: 'Boolean Expression', default: 'false', description: 'Condition controlling physical DOM presence.' }
-    ],
-    Extensibility: '<p>Unlike <code>data-show</code> which toggles CSS visibility, <code>data-if</code> completely mounts or unmounts the DOM subtree. When unmounted, all attached <code>elementBoundEffect</code> runners and event listeners are cleanly terminated.</p>',
-    Snippet: '<div data-signal=\"{ isReady: false }\" class=\"space-y-4 p-4 bg-base-200/50 rounded-xl border border-base-content/10\">\n  <button class=\"btn btn-sm\" data-class=\"{ \'btn-success\': isReady, \'btn-neutral\': !isReady }\" data-on-click=\"isReady = !isReady\">\n    Toggle DOM Presence: <span class=\"font-mono font-bold ms-1\" data-bind=\"isReady ? \'TRUE (Mounted)\' : \'FALSE (Unmounted)\'\"></span>\n  </button>\n  <template data-if=\"isReady\">\n    <div class=\"alert alert-success shadow-sm\">\n      <iconify-icon icon=\"material-symbols-light:check-circle\" class=\"text-2xl\"></iconify-icon>\n      <div>\n        <h4 class=\"font-bold\">Element Physically Mounted in DOM!</h4>\n        <p class=\"text-xs opacity-80\">Inspect elements in devtools to verify presence.</p>\n      </div>\n    </div>\n  </template>\n</div>'
-  }
-}">
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: 'data-if',
+      Category: 'Attributes',
+      Icon: 'material-symbols-light:splitscreen-top',
+      Description: 'Controls physical conditional rendering using &lt;code&gt;&lt;template data-if=\&quot;condition\&quot;&gt;&lt;/code&gt;, completely inserting or removing DOM subtrees with deterministic teardown.',
+      Syntax: '&lt;template data-if=\&quot;isLoggedIn\&quot;&gt;\n  &lt;div class=\&quot;dashboard\&quot;&gt;Welcome back!&lt;/div&gt;\n&lt;/template&gt;\n&lt;template data-if=\&quot;!isLoggedIn\&quot;&gt;\n  &lt;button&gt;Please Sign In&lt;/button&gt;\n&lt;/template&gt;',
+      Params: [
+        { name: 'data-if=&quot;condition&quot;', type: 'Boolean Expression', default: 'false', description: 'Evaluates the condition. When truthy, creates/morphs elements into DOM; when falsy, destroys them.' }
+      ],
+      SourceModule: '/modules/attributes/if.ts',
+      SnippetModule: '/_pages/labs/attributes/if.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/attributes/if.ts&lt;/code&gt;, the if directive manages physical DOM lifecycle. Unlike &lt;code&gt;data-show&lt;/code&gt; which merely toggles CSS display styles, &lt;code&gt;data-if&lt;/code&gt; constructs nodes on demand and deterministically tears down subtrees when conditions become falsy.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Physical Lifecycle&lt;/strong&gt; — Nodes exist in the DOM only when the expression evaluates to truthy&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Anchor Markers&lt;/strong&gt; — Uses lightweight comment markers in the DOM to remember insertion positions&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Recursive Teardown&lt;/strong&gt; — Cleans up all child signal effects, event listeners, and timers before removal&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Zero Ghost Listeners&lt;/strong&gt; — Eradicates memory leaks by disconnecting listeners bound to destroyed nodes&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ activeMode: \'operational\', authLevel: 2 }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm uppercase tracking-wider text-primary\&quot;&gt;System Mode Selector&lt;/h4&gt;\n        &lt;div class=\&quot;flex flex-wrap gap-2\&quot;&gt;\n            &lt;button class=\&quot;btn btn-sm\&quot; data-class=\&quot;{ \'btn-primary\': activeMode === \'operational\', \'btn-outline\': activeMode !== \'operational\' }\&quot; data-on-click=\&quot;activeMode = \'operational\'\&quot;&gt;\n                Operational\n            &lt;/button&gt;\n            &lt;button class=\&quot;btn btn-sm\&quot; data-class=\&quot;{ \'btn-warning\': activeMode === \'diagnostic\', \'btn-outline\': activeMode !== \'diagnostic\' }\&quot; data-on-click=\&quot;activeMode = \'diagnostic\'\&quot;&gt;\n                Diagnostic\n            &lt;/button&gt;\n            &lt;button class=\&quot;btn btn-sm\&quot; data-class=\&quot;{ \'btn-error\': activeMode === \'lockdown\', \'btn-outline\': activeMode !== \'lockdown\' }\&quot; data-on-click=\&quot;activeMode = \'lockdown\'\&quot;&gt;\n                Lockdown\n            &lt;/button&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n\n    &lt;div class=\&quot;p-6 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm min-h-[140px] flex items-center justify-center\&quot;&gt;\n        &lt;template data-if=\&quot;activeMode === \'operational\'\&quot;&gt;\n            &lt;div class=\&quot;text-center space-y-2 animate-fadeIn\&quot;&gt;\n                &lt;div class=\&quot;badge badge-success gap-2 py-3 px-4 font-bold text-xs\&quot;&gt;\n                    ● Normal Subsystem Telemetry Active\n                &lt;/div&gt;\n                &lt;p class=\&quot;text-xs opacity-70 font-mono\&quot;&gt;All quantum conduits operating within normal tolerances.&lt;/p&gt;\n            &lt;/div&gt;\n        &lt;/template&gt;\n\n        &lt;template data-if=\&quot;activeMode === \'diagnostic\'\&quot;&gt;\n            &lt;div class=\&quot;text-center space-y-2 animate-fadeIn\&quot;&gt;\n                &lt;div class=\&quot;badge badge-warning gap-2 py-3 px-4 font-bold text-xs\&quot;&gt;\n                    ▲ Diagnostics Running — Buffer Check\n                &lt;/div&gt;\n                &lt;p class=\&quot;text-xs opacity-70 font-mono\&quot;&gt;Performing L1/L2 cache integrity tests across nodes.&lt;/p&gt;\n            &lt;/div&gt;\n        &lt;/template&gt;\n\n        &lt;template data-if=\&quot;activeMode === \'lockdown\'\&quot;&gt;\n            &lt;div class=\&quot;text-center space-y-2 animate-fadeIn\&quot;&gt;\n                &lt;div class=\&quot;badge badge-error gap-2 py-3 px-4 font-bold text-xs\&quot;&gt;\n                    ✖ EMERGENCY LOCKDOWN IN EFFECT\n                &lt;/div&gt;\n                &lt;p class=\&quot;text-xs opacity-70 font-mono\&quot;&gt;Containment fields active. Operator authorization required.&lt;/p&gt;\n            &lt;/div&gt;\n        &lt;/template&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
