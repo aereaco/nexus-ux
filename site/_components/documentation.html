@@ -1,4 +1,16 @@
-<div class="dashboard-fragment w-full px-10 flex-1 grow flex flex-col h-full min-h-0 overflow-hidden" data-signal="{ 
+<div class="dashboard-fragment w-full px-10 flex-1 grow flex flex-col h-full min-h-0 overflow-hidden" 
+    data-import="{ 
+        'CM': { 
+            module: [
+                'https://esm.sh/@codemirror/state@6.4.1',
+                'https://esm.sh/codemirror@6.0.1?deps=@codemirror/state@6.4.1',
+                'https://esm.sh/@codemirror/lang-javascript@6.2.2?deps=@codemirror/state@6.4.1',
+                'https://esm.sh/@codemirror/lang-html@6.4.9?deps=@codemirror/state@6.4.1',
+                'https://esm.sh/@codemirror/theme-one-dark@6.1.2?deps=@codemirror/state@6.4.1'
+            ]
+        } 
+    }"
+    data-signal="{ 
         toastMsg: '', 
         toastType: 'info', 
         showToast: false,
