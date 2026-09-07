@@ -5754,7 +5754,9 @@ ${scripts}
             const zoom = state.zoom || 1;
             const x = state.x || 0;
             const y = state.y || 0;
-            content.classList.add("flow-viewport");
+            if (!content.hasAttribute("data-flow-viewport")) {
+              content.setAttribute("data-flow-viewport", "");
+            }
             content.style.transformOrigin = "0 0";
             content.style.transform = `translate(${x}px, ${y}px) scale(${zoom})`;
             if (gridSize > 0 && element.style.backgroundImage) {

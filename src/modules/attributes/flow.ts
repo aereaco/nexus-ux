@@ -277,7 +277,9 @@ export const flowAttribute: AttributeModule = {
 
       // The viewport: ONE transformed layer holding nodes + edges, so both
       // scale together automatically (xyflow Viewport.svelte).
-      content.classList.add('flow-viewport');
+      if (!content.hasAttribute('data-flow-viewport')) {
+        content.setAttribute('data-flow-viewport', '');
+      }
       content.style.transformOrigin = '0 0';
       content.style.transform = `translate(${x}px, ${y}px) scale(${zoom})`;
 
