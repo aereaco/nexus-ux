@@ -96,7 +96,7 @@
             }
 
             // Fetch framework module source directly from GitHub
-            fetch('https://raw.githubusercontent.com/aereaco/nexus-ux/main/src' + doc.SourceModule)
+            window.fetch('https://raw.githubusercontent.com/aereaco/nexus-ux/main/src' + doc.SourceModule)
                 .then(r => r.ok ? r.text() : Promise.reject(r.statusText))
                 .then(d => {
                     forkSource = d;
@@ -178,7 +178,7 @@
         if (activeModulePath) {
             // Mount when switching to source or split
             if (specTab === 'source' || labTab === 'source' || labTab === 'split') {
-                setTimeout(() => $el._mountEditors?.(), 40);
+                window.setTimeout(() => $el._mountEditors?.(), 40);
             }
 
             // Sync snippet code to editor when changed externally
