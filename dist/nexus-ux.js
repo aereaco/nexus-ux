@@ -3718,6 +3718,9 @@ ${scripts}
               return;
             if (el.hasAttribute("data-nx-cmp-done"))
               return;
+            if (el.__component_init)
+              return;
+            el.__component_init = true;
             ensureCustomElementRegistered(el.tagName);
             const componentState = runtime.reactive({
               isConnected: false,

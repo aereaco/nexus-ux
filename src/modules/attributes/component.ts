@@ -265,6 +265,8 @@ const componentModule: AttributeModule = {
     try {
       if (el.hasAttribute('data-route')) return;
       if (el.hasAttribute('data-nx-cmp-done')) return;
+      if ((el as any).__component_init) return;
+      (el as any).__component_init = true;
 
       ensureCustomElementRegistered(el.tagName);
 
