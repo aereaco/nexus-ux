@@ -426,6 +426,16 @@
     "category": "Labs"
   },
   {
+    "id": "lab-attr-effect",
+    "route": "/labs/attributes/effect",
+    "path": "/_pages/labs/attributes/effect.html",
+    "title": "data-effect",
+    "icon": "material-symbols-light:bolt",
+    "order": 9,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
     "id": "lab-mod-window",
     "route": "/labs/modifiers/window",
     "path": "/_pages/labs/modifiers/window.html",
@@ -593,16 +603,6 @@
     "icon": "material-symbols-light:smart-toy",
     "order": 14,
     "parent": "/labs/sprites",
-    "category": "Labs"
-  },
-  {
-    "id": "lab-attr-effect",
-    "route": "/labs/attributes/effect",
-    "path": "/_pages/labs/attributes/effect.html",
-    "title": "data-effect",
-    "icon": "material-symbols-light:auto-awesome-outline",
-    "order": 15,
-    "parent": "/labs/attributes",
     "category": "Labs"
   },
   {

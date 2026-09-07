@@ -1,30 +1,28 @@
-<title>data-effect</title>
-<meta name="id" content="lab-attr-effect">
-<meta name="route" content="/labs/attributes/effect">
-<meta name="icon" content="material-symbols-light:auto-awesome-outline">
-<meta name="order" content="15">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/attributes">
+<head>
+  <title>data-effect</title>
+  <meta name="id" content="lab-attr-effect">
+  <meta name="route" content="/labs/attributes/effect">
+  <meta name="icon" content="material-symbols-light:bolt">
+  <meta name="order" content="9">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/attributes">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "data-effect",
-    "Category": "Attributes",
-    "Icon": "material-symbols-light:auto-awesome-outline",
-    "ModulePath": "src/modules/attributes/effect.ts",
-    "Description": "Executes an automatic reactive side effect that automatically tracks accessed signal dependencies and re-executes on mutations.",
-    "Syntax": "<div data-effect=\"console.log(&#39;Count changed:&#39;, count)\">...</div>",
-    "Params": [
-      {
-        "name": "data-effect",
-        "type": "Expression",
-        "default": "undefined",
-        "description": "JavaScript expression containing signals to track and execute as side-effects."
-      }
-    ],
-    "Extensibility": "<p>Tied directly to element lifecycle via <code>elementBoundEffect</code>. Deterministically disposed when the host element leaves the DOM.</p>",
-    "Snippet": "<div data-signal=\"{ msg: &#39;Hello&#39;, logs: [] }\"\n     data-effect=\"logs = [...logs.slice(-3), &#39;Updated: &#39; + msg]\"\n     class=\"p-4 bg-base-200/50 rounded-xl space-y-3\">\n  <div class=\"flex items-center gap-2\">\n    <input type=\"text\" data-bind-value=\"msg\" class=\"input input-bordered input-sm font-mono\" />\n  </div>\n  <div class=\"text-xs font-mono space-y-1\">\n    <div class=\"font-bold opacity-70\">Recent Reactive Runs:</div>\n    <template data-for=\"l in logs\" data-key=\"l\">\n      <div class=\"badge badge-sm badge-outline font-mono\" data-bind=\"l\"></div>\n    </template>\n  </div>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: 'data-effect',
+      Category: 'Attributes',
+      Icon: 'material-symbols-light:bolt',
+      Description: 'Executes an automatic reactive side-effect loop tied directly to element lifecycle via &lt;code&gt;elementBoundEffect&lt;/code&gt;, auto-tracking dependencies and preventing recursive cascades.',
+      Syntax: '&lt;div data-effect=\&quot;console.log(\'Volume updated:\', volume)\&quot;&gt;&lt;/div&gt;\n&lt;div data-effect=\&quot;if (level &gt; 90) alertThreshold()\&quot;&gt;&lt;/div&gt;',
+      Params: [
+        { name: 'data-effect=&quot;expr&quot;', type: 'Reactive Expression', default: '-', description: 'Evaluates the expression immediately, tracks all read signal dependencies, and re-executes whenever those signals mutate.' }
+      ],
+      SourceModule: '/modules/attributes/effect.ts',
+      SnippetModule: '/_pages/labs/attributes/effect.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/attributes/effect.ts&lt;/code&gt;, the effect directive establishes reactive side-effects bound to DOM nodes. The engine tracks whatever reactive properties are read during execution and re-evaluates the expression whenever any tracked value mutates.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Automatic Dependency Tracking&lt;/strong&gt; — No explicit dependency arrays; signals are captured at runtime via Proxy getters&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Re-entrancy Protection&lt;/strong&gt; — Internal loop guards (&lt;code&gt;isEvaluating&lt;/code&gt;) prevent runaway cascade loops&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Deterministic Disposal&lt;/strong&gt; — Automatically unsubscribes and cleans up runner memory when the hosting element is removed&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ temp: 45, pressure: 30, warningCount: 0, statusMessage: \'All systems normal\' }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div data-effect=\&quot;statusMessage = (temp &gt; 80 || pressure &gt; 70) ? \'⚠️ WARNING: Subsystem threshold exceeded!\' : \'✅ Operational parameters stable.\'\&quot;&gt;&lt;/div&gt;\n\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-6\&quot;&gt;\n        &lt;div class=\&quot;space-y-2\&quot;&gt;\n            &lt;div class=\&quot;flex justify-between text-xs font-semibold opacity-70\&quot;&gt;\n                &lt;span&gt;Core Temperature:&lt;/span&gt;\n                &lt;span class=\&quot;font-mono font-bold text-primary\&quot; data-bind=\&quot;temp + \' °C\'\&quot;&gt;&lt;/span&gt;\n            &lt;/div&gt;\n            &lt;input type=\&quot;range\&quot; min=\&quot;20\&quot; max=\&quot;100\&quot; data-bind-value=\&quot;temp\&quot; class=\&quot;range range-xs range-primary\&quot;&gt;\n        &lt;/div&gt;\n\n        &lt;div class=\&quot;space-y-2\&quot;&gt;\n            &lt;div class=\&quot;flex justify-between text-xs font-semibold opacity-70\&quot;&gt;\n                &lt;span&gt;Chamber Pressure:&lt;/span&gt;\n                &lt;span class=\&quot;font-mono font-bold text-secondary\&quot; data-bind=\&quot;pressure + \' PSI\'\&quot;&gt;&lt;/span&gt;\n            &lt;/div&gt;\n            &lt;input type=\&quot;range\&quot; min=\&quot;10\&quot; max=\&quot;100\&quot; data-bind-value=\&quot;pressure\&quot; class=\&quot;range range-xs range-secondary\&quot;&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n\n    &lt;div class=\&quot;p-5 rounded-2xl border transition-all duration-200\&quot;\n         data-class=\&quot;{ \'bg-error/10 border-error/30\': (temp &gt; 80 || pressure &gt; 70), \'bg-base-100 border-base-content/10\': (temp &lt;= 80 &amp;&amp; pressure &lt;= 70) }\&quot;&gt;\n        &lt;div class=\&quot;flex items-center justify-between\&quot;&gt;\n            &lt;h4 class=\&quot;font-bold text-sm\&quot; data-bind=\&quot;statusMessage\&quot;&gt;&lt;/h4&gt;\n            &lt;span class=\&quot;badge badge-sm font-mono\&quot; data-class=\&quot;{ \'badge-error\': (temp &gt; 80 || pressure &gt; 70), \'badge-success\': (temp &lt;= 80 &amp;&amp; pressure &lt;= 70) }\&quot;&gt;\n                &lt;span data-bind=\&quot;(temp &gt; 80 || pressure &gt; 70) ? \'CRITICAL\' : \'NOMINAL\'\&quot;&gt;&lt;/span&gt;\n            &lt;/span&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
