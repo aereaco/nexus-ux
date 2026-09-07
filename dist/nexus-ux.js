@@ -10529,9 +10529,8 @@ ${match}</ul>
             },
             /** Zoom in on canvas viewport */
             zoomIn: (target, delta = 0.2) => {
-              const container = target instanceof Element ? flowContainer(target) : document.querySelector("[data-flow]");
-              const flow = container;
-              const vp = flow?.__flowViewport || flow?.__nexusFlowViewport;
+              const container = target instanceof Element ? flowContainer(target) || document.querySelector("[data-flow]") : document.querySelector("[data-flow]");
+              const vp = container?.__flowViewport || container?.__nexusFlowViewport;
               if (vp) {
                 vp.zoom = Math.min(4, (vp.zoom || 1) + delta);
                 vp.tick = (vp.tick || 0) + 1;
@@ -10539,9 +10538,8 @@ ${match}</ul>
             },
             /** Zoom out on canvas viewport */
             zoomOut: (target, delta = 0.2) => {
-              const container = target instanceof Element ? flowContainer(target) : document.querySelector("[data-flow]");
-              const flow = container;
-              const vp = flow?.__flowViewport || flow?.__nexusFlowViewport;
+              const container = target instanceof Element ? flowContainer(target) || document.querySelector("[data-flow]") : document.querySelector("[data-flow]");
+              const vp = container?.__flowViewport || container?.__nexusFlowViewport;
               if (vp) {
                 vp.zoom = Math.max(0.2, (vp.zoom || 1) - delta);
                 vp.tick = (vp.tick || 0) + 1;
@@ -10549,9 +10547,8 @@ ${match}</ul>
             },
             /** Reset canvas viewport position and zoom */
             reset: (target) => {
-              const container = target instanceof Element ? flowContainer(target) : document.querySelector("[data-flow]");
-              const flow = container;
-              const vp = flow?.__flowViewport || flow?.__nexusFlowViewport;
+              const container = target instanceof Element ? flowContainer(target) || document.querySelector("[data-flow]") : document.querySelector("[data-flow]");
+              const vp = container?.__flowViewport || container?.__nexusFlowViewport;
               if (vp) {
                 vp.x = 0;
                 vp.y = 0;
@@ -10561,7 +10558,7 @@ ${match}</ul>
             },
             /** Fit canvas view to current nodes */
             fit: (target, nodes, padding = 40) => {
-              const container = target instanceof Element ? flowContainer(target) : document.querySelector("[data-flow]");
+              const container = target instanceof Element ? flowContainer(target) || document.querySelector("[data-flow]") : document.querySelector("[data-flow]");
               if (!container)
                 return;
               const flow = container;

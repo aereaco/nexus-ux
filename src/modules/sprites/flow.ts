@@ -206,9 +206,8 @@ export const flowModule: SpriteModule = {
 
       /** Zoom in on canvas viewport */
       zoomIn: (target?: any, delta = 0.2) => {
-        const container = target instanceof Element ? flowContainer(target) : document.querySelector('[data-flow]');
-        const flow = container as (HTMLElement & { __nexusFlowViewport?: any; __flowViewport?: any }) | null;
-        const vp = flow?.__flowViewport || flow?.__nexusFlowViewport;
+        const container = (target instanceof Element ? (flowContainer(target) || document.querySelector('[data-flow]')) : document.querySelector('[data-flow]')) as (HTMLElement & { __nexusFlowViewport?: any; __flowViewport?: any }) | null;
+        const vp = container?.__flowViewport || container?.__nexusFlowViewport;
         if (vp) {
           vp.zoom = Math.min(4, (vp.zoom || 1) + delta);
           vp.tick = (vp.tick || 0) + 1;
@@ -217,9 +216,8 @@ export const flowModule: SpriteModule = {
 
       /** Zoom out on canvas viewport */
       zoomOut: (target?: any, delta = 0.2) => {
-        const container = target instanceof Element ? flowContainer(target) : document.querySelector('[data-flow]');
-        const flow = container as (HTMLElement & { __nexusFlowViewport?: any; __flowViewport?: any }) | null;
-        const vp = flow?.__flowViewport || flow?.__nexusFlowViewport;
+        const container = (target instanceof Element ? (flowContainer(target) || document.querySelector('[data-flow]')) : document.querySelector('[data-flow]')) as (HTMLElement & { __nexusFlowViewport?: any; __flowViewport?: any }) | null;
+        const vp = container?.__flowViewport || container?.__nexusFlowViewport;
         if (vp) {
           vp.zoom = Math.max(0.2, (vp.zoom || 1) - delta);
           vp.tick = (vp.tick || 0) + 1;
@@ -228,9 +226,8 @@ export const flowModule: SpriteModule = {
 
       /** Reset canvas viewport position and zoom */
       reset: (target?: any) => {
-        const container = target instanceof Element ? flowContainer(target) : document.querySelector('[data-flow]');
-        const flow = container as (HTMLElement & { __nexusFlowViewport?: any; __flowViewport?: any }) | null;
-        const vp = flow?.__flowViewport || flow?.__nexusFlowViewport;
+        const container = (target instanceof Element ? (flowContainer(target) || document.querySelector('[data-flow]')) : document.querySelector('[data-flow]')) as (HTMLElement & { __nexusFlowViewport?: any; __flowViewport?: any }) | null;
+        const vp = container?.__flowViewport || container?.__nexusFlowViewport;
         if (vp) {
           vp.x = 0;
           vp.y = 0;
@@ -241,7 +238,7 @@ export const flowModule: SpriteModule = {
 
       /** Fit canvas view to current nodes */
       fit: (target?: any, nodes?: any[], padding = 40) => {
-        const container = (target instanceof Element ? flowContainer(target) : document.querySelector('[data-flow]')) as HTMLElement | null;
+        const container = (target instanceof Element ? (flowContainer(target) || document.querySelector('[data-flow]')) : document.querySelector('[data-flow]')) as HTMLElement | null;
         if (!container) return;
         const flow = container as (HTMLElement & { __nexusFlowViewport?: any; __flowViewport?: any });
         const vp = flow?.__flowViewport || flow?.__nexusFlowViewport;
