@@ -313,6 +313,7 @@ export const flowNodeAttribute: AttributeModule = {
   name: 'flowNode',
   attribute: 'flow-node',
   handle: (element: HTMLElement, value: string, runtime: RuntimeContext) => {
+    ensureFlowStyles(element.getRootNode() as Document | ShadowRoot);
     const nodeState = runtime.evaluate(element, value) as any;
     if (!nodeState || typeof nodeState !== 'object') return;
 

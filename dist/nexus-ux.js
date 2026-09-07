@@ -5782,6 +5782,7 @@ ${scripts}
         name: "flowNode",
         attribute: "flow-node",
         handle: (element, value, runtime) => {
+          ensureFlowStyles(element.getRootNode());
           const nodeState = runtime.evaluate(element, value);
           if (!nodeState || typeof nodeState !== "object")
             return;
