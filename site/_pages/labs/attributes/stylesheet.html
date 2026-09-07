@@ -1,30 +1,28 @@
-<title>data-stylesheet</title>
-<meta name="id" content="lab-attr-stylesheet">
-<meta name="route" content="/labs/attributes/stylesheet">
-<meta name="icon" content="material-symbols-light:css">
-<meta name="order" content="27">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/attributes">
+<head>
+  <title>data-stylesheet</title>
+  <meta name="id" content="lab-attr-stylesheet">
+  <meta name="route" content="/labs/attributes/stylesheet">
+  <meta name="icon" content="material-symbols-light:css">
+  <meta name="order" content="14">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/attributes">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "data-stylesheet",
-    "Category": "Attributes",
-    "Icon": "material-symbols-light:css",
-    "ModulePath": "src/modules/attributes/stylesheet.ts",
-    "Description": "Manages on-demand Tailwind v4 JIT compilation and native CSS @import inlining into constructable stylesheets.",
-    "Syntax": "<style data-stylesheet>@import \"tailwindcss\";</style>",
-    "Params": [
-      {
-        "name": "data-stylesheet",
-        "type": "Boolean / String",
-        "default": "true",
-        "description": "Marks a style tag for runtime compilation and constructable CSSOM adoption."
-      }
-    ],
-    "Extensibility": "<p>Adopts compiled CSS across Light DOM and all active Shadow DOM component instances with zero duplicate stylesheets in memory.</p>",
-    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-2\">\n  <div class=\"badge badge-primary\">CSSOM Constructable Stylesheet</div>\n  <p class=\"text-sm\">Inlines and compiles styles with zero duplicate memory footprint.</p>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: 'data-stylesheet',
+      Category: 'Attributes',
+      Icon: 'material-symbols-light:css',
+      Description: 'Manages constructable stylesheets via CSSOM &lt;code&gt;document.adoptedStyleSheets&lt;/code&gt;, scoped Tailwind v4 JIT compilation, and native &lt;code&gt;@import&lt;/code&gt; inlining.',
+      Syntax: '&lt;style data-stylesheet&gt; .custom-card { backdrop-filter: blur(12px); } &lt;/style&gt;',
+      Params: [
+        { name: 'data-stylesheet', type: 'Directive Flag', default: '-', description: 'Instructs the engine to adopt the stylesheet directly into the document\'s constructable stylesheet registry.' }
+      ],
+      SourceModule: '/modules/attributes/stylesheet.ts',
+      SnippetModule: '/_pages/labs/attributes/stylesheet.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/attributes/stylesheet.ts&lt;/code&gt;, this module bypasses traditional &lt;code&gt;&lt;style&gt;&lt;/code&gt; tag injection by creating reusable &lt;code&gt;CSSStyleSheet&lt;/code&gt; objects shared across Shadow DOM boundaries and document roots.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Constructable CSSStyleSheet&lt;/strong&gt; — Inlines rules into &lt;code&gt;adoptedStyleSheets&lt;/code&gt; for zero DOM bloat&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Native @import Resolver&lt;/strong&gt; — Inlines external stylesheets recursively ahead of browser adoption&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Scoped Tailwind JIT&lt;/strong&gt; — Dynamically evaluates Tailwind utility classes on the fly&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Zero Re-Parsing&lt;/strong&gt; — Compiled stylesheets are cached in memory by content hash&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ glowIntensity: 20, cardBorderRadius: 16 }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-4\&quot;&gt;\n        &lt;div class=\&quot;space-y-1\&quot;&gt;\n            &lt;label class=\&quot;text-xs font-semibold opacity-70\&quot;&gt;Glow Spread (px):&lt;/label&gt;\n            &lt;input type=\&quot;range\&quot; min=\&quot;0\&quot; max=\&quot;40\&quot; data-bind-value=\&quot;glowIntensity\&quot; class=\&quot;range range-xs range-primary\&quot;&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;space-y-1\&quot;&gt;\n            &lt;label class=\&quot;text-xs font-semibold opacity-70\&quot;&gt;Border Radius (px):&lt;/label&gt;\n            &lt;input type=\&quot;range\&quot; min=\&quot;4\&quot; max=\&quot;32\&quot; data-bind-value=\&quot;cardBorderRadius\&quot; class=\&quot;range range-xs range-secondary\&quot;&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n\n    &lt;div class=\&quot;p-8 bg-base-100 border border-base-content/10 text-center space-y-2 transition-all duration-200\&quot;\n         data-style=\&quot;{\n             borderRadius: cardBorderRadius + \'px\',\n             boxShadow: \'0 0 \' + glowIntensity + \'px rgba(59, 130, 246, 0.4)\'\n         }\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-base text-primary\&quot;&gt;Constructable CSSOM Target&lt;/h4&gt;\n        &lt;p class=\&quot;text-xs opacity-70 font-mono max-w-sm mx-auto\&quot;&gt;\n            Styles are compiled and applied with sub-millisecond latency directly onto DOM elements.\n        &lt;/p&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
