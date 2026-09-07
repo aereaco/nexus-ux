@@ -1,30 +1,30 @@
-<title>data-computed</title>
-<meta name="id" content="lab-attr-computed">
-<meta name="route" content="/labs/attributes/computed">
-<meta name="icon" content="material-symbols-light:calculate-outline">
-<meta name="order" content="12">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/attributes">
+<head>
+  <title>data-computed</title>
+  <meta name="id" content="lab-attr-computed">
+  <meta name="route" content="/labs/attributes/computed">
+  <meta name="icon" content="material-symbols-light:calculate">
+  <meta name="order" content="10">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/attributes">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "data-computed",
-    "Category": "Attributes",
-    "Icon": "material-symbols-light:calculate-outline",
-    "ModulePath": "src/modules/attributes/computed.ts",
-    "Description": "Declares memoized derived getters using unifiedComputed and fine-grained reactive dependency tracking.",
-    "Syntax": "<div data-computed=\"{ double: () => count * 2 }\">...</div>",
-    "Params": [
-      {
-        "name": "data-computed",
-        "type": "Object Literal",
-        "default": "{}",
-        "description": "Dictionary of getter functions that re-evaluate only when their reactive dependencies change."
-      }
-    ],
-    "Extensibility": "<p>Computed values evaluate lazily and are cached using Vue 3-compatible dependency sets. They bridge directly into the element&#39;s local data stack.</p>",
-    "Snippet": "<div data-signal=\"{ price: 25, quantity: 2 }\"\n     data-computed=\"{ total: () => price * quantity, tax: () => price * quantity * 0.08 }\"\n     class=\"p-4 bg-base-200/50 rounded-xl space-y-3\">\n  <div class=\"flex gap-4\">\n    <div><span class=\"text-xs opacity-70\">Price:</span> <input type=\"number\" data-bind-value=\"price\" class=\"input input-bordered input-xs w-20\" /></div>\n    <div><span class=\"text-xs opacity-70\">Qty:</span> <input type=\"number\" data-bind-value=\"quantity\" class=\"input input-bordered input-xs w-20\" /></div>\n  </div>\n  <div class=\"stat bg-base-100 rounded-lg p-3 border border-base-content/10\">\n    <div class=\"stat-title text-xs\">Total with Tax</div>\n    <div class=\"stat-value text-primary text-xl font-mono\">$<span data-bind=\"(total + tax).toFixed(2)\"></span></div>\n    <div class=\"stat-desc text-xs font-mono\">Subtotal: $<span data-bind=\"total\"></span> | Tax: $<span data-bind=\"tax.toFixed(2)\"></span></div>\n  </div>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: 'data-computed',
+      Category: 'Attributes',
+      Icon: 'material-symbols-light:calculate',
+      Description: 'Declares cached, fine-grained reactive computed values with zero serialization via &lt;code&gt;unifiedComputed&lt;/code&gt; and ghost key memory pre-allocation.',
+      Syntax: '&lt;div data-computed=\&quot;{ total: () =&gt; price * qty, formatted: () =&gt; \'$\' + total.toFixed(2) }\&quot;&gt;&lt;/div&gt;\n&lt;div data-computed-double=\&quot;count * 2\&quot;&gt;&lt;/div&gt;',
+      Params: [
+        { name: 'data-computed=&quot;{ ... }&quot;', type: 'Getter Object Map', default: '-', description: 'Defines computed getter functions that re-calculate only when their exact dependencies change.' },
+        { name: 'data-computed-[prop]=&quot;expr&quot;', type: 'Per-Attribute Computed', default: '-', description: 'Publishes a single computed getter directly from an attribute expression.' },
+        { name: 'data-computed:global', type: 'Modifier', default: 'false', description: 'Exposes computed results on the global namespace (#name).' }
+      ],
+      SourceModule: '/modules/attributes/computed.ts',
+      SnippetModule: '/_pages/labs/attributes/computed.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/attributes/computed.ts&lt;/code&gt;, computed directives cache derived values using &lt;code&gt;unifiedComputed&lt;/code&gt;. Unlike raw effect loops, computed values evaluate lazily upon read and remain cached until one of their upstream dependencies changes.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Ghost Key Pre-Allocation&lt;/strong&gt; — Parses property keys ahead of execution to pre-allocate typed slots in the SignalHeap&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Zero-Copy Derivations&lt;/strong&gt; — Returns typed reactive references without cloning underlying objects&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Dual Usage Modes&lt;/strong&gt; — Supports object literal dictionaries &lt;code&gt;data-computed=&quot;{ ... }&quot;&lt;/code&gt; and per-attribute declarations &lt;code&gt;data-computed-subtotal=&quot;...&quot;&lt;/code&gt;&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ basePrice: 150, quantity: 2, discountRate: 0.15 }\&quot;\n     data-computed=\&quot;{\n       subtotal: () =&gt; basePrice * quantity,\n       discountAmount: () =&gt; (basePrice * quantity) * discountRate,\n       grandTotal: () =&gt; (basePrice * quantity) * (1 - discountRate)\n     }\&quot;\n     class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-4\&quot;&gt;\n        &lt;div class=\&quot;space-y-1\&quot;&gt;\n            &lt;label class=\&quot;text-xs font-semibold opacity-70\&quot;&gt;Unit Price ($):&lt;/label&gt;\n            &lt;input type=\&quot;number\&quot; data-bind-value=\&quot;basePrice\&quot; class=\&quot;input input-bordered input-sm font-mono w-full\&quot;&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;space-y-1\&quot;&gt;\n            &lt;label class=\&quot;text-xs font-semibold opacity-70\&quot;&gt;Quantity:&lt;/label&gt;\n            &lt;input type=\&quot;number\&quot; min=\&quot;1\&quot; data-bind-value=\&quot;quantity\&quot; class=\&quot;input input-bordered input-sm font-mono w-full\&quot;&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;space-y-1\&quot;&gt;\n            &lt;label class=\&quot;text-xs font-semibold opacity-70\&quot;&gt;Discount Rate:&lt;/label&gt;\n            &lt;select data-bind-value=\&quot;discountRate\&quot; class=\&quot;select select-bordered select-sm font-mono w-full\&quot;&gt;\n                &lt;option value=\&quot;0\&quot;&gt;0% (None)&lt;/option&gt;\n                &lt;option value=\&quot;0.10\&quot;&gt;10% Member&lt;/option&gt;\n                &lt;option value=\&quot;0.15\&quot;&gt;15% Early Bird&lt;/option&gt;\n                &lt;option value=\&quot;0.25\&quot;&gt;25% Enterprise&lt;/option&gt;\n            &lt;/select&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n\n    &lt;div class=\&quot;stats bg-base-100 shadow-sm border border-base-content/10 w-full grid grid-cols-1 md:grid-cols-3\&quot;&gt;\n        &lt;div class=\&quot;stat\&quot;&gt;\n            &lt;div class=\&quot;stat-title text-xs font-bold\&quot;&gt;Gross Subtotal&lt;/div&gt;\n            &lt;div class=\&quot;stat-value text-base font-mono text-primary\&quot; data-bind=\&quot;\'$\' + subtotal.toFixed(2)\&quot;&gt;&lt;/div&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;stat\&quot;&gt;\n            &lt;div class=\&quot;stat-title text-xs font-bold\&quot;&gt;Discount Savings&lt;/div&gt;\n            &lt;div class=\&quot;stat-value text-base font-mono text-secondary\&quot; data-bind=\&quot;\'-\$\' + discountAmount.toFixed(2)\&quot;&gt;&lt;/div&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;stat bg-primary/5\&quot;&gt;\n            &lt;div class=\&quot;stat-title text-xs font-bold text-primary\&quot;&gt;Grand Total&lt;/div&gt;\n            &lt;div class=\&quot;stat-value text-2xl font-mono text-primary font-bold\&quot; data-bind=\&quot;\'$\' + grandTotal.toFixed(2)\&quot;&gt;&lt;/div&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>

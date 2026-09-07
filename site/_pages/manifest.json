@@ -466,6 +466,16 @@
     "category": "Labs"
   },
   {
+    "id": "lab-attr-computed",
+    "route": "/labs/attributes/computed",
+    "path": "/_pages/labs/attributes/computed.html",
+    "title": "data-computed",
+    "icon": "material-symbols-light:calculate",
+    "order": 10,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
     "id": "lab-mod-document",
     "route": "/labs/modifiers/document",
     "path": "/_pages/labs/modifiers/document.html",
@@ -513,16 +523,6 @@
     "icon": "material-symbols-light:update",
     "order": 11,
     "parent": "/labs/sprites",
-    "category": "Labs"
-  },
-  {
-    "id": "lab-attr-computed",
-    "route": "/labs/attributes/computed",
-    "path": "/_pages/labs/attributes/computed.html",
-    "title": "data-computed",
-    "icon": "material-symbols-light:calculate-outline",
-    "order": 12,
-    "parent": "/labs/attributes",
     "category": "Labs"
   },
   {
