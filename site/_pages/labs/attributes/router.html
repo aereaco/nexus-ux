@@ -1,30 +1,30 @@
-<title>data-router</title>
-<meta name="id" content="lab-attr-router">
-<meta name="route" content="/labs/attributes/router">
-<meta name="icon" content="material-symbols-light:route">
-<meta name="order" content="25">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/attributes">
+<head>
+  <title>data-router</title>
+  <meta name="id" content="lab-attr-router">
+  <meta name="route" content="/labs/attributes/router">
+  <meta name="icon" content="material-symbols-light:alt-route">
+  <meta name="order" content="17">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/attributes">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "data-router",
-    "Category": "Attributes",
-    "Icon": "material-symbols-light:route",
-    "ModulePath": "src/modules/attributes/router.ts",
-    "Description": "Comprehensive SPA routing engine with multi-tab workspaces, automatic page discovery, and browser history synchronization.",
-    "Syntax": "<html data-router=\"{ mode: &#39;hybrid&#39;, pagesDir: &#39;_pages&#39; }\">",
-    "Params": [
-      {
-        "name": "data-router",
-        "type": "Object Literal",
-        "default": "{}",
-        "description": "Router configuration object supporting mode, pagesDir, manifest, and error route."
-      }
-    ],
-    "Extensibility": "<p>Exposes #router reactive state app-wide with pageTabs, navigate(), createPageTab(), switchPageTab(), and lineage breadcrumb helpers.</p>",
-    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-2\">\n  <p class=\"text-xs font-bold opacity-70\">Active Route:</p>\n  <div class=\"font-mono text-primary text-sm font-bold\" data-bind=\"router.path\">/labs/attributes/router</div>\n  <div class=\"text-xs opacity-70 font-mono\">Open tabs: <span data-bind=\"router.pageTabs.length\">1</span></div>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: 'data-router',
+      Category: 'Attributes',
+      Icon: 'material-symbols-light:alt-route',
+      Description: 'Single Page Application (SPA) routing engine managing route matching, browser history pushState, tab sessions, and published &lt;code&gt;#router&lt;/code&gt; global signals.',
+      Syntax: '&lt;div data-router=\&quot;{ mode: \'history\', root: \'/_pages\' }\&quot;&gt;&lt;/div&gt;',
+      Params: [
+        { name: 'data-router', type: 'Router Config', default: '{}', description: 'Mounts the SPA router and publishes the #router reactive global signal.' },
+        { name: '#router.pages', type: 'Global Signal Array', default: '[]', description: 'List of discovered route records from the manifest.' },
+        { name: '#router.createPageTab(path)', type: 'Method', default: '-', description: 'Spawns a new tab in the multi-tab layout.' }
+      ],
+      SourceModule: '/modules/attributes/router.ts',
+      SnippetModule: '/_pages/labs/attributes/router.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/attributes/router.ts&lt;/code&gt;, this module provides browser history orchestration. It intercepts anchor clicks via &lt;code&gt;linkRewriter&lt;/code&gt;, handles browser back/forward buttons via &lt;code&gt;history&lt;/code&gt; listener, and maintains multi-tab sessions in live signals.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Multi-Tab Workspace&lt;/strong&gt; — Supports desktop-grade tab bars via &lt;code&gt;#router.pageTabs&lt;/code&gt;&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Instant Navigation&lt;/strong&gt; — Zero full-page reloads; switches views via cached DOM morphing&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Global Reactive State&lt;/strong&gt; — Accessible in any expression via &lt;code&gt;#router&lt;/code&gt;&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ currentSimRoute: \'/labs/attributes/router\', simulatedTabs: [\'Home\', \'Attributes\', \'data-router\'] }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;SPA Router Status Telemetry&lt;/h4&gt;\n        &lt;div class=\&quot;p-3 bg-base-200/50 rounded-xl font-mono text-xs flex items-center justify-between\&quot;&gt;\n            &lt;span class=\&quot;opacity-70\&quot;&gt;Active Route:&lt;/span&gt;\n            &lt;span class=\&quot;text-accent font-bold\&quot; data-bind=\&quot;currentSimRoute\&quot;&gt;&lt;/span&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;flex flex-wrap gap-2\&quot;&gt;\n            &lt;template data-for=\&quot;tab in simulatedTabs\&quot;&gt;\n                &lt;div class=\&quot;badge badge-lg badge-outline gap-2 font-mono text-xs\&quot;&gt;\n                    &lt;span class=\&quot;text-primary font-bold\&quot;&gt;●&lt;/span&gt;\n                    &lt;span data-bind=\&quot;tab\&quot;&gt;&lt;/span&gt;\n                &lt;/div&gt;\n            &lt;/template&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>

@@ -665,6 +665,16 @@
     "category": "Labs"
   },
   {
+    "id": "lab-attr-router",
+    "route": "/labs/attributes/router",
+    "path": "/_pages/labs/attributes/router.html",
+    "title": "data-router",
+    "icon": "material-symbols-light:alt-route",
+    "order": 17,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
     "id": "lab-attr-markdown",
     "route": "/labs/attributes/markdown",
     "path": "/_pages/labs/attributes/markdown.html",
@@ -721,16 +731,6 @@
     "title": "data-route",
     "icon": "material-symbols-light:alt-route",
     "order": 24,
-    "parent": "/labs/attributes",
-    "category": "Labs"
-  },
-  {
-    "id": "lab-attr-router",
-    "route": "/labs/attributes/router",
-    "path": "/_pages/labs/attributes/router.html",
-    "title": "data-router",
-    "icon": "material-symbols-light:route",
-    "order": 25,
     "parent": "/labs/attributes",
     "category": "Labs"
   },
