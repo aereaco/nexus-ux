@@ -1,23 +1,29 @@
-<title>$(selector)</title>
-<meta name="id" content="lab-sprite-selector">
-<meta name="route" content="/labs/sprites/selector">
-<meta name="icon" content="material-symbols-light:search">
-<meta name="order" content="2">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/sprites">
+<head>
+  <title>$(...)</title>
+  <meta name="id" content="lab-sprite-selector">
+  <meta name="route" content="/labs/sprites/selector">
+  <meta name="icon" content="material-symbols-light:travel-explore">
+  <meta name="order" content="11">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/sprites">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "$(selector)",
-    "Category": "Sprites",
-    "Icon": "material-symbols-light:search",
-    "ModulePath": "src/modules/sprites/selector.ts",
-    "Description": "Contextual DOM selector engine with directional combinators (^ closest, > child, + next, - prev).",
-    "Syntax": "$(&#39;^.card > .title&#39;)",
-    "Params": [],
-    "Extensibility": "<p>Extended micro-selector engine without DOM traversal boilerplate.</p>",
-    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-2\">\n  <div class=\"badge badge-outline\">$(selector) Engine</div>\n  <p class=\"text-xs opacity-70\">Directional combinators for context-aware queries.</p>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: '$(...) Unified Selector',
+      Category: 'Sprites',
+      Icon: 'material-symbols-light:travel-explore',
+      Description: 'Context-aware DOM traversal engine returning reactive element proxies with special combinators (^ closest ancestor, &gt; direct child, + next sibling, - previous sibling, ~ parent query).',
+      Syntax: '$(\'^.card\').classList.add(\'active\')\n$(\'&gt;input\').focus()',
+      Params: [
+        { name: '$(selector)', type: 'DOM Traversal Method', default: '-', description: 'Evaluates contextual selector relative to current element.' },
+        { name: '^, &gt;, +, -, ~', type: 'Nexus Combinators', default: '-', description: 'Directional combinators for parent, child, sibling, and ancestor traversal.' }
+      ],
+      SourceModule: '/modules/sprites/selector.ts',
+      SnippetModule: '/_pages/labs/sprites/selector.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/sprites/selector.ts&lt;/code&gt;, the $(...) engine returns reactive proxies wrapping DOM elements. Modifying properties on the proxy directly triggers reactive updates.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Directional Combinators&lt;/strong&gt; — &lt;code&gt;^&lt;/code&gt; for closest, &lt;code&gt;&amp;gt;&lt;/code&gt; for children, &lt;code&gt;+&lt;/code&gt; for next sibling&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Reactive Proxies&lt;/strong&gt; — Intercepts calls via Reflect to notify dependent signals&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ targetFound: false }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4 max-w-md card-container\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Contextual DOM Traversal ($)&lt;/h4&gt;\n        &lt;div class=\&quot;p-4 bg-base-200/50 rounded-xl space-y-3\&quot;&gt;\n            &lt;div id=\&quot;demo-target\&quot; class=\&quot;p-3 bg-base-100 rounded-lg border border-base-content/10 text-xs font-mono text-center transition-all\&quot;\n                 data-class=\&quot;{ \'border-primary text-primary font-bold shadow-md\': targetFound }\&quot;&gt;\n                Target Element: #demo-target\n            &lt;/div&gt;\n            &lt;button class=\&quot;btn btn-sm btn-primary font-bold w-full\&quot;\n                    data-on-click=\&quot;targetFound = !targetFound; $(\'#demo-target\')?.classList?.toggle(\'scale-105\')\&quot;&gt;\n                Locate &amp;amp; Pulse ($(\'#demo-target\'))\n            &lt;/button&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
