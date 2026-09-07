@@ -1,23 +1,28 @@
-<title>@auth</title>
-<meta name="id" content="lab-scope-auth">
-<meta name="route" content="/labs/scopes/auth">
-<meta name="icon" content="material-symbols-light:lock">
-<meta name="order" content="3">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/scopes">
+<head>
+  <title>@auth</title>
+  <meta name="id" content="lab-scope-auth">
+  <meta name="route" content="/labs/scopes/auth">
+  <meta name="icon" content="material-symbols-light:lock">
+  <meta name="order" content="3">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/scopes">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "@auth",
-    "Category": "Scopes",
-    "Icon": "material-symbols-light:lock",
-    "ModulePath": "src/modules/scopes/auth.ts",
-    "Description": "Enforces role-based authentication rules in NEG grammar expressions.",
-    "Syntax": "@auth(&#39;admin&#39;) { ... }",
-    "Params": [],
-    "Extensibility": "<p>Queries current user claims from security context.</p>",
-    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-1\">\n  <div class=\"badge badge-warning\">@auth Scope Gate</div>\n  <p class=\"text-xs opacity-70\">Controls declarative visibility by user role.</p>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: '@auth',
+      Category: 'Scopes',
+      Icon: 'material-symbols-light:lock',
+      Description: 'Authentication and role-gating scope provider enabling declarative permission checks and role evaluations directly within HTML attribute expressions.',
+      Syntax: '&lt;div data-show=\&quot;@auth(\'admin\')\&quot;&gt;Admin Controls&lt;/div&gt;\n&lt;button data-bind-disabled=\&quot;!@auth(\'editor\')\&quot;&gt;Publish&lt;/button&gt;',
+      Params: [
+        { name: '@auth(\'role\')', type: 'Role String Expression', default: '-', description: 'Evaluates user role permissions against active auth identity.' }
+      ],
+      SourceModule: '/modules/scopes/auth.ts',
+      SnippetModule: '/_pages/labs/scopes/auth.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/scopes/auth.ts&lt;/code&gt;, the @auth rule simplifies RBAC (Role-Based Access Control) in the presentation layer. It evaluates user credentials against configured access boundaries.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Declarative Role Gating&lt;/strong&gt; — Clean &lt;code&gt;data-show=&quot;@auth(\'admin\')&quot;&lt;/code&gt; syntax without nested if branches&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Instant Sync&lt;/strong&gt; — UI visibility reacts immediately when active auth signal updates upon login or logout&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ currentRole: \'operator\' }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4 max-w-md\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Role-Based Gating Scope&lt;/h4&gt;\n        &lt;div class=\&quot;flex gap-2\&quot;&gt;\n            &lt;button class=\&quot;btn btn-xs\&quot; data-class=\&quot;{ \'btn-primary\': currentRole === \'viewer\', \'btn-outline\': currentRole !== \'viewer\' }\&quot; data-on-click=\&quot;currentRole = \'viewer\'\&quot;&gt;Viewer&lt;/button&gt;\n            &lt;button class=\&quot;btn btn-xs\&quot; data-class=\&quot;{ \'btn-primary\': currentRole === \'operator\', \'btn-outline\': currentRole !== \'operator\' }\&quot; data-on-click=\&quot;currentRole = \'operator\'\&quot;&gt;Operator&lt;/button&gt;\n            &lt;button class=\&quot;btn btn-xs\&quot; data-class=\&quot;{ \'btn-primary\': currentRole === \'admin\', \'btn-outline\': currentRole !== \'admin\' }\&quot; data-on-click=\&quot;currentRole = \'admin\'\&quot;&gt;Admin&lt;/button&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;space-y-2 pt-2 font-mono text-xs\&quot;&gt;\n            &lt;div class=\&quot;p-3 bg-base-200/50 rounded-xl flex items-center justify-between\&quot;&gt;\n                &lt;span&gt;Public Telemetry (All):&lt;/span&gt;\n                &lt;span class=\&quot;badge badge-success badge-xs font-bold\&quot;&gt;ACCESSIBLE&lt;/span&gt;\n            &lt;/div&gt;\n            &lt;div class=\&quot;p-3 rounded-xl border flex items-center justify-between transition-all\&quot;\n                 data-class=\&quot;{ \'bg-base-200/50 border-base-content/5\': currentRole !== \'viewer\', \'bg-base-300/30 opacity-40 border-dashed\': currentRole === \'viewer\' }\&quot;&gt;\n                &lt;span&gt;Chamber Controls (Operator+):&lt;/span&gt;\n                &lt;span class=\&quot;badge badge-xs font-bold\&quot; data-class=\&quot;{ \'badge-success\': currentRole !== \'viewer\', \'badge-error\': currentRole === \'viewer\' }\&quot; data-bind=\&quot;currentRole !== \'viewer\' ? \'ACCESSIBLE\' : \'RESTRICTED\'\&quot;&gt;&lt;/span&gt;\n            &lt;/div&gt;\n            &lt;div class=\&quot;p-3 rounded-xl border flex items-center justify-between transition-all\&quot;\n                 data-class=\&quot;{ \'bg-base-200/50 border-base-content/5\': currentRole === \'admin\', \'bg-base-300/30 opacity-40 border-dashed\': currentRole !== \'admin\' }\&quot;&gt;\n                &lt;span&gt;Quantum Destruct (Admin Only):&lt;/span&gt;\n                &lt;span class=\&quot;badge badge-xs font-bold\&quot; data-class=\&quot;{ \'badge-success\': currentRole === \'admin\', \'badge-error\': currentRole !== \'admin\' }\&quot; data-bind=\&quot;currentRole === \'admin\' ? \'ACCESSIBLE\' : \'RESTRICTED\'\&quot;&gt;&lt;/span&gt;\n            &lt;/div&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
