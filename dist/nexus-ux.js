@@ -5527,8 +5527,10 @@ ${scripts}
     flowEdgesAttribute: () => flowEdgesAttribute,
     flowGridAttribute: () => flowGridAttribute,
     flowHandleAttribute: () => flowHandleAttribute,
+    flowMinimapAttribute: () => flowMinimapAttribute,
     flowNoDragAttribute: () => flowNoDragAttribute,
     flowNodeAttribute: () => flowNodeAttribute,
+    flowResizerAttribute: () => flowResizerAttribute,
     flowSideAttribute: () => flowSideAttribute,
     flowSnapAttribute: () => flowSnapAttribute,
     flowViewportAttribute: () => flowViewportAttribute
@@ -5552,14 +5554,14 @@ ${scripts}
       }
     }
   }
-  var SVG_NS, MIN_ZOOM, MAX_ZOOM, NO_PAN, sharedViewport, FLOW_CSS, flowSheet, flowViewportAttribute, flowAttribute, flowNodeAttribute, flowHandleAttribute, flowEdgesAttribute, flowSideAttribute, flowNoDragAttribute, flowGridAttribute, flowSnapAttribute, flow_default;
+  var SVG_NS, MIN_ZOOM, MAX_ZOOM, NO_PAN, sharedViewport, FLOW_CSS, flowSheet, flowViewportAttribute, flowAttribute, flowNodeAttribute, flowHandleAttribute, flowEdgesAttribute, flowResizerAttribute, flowMinimapAttribute, flowSideAttribute, flowNoDragAttribute, flowGridAttribute, flowSnapAttribute, flow_default;
   var init_flow = __esm({
     "src/modules/attributes/flow.ts"() {
       init_reactivity();
       SVG_NS = "http://www.w3.org/2000/svg";
       MIN_ZOOM = 0.2;
       MAX_ZOOM = 4;
-      NO_PAN = "[data-flow-node],[data-flow-handle],[data-flow-nodrag],button,a,input,textarea,select,label";
+      NO_PAN = "[data-flow-node],[data-flow-handle],[data-flow-nodrag],[data-flow-resizer],[data-flow-minimap],button,a,input,textarea,select,label";
       sharedViewport = (el) => {
         const flow = el?.closest("[data-flow]");
         const vp = flow?.__flowViewport || flow?.__nexusFlowViewport;
@@ -5599,6 +5601,10 @@ ${scripts}
 }
 [data-flow-node]:active {
   cursor: grabbing;
+}
+[data-flow-node].selected .card,
+[data-flow-node].selected > *:first-child {
+  box-shadow: 0 0 0 2px var(--color-primary, #3b82f6), 0 20px 25px -5px rgba(0, 0, 0, 0.25);
 }
 [data-flow-handle] {
   position: absolute;
@@ -5651,7 +5657,7 @@ ${scripts}
   fill: none;
   stroke: currentColor;
   stroke-width: 2px;
-  opacity: 0.7;
+  opacity: 0.75;
   transition: opacity 0.15s ease, stroke-width 0.15s ease;
 }
 .flow-edge:hover {
@@ -5661,6 +5667,91 @@ ${scripts}
 .flow-edge-preview {
   pointer-events: none;
   stroke-dasharray: 4 4;
+}
+.flow-selection-rect {
+  position: absolute;
+  border: 1.5px dashed var(--color-primary, #3b82f6);
+  background-color: color-mix(in srgb, var(--color-primary, #3b82f6) 12%, transparent);
+  pointer-events: none;
+  z-index: 50;
+  border-radius: 4px;
+}
+.flow-resizer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.flow-resize-handle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background-color: var(--color-base-100, #ffffff);
+  border: 1.5px solid var(--color-primary, #3b82f6);
+  border-radius: 2px;
+  z-index: 30;
+  box-sizing: border-box;
+  pointer-events: all;
+}
+.flow-resize-handle.top-left { top: -4px; left: -4px; cursor: nwse-resize; }
+.flow-resize-handle.top-right { top: -4px; right: -4px; cursor: nesw-resize; }
+.flow-resize-handle.bottom-left { bottom: -4px; left: -4px; cursor: nesw-resize; }
+.flow-resize-handle.bottom-right { bottom: -4px; right: -4px; cursor: nwse-resize; }
+.flow-resize-handle.top { top: -4px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+.flow-resize-handle.bottom { bottom: -4px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+.flow-resize-handle.left { left: -4px; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
+.flow-resize-handle.right { right: -4px; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
+
+.flow-minimap {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  width: 12rem;
+  height: 8rem;
+  background: color-mix(in srgb, var(--color-base-100, #1e293b) 85%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  z-index: 40;
+  user-select: none;
+}
+.flow-minimap-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.flow-minimap-node {
+  fill: var(--color-primary, #3b82f6);
+  opacity: 0.75;
+  rx: 3px;
+}
+.flow-minimap-lens {
+  fill: color-mix(in srgb, var(--color-primary, #3b82f6) 15%, transparent);
+  stroke: var(--color-primary, #3b82f6);
+  stroke-width: 1.5px;
+  cursor: grab;
+  rx: 4px;
+}
+.flow-minimap-lens:active {
+  cursor: grabbing;
+}
+.flow-edge-label-group {
+  pointer-events: all;
+  cursor: pointer;
+}
+.flow-edge-label-bg {
+  fill: var(--color-base-100, #1e293b);
+  stroke: color-mix(in srgb, currentColor 15%, transparent);
+  stroke-width: 1px;
+  rx: 4px;
+}
+.flow-edge-label-text {
+  fill: currentColor;
+  font-size: 10px;
+  font-weight: 600;
+  text-anchor: middle;
+  dominant-baseline: central;
 }
 `;
       flowSheet = null;
@@ -5723,6 +5814,19 @@ ${scripts}
           let isPanning = false;
           let startX = 0;
           let startY = 0;
+          let isSelecting = false;
+          let selStartX = 0;
+          let selStartY = 0;
+          let selRectEl = null;
+          let didMove = false;
+          const screenToFlowLocal = (clientX, clientY) => {
+            const r = element.getBoundingClientRect();
+            const z = state.zoom || 1;
+            return {
+              x: (clientX - r.left - (state.x || 0)) / z,
+              y: (clientY - r.top - (state.y || 0)) / z
+            };
+          };
           const canPan = (e) => {
             if (e.button === 1)
               return true;
@@ -5735,6 +5839,21 @@ ${scripts}
           const onPointerDown = (e) => {
             if (!canPan(e))
               return;
+            didMove = false;
+            if (e.button === 0 && e.shiftKey) {
+              isSelecting = true;
+              const pt = screenToFlowLocal(e.clientX, e.clientY);
+              selStartX = pt.x;
+              selStartY = pt.y;
+              selRectEl = document.createElement("div");
+              selRectEl.className = "flow-selection-rect";
+              content.appendChild(selRectEl);
+              try {
+                element.setPointerCapture(e.pointerId);
+              } catch {
+              }
+              return;
+            }
             isPanning = true;
             startX = e.clientX - state.x;
             startY = e.clientY - state.y;
@@ -5745,13 +5864,50 @@ ${scripts}
             element.style.cursor = "grabbing";
           };
           const onPointerMove = (e) => {
+            if (isSelecting && selRectEl) {
+              didMove = true;
+              const pt = screenToFlowLocal(e.clientX, e.clientY);
+              const minX = Math.min(selStartX, pt.x);
+              const minY = Math.min(selStartY, pt.y);
+              const w = Math.abs(pt.x - selStartX);
+              const h = Math.abs(pt.y - selStartY);
+              selRectEl.style.left = `${minX}px`;
+              selRectEl.style.top = `${minY}px`;
+              selRectEl.style.width = `${w}px`;
+              selRectEl.style.height = `${h}px`;
+              const nodes = runtime.evaluate(element, "nodes");
+              if (Array.isArray(nodes)) {
+                nodes.forEach((n) => {
+                  const p = n.position || n;
+                  const nx = p.x || 0;
+                  const ny = p.y || 0;
+                  const nw = n.w || n.width || 176;
+                  const nh = n.h || n.height || 90;
+                  const inside = nx < minX + w && nx + nw > minX && ny < minY + h && ny + nh > minY;
+                  n.selected = inside;
+                });
+                state.tick = (state.tick || 0) + 1;
+              }
+              return;
+            }
             if (!isPanning)
               return;
+            didMove = true;
             state.x = e.clientX - startX;
             state.y = e.clientY - startY;
             state.tick = (state.tick || 0) + 1;
           };
           const onPointerUp = (e) => {
+            if (isSelecting) {
+              isSelecting = false;
+              selRectEl?.remove();
+              selRectEl = null;
+              try {
+                element.releasePointerCapture(e.pointerId);
+              } catch {
+              }
+              return;
+            }
             if (!isPanning)
               return;
             isPanning = false;
@@ -5760,6 +5916,15 @@ ${scripts}
             } catch {
             }
             element.style.cursor = "";
+            if (!didMove && !e.shiftKey) {
+              const nodes = runtime.evaluate(element, "nodes");
+              if (Array.isArray(nodes) && nodes.some((n) => n.selected)) {
+                nodes.forEach((n) => {
+                  n.selected = false;
+                });
+                state.tick = (state.tick || 0) + 1;
+              }
+            }
           };
           const onWheel = (e) => {
             e.preventDefault();
@@ -5778,10 +5943,69 @@ ${scripts}
             state.zoom = nextZoom;
             state.tick = (state.tick || 0) + 1;
           };
+          const onKeyDown = (e) => {
+            const active = document.activeElement;
+            if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable)) {
+              return;
+            }
+            let nodes = [];
+            try {
+              nodes = runtime.evaluate(element, "nodes") || [];
+            } catch {
+              nodes = [];
+            }
+            if (!Array.isArray(nodes))
+              return;
+            if (e.key === "Delete" || e.key === "Backspace") {
+              const selectedIds = new Set(nodes.filter((n) => n.selected).map((n) => String(n.id)));
+              if (selectedIds.size > 0) {
+                e.preventDefault();
+                const remainingNodes = nodes.filter((n) => !selectedIds.has(String(n.id)));
+                let edges = [];
+                try {
+                  edges = runtime.evaluate(element, "edges") || [];
+                } catch {
+                  edges = [];
+                }
+                if (Array.isArray(edges)) {
+                  const remainingEdges = edges.filter((ed) => !selectedIds.has(String(ed.source)) && !selectedIds.has(String(ed.target)));
+                  edges.length = 0;
+                  edges.push(...remainingEdges);
+                }
+                nodes.length = 0;
+                nodes.push(...remainingNodes);
+                state.tick = (state.tick || 0) + 1;
+              }
+            } else if (e.key.startsWith("Arrow")) {
+              const selectedNodes = nodes.filter((n) => n.selected);
+              if (selectedNodes.length > 0) {
+                e.preventDefault();
+                const step = e.shiftKey ? 10 : 1;
+                selectedNodes.forEach((n) => {
+                  const p = n.position || n;
+                  if (e.key === "ArrowLeft")
+                    p.x = (p.x || 0) - step;
+                  if (e.key === "ArrowRight")
+                    p.x = (p.x || 0) + step;
+                  if (e.key === "ArrowUp")
+                    p.y = (p.y || 0) - step;
+                  if (e.key === "ArrowDown")
+                    p.y = (p.y || 0) + step;
+                });
+                state.tick = (state.tick || 0) + 1;
+              }
+            } else if (e.key === "Escape") {
+              nodes.forEach((n) => {
+                n.selected = false;
+              });
+              state.tick = (state.tick || 0) + 1;
+            }
+          };
           element.addEventListener("pointerdown", onPointerDown);
           element.addEventListener("pointermove", onPointerMove);
           element.addEventListener("pointerup", onPointerUp);
           element.addEventListener("wheel", onWheel, { passive: false });
+          window.addEventListener("keydown", onKeyDown);
           let settleFrames = 0;
           const settle = () => {
             state.tick = (state.tick || 0) + 1;
@@ -5810,6 +6034,7 @@ ${scripts}
             element.removeEventListener("pointermove", onPointerMove);
             element.removeEventListener("pointerup", onPointerUp);
             element.removeEventListener("wheel", onWheel);
+            window.removeEventListener("keydown", onKeyDown);
             delete element.__flowViewport;
             delete element.__nexusFlowViewport;
           };
@@ -5823,17 +6048,17 @@ ${scripts}
           const nodeState = runtime.evaluate(element, value);
           if (!nodeState || typeof nodeState !== "object")
             return;
-          const readPos = () => {
-            const p = nodeState.position;
-            return p ? { x: p.x || 0, y: p.y || 0 } : { x: nodeState.x || 0, y: nodeState.y || 0 };
+          const readPos = (n = nodeState) => {
+            const p = n.position;
+            return p ? { x: p.x || 0, y: p.y || 0 } : { x: n.x || 0, y: n.y || 0 };
           };
-          const writePos = (x, y) => {
-            if (nodeState.position) {
-              nodeState.position.x = x;
-              nodeState.position.y = y;
+          const writePos = (n, x, y) => {
+            if (n.position) {
+              n.position.x = x;
+              n.position.y = y;
             } else {
-              nodeState.x = x;
-              nodeState.y = y;
+              n.x = x;
+              n.y = y;
             }
           };
           const resolveSnap = () => {
@@ -5850,8 +6075,55 @@ ${scripts}
           let isDragging = false;
           let dragStartX = 0;
           let dragStartY = 0;
-          let initialX = 0;
-          let initialY = 0;
+          let dragGroup = [];
+          const onPointerDown = (e) => {
+            if (e.button !== 0 || e.altKey)
+              return;
+            if (e.target.closest(
+              "[data-flow-handle],[data-flow-nodrag],[data-flow-resizer],button,a,input,textarea,select,label"
+            ))
+              return;
+            e.stopPropagation();
+            const flowEl = element.closest("[data-flow]");
+            let allNodes = [];
+            try {
+              allNodes = runtime.evaluate(flowEl || element, "nodes") || [];
+            } catch {
+              allNodes = [];
+            }
+            if (e.shiftKey) {
+              nodeState.selected = !nodeState.selected;
+            } else {
+              if (!nodeState.selected) {
+                allNodes.forEach((n) => {
+                  n.selected = false;
+                });
+                nodeState.selected = true;
+              }
+            }
+            const selectedNodes = allNodes.filter((n) => n.selected);
+            const movingNodes = selectedNodes.length > 0 && nodeState.selected ? selectedNodes : [nodeState];
+            const groupSet = new Set(movingNodes);
+            allNodes.forEach((n) => {
+              if (n.parentId && movingNodes.some((p) => String(p.id) === String(n.parentId))) {
+                groupSet.add(n);
+              }
+            });
+            dragGroup = Array.from(groupSet).map((n) => {
+              const p = readPos(n);
+              return { node: n, initialX: p.x, initialY: p.y };
+            });
+            isDragging = true;
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+            try {
+              element.setPointerCapture(e.pointerId);
+            } catch {
+            }
+            element.style.zIndex = "1000";
+            window.addEventListener("pointermove", onPointerMove);
+            window.addEventListener("pointerup", onPointerUp);
+          };
           const onPointerMove = (e) => {
             if (!isDragging)
               return;
@@ -5860,11 +6132,13 @@ ${scripts}
             const zoom = vp?.zoom || 1;
             const dx = (e.clientX - dragStartX) / zoom;
             const dy = (e.clientY - dragStartY) / zoom;
-            const snapped = snapPoint(initialX + dx, initialY + dy, resolveSnap());
-            writePos(snapped.x, snapped.y);
-            if (vp) {
+            const snap = resolveSnap();
+            dragGroup.forEach((item) => {
+              const snapped = snapPoint(item.initialX + dx, item.initialY + dy, snap);
+              writePos(item.node, snapped.x, snapped.y);
+            });
+            if (vp)
               vp.tick = (vp.tick || 0) + 1;
-            }
           };
           const onPointerUp = (e) => {
             if (!isDragging)
@@ -5878,28 +6152,6 @@ ${scripts}
             }
             element.style.zIndex = "";
           };
-          const onPointerDown = (e) => {
-            if (e.button !== 0 || e.altKey)
-              return;
-            if (e.target.closest(
-              "[data-flow-handle],[data-flow-nodrag],button,a,input,textarea,select,label"
-            ))
-              return;
-            e.stopPropagation();
-            isDragging = true;
-            dragStartX = e.clientX;
-            dragStartY = e.clientY;
-            const p = readPos();
-            initialX = p.x;
-            initialY = p.y;
-            try {
-              element.setPointerCapture(e.pointerId);
-            } catch {
-            }
-            element.style.zIndex = "1000";
-            window.addEventListener("pointermove", onPointerMove);
-            window.addEventListener("pointerup", onPointerUp);
-          };
           element.addEventListener("pointerdown", onPointerDown);
           const stop2 = runtime.effect(() => {
             element.style.position = "absolute";
@@ -5908,6 +6160,17 @@ ${scripts}
             const p = readPos();
             const s = snapPoint(p.x, p.y, resolveSnap());
             element.style.transform = `translate3d(${s.x}px, ${s.y}px, 0)`;
+            if (nodeState.width !== void 0) {
+              element.style.width = typeof nodeState.width === "number" ? `${nodeState.width}px` : nodeState.width;
+            }
+            if (nodeState.height !== void 0) {
+              element.style.height = typeof nodeState.height === "number" ? `${nodeState.height}px` : nodeState.height;
+            }
+            if (nodeState.selected) {
+              element.classList.add("selected");
+            } else {
+              element.classList.remove("selected");
+            }
           });
           return () => {
             stop2();
@@ -6003,9 +6266,8 @@ ${scripts}
                 if (edges && !edges.some((ed) => String(ed.source) === String(srcId) && String(ed.target) === String(tgtId))) {
                   edges.push({ source: srcId, target: tgtId });
                   const vpState = vp?.__flowViewport || vp?.__nexusFlowViewport;
-                  if (vpState) {
+                  if (vpState)
                     vpState.tick = (vpState.tick || 0) + 1;
-                  }
                 }
               }
             };
@@ -6030,10 +6292,22 @@ ${scripts}
           if (content && element.parentElement !== content) {
             content.insertBefore(element, content.firstChild);
           }
-          const hasCustomTemplate = element.querySelector("template, path[data-for], path[data-effect]");
-          if (hasCustomTemplate) {
-            return;
+          if (!element.querySelector("#flow-defs")) {
+            const defs = document.createElementNS(SVG_NS, "defs");
+            defs.id = "flow-defs";
+            defs.innerHTML = `
+        <marker id="flow-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <polyline points="0,0 10,5 0,10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+        </marker>
+        <marker id="flow-arrow-closed" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" stroke="none" />
+        </marker>
+      `;
+            element.insertBefore(defs, element.firstChild);
           }
+          const hasCustomTemplate = element.querySelector("template, path[data-for], path[data-effect]");
+          if (hasCustomTemplate)
+            return;
           const stop2 = runtime.effect(() => {
             const currentFlow = element.closest("[data-flow]");
             const vp = currentFlow?.__flowViewport || currentFlow?.__nexusFlowViewport;
@@ -6046,8 +6320,12 @@ ${scripts}
             } catch {
             }
             const existingPaths = /* @__PURE__ */ new Map();
+            const existingLabels = /* @__PURE__ */ new Map();
             element.querySelectorAll("path[data-edge-key]").forEach((p) => {
               existingPaths.set(p.getAttribute("data-edge-key"), p);
+            });
+            element.querySelectorAll("g[data-edge-label-key]").forEach((g) => {
+              existingLabels.set(g.getAttribute("data-edge-label-key"), g);
             });
             const activeKeys = /* @__PURE__ */ new Set();
             edgeList.forEach((edge) => {
@@ -6067,24 +6345,276 @@ ${scripts}
                 pathEl.setAttribute("stroke-width", "2");
                 element.appendChild(pathEl);
               }
-              const d = runtime.$flow?.edge?.(srcId, tgtId, {
+              const edgeRes = runtime.$flow?.edge?.(srcId, tgtId, {
                 type: edge.type || "bezier",
                 curvature: edge.curvature,
+                borderRadius: edge.borderRadius,
+                offset: edge.offset,
                 container: currentFlow || void 0
-              }) || "";
-              if (d) {
+              });
+              const d = edgeRes?.d || (typeof edgeRes === "string" ? edgeRes : "");
+              if (d)
                 pathEl.setAttribute("d", d);
+              if (edge.markerEnd) {
+                const markerId = edge.markerEnd === "arrowclosed" ? "url(#flow-arrow-closed)" : "url(#flow-arrow)";
+                pathEl.setAttribute("marker-end", markerId);
+              } else {
+                pathEl.removeAttribute("marker-end");
+              }
+              if (edge.label && edgeRes?.labelX !== void 0) {
+                let labelG = existingLabels.get(key);
+                if (!labelG) {
+                  labelG = document.createElementNS(SVG_NS, "g");
+                  labelG.setAttribute("class", "flow-edge-label-group");
+                  labelG.setAttribute("data-edge-label-key", key);
+                  labelG.innerHTML = `
+              <rect class="flow-edge-label-bg" x="-32" y="-10" width="64" height="20" />
+              <text class="flow-edge-label-text">${edge.label}</text>
+            `;
+                  element.appendChild(labelG);
+                } else {
+                  const textEl = labelG.querySelector("text");
+                  if (textEl && textEl.textContent !== edge.label)
+                    textEl.textContent = edge.label;
+                }
+                labelG.setAttribute("transform", `translate(${edgeRes.labelX}, ${edgeRes.labelY})`);
               }
             });
-            existingPaths.forEach((pathEl, key) => {
-              if (!activeKeys.has(key)) {
-                pathEl.remove();
-              }
+            existingPaths.forEach((p, k) => {
+              if (!activeKeys.has(k))
+                p.remove();
+            });
+            existingLabels.forEach((g, k) => {
+              if (!activeKeys.has(k))
+                g.remove();
             });
           });
           return () => {
             stop2();
             element.removeAttribute("data-flow-edges-expr");
+          };
+        }
+      };
+      flowResizerAttribute = {
+        name: "flowResizer",
+        attribute: "flow-resizer",
+        handle: (element, _value, runtime) => {
+          ensureFlowStyles(element.getRootNode());
+          const nodeEl = element.closest("[data-flow-node]");
+          if (!nodeEl)
+            return;
+          element.classList.add("flow-resizer");
+          const directions = ["nw", "ne", "se", "sw", "n", "s", "e", "w"];
+          const handleClassMap = {
+            nw: "top-left",
+            ne: "top-right",
+            se: "bottom-right",
+            sw: "bottom-left",
+            n: "top",
+            s: "bottom",
+            e: "right",
+            w: "left"
+          };
+          directions.forEach((dir) => {
+            if (!element.querySelector(`.flow-resize-handle.${handleClassMap[dir]}`)) {
+              const h = document.createElement("div");
+              h.className = `flow-resize-handle ${handleClassMap[dir]}`;
+              h.setAttribute("data-flow-nodrag", "");
+              h.setAttribute("data-direction", dir);
+              element.appendChild(h);
+            }
+          });
+          const onPointerDown = (e) => {
+            const handle = e.target.closest(".flow-resize-handle");
+            if (!handle || e.button !== 0)
+              return;
+            e.stopPropagation();
+            e.preventDefault();
+            const dir = handle.getAttribute("data-direction") || "se";
+            const flowEl = element.closest("[data-flow]");
+            const vp = flowEl?.__flowViewport || flowEl?.__nexusFlowViewport;
+            const zoom = vp?.zoom || 1;
+            const nodeExpr = nodeEl.getAttribute("data-flow-node") || "";
+            let nodeState = null;
+            try {
+              nodeState = runtime.evaluate(nodeEl, nodeExpr);
+            } catch {
+              nodeState = null;
+            }
+            if (!nodeState)
+              return;
+            const startX = e.clientX;
+            const startY = e.clientY;
+            const initialPos = nodeState.position ? { ...nodeState.position } : { x: nodeState.x || 0, y: nodeState.y || 0 };
+            const initialWidth = nodeState.width || nodeEl.offsetWidth || 176;
+            const initialHeight = nodeState.height || nodeEl.offsetHeight || 90;
+            const onMove = (ev) => {
+              const dx = (ev.clientX - startX) / zoom;
+              const dy = (ev.clientY - startY) / zoom;
+              let newW = initialWidth;
+              let newH = initialHeight;
+              let newX = initialPos.x;
+              let newY = initialPos.y;
+              if (dir.includes("e"))
+                newW = Math.max(80, initialWidth + dx);
+              if (dir.includes("w")) {
+                const clamped = Math.max(80, initialWidth - dx);
+                newX = initialPos.x + (initialWidth - clamped);
+                newW = clamped;
+              }
+              if (dir.includes("s"))
+                newH = Math.max(40, initialHeight + dy);
+              if (dir.includes("n")) {
+                const clamped = Math.max(40, initialHeight - dy);
+                newY = initialPos.y + (initialHeight - clamped);
+                newH = clamped;
+              }
+              nodeState.width = newW;
+              nodeState.height = newH;
+              if (nodeState.position) {
+                nodeState.position.x = newX;
+                nodeState.position.y = newY;
+              } else {
+                nodeState.x = newX;
+                nodeState.y = newY;
+              }
+              if (vp)
+                vp.tick = (vp.tick || 0) + 1;
+            };
+            const onUp = () => {
+              window.removeEventListener("pointermove", onMove);
+              window.removeEventListener("pointerup", onUp);
+            };
+            window.addEventListener("pointermove", onMove);
+            window.addEventListener("pointerup", onUp);
+          };
+          element.addEventListener("pointerdown", onPointerDown);
+          return () => {
+            element.removeEventListener("pointerdown", onPointerDown);
+          };
+        }
+      };
+      flowMinimapAttribute = {
+        name: "flowMinimap",
+        attribute: "flow-minimap",
+        handle: (element, _value, runtime) => {
+          ensureFlowStyles(element.getRootNode());
+          let svg;
+          if (element instanceof SVGSVGElement) {
+            svg = element;
+          } else {
+            element.classList.add("flow-minimap");
+            let existing = element.querySelector("svg.flow-minimap-svg");
+            if (!existing) {
+              existing = document.createElementNS(SVG_NS, "svg");
+              existing.setAttribute("class", "flow-minimap-svg");
+              element.appendChild(existing);
+            }
+            svg = existing;
+          }
+          const flowEl = element.closest("[data-flow]");
+          let isMinimapPanning = false;
+          let minimapBounds = null;
+          let currentViewScale = 1;
+          let minX = 0;
+          let minY = 0;
+          const updatePanFromMinimap = (e) => {
+            if (!minimapBounds || !flowEl)
+              return;
+            const vp = flowEl.__flowViewport || flowEl.__nexusFlowViewport;
+            if (!vp)
+              return;
+            const px = e.clientX - minimapBounds.left;
+            const py = e.clientY - minimapBounds.top;
+            const flowX = minX + px * currentViewScale;
+            const flowY = minY + py * currentViewScale;
+            const containerRect = flowEl.getBoundingClientRect();
+            vp.x = containerRect.width / 2 - flowX * (vp.zoom || 1);
+            vp.y = containerRect.height / 2 - flowY * (vp.zoom || 1);
+            vp.tick = (vp.tick || 0) + 1;
+          };
+          const onMinimapDown = (e) => {
+            if (e.button !== 0)
+              return;
+            e.stopPropagation();
+            e.preventDefault();
+            isMinimapPanning = true;
+            minimapBounds = svg.getBoundingClientRect();
+            updatePanFromMinimap(e);
+            window.addEventListener("pointermove", onMinimapMove);
+            window.addEventListener("pointerup", onMinimapUp);
+          };
+          const onMinimapMove = (e) => {
+            if (!isMinimapPanning)
+              return;
+            updatePanFromMinimap(e);
+          };
+          const onMinimapUp = () => {
+            if (!isMinimapPanning)
+              return;
+            isMinimapPanning = false;
+            window.removeEventListener("pointermove", onMinimapMove);
+            window.removeEventListener("pointerup", onMinimapUp);
+          };
+          svg.addEventListener("pointerdown", onMinimapDown);
+          const stop2 = runtime.effect(() => {
+            if (!flowEl)
+              return;
+            const vp = flowEl.__flowViewport || flowEl.__nexusFlowViewport;
+            const _t = vp?.tick;
+            let nodesList = [];
+            try {
+              nodesList = runtime.evaluate(flowEl, "nodes") || [];
+            } catch {
+              nodesList = [];
+            }
+            const containerRect = flowEl.getBoundingClientRect();
+            const z = vp?.zoom || 1;
+            const viewBB = {
+              x: -(vp?.x || 0) / z,
+              y: -(vp?.y || 0) / z,
+              width: (containerRect.width || 800) / z,
+              height: (containerRect.height || 600) / z
+            };
+            let bMinX = viewBB.x;
+            let bMinY = viewBB.y;
+            let bMaxX = viewBB.x + viewBB.width;
+            let bMaxY = viewBB.y + viewBB.height;
+            nodesList.forEach((n) => {
+              const p = n.position || n;
+              const nx = p.x || 0;
+              const ny = p.y || 0;
+              const nw = n.w || n.width || 176;
+              const nh = n.h || n.height || 90;
+              bMinX = Math.min(bMinX, nx);
+              bMinY = Math.min(bMinY, ny);
+              bMaxX = Math.max(bMaxX, nx + nw);
+              bMaxY = Math.max(bMaxY, ny + nh);
+            });
+            const pad = 40;
+            minX = bMinX - pad;
+            minY = bMinY - pad;
+            const totalW = bMaxX - bMinX + pad * 2;
+            const totalH = bMaxY - bMinY + pad * 2;
+            svg.setAttribute("viewBox", `${minX} ${minY} ${totalW} ${totalH}`);
+            currentViewScale = totalW / (svg.clientWidth || 200);
+            let html = "";
+            nodesList.forEach((n) => {
+              const p = n.position || n;
+              const nx = p.x || 0;
+              const ny = p.y || 0;
+              const nw = n.w || n.width || 176;
+              const nh = n.h || n.height || 90;
+              html += `<rect x="${nx}" y="${ny}" width="${nw}" height="${nh}" class="flow-minimap-node" />`;
+            });
+            html += `<rect x="${viewBB.x}" y="${viewBB.y}" width="${viewBB.width}" height="${viewBB.height}" class="flow-minimap-lens" />`;
+            svg.innerHTML = html;
+          });
+          return () => {
+            stop2();
+            svg.removeEventListener("pointerdown", onMinimapDown);
+            window.removeEventListener("pointermove", onMinimapMove);
+            window.removeEventListener("pointerup", onMinimapUp);
           };
         }
       };
