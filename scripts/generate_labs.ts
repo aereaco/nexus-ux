@@ -474,8 +474,8 @@ function generateHtml(spec: LabSpec): string {
 <meta name="category" content="Labs">
 <meta name="parent" content="${spec.parent}">
 
-<div data-signal='${jsonStr.replace(/'/g, "&#39;")}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal='${jsonStr.replace(/'/g, "&#39;")}'>
+  <div data-component="'_components/documentation.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
 `;
 }
