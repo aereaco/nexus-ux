@@ -576,6 +576,16 @@
     "category": "Labs"
   },
   {
+    "id": "lab-attr-theme",
+    "route": "/labs/attributes/theme",
+    "path": "/_pages/labs/attributes/theme.html",
+    "title": "data-theme",
+    "icon": "material-symbols-light:dark-mode",
+    "order": 13,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
     "id": "lab-mod-zoom",
     "route": "/labs/modifiers/zoom",
     "path": "/_pages/labs/modifiers/zoom.html",
@@ -751,16 +761,6 @@
     "title": "data-teleport",
     "icon": "material-symbols-light:move-group",
     "order": 29,
-    "parent": "/labs/attributes",
-    "category": "Labs"
-  },
-  {
-    "id": "lab-attr-theme",
-    "route": "/labs/attributes/theme",
-    "path": "/_pages/labs/attributes/theme.html",
-    "title": "data-theme",
-    "icon": "material-symbols-light:palette-outline",
-    "order": 30,
     "parent": "/labs/attributes",
     "category": "Labs"
   },

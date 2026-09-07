@@ -1,30 +1,31 @@
-<title>data-theme</title>
-<meta name="id" content="lab-attr-theme">
-<meta name="route" content="/labs/attributes/theme">
-<meta name="icon" content="material-symbols-light:palette-outline">
-<meta name="order" content="30">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/attributes">
+<head>
+  <title>data-theme</title>
+  <meta name="id" content="lab-attr-theme">
+  <meta name="route" content="/labs/attributes/theme">
+  <meta name="icon" content="material-symbols-light:dark-mode">
+  <meta name="order" content="13">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/attributes">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "data-theme",
-    "Category": "Attributes",
-    "Icon": "material-symbols-light:palette-outline",
-    "ModulePath": "src/modules/attributes/theme.ts",
-    "Description": "Manages DaisyUI and Tailwind CSS theme states, exposing $theme, $themeIcon, $switchTheme(), and $setTheme().",
-    "Syntax": "<html data-theme=\"{ default: &#39;dark&#39; }\">",
-    "Params": [
-      {
-        "name": "data-theme",
-        "type": "Object / String",
-        "default": "&#39;dark&#39;",
-        "description": "Initial theme and available theme palette declarations."
-      }
-    ],
-    "Extensibility": "<p>Persists theme selections to localStorage automatically and updates data-theme on documentElement without layout thrashing.</p>",
-    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-3\">\n  <div class=\"flex items-center gap-2\">\n    <button class=\"btn btn-sm btn-outline\" data-on-click=\"document.documentElement.setAttribute(&#39;data-theme&#39;, &#39;synthwave&#39;)\">Synthwave</button>\n    <button class=\"btn btn-sm btn-outline\" data-on-click=\"document.documentElement.setAttribute(&#39;data-theme&#39;, &#39;luxury&#39;)\">Luxury</button>\n    <button class=\"btn btn-sm btn-outline\" data-on-click=\"document.documentElement.setAttribute(&#39;data-theme&#39;, &#39;dark&#39;)\">Dark</button>\n  </div>\n  <p class=\"text-xs opacity-70\">Click above to dynamically test theme switching.</p>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: 'data-theme',
+      Category: 'Attributes',
+      Icon: 'material-symbols-light:dark-mode',
+      Description: 'Declarative DaisyUI and Tailwind CSS theme orchestration with auto-detection of system dark mode, local storage persistence, and injected helpers (&lt;code&gt;$theme&lt;/code&gt;, &lt;code&gt;$switchTheme()&lt;/code&gt;).',
+      Syntax: '&lt;html data-theme=\&quot;{ default: \'dark\' }\&quot;&gt;&lt;/html&gt;\n&lt;button data-on-click=\&quot;$switchTheme()\&quot;&gt;&lt;span data-bind=\&quot;$themeIcon\&quot;&gt;&lt;/span&gt;&lt;/button&gt;',
+      Params: [
+        { name: 'data-theme=&quot;{ ... }&quot;', type: 'Config Object / String', default: '\'auto\'', description: 'Configures default theme mode (light, dark, auto) and custom theme names.' },
+        { name: '$theme', type: 'Injected Reactive Scope', default: '-', description: 'Active theme name string (e.g. \'dark\', \'light\', \'cyberpunk\').' },
+        { name: '$switchTheme()', type: 'Injected Method', default: '-', description: 'Cycles between Light, Dark, and System modes.' },
+        { name: '$setTheme(name)', type: 'Injected Method', default: '-', description: 'Directly applies any registered DaisyUI theme string.' }
+      ],
+      SourceModule: '/modules/attributes/theme.ts',
+      SnippetModule: '/_pages/labs/attributes/theme.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/attributes/theme.ts&lt;/code&gt;, the theme directive handles color scheme transitions across light, dark, and system preference profiles. It manages the DOM &lt;code&gt;data-theme&lt;/code&gt; attribute directly without triggering expensive CSS re-parsing.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;3-State Orchestration&lt;/strong&gt; — Smoothly alternates between Light, Dark, and System auto-detection&lt;/li&gt;&lt;li&gt;&lt;strong&gt;DaisyUI &amp;amp; Tailwind Bridge&lt;/strong&gt; — Instantly applies OKLCH color palettes to CSS variables&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Zero-Boilerplate Helpers&lt;/strong&gt; — Injects &lt;code&gt;$theme&lt;/code&gt;, &lt;code&gt;$themeIcon&lt;/code&gt;, and &lt;code&gt;$switchTheme()&lt;/code&gt; into scope&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Automatic Persistence&lt;/strong&gt; — Stores user preferences in &lt;code&gt;localStorage&lt;/code&gt; across sessions&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ sampleTheme: \'dark\' }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm flex items-center justify-between\&quot;&gt;\n        &lt;div&gt;\n            &lt;h4 class=\&quot;font-bold text-sm text-primary\&quot;&gt;Theme Preset Controller&lt;/h4&gt;\n            &lt;p class=\&quot;text-xs opacity-70 font-mono\&quot;&gt;Current Active Theme: &lt;span class=\&quot;text-primary font-bold\&quot; data-bind=\&quot;sampleTheme\&quot;&gt;&lt;/span&gt;&lt;/p&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;flex gap-2\&quot;&gt;\n            &lt;button class=\&quot;btn btn-sm btn-outline font-bold\&quot; data-on-click=\&quot;sampleTheme = (sampleTheme === \'dark\' ? \'light\' : \'dark\')\&quot;&gt;\n                Toggle Light/Dark\n            &lt;/button&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n\n    &lt;div class=\&quot;p-6 rounded-2xl border border-base-content/10 shadow-lg space-y-4 transition-colors duration-300\&quot;\n         data-bind-data-theme=\&quot;sampleTheme\&quot;\n         data-class=\&quot;{ \'bg-neutral text-neutral-content\': sampleTheme === \'dark\', \'bg-base-200 text-base-content\': sampleTheme === \'light\' }\&quot;&gt;\n        &lt;div class=\&quot;flex items-center justify-between\&quot;&gt;\n            &lt;span class=\&quot;font-bold text-sm uppercase tracking-wider\&quot;&gt;Scoped Theme Container&lt;/span&gt;\n            &lt;span class=\&quot;badge badge-primary font-mono text-xs\&quot; data-bind=\&quot;sampleTheme\&quot;&gt;&lt;/span&gt;\n        &lt;/div&gt;\n        &lt;p class=\&quot;text-xs opacity-80 leading-relaxed\&quot;&gt;\n            Themes apply atomically to isolated DOM subtrees or globally to the document element without page reload.\n        &lt;/p&gt;\n        &lt;div class=\&quot;flex gap-2 pt-2\&quot;&gt;\n            &lt;button class=\&quot;btn btn-xs btn-primary\&quot;&gt;Primary Action&lt;/button&gt;\n            &lt;button class=\&quot;btn btn-xs btn-secondary\&quot;&gt;Secondary Action&lt;/button&gt;\n            &lt;button class=\&quot;btn btn-xs btn-accent\&quot;&gt;Accent Action&lt;/button&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
