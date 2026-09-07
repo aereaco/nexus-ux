@@ -329,6 +329,16 @@
     "category": "Labs"
   },
   {
+    "id": "lab-mod-hold",
+    "route": "/labs/modifiers/hold",
+    "path": "/_pages/labs/modifiers/hold.html",
+    "title": ":hold",
+    "icon": "material-symbols-light:touch-long",
+    "order": 5,
+    "parent": "/labs/modifiers",
+    "category": "Labs"
+  },
+  {
     "id": "lab-mod-once",
     "route": "/labs/modifiers/once",
     "path": "/_pages/labs/modifiers/once.html",
@@ -425,15 +435,6 @@
     "icon": "material-symbols-light:format-paint",
     "order": 8,
     "parent": "/labs/attributes",
-    "category": "Labs"
-  },
-  {
-    "id": "lab-mod-hold",
-    "route": "/labs/modifiers/hold",
-    "path": "/_pages/labs/modifiers/hold.html",
-    "icon": "material-symbols-light:touch-app",
-    "order": 8,
-    "parent": "/labs/modifiers",
     "category": "Labs"
   },
   {

@@ -1,23 +1,28 @@
-<title>:hold.<ms></title>
-<meta name="id" content="lab-mod-hold">
-<meta name="route" content="/labs/modifiers/hold">
-<meta name="icon" content="material-symbols-light:touch-app">
-<meta name="order" content="8">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/modifiers">
+<head>
+  <title>:hold</title>
+  <meta name="id" content="lab-mod-hold">
+  <meta name="route" content="/labs/modifiers/hold">
+  <meta name="icon" content="material-symbols-light:touch-long">
+  <meta name="order" content="5">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/modifiers">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": ":hold.<ms>",
-    "Category": "Modifiers",
-    "Icon": "material-symbols-light:touch-app",
-    "ModulePath": "src/modules/modifiers/hold.ts",
-    "Description": "Fires only when user presses and holds the pointer for the specified duration.",
-    "Syntax": "<button data-on-pointerdown:hold.500=\"confirmAction()\">Hold to Delete</button>",
-    "Params": [],
-    "Extensibility": "<p>Monitors pointerdown and pointerup/cancel to trigger press-and-hold gestures.</p>",
-    "Snippet": "<div data-signal=\"{ confirmed: false }\" class=\"p-4 bg-base-200/50 rounded-xl space-y-2\">\n  <button data-on-pointerdown:hold.600=\"confirmed = true\" class=\"btn btn-sm btn-error\">Press &amp; Hold for 600ms</button>\n  <span data-show=\"confirmed\" class=\"badge badge-success ms-2 font-mono\">Action confirmed!</span>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: ':hold.<ms>',
+      Category: 'Modifiers',
+      Icon: 'material-symbols-light:touch-long',
+      Description: 'Requires continuous pointer or key depression for the specified millisecond duration before triggering the event handler (press-and-hold confirmation).',
+      Syntax: '&lt;button data-on-pointerdown:hold.800=\&quot;confirmErase()\&quot;&gt;Hold to Erase (800ms)&lt;/button&gt;',
+      Params: [
+        { name: ':hold.[ms]', type: 'Hold Duration Modifier', default: '500', description: 'Duration in milliseconds pointer must remain down to trigger event.' }
+      ],
+      SourceModule: '/modules/modifiers/hold.ts',
+      SnippetModule: '/_pages/labs/modifiers/hold.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/modifiers/hold.ts&lt;/code&gt;, this modifier manages pointer down and release listeners. If the user lifts or moves pointer beyond threshold before duration expires, the timer cancels automatically.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Destructive Confirmations&lt;/strong&gt; — Prevent accidental clicks on delete, reboot, or wipe actions&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Auto-Cancel on Early Release&lt;/strong&gt; — Aborts immediately if pointerup occurs prematurely&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ heldTriggered: false, holdState: \'Press &amp;amp; Hold\' }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4 max-w-md\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Press-and-Hold Action (:hold.600)&lt;/h4&gt;\n        &lt;button class=\&quot;btn btn-sm btn-error font-bold w-full select-none\&quot;\n                data-on-pointerdown=\&quot;holdState = \'Holding...\'\&quot;\n                data-on-pointerup=\&quot;if (!heldTriggered) holdState = \'Released too early!\'\&quot;\n                data-on-pointerdown:hold.600=\&quot;heldTriggered = true; holdState = \'CONFIRMED (Action Fired!)\'\&quot;&gt;\n            &lt;span data-bind=\&quot;holdState\&quot;&gt;&lt;/span&gt;\n        &lt;/button&gt;\n        &lt;div class=\&quot;flex justify-end\&quot;&gt;\n            &lt;button class=\&quot;btn btn-xs btn-ghost\&quot; data-on-click=\&quot;heldTriggered = false; holdState = \'Press &amp;amp; Hold\'\&quot;&gt;Reset&lt;/button&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
