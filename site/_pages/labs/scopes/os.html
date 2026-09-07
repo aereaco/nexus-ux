@@ -1,23 +1,28 @@
-<title>@os</title>
-<meta name="id" content="lab-scope-os">
-<meta name="route" content="/labs/scopes/os">
-<meta name="icon" content="material-symbols-light:computer">
-<meta name="order" content="4">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/scopes">
+<head>
+  <title>@os</title>
+  <meta name="id" content="lab-scope-os">
+  <meta name="route" content="/labs/scopes/os">
+  <meta name="icon" content="material-symbols-light:desktop-windows">
+  <meta name="order" content="5">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/scopes">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "@os",
-    "Category": "Scopes",
-    "Icon": "material-symbols-light:computer",
-    "ModulePath": "src/modules/scopes/os.ts",
-    "Description": "Platform and operating system detection (macos, windows, linux, ios, android).",
-    "Syntax": "@os(&#39;macos&#39;) ? &#39;Cmd&#39; : &#39;Ctrl&#39;",
-    "Params": [],
-    "Extensibility": "<p>Detects navigator.userAgentData and platform strings.</p>",
-    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-1\">\n  <div class=\"badge badge-info\">@os Platform Detection</div>\n  <p class=\"text-xs opacity-70\">Detects desktop vs mobile and OS platform.</p>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: '@os',
+      Category: 'Scopes',
+      Icon: 'material-symbols-light:desktop-windows',
+      Description: 'Operating system and platform detection scope provider enabling conditional shortcut badges (⌘ vs Ctrl) and OS-specific presentation.',
+      Syntax: '&lt;span data-show=\&quot;@os(\'macos\')\&quot;&gt;⌘K&lt;/span&gt;\n&lt;span data-show=\&quot;!@os(\'macos\')\&quot;&gt;Ctrl+K&lt;/span&gt;',
+      Params: [
+        { name: '@os(\'platform\')', type: 'Platform String Expression', default: '-', description: 'Evaluates if current client OS matches \'macos\', \'windows\', \'linux\', \'ios\', or \'android\'.' }
+      ],
+      SourceModule: '/modules/scopes/os.ts',
+      SnippetModule: '/_pages/labs/scopes/os.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/scopes/os.ts&lt;/code&gt;, this scope rule normalizes &lt;code&gt;navigator.userAgent&lt;/code&gt; and &lt;code&gt;navigator.userAgentData&lt;/code&gt; into friendly platform tokens.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Keyboard Shortcut Badges&lt;/strong&gt; — Display ⌘ Cmd for Apple users and Ctrl for Windows/Linux&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Mobile vs Desktop Optimization&lt;/strong&gt; — Tailor interaction targets and gestures accordingly&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ detectedPlatform: navigator.userAgent.toLowerCase().includes(\'mac\') ? \'macos\' : (navigator.userAgent.toLowerCase().includes(\'win\') ? \'windows\' : \'linux\') }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4 max-w-md\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Platform Detection Scope&lt;/h4&gt;\n        &lt;div class=\&quot;p-4 bg-base-200/50 rounded-xl font-mono text-xs space-y-2\&quot;&gt;\n            &lt;div class=\&quot;flex justify-between items-center\&quot;&gt;\n                &lt;span class=\&quot;opacity-70\&quot;&gt;Detected Operating System:&lt;/span&gt;\n                &lt;span class=\&quot;text-primary font-bold uppercase\&quot; data-bind=\&quot;detectedPlatform\&quot;&gt;&lt;/span&gt;\n            &lt;/div&gt;\n            &lt;div class=\&quot;flex justify-between items-center pt-2 border-t border-base-content/10\&quot;&gt;\n                &lt;span&gt;Keyboard Shortcut Symbol:&lt;/span&gt;\n                &lt;kbd class=\&quot;kbd kbd-sm font-mono font-bold\&quot; data-bind=\&quot;detectedPlatform === \'macos\' ? \'⌘ + K\' : \'Ctrl + K\'\&quot;&gt;&lt;/kbd&gt;\n            &lt;/div&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
