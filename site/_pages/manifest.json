@@ -369,6 +369,16 @@
     "category": "Labs"
   },
   {
+    "id": "lab-sprite-mask",
+    "route": "/labs/sprites/mask",
+    "path": "/_pages/labs/sprites/mask.html",
+    "title": "$mask",
+    "icon": "material-symbols-light:format-shapes",
+    "order": 6,
+    "parent": "/labs/sprites",
+    "category": "Labs"
+  },
+  {
     "id": "lab-attr-class",
     "route": "/labs/attributes/class",
     "path": "/_pages/labs/attributes/class.html",
@@ -516,16 +526,6 @@
     "icon": "material-symbols-light:pan-tool",
     "order": 12,
     "parent": "/labs/modifiers",
-    "category": "Labs"
-  },
-  {
-    "id": "lab-sprite-mask",
-    "route": "/labs/sprites/mask",
-    "path": "/_pages/labs/sprites/mask.html",
-    "title": "$mask",
-    "icon": "material-symbols-light:tag",
-    "order": 12,
-    "parent": "/labs/sprites",
     "category": "Labs"
   },
   {
