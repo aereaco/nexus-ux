@@ -715,16 +715,6 @@
     "category": "Labs"
   },
   {
-    "id": "lab-attr-preserve",
-    "route": "/labs/attributes/preserve",
-    "path": "/_pages/labs/attributes/preserve.html",
-    "title": "data-preserve",
-    "icon": "material-symbols-light:shield-outline",
-    "order": 21,
-    "parent": "/labs/attributes",
-    "category": "Labs"
-  },
-  {
     "id": "lab-attr-switcher",
     "route": "/labs/attributes/switcher",
     "path": "/_pages/labs/attributes/switcher.html",
@@ -761,6 +751,16 @@
     "title": "data-pwa",
     "icon": "material-symbols-light:install-mobile",
     "order": 25,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-preserve",
+    "route": "/labs/attributes/preserve",
+    "path": "/_pages/labs/attributes/preserve.html",
+    "title": "data-preserve",
+    "icon": "material-symbols-light:shield",
+    "order": 26,
     "parent": "/labs/attributes",
     "category": "Labs"
   },
