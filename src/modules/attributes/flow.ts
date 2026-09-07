@@ -138,10 +138,9 @@ export const flowAttribute: AttributeModule = {
 
     let ro: ResizeObserver | null = null;
     if (typeof ResizeObserver !== 'undefined') {
-      const contentEl = element.querySelector('.nexus-flow-content') as HTMLElement | null;
-      if (contentEl) {
+      if (content) {
         ro = new ResizeObserver(() => { (state as any).tick++; });
-        ro.observe(contentEl);
+        ro.observe(content);
       }
     }
 
@@ -152,8 +151,7 @@ export const flowAttribute: AttributeModule = {
 
       // The viewport: ONE transformed layer holding nodes + edges, so both
       // scale together automatically (xyflow Viewport.svelte).
-      const content = element.querySelector('.nexus-flow-content') as HTMLElement || element;
-      content.classList.add('nexus-flow-viewport');
+      content.classList.add('flow-viewport');
       content.style.transformOrigin = '0 0';
       content.style.transform = `translate(${x}px, ${y}px) scale(${zoom})`;
 
@@ -174,6 +172,7 @@ export const flowAttribute: AttributeModule = {
       element.removeEventListener('pointermove', onPointerMove);
       element.removeEventListener('pointerup', onPointerUp);
       element.removeEventListener('wheel', onWheel);
+      delete element.__flowViewport;
       delete element.__nexusFlowViewport;
     };
   }

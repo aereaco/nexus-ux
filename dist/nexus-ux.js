@@ -5625,22 +5625,20 @@ ${scripts}
           requestAnimationFrame(settle);
           let ro = null;
           if (typeof ResizeObserver !== "undefined") {
-            const contentEl = element.querySelector(".nexus-flow-content");
-            if (contentEl) {
+            if (content) {
               ro = new ResizeObserver(() => {
                 state.tick++;
               });
-              ro.observe(contentEl);
+              ro.observe(content);
             }
           }
           const stop2 = runtime.effect(() => {
             const zoom = state.zoom || 1;
             const x = state.x || 0;
             const y = state.y || 0;
-            const content2 = element.querySelector(".nexus-flow-content") || element;
-            content2.classList.add("nexus-flow-viewport");
-            content2.style.transformOrigin = "0 0";
-            content2.style.transform = `translate(${x}px, ${y}px) scale(${zoom})`;
+            content.classList.add("flow-viewport");
+            content.style.transformOrigin = "0 0";
+            content.style.transform = `translate(${x}px, ${y}px) scale(${zoom})`;
             if (gridSize > 0 && element.style.backgroundImage) {
               const scaled = gridSize * zoom;
               element.style.backgroundSize = `${scaled}px ${scaled}px`;
@@ -5655,6 +5653,7 @@ ${scripts}
             element.removeEventListener("pointermove", onPointerMove);
             element.removeEventListener("pointerup", onPointerUp);
             element.removeEventListener("wheel", onWheel);
+            delete element.__flowViewport;
             delete element.__nexusFlowViewport;
           };
         }
