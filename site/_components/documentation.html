@@ -1,4 +1,4 @@
-<div class="dashboard-fragment w-full px-10 flex-1 grow flex flex-col" data-signal="{ 
+<div class="dashboard-fragment w-full px-10 flex-1 grow flex flex-col h-full min-h-0 overflow-hidden" data-signal="{ 
         toastMsg: '', 
         toastType: 'info', 
         showToast: false,
@@ -276,8 +276,17 @@
         }
     </script>
 
+    <style>
+        .nx-editor, .nx-editor .cm-editor {
+            height: 100%;
+        }
+        .nx-editor .cm-scroller {
+            overflow: auto;
+        }
+    </style>
+
     <!-- ═══════════ TWO-COLUMN FULL PAGE LAYOUT ═══════════ -->
-    <div class="flex-1 grow flex flex-col lg:flex-row gap-6 w-full">
+    <div class="flex-1 grow flex flex-col lg:flex-row gap-6 w-full min-h-0 overflow-hidden">
         <!-- ──── LEFT COLUMN: HEADER & MODULE SPECIFICATION ──── -->
         <div class="flex-1 flex flex-col gap-4 min-h-0 overflow-hidden">
             <!-- 1. HEADER TOOLBAR -->
@@ -330,9 +339,9 @@
                     </div>
                 </div>
 
-                <div class="p-6 flex-1 overflow-y-auto min-h-0">
+                <div class="p-6 flex-1 flex flex-col min-h-0 overflow-hidden">
                     <!-- Sub-Tab 1: Syntax & API Usage -->
-                    <div data-show="specTab === 'usage'" class="space-y-6">
+                    <div data-show="specTab === 'usage'" class="space-y-6 overflow-y-auto flex-1 min-h-0">
                         <div>
                             <!-- Module Description -->
                             <p class="text-sm text-base-content/70 mb-6 leading-relaxed border-b border-base-content/10 pb-4"
@@ -385,9 +394,9 @@
 
                     <!-- Sub-Tab 2: Module Source -->
                     <div data-show="specTab === 'source'" style="display:none;"
-                        class="space-y-4 h-full flex-1 flex flex-col min-h-0">
+                        class="space-y-4 h-full flex-1 flex flex-col min-h-0 overflow-hidden">
                         <div
-                            class="nx-editor-container border border-base-content/10 rounded-xl overflow-y-auto flex-1 min-h-0">
+                            class="nx-editor-container border border-base-content/10 rounded-xl overflow-hidden flex-1 min-h-0">
                             <div id="source-editor" class="nx-editor h-full"></div>
                         </div>
                     </div>
@@ -467,18 +476,20 @@
                     </div>
                 </div>
 
-                <div class="p-6 space-y-6 flex-1 overflow-y-auto min-h-0">
+                <div class="p-6 space-y-6 flex-1 flex flex-col min-h-0 overflow-hidden">
                     <!-- Interactive Lab Live Execution Panel (TOP) -->
-                    <div data-show="labTab === 'preview' || labTab === 'split'" class="w-full">
-                        <div class="bg-base-200/50 rounded-xl p-6 min-h-[220px] border border-base-content/10"
+                    <div data-show="labTab === 'preview' || labTab === 'split'"
+                        data-class="{ 'shrink-0 max-h-[45%] overflow-y-auto': labTab === 'split', 'flex-1 overflow-y-auto min-h-0': labTab === 'preview' }"
+                        class="w-full">
+                        <div class="bg-base-200/50 rounded-xl p-6 min-h-[200px] border border-base-content/10"
                             data-html="snippetCode">
                         </div>
                     </div>
 
                     <!-- Lab Source CodeMirror Editor Panel (BELOW PREVIEW) -->
-                    <div data-show="labTab === 'source' || labTab === 'split'" class="w-full flex flex-col min-h-0">
-                        <div class="nx-editor-container border border-base-content/10 rounded-xl overflow-y-auto">
-                            <div id="snippet-editor" class="nx-editor"></div>
+                    <div data-show="labTab === 'source' || labTab === 'split'" class="w-full flex-1 flex flex-col min-h-0 overflow-hidden">
+                        <div class="nx-editor-container border border-base-content/10 rounded-xl overflow-hidden flex-1 min-h-0">
+                            <div id="snippet-editor" class="nx-editor h-full"></div>
                         </div>
                     </div>
                 </div>
