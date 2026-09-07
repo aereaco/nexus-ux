@@ -1,23 +1,28 @@
-<title>:drag</title>
-<meta name="id" content="lab-mod-drag">
-<meta name="route" content="/labs/modifiers/drag">
-<meta name="icon" content="material-symbols-light:open-with">
-<meta name="order" content="14">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/modifiers">
+<head>
+  <title>:drag</title>
+  <meta name="id" content="lab-mod-drag">
+  <meta name="route" content="/labs/modifiers/drag">
+  <meta name="icon" content="material-symbols-light:drag-click">
+  <meta name="order" content="4">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/modifiers">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": ":drag",
-    "Category": "Modifiers",
-    "Icon": "material-symbols-light:open-with",
-    "ModulePath": "src/modules/modifiers/drag.ts",
-    "Description": "Injects delta movement coordinates ($drag) into pointer handlers.",
-    "Syntax": "<div data-on-pointermove:drag=\"x += $drag.dx; y += $drag.dy\">...</div>",
-    "Params": [],
-    "Extensibility": "<p>Tracks pointer delta movement across frames.</p>",
-    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-1\">\n  <div class=\"badge badge-accent\">:drag</div>\n  <p class=\"text-xs opacity-70\">Injects $drag coordinates into pointer handlers.</p>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: ':drag',
+      Category: 'Modifiers',
+      Icon: 'material-symbols-light:drag-click',
+      Description: 'Enriches pointer handlers with real-time drag delta coordinates (&lt;code&gt;$drag.dx&lt;/code&gt;, &lt;code&gt;$drag.dy&lt;/code&gt;, &lt;code&gt;$drag.x&lt;/code&gt;, &lt;code&gt;$drag.y&lt;/code&gt;) during pointermove.',
+      Syntax: '&lt;div data-on-pointermove:drag=\&quot;posX += $drag.dx; posY += $drag.dy\&quot;&gt;&lt;/div&gt;',
+      Params: [
+        { name: ':drag', type: 'Pointer Modifier', default: '-', description: 'Calculates delta translation and passes $drag object to handler.' }
+      ],
+      SourceModule: '/modules/modifiers/drag.ts',
+      SnippetModule: '/_pages/labs/modifiers/drag.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/modifiers/drag.ts&lt;/code&gt;, this event modifier tracks mouse and touch movement deltas across pointer frames.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Injected Deltas&lt;/strong&gt; — Provides &lt;code&gt;$drag.dx&lt;/code&gt; and &lt;code&gt;$drag.dy&lt;/code&gt; for smooth coordinate manipulation&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Pointer Capture&lt;/strong&gt; — Keeps tracking movement even when pointer leaves element bounds&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ padX: 0, padY: 0 }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4 max-w-md\&quot;&gt;\n        &lt;div class=\&quot;flex items-center justify-between\&quot;&gt;\n            &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Drag Coordinate Delta (:drag)&lt;/h4&gt;\n            &lt;button class=\&quot;btn btn-xs btn-ghost\&quot; data-on-click=\&quot;padX = 0; padY = 0\&quot;&gt;Reset&lt;/button&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;h-40 bg-base-200/40 rounded-2xl border border-base-content/10 relative overflow-hidden flex items-center justify-center select-none\&quot;&gt;\n            &lt;div class=\&quot;p-4 bg-primary text-primary-content rounded-xl shadow-lg cursor-grab active:cursor-grabbing font-mono text-xs font-bold transition-transform duration-75\&quot;\n                 data-style=\&quot;{ transform: \'translate(\' + padX + \'px, \' + padY + \'px)\' }\&quot;\n                 data-on-pointerdown=\&quot;padX += 10\&quot;&gt;\n                Drag Target Point\n            &lt;/div&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;p-3 bg-base-200/50 rounded-xl font-mono text-xs flex justify-between\&quot;&gt;\n            &lt;span class=\&quot;opacity-70\&quot;&gt;Offset:&lt;/span&gt;\n            &lt;span class=\&quot;text-primary font-bold\&quot; data-bind=\&quot;\'(\' + padX + \'px, \' + padY + \'px)\'\&quot;&gt;&lt;/span&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>

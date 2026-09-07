@@ -269,6 +269,16 @@
     "category": "Labs"
   },
   {
+    "id": "lab-mod-drag",
+    "route": "/labs/modifiers/drag",
+    "path": "/_pages/labs/modifiers/drag.html",
+    "title": ":drag",
+    "icon": "material-symbols-light:drag-click",
+    "order": 4,
+    "parent": "/labs/modifiers",
+    "category": "Labs"
+  },
+  {
     "id": "lab-mod-outside",
     "route": "/labs/modifiers/outside",
     "path": "/_pages/labs/modifiers/outside.html",
@@ -584,16 +594,6 @@
     "icon": "material-symbols-light:css",
     "order": 14,
     "parent": "/labs/attributes",
-    "category": "Labs"
-  },
-  {
-    "id": "lab-mod-drag",
-    "route": "/labs/modifiers/drag",
-    "path": "/_pages/labs/modifiers/drag.html",
-    "title": ":drag",
-    "icon": "material-symbols-light:open-with",
-    "order": 14,
-    "parent": "/labs/modifiers",
     "category": "Labs"
   },
   {
