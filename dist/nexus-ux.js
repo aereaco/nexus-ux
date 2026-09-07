@@ -10421,16 +10421,94 @@ ${match}</ul>
                 return [x1, y1 + calculateControlOffset(y2 - y1, c)];
             }
           };
+          const handleDirections = {
+            left: { x: -1, y: 0 },
+            right: { x: 1, y: 0 },
+            top: { x: 0, y: -1 },
+            bottom: { x: 0, y: 1 }
+          };
+          const getDirection = (source, sourcePosition, target) => {
+            if (sourcePosition === "left" || sourcePosition === "right") {
+              return source.x < target.x ? { x: 1, y: 0 } : { x: -1, y: 0 };
+            }
+            return source.y < target.y ? { x: 0, y: 1 } : { x: 0, y: -1 };
+          };
+          const dist = (a, b) => Math.hypot(b.x - a.x, b.y - a.y);
+          const getBend = (a, b, c, size) => {
+            const bendSize = Math.min(dist(a, b) / 2, dist(b, c) / 2, size);
+            const { x, y } = b;
+            if (bendSize <= 0 || a.x === x && x === c.x || a.y === y && y === c.y) {
+              return `L ${x} ${y}`;
+            }
+            if (a.y === y) {
+              const xDir2 = a.x < c.x ? -1 : 1;
+              const yDir2 = a.y < c.y ? 1 : -1;
+              return `L ${x + bendSize * xDir2},${y} Q ${x},${y} ${x},${y + bendSize * yDir2}`;
+            }
+            const xDir = a.x < c.x ? 1 : -1;
+            const yDir = a.y < c.y ? -1 : 1;
+            return `L ${x},${y + bendSize * yDir} Q ${x},${y} ${x + bendSize * xDir},${y}`;
+          };
+          const smoothStepPath = (sx, sy, sSide, tx, ty, tSide, borderRadius = 5, offset = 20, stepPosition = 0.5) => {
+            const source = { x: sx, y: sy };
+            const target = { x: tx, y: ty };
+            const sourceDir = handleDirections[sSide];
+            const targetDir = handleDirections[tSide];
+            const sourceGapped = { x: source.x + sourceDir.x * offset, y: source.y + sourceDir.y * offset };
+            const targetGapped = { x: target.x + targetDir.x * offset, y: target.y + targetDir.y * offset };
+            const dir = getDirection(sourceGapped, sSide, targetGapped);
+            const dirAccessor = dir.x !== 0 ? "x" : "y";
+            const currDir = dir[dirAccessor];
+            let points = [];
+            let centerX = (sx + tx) / 2;
+            let centerY = (sy + ty) / 2;
+            if (sourceDir[dirAccessor] * targetDir[dirAccessor] === -1) {
+              if (dirAccessor === "x") {
+                centerX = sourceGapped.x + (targetGapped.x - sourceGapped.x) * stepPosition;
+                centerY = (sourceGapped.y + targetGapped.y) / 2;
+              } else {
+                centerX = (sourceGapped.x + targetGapped.x) / 2;
+                centerY = sourceGapped.y + (targetGapped.y - sourceGapped.y) * stepPosition;
+              }
+              const verticalSplit = [
+                { x: centerX, y: sourceGapped.y },
+                { x: centerX, y: targetGapped.y }
+              ];
+              const horizontalSplit = [
+                { x: sourceGapped.x, y: centerY },
+                { x: targetGapped.x, y: centerY }
+              ];
+              points = sourceDir[dirAccessor] === currDir ? dirAccessor === "x" ? verticalSplit : horizontalSplit : dirAccessor === "x" ? horizontalSplit : verticalSplit;
+            } else {
+              const sourceTarget = [{ x: sourceGapped.x, y: targetGapped.y }];
+              const targetSource = [{ x: targetGapped.x, y: sourceGapped.y }];
+              points = dirAccessor === "x" ? sourceDir.x === currDir ? targetSource : sourceTarget : sourceDir.y === currDir ? sourceTarget : targetSource;
+            }
+            const pathPoints = [source, sourceGapped, ...points, targetGapped, target];
+            const deduped = [];
+            for (let i = 0; i < pathPoints.length; i++) {
+              const p = pathPoints[i];
+              const prev = deduped[deduped.length - 1];
+              if (!prev || prev.x !== p.x || prev.y !== p.y) {
+                deduped.push(p);
+              }
+            }
+            let path = `M ${deduped[0].x} ${deduped[0].y}`;
+            for (let i = 1; i < deduped.length - 1; i++) {
+              path += " " + getBend(deduped[i - 1], deduped[i], deduped[i + 1], borderRadius);
+            }
+            path += ` L ${deduped[deduped.length - 1].x} ${deduped[deduped.length - 1].y}`;
+            return { path, labelX: centerX, labelY: centerY };
+          };
           const bezierPath = (sx, sy, ssIde, tx, ty, tSide, curvature = 0.25) => {
             const [scx, scy] = controlWithCurvature(ssIde, sx, sy, tx, ty, curvature);
             const [tcx, tcy] = controlWithCurvature(tSide, tx, ty, sx, sy, curvature);
-            return `M${sx},${sy} C${scx},${scy} ${tcx},${tcy} ${tx},${ty}`;
+            const path = `M${sx},${sy} C${scx},${scy} ${tcx},${tcy} ${tx},${ty}`;
+            const labelX = sx * 0.125 + scx * 0.375 + tcx * 0.375 + tx * 0.125;
+            const labelY = sy * 0.125 + scy * 0.375 + tcy * 0.375 + ty * 0.125;
+            return { path, labelX, labelY };
           };
           const straightPath = (x1, y1, x2, y2) => `M ${x1} ${y1} L ${x2} ${y2}`;
-          const stepPath = (x1, y1, x2, y2) => {
-            const mx = x1 + (x2 - x1) / 2;
-            return `M ${x1} ${y1} L ${mx} ${y1} L ${mx} ${y2} L ${x2} ${y2}`;
-          };
           const viewportOf = (el) => {
             const flow = el?.closest("[data-flow]");
             const vp = flow?.__flowViewport || flow?.__nexusFlowViewport;

@@ -68,24 +68,125 @@ export const flowModule: SpriteModule = {
       }
     };
 
+    const handleDirections: Record<Side, { x: number; y: number }> = {
+      left: { x: -1, y: 0 },
+      right: { x: 1, y: 0 },
+      top: { x: 0, y: -1 },
+      bottom: { x: 0, y: 1 },
+    };
+
+    const getDirection = (source: { x: number; y: number }, sourcePosition: Side, target: { x: number; y: number }) => {
+      if (sourcePosition === 'left' || sourcePosition === 'right') {
+        return source.x < target.x ? { x: 1, y: 0 } : { x: -1, y: 0 };
+      }
+      return source.y < target.y ? { x: 0, y: 1 } : { x: 0, y: -1 };
+    };
+
+    const dist = (a: { x: number; y: number }, b: { x: number; y: number }) =>
+      Math.hypot(b.x - a.x, b.y - a.y);
+
+    const getBend = (a: { x: number; y: number }, b: { x: number; y: number }, c: { x: number; y: number }, size: number): string => {
+      const bendSize = Math.min(dist(a, b) / 2, dist(b, c) / 2, size);
+      const { x, y } = b;
+      if (bendSize <= 0 || (a.x === x && x === c.x) || (a.y === y && y === c.y)) {
+        return `L ${x} ${y}`;
+      }
+      if (a.y === y) {
+        const xDir = a.x < c.x ? -1 : 1;
+        const yDir = a.y < c.y ? 1 : -1;
+        return `L ${x + bendSize * xDir},${y} Q ${x},${y} ${x},${y + bendSize * yDir}`;
+      }
+      const xDir = a.x < c.x ? 1 : -1;
+      const yDir = a.y < c.y ? -1 : 1;
+      return `L ${x},${y + bendSize * yDir} Q ${x},${y} ${x + bendSize * xDir},${y}`;
+    };
+
+    /** xyflow smoothstep / step path generator with rounded orthogonal corners. */
+    const smoothStepPath = (
+      sx: number, sy: number, sSide: Side,
+      tx: number, ty: number, tSide: Side,
+      borderRadius = 5,
+      offset = 20,
+      stepPosition = 0.5
+    ): { path: string; labelX: number; labelY: number } => {
+      const source = { x: sx, y: sy };
+      const target = { x: tx, y: ty };
+      const sourceDir = handleDirections[sSide];
+      const targetDir = handleDirections[tSide];
+      const sourceGapped = { x: source.x + sourceDir.x * offset, y: source.y + sourceDir.y * offset };
+      const targetGapped = { x: target.x + targetDir.x * offset, y: target.y + targetDir.y * offset };
+
+      const dir = getDirection(sourceGapped, sSide, targetGapped);
+      const dirAccessor: 'x' | 'y' = dir.x !== 0 ? 'x' : 'y';
+      const currDir = dir[dirAccessor];
+
+      let points: Array<{ x: number; y: number }> = [];
+      let centerX = (sx + tx) / 2;
+      let centerY = (sy + ty) / 2;
+
+      if (sourceDir[dirAccessor] * targetDir[dirAccessor] === -1) {
+        if (dirAccessor === 'x') {
+          centerX = sourceGapped.x + (targetGapped.x - sourceGapped.x) * stepPosition;
+          centerY = (sourceGapped.y + targetGapped.y) / 2;
+        } else {
+          centerX = (sourceGapped.x + targetGapped.x) / 2;
+          centerY = sourceGapped.y + (targetGapped.y - sourceGapped.y) * stepPosition;
+        }
+        const verticalSplit = [
+          { x: centerX, y: sourceGapped.y },
+          { x: centerX, y: targetGapped.y },
+        ];
+        const horizontalSplit = [
+          { x: sourceGapped.x, y: centerY },
+          { x: targetGapped.x, y: centerY },
+        ];
+        points = sourceDir[dirAccessor] === currDir
+          ? (dirAccessor === 'x' ? verticalSplit : horizontalSplit)
+          : (dirAccessor === 'x' ? horizontalSplit : verticalSplit);
+      } else {
+        const sourceTarget = [{ x: sourceGapped.x, y: targetGapped.y }];
+        const targetSource = [{ x: targetGapped.x, y: sourceGapped.y }];
+        points = dirAccessor === 'x'
+          ? (sourceDir.x === currDir ? targetSource : sourceTarget)
+          : (sourceDir.y === currDir ? sourceTarget : targetSource);
+      }
+
+      const pathPoints = [source, sourceGapped, ...points, targetGapped, target];
+      const deduped: Array<{ x: number; y: number }> = [];
+      for (let i = 0; i < pathPoints.length; i++) {
+        const p = pathPoints[i];
+        const prev = deduped[deduped.length - 1];
+        if (!prev || prev.x !== p.x || prev.y !== p.y) {
+          deduped.push(p);
+        }
+      }
+
+      let path = `M ${deduped[0].x} ${deduped[0].y}`;
+      for (let i = 1; i < deduped.length - 1; i++) {
+        path += ' ' + getBend(deduped[i - 1], deduped[i], deduped[i + 1], borderRadius);
+      }
+      path += ` L ${deduped[deduped.length - 1].x} ${deduped[deduped.length - 1].y}`;
+
+      return { path, labelX: centerX, labelY: centerY };
+    };
+
     /** Full xyflow bezier: directional control points based on handle sides. */
     const bezierPath = (
       sx: number, sy: number, ssIde: Side,
       tx: number, ty: number, tSide: Side,
       curvature = 0.25
-    ): string => {
+    ): { path: string; labelX: number; labelY: number } => {
       const [scx, scy] = controlWithCurvature(ssIde, sx, sy, tx, ty, curvature);
       const [tcx, tcy] = controlWithCurvature(tSide, tx, ty, sx, sy, curvature);
-      return `M${sx},${sy} C${scx},${scy} ${tcx},${tcy} ${tx},${ty}`;
+      const path = `M${sx},${sy} C${scx},${scy} ${tcx},${tcy} ${tx},${ty}`;
+      const labelX = sx * 0.125 + scx * 0.375 + tcx * 0.375 + tx * 0.125;
+      const labelY = sy * 0.125 + scy * 0.375 + tcy * 0.375 + ty * 0.125;
+      return { path, labelX, labelY };
     };
 
-    /** Simple generators (kept for non-bezier edge types). */
+    /** Simple straight line generator. */
     const straightPath = (x1: number, y1: number, x2: number, y2: number) =>
       `M ${x1} ${y1} L ${x2} ${y2}`;
-    const stepPath = (x1: number, y1: number, x2: number, y2: number) => {
-      const mx = x1 + (x2 - x1) / 2;
-      return `M ${x1} ${y1} L ${mx} ${y1} L ${mx} ${y2} L ${x2} ${y2}`;
-    };
 
     // -----------------------------------------------------------------------
     // Viewport / coordinate helpers
