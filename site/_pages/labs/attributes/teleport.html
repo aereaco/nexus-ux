@@ -1,30 +1,30 @@
-<title>data-teleport</title>
-<meta name="id" content="lab-attr-teleport">
-<meta name="route" content="/labs/attributes/teleport">
-<meta name="icon" content="material-symbols-light:move-group">
-<meta name="order" content="29">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/attributes">
+<head>
+  <title>data-teleport</title>
+  <meta name="id" content="lab-attr-teleport">
+  <meta name="route" content="/labs/attributes/teleport">
+  <meta name="icon" content="material-symbols-light:move-item">
+  <meta name="order" content="19">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/attributes">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "data-teleport",
-    "Category": "Attributes",
-    "Icon": "material-symbols-light:move-group",
-    "ModulePath": "src/modules/attributes/teleport.ts",
-    "Description": "Transports DOM subtrees to another target selector or defines native drag-and-drop drop zones.",
-    "Syntax": "<div data-teleport=\"body\">...</div>",
-    "Params": [
-      {
-        "name": "data-teleport",
-        "type": "Target CSS Selector",
-        "default": "&#39;body&#39;",
-        "description": "Target element selector where the DOM subtree should be appended."
-      }
-    ],
-    "Extensibility": "<p>Maintains full reactive scope continuity: teleported elements retain access to their original parent data stack and signals.</p>",
-    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-2\">\n  <div class=\"badge badge-info\">DOM Teleportation</div>\n  <p class=\"text-sm\">Renders modals, popovers, and tooltips at root level without breaking reactive signal ancestry.</p>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: 'data-teleport',
+      Category: 'Attributes',
+      Icon: 'material-symbols-light:move-item',
+      Description: 'Dual-mode DOM and data teleportation directive for moving subtrees to external target selectors or establishing HTML5 drag-and-drop drop zones with &lt;code&gt;data-teleport:drop&lt;/code&gt;.',
+      Syntax: '&lt;template data-teleport=\&quot;body\&quot;&gt;&lt;div class=\&quot;modal\&quot;&gt;&lt;/div&gt;&lt;/template&gt;\n&lt;div data-teleport:drop=\&quot;archiveList\&quot; data-teleport-mode=\&quot;move\&quot;&gt;&lt;/div&gt;',
+      Params: [
+        { name: 'data-teleport=&quot;selector&quot;', type: 'DOM Selector', default: '-', description: 'Moves the rendered DOM subtree to the specified query selector outside local hierarchy.' },
+        { name: 'data-teleport:drop=&quot;list&quot;', type: 'Drop Target Modifier', default: '-', description: 'Designates a target drop zone for HTML5 drag operations.' },
+        { name: 'data-teleport-mode', type: '\'move\' | \'clone\' | \'swap\'', default: '\'move\'', description: 'Action executed when an item is dropped into the teleport target.' }
+      ],
+      SourceModule: '/modules/attributes/teleport.ts',
+      SnippetModule: '/_pages/labs/attributes/teleport.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/attributes/teleport.ts&lt;/code&gt;, teleportation operates in two distinct modes. In DOM mode, it mounts templates to body/dialog targets while retaining full reactive signal scope. In Drop mode, it turns containers into drag destinations.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Scope Preservation&lt;/strong&gt; — Teleported elements retain their original lexical data stack context&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Drag &amp;amp; Drop Targets&lt;/strong&gt; — &lt;code&gt;data-teleport:drop&lt;/code&gt; handles drag payload receipt and array mutations&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Clean Disposal&lt;/strong&gt; — When the source template unmounts, teleported target elements are cleanly cleaned up&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ targetZone: \'Archive Vault\', dropCount: 0 }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Teleport Target Zone&lt;/h4&gt;\n        &lt;div class=\&quot;p-6 bg-base-200/50 rounded-xl border-2 border-dashed border-primary/40 text-center space-y-2\&quot;&gt;\n            &lt;div class=\&quot;badge badge-primary font-mono text-xs\&quot;&gt;data-teleport:drop Active&lt;/div&gt;\n            &lt;div class=\&quot;text-sm font-bold text-base-content\&quot;&gt;Drop Target: &lt;span data-bind=\&quot;targetZone\&quot;&gt;&lt;/span&gt;&lt;/div&gt;\n            &lt;p class=\&quot;text-xs opacity-60 font-mono\&quot;&gt;Mode: move | Spliced items transfer with zero serialization.&lt;/p&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>

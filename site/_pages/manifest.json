@@ -695,6 +695,16 @@
     "category": "Labs"
   },
   {
+    "id": "lab-attr-teleport",
+    "route": "/labs/attributes/teleport",
+    "path": "/_pages/labs/attributes/teleport.html",
+    "title": "data-teleport",
+    "icon": "material-symbols-light:move-item",
+    "order": 19,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
     "id": "lab-attr-mask",
     "route": "/labs/attributes/mask",
     "path": "/_pages/labs/attributes/mask.html",
@@ -751,16 +761,6 @@
     "title": "data-switcher",
     "icon": "material-symbols-light:toggle-on-outline",
     "order": 28,
-    "parent": "/labs/attributes",
-    "category": "Labs"
-  },
-  {
-    "id": "lab-attr-teleport",
-    "route": "/labs/attributes/teleport",
-    "path": "/_pages/labs/attributes/teleport.html",
-    "title": "data-teleport",
-    "icon": "material-symbols-light:move-group",
-    "order": 29,
     "parent": "/labs/attributes",
     "category": "Labs"
   },
