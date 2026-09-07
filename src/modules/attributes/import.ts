@@ -596,7 +596,7 @@ const importModule: AttributeModule = {
 
             // module: — dynamic ESM module import from CDN directly into window[id]
             if (item.module) {
-                itemTasks.push(importModule(id, item.module, iterationCleanupFns, runtime, el));
+                itemTasks.push(importESModule(id, item.module, iterationCleanupFns, runtime, el));
             }
 
             // Scripts — run asynchronously so external CDN scripts (Iconify) do not block FOUC gate

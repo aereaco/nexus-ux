@@ -6294,6 +6294,67 @@ ${scripts}
     });
     await Promise.all(tasks);
   }
+  async function importESModule(id, payload, cleanupFns, runtime, el) {
+    const globalWin = globalThis;
+    const targetObj = globalWin[id] || {};
+    globalWin[id] = targetObj;
+    try {
+      if (Array.isArray(payload)) {
+        const modules = await Promise.all(
+          payload.map(async (url) => {
+            try {
+              return await import(
+                /* @vite-ignore */
+                url
+              );
+            } catch (err) {
+              reportError(new Error(`Nexus Import [${id}]: Failed to import module ${url}: ${err}`), el);
+              return {};
+            }
+          })
+        );
+        modules.forEach((mod) => {
+          Object.assign(targetObj, mod);
+        });
+      } else if (typeof payload === "object" && payload !== null) {
+        const entries = Object.entries(payload);
+        await Promise.all(
+          entries.map(async ([key, url]) => {
+            try {
+              const mod = await import(
+                /* @vite-ignore */
+                url
+              );
+              targetObj[key] = mod[key] !== void 0 ? mod[key] : mod.default || mod;
+            } catch (err) {
+              reportError(new Error(`Nexus Import [${id}]: Failed to import module ${url}: ${err}`), el);
+            }
+          })
+        );
+      } else if (typeof payload === "string") {
+        try {
+          const mod = await import(
+            /* @vite-ignore */
+            payload
+          );
+          Object.assign(targetObj, mod);
+        } catch (err) {
+          reportError(new Error(`Nexus Import [${id}]: Failed to import module ${payload}: ${err}`), el);
+        }
+      }
+      cleanupFns.push(() => {
+      });
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent(`nexus:${id.toLowerCase()}-ready`, { detail: targetObj }));
+        if (id.toLowerCase() === "cm" || id.toLowerCase() === "codemirror") {
+          window.dispatchEvent(new CustomEvent("nexus:cm-ready", { detail: targetObj }));
+        }
+      }
+      runtime.log(`Nexus Import [${id}]: ES module(s) imported into window.${id}`);
+    } catch (err) {
+      reportError(new Error(`Nexus Import [${id}]: Module import error: ${err}`), el);
+    }
+  }
   async function importStyle(id, payload, cleanupFns, runtime, el) {
     const items = Array.isArray(payload) ? payload : [payload];
     const tasks = items.map(async (item) => {
@@ -6448,7 +6509,7 @@ ${scripts}
                     itemTasks.push(importAdopt(id, item.adopt, iterationCleanupFns, runtime, el));
                   }
                   if (item.module) {
-                    itemTasks.push(importModule(id, item.module, iterationCleanupFns, runtime, el));
+                    itemTasks.push(importESModule(id, item.module, iterationCleanupFns, runtime, el));
                   }
                   if (item.script) {
                     importScript(id, item.script, iterationCleanupFns, runtime, el).catch(() => {
