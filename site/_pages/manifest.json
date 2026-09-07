@@ -725,16 +725,6 @@
     "category": "Labs"
   },
   {
-    "id": "lab-attr-pwa",
-    "route": "/labs/attributes/pwa",
-    "path": "/_pages/labs/attributes/pwa.html",
-    "title": "data-pwa",
-    "icon": "material-symbols-light:install-desktop",
-    "order": 22,
-    "parent": "/labs/attributes",
-    "category": "Labs"
-  },
-  {
     "id": "lab-attr-switcher",
     "route": "/labs/attributes/switcher",
     "path": "/_pages/labs/attributes/switcher.html",
@@ -761,6 +751,16 @@
     "title": "data-raf",
     "icon": "material-symbols-light:speed",
     "order": 24,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-pwa",
+    "route": "/labs/attributes/pwa",
+    "path": "/_pages/labs/attributes/pwa.html",
+    "title": "data-pwa",
+    "icon": "material-symbols-light:install-mobile",
+    "order": 25,
     "parent": "/labs/attributes",
     "category": "Labs"
   },
