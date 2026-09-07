@@ -1,23 +1,29 @@
-<title>$svg</title>
-<meta name="id" content="lab-sprite-svg">
-<meta name="route" content="/labs/sprites/svg">
-<meta name="icon" content="material-symbols-light:polyline">
-<meta name="order" content="13">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/sprites">
+<head>
+  <title>$svg</title>
+  <meta name="id" content="lab-sprite-svg">
+  <meta name="route" content="/labs/sprites/svg">
+  <meta name="icon" content="material-symbols-light:gesture">
+  <meta name="order" content="13">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/sprites">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "$svg",
-    "Category": "Sprites",
-    "Icon": "material-symbols-light:polyline",
-    "ModulePath": "src/modules/sprites/svg.ts",
-    "Description": "Reactive SVG Bezier curve and path generator for node graph connectors.",
-    "Syntax": "$svg.bezier(x1, y1, x2, y2)",
-    "Params": [],
-    "Extensibility": "<p>Calculates cubic and quadratic Bezier curves for node graph links.</p>",
-    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-1\">\n  <div class=\"badge badge-outline\">$svg Path Generator</div>\n  <p class=\"text-xs opacity-70\">Cubic Bezier curve generator for visual links.</p>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: '$svg Path Generator',
+      Category: 'Sprites',
+      Icon: 'material-symbols-light:gesture',
+      Description: 'Reactive SVG path and bezier spline generator ($svg.bezier, $svg.smooth, $svg.orthogonal) designed for dynamic wire routing in node graphs and canvas flows.',
+      Syntax: '&lt;path data-bind-d=\&quot;$svg.bezier(sourceNode, targetNode)\&quot; /&gt;',
+      Params: [
+        { name: '$svg.bezier(from, to, options)', type: 'Spline Function', default: '-', description: 'Calculates cubic bezier curve SVG \'d\' path string between coordinate anchors.' },
+        { name: '$svg.smooth(points)', type: 'Polyline Function', default: '-', description: 'Calculates Catmull-Rom smoothing curve across a list of point coordinates.' }
+      ],
+      SourceModule: '/modules/sprites/svg.ts',
+      SnippetModule: '/_pages/labs/sprites/svg.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/sprites/svg.ts&lt;/code&gt;, the $svg sprite eliminates imperative canvas drawing code by compiling SVG bezier curves directly into reactive path strings.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;60fps Wire Re-routing&lt;/strong&gt; — Path calculations run in sub-millisecond time on coordinate updates&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Flow Integration&lt;/strong&gt; — Pairs natively with &lt;code&gt;data-flow&lt;/code&gt; nodes&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ p1: { x: 20, y: 30 }, p2: { x: 220, y: 90 } }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4 max-w-md\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Reactive Bezier Spline ($svg)&lt;/h4&gt;\n        &lt;div class=\&quot;space-y-1\&quot;&gt;\n            &lt;div class=\&quot;flex justify-between text-xs font-semibold opacity-70\&quot;&gt;\n                &lt;span&gt;Target Y Position:&lt;/span&gt;\n                &lt;span class=\&quot;font-mono\&quot; data-bind=\&quot;p2.y + \'px\'\&quot;&gt;&lt;/span&gt;\n            &lt;/div&gt;\n            &lt;input type=\&quot;range\&quot; min=\&quot;20\&quot; max=\&quot;120\&quot; data-bind-value=\&quot;p2.y\&quot; class=\&quot;range range-xs range-secondary\&quot;&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;h-36 bg-base-200/40 rounded-xl border border-base-content/10 relative overflow-hidden flex items-center justify-center\&quot;&gt;\n            &lt;svg class=\&quot;w-full h-full absolute inset-0\&quot;&gt;\n                &lt;path data-bind-d=\&quot;\'M \' + p1.x + \' \' + p1.y + \' C \' + (p1.x + 80) + \' \' + p1.y + \', \' + (p2.x - 80) + \' \' + p2.y + \', \' + p2.x + \' \' + p2.y\&quot;\n                      fill=\&quot;none\&quot; stroke=\&quot;#3b82f6\&quot; stroke-width=\&quot;3\&quot; stroke-linecap=\&quot;round\&quot; /&gt;\n                &lt;circle data-bind-cx=\&quot;p1.x\&quot; data-bind-cy=\&quot;p1.y\&quot; r=\&quot;5\&quot; fill=\&quot;#3b82f6\&quot; /&gt;\n                &lt;circle data-bind-cx=\&quot;p2.x\&quot; data-bind-cy=\&quot;p2.y\&quot; r=\&quot;5\&quot; fill=\&quot;#ec4899\&quot; /&gt;\n            &lt;/svg&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>

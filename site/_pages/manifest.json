@@ -573,7 +573,7 @@
     "route": "/labs/sprites/svg",
     "path": "/_pages/labs/sprites/svg.html",
     "title": "$svg",
-    "icon": "material-symbols-light:polyline",
+    "icon": "material-symbols-light:gesture",
     "order": 13,
     "parent": "/labs/sprites",
     "category": "Labs"
