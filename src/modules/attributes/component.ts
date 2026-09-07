@@ -1,7 +1,7 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { addScopeToNode, getDataStack } from '../../engine/scope.ts';
-import { COMPONENT_CONTEXT_KEY, DATA_STACK_KEY } from '../../engine/consts.ts';
+import { COMPONENT_CONTEXT_KEY, DATA_STACK_KEY, CLEANUP_FUNCTIONS_KEY, MARKER_KEY } from '../../engine/consts.ts';
 import { cacheEngine } from '../../engine/cache.ts';
 import type { NexusEnhancedElement } from '../../engine/reactivity.ts';
 import { initError } from '../../engine/debug.ts';
@@ -59,8 +59,28 @@ export class BaseComponent extends ElementBase {
     this._cleanupFunctions = [];
   }
 
-  registerCleanup(fn: () => void) {
+  registerCleanup(fn: () => void): void {
     this._cleanupFunctions.push(fn);
+  }
+}
+
+function teardownComponentSubtree(root: Element | ShadowRoot): void {
+  const disposeNode = (node: Node) => {
+    if (node instanceof Element) {
+      const enhanced = node as NexusEnhancedElement;
+      if (enhanced[CLEANUP_FUNCTIONS_KEY]) {
+        enhanced[CLEANUP_FUNCTIONS_KEY].forEach((cleanup: () => void) => cleanup());
+        enhanced[CLEANUP_FUNCTIONS_KEY].clear();
+      }
+      delete (enhanced as any)[MARKER_KEY];
+      Array.from(node.children).forEach(disposeNode);
+    }
+  };
+  Array.from(root.childNodes).forEach(disposeNode);
+  if (root instanceof Element) {
+    root.replaceChildren();
+  } else {
+    while (root.firstChild) root.removeChild(root.firstChild);
   }
 }
 
@@ -310,6 +330,7 @@ const componentModule: AttributeModule = {
         if (!config.path || config.path === 'none' || config.path === 'undefined' || config.path === 'null') return;
 
         if (config.path === __lastPath) return;
+        const previousPath = __lastPath;
         __lastPath = config.path;
 
         const load = async () => {
@@ -381,6 +402,12 @@ const componentModule: AttributeModule = {
               tabObj.meta = { ...(tabObj.meta || {}), ...extracted };
             }
 
+            const isPathChange = previousPath !== undefined && previousPath !== targetPath;
+            if (isPathChange) {
+              const targetRoot = config.shadowrootmode ? el.shadowRoot : el;
+              if (targetRoot) teardownComponentSubtree(targetRoot);
+            }
+
             if (config.shadowrootmode) {
               if (!el.shadowRoot) el.attachShadow({ mode: config.shadowrootmode });
               const shadow = el.shadowRoot!;
@@ -399,7 +426,11 @@ const componentModule: AttributeModule = {
               }
               (shadow as unknown as NexusEnhancedElement)[DATA_STACK_KEY] = [shadowScope];
 
-              runtime.morphDOM(shadow as unknown as HTMLElement, html);
+              if (isPathChange) {
+                shadow.innerHTML = html;
+              } else {
+                runtime.morphDOM(shadow as unknown as HTMLElement, html);
+              }
               stylesheet.adoptElementSubtree(shadow);
               Array.from(shadow.children).forEach((child) => {
                 if (child instanceof HTMLElement || child instanceof SVGElement) {
@@ -407,7 +438,11 @@ const componentModule: AttributeModule = {
                 }
               });
             } else {
-              runtime.morphDOM(el, html);
+              if (isPathChange) {
+                el.innerHTML = html;
+              } else {
+                runtime.morphDOM(el, html);
+              }
               stylesheet.adoptElementSubtree(el);
               Array.from(el.children).forEach((child) => {
                 if (child instanceof HTMLElement || child instanceof SVGElement) {

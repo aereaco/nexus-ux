@@ -32,75 +32,86 @@
  *   - Shadow DOM boundary traversal for isolated contexts
  */
 
-import { DATA_STACK_KEY } from './consts.ts';
+import { DATA_STACK_KEY, LOCAL_SCOPES_KEY } from './consts.ts';
 import { NexusEnhancedElement, track, trigger } from './reactivity.ts';
 
 /**
- * Retrieves the data stack associated with a given HTMLElement.
- * The data stack is an array of reactive objects, where each object represents
- * a scope (e.g., from a `data-signal` attribute) in the element's ancestry.
- * The most local scope is at the beginning of the array.
+ * Retrieves the data stack associated with a given HTMLElement by dynamically
+ * traversing ancestors in the live DOM hierarchy (Zero-Copy Zero-Serialization).
+ * Local scopes on the immediate element appear first, followed by ancestor scopes,
+ * ending with root/host scopes.
  */
 export function getDataStack(element: HTMLElement | Text | Comment | Element): Record<string, unknown>[] {
-  const node = element as NexusEnhancedElement;
-  if (node[DATA_STACK_KEY]) {
-    return node[DATA_STACK_KEY]!;
-  }
+  const stack: Record<string, unknown>[] = [];
+  let curr: Node | null = element;
 
-  if (typeof ShadowRoot !== 'undefined' && node instanceof ShadowRoot) {
-    return getDataStack(node.host as HTMLElement); // Recursively get from host
-  }
+  while (curr) {
+    const enhanced = curr as unknown as NexusEnhancedElement;
 
-  const parent = node.parentElement || node.parentNode;
-  if (!parent) {
-    return [];
-  }
-
-  // Handle ShadowRoot boundary: if the shadow root carries a seeded scope
-  // (from data-component implicit inherit or explicit data-scope), honor it so
-  // that data-bind inside the shadow tree resolves against the seeded scope.
-  if (typeof ShadowRoot !== 'undefined' && parent instanceof ShadowRoot) {
-    const shadow = parent as unknown as NexusEnhancedElement;
-    if (shadow[DATA_STACK_KEY]) {
-      return shadow[DATA_STACK_KEY]!;
+    // 1. If explicit legacy/cloned DATA_STACK_KEY is attached (e.g. Teleport or Draggable clone), include it
+    if (enhanced[DATA_STACK_KEY] && enhanced[DATA_STACK_KEY]!.length > 0) {
+      stack.push(...enhanced[DATA_STACK_KEY]!);
+      break;
     }
-    return [];
+
+    // 2. Add local scopes declared directly on this element
+    if (enhanced[LOCAL_SCOPES_KEY] && enhanced[LOCAL_SCOPES_KEY]!.length > 0) {
+      stack.push(...enhanced[LOCAL_SCOPES_KEY]!);
+    }
+
+    // 3. Ascend to parent / ShadowRoot boundary
+    if (typeof ShadowRoot !== 'undefined' && curr instanceof ShadowRoot) {
+      curr = curr.host;
+    } else {
+      const parent: Node | null = curr.parentElement || curr.parentNode || (curr as any).__scopeParent;
+      if (typeof ShadowRoot !== 'undefined' && parent instanceof ShadowRoot) {
+        const shadow = parent as unknown as NexusEnhancedElement;
+        if (shadow[LOCAL_SCOPES_KEY] && shadow[LOCAL_SCOPES_KEY]!.length > 0) {
+          stack.push(...shadow[LOCAL_SCOPES_KEY]!);
+        } else if (shadow[DATA_STACK_KEY] && shadow[DATA_STACK_KEY]!.length > 0) {
+          stack.push(...shadow[DATA_STACK_KEY]!);
+        }
+        curr = (parent as ShadowRoot).host;
+      } else if (parent instanceof DocumentFragment) {
+        curr = (parent as any).host || (curr as any).__scopeParent || null;
+      } else {
+        curr = parent;
+      }
+    }
   }
 
-  // Handle DocumentFragment (end of climb for detached trees)
-  if (parent instanceof DocumentFragment) {
-    return [];
-  }
-
-  // Climb up through Elements and SVGElements
-  if (parent instanceof Element) {
-    return getDataStack(parent as any);
-  }
-
-  return [];
+  return stack;
 }
 
 /**
- * Adds a new data scope to a node's data stack.
+ * Adds a new data scope to a node's local scopes (ZCZS live reference).
  */
 export function addScopeToNode(element: Element, data: Record<string, unknown>, referenceNode?: Element): () => void {
   const node = element as NexusEnhancedElement;
-  const parentStack = getDataStack(referenceNode || element);
-  node[DATA_STACK_KEY] = [data, ...parentStack];
+  if (!node[LOCAL_SCOPES_KEY]) {
+    node[LOCAL_SCOPES_KEY] = [];
+  }
+  node[LOCAL_SCOPES_KEY]!.unshift(data);
+  if (referenceNode && !node.parentElement) {
+    (node as any).__scopeParent = referenceNode;
+  }
 
-  // Scope stack attached to node
   return () => {
-    if (node[DATA_STACK_KEY]) {
-      node[DATA_STACK_KEY] = node[DATA_STACK_KEY]!.filter((item: Record<string, unknown>) => item !== data);
+    if (node[LOCAL_SCOPES_KEY]) {
+      node[LOCAL_SCOPES_KEY] = node[LOCAL_SCOPES_KEY]!.filter((item) => item !== data);
+      if (node[LOCAL_SCOPES_KEY]!.length === 0) {
+        delete node[LOCAL_SCOPES_KEY];
+      }
     }
   };
 }
 
 /**
- * Checks if a node has an associated data stack.
+ * Checks if a node has any associated local or explicit data scopes.
  */
 export function hasScope(element: HTMLElement): boolean {
-  return !!(element as NexusEnhancedElement)[DATA_STACK_KEY];
+  const node = element as NexusEnhancedElement;
+  return !!(node[LOCAL_SCOPES_KEY]?.length || node[DATA_STACK_KEY]?.length);
 }
 
 // ---------------------------------------------------------------------------

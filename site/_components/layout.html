@@ -948,8 +948,7 @@
               <span>No notifications</span>
             </div>
             <template
-              data-for="item in (notificationFilter === 'unread' ? (notifications || []).filter(n => !n.read) : (notifications || []))"
-              data-key="item.id">
+              data-for="item in (notificationFilter === 'unread' ? (notifications || []).filter(n => !n.read) : (notifications || []))">
               <div
                 class="alert alert-soft p-2.5 rounded-xl flex items-start gap-2.5 relative group cursor-pointer transition-all"
                 data-class="{
@@ -996,7 +995,7 @@
             </button>
           </div>
           <div class="flex-1 overflow-y-auto p-2 space-y-1">
-            <template data-for="mail in mailMessages" data-key="mail.id">
+            <template data-for="mail in mailMessages">
               <div
                 class="p-2.5 rounded-xl transition-colors flex items-start gap-2.5 cursor-pointer hover:bg-base-200/50"
                 data-class="{ 'bg-base-200/60 font-semibold': mail.unread, 'bg-base-100 opacity-80': !mail.unread }"
@@ -1037,7 +1036,7 @@
               <iconify-icon icon="material-symbols-light:shopping-cart-outline" class="text-4xl"></iconify-icon>
               <span>Your cart is empty</span>
             </div>
-            <template data-for="item in cartItems" data-key="item.id">
+            <template data-for="item in cartItems">
               <div class="p-2 rounded-xl bg-base-200/40 border border-base-content/5 flex items-center gap-2.5">
                 <div class="size-9 rounded-lg bg-base-300 flex items-center justify-center shrink-0">
                   <iconify-icon icon="material-symbols-light:package-2-outline"
@@ -1147,7 +1146,7 @@
           <div class="flex flex-nowrap bg-base-300/20 rounded-none overflow-x-auto pb-1 scrollbar-auto-hide"
             role="tablist" aria-orientation="horizontal" data-drag-container="router.pageTabs"
             data-drag-group="pageTabs" data-drag-direction="horizontal">
-            <template data-for="tab in router.pageTabs" data-key="tab.id">
+            <template data-for="tab in router.pageTabs">
               <tab-header data-component="'#tab-header-template'" data-drag
                 data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'tab', target: tab }"></tab-header>
             </template>
@@ -1183,7 +1182,7 @@
               class="breadcrumbs text-sm font-semibold max-w-xs overflow-x-auto scrollbar-none transition-all duration-300 flex items-center shrink-0 w-auto"
               data-class="{ 'opacity-100 max-w-xs px-4': hovered, 'opacity-0 max-w-0 px-0': !hovered }">
               <ul class="flex items-center flex-nowrap whitespace-nowrap min-w-max my-0 py-0">
-                <template data-for="crumb in router.lineage" data-key="crumb.href">
+                <template data-for="crumb in router.lineage">
                   <li class="flex items-center gap-1 shrink-0">
                     <a data-bind-href="crumb.href" class="flex items-center gap-1">
                       <iconify-icon data-show="crumb.icon" data-bind-icon="crumb.icon" class="text-base"></iconify-icon>
@@ -1239,7 +1238,7 @@
           <!-- 2. Pure Horizontal Breadcrumbs with Icons and Lineage (zero wrap, zero vertical scroll) -->
           <div class="breadcrumbs text-sm font-medium p-0 overflow-visible shrink-0 min-w-max">
             <ul class="flex flex-nowrap items-center whitespace-nowrap gap-1 min-w-max my-0 py-0">
-              <template data-for="crumb in router.lineage" data-key="crumb.href">
+              <template data-for="crumb in router.lineage">
                 <li class="flex items-center gap-1 shrink-0">
                   <a data-bind-href="crumb.href"
                     class="flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
@@ -1254,7 +1253,7 @@
 
         <!-- Retained Multi-Panel Outlets: Each tab retains its mounted DOM tree.
              data-show toggles panel visibility instantly (display: none) without destroying nodes or resetting state. -->
-        <template data-for="tab in router.pageTabs" data-key="tab.id">
+        <template data-for="tab in router.pageTabs">
           <div role="tabpanel" class="w-full grow flex-1 flex flex-col min-h-0"
             data-show="router.activePageTabId === tab.id">
             <!-- Default Loading Fallback Skeleton -->
@@ -1288,7 +1287,7 @@
           <!-- Speed Dial Session Pills (Correlate to chatSessions, draggable & contextmenu pinnable) -->
           <div class="flex flex-col items-end gap-3 w-full" data-drag-container="chatSessions"
             data-drag-group="chatSessions" data-drag-direction="vertical">
-            <template data-for="session in (chatSessions || [])" data-key="session.id">
+            <template data-for="session in (chatSessions || [])">
               <div data-drag class="flex items-center gap-2.5 cursor-grab active:cursor-grabbing select-none"
                 data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'chatSession', target: session }">
                 <span
@@ -1381,7 +1380,7 @@
             </div>
 
             <!-- Terminal Tabs -->
-            <template data-for="tab in (terminalTabs || [])" data-key="tab.id">
+            <template data-for="tab in (terminalTabs || [])">
               <div class="flex items-center gap-1 px-2.5 py-1 rounded cursor-pointer transition-colors shrink-0 text-xs"
                 data-class="{
                   'bg-neutral-800 text-primary font-medium shadow-sm border border-primary/20': terminalActiveTab === tab.id,
@@ -1555,7 +1554,7 @@
 
           <!-- State 3: Active Query & Has Results (Grouped by Pages & Navigation vs Page Content Matches) -->
           <div data-show="searchQuery.trim() && hasSearchResults(searchQuery)" class="space-y-4">
-            <template data-for="group in searchResultGroups(searchQuery)" data-key="group.type">
+            <template data-for="group in searchResultGroups(searchQuery)">
               <div class="w-full">
                 <div
                   class="flex items-center justify-between px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/50">
@@ -1566,7 +1565,7 @@
                   <span class="badge badge-xs badge-ghost opacity-60" data-bind="(group.items || []).length"></span>
                 </div>
                 <ul class="menu menu-sm w-full p-0">
-                  <template data-for="item in (group.items || [])" data-key="item.path">
+                  <template data-for="item in (group.items || [])">
                     <li>
                       <a class="flex flex-col items-start gap-1 py-2 px-3 rounded-xl hover:bg-base-200/60 transition-colors"
                         data-on-click="
@@ -1673,8 +1672,7 @@
           data-class="{ 'h-auto opacity-100': open && (!collapsed || hovered || sidebarOpen), 'h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
           data-drag-container="item.children">
           <!-- RECURSIVE TEMPLATE: Calls itself for infinite arbitrary sub-levels! -->
-          <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
-            data-key="item.href || item.id"></template>
+          <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"></template>
         </ul>
       </li>
     </template>
@@ -1693,7 +1691,7 @@
       <div data-show="activeSidebarTab === 1" class="w-full">
         <!-- 1. Top-Level Uncategorized Items (Dedicated <ul>) -->
         <ul class="menu w-full" data-drag-container="(router.pages || []).filter(p => !p.category)">
-          <template data-for="item in (router.pages || []).filter(p => !p.category)" data-key="item.href">
+          <template data-for="item in (router.pages || []).filter(p => !p.category)">
             <!-- Root Leaf Item (No Children) -->
             <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
               data-bind-data-drag="item.href !== '/' ? '' : null"
@@ -1733,8 +1731,7 @@
                 class="menu-dropdown menu-dropdown-show ms-12 overflow-hidden [interpolate-size:allow-keywords] transition-[height,opacity] duration-300 ease-in-out"
                 data-class="{ 'h-auto opacity-100': open && (!collapsed || hovered || sidebarOpen), 'h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
                 data-drag-container="item.children">
-                <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
-                  data-key="item.href || item.id"></template>
+                <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"></template>
               </ul>
             </li>
           </template>
@@ -1742,7 +1739,7 @@
 
         <!-- 2. Categorized Sections (Draggable Category Groups & Dedicated Item Lists) -->
         <div data-drag-container="categories" data-drag-handle=".menu-title">
-          <template data-for="cat in categories" data-key="cat.name">
+          <template data-for="cat in categories">
             <div data-drag
               data-show="(router.pages || []).filter(p => (p.category || p.meta?.category) === cat.name).length > 0">
               <!-- Category Header (Title + Separator Line) -->
@@ -1760,8 +1757,7 @@
               <ul class="menu w-full"
                 data-drag-container="(router.pages || []).filter(p => (p.category || p.meta?.category) === cat.name)">
                 <template
-                  data-for="item in (router.pages || []).filter(p => (p.category || p.meta?.category) === cat.name)"
-                  data-key="item.href || item.id">
+                  data-for="item in (router.pages || []).filter(p => (p.category || p.meta?.category) === cat.name)">
                   <!-- Root Leaf Item (No Children) -->
                   <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
                     data-bind-data-drag="cat.itemsDraggable && item.href !== '/' ? '' : null"
@@ -1802,8 +1798,7 @@
                       class="menu-dropdown menu-dropdown-show ms-12 overflow-hidden [interpolate-size:allow-keywords] transition-[height,opacity] duration-300 ease-in-out"
                       data-class="{ 'h-auto opacity-100': open && (!collapsed || hovered || sidebarOpen), 'h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
                       data-drag-container="item.children">
-                      <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
-                        data-key="item.href || item.id"></template>
+                      <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"></template>
                     </ul>
                   </li>
 
@@ -1827,8 +1822,7 @@
                       class="menu-dropdown menu-dropdown-show ms-6 overflow-hidden [interpolate-size:allow-keywords] transition-[height,opacity] duration-300 ease-in-out"
                       data-class="{ 'h-auto opacity-100': open && (!collapsed || hovered || sidebarOpen), 'h-0 opacity-0 pointer-events-none': (collapsed && !hovered && !sidebarOpen) || !open }"
                       data-drag-container="item.children">
-                      <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"
-                        data-key="item.href || item.id"></template>
+                      <template data-for="item in item.children" data-template="#sidebar-sub-menu-item"></template>
                     </ul>
                   </li>
                 </template>
@@ -1875,8 +1869,7 @@
           data-drag-container="favorites" data-drag-group="favorites"
           data-drag-class="!opacity-100 !shadow-[0_15px_30px_-8px_rgba(0,0,0,0.25)] scale-105 cursor-grabbing z-[9999]"
           data-drag-ghost-class="opacity-40 bg-base-200 border-2 border-dashed border-base-content/20">
-          <template data-for="fav in (favorites || []).filter(f => !f.group || !f.group.trim())"
-            data-key="fav.id || fav.href">
+          <template data-for="fav in (favorites || []).filter(f => !f.group || !f.group.trim())">
             <div data-drag
               data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'fav', target: fav }"
               class="rounded-xl transition-all duration-300 flex border border-transparent min-w-0 cursor-move relative group"
@@ -1920,7 +1913,7 @@
 
         <!-- 2. Categorized / Grouped Favorites (Draggable Whole Groups) -->
         <div data-drag-container="favoriteGroups">
-          <template data-for="grp in favoriteGroups" data-key="grp">
+          <template data-for="grp in favoriteGroups">
             <div data-drag data-show="(favorites || []).filter(f => (f.group || '').trim() === grp).length > 0">
               <!-- Group Header (Title + Separator Line) -->
               <ul class="menu w-full py-0">
@@ -1936,8 +1929,7 @@
                 }" data-drag-container="favorites" data-drag-group="favorites"
                 data-drag-class="!opacity-100 !shadow-[0_15px_30px_-8px_rgba(0,0,0,0.25)] scale-105 cursor-grabbing z-[9999]"
                 data-drag-ghost-class="opacity-40 bg-base-200 border-2 border-dashed border-base-content/20">
-                <template data-for="fav in (favorites || []).filter(f => (f.group || '').trim() === grp)"
-                  data-key="fav.id || fav.href">
+                <template data-for="fav in (favorites || []).filter(f => (f.group || '').trim() === grp)">
                   <div data-drag
                     data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'fav', target: fav }"
                     class="rounded-xl transition-all duration-300 flex border border-transparent min-w-0 cursor-move relative group"
@@ -2034,7 +2026,7 @@
               <!-- Dropdown Content Menu -->
               <div
                 class="dropdown-content bg-base-200 text-base-content rounded-box absolute top-full start-0 mt-2 h-60 max-h-[calc(100vh-10rem)] w-full overflow-y-auto border border-base-content/10 shadow-2xl z-[200] p-2 space-y-2">
-                <template data-for="t in themes" data-key="t">
+                <template data-for="t in themes">
                   <label class="outline-base-content text-start outline-offset-4 cursor-pointer block"
                     data-bind-data-active-option="$theme.current === t">
                     <input type="radio" name="theme-radios" class="radio hidden" data-bind-value="t"
@@ -2344,7 +2336,7 @@
           <input type="text" class="input input-bordered w-full" list="fav-groups-datalist" data-bind="favForm.group"
             placeholder="e.g. Work, Tools, Personal..." />
           <datalist id="fav-groups-datalist">
-            <template data-for="grp in favoriteGroups" data-key="grp">
+            <template data-for="grp in favoriteGroups">
               <option data-bind-value="grp"></option>
             </template>
           </datalist>
@@ -2425,7 +2417,7 @@
   <!-- App-Wide Declarative Toaster Notifications -->
   <div class="toast toast-end toast-bottom z-[99999] pointer-events-none p-4 flex flex-col gap-2"
     data-show="(toasts || []).length > 0">
-    <template data-for="toast in toasts" data-key="toast.id">
+    <template data-for="toast in toasts">
       <div
         class="alert shadow-2xl pointer-events-auto transition-all duration-300 flex items-center gap-3 text-sm py-2.5 px-4 rounded-box bg-base-100/95 backdrop-blur-md text-base-content border"
         data-class="{
@@ -2477,7 +2469,7 @@
       <!-- Vertical Rail Session Buttons (Correlate to speed dial sessions, draggable & contextmenu pinnable) -->
       <div class="flex-1 w-full flex flex-col items-center gap-2 overflow-y-auto scrollbar-none"
         data-drag-container="chatSessions" data-drag-group="chatSessions" data-drag-direction="vertical">
-        <template data-for="session in (chatSessions || [])" data-key="session.id">
+        <template data-for="session in (chatSessions || [])">
           <div data-drag class="tooltip tooltip-right relative cursor-grab active:cursor-grabbing select-none"
             data-bind-attr-data-tip="session.name + (session.pinned ? ' (Pinned)' : '')"
             data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'chatSession', target: session }">
@@ -2576,7 +2568,7 @@
 
       <!-- 3. Message Stream -->
       <div id="chat-message-stream" class="flex-1 p-4 overflow-y-auto space-y-4">
-        <template data-for="msg in getActiveMessages()" data-key="msg.id">
+        <template data-for="msg in getActiveMessages()">
           <div class="flex flex-col gap-1 w-full"
             data-class="{ 'items-end': !msg.isAgent && msg.sender === 'Vernon', 'items-start': msg.isAgent || msg.sender !== 'Vernon' }">
 

@@ -205,7 +205,7 @@ const stateRef = unifiedRef<Record<string, unknown>>(initialGhostState, scopeId,
 | `data-if` | 3.6.2 | ✅ | `modules/attributes/if.ts` |
 | `data-show` | 3.6.2 | ✅ | `modules/attributes/show.ts` |
 | `data-for` | 3.6.2 | ✅ | `modules/attributes/for.ts` |
-| `data-key` | 3.6.2 | ✅ | (in for.ts) |
+| `data-key` | 3.6.2 | ❌ Deprecated | Purged (zero-config item tracking) |
 | `data-theme` | 3.6.3 | ✅ | `modules/attributes/theme.ts` |
 | `data-switcher` | 3.6.3 | ✅ | `modules/attributes/switcher.ts` |
 | `data-on` | 3.6.4 | ✅ | `modules/attributes/on.ts` |

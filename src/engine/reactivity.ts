@@ -1,5 +1,5 @@
 /// <reference path="./composition.ts" />
-import { CLEANUP_FUNCTIONS_KEY, EFFECT_RUNNERS_KEY, RUN_EFFECT_RUNNERS_KEY, DATA_STACK_KEY, MARKER_KEY } from './consts.ts';
+import { CLEANUP_FUNCTIONS_KEY, EFFECT_RUNNERS_KEY, RUN_EFFECT_RUNNERS_KEY, DATA_STACK_KEY, LOCAL_SCOPES_KEY, MARKER_KEY } from './consts.ts';
 import { reportError } from './debug.ts';
 import { scheduler } from './scheduler.ts';
 
@@ -782,5 +782,6 @@ export interface NexusEnhancedElement extends HTMLElement {
   [RUN_EFFECT_RUNNERS_KEY]?: () => void;
   [CLEANUP_FUNCTIONS_KEY]?: Map<string, () => void>;
   [DATA_STACK_KEY]?: Record<string, unknown>[];
+  [LOCAL_SCOPES_KEY]?: Record<string, unknown>[];
   [MARKER_KEY]?: number;
 }

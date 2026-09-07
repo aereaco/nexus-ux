@@ -63,6 +63,7 @@ export const RELATIONAL_COMBINATORS = {
 
 // 4. Internal Keys for HTMLElement Augmentation
 export const DATA_STACK_KEY = Symbol.for('__data_stack__');
+export const LOCAL_SCOPES_KEY = Symbol.for('__local_scopes__');
 export const COMPONENT_CONTEXT_KEY = Symbol.for('__component_context__');
 export const CLEANUP_FUNCTIONS_KEY = Symbol.for('__cleanup_functions__');
 export const EFFECT_RUNNERS_KEY = Symbol.for('__effect_runners__');

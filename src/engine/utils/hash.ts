@@ -50,7 +50,7 @@ export function elUniqId(el: Element): string {
   if (el.id) return el.id;
   
   // Prioritize Nexus-UX specific stable keys for lists/loops
-  const key = (el as HTMLElement).getAttribute('data-ux-id') || (el as HTMLElement).getAttribute('data-key') || (el as HTMLElement).getAttribute('data-id');
+  const key = (el as HTMLElement).getAttribute('data-ux-id') || (el as HTMLElement).getAttribute('data-id');
   if (key) {
     const hash = new Hash();
     hash.with(el.tagName).with(key);

@@ -21,7 +21,7 @@ var UX = (() => {
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
   // src/engine/consts.ts
-  var ROOT_SELECTOR, STATE, ATTRIBUTE_PREFIX, CUSTOM_EVENT_PREFIX, DATA_PRESERVE_ATTR, NEG_TOKENS, MODIFIER_DELIMITER, DATA_STACK_KEY, COMPONENT_CONTEXT_KEY, CLEANUP_FUNCTIONS_KEY, EFFECT_RUNNERS_KEY, RUN_EFFECT_RUNNERS_KEY, MARKER_KEY, IS_TEMPLATE_KEY, TIMER_MAP_KEY, DEFAULT_DEBOUNCE_TIME, DEFAULT_THROTTLE_TIME;
+  var ROOT_SELECTOR, STATE, ATTRIBUTE_PREFIX, CUSTOM_EVENT_PREFIX, DATA_PRESERVE_ATTR, NEG_TOKENS, MODIFIER_DELIMITER, DATA_STACK_KEY, LOCAL_SCOPES_KEY, COMPONENT_CONTEXT_KEY, CLEANUP_FUNCTIONS_KEY, EFFECT_RUNNERS_KEY, RUN_EFFECT_RUNNERS_KEY, MARKER_KEY, IS_TEMPLATE_KEY, TIMER_MAP_KEY, DEFAULT_DEBOUNCE_TIME, DEFAULT_THROTTLE_TIME;
   var init_consts = __esm({
     "src/engine/consts.ts"() {
       ROOT_SELECTOR = "[data-init], [data-ux-init], [data-signal], [data-router], [data-import], [data-stylesheet], [data-ux-theme], body";
@@ -43,6 +43,7 @@ var UX = (() => {
       };
       MODIFIER_DELIMITER = NEG_TOKENS.MODIFIER;
       DATA_STACK_KEY = Symbol.for("__data_stack__");
+      LOCAL_SCOPES_KEY = Symbol.for("__local_scopes__");
       COMPONENT_CONTEXT_KEY = Symbol.for("__component_context__");
       CLEANUP_FUNCTIONS_KEY = Symbol.for("__cleanup_functions__");
       EFFECT_RUNNERS_KEY = Symbol.for("__effect_runners__");
@@ -2611,39 +2612,53 @@ ${suggestion}`);
 
   // src/engine/scope.ts
   function getDataStack(element) {
-    const node = element;
-    if (node[DATA_STACK_KEY]) {
-      return node[DATA_STACK_KEY];
-    }
-    if (typeof ShadowRoot !== "undefined" && node instanceof ShadowRoot) {
-      return getDataStack(node.host);
-    }
-    const parent = node.parentElement || node.parentNode;
-    if (!parent) {
-      return [];
-    }
-    if (typeof ShadowRoot !== "undefined" && parent instanceof ShadowRoot) {
-      const shadow = parent;
-      if (shadow[DATA_STACK_KEY]) {
-        return shadow[DATA_STACK_KEY];
+    const stack = [];
+    let curr = element;
+    while (curr) {
+      const enhanced = curr;
+      if (enhanced[DATA_STACK_KEY] && enhanced[DATA_STACK_KEY].length > 0) {
+        stack.push(...enhanced[DATA_STACK_KEY]);
+        break;
       }
-      return [];
+      if (enhanced[LOCAL_SCOPES_KEY] && enhanced[LOCAL_SCOPES_KEY].length > 0) {
+        stack.push(...enhanced[LOCAL_SCOPES_KEY]);
+      }
+      if (typeof ShadowRoot !== "undefined" && curr instanceof ShadowRoot) {
+        curr = curr.host;
+      } else {
+        const parent = curr.parentElement || curr.parentNode || curr.__scopeParent;
+        if (typeof ShadowRoot !== "undefined" && parent instanceof ShadowRoot) {
+          const shadow = parent;
+          if (shadow[LOCAL_SCOPES_KEY] && shadow[LOCAL_SCOPES_KEY].length > 0) {
+            stack.push(...shadow[LOCAL_SCOPES_KEY]);
+          } else if (shadow[DATA_STACK_KEY] && shadow[DATA_STACK_KEY].length > 0) {
+            stack.push(...shadow[DATA_STACK_KEY]);
+          }
+          curr = parent.host;
+        } else if (parent instanceof DocumentFragment) {
+          curr = parent.host || curr.__scopeParent || null;
+        } else {
+          curr = parent;
+        }
+      }
     }
-    if (parent instanceof DocumentFragment) {
-      return [];
-    }
-    if (parent instanceof Element) {
-      return getDataStack(parent);
-    }
-    return [];
+    return stack;
   }
   function addScopeToNode(element, data, referenceNode) {
     const node = element;
-    const parentStack = getDataStack(referenceNode || element);
-    node[DATA_STACK_KEY] = [data, ...parentStack];
+    if (!node[LOCAL_SCOPES_KEY]) {
+      node[LOCAL_SCOPES_KEY] = [];
+    }
+    node[LOCAL_SCOPES_KEY].unshift(data);
+    if (referenceNode && !node.parentElement) {
+      node.__scopeParent = referenceNode;
+    }
     return () => {
-      if (node[DATA_STACK_KEY]) {
-        node[DATA_STACK_KEY] = node[DATA_STACK_KEY].filter((item) => item !== data);
+      if (node[LOCAL_SCOPES_KEY]) {
+        node[LOCAL_SCOPES_KEY] = node[LOCAL_SCOPES_KEY].filter((item) => item !== data);
+        if (node[LOCAL_SCOPES_KEY].length === 0) {
+          delete node[LOCAL_SCOPES_KEY];
+        }
       }
     };
   }
@@ -3472,6 +3487,26 @@ ${scripts}
     BaseComponent: () => BaseComponent,
     default: () => component_default
   });
+  function teardownComponentSubtree(root) {
+    const disposeNode = (node) => {
+      if (node instanceof Element) {
+        const enhanced = node;
+        if (enhanced[CLEANUP_FUNCTIONS_KEY]) {
+          enhanced[CLEANUP_FUNCTIONS_KEY].forEach((cleanup) => cleanup());
+          enhanced[CLEANUP_FUNCTIONS_KEY].clear();
+        }
+        delete enhanced[MARKER_KEY];
+        Array.from(node.children).forEach(disposeNode);
+      }
+    };
+    Array.from(root.childNodes).forEach(disposeNode);
+    if (root instanceof Element) {
+      root.replaceChildren();
+    } else {
+      while (root.firstChild)
+        root.removeChild(root.firstChild);
+    }
+  }
   function extractResourceMetadata(htmlText, path, runtime) {
     const meta = {};
     if (!htmlText || typeof htmlText !== "string")
@@ -3720,6 +3755,7 @@ ${scripts}
                 return;
               if (config.path === __lastPath)
                 return;
+              const previousPath = __lastPath;
               __lastPath = config.path;
               const load = async () => {
                 componentState.isLoading = true;
@@ -3781,6 +3817,12 @@ ${scripts}
                   if (tabObj && extracted && (extracted.title || extracted.icon)) {
                     tabObj.meta = { ...tabObj.meta || {}, ...extracted };
                   }
+                  const isPathChange = previousPath !== void 0 && previousPath !== targetPath;
+                  if (isPathChange) {
+                    const targetRoot = config.shadowrootmode ? el.shadowRoot : el;
+                    if (targetRoot)
+                      teardownComponentSubtree(targetRoot);
+                  }
                   if (config.shadowrootmode) {
                     if (!el.shadowRoot)
                       el.attachShadow({ mode: config.shadowrootmode });
@@ -3795,7 +3837,11 @@ ${scripts}
                       shadowScope = createInheritedShadowScope(el, ctx);
                     }
                     shadow[DATA_STACK_KEY] = [shadowScope];
-                    runtime.morphDOM(shadow, html);
+                    if (isPathChange) {
+                      shadow.innerHTML = html;
+                    } else {
+                      runtime.morphDOM(shadow, html);
+                    }
                     stylesheet.adoptElementSubtree(shadow);
                     Array.from(shadow.children).forEach((child) => {
                       if (child instanceof HTMLElement || child instanceof SVGElement) {
@@ -3803,7 +3849,11 @@ ${scripts}
                       }
                     });
                   } else {
-                    runtime.morphDOM(el, html);
+                    if (isPathChange) {
+                      el.innerHTML = html;
+                    } else {
+                      runtime.morphDOM(el, html);
+                    }
                     stylesheet.adoptElementSubtree(el);
                     Array.from(el.children).forEach((child) => {
                       if (child instanceof HTMLElement || child instanceof SVGElement) {
@@ -13689,7 +13739,7 @@ ${bridge}`, {
   function getElementKey(node) {
     if (node.nodeType === Node.ELEMENT_NODE) {
       const el = node;
-      return el.getAttribute("data-key") || el.getAttribute("key") || el.id || null;
+      return el.id || null;
     }
     return null;
   }
@@ -14338,7 +14388,7 @@ ${bridge}`, {
   function elUniqId(el) {
     if (el.id)
       return el.id;
-    const key = el.getAttribute("data-ux-id") || el.getAttribute("data-key") || el.getAttribute("data-id");
+    const key = el.getAttribute("data-ux-id") || el.getAttribute("data-id");
     if (key) {
       const hash2 = new Hash();
       hash2.with(el.tagName).with(key);

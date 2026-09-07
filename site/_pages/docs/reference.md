@@ -421,14 +421,13 @@ internally:
 ### 3.2. `data-for` — Zero-Allocation List Rendering
 
 **Syntax**: `data-for="item in items"` or `data-for="(item, index) in items"`  
-**Companion Attribute**: `data-key="item.id"`
 
-Repeats the element or template for each array item, using keyed diffing for minimal DOM mutations:
+Repeats the element or template for each array item, automatically tracking items by `.id` or `index` with zero configuration:
 
 ```html
 <div data-signal="{ users: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }] }">
   <ul>
-    <li data-for="user in users" data-key="user.id">
+    <li data-for="user in users">
       <span data-bind="user.name"></span>
     </li>
   </ul>
@@ -2543,7 +2542,7 @@ power of Nexus-UX's unified architecture.
 <div
   data-signal="{ activeSensors: $sql('LIVE SELECT * FROM sensor WHERE active = true') }"
 >
-  <div data-for="sensor in activeSensors" data-key="sensor.id">
+  <div data-for="sensor in activeSensors">
     <div
       class="card bg-base-200 shadow-lg"
       data-style-border-left-width="4"
@@ -2564,7 +2563,7 @@ power of Nexus-UX's unified architecture.
 </div>
 ```
 
-_Features_: `data-for` + `data-key`, `data-style` (automatic unit appending for
+_Features_: `data-for` (automatic item tracking), `data-style` (automatic unit appending for
 numeric `border-left-width`), `data-on-intersect` (lazy hydration), `$sql` (LIVE queries).
 
 #### 11.2.2. The "God-Mode" Auth Gateway
@@ -2587,7 +2586,7 @@ numeric `border-left-width`), `data-on-intersect` (lazy hydration), `$sql` (LIVE
     <h2>⚡ Admin Control Panel</h2>
     <div data-signal="{ allUsers: $sql('LIVE SELECT * FROM user') }">
       <table>
-        <tr data-for="u in allUsers" data-key="u.id">
+        <tr data-for="u in allUsers">
           <td data-bind="u.name"></td>
           <td data-bind="u.email"></td>
           <td>

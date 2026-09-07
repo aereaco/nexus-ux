@@ -17,8 +17,7 @@
       Syntax: '&lt;template data-for=\&quot;item in items\&quot;&gt;\n  &lt;div data-bind=\&quot;item.title\&quot;&gt;&lt;/div&gt;\n&lt;/template&gt;\n&lt;template data-for=\&quot;(item, idx) in items\&quot;&gt;\n  &lt;span data-bind=\&quot;idx + \': \' + item.name\&quot;&gt;&lt;/span&gt;\n&lt;/template&gt;',
       Params: [
         { name: 'data-for=&quot;item in items&quot;', type: 'Expression', default: '-', description: 'Iterates array items and binds each item to the cloned template scope.' },
-        { name: 'data-for=&quot;(item, index) in items&quot;', type: 'Tuple Destructuring', default: '-', description: 'Exposes both the item value and its 0-indexed loop position.' },
-        { name: 'data-key=&quot;item.id&quot;', type: 'Optimization', default: 'index', description: 'Tracks elements across list mutations for optimal DOM re-use.' }
+        { name: 'data-for=&quot;(item, index) in items&quot;', type: 'Tuple Destructuring', default: '-', description: 'Exposes both the item value and its 0-indexed loop position with automatic zero-config item keying.' }
       ],
       SourceModule: '/modules/attributes/for.ts',
       SnippetModule: '/_pages/labs/attributes/for.html',

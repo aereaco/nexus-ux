@@ -32,7 +32,7 @@
         manageTarget: '',
         newName: '',
         manageError: '',
-        initComplete: false,
+        activeModulePath: '',
         askCopilot() {
             if (window.Nexus?.coordinator?.runtimeContext?.globalSignals) {
                 const g = window.Nexus.coordinator.runtimeContext.globalSignals();
@@ -41,49 +41,69 @@
             }
         }
      }" data-effect="
-        if (!initComplete && doc) {
-            initComplete = true;
+        if (doc && doc.SourceModule && doc.SourceModule !== activeModulePath) {
+            activeModulePath = doc.SourceModule;
+            forkSource = '';
+            forkCode = '';
+            snippetCode = '';
+            baseSnippets = [];
+            snippets = [];
+            snippetsLoaded = false;
+            activeFork = 'Default';
+            activeSnippet = 'Default';
 
             // Populate base snippets
-            if (baseSnippets.length === 0) {
-                const bases = [];
-                if (doc.Examples) {
-                    Object.keys(doc.Examples).forEach(k => bases.push(k));
-                } else if (doc.Snippet) {
-                    bases.push(doc.DefaultSnippetName || 'Default');
-                }
-                baseSnippets = bases;
-                if (bases.length > 0 && activeSnippet === 'Default') activeSnippet = bases[0];
+            const bases = [];
+            if (doc.Examples) {
+                Object.keys(doc.Examples).forEach(k => bases.push(k));
+            } else if (doc.Snippet) {
+                bases.push(doc.DefaultSnippetName || 'Default');
             }
+            baseSnippets = bases;
+            if (bases.length > 0) activeSnippet = bases[0];
 
             // Sync snippet code to preview immediately
-            if (!snippetCode && doc.Examples && doc.Examples[activeSnippet]) {
+            if (doc.Examples && doc.Examples[activeSnippet]) {
                 snippetCode = doc.Examples[activeSnippet];
-            } else if (!snippetCode && doc.Snippet && activeSnippet === (doc.DefaultSnippetName || 'Default')) {
+            } else if (doc.Snippet) {
                 snippetCode = doc.Snippet;
             }
 
-            if (activeFork === 'Default' && forkSource && !forkCode) forkCode = forkSource;
-
             // Initialize saved snippets list from IndexedDB
-            if (!snippetsLoaded && doc.SnippetModule) {
+            if (doc.SnippetModule && window.indexedDB?.snippets) {
                 snippetsLoaded = true;
-                indexedDB.snippets.keys(doc.SnippetModule + '_').then(keys => {
+                window.indexedDB.snippets.keys(doc.SnippetModule + '_').then(keys => {
                     snippets = keys.map(k => k.substring(doc.SnippetModule.length + 1));
-                });
+                }).catch(() => {});
+            }
+
+            // Cleanup stale editor instances if any
+            if ($el._sourceEditor) {
+                $el._sourceEditor.destroy();
+                $el._sourceEditor = null;
+            }
+            if ($el._snippetEditor) {
+                $el._snippetEditor.destroy();
+                $el._snippetEditor = null;
+            }
+            if (window._sourceEditor) {
+                window._sourceEditor.destroy();
+                window._sourceEditor = null;
+            }
+            if (window._snippetEditor) {
+                window._snippetEditor.destroy();
+                window._snippetEditor = null;
             }
 
             // Fetch framework module source directly from GitHub
-            if (!forkSource && doc.SourceModule) {
-                fetch('https://raw.githubusercontent.com/aereaco/nexus-ux/main/src' + doc.SourceModule)
-                    .then(r => r.ok ? r.text() : Promise.reject(r.statusText))
-                    .then(d => {
-                        forkSource = d;
-                        if (activeFork === 'Default') forkCode = d;
-                        $el._mountEditors?.();
-                    })
-                    .catch(err => console.error('Failed to load source from GitHub:', err));
-            }
+            fetch('https://raw.githubusercontent.com/aereaco/nexus-ux/main/src' + doc.SourceModule)
+                .then(r => r.ok ? r.text() : Promise.reject(r.statusText))
+                .then(d => {
+                    forkSource = d;
+                    if (activeFork === 'Default') forkCode = d;
+                    $el._mountEditors?.();
+                })
+                .catch(err => console.error('Failed to load source from GitHub:', err));
 
             // Mount editors (CodeMirror 6)
             const mountEditors = () => {
@@ -91,21 +111,12 @@
 
                 const { EditorView, EditorState, Compartment, basicSetup, javascript, html, oneDark } = window.CM;
 
-                // Cleanup stale editor instances if detached
-                if (window._sourceEditor && !document.contains(window._sourceEditor.dom)) {
-                    window._sourceEditor.destroy();
-                    window._sourceEditor = null;
-                }
-                if (window._snippetEditor && !document.contains(window._snippetEditor.dom)) {
-                    window._snippetEditor.destroy();
-                    window._snippetEditor = null;
-                }
-
                 // 1. Module Source Editor
                 const sourceEl = document.getElementById('source-editor');
-                if (sourceEl && !window._sourceEditor && forkSource) {
+                if (sourceEl && !$el._sourceEditor && forkSource) {
                     const readOnly = new Compartment();
-                    window._sourceEditor = new EditorView({
+                    sourceEl.replaceChildren();
+                    $el._sourceEditor = new EditorView({
                         state: EditorState.create({
                             doc: forkSource,
                             extensions: [
@@ -124,12 +135,14 @@
                         }),
                         parent: sourceEl
                     });
+                    window._sourceEditor = $el._sourceEditor;
                 }
 
                 // 2. Lab Snippet Editor (Live Editable)
                 const snippetEl = document.getElementById('snippet-editor');
-                if (snippetEl && (doc?.Snippet || doc?.Examples) && !window._snippetEditor) {
-                    window._snippetEditor = new EditorView({
+                if (snippetEl && (doc?.Snippet || doc?.Examples) && !$el._snippetEditor) {
+                    snippetEl.replaceChildren();
+                    $el._snippetEditor = new EditorView({
                         state: EditorState.create({
                             doc: snippetCode || '',
                             extensions: [
@@ -147,6 +160,7 @@
                         }),
                         parent: snippetEl
                     });
+                    window._snippetEditor = $el._snippetEditor;
                 }
             };
 
@@ -161,25 +175,27 @@
         }
 
         // Reactive synchronization via native data-effect:
-        if (initComplete) {
+        if (activeModulePath) {
             // Mount when switching to source or split
             if (specTab === 'source' || labTab === 'source' || labTab === 'split') {
                 setTimeout(() => $el._mountEditors?.(), 40);
             }
 
             // Sync snippet code to editor when changed externally
-            if (window._snippetEditor && snippetCode !== undefined) {
-                const cur = window._snippetEditor.state.doc.toString();
+            const activeSnipEd = $el._snippetEditor || window._snippetEditor;
+            if (activeSnipEd && snippetCode !== undefined) {
+                const cur = activeSnipEd.state.doc.toString();
                 if (cur !== snippetCode) {
-                    window._snippetEditor.dispatch({ changes: { from: 0, to: cur.length, insert: snippetCode || '' } });
+                    activeSnipEd.dispatch({ changes: { from: 0, to: cur.length, insert: snippetCode || '' } });
                 }
             }
 
             // Sync source code to editor when changed externally
-            if (window._sourceEditor && forkCode !== undefined) {
-                const cur = window._sourceEditor.state.doc.toString();
+            const activeSrcEd = $el._sourceEditor || window._sourceEditor;
+            if (activeSrcEd && forkCode !== undefined) {
+                const cur = activeSrcEd.state.doc.toString();
                 if (cur !== forkCode) {
-                    window._sourceEditor.dispatch({ changes: { from: 0, to: cur.length, insert: forkCode || '' } });
+                    activeSrcEd.dispatch({ changes: { from: 0, to: cur.length, insert: forkCode || '' } });
                 }
             }
         }
@@ -279,7 +295,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <template data-for="param in (doc.Params || [])" data-key="param.name">
+                                        <template data-for="param in (doc.Params || [])">
                                             <tr>
                                                 <td class="font-mono text-primary font-bold text-xs"
                                                     data-bind="param.name"></td>

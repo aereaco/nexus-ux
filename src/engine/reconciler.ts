@@ -182,7 +182,7 @@ function morphScript(fromScript: HTMLScriptElement, toScript: HTMLScriptElement)
 function getElementKey(node: Node): string | null {
   if (node.nodeType === Node.ELEMENT_NODE) {
     const el = node as Element;
-    return el.getAttribute('data-key') || el.getAttribute('key') || el.id || null;
+    return el.id || null;
   }
   return null;
 }

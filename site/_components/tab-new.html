@@ -24,7 +24,7 @@
       No favorites yet. Right-click a tab or link and choose <span class="font-medium">Save to Favorites</span>.
     </div>
     <ul class="menu w-full rounded-box bg-base-100/50" data-show="favorites && favorites.length > 0">
-      <template data-for="fav in favorites" data-key="fav.id || fav.href || fav">
+      <template data-for="fav in favorites">
         <li>
           <a data-bind-href="fav.href || fav.url || fav" data-bind-title="fav.title || fav"
              data-bind-data-tab-title="fav.title || fav" data-bind-data-tab-icon="fav.icon || 'material-symbols-light:star-outline'"
@@ -47,7 +47,7 @@
       Pages you visit will show up here.
     </div>
     <ul class="menu w-full rounded-box bg-base-100/50" data-show="recent && recent.length > 0">
-      <template data-for="item in recent" data-key="item.path">
+      <template data-for="item in recent">
         <li>
           <a data-bind-href="item.path" data-bind-title="item.title"
              data-bind-data-tab-title="item.title" data-bind-data-tab-icon="item.icon || 'material-symbols-light:article-outline'">

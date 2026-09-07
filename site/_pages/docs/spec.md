@@ -776,7 +776,7 @@ directive catalog:
 
 - **`data-if`**: Conditional Rendering — physical DOM insertion and removal with Idiomorph reconciliation.
 - **`data-show`**: Visual Toggle — toggles `display: none` without DOM removal for instant transitions.
-- **`data-for`**: List Iteration — zero-allocation array rendering with keyed item reconciliation (`data-key`).
+- **`data-for`**: List Iteration — zero-allocation array rendering with automatic item tracking (`item.id ?? index`).
 - **`data-switcher`**: State Cycle Iteration — provides a high-performance state toggle component (e.g., Theme Switcher). Companion attribute `data-switcher-options` defines the cycle array.
 - **`data-teleport`**: DOM Portal — teleports elements to target containers (`body`, selector) or drag/drop dropzones.
 

@@ -125,7 +125,7 @@ const remainingAttributes: LabSpec[] = [
       { name: "data-drag-group", type: "String", default: "''", description: "Optional group identifier allowing cross-container dragging." }
     ],
     extensibility: "<p>Powered by native pointer events and GPU-accelerated Web Animations API FLIP calculations. Mutates underlying reactive arrays without serialization.</p>",
-    snippet: '<div data-signal="{ tasks: [\'Architecture review\', \'Performance audit\', \'Release bundle\'] }" class="p-4 bg-base-200/50 rounded-xl space-y-2">\n  <p class="text-xs font-bold opacity-70">Drag items to reorder:</p>\n  <div data-drag-container="tasks" class="space-y-2">\n    <template data-for="t in tasks" data-key="t">\n      <div data-drag class="p-2.5 bg-base-100 rounded-lg shadow-sm border border-base-content/10 flex items-center justify-between cursor-grab active:cursor-grabbing">\n        <span class="text-sm font-medium" data-bind="t"></span>\n        <iconify-icon icon="material-symbols-light:drag-indicator" class="text-xl opacity-40"></iconify-icon>\n      </div>\n    </template>\n  </div>\n</div>'
+    snippet: '<div data-signal="{ tasks: [\'Architecture review\', \'Performance audit\', \'Release bundle\'] }" class="p-4 bg-base-200/50 rounded-xl space-y-2">\n  <p class="text-xs font-bold opacity-70">Drag items to reorder:</p>\n  <div data-drag-container="tasks" class="space-y-2">\n    <template data-for="t in tasks">\n      <div data-drag class="p-2.5 bg-base-100 rounded-lg shadow-sm border border-base-content/10 flex items-center justify-between cursor-grab active:cursor-grabbing">\n        <span class="text-sm font-medium" data-bind="t"></span>\n        <iconify-icon icon="material-symbols-light:drag-indicator" class="text-xl opacity-40"></iconify-icon>\n      </div>\n    </template>\n  </div>\n</div>'
   },
   {
     id: "lab-attr-effect",
@@ -142,7 +142,7 @@ const remainingAttributes: LabSpec[] = [
       { name: "data-effect", type: "Expression", default: "undefined", description: "JavaScript expression containing signals to track and execute as side-effects." }
     ],
     extensibility: "<p>Tied directly to element lifecycle via <code>elementBoundEffect</code>. Deterministically disposed when the host element leaves the DOM.</p>",
-    snippet: '<div data-signal="{ msg: \'Hello\', logs: [] }"\n     data-effect="logs = [...logs.slice(-3), \'Updated: \' + msg]"\n     class="p-4 bg-base-200/50 rounded-xl space-y-3">\n  <div class="flex items-center gap-2">\n    <input type="text" data-bind-value="msg" class="input input-bordered input-sm font-mono" />\n  </div>\n  <div class="text-xs font-mono space-y-1">\n    <div class="font-bold opacity-70">Recent Reactive Runs:</div>\n    <template data-for="l in logs" data-key="l">\n      <div class="badge badge-sm badge-outline font-mono" data-bind="l"></div>\n    </template>\n  </div>\n</div>'
+    snippet: '<div data-signal="{ msg: \'Hello\', logs: [] }"\n     data-effect="logs = [...logs.slice(-3), \'Updated: \' + msg]"\n     class="p-4 bg-base-200/50 rounded-xl space-y-3">\n  <div class="flex items-center gap-2">\n    <input type="text" data-bind-value="msg" class="input input-bordered input-sm font-mono" />\n  </div>\n  <div class="text-xs font-mono space-y-1">\n    <div class="font-bold opacity-70">Recent Reactive Runs:</div>\n    <template data-for="l in logs">\n      <div class="badge badge-sm badge-outline font-mono" data-bind="l"></div>\n    </template>\n  </div>\n</div>'
   },
   {
     id: "lab-attr-flow",
