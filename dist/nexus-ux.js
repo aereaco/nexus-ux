@@ -3904,7 +3904,9 @@ ${scripts}
                 } finally {
                   componentState.isLoading = false;
                   if (isTabOutlet && tabObj && typeof tabObj === "object") {
-                    tabObj.isLoading = false;
+                    if (tabObj.isLoading !== false) {
+                      tabObj.isLoading = false;
+                    }
                     if (componentState.meta?.title && (!tabObj.meta || !tabObj.meta.title)) {
                       tabObj.meta = Object.assign(tabObj.meta || {}, { title: componentState.meta.title });
                     }
@@ -3917,6 +3919,7 @@ ${scripts}
               load();
             });
             return () => {
+              delete el.__component_init;
               if (el instanceof BaseComponent) {
                 el.disconnectedCallback();
               }
