@@ -279,16 +279,6 @@
     "category": "Labs"
   },
   {
-    "id": "lab-mod-outside",
-    "route": "/labs/modifiers/outside",
-    "path": "/_pages/labs/modifiers/outside.html",
-    "title": ":outside",
-    "icon": "material-symbols-light:open-in-new",
-    "order": 4,
-    "parent": "/labs/modifiers",
-    "category": "Labs"
-  },
-  {
     "id": "lab-scope-os",
     "route": "/labs/scopes/os",
     "path": "/_pages/labs/scopes/os.html",
@@ -475,6 +465,16 @@
     "icon": "material-symbols-light:bolt",
     "order": 9,
     "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-mod-outside",
+    "route": "/labs/modifiers/outside",
+    "path": "/_pages/labs/modifiers/outside.html",
+    "title": ":outside",
+    "icon": "material-symbols-light:tab-close",
+    "order": 9,
+    "parent": "/labs/modifiers",
     "category": "Labs"
   },
   {
