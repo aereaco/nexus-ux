@@ -416,16 +416,6 @@
     "category": "Labs"
   },
   {
-    "id": "lab-attr-assert",
-    "route": "/labs/attributes/assert",
-    "path": "/_pages/labs/attributes/assert.html",
-    "title": "data-assert",
-    "icon": "material-symbols-light:rule-settings-outline",
-    "order": 9,
-    "parent": "/labs/attributes",
-    "category": "Labs"
-  },
-  {
     "id": "lab-attr-effect",
     "route": "/labs/attributes/effect",
     "path": "/_pages/labs/attributes/effect.html",
@@ -761,6 +751,16 @@
     "title": "data-preserve",
     "icon": "material-symbols-light:shield",
     "order": 26,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-assert",
+    "route": "/labs/attributes/assert",
+    "path": "/_pages/labs/attributes/assert.html",
+    "title": "data-assert",
+    "icon": "material-symbols-light:fact-check",
+    "order": 27,
     "parent": "/labs/attributes",
     "category": "Labs"
   },

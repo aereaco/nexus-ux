@@ -1,30 +1,28 @@
-<title>data-assert</title>
-<meta name="id" content="lab-attr-assert">
-<meta name="route" content="/labs/attributes/assert">
-<meta name="icon" content="material-symbols-light:rule-settings-outline">
-<meta name="order" content="9">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/attributes">
+<head>
+  <title>data-assert</title>
+  <meta name="id" content="lab-attr-assert">
+  <meta name="route" content="/labs/attributes/assert">
+  <meta name="icon" content="material-symbols-light:fact-check">
+  <meta name="order" content="27">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/attributes">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "data-assert",
-    "Category": "Attributes",
-    "Icon": "material-symbols-light:rule-settings-outline",
-    "ModulePath": "src/modules/attributes/assert.ts",
-    "Description": "Evaluates runtime invariant assertion expressions against element scope. Emits system diagnostics on failure.",
-    "Syntax": "<div data-assert=\"count >= 0\">...</div>",
-    "Params": [
-      {
-        "name": "data-assert",
-        "type": "Expression",
-        "default": "true",
-        "description": "Boolean expression that must evaluate to truthy; otherwise logs an invariant violation."
-      }
-    ],
-    "Extensibility": "<p>The <code>assert</code> directive monitors reactive dependencies and logs error invariants when falsy conditions occur, facilitating early MCP self-healing.</p>",
-    "Snippet": "<div data-signal=\"{ val: 5 }\" class=\"p-4 bg-base-200/50 rounded-xl space-y-3\">\n  <p class=\"text-sm\">Value must be &gt;= 0:</p>\n  <div class=\"flex items-center gap-3\">\n    <button class=\"btn btn-sm btn-outline\" data-on-click=\"val--\">Decrement (-1)</button>\n    <span class=\"font-mono text-lg font-bold\" data-bind=\"val\"></span>\n    <button class=\"btn btn-sm btn-outline\" data-on-click=\"val++\">Increment (+1)</button>\n  </div>\n  <div data-assert=\"val >= 0\" class=\"text-xs text-success font-mono\">Invariant active: val &gt;= 0</div>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: 'data-assert',
+      Category: 'Attributes',
+      Icon: 'material-symbols-light:fact-check',
+      Description: 'Runtime invariant validation directive that verifies contracts on elements, firing telemetry alerts or errors when assertions evaluate to falsy.',
+      Syntax: '&lt;div data-assert=\&quot;items.length &gt; 0\&quot;&gt;&lt;/div&gt;',
+      Params: [
+        { name: 'data-assert=&quot;expr&quot;', type: 'Boolean Invariant Expression', default: '-', description: 'Evaluates invariant condition; reports error via debug telemetry if violated.' }
+      ],
+      SourceModule: '/modules/attributes/assert.ts',
+      SnippetModule: '/_pages/labs/attributes/assert.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/attributes/assert.ts&lt;/code&gt;, assert directives provide defensive programming right inside declarative HTML. When expressions fail, diagnostic reports route to &lt;code&gt;debug.ts&lt;/code&gt; and the self-healing telemetry agent.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Defensive UI Contracts&lt;/strong&gt; — Validate required inputs, non-empty collections, and valid states&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Self-Healing Bridge&lt;/strong&gt; — Telemetry payloads route directly to AI diagnostic repair tools&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Development &amp;amp; CI Validation&lt;/strong&gt; — Uncover state inconsistencies before production release&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ quota: 100, usage: 80 }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div data-assert=\&quot;usage &lt;= quota\&quot; class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4\&quot;&gt;\n        &lt;div class=\&quot;flex items-center justify-between\&quot;&gt;\n            &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Resource Quota Assertion&lt;/h4&gt;\n            &lt;span class=\&quot;badge font-mono text-xs\&quot; data-class=\&quot;{ \'badge-success\': usage &lt;= quota, \'badge-error\': usage &gt; quota }\&quot;&gt;\n                &lt;span data-bind=\&quot;usage &lt;= quota ? \'ASSERTION PASSED\' : \'ASSERTION VIOLATED\'\&quot;&gt;&lt;/span&gt;\n            &lt;/span&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;space-y-1\&quot;&gt;\n            &lt;div class=\&quot;flex justify-between text-xs font-semibold opacity-70\&quot;&gt;\n                &lt;span&gt;Usage (&lt;span data-bind=\&quot;usage\&quot;&gt;&lt;/span&gt; / &lt;span data-bind=\&quot;quota\&quot;&gt;&lt;/span&gt; MB):&lt;/span&gt;\n            &lt;/div&gt;\n            &lt;input type=\&quot;range\&quot; min=\&quot;50\&quot; max=\&quot;150\&quot; data-bind-value=\&quot;usage\&quot; class=\&quot;range range-xs range-primary\&quot;&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
