@@ -119,6 +119,16 @@
     "category": "Labs"
   },
   {
+    "id": "lab-mod-delay",
+    "route": "/labs/modifiers/delay",
+    "path": "/_pages/labs/modifiers/delay.html",
+    "title": ":delay",
+    "icon": "material-symbols-light:schedule",
+    "order": 2,
+    "parent": "/labs/modifiers",
+    "category": "Labs"
+  },
+  {
     "id": "lab-mod-stop",
     "route": "/labs/modifiers/stop",
     "path": "/_pages/labs/modifiers/stop.html",
@@ -604,15 +614,6 @@
     "icon": "material-symbols-light:extension",
     "order": 15,
     "parent": "/labs/attributes",
-    "category": "Labs"
-  },
-  {
-    "id": "lab-mod-delay",
-    "route": "/labs/modifiers/delay",
-    "path": "/_pages/labs/modifiers/delay.html",
-    "icon": "material-symbols-light:timer",
-    "order": 15,
-    "parent": "/labs/modifiers",
     "category": "Labs"
   },
   {
