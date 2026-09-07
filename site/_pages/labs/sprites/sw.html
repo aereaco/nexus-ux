@@ -1,23 +1,29 @@
-<title>$sw</title>
-<meta name="id" content="lab-sprite-sw">
-<meta name="route" content="/labs/sprites/sw">
-<meta name="icon" content="material-symbols-light:offline-bolt">
-<meta name="order" content="7">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/sprites">
+<head>
+  <title>$sw</title>
+  <meta name="id" content="lab-sprite-sw">
+  <meta name="route" content="/labs/sprites/sw">
+  <meta name="icon" content="material-symbols-light:cloud">
+  <meta name="order" content="14">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/sprites">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "$sw",
-    "Category": "Sprites",
-    "Icon": "material-symbols-light:offline-bolt",
-    "ModulePath": "src/modules/sprites/sw.ts",
-    "Description": "Service Worker lifecycle manager, registration, and cache controller.",
-    "Syntax": "$sw.register()",
-    "Params": [],
-    "Extensibility": "<p>Manages background caches and offline sync triggers.</p>",
-    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-1\">\n  <div class=\"badge badge-info\">$sw Service Worker</div>\n  <p class=\"text-xs opacity-70\">Offline storage and worker lifecycle controller.</p>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: '$sw Service Worker',
+      Category: 'Sprites',
+      Icon: 'material-symbols-light:cloud',
+      Description: 'Service Worker lifecycle coordinator ($sw.register, $sw.state, $sw.update, $sw.skipWaiting) providing reactive registration, caching control, and update prompts.',
+      Syntax: '$sw.register(\'/sw.js\')\n$sw.update()',
+      Params: [
+        { name: '$sw.register(scriptUrl)', type: 'Async Method', default: '-', description: 'Registers service worker script with optional scope configuration.' },
+        { name: '$sw.state', type: 'String Signal', default: '\'idle\'', description: 'Tracks worker lifecycle state (\'installing\', \'installed\', \'activating\', \'activated\', \'redundant\').' }
+      ],
+      SourceModule: '/modules/sprites/sw.ts',
+      SnippetModule: '/_pages/labs/sprites/sw.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/sprites/sw.ts&lt;/code&gt;, the $sw sprite bridges browser Service Worker APIs into reactive signals.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Lifecycle Tracking&lt;/strong&gt; — Track registration states dynamically in UI banners&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Skip Waiting Prompt&lt;/strong&gt; — Declaratively invoke &lt;code&gt;$sw.skipWaiting()&lt;/code&gt; when updates arrive&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ workerActive: true, cacheVersion: \'v2.4.0\' }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4 max-w-md\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Service Worker Lifecycle ($sw)&lt;/h4&gt;\n        &lt;div class=\&quot;p-4 bg-base-200/50 rounded-xl space-y-2 font-mono text-xs\&quot;&gt;\n            &lt;div class=\&quot;flex justify-between items-center\&quot;&gt;\n                &lt;span class=\&quot;opacity-70\&quot;&gt;Lifecycle State:&lt;/span&gt;\n                &lt;span class=\&quot;badge badge-success font-bold font-mono\&quot;&gt;ACTIVATED&lt;/span&gt;\n            &lt;/div&gt;\n            &lt;div class=\&quot;flex justify-between items-center\&quot;&gt;\n                &lt;span class=\&quot;opacity-70\&quot;&gt;Offline Cache:&lt;/span&gt;\n                &lt;span class=\&quot;text-primary font-bold\&quot; data-bind=\&quot;cacheVersion\&quot;&gt;&lt;/span&gt;\n            &lt;/div&gt;\n        &lt;/div&gt;\n        &lt;button class=\&quot;btn btn-xs btn-primary font-bold w-full\&quot;\n                data-on-click=\&quot;cacheVersion = \'v2.4.1 (Updated)\'\&quot;&gt;\n            Check for Worker Update ($sw.update)\n        &lt;/button&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>

@@ -389,16 +389,6 @@
     "category": "Labs"
   },
   {
-    "id": "lab-sprite-sw",
-    "route": "/labs/sprites/sw",
-    "path": "/_pages/labs/sprites/sw.html",
-    "title": "$sw",
-    "icon": "material-symbols-light:offline-bolt",
-    "order": 7,
-    "parent": "/labs/sprites",
-    "category": "Labs"
-  },
-  {
     "id": "lab-attr-style",
     "route": "/labs/attributes/style",
     "path": "/_pages/labs/attributes/style.html",
@@ -596,6 +586,16 @@
     "icon": "material-symbols-light:web-asset",
     "order": 14,
     "parent": "/labs/modifiers",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-sprite-sw",
+    "route": "/labs/sprites/sw",
+    "path": "/_pages/labs/sprites/sw.html",
+    "title": "$sw",
+    "icon": "material-symbols-light:cloud",
+    "order": 14,
+    "parent": "/labs/sprites",
     "category": "Labs"
   },
   {
