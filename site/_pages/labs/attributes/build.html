@@ -1,30 +1,28 @@
-<title>data-build</title>
-<meta name="id" content="lab-attr-build">
-<meta name="route" content="/labs/attributes/build">
-<meta name="icon" content="material-symbols-light:package-2-outline">
-<meta name="order" content="10">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/attributes">
+<head>
+  <title>data-build</title>
+  <meta name="id" content="lab-attr-build">
+  <meta name="route" content="/labs/attributes/build">
+  <meta name="icon" content="material-symbols-light:build">
+  <meta name="order" content="28">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/attributes">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "data-build",
-    "Category": "Attributes",
-    "Icon": "material-symbols-light:package-2-outline",
-    "ModulePath": "src/modules/attributes/build.ts",
-    "Description": "In-browser bundler and asset packager compiling live DOM elements into IndexedDB binary payloads.",
-    "Syntax": "<div data-build=\"idb://my-app-bundle\">...</div>",
-    "Params": [
-      {
-        "name": "data-build",
-        "type": "URI String",
-        "default": "idb://default",
-        "description": "Target IndexedDB namespace for in-browser serialized tree packaging."
-      }
-    ],
-    "Extensibility": "<p>The <code>build</code> directive executes ZCZS binary serialization to cache pre-compiled component trees offline without JSON serialization overhead.</p>",
-    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-2\">\n  <div class=\"badge badge-primary\">data-build Active</div>\n  <p class=\"text-sm\">Serializes element subtrees into high-performance binary memory storage.</p>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: 'data-build',
+      Category: 'Attributes',
+      Icon: 'material-symbols-light:build',
+      Description: 'In-browser compilation and bundling directive that serializes live DOM subtrees, stylesheets, and assets directly into IndexedDB or client-side bundles.',
+      Syntax: '&lt;div data-build=\&quot;idb://artifacts/bundle.html\&quot;&gt;&lt;/div&gt;',
+      Params: [
+        { name: 'data-build=&quot;target&quot;', type: 'Storage URI', default: '-', description: 'Target destination URI for the serialized bundle payload.' }
+      ],
+      SourceModule: '/modules/attributes/build.ts',
+      SnippetModule: '/_pages/labs/attributes/build.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/attributes/build.ts&lt;/code&gt;, the build directive powers in-browser packaging workflows. It allows dynamic sites to snapshot their current DOM state and write production-ready bundles directly into IndexedDB without a Node or server build process.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;In-Browser Bundling&lt;/strong&gt; — Zero terminal toolchain required to compile and save templates&lt;/li&gt;&lt;li&gt;&lt;strong&gt;IndexedDB Persistence&lt;/strong&gt; — Directly integrates with &lt;code&gt;cacheEngine&lt;/code&gt; and local storage&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Offline Distribution&lt;/strong&gt; — Exports self-contained single-file HTML applications&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ bundleId: \'idb://bundles/app-v1.html\', buildStatus: \'Ready to compile\' }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;In-Browser Bundler Target&lt;/h4&gt;\n        &lt;div class=\&quot;p-3 bg-base-200/50 rounded-xl font-mono text-xs flex items-center justify-between\&quot;&gt;\n            &lt;span class=\&quot;opacity-70\&quot;&gt;Destination:&lt;/span&gt;\n            &lt;span class=\&quot;text-accent font-bold\&quot; data-bind=\&quot;bundleId\&quot;&gt;&lt;/span&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;flex items-center justify-between pt-2\&quot;&gt;\n            &lt;span class=\&quot;text-xs opacity-70 font-mono\&quot; data-bind=\&quot;buildStatus\&quot;&gt;&lt;/span&gt;\n            &lt;button class=\&quot;btn btn-sm btn-primary font-bold\&quot; data-on-click=\&quot;buildStatus = \'Artifact serialized to IndexedDB (✓)\'\&quot;&gt;\n                Compile Snapshot\n            &lt;/button&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
