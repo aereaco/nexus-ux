@@ -269,6 +269,16 @@
     "category": "Labs"
   },
   {
+    "id": "lab-sprite-flow",
+    "route": "/labs/sprites/flow",
+    "path": "/_pages/labs/sprites/flow.html",
+    "title": "$flow",
+    "icon": "material-symbols-light:schema",
+    "order": 4,
+    "parent": "/labs/sprites",
+    "category": "Labs"
+  },
+  {
     "id": "doc-license",
     "route": "/docs/license",
     "path": "/_pages/docs/license.md",

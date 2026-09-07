@@ -1,0 +1,29 @@
+<head>
+  <title>$flow</title>
+  <meta name="id" content="lab-sprite-flow">
+  <meta name="route" content="/labs/sprites/flow">
+  <meta name="icon" content="material-symbols-light:schema">
+  <meta name="order" content="4">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/sprites">
+</head>
+
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: '$flow',
+      Category: 'Sprites',
+      Icon: 'material-symbols-light:schema',
+      Description: 'Exposes reactive node-graph canvas manipulation methods and viewport query access ($flow.zoomIn, $flow.zoomOut, $flow.fitView, $flow.centerNode) directly in expressions.',
+      Syntax: '$flow.zoomIn()\n$flow.fitView({ padding: 20 })',
+      Params: [
+        { name: '$flow.zoomIn()', type: 'Method', default: '-', description: 'Smoothly increments current canvas viewport zoom level.' },
+        { name: '$flow.fitView()', type: 'Method', default: '-', description: 'Calculates bounding box of all nodes and centers canvas viewport.' }
+      ],
+      SourceModule: '/modules/sprites/flow.ts',
+      SnippetModule: '/_pages/labs/sprites/flow.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/sprites/flow.ts&lt;/code&gt;, the $flow sprite exposes programmatic navigation controls for xyflow canvas containers.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Camera Navigation&lt;/strong&gt; — Pan, zoom, and center operations with smooth easing&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Live Viewport Metrics&lt;/strong&gt; — Access active scale and offset coordinates from any child element&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ canvasZoom: 1 }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4 max-w-md\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Canvas Viewport Controller ($flow)&lt;/h4&gt;\n        &lt;div class=\&quot;flex gap-2\&quot;&gt;\n            &lt;button class=\&quot;btn btn-sm btn-primary font-bold flex-1\&quot; data-on-click=\&quot;canvasZoom = Math.min(2.5, canvasZoom + 0.2)\&quot;&gt;Zoom In (+)&lt;/button&gt;\n            &lt;button class=\&quot;btn btn-sm btn-secondary font-bold flex-1\&quot; data-on-click=\&quot;canvasZoom = Math.max(0.5, canvasZoom - 0.2)\&quot;&gt;Zoom Out (-)&lt;/button&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;p-3 bg-base-200/50 rounded-xl font-mono text-xs flex justify-between\&quot;&gt;\n            &lt;span class=\&quot;opacity-70\&quot;&gt;Viewport Scale:&lt;/span&gt;\n            &lt;span class=\&quot;text-primary font-bold\&quot; data-bind=\&quot;canvasZoom.toFixed(1) + \'x\'\&quot;&gt;&lt;/span&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
+</div>
