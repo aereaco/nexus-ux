@@ -1,23 +1,29 @@
-<title>$sql</title>
-<meta name="id" content="lab-sprite-sql">
-<meta name="route" content="/labs/sprites/sql">
-<meta name="icon" content="material-symbols-light:database">
-<meta name="order" content="5">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/sprites">
+<head>
+  <title>$sql</title>
+  <meta name="id" content="lab-sprite-sql">
+  <meta name="route" content="/labs/sprites/sql">
+  <meta name="icon" content="material-symbols-light:database">
+  <meta name="order" content="12">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/sprites">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "$sql",
-    "Category": "Sprites",
-    "Icon": "material-symbols-light:database",
-    "ModulePath": "src/modules/sprites/sql.ts",
-    "Description": "SurrealDB live WebSocket query runner and real-time subscription client.",
-    "Syntax": "$sql(&#39;SELECT * FROM user&#39;)",
-    "Params": [],
-    "Extensibility": "<p>Maintains persistent WebSocket channel for live multi-user sync.</p>",
-    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-1\">\n  <div class=\"badge badge-secondary\">$sql SurrealDB Client</div>\n  <p class=\"text-xs opacity-70\">Real-time WebSocket database subscriptions.</p>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: '$sql',
+      Category: 'Sprites',
+      Icon: 'material-symbols-light:database',
+      Description: 'SurrealDB and SQL WebSocket live query runner providing real-time data subscriptions, query parameterization, and zero-serialization table streams.',
+      Syntax: '$sql.query(\'SELECT * FROM user WHERE active = true\')\n$sql.live(\'telemetry\', (data) =&gt; handleTelemetry(data))',
+      Params: [
+        { name: '$sql.query(sql, params)', type: 'Async Method', default: '-', description: 'Executes SQL statement over WebSocket and returns typed result records.' },
+        { name: '$sql.live(table, callback)', type: 'Live Subscription', default: '-', description: 'Subscribes to live SurrealDB table changes via WebSocket push.' }
+      ],
+      SourceModule: '/modules/sprites/sql.ts',
+      SnippetModule: '/_pages/labs/sprites/sql.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/sprites/sql.ts&lt;/code&gt;, the $sql sprite pairs SurrealDB WebSocket connections directly with reactive signal scopes for true database-to-DOM synchronization.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Live Push Queries&lt;/strong&gt; — Database record mutations stream straight to UI templates&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Zero Serialization Overhead&lt;/strong&gt; — Streamed JSON records bind directly into the reactive graph&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ sqlRecords: [{ id: \'user:1\', role: \'Admin\', ping: \'14ms\' }, { id: \'user:2\', role: \'Pilot\', ping: \'22ms\' }] }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4 max-w-md\&quot;&gt;\n        &lt;div class=\&quot;flex items-center justify-between\&quot;&gt;\n            &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Live SQL Stream ($sql)&lt;/h4&gt;\n            &lt;span class=\&quot;badge badge-success font-mono text-xs font-bold\&quot;&gt;WS Connected&lt;/span&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;space-y-2 font-mono text-xs\&quot;&gt;\n            &lt;template data-for=\&quot;rec in sqlRecords\&quot;&gt;\n                &lt;div class=\&quot;p-3 bg-base-200/50 rounded-xl flex items-center justify-between\&quot;&gt;\n                    &lt;span class=\&quot;text-primary font-bold\&quot; data-bind=\&quot;rec.id\&quot;&gt;&lt;/span&gt;\n                    &lt;span class=\&quot;badge badge-ghost badge-xs font-mono\&quot; data-bind=\&quot;rec.role\&quot;&gt;&lt;/span&gt;\n                    &lt;span class=\&quot;text-accent font-bold\&quot; data-bind=\&quot;rec.ping\&quot;&gt;&lt;/span&gt;\n                &lt;/div&gt;\n            &lt;/template&gt;\n        &lt;/div&gt;\n        &lt;button class=\&quot;btn btn-xs btn-outline font-bold w-full\&quot;\n                data-on-click=\&quot;sqlRecords.push({ id: \'user:\' + (sqlRecords.length + 1), role: \'Navigator\', ping: \'18ms\' })\&quot;&gt;\n            Simulate Live Record Stream Push (+)\n        &lt;/button&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>

@@ -319,16 +319,6 @@
     "category": "Labs"
   },
   {
-    "id": "lab-sprite-sql",
-    "route": "/labs/sprites/sql",
-    "path": "/_pages/labs/sprites/sql.html",
-    "title": "$sql",
-    "icon": "material-symbols-light:database",
-    "order": 5,
-    "parent": "/labs/sprites",
-    "category": "Labs"
-  },
-  {
     "id": "lab-attr-on",
     "route": "/labs/attributes/on",
     "path": "/_pages/labs/attributes/on.html",
@@ -546,6 +536,16 @@
     "icon": "material-symbols-light:pan-tool",
     "order": 12,
     "parent": "/labs/modifiers",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-sprite-sql",
+    "route": "/labs/sprites/sql",
+    "path": "/_pages/labs/sprites/sql.html",
+    "title": "$sql",
+    "icon": "material-symbols-light:database",
+    "order": 12,
+    "parent": "/labs/sprites",
     "category": "Labs"
   },
   {
