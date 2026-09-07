@@ -1,30 +1,31 @@
-<title>data-import</title>
-<meta name="id" content="lab-attr-import">
-<meta name="route" content="/labs/attributes/import">
-<meta name="icon" content="material-symbols-light:download-for-offline-outline">
-<meta name="order" content="18">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/attributes">
+<head>
+  <title>data-import</title>
+  <meta name="id" content="lab-attr-import">
+  <meta name="route" content="/labs/attributes/import">
+  <meta name="icon" content="material-symbols-light:cloud-download">
+  <meta name="order" content="16">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/attributes">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "data-import",
-    "Category": "Attributes",
-    "Icon": "material-symbols-light:download-for-offline-outline",
-    "ModulePath": "src/modules/attributes/import.ts",
-    "Description": "Universal declarative asset loader for external JavaScript modules, constructable stylesheets, and Iconify font libraries.",
-    "Syntax": "<div data-import=\"{ script: &#39;https://cdn.example.com/lib.js&#39; }\">...</div>",
-    "Params": [
-      {
-        "name": "data-import",
-        "type": "Object / String",
-        "default": "{}",
-        "description": "Manifest of external scripts or stylesheet links to load and cache."
-      }
-    ],
-    "Extensibility": "<p>Manages deduplicated script loading, global symbol injection, and link stylesheet compilation with Promise-based completion signals.</p>",
-    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-2\">\n  <div class=\"badge badge-info\">Universal Import Active</div>\n  <p class=\"text-sm\">Loads scripts, stylesheets, and icons declaratively on-demand.</p>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: 'data-import',
+      Category: 'Attributes',
+      Icon: 'material-symbols-light:cloud-download',
+      Description: 'Declarative external dependency loader for scripts, stylesheets, ESM modules, HTML patterns, and theme assets with automated deduplication.',
+      Syntax: '&lt;div data-import=\&quot;{ script: \'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.js\' }\&quot;&gt;&lt;/div&gt;',
+      Params: [
+        { name: 'script', type: 'URL / Array', default: '-', description: 'External JavaScript file URL or list of scripts to load.' },
+        { name: 'link', type: 'URL / Array', default: '-', description: 'External CSS stylesheet URL or list of stylesheets to inject.' },
+        { name: 'module', type: 'ESM URL', default: '-', description: 'Dynamic ES module imported via browser native import().' },
+        { name: 'adopt', type: 'CSS URL', default: '-', description: 'Adopts CSS directly into constructable stylesheets.' }
+      ],
+      SourceModule: '/modules/attributes/import.ts',
+      SnippetModule: '/_pages/labs/attributes/import.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/attributes/import.ts&lt;/code&gt;, the import directive eliminates imperative &lt;code&gt;&lt;script&gt;&lt;/code&gt; tags from template files. Dependencies load asynchronously, deduplicate automatically, and fire readiness callbacks.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Automatic Deduplication&lt;/strong&gt; — Simultaneous requests for identical libraries resolve to a single network fetch&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Constructable Adoption&lt;/strong&gt; — The &lt;code&gt;adopt&lt;/code&gt; key compiles remote CSS into &lt;code&gt;adoptedStyleSheets&lt;/code&gt;&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Pure HTML Declarative&lt;/strong&gt; — Zero imperative loader scripts required anywhere in page markup&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ libraryLoaded: true, libUrl: \'https://esm.sh/canvas-confetti@1.9.3\' }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-3\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm text-primary\&quot;&gt;Declarative Dependency Manifest&lt;/h4&gt;\n        &lt;div class=\&quot;p-3 bg-base-200/50 rounded-xl font-mono text-xs overflow-x-auto\&quot;&gt;\n            &lt;span class=\&quot;text-primary font-bold\&quot;&gt;data-import&lt;/span&gt;=&quot;{ module: \'&lt;span data-bind=\&quot;libUrl\&quot;&gt;&lt;/span&gt;\' }&quot;\n        &lt;/div&gt;\n        &lt;div class=\&quot;flex items-center justify-between pt-2\&quot;&gt;\n            &lt;span class=\&quot;text-xs opacity-70\&quot;&gt;Status:&lt;/span&gt;\n            &lt;span class=\&quot;badge badge-success badge-sm font-mono\&quot;&gt;Verified In Cache&lt;/span&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>

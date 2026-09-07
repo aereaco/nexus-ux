@@ -645,22 +645,22 @@
     "category": "Labs"
   },
   {
+    "id": "lab-attr-import",
+    "route": "/labs/attributes/import",
+    "path": "/_pages/labs/attributes/import.html",
+    "title": "data-import",
+    "icon": "material-symbols-light:cloud-download",
+    "order": 16,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
     "id": "lab-attr-html",
     "route": "/labs/attributes/html",
     "path": "/_pages/labs/attributes/html.html",
     "title": "data-html",
     "icon": "material-symbols-light:code",
     "order": 17,
-    "parent": "/labs/attributes",
-    "category": "Labs"
-  },
-  {
-    "id": "lab-attr-import",
-    "route": "/labs/attributes/import",
-    "path": "/_pages/labs/attributes/import.html",
-    "title": "data-import",
-    "icon": "material-symbols-light:download-for-offline-outline",
-    "order": 18,
     "parent": "/labs/attributes",
     "category": "Labs"
   },
