@@ -559,16 +559,6 @@
     "category": "Labs"
   },
   {
-    "id": "lab-mod-zoom",
-    "route": "/labs/modifiers/zoom",
-    "path": "/_pages/labs/modifiers/zoom.html",
-    "title": ":zoom",
-    "icon": "material-symbols-light:zoom-in",
-    "order": 13,
-    "parent": "/labs/modifiers",
-    "category": "Labs"
-  },
-  {
     "id": "lab-sprite-svg",
     "route": "/labs/sprites/svg",
     "path": "/_pages/labs/sprites/svg.html",
@@ -616,6 +606,16 @@
     "icon": "material-symbols-light:extension",
     "order": 15,
     "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-mod-zoom",
+    "route": "/labs/modifiers/zoom",
+    "path": "/_pages/labs/modifiers/zoom.html",
+    "title": ":zoom",
+    "icon": "material-symbols-light:zoom-in",
+    "order": 15,
+    "parent": "/labs/modifiers",
     "category": "Labs"
   },
   {
