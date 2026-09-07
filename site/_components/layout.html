@@ -558,7 +558,7 @@
   data-on-resize_window="isMobile = window.innerWidth < 768"
   data-on-keydown_window="if ($evt.ctrlKey && ($evt.key === '`' || $evt.key === '~')) { $evt.preventDefault(); toggleTerminalHud(); }">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
-  <div class="drawer-content flex flex-col transition-[padding] duration-300 ease-in-out"
+  <div class="drawer-content flex flex-col transition-[padding] duration-300 ease-in-out max-h-4"
     data-class="{ 'h-full overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader, 'md:pe-96': chatbarDocked && chatbarOpen, 'pe-0': !chatbarDocked || !chatbarOpen }">
     <!-- Signal-Based Routes configured on <html> via data-route="{ routes: [...] }" -->
 
