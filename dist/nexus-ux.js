@@ -5676,10 +5676,20 @@ ${scripts}
   z-index: 50;
   border-radius: 4px;
 }
+[data-flow-node].selected > * {
+  outline: 2px solid var(--color-primary, #3b82f6);
+  outline-offset: 2px;
+}
 .flow-resizer {
   position: absolute;
-  inset: 0;
+  inset: -2px;
   pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+[data-flow-node]:hover .flow-resizer,
+[data-flow-node].selected .flow-resizer {
+  opacity: 1;
 }
 .flow-resize-handle {
   position: absolute;
