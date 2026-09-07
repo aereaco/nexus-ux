@@ -479,6 +479,16 @@
     "category": "Labs"
   },
   {
+    "id": "lab-sprite-predictive",
+    "route": "/labs/sprites/predictive",
+    "path": "/_pages/labs/sprites/predictive.html",
+    "title": "$predictive",
+    "icon": "material-symbols-light:psychology",
+    "order": 9,
+    "parent": "/labs/sprites",
+    "category": "Labs"
+  },
+  {
     "id": "lab-attr-computed",
     "route": "/labs/attributes/computed",
     "path": "/_pages/labs/attributes/computed.html",
