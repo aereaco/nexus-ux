@@ -1,26 +1,30 @@
-<title>data-for</title>
-<meta name="id" content="lab-attr-for">
-<meta name="route" content="/labs/attributes/for">
-<meta name="icon" content="material-symbols-light:repeat">
-<meta name="order" content="3">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/attributes">
+<head>
+  <title>data-for</title>
+  <meta name="id" content="lab-attr-for">
+  <meta name="route" content="/labs/attributes/for">
+  <meta name="icon" content="material-symbols-light:repeat">
+  <meta name="order" content="3">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/attributes">
+</head>
 
-<div data-signal="{
-  doc: {
-    Title: 'data-for',
-    Category: 'Attributes',
-    Icon: 'material-symbols-light:repeat',
-    ModulePath: 'src/modules/attributes/for.ts',
-    Description: 'Zero-allocation keyed list rendering on template or standard elements with support for tuple destructuring and in-place DOM morph diffing.',
-    Syntax: '<template data-for=\"item in items\" data-key=\"item.id\">\n  <li data-bind=\"item.name\"></li>\n</template>',
-    Params: [
-      { name: 'data-for', type: 'Expression', default: '-', description: 'Iterates over arrays or iterables using \"item in items\" or \"(item, index) in items\".' },
-      { name: 'data-key', type: 'Expression', default: '-', description: 'Unique identifier key for optimal DOM reconciliation and diffing.' }
-    ],
-    Extensibility: '<p>The <code>for</code> directive utilizes fine-grained keyed caching. When list order changes or items are inserted, DOM morphing preserves node focus, selection states, and transitions while avoiding full subtree demolitions.</p>',
-    Snippet: '<div data-signal=\"{ items: [\'Alpha Core\', \'Beta Gateway\', \'Gamma Engine\'], newItem: \'\' }\" class=\"space-y-4 p-4 bg-base-200/50 rounded-xl border border-base-content/10\">\n  <div class=\"flex gap-2 max-w-md\">\n    <input type=\"text\" placeholder=\"Add item...\" data-bind-value=\"newItem\" class=\"input input-bordered input-sm grow\" />\n    <button class=\"btn btn-sm btn-primary\" data-on-click=\"if (newItem.trim()) { items = [...items, newItem.trim()]; newItem = \'\'; }\">Add</button>\n  </div>\n  <ul class=\"space-y-2\">\n    <template data-for=\"(item, idx) in items\" data-key=\"item\">\n      <li class=\"flex items-center justify-between p-2.5 bg-base-100 rounded-lg border border-base-content/10 text-sm\">\n        <span class=\"font-medium\"><span class=\"opacity-50 font-mono me-2\">#{{idx + 1}}</span>{{item}}</span>\n        <button class=\"btn btn-ghost btn-xs text-error\" data-on-click=\"items = items.filter((_, i) => i !== idx)\">Remove</button>\n      </li>\n    </template>\n  </ul>\n</div>'
-  }
-}">
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: 'data-for',
+      Category: 'Attributes',
+      Icon: 'material-symbols-light:repeat',
+      Description: 'Renders high-performance dynamic lists directly from reactive arrays via zero-allocation DOM cloning, supporting tuple destructuring &lt;code&gt;(item, index) in items&lt;/code&gt; and SVG/HTML nodes.',
+      Syntax: '&lt;template data-for=\&quot;item in items\&quot;&gt;\n  &lt;div data-bind=\&quot;item.title\&quot;&gt;&lt;/div&gt;\n&lt;/template&gt;\n&lt;template data-for=\&quot;(item, idx) in items\&quot;&gt;\n  &lt;span data-bind=\&quot;idx + \': \' + item.name\&quot;&gt;&lt;/span&gt;\n&lt;/template&gt;',
+      Params: [
+        { name: 'data-for=&quot;item in items&quot;', type: 'Expression', default: '-', description: 'Iterates array items and binds each item to the cloned template scope.' },
+        { name: 'data-for=&quot;(item, index) in items&quot;', type: 'Tuple Destructuring', default: '-', description: 'Exposes both the item value and its 0-indexed loop position.' },
+        { name: 'data-key=&quot;item.id&quot;', type: 'Optimization', default: 'index', description: 'Tracks elements across list mutations for optimal DOM re-use.' }
+      ],
+      SourceModule: '/modules/attributes/for.ts',
+      SnippetModule: '/_pages/labs/attributes/for.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/attributes/for.ts&lt;/code&gt;, the for directive coordinates template cloning with the DOM data stack. Each iteration is wrapped in an isolated scope proxy referencing the item without copying memory.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Zero-Allocation Cloning&lt;/strong&gt; — Clones template nodes via &lt;code&gt;cloneNode(true)&lt;/code&gt;; the original blueprint is never mutated&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Tuple Destructuring&lt;/strong&gt; — Supports &lt;code&gt;(item, index)&lt;/code&gt; or &lt;code&gt;item, i&lt;/code&gt; syntax natively&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Flow-Aware&lt;/strong&gt; — Clones HTML and SVG elements seamlessly, preserving CSSOM metadata across clone boundaries&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Deterministic Disposal&lt;/strong&gt; — Invokes cleanup hooks automatically when items are removed from reactive arrays&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ newTitle: \'Deploy Satellite Relay\', todos: [{ id: 1, text: \'Synchronize Quantum Clocks\', priority: \'High\' }, { id: 2, text: \'Inspect Shield Generator\', priority: \'Normal\' }] }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm uppercase tracking-wider text-primary\&quot;&gt;Reactive Array Mutation&lt;/h4&gt;\n        &lt;div class=\&quot;flex gap-2 max-w-md\&quot;&gt;\n            &lt;input type=\&quot;text\&quot; data-bind-value=\&quot;newTitle\&quot; placeholder=\&quot;New task description...\&quot; class=\&quot;input input-bordered input-sm font-mono flex-1\&quot;&gt;\n            &lt;button class=\&quot;btn btn-sm btn-primary font-bold\&quot; data-on-click=\&quot;if (newTitle.trim()) { todos.push({ id: Date.now(), text: newTitle.trim(), priority: \'Normal\' }); newTitle = \'\'; }\&quot;&gt;\n                Add (+)\n            &lt;/button&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n\n    &lt;div class=\&quot;space-y-3\&quot;&gt;\n        &lt;div class=\&quot;flex items-center justify-between px-1\&quot;&gt;\n            &lt;span class=\&quot;text-xs font-bold uppercase tracking-wider opacity-60\&quot;&gt;Active Pipeline Items:&lt;/span&gt;\n            &lt;span class=\&quot;badge badge-sm badge-neutral font-mono\&quot;&gt;Total: &lt;span data-bind=\&quot;todos.length\&quot;&gt;&lt;/span&gt;&lt;/span&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;space-y-2\&quot;&gt;\n            &lt;template data-for=\&quot;(todo, idx) in todos\&quot;&gt;\n                &lt;div class=\&quot;p-3 bg-base-100 rounded-xl border border-base-content/10 shadow-sm flex items-center justify-between gap-4\&quot;&gt;\n                    &lt;div class=\&quot;flex items-center gap-3 min-w-0\&quot;&gt;\n                        &lt;span class=\&quot;badge badge-sm badge-ghost font-mono text-xs\&quot; data-bind=\&quot;\'#\' + (idx + 1)\&quot;&gt;&lt;/span&gt;\n                        &lt;span class=\&quot;text-sm font-medium truncate\&quot; data-bind=\&quot;todo.text\&quot;&gt;&lt;/span&gt;\n                    &lt;/div&gt;\n                    &lt;div class=\&quot;flex items-center gap-2 shrink-0\&quot;&gt;\n                        &lt;span class=\&quot;badge badge-xs badge-outline font-bold\&quot; data-bind=\&quot;todo.priority\&quot;&gt;&lt;/span&gt;\n                        &lt;button class=\&quot;btn btn-xs btn-circle btn-ghost text-error\&quot; data-on-click=\&quot;todos.splice(idx, 1)\&quot;&gt;\n                            ✕\n                        &lt;/button&gt;\n                    &lt;/div&gt;\n                &lt;/div&gt;\n            &lt;/template&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
