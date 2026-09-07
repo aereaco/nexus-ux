@@ -1,23 +1,28 @@
-<title>$periodicSync</title>
-<meta name="id" content="lab-sprite-periodicsync">
-<meta name="route" content="/labs/sprites/periodicsync">
-<meta name="icon" content="material-symbols-light:update">
-<meta name="order" content="11">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/sprites">
+<head>
+  <title>$periodicSync</title>
+  <meta name="id" content="lab-sprite-periodicsync">
+  <meta name="route" content="/labs/sprites/periodicsync">
+  <meta name="icon" content="material-symbols-light:update">
+  <meta name="order" content="8">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/sprites">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "$periodicSync",
-    "Category": "Sprites",
-    "Icon": "material-symbols-light:update",
-    "ModulePath": "src/modules/sprites/periodicSync.ts",
-    "Description": "Periodic Background Sync manager for background data polling.",
-    "Syntax": "$periodicSync.register(&#39;check-news&#39;)",
-    "Params": [],
-    "Extensibility": "<p>Allows apps to refresh content periodically in the background.</p>",
-    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-1\">\n  <div class=\"badge badge-outline\">$periodicSync</div>\n  <p class=\"text-xs opacity-70\">Background content polling scheduler.</p>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: '$periodicSync',
+      Category: 'Sprites',
+      Icon: 'material-symbols-light:update',
+      Description: 'Periodic Background Sync API client registering recurring background tasks with the Service Worker to fetch fresh content periodically even when the app is closed.',
+      Syntax: '$periodicSync.register(\'update-news\', { minInterval: 24 * 60 * 60 * 1000 })',
+      Params: [
+        { name: '$periodicSync.register(tag, options)', type: 'Async Method', default: '-', description: 'Registers a periodic sync tag and interval constraint with Service Worker.' }
+      ],
+      SourceModule: '/modules/sprites/periodicSync.ts',
+      SnippetModule: '/_pages/labs/sprites/periodicsync.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/sprites/periodicSync.ts&lt;/code&gt;, this sprite provides recurring background synchronization for news feeds, telemetry updates, and local database syncs.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Periodic Execution&lt;/strong&gt; — Keeps cached data fresh before the user opens the application&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Native OS Management&lt;/strong&gt; — Browser schedules sync according to device battery and network state&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ syncRegistered: false, intervalHours: 12 }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4 max-w-md\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Periodic Background Sync ($periodicSync)&lt;/h4&gt;\n        &lt;div class=\&quot;space-y-1\&quot;&gt;\n            &lt;label class=\&quot;text-xs font-semibold opacity-70\&quot;&gt;Sync Interval (Hours):&lt;/label&gt;\n            &lt;input type=\&quot;range\&quot; min=\&quot;1\&quot; max=\&quot;24\&quot; data-bind-value=\&quot;intervalHours\&quot; class=\&quot;range range-xs range-primary\&quot;&gt;\n        &lt;/div&gt;\n        &lt;button class=\&quot;btn btn-sm btn-primary font-bold w-full\&quot;\n                data-on-click=\&quot;syncRegistered = true\&quot;&gt;\n            Register Periodic Sync Tag\n        &lt;/button&gt;\n        &lt;div class=\&quot;p-3 bg-base-200/50 rounded-xl font-mono text-xs flex justify-between items-center\&quot;&gt;\n            &lt;span class=\&quot;opacity-70\&quot;&gt;Registration Status:&lt;/span&gt;\n            &lt;span class=\&quot;badge font-bold font-mono\&quot; data-class=\&quot;{ \'badge-success\': syncRegistered, \'badge-ghost\': !syncRegistered }\&quot; data-bind=\&quot;syncRegistered ? (\'REGISTERED (\' + intervalHours + \'h)\') : \'UNREGISTERED\'\&quot;&gt;&lt;/span&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
