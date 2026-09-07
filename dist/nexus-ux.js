@@ -14478,7 +14478,7 @@ ${bridge}`, {
     let target = void 0;
     let state = 0;
     let rest = rawName;
-    const hyphenated = ["ux-theme", "on-raf", "flow-node", "flow-handle", "flow-edges", "flow-grid"].find(
+    const hyphenated = ["ux-theme", "on-raf", "flow-viewport", "flow-node", "flow-handle", "flow-edges", "flow-grid"].find(
       (h) => rawName === h || rawName.startsWith(h + "-") || rawName.startsWith(h + ":")
     );
     if (hyphenated) {
