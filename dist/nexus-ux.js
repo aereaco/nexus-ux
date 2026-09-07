@@ -5525,7 +5525,7 @@ ${scripts}
       NO_PAN = "[data-flow-node],[data-flow-handle],[data-flow-nodrag],button,a,input,textarea,select,label";
       sharedViewport = (el) => {
         const flow = el?.closest("[data-flow]");
-        const vp = flow?.__nexusFlowViewport;
+        const vp = flow?.__flowViewport || flow?.__nexusFlowViewport;
         return vp ? { x: vp.x || 0, y: vp.y || 0, zoom: vp.zoom || 1 } : { x: 0, y: 0, zoom: 1 };
       };
       flowAttribute = {
@@ -5541,8 +5541,18 @@ ${scripts}
             state.x = 0;
           if (state.y === void 0)
             state.y = 0;
+          let content = element.querySelector(".flow-viewport, .nexus-flow-content");
+          if (!content) {
+            content = document.createElement("div");
+            content.className = "flow-viewport w-full h-full";
+            while (element.firstChild) {
+              content.appendChild(element.firstChild);
+            }
+            element.appendChild(content);
+          }
+          element.__flowViewport = state;
           element.__nexusFlowViewport = state;
-          element.classList.add("nexus-flow", "nexus-flow-pane");
+          element.classList.add("flow-container", "flow-pane");
           const gridAttr = element.getAttribute("data-flow-grid");
           const gridSize = gridAttr !== null ? parseFloat(gridAttr) || 0 : 0;
           let isPanning = false;
@@ -5627,10 +5637,10 @@ ${scripts}
             const zoom = state.zoom || 1;
             const x = state.x || 0;
             const y = state.y || 0;
-            const content = element.querySelector(".nexus-flow-content") || element;
-            content.classList.add("nexus-flow-viewport");
-            content.style.transformOrigin = "0 0";
-            content.style.transform = `translate(${x}px, ${y}px) scale(${zoom})`;
+            const content2 = element.querySelector(".nexus-flow-content") || element;
+            content2.classList.add("nexus-flow-viewport");
+            content2.style.transformOrigin = "0 0";
+            content2.style.transform = `translate(${x}px, ${y}px) scale(${zoom})`;
             if (gridSize > 0 && element.style.backgroundImage) {
               const scaled = gridSize * zoom;
               element.style.backgroundSize = `${scaled}px ${scaled}px`;

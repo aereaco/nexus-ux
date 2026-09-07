@@ -8,7 +8,7 @@ const MIN_ZOOM = 0.2;
 const MAX_ZOOM = 4;
 
 interface Viewport { x: number; y: number; zoom: number }
-type FlowElement = HTMLElement & { __nexusFlowViewport?: Viewport };
+type FlowElement = HTMLElement & { __nexusFlowViewport?: Viewport; __flowViewport?: Viewport };
 
 /** Elements that must not initiate a canvas pan when pressed. */
 const NO_PAN = '[data-flow-node],[data-flow-handle],[data-flow-nodrag],button,a,input,textarea,select,label';
@@ -16,7 +16,7 @@ const NO_PAN = '[data-flow-node],[data-flow-handle],[data-flow-nodrag],button,a,
 /** Read the shared, live viewport state a [data-flow] element publishes. */
 const sharedViewport = (el: Element | null): Viewport => {
   const flow = el?.closest('[data-flow]') as FlowElement | null;
-  const vp = flow?.__nexusFlowViewport;
+  const vp = flow?.__flowViewport || flow?.__nexusFlowViewport;
   return vp ? { x: vp.x || 0, y: vp.y || 0, zoom: vp.zoom || 1 } : { x: 0, y: 0, zoom: 1 };
 };
 
@@ -40,10 +40,23 @@ export const flowAttribute: AttributeModule = {
     if (state.x === undefined) state.x = 0;
     if (state.y === undefined) state.y = 0;
 
+    // Viewport resolution: locate existing viewport or auto-wrap canvas children
+    // so the directive alone provides everything needed without mandatory classes.
+    let content = element.querySelector('.flow-viewport, .nexus-flow-content') as HTMLElement | null;
+    if (!content) {
+      content = document.createElement('div');
+      content.className = 'flow-viewport w-full h-full';
+      while (element.firstChild) {
+        content.appendChild(element.firstChild);
+      }
+      element.appendChild(content);
+    }
+
     // Publish for descendant directives ($flow, nodes, handles) so they read
     // the SAME live object instead of re-evaluating the attribute expression.
+    element.__flowViewport = state;
     element.__nexusFlowViewport = state;
-    element.classList.add('nexus-flow', 'nexus-flow-pane');
+    element.classList.add('flow-container', 'flow-pane');
 
     const gridAttr = element.getAttribute('data-flow-grid');
     const gridSize = gridAttr !== null ? (parseFloat(gridAttr) || 0) : 0;
