@@ -199,16 +199,6 @@
     "category": "Labs"
   },
   {
-    "id": "lab-mod-self",
-    "route": "/labs/modifiers/self",
-    "path": "/_pages/labs/modifiers/self.html",
-    "title": ":self",
-    "icon": "material-symbols-light:person-pin-circle-outline",
-    "order": 3,
-    "parent": "/labs/modifiers",
-    "category": "Labs"
-  },
-  {
     "id": "lab-scope-auth",
     "route": "/labs/scopes/auth",
     "path": "/_pages/labs/scopes/auth.html",
@@ -525,6 +515,16 @@
     "icon": "material-symbols-light:drag-pan",
     "order": 11,
     "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-mod-self",
+    "route": "/labs/modifiers/self",
+    "path": "/_pages/labs/modifiers/self.html",
+    "title": ":self",
+    "icon": "material-symbols-light:target",
+    "order": 11,
+    "parent": "/labs/modifiers",
     "category": "Labs"
   },
   {

@@ -1,23 +1,28 @@
-<title>:self</title>
-<meta name="id" content="lab-mod-self">
-<meta name="route" content="/labs/modifiers/self">
-<meta name="icon" content="material-symbols-light:person-pin-circle-outline">
-<meta name="order" content="3">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/modifiers">
+<head>
+  <title>:self</title>
+  <meta name="id" content="lab-mod-self">
+  <meta name="route" content="/labs/modifiers/self">
+  <meta name="icon" content="material-symbols-light:target">
+  <meta name="order" content="11">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/modifiers">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": ":self",
-    "Category": "Modifiers",
-    "Icon": "material-symbols-light:person-pin-circle-outline",
-    "ModulePath": "src/modules/modifiers/self.ts",
-    "Description": "Executes handler only if event.target is the element itself, ignoring child bubbled events.",
-    "Syntax": "<div data-on-click:self=\"close()\">...</div>",
-    "Params": [],
-    "Extensibility": "<p>Standard pattern for modal backdrop dismissals.</p>",
-    "Snippet": "<div data-signal=\"{ selfClicks: 0 }\" data-on-click:self=\"selfClicks++\" class=\"p-6 bg-base-200/50 rounded-xl border border-dashed border-base-content/20 text-center space-y-2 cursor-pointer\">\n  <p class=\"text-xs font-bold\">Click outside the inner box (:self trigger only)</p>\n  <div class=\"inline-block p-3 bg-base-100 rounded-lg shadow pointer-events-auto cursor-default\">\n    <span class=\"text-xs\">Inner element (clicks here won&#39;t trigger :self)</span>\n  </div>\n  <div class=\"text-xs font-mono\">Self clicks: <span data-bind=\"selfClicks\" class=\"font-bold text-primary\"></span></div>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: ':self',
+      Category: 'Modifiers',
+      Icon: 'material-symbols-light:target',
+      Description: 'Restricts handler evaluation to instances where &lt;code&gt;e.target === $el&lt;/code&gt;, completely ignoring events dispatched from child elements.',
+      Syntax: '&lt;div data-on-click:self=\&quot;closeBackdrop()\&quot;&gt;&lt;div class=\&quot;modal-box\&quot;&gt;&lt;/div&gt;&lt;/div&gt;',
+      Params: [
+        { name: ':self', type: 'Target Scope Modifier', default: '-', description: 'Ensures only direct clicks on the element trigger the expression.' }
+      ],
+      SourceModule: '/modules/modifiers/self.ts',
+      SnippetModule: '/_pages/labs/modifiers/self.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/modifiers/self.ts&lt;/code&gt;, the self modifier compares &lt;code&gt;event.target&lt;/code&gt; to the listener element. This provides foolproof modal backdrop dismissal without closing when the modal contents are clicked.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Backdrop Click Safety&lt;/strong&gt; — Click on overlay closes modal; clicks inside inner cards do not&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Zero Delegation Pollution&lt;/strong&gt; — Child event bubbling does not trigger parent logic&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ backdropClicks: 0, innerClicks: 0 }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4 max-w-md\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Target Filtering (:self)&lt;/h4&gt;\n        &lt;div class=\&quot;p-8 bg-base-200/60 rounded-2xl border border-base-content/10 cursor-pointer text-center space-y-4\&quot;\n             data-on-click:self=\&quot;backdropClicks++\&quot;&gt;\n            &lt;div class=\&quot;font-bold text-xs opacity-70\&quot;&gt;Outer Backdrop (Click Here)&lt;/div&gt;\n            &lt;div class=\&quot;p-4 bg-primary text-primary-content rounded-xl shadow-md cursor-default inline-block\&quot;\n                 data-on-click=\&quot;innerClicks++\&quot;&gt;\n                &lt;span class=\&quot;font-bold text-xs\&quot;&gt;Inner Modal Card (Clicks stay here)&lt;/span&gt;\n            &lt;/div&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;grid grid-cols-2 gap-3 font-mono text-xs text-center\&quot;&gt;\n            &lt;div class=\&quot;p-3 bg-base-200/40 rounded-xl\&quot;&gt;\n                &lt;div class=\&quot;text-[10px] opacity-60 font-bold\&quot;&gt;Backdrop Clicks&lt;/div&gt;\n                &lt;div class=\&quot;text-lg font-bold text-primary\&quot; data-bind=\&quot;backdropClicks\&quot;&gt;&lt;/div&gt;\n            &lt;/div&gt;\n            &lt;div class=\&quot;p-3 bg-base-200/40 rounded-xl\&quot;&gt;\n                &lt;div class=\&quot;text-[10px] opacity-60 font-bold\&quot;&gt;Inner Card Clicks&lt;/div&gt;\n                &lt;div class=\&quot;text-lg font-bold text-secondary\&quot; data-bind=\&quot;innerClicks\&quot;&gt;&lt;/div&gt;\n            &lt;/div&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
