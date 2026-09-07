@@ -536,7 +536,7 @@ export function evaluateLater(
 
         if (key in globalThis) {
           const val = (globalThis as any)[key];
-          return typeof val === 'function' ? val.bind(globalThis) : val;
+          return typeof val === 'function' ? wrapGlobalFunction(val, globalThis, scope) : val;
         }
       }
       return undefined;

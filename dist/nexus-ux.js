@@ -3013,6 +3013,26 @@ ${suggestion}`);
     });
     return cachedIDBProxy;
   }
+  function wrapGlobalFunction(fn, globalContext, scopeObj) {
+    let proxy = globalFnProxyCache.get(fn);
+    if (!proxy) {
+      proxy = new Proxy(fn, {
+        apply(target, thisArg, args) {
+          const receiver = thisArg === void 0 || thisArg === null || thisArg === scopeObj ? globalContext : thisArg;
+          return Reflect.apply(target, receiver, args);
+        },
+        construct(target, args, newTarget) {
+          return Reflect.construct(target, args, newTarget);
+        },
+        get(target, prop, receiver) {
+          const val = Reflect.get(target, prop, receiver);
+          return typeof val === "function" ? val.bind(target) : val;
+        }
+      });
+      globalFnProxyCache.set(fn, proxy);
+    }
+    return proxy;
+  }
   function evaluate(el, expression, runtime, extras = {}) {
     if (typeof expression !== "string" || !expression || expression.trim() === "")
       return {};
@@ -3152,7 +3172,7 @@ ${suggestion}`);
           }
           if (key in globalThis) {
             const val = globalThis[key];
-            return typeof val === "function" ? val.bind(globalThis) : val;
+            return typeof val === "function" ? wrapGlobalFunction(val, globalThis, scope) : val;
           }
         }
         return void 0;
@@ -3279,7 +3299,7 @@ ${suggestion}`);
       }
     };
   }
-  var shouldAutoEvaluateFunctions, currentEvalDepth, MAX_EVAL_DEPTH, DEFAULT_IDB_DATABASE, cachedIDBProxy;
+  var shouldAutoEvaluateFunctions, currentEvalDepth, MAX_EVAL_DEPTH, DEFAULT_IDB_DATABASE, cachedIDBProxy, globalFnProxyCache;
   var init_evaluator = __esm({
     "src/engine/evaluator.ts"() {
       init_agent();
@@ -3291,6 +3311,7 @@ ${suggestion}`);
       MAX_EVAL_DEPTH = 50;
       DEFAULT_IDB_DATABASE = "nexus-store";
       cachedIDBProxy = null;
+      globalFnProxyCache = /* @__PURE__ */ new WeakMap();
     }
   });
 
