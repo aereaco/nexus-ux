@@ -323,8 +323,7 @@ async function importESModule(
   el: HTMLElement
 ): Promise<void> {
   const globalWin = globalThis as any;
-  const targetObj: Record<string, any> = globalWin[id] || {};
-  globalWin[id] = targetObj;
+  const targetObj: Record<string, any> = {};
 
   try {
     if (Array.isArray(payload)) {
@@ -362,6 +361,9 @@ async function importESModule(
       }
     }
 
+    // Assign to global window only once all imports have completed
+    globalWin[id] = Object.assign(globalWin[id] || {}, targetObj);
+
     // Cleanup hook
     cleanupFns.push(() => {
       // Retain module singleton across fast re-renders if needed
@@ -369,9 +371,9 @@ async function importESModule(
 
     // Dispatch lifecycle events
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent(`nexus:${id.toLowerCase()}-ready`, { detail: targetObj }));
+      window.dispatchEvent(new CustomEvent(`nexus:${id.toLowerCase()}-ready`, { detail: globalWin[id] }));
       if (id.toLowerCase() === 'cm' || id.toLowerCase() === 'codemirror') {
-        window.dispatchEvent(new CustomEvent('nexus:cm-ready', { detail: targetObj }));
+        window.dispatchEvent(new CustomEvent('nexus:cm-ready', { detail: globalWin[id] }));
       }
     }
     runtime.log(`Nexus Import [${id}]: ES module(s) imported into window.${id}`);

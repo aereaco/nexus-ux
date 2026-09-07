@@ -6296,8 +6296,7 @@ ${scripts}
   }
   async function importESModule(id, payload, cleanupFns, runtime, el) {
     const globalWin = globalThis;
-    const targetObj = globalWin[id] || {};
-    globalWin[id] = targetObj;
+    const targetObj = {};
     try {
       if (Array.isArray(payload)) {
         const modules = await Promise.all(
@@ -6342,12 +6341,13 @@ ${scripts}
           reportError(new Error(`Nexus Import [${id}]: Failed to import module ${payload}: ${err}`), el);
         }
       }
+      globalWin[id] = Object.assign(globalWin[id] || {}, targetObj);
       cleanupFns.push(() => {
       });
       if (typeof window !== "undefined") {
-        window.dispatchEvent(new CustomEvent(`nexus:${id.toLowerCase()}-ready`, { detail: targetObj }));
+        window.dispatchEvent(new CustomEvent(`nexus:${id.toLowerCase()}-ready`, { detail: globalWin[id] }));
         if (id.toLowerCase() === "cm" || id.toLowerCase() === "codemirror") {
-          window.dispatchEvent(new CustomEvent("nexus:cm-ready", { detail: targetObj }));
+          window.dispatchEvent(new CustomEvent("nexus:cm-ready", { detail: globalWin[id] }));
         }
       }
       runtime.log(`Nexus Import [${id}]: ES module(s) imported into window.${id}`);
