@@ -59,16 +59,6 @@
     "category": "Labs"
   },
   {
-    "id": "lab-sprite-el",
-    "route": "/labs/sprites/el",
-    "path": "/_pages/labs/sprites/el.html",
-    "title": "$el",
-    "icon": "material-symbols-light:code-blocks",
-    "order": 1,
-    "parent": "/labs/sprites",
-    "category": "Labs"
-  },
-  {
     "id": "drag",
     "route": "/drag",
     "path": "/_pages/drag.html",
@@ -196,16 +186,6 @@
     "icon": "material-symbols-light:lock",
     "order": 3,
     "parent": "/labs/scopes",
-    "category": "Labs"
-  },
-  {
-    "id": "lab-sprite-dispatch",
-    "route": "/labs/sprites/dispatch",
-    "path": "/_pages/labs/sprites/dispatch.html",
-    "title": "$dispatch",
-    "icon": "material-symbols-light:send",
-    "order": 3,
-    "parent": "/labs/sprites",
     "category": "Labs"
   },
   {
