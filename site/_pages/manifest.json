@@ -496,16 +496,6 @@
     "category": "Labs"
   },
   {
-    "id": "lab-attr-component",
-    "route": "/labs/attributes/component",
-    "path": "/_pages/labs/attributes/component.html",
-    "title": "data-component",
-    "icon": "material-symbols-light:web-asset",
-    "order": 11,
-    "parent": "/labs/attributes",
-    "category": "Labs"
-  },
-  {
     "id": "lab-attr-drag",
     "route": "/labs/attributes/drag",
     "path": "/_pages/labs/attributes/drag.html",
@@ -633,6 +623,16 @@
     "icon": "material-symbols-light:smart-toy",
     "order": 14,
     "parent": "/labs/sprites",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-component",
+    "route": "/labs/attributes/component",
+    "path": "/_pages/labs/attributes/component.html",
+    "title": "data-component",
+    "icon": "material-symbols-light:extension",
+    "order": 15,
+    "parent": "/labs/attributes",
     "category": "Labs"
   },
   {

@@ -1,36 +1,30 @@
-<title>data-component</title>
-<meta name="id" content="lab-attr-component">
-<meta name="route" content="/labs/attributes/component">
-<meta name="icon" content="material-symbols-light:web-asset">
-<meta name="order" content="11">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/attributes">
+<head>
+  <title>data-component</title>
+  <meta name="id" content="lab-attr-component">
+  <meta name="route" content="/labs/attributes/component">
+  <meta name="icon" content="material-symbols-light:extension">
+  <meta name="order" content="15">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/attributes">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "data-component",
-    "Category": "Attributes",
-    "Icon": "material-symbols-light:web-asset",
-    "ModulePath": "src/modules/attributes/component.ts",
-    "Description": "Asynchronously fetches, caches, and compiles external HTML or Markdown component files into Light or Shadow DOM.",
-    "Syntax": "<div data-component=\"&#39;_components/header.html&#39;\"></div>",
-    "Params": [
-      {
-        "name": "data-component",
-        "type": "URL String",
-        "default": "&#39;&#39;",
-        "description": "Relative or absolute path to the HTML fragment or Markdown document to mount."
-      },
-      {
-        "name": "data-component:shadow",
-        "type": "Modifier",
-        "default": "false",
-        "description": "Mounts the template inside an isolated ShadowRoot with encapsulated styles."
-      }
-    ],
-    "Extensibility": "<p>The <code>component</code> loader implements deduplicated HTTP request streaming, constructable stylesheet extraction, and seamless Markdown rendering via <code>data-markdown</code>.</p>",
-    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-2\">\n  <p class=\"text-xs font-bold text-accent\">Dynamic Component Host:</p>\n  <div data-component=\"&#39;_components/tab-new.html&#39;\" class=\"border border-base-content/10 rounded-lg p-2 max-h-48 overflow-y-auto\"></div>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: 'data-component',
+      Category: 'Attributes',
+      Icon: 'material-symbols-light:extension',
+      Description: 'Dynamically fetches, compiles, and embeds reusable HTML templates into Light DOM or Shadow DOM with isolated CSS/JS and cacheEngine acceleration.',
+      Syntax: '&lt;div data-component=\&quot;\'_components/navbar.html\'\&quot;&gt;&lt;/div&gt;\n&lt;div data-component=\&quot;{ path: \'_components/card.html\', shadowrootmode: \'open\' }\&quot;&gt;&lt;/div&gt;',
+      Params: [
+        { name: 'data-component=&quot;path&quot;', type: 'String / Object', default: '-', description: 'Path to component HTML file, or configuration object with path, lazy, shadowrootmode.' },
+        { name: 'shadowrootmode=&quot;open&quot;', type: 'Shadow DOM Option', default: 'none', description: 'Attaches an open ShadowRoot to encapsulate component styling.' },
+        { name: 'lazy=&quot;true&quot;', type: 'IntersectionObserver Option', default: 'false', description: 'Defers template fetching until the element scrolls into viewport.' }
+      ],
+      SourceModule: '/modules/attributes/component.ts',
+      SnippetModule: '/_pages/labs/attributes/component.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/attributes/component.ts&lt;/code&gt;, components are pure HTML templates. When mounted, the runtime fetches the file, parses its styles and template body, and links it into the parent DOM data stack without framework compilation overhead.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;CacheEngine Integration&lt;/strong&gt; — Fetched templates are cached in memory and IndexedDB for instantaneous reuse&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Light or Shadow DOM&lt;/strong&gt; — Optional &lt;code&gt;shadowrootmode: \'open\'&lt;/code&gt; provides CSS isolation&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Scoped State Inheritance&lt;/strong&gt; — Injected components automatically inherit parent signals via the DOM data stack&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ componentMounted: true, targetPath: \'_components/theme-toggle.html\' }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm flex items-center justify-between\&quot;&gt;\n        &lt;div&gt;\n            &lt;h4 class=\&quot;font-bold text-sm text-primary\&quot;&gt;Dynamic Component Host&lt;/h4&gt;\n            &lt;p class=\&quot;text-xs opacity-70 font-mono\&quot;&gt;Target: &lt;span class=\&quot;text-accent\&quot; data-bind=\&quot;targetPath\&quot;&gt;&lt;/span&gt;&lt;/p&gt;\n        &lt;/div&gt;\n        &lt;button class=\&quot;btn btn-sm btn-outline font-bold\&quot; data-on-click=\&quot;componentMounted = !componentMounted\&quot;&gt;\n            &lt;span data-bind=\&quot;componentMounted ? \'Unmount Component\' : \'Mount Component\'\&quot;&gt;&lt;/span&gt;\n        &lt;/button&gt;\n    &lt;/div&gt;\n\n    &lt;div class=\&quot;p-6 bg-base-200/40 rounded-2xl border border-base-content/10 min-h-[120px] flex items-center justify-center\&quot;&gt;\n        &lt;template data-if=\&quot;componentMounted\&quot;&gt;\n            &lt;div class=\&quot;p-4 bg-base-100 rounded-xl border border-base-content/10 shadow-sm text-center space-y-2\&quot;&gt;\n                &lt;div class=\&quot;badge badge-success text-xs font-bold\&quot;&gt;● Component Active&lt;/div&gt;\n                &lt;div class=\&quot;text-xs opacity-80 font-mono\&quot;&gt;Scoped lifecycle hooks bound to host element.&lt;/div&gt;\n            &lt;/div&gt;\n        &lt;/template&gt;\n        &lt;template data-if=\&quot;!componentMounted\&quot;&gt;\n            &lt;span class=\&quot;text-xs opacity-50 italic\&quot;&gt;Component unmounted. All listeners and styles safely detached.&lt;/span&gt;\n        &lt;/template&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
