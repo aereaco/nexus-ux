@@ -1,25 +1,28 @@
-<title>data-style</title>
-<meta name="id" content="lab-attr-style">
-<meta name="route" content="/labs/attributes/style">
-<meta name="icon" content="material-symbols-light:format-paint">
-<meta name="order" content="8">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/attributes">
+<head>
+  <title>data-style</title>
+  <meta name="id" content="lab-attr-style">
+  <meta name="route" content="/labs/attributes/style">
+  <meta name="icon" content="material-symbols-light:format-paint">
+  <meta name="order" content="8">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/attributes">
+</head>
 
-<div data-signal="{
-  doc: {
-    Title: 'data-style',
-    Category: 'Attributes',
-    Icon: 'material-symbols-light:format-paint',
-    ModulePath: 'src/modules/attributes/style.ts',
-    Description: 'Reconciles dynamic inline CSS styles directly on the HTMLElement with support for camelCase and kebab-case style properties.',
-    Syntax: '<div data-style=\"{ transform: \'translateX(\' + x + \'px)\', opacity: alpha }\"></div>',
-    Params: [
-      { name: 'data-style', type: 'Object / String Expression', default: '{}', description: 'CSS property-value map or style string.' }
-    ],
-    Extensibility: '<p>The <code>style</code> directive uses CSSStyleDeclaration direct assignments, bypassing string serialization and recalculating only modified CSS properties.</p>',
-    Snippet: '<div data-signal=\"{ barWidth: 65, barColor: \'#570df8\' }\" class=\"space-y-4 p-4 bg-base-200/50 rounded-xl border border-base-content/10\">\n  <div class=\"flex items-center gap-4 max-w-md\">\n    <span class=\"text-xs font-bold\">Width (%):</span>\n    <input type=\"range\" min=\"10\" max=\"100\" data-bind-value=\"barWidth\" class=\"range range-xs range-primary\" />\n    <span class=\"font-mono text-xs font-bold w-12\" data-bind=\"barWidth + \'%\'\"></span>\n  </div>\n  <div class=\"w-full bg-base-300 h-6 rounded-full overflow-hidden p-1 border border-base-content/10\">\n    <div class=\"h-full rounded-full transition-[width] duration-150 ease-out\"\n      data-style=\"{ width: barWidth + \'%\', backgroundColor: barColor }\"></div>\n  </div>\n</div>'
-  }
-}">
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: 'data-style',
+      Category: 'Attributes',
+      Icon: 'material-symbols-light:format-paint',
+      Description: 'Directly reconciles dynamic inline CSS style properties from reactive objects (&lt;code&gt;{ transform: \'scale(\' + zoom + \')\', opacity: alpha }&lt;/code&gt;) via &lt;code&gt;reconcileStyle&lt;/code&gt;.',
+      Syntax: '&lt;div data-style=\&quot;{ transform: \'translateX(\' + x + \'px)\', opacity: isVisible ? 1 : 0 }\&quot;&gt;&lt;/div&gt;',
+      Params: [
+        { name: 'data-style=&quot;{ ... }&quot;', type: 'Style Object / String', default: '-', description: 'Evaluates object keys as CSS properties (camelCase or kebab-case) and sets their dynamic values.' }
+      ],
+      SourceModule: '/modules/attributes/style.ts',
+      SnippetModule: '/_pages/labs/attributes/style.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/attributes/style.ts&lt;/code&gt;, the style directive coordinates fine-grained CSS property updates without requiring stylesheet compilation. It uses &lt;code&gt;reconcileStyle&lt;/code&gt; to diff existing properties against newly evaluated states.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Surgical Property Diffs&lt;/strong&gt; — Only properties whose values actually changed are assigned to &lt;code&gt;el.style&lt;/code&gt;&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Automatic Cleanup&lt;/strong&gt; — Removed or undefined keys are cleaned up using &lt;code&gt;removeProperty()&lt;/code&gt;&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Transforms &amp;amp; GPU Acceleration&lt;/strong&gt; — Ideal for coordinate translation, scale, rotation, and dynamic CSS custom properties&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ rotation: 0, scale: 1, blurAmount: 0, accentHue: 190 }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-4\&quot;&gt;\n        &lt;div class=\&quot;space-y-1\&quot;&gt;\n            &lt;div class=\&quot;flex justify-between text-xs font-semibold opacity-70\&quot;&gt;\n                &lt;span&gt;Rotation (deg):&lt;/span&gt;\n                &lt;span class=\&quot;font-mono\&quot; data-bind=\&quot;rotation + \'°\'\&quot;&gt;&lt;/span&gt;\n            &lt;/div&gt;\n            &lt;input type=\&quot;range\&quot; min=\&quot;-45\&quot; max=\&quot;45\&quot; data-bind-value=\&quot;rotation\&quot; class=\&quot;range range-xs range-primary\&quot;&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;space-y-1\&quot;&gt;\n            &lt;div class=\&quot;flex justify-between text-xs font-semibold opacity-70\&quot;&gt;\n                &lt;span&gt;Scale Multiplier:&lt;/span&gt;\n                &lt;span class=\&quot;font-mono\&quot; data-bind=\&quot;scale\&quot;&gt;&lt;/span&gt;\n            &lt;/div&gt;\n            &lt;input type=\&quot;range\&quot; min=\&quot;0.8\&quot; max=\&quot;1.2\&quot; step=\&quot;0.05\&quot; data-bind-value=\&quot;scale\&quot; class=\&quot;range range-xs range-secondary\&quot;&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n\n    &lt;div class=\&quot;h-48 rounded-2xl bg-base-200/40 border border-base-content/10 flex items-center justify-center overflow-hidden\&quot;&gt;\n        &lt;div class=\&quot;p-6 bg-gradient-to-tr from-primary to-secondary text-primary-content rounded-2xl shadow-xl transition-transform duration-75\&quot;\n             data-style=\&quot;{\n                 transform: \'rotate(\' + rotation + \'deg) scale(\' + scale + \')\',\n                 boxShadow: \'0 20px 25px -5px rgba(0, 0, 0, 0.3)\'\n             }\&quot;&gt;\n            &lt;h4 class=\&quot;font-bold text-sm uppercase tracking-wider text-center\&quot;&gt;GPU Synthesized Surface&lt;/h4&gt;\n            &lt;div class=\&quot;mt-2 text-xs font-mono text-center opacity-90\&quot;&gt;\n                Rot: &lt;span data-bind=\&quot;rotation\&quot;&gt;&lt;/span&gt;deg | Scale: &lt;span data-bind=\&quot;scale\&quot;&gt;&lt;/span&gt;x\n            &lt;/div&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
