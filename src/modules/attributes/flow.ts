@@ -292,8 +292,8 @@ export const flowHandleAttribute: AttributeModule = {
         if (resolved === 'source' || resolved === 'target') kind = resolved;
       } catch { /* keep default */ }
     }
-    element.setAttribute('data-nexus-flow-handle', kind);
-    element.classList.add('nexus-flow-handle');
+    element.setAttribute('data-flow-handle-type', kind);
+    element.classList.add('flow-handle');
 
     const viewport = () => element.closest('[data-flow]') as HTMLElement | null;
 
@@ -313,7 +313,8 @@ export const flowHandleAttribute: AttributeModule = {
       const vp = viewport();
       if (!vp) return null;
       const svg = vp.querySelector('[data-flow-edges]') as HTMLElement | null;
-      const expr = (svg?.getAttribute('data-nexus-flow-edges-expr'))
+      const expr = (svg?.getAttribute('data-flow-edges-expr'))
+        || (svg?.getAttribute('data-nexus-flow-edges-expr'))
         || (svg?.getAttribute('data-flow-edges'))
         || 'edges';
       try {
@@ -340,7 +341,7 @@ export const flowHandleAttribute: AttributeModule = {
       const start = anchorFlow(element);
 
       const preview = document.createElementNS(SVG_NS, 'path');
-      preview.setAttribute('class', 'nexus-flow-edge nexus-flow-edge-preview');
+      preview.setAttribute('class', 'flow-edge flow-edge-preview');
       preview.setAttribute('fill', 'none');
       preview.setAttribute('stroke', 'currentColor');
       preview.setAttribute('stroke-width', '2');
@@ -390,18 +391,19 @@ export const flowEdgesAttribute: AttributeModule = {
   attribute: 'flow-edges',
   handle: (element: HTMLElement, value: string) => {
     const expr = value.trim() || 'edges';
-    element.setAttribute('data-nexus-flow-edges-expr', expr);
-    element.classList.add('nexus-flow-edges', 'absolute', 'inset-0', 'overflow-visible', 'pointer-events-none');
+    element.setAttribute('data-flow-edges-expr', expr);
+    element.classList.add('flow-edges', 'absolute', 'inset-0', 'overflow-visible', 'pointer-events-none');
 
     // Ensure the edges SVG lives INSIDE the transformed viewport so edge paths,
     // expressed in flow-space, scale and pan together with the nodes.
     const flowEl = element.closest('[data-flow]') as HTMLElement | null;
-    const content = flowEl?.querySelector('.nexus-flow-content') as HTMLElement | null;
+    const content = flowEl?.querySelector('.flow-viewport, .nexus-flow-content') as HTMLElement | null;
     if (content && element.parentElement !== content) {
       content.appendChild(element);
     }
 
     return () => {
+      element.removeAttribute('data-flow-edges-expr');
       element.removeAttribute('data-nexus-flow-edges-expr');
     };
   }

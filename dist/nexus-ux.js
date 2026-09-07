@@ -5765,8 +5765,8 @@ ${scripts}
             } catch {
             }
           }
-          element.setAttribute("data-nexus-flow-handle", kind);
-          element.classList.add("nexus-flow-handle");
+          element.setAttribute("data-flow-handle-type", kind);
+          element.classList.add("flow-handle");
           const viewport = () => element.closest("[data-flow]");
           const toFlow = (clientX, clientY) => {
             const vp = viewport();
@@ -5783,7 +5783,7 @@ ${scripts}
             if (!vp)
               return null;
             const svg = vp.querySelector("[data-flow-edges]");
-            const expr = svg?.getAttribute("data-nexus-flow-edges-expr") || svg?.getAttribute("data-flow-edges") || "edges";
+            const expr = svg?.getAttribute("data-flow-edges-expr") || svg?.getAttribute("data-nexus-flow-edges-expr") || svg?.getAttribute("data-flow-edges") || "edges";
             try {
               const arr = runtime.evaluate(vp, expr);
               return Array.isArray(arr) ? arr : null;
@@ -5804,7 +5804,7 @@ ${scripts}
             const srcId = srcNode?.id || srcNode?.getAttribute("data-bind-id") || element.id || "";
             const start = anchorFlow(element);
             const preview = document.createElementNS(SVG_NS, "path");
-            preview.setAttribute("class", "nexus-flow-edge nexus-flow-edge-preview");
+            preview.setAttribute("class", "flow-edge flow-edge-preview");
             preview.setAttribute("fill", "none");
             preview.setAttribute("stroke", "currentColor");
             preview.setAttribute("stroke-width", "2");
@@ -5847,14 +5847,15 @@ ${scripts}
         attribute: "flow-edges",
         handle: (element, value) => {
           const expr = value.trim() || "edges";
-          element.setAttribute("data-nexus-flow-edges-expr", expr);
-          element.classList.add("nexus-flow-edges", "absolute", "inset-0", "overflow-visible", "pointer-events-none");
+          element.setAttribute("data-flow-edges-expr", expr);
+          element.classList.add("flow-edges", "absolute", "inset-0", "overflow-visible", "pointer-events-none");
           const flowEl = element.closest("[data-flow]");
-          const content = flowEl?.querySelector(".nexus-flow-content");
+          const content = flowEl?.querySelector(".flow-viewport, .nexus-flow-content");
           if (content && element.parentElement !== content) {
             content.appendChild(element);
           }
           return () => {
+            element.removeAttribute("data-flow-edges-expr");
             element.removeAttribute("data-nexus-flow-edges-expr");
           };
         }
