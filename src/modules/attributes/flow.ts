@@ -30,14 +30,14 @@ const FLOW_CSS = `
 [data-flow]:active {
   cursor: grabbing;
 }
-[data-flow-viewport], [data-flow] > .flow-viewport {
+[data-flow-viewport], [data-flow] > .flow-viewport, [data-flow] > [data-flow="viewport"] {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   transform-origin: 0 0;
 }
-[data-flow-edges] {
+[data-flow-edges], .flow-edges {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -56,7 +56,51 @@ const FLOW_CSS = `
   cursor: grabbing;
 }
 [data-flow-handle] {
+  position: absolute;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 9999px;
+  background-color: var(--color-primary, currentColor);
+  border: 2px solid var(--color-base-100, #ffffff);
   cursor: crosshair;
+  z-index: 20;
+  box-sizing: border-box;
+  transition: transform 0.15s ease;
+}
+[data-flow-handle]:hover {
+  transform: scale(1.25);
+}
+[data-flow-handle-side="left"], [data-flow-side="left"], [data-flow-handle="target"]:not([data-flow-side]):not([data-flow-handle-side]) {
+  left: 0;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+[data-flow-handle-side="left"]:hover, [data-flow-side="left"]:hover, [data-flow-handle="target"]:not([data-flow-side]):not([data-flow-handle-side]):hover {
+  transform: translate(-50%, -50%) scale(1.25);
+}
+[data-flow-handle-side="right"], [data-flow-side="right"], [data-flow-handle="source"]:not([data-flow-side]):not([data-flow-handle-side]) {
+  right: 0;
+  top: 50%;
+  transform: translate(50%, -50%);
+}
+[data-flow-handle-side="right"]:hover, [data-flow-side="right"]:hover, [data-flow-handle="source"]:not([data-flow-side]):not([data-flow-handle-side]):hover {
+  transform: translate(50%, -50%) scale(1.25);
+}
+[data-flow-handle-side="top"], [data-flow-side="top"] {
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+[data-flow-handle-side="top"]:hover, [data-flow-side="top"]:hover {
+  transform: translate(-50%, -50%) scale(1.25);
+}
+[data-flow-handle-side="bottom"], [data-flow-side="bottom"] {
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, 50%);
+}
+[data-flow-handle-side="bottom"]:hover, [data-flow-side="bottom"]:hover {
+  transform: translate(-50%, 50%) scale(1.25);
 }
 .flow-edge-preview {
   pointer-events: none;
@@ -78,7 +122,28 @@ function ensureFlowStyles(root?: Document | ShadowRoot | null) {
       rootNode.adoptedStyleSheets = [...rootNode.adoptedStyleSheets, flowSheet];
     }
   }
+  if (typeof document !== 'undefined' && 'adoptedStyleSheets' in document) {
+    if (!document.adoptedStyleSheets.includes(flowSheet)) {
+      document.adoptedStyleSheets = [...document.adoptedStyleSheets, flowSheet];
+    }
+  }
 }
+
+// Ensure styles are adopted synchronously at load time if running in browser
+if (typeof document !== 'undefined') {
+  ensureFlowStyles();
+}
+
+// ---------------------------------------------------------------------------
+// data-flow-viewport: Transformation Pane Directive
+// ---------------------------------------------------------------------------
+export const flowViewportAttribute: AttributeModule = {
+  name: 'flowViewport',
+  attribute: 'flow-viewport',
+  handle: (element: HTMLElement) => {
+    ensureFlowStyles(element.getRootNode() as Document | ShadowRoot);
+  }
+};
 
 // ---------------------------------------------------------------------------
 // data-flow: Root Viewport / Pane Directive
@@ -104,7 +169,7 @@ export const flowAttribute: AttributeModule = {
 
     // Viewport resolution: locate existing viewport or auto-wrap canvas children
     // so the directive alone provides everything needed without mandatory classes.
-    let content = element.querySelector('[data-flow-viewport], .flow-viewport, .nexus-flow-content') as HTMLElement | null;
+    let content = element.querySelector('[data-flow-viewport], [data-flow="viewport"], .flow-viewport, .nexus-flow-content') as HTMLElement | null;
     if (!content) {
       content = document.createElement('div');
       content.setAttribute('data-flow-viewport', '');

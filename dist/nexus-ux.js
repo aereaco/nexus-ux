@@ -5513,7 +5513,8 @@ ${scripts}
     flowAttribute: () => flowAttribute,
     flowEdgesAttribute: () => flowEdgesAttribute,
     flowHandleAttribute: () => flowHandleAttribute,
-    flowNodeAttribute: () => flowNodeAttribute
+    flowNodeAttribute: () => flowNodeAttribute,
+    flowViewportAttribute: () => flowViewportAttribute
   });
   function ensureFlowStyles(root) {
     if (typeof CSSStyleSheet === "undefined")
@@ -5528,8 +5529,13 @@ ${scripts}
         rootNode.adoptedStyleSheets = [...rootNode.adoptedStyleSheets, flowSheet];
       }
     }
+    if (typeof document !== "undefined" && "adoptedStyleSheets" in document) {
+      if (!document.adoptedStyleSheets.includes(flowSheet)) {
+        document.adoptedStyleSheets = [...document.adoptedStyleSheets, flowSheet];
+      }
+    }
   }
-  var SVG_NS, MIN_ZOOM, MAX_ZOOM, NO_PAN, sharedViewport, FLOW_CSS, flowSheet, flowAttribute, flowNodeAttribute, flowHandleAttribute, flowEdgesAttribute, flow_default;
+  var SVG_NS, MIN_ZOOM, MAX_ZOOM, NO_PAN, sharedViewport, FLOW_CSS, flowSheet, flowViewportAttribute, flowAttribute, flowNodeAttribute, flowHandleAttribute, flowEdgesAttribute, flow_default;
   var init_flow = __esm({
     "src/modules/attributes/flow.ts"() {
       init_reactivity();
@@ -5552,14 +5558,14 @@ ${scripts}
 [data-flow]:active {
   cursor: grabbing;
 }
-[data-flow-viewport], [data-flow] > .flow-viewport {
+[data-flow-viewport], [data-flow] > .flow-viewport, [data-flow] > [data-flow="viewport"] {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   transform-origin: 0 0;
 }
-[data-flow-edges] {
+[data-flow-edges], .flow-edges {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -5578,7 +5584,51 @@ ${scripts}
   cursor: grabbing;
 }
 [data-flow-handle] {
+  position: absolute;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 9999px;
+  background-color: var(--color-primary, currentColor);
+  border: 2px solid var(--color-base-100, #ffffff);
   cursor: crosshair;
+  z-index: 20;
+  box-sizing: border-box;
+  transition: transform 0.15s ease;
+}
+[data-flow-handle]:hover {
+  transform: scale(1.25);
+}
+[data-flow-handle-side="left"], [data-flow-side="left"], [data-flow-handle="target"]:not([data-flow-side]):not([data-flow-handle-side]) {
+  left: 0;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+[data-flow-handle-side="left"]:hover, [data-flow-side="left"]:hover, [data-flow-handle="target"]:not([data-flow-side]):not([data-flow-handle-side]):hover {
+  transform: translate(-50%, -50%) scale(1.25);
+}
+[data-flow-handle-side="right"], [data-flow-side="right"], [data-flow-handle="source"]:not([data-flow-side]):not([data-flow-handle-side]) {
+  right: 0;
+  top: 50%;
+  transform: translate(50%, -50%);
+}
+[data-flow-handle-side="right"]:hover, [data-flow-side="right"]:hover, [data-flow-handle="source"]:not([data-flow-side]):not([data-flow-handle-side]):hover {
+  transform: translate(50%, -50%) scale(1.25);
+}
+[data-flow-handle-side="top"], [data-flow-side="top"] {
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+[data-flow-handle-side="top"]:hover, [data-flow-side="top"]:hover {
+  transform: translate(-50%, -50%) scale(1.25);
+}
+[data-flow-handle-side="bottom"], [data-flow-side="bottom"] {
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, 50%);
+}
+[data-flow-handle-side="bottom"]:hover, [data-flow-side="bottom"]:hover {
+  transform: translate(-50%, 50%) scale(1.25);
 }
 .flow-edge-preview {
   pointer-events: none;
@@ -5586,6 +5636,16 @@ ${scripts}
 }
 `;
       flowSheet = null;
+      if (typeof document !== "undefined") {
+        ensureFlowStyles();
+      }
+      flowViewportAttribute = {
+        name: "flowViewport",
+        attribute: "flow-viewport",
+        handle: (element) => {
+          ensureFlowStyles(element.getRootNode());
+        }
+      };
       flowAttribute = {
         name: "flow",
         attribute: "flow",
@@ -5600,7 +5660,7 @@ ${scripts}
             state.x = 0;
           if (state.y === void 0)
             state.y = 0;
-          let content = element.querySelector("[data-flow-viewport], .flow-viewport, .nexus-flow-content");
+          let content = element.querySelector('[data-flow-viewport], [data-flow="viewport"], .flow-viewport, .nexus-flow-content');
           if (!content) {
             content = document.createElement("div");
             content.setAttribute("data-flow-viewport", "");
