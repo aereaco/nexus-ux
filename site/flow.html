@@ -69,11 +69,11 @@
          data-flow-grid="20"
          style="background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 20px 20px;">
 
-          <div class="nexus-flow-content w-full h-full">
+          <div class="flow-viewport w-full h-full">
            <!-- Edges live inside the transformed viewport, so their flow-space
                 paths scale and pan together with the nodes. Rendered first so
                 node cards paint above the connector lines. -->
-           <svg data-flow-edges="edges" class="nexus-flow-edges absolute inset-0 overflow-visible pointer-events-none text-primary">
+           <svg data-flow-edges="edges" class="flow-edges absolute inset-0 overflow-visible pointer-events-none text-primary">
                <path data-for="edge in edges"
                      data-effect="viewport.tick; const na = nodes.find(n => n.id === edge.source); const nb = nodes.find(n => n.id === edge.target); const dep = (na && na.position.x + na.position.y) + (nb && nb.position.x + nb.position.y); $el.setAttribute('d', $flow.edge('node-' + edge.source, 'node-' + edge.target, { type: 'bezier' }))"
                      fill="none" stroke="currentColor" stroke-width="2" class="opacity-60"></path>
