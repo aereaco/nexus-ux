@@ -409,6 +409,8 @@ export const flowHandleAttribute: AttributeModule = {
   name: 'flowHandle',
   attribute: 'flow-handle',
   handle: (element: HTMLElement, value: string, runtime: RuntimeContext) => {
+    ensureFlowStyles(element.getRootNode() as Document | ShadowRoot);
+
     // The value may be a literal ("source") or an expression ("handle.type")
     // resolved against the element scope. Resolve it, defaulting to 'source'.
     let kind = 'source';
@@ -422,7 +424,18 @@ export const flowHandleAttribute: AttributeModule = {
       } catch { /* keep default */ }
     }
     element.setAttribute('data-flow-handle-type', kind);
-    element.classList.add('flow-handle');
+
+    const sideAttr = element.getAttribute('data-flow-side');
+    if (!sideAttr) {
+      try {
+        const sideVal = runtime.evaluate(element, 'handle?.side || side') as any;
+        if (typeof sideVal === 'string' && ['left', 'right', 'top', 'bottom'].includes(sideVal)) {
+          element.setAttribute('data-flow-handle-side', sideVal);
+        }
+      } catch { /* ignore */ }
+    } else {
+      element.setAttribute('data-flow-handle-side', sideAttr);
+    }
 
     const viewport = () => element.closest('[data-flow]') as HTMLElement | null;
 
@@ -519,14 +532,14 @@ export const flowEdgesAttribute: AttributeModule = {
   name: 'flowEdges',
   attribute: 'flow-edges',
   handle: (element: HTMLElement, value: string) => {
+    ensureFlowStyles(element.getRootNode() as Document | ShadowRoot);
     const expr = value.trim() || 'edges';
     element.setAttribute('data-flow-edges-expr', expr);
-    element.classList.add('flow-edges', 'absolute', 'inset-0', 'overflow-visible', 'pointer-events-none');
 
     // Ensure the edges SVG lives INSIDE the transformed viewport so edge paths,
     // expressed in flow-space, scale and pan together with the nodes.
     const flowEl = element.closest('[data-flow]') as HTMLElement | null;
-    const content = flowEl?.querySelector('.flow-viewport, .nexus-flow-content') as HTMLElement | null;
+    const content = flowEl?.querySelector('[data-flow-viewport], [data-flow="viewport"], .flow-viewport, .nexus-flow-content') as HTMLElement | null;
     if (content && element.parentElement !== content) {
       content.appendChild(element);
     }

@@ -5874,6 +5874,7 @@ ${scripts}
         name: "flowHandle",
         attribute: "flow-handle",
         handle: (element, value, runtime) => {
+          ensureFlowStyles(element.getRootNode());
           let kind = "source";
           const raw = value.trim();
           if (raw === "source" || raw === "target") {
@@ -5887,7 +5888,18 @@ ${scripts}
             }
           }
           element.setAttribute("data-flow-handle-type", kind);
-          element.classList.add("flow-handle");
+          const sideAttr = element.getAttribute("data-flow-side");
+          if (!sideAttr) {
+            try {
+              const sideVal = runtime.evaluate(element, "handle?.side || side");
+              if (typeof sideVal === "string" && ["left", "right", "top", "bottom"].includes(sideVal)) {
+                element.setAttribute("data-flow-handle-side", sideVal);
+              }
+            } catch {
+            }
+          } else {
+            element.setAttribute("data-flow-handle-side", sideAttr);
+          }
           const viewport = () => element.closest("[data-flow]");
           const toFlow = (clientX, clientY) => {
             const vp = viewport();
@@ -5967,11 +5979,11 @@ ${scripts}
         name: "flowEdges",
         attribute: "flow-edges",
         handle: (element, value) => {
+          ensureFlowStyles(element.getRootNode());
           const expr = value.trim() || "edges";
           element.setAttribute("data-flow-edges-expr", expr);
-          element.classList.add("flow-edges", "absolute", "inset-0", "overflow-visible", "pointer-events-none");
           const flowEl = element.closest("[data-flow]");
-          const content = flowEl?.querySelector(".flow-viewport, .nexus-flow-content");
+          const content = flowEl?.querySelector('[data-flow-viewport], [data-flow="viewport"], .flow-viewport, .nexus-flow-content');
           if (content && element.parentElement !== content) {
             content.appendChild(element);
           }
