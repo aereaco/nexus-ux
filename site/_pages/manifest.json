@@ -635,16 +635,6 @@
     "category": "Labs"
   },
   {
-    "id": "lab-attr-html",
-    "route": "/labs/attributes/html",
-    "path": "/_pages/labs/attributes/html.html",
-    "title": "data-html",
-    "icon": "material-symbols-light:code",
-    "order": 17,
-    "parent": "/labs/attributes",
-    "category": "Labs"
-  },
-  {
     "id": "lab-attr-router",
     "route": "/labs/attributes/router",
     "path": "/_pages/labs/attributes/router.html",
@@ -761,6 +751,16 @@
     "title": "data-build",
     "icon": "material-symbols-light:build",
     "order": 28,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-html",
+    "route": "/labs/attributes/html",
+    "path": "/_pages/labs/attributes/html.html",
+    "title": "data-html",
+    "icon": "material-symbols-light:html",
+    "order": 29,
     "parent": "/labs/attributes",
     "category": "Labs"
   },
