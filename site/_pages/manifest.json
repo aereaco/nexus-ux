@@ -339,16 +339,6 @@
     "category": "Labs"
   },
   {
-    "id": "lab-mod-once",
-    "route": "/labs/modifiers/once",
-    "path": "/_pages/labs/modifiers/once.html",
-    "title": ":once",
-    "icon": "material-symbols-light:looks-one-outline",
-    "order": 5,
-    "parent": "/labs/modifiers",
-    "category": "Labs"
-  },
-  {
     "id": "lab-scope-view",
     "route": "/labs/scopes/view",
     "path": "/_pages/labs/scopes/view.html",
@@ -455,6 +445,16 @@
     "icon": "material-symbols-light:format-paint",
     "order": 8,
     "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-mod-once",
+    "route": "/labs/modifiers/once",
+    "path": "/_pages/labs/modifiers/once.html",
+    "title": ":once",
+    "icon": "material-symbols-light:looks-one",
+    "order": 8,
+    "parent": "/labs/modifiers",
     "category": "Labs"
   },
   {
