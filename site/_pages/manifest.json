@@ -536,16 +536,6 @@
     "category": "Labs"
   },
   {
-    "id": "lab-attr-debug",
-    "route": "/labs/attributes/debug",
-    "path": "/_pages/labs/attributes/debug.html",
-    "title": "data-debug",
-    "icon": "material-symbols-light:bug-report-outline",
-    "order": 13,
-    "parent": "/labs/attributes",
-    "category": "Labs"
-  },
-  {
     "id": "lab-attr-theme",
     "route": "/labs/attributes/theme",
     "path": "/_pages/labs/attributes/theme.html",
@@ -761,6 +751,16 @@
     "title": "data-html",
     "icon": "material-symbols-light:html",
     "order": 29,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-debug",
+    "route": "/labs/attributes/debug",
+    "path": "/_pages/labs/attributes/debug.html",
+    "title": "data-debug",
+    "icon": "material-symbols-light:bug-report",
+    "order": 30,
     "parent": "/labs/attributes",
     "category": "Labs"
   },

@@ -1,30 +1,28 @@
-<title>data-debug</title>
-<meta name="id" content="lab-attr-debug">
-<meta name="route" content="/labs/attributes/debug">
-<meta name="icon" content="material-symbols-light:bug-report-outline">
-<meta name="order" content="13">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/attributes">
+<head>
+  <title>data-debug</title>
+  <meta name="id" content="lab-attr-debug">
+  <meta name="route" content="/labs/attributes/debug">
+  <meta name="icon" content="material-symbols-light:bug-report">
+  <meta name="order" content="30">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/attributes">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "data-debug",
-    "Category": "Attributes",
-    "Icon": "material-symbols-light:bug-report-outline",
-    "ModulePath": "src/modules/attributes/debug.ts",
-    "Description": "Enables verbose diagnostic telemetry, lifecycle profiling, and Model Context Protocol (MCP) auto-repair logging on an element.",
-    "Syntax": "<div data-debug>...</div>",
-    "Params": [
-      {
-        "name": "data-debug",
-        "type": "Boolean / String",
-        "default": "true",
-        "description": "Activates diagnostic logs and inspects property resolutions across the DOM stack."
-      }
-    ],
-    "Extensibility": "<p>Directly interfaces with the browser DevTools Console and engine diagnostics tracker for real-time reactivity introspection.</p>",
-    "Snippet": "<div data-debug class=\"p-4 bg-base-200/50 rounded-xl space-y-2 border border-warning/30\">\n  <div class=\"badge badge-warning text-xs font-bold\">Debug Mode Active</div>\n  <p class=\"text-xs font-mono opacity-80\">Element lifecycle changes, state diffs, and evaluations are logged to the console.</p>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: 'data-debug',
+      Category: 'Attributes',
+      Icon: 'material-symbols-light:bug-report',
+      Description: 'Activates verbose diagnostic logging and telemetry beacons for the element subtree, piping runtime lifecycle metrics to the MCP auto-healing agent.',
+      Syntax: '&lt;div data-debug&gt;&lt;/div&gt;',
+      Params: [
+        { name: 'data-debug', type: 'Directive Flag', default: '-', description: 'Enables debug logging for attribute evaluations, reactive effect runs, and error beacons.' }
+      ],
+      SourceModule: '/modules/attributes/debug.ts',
+      SnippetModule: '/_pages/labs/attributes/debug.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/attributes/debug.ts&lt;/code&gt;, the debug directive provides runtime observability. It captures evaluation anomalies, unhandled promise rejections, and signal mutation histories for instant debugging.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Telemetry Beacons&lt;/strong&gt; — Logs DOM element breadcrumbs and stack traces&lt;/li&gt;&lt;li&gt;&lt;strong&gt;AI Model Context Protocol Bridge&lt;/strong&gt; — Routes debug snapshots to MCP agent tools for automated code repair&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Scoped Diagnostics&lt;/strong&gt; — Isolates logs strictly to the designated subtree&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ debugActive: true, traceLog: [\'[INIT] Module mounted\', \'[RENDER] 4-Phase loop completed (0.12ms)\', \'[BEACON] Telemetry channel open\'] }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div data-debug class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4\&quot;&gt;\n        &lt;div class=\&quot;flex items-center justify-between\&quot;&gt;\n            &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Scoped Debug Beacon&lt;/h4&gt;\n            &lt;span class=\&quot;badge badge-sm badge-info font-mono\&quot;&gt;Diagnostic Stream Active&lt;/span&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;space-y-1 font-mono text-xs p-3 bg-base-200/60 rounded-xl border border-base-content/5\&quot;&gt;\n            &lt;template data-for=\&quot;entry in traceLog\&quot;&gt;\n                &lt;div class=\&quot;text-accent\&quot; data-bind=\&quot;entry\&quot;&gt;&lt;/div&gt;\n            &lt;/template&gt;\n        &lt;/div&gt;\n        &lt;button class=\&quot;btn btn-xs btn-outline font-bold\&quot; data-on-click=\&quot;traceLog.push(\'[EVENT] Signal pulse emitted at \' + Date.now())\&quot;&gt;\n            Emit Diagnostic Beacon (+)\n        &lt;/button&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
