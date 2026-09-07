@@ -439,16 +439,6 @@
     "category": "Labs"
   },
   {
-    "id": "lab-mod-window",
-    "route": "/labs/modifiers/window",
-    "path": "/_pages/labs/modifiers/window.html",
-    "title": ":window",
-    "icon": "material-symbols-light:fullscreen",
-    "order": 9,
-    "parent": "/labs/modifiers",
-    "category": "Labs"
-  },
-  {
     "id": "lab-sprite-bgfetch",
     "route": "/labs/sprites/bgfetch",
     "path": "/_pages/labs/sprites/bgfetch.html",
@@ -596,6 +586,16 @@
     "icon": "material-symbols-light:css",
     "order": 14,
     "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-mod-window",
+    "route": "/labs/modifiers/window",
+    "path": "/_pages/labs/modifiers/window.html",
+    "title": ":window",
+    "icon": "material-symbols-light:web-asset",
+    "order": 14,
+    "parent": "/labs/modifiers",
     "category": "Labs"
   },
   {

@@ -1,23 +1,28 @@
-<title>:window</title>
-<meta name="id" content="lab-mod-window">
-<meta name="route" content="/labs/modifiers/window">
-<meta name="icon" content="material-symbols-light:fullscreen">
-<meta name="order" content="9">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/modifiers">
+<head>
+  <title>:window</title>
+  <meta name="id" content="lab-mod-window">
+  <meta name="route" content="/labs/modifiers/window">
+  <meta name="icon" content="material-symbols-light:web-asset">
+  <meta name="order" content="14">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/modifiers">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": ":window",
-    "Category": "Modifiers",
-    "Icon": "material-symbols-light:fullscreen",
-    "ModulePath": "src/modules/modifiers/window.ts",
-    "Description": "Attaches event listener to window rather than the local HTMLElement.",
-    "Syntax": "<div data-on-resize:window=\"onResize()\">...</div>",
-    "Params": [],
-    "Extensibility": "<p>Allows declarative handling of global window resize and scroll events.</p>",
-    "Snippet": "<div data-signal=\"{ width: window.innerWidth }\" data-on-resize:window=\"width = window.innerWidth\" class=\"p-4 bg-base-200/50 rounded-xl space-y-1\">\n  <p class=\"text-xs font-mono\">Window width: <span class=\"font-bold text-accent\" data-bind=\"width\"></span>px (resize browser to test)</p>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: ':window',
+      Category: 'Modifiers',
+      Icon: 'material-symbols-light:web-asset',
+      Description: 'Redirects the event listener from the host element to the global window target, supporting global resize, keydown, and scroll listeners with automatic element teardown.',
+      Syntax: '&lt;div data-on-resize:window=\&quot;updateDimensions()\&quot;&gt;&lt;/div&gt;\n&lt;div data-on-keydown:window:escape=\&quot;close()\&quot;&gt;&lt;/div&gt;',
+      Params: [
+        { name: ':window', type: 'Target Modifier', default: '-', description: 'Attaches listener to global window; disposes cleanly upon element destruction.' }
+      ],
+      SourceModule: '/modules/modifiers/window.ts',
+      SnippetModule: '/_pages/labs/modifiers/window.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/modifiers/window.ts&lt;/code&gt;, this modifier binds directly to &lt;code&gt;window&lt;/code&gt; for global browser viewport events while scoping callback execution to the element.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Global Hotkeys&lt;/strong&gt; — Listen for Escape or Ctrl+K anywhere on the page&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Automatic Cleanup&lt;/strong&gt; — Never leaves orphan window listeners after unmounting&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ windowResizes: 0, windowWidth: window.innerWidth }\&quot;\n     data-on-resize:window=\&quot;windowResizes++; windowWidth = window.innerWidth\&quot;\n     class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4 max-w-md\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Window Viewport Listener (:window)&lt;/h4&gt;\n        &lt;p class=\&quot;text-xs opacity-70\&quot;&gt;Resize the browser window to see real-time updates.&lt;/p&gt;\n        &lt;div class=\&quot;grid grid-cols-2 gap-3 font-mono text-xs text-center pt-2\&quot;&gt;\n            &lt;div class=\&quot;p-3 bg-base-200/40 rounded-xl\&quot;&gt;\n                &lt;div class=\&quot;text-[10px] opacity-60 font-bold\&quot;&gt;Current Width&lt;/div&gt;\n                &lt;div class=\&quot;text-base font-bold text-primary\&quot; data-bind=\&quot;windowWidth + \'px\'\&quot;&gt;&lt;/div&gt;\n            &lt;/div&gt;\n            &lt;div class=\&quot;p-3 bg-base-200/40 rounded-xl\&quot;&gt;\n                &lt;div class=\&quot;text-[10px] opacity-60 font-bold\&quot;&gt;Resize Events&lt;/div&gt;\n                &lt;div class=\&quot;text-base font-bold text-secondary\&quot; data-bind=\&quot;windowResizes\&quot;&gt;&lt;/div&gt;\n            &lt;/div&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
