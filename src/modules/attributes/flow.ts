@@ -426,14 +426,7 @@ export const flowHandleAttribute: AttributeModule = {
     element.setAttribute('data-flow-handle-type', kind);
 
     const sideAttr = element.getAttribute('data-flow-side');
-    if (!sideAttr) {
-      try {
-        const sideVal = runtime.evaluate(element, 'handle?.side || side') as any;
-        if (typeof sideVal === 'string' && ['left', 'right', 'top', 'bottom'].includes(sideVal)) {
-          element.setAttribute('data-flow-handle-side', sideVal);
-        }
-      } catch { /* ignore */ }
-    } else {
+    if (sideAttr) {
       element.setAttribute('data-flow-handle-side', sideAttr);
     }
 

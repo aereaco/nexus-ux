@@ -5890,15 +5890,7 @@ ${scripts}
           }
           element.setAttribute("data-flow-handle-type", kind);
           const sideAttr = element.getAttribute("data-flow-side");
-          if (!sideAttr) {
-            try {
-              const sideVal = runtime.evaluate(element, "handle?.side || side");
-              if (typeof sideVal === "string" && ["left", "right", "top", "bottom"].includes(sideVal)) {
-                element.setAttribute("data-flow-handle-side", sideVal);
-              }
-            } catch {
-            }
-          } else {
+          if (sideAttr) {
             element.setAttribute("data-flow-handle-side", sideAttr);
           }
           const viewport = () => element.closest("[data-flow]");
