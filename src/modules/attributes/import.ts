@@ -315,7 +315,7 @@ async function importScript(
  *   - nexus:${id.toLowerCase()}-ready
  *   - nexus:cm-ready (when id is CM or codemirror)
  */
-async function importModule(
+async function importESModule(
   id: string,
   payload: string | Record<string, string> | Array<string>,
   cleanupFns: Array<() => void>,

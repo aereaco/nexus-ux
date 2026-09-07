@@ -2799,7 +2799,7 @@ ${suggestion}`);
       req.onupgradeneeded = (e) => {
         const udb = e.target.result;
         if (!udb.objectStoreNames.contains(storeName)) {
-          udb.createObjectStore(storeName, { keyPath: "id" });
+          udb.createObjectStore(storeName);
         }
       };
     });
@@ -2813,7 +2813,7 @@ ${suggestion}`);
       req.onupgradeneeded = (e) => {
         const udb = e.target.result;
         if (!udb.objectStoreNames.contains(storeName)) {
-          udb.createObjectStore(storeName, { keyPath: "id" });
+          udb.createObjectStore(storeName);
         }
       };
       req.onsuccess = () => resolve(req.result);
@@ -2821,7 +2821,7 @@ ${suggestion}`);
     });
   }
   function createStoreOperations(storeName) {
-    return {
+    const baseOps = {
       async all() {
         const db = await openAndEnsureStore(storeName);
         return new Promise((resolve) => {
@@ -2842,6 +2842,31 @@ ${suggestion}`);
             resolve([]);
           }
         });
+      },
+      async keys(prefix) {
+        const db = await openAndEnsureStore(storeName);
+        return new Promise((resolve) => {
+          try {
+            const tx = db.transaction(storeName, "readonly");
+            const store = tx.objectStore(storeName);
+            const req = store.getAllKeys();
+            req.onsuccess = () => {
+              db.close();
+              const rawKeys = (req.result || []).map(String);
+              resolve(prefix ? rawKeys.filter((k) => k.startsWith(prefix)) : rawKeys);
+            };
+            req.onerror = () => {
+              db.close();
+              resolve([]);
+            };
+          } catch {
+            db.close();
+            resolve([]);
+          }
+        });
+      },
+      async list(prefix) {
+        return baseOps.keys(prefix);
       },
       async get(key) {
         const db = await openAndEnsureStore(storeName);
@@ -2876,7 +2901,11 @@ ${suggestion}`);
               }
               store.put(item);
             } else {
-              store.put(item, key);
+              if (key !== void 0) {
+                store.put(item, key);
+              } else {
+                store.put(item);
+              }
             }
             tx.oncomplete = () => {
               db.close();
@@ -2935,6 +2964,16 @@ ${suggestion}`);
         });
       }
     };
+    return new Proxy(baseOps, {
+      set(target, prop, value) {
+        if (typeof prop === "string" && !(prop in target)) {
+          target.put(value, prop);
+          return true;
+        }
+        target[prop] = value;
+        return true;
+      }
+    });
   }
   function getIndexedDBProxy() {
     if (cachedIDBProxy)
@@ -6407,6 +6446,9 @@ ${scripts}
                   }
                   if (item.adopt) {
                     itemTasks.push(importAdopt(id, item.adopt, iterationCleanupFns, runtime, el));
+                  }
+                  if (item.module) {
+                    itemTasks.push(importModule(id, item.module, iterationCleanupFns, runtime, el));
                   }
                   if (item.script) {
                     importScript(id, item.script, iterationCleanupFns, runtime, el).catch(() => {
