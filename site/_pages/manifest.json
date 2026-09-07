@@ -379,6 +379,16 @@
     "category": "Labs"
   },
   {
+    "id": "lab-mod-keys",
+    "route": "/labs/modifiers/keys",
+    "path": "/_pages/labs/modifiers/keys.html",
+    "title": ":keys",
+    "icon": "material-symbols-light:keyboard",
+    "order": 6,
+    "parent": "/labs/modifiers",
+    "category": "Labs"
+  },
+  {
     "id": "lab-scope-native",
     "route": "/labs/scopes/native",
     "path": "/_pages/labs/scopes/native.html",
@@ -505,16 +515,6 @@
     "icon": "material-symbols-light:drag-pan",
     "order": 11,
     "parent": "/labs/attributes",
-    "category": "Labs"
-  },
-  {
-    "id": "lab-mod-keys",
-    "route": "/labs/modifiers/keys",
-    "path": "/_pages/labs/modifiers/keys.html",
-    "title": ":enter / :escape / :ctrl",
-    "icon": "material-symbols-light:keyboard",
-    "order": 11,
-    "parent": "/labs/modifiers",
     "category": "Labs"
   },
   {
