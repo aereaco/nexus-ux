@@ -1,36 +1,31 @@
-<title>data-switcher</title>
-<meta name="id" content="lab-attr-switcher">
-<meta name="route" content="/labs/attributes/switcher">
-<meta name="icon" content="material-symbols-light:toggle-on-outline">
-<meta name="order" content="28">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/attributes">
+<head>
+  <title>data-switcher</title>
+  <meta name="id" content="lab-attr-switcher">
+  <meta name="route" content="/labs/attributes/switcher">
+  <meta name="icon" content="material-symbols-light:swap-calls">
+  <meta name="order" content="22">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/attributes">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "data-switcher",
-    "Category": "Attributes",
-    "Icon": "material-symbols-light:toggle-on-outline",
-    "ModulePath": "src/modules/attributes/switcher.ts",
-    "Description": "State-cycling helper exposing $switch(), $isActive(), and $activeItem for tabs, carousels, and multi-step wizards.",
-    "Syntax": "<div data-switcher=\"activeTab\" data-switcher-options=\"[&#39;One&#39;, &#39;Two&#39;, &#39;Three&#39;]\">...</div>",
-    "Params": [
-      {
-        "name": "data-switcher",
-        "type": "Signal Name",
-        "default": "&#39;&#39;",
-        "description": "State property name to cycle through."
-      },
-      {
-        "name": "data-switcher-options",
-        "type": "Array",
-        "default": "[]",
-        "description": "List of options to cycle through sequentially."
-      }
-    ],
-    "Extensibility": "<p>Provides out-of-the-box keyboard navigation, wrapping indices, and state synchronizations for segmented controllers.</p>",
-    "Snippet": "<div data-signal=\"{ activeMode: &#39;Design&#39; }\"\n     class=\"p-4 bg-base-200/50 rounded-xl space-y-3\">\n  <div class=\"flex gap-2\">\n    <button class=\"btn btn-sm\" data-class=\"{ &#39;btn-primary&#39;: activeMode === &#39;Design&#39;, &#39;btn-outline&#39;: activeMode !== &#39;Design&#39; }\" data-on-click=\"activeMode = &#39;Design&#39;\">Design</button>\n    <button class=\"btn btn-sm\" data-class=\"{ &#39;btn-primary&#39;: activeMode === &#39;Code&#39;, &#39;btn-outline&#39;: activeMode !== &#39;Code&#39; }\" data-on-click=\"activeMode = &#39;Code&#39;\">Code</button>\n    <button class=\"btn btn-sm\" data-class=\"{ &#39;btn-primary&#39;: activeMode === &#39;Preview&#39;, &#39;btn-outline&#39;: activeMode !== &#39;Preview&#39; }\" data-on-click=\"activeMode = &#39;Preview&#39;\">Preview</button>\n  </div>\n  <p class=\"text-xs font-mono\">Current mode: <span class=\"font-bold text-accent\" data-bind=\"activeMode\"></span></p>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: 'data-switcher',
+      Category: 'Attributes',
+      Icon: 'material-symbols-light:swap-calls',
+      Description: 'State-cycling and option-selection helper exposing scoped utilities (&lt;code&gt;$switch()&lt;/code&gt;, &lt;code&gt;$isActive()&lt;/code&gt;, &lt;code&gt;$activeItem&lt;/code&gt;) for segmented controls, tabs, and multi-state switches.',
+      Syntax: '&lt;div data-switcher=\&quot;activeTab\&quot; data-switcher-options=\&quot;[\'Day\', \'Week\', \'Month\']\&quot;&gt;\n  &lt;button data-on-click=\&quot;$switch()\&quot;&gt;Next&lt;/button&gt;\n&lt;/div&gt;',
+      Params: [
+        { name: 'data-switcher=&quot;signal&quot;', type: 'Signal Property Name', default: '-', description: 'Bound signal holding the current active item or active ID.' },
+        { name: 'data-switcher-options=&quot;[...]&quot;', type: 'Array Expression', default: '[]', description: 'Array of strings or objects representing the available cycle options.' },
+        { name: '$switch()', type: 'Injected Helper', default: '-', description: 'Advances to the next item in the array, wrapping around to the start.' },
+        { name: '$isActive(item)', type: 'Injected Helper', default: '-', description: 'Returns boolean indicating if the given item matches active state.' }
+      ],
+      SourceModule: '/modules/attributes/switcher.ts',
+      SnippetModule: '/_pages/labs/attributes/switcher.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/attributes/switcher.ts&lt;/code&gt;, the switcher directive abstracts tab bars, segmented controls, and carousel state machines. It automatically resolves active index position, bounds checking, and circular wraparounds.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Circular Stepping&lt;/strong&gt; — &lt;code&gt;$switch()&lt;/code&gt; seamlessly advances through items with zero index-boundary bugs&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Clean Scoped Helpers&lt;/strong&gt; — Injects &lt;code&gt;$switch&lt;/code&gt;, &lt;code&gt;$isActive&lt;/code&gt;, and &lt;code&gt;$activeItem&lt;/code&gt; into template scope&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Object or Primitive Lists&lt;/strong&gt; — Matches items either by reference identity or by matching &lt;code&gt;item.id&lt;/code&gt;&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ viewMode: \'weekly\' }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div data-switcher=\&quot;viewMode\&quot;\n         data-switcher-options=\&quot;[\'daily\', \'weekly\', \'monthly\', \'annual\']\&quot;\n         class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4\&quot;&gt;\n        &lt;div class=\&quot;flex items-center justify-between\&quot;&gt;\n            &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Segmented Period Switcher&lt;/h4&gt;\n            &lt;button class=\&quot;btn btn-xs btn-primary font-bold\&quot; data-on-click=\&quot;$switch()\&quot;&gt;\n                Cycle Next ($switch)\n            &lt;/button&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;flex gap-2 p-1.5 bg-base-200/60 rounded-xl border border-base-content/5\&quot;&gt;\n            &lt;button class=\&quot;btn btn-sm flex-1 font-bold capitalize transition-all\&quot;\n                    data-class=\&quot;{ \'btn-primary shadow-md\': $isActive(\'daily\'), \'btn-ghost\': !$isActive(\'daily\') }\&quot;\n                    data-on-click=\&quot;viewMode = \'daily\'\&quot;&gt;\n                Daily\n            &lt;/button&gt;\n            &lt;button class=\&quot;btn btn-sm flex-1 font-bold capitalize transition-all\&quot;\n                    data-class=\&quot;{ \'btn-primary shadow-md\': $isActive(\'weekly\'), \'btn-ghost\': !$isActive(\'weekly\') }\&quot;\n                    data-on-click=\&quot;viewMode = \'weekly\'\&quot;&gt;\n                Weekly\n            &lt;/button&gt;\n            &lt;button class=\&quot;btn btn-sm flex-1 font-bold capitalize transition-all\&quot;\n                    data-class=\&quot;{ \'btn-primary shadow-md\': $isActive(\'monthly\'), \'btn-ghost\': !$isActive(\'monthly\') }\&quot;\n                    data-on-click=\&quot;viewMode = \'monthly\'\&quot;&gt;\n                Monthly\n            &lt;/button&gt;\n            &lt;button class=\&quot;btn btn-sm flex-1 font-bold capitalize transition-all\&quot;\n                    data-class=\&quot;{ \'btn-primary shadow-md\': $isActive(\'annual\'), \'btn-ghost\': !$isActive(\'annual\') }\&quot;\n                    data-on-click=\&quot;viewMode = \'annual\'\&quot;&gt;\n                Annual\n            &lt;/button&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;text-xs font-mono opacity-70\&quot;&gt;\n            Active Period: &lt;span class=\&quot;text-accent font-bold uppercase\&quot; data-bind=\&quot;viewMode\&quot;&gt;&lt;/span&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>

@@ -735,6 +735,16 @@
     "category": "Labs"
   },
   {
+    "id": "lab-attr-switcher",
+    "route": "/labs/attributes/switcher",
+    "path": "/_pages/labs/attributes/switcher.html",
+    "title": "data-switcher",
+    "icon": "material-symbols-light:swap-calls",
+    "order": 22,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
     "id": "lab-attr-raf",
     "route": "/labs/attributes/raf",
     "path": "/_pages/labs/attributes/raf.html",
@@ -751,16 +761,6 @@
     "title": "data-scrollbar",
     "icon": "material-symbols-light:view-stream-outline",
     "order": 26,
-    "parent": "/labs/attributes",
-    "category": "Labs"
-  },
-  {
-    "id": "lab-attr-switcher",
-    "route": "/labs/attributes/switcher",
-    "path": "/_pages/labs/attributes/switcher.html",
-    "title": "data-switcher",
-    "icon": "material-symbols-light:toggle-on-outline",
-    "order": 28,
     "parent": "/labs/attributes",
     "category": "Labs"
   },
