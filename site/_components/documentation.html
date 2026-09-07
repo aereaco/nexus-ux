@@ -87,7 +87,7 @@
 
             // Mount editors (CodeMirror 6)
             const mountEditors = () => {
-                if (!window.CM) return;
+                if (!window.CM?.EditorView) return;
 
                 const { EditorView, EditorState, Compartment, basicSetup, javascript, html, oneDark } = window.CM;
 
