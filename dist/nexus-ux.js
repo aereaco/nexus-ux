@@ -10341,9 +10341,26 @@ ${match}</ul>
               return "top";
             return "bottom";
           };
+          const findNode = (id, container) => {
+            if (!id)
+              return null;
+            let el = document.getElementById(id);
+            if (el)
+              return el;
+            el = document.getElementById(`node-${id}`);
+            if (el)
+              return el;
+            if (id.startsWith("node-")) {
+              el = document.getElementById(id.slice(5));
+              if (el)
+                return el;
+            }
+            const root = container || document;
+            return root.querySelector(`[data-id="${id}"], [data-node-id="${id}"]`);
+          };
           const findHandle = (node, role) => {
             const real = (sel) => Array.from(node.querySelectorAll(sel)).find((el) => !el[IS_TEMPLATE_KEY] && !el.hasAttribute("data-for")) || null;
-            return real(`[data-flow-handle="${role}"]`) || real("[data-flow-handle]");
+            return real(`[data-flow-handle="${role}"]`) || real(`[data-flow-handle-type="${role}"]`) || real("[data-flow-handle]");
           };
           const $flow = {
             /** Screen coordinates -> flow-space (public, xyflow pointToRendererPoint). */
@@ -10378,6 +10395,50 @@ ${match}</ul>
               state.y = (rect.height - bounds.h * zoom) / 2 - bounds.y * zoom;
               state.zoom = zoom;
             },
+            /** Zoom in on canvas viewport */
+            zoomIn: (target, delta = 0.2) => {
+              const container = target instanceof Element ? flowContainer(target) : document.querySelector("[data-flow]");
+              const flow = container;
+              const vp = flow?.__flowViewport || flow?.__nexusFlowViewport;
+              if (vp) {
+                vp.zoom = Math.min(4, (vp.zoom || 1) + delta);
+                vp.tick = (vp.tick || 0) + 1;
+              }
+            },
+            /** Zoom out on canvas viewport */
+            zoomOut: (target, delta = 0.2) => {
+              const container = target instanceof Element ? flowContainer(target) : document.querySelector("[data-flow]");
+              const flow = container;
+              const vp = flow?.__flowViewport || flow?.__nexusFlowViewport;
+              if (vp) {
+                vp.zoom = Math.max(0.2, (vp.zoom || 1) - delta);
+                vp.tick = (vp.tick || 0) + 1;
+              }
+            },
+            /** Reset canvas viewport position and zoom */
+            reset: (target) => {
+              const container = target instanceof Element ? flowContainer(target) : document.querySelector("[data-flow]");
+              const flow = container;
+              const vp = flow?.__flowViewport || flow?.__nexusFlowViewport;
+              if (vp) {
+                vp.x = 0;
+                vp.y = 0;
+                vp.zoom = 1;
+                vp.tick = (vp.tick || 0) + 1;
+              }
+            },
+            /** Fit canvas view to current nodes */
+            fit: (target, nodes, padding = 40) => {
+              const container = target instanceof Element ? flowContainer(target) : document.querySelector("[data-flow]");
+              if (!container)
+                return;
+              const flow = container;
+              const vp = flow?.__flowViewport || flow?.__nexusFlowViewport;
+              if (vp && nodes && nodes.length > 0) {
+                $flow.fitView(container, vp, nodes, padding);
+                vp.tick = (vp.tick || 0) + 1;
+              }
+            },
             /**
              * Synchronous edge path string between two nodes (by DOM id), computed in
              * flow-space so it is independent of the current pan/zoom. The edges SVG
@@ -10388,8 +10449,8 @@ ${match}</ul>
              * handle elements, inferring each handle's side from its geometry.
              */
             edge: (sourceId, targetId, options = {}) => {
-              const a = document.getElementById(sourceId);
-              const b = document.getElementById(targetId);
+              const a = findNode(sourceId, options.container);
+              const b = findNode(targetId, options.container);
               if (!a || !b)
                 return "";
               const container = options.container || flowContainer(a) || flowContainer(b);
