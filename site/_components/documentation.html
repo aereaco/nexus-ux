@@ -484,17 +484,13 @@
                                 toastMsg = 'Lab snippet copied to clipboard'; toastType = 'info'; showToast = true;
                             ">
                             <iconify-icon icon="material-symbols-light:content-copy" class="text-sm"></iconify-icon>
-                            Copy
-                        </button>
-                    </div>
-
-                    <!-- Right: Save + Reset Actions -->
+                                       <!-- Right: Save + Reset Actions -->
                     <div class="flex items-center gap-2">
                         <button
                             class="btn btn-xs btn-ghost text-secondary border border-secondary/20 hover:bg-secondary/10 gap-1"
                             data-on-click="
                                 if (!baseSnippets.includes(activeSnippet)) {
-                                    window._indexedDB.snippets[doc.SnippetModule + '_' + activeSnippet] = snippetCode;
+                                    indexedDB.snippets.put(snippetCode, doc.SnippetModule + '_' + activeSnippet);
                                     toastMsg = 'Snippet saved: ' + activeSnippet; toastType = 'success'; showToast = true;
                                 } else {
                                     showSnippetModal = true; snippetName = ''; snippetError = '';
@@ -505,7 +501,7 @@
                         <button class="btn btn-xs btn-ghost text-error border border-error/20 hover:bg-error/10 gap-1"
                             data-on-click="
                                 if (!baseSnippets.includes(activeSnippet)) {
-                                    window._indexedDB.snippets.get(doc.SnippetModule + '_' + activeSnippet).then(val => {
+                                    indexedDB.snippets.get(doc.SnippetModule + '_' + activeSnippet).then(val => {
                                         snippetCode = val || (doc.Examples && doc.Examples[activeSnippet]) || doc.Snippet || '';
                                         toastMsg = 'Reset complete'; toastType = 'success'; showToast = true;
                                     });
@@ -545,7 +541,7 @@
                             if (!name) { snippetError = 'Name is required'; return; }
                             if (baseSnippets.includes(name)) { snippetError = 'Reserved name'; return; }
                             if (snippets.indexOf(name) !== -1) { snippetError = 'Already exists'; return; }
-                            window._indexedDB.snippets[doc.SnippetModule + '_' + name] = snippetCode;
+                            indexedDB.snippets.put(snippetCode, doc.SnippetModule + '_' + name);
                             snippets.push(name);
                             activeSnippet = name;
                             showSnippetModal = false;
@@ -581,9 +577,9 @@
                             if (!name) { manageError = 'Name is required'; return; }
                             if (baseSnippets.includes(name)) { manageError = 'Reserved name'; return; }
                             if (snippets.indexOf(name) !== -1 && name !== target) { manageError = 'Already exists'; return; }
-                            window._indexedDB.snippets.get(doc.SnippetModule + '_' + target).then(val => {
-                                window._indexedDB.snippets[doc.SnippetModule + '_' + name] = val || snippetCode;
-                                window._indexedDB.snippets.delete(doc.SnippetModule + '_' + target);
+                            indexedDB.snippets.get(doc.SnippetModule + '_' + target).then(val => {
+                                indexedDB.snippets.put(val || snippetCode, doc.SnippetModule + '_' + name);
+                                indexedDB.snippets.delete(doc.SnippetModule + '_' + target);
                                 const idx = snippets.indexOf(target);
                                 if (idx !== -1) snippets[idx] = name;
                                 if (activeSnippet === target) activeSnippet = name;
@@ -608,18 +604,20 @@
                     </h3>
                     <p class="py-1 text-xs text-base-content/70">Are you sure you want to delete <span
                             class="font-bold font-mono text-error" data-bind="manageTarget"></span>? This cannot be
-                        undone.</p>
+                            undone.</p>
                     <div class="card-actions justify-end mt-4 gap-2">
                         <button class="btn btn-ghost btn-xs"
                             data-on-click="showDeleteSnippetModal = false">Cancel</button>
                         <button class="btn btn-error btn-xs" data-on-click="
                             const target = manageTarget;
-                            window._indexedDB.snippets.delete(doc.SnippetModule + '_' + target);
+                            indexedDB.snippets.delete(doc.SnippetModule + '_' + target);
                             const idx = snippets.indexOf(target);
                             if (idx !== -1) snippets.splice(idx, 1);
                             if (activeSnippet === target) activeSnippet = baseSnippets[0] || 'Default';
                             showDeleteSnippetModal = false;
                             toastMsg = 'Deleted: ' + target; toastType = 'info'; showToast = true;
+                        ">Delete</button>
+                    </div>: ' + target; toastType = 'info'; showToast = true;
                         ">Delete</button>
                     </div>
                 </div>
