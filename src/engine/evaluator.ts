@@ -315,14 +315,14 @@ function wrapGlobalFunction(fn: Function, globalContext: any): Function {
   if (!proxy) {
     proxy = new Proxy(fn, {
       apply(target, thisArg, args) {
-        const receiver = (thisArg === target || thisArg === undefined || thisArg === null) ? (thisArg || globalContext) : globalContext;
-        return Reflect.apply(target, receiver, args);
+        return Reflect.apply(target, thisArg == null || thisArg === proxy ? globalContext : thisArg, args);
       },
       construct(target, args, newTarget) {
-        return Reflect.construct(target, args, newTarget);
+        return Reflect.construct(target, args, newTarget === proxy ? target : newTarget);
       },
-      get(target, prop, receiver) {
-        const val = Reflect.get(target, prop, receiver);
+      get(target, prop) {
+        if (prop === 'prototype') return (target as any).prototype;
+        const val = Reflect.get(target, prop);
         return typeof val === 'function' ? val.bind(target) : val;
       }
     });
