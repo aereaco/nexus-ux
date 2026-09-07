@@ -57,10 +57,10 @@
     data-flow="viewport" data-flow-grid="20"
     style="background-image: linear-gradient(rgba(255,255,255,0.05) 0.0625rem, transparent 0.0625rem), linear-gradient(90deg, rgba(255,255,255,0.05) 0.0625rem, transparent 0.0625rem); background-size: 1.25rem 1.25rem;">
 
-    <div class="nexus-flow-content w-full h-full">
+    <div class="flow-viewport w-full h-full">
       <!-- Dynamic SVG Bezier Edges -->
       <svg data-flow-edges="edges"
-        class="nexus-flow-edges absolute inset-0 overflow-visible pointer-events-none text-primary">
+        class="flow-edges absolute inset-0 overflow-visible pointer-events-none text-primary">
         <path data-for="edge in edges"
           data-effect="viewport.tick; const na = nodes.find(n => n.id === edge.source); const nb = nodes.find(n => n.id === edge.target); const dep = (na && na.position.x + na.position.y) + (nb && nb.position.x + nb.position.y); $el.setAttribute('d', $flow.edge('node-' + edge.source, 'node-' + edge.target, { type: 'bezier' }))"
           fill="none" stroke="currentColor" stroke-width="2" class="opacity-60"></path>
