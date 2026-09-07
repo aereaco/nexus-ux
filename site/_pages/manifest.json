@@ -379,15 +379,6 @@
     "category": "Labs"
   },
   {
-    "id": "lab-mod-throttle",
-    "route": "/labs/modifiers/throttle",
-    "path": "/_pages/labs/modifiers/throttle.html",
-    "icon": "material-symbols-light:speed",
-    "order": 7,
-    "parent": "/labs/modifiers",
-    "category": "Labs"
-  },
-  {
     "id": "lab-sprite-sw",
     "route": "/labs/sprites/sw",
     "path": "/_pages/labs/sprites/sw.html",
@@ -565,6 +556,16 @@
     "icon": "material-symbols-light:dark-mode",
     "order": 13,
     "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-mod-throttle",
+    "route": "/labs/modifiers/throttle",
+    "path": "/_pages/labs/modifiers/throttle.html",
+    "title": ":throttle",
+    "icon": "material-symbols-light:timer",
+    "order": 13,
+    "parent": "/labs/modifiers",
     "category": "Labs"
   },
   {
