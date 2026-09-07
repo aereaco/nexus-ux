@@ -1,23 +1,29 @@
-<title>@view</title>
-<meta name="id" content="lab-scope-view">
-<meta name="route" content="/labs/scopes/view">
-<meta name="icon" content="material-symbols-light:crop">
-<meta name="order" content="5">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/scopes">
+<head>
+  <title>@view</title>
+  <meta name="id" content="lab-scope-view">
+  <meta name="route" content="/labs/scopes/view">
+  <meta name="icon" content="material-symbols-light:screen-search-desktop">
+  <meta name="order" content="6">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/scopes">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "@view",
-    "Category": "Scopes",
-    "Icon": "material-symbols-light:crop",
-    "ModulePath": "src/modules/scopes/view.ts",
-    "Description": "Live viewport dimensions and orientation tracking ($view.width, $view.height, $view.isPortrait).",
-    "Syntax": "@view.width > 1024",
-    "Params": [],
-    "Extensibility": "<p>Reactive viewport dimensions without manual resize listeners.</p>",
-    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-1\">\n  <div class=\"badge badge-success\">@view Geometry</div>\n  <p class=\"text-xs opacity-70\">Provides live width, height, and orientation metrics.</p>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: '@view',
+      Category: 'Scopes',
+      Icon: 'material-symbols-light:screen-search-desktop',
+      Description: 'Exposes real-time viewport dimensions (&lt;code&gt;width&lt;/code&gt;, &lt;code&gt;height&lt;/code&gt;, &lt;code&gt;isPortrait&lt;/code&gt;, &lt;code&gt;isLandscape&lt;/code&gt;, &lt;code&gt;aspectRatio&lt;/code&gt;) as reactive signal variables.',
+      Syntax: '&lt;div data-show=\&quot;@view.isLandscape\&quot;&gt;&lt;/div&gt;\n&lt;span data-bind=\&quot;@view.width + \'x\' + @view.height\&quot;&gt;&lt;/span&gt;',
+      Params: [
+        { name: '@view.width, @view.height', type: 'Number Signals', default: '-', description: 'Window innerWidth and innerHeight updated on resize.' },
+        { name: '@view.isPortrait, @view.isLandscape', type: 'Boolean Signals', default: '-', description: 'Evaluates current viewport orientation.' }
+      ],
+      SourceModule: '/modules/scopes/view.ts',
+      SnippetModule: '/_pages/labs/scopes/view.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/scopes/view.ts&lt;/code&gt;, this scope exposes window geometry metrics directly into the reactive expression engine without manual resize listeners.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Orientation Detection&lt;/strong&gt; — Automatically detects mobile portrait vs landscape orientation&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Live Dimensions&lt;/strong&gt; — Access exact pixel dimensions for responsive canvas sizing&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ vWidth: window.innerWidth, vHeight: window.innerHeight }\&quot;\n     data-on-resize:window=\&quot;vWidth = window.innerWidth; vHeight = window.innerHeight\&quot;\n     class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4 max-w-md\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Viewport Metrics Scope (@view)&lt;/h4&gt;\n        &lt;div class=\&quot;p-4 bg-base-200/50 rounded-xl space-y-3 font-mono text-xs\&quot;&gt;\n            &lt;div class=\&quot;flex justify-between items-center\&quot;&gt;\n                &lt;span class=\&quot;opacity-70\&quot;&gt;Dimensions:&lt;/span&gt;\n                &lt;span class=\&quot;text-primary font-bold\&quot; data-bind=\&quot;vWidth + \' × \' + vHeight + \' px\'\&quot;&gt;&lt;/span&gt;\n            &lt;/div&gt;\n            &lt;div class=\&quot;flex justify-between items-center\&quot;&gt;\n                &lt;span class=\&quot;opacity-70\&quot;&gt;Orientation:&lt;/span&gt;\n                &lt;span class=\&quot;badge badge-sm badge-secondary font-mono font-bold uppercase\&quot; data-bind=\&quot;vWidth &gt;= vHeight ? \'Landscape\' : \'Portrait\'\&quot;&gt;&lt;/span&gt;\n            &lt;/div&gt;\n            &lt;div class=\&quot;flex justify-between items-center\&quot;&gt;\n                &lt;span class=\&quot;opacity-70\&quot;&gt;Aspect Ratio:&lt;/span&gt;\n                &lt;span class=\&quot;font-bold text-accent\&quot; data-bind=\&quot;(vWidth / vHeight).toFixed(2) + \':1\'\&quot;&gt;&lt;/span&gt;\n            &lt;/div&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
