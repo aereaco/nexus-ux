@@ -39,6 +39,16 @@
     "category": "Labs"
   },
   {
+    "id": "lab-mod-debounce",
+    "route": "/labs/modifiers/debounce",
+    "path": "/_pages/labs/modifiers/debounce.html",
+    "title": ":debounce",
+    "icon": "material-symbols-light:hourglass-empty",
+    "order": 1,
+    "parent": "/labs/modifiers",
+    "category": "Labs"
+  },
+  {
     "id": "lab-mod-prevent",
     "route": "/labs/modifiers/prevent",
     "path": "/_pages/labs/modifiers/prevent.html",
@@ -326,15 +336,6 @@
     "icon": "material-symbols-light:touch-app",
     "order": 6,
     "parent": "/labs/attributes",
-    "category": "Labs"
-  },
-  {
-    "id": "lab-mod-debounce",
-    "route": "/labs/modifiers/debounce",
-    "path": "/_pages/labs/modifiers/debounce.html",
-    "icon": "material-symbols-light:hourglass-empty",
-    "order": 6,
-    "parent": "/labs/modifiers",
     "category": "Labs"
   },
   {

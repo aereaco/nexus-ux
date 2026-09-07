@@ -1,23 +1,28 @@
-<title>:debounce.<ms></title>
-<meta name="id" content="lab-mod-debounce">
-<meta name="route" content="/labs/modifiers/debounce">
-<meta name="icon" content="material-symbols-light:hourglass-empty">
-<meta name="order" content="6">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/modifiers">
+<head>
+  <title>:debounce</title>
+  <meta name="id" content="lab-mod-debounce">
+  <meta name="route" content="/labs/modifiers/debounce">
+  <meta name="icon" content="material-symbols-light:hourglass-empty">
+  <meta name="order" content="1">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/modifiers">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": ":debounce.<ms>",
-    "Category": "Modifiers",
-    "Icon": "material-symbols-light:hourglass-empty",
-    "ModulePath": "src/modules/modifiers/debounce.ts",
-    "Description": "Delays execution until specified milliseconds have elapsed since the last invocation.",
-    "Syntax": "<input data-on-input:debounce.300=\"search($newValue)\" />",
-    "Params": [],
-    "Extensibility": "<p>Caches timer handle per element, clearing previous pending calls.</p>",
-    "Snippet": "<div data-signal=\"{ query: &#39;&#39;, runs: 0 }\" class=\"p-4 bg-base-200/50 rounded-xl space-y-2\">\n  <input type=\"text\" data-on-input:debounce.400=\"runs++; query = $newValue\" placeholder=\"Type fast...\" class=\"input input-bordered input-sm w-48 font-mono\" />\n  <p class=\"text-xs font-mono\">Debounced handler runs: <span class=\"font-bold text-primary\" data-bind=\"runs\"></span> | Value: <span data-bind=\"query\"></span></p>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: ':debounce.<ms>',
+      Category: 'Modifiers',
+      Icon: 'material-symbols-light:hourglass-empty',
+      Description: 'Pipes an event listener through an auto-clearing timer, delaying execution until the specified milliseconds have elapsed since the user last triggered the event.',
+      Syntax: '&lt;input data-on-input:debounce.300=\&quot;query = $newValue\&quot; /&gt;\n&lt;input data-on-input:debounce.500=\&quot;searchDatabase()\&quot; /&gt;',
+      Params: [
+        { name: ':debounce.[ms]', type: 'Rate Limit Modifier', default: '300', description: 'Duration in milliseconds to wait for input settling before executing expression.' }
+      ],
+      SourceModule: '/modules/modifiers/debounce.ts',
+      SnippetModule: '/_pages/labs/modifiers/debounce.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/modifiers/debounce.ts&lt;/code&gt;, this modifier manages timer handles directly on the hosting element. Each incoming event cancels any existing pending timeout and restarts the timer, preventing network spam on rapid keystrokes.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Micro-Timer Management&lt;/strong&gt; — Automatically cancels previous timer IDs without memory leaks&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Customizable Latency&lt;/strong&gt; — Specify any millisecond integer suffix (e.g., &lt;code&gt;:debounce.150&lt;/code&gt;, &lt;code&gt;:debounce.750&lt;/code&gt;)&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Injected Values&lt;/strong&gt; — Passes the latest &lt;code&gt;$newValue&lt;/code&gt; and &lt;code&gt;$evt&lt;/code&gt; to the deferred handler&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ rawKeystrokes: 0, debouncedCount: 0, searchQuery: \'\' }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4 max-w-md\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Keystroke Stream Rate Limiter&lt;/h4&gt;\n        &lt;div class=\&quot;form-control\&quot;&gt;\n            &lt;label class=\&quot;label py-1\&quot;&gt;&lt;span class=\&quot;label-text text-xs font-semibold opacity-70\&quot;&gt;Search Filter (:debounce.350):&lt;/span&gt;&lt;/label&gt;\n            &lt;input type=\&quot;text\&quot;\n                   data-on-input=\&quot;rawKeystrokes++\&quot;\n                   data-on-input:debounce.350=\&quot;debouncedCount++; searchQuery = $newValue\&quot;\n                   placeholder=\&quot;Type rapidly to test debounce...\&quot;\n                   class=\&quot;input input-bordered input-sm font-mono w-full\&quot;&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;grid grid-cols-2 gap-3 pt-2\&quot;&gt;\n            &lt;div class=\&quot;p-3 bg-base-200/50 rounded-xl text-center\&quot;&gt;\n                &lt;div class=\&quot;text-[10px] uppercase font-bold opacity-60\&quot;&gt;Raw Keystrokes&lt;/div&gt;\n                &lt;div class=\&quot;text-lg font-mono font-bold text-error\&quot; data-bind=\&quot;rawKeystrokes\&quot;&gt;&lt;/div&gt;\n            &lt;/div&gt;\n            &lt;div class=\&quot;p-3 bg-base-200/50 rounded-xl text-center\&quot;&gt;\n                &lt;div class=\&quot;text-[10px] uppercase font-bold opacity-60\&quot;&gt;Debounced Invocations&lt;/div&gt;\n                &lt;div class=\&quot;text-lg font-mono font-bold text-success\&quot; data-bind=\&quot;debouncedCount\&quot;&gt;&lt;/div&gt;\n            &lt;/div&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;text-xs font-mono opacity-70 flex justify-between\&quot;&gt;\n            &lt;span&gt;Settled Query:&lt;/span&gt;\n            &lt;span class=\&quot;text-primary font-bold\&quot; data-bind=\&quot;searchQuery || \'(awaiting input)\'\&quot;&gt;&lt;/span&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
