@@ -1255,7 +1255,8 @@
         <!-- Retained Multi-Panel Outlets: Each tab retains its mounted DOM tree.
              data-show toggles panel visibility instantly (display: none) without destroying nodes or resetting state. -->
         <template data-for="tab in router.pageTabs" data-key="tab.id">
-          <div role="tabpanel" class="w-full grow flex-1 flex flex-col min-h-0" data-show="router.activePageTabId === tab.id">
+          <div role="tabpanel" class="w-full grow flex-1 flex flex-col min-h-0"
+            data-show="router.activePageTabId === tab.id">
             <!-- Default Loading Fallback Skeleton -->
             <div data-show="tab.isLoading !== false" class="flex flex-col gap-4 w-full p-4 animate-pulse">
               <div class="skeleton h-8 w-1/3 rounded-lg bg-base-300"></div>
@@ -1683,9 +1684,9 @@
       data-effect="if (collapsed && !hovered && !sidebarOpen && $el) { $el.scrollTo({ top: 0, behavior: 'smooth' }); }"
       data-signal="{
         categories: [
-          { name: 'Apps', itemsDraggable: true, icon: 'material-symbols-light:apps' },
           { name: 'Docs', itemsDraggable: false, icon: 'material-symbols-light:menu-book-outline' },
           { name: 'Labs', itemsDraggable: false, icon: 'material-symbols-light:science-outline' },
+          { name: 'Apps', itemsDraggable: true, icon: 'material-symbols-light:apps' },
           { name: 'Profiles', itemsDraggable: true, icon: 'material-symbols-light:person-outline' },
           { name: 'System', itemsDraggable: true, icon: 'material-symbols-light:settings-outline' }
         ]
