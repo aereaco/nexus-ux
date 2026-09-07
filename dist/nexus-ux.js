@@ -10291,7 +10291,11 @@ ${match}</ul>
           const viewportOf = (el) => {
             const flow = el?.closest("[data-flow]");
             const vp = flow?.__flowViewport || flow?.__nexusFlowViewport;
-            return vp ? { x: vp.x || 0, y: vp.y || 0, zoom: vp.zoom || 1 } : { x: 0, y: 0, zoom: 1 };
+            if (vp) {
+              const _t = vp.tick;
+              return vp;
+            }
+            return { x: 0, y: 0, zoom: 1 };
           };
           const flowContainer = (el) => el?.closest("[data-flow]") || null;
           const screenToFlow = (clientX, clientY, container, vp) => {
