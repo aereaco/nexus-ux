@@ -759,8 +759,8 @@
     "route": "/labs/attributes/scrollbar",
     "path": "/_pages/labs/attributes/scrollbar.html",
     "title": "data-scrollbar",
-    "icon": "material-symbols-light:view-stream-outline",
-    "order": 26,
+    "icon": "material-symbols-light:view-stream",
+    "order": 23,
     "parent": "/labs/attributes",
     "category": "Labs"
   },

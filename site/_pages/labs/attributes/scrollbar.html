@@ -1,30 +1,29 @@
-<title>data-scrollbar</title>
-<meta name="id" content="lab-attr-scrollbar">
-<meta name="route" content="/labs/attributes/scrollbar">
-<meta name="icon" content="material-symbols-light:view-stream-outline">
-<meta name="order" content="26">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/attributes">
+<head>
+  <title>data-scrollbar</title>
+  <meta name="id" content="lab-attr-scrollbar">
+  <meta name="route" content="/labs/attributes/scrollbar">
+  <meta name="icon" content="material-symbols-light:view-stream">
+  <meta name="order" content="23">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/attributes">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "data-scrollbar",
-    "Category": "Attributes",
-    "Icon": "material-symbols-light:view-stream-outline",
-    "ModulePath": "src/modules/attributes/scrollbar.ts",
-    "Description": "GPU-accelerated overlay scrollbar engine with smooth inertia physics, auto-hide fading, and custom styling.",
-    "Syntax": "<div data-scrollbar=\"{ mode: &#39;overlay&#39;, autoHide: true }\">...</div>",
-    "Params": [
-      {
-        "name": "data-scrollbar",
-        "type": "Object",
-        "default": "{ mode: &#39;overlay&#39; }",
-        "description": "Configures scrollbar mode, autoHide behavior, and thumb sizes."
-      }
-    ],
-    "Extensibility": "<p>Eliminates layout shifts caused by native platform scrollbars while maintaining full accessibility and touch compatibility.</p>",
-    "Snippet": "<div data-scrollbar class=\"h-32 overflow-y-auto p-4 bg-base-200/50 rounded-xl space-y-2 border border-base-content/10\">\n  <p class=\"text-xs font-bold opacity-70\">Custom Overlay Scrollbar Demo:</p>\n  <div class=\"space-y-2 text-sm font-mono opacity-80\">\n    <p>Scroll down to inspect smooth inertia physics...</p>\n    <p>Item 1 - High performance non-blocking scrolling</p>\n    <p>Item 2 - Clean modern aesthetic</p>\n    <p>Item 3 - Full touch &amp; mouse wheel support</p>\n    <p>Item 4 - Zero layout shift</p>\n  </div>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: 'data-scrollbar',
+      Category: 'Attributes',
+      Icon: 'material-symbols-light:view-stream',
+      Description: 'GPU-accelerated overlay scrollbar engine providing cross-platform scroll behavior, auto-hide fading, track thumb styling, and custom scroll metrics.',
+      Syntax: '&lt;div data-scrollbar=\&quot;{ mode: \'overlay\', autoHide: true }\&quot;&gt;&lt;/div&gt;',
+      Params: [
+        { name: 'data-scrollbar', type: 'Scrollbar Config', default: '{}', description: 'Configures overlay mode, thumb colors, and auto-hide timing.' },
+        { name: 'autoHide', type: 'Boolean', default: 'true', description: 'Fades out scrollbar thumbs when container is idle.' }
+      ],
+      SourceModule: '/modules/attributes/scrollbar.ts',
+      SnippetModule: '/_pages/labs/attributes/scrollbar.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/attributes/scrollbar.ts&lt;/code&gt;, this module overrides default OS scrollbars with GPU-composited overlay bars. It maintains consistent thumb aesthetics across Windows, macOS, and Linux browsers without altering document layout flow.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Zero Layout Shift&lt;/strong&gt; — Overlays floating thumbs above content without consuming layout width&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Idle Fadeout&lt;/strong&gt; — Smoothly dissolves thumbs during inactivity for clean UI presentation&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Hardware Compositing&lt;/strong&gt; — Thumbs transform via GPU transforms for 120fps smoothness&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ scrollPos: 0 }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm flex items-center justify-between\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Custom Overlay Scroll Container&lt;/h4&gt;\n        &lt;span class=\&quot;badge badge-sm badge-secondary font-mono\&quot;&gt;Custom Track Active&lt;/span&gt;\n    &lt;/div&gt;\n    &lt;div data-scrollbar=\&quot;{ mode: \'overlay\' }\&quot;\n         class=\&quot;h-48 p-4 bg-base-200/40 rounded-2xl border border-base-content/10 overflow-y-auto space-y-2 select-none font-mono text-xs\&quot;&gt;\n        &lt;div class=\&quot;p-3 bg-base-100 rounded-lg border border-base-content/5\&quot;&gt;Cluster Node #001 — Operational (99.98% uptime)&lt;/div&gt;\n        &lt;div class=\&quot;p-3 bg-base-100 rounded-lg border border-base-content/5\&quot;&gt;Cluster Node #002 — Ingesting Telemetry Stream&lt;/div&gt;\n        &lt;div class=\&quot;p-3 bg-base-100 rounded-lg border border-base-content/5\&quot;&gt;Cluster Node #003 — Syncing SharedArrayBuffer Heap&lt;/div&gt;\n        &lt;div class=\&quot;p-3 bg-base-100 rounded-lg border border-base-content/5\&quot;&gt;Cluster Node #004 — Topology Tier 2 Web Worker Active&lt;/div&gt;\n        &lt;div class=\&quot;p-3 bg-base-100 rounded-lg border border-base-content/5\&quot;&gt;Cluster Node #005 — Atomic Memory Mutex Acquired&lt;/div&gt;\n        &lt;div class=\&quot;p-3 bg-base-100 rounded-lg border border-base-content/5\&quot;&gt;Cluster Node #006 — Completed 4-Phase Atomic Frame&lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
