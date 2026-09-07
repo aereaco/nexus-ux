@@ -47,6 +47,7 @@ interface ImportPayload {
   link?: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>;
   adopt?: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>;
   script?: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>;
+  module?: string | Record<string, string> | Array<string>;
   style?: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>;
   theme?: string | Record<string, string | boolean | number> | Array<string | Record<string, string | boolean | number>>; 
   pattern?: string;
