@@ -5965,23 +5965,20 @@ ${scripts}
             if (!Array.isArray(nodes))
               return;
             if (e.key === "Delete" || e.key === "Backspace") {
-              const selectedIds = new Set(nodes.filter((n) => n.selected).map((n) => String(n.id)));
-              if (selectedIds.size > 0) {
+              const hasSelected = nodes.some((n) => n.selected);
+              if (hasSelected) {
                 e.preventDefault();
-                const remainingNodes = nodes.filter((n) => !selectedIds.has(String(n.id)));
-                let edges = [];
                 try {
-                  edges = runtime.evaluate(element, "edges") || [];
+                  runtime.evaluate(element, `
+              edges = (typeof edges !== 'undefined' && Array.isArray(edges)) ? edges.filter(e => !nodes.some(n => n.selected && (String(n.id) === String(e.source) || String(n.id) === String(e.target)))) : [];
+              nodes = nodes.filter(n => !n.selected);
+            `);
                 } catch {
-                  edges = [];
+                  const selectedIds = new Set(nodes.filter((n) => n.selected).map((n) => String(n.id)));
+                  const remaining = nodes.filter((n) => !selectedIds.has(String(n.id)));
+                  nodes.length = 0;
+                  nodes.push(...remaining);
                 }
-                if (Array.isArray(edges)) {
-                  const remainingEdges = edges.filter((ed) => !selectedIds.has(String(ed.source)) && !selectedIds.has(String(ed.target)));
-                  edges.length = 0;
-                  edges.push(...remainingEdges);
-                }
-                nodes.length = 0;
-                nodes.push(...remainingNodes);
                 state.tick = (state.tick || 0) + 1;
               }
             } else if (e.key.startsWith("Arrow")) {
