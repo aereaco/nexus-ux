@@ -745,22 +745,22 @@
     "category": "Labs"
   },
   {
-    "id": "lab-attr-raf",
-    "route": "/labs/attributes/raf",
-    "path": "/_pages/labs/attributes/raf.html",
-    "title": "data-on-raf",
-    "icon": "material-symbols-light:speed-outline",
-    "order": 23,
-    "parent": "/labs/attributes",
-    "category": "Labs"
-  },
-  {
     "id": "lab-attr-scrollbar",
     "route": "/labs/attributes/scrollbar",
     "path": "/_pages/labs/attributes/scrollbar.html",
     "title": "data-scrollbar",
     "icon": "material-symbols-light:view-stream",
     "order": 23,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
+    "id": "lab-attr-raf",
+    "route": "/labs/attributes/raf",
+    "path": "/_pages/labs/attributes/raf.html",
+    "title": "data-raf",
+    "icon": "material-symbols-light:speed",
+    "order": 24,
     "parent": "/labs/attributes",
     "category": "Labs"
   },

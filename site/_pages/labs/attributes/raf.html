@@ -1,30 +1,30 @@
-<title>data-on-raf</title>
-<meta name="id" content="lab-attr-raf">
-<meta name="route" content="/labs/attributes/raf">
-<meta name="icon" content="material-symbols-light:speed-outline">
-<meta name="order" content="23">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/attributes">
+<head>
+  <title>data-raf</title>
+  <meta name="id" content="lab-attr-raf">
+  <meta name="route" content="/labs/attributes/raf">
+  <meta name="icon" content="material-symbols-light:speed">
+  <meta name="order" content="24">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/attributes">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "data-on-raf",
-    "Category": "Attributes",
-    "Icon": "material-symbols-light:speed-outline",
-    "ModulePath": "src/modules/attributes/raf.ts",
-    "Description": "High-frequency animation loop callback injecting $time and $delta timestamps synchronized with screen refresh rates.",
-    "Syntax": "<div data-on-raf=\"angle += $delta * 0.1\">...</div>",
-    "Params": [
-      {
-        "name": "data-on-raf",
-        "type": "Expression",
-        "default": "undefined",
-        "description": "Expression evaluated every animation frame. Injects $time and $delta."
-      }
-    ],
-    "Extensibility": "<p>Automatically halts when the host element becomes hidden or leaves the DOM to avoid unnecessary battery drain.</p>",
-    "Snippet": "<div data-signal=\"{ rotation: 0 }\"\n     data-on-raf=\"rotation = (rotation + 2) % 360\"\n     class=\"p-4 bg-base-200/50 rounded-xl flex items-center gap-4\">\n  <div class=\"w-12 h-12 rounded-xl bg-gradient-to-tr from-primary to-accent flex items-center justify-center text-primary-content shadow-lg\"\n       data-bind-style=\"&#39;transform: rotate(&#39; + rotation + &#39;deg);&#39;\">\n    <iconify-icon icon=\"material-symbols-light:refresh\" class=\"text-2xl\"></iconify-icon>\n  </div>\n  <div>\n    <div class=\"text-sm font-bold\">60fps RAF Loop</div>\n    <div class=\"text-xs font-mono opacity-70\">Rotation: <span data-bind=\"Math.round(rotation)\"></span>°</div>\n  </div>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: 'data-raf',
+      Category: 'Attributes',
+      Icon: 'material-symbols-light:speed',
+      Description: 'Synchronizes element execution loops directly with the browser\'s 60fps/120fps display refresh rate via &lt;code&gt;requestAnimationFrame&lt;/code&gt;, injecting &lt;code&gt;$time&lt;/code&gt; and &lt;code&gt;$delta&lt;/code&gt; into scope.',
+      Syntax: '&lt;div data-on-raf=\&quot;pulse = Math.sin($time / 500)\&quot;&gt;&lt;/div&gt;',
+      Params: [
+        { name: 'data-on-raf=&quot;expr&quot;', type: 'Frame Callback Expression', default: '-', description: 'Evaluates on every monitor animation frame; automatically pauses when tab is backgrounded.' },
+        { name: '$time', type: 'High-Res Timestamp', default: '-', description: 'Current DOMHighResTimeStamp passed by requestAnimationFrame.' },
+        { name: '$delta', type: 'Delta Milliseconds', default: '-', description: 'Elapsed duration since previous rendered frame.' }
+      ],
+      SourceModule: '/modules/attributes/raf.ts',
+      SnippetModule: '/_pages/labs/attributes/raf.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/attributes/raf.ts&lt;/code&gt;, this module binds continuous game loops, canvas rendering cycles, and procedural animations directly to browser V-Sync. It automatically cancels animation frames when elements are removed from the DOM.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;V-Sync Synced&lt;/strong&gt; — Smooth 60Hz/120Hz/144Hz screen refresh synchronization&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Battery &amp;amp; Background Optimization&lt;/strong&gt; — Browser halts RAF loops when inactive or minimized&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Injected Delta Metrics&lt;/strong&gt; — Exposes frame duration (&lt;code&gt;$delta&lt;/code&gt;) for frame-rate-independent physics&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ pulse: 0, fps: 60 }\&quot;\n     data-on-raf=\&quot;pulse = (pulse + 0.05) % (Math.PI * 2); fps = $delta ? Math.round(1000 / $delta) : 60\&quot;\n     class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm flex items-center justify-between\&quot;&gt;\n        &lt;div&gt;\n            &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Native V-Sync Animation Loop&lt;/h4&gt;\n            &lt;p class=\&quot;text-xs opacity-70 font-mono\&quot;&gt;FPS: &lt;span class=\&quot;text-success font-bold\&quot; data-bind=\&quot;fps\&quot;&gt;&lt;/span&gt;&lt;/p&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;badge badge-sm badge-outline font-mono\&quot;&gt;60 FPS Nominal&lt;/div&gt;\n    &lt;/div&gt;\n\n    &lt;div class=\&quot;h-32 bg-base-200/40 rounded-2xl border border-base-content/10 flex items-center justify-center overflow-hidden\&quot;&gt;\n        &lt;div class=\&quot;w-16 h-16 rounded-2xl bg-gradient-to-tr from-primary to-accent shadow-xl flex items-center justify-center font-bold text-white text-xs\&quot;\n             data-style=\&quot;{ transform: \'scale(\' + (1 + Math.sin(pulse) * 0.25) + \') rotate(\' + (pulse * 20) + \'deg)\' }\&quot;&gt;\n            RAF\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
