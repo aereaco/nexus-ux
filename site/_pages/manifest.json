@@ -506,6 +506,16 @@
     "category": "Labs"
   },
   {
+    "id": "lab-attr-drag",
+    "route": "/labs/attributes/drag",
+    "path": "/_pages/labs/attributes/drag.html",
+    "title": "data-drag",
+    "icon": "material-symbols-light:drag-pan",
+    "order": 11,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
     "id": "lab-mod-keys",
     "route": "/labs/modifiers/keys",
     "path": "/_pages/labs/modifiers/keys.html",
@@ -573,16 +583,6 @@
     "icon": "material-symbols-light:polyline",
     "order": 13,
     "parent": "/labs/sprites",
-    "category": "Labs"
-  },
-  {
-    "id": "lab-attr-drag",
-    "route": "/labs/attributes/drag",
-    "path": "/_pages/labs/attributes/drag.html",
-    "title": "data-drag",
-    "icon": "material-symbols-light:drag-pan",
-    "order": 14,
-    "parent": "/labs/attributes",
     "category": "Labs"
   },
   {
