@@ -3172,7 +3172,7 @@ ${suggestion}`);
           }
           if (key in globalThis) {
             const val = globalThis[key];
-            return typeof val === "function" ? wrapGlobalFunction(val, globalThis, scope) : val;
+            return typeof val === "function" ? wrapGlobalFunction(val, globalThis) : val;
           }
         }
         return void 0;
