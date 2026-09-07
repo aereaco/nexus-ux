@@ -92,8 +92,8 @@ export const flowModule: SpriteModule = {
     // -----------------------------------------------------------------------
     /** The shared viewport state stashed on a [data-flow] element by the directive. */
     const viewportOf = (el: Element | null): Viewport => {
-      const flow = el?.closest('[data-flow]') as (HTMLElement & { __nexusFlowViewport?: Viewport }) | null;
-      const vp = flow?.__nexusFlowViewport;
+      const flow = el?.closest('[data-flow]') as (HTMLElement & { __nexusFlowViewport?: Viewport; __flowViewport?: Viewport }) | null;
+      const vp = flow?.__flowViewport || flow?.__nexusFlowViewport;
       return vp ? { x: vp.x || 0, y: vp.y || 0, zoom: vp.zoom || 1 } : { x: 0, y: 0, zoom: 1 };
     };
 
