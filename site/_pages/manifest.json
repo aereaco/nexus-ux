@@ -319,6 +319,16 @@
     "category": "Labs"
   },
   {
+    "id": "lab-sprite-gql",
+    "route": "/labs/sprites/gql",
+    "path": "/_pages/labs/sprites/gql.html",
+    "title": "$gql",
+    "icon": "material-symbols-light:graphql",
+    "order": 5,
+    "parent": "/labs/sprites",
+    "category": "Labs"
+  },
+  {
     "id": "lab-sprite-sql",
     "route": "/labs/sprites/sql",
     "path": "/_pages/labs/sprites/sql.html",
@@ -356,16 +366,6 @@
     "icon": "material-symbols-light:screen-search-desktop",
     "order": 6,
     "parent": "/labs/scopes",
-    "category": "Labs"
-  },
-  {
-    "id": "lab-sprite-gql",
-    "route": "/labs/sprites/gql",
-    "path": "/_pages/labs/sprites/gql.html",
-    "title": "$gql",
-    "icon": "material-symbols-light:schema",
-    "order": 6,
-    "parent": "/labs/sprites",
     "category": "Labs"
   },
   {

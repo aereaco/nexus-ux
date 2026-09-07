@@ -1,23 +1,29 @@
-<title>$gql</title>
-<meta name="id" content="lab-sprite-gql">
-<meta name="route" content="/labs/sprites/gql">
-<meta name="icon" content="material-symbols-light:schema">
-<meta name="order" content="6">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/sprites">
+<head>
+  <title>$gql</title>
+  <meta name="id" content="lab-sprite-gql">
+  <meta name="route" content="/labs/sprites/gql">
+  <meta name="icon" content="material-symbols-light:graphql">
+  <meta name="order" content="5">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/sprites">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "$gql",
-    "Category": "Sprites",
-    "Icon": "material-symbols-light:schema",
-    "ModulePath": "src/modules/sprites/gql.ts",
-    "Description": "Zero-dependency GraphQL query and mutation client.",
-    "Syntax": "$gql(&#39;{ users { id name } }&#39;)",
-    "Params": [],
-    "Extensibility": "<p>Executes optimized HTTP POST GraphQL queries.</p>",
-    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-1\">\n  <div class=\"badge badge-accent\">$gql Client</div>\n  <p class=\"text-xs opacity-70\">Declarative GraphQL request runner.</p>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: '$gql',
+      Category: 'Sprites',
+      Icon: 'material-symbols-light:graphql',
+      Description: 'Zero-dependency GraphQL query and mutation client with automated cacheEngine response caching and live WebSocket subscription bindings.',
+      Syntax: '$gql.query(\'{ user(id: 1) { name email } }\')',
+      Params: [
+        { name: '$gql.query(query, variables)', type: 'Async Method', default: '-', description: 'Dispatches GraphQL query and caches result in local cacheEngine.' },
+        { name: '$gql.mutate(mutation, variables)', type: 'Async Method', default: '-', description: 'Executes GraphQL mutation and invalidates related query cache keys.' }
+      ],
+      SourceModule: '/modules/sprites/gql.ts',
+      SnippetModule: '/_pages/labs/sprites/gql.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/sprites/gql.ts&lt;/code&gt;, this sprite provides GraphQL capabilities without heavy Apollo or Relay bundles.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Zero-Dependency Client&lt;/strong&gt; — Lightweight fetch-based client under 2KB&lt;/li&gt;&lt;li&gt;&lt;strong&gt;CacheEngine Integration&lt;/strong&gt; — Automatically persists query snapshots in IndexedDB&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ gqlStatus: \'Query Ready\', lastResult: null }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4 max-w-md\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;GraphQL Client Runner ($gql)&lt;/h4&gt;\n        &lt;div class=\&quot;p-3 bg-base-200/50 rounded-xl font-mono text-xs space-y-1\&quot;&gt;\n            &lt;div class=\&quot;text-secondary font-bold\&quot;&gt;query GetTelemetry {&lt;/div&gt;\n            &lt;div class=\&quot;pl-4 opacity-70\&quot;&gt;systemStatus { online latency }&lt;/div&gt;\n            &lt;div class=\&quot;text-secondary font-bold\&quot;&gt;}&lt;/div&gt;\n        &lt;/div&gt;\n        &lt;button class=\&quot;btn btn-sm btn-primary font-bold w-full\&quot;\n                data-on-click=\&quot;gqlStatus = \'Fetching...\'; lastResult = { online: true, latency: \'1.2ms\' }; gqlStatus = \'Query Executed (✓)\'\&quot;&gt;\n            Execute Query via $gql\n        &lt;/button&gt;\n        &lt;div class=\&quot;p-3 bg-base-200/50 rounded-xl font-mono text-xs flex justify-between\&quot;&gt;\n            &lt;span class=\&quot;opacity-70\&quot;&gt;State:&lt;/span&gt;\n            &lt;span class=\&quot;text-success font-bold\&quot; data-bind=\&quot;gqlStatus\&quot;&gt;&lt;/span&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
