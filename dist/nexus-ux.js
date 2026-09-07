@@ -5515,7 +5515,21 @@ ${scripts}
     flowHandleAttribute: () => flowHandleAttribute,
     flowNodeAttribute: () => flowNodeAttribute
   });
-  var SVG_NS, MIN_ZOOM, MAX_ZOOM, NO_PAN, sharedViewport, flowAttribute, flowNodeAttribute, flowHandleAttribute, flowEdgesAttribute, flow_default;
+  function ensureFlowStyles(root) {
+    if (typeof CSSStyleSheet === "undefined")
+      return;
+    if (!flowSheet) {
+      flowSheet = new CSSStyleSheet();
+      flowSheet.replaceSync(FLOW_CSS);
+    }
+    const rootNode = root || (typeof document !== "undefined" ? document : null);
+    if (rootNode && "adoptedStyleSheets" in rootNode) {
+      if (!rootNode.adoptedStyleSheets.includes(flowSheet)) {
+        rootNode.adoptedStyleSheets = [...rootNode.adoptedStyleSheets, flowSheet];
+      }
+    }
+  }
+  var SVG_NS, MIN_ZOOM, MAX_ZOOM, NO_PAN, sharedViewport, FLOW_CSS, flowSheet, flowAttribute, flowNodeAttribute, flowHandleAttribute, flowEdgesAttribute, flow_default;
   var init_flow = __esm({
     "src/modules/attributes/flow.ts"() {
       init_reactivity();
@@ -5528,10 +5542,55 @@ ${scripts}
         const vp = flow?.__flowViewport || flow?.__nexusFlowViewport;
         return vp ? { x: vp.x || 0, y: vp.y || 0, zoom: vp.zoom || 1 } : { x: 0, y: 0, zoom: 1 };
       };
+      FLOW_CSS = `
+[data-flow] {
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  cursor: grab;
+}
+[data-flow]:active {
+  cursor: grabbing;
+}
+[data-flow-viewport], [data-flow] > .flow-viewport {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: 0 0;
+}
+[data-flow-edges] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+[data-flow-node] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  cursor: grab;
+  user-select: none;
+}
+[data-flow-node]:active {
+  cursor: grabbing;
+}
+[data-flow-handle] {
+  cursor: crosshair;
+}
+.flow-edge-preview {
+  pointer-events: none;
+  stroke-dasharray: 4 4;
+}
+`;
+      flowSheet = null;
       flowAttribute = {
         name: "flow",
         attribute: "flow",
         handle: (element, value, runtime) => {
+          ensureFlowStyles(element.getRootNode());
           const evaluated = runtime.evaluate(element, value);
           const isViewport = evaluated && typeof evaluated === "object" && !Array.isArray(evaluated) && ("zoom" in evaluated || "x" in evaluated || "y" in evaluated);
           const state = isViewport ? evaluated : reactive({ x: 0, y: 0, zoom: 1 });
@@ -5541,10 +5600,10 @@ ${scripts}
             state.x = 0;
           if (state.y === void 0)
             state.y = 0;
-          let content = element.querySelector(".flow-viewport, .nexus-flow-content");
+          let content = element.querySelector("[data-flow-viewport], .flow-viewport, .nexus-flow-content");
           if (!content) {
             content = document.createElement("div");
-            content.className = "flow-viewport w-full h-full";
+            content.setAttribute("data-flow-viewport", "");
             while (element.firstChild) {
               content.appendChild(element.firstChild);
             }
@@ -5552,7 +5611,6 @@ ${scripts}
           }
           element.__flowViewport = state;
           element.__nexusFlowViewport = state;
-          element.classList.add("flow-container", "flow-pane");
           const gridAttr = element.getAttribute("data-flow-grid");
           const gridSize = gridAttr !== null ? parseFloat(gridAttr) || 0 : 0;
           let isPanning = false;

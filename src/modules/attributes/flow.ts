@@ -20,6 +20,66 @@ const sharedViewport = (el: Element | null): Viewport => {
   return vp ? { x: vp.x || 0, y: vp.y || 0, zoom: vp.zoom || 1 } : { x: 0, y: 0, zoom: 1 };
 };
 
+const FLOW_CSS = `
+[data-flow] {
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  cursor: grab;
+}
+[data-flow]:active {
+  cursor: grabbing;
+}
+[data-flow-viewport], [data-flow] > .flow-viewport {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: 0 0;
+}
+[data-flow-edges] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+[data-flow-node] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  cursor: grab;
+  user-select: none;
+}
+[data-flow-node]:active {
+  cursor: grabbing;
+}
+[data-flow-handle] {
+  cursor: crosshair;
+}
+.flow-edge-preview {
+  pointer-events: none;
+  stroke-dasharray: 4 4;
+}
+`;
+
+let flowSheet: CSSStyleSheet | null = null;
+
+function ensureFlowStyles(root?: Document | ShadowRoot | null) {
+  if (typeof CSSStyleSheet === 'undefined') return;
+  if (!flowSheet) {
+    flowSheet = new CSSStyleSheet();
+    flowSheet.replaceSync(FLOW_CSS);
+  }
+  const rootNode = (root || (typeof document !== 'undefined' ? document : null)) as Document | ShadowRoot | null;
+  if (rootNode && 'adoptedStyleSheets' in rootNode) {
+    if (!rootNode.adoptedStyleSheets.includes(flowSheet)) {
+      rootNode.adoptedStyleSheets = [...rootNode.adoptedStyleSheets, flowSheet];
+    }
+  }
+}
+
 // ---------------------------------------------------------------------------
 // data-flow: Root Viewport / Pane Directive
 // ---------------------------------------------------------------------------
@@ -27,6 +87,8 @@ export const flowAttribute: AttributeModule = {
   name: 'flow',
   attribute: 'flow',
   handle: (element: FlowElement, value: string, runtime: RuntimeContext) => {
+    ensureFlowStyles(element.getRootNode() as Document | ShadowRoot);
+
     // Resolve viewport state. If the expression already yields a viewport-like
     // object ({x,y,zoom}) use it directly (declarative, shared with the page).
     // Otherwise (e.g. `data-flow="nodes"`) create an internal reactive one.
@@ -42,10 +104,10 @@ export const flowAttribute: AttributeModule = {
 
     // Viewport resolution: locate existing viewport or auto-wrap canvas children
     // so the directive alone provides everything needed without mandatory classes.
-    let content = element.querySelector('.flow-viewport, .nexus-flow-content') as HTMLElement | null;
+    let content = element.querySelector('[data-flow-viewport], .flow-viewport, .nexus-flow-content') as HTMLElement | null;
     if (!content) {
       content = document.createElement('div');
-      content.className = 'flow-viewport w-full h-full';
+      content.setAttribute('data-flow-viewport', '');
       while (element.firstChild) {
         content.appendChild(element.firstChild);
       }
@@ -56,7 +118,6 @@ export const flowAttribute: AttributeModule = {
     // the SAME live object instead of re-evaluating the attribute expression.
     element.__flowViewport = state;
     element.__nexusFlowViewport = state;
-    element.classList.add('flow-container', 'flow-pane');
 
     const gridAttr = element.getAttribute('data-flow-grid');
     const gridSize = gridAttr !== null ? (parseFloat(gridAttr) || 0) : 0;
