@@ -1,23 +1,28 @@
-<title>@media</title>
-<meta name="id" content="lab-scope-media">
-<meta name="route" content="/labs/scopes/media">
-<meta name="icon" content="material-symbols-light:devices">
-<meta name="order" content="1">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/scopes">
+<head>
+  <title>@media</title>
+  <meta name="id" content="lab-scope-media">
+  <meta name="route" content="/labs/scopes/media">
+  <meta name="icon" content="material-symbols-light:devices">
+  <meta name="order" content="1">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/scopes">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "@media",
-    "Category": "Scopes",
-    "Icon": "material-symbols-light:devices",
-    "ModulePath": "src/modules/scopes/media.ts",
-    "Description": "Evaluates responsive viewport media queries dynamically in expressions.",
-    "Syntax": "@media(&#39;(min-width: 768px)&#39;) { ... }",
-    "Params": [],
-    "Extensibility": "<p>Uses matchMedia API to trigger reactive re-evaluations when viewport crosses breakpoints.</p>",
-    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-2\">\n  <p class=\"text-xs font-bold opacity-70\">Responsive Viewport Scope:</p>\n  <div class=\"badge badge-primary\">@media(&#39;(min-width: 768px)&#39;)</div>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: '@media',
+      Category: 'Scopes',
+      Icon: 'material-symbols-light:devices',
+      Description: 'Scoped reactive media query rule evaluating &lt;code&gt;window.matchMedia&lt;/code&gt; directly in NEG expressions, updating dynamically as viewport dimensions cross CSS breakpoints.',
+      Syntax: '@media(\'(min-width: 768px)\') { isDesktop = true }\n&lt;div data-show=\&quot;@media(\'(min-width: 1024px)\')\&quot;&gt;&lt;/div&gt;',
+      Params: [
+        { name: '@media(\'query\')', type: 'CSS Media Query String', default: '-', description: 'Evaluates standard CSS media query and returns live boolean reactivity.' }
+      ],
+      SourceModule: '/modules/scopes/media.ts',
+      SnippetModule: '/_pages/labs/scopes/media.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/scopes/media.ts&lt;/code&gt;, the @media scope provider links &lt;code&gt;window.matchMedia&lt;/code&gt; change listeners directly into the reactive dependency graph.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Native MediaQueryList&lt;/strong&gt; — Backed directly by browser native C++ matchMedia implementation&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Zero Polling&lt;/strong&gt; — Updates trigger strictly on change events when breakpoint thresholds cross&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Universal Scope Rule&lt;/strong&gt; — Usable in any NEG attribute expression&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ simulatedWidth: window.innerWidth }\&quot;\n     data-on-resize:window=\&quot;simulatedWidth = window.innerWidth\&quot;\n     class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4 max-w-md\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Responsive @media Rule Scope&lt;/h4&gt;\n        &lt;div class=\&quot;p-4 bg-base-200/50 rounded-xl space-y-3 font-mono text-xs\&quot;&gt;\n            &lt;div class=\&quot;flex justify-between items-center\&quot;&gt;\n                &lt;span class=\&quot;opacity-70\&quot;&gt;Viewport Width:&lt;/span&gt;\n                &lt;span class=\&quot;text-primary font-bold\&quot; data-bind=\&quot;simulatedWidth + \'px\'\&quot;&gt;&lt;/span&gt;\n            &lt;/div&gt;\n            &lt;div class=\&quot;flex justify-between items-center\&quot;&gt;\n                &lt;span class=\&quot;opacity-70\&quot;&gt;Tablet Breakpoint (≥768px):&lt;/span&gt;\n                &lt;span class=\&quot;badge badge-sm font-mono font-bold\&quot; data-class=\&quot;{ \'badge-success\': simulatedWidth &gt;= 768, \'badge-ghost\': simulatedWidth &lt; 768 }\&quot; data-bind=\&quot;simulatedWidth &gt;= 768 ? \'MATCHED\' : \'UNMATCHED\'\&quot;&gt;&lt;/span&gt;\n            &lt;/div&gt;\n            &lt;div class=\&quot;flex justify-between items-center\&quot;&gt;\n                &lt;span class=\&quot;opacity-70\&quot;&gt;Desktop Breakpoint (≥1024px):&lt;/span&gt;\n                &lt;span class=\&quot;badge badge-sm font-mono font-bold\&quot; data-class=\&quot;{ \'badge-success\': simulatedWidth &gt;= 1024, \'badge-ghost\': simulatedWidth &lt; 1024 }\&quot; data-bind=\&quot;simulatedWidth &gt;= 1024 ? \'MATCHED\' : \'UNMATCHED\'\&quot;&gt;&lt;/span&gt;\n            &lt;/div&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
