@@ -5943,12 +5943,18 @@ ${scripts}
         attribute: "html",
         handle: (el, value, runtime) => {
           try {
+            let lastContent = Symbol();
             const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
               const content = runtime.evaluate(el, value);
-              const html = content === void 0 || content === null ? "" : String(content);
-              if (el.innerHTML !== html) {
+              if (content !== lastContent) {
+                lastContent = content;
+                const html = content === void 0 || content === null ? "" : String(content);
                 el.innerHTML = html;
-                runtime.processElement(el);
+                Array.from(el.children).forEach((child) => {
+                  if (child instanceof HTMLElement || child instanceof SVGElement) {
+                    runtime.processElement(child, true);
+                  }
+                });
               }
             });
             return cleanup;

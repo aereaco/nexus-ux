@@ -7,12 +7,18 @@ const htmlModule: AttributeModule = {
   attribute: 'html',
   handle: (el: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void => {
     try {
+      let lastContent: unknown = Symbol();
       const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
         const content = runtime.evaluate(el, value);
-        const html = content === undefined || content === null ? '' : String(content);
-        if (el.innerHTML !== html) {
+        if (content !== lastContent) {
+          lastContent = content;
+          const html = content === undefined || content === null ? '' : String(content);
           el.innerHTML = html;
-          runtime.processElement(el);
+          Array.from(el.children).forEach(child => {
+            if (child instanceof HTMLElement || child instanceof SVGElement) {
+              runtime.processElement(child as HTMLElement, true);
+            }
+          });
         }
       });
       return cleanup;
