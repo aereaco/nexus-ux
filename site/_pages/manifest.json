@@ -419,6 +419,16 @@
     "category": "Labs"
   },
   {
+    "id": "lab-mod-morph",
+    "route": "/labs/modifiers/morph",
+    "path": "/_pages/labs/modifiers/morph.html",
+    "title": ":morph",
+    "icon": "material-symbols-light:transform",
+    "order": 7,
+    "parent": "/labs/modifiers",
+    "category": "Labs"
+  },
+  {
     "id": "lab-mod-throttle",
     "route": "/labs/modifiers/throttle",
     "path": "/_pages/labs/modifiers/throttle.html",
@@ -535,16 +545,6 @@
     "icon": "material-symbols-light:account-tree",
     "order": 12,
     "parent": "/labs/attributes",
-    "category": "Labs"
-  },
-  {
-    "id": "lab-mod-morph",
-    "route": "/labs/modifiers/morph",
-    "path": "/_pages/labs/modifiers/morph.html",
-    "title": ":morph",
-    "icon": "material-symbols-light:autorenew",
-    "order": 12,
-    "parent": "/labs/modifiers",
     "category": "Labs"
   },
   {
