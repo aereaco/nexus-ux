@@ -199,6 +199,16 @@
     "category": "Labs"
   },
   {
+    "id": "lab-mod-document",
+    "route": "/labs/modifiers/document",
+    "path": "/_pages/labs/modifiers/document.html",
+    "title": ":document",
+    "icon": "material-symbols-light:description",
+    "order": 3,
+    "parent": "/labs/modifiers",
+    "category": "Labs"
+  },
+  {
     "id": "lab-mod-self",
     "route": "/labs/modifiers/self",
     "path": "/_pages/labs/modifiers/self.html",
@@ -464,16 +474,6 @@
     "icon": "material-symbols-light:calculate",
     "order": 10,
     "parent": "/labs/attributes",
-    "category": "Labs"
-  },
-  {
-    "id": "lab-mod-document",
-    "route": "/labs/modifiers/document",
-    "path": "/_pages/labs/modifiers/document.html",
-    "title": ":document",
-    "icon": "material-symbols-light:description",
-    "order": 10,
-    "parent": "/labs/modifiers",
     "category": "Labs"
   },
   {
