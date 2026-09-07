@@ -1,30 +1,30 @@
-<title>data-route</title>
-<meta name="id" content="lab-attr-route">
-<meta name="route" content="/labs/attributes/route">
-<meta name="icon" content="material-symbols-light:alt-route">
-<meta name="order" content="24">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/attributes">
+<head>
+  <title>data-route</title>
+  <meta name="id" content="lab-attr-route">
+  <meta name="route" content="/labs/attributes/route">
+  <meta name="icon" content="material-symbols-light:signpost">
+  <meta name="order" content="18">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/attributes">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "data-route",
-    "Category": "Attributes",
-    "Icon": "material-symbols-light:alt-route",
-    "ModulePath": "src/modules/attributes/route.ts",
-    "Description": "Declaratively registers a route record and component association into the Nexus-UX client routing table.",
-    "Syntax": "<div data-route=\"/dashboard\" data-component=\"&#39;_pages/dash.html&#39;\"></div>",
-    "Params": [
-      {
-        "name": "data-route",
-        "type": "Path String",
-        "default": "&#39;&#39;",
-        "description": "URL path pattern matching incoming routes (supports parameters like :id)."
-      }
-    ],
-    "Extensibility": "<p>Integrates with the central Router module, allowing static and dynamically compiled page views to register without manual configuration.</p>",
-    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-2\">\n  <div class=\"badge badge-outline font-mono\">data-route=\"/labs/attributes/route\"</div>\n  <p class=\"text-sm\">Registers URL routes into the client SPA routing manifest.</p>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: 'data-route',
+      Category: 'Attributes',
+      Icon: 'material-symbols-light:signpost',
+      Description: 'Declaratively registers a route record and component association directly in HTML markup, supporting route guards and lifecycle hooks.',
+      Syntax: '&lt;div data-route=\&quot;/dashboard\&quot; data-component=\&quot;\'_pages/dashboard.html\'\&quot;&gt;&lt;/div&gt;',
+      Params: [
+        { name: 'data-route=&quot;/path&quot;', type: 'Route URL Pattern', default: '-', description: 'Registers the route with parameter matching (/user/:id).' },
+        { name: 'data-route-before-enter', type: 'Guard Expression', default: '-', description: 'Navigation guard receiving $to and $from; returning false cancels routing.' },
+        { name: 'data-route-name', type: 'String', default: '-', description: 'Assigns a friendly name identifier to the route.' }
+      ],
+      SourceModule: '/modules/attributes/route.ts',
+      SnippetModule: '/_pages/labs/attributes/route.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/attributes/route.ts&lt;/code&gt;, route directives register navigation paths directly in HTML templates. When parsed, they register into &lt;code&gt;#router.routes&lt;/code&gt; and disconnect automatically if the defining element is detached.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Declarative Markup&lt;/strong&gt; — Define routes directly in the DOM alongside components&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Navigation Guards&lt;/strong&gt; — Hook &lt;code&gt;data-route-before-enter&lt;/code&gt; into auth and role checks&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Dynamic Parameters&lt;/strong&gt; — Seamlessly parses named tokens like &lt;code&gt;:id&lt;/code&gt;&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ testPath: \'/user/42\', pattern: \'/user/:id\' }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Declarative Route Definition&lt;/h4&gt;\n        &lt;div class=\&quot;p-3 bg-base-200/50 rounded-xl font-mono text-xs space-y-2\&quot;&gt;\n            &lt;div&gt;&lt;span class=\&quot;text-primary font-bold\&quot;&gt;data-route&lt;/span&gt;=&quot;&lt;span data-bind=\&quot;pattern\&quot;&gt;&lt;/span&gt;&quot;&lt;/div&gt;\n            &lt;div&gt;&lt;span class=\&quot;text-secondary font-bold\&quot;&gt;data-component&lt;/span&gt;=&quot;\'/_pages/user.html\'&quot;&lt;/div&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;p-3 bg-base-100 rounded-xl border border-base-content/5 flex items-center justify-between text-xs font-mono\&quot;&gt;\n            &lt;span class=\&quot;opacity-70\&quot;&gt;Sample URL:&lt;/span&gt;\n            &lt;span class=\&quot;text-success font-bold\&quot; data-bind=\&quot;testPath\&quot;&gt;&lt;/span&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
