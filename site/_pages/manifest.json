@@ -129,6 +129,16 @@
     "category": "Labs"
   },
   {
+    "id": "lab-sprite-bgfetch",
+    "route": "/labs/sprites/bgfetch",
+    "path": "/_pages/labs/sprites/bgfetch.html",
+    "title": "$bgFetch",
+    "icon": "material-symbols-light:cloud-sync",
+    "order": 2,
+    "parent": "/labs/sprites",
+    "category": "Labs"
+  },
+  {
     "id": "lab-sprite-selector",
     "route": "/labs/sprites/selector",
     "path": "/_pages/labs/sprites/selector.html",
@@ -416,16 +426,6 @@
     "icon": "material-symbols-light:tab-close",
     "order": 9,
     "parent": "/labs/modifiers",
-    "category": "Labs"
-  },
-  {
-    "id": "lab-sprite-bgfetch",
-    "route": "/labs/sprites/bgfetch",
-    "path": "/_pages/labs/sprites/bgfetch.html",
-    "title": "$bgFetch",
-    "icon": "material-symbols-light:cloud-download",
-    "order": 9,
-    "parent": "/labs/sprites",
     "category": "Labs"
   },
   {
