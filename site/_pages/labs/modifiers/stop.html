@@ -1,23 +1,28 @@
-<title>:stop</title>
-<meta name="id" content="lab-mod-stop">
-<meta name="route" content="/labs/modifiers/stop">
-<meta name="icon" content="material-symbols-light:stop-circle-outline">
-<meta name="order" content="2">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/modifiers">
+<head>
+  <title>:stop</title>
+  <meta name="id" content="lab-mod-stop">
+  <meta name="route" content="/labs/modifiers/stop">
+  <meta name="icon" content="material-symbols-light:pan-tool">
+  <meta name="order" content="12">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/modifiers">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": ":stop",
-    "Category": "Modifiers",
-    "Icon": "material-symbols-light:stop-circle-outline",
-    "ModulePath": "src/modules/modifiers/stop.ts",
-    "Description": "Calls event.stopPropagation() to prevent event bubbling up the DOM tree.",
-    "Syntax": "<button data-on-click:stop=\"handleClick()\">...</button>",
-    "Params": [],
-    "Extensibility": "<p>Isolates inner interactive controls inside clickable cards or container rows.</p>",
-    "Snippet": "<div data-signal=\"{ parentClicked: 0, childClicked: 0 }\" data-on-click=\"parentClicked++\" class=\"p-4 bg-base-200/50 rounded-xl space-y-2 cursor-pointer\">\n  <div class=\"text-xs\">Parent clicks: <span data-bind=\"parentClicked\" class=\"font-bold\"></span></div>\n  <button data-on-click:stop=\"childClicked++\" class=\"btn btn-sm btn-accent\">Child Button (:stop)</button>\n  <span class=\"text-xs ms-2\">Child clicks: <span data-bind=\"childClicked\" class=\"font-bold\"></span></span>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: ':stop',
+      Category: 'Modifiers',
+      Icon: 'material-symbols-light:pan-tool',
+      Description: 'Automatically invokes &lt;code&gt;event.stopPropagation()&lt;/code&gt; prior to evaluation, halting the event from bubbling up to ancestor DOM containers.',
+      Syntax: '&lt;button data-on-click:stop=\&quot;deleteItem()\&quot;&gt;Delete&lt;/button&gt;',
+      Params: [
+        { name: ':stop', type: 'Propagation Modifier', default: '-', description: 'Invokes e.stopPropagation() to halt event bubbling up the DOM tree.' }
+      ],
+      SourceModule: '/modules/modifiers/stop.ts',
+      SnippetModule: '/_pages/labs/modifiers/stop.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/modifiers/stop.ts&lt;/code&gt;, the stop modifier ensures that clicking on action buttons embedded inside rows or cards does not trigger the parent container\'s row selection handlers.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Clean Bubbling Control&lt;/strong&gt; — Keeps child action events strictly isolated from parent card clicks&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Declarative Syntax&lt;/strong&gt; — Eliminates inline &lt;code&gt;e.stopPropagation()&lt;/code&gt; code&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ parentRowClicks: 0, buttonClicks: 0 }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4 max-w-md\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Event Bubbling Suppression (:stop)&lt;/h4&gt;\n        &lt;div class=\&quot;p-4 bg-base-200/60 rounded-xl border border-base-content/10 flex items-center justify-between cursor-pointer hover:border-primary/40 transition-all\&quot;\n             data-on-click=\&quot;parentRowClicks++\&quot;&gt;\n            &lt;div class=\&quot;text-xs font-bold\&quot;&gt;Interactive Row Item&lt;/div&gt;\n            &lt;button class=\&quot;btn btn-xs btn-primary font-bold\&quot;\n                    data-on-click:stop=\&quot;buttonClicks++\&quot;&gt;\n                Nested Action (:stop)\n            &lt;/button&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;grid grid-cols-2 gap-3 font-mono text-xs text-center\&quot;&gt;\n            &lt;div class=\&quot;p-3 bg-base-200/40 rounded-xl\&quot;&gt;\n                &lt;div class=\&quot;text-[10px] opacity-60 font-bold\&quot;&gt;Row Clicks&lt;/div&gt;\n                &lt;div class=\&quot;text-lg font-bold text-secondary\&quot; data-bind=\&quot;parentRowClicks\&quot;&gt;&lt;/div&gt;\n            &lt;/div&gt;\n            &lt;div class=\&quot;p-3 bg-base-200/40 rounded-xl\&quot;&gt;\n                &lt;div class=\&quot;text-[10px] opacity-60 font-bold\&quot;&gt;Button Clicks (:stop)&lt;/div&gt;\n                &lt;div class=\&quot;text-lg font-bold text-primary\&quot; data-bind=\&quot;buttonClicks\&quot;&gt;&lt;/div&gt;\n            &lt;/div&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
