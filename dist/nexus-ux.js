@@ -5733,24 +5733,9 @@ ${scripts}
           element.addEventListener("wheel", onWheel, { passive: false });
           if (state.tick === void 0)
             state.tick = 0;
-          let settleFrames = 0;
-          const settle = () => {
+          requestAnimationFrame(() => {
             state.tick++;
-            if (++settleFrames < 24)
-              requestAnimationFrame(settle);
-            else if (settleFrames === 24)
-              setTimeout(() => state.tick++, 350);
-          };
-          requestAnimationFrame(settle);
-          let ro = null;
-          if (typeof ResizeObserver !== "undefined") {
-            if (content) {
-              ro = new ResizeObserver(() => {
-                state.tick++;
-              });
-              ro.observe(content);
-            }
-          }
+          });
           const stop2 = runtime.effect(() => {
             const zoom = state.zoom || 1;
             const x = state.x || 0;
@@ -5768,8 +5753,6 @@ ${scripts}
           });
           return () => {
             stop2();
-            if (ro)
-              ro.disconnect();
             element.removeEventListener("pointerdown", onPointerDown);
             element.removeEventListener("pointermove", onPointerMove);
             element.removeEventListener("pointerup", onPointerUp);

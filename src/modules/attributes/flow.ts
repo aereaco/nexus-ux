@@ -254,21 +254,9 @@ export const flowAttribute: AttributeModule = {
     // lets edge effects (which read viewport.tick) recompute once real geometry
     // is available. A ResizeObserver keeps edges correct through late reflows.
     if ((state as any).tick === undefined) (state as any).tick = 0;
-    let settleFrames = 0;
-    const settle = () => {
+    requestAnimationFrame(() => {
       (state as any).tick++;
-      if (++settleFrames < 24) requestAnimationFrame(settle);
-      else if (settleFrames === 24) setTimeout(() => (state as any).tick++, 350);
-    };
-    requestAnimationFrame(settle);
-
-    let ro: ResizeObserver | null = null;
-    if (typeof ResizeObserver !== 'undefined') {
-      if (content) {
-        ro = new ResizeObserver(() => { (state as any).tick++; });
-        ro.observe(content);
-      }
-    }
+    });
 
     const stop = runtime.effect(() => {
       const zoom = state.zoom || 1;
@@ -295,7 +283,6 @@ export const flowAttribute: AttributeModule = {
 
     return () => {
       stop();
-      if (ro) ro.disconnect();
       element.removeEventListener('pointerdown', onPointerDown);
       element.removeEventListener('pointermove', onPointerMove);
       element.removeEventListener('pointerup', onPointerUp);
