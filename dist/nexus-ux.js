@@ -3786,7 +3786,9 @@ ${scripts}
                 componentState.isLoading = true;
                 componentState.hasError = false;
                 if (isTabOutlet && tabObj && typeof tabObj === "object") {
-                  tabObj.isLoading = true;
+                  if (tabObj.isLoading !== true) {
+                    tabObj.isLoading = true;
+                  }
                   tabObj.linkedContent = componentState;
                 }
                 try {

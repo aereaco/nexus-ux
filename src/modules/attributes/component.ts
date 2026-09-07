@@ -339,7 +339,9 @@ const componentModule: AttributeModule = {
           componentState.isLoading = true;
           componentState.hasError = false;
           if (isTabOutlet && tabObj && typeof tabObj === 'object') {
-            (tabObj as any).isLoading = true;
+            if ((tabObj as any).isLoading !== true) {
+              (tabObj as any).isLoading = true;
+            }
             (tabObj as any).linkedContent = componentState;
           }
           try {
@@ -469,7 +471,9 @@ const componentModule: AttributeModule = {
           } finally {
             componentState.isLoading = false;
             if (isTabOutlet && tabObj && typeof tabObj === 'object') {
-              (tabObj as any).isLoading = false;
+              if ((tabObj as any).isLoading !== false) {
+                (tabObj as any).isLoading = false;
+              }
               if (componentState.meta?.title && (!tabObj.meta || !(tabObj.meta as any).title)) {
                 tabObj.meta = Object.assign(tabObj.meta || {}, { title: componentState.meta.title });
               }
@@ -484,6 +488,7 @@ const componentModule: AttributeModule = {
       });
 
       return () => {
+        delete (el as any).__component_init;
         if (el instanceof BaseComponent) {
           el.disconnectedCallback();
         }
