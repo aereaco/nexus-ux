@@ -152,9 +152,9 @@
 
             $el._mountEditors = mountEditors;
 
-            if (window.CM) mountEditors();
+            if (window.CM?.EditorView) mountEditors();
 
-            if (!window.CM && !$el._cmListenerRegistered) {
+            if (!window.CM?.EditorView && !$el._cmListenerRegistered) {
                 $el._cmListenerRegistered = true;
                 window.addEventListener('nexus:cm-ready', () => $el._mountEditors?.(), { once: true });
             }
