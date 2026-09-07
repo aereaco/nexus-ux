@@ -59,6 +59,16 @@
     "category": "Labs"
   },
   {
+    "id": "lab-sprite-animate",
+    "route": "/labs/sprites/animate",
+    "path": "/_pages/labs/sprites/animate.html",
+    "title": "$animate",
+    "icon": "material-symbols-light:animation",
+    "order": 1,
+    "parent": "/labs/sprites",
+    "category": "Labs"
+  },
+  {
     "id": "drag",
     "route": "/drag",
     "path": "/_pages/drag.html",
@@ -236,16 +246,6 @@
     "icon": "material-symbols-light:phone-android",
     "order": 4,
     "parent": "/labs/scopes",
-    "category": "Labs"
-  },
-  {
-    "id": "lab-sprite-animate",
-    "route": "/labs/sprites/animate",
-    "path": "/_pages/labs/sprites/animate.html",
-    "title": "$animate",
-    "icon": "material-symbols-light:animation",
-    "order": 4,
-    "parent": "/labs/sprites",
     "category": "Labs"
   },
   {
