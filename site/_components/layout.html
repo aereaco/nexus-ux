@@ -1216,7 +1216,7 @@
         </nav>
       </div>
 
-      <div class="p-6 relative grow flex flex-col" data-class="{ 'overflow-y-auto': fixedHeader && fixedFooter }">
+      <div class="p-6 relative grow flex-1 flex flex-col min-h-0 overflow-hidden">
 
         <!-- Inline Header Bar with Breadcrumbs & Page Tabs Toggle (when floatingBookmarks is false) -->
         <div data-show="!floatingBookmarks"
@@ -1255,7 +1255,7 @@
         <!-- Retained Multi-Panel Outlets: Each tab retains its mounted DOM tree.
              data-show toggles panel visibility instantly (display: none) without destroying nodes or resetting state. -->
         <template data-for="tab in router.pageTabs" data-key="tab.id">
-          <div role="tabpanel" class="w-full grow flex flex-col" data-show="router.activePageTabId === tab.id">
+          <div role="tabpanel" class="w-full grow flex-1 flex flex-col min-h-0" data-show="router.activePageTabId === tab.id">
             <!-- Default Loading Fallback Skeleton -->
             <div data-show="tab.isLoading !== false" class="flex flex-col gap-4 w-full p-4 animate-pulse">
               <div class="skeleton h-8 w-1/3 rounded-lg bg-base-300"></div>
@@ -1266,7 +1266,7 @@
 
             <!-- Fully Loaded Route Content -->
             <tab-content data-component="tab.source || tab.content" data-show="tab.isLoading === false"
-              class="grow flex flex-col"></tab-content>
+              class="grow flex-1 flex flex-col min-h-0"></tab-content>
           </div>
         </template>
 
