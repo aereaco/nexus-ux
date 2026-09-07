@@ -1,26 +1,29 @@
-<title>data-class</title>
-<meta name="id" content="lab-attr-class">
-<meta name="route" content="/labs/attributes/class">
-<meta name="icon" content="material-symbols-light:palette">
-<meta name="order" content="7">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/attributes">
+<head>
+  <title>data-class</title>
+  <meta name="id" content="lab-attr-class">
+  <meta name="route" content="/labs/attributes/class">
+  <meta name="icon" content="material-symbols-light:palette">
+  <meta name="order" content="7">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/attributes">
+</head>
 
-<div data-signal="{
-  doc: {
-    Title: 'data-class',
-    Category: 'Attributes',
-    Icon: 'material-symbols-light:palette',
-    ModulePath: 'src/modules/attributes/class.ts',
-    Description: 'Reconciles dynamic Tailwind and DaisyUI classes via object toggles or direct string expressions with high-performance CSSOM diffing.',
-    Syntax: '<div data-class=\"{ \'bg-primary text-white\': isActive, \'opacity-50\': isDisabled }\"></div>\n<div data-class-active=\"isActive\"></div>',
-    Params: [
-      { name: 'data-class', type: 'Object / String Expression', default: '{}', description: 'Object of className: boolean mappings or space-separated class string.' },
-      { name: 'data-class-<name>', type: 'Boolean Expression', default: '-', description: 'Toggles a single class name conditionally.' }
-    ],
-    Extensibility: '<p>The <code>class</code> directive integrates with the framework\'s JIT compiler. Classes are reconciled without thrashing the DOM or clearing static classes defined in the initial HTML markup.</p>',
-    Snippet: '<div data-signal=\"{ themeMode: \'primary\', isRounded: true }\" class=\"space-y-4 p-4 bg-base-200/50 rounded-xl border border-base-content/10\">\n  <div class=\"flex flex-wrap gap-2\">\n    <button class=\"btn btn-xs\" data-class=\"{ \'btn-primary\': themeMode === \'primary\' }\" data-on-click=\"themeMode = \'primary\'\">Primary</button>\n    <button class=\"btn btn-xs\" data-class=\"{ \'btn-secondary\': themeMode === \'secondary\' }\" data-on-click=\"themeMode = \'secondary\'\">Secondary</button>\n    <button class=\"btn btn-xs\" data-class=\"{ \'btn-accent\': themeMode === \'accent\' }\" data-on-click=\"themeMode = \'accent\'\">Accent</button>\n    <button class=\"btn btn-xs btn-outline\" data-on-click=\"isRounded = !isRounded\">Toggle Full Round</button>\n  </div>\n  <div class=\"p-6 text-center text-white font-bold transition-all duration-300 shadow-md\"\n    data-class=\"{\n      \'bg-primary\': themeMode === \'primary\',\n      \'bg-secondary\': themeMode === \'secondary\',\n      \'bg-accent\': themeMode === \'accent\',\n      \'rounded-full\': isRounded,\n      \'rounded-lg\': !isRounded\n    }\">\n    Dynamic Reconciled Component\n  </div>\n</div>'
-  }
-}">
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: 'data-class',
+      Category: 'Attributes',
+      Icon: 'material-symbols-light:palette',
+      Description: 'Reconciles reactive CSS classes dynamically via standard object maps (&lt;code&gt;{ \'active\': isActive }&lt;/code&gt;) or suffixed attribute toggles (&lt;code&gt;data-class-active=\&quot;isActive\&quot;&lt;/code&gt;).',
+      Syntax: '&lt;div data-class=\&quot;{ \'border-primary shadow-lg\': isHighlighted, \'opacity-50\': isDisabled }\&quot;&gt;&lt;/div&gt;\n&lt;button data-class-btn-active=\&quot;isSelected\&quot;&gt;&lt;/button&gt;',
+      Params: [
+        { name: 'data-class=&quot;{ ... }&quot;', type: 'Class Map / String', default: '-', description: 'Evaluates object keys as class names when their corresponding boolean values evaluate to truthy.' },
+        { name: 'data-class-[name]=&quot;expr&quot;', type: 'Suffixed Toggle', default: '-', description: 'Directly toggles the single specified class name based on expression truthiness.' }
+      ],
+      SourceModule: '/modules/attributes/class.ts',
+      SnippetModule: '/_pages/labs/attributes/class.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/attributes/class.ts&lt;/code&gt;, the class directive reconciles dynamic class mutations with the CSSOM. It integrates with &lt;code&gt;stylesheet.ts&lt;/code&gt; to ensure dynamically evaluated utility tokens are compiled into adopted stylesheets on demand.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Dual-Mode Binding&lt;/strong&gt; — Supports multi-token class maps &lt;code&gt;data-class=&quot;{ ... }&quot;&lt;/code&gt; and direct suffixed toggles &lt;code&gt;data-class-active=&quot;isActive&quot;&lt;/code&gt;&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Static Class Preservation&lt;/strong&gt; — Base classes declared in HTML markup are untouched; only managed tokens are reconciled&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Zero-Copy Mutations&lt;/strong&gt; — Directly alters &lt;code&gt;classList&lt;/code&gt; using Set comparisons to minimize paint churn&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ highlighted: true, dangerState: false, compact: false }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm flex flex-wrap gap-4\&quot;&gt;\n        &lt;label class=\&quot;cursor-pointer flex items-center gap-2\&quot;&gt;\n            &lt;input type=\&quot;checkbox\&quot; data-bind-value=\&quot;highlighted\&quot; class=\&quot;checkbox checkbox-sm checkbox-primary\&quot;&gt;\n            &lt;span class=\&quot;text-xs font-semibold\&quot;&gt;Primary Glow&lt;/span&gt;\n        &lt;/label&gt;\n        &lt;label class=\&quot;cursor-pointer flex items-center gap-2\&quot;&gt;\n            &lt;input type=\&quot;checkbox\&quot; data-bind-value=\&quot;dangerState\&quot; class=\&quot;checkbox checkbox-sm checkbox-error\&quot;&gt;\n            &lt;span class=\&quot;text-xs font-semibold\&quot;&gt;Hazard Alert&lt;/span&gt;\n        &lt;/label&gt;\n        &lt;label class=\&quot;cursor-pointer flex items-center gap-2\&quot;&gt;\n            &lt;input type=\&quot;checkbox\&quot; data-bind-value=\&quot;compact\&quot; class=\&quot;checkbox checkbox-sm checkbox-secondary\&quot;&gt;\n            &lt;span class=\&quot;text-xs font-semibold\&quot;&gt;Compact View&lt;/span&gt;\n        &lt;/label&gt;\n    &lt;/div&gt;\n\n    &lt;div class=\&quot;rounded-2xl border transition-all duration-300 bg-base-100\&quot;\n         data-class=\&quot;{\n           \'p-8 border-2 border-primary ring-4 ring-primary/20 shadow-xl\': highlighted &amp;&amp; !dangerState,\n           \'p-8 border-2 border-error ring-4 ring-error/30 bg-error/5 shadow-2xl\': dangerState,\n           \'p-4 border-base-content/10\': !highlighted &amp;&amp; !dangerState,\n           \'scale-95\': compact\n         }\&quot;&gt;\n        &lt;div class=\&quot;flex items-center justify-between\&quot;&gt;\n            &lt;h4 class=\&quot;font-bold text-base\&quot; data-class=\&quot;{ \'text-primary\': highlighted &amp;&amp; !dangerState, \'text-error\': dangerState }\&quot;&gt;\n                Dynamic Reactor Chamber\n            &lt;/h4&gt;\n            &lt;span class=\&quot;badge badge-sm font-mono\&quot; data-class=\&quot;{ \'badge-error\': dangerState, \'badge-primary\': highlighted &amp;&amp; !dangerState }\&quot;&gt;\n                &lt;span data-bind=\&quot;dangerState ? \'CRITICAL\' : (highlighted ? \'OPTIMAL\' : \'STANDBY\')\&quot;&gt;&lt;/span&gt;\n            &lt;/span&gt;\n        &lt;/div&gt;\n        &lt;p class=\&quot;text-xs opacity-70 mt-2 font-mono\&quot;&gt;\n            Classes reconciled in-place across DOM ticks via atomic CSSOM diffing.\n        &lt;/p&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
