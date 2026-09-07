@@ -1,12 +1,11 @@
 <head>
-  <title>Nexus-UX — Modern HTML-First Reactive Framework</title>
+  <title>Home</title>
   <meta name="route" content="/">
   <meta name="icon" content="material-symbols-light:home-outline">
   <meta name="order" content="1">
 </head>
 
-<div class="max-w-7xl mx-auto w-full space-y-12 pb-12"
-     data-signal="{
+<div class="max-w-7xl mx-auto w-full space-y-12 pb-12" data-signal="{
         activeTab: 'hero',
         liveCount: 42,
         liveGreeting: 'Zero-Copy Reactive State',
@@ -20,40 +19,47 @@
   <!-- ═══════════════════════════════════════════════════════════
        1. HERO SECTION: GLOWING AURA & REACTIVE METRICS
        ═══════════════════════════════════════════════════════════ -->
-  <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-base-200/90 via-base-100 to-base-200/50 p-8 md:p-12 border border-base-content/10 shadow-2xl backdrop-blur-xl">
+  <div
+    class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-base-200/90 via-base-100 to-base-200/50 p-8 md:p-12 border border-base-content/10 shadow-2xl backdrop-blur-xl">
     <!-- Ambient glowing backdrop effect -->
     <div class="absolute -top-24 -right-24 w-96 h-96 bg-primary/20 rounded-full blur-3xl pointer-events-none"></div>
     <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-secondary/20 rounded-full blur-3xl pointer-events-none"></div>
 
     <div class="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
       <div class="max-w-2xl space-y-5">
-        <div class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/25 text-primary text-xs font-semibold tracking-wide uppercase">
+        <div
+          class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/25 text-primary text-xs font-semibold tracking-wide uppercase">
           <span class="inline-block w-2 h-2 rounded-full bg-primary animate-pulse"></span>
           Nexus-UX Engine 2.0 • Public Beta Ready
         </div>
 
         <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight">
-          Modern <span class="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">HTML-First</span> Reactive Architecture
+          Modern <span
+            class="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">HTML-First</span>
+          Reactive Architecture
         </h1>
 
         <p class="text-base sm:text-lg text-base-content/80 leading-relaxed font-normal">
-          A high-performance reactive user experience framework coordinating declarative HTML directives with web-native browser APIs. Built for <strong>Zero-Copy Zero-Serialization (ZCZS)</strong> execution directly across the DOM namespace.
+          A high-performance reactive user experience framework coordinating declarative HTML directives with web-native
+          browser APIs. Built for <strong>Zero-Copy Zero-Serialization (ZCZS)</strong> execution directly across the DOM
+          namespace.
         </p>
 
         <!-- Dynamic Action Badges -->
         <div class="flex flex-wrap items-center gap-4 pt-2">
-          <a href="/labs/attributes/signal" data-tab-title="data-signal" data-tab-icon="material-symbols-light:code-blocks-outline"
-             class="btn btn-primary btn-md gap-2 shadow-lg shadow-primary/25 hover:scale-105 transition-transform">
+          <a href="/labs/attributes/signal" data-tab-title="data-signal"
+            data-tab-icon="material-symbols-light:code-blocks-outline"
+            class="btn btn-primary btn-md gap-2 shadow-lg shadow-primary/25 hover:scale-105 transition-transform">
             <iconify-icon icon="material-symbols-light:science-outline" class="text-xl"></iconify-icon>
             Explore Interactive Labs
           </a>
           <a href="/flow" data-tab-title="Flow Canvas" data-tab-icon="material-symbols-light:account-tree-outline"
-             class="btn btn-outline btn-secondary btn-md gap-2 hover:scale-105 transition-transform">
+            class="btn btn-outline btn-secondary btn-md gap-2 hover:scale-105 transition-transform">
             <iconify-icon icon="material-symbols-light:account-tree-outline" class="text-xl"></iconify-icon>
             Visual Node Graph
           </a>
           <a href="/docs/readme" data-tab-title="Documentation" data-tab-icon="material-symbols-light:menu-book-outline"
-             class="btn btn-ghost btn-md gap-2 hover:bg-base-content/10">
+            class="btn btn-ghost btn-md gap-2 hover:bg-base-content/10">
             <iconify-icon icon="material-symbols-light:description-outline" class="text-xl"></iconify-icon>
             Specification & Docs
           </a>
@@ -61,7 +67,8 @@
       </div>
 
       <!-- Live Interactive Mini-Sandbox Hero Widget -->
-      <div class="w-full lg:w-96 rounded-2xl bg-base-100/80 border border-base-content/15 p-6 shadow-xl backdrop-blur-md space-y-4">
+      <div
+        class="w-full lg:w-96 rounded-2xl bg-base-100/80 border border-base-content/15 p-6 shadow-xl backdrop-blur-md space-y-4">
         <div class="flex items-center justify-between border-b border-base-content/10 pb-3">
           <div class="flex items-center gap-2">
             <iconify-icon icon="material-symbols-light:terminal" class="text-secondary text-lg"></iconify-icon>
@@ -76,7 +83,7 @@
           <div>
             <label class="text-[11px] font-semibold text-base-content/60 uppercase">Reactive Signal Binding</label>
             <input type="text" data-bind-value="liveGreeting"
-                   class="input input-sm input-bordered w-full font-mono text-xs bg-base-200/50 mt-1" />
+              class="input input-sm input-bordered w-full font-mono text-xs bg-base-200/50 mt-1" />
           </div>
 
           <div class="p-3 bg-base-200/60 rounded-xl border border-base-content/10 flex items-center justify-between">
@@ -110,16 +117,19 @@
         Core Architectural Pillars
       </h2>
       <p class="text-sm text-base-content/70">
-        Engineered from the ground up for maximum browser performance, zero memory churn, and pure HTML-first expressiveness.
+        Engineered from the ground up for maximum browser performance, zero memory churn, and pure HTML-first
+        expressiveness.
       </p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
       <!-- PILLAR 1: DECLARATIVE HTML-FIRST -->
-      <div class="card bg-base-200/50 hover:bg-base-200/80 border border-base-content/10 hover:border-primary/40 transition-all duration-300 shadow-lg hover:shadow-primary/10 rounded-2xl p-6 space-y-4">
+      <div
+        class="card bg-base-200/50 hover:bg-base-200/80 border border-base-content/10 hover:border-primary/40 transition-all duration-300 shadow-lg hover:shadow-primary/10 rounded-2xl p-6 space-y-4">
         <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-xl bg-primary/15 text-primary flex items-center justify-center text-2xl font-bold border border-primary/20">
+          <div
+            class="w-12 h-12 rounded-xl bg-primary/15 text-primary flex items-center justify-center text-2xl font-bold border border-primary/20">
             <iconify-icon icon="material-symbols-light:code-blocks-outline"></iconify-icon>
           </div>
           <div>
@@ -129,23 +139,30 @@
         </div>
 
         <p class="text-xs text-base-content/80 leading-relaxed">
-          Application logic, state bindings, dynamic templates, and animations are expressed directly in HTML markup. No build step required to run; templates parse natively in the browser's DOM parser.
+          Application logic, state bindings, dynamic templates, and animations are expressed directly in HTML markup. No
+          build step required to run; templates parse natively in the browser's DOM parser.
         </p>
 
         <div class="space-y-2 pt-2 border-t border-base-content/10">
           <div class="text-[11px] font-bold text-primary uppercase tracking-wider">Implementation Features</div>
           <ul class="text-xs text-base-content/70 space-y-1.5 list-disc list-inside">
-            <li><strong>30 Native Attribute Directives</strong>: <code>data-signal</code>, <code>data-bind</code>, <code>data-for</code>, <code>data-if</code>, <code>data-show</code>, <code>data-on</code>, <code>data-flow</code>, and more.</li>
-            <li><strong>Constructable CSSStyleSheets</strong>: Direct CSSOM integration via <code>document.adoptedStyleSheets</code> and <code>data-stylesheet</code>.</li>
-            <li><strong>Single Observer Context</strong>: Exactly one universal <code>MutationObserver</code> orchestrating all DOM insertions, diffing, and deterministic teardowns.</li>
+            <li><strong>30 Native Attribute Directives</strong>: <code>data-signal</code>, <code>data-bind</code>,
+              <code>data-for</code>, <code>data-if</code>, <code>data-show</code>, <code>data-on</code>,
+              <code>data-flow</code>, and more.</li>
+            <li><strong>Constructable CSSStyleSheets</strong>: Direct CSSOM integration via
+              <code>document.adoptedStyleSheets</code> and <code>data-stylesheet</code>.</li>
+            <li><strong>Single Observer Context</strong>: Exactly one universal <code>MutationObserver</code>
+              orchestrating all DOM insertions, diffing, and deterministic teardowns.</li>
           </ul>
         </div>
       </div>
 
       <!-- PILLAR 2: ZERO-COPY ZERO-SERIALIZATION (ZCZS) -->
-      <div class="card bg-base-200/50 hover:bg-base-200/80 border border-base-content/10 hover:border-secondary/40 transition-all duration-300 shadow-lg hover:shadow-secondary/10 rounded-2xl p-6 space-y-4">
+      <div
+        class="card bg-base-200/50 hover:bg-base-200/80 border border-base-content/10 hover:border-secondary/40 transition-all duration-300 shadow-lg hover:shadow-secondary/10 rounded-2xl p-6 space-y-4">
         <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-xl bg-secondary/15 text-secondary flex items-center justify-center text-2xl font-bold border border-secondary/20">
+          <div
+            class="w-12 h-12 rounded-xl bg-secondary/15 text-secondary flex items-center justify-center text-2xl font-bold border border-secondary/20">
             <iconify-icon icon="material-symbols-light:memory"></iconify-icon>
           </div>
           <div>
@@ -155,23 +172,30 @@
         </div>
 
         <p class="text-xs text-base-content/80 leading-relaxed">
-          State is held in shared memory references and typed heaps. Web Workers and main thread communicate via <code>SharedArrayBuffer</code>, completely avoiding expensive <code>JSON.stringify</code> and <code>postMessage</code> copies.
+          State is held in shared memory references and typed heaps. Web Workers and main thread communicate via
+          <code>SharedArrayBuffer</code>, completely avoiding expensive <code>JSON.stringify</code> and
+          <code>postMessage</code> copies.
         </p>
 
         <div class="space-y-2 pt-2 border-t border-base-content/10">
           <div class="text-[11px] font-bold text-secondary uppercase tracking-wider">Implementation Features</div>
           <ul class="text-xs text-base-content/70 space-y-1.5 list-disc list-inside">
-            <li><strong>SignalHeap & SharedArrayBuffer</strong>: Atomic typed-array state stores with multi-threaded autoscale topology tiers.</li>
-            <li><strong>Live Proxy Memory Graphs</strong>: Arrays and objects mutated in-place; Reflect traps eliminate object re-allocations.</li>
-            <li><strong>Rust-Inspired Borrowing</strong>: Strict ownership tracking ensures optimal memory safety and deterministic lifecycle cleanup.</li>
+            <li><strong>SignalHeap & SharedArrayBuffer</strong>: Atomic typed-array state stores with multi-threaded
+              autoscale topology tiers.</li>
+            <li><strong>Live Proxy Memory Graphs</strong>: Arrays and objects mutated in-place; Reflect traps eliminate
+              object re-allocations.</li>
+            <li><strong>Rust-Inspired Borrowing</strong>: Strict ownership tracking ensures optimal memory safety and
+              deterministic lifecycle cleanup.</li>
           </ul>
         </div>
       </div>
 
       <!-- PILLAR 3: FINE-GRAINED REACTIVE SIGNALS -->
-      <div class="card bg-base-200/50 hover:bg-base-200/80 border border-base-content/10 hover:border-accent/40 transition-all duration-300 shadow-lg hover:shadow-accent/10 rounded-2xl p-6 space-y-4">
+      <div
+        class="card bg-base-200/50 hover:bg-base-200/80 border border-base-content/10 hover:border-accent/40 transition-all duration-300 shadow-lg hover:shadow-accent/10 rounded-2xl p-6 space-y-4">
         <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-xl bg-accent/15 text-accent flex items-center justify-center text-2xl font-bold border border-accent/20">
+          <div
+            class="w-12 h-12 rounded-xl bg-accent/15 text-accent flex items-center justify-center text-2xl font-bold border border-accent/20">
             <iconify-icon icon="material-symbols-light:bolt"></iconify-icon>
           </div>
           <div>
@@ -181,41 +205,55 @@
         </div>
 
         <p class="text-xs text-base-content/80 leading-relaxed">
-          Reactivity graphs track precise signal dependencies. Modifying a single value updates only the exact text node or attribute mapped to it, without re-rendering component trees or virtual DOM diffs.
+          Reactivity graphs track precise signal dependencies. Modifying a single value updates only the exact text node
+          or attribute mapped to it, without re-rendering component trees or virtual DOM diffs.
         </p>
 
         <div class="space-y-2 pt-2 border-t border-base-content/10">
           <div class="text-[11px] font-bold text-accent uppercase tracking-wider">Implementation Features</div>
           <ul class="text-xs text-base-content/70 space-y-1.5 list-disc list-inside">
-            <li><strong>4-Phase Atomic Execution Loop</strong>: <code>Capture &rarr; Evaluate &rarr; Resolve &rarr; Paint</code> guarantees zero dropped animation frames.</li>
-            <li><strong>Frame Budget Yielding</strong>: <code>MessageChannel</code> microtask scheduler yields to the browser when computations exceed 8ms.</li>
-            <li><strong>Element-Bound Effects</strong>: <code>elementBoundEffect</code> attaches directly to DOM nodes, automatically tearing down effects when removed.</li>
+            <li><strong>4-Phase Atomic Execution Loop</strong>:
+              <code>Capture &rarr; Evaluate &rarr; Resolve &rarr; Paint</code> guarantees zero dropped animation frames.
+            </li>
+            <li><strong>Frame Budget Yielding</strong>: <code>MessageChannel</code> microtask scheduler yields to the
+              browser when computations exceed 8ms.</li>
+            <li><strong>Element-Bound Effects</strong>: <code>elementBoundEffect</code> attaches directly to DOM nodes,
+              automatically tearing down effects when removed.</li>
           </ul>
         </div>
       </div>
 
       <!-- PILLAR 4: NEXUS EXPRESSION GRAMMAR (NEG) -->
-      <div class="card bg-base-200/50 hover:bg-base-200/80 border border-base-content/10 hover:border-info/40 transition-all duration-300 shadow-lg hover:shadow-info/10 rounded-2xl p-6 space-y-4">
+      <div
+        class="card bg-base-200/50 hover:bg-base-200/80 border border-base-content/10 hover:border-info/40 transition-all duration-300 shadow-lg hover:shadow-info/10 rounded-2xl p-6 space-y-4">
         <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-xl bg-info/15 text-info flex items-center justify-center text-2xl font-bold border border-info/20">
+          <div
+            class="w-12 h-12 rounded-xl bg-info/15 text-info flex items-center justify-center text-2xl font-bold border border-info/20">
             <iconify-icon icon="material-symbols-light:terminal"></iconify-icon>
           </div>
           <div>
             <h3 class="text-lg font-bold">Nexus Expression Grammar (NEG)</h3>
-            <p class="text-xs text-base-content/60">Intuitive attribute syntax with scoped rules and pipeline modifiers</p>
+            <p class="text-xs text-base-content/60">Intuitive attribute syntax with scoped rules and pipeline modifiers
+            </p>
           </div>
         </div>
 
         <p class="text-xs text-base-content/80 leading-relaxed">
-          NEG provides a clean, expressive grammar executed inside DOM Proxy scopes. Supports scoped rule queries, global signals, event modifier pipelines, and built-in sprite utilities natively.
+          NEG provides a clean, expressive grammar executed inside DOM Proxy scopes. Supports scoped rule queries,
+          global signals, event modifier pipelines, and built-in sprite utilities natively.
         </p>
 
         <div class="space-y-2 pt-2 border-t border-base-content/10">
           <div class="text-[11px] font-bold text-info uppercase tracking-wider">Implementation Features</div>
           <ul class="text-xs text-base-content/70 space-y-1.5 list-disc list-inside">
-            <li><strong>6 Reactive Scopes</strong>: <code>@media</code>, <code>@container</code>, <code>@auth</code>, <code>@os</code>, <code>@view</code>, and <code>@native</code> for contextual responsive layouts.</li>
-            <li><strong>15 Pipeline Event Modifiers</strong>: <code>:prevent</code>, <code>:stop</code>, <code>:outside</code>, <code>:debounce.250</code>, <code>:throttle</code>, <code>:morph</code>, key filters, and more.</li>
-            <li><strong>14 Injected Sprites</strong>: <code>$el</code>, <code>$(selector)</code>, <code>$animate</code>, <code>$sql</code>, <code>$sw</code>, <code>$push</code>, <code>$mcp</code> accessible directly in expressions.</li>
+            <li><strong>6 Reactive Scopes</strong>: <code>@media</code>, <code>@container</code>, <code>@auth</code>,
+              <code>@os</code>, <code>@view</code>, and <code>@native</code> for contextual responsive layouts.</li>
+            <li><strong>15 Pipeline Event Modifiers</strong>: <code>:prevent</code>, <code>:stop</code>,
+              <code>:outside</code>, <code>:debounce.250</code>, <code>:throttle</code>, <code>:morph</code>, key
+              filters, and more.</li>
+            <li><strong>14 Injected Sprites</strong>: <code>$el</code>, <code>$(selector)</code>, <code>$animate</code>,
+              <code>$sql</code>, <code>$sw</code>, <code>$push</code>, <code>$mcp</code> accessible directly in
+              expressions.</li>
           </ul>
         </div>
       </div>
@@ -230,10 +268,11 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <h2 class="text-2xl font-extrabold tracking-tight">Flagship Interactive Labs</h2>
-        <p class="text-xs text-base-content/70">Test, tweak, and fork directives in real time using the CodeMirror sandbox.</p>
+        <p class="text-xs text-base-content/70">Test, tweak, and fork directives in real time using the CodeMirror
+          sandbox.</p>
       </div>
       <a href="/labs/attributes/signal" data-tab-title="All Labs" data-tab-icon="material-symbols-light:science-outline"
-         class="btn btn-xs btn-ghost text-primary gap-1 self-start sm:self-auto font-bold">
+        class="btn btn-xs btn-ghost text-primary gap-1 self-start sm:self-auto font-bold">
         View All 65 Labs <iconify-icon icon="material-symbols-light:arrow-forward"></iconify-icon>
       </a>
     </div>
@@ -241,8 +280,9 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
       <!-- Lab Card 1: data-signal -->
-      <a href="/labs/attributes/signal" data-tab-title="data-signal" data-tab-icon="material-symbols-light:code-blocks-outline"
-         class="group p-5 bg-base-200/40 hover:bg-base-200/90 rounded-2xl border border-base-content/10 hover:border-primary/40 transition-all hover:scale-[1.02] shadow-sm flex flex-col justify-between space-y-3">
+      <a href="/labs/attributes/signal" data-tab-title="data-signal"
+        data-tab-icon="material-symbols-light:code-blocks-outline"
+        class="group p-5 bg-base-200/40 hover:bg-base-200/90 rounded-2xl border border-base-content/10 hover:border-primary/40 transition-all hover:scale-[1.02] shadow-sm flex flex-col justify-between space-y-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <span class="w-8 h-8 rounded-lg bg-primary/15 text-primary flex items-center justify-center text-lg">
@@ -255,14 +295,15 @@
         <p class="text-xs text-base-content/70 line-clamp-2">
           Isolated reactive state scopes bound directly to DOM elements with nested hierarchy inheritance.
         </p>
-        <div class="text-[11px] font-semibold text-primary flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+        <div
+          class="text-[11px] font-semibold text-primary flex items-center gap-1 group-hover:translate-x-1 transition-transform">
           Launch Sandbox <iconify-icon icon="material-symbols-light:chevron-right"></iconify-icon>
         </div>
       </a>
 
       <!-- Lab Card 2: data-flow -->
       <a href="/flow" data-tab-title="Flow Canvas" data-tab-icon="material-symbols-light:account-tree-outline"
-         class="group p-5 bg-base-200/40 hover:bg-base-200/90 rounded-2xl border border-base-content/10 hover:border-secondary/40 transition-all hover:scale-[1.02] shadow-sm flex flex-col justify-between space-y-3">
+        class="group p-5 bg-base-200/40 hover:bg-base-200/90 rounded-2xl border border-base-content/10 hover:border-secondary/40 transition-all hover:scale-[1.02] shadow-sm flex flex-col justify-between space-y-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <span class="w-8 h-8 rounded-lg bg-secondary/15 text-secondary flex items-center justify-center text-lg">
@@ -275,14 +316,15 @@
         <p class="text-xs text-base-content/70 line-clamp-2">
           xyflow-style spatial canvas with pan/zoom viewport, dynamic node insertion, and reactive SVG bezier links.
         </p>
-        <div class="text-[11px] font-semibold text-secondary flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+        <div
+          class="text-[11px] font-semibold text-secondary flex items-center gap-1 group-hover:translate-x-1 transition-transform">
           Open Canvas <iconify-icon icon="material-symbols-light:chevron-right"></iconify-icon>
         </div>
       </a>
 
       <!-- Lab Card 3: data-drag -->
       <a href="/drag" data-tab-title="Drag & Drop" data-tab-icon="material-symbols-light:drag-pan"
-         class="group p-5 bg-base-200/40 hover:bg-base-200/90 rounded-2xl border border-base-content/10 hover:border-accent/40 transition-all hover:scale-[1.02] shadow-sm flex flex-col justify-between space-y-3">
+        class="group p-5 bg-base-200/40 hover:bg-base-200/90 rounded-2xl border border-base-content/10 hover:border-accent/40 transition-all hover:scale-[1.02] shadow-sm flex flex-col justify-between space-y-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <span class="w-8 h-8 rounded-lg bg-accent/15 text-accent flex items-center justify-center text-lg">
@@ -295,14 +337,15 @@
         <p class="text-xs text-base-content/70 line-clamp-2">
           Zero-config list reordering and multi-list cross-transfer with 60fps GPU FLIP animations.
         </p>
-        <div class="text-[11px] font-semibold text-accent flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+        <div
+          class="text-[11px] font-semibold text-accent flex items-center gap-1 group-hover:translate-x-1 transition-transform">
           Test Drag FLIP <iconify-icon icon="material-symbols-light:chevron-right"></iconify-icon>
         </div>
       </a>
 
       <!-- Lab Card 4: data-bind -->
       <a href="/labs/attributes/bind" data-tab-title="data-bind" data-tab-icon="material-symbols-light:link"
-         class="group p-5 bg-base-200/40 hover:bg-base-200/90 rounded-2xl border border-base-content/10 hover:border-info/40 transition-all hover:scale-[1.02] shadow-sm flex flex-col justify-between space-y-3">
+        class="group p-5 bg-base-200/40 hover:bg-base-200/90 rounded-2xl border border-base-content/10 hover:border-info/40 transition-all hover:scale-[1.02] shadow-sm flex flex-col justify-between space-y-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <span class="w-8 h-8 rounded-lg bg-info/15 text-info flex items-center justify-center text-lg">
@@ -315,14 +358,16 @@
         <p class="text-xs text-base-content/70 line-clamp-2">
           Two-way binding for native form inputs and automatic proxy reflection with localStorage and window.
         </p>
-        <div class="text-[11px] font-semibold text-info flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+        <div
+          class="text-[11px] font-semibold text-info flex items-center gap-1 group-hover:translate-x-1 transition-transform">
           Launch Sandbox <iconify-icon icon="material-symbols-light:chevron-right"></iconify-icon>
         </div>
       </a>
 
       <!-- Lab Card 5: data-import -->
-      <a href="/labs/attributes/import" data-tab-title="data-import" data-tab-icon="material-symbols-light:download-for-offline-outline"
-         class="group p-5 bg-base-200/40 hover:bg-base-200/90 rounded-2xl border border-base-content/10 hover:border-warning/40 transition-all hover:scale-[1.02] shadow-sm flex flex-col justify-between space-y-3">
+      <a href="/labs/attributes/import" data-tab-title="data-import"
+        data-tab-icon="material-symbols-light:download-for-offline-outline"
+        class="group p-5 bg-base-200/40 hover:bg-base-200/90 rounded-2xl border border-base-content/10 hover:border-warning/40 transition-all hover:scale-[1.02] shadow-sm flex flex-col justify-between space-y-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <span class="w-8 h-8 rounded-lg bg-warning/15 text-warning flex items-center justify-center text-lg">
@@ -335,14 +380,16 @@
         <p class="text-xs text-base-content/70 line-clamp-2">
           Universal declarative asset loader for external JavaScript modules, constructable stylesheets, and icon packs.
         </p>
-        <div class="text-[11px] font-semibold text-warning flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+        <div
+          class="text-[11px] font-semibold text-warning flex items-center gap-1 group-hover:translate-x-1 transition-transform">
           Launch Sandbox <iconify-icon icon="material-symbols-light:chevron-right"></iconify-icon>
         </div>
       </a>
 
       <!-- Lab Card 6: data-theme -->
-      <a href="/labs/attributes/theme" data-tab-title="data-theme" data-tab-icon="material-symbols-light:palette-outline"
-         class="group p-5 bg-base-200/40 hover:bg-base-200/90 rounded-2xl border border-base-content/10 hover:border-success/40 transition-all hover:scale-[1.02] shadow-sm flex flex-col justify-between space-y-3">
+      <a href="/labs/attributes/theme" data-tab-title="data-theme"
+        data-tab-icon="material-symbols-light:palette-outline"
+        class="group p-5 bg-base-200/40 hover:bg-base-200/90 rounded-2xl border border-base-content/10 hover:border-success/40 transition-all hover:scale-[1.02] shadow-sm flex flex-col justify-between space-y-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <span class="w-8 h-8 rounded-lg bg-success/15 text-success flex items-center justify-center text-lg">
@@ -355,7 +402,8 @@
         <p class="text-xs text-base-content/70 line-clamp-2">
           Live theme orchestration with Tailwind CSS v4 and DaisyUI theme switching without page reloads.
         </p>
-        <div class="text-[11px] font-semibold text-success flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+        <div
+          class="text-[11px] font-semibold text-success flex items-center gap-1 group-hover:translate-x-1 transition-transform">
           Launch Sandbox <iconify-icon icon="material-symbols-light:chevron-right"></iconify-icon>
         </div>
       </a>
@@ -366,7 +414,8 @@
   <!-- ═══════════════════════════════════════════════════════════
        4. STATS BAR / FOOTER HIGHLIGHT
        ═══════════════════════════════════════════════════════════ -->
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 rounded-2xl bg-base-200/30 border border-base-content/10 text-center">
+  <div
+    class="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 rounded-2xl bg-base-200/30 border border-base-content/10 text-center">
     <div>
       <div class="text-2xl sm:text-3xl font-black text-primary font-mono">0 KB</div>
       <div class="text-xs text-base-content/60 font-medium mt-0.5">Build Step Required</div>
