@@ -536,6 +536,16 @@
     "category": "Labs"
   },
   {
+    "id": "lab-attr-flow",
+    "route": "/labs/attributes/flow",
+    "path": "/_pages/labs/attributes/flow.html",
+    "title": "data-flow",
+    "icon": "material-symbols-light:account-tree",
+    "order": 12,
+    "parent": "/labs/attributes",
+    "category": "Labs"
+  },
+  {
     "id": "lab-mod-morph",
     "route": "/labs/modifiers/morph",
     "path": "/_pages/labs/modifiers/morph.html",
@@ -612,16 +622,6 @@
     "icon": "material-symbols-light:timer",
     "order": 15,
     "parent": "/labs/modifiers",
-    "category": "Labs"
-  },
-  {
-    "id": "lab-attr-flow",
-    "route": "/labs/attributes/flow",
-    "path": "/_pages/labs/attributes/flow.html",
-    "title": "data-flow",
-    "icon": "material-symbols-light:account-tree-outline",
-    "order": 16,
-    "parent": "/labs/attributes",
     "category": "Labs"
   },
   {

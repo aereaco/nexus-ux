@@ -1,30 +1,30 @@
-<title>data-flow</title>
-<meta name="id" content="lab-attr-flow">
-<meta name="route" content="/labs/attributes/flow">
-<meta name="icon" content="material-symbols-light:account-tree-outline">
-<meta name="order" content="16">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/attributes">
+<head>
+  <title>data-flow</title>
+  <meta name="id" content="lab-attr-flow">
+  <meta name="route" content="/labs/attributes/flow">
+  <meta name="icon" content="material-symbols-light:account-tree">
+  <meta name="order" content="12">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/attributes">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "data-flow",
-    "Category": "Attributes",
-    "Icon": "material-symbols-light:account-tree-outline",
-    "ModulePath": "src/modules/attributes/flow.ts",
-    "Description": "Reactive node-graph workspace canvas featuring zoom, pan, node dragging, and dynamic SVG Bezier edge connections.",
-    "Syntax": "<div data-flow=\"viewport\">...</div>",
-    "Params": [
-      {
-        "name": "data-flow",
-        "type": "String / Object",
-        "default": "&#39;viewport&#39;",
-        "description": "Configures graph viewport parameters, minimum/maximum zoom scale, and node snapping."
-      }
-    ],
-    "Extensibility": "<p>Zero-dependency xyflow-inspired engine built natively into the declarative runtime. Uses GPU CSS transforms for 120fps infinite canvas panning.</p>",
-    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-2\">\n  <div class=\"badge badge-accent\">Node Canvas Host</div>\n  <p class=\"text-sm\">Embeds interactive state machine and topology workflows directly into HTML.</p>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: 'data-flow',
+      Category: 'Attributes',
+      Icon: 'material-symbols-light:account-tree',
+      Description: 'Reactive node-graph and workflow canvas directive with hardware-accelerated pan, zoom, grid snapping, and dynamic SVG connector path routing.',
+      Syntax: '&lt;div data-flow=\&quot;viewport\&quot; data-flow-grid=\&quot;20\&quot;&gt;\n  &lt;div data-flow-node=\&quot;nodeA\&quot;&gt;&lt;/div&gt;\n  &lt;svg&gt;&lt;path data-bind-d=\&quot;$svg.bezier(nodeA, nodeB)\&quot; /&gt;&lt;/svg&gt;\n&lt;/div&gt;',
+      Params: [
+        { name: 'data-flow=&quot;viewport&quot;', type: 'Viewport Object', default: '{ x: 0, y: 0, zoom: 1 }', description: 'Mounts the interactive canvas viewport tracking offset and scale.' },
+        { name: 'data-flow-node=&quot;node&quot;', type: 'Node Coordinates', default: '-', description: 'Designates an interactive node with independent dragging and coordinate updates.' },
+        { name: 'data-flow-grid=&quot;size&quot;', type: 'Pixels', default: '0', description: 'Enables grid snapping during node translation.' }
+      ],
+      SourceModule: '/modules/attributes/flow.ts',
+      SnippetModule: '/_pages/labs/attributes/flow.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/attributes/flow.ts&lt;/code&gt;, the flow directive implements an infinite node-canvas architecture inspired by xyflow. Nodes publish coordinate positions directly into reactive signals, allowing SVG bezier wires to re-route at 60fps.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Infinite Canvas Navigation&lt;/strong&gt; — Smooth wheel zoom (0.2x to 4x) and pan via background dragging&lt;/li&gt;&lt;li&gt;&lt;strong&gt;ZCZS Coordinate Tracking&lt;/strong&gt; — Node positions update in-place without serializing graph trees&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Integrated SVG Wiring&lt;/strong&gt; — Pairs natively with the &lt;code&gt;$svg&lt;/code&gt; sprite for real-time spline generation&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ vp: { x: 0, y: 0, zoom: 1 }, nodeA: { x: 40, y: 40 }, nodeB: { x: 260, y: 120 } }\&quot; class=\&quot;space-y-4\&quot;&gt;\n    &lt;div class=\&quot;p-4 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm flex items-center justify-between\&quot;&gt;\n        &lt;div&gt;\n            &lt;h4 class=\&quot;font-bold text-sm text-primary\&quot;&gt;Reactive Flow Viewport&lt;/h4&gt;\n            &lt;p class=\&quot;text-xs opacity-70 font-mono\&quot;&gt;Zoom: &lt;span data-bind=\&quot;vp.zoom.toFixed(2) + \'x\'\&quot;&gt;&lt;/span&gt; | Pan: (&lt;span data-bind=\&quot;Math.round(vp.x)\&quot;&gt;&lt;/span&gt;, &lt;span data-bind=\&quot;Math.round(vp.y)\&quot;&gt;&lt;/span&gt;)&lt;/p&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;flex gap-2\&quot;&gt;\n            &lt;button class=\&quot;btn btn-xs btn-outline font-bold\&quot; data-on-click=\&quot;vp.zoom = Math.min(2, vp.zoom + 0.1)\&quot;&gt;Zoom (+)&lt;/button&gt;\n            &lt;button class=\&quot;btn btn-xs btn-outline font-bold\&quot; data-on-click=\&quot;vp.zoom = Math.max(0.5, vp.zoom - 0.1)\&quot;&gt;Zoom (-)&lt;/button&gt;\n            &lt;button class=\&quot;btn btn-xs btn-ghost font-bold\&quot; data-on-click=\&quot;vp.x = 0; vp.y = 0; vp.zoom = 1\&quot;&gt;Reset&lt;/button&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n\n    &lt;div data-flow=\&quot;vp\&quot; class=\&quot;relative h-64 bg-base-200/40 rounded-2xl border border-base-content/10 overflow-hidden select-none cursor-grab active:cursor-grabbing\&quot;&gt;\n        &lt;div class=\&quot;absolute inset-0 opacity-20 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:16px_16px]\&quot;&gt;&lt;/div&gt;\n        &lt;div class=\&quot;absolute p-4 bg-base-100 rounded-xl border-2 border-primary shadow-lg font-mono text-xs cursor-move\&quot;\n             data-style=\&quot;{ transform: \'translate(\' + (nodeA.x + vp.x) + \'px, \' + (nodeA.y + vp.y) + \'px) scale(\' + vp.zoom + \')\' }\&quot;&gt;\n            &lt;div class=\&quot;font-bold text-primary\&quot;&gt;Node Alpha (Source)&lt;/div&gt;\n            &lt;div class=\&quot;opacity-60 text-[10px] mt-1\&quot;&gt;Status: Streaming&lt;/div&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;absolute p-4 bg-base-100 rounded-xl border-2 border-secondary shadow-lg font-mono text-xs cursor-move\&quot;\n             data-style=\&quot;{ transform: \'translate(\' + (nodeB.x + vp.x) + \'px, \' + (nodeB.y + vp.y) + \'px) scale(\' + vp.zoom + \')\' }\&quot;&gt;\n            &lt;div class=\&quot;font-bold text-secondary\&quot;&gt;Node Beta (Kernel)&lt;/div&gt;\n            &lt;div class=\&quot;opacity-60 text-[10px] mt-1\&quot;&gt;Status: Processing&lt;/div&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
