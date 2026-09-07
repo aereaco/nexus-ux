@@ -66,9 +66,9 @@
             if (activeFork === 'Default' && forkSource && !forkCode) forkCode = forkSource;
 
             // Initialize saved snippets list from IndexedDB
-            if (window._indexedDB?.snippets && !snippetsLoaded && doc.SnippetModule) {
+            if (!snippetsLoaded && doc.SnippetModule) {
                 snippetsLoaded = true;
-                window._indexedDB.snippets.list(doc.SnippetModule + '_').then(keys => {
+                indexedDB.snippets.keys(doc.SnippetModule + '_').then(keys => {
                     snippets = keys.map(k => k.substring(doc.SnippetModule.length + 1));
                 });
             }
