@@ -3013,12 +3013,12 @@ ${suggestion}`);
     });
     return cachedIDBProxy;
   }
-  function wrapGlobalFunction(fn, globalContext, scopeObj) {
+  function wrapGlobalFunction(fn, globalContext) {
     let proxy = globalFnProxyCache.get(fn);
     if (!proxy) {
       proxy = new Proxy(fn, {
         apply(target, thisArg, args) {
-          const receiver = thisArg === void 0 || thisArg === null || thisArg === scopeObj ? globalContext : thisArg;
+          const receiver = thisArg === target || thisArg === void 0 || thisArg === null ? thisArg || globalContext : globalContext;
           return Reflect.apply(target, receiver, args);
         },
         construct(target, args, newTarget) {

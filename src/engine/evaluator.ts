@@ -310,12 +310,12 @@ export function getIndexedDBProxy(): any {
 
 const globalFnProxyCache = new WeakMap<Function, Function>();
 
-function wrapGlobalFunction(fn: Function, globalContext: any, scopeObj: any): Function {
+function wrapGlobalFunction(fn: Function, globalContext: any): Function {
   let proxy = globalFnProxyCache.get(fn);
   if (!proxy) {
     proxy = new Proxy(fn, {
       apply(target, thisArg, args) {
-        const receiver = (thisArg === undefined || thisArg === null || thisArg === scopeObj) ? globalContext : thisArg;
+        const receiver = (thisArg === target || thisArg === undefined || thisArg === null) ? (thisArg || globalContext) : globalContext;
         return Reflect.apply(target, receiver, args);
       },
       construct(target, args, newTarget) {
