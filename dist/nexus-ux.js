@@ -5643,6 +5643,17 @@ ${scripts}
 [data-flow-handle-side="bottom"]:hover, [data-flow-side="bottom"]:hover {
   transform: translate(-50%, 50%) scale(1.25);
 }
+.flow-edge {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2px;
+  opacity: 0.7;
+  transition: opacity 0.15s ease, stroke-width 0.15s ease;
+}
+.flow-edge:hover {
+  opacity: 1;
+  stroke-width: 2.5px;
+}
 .flow-edge-preview {
   pointer-events: none;
   stroke-dasharray: 4 4;
