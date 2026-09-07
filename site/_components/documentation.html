@@ -277,9 +277,11 @@
     </script>
 
     <style>
-        .nx-editor, .nx-editor .cm-editor {
+        .nx-editor,
+        .nx-editor .cm-editor {
             height: 100%;
         }
+
         .nx-editor .cm-scroller {
             overflow: auto;
         }
@@ -435,30 +437,27 @@
             </div>
         </div>
 
-        <!-- ──── RIGHT COLUMN: INTERACTIVE SANDBOX ──── -->
+        <!-- ──── RIGHT COLUMN: INTERACTIVE LAB ──── -->
         <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
-            <!-- 3. TAB GROUP 2: INTERACTIVE SANDBOX -->
+            <!-- 3. TAB GROUP 2: INTERACTIVE LAB -->
             <div class="card bg-base-100 border border-base-content/10 shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden"
                 data-if="doc.Snippet || doc.Examples">
                 <div
                     class="card-header bg-base-200/40 px-6 py-3 border-b border-base-content/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div class="flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-success animate-pulse"></span>
-                        <h2 class="font-bold text-sm uppercase tracking-wider text-base-content/80">Interactive Sandbox
+                        <h2 class="font-bold text-sm uppercase tracking-wider text-base-content/80">Interactive Lab
                         </h2>
-                        <span
-                            class="badge badge-success badge-xs gap-1 py-0.5 px-2 font-mono text-[10px] font-semibold">LIVE
-                            REACTIVE DOM</span>
                     </div>
 
-                    <!-- Tabs: [ Interactive Lab ] [ Lab Source ] [ Split View ] -->
+                    <!-- Tabs: [ Live Sandbox ] [ Lab Source ] [ Split View ] -->
                     <div class="tabs tabs-boxed bg-base-200/60 p-1">
                         <button class="tab tab-sm font-medium transition-colors"
                             data-class="{ 'tab-active bg-secondary text-secondary-content': labTab === 'preview' }"
                             data-on-click="labTab = 'preview'">
                             <iconify-icon icon="material-symbols-light:play-circle-outline"
                                 class="text-base me-1"></iconify-icon>
-                            Interactive Lab
+                            Live Sandbox
                         </button>
                         <button class="tab tab-sm font-medium transition-colors"
                             data-class="{ 'tab-active bg-secondary text-secondary-content': labTab === 'source' }"
@@ -487,14 +486,16 @@
                     </div>
 
                     <!-- Lab Source CodeMirror Editor Panel (BELOW PREVIEW) -->
-                    <div data-show="labTab === 'source' || labTab === 'split'" class="w-full flex-1 flex flex-col min-h-0 overflow-hidden">
-                        <div class="nx-editor-container border border-base-content/10 rounded-xl overflow-hidden flex-1 min-h-0">
+                    <div data-show="labTab === 'source' || labTab === 'split'"
+                        class="w-full flex-1 flex flex-col min-h-0 overflow-hidden">
+                        <div
+                            class="nx-editor-container border border-base-content/10 rounded-xl overflow-hidden flex-1 min-h-0">
                             <div id="snippet-editor" class="nx-editor h-full"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Command bar for Interactive Sandbox -->
+                <!-- Command bar for Interactive Lab -->
                 <div
                     class="flex flex-wrap items-center justify-between px-6 py-3 bg-base-200/40 border-t border-base-content/10 gap-3 text-xs">
                     <!-- Left: Snippets Dropdown + New Snippet Button -->
