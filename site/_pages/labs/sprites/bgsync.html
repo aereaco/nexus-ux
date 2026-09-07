@@ -1,23 +1,28 @@
-<title>$bgSync</title>
-<meta name="id" content="lab-sprite-bgsync">
-<meta name="route" content="/labs/sprites/bgsync">
-<meta name="icon" content="material-symbols-light:sync">
-<meta name="order" content="10">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/sprites">
+<head>
+  <title>$bgSync</title>
+  <meta name="id" content="lab-sprite-bgsync">
+  <meta name="route" content="/labs/sprites/bgsync">
+  <meta name="icon" content="material-symbols-light:sync">
+  <meta name="order" content="3">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/sprites">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "$bgSync",
-    "Category": "Sprites",
-    "Icon": "material-symbols-light:sync",
-    "ModulePath": "src/modules/sprites/bgSync.ts",
-    "Description": "Background Sync API for deferred offline requests.",
-    "Syntax": "$bgSync.register(&#39;sync-orders&#39;)",
-    "Params": [],
-    "Extensibility": "<p>Guarantees request delivery once network connectivity returns.</p>",
-    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-1\">\n  <div class=\"badge badge-outline\">$bgSync</div>\n  <p class=\"text-xs opacity-70\">Offline sync queue manager.</p>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: '$bgSync',
+      Category: 'Sprites',
+      Icon: 'material-symbols-light:sync',
+      Description: 'Background Synchronization API client manager registering sync tags with the Service Worker to replay pending offline mutations when connectivity restores.',
+      Syntax: '$bgSync.register(\'sync-comments\')',
+      Params: [
+        { name: '$bgSync.register(tag)', type: 'Async Method', default: '-', description: 'Schedules a one-off background synchronization task in the Service Worker.' }
+      ],
+      SourceModule: '/modules/sprites/bgSync.ts',
+      SnippetModule: '/_pages/labs/sprites/bgsync.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/sprites/bgSync.ts&lt;/code&gt;, this sprite provides resilient offline data pipelines by registering background sync tags with the service worker registration.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Offline Mutation Replay&lt;/strong&gt; — Queues actions while offline; fires when connection returns&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Battery &amp;amp; Network Aware&lt;/strong&gt; — OS defers sync until network conditions are optimal&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ queuedMutations: 0 }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4 max-w-md\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Background Sync Queue ($bgSync)&lt;/h4&gt;\n        &lt;button class=\&quot;btn btn-sm btn-primary font-bold w-full\&quot;\n                data-on-click=\&quot;queuedMutations++; $bgSync?.register?.(\'mutation-\' + queuedMutations)\&quot;&gt;\n            Queue Mutation for Sync (+)\n        &lt;/button&gt;\n        &lt;div class=\&quot;p-3 bg-base-200/50 rounded-xl font-mono text-xs flex justify-between items-center\&quot;&gt;\n            &lt;span class=\&quot;opacity-70\&quot;&gt;Queued Payloads:&lt;/span&gt;\n            &lt;span class=\&quot;badge badge-success font-bold font-mono\&quot; data-bind=\&quot;queuedMutations\&quot;&gt;&lt;/span&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>

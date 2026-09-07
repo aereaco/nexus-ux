@@ -209,6 +209,16 @@
     "category": "Labs"
   },
   {
+    "id": "lab-sprite-bgsync",
+    "route": "/labs/sprites/bgsync",
+    "path": "/_pages/labs/sprites/bgsync.html",
+    "title": "$bgSync",
+    "icon": "material-symbols-light:sync",
+    "order": 3,
+    "parent": "/labs/sprites",
+    "category": "Labs"
+  },
+  {
     "id": "doc-readme",
     "route": "/docs/readme",
     "path": "/_pages/docs/readme.md",
@@ -446,16 +456,6 @@
     "icon": "material-symbols-light:block",
     "order": 10,
     "parent": "/labs/modifiers",
-    "category": "Labs"
-  },
-  {
-    "id": "lab-sprite-bgsync",
-    "route": "/labs/sprites/bgsync",
-    "path": "/_pages/labs/sprites/bgsync.html",
-    "title": "$bgSync",
-    "icon": "material-symbols-light:sync",
-    "order": 10,
-    "parent": "/labs/sprites",
     "category": "Labs"
   },
   {
