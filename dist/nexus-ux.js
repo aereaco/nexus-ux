@@ -3742,21 +3742,19 @@ ${scripts}
                   const t = scope.tab;
                   if (t && typeof t === "object") {
                     tabObj = t;
-                    tabObj.linkedContent = componentState;
+                    if (tabObj.linkedContent !== componentState) {
+                      tabObj.linkedContent = componentState;
+                    }
                   }
                   break;
                 }
               }
             }
-            let scopeAttached = false;
+            addScopeToNode(el, ctx);
             let __lastPath;
             runtime.effect(() => {
               let config;
               const evaluated = runtime.evaluate(el, value);
-              if (!scopeAttached) {
-                addScopeToNode(el, ctx);
-                scopeAttached = true;
-              }
               if (typeof evaluated === "object" && evaluated !== null) {
                 config = evaluated;
               } else if (typeof evaluated === "string") {
@@ -3789,7 +3787,9 @@ ${scripts}
                   if (tabObj.isLoading !== true) {
                     tabObj.isLoading = true;
                   }
-                  tabObj.linkedContent = componentState;
+                  if (tabObj.linkedContent !== componentState) {
+                    tabObj.linkedContent = componentState;
+                  }
                 }
                 try {
                   let html = "";

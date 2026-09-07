@@ -293,22 +293,21 @@ const componentModule: AttributeModule = {
             const t = (scope as any).tab;
             if (t && typeof t === 'object') {
               tabObj = t as Record<string, unknown>;
-              tabObj.linkedContent = componentState;
+              if (tabObj.linkedContent !== componentState) {
+                tabObj.linkedContent = componentState;
+              }
             }
             break;
           }
         }
       }
-      let scopeAttached = false;
+
+      addScopeToNode(el, ctx);
 
       let __lastPath: string | undefined;
       runtime.effect(() => {
         let config: ComponentConfig;
         const evaluated = runtime.evaluate(el, value);
-        if (!scopeAttached) {
-          addScopeToNode(el, ctx);
-          scopeAttached = true;
-        }
         if (typeof evaluated === 'object' && evaluated !== null) {
           config = evaluated as ComponentConfig;
         } else if (typeof evaluated === 'string') {
@@ -342,7 +341,9 @@ const componentModule: AttributeModule = {
             if ((tabObj as any).isLoading !== true) {
               (tabObj as any).isLoading = true;
             }
-            (tabObj as any).linkedContent = componentState;
+            if ((tabObj as any).linkedContent !== componentState) {
+              (tabObj as any).linkedContent = componentState;
+            }
           }
           try {
             let html = '';
