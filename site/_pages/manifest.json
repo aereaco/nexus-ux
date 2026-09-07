@@ -3,7 +3,7 @@
     "id": "home",
     "route": "/",
     "path": "/_pages/home.html",
-    "title": "Home",
+    "title": "Nexus-UX — Modern HTML-First Reactive Framework",
     "icon": "material-symbols-light:home-outline",
     "order": 1,
     "parent": null
