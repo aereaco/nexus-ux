@@ -1,27 +1,31 @@
-<title>data-bind</title>
-<meta name="id" content="lab-attr-bind">
-<meta name="route" content="/labs/attributes/bind">
-<meta name="icon" content="material-symbols-light:link">
-<meta name="order" content="2">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/attributes">
+<head>
+  <title>data-bind</title>
+  <meta name="id" content="lab-attr-bind">
+  <meta name="route" content="/labs/attributes/bind">
+  <meta name="icon" content="material-symbols-light:link">
+  <meta name="order" content="2">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/attributes">
+</head>
 
-<div data-signal="{
-  doc: {
-    Title: 'data-bind',
-    Category: 'Attributes',
-    Icon: 'material-symbols-light:link',
-    ModulePath: 'src/modules/attributes/bind.ts',
-    Description: 'Provides two-way native Web API binding (localStorage, window, navigator) and reactive HTML attribute synchronization with zero boilerplate.',
-    Syntax: '<input data-bind-value=\"username\" />\n<div data-bind-class=\"activeTab === \'home\' ? \'tab-active\' : \'\'\"></div>',
-    Params: [
-      { name: 'data-bind', type: 'Expression', default: '-', description: 'Synchronizes element innerText with evaluated expression.' },
-      { name: 'data-bind-value', type: 'Expression', default: '-', description: 'Two-way binding for form inputs, textareas, and select elements.' },
-      { name: 'data-bind-<attr>', type: 'Expression', default: '-', description: 'Synchronizes specific HTML attribute (e.g. data-bind-href, data-bind-disabled).' }
-    ],
-    Extensibility: '<p>The <code>bind</code> directive establishes bidirectional bridges between DOM attributes/values and reactive signals. Reads and writes against native browser APIs like <code>window.innerWidth</code> or <code>localStorage</code> are intercepted via Proxy traps to trigger automatic push-based updates.</p>',
-    Snippet: '<div data-signal=\"{ greeting: \'Hello Nexus-UX\', isBold: false }\" class=\"space-y-4 p-4 bg-base-200/50 rounded-xl border border-base-content/10\">\n  <div class=\"form-control\">\n    <label class=\"label\"><span class=\"label-text font-bold text-xs\">Live Input Two-Way Binding:</span></label>\n    <input type=\"text\" data-bind-value=\"greeting\" class=\"input input-bordered input-sm w-full max-w-md\" />\n  </div>\n  <div class=\"p-4 bg-base-100 rounded-lg border border-base-content/10 flex items-center justify-between\">\n    <span class=\"text-lg\" data-class=\"{ \'font-bold text-primary\': isBold }\" data-bind=\"greeting\"></span>\n    <button class=\"btn btn-xs btn-outline\" data-on-click=\"isBold = !isBold\">Toggle Bold</button>\n  </div>\n</div>'
-  }
-}">
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: 'data-bind',
+      Category: 'Attributes',
+      Icon: 'material-symbols-light:link',
+      Description: 'Enables two-way native Web API binding (&lt;code&gt;localStorage&lt;/code&gt;, &lt;code&gt;sessionStorage&lt;/code&gt;, &lt;code&gt;window&lt;/code&gt;) and seamless HTML form &amp; attribute synchronization via Reflect Proxy traps.',
+      Syntax: '&lt;input data-bind-value=\&quot;username\&quot; /&gt;\n&lt;div data-bind=\&quot;username\&quot;&gt;&lt;/div&gt;\n&lt;button data-bind-disabled=\&quot;isSubmitting\&quot;&gt;Submit&lt;/button&gt;\n&lt;input data-bind-value=\&quot;localStorage.userTheme\&quot; /&gt;',
+      Params: [
+        { name: 'data-bind=&quot;expr&quot;', type: 'Auto / Text', default: '-', description: 'Binds the element value (form controls) or textContent to the evaluated expression.' },
+        { name: 'data-bind-value=&quot;expr&quot;', type: 'Two-way Form Value', default: '-', description: 'Enforces bidirectional synchronization on &lt;input&gt;, &lt;textarea&gt;, and &lt;select&gt; elements.' },
+        { name: 'data-bind-[attr]=&quot;expr&quot;', type: 'Attribute Sync', default: '-', description: 'Synchronizes specific HTML attributes (e.g., data-bind-disabled, data-bind-placeholder, data-bind-href).' },
+        { name: 'data-bind:lazy', type: 'Modifier', default: 'false', description: 'Updates reactive state only on change/blur rather than on every keystroke.' }
+      ],
+      SourceModule: '/modules/attributes/bind.ts',
+      SnippetModule: '/_pages/labs/attributes/bind.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/attributes/bind.ts&lt;/code&gt;, the bind directive establishes bidirectional bridges between DOM elements and reactive signals. Reads and writes against native browser APIs like &lt;code&gt;window.innerWidth&lt;/code&gt; or &lt;code&gt;localStorage&lt;/code&gt; are intercepted via Reflect traps to trigger automatic push-based updates.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Auto-detection&lt;/strong&gt; — Automatically detects form controls (value/checked) vs standard DOM textContent&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Sub-directives&lt;/strong&gt; — &lt;code&gt;data-bind-disabled&lt;/code&gt;, &lt;code&gt;data-bind-href&lt;/code&gt;, &lt;code&gt;data-bind-class&lt;/code&gt; target exact attributes&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Native API Interceptors&lt;/strong&gt; — Transparently synchronizes with &lt;code&gt;localStorage&lt;/code&gt;, &lt;code&gt;sessionStorage&lt;/code&gt;, and &lt;code&gt;window&lt;/code&gt;&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Zero-Serialization&lt;/strong&gt; — Values mutate in-place without JSON cloning or string conversions&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ username: \'Aerea Pilot\', volume: 75, agreed: true }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm uppercase tracking-wider text-primary\&quot;&gt;Two-Way Form Binding&lt;/h4&gt;\n        &lt;div class=\&quot;form-control\&quot;&gt;\n            &lt;label class=\&quot;label py-1\&quot;&gt;&lt;span class=\&quot;label-text text-xs font-semibold opacity-70\&quot;&gt;Username:&lt;/span&gt;&lt;/label&gt;\n            &lt;input type=\&quot;text\&quot; data-bind-value=\&quot;username\&quot; class=\&quot;input input-bordered input-sm font-mono w-full max-w-sm\&quot;&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;p-3 bg-base-200/50 rounded-xl border border-base-content/5 flex items-center justify-between\&quot;&gt;\n            &lt;span class=\&quot;text-xs opacity-70\&quot;&gt;Bound Display:&lt;/span&gt;\n            &lt;span class=\&quot;font-mono font-bold text-primary\&quot; data-bind=\&quot;username\&quot;&gt;&lt;/span&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm uppercase tracking-wider text-secondary\&quot;&gt;Range &amp;amp; Attribute Sync&lt;/h4&gt;\n        &lt;div class=\&quot;flex items-center gap-4\&quot;&gt;\n            &lt;input type=\&quot;range\&quot; min=\&quot;0\&quot; max=\&quot;100\&quot; data-bind-value=\&quot;volume\&quot; class=\&quot;range range-sm range-secondary flex-1\&quot;&gt;\n            &lt;div class=\&quot;badge badge-secondary badge-lg font-mono font-bold w-16 justify-center\&quot;&gt;\n                &lt;span data-bind=\&quot;volume\&quot;&gt;&lt;/span&gt;%\n            &lt;/div&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;divider my-2\&quot;&gt;&lt;/div&gt;\n        &lt;div class=\&quot;flex items-center justify-between\&quot;&gt;\n            &lt;label class=\&quot;cursor-pointer flex items-center gap-3\&quot;&gt;\n                &lt;input type=\&quot;checkbox\&quot; data-bind-value=\&quot;agreed\&quot; class=\&quot;checkbox checkbox-sm checkbox-primary\&quot;&gt;\n                &lt;span class=\&quot;text-xs font-semibold\&quot;&gt;Enable Transmission Controls&lt;/span&gt;\n            &lt;/label&gt;\n            &lt;button class=\&quot;btn btn-sm btn-primary font-bold\&quot; data-bind-disabled=\&quot;!agreed\&quot;&gt;\n                Transmit Data\n            &lt;/button&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
