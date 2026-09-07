@@ -3799,6 +3799,10 @@ ${scripts}
                   }
                   if (targetPath.startsWith("<")) {
                     html = targetPath;
+                  } else {
+                    console.log("[Component load]:", targetPath, "tag:", el.tagName);
+                  }
+                  if (targetPath.startsWith("<")) {
                   } else if (targetPath.startsWith("#")) {
                     const rootNode = el.getRootNode();
                     const template = (rootNode?.querySelector ? rootNode.querySelector(targetPath) : null) || document.querySelector(targetPath);
