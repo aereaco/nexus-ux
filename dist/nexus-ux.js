@@ -7807,11 +7807,31 @@ ${match}</ul>
                   return;
                 state.tabSeq++;
                 const id = "tab-" + state.tabSeq;
-                const src = source || state.config.newPageTab || "_components/tab-new.html";
-                const r = route !== void 0 ? route : src.startsWith("_components/") ? "" : src;
-                state.pageTabs = [...state.pageTabs, { id, source: src, route: r, meta: {}, isLoading: true }];
+                const rawSource = (source || "").trim();
+                const rawRoute = (route !== void 0 ? route : "").trim();
+                const candidatePath = rawRoute || (!rawSource.endsWith(".html") && !rawSource.endsWith(".md") && !rawSource.startsWith("_components/") ? rawSource : "");
+                const matched = candidatePath ? routeList.find((r) => r.path === candidatePath || r.path === stripBase(candidatePath)) || null : rawSource ? routeList.find((r) => r.path === rawSource || r.component === rawSource || r.path === stripBase(rawSource)) || null : null;
+                let resolvedSource = rawSource;
+                let resolvedRoute = rawRoute;
+                let resolvedMeta = {};
+                if (matched) {
+                  resolvedSource = matched.component || resolvedSource || resolveStaticComponent(matched.path);
+                  resolvedRoute = matched.path;
+                  resolvedMeta = matched.meta || {};
+                } else if (rawSource.startsWith("_components/")) {
+                  resolvedSource = rawSource;
+                  resolvedRoute = rawRoute || "";
+                  resolvedMeta = rawRoute ? routeList.find((r) => r.path === rawRoute)?.meta || {} : { title: "New Tab" };
+                } else {
+                  resolvedSource = rawSource || state.config.newPageTab || "_components/tab-new.html";
+                  resolvedRoute = rawRoute || (resolvedSource.startsWith("_components/") ? "" : resolvedSource);
+                }
+                state.tabPaths[id] = resolvedSource.startsWith("_components/") ? "custom-component" : resolvedRoute || resolvedSource;
+                if (resolvedMeta.title || resolvedMeta.icon) {
+                  state.tabMeta[id] = { title: resolvedMeta.title, icon: resolvedMeta.icon };
+                }
+                state.pageTabs = [...state.pageTabs, { id, source: resolvedSource, route: resolvedRoute, meta: resolvedMeta, isLoading: true }];
                 state.activePageTabId = id;
-                state.tabPaths[id] = src.startsWith("_components/") ? "custom-component" : r || src;
                 state.setActiveTab(id);
               },
               switchPageTab(id) {
@@ -7878,6 +7898,7 @@ ${match}</ul>
                 if (_activeId && state.tabPaths[_activeId] !== "custom-component") {
                   const resolvedSource = matched?.component || resolveStaticComponent(cleanPath);
                   const curPageTab = state.pageTabs.find((t) => t.id === _activeId);
+                  const routeMeta = matched?.meta;
                   if (curPageTab) {
                     if (curPageTab.source !== resolvedSource) {
                       curPageTab.source = resolvedSource;
@@ -7887,6 +7908,14 @@ ${match}</ul>
                     }
                     if (curPageTab.route !== cleanPath)
                       curPageTab.route = cleanPath;
+                    if (routeMeta || opts?.title !== void 0 || opts?.icon !== void 0) {
+                      curPageTab.meta = {
+                        ...curPageTab.meta || {},
+                        ...routeMeta || {},
+                        ...opts?.title !== void 0 ? { title: opts.title } : {},
+                        ...opts?.icon !== void 0 ? { icon: opts.icon } : {}
+                      };
+                    }
                     state.pageTabs = [...state.pageTabs];
                   }
                   const _tabs = (runtime.globalSignals ? runtime.globalSignals() : {}).tabs;
@@ -7897,6 +7926,14 @@ ${match}</ul>
                         _tab.source = resolvedSource;
                       if (_tab.route !== cleanPath)
                         _tab.route = cleanPath;
+                      if (routeMeta || opts?.title !== void 0 || opts?.icon !== void 0) {
+                        _tab.meta = {
+                          ..._tab.meta || {},
+                          ...routeMeta || {},
+                          ...opts?.title !== void 0 ? { title: opts.title } : {},
+                          ...opts?.icon !== void 0 ? { icon: opts.icon } : {}
+                        };
+                      }
                     }
                   }
                 }

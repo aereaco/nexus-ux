@@ -1115,7 +1115,7 @@
         data-class="{'tab-active border-b border-primary text-primary': router.activePageTabId === tab.id }"
         data-on-click="router.switchPageTab(tab.id)"
         data-on-auxclick="if ($evt.button === 1) router.closePageTab(tab.id)"
-        data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'tab', target: tab }">
+        data-on-contextmenu:prevent:stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'tab', target: tab }">
         <iconify-icon icon="material-symbols-light:drag-indicator"
           class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
         <span data-show="tab.isLoading !== false" class="loading loading-spinner loading-xs text-primary me-2"></span>
@@ -1148,7 +1148,7 @@
             data-drag-group="pageTabs" data-drag-direction="horizontal">
             <template data-for="tab in router.pageTabs">
               <tab-header data-component="'#tab-header-template'" data-drag
-                data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'tab', target: tab }"></tab-header>
+                data-on-contextmenu:prevent:stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'tab', target: tab }"></tab-header>
             </template>
 
             <button class="btn btn-circle shrink-0" data-class="{ 'hidden': !pageTabs }"
@@ -1289,7 +1289,7 @@
             data-drag-group="chatSessions" data-drag-direction="vertical">
             <template data-for="session in (chatSessions || [])">
               <div data-drag class="flex items-center gap-2.5 cursor-grab active:cursor-grabbing select-none"
-                data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'chatSession', target: session }">
+                data-on-contextmenu:prevent:stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'chatSession', target: session }">
                 <span
                   class="badge badge-neutral shadow-lg font-medium text-xs py-2 px-3 max-w-xs truncate cursor-pointer hover:bg-neutral-focus transition-colors flex items-center gap-1.5"
                   data-on-click="openSession(session.id)">
@@ -1642,11 +1642,11 @@
       <!-- Sub Leaf Item -->
       <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
         data-bind-data-drag="cat?.itemsDraggable ? '' : null"
-        data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
+        data-on-contextmenu:prevent:stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
         <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
           data-bind-data-tab-title="item.tabTitle || item.title"
           data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-          data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }"
+          data-on-contextmenu:prevent:stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }"
           data-bind="item.title">
         </a>
       </li>
@@ -1654,12 +1654,12 @@
       <!-- Sub Branch Item (e.g. Profile 3) -->
       <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
         data-bind-data-drag="cat?.itemsDraggable ? '' : null" data-signal="{ open: false }"
-        data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
+        data-on-contextmenu:prevent:stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
         <div class="flex">
           <a data-bind-href="item.href" draggable="false" class="grow whitespace-nowrap"
             data-bind-data-tab-title="item.tabTitle || item.title"
             data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-            data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
+            data-on-contextmenu:prevent:stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
             <span class="whitespace-nowrap" data-bind="item.title"></span>
           </a>
           <button class="btn btn-circle btn-xs hover:bg-accent/60" data-on-click="open = !open"
@@ -1695,12 +1695,12 @@
             <!-- Root Leaf Item (No Children) -->
             <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
               data-bind-data-drag="item.href !== '/' ? '' : null"
-              data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
+              data-on-contextmenu:prevent:stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
               <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
                 data-bind-data-tab-title="item.tabTitle || item.title"
                 data-bind-data-tab-icon="item.tabIcon || item.icon"
                 data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-                data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
+                data-on-contextmenu:prevent:stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                 <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
                 <span class="whitespace-nowrap" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
                   data-bind="item.title"></span>
@@ -1710,13 +1710,13 @@
             <!-- Root Branch Item (With Children) -->
             <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
               data-bind-data-drag="item.href !== '/' ? '' : null" data-signal="{ open: false }"
-              data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
+              data-on-contextmenu:prevent:stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
               <div class="flex">
                 <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
                   data-bind-data-tab-title="item.tabTitle || item.title"
                   data-bind-data-tab-icon="item.tabIcon || item.icon"
                   data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-                  data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
+                  data-on-contextmenu:prevent:stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                   <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
                   <span class="whitespace-nowrap" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
                     data-bind="item.title"></span>
@@ -1761,12 +1761,12 @@
                   <!-- Root Leaf Item (No Children) -->
                   <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
                     data-bind-data-drag="cat.itemsDraggable && item.href !== '/' ? '' : null"
-                    data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
+                    data-on-contextmenu:prevent:stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                     <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
                       data-bind-data-tab-title="item.tabTitle || item.title"
                       data-bind-data-tab-icon="item.tabIcon || item.icon"
                       data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-                      data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
+                      data-on-contextmenu:prevent:stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                       <iconify-icon data-bind-icon="item.icon" class="shrink-0 text-2xl"></iconify-icon>
                       <span class="whitespace-nowrap" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
                         data-bind="item.title"></span>
@@ -1777,13 +1777,13 @@
                   <li data-show="item.children && item.children.length > 0 && !item.meta?.isSubmenu && item.href"
                     class="cursor-pointer" data-bind-data-drag="cat.itemsDraggable && item.href !== '/' ? '' : null"
                     data-signal="{ open: false }"
-                    data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
+                    data-on-contextmenu:prevent:stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                     <div class="flex">
                       <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
                         data-bind-data-tab-title="item.tabTitle || item.title"
                         data-bind-data-tab-icon="item.tabIcon || item.icon"
                         data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-                        data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
+                        data-on-contextmenu:prevent:stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                         <iconify-icon data-bind-icon="item.icon" class="shrink-0 pe-2 text-2xl"></iconify-icon>
                         <span class="whitespace-nowrap" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
                           data-bind="item.title"></span>
@@ -1855,7 +1855,7 @@
             </div>
             <!-- Add Favorite button -->
             <button type="button" class="btn btn-ghost btn-xs btn-circle ms-0.5" title="Add Favorite"
-              data-on-click="searchOpen = false; favForm = { id: null, title: router.activePageTab?.meta?.title || 'Home', href: router.route || '/', icon: 'material-symbols-light:star-outline', group: '' }; favModalOpen = true; $nextTick(() => $('#fav-modal-title')?.focus())">
+              data-on-click="searchOpen = false; favForm = { id: null, title: router.activePageTab?.meta?.title || router.currentRoute?.meta?.title || router.meta?.title || 'Home', href: router.activePageTab?.route || router.path || '/', icon: router.activePageTab?.meta?.icon || router.currentRoute?.meta?.icon || router.meta?.icon || 'material-symbols-light:star-outline', group: '' }; favModalOpen = true; $nextTick(() => $('#fav-modal-title')?.focus())">
               <iconify-icon icon="material-symbols-light:add" class="text-lg"></iconify-icon>
             </button>
           </div>
@@ -1871,7 +1871,7 @@
           data-drag-ghost-class="opacity-40 bg-base-200 border-2 border-dashed border-base-content/20">
           <template data-for="fav in (favorites || []).filter(f => !f.group || !f.group.trim())">
             <div data-drag
-              data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'fav', target: fav }"
+              data-on-contextmenu:prevent:stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'fav', target: fav }"
               class="rounded-xl transition-all duration-300 flex border border-transparent min-w-0 cursor-move relative group"
               data-class="{
                 'p-3 flex-col items-center justify-center text-center h-28 bg-base-200/70 hover:bg-base-200': favViewMode === 'grid',
@@ -1882,7 +1882,7 @@
                   'flex-col items-center w-full': favViewMode === 'grid',
                   'items-center gap-3': favViewMode === 'list'
                 }"
-                data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'fav', target: fav }">
+                data-on-contextmenu:prevent:stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'fav', target: fav }">
                 <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:star'" class="text-warning shrink-0"
                   data-class="{
                     'text-3xl mb-1': favViewMode === 'grid',
@@ -1931,7 +1931,7 @@
                 data-drag-ghost-class="opacity-40 bg-base-200 border-2 border-dashed border-base-content/20">
                 <template data-for="fav in (favorites || []).filter(f => (f.group || '').trim() === grp)">
                   <div data-drag
-                    data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'fav', target: fav }"
+                    data-on-contextmenu:prevent:stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'fav', target: fav }"
                     class="rounded-xl transition-all duration-300 flex border border-transparent min-w-0 cursor-move relative group"
                     data-class="{
                       'p-3 flex-col items-center justify-center text-center h-28 bg-base-200/70 hover:bg-base-200': favViewMode === 'grid',
@@ -1942,7 +1942,7 @@
                         'flex-col items-center w-full': favViewMode === 'grid',
                         'items-center gap-3': favViewMode === 'list'
                       }"
-                      data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'fav', target: fav }">
+                      data-on-contextmenu:prevent:stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'fav', target: fav }">
                       <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:star'"
                         class="text-warning shrink-0" data-class="{
                           'text-3xl mb-1': favViewMode === 'grid',
@@ -2226,7 +2226,7 @@
       <!-- 2. Nav Context Menu Items -->
       <li data-show="ctxMenu.type === 'nav' && ctxMenu.target">
         <button type="button"
-          data-on-click="router.createPageTab(ctxMenu.target?.href || ctxMenu.target, ctxMenu.target?.href || ctxMenu.target); ctxMenu.open = false">
+          data-on-click="router.createPageTab(ctxMenu.target?.path || ctxMenu.target?.component || ctxMenu.target?.href, ctxMenu.target?.href || ctxMenu.target?.route); ctxMenu.open = false">
           <iconify-icon icon="material-symbols-light:open-in-new" class="text-lg"></iconify-icon>
           <span>Open in New Tab</span>
         </button>
@@ -2249,14 +2249,14 @@
       <!-- 3. Favorite Context Menu Items -->
       <li data-show="ctxMenu.type === 'fav' && ctxMenu.target">
         <button type="button"
-          data-on-click="router.createPageTab(ctxMenu.target?.href || ctxMenu.target, ctxMenu.target?.href || ctxMenu.target); ctxMenu.open = false">
+          data-on-click="router.createPageTab(ctxMenu.target?.path || ctxMenu.target?.href, ctxMenu.target?.href); ctxMenu.open = false">
           <iconify-icon icon="material-symbols-light:open-in-new" class="text-lg"></iconify-icon>
           <span>Open in New Tab</span>
         </button>
       </li>
       <li data-show="ctxMenu.type === 'fav' && ctxMenu.target">
         <button type="button"
-          data-on-click="router.createPageTab(ctxMenu.target?.href || ctxMenu.target, ctxMenu.target?.href || ctxMenu.target); router.pinPageTab(router.activePageTabId); ctxMenu.open = false">
+          data-on-click="router.createPageTab(ctxMenu.target?.path || ctxMenu.target?.href, ctxMenu.target?.href); router.pinPageTab(router.activePageTabId); ctxMenu.open = false">
           <iconify-icon icon="material-symbols-light:keep-outline" class="text-lg"></iconify-icon>
           <span>Add as Pinned Tab</span>
         </button>
@@ -2472,7 +2472,7 @@
         <template data-for="session in (chatSessions || [])">
           <div data-drag class="tooltip tooltip-right relative cursor-grab active:cursor-grabbing select-none"
             data-bind-attr-data-tip="session.name + (session.pinned ? ' (Pinned)' : '')"
-            data-on-contextmenu:prevent="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'chatSession', target: session }">
+            data-on-contextmenu:prevent:stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'chatSession', target: session }">
             <button type="button" class="btn btn-ghost btn-circle btn-sm relative transition-all duration-200"
               data-class="{
                 'btn-active bg-primary/20 text-primary shadow-sm': activeSessionId === session.id,
