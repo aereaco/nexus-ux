@@ -10575,18 +10575,34 @@ ${match}</ul>
           const $flow = {
             /** Screen coordinates -> flow-space (public, xyflow pointToRendererPoint). */
             screenToFlow: (container, x, y, state) => screenToFlow(x, y, container, state),
-            /** Bounding box of a node collection in flow-space. */
+            /** Bounding box of a node collection in flow-space (supports parentId sub-flows). */
             getBounds: (nodes) => {
               if (!nodes || nodes.length === 0)
                 return { x: 0, y: 0, w: 0, h: 0 };
+              const nodeMap = /* @__PURE__ */ new Map();
+              nodes.forEach((n) => {
+                if (n.id)
+                  nodeMap.set(String(n.id), n);
+              });
+              const getAbsolutePos = (n) => {
+                const p = n.position || n;
+                let x = p.x || 0;
+                let y = p.y || 0;
+                if (n.parentId && nodeMap.has(String(n.parentId))) {
+                  const parentPos = getAbsolutePos(nodeMap.get(String(n.parentId)));
+                  x += parentPos.x;
+                  y += parentPos.y;
+                }
+                return { x, y };
+              };
               let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
               nodes.forEach((n) => {
-                const p = n.position || n;
-                const x = p.x || 0, y = p.y || 0, w = n.w || n.width || 160, h = n.h || n.height || 90;
-                minX = Math.min(minX, x);
-                minY = Math.min(minY, y);
-                maxX = Math.max(maxX, x + w);
-                maxY = Math.max(maxY, y + h);
+                const abs = getAbsolutePos(n);
+                const w = n.w || n.width || 160, h = n.h || n.height || 90;
+                minX = Math.min(minX, abs.x);
+                minY = Math.min(minY, abs.y);
+                maxX = Math.max(maxX, abs.x + w);
+                maxY = Math.max(maxY, abs.y + h);
               });
               return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
             },
@@ -10646,14 +10662,14 @@ ${match}</ul>
                 vp.tick = (vp.tick || 0) + 1;
               }
             },
+            /** Return SVG marker URL reference for arrowhead ends */
+            marker: (type = "arrow") => `url(#flow-${type === "arrowclosed" ? "arrow-closed" : "arrow"})`,
             /**
              * Synchronous edge path string between two nodes (by DOM id), computed in
-             * flow-space so it is independent of the current pan/zoom. The edges SVG
-             * lives inside the transformed viewport, so this flow-space `d` renders
-             * correctly and stays attached to handles as the canvas pans/zooms.
+             * flow-space so it is independent of the current pan/zoom.
              *
-             * Uses the real xyflow directional bezier anchored at the source/target
-             * handle elements, inferring each handle's side from its geometry.
+             * Supports bezier, smoothstep, step, and straight edge types with
+             * handle side awareness, corner radiuses, and midpoint label coordinates.
              */
             edge: (sourceId, targetId, options = {}) => {
               const a = findNode(sourceId, options.container);
@@ -10670,22 +10686,38 @@ ${match}</ul>
               const tAnchor = tgtHandle || b;
               const s = anchorFlow(sAnchor, container, vp);
               const t = anchorFlow(tAnchor, container, vp);
-              const type = options.type || "bezier";
-              if (type === "straight")
-                return straightPath(s.x, s.y, t.x, t.y);
-              if (type === "step")
-                return stepPath(s.x, s.y, t.x, t.y);
               const sSide = srcHandle ? inferSide(srcHandle, a) : "right";
               const tSide = tgtHandle ? inferSide(tgtHandle, b) : "left";
-              return bezierPath(s.x, s.y, sSide, t.x, t.y, tSide, options.curvature ?? 0.25);
+              const type = options.type || "bezier";
+              let res;
+              if (type === "straight") {
+                res = { path: straightPath(s.x, s.y, t.x, t.y), labelX: (s.x + t.x) / 2, labelY: (s.y + t.y) / 2 };
+              } else if (type === "step") {
+                res = smoothStepPath(s.x, s.y, sSide, t.x, t.y, tSide, 0, options.offset ?? 20, options.stepPosition ?? 0.5);
+              } else if (type === "smoothstep") {
+                res = smoothStepPath(s.x, s.y, sSide, t.x, t.y, tSide, options.borderRadius ?? 5, options.offset ?? 20, options.stepPosition ?? 0.5);
+              } else {
+                res = bezierPath(s.x, s.y, sSide, t.x, t.y, tSide, options.curvature ?? 0.25);
+              }
+              const out = {
+                d: res.path,
+                labelX: res.labelX,
+                labelY: res.labelY,
+                toString() {
+                  return this.d;
+                },
+                valueOf() {
+                  return this.d;
+                }
+              };
+              return out;
             },
             /**
              * Reactive edge attached to two live DOM elements. Returns a reactive
-             * `{ d }` that self-updates every frame — used for the connection preview
-             * and any imperative edge rendering.
+             * `{ d, labelX, labelY }` that self-updates every frame.
              */
             connect: (elA, elB, options = {}) => {
-              const pathData = reactive({ d: "" });
+              const pathData = reactive({ d: "", labelX: 0, labelY: 0 });
               const update = () => {
                 if (!elA || !elB || typeof elA.getBoundingClientRect !== "function")
                   return;
@@ -10695,24 +10727,22 @@ ${match}</ul>
                 const vp = viewportOf(elA);
                 const s = anchorFlow(elA, container, vp);
                 const t = anchorFlow(elB, container, vp);
+                const sSide = inferSide(elA, elA.parentElement || elA);
+                const tSide = inferSide(elB, elB.parentElement || elB);
                 const type = options.type || "bezier";
+                let res;
                 if (type === "straight") {
-                  pathData.d = straightPath(s.x, s.y, t.x, t.y);
-                  return;
+                  res = { path: straightPath(s.x, s.y, t.x, t.y), labelX: (s.x + t.x) / 2, labelY: (s.y + t.y) / 2 };
+                } else if (type === "step") {
+                  res = smoothStepPath(s.x, s.y, sSide, t.x, t.y, tSide, 0);
+                } else if (type === "smoothstep") {
+                  res = smoothStepPath(s.x, s.y, sSide, t.x, t.y, tSide, options.borderRadius ?? 5);
+                } else {
+                  res = bezierPath(s.x, s.y, sSide, t.x, t.y, tSide, options.curvature ?? 0.25);
                 }
-                if (type === "step") {
-                  pathData.d = stepPath(s.x, s.y, t.x, t.y);
-                  return;
-                }
-                pathData.d = bezierPath(
-                  s.x,
-                  s.y,
-                  inferSide(elA, elA.parentElement || elA),
-                  t.x,
-                  t.y,
-                  inferSide(elB, elB.parentElement || elB),
-                  options.curvature ?? 0.25
-                );
+                pathData.d = res.path;
+                pathData.labelX = res.labelX;
+                pathData.labelY = res.labelY;
               };
               const ticker = () => {
                 update();
