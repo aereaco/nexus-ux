@@ -1,23 +1,29 @@
-<title>$push</title>
-<meta name="id" content="lab-sprite-push">
-<meta name="route" content="/labs/sprites/push">
-<meta name="icon" content="material-symbols-light:notifications-active">
-<meta name="order" content="8">
-<meta name="category" content="Labs">
-<meta name="parent" content="/labs/sprites">
+<head>
+  <title>$push</title>
+  <meta name="id" content="lab-sprite-push">
+  <meta name="route" content="/labs/sprites/push">
+  <meta name="icon" content="material-symbols-light:notifications-active">
+  <meta name="order" content="10">
+  <meta name="category" content="Labs">
+  <meta name="parent" content="/labs/sprites">
+</head>
 
-<div data-signal='{
-  "doc": {
-    "Title": "$push",
-    "Category": "Sprites",
-    "Icon": "material-symbols-light:notifications-active",
-    "ModulePath": "src/modules/sprites/push.ts",
-    "Description": "Web Push notification subscription and permission manager.",
-    "Syntax": "$push.subscribe()",
-    "Params": [],
-    "Extensibility": "<p>Manages VAPID keys and PushSubscription tokens.</p>",
-    "Snippet": "<div class=\"p-4 bg-base-200/50 rounded-xl space-y-1\">\n  <div class=\"badge badge-warning\">$push Manager</div>\n  <p class=\"text-xs opacity-70\">Web Push subscription controller.</p>\n</div>"
-  }
-}'>
-  <div data-component="'_components/lab-viewer.html'"></div>
+<div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
+    doc: {
+      Title: '$push',
+      Category: 'Sprites',
+      Icon: 'material-symbols-light:notifications-active',
+      Description: 'Web Push Notifications client manager ($push.subscribe, $push.permission, $push.notify) wrapping the Push API and PushManager with VAPID key negotiation.',
+      Syntax: '$push.subscribe({ userVisibleOnly: true, applicationServerKey: \'...\' })',
+      Params: [
+        { name: '$push.subscribe(options)', type: 'Async Method', default: '-', description: 'Requests notification permissions and acquires PushSubscription token.' },
+        { name: '$push.permission', type: 'String Signal', default: '\'default\'', description: 'Tracks live permission status (\'granted\', \'denied\', \'default\').' }
+      ],
+      SourceModule: '/modules/sprites/push.ts',
+      SnippetModule: '/_pages/labs/sprites/push.html',
+      Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/sprites/push.ts&lt;/code&gt;, this sprite provides native OS-level push notification integration.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;VAPID Negotiation&lt;/strong&gt; — Converts base64 public keys into typed Uint8Array buffers&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Background Wakeup&lt;/strong&gt; — Wakes Service Worker to show notifications when app is closed&lt;/li&gt;&lt;/ul&gt;',
+      Snippet: '&lt;div data-signal=\&quot;{ simulatedPermission: \'granted\', pushTokensReceived: 1 }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4 max-w-md\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Web Push Manager ($push)&lt;/h4&gt;\n        &lt;div class=\&quot;p-3 bg-base-200/50 rounded-xl font-mono text-xs flex justify-between items-center\&quot;&gt;\n            &lt;span class=\&quot;opacity-70\&quot;&gt;Notification Permission:&lt;/span&gt;\n            &lt;span class=\&quot;badge badge-success font-bold uppercase\&quot; data-bind=\&quot;simulatedPermission\&quot;&gt;&lt;/span&gt;\n        &lt;/div&gt;\n        &lt;button class=\&quot;btn btn-sm btn-primary font-bold w-full\&quot;\n                data-on-click=\&quot;pushTokensReceived++\&quot;&gt;\n            Subscribe to Web Push ($push.subscribe)\n        &lt;/button&gt;\n        &lt;div class=\&quot;text-xs font-mono opacity-70 flex justify-between\&quot;&gt;\n            &lt;span&gt;Active Subscriptions:&lt;/span&gt;\n            &lt;span class=\&quot;text-accent font-bold\&quot; data-bind=\&quot;pushTokensReceived\&quot;&gt;&lt;/span&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+    }
+  }">
+  <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>
 </div>
