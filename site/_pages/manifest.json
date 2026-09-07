@@ -709,8 +709,8 @@
     "route": "/labs/attributes/mask",
     "path": "/_pages/labs/attributes/mask.html",
     "title": "data-mask",
-    "icon": "material-symbols-light:pin-outline",
-    "order": 20,
+    "icon": "material-symbols-light:badge",
+    "order": 21,
     "parent": "/labs/attributes",
     "category": "Labs"
   },
