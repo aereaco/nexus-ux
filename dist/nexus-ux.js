@@ -5525,8 +5525,12 @@ ${scripts}
     default: () => flow_default,
     flowAttribute: () => flowAttribute,
     flowEdgesAttribute: () => flowEdgesAttribute,
+    flowGridAttribute: () => flowGridAttribute,
     flowHandleAttribute: () => flowHandleAttribute,
+    flowNoDragAttribute: () => flowNoDragAttribute,
     flowNodeAttribute: () => flowNodeAttribute,
+    flowSideAttribute: () => flowSideAttribute,
+    flowSnapAttribute: () => flowSnapAttribute,
     flowViewportAttribute: () => flowViewportAttribute
   });
   function ensureFlowStyles(root) {
@@ -5548,7 +5552,7 @@ ${scripts}
       }
     }
   }
-  var SVG_NS, MIN_ZOOM, MAX_ZOOM, NO_PAN, sharedViewport, FLOW_CSS, flowSheet, flowViewportAttribute, flowAttribute, flowNodeAttribute, flowHandleAttribute, flowEdgesAttribute, flow_default;
+  var SVG_NS, MIN_ZOOM, MAX_ZOOM, NO_PAN, sharedViewport, FLOW_CSS, flowSheet, flowViewportAttribute, flowAttribute, flowNodeAttribute, flowHandleAttribute, flowEdgesAttribute, flowSideAttribute, flowNoDragAttribute, flowGridAttribute, flowSnapAttribute, flow_default;
   var init_flow = __esm({
     "src/modules/attributes/flow.ts"() {
       init_reactivity();
@@ -5679,20 +5683,43 @@ ${scripts}
             return;
           }
           ensureFlowStyles(element.getRootNode());
-          const evaluated = runtime.evaluate(element, value);
-          const isViewport = evaluated && typeof evaluated === "object" && !Array.isArray(evaluated) && ("zoom" in evaluated || "x" in evaluated || "y" in evaluated);
-          const state = isViewport ? evaluated : reactive({ x: 0, y: 0, zoom: 1 });
+          let config = {};
+          if (value && value.trim()) {
+            try {
+              config = runtime.evaluate(element, value);
+            } catch {
+              config = {};
+            }
+          }
+          const isViewportObj = config && typeof config === "object" && !Array.isArray(config) && ("zoom" in config || "x" in config || "y" in config);
+          let state;
+          if (isViewportObj) {
+            state = config;
+          } else {
+            let inScopeVp = null;
+            try {
+              inScopeVp = runtime.evaluate(element, "viewport");
+            } catch {
+            }
+            if (inScopeVp && typeof inScopeVp === "object" && ("zoom" in inScopeVp || "x" in inScopeVp || "y" in inScopeVp)) {
+              state = inScopeVp;
+            } else {
+              state = reactive({ x: 0, y: 0, zoom: 1, tick: 0 });
+            }
+          }
           if (state.zoom === void 0)
             state.zoom = 1;
           if (state.x === void 0)
             state.x = 0;
           if (state.y === void 0)
             state.y = 0;
-          const content = element.querySelector("[data-flow-viewport], .flow-viewport, .nexus-flow-content") || element.firstElementChild || element;
+          if (state.tick === void 0)
+            state.tick = 0;
+          const content = element.querySelector("[data-flow-viewport], .flow-viewport") || element.firstElementChild || element;
           element.__flowViewport = state;
           element.__nexusFlowViewport = state;
           const gridAttr = element.getAttribute("data-flow-grid");
-          const gridSize = gridAttr !== null ? parseFloat(gridAttr) || 0 : 0;
+          const gridSize = config?.grid ?? (gridAttr !== null ? parseFloat(gridAttr) || 0 : 0);
           let isPanning = false;
           let startX = 0;
           let startY = 0;
@@ -5711,7 +5738,10 @@ ${scripts}
             isPanning = true;
             startX = e.clientX - state.x;
             startY = e.clientY - state.y;
-            element.setPointerCapture(e.pointerId);
+            try {
+              element.setPointerCapture(e.pointerId);
+            } catch {
+            }
             element.style.cursor = "grabbing";
           };
           const onPointerMove = (e) => {
@@ -5719,6 +5749,7 @@ ${scripts}
               return;
             state.x = e.clientX - startX;
             state.y = e.clientY - startY;
+            state.tick = (state.tick || 0) + 1;
           };
           const onPointerUp = (e) => {
             if (!isPanning)
@@ -5745,16 +5776,15 @@ ${scripts}
             state.x = px - fx * nextZoom;
             state.y = py - fy * nextZoom;
             state.zoom = nextZoom;
+            state.tick = (state.tick || 0) + 1;
           };
           element.addEventListener("pointerdown", onPointerDown);
           element.addEventListener("pointermove", onPointerMove);
           element.addEventListener("pointerup", onPointerUp);
           element.addEventListener("wheel", onWheel, { passive: false });
-          if (state.tick === void 0)
-            state.tick = 0;
           let settleFrames = 0;
           const settle = () => {
-            state.tick++;
+            state.tick = (state.tick || 0) + 1;
             if (++settleFrames < 24)
               requestAnimationFrame(settle);
           };
@@ -5822,6 +5852,32 @@ ${scripts}
           let dragStartY = 0;
           let initialX = 0;
           let initialY = 0;
+          const onPointerMove = (e) => {
+            if (!isDragging)
+              return;
+            const flowEl = element.closest("[data-flow]");
+            const vp = flowEl?.__flowViewport || flowEl?.__nexusFlowViewport;
+            const zoom = vp?.zoom || 1;
+            const dx = (e.clientX - dragStartX) / zoom;
+            const dy = (e.clientY - dragStartY) / zoom;
+            const snapped = snapPoint(initialX + dx, initialY + dy, resolveSnap());
+            writePos(snapped.x, snapped.y);
+            if (vp) {
+              vp.tick = (vp.tick || 0) + 1;
+            }
+          };
+          const onPointerUp = (e) => {
+            if (!isDragging)
+              return;
+            isDragging = false;
+            window.removeEventListener("pointermove", onPointerMove);
+            window.removeEventListener("pointerup", onPointerUp);
+            try {
+              element.releasePointerCapture(e.pointerId);
+            } catch {
+            }
+            element.style.zIndex = "";
+          };
           const onPointerDown = (e) => {
             if (e.button !== 0 || e.altKey)
               return;
@@ -5836,31 +5892,15 @@ ${scripts}
             const p = readPos();
             initialX = p.x;
             initialY = p.y;
-            element.setPointerCapture(e.pointerId);
-            element.style.zIndex = "1000";
-          };
-          const onPointerMove = (e) => {
-            if (!isDragging)
-              return;
-            const zoom = sharedViewport(element).zoom;
-            const dx = (e.clientX - dragStartX) / zoom;
-            const dy = (e.clientY - dragStartY) / zoom;
-            const snapped = snapPoint(initialX + dx, initialY + dy, resolveSnap());
-            writePos(snapped.x, snapped.y);
-          };
-          const onPointerUp = (e) => {
-            if (!isDragging)
-              return;
-            isDragging = false;
             try {
-              element.releasePointerCapture(e.pointerId);
+              element.setPointerCapture(e.pointerId);
             } catch {
             }
-            element.style.zIndex = "";
+            element.style.zIndex = "1000";
+            window.addEventListener("pointermove", onPointerMove);
+            window.addEventListener("pointerup", onPointerUp);
           };
           element.addEventListener("pointerdown", onPointerDown);
-          element.addEventListener("pointermove", onPointerMove);
-          element.addEventListener("pointerup", onPointerUp);
           const stop2 = runtime.effect(() => {
             element.style.position = "absolute";
             element.style.left = "0";
@@ -5872,8 +5912,8 @@ ${scripts}
           return () => {
             stop2();
             element.removeEventListener("pointerdown", onPointerDown);
-            element.removeEventListener("pointermove", onPointerMove);
-            element.removeEventListener("pointerup", onPointerUp);
+            window.removeEventListener("pointermove", onPointerMove);
+            window.removeEventListener("pointerup", onPointerUp);
           };
         }
       };
@@ -5915,7 +5955,7 @@ ${scripts}
             if (!vp)
               return null;
             const svg = vp.querySelector("[data-flow-edges]");
-            const expr = svg?.getAttribute("data-flow-edges-expr") || svg?.getAttribute("data-nexus-flow-edges-expr") || svg?.getAttribute("data-flow-edges") || "edges";
+            const expr = svg?.getAttribute("data-flow-edges-expr") || svg?.getAttribute("data-flow-edges") || "edges";
             try {
               const arr = runtime.evaluate(vp, expr);
               return Array.isArray(arr) ? arr : null;
@@ -5933,7 +5973,7 @@ ${scripts}
             if (!vp || !svg)
               return;
             const srcNode = element.closest("[data-flow-node]");
-            const srcId = srcNode?.id || srcNode?.getAttribute("data-bind-id") || element.id || "";
+            const srcId = srcNode?.id || srcNode?.getAttribute("data-bind-id")?.replace(/^['"]|['"]$/g, "").replace(/^node-/, "") || element.id || "";
             const start = anchorFlow(element);
             const preview = document.createElementNS(SVG_NS, "path");
             preview.setAttribute("class", "flow-edge flow-edge-preview");
@@ -5952,21 +5992,25 @@ ${scripts}
               );
             };
             const up = (ev) => {
-              document.removeEventListener("pointermove", move);
-              document.removeEventListener("pointerup", up);
+              window.removeEventListener("pointermove", move);
+              window.removeEventListener("pointerup", up);
               preview.remove();
               const target = document.elementFromPoint(ev.clientX, ev.clientY);
               const targetNode = target?.closest("[data-flow-node]");
-              const tgtId = targetNode?.id || targetNode?.getAttribute("data-bind-id") || "";
+              const tgtId = targetNode?.id || targetNode?.getAttribute("data-bind-id")?.replace(/^['"]|['"]$/g, "").replace(/^node-/, "") || "";
               if (tgtId && tgtId !== srcId) {
                 const edges = edgesArray();
-                if (edges && !edges.some((ed) => ed.source === srcId && ed.target === tgtId)) {
+                if (edges && !edges.some((ed) => String(ed.source) === String(srcId) && String(ed.target) === String(tgtId))) {
                   edges.push({ source: srcId, target: tgtId });
+                  const vpState = vp?.__flowViewport || vp?.__nexusFlowViewport;
+                  if (vpState) {
+                    vpState.tick = (vpState.tick || 0) + 1;
+                  }
                 }
               }
             };
-            document.addEventListener("pointermove", move);
-            document.addEventListener("pointerup", up);
+            window.addEventListener("pointermove", move);
+            window.addEventListener("pointerup", up);
           };
           element.addEventListener("pointerdown", onPointerDown);
           return () => {
@@ -5977,19 +6021,107 @@ ${scripts}
       flowEdgesAttribute = {
         name: "flowEdges",
         attribute: "flow-edges",
-        handle: (element, value) => {
+        handle: (element, value, runtime) => {
           ensureFlowStyles(element.getRootNode());
           const expr = value.trim() || "edges";
           element.setAttribute("data-flow-edges-expr", expr);
           const flowEl = element.closest("[data-flow]");
-          const content = flowEl?.querySelector('[data-flow-viewport], [data-flow="viewport"], .flow-viewport, .nexus-flow-content');
+          const content = flowEl?.querySelector("[data-flow-viewport], .flow-viewport");
           if (content && element.parentElement !== content) {
-            content.appendChild(element);
+            content.insertBefore(element, content.firstChild);
           }
+          const hasCustomTemplate = element.querySelector("template, path[data-for], path[data-effect]");
+          if (hasCustomTemplate) {
+            return;
+          }
+          const stop2 = runtime.effect(() => {
+            const currentFlow = element.closest("[data-flow]");
+            const vp = currentFlow?.__flowViewport || currentFlow?.__nexusFlowViewport;
+            const _t = vp?.tick;
+            let edgeList = [];
+            try {
+              const evaluated = runtime.evaluate(element, expr);
+              if (Array.isArray(evaluated))
+                edgeList = evaluated;
+            } catch {
+            }
+            const existingPaths = /* @__PURE__ */ new Map();
+            element.querySelectorAll("path[data-edge-key]").forEach((p) => {
+              existingPaths.set(p.getAttribute("data-edge-key"), p);
+            });
+            const activeKeys = /* @__PURE__ */ new Set();
+            edgeList.forEach((edge) => {
+              const srcId = String(edge.source ?? "");
+              const tgtId = String(edge.target ?? "");
+              if (!srcId || !tgtId)
+                return;
+              const key = edge.id || `${srcId}->${tgtId}`;
+              activeKeys.add(key);
+              let pathEl = existingPaths.get(key);
+              if (!pathEl) {
+                pathEl = document.createElementNS(SVG_NS, "path");
+                pathEl.setAttribute("class", "flow-edge");
+                pathEl.setAttribute("data-edge-key", key);
+                pathEl.setAttribute("fill", "none");
+                pathEl.setAttribute("stroke", "currentColor");
+                pathEl.setAttribute("stroke-width", "2");
+                element.appendChild(pathEl);
+              }
+              const d = runtime.$flow?.edge?.(srcId, tgtId, {
+                type: edge.type || "bezier",
+                curvature: edge.curvature,
+                container: currentFlow || void 0
+              }) || "";
+              if (d) {
+                pathEl.setAttribute("d", d);
+              }
+            });
+            existingPaths.forEach((pathEl, key) => {
+              if (!activeKeys.has(key)) {
+                pathEl.remove();
+              }
+            });
+          });
           return () => {
+            stop2();
             element.removeAttribute("data-flow-edges-expr");
-            element.removeAttribute("data-nexus-flow-edges-expr");
           };
+        }
+      };
+      flowSideAttribute = {
+        name: "flowSide",
+        attribute: "flow-side",
+        handle: (element, value, runtime) => {
+          let side = value.trim();
+          if (side) {
+            try {
+              const resolved = runtime.evaluate(element, side);
+              if (typeof resolved === "string")
+                side = resolved;
+            } catch {
+            }
+          }
+          if (side) {
+            element.setAttribute("data-flow-handle-side", side);
+          }
+        }
+      };
+      flowNoDragAttribute = {
+        name: "flowNoDrag",
+        attribute: "flow-nodrag",
+        handle: () => {
+        }
+      };
+      flowGridAttribute = {
+        name: "flowGrid",
+        attribute: "flow-grid",
+        handle: () => {
+        }
+      };
+      flowSnapAttribute = {
+        name: "flowSnap",
+        attribute: "flow-snap",
+        handle: () => {
         }
       };
       flow_default = flowAttribute;

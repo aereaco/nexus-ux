@@ -157,7 +157,7 @@ export const flowViewportAttribute: AttributeModule = {
 };
 
 // ---------------------------------------------------------------------------
-// data-flow: Root Viewport / Pane Directive
+// data-flow: Root Canvas Directive
 // ---------------------------------------------------------------------------
 export const flowAttribute: AttributeModule = {
   name: 'flow',
@@ -171,21 +171,46 @@ export const flowAttribute: AttributeModule = {
 
     ensureFlowStyles(element.getRootNode() as Document | ShadowRoot);
 
-    // Resolve viewport state. If the expression already yields a viewport-like
-    // object ({x,y,zoom}) use it directly (declarative, shared with the page).
-    // Otherwise (e.g. `data-flow="nodes"`) create an internal reactive one.
-    const evaluated = runtime.evaluate(element, value) as any;
-    const isViewport = evaluated && typeof evaluated === 'object' && !Array.isArray(evaluated)
-      && ('zoom' in evaluated || 'x' in evaluated || 'y' in evaluated);
-    const state: Viewport = isViewport
-      ? evaluated
-      : reactive({ x: 0, y: 0, zoom: 1 });
+    // Resolve configuration and viewport state.
+    // Value could be:
+    // - empty/undefined
+    // - JSON config: { grid: 20 }
+    // - explicit viewport object: { x: 0, y: 0, zoom: 1 } or signal expression
+    let config: any = {};
+    if (value && value.trim()) {
+      try {
+        config = runtime.evaluate(element, value);
+      } catch {
+        config = {};
+      }
+    }
+
+    const isViewportObj = config && typeof config === 'object' && !Array.isArray(config)
+      && ('zoom' in config || 'x' in config || 'y' in config);
+
+    let state: Viewport;
+    if (isViewportObj) {
+      state = config;
+    } else {
+      // Check if a 'viewport' signal already exists in element's scope
+      let inScopeVp: any = null;
+      try {
+        inScopeVp = runtime.evaluate(element, 'viewport');
+      } catch { /* ignore */ }
+      if (inScopeVp && typeof inScopeVp === 'object' && ('zoom' in inScopeVp || 'x' in inScopeVp || 'y' in inScopeVp)) {
+        state = inScopeVp;
+      } else {
+        state = reactive({ x: 0, y: 0, zoom: 1, tick: 0 });
+      }
+    }
+
     if (state.zoom === undefined) state.zoom = 1;
     if (state.x === undefined) state.x = 0;
     if (state.y === undefined) state.y = 0;
+    if ((state as any).tick === undefined) (state as any).tick = 0;
 
     // Viewport resolution: locate existing viewport or first child container
-    const content = (element.querySelector('[data-flow-viewport], .flow-viewport, .nexus-flow-content') as HTMLElement | null)
+    const content = (element.querySelector('[data-flow-viewport], .flow-viewport') as HTMLElement | null)
       || (element.firstElementChild as HTMLElement | null)
       || element;
 
@@ -195,7 +220,7 @@ export const flowAttribute: AttributeModule = {
     element.__nexusFlowViewport = state;
 
     const gridAttr = element.getAttribute('data-flow-grid');
-    const gridSize = gridAttr !== null ? (parseFloat(gridAttr) || 0) : 0;
+    const gridSize = config?.grid ?? (gridAttr !== null ? (parseFloat(gridAttr) || 0) : 0);
 
     // --- Panning (xyflow panOnDrag): drag the empty pane to move the canvas ---
     let isPanning = false;
@@ -216,7 +241,7 @@ export const flowAttribute: AttributeModule = {
       isPanning = true;
       startX = e.clientX - state.x;
       startY = e.clientY - state.y;
-      element.setPointerCapture(e.pointerId);
+      try { element.setPointerCapture(e.pointerId); } catch { /* ignore */ }
       element.style.cursor = 'grabbing';
     };
 
@@ -224,6 +249,7 @@ export const flowAttribute: AttributeModule = {
       if (!isPanning) return;
       state.x = e.clientX - startX;
       state.y = e.clientY - startY;
+      (state as any).tick = ((state as any).tick || 0) + 1;
     };
 
     const onPointerUp = (e: PointerEvent) => {
@@ -251,6 +277,7 @@ export const flowAttribute: AttributeModule = {
       state.x = px - fx * nextZoom;
       state.y = py - fy * nextZoom;
       state.zoom = nextZoom;
+      (state as any).tick = ((state as any).tick || 0) + 1;
     };
 
     element.addEventListener('pointerdown', onPointerDown);
@@ -258,14 +285,10 @@ export const flowAttribute: AttributeModule = {
     element.addEventListener('pointerup', onPointerUp);
     element.addEventListener('wheel', onWheel, { passive: false });
 
-    // Post-layout settle: edge paths are measured from node/handle DOM.
-    // Bumping a reactive `tick` on the viewport across several initial frames
-    // lets edge effects (which read viewport.tick) recompute once real geometry
-    // is available. Bounded to 24 frames so no infinite loop can occur.
-    if ((state as any).tick === undefined) (state as any).tick = 0;
+    // Post-layout settle: bump tick across several initial frames so edge paths recompute once real geometry is available.
     let settleFrames = 0;
     const settle = () => {
-      (state as any).tick++;
+      (state as any).tick = ((state as any).tick || 0) + 1;
       if (++settleFrames < 24) requestAnimationFrame(settle);
     };
     requestAnimationFrame(settle);
@@ -275,17 +298,14 @@ export const flowAttribute: AttributeModule = {
       const x = state.x || 0;
       const y = state.y || 0;
 
-      // The viewport: ONE transformed layer holding nodes + edges, so both
-      // scale together automatically (xyflow Viewport.svelte).
+      // The viewport: ONE transformed layer holding nodes + edges
       if (content !== element && !content.hasAttribute('data-flow-viewport')) {
         content.setAttribute('data-flow-viewport', '');
       }
       content.style.transformOrigin = '0 0';
       content.style.transform = `translate(${x}px, ${y}px) scale(${zoom})`;
 
-      // The grid: a separate, untransformed layer whose pattern is scaled by
-      // zoom and offset by the pan (xyflow Background.svelte). Driven from the
-      // same viewport state, so grid and nodes scale symmetrically.
+      // The grid: background pattern scaled by zoom and offset by pan
       if (gridSize > 0 && element.style.backgroundImage) {
         const scaled = gridSize * zoom;
         element.style.backgroundSize = `${scaled}px ${scaled}px`;
@@ -345,6 +365,32 @@ export const flowNodeAttribute: AttributeModule = {
     let initialX = 0;
     let initialY = 0;
 
+    const onPointerMove = (e: PointerEvent) => {
+      if (!isDragging) return;
+      // Divide by live zoom so the node tracks the cursor 1:1 on screen.
+      const flowEl = element.closest('[data-flow]') as FlowElement | null;
+      const vp = flowEl?.__flowViewport || flowEl?.__nexusFlowViewport;
+      const zoom = vp?.zoom || 1;
+      const dx = (e.clientX - dragStartX) / zoom;
+      const dy = (e.clientY - dragStartY) / zoom;
+      const snapped = snapPoint(initialX + dx, initialY + dy, resolveSnap());
+      writePos(snapped.x, snapped.y);
+
+      // Crucial: bump viewport.tick on every drag frame so edges track the node at 60fps!
+      if (vp) {
+        (vp as any).tick = ((vp as any).tick || 0) + 1;
+      }
+    };
+
+    const onPointerUp = (e: PointerEvent) => {
+      if (!isDragging) return;
+      isDragging = false;
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      try { element.releasePointerCapture(e.pointerId); } catch { /* ignore */ }
+      element.style.zIndex = '';
+    };
+
     const onPointerDown = (e: PointerEvent) => {
       if (e.button !== 0 || e.altKey) return;
       // Never drag from ports or interactive controls.
@@ -358,30 +404,14 @@ export const flowNodeAttribute: AttributeModule = {
       const p = readPos();
       initialX = p.x;
       initialY = p.y;
-      element.setPointerCapture(e.pointerId);
+      try { element.setPointerCapture(e.pointerId); } catch { /* ignore */ }
       element.style.zIndex = '1000';
-    };
 
-    const onPointerMove = (e: PointerEvent) => {
-      if (!isDragging) return;
-      // Divide by live zoom so the node tracks the cursor 1:1 on screen.
-      const zoom = sharedViewport(element).zoom;
-      const dx = (e.clientX - dragStartX) / zoom;
-      const dy = (e.clientY - dragStartY) / zoom;
-      const snapped = snapPoint(initialX + dx, initialY + dy, resolveSnap());
-      writePos(snapped.x, snapped.y);
-    };
-
-    const onPointerUp = (e: PointerEvent) => {
-      if (!isDragging) return;
-      isDragging = false;
-      try { element.releasePointerCapture(e.pointerId); } catch { /* ignore */ }
-      element.style.zIndex = '';
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', onPointerUp);
     };
 
     element.addEventListener('pointerdown', onPointerDown);
-    element.addEventListener('pointermove', onPointerMove);
-    element.addEventListener('pointerup', onPointerUp);
 
     const stop = runtime.effect(() => {
       element.style.position = 'absolute';
@@ -395,8 +425,8 @@ export const flowNodeAttribute: AttributeModule = {
     return () => {
       stop();
       element.removeEventListener('pointerdown', onPointerDown);
-      element.removeEventListener('pointermove', onPointerMove);
-      element.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
     };
   }
 };
@@ -410,8 +440,7 @@ export const flowHandleAttribute: AttributeModule = {
   handle: (element: HTMLElement, value: string, runtime: RuntimeContext) => {
     ensureFlowStyles(element.getRootNode() as Document | ShadowRoot);
 
-    // The value may be a literal ("source") or an expression ("handle.type")
-    // resolved against the element scope. Resolve it, defaulting to 'source'.
+    // Resolve kind ('source' or 'target')
     let kind = 'source';
     const raw = value.trim();
     if (raw === 'source' || raw === 'target') {
@@ -429,7 +458,7 @@ export const flowHandleAttribute: AttributeModule = {
       element.setAttribute('data-flow-handle-side', sideAttr);
     }
 
-    const viewport = () => element.closest('[data-flow]') as HTMLElement | null;
+    const viewport = () => element.closest('[data-flow]') as FlowElement | null;
 
     const toFlow = (clientX: number, clientY: number) => {
       const vp = viewport()!;
@@ -448,7 +477,6 @@ export const flowHandleAttribute: AttributeModule = {
       if (!vp) return null;
       const svg = vp.querySelector('[data-flow-edges]') as HTMLElement | null;
       const expr = (svg?.getAttribute('data-flow-edges-expr'))
-        || (svg?.getAttribute('data-nexus-flow-edges-expr'))
         || (svg?.getAttribute('data-flow-edges'))
         || 'edges';
       try {
@@ -469,7 +497,7 @@ export const flowHandleAttribute: AttributeModule = {
 
       const srcNode = element.closest('[data-flow-node]') as HTMLElement | null;
       const srcId = srcNode?.id
-        || srcNode?.getAttribute('data-bind-id')
+        || srcNode?.getAttribute('data-bind-id')?.replace(/^['"]|['"]$/g, '').replace(/^node-/, '')
         || element.id
         || '';
       const start = anchorFlow(element);
@@ -491,22 +519,28 @@ export const flowHandleAttribute: AttributeModule = {
       };
 
       const up = (ev: PointerEvent) => {
-        document.removeEventListener('pointermove', move);
-        document.removeEventListener('pointerup', up);
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', up);
         preview.remove();
         const target = document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null;
         const targetNode = target?.closest('[data-flow-node]') as HTMLElement | null;
-        const tgtId = targetNode?.id || targetNode?.getAttribute('data-bind-id') || '';
+        const tgtId = targetNode?.id
+          || targetNode?.getAttribute('data-bind-id')?.replace(/^['"]|['"]$/g, '').replace(/^node-/, '')
+          || '';
         if (tgtId && tgtId !== srcId) {
           const edges = edgesArray();
-          if (edges && !edges.some((ed: any) => ed.source === srcId && ed.target === tgtId)) {
+          if (edges && !edges.some((ed: any) => String(ed.source) === String(srcId) && String(ed.target) === String(tgtId))) {
             edges.push({ source: srcId, target: tgtId });
+            const vpState = vp?.__flowViewport || vp?.__nexusFlowViewport;
+            if (vpState) {
+              (vpState as any).tick = ((vpState as any).tick || 0) + 1;
+            }
           }
         }
       };
 
-      document.addEventListener('pointermove', move);
-      document.addEventListener('pointerup', up);
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
     };
 
     element.addEventListener('pointerdown', onPointerDown);
@@ -518,29 +552,132 @@ export const flowHandleAttribute: AttributeModule = {
 };
 
 // ---------------------------------------------------------------------------
-// data-flow-edges: Edge Overlay Directive
+// data-flow-edges: Edge Overlay Directive (Automated SVG wiring)
 // ---------------------------------------------------------------------------
 export const flowEdgesAttribute: AttributeModule = {
   name: 'flowEdges',
   attribute: 'flow-edges',
-  handle: (element: HTMLElement, value: string) => {
+  handle: (element: HTMLElement, value: string, runtime: RuntimeContext) => {
     ensureFlowStyles(element.getRootNode() as Document | ShadowRoot);
     const expr = value.trim() || 'edges';
     element.setAttribute('data-flow-edges-expr', expr);
 
     // Ensure the edges SVG lives INSIDE the transformed viewport so edge paths,
     // expressed in flow-space, scale and pan together with the nodes.
-    const flowEl = element.closest('[data-flow]') as HTMLElement | null;
-    const content = flowEl?.querySelector('[data-flow-viewport], [data-flow="viewport"], .flow-viewport, .nexus-flow-content') as HTMLElement | null;
+    const flowEl = element.closest('[data-flow]') as FlowElement | null;
+    const content = flowEl?.querySelector('[data-flow-viewport], .flow-viewport') as HTMLElement | null;
     if (content && element.parentElement !== content) {
-      content.appendChild(element);
+      content.insertBefore(element, content.firstChild);
     }
 
+    // Check if the developer provided an explicit template or path inside <svg data-flow-edges>
+    const hasCustomTemplate = element.querySelector('template, path[data-for], path[data-effect]');
+    if (hasCustomTemplate) {
+      // Developer provides custom edge template; leave rendering to template
+      return;
+    }
+
+    // Automated edge rendering (Option 2):
+    const stop = runtime.effect(() => {
+      const currentFlow = element.closest('[data-flow]') as FlowElement | null;
+      const vp = currentFlow?.__flowViewport || currentFlow?.__nexusFlowViewport;
+      // Read reactive tick to re-run whenever any node moves or viewport pans
+      const _t = (vp as any)?.tick;
+
+      let edgeList: any[] = [];
+      try {
+        const evaluated = runtime.evaluate(element, expr);
+        if (Array.isArray(evaluated)) edgeList = evaluated;
+      } catch { /* ignore */ }
+
+      const existingPaths = new Map<string, SVGPathElement>();
+      element.querySelectorAll('path[data-edge-key]').forEach((p) => {
+        existingPaths.set(p.getAttribute('data-edge-key')!, p as SVGPathElement);
+      });
+
+      const activeKeys = new Set<string>();
+
+      edgeList.forEach((edge) => {
+        const srcId = String(edge.source ?? '');
+        const tgtId = String(edge.target ?? '');
+        if (!srcId || !tgtId) return;
+
+        const key = edge.id || `${srcId}->${tgtId}`;
+        activeKeys.add(key);
+
+        let pathEl = existingPaths.get(key);
+        if (!pathEl) {
+          pathEl = document.createElementNS(SVG_NS, 'path');
+          pathEl.setAttribute('class', 'flow-edge');
+          pathEl.setAttribute('data-edge-key', key);
+          pathEl.setAttribute('fill', 'none');
+          pathEl.setAttribute('stroke', 'currentColor');
+          pathEl.setAttribute('stroke-width', '2');
+          element.appendChild(pathEl);
+        }
+
+        const d = (runtime as any).$flow?.edge?.(srcId, tgtId, {
+          type: edge.type || 'bezier',
+          curvature: edge.curvature,
+          container: currentFlow || undefined
+        }) || '';
+
+        if (d) {
+          pathEl.setAttribute('d', d);
+        }
+      });
+
+      // Remove obsolete paths
+      existingPaths.forEach((pathEl, key) => {
+        if (!activeKeys.has(key)) {
+          pathEl.remove();
+        }
+      });
+    });
+
     return () => {
+      stop();
       element.removeAttribute('data-flow-edges-expr');
-      element.removeAttribute('data-nexus-flow-edges-expr');
     };
   }
+};
+
+// ---------------------------------------------------------------------------
+// Helper Attribute Modules for Canonical Namespaces
+// ---------------------------------------------------------------------------
+export const flowSideAttribute: AttributeModule = {
+  name: 'flowSide',
+  attribute: 'flow-side',
+  handle: (element: HTMLElement, value: string, runtime: RuntimeContext) => {
+    let side = value.trim();
+    if (side) {
+      try {
+        const resolved = runtime.evaluate(element, side);
+        if (typeof resolved === 'string') side = resolved;
+      } catch { /* use raw */ }
+    }
+    if (side) {
+      element.setAttribute('data-flow-handle-side', side);
+    }
+  }
+};
+
+export const flowNoDragAttribute: AttributeModule = {
+  name: 'flowNoDrag',
+  attribute: 'flow-nodrag',
+  handle: () => {}
+};
+
+export const flowGridAttribute: AttributeModule = {
+  name: 'flowGrid',
+  attribute: 'flow-grid',
+  handle: () => {}
+};
+
+export const flowSnapAttribute: AttributeModule = {
+  name: 'flowSnap',
+  attribute: 'flow-snap',
+  handle: () => {}
 };
 
 export default flowAttribute;
