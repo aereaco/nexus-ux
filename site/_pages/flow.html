@@ -8,15 +8,15 @@
 
 <div class="flex flex-col h-full w-full gap-4 p-4" data-signal="{
     nodes: [
-        { id: '1', label: 'Start',     position: { x: 80,  y: 40  }, handles: [{ type: 'source', side: 'right' }] },
-        { id: '2', label: 'Ingest',    position: { x: 340, y: 40  }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
-        { id: '3', label: 'Validate',  position: { x: 600, y: 40  }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
-        { id: '4', label: 'Transform', position: { x: 80,  y: 240 }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
-        { id: '5', label: 'Enrich',    position: { x: 340, y: 240 }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
-        { id: '6', label: 'Route',     position: { x: 600, y: 240 }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
-        { id: '7', label: 'Store',     position: { x: 80,  y: 440 }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
-        { id: '8', label: 'Notify',    position: { x: 340, y: 440 }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
-        { id: '9', label: 'Complete',  position: { x: 600, y: 440 }, handles: [{ type: 'target', side: 'left' }] }
+        { id: '1', label: 'Start',     position: { x: 80,  y: 60  }, handles: [{ type: 'source', side: 'right' }] },
+        { id: '2', label: 'Ingest',    position: { x: 340, y: 60  }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
+        { id: '3', label: 'Validate',  position: { x: 600, y: 60  }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
+        { id: '4', label: 'Transform', position: { x: 80,  y: 260 }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
+        { id: '5', label: 'Enrich',    position: { x: 340, y: 260 }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
+        { id: '6', label: 'Route',     position: { x: 600, y: 260 }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
+        { id: '7', label: 'Store',     position: { x: 80,  y: 460 }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
+        { id: '8', label: 'Notify',    position: { x: 340, y: 460 }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
+        { id: '9', label: 'Complete',  position: { x: 600, y: 460 }, handles: [{ type: 'target', side: 'left' }] }
     ],
     edges: [
         { source: '1', target: '2' },
@@ -30,20 +30,40 @@
         { source: '5', target: '8' }
     ],
     modal: { type: '', nodeId: '', draft: '' },
-    viewport: { x: 0, y: 0, zoom: 1 }
+    viewport: { x: 0, y: 0, zoom: 1, tick: 0 }
 }">
 
   <!-- Header Toolbar -->
   <header class="navbar bg-base-200/80 backdrop-blur border border-base-content/10 rounded-box px-6 py-2 shrink-0">
     <div class="flex-1 flex items-center gap-3">
       <iconify-icon icon="material-symbols-light:schema" class="text-primary text-2xl"></iconify-icon>
-      <h1 class="text-lg font-bold">xyFlow Spatial Canvas</h1>
+      <div>
+        <h1 class="text-lg font-bold leading-tight">xyFlow Spatial Canvas</h1>
+        <p class="text-[11px] opacity-60">Reactive node graph powered by pure declarative HTML directives</p>
+      </div>
     </div>
-    <div class="flex items-center gap-4 text-xs opacity-70">
-      <span>Engine: <strong class="text-primary">data-flow</strong></span>
-      <span>Nodes: <strong data-bind="nodes.length"></strong></span>
-      <span>Edges: <strong data-bind="edges.length"></strong></span>
-      <button class="btn btn-primary btn-xs"
+    <div class="flex items-center gap-3 text-xs">
+      <div class="hidden sm:flex items-center gap-3 opacity-75 font-mono mr-2">
+        <span>Nodes: <strong class="text-primary" data-bind="nodes.length"></strong></span>
+        <span>Edges: <strong class="text-primary" data-bind="edges.length"></strong></span>
+        <span>Zoom: <strong class="text-primary" data-bind="(viewport.zoom || 1).toFixed(2) + 'x'"></strong></span>
+      </div>
+      <div class="flex items-center gap-1">
+        <button class="btn btn-outline btn-xs" title="Zoom In" data-on-click="$flow.zoomIn($el)">
+          <iconify-icon icon="material-symbols-light:zoom-in"></iconify-icon>
+        </button>
+        <button class="btn btn-outline btn-xs" title="Zoom Out" data-on-click="$flow.zoomOut($el)">
+          <iconify-icon icon="material-symbols-light:zoom-out"></iconify-icon>
+        </button>
+        <button class="btn btn-outline btn-xs" title="Reset View" data-on-click="$flow.reset($el)">
+          <iconify-icon icon="material-symbols-light:restart-alt"></iconify-icon>
+        </button>
+        <button class="btn btn-outline btn-xs font-semibold" title="Fit View" data-on-click="$flow.fit($el, nodes)">
+          <iconify-icon icon="material-symbols-light:fit-screen"></iconify-icon>
+          Fit
+        </button>
+      </div>
+      <button class="btn btn-primary btn-xs font-bold gap-1 shadow-sm"
         data-on-click="modal.type='add'; modal.draft=''; modal.nodeId=String(nodes.length + 1); document.getElementById('flow-modal-add').showModal()">
         <iconify-icon icon="material-symbols-light:add"></iconify-icon>
         Add Node
@@ -53,24 +73,21 @@
 
   <!-- Interactive Canvas Container -->
   <div
-    class="flex-1 bg-base-300 rounded-box border border-base-content/10 shadow-inner min-h-[37.5rem] h-[calc(100vh-14rem)]"
-    data-flow="viewport" data-flow-grid="20"
+    class="relative flex-1 bg-base-300 rounded-box border border-base-content/10 shadow-inner min-h-[37.5rem] h-[calc(100vh-14rem)] overflow-hidden"
+    data-flow="{ grid: 20 }"
     style="background-image: linear-gradient(rgba(255,255,255,0.05) 0.0625rem, transparent 0.0625rem), linear-gradient(90deg, rgba(255,255,255,0.05) 0.0625rem, transparent 0.0625rem); background-size: 1.25rem 1.25rem;">
 
+    <!-- Transformation Viewport Layer -->
     <div data-flow-viewport>
-      <!-- Dynamic SVG Bezier Edges -->
-      <svg data-flow-edges="edges" class="text-primary">
-        <path data-for="edge in edges"
-          data-effect="viewport.tick; const na = nodes.find(n => n.id === edge.source); const nb = nodes.find(n => n.id === edge.target); const dep = (na && na.position.x + na.position.y) + (nb && nb.position.x + nb.position.y); $el.setAttribute('d', $flow.edge('node-' + edge.source, 'node-' + edge.target, { type: 'bezier' }))"
-          fill="none" stroke="currentColor" stroke-width="2" class="opacity-60"></path>
-      </svg>
+      <!-- Automated Dynamic SVG Bezier Edges Overlay -->
+      <svg data-flow-edges class="text-primary"></svg>
 
       <!-- Draggable Flow Nodes -->
       <template data-for="node in nodes">
-        <div data-bind-id="`node-${node.id}`" class="w-[10rem]"
+        <div data-bind-id="'node-' + node.id" class="w-[11rem]"
           data-flow-node="node">
           <div
-            class="card bg-base-100 shadow-md border border-base-content/10 w-full rounded-box hover:shadow-xl hover:scale-[1.03] hover:border-primary/40 transition-transform group"
+            class="card bg-base-100 shadow-md border border-base-content/10 w-full rounded-box hover:shadow-xl hover:border-primary/40 transition-all group select-none"
             style="touch-action: none;">
             <div class="h-1.5 w-full bg-primary rounded-t-box"></div>
             <div class="p-3">
@@ -94,11 +111,58 @@
                 </div>
               </div>
               <div class="font-semibold text-sm truncate" data-bind="node.label"></div>
+              <div class="text-[10px] font-mono opacity-50 mt-1 flex justify-between">
+                <span>Pos:</span>
+                <span>(<span data-bind="Math.round(node.position.x)"></span>, <span data-bind="Math.round(node.position.y)"></span>)</span>
+              </div>
             </div>
-            <div data-for="handle in node.handles" data-flow-handle="handle.type"></div>
+            <!-- Reactive Connection Ports -->
+            <div data-for="handle in node.handles" data-flow-handle="handle.type" data-flow-side="handle.side"></div>
           </div>
         </div>
       </template>
+    </div>
+
+    <!-- Canvas Controls Mini-Dock (Bottom-Left) -->
+    <div data-flow-nodrag class="absolute bottom-4 left-4 flex items-center gap-1 bg-base-100/90 backdrop-blur border border-base-content/10 shadow-lg rounded-xl p-1.5 z-30">
+      <button class="btn btn-ghost btn-xs btn-square" title="Zoom In" data-on-click="$flow.zoomIn($el)">
+        <iconify-icon icon="material-symbols-light:zoom-in" class="text-base"></iconify-icon>
+      </button>
+      <button class="btn btn-ghost btn-xs btn-square" title="Zoom Out" data-on-click="$flow.zoomOut($el)">
+        <iconify-icon icon="material-symbols-light:zoom-out" class="text-base"></iconify-icon>
+      </button>
+      <div class="divider divider-horizontal my-0 mx-0.5"></div>
+      <button class="btn btn-ghost btn-xs btn-square" title="Reset View" data-on-click="$flow.reset($el)">
+        <iconify-icon icon="material-symbols-light:restart-alt" class="text-base"></iconify-icon>
+      </button>
+      <button class="btn btn-ghost btn-xs px-2 font-medium text-xs flex items-center gap-1" title="Fit View" data-on-click="$flow.fit($el, nodes)">
+        <iconify-icon icon="material-symbols-light:fit-screen" class="text-base"></iconify-icon>
+        Fit View
+      </button>
+      <div class="divider divider-horizontal my-0 mx-0.5"></div>
+      <span class="text-[11px] font-mono px-2 text-primary font-bold" data-bind="(viewport.zoom || 1).toFixed(2) + 'x'"></span>
+    </div>
+
+    <!-- Reactive Store HUD Card (Bottom-Right) -->
+    <div data-flow-nodrag class="absolute bottom-4 right-4 bg-base-100/90 backdrop-blur border border-base-content/10 shadow-lg rounded-2xl p-3 z-30 w-64 text-xs">
+      <div class="flex items-center justify-between font-bold text-primary mb-2 border-b border-base-content/10 pb-1">
+        <span class="flex items-center gap-1.5">
+          <iconify-icon icon="material-symbols-light:memory" class="text-sm"></iconify-icon>
+          Live Reactive Store
+        </span>
+        <span class="badge badge-xs badge-success">ZCZS 60fps</span>
+      </div>
+      <div class="space-y-1 font-mono text-[11px] opacity-80 max-h-36 overflow-y-auto pr-1">
+        <div class="text-accent font-semibold">Pan: (<span data-bind="Math.round(viewport.x)"></span>, <span data-bind="Math.round(viewport.y)"></span>)</div>
+        <div class="border-t border-base-content/5 pt-1">
+          <template data-for="n in nodes">
+            <div class="flex justify-between py-0.5">
+              <span class="truncate max-w-[80px]" data-bind="'#' + n.id + ' ' + n.label"></span>
+              <span class="text-primary font-bold">(<span data-bind="Math.round(n.position.x)"></span>, <span data-bind="Math.round(n.position.y)"></span>)</span>
+            </div>
+          </template>
+        </div>
+      </div>
     </div>
   </div>
 
