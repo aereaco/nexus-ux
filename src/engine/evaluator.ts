@@ -72,10 +72,13 @@ const DEFAULT_IDB_DATABASE = 'nexus-store';
 
 export interface IndexedDBStoreOperations {
   all(): Promise<any[]>;
+  keys(prefix?: string): Promise<string[]>;
+  list(prefix?: string): Promise<string[]>;
   get(key: string | number): Promise<any>;
   put(item: any, key?: string | number): Promise<void>;
   delete(key: string | number): Promise<void>;
   clear(): Promise<void>;
+  [key: string]: any;
 }
 
 async function openAndEnsureStore(storeName: string): Promise<IDBDatabase> {
@@ -90,7 +93,7 @@ async function openAndEnsureStore(storeName: string): Promise<IDBDatabase> {
     req.onupgradeneeded = (e) => {
       const udb = (e.target as IDBOpenDBRequest).result;
       if (!udb.objectStoreNames.contains(storeName)) {
-        udb.createObjectStore(storeName, { keyPath: 'id' });
+        udb.createObjectStore(storeName);
       }
     };
   });
@@ -107,7 +110,7 @@ async function openAndEnsureStore(storeName: string): Promise<IDBDatabase> {
     req.onupgradeneeded = (e) => {
       const udb = (e.target as IDBOpenDBRequest).result;
       if (!udb.objectStoreNames.contains(storeName)) {
-        udb.createObjectStore(storeName, { keyPath: 'id' });
+        udb.createObjectStore(storeName);
       }
     };
     req.onsuccess = () => resolve(req.result);
@@ -116,7 +119,7 @@ async function openAndEnsureStore(storeName: string): Promise<IDBDatabase> {
 }
 
 function createStoreOperations(storeName: string): IndexedDBStoreOperations {
-  return {
+  const baseOps: IndexedDBStoreOperations = {
     async all(): Promise<any[]> {
       const db = await openAndEnsureStore(storeName);
       return new Promise((resolve) => {
@@ -137,6 +140,33 @@ function createStoreOperations(storeName: string): IndexedDBStoreOperations {
           resolve([]);
         }
       });
+    },
+
+    async keys(prefix?: string): Promise<string[]> {
+      const db = await openAndEnsureStore(storeName);
+      return new Promise((resolve) => {
+        try {
+          const tx = db.transaction(storeName, 'readonly');
+          const store = tx.objectStore(storeName);
+          const req = store.getAllKeys();
+          req.onsuccess = () => {
+            db.close();
+            const rawKeys = (req.result || []).map(String);
+            resolve(prefix ? rawKeys.filter(k => k.startsWith(prefix)) : rawKeys);
+          };
+          req.onerror = () => {
+            db.close();
+            resolve([]);
+          };
+        } catch {
+          db.close();
+          resolve([]);
+        }
+      });
+    },
+
+    async list(prefix?: string): Promise<string[]> {
+      return baseOps.keys(prefix);
     },
 
     async get(key: string | number): Promise<any> {
@@ -173,7 +203,11 @@ function createStoreOperations(storeName: string): IndexedDBStoreOperations {
             }
             store.put(item);
           } else {
-            store.put(item, key);
+            if (key !== undefined) {
+              store.put(item, key);
+            } else {
+              store.put(item);
+            }
           }
           tx.oncomplete = () => {
             db.close();
@@ -234,6 +268,17 @@ function createStoreOperations(storeName: string): IndexedDBStoreOperations {
       });
     }
   };
+
+  return new Proxy(baseOps, {
+    set(target, prop, value) {
+      if (typeof prop === 'string' && !(prop in target)) {
+        target.put(value, prop);
+        return true;
+      }
+      (target as any)[prop] = value;
+      return true;
+    }
+  });
 }
 
 let cachedIDBProxy: any = null;
