@@ -864,10 +864,10 @@ The browser runtime maintains a live WebSocket connection to the Nexus-IO Kernel
 
 ### 4.3. Behavioral Pipeline Orchestration
 
-Behaviors are composed into sequential **Pipelines** using modifiers (`:`).
+Behaviors are composed into sequential **Pipelines** using modifiers (`_`).
 
 - **Handshake**: Modifiers are processed as a chain of execution.
-  - **Interceptors**: Guards like `:confirm` halt the chain until passed.
+  - **Interceptors**: Guards like `_confirm` halt the chain until passed.
   - **Wrappers**: Lifecycles manage visual state (indicator) during async ops.
   - **Pipeways**: Handlers like `_morph` apply the result to the DOM.
 

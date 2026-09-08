@@ -13,7 +13,7 @@
       Title: 'data-on',
       Category: 'Attributes',
       Icon: 'material-symbols-light:touch-app',
-      Description: 'Attaches reactive event listeners with pipeline modifiers (&lt;code&gt;_prevent&lt;/code&gt;, &lt;code&gt;:stop&lt;/code&gt;, &lt;code&gt;_debounce.300&lt;/code&gt;, &lt;code&gt;_outside&lt;/code&gt;) injecting &lt;code&gt;$evt&lt;/code&gt;, &lt;code&gt;$detail&lt;/code&gt;, and &lt;code&gt;$newValue&lt;/code&gt; directly into evaluation scope.',
+      Description: 'Attaches reactive event listeners with pipeline modifiers (&lt;code&gt;_prevent&lt;/code&gt;, &lt;code&gt;_stop&lt;/code&gt;, &lt;code&gt;_debounce.300&lt;/code&gt;, &lt;code&gt;_outside&lt;/code&gt;) injecting &lt;code&gt;$evt&lt;/code&gt;, &lt;code&gt;$detail&lt;/code&gt;, and &lt;code&gt;$newValue&lt;/code&gt; directly into evaluation scope.',
       Syntax: '&lt;button data-on-click=\&quot;count++\&quot;&gt;Increment&lt;/button&gt;\n&lt;input data-on-input_debounce.250=\&quot;searchQuery = $newValue\&quot; /&gt;\n&lt;div data-on-click_outside=\&quot;menuOpen = false\&quot;&gt;&lt;/div&gt;',
       Params: [
         { name: 'data-on-[event]=&quot;expr&quot;', type: 'Event Binding', default: '-', description: 'Listens for standard or custom DOM events and evaluates expressions upon trigger.' },
