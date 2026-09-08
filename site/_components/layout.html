@@ -1284,8 +1284,8 @@
           </div>
 
           <!-- Speed Dial Session Pills (Correlate to chatSessions, draggable & contextmenu pinnable) -->
-          <div class="flex flex-col items-end gap-3 w-full" data-drag-container="chatSessions"
-            data-drag-group="chatSessions" data-drag-direction="vertical">
+          <div class="flex flex-col items-end gap-3 w-full"
+            data-drag="{ list: 'chatSessions', group: 'chatSessions', direction: 'vertical' }">
             <template data-for="session in (chatSessions || [])">
               <div data-drag-item class="flex items-center gap-2.5 cursor-grab active:cursor-grabbing select-none"
                 data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'chatSession', target: session }">
