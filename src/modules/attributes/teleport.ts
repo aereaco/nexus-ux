@@ -9,8 +9,8 @@ import { DragReorderEngine, buildReorderContext } from './drag.ts';
  * data-teleport: Dual-mode teleportation engine.
  *
  * Mode 1 — Data Teleportation (Drop Zone for Drag & Drop):
- *   <div data-teleport:drop="listExpression">
- *   The :drop modifier turns the element into a native HTML5 drop zone.
+ *   <div data-teleport_drop="listExpression">
+ *   The _drop modifier turns the element into a native HTML5 drop zone.
  *
  *   Optional data-teleport-mode attribute:
  *     "move"  (default) — splice item from source, insert into target
@@ -27,7 +27,7 @@ export const teleportAttribute: AttributeModule = {
   handle: (element: HTMLElement, value: string, runtime: RuntimeContext, parsed?: ParsedAttribute) => {
     const modifiers = parsed?.modifiers ?? [];
 
-    // ZCZS: data-teleport-mode is consumed by the :drop handler below.
+    // ZCZS: data-teleport-mode is consumed by the _drop handler below.
     // Skip it here to prevent dual-mode execution and spurious
     // "<template> only" warnings on container divs.
     if (parsed?.argument === 'mode' && !modifiers.length) return;
