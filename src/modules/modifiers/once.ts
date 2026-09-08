@@ -5,8 +5,8 @@
  * are silently discarded.
  *
  * NEG Token Boundary:
- *   This is a behavior modifier (`:`) not an intent modifier (`-`).
- *   Used as: `data-on-click:once`
+ *   This is a behavior modifier (`_`) not an intent modifier (`-`).
+ *   Used as: `data-on-click_once`
  *
  * ZCZS Guarantees:
  *   - Zero-copy: Closure captures fired flag by reference; no cloning.
