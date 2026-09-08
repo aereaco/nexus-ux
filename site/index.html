@@ -17,7 +17,7 @@
           script: { src: 'https://cdn.jsdelivr.net/npm/iconify-icon@3.0.0/dist/iconify-icon.min.js' }
         }
       }"
-  data-signal="{ appReady: false, rtl: localStorage.rtl === 'true', zoom: Number(localStorage.zoom) || 1, tempZoom: Number(localStorage.zoom) || 1 }"
+  data-signal="{ appReady: false, rtl: localStorage.rtl !== 'true', zoom: Number(localStorage.zoom) || 1, tempZoom: Number(localStorage.zoom) || 1 }"
   data-on-nexus-ready_document="appReady = true"
   data-effect="if (document.documentElement.classList.contains('nexus-ready')) appReady = true"
   data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: (zoom || 1) + 'rem' }">
@@ -68,8 +68,13 @@
     }
 
     @keyframes nexus-progress-slide {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
+      0% {
+        background-position: 200% 0;
+      }
+
+      100% {
+        background-position: -200% 0;
+      }
     }
 
     /* 3. Sleek Loading Splash Screen */
@@ -98,10 +103,13 @@
     }
 
     @keyframes nexus-loader-pulse {
-      0%, 100% {
+
+      0%,
+      100% {
         transform: scale(1);
         opacity: 0.85;
       }
+
       50% {
         transform: scale(1.08);
         opacity: 1;
@@ -110,7 +118,7 @@
     }
 
     /* 4. Tab Content Scaffolding */
-    tab-content > body {
+    tab-content>body {
       display: flex;
       flex-direction: column;
       flex: 1 1 0%;
@@ -144,7 +152,8 @@
   </div>
 
   <main class="nx-main h-full flex flex-col min-h-0">
-    <app-layout data-component="'_components/layout.html'" class="block h-full flex-1 flex flex-col min-h-0"></app-layout>
+    <app-layout data-component="'_components/layout.html'"
+      class="block h-full flex-1 flex flex-col min-h-0"></app-layout>
   </main>
 </body>
 
