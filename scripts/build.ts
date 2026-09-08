@@ -52,10 +52,10 @@ function analyzeFile(content: string): {
   const modifiers = new Set<string>();
   const tailwindClasses = new Set<string>();
 
-  const attrRegex = /data-([a-z]+(?:[.:-][a-zA-Z0-9-]+)*)/g;
+  const attrRegex = /data-([a-z]+(?:[.:_\-][a-zA-Z0-9-]+)*)/g;
   let match: RegExpExecArray | null;
   while ((match = attrRegex.exec(content)) !== null) {
-    const base = match[1].split(/[.:-]/)[0];
+    const base = match[1].split(/[.:_\-]/)[0];
     if (base) attributeDirectives.add(base);
   }
 
@@ -85,7 +85,7 @@ function analyzeFile(content: string): {
     }
   }
 
-  const modRegex = /:([a-zA-Z_$][\w$]*)(?:\([^)]*\))?/g;
+  const modRegex = /(?:[:_])([a-zA-Z_$][\w$]*)(?:\([^)]*\))?/g;
   while ((match = modRegex.exec(content)) !== null) {
     modifiers.add(match[1]);
   }

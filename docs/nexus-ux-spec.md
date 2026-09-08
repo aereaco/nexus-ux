@@ -247,7 +247,7 @@ Total: 1-5ms (10-100x faster)
 | **Philosophy**    | "Tailwind for JS" | Hypermedia Power | State -> VDOM -> UI  | **Omni-State (DOM-as-State)** |
 | **Communication** | Store/Events      | Server-Bound     | Prop Drilling/Stores | **Unified Selector $(...)**   |
 | **State Tree**    | Proxy-based       | None (DOM-only)  | JS Object Tree       | **DOM State Graph**           |
-| **Hypermedia**    | Morph Plugin      | Native/Reconciler| None (Manual JSON)   | **Native :morph mod**         |
+| **Hypermedia**    | Morph Plugin      | Native/Reconciler| None (Manual JSON)   | **Native _morph mod**         |
 | **AI Readiness**  | Moderate          | High             | Reactive Logic       | **Highest (Beacons)**         |
 
 - **vs. Alpine.js**: Nexus provides **stability at scale**. While Alpine becomes
@@ -256,7 +256,7 @@ Total: 1-5ms (10-100x faster)
   "Store" or "Event Bus."
 - **vs. HTMX**: Nexus provides the **Brain**. HTMX is king of server-swaps but
   lacks a solution for client-side state. Nexus provides the hypermedia swap via
-  `:morph` but keeps the reactive engine HTMX avoids.
+  `_morph` but keeps the reactive engine HTMX avoids.
 - **vs. React/Vue**: Nexus provides **Performance & Simplicity**. We eliminate
   the VDOM and the "State-to-JS-to-DOM" translation layer. This delivers peak
   performance with near-zero bundle overhead.
@@ -270,7 +270,7 @@ systems.
 
 - **Visual Intention**: An AI agent can scan the DOM, see IDs and Classes, and
   instantly generate a navigation path like
-  `data-on-click:morph="$(^section .results)"`.
+  `data-on-click_morph="$(^section .results)"`.
 - **Zero Phantom State**: AI no longer has to guess at hidden JS state; if the
   agent can see it in the DOM, it can script it. This makes Nexus-UX the prime
   candidate for the next generation of AI-generated and AI-maintained web
@@ -433,7 +433,7 @@ legacy frameworks by utilizing direct token-to-function mapping.
 | Symbol | Designation | Technical Role | Practical Example |
 | :--- | :--- | :--- | :--- |
 | **`-`** | **Intent / Argument** | **Directive Delimiter**. Separates directive name from its intent/argument (what it acts on). | `<div data-ignore-ux></div>`, `<div data-route-layout></div>` |
-| **`:`** | **Modifier** | **Pipeline Anchor**. Defines interceptors, wrappers, and execution behavior. | `<button data-on-click:once="save()"></button>` |
+| **`_`** | **Modifier** | **Pipeline Anchor**. Defines interceptors, wrappers, and execution behavior. | `<button data-on-click_once="save()"></button>` |
 | **`.`** | **Native Access** | **Reactive Property Traversal**. Standard property access through reactive proxy for native APIs (window, localStorage, etc.). | `<div data-bind="window.innerWidth"></div>` |
 | **`#`** | **Global Signal** | **Reactive Source**. Accesses user-defined Global Signals managed by the Shared Memory Heap. | `<div data-bind="#auth.user"></div>` |
 | **`$`** | **Logic / Selector** | **Sprite / Command**. Framework tools and the Unified Selector engine for spatial queries. | `<button data-on-click="$(^form).save()"></button>` |
@@ -855,12 +855,12 @@ The browser runtime maintains a live WebSocket connection to the Nexus-IO Kernel
 
 ### 4.3. Behavioral Pipeline Orchestration
 
-Behaviors are composed into sequential **Pipelines** using modifiers (`:`).
+Behaviors are composed into sequential **Pipelines** using modifiers (`_`).
 
 - **Handshake**: Modifiers are processed as a chain of execution.
-  - **Interceptors**: Guards like `:confirm` halt the chain until passed.
+  - **Interceptors**: Guards like `_confirm` halt the chain until passed.
   - **Wrappers**: Lifecycles manage visual state (indicator) during async ops.
-  - **Pipeways**: Handlers like `:morph` apply the result to the DOM.
+  - **Pipeways**: Handlers like `_morph` apply the result to the DOM.
 
 ### 4.4. Structural Context Shifting
 
@@ -1438,7 +1438,7 @@ global sprite (`$animate`), or a scope rule (`@media`)—lives isolated within t
 
 - `src/modules/attributes/`: Directives (`data-signal`, `data-drag`, `data-stylesheet`, `data-theme`)
 - `src/modules/sprites/`: Action handlers and tools (`$sql`, `$selector`, `$flow`)
-- `src/modules/modifiers/`: Event pipeline modifiers (`:once`, `:debounce`, `:prevent`)
+- `src/modules/modifiers/`: Event pipeline modifiers (`_once`, `_debounce`, `_prevent`)
 - `src/modules/scopes/`: Evaluation closures for the `@` Grammar (`@media`, `@auth`)
 - `src/modules/listeners/`: Global lifecycle event listeners (`history`, `bfcache`)
 
@@ -1788,7 +1788,7 @@ PostgreSQL database).
       type="text"
       data-bind-value="draft"
       placeholder="Type a message..."
-      data-on-keydown:enter="$sql('CREATE message CONTENT { room: roomId, author: auth.id, text: draft, timestamp: time::now() }'); draft = ''"
+      data-on-keydown_enter="$sql('CREATE message CONTENT { room: roomId, author: auth.id, text: draft, timestamp: time::now() }'); draft = ''"
     >
     <button data-on-click="$sql('CREATE message CONTENT { ... }')">Send</button>
   </div>
@@ -1883,7 +1883,7 @@ capabilities, active issues, and ongoing evolution.
 - ZCZS Reactor Core (`Proxy` and `Binary Heaps`)
 - Unified JIT Mirror Proxy (`_window`, `_localStorage`, etc.)
 - Constructable `StyleSheetManager` Integration
-- Native Hypermedia Interoperability (`:morph`)
+- Native Hypermedia Interoperability (`_morph`)
 - Comprehensive Routing Ecosystem (`data-router`)
 
 #### Testing (Beta Validation)
