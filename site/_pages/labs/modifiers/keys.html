@@ -14,7 +14,7 @@
       Category: 'Modifiers',
       Icon: 'material-symbols-light:keyboard',
       Description: 'Filters keyboard events to specific keystroke matches (:enter, :escape, :space, :tab, :up, :down, :delete) and modifier key chords (:ctrl, :alt, :shift, :meta).',
-      Syntax: '&lt;input data-on-keydown_enter=\&quot;submit()\&quot; /&gt;\n&lt;div data-on-keydown_escape=\&quot;closeModal()\&quot;&gt;&lt;/div&gt;\n&lt;input data-on-keydown_ctrl:enter=\&quot;sendDraft()\&quot; /&gt;',
+      Syntax: '&lt;input data-on-keydown_enter=\&quot;submit()\&quot; /&gt;\n&lt;div data-on-keydown_escape=\&quot;closeModal()\&quot;&gt;&lt;/div&gt;\n&lt;input data-on-keydown_ctrl_enter=\&quot;sendDraft()\&quot; /&gt;',
       Params: [
         { name: ':enter, :escape, :space', type: 'Key Filter', default: '-', description: 'Evaluates handler only when the specific key code matches e.key.' },
         { name: ':ctrl, :meta, :alt, :shift', type: 'Chord Modifier', default: '-', description: 'Requires corresponding modifier flag (e.ctrlKey, e.metaKey) to be active.' }
