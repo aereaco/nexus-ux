@@ -5777,10 +5777,27 @@ ${scripts}
         name: "flow",
         attribute: "flow",
         handle: (element, value, runtime, parsedAttr) => {
-          if (element.hasAttribute("data-flow-viewport") || parsedAttr?.argument === "viewport") {
-            ensureFlowStyles(element.getRootNode());
-            return;
-          }
+          const arg = parsedAttr?.argument;
+          if (arg === "viewport")
+            return flowViewportAttribute.handle(element, value, runtime, parsedAttr);
+          if (arg === "node")
+            return flowNodeAttribute.handle(element, value, runtime, parsedAttr);
+          if (arg === "handle")
+            return flowHandleAttribute.handle(element, value, runtime, parsedAttr);
+          if (arg === "edges")
+            return flowEdgesAttribute.handle(element, value, runtime, parsedAttr);
+          if (arg === "minimap")
+            return flowMinimapAttribute.handle(element, value, runtime, parsedAttr);
+          if (arg === "resizer")
+            return flowResizerAttribute.handle(element, value, runtime, parsedAttr);
+          if (arg === "side")
+            return flowSideAttribute.handle(element, value, runtime, parsedAttr);
+          if (arg === "nodrag")
+            return flowNoDragAttribute.handle(element, value, runtime, parsedAttr);
+          if (arg === "grid")
+            return flowGridAttribute.handle(element, value, runtime, parsedAttr);
+          if (arg === "snap")
+            return flowSnapAttribute.handle(element, value, runtime, parsedAttr);
           ensureFlowStyles(element.getRootNode());
           let config = {};
           if (value && value.trim()) {
