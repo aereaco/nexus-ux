@@ -5,9 +5,9 @@
  * since the last invocation. Supports static and dynamic wait times.
  *
  * Argument Syntax:
- *   - `:debounce` — uses DEFAULT_DEBOUNCE_TIME (250ms)
- *   - `:debounce-500` — static 500ms delay
- *   - `:debounce-#delay` — dynamic delay from signal/expression
+ *   - `_debounce` — uses DEFAULT_DEBOUNCE_TIME (250ms)
+ *   - `_debounce-500` — static 500ms delay
+ *   - `_debounce-#delay` — dynamic delay from signal/expression
  *
  * ZCZS Guarantees:
  *   - Zero-copy: Timeout IDs are stored by reference; no cloning.
