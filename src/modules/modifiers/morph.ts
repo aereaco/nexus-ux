@@ -6,8 +6,8 @@
  * it is treated as HTML and morphed into the target element.
  *
  * Argument Syntax:
- *   - `:morph` — morph the bound element itself
- *   - `:morph-selector` — morph the element matching the selector
+ *   - `_morph` — morph the bound element itself
+ *   - `_morph-selector` — morph the element matching the selector
  *
  * ZCZS Guarantees:
  *   - Zero-copy: HTML string is passed directly to morphDOM; no parsing.
