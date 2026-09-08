@@ -1,5 +1,5 @@
 <head>
-  <title>:zoom</title>
+  <title>_zoom</title>
   <meta name="id" content="lab-mod-zoom">
   <meta name="route" content="/labs/modifiers/zoom">
   <meta name="icon" content="material-symbols-light:zoom-in">
@@ -10,13 +10,13 @@
 
 <div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
     doc: {
-      Title: ':zoom',
+      Title: '_zoom',
       Category: 'Modifiers',
       Icon: 'material-symbols-light:zoom-in',
       Description: 'Normalizes mouse wheel deltas and pinch gestures into smooth zoom multipliers (&lt;code&gt;$zoom.delta&lt;/code&gt;, &lt;code&gt;$zoom.scale&lt;/code&gt;) with boundary clamping.',
       Syntax: '&lt;div data-on-wheel_zoom=\&quot;canvasScale = Math.min(3, Math.max(0.5, canvasScale + $zoom.delta))\&quot;&gt;&lt;/div&gt;',
       Params: [
-        { name: ':zoom', type: 'Gesture Modifier', default: '-', description: 'Captures wheel/gesture delta and injects $zoom delta object into evaluation scope.' }
+        { name: '_zoom', type: 'Gesture Modifier', default: '-', description: 'Captures wheel/gesture delta and injects $zoom delta object into evaluation scope.' }
       ],
       SourceModule: '/modules/modifiers/zoom.ts',
       SnippetModule: '/_pages/labs/modifiers/zoom.html',

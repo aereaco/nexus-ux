@@ -299,14 +299,14 @@ const stateRef = unifiedRef<Record<string, unknown>>(initialGhostState, scopeId,
 
 | Modifier | Implemented | File |
 |----------|-------------|------|
-| `:prevent` | ✅ | `modules/modifiers/prevent.ts` |
-| `:stop` | ✅ | `modules/modifiers/stop.ts` |
-| `:once` | ✅ | `modules/modifiers/once.ts` |
+| `_prevent` | ✅ | `modules/modifiers/prevent.ts` |
+| `_stop` | ✅ | `modules/modifiers/stop.ts` |
+| `_once` | ✅ | `modules/modifiers/once.ts` |
 | `:keys` | ✅ | `modules/modifiers/keys.ts` |
-| `:self` | ✅ | `modules/modifiers/self.ts` |
-| `:debounce` | ✅ | `modules/modifiers/debounce.ts` |
-| `:throttle` | ✅ | `modules/modifiers/throttle.ts` |
-| `:morph` | ✅ | `modules/modifiers/morph.ts` |
+| `_self` | ✅ | `modules/modifiers/self.ts` |
+| `_debounce` | ✅ | `modules/modifiers/debounce.ts` |
+| `_throttle` | ✅ | `modules/modifiers/throttle.ts` |
+| `_morph` | ✅ | `modules/modifiers/morph.ts` |
 | `:intersect` | ✅ | `modules/modifiers/intersect.ts` |
 
 **Modifiers Implemented**: 9/9 (100%)

@@ -1,5 +1,5 @@
 <head>
-  <title>:outside</title>
+  <title>_outside</title>
   <meta name="id" content="lab-mod-outside">
   <meta name="route" content="/labs/modifiers/outside">
   <meta name="icon" content="material-symbols-light:tab-close">
@@ -10,18 +10,18 @@
 
 <div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
     doc: {
-      Title: ':outside',
+      Title: '_outside',
       Category: 'Modifiers',
       Icon: 'material-symbols-light:tab-close',
       Description: 'Listens for clicks or pointerdown events occurring strictly outside the host element boundary, providing declarative outside-click dismissal for dropdowns, popovers, and modals.',
       Syntax: '&lt;div data-on-click_outside=\&quot;isOpen = false\&quot;&gt;&lt;/div&gt;',
       Params: [
-        { name: ':outside', type: 'Spatial Modifier', default: '-', description: 'Evaluates handler only when e.target is not contained within $el.' }
+        { name: '_outside', type: 'Spatial Modifier', default: '-', description: 'Evaluates handler only when e.target is not contained within $el.' }
       ],
       SourceModule: '/modules/modifiers/outside.ts',
       SnippetModule: '/_pages/labs/modifiers/outside.html',
       Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/modifiers/outside.ts&lt;/code&gt;, this modifier intercepts document clicks and uses &lt;code&gt;el.contains(e.target)&lt;/code&gt; to determine spatial boundary intersection.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Zero-Boilerplate Modals&lt;/strong&gt; — Dismiss floating menus without global document listeners&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Shadow DOM Aware&lt;/strong&gt; — Uses composedPath() to support web components and slotted elements&lt;/li&gt;&lt;/ul&gt;',
-      Snippet: '&lt;div data-signal=\&quot;{ dropdownOpen: true }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4 max-w-md\&quot;&gt;\n        &lt;div class=\&quot;flex items-center justify-between\&quot;&gt;\n            &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Outside Click Dismissal (:outside)&lt;/h4&gt;\n            &lt;button class=\&quot;btn btn-xs btn-primary font-bold\&quot; data-on-click=\&quot;dropdownOpen = true\&quot;&gt;Open Menu&lt;/button&gt;\n        &lt;/div&gt;\n        &lt;div data-show=\&quot;dropdownOpen\&quot;\n             data-on-click_outside=\&quot;dropdownOpen = false\&quot;\n             class=\&quot;p-5 bg-primary/10 rounded-xl border border-primary/30 space-y-2 text-center shadow-lg animate-fadeIn\&quot;&gt;\n            &lt;div class=\&quot;badge badge-primary font-mono text-xs font-bold\&quot;&gt;Active Floating Popover&lt;/div&gt;\n            &lt;p class=\&quot;text-xs opacity-70 font-mono\&quot;&gt;\n                Click anywhere outside this box to automatically dismiss it.\n            &lt;/p&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;text-xs font-mono opacity-70 flex justify-between\&quot;&gt;\n            &lt;span&gt;Popover State:&lt;/span&gt;\n            &lt;span class=\&quot;font-bold\&quot; data-class=\&quot;{ \'text-success\': dropdownOpen, \'text-error\': !dropdownOpen }\&quot; data-bind=\&quot;dropdownOpen ? \'OPEN\' : \'CLOSED (Dismissed by outside click)\'\&quot;&gt;&lt;/span&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+      Snippet: '&lt;div data-signal=\&quot;{ dropdownOpen: true }\&quot; class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-4 max-w-md\&quot;&gt;\n        &lt;div class=\&quot;flex items-center justify-between\&quot;&gt;\n            &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Outside Click Dismissal (_outside)&lt;/h4&gt;\n            &lt;button class=\&quot;btn btn-xs btn-primary font-bold\&quot; data-on-click=\&quot;dropdownOpen = true\&quot;&gt;Open Menu&lt;/button&gt;\n        &lt;/div&gt;\n        &lt;div data-show=\&quot;dropdownOpen\&quot;\n             data-on-click_outside=\&quot;dropdownOpen = false\&quot;\n             class=\&quot;p-5 bg-primary/10 rounded-xl border border-primary/30 space-y-2 text-center shadow-lg animate-fadeIn\&quot;&gt;\n            &lt;div class=\&quot;badge badge-primary font-mono text-xs font-bold\&quot;&gt;Active Floating Popover&lt;/div&gt;\n            &lt;p class=\&quot;text-xs opacity-70 font-mono\&quot;&gt;\n                Click anywhere outside this box to automatically dismiss it.\n            &lt;/p&gt;\n        &lt;/div&gt;\n        &lt;div class=\&quot;text-xs font-mono opacity-70 flex justify-between\&quot;&gt;\n            &lt;span&gt;Popover State:&lt;/span&gt;\n            &lt;span class=\&quot;font-bold\&quot; data-class=\&quot;{ \'text-success\': dropdownOpen, \'text-error\': !dropdownOpen }\&quot; data-bind=\&quot;dropdownOpen ? \'OPEN\' : \'CLOSED (Dismissed by outside click)\'\&quot;&gt;&lt;/span&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
     }
   }">
   <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>

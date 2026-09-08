@@ -1,5 +1,5 @@
 <head>
-  <title>:document</title>
+  <title>_document</title>
   <meta name="id" content="lab-mod-document">
   <meta name="route" content="/labs/modifiers/document">
   <meta name="icon" content="material-symbols-light:description">
@@ -10,18 +10,18 @@
 
 <div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
     doc: {
-      Title: ':document',
+      Title: '_document',
       Category: 'Modifiers',
       Icon: 'material-symbols-light:description',
       Description: 'Redirects the event listener from the host element to the global document target, enabling document-wide event listening with automatic element lifecycle cleanup.',
       Syntax: '&lt;div data-on-click_document=\&quot;dismissAll()\&quot;&gt;&lt;/div&gt;\n&lt;div data-on-visibilitychange_document=\&quot;checkStatus()\&quot;&gt;&lt;/div&gt;',
       Params: [
-        { name: ':document', type: 'Target Modifier', default: '-', description: 'Attaches event listener to document instead of element; unbinds automatically when host element unmounts.' }
+        { name: '_document', type: 'Target Modifier', default: '-', description: 'Attaches event listener to document instead of element; unbinds automatically when host element unmounts.' }
       ],
       SourceModule: '/modules/modifiers/document.ts',
       SnippetModule: '/_pages/labs/modifiers/document.html',
       Extensibility: '&lt;p class=\&quot;opacity-80 leading-relaxed\&quot;&gt;Located in &lt;code&gt;src/modules/modifiers/document.ts&lt;/code&gt;, this modifier allows elements to listen for document-level events without manually managing &lt;code&gt;document.addEventListener&lt;/code&gt; and &lt;code&gt;removeEventListener&lt;/code&gt; pairs.&lt;/p&gt;&lt;ul class=\&quot;list-disc list-inside opacity-80 mt-3 space-y-1.5\&quot;&gt;&lt;li&gt;&lt;strong&gt;Global Document Interception&lt;/strong&gt; — Catch clicks, visibility changes, and pointer events anywhere in the page&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Zero Memory Leaks&lt;/strong&gt; — The engine automatically removes the document listener when the element is destroyed&lt;/li&gt;&lt;/ul&gt;',
-      Snippet: '&lt;div data-signal=\&quot;{ docClickCount: 0 }\&quot;\n     data-on-click_document=\&quot;docClickCount++\&quot;\n     class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-3 max-w-md\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Document Event Listener (:document)&lt;/h4&gt;\n        &lt;p class=\&quot;text-xs opacity-70\&quot;&gt;Click anywhere in the page viewport to increment the counter.&lt;/p&gt;\n        &lt;div class=\&quot;p-3 bg-base-200/50 rounded-xl text-xs font-mono flex justify-between items-center\&quot;&gt;\n            &lt;span class=\&quot;opacity-70\&quot;&gt;Document Clicks Captured:&lt;/span&gt;\n            &lt;span class=\&quot;badge badge-primary font-bold font-mono\&quot; data-bind=\&quot;docClickCount\&quot;&gt;&lt;/span&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
+      Snippet: '&lt;div data-signal=\&quot;{ docClickCount: 0 }\&quot;\n     data-on-click_document=\&quot;docClickCount++\&quot;\n     class=\&quot;space-y-6\&quot;&gt;\n    &lt;div class=\&quot;p-5 bg-base-100 rounded-2xl border border-base-content/10 shadow-sm space-y-3 max-w-md\&quot;&gt;\n        &lt;h4 class=\&quot;font-bold text-sm text-primary uppercase tracking-wider\&quot;&gt;Document Event Listener (_document)&lt;/h4&gt;\n        &lt;p class=\&quot;text-xs opacity-70\&quot;&gt;Click anywhere in the page viewport to increment the counter.&lt;/p&gt;\n        &lt;div class=\&quot;p-3 bg-base-200/50 rounded-xl text-xs font-mono flex justify-between items-center\&quot;&gt;\n            &lt;span class=\&quot;opacity-70\&quot;&gt;Document Clicks Captured:&lt;/span&gt;\n            &lt;span class=\&quot;badge badge-primary font-bold font-mono\&quot; data-bind=\&quot;docClickCount\&quot;&gt;&lt;/span&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n&lt;/div&gt;'
     }
   }">
   <div data-component="'_components/lab-viewer.html'" class="w-full h-full flex-1 flex flex-col min-h-0"></div>

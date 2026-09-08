@@ -118,7 +118,7 @@ Nexus-UX utilizes a deterministic, token-based grammar for high-baud efficiency:
 | :--- | :--- | :--- | :--- |
 | **`.`** | **Native Access** | Unwrapped, raw JS/DOM/Browser API reactive property access. | `window.innerWidth`, `localStorage.theme` |
 | **`#`** | **Global Signal** | The Global Registry of shared reactive sources. | `#auth.user` |
-| **`:`** | **Modifier** | Pipeline anchors, filters, and lifecycle wrappers. | `data-on-click:once:prevent` |
+| **`_`** | **Modifier** | Pipeline anchors, filters, and lifecycle wrappers. | `data-on-click_once_prevent` |
 | **`$`** | **Sprite / Selector** | Framework tools, Sprites, and the `$()` selector engine. | `$(^card).$animate()`, `$sql(...)` |
 | **`@`** | **Scope Rule** | Context-aware boundary rules (Media, OS, Auth). | `@media(min-width: 600px) { ... }` |
 
@@ -141,7 +141,7 @@ Nexus-UX utilizes a deterministic, token-based grammar for high-baud efficiency:
 | **`data-switcher`** | **Iteration** | Automates cycling through states (e.g., Theme Switchers). |
 | **`data-drag`** | **Drag & Drop** | Native DnD engine supporting multi-drag, groups, cloning, handles, and sorting. |
 | **`data-flow`** | **Spatial Canvas** | Infinite-canvas layout engine with pan, zoom, and spatial coordinate mapping. |
-| **`data-on`** | **Behavior** | Event handlers with NEG pipeline modifiers (`:debounce`, `:once`, `:prevent`). |
+| **`data-on`** | **Behavior** | Event handlers with NEG pipeline modifiers (`_debounce`, `_once`, `_prevent`). |
 | **`data-router` / `data-route`** | **Routing** | Declarative SPA client routing with guards, layouts, and History API sync. |
 | **`data-component`** | **Components** | Mounts reusable HTML component fragments into Shadow DOM or light DOM. |
 | **`data-import`** | **Asset Registry** | Asynchronously adopts scripts, stylesheets, and VFS components. |
@@ -189,9 +189,9 @@ No transpilant, no bundler, no delay.
         >0</span>
       </p>
 
-      <!-- Native NEG Event Syntax: data-on-EVENT:MODIFIER -->
+      <!-- Native NEG Event Syntax: data-on-EVENT_MODIFIER -->
       <button
-        data-on-click:once="count++"
+        data-on-click_once="count++"
         class="px-8 py-4 bg-blue-600 hover:bg-blue-500 active:scale-95 rounded-full font-bold transition-all"
       >
         Increment Once

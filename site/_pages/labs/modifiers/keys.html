@@ -1,5 +1,5 @@
 <head>
-  <title>:keys</title>
+  <title>_keys</title>
   <meta name="id" content="lab-mod-keys">
   <meta name="route" content="/labs/modifiers/keys">
   <meta name="icon" content="material-symbols-light:keyboard">
@@ -13,10 +13,10 @@
       Title: 'Keyboard Modifiers',
       Category: 'Modifiers',
       Icon: 'material-symbols-light:keyboard',
-      Description: 'Filters keyboard events to specific keystroke matches (:enter, :escape, :space, :tab, :up, :down, :delete) and modifier key chords (:ctrl, :alt, :shift, :meta).',
+      Description: 'Filters keyboard events to specific keystroke matches (_enter, _escape, _space, _tab, _up, _down, _delete) and modifier key chords (_ctrl, _alt, _shift, _meta).',
       Syntax: '&lt;input data-on-keydown_enter=\&quot;submit()\&quot; /&gt;\n&lt;div data-on-keydown_escape=\&quot;closeModal()\&quot;&gt;&lt;/div&gt;\n&lt;input data-on-keydown_ctrl_enter=\&quot;sendDraft()\&quot; /&gt;',
       Params: [
-        { name: ':enter, :escape, :space', type: 'Key Filter', default: '-', description: 'Evaluates handler only when the specific key code matches e.key.' },
+        { name: '_enter, _escape, _space', type: 'Key Filter', default: '-', description: 'Evaluates handler only when the specific key code matches e.key.' },
         { name: ':ctrl, :meta, :alt, :shift', type: 'Chord Modifier', default: '-', description: 'Requires corresponding modifier flag (e.ctrlKey, e.metaKey) to be active.' }
       ],
       SourceModule: '/modules/modifiers/keys.ts',

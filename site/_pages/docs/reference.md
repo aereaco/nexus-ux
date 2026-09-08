@@ -117,7 +117,7 @@ legacy frameworks by utilizing direct token-to-function mapping.
 | Symbol | Designation | Technical Role | Practical Example |
 | :--- | :--- | :--- | :--- |
 | **`-`** | **Intent / Argument** | **Directive Delimiter**. Separates directive name from its intent/argument (what it acts on). | `<div data-ignore-ux></div>`, `<div data-route-layout></div>` |
-| **`:`** | **Modifier** | **Pipeline Anchor**. Defines interceptors, wrappers, and execution behavior. | `<button data-on-click:once="save()"></button>` |
+| **`_`** | **Modifier** | **Pipeline Anchor**. Defines interceptors, wrappers, and execution behavior. | `<button data-on-click_once="save()"></button>` |
 | **`.`** | **Native Access** | **Reactive Property Traversal**. Standard property access through reactive proxy for native APIs (window, localStorage, etc.). | `<div data-bind="window.innerWidth"></div>` |
 | **`#`** | **Global Signal** | **Reactive Source**. Accesses user-defined Global Signals managed by the Shared Memory Heap. | `<div data-bind="#auth.user"></div>` |
 | **`$`** | **Logic / Selector** | **Sprite / Command**. Framework tools and the Unified Selector engine for spatial queries. | `<button data-on-click="$(^form).save()"></button>` |
@@ -235,7 +235,7 @@ internally:
 ### 2.1. `data-signal` — Declare Reactive State
 
 **Syntax**: `data-signal="{ signalName: initialValue, ... }"`  
-**Modifiers**: `:global` / `data-signal-global` (attaches to `#` global signal heap), `:deep` (enforces deep cloning for mutable structures)
+**Modifiers**: `_global` / `data-signal_global` (attaches to `#` global signal heap), `:deep` (enforces deep cloning for mutable structures)
 
 **Purpose**: Creates a reactive scope on a DOM element. In Nexus-UX, `data-signal` is an active `elementBoundEffect` — **not a static one-time JSON initializer**. It runs during initial synchronous hydration and continuously re-evaluates whenever its reactive dependencies (including native browser APIs) change.
 
@@ -282,7 +282,7 @@ internally:
 
 **Supported Modes**:
 1. **Form Input Auto-Detection**:
-   - `<input type="text" data-bind="username">`: Bidirectional sync with `input` event (or `change` if `data-bind:lazy`).
+   - `<input type="text" data-bind="username">`: Bidirectional sync with `input` event (or `change` if `data-bind_lazy`).
    - `<input type="checkbox" data-bind="isActive">`: Bidirectional sync with `checked` boolean state.
    - `<input type="radio" value="dark" data-bind="theme">`: Syncs radio group state.
    - `<select data-bind="selectedCategory">`: Syncs dropdown selection (single or multi).
@@ -1671,7 +1671,7 @@ supports declarative tracking of it today.
 ```html
 <div data-signal="{ formData: { email: '', password: '' } }">
   <form
-    data-on-submit:prevent="$sql('CREATE session CONTENT { user: formData.email, password: formData.password }').then(r => window.location = '/dashboard')"
+    data-on-submit_prevent="$sql('CREATE session CONTENT { user: formData.email, password: formData.password }').then(r => window.location = '/dashboard')"
   >
     <input type="email" data-bind-value="formData.email" required>
     <input type="password" data-bind-value="formData.password" required>
@@ -1685,7 +1685,7 @@ supports declarative tracking of it today.
 ```html
 <div data-signal="{ form: { email: '', password: '', errors: {} } }">
   <form
-    data-on-submit:prevent="
+    data-on-submit_prevent="
     form.errors = {};
     if (!form.email.includes('@')) form.errors.email = 'Invalid email';
     if (form.password.length < 8) form.errors.password = 'Password too short';
@@ -2547,7 +2547,7 @@ power of Nexus-UX's unified architecture.
       class="card bg-base-200 shadow-lg"
       data-style-border-left-width="4"
       data-style-border-left-color="sensor.status === 'ok' ? 'green' : 'red'"
-      data-on-intersect:once="$sql('UPDATE sensor SET last_viewed = time::now() WHERE id = sensor.id')"
+      data-on-intersect_once="$sql('UPDATE sensor SET last_viewed = time::now() WHERE id = sensor.id')"
     >
       <h3 data-bind="sensor.name"></h3>
       <p>Value: <span data-bind="sensor.value"></span></p>
@@ -2590,7 +2590,7 @@ numeric `border-left-width`), `data-on-intersect` (lazy hydration), `$sql` (LIVE
           <td data-bind="u.name"></td>
           <td data-bind="u.email"></td>
           <td>
-            <button data-on-click:confirm('Are you sure?')="$sql('DELETE user WHERE id = u.id')">Delete</button>
+            <button data-on-click_confirm('Are you sure?')="$sql('DELETE user WHERE id = u.id')">Delete</button>
           </td>
         </tr>
       </table>
