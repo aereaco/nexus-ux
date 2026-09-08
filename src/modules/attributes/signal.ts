@@ -8,13 +8,13 @@
  *   - Empty value on <script>: Uses textContent as expression
  *   - Object literal: Creates reactive proxy scope with ghost key parsing
  *   - String expression: Evaluates and binds result to element scope
- *   - `data-signal:global`: Binds to global signal namespace (# prefix)
+ *   - `data-signal_global`: Binds to global signal namespace (# prefix)
  *
  * ZCZS Guarantees:
  *   - Zero-copy: Reactive proxy wraps existing object; no cloning for
  *     normal property access.
  *   - Zero-serialization: Scope objects are shared by reference.
- *   - Deep clone only on `:deep` modifier to prevent mutation leaks.
+ *   - Deep clone only on `_deep` modifier to prevent mutation leaks.
  *
  * Coordination:
  *   - scope.ts provides addScopeToNode, parseGhostKeys, createScopeProxy
@@ -25,7 +25,7 @@
  * Nexus-UX Innovations Preserved:
  *   - Ghost key parsing for typed reactive properties
  *   - Element-bound reactive scope with automatic cleanup
- *   - Global signal binding via data-signal:global
+ *   - Global signal binding via data-signal_global
  *   - Deep clone option for mutable external state
  */
 
