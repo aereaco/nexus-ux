@@ -1135,54 +1135,81 @@ export class DragReorderEngine<T> {
 
   private init() {
     const container = this.ctx.container;
-    const isMulti = container.getAttribute("data-drag-multi") === "true";
-    const selectedClass = container.getAttribute("data-drag-selected-class") || "draggable-selected";
-    const swap = container.hasAttribute("data-drag-swap") || container.getAttribute("data-drag-swap") === "true";
-    const swapClass = container.getAttribute("data-drag-swap-class") || "draggable-swap-highlight";
+    const rawDragVal = container.getAttribute("data-drag");
+    let config: any = {};
+    if (rawDragVal && rawDragVal.trim()) {
+      try {
+        const evaluated = this.runtime?.evaluate(container, rawDragVal);
+        if (evaluated && typeof evaluated === "object" && !Array.isArray(evaluated)) {
+          config = evaluated;
+        } else if (typeof evaluated === "string") {
+          config = { list: evaluated };
+        }
+      } catch {
+        try {
+          config = JSON.parse(rawDragVal);
+        } catch {
+          config = { list: rawDragVal.trim() };
+        }
+      }
+    }
 
-    const groupAttr = container.getAttribute("data-drag-group");
+    const isMulti = config.multiDrag ?? config.multi ?? (container.getAttribute("data-drag-multi") === "true");
+    const selectedClass = config.selectedClass || container.getAttribute("data-drag-selected-class") || "draggable-selected";
+    const swap = config.swap ?? (container.hasAttribute("data-drag-swap") || container.getAttribute("data-drag-swap") === "true");
+    const swapClass = config.swapClass || container.getAttribute("data-drag-swap-class") || "draggable-swap-highlight";
+
+    const groupOpt = config.group || container.getAttribute("data-drag-group");
     let group: any = undefined;
-    if (groupAttr) {
-      group = { name: groupAttr };
+    if (groupOpt) {
+      if (typeof groupOpt === "object") {
+        group = { ...groupOpt };
+      } else {
+        group = { name: String(groupOpt) };
+      }
       // Parse custom data-drag-pull and data-drag-put configuration
       const pullAttr = container.getAttribute("data-drag-pull");
-      const pull = pullAttr !== "false" ? (container.hasAttribute("data-drag-clone") || container.getAttribute("data-drag-clone") === "true" ? "clone" : true) : false;
-      const put = container.getAttribute("data-drag-put") !== "false";
-      const revertClone = container.getAttribute("data-drag-revert-clone") === "true";
+      const pull = group.pull !== undefined
+        ? group.pull
+        : (pullAttr !== "false" ? (container.hasAttribute("data-drag-clone") || container.getAttribute("data-drag-clone") === "true" ? "clone" : true) : false);
+      const put = group.put !== undefined ? group.put : (container.getAttribute("data-drag-put") !== "false");
+      const revertClone = group.revertClone ?? (container.getAttribute("data-drag-revert-clone") === "true");
       group.pull = pull;
       group.put = put;
       group.revertClone = revertClone;
     }
 
-    const directionAttr = container.getAttribute("data-drag-direction");
-    const direction = directionAttr === "grid" ? undefined : (directionAttr as "vertical" | "horizontal" | undefined);
+    const directionOpt = config.direction || container.getAttribute("data-drag-direction");
+    const direction = directionOpt === "grid" ? undefined : (directionOpt as "vertical" | "horizontal" | undefined);
 
     // Auto-enable invertSwap and 0.65 threshold for nested group
-    const isNested = groupAttr === "nested";
+    const isNested = (typeof groupOpt === "string" ? groupOpt : groupOpt?.name) === "nested";
     const swapThresholdAttr = container.getAttribute("data-drag-swap-threshold");
-    const swapThreshold = swapThresholdAttr ? parseFloat(swapThresholdAttr) : (isNested ? 0.65 : 1);
+    const swapThreshold = config.swapThreshold !== undefined
+      ? Number(config.swapThreshold)
+      : (swapThresholdAttr ? parseFloat(swapThresholdAttr) : (isNested ? 0.65 : 1));
 
     const invertSwapAttr = container.getAttribute("data-drag-invert-swap");
-    const invertSwap = invertSwapAttr === "true" || isNested;
+    const invertSwap = config.invertSwap ?? (invertSwapAttr === "true" || isNested);
 
     this.draggable = new Draggable(container, {
-      animation: this.ctx.animationDuration ?? 150,
-      ghostClass: this.ctx.ghostClass ?? "draggable-ghost",
-      dragClass: this.ctx.dragClass ?? "draggable-drag",
-      ghostOpacity: this.ctx.ghostOpacity ?? 0.4,
-      fallbackOnBody: this.ctx.fallbackOnBody !== false,
+      animation: config.animation ?? this.ctx.animationDuration ?? 150,
+      ghostClass: config.ghostClass ?? this.ctx.ghostClass ?? "draggable-ghost",
+      dragClass: config.dragClass ?? this.ctx.dragClass ?? "draggable-drag",
+      ghostOpacity: config.ghostOpacity ?? this.ctx.ghostOpacity ?? 0.4,
+      fallbackOnBody: config.fallbackOnBody ?? (this.ctx.fallbackOnBody !== false),
       swapThreshold,
       invertSwap,
       direction,
-      handle: container.getAttribute("data-drag-handle") || undefined,
-      filter: container.getAttribute("data-drag-filter") || undefined,
-      draggable: "[data-drag]",
+      handle: config.handle || container.getAttribute("data-drag-handle") || undefined,
+      filter: config.filter || container.getAttribute("data-drag-filter") || undefined,
+      draggable: config.draggable || "[data-drag-item], [data-drag]:not([data-drag*='{']):not([data-drag*='=']):not([data-drag-container])",
       multiDrag: isMulti,
       selectedClass,
       swap,
       swapClass,
       group,
-      sort: this.ctx.sort !== false,
+      sort: config.sort ?? (this.ctx.sort !== false),
       onStart: (evt) => {
         const globalSignals = this.runtime?.globalSignals() as any;
         if (globalSignals) {
@@ -1212,8 +1239,18 @@ export class DragReorderEngine<T> {
 
         const fromContainer = evt.from;
         const toContainer = evt.to;
-        const fromExpr = fromContainer.getAttribute("data-drag-container") || fromContainer.getAttribute("data-teleport:drop");
-        const toExpr = toContainer.getAttribute("data-drag-container") || toContainer.getAttribute("data-teleport:drop");
+        const fromExpr = (fromContainer as any).__dragListExpr
+          || fromContainer.getAttribute("data-drag-container")
+          || fromContainer.getAttribute("data-teleport_drop")
+          || fromContainer.getAttribute("data-teleport:drop")
+          || fromContainer.getAttribute("data-drag")
+          || "";
+        const toExpr = (toContainer as any).__dragListExpr
+          || toContainer.getAttribute("data-drag-container")
+          || toContainer.getAttribute("data-teleport_drop")
+          || toContainer.getAttribute("data-teleport:drop")
+          || toContainer.getAttribute("data-drag")
+          || "";
 
         if (!fromExpr || !this.runtime) return;
 
