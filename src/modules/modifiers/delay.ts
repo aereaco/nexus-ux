@@ -5,9 +5,9 @@
  * always fires after the specified time regardless of subsequent calls.
  *
  * Argument Syntax:
- *   - `:delay` — uses DEFAULT_DEBOUNCE_TIME (250ms)
- *   - `:delay-500` — static 500ms delay
- *   - `:delay-#ms` — dynamic delay from signal/expression
+ *   - `_delay` — uses DEFAULT_DEBOUNCE_TIME (250ms)
+ *   - `_delay-500` — static 500ms delay
+ *   - `_delay-#ms` — dynamic delay from signal/expression
  *
  * ZCZS Guarantees:
  *   - Zero-copy: Timeout IDs are stored by reference; no cloning.
