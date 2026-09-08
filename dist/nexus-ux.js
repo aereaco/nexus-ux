@@ -15325,29 +15325,13 @@ ${bridge}`, {
     const modifiers = [];
     let target = void 0;
     let state = 0;
-    let rest = rawName;
-    const hyphenated = ["ux-theme", "on-raf", "flow-viewport", "flow-node", "flow-handle", "flow-edges", "flow-grid", "flow-nodrag", "flow-side", "flow-snap", "flow-minimap", "flow-resizer", "flow-reconnect", "flow-label"].find(
-      (h) => rawName === h || rawName.startsWith(h + "-") || rawName.startsWith(h + ":")
-    );
-    if (hyphenated) {
-      directive = hyphenated;
-      rest = rawName.slice(hyphenated.length);
-      if (rest.length > 0) {
-        if (rest.startsWith("-")) {
-          state = 1;
-          rest = rest.slice(1);
-        } else if (rest.startsWith(":")) {
-          state = 2;
-          rest = rest.slice(1);
-        }
-      }
-    }
+    const rest = rawName;
     let currentTokenStart = 0;
     const len = rest.length;
     for (let i = 0; i <= len; i++) {
       const isEnd = i === len;
       const char = isEnd ? "" : rest[i];
-      const isModifierDelim = char === MODIFIER_DELIMITER || char === ":" || char === "_";
+      const isModifierDelim = char === MODIFIER_DELIMITER || char === "_" || char === ":";
       const isArgDelim = char === "-" && state < 2;
       const isDelim = isModifierDelim || isArgDelim;
       if (isDelim || isEnd) {

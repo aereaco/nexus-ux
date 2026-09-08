@@ -14,16 +14,16 @@ export interface ParsedAttribute {
  * Parses an HTML attribute into a structured Nexus-UX directive object.
  * 
  * Universal Grammar (per §2.1 NEG Token Set):
- *   data-{directive}[-{argument}][:{modifier1}[:{modifier2}]]
+ *   data-{directive}[-{argument}][_{modifier1}[_{modifier2}]]
  * 
  * - `-` separates directive from argument
- * - `:` ALWAYS introduces modifiers (Pipeline Anchors)
+ * - `_` introduces modifiers (Pipeline Anchors per NEG_TOKENS.MODIFIER)
  * Examples:
- *   data-on-click:once       → { directive: "on", argument: "click", modifiers: ["once"] }
- *   data-teleport:drop       → { directive: "teleport", modifiers: ["drop"] }
- *   data-bind-attr:draggable → { directive: "bind", argument: "attr", modifiers: ["draggable"] }
+ *   data-on-click_once       → { directive: "on", argument: "click", modifiers: ["once"] }
+ *   data-drag-handle         → { directive: "drag", argument: "handle", modifiers: [] }
+ *   data-bind-value_lazy     → { directive: "bind", argument: "value", modifiers: ["lazy"] }
+ *   data-signal_global       → { directive: "signal", modifiers: ["global"] }
  *   data-for                 → { directive: "for" }
- *   data-signal              → { directive: "signal" }
  */
 export function parseAttribute(name: string, _runtime: RuntimeContext, element: HTMLElement): ParsedAttribute | null {
   let rawName = '';
@@ -51,25 +51,7 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
 
   // State machine: 0=DIRECTIVE, 1=ARGUMENT, 2=MODIFIER
   let state = 0;
-  let rest = rawName;
-
-  const hyphenated = ['ux-theme', 'on-raf', 'flow-viewport', 'flow-node', 'flow-handle', 'flow-edges', 'flow-grid', 'flow-nodrag', 'flow-side', 'flow-snap', 'flow-minimap', 'flow-resizer', 'flow-reconnect', 'flow-label'].find(h =>
-    rawName === h || rawName.startsWith(h + '-') || rawName.startsWith(h + ':')
-  );
-
-  if (hyphenated) {
-    directive = hyphenated;
-    rest = rawName.slice(hyphenated.length);
-    if (rest.length > 0) {
-      if (rest.startsWith('-')) {
-        state = 1;
-        rest = rest.slice(1);
-      } else if (rest.startsWith(':')) {
-        state = 2;
-        rest = rest.slice(1);
-      }
-    }
-  }
+  const rest = rawName;
 
   let currentTokenStart = 0;
   const len = rest.length;
@@ -78,9 +60,10 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
     const isEnd = i === len;
     const char = isEnd ? '' : rest[i];
 
-    // `_` (standard) or `:` (compat) ALWAYS transitions to MODIFIER state
+    // `_` (standard per NEG_TOKENS.MODIFIER) transitions to MODIFIER state
+    // `:` preserved as transitional compatibility fallback
     // `-` transitions from DIRECTIVE to ARGUMENT state (only when before modifier state)
-    const isModifierDelim = char === MODIFIER_DELIMITER || char === ':' || char === '_';
+    const isModifierDelim = char === MODIFIER_DELIMITER || char === '_' || char === ':';
     const isArgDelim = char === '-' && state < 2;
     const isDelim = isModifierDelim || isArgDelim;
 
@@ -102,10 +85,8 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
 
       if (isDelim) {
         if (isModifierDelim) {
-          // `_` or `:` ALWAYS moves to modifier state
           state = 2;
         } else if (isArgDelim && state === 0) {
-          // `-` after directive introduces the argument
           state = 1;
         }
       }
@@ -126,16 +107,15 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
 
 /**
  * Helper to find all attributes on an element that match a specific directive.
- * Supports data-directive, data-directive_modifier, data-directive:arg, and data-directive-arg formats.
+ * Supports data-directive, data-directive_modifier, and data-directive-arg formats.
  */
 export function matchAttributes(el: HTMLElement, directive: string, value?: string): Attr[] {
   const prefixUnderscore = `data-${directive}_`;
-  const prefixColon = `data-${directive}:`;
   const prefixDash = `data-${directive}-`;
   const exact = `data-${directive}`;
   
   return Array.from(el.attributes).filter(a => {
-    const isMatch = a.name === exact || a.name.startsWith(prefixUnderscore) || a.name.startsWith(prefixColon) || a.name.startsWith(prefixDash);
+    const isMatch = a.name === exact || a.name.startsWith(prefixUnderscore) || a.name.startsWith(prefixDash);
     if (!isMatch) return false;
     if (value !== undefined && a.value !== value) return false;
     return true;
