@@ -10324,12 +10324,12 @@ ${match}</ul>
               try {
                 e.preventDefault();
                 e.stopPropagation();
-                const dragState = globalThis._dragState;
-                if (!dragState) {
+                const dragState2 = globalThis._dragState;
+                if (!dragState2) {
                   console.warn("[teleport] No drag state \u2014 was the source dragged?");
                   return;
                 }
-                const { fromIndex, sourceContainer, element: draggedEl, sourceList, reorderEngine } = dragState;
+                const { fromIndex, sourceContainer, element: draggedEl, sourceList, reorderEngine } = dragState2;
                 if (!Array.isArray(sourceList)) {
                   console.warn("[teleport] sourceList is not an array - check expression evaluation");
                   return;
@@ -10942,6 +10942,85 @@ ${match}</ul>
   }
   var init_bgSync = __esm({
     "src/modules/sprites/bgSync.ts"() {
+    }
+  });
+
+  // src/modules/sprites/drag.ts
+  var drag_exports2 = {};
+  __export(drag_exports2, {
+    $drag: () => $drag,
+    default: () => drag_default2,
+    dragSprite: () => dragSprite,
+    dragState: () => dragState
+  });
+  var dragState, $drag, dragSprite, drag_default2;
+  var init_drag2 = __esm({
+    "src/modules/sprites/drag.ts"() {
+      init_reactivity();
+      dragState = reactive({
+        isDragging: false,
+        activeItem: null,
+        sourceList: "",
+        targetList: "",
+        fromIndex: -1,
+        toIndex: -1
+      });
+      $drag = {
+        get isDragging() {
+          return dragState.isDragging;
+        },
+        get activeItem() {
+          return dragState.activeItem;
+        },
+        get sourceList() {
+          return dragState.sourceList;
+        },
+        get targetList() {
+          return dragState.targetList;
+        },
+        get fromIndex() {
+          return dragState.fromIndex;
+        },
+        get toIndex() {
+          return dragState.toIndex;
+        },
+        /** Programmatic in-place list reordering */
+        move(list, fromIndex, toIndex) {
+          if (!Array.isArray(list) || fromIndex < 0 || fromIndex >= list.length || toIndex < 0 || toIndex >= list.length) {
+            return list;
+          }
+          const [item] = list.splice(fromIndex, 1);
+          list.splice(toIndex, 0, item);
+          return list;
+        },
+        /** Programmatic cross-list transfer */
+        transfer(fromList, toList, fromIndex, toIndex) {
+          if (!Array.isArray(fromList) || !Array.isArray(toList) || fromIndex < 0 || fromIndex >= fromList.length) {
+            return false;
+          }
+          const [item] = fromList.splice(fromIndex, 1);
+          const dest = typeof toIndex === "number" && toIndex >= 0 ? toIndex : toList.length;
+          toList.splice(dest, 0, item);
+          return true;
+        },
+        /** Abort active drag */
+        cancel() {
+          dragState.isDragging = false;
+          dragState.activeItem = null;
+          dragState.sourceList = "";
+          dragState.targetList = "";
+          dragState.fromIndex = -1;
+          dragState.toIndex = -1;
+        }
+      };
+      dragSprite = {
+        name: "drag",
+        handle: (_element, _arg, context) => {
+          context.$drag = $drag;
+          return $drag;
+        }
+      };
+      drag_default2 = dragSprite;
     }
   });
 
@@ -13113,13 +13192,13 @@ ${match}</ul>
   });
 
   // src/modules/modifiers/drag.ts
-  var drag_exports2 = {};
-  __export(drag_exports2, {
-    default: () => drag_default2,
+  var drag_exports3 = {};
+  __export(drag_exports3, {
+    default: () => drag_default3,
     dragModifier: () => dragModifier
   });
-  var dragModifier, drag_default2;
-  var init_drag2 = __esm({
+  var dragModifier, drag_default3;
+  var init_drag3 = __esm({
     "src/modules/modifiers/drag.ts"() {
       dragModifier = {
         name: "drag",
@@ -13158,7 +13237,7 @@ ${match}</ul>
           };
         }
       };
-      drag_default2 = dragModifier;
+      drag_default3 = dragModifier;
     }
   });
 
@@ -14072,6 +14151,7 @@ ${match}</ul>
       init_animate();
       init_bgFetch();
       init_bgSync();
+      init_drag2();
       init_flow2();
       init_gql();
       init_mask();
@@ -14092,7 +14172,7 @@ ${match}</ul>
       init_debounce();
       init_delay();
       init_document();
-      init_drag2();
+      init_drag3();
       init_hold();
       init_keys();
       init_morph();
@@ -14145,6 +14225,7 @@ ${match}</ul>
         { name: "animate", module: animate_exports },
         { name: "bgFetch", module: bgFetch_exports },
         { name: "bgSync", module: bgSync_exports },
+        { name: "drag", module: drag_exports2 },
         { name: "flow", module: flow_exports2 },
         { name: "gql", module: gql_exports },
         { name: "mask", module: mask_exports },
@@ -14161,7 +14242,7 @@ ${match}</ul>
         { name: "debounce", module: debounce_exports },
         { name: "delay", module: delay_exports },
         { name: "document", module: document_exports },
-        { name: "drag", module: drag_exports2 },
+        { name: "drag", module: drag_exports3 },
         { name: "hold", module: hold_exports },
         { name: "keys", module: keys_exports },
         { name: "morph", module: morph_exports },
