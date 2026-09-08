@@ -1,12 +1,12 @@
 /**
- * Nexus-UX Hold Modifier (:hold)
+ * Nexus-UX Hold Modifier (_hold)
  *
  * Delays event handler execution until the element is held down for a specified duration (default 500ms).
  * Cancels automatically if released (pointerup, touchend) or moved away (pointerleave, touchcancel) before wait.
  *
  * Usage:
- *   `data-on-pointerdown:hold="expression"` — default 500ms hold
- *   `data-on-pointerdown:hold-750="expression"` — 750ms hold
+ *   `data-on-pointerdown_hold="expression"` — default 500ms hold
+ *   `data-on-pointerdown_hold-750="expression"` — 750ms hold
  *
  * ZCZS Guarantees:
  *   - Zero-copy: Timer references are tracked directly in closure.
