@@ -302,12 +302,12 @@ const stateRef = unifiedRef<Record<string, unknown>>(initialGhostState, scopeId,
 | `_prevent` | ✅ | `modules/modifiers/prevent.ts` |
 | `_stop` | ✅ | `modules/modifiers/stop.ts` |
 | `_once` | ✅ | `modules/modifiers/once.ts` |
-| `:keys` | ✅ | `modules/modifiers/keys.ts` |
+| `_keys` | ✅ | `modules/modifiers/keys.ts` |
 | `_self` | ✅ | `modules/modifiers/self.ts` |
 | `_debounce` | ✅ | `modules/modifiers/debounce.ts` |
 | `_throttle` | ✅ | `modules/modifiers/throttle.ts` |
 | `_morph` | ✅ | `modules/modifiers/morph.ts` |
-| `:intersect` | ✅ | `modules/modifiers/intersect.ts` |
+| `_intersect` | ✅ | `modules/modifiers/intersect.ts` |
 
 **Modifiers Implemented**: 9/9 (100%)
 
