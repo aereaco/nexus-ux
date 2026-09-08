@@ -4,6 +4,128 @@ import { flip } from "../sprites/animate.ts";
 import { getDataStack } from "../../engine/scope.ts";
 import { CLEANUP_FUNCTIONS_KEY, MARKER_KEY, DATA_STACK_KEY, IS_TEMPLATE_KEY } from "../../engine/consts.ts";
 import { stylesheet } from "./stylesheet.ts";
+import { dragState } from "../sprites/drag.ts";
+
+const DRAG_CSS = `
+[data-drag-item], [data-drag]:not([data-drag*="{"]):not([data-drag*="="]):not([data-drag-container]) {
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+[data-drag-item]:not([data-drag-handle]),
+[data-drag]:not([data-drag-handle]):not([data-drag*="{"]):not([data-drag*="="]):not([data-drag-container]) {
+  cursor: grab;
+}
+
+[data-drag-item]:not([data-drag-handle]):active,
+[data-drag]:not([data-drag-handle]):not([data-drag*="{"]):not([data-drag*="="]):not([data-drag-container]):active {
+  cursor: grabbing;
+}
+
+[data-drag-handle], .handle {
+  cursor: grab;
+  touch-action: none;
+}
+
+[data-drag-handle]:active, .handle:active {
+  cursor: grabbing;
+}
+
+[data-drag-nodrag] {
+  cursor: default !important;
+  touch-action: auto !important;
+  pointer-events: auto !important;
+}
+
+.draggable-drag, .drag-active {
+  opacity: 1 !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35) !important;
+  transform: scale(1.03) !important;
+  cursor: grabbing !important;
+  z-index: 9999 !important;
+  pointer-events: none !important;
+}
+
+.draggable-ghost, .drag-ghost {
+  opacity: 0.4 !important;
+  pointer-events: none !important;
+  border: 2px dashed color-mix(in srgb, currentColor 25%, transparent) !important;
+  background-color: color-mix(in srgb, var(--color-base-200, #374151) 60%, transparent) !important;
+}
+
+.draggable-chosen, .drag-chosen {
+  cursor: grabbing !important;
+  opacity: 0.85;
+}
+
+.draggable-selected, [data-drag-item].selected {
+  outline: 2px solid var(--color-primary, #3b82f6) !important;
+  outline-offset: 2px !important;
+}
+
+.draggable-swap-highlight {
+  outline: 2px dashed var(--color-warning, #f59e0b) !important;
+  outline-offset: 2px !important;
+  transition: outline 0.15s ease !important;
+}
+`;
+
+let dragSheet: CSSStyleSheet | null = null;
+
+export function ensureDragStyles(root?: Document | ShadowRoot | null) {
+  if (typeof CSSStyleSheet === "undefined") return;
+  if (!dragSheet) {
+    dragSheet = new CSSStyleSheet();
+    dragSheet.replaceSync(DRAG_CSS);
+  }
+  const rootNode = (root || (typeof document !== "undefined" ? document : null)) as Document | ShadowRoot | null;
+  if (rootNode && "adoptedStyleSheets" in rootNode) {
+    if (!rootNode.adoptedStyleSheets.includes(dragSheet)) {
+      rootNode.adoptedStyleSheets = [...rootNode.adoptedStyleSheets, dragSheet];
+    }
+  }
+  if (typeof document !== "undefined" && "adoptedStyleSheets" in document) {
+    if (!document.adoptedStyleSheets.includes(dragSheet)) {
+      document.adoptedStyleSheets = [...document.adoptedStyleSheets, dragSheet];
+    }
+  }
+}
+
+if (typeof document !== "undefined") {
+  ensureDragStyles();
+}
+
+export const CONTAINER_SELECTOR = '[data-drag], [data-drag-container], [data-teleport_drop], [data-teleport\\:drop]';
+
+export function isContainerElement(el: HTMLElement | null): boolean {
+  if (!el) return false;
+  if (el.hasAttribute("data-drag-item")) return false;
+  if (
+    el.hasAttribute("data-drag-container") ||
+    el.hasAttribute("data-teleport_drop") ||
+    el.hasAttribute("data-teleport:drop")
+  ) {
+    return true;
+  }
+  if (el.hasAttribute("data-drag")) {
+    const val = el.getAttribute("data-drag");
+    if (val && (val.includes("{") || val.includes(".") || val.trim().length > 0)) {
+      return true;
+    }
+    return !!(el as any).__draggable;
+  }
+  return false;
+}
+
+export function getClosestContainer(el: HTMLElement | null): HTMLElement | null {
+  let curr: HTMLElement | null = el;
+  while (curr) {
+    if (isContainerElement(curr)) return curr;
+    curr = curr.parentElement;
+  }
+  return null;
+}
 
 // Helper to find scrollable parent container
 function getScrollParent(el: HTMLElement): HTMLElement {
