@@ -1805,7 +1805,7 @@ ${suggestion}`);
               cleanupFns2.push(cleanup);
               const isFormInput = el instanceof HTMLInputElement || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement || el.isContentEditable;
               if (isFormInput) {
-                const isLazy = el.hasAttribute("data-bind:lazy");
+                const isLazy = el.hasAttribute("data-bind_lazy") || el.hasAttribute("data-bind-lazy");
                 const eventName = isLazy ? "change" : el instanceof HTMLSelectElement || el instanceof HTMLInputElement && (el.type === "checkbox" || el.type === "radio") ? "change" : "input";
                 const inputHandler = (_e) => {
                   let newValue;
@@ -1912,7 +1912,7 @@ ${suggestion}`);
             });
             cleanupFns.push(cleanup);
             if (target === "value" || target === "checked") {
-              const isLazy = el.hasAttribute("data-bind:lazy");
+              const isLazy = el.hasAttribute("data-bind_lazy") || el.hasAttribute("data-bind-lazy");
               const eventName = isLazy ? "change" : el instanceof HTMLInputElement && (el.type === "checkbox" || el.type === "radio") || el instanceof HTMLSelectElement ? "change" : "input";
               const inputHandler = (e) => {
                 let newValue;

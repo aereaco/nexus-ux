@@ -34,7 +34,7 @@
  * Nexus-UX Innovations Preserved:
  *   - Auto-detect mode absorbs Alpine's data-model behavior
  *   - Mass property assignment from object expressions
- *   - Lazy binding via :lazy modifier for input/select/textarea
+ *   - Lazy binding via _lazy modifier for input/select/textarea
  *   - Native API two-way binding via Reflect Proxy traps
  *   - Reactive effect cleanup on element removal
  */
@@ -232,7 +232,7 @@ const bindModule: AttributeModule = {
         const isFormInput = el instanceof HTMLInputElement || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement || (el as HTMLElement).isContentEditable;
 
         if (isFormInput) {
-          const isLazy = el.hasAttribute('data-bind:lazy');
+          const isLazy = el.hasAttribute('data-bind_lazy') || el.hasAttribute('data-bind-lazy');
           const eventName = isLazy ? 'change' : (
             el instanceof HTMLSelectElement || (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio'))
               ? 'change' : 'input'
@@ -344,7 +344,7 @@ const bindModule: AttributeModule = {
 
       // Two-Way Binding Setup (Input Listener)
       if (target === 'value' || target === 'checked') {
-        const isLazy = el.hasAttribute('data-bind:lazy');
+        const isLazy = el.hasAttribute('data-bind_lazy') || el.hasAttribute('data-bind-lazy');
         const eventName = isLazy ? 'change' : (
           el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')
             || el instanceof HTMLSelectElement ? 'change' : 'input'
