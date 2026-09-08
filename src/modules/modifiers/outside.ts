@@ -2,9 +2,9 @@
  * Nexus-UX Outside Modifier
  *
  * Ensures the event handler only fires when the click event target is outside
- * the bound element. AlpineJS parity modifier (:outside).
+ * the bound element. AlpineJS parity modifier (_outside).
  *
- * Used as: `data-on-click:outside="expression"`
+ * Used as: `data-on-click_outside="expression"`
  *
  * ZCZS Guarantees:
  *   - Zero-copy: Node containment is checked by reference; no cloning.
