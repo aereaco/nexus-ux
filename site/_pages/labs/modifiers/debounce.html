@@ -10,13 +10,13 @@
 
 <div class="w-full h-full flex-1 flex flex-col min-h-0" data-signal="{
     doc: {
-      Title: ':debounce.<ms>',
+      Title: '_debounce.<ms>',
       Category: 'Modifiers',
       Icon: 'material-symbols-light:hourglass-empty',
       Description: 'Pipes an event listener through an auto-clearing timer, delaying execution until the specified milliseconds have elapsed since the user last triggered the event.',
       Syntax: '&lt;input data-on-input_debounce.300=\&quot;query = $newValue\&quot; /&gt;\n&lt;input data-on-input_debounce.500=\&quot;searchDatabase()\&quot; /&gt;',
       Params: [
-        { name: ':debounce.[ms]', type: 'Rate Limit Modifier', default: '300', description: 'Duration in milliseconds to wait for input settling before executing expression.' }
+        { name: '_debounce.[ms]', type: 'Rate Limit Modifier', default: '300', description: 'Duration in milliseconds to wait for input settling before executing expression.' }
       ],
       SourceModule: '/modules/modifiers/debounce.ts',
       SnippetModule: '/_pages/labs/modifiers/debounce.html',
