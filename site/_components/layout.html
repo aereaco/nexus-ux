@@ -1681,9 +1681,9 @@
       data-effect="if (collapsed && !hovered && !sidebarOpen && $el) { $el.scrollTo({ top: 0, behavior: 'smooth' }); }"
       data-signal="{
         categories: [
-          { name: 'Docs', itemsDraggable: false, icon: 'material-symbols-light:menu-book-outline' },
-          { name: 'Labs', itemsDraggable: false, icon: 'material-symbols-light:science-outline' },
-          { name: 'Apps', itemsDraggable: true, icon: 'material-symbols-light:apps' }
+          { id: 'Docs', name: 'Docs', itemsDraggable: false, icon: 'material-symbols-light:menu-book-outline' },
+          { id: 'Labs', name: 'Labs', itemsDraggable: false, icon: 'material-symbols-light:science-outline' },
+          { id: 'Apps', name: 'Apps', itemsDraggable: true, icon: 'material-symbols-light:apps' }
         ]
       }">
       <!-- Main Navigation Menu (tab 1) -->
@@ -1739,7 +1739,7 @@
         <!-- 2. Categorized Sections (Draggable Category Groups & Dedicated Item Lists) -->
         <div data-drag="{ list: 'categories', handle: '.menu-title' }">
           <template data-for="cat in categories">
-            <div data-drag
+            <div data-drag-item
               data-show="(router.pages || []).filter(p => (p.category || p.meta?.category) === cat.name).length > 0">
               <!-- Category Header (Title + Separator Line) -->
               <ul class="menu w-full py-0">
@@ -1754,7 +1754,7 @@
 
               <!-- Dynamic Category Item List (Zero Hardcoding, Zero Duplication) -->
               <ul class="menu w-full"
-                data-drag="(router.pages || []).filter(p => (p.category || p.meta?.category) === cat.name)">
+                data-bind-data-drag="cat.itemsDraggable ? '(router.pages || []).filter(p => (p.category || p.meta?.category) === cat.name)' : null">
                 <template
                   data-for="item in (router.pages || []).filter(p => (p.category || p.meta?.category) === cat.name)">
                   <!-- Root Leaf Item (No Children) -->
