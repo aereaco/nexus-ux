@@ -778,10 +778,13 @@ export class Draggable {
 
     this._clearDocked();
 
-    if (this.el) {
-      this.el.querySelectorAll('[data-drag-container]').forEach(el => {
-      });
-    }
+    // Reset $drag reactive sprite
+    dragState.isDragging = false;
+    dragState.activeItem = null;
+    dragState.sourceList = '';
+    dragState.targetList = '';
+    dragState.fromIndex = -1;
+    dragState.toIndex = -1;
 
     Draggable.active = null;
     this.dragEl = null;
@@ -805,7 +808,7 @@ export class Draggable {
 
   private _updateDocked() {
     if (!this.dragEl) return;
-    const container = this.dragEl.closest("[data-drag-container]") as HTMLElement | null;
+    const container = getClosestContainer(this.dragEl);
     if (container !== this._dockedContainer) {
       if (this._dockedContainer) {
         this._dockedContainer.removeAttribute('data-dropzone-state');
@@ -866,7 +869,7 @@ export class Draggable {
     if (!el) return null;
 
     // Resolve the drop container under the cursor (handles cross-container drags).
-    const container = el.closest('[data-drag-container]') as HTMLElement | null;
+    const container = getClosestContainer(el);
     if (!container || !(container as any).__draggable) return null;
 
     const children = Array.from(container.children).filter(c =>

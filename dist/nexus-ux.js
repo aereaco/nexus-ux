@@ -5107,10 +5107,12 @@ ${scripts}
             this._lastSourceItemScope = null;
           }
           this._clearDocked();
-          if (this.el) {
-            this.el.querySelectorAll("[data-drag-container]").forEach((el) => {
-            });
-          }
+          dragState.isDragging = false;
+          dragState.activeItem = null;
+          dragState.sourceList = "";
+          dragState.targetList = "";
+          dragState.fromIndex = -1;
+          dragState.toIndex = -1;
           _Draggable.active = null;
           this.dragEl = null;
           this.tapEvt = null;
@@ -5131,7 +5133,7 @@ ${scripts}
         _updateDocked() {
           if (!this.dragEl)
             return;
-          const container = this.dragEl.closest("[data-drag-container]");
+          const container = getClosestContainer(this.dragEl);
           if (container !== this._dockedContainer) {
             if (this._dockedContainer) {
               this._dockedContainer.removeAttribute("data-dropzone-state");
@@ -5179,7 +5181,7 @@ ${scripts}
           const el = document.elementFromPoint(clientX, clientY);
           if (!el)
             return null;
-          const container = el.closest("[data-drag-container]");
+          const container = getClosestContainer(el);
           if (!container || !container.__draggable)
             return null;
           const children = Array.from(container.children).filter(
