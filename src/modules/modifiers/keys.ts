@@ -9,8 +9,8 @@
  *   - ctrl, shift, alt (boolean key state modifiers)
  *
  * NEG Token Boundary:
- *   These are behavior modifiers (`:`) not intent modifiers (`-`).
- *   Used as: `data-on-keydown:enter:ctrl`
+ *   These are behavior modifiers (`_`) not intent modifiers (`-`).
+ *   Used as: `data-on-keydown_enter_ctrl`
  *
  * ZCZS Guarantees:
  *   - Zero-copy: KeyboardEvent is passed by reference; no cloning.
