@@ -279,7 +279,7 @@ export class Draggable {
       swapThreshold: 1,
       invertedSwapThreshold: 1,
       invertSwap: false,
-      draggable: '[data-drag]',
+      draggable: '[data-drag-item], [data-drag]:not([data-drag*="{"]):not([data-drag*="="]):not([data-drag-container])',
       sort: true,
       ...options,
     };
@@ -292,10 +292,15 @@ export class Draggable {
       const target = e.target as HTMLElement;
       const dragEl = target.closest(this.options.draggable!) as HTMLElement | null;
       if (dragEl && this.el.contains(dragEl)) {
-        const closestContainer = dragEl.closest('[data-drag-container]');
+        const closestContainer = getClosestContainer(dragEl);
         if (closestContainer !== this.el) return;
         if (dragEl.getAttribute('draggable') === 'false') return;
+        if (target.closest('[data-drag-nodrag]')) return;
+
+        const itemHasHandle = dragEl.querySelector('[data-drag-handle]');
         if (this.options.handle && !target.closest(this.options.handle)) return;
+        else if (itemHasHandle && !target.closest('[data-drag-handle]')) return;
+
         if (this.options.filter && target.closest(this.options.filter)) return;
 
         const tagName = target.tagName.toUpperCase();
@@ -324,7 +329,7 @@ export class Draggable {
     if (!dragEl || !this.el.contains(dragEl)) return;
 
     // Bubbling Gating: ensure the closest Draggable container is this.el
-    const closestDraggableContainer = dragEl.closest('[data-drag-container]');
+    const closestDraggableContainer = getClosestContainer(dragEl);
     if (closestDraggableContainer !== this.el) {
       return; // Let the nested Draggable handle it!
     }
@@ -333,8 +338,17 @@ export class Draggable {
       return;
     }
 
+    if (target.closest('[data-drag-nodrag]')) {
+      return;
+    }
+
     // Handle Selector
-    if (this.options.handle && !target.closest(this.options.handle)) return;
+    const itemHasHandle = dragEl.querySelector('[data-drag-handle]');
+    if (this.options.handle) {
+      if (!target.closest(this.options.handle)) return;
+    } else if (itemHasHandle) {
+      if (!target.closest('[data-drag-handle]')) return;
+    }
 
     // Filter Selector
     if (this.options.filter) {

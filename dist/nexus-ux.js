@@ -4651,7 +4651,7 @@ ${scripts}
             swapThreshold: 1,
             invertedSwapThreshold: 1,
             invertSwap: false,
-            draggable: "[data-drag]",
+            draggable: '[data-drag-item], [data-drag]:not([data-drag*="{"]):not([data-drag*="="]):not([data-drag-container])',
             sort: true,
             ...options
           };
@@ -4662,12 +4662,17 @@ ${scripts}
             const target = e.target;
             const dragEl = target.closest(this.options.draggable);
             if (dragEl && this.el.contains(dragEl)) {
-              const closestContainer = dragEl.closest("[data-drag-container]");
+              const closestContainer = getClosestContainer(dragEl);
               if (closestContainer !== this.el)
                 return;
               if (dragEl.getAttribute("draggable") === "false")
                 return;
+              if (target.closest("[data-drag-nodrag]"))
+                return;
+              const itemHasHandle = dragEl.querySelector("[data-drag-handle]");
               if (this.options.handle && !target.closest(this.options.handle))
+                return;
+              else if (itemHasHandle && !target.closest("[data-drag-handle]"))
                 return;
               if (this.options.filter && target.closest(this.options.filter))
                 return;
@@ -4694,15 +4699,24 @@ ${scripts}
           const dragEl = target.closest(this.options.draggable);
           if (!dragEl || !this.el.contains(dragEl))
             return;
-          const closestDraggableContainer = dragEl.closest("[data-drag-container]");
+          const closestDraggableContainer = getClosestContainer(dragEl);
           if (closestDraggableContainer !== this.el) {
             return;
           }
           if (dragEl.getAttribute("draggable") === "false") {
             return;
           }
-          if (this.options.handle && !target.closest(this.options.handle))
+          if (target.closest("[data-drag-nodrag]")) {
             return;
+          }
+          const itemHasHandle = dragEl.querySelector("[data-drag-handle]");
+          if (this.options.handle) {
+            if (!target.closest(this.options.handle))
+              return;
+          } else if (itemHasHandle) {
+            if (!target.closest("[data-drag-handle]"))
+              return;
+          }
           if (this.options.filter) {
             if (target.closest(this.options.filter)) {
               return;
