@@ -8,16 +8,18 @@
         error: '/_pages/error.html'
       }" data-import="{ 
         'DaisyUI': { 
-          link: [
-            { href: 'https://cdn.jsdelivr.net/npm/daisyui@5' },
-            { href: 'https://cdn.jsdelivr.net/npm/daisyui@5/themes.css' }
+          adopt: [
+            'https://cdn.jsdelivr.net/npm/daisyui@5',
+            'https://cdn.jsdelivr.net/npm/daisyui@5/themes.css'
           ] 
         }, 
         'Iconify': { 
           script: { src: 'https://cdn.jsdelivr.net/npm/iconify-icon@3.0.0/dist/iconify-icon.min.js' }
         }
       }"
-  data-signal="{ appReady: true, rtl: localStorage.rtl === 'true', zoom: Number(localStorage.zoom) || 1, tempZoom: Number(localStorage.zoom) || 1 }"
+  data-signal="{ appReady: false, rtl: localStorage.rtl === 'true', zoom: Number(localStorage.zoom) || 1, tempZoom: Number(localStorage.zoom) || 1 }"
+  data-on-nexus-ready_document="appReady = true"
+  data-effect="if (document.documentElement.classList.contains('nexus-ready')) appReady = true"
   data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: (zoom || 1) + 'rem' }">
 
 
@@ -33,42 +35,81 @@
   <script type="module" src="./dist/nexus-ux.js"></script>
   <link rel="icon" type="image/svg+xml" href="./_assets/images/emblem.svg">
   <style>
-    /* Progress Bar */
+    /* 1. Static Pre-JS FOUC Guard */
+    html:not(.nexus-ready) .nx-main {
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+
+    html.nexus-ready .nx-main {
+      opacity: 1 !important;
+      visibility: visible !important;
+      transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* 2. Top Progress Bar */
     .nexus-progress-mount {
       position: fixed;
       top: 0;
       inset-inline: 0;
       z-index: 9999;
+      height: 3px;
+      pointer-events: none;
+      transition: opacity 0.35s ease-out, visibility 0.35s ease-out;
     }
 
-    progress {
-      appearance: none;
-      -webkit-appearance: none;
-      border: none;
-      background: transparent;
-      height: 0.5rem;
-      margin: 0;
-      display: block;
+    .nexus-top-bar {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #570df8, #f000b8, #37cdbe, #570df8);
+      background-size: 200% 100%;
+      animation: nexus-progress-slide 1.5s infinite linear;
     }
 
-    progress::-webkit-progress-bar {
-      background-color: rgba(166, 173, 187, 0.2);
+    @keyframes nexus-progress-slide {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
     }
 
-    progress::-webkit-progress-value {
-      background-color: #570df8;
+    /* 3. Sleek Loading Splash Screen */
+    .nexus-loading-screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9998;
+      background: radial-gradient(circle at center, rgba(15, 23, 42, 0.97) 0%, rgba(2, 6, 23, 0.99) 100%);
+      transition: opacity 0.45s ease-out, visibility 0.45s ease-out;
     }
 
-    progress::-moz-progress-bar {
-      background-color: #570df8;
+    html.nexus-ready .nexus-loading-screen,
+    html.nexus-ready .nexus-progress-mount {
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
     }
 
-    /* Main Layout */
-    main.nx-main {
-      opacity: 1;
-      transition: opacity 0.5s ease-in;
+    .nexus-loader-emblem {
+      animation: nexus-loader-pulse 2s ease-in-out infinite;
+      filter: drop-shadow(0 0 24px rgba(87, 13, 248, 0.5));
     }
 
+    @keyframes nexus-loader-pulse {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 0.85;
+      }
+      50% {
+        transform: scale(1.08);
+        opacity: 1;
+        filter: drop-shadow(0 0 32px rgba(240, 0, 184, 0.65));
+      }
+    }
+
+    /* 4. Tab Content Scaffolding */
     tab-content > body {
       display: flex;
       flex-direction: column;
@@ -83,6 +124,25 @@
 
 <body
   class="bg-gradient-to-br from-base-200 via-base-100 to-base-300 h-screen max-h-screen overflow-hidden font-sans antialiased text-base-content">
+  <!-- Top Indeterminate Progress Bar -->
+  <div class="nexus-progress-mount" aria-hidden="true">
+    <div class="nexus-top-bar"></div>
+  </div>
+
+  <!-- Sleek Centered Loading Splash -->
+  <div class="nexus-loading-screen" aria-label="Loading application">
+    <div class="relative flex flex-col items-center gap-5 select-none">
+      <div class="relative w-20 h-20 flex items-center justify-center">
+        <div class="absolute inset-0 rounded-full bg-primary/20 blur-2xl animate-pulse"></div>
+        <img src="./_assets/images/emblem.svg" alt="Nexus-UX" class="nexus-loader-emblem w-14 h-14 relative z-10" />
+      </div>
+      <div class="flex flex-col items-center gap-1.5">
+        <span class="text-base font-bold tracking-widest text-slate-200 uppercase">Nexus-UX</span>
+        <span class="text-xs text-slate-400 font-mono tracking-widest animate-pulse">INITIALIZING</span>
+      </div>
+    </div>
+  </div>
+
   <main class="nx-main h-full flex flex-col min-h-0">
     <app-layout data-component="'_components/layout.html'" class="block h-full flex-1 flex flex-col min-h-0"></app-layout>
   </main>
