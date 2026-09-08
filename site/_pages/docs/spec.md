@@ -1447,7 +1447,7 @@ global sprite (`$animate`), or a scope rule (`@media`)—lives isolated within t
 
 - `src/modules/attributes/`: Directives (`data-signal`, `data-drag`, `data-stylesheet`, `data-theme`)
 - `src/modules/sprites/`: Action handlers and tools (`$sql`, `$selector`, `$flow`)
-- `src/modules/modifiers/`: Event pipeline modifiers (`:once`, `:debounce`, `:prevent`)
+- `src/modules/modifiers/`: Event pipeline modifiers (`_once`, `_debounce`, `_prevent`)
 - `src/modules/scopes/`: Evaluation closures for the `@` Grammar (`@media`, `@auth`)
 - `src/modules/listeners/`: Global lifecycle event listeners (`history`, `bfcache`)
 
