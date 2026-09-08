@@ -8,7 +8,7 @@
  * Module Types:
  *   - AttributeModule: Handles data-* directives (data-bind, data-on, etc.)
  *   - ActionModule: Imperative actions exposed to expression scope ($id, $nextTick)
- *   - ModifierModule: Pipeline behavior modifiers (:once, :prevent, :debounce)
+ *   - ModifierModule: Pipeline behavior modifiers (_once, _prevent, _debounce)
  *   - SpriteModule: Reactive command sets ($animate, $svg, $flow)
  *   - ScopeModule: Conditional boundaries (@media, @auth, @os)
  *   - ListenerModule: Global event listeners (SPA routing, history)
