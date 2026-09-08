@@ -35,7 +35,7 @@ export const teleportAttribute: AttributeModule = {
     // =========================================================================
     // Mode 1: Data Teleportation (Drop Zone for Drag & Drop)
     // =========================================================================
-    if (modifiers.includes('drop')) {
+    if (modifiers.includes('drop') || parsed?.argument === 'drop') {
       const mode = element.getAttribute('data-teleport-mode') || 'move';
 
       const onDragOver = (e: DragEvent) => {

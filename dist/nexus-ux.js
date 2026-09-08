@@ -3958,7 +3958,7 @@ ${scripts}
         metadata: { after: ["signal"] },
         handle: (el, value, runtime) => {
           const computedCleanup = [];
-          const isGlobal = el.hasAttribute("data-computed:global");
+          const isGlobal = el.hasAttribute("data-computed_global") || el.hasAttribute("data-computed:global") || el.hasAttribute("data-computed-global");
           const { ghostKeys } = parseGhostKeys(value);
           const initialGhostState = {};
           ghostKeys.forEach((key) => initialGhostState[key] = void 0);
@@ -10281,7 +10281,7 @@ ${match}</ul>
         attribute: "scrollbar",
         handle: (el, value, runtime) => {
           ensureStylesAdopted();
-          const isGlobal = el.hasAttribute("data-scrollbar:global") || el.tagName.toLowerCase() === "html";
+          const isGlobal = el.hasAttribute("data-scrollbar_global") || el.hasAttribute("data-scrollbar:global") || el.hasAttribute("data-scrollbar-global") || el.tagName.toLowerCase() === "html";
           let config = {};
           if (value && value.trim()) {
             try {
@@ -10604,7 +10604,7 @@ ${match}</ul>
           const modifiers = parsed?.modifiers ?? [];
           if (parsed?.argument === "mode" && !modifiers.length)
             return;
-          if (modifiers.includes("drop")) {
+          if (modifiers.includes("drop") || parsed?.argument === "drop") {
             const mode = element.getAttribute("data-teleport-mode") || "move";
             const onDragOver = (e) => {
               e.preventDefault();
