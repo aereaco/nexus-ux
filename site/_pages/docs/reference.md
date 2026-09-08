@@ -2600,7 +2600,7 @@ numeric `border-left-width`), `data-on-intersect` (lazy hydration), `$sql` (LIVE
 ```
 
 _Features_: Global signals (`data-signal-global`), reactive UI gating
-(`data-if`), SurrealDB permissions, `:confirm` interceptor.
+(`data-if`), SurrealDB permissions, `_confirm` interceptor.
 
 ---
 
