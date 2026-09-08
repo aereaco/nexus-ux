@@ -9,8 +9,8 @@
  *   - When intercepting pipeline: passes payload through unchanged
  *
  * NEG Token Boundary:
- *   This is a behavior modifier (`:`) not an intent modifier (`-`).
- *   Used as: `data-on-click:prevent`
+ *   This is a behavior modifier (`_`) not an intent modifier (`-`).
+ *   Used as: `data-on-click_prevent`
  *
  * ZCZS Guarantees:
  *   - Zero-copy: Event object is mutated in-place; no cloning.
