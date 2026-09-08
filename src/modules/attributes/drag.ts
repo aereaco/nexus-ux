@@ -435,6 +435,15 @@ export class Draggable {
       }
     });
 
+    // Sync $drag reactive sprite
+    dragState.isDragging = true;
+    dragState.activeItem = getBoundItemFromElement(this.dragEl, this._runtime);
+    dragState.sourceList = (this.el as any).__dragListExpr || '';
+    dragState.targetList = (this.el as any).__dragListExpr || '';
+    const startIdx = this.originalIndices.get(this.dragEl!) ?? -1;
+    dragState.fromIndex = startIdx;
+    dragState.toIndex = startIdx;
+
     // Populate MultiDrag items list if multiDrag is active
     if (this.options.multiDrag) {
       // If the clicked element is already selected, gather all selected elements in the container
