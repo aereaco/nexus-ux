@@ -4939,7 +4939,7 @@ ${scripts}
             this._clearDragOverState();
             return;
           }
-          const targetParent = target.hasAttribute("data-drag-container") ? target : target.closest("[data-drag-container]");
+          const targetParent = isContainerElement(target) ? target : getClosestContainer(target);
           if (!targetParent) {
             this._clearDragOverState();
             return;
@@ -4957,8 +4957,9 @@ ${scripts}
               return;
             }
           }
+          dragState.targetList = targetParent.__dragListExpr || "";
           this._updateDragOverState(targetParent, e);
-          if (target.hasAttribute("data-drag-container")) {
+          if (isContainerElement(target)) {
             if (this.dragEl.parentElement !== target) {
               const srcBefore = this._captureRects(this.dragEl.parentElement);
               const destBefore = this._captureRects(target);

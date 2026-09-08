@@ -548,7 +548,7 @@ export class Draggable {
       return;
     }
 
-    const targetParent = target.hasAttribute('data-drag-container') ? target : target.closest('[data-drag-container]') as HTMLElement | null;
+    const targetParent = isContainerElement(target) ? target : getClosestContainer(target);
     if (!targetParent) {
       this._clearDragOverState();
       return;
@@ -570,9 +570,11 @@ export class Draggable {
       }
     }
 
+    dragState.targetList = (targetParent as any).__dragListExpr || '';
+
     this._updateDragOverState(targetParent, e);
 
-    if (target.hasAttribute('data-drag-container')) {
+    if (isContainerElement(target)) {
       // Dragged over an empty container: append directly!
       if (this.dragEl.parentElement !== target) {
         const srcBefore = this._captureRects(this.dragEl.parentElement!);
