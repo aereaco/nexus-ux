@@ -6,8 +6,8 @@
  * listener construction.
  *
  * NEG Token Boundary:
- *   This is a behavior modifier (`:`) not an intent modifier (`-`).
- *   Used as: `data-on-click:document`
+ *   This is a behavior modifier (`_`) not an intent modifier (`-`).
+ *   Used as: `data-on-click_document`
  *
  * ZCZS Guarantees:
  *   - Zero-copy: Marker only; payload is passed through unchanged.
