@@ -63,81 +63,83 @@ export const autoAttributes: any[] = [  { name: 'assert', module: mod_0 },
 import * as mod_30 from './modules/sprites/animate.ts';
 import * as mod_31 from './modules/sprites/bgFetch.ts';
 import * as mod_32 from './modules/sprites/bgSync.ts';
-import * as mod_33 from './modules/sprites/flow.ts';
-import * as mod_34 from './modules/sprites/gql.ts';
-import * as mod_35 from './modules/sprites/mask.ts';
-import * as mod_36 from './modules/sprites/mcp.ts';
-import * as mod_37 from './modules/sprites/periodicSync.ts';
-import * as mod_38 from './modules/sprites/predictive.ts';
-import * as mod_39 from './modules/sprites/push.ts';
-import * as mod_40 from './modules/sprites/selector.ts';
-import * as mod_41 from './modules/sprites/sql.ts';
-import * as mod_42 from './modules/sprites/svg.ts';
-import * as mod_43 from './modules/sprites/sw.ts';
+import * as mod_33 from './modules/sprites/drag.ts';
+import * as mod_34 from './modules/sprites/flow.ts';
+import * as mod_35 from './modules/sprites/gql.ts';
+import * as mod_36 from './modules/sprites/mask.ts';
+import * as mod_37 from './modules/sprites/mcp.ts';
+import * as mod_38 from './modules/sprites/periodicSync.ts';
+import * as mod_39 from './modules/sprites/predictive.ts';
+import * as mod_40 from './modules/sprites/push.ts';
+import * as mod_41 from './modules/sprites/selector.ts';
+import * as mod_42 from './modules/sprites/sql.ts';
+import * as mod_43 from './modules/sprites/svg.ts';
+import * as mod_44 from './modules/sprites/sw.ts';
 export const autoSprites: any[] = [  { name: 'animate', module: mod_30 },
   { name: 'bgFetch', module: mod_31 },
   { name: 'bgSync', module: mod_32 },
-  { name: 'flow', module: mod_33 },
-  { name: 'gql', module: mod_34 },
-  { name: 'mask', module: mod_35 },
-  { name: 'mcp', module: mod_36 },
-  { name: 'periodicSync', module: mod_37 },
-  { name: 'predictive', module: mod_38 },
-  { name: 'push', module: mod_39 },
-  { name: 'selector', module: mod_40 },
-  { name: 'sql', module: mod_41 },
-  { name: 'svg', module: mod_42 },
-  { name: 'sw', module: mod_43 }];
-import * as mod_44 from './modules/scopes/auth.ts';
-import * as mod_45 from './modules/scopes/container.ts';
-import * as mod_46 from './modules/scopes/media.ts';
-import * as mod_47 from './modules/scopes/native.ts';
-import * as mod_48 from './modules/scopes/os.ts';
-import * as mod_49 from './modules/scopes/view.ts';
-export const autoScopes: any[] = [  { name: 'auth', module: mod_44 },
-  { name: 'container', module: mod_45 },
-  { name: 'media', module: mod_46 },
-  { name: 'native', module: mod_47 },
-  { name: 'os', module: mod_48 },
-  { name: 'view', module: mod_49 }];
-import * as mod_50 from './modules/modifiers/debounce.ts';
-import * as mod_51 from './modules/modifiers/delay.ts';
-import * as mod_52 from './modules/modifiers/document.ts';
-import * as mod_53 from './modules/modifiers/drag.ts';
-import * as mod_54 from './modules/modifiers/hold.ts';
-import * as mod_55 from './modules/modifiers/keys.ts';
-import * as mod_56 from './modules/modifiers/morph.ts';
-import * as mod_57 from './modules/modifiers/once.ts';
-import * as mod_58 from './modules/modifiers/outside.ts';
-import * as mod_59 from './modules/modifiers/prevent.ts';
-import * as mod_60 from './modules/modifiers/self.ts';
-import * as mod_61 from './modules/modifiers/stop.ts';
-import * as mod_62 from './modules/modifiers/throttle.ts';
-import * as mod_63 from './modules/modifiers/window.ts';
-import * as mod_64 from './modules/modifiers/zoom.ts';
-export const autoModifiers: any[] = [  { name: 'debounce', module: mod_50 },
-  { name: 'delay', module: mod_51 },
-  { name: 'document', module: mod_52 },
-  { name: 'drag', module: mod_53 },
-  { name: 'hold', module: mod_54 },
-  { name: 'keys', module: mod_55 },
-  { name: 'morph', module: mod_56 },
-  { name: 'once', module: mod_57 },
-  { name: 'outside', module: mod_58 },
-  { name: 'prevent', module: mod_59 },
-  { name: 'self', module: mod_60 },
-  { name: 'stop', module: mod_61 },
-  { name: 'throttle', module: mod_62 },
-  { name: 'window', module: mod_63 },
-  { name: 'zoom', module: mod_64 }];
-import * as mod_65 from './modules/listeners/bfcache.ts';
-import * as mod_66 from './modules/listeners/executeScript.ts';
-import * as mod_67 from './modules/listeners/history.ts';
-import * as mod_68 from './modules/listeners/linkRewriter.ts';
-export const autoListeners: any[] = [  { name: 'bfcache', module: mod_65 },
-  { name: 'executeScript', module: mod_66 },
-  { name: 'history', module: mod_67 },
-  { name: 'linkRewriter', module: mod_68 }];
+  { name: 'drag', module: mod_33 },
+  { name: 'flow', module: mod_34 },
+  { name: 'gql', module: mod_35 },
+  { name: 'mask', module: mod_36 },
+  { name: 'mcp', module: mod_37 },
+  { name: 'periodicSync', module: mod_38 },
+  { name: 'predictive', module: mod_39 },
+  { name: 'push', module: mod_40 },
+  { name: 'selector', module: mod_41 },
+  { name: 'sql', module: mod_42 },
+  { name: 'svg', module: mod_43 },
+  { name: 'sw', module: mod_44 }];
+import * as mod_45 from './modules/scopes/auth.ts';
+import * as mod_46 from './modules/scopes/container.ts';
+import * as mod_47 from './modules/scopes/media.ts';
+import * as mod_48 from './modules/scopes/native.ts';
+import * as mod_49 from './modules/scopes/os.ts';
+import * as mod_50 from './modules/scopes/view.ts';
+export const autoScopes: any[] = [  { name: 'auth', module: mod_45 },
+  { name: 'container', module: mod_46 },
+  { name: 'media', module: mod_47 },
+  { name: 'native', module: mod_48 },
+  { name: 'os', module: mod_49 },
+  { name: 'view', module: mod_50 }];
+import * as mod_51 from './modules/modifiers/debounce.ts';
+import * as mod_52 from './modules/modifiers/delay.ts';
+import * as mod_53 from './modules/modifiers/document.ts';
+import * as mod_54 from './modules/modifiers/drag.ts';
+import * as mod_55 from './modules/modifiers/hold.ts';
+import * as mod_56 from './modules/modifiers/keys.ts';
+import * as mod_57 from './modules/modifiers/morph.ts';
+import * as mod_58 from './modules/modifiers/once.ts';
+import * as mod_59 from './modules/modifiers/outside.ts';
+import * as mod_60 from './modules/modifiers/prevent.ts';
+import * as mod_61 from './modules/modifiers/self.ts';
+import * as mod_62 from './modules/modifiers/stop.ts';
+import * as mod_63 from './modules/modifiers/throttle.ts';
+import * as mod_64 from './modules/modifiers/window.ts';
+import * as mod_65 from './modules/modifiers/zoom.ts';
+export const autoModifiers: any[] = [  { name: 'debounce', module: mod_51 },
+  { name: 'delay', module: mod_52 },
+  { name: 'document', module: mod_53 },
+  { name: 'drag', module: mod_54 },
+  { name: 'hold', module: mod_55 },
+  { name: 'keys', module: mod_56 },
+  { name: 'morph', module: mod_57 },
+  { name: 'once', module: mod_58 },
+  { name: 'outside', module: mod_59 },
+  { name: 'prevent', module: mod_60 },
+  { name: 'self', module: mod_61 },
+  { name: 'stop', module: mod_62 },
+  { name: 'throttle', module: mod_63 },
+  { name: 'window', module: mod_64 },
+  { name: 'zoom', module: mod_65 }];
+import * as mod_66 from './modules/listeners/bfcache.ts';
+import * as mod_67 from './modules/listeners/executeScript.ts';
+import * as mod_68 from './modules/listeners/history.ts';
+import * as mod_69 from './modules/listeners/linkRewriter.ts';
+export const autoListeners: any[] = [  { name: 'bfcache', module: mod_66 },
+  { name: 'executeScript', module: mod_67 },
+  { name: 'history', module: mod_68 },
+  { name: 'linkRewriter', module: mod_69 }];
 import * as mod_mutation from './engine/mutation.ts';
 export const autoObservers: any[] = [{ name: 'mutation', module: mod_mutation }];
 export const PACKED_COMPONENTS = ".draggable-chosen{background-color:var(--color-base-300,#d4d4d8);box-shadow:inset 0 0 0 2px var(--color-primary,#3b82f6)}.draggable-drag{opacity:1;background-color:var(--color-base-300,#d4d4d8);box-shadow:0 25px 50px -12px rgba(0,0,0,.25);transform:scale(1.05);cursor:grabbing;z-index:9999}.draggable-ghost{opacity:1;background-color:var(--color-base-300,#d4d4d8);border:2px solid var(--color-primary,#3b82f6);box-shadow:0 25px 50px -12px rgba(0,0,0,.25)}.draggable-selected{box-shadow:inset 0 0 0 2px var(--color-accent,var(--color-secondary,#ec4899))}.draggable-swap-highlight{background-color:color-mix(in srgb,var(--color-warning,#eab308) 20%,transparent);box-shadow:inset 0 0 0 2px var(--color-warning,#eab308)}.drop-target-before{background:linear-gradient(to bottom,color-mix(in srgb,var(--color-primary,#3b82f6) 30%,transparent) 0%,transparent 20%);box-shadow:inset 0 2px 0 0 var(--color-primary,#3b82f6)}.drop-target-after{background:linear-gradient(to top,color-mix(in srgb,var(--color-primary,#3b82f6) 30%,transparent) 0%,transparent 20%);box-shadow:inset 0 -2px 0 0 var(--color-primary,#3b82f6)}";
