@@ -18,8 +18,8 @@
         }
       }"
   data-signal="{ appReady: false, rtl: localStorage.rtl === 'true', zoom: Number(localStorage.zoom) || 1, tempZoom: Number(localStorage.zoom) || 1 }"
-  data-on-nexus-ready_document="appReady = true"
-  data-effect="if (document.documentElement.classList.contains('nexus-ready')) appReady = true"
+  data-effect="if (router?.activePageTab && router.activePageTab.isLoading === false) appReady = true"
+  data-init="setTimeout(() => appReady = true, 3000)"
   data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: (zoom || 1) + 'rem' }">
 
 
@@ -36,16 +36,17 @@
   <link rel="icon" type="image/svg+xml" href="./_assets/images/emblem.svg">
   <style>
     /* 1. Static Pre-JS FOUC Guard */
-    html:not(.nexus-ready) .nx-main {
+    .nx-main {
       opacity: 0 !important;
       visibility: hidden !important;
       pointer-events: none !important;
+      transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    html.nexus-ready .nx-main {
+    body.app-ready .nx-main {
       opacity: 1 !important;
       visibility: visible !important;
-      transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: auto !important;
     }
 
     /* 2. Top Progress Bar */
@@ -86,12 +87,27 @@
       align-items: center;
       justify-content: center;
       z-index: 9998;
-      background: radial-gradient(circle at center, rgba(15, 23, 42, 0.97) 0%, rgba(2, 6, 23, 0.99) 100%);
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      color: #0f172a;
       transition: opacity 0.45s ease-out, visibility 0.45s ease-out;
     }
 
-    html.nexus-ready .nexus-loading-screen,
-    html.nexus-ready .nexus-progress-mount {
+    @media (prefers-color-scheme: dark) {
+      .nexus-loading-screen {
+        background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
+        color: #f8fafc;
+      }
+    }
+
+    html[data-theme="dark"] .nexus-loading-screen,
+    html[data-theme="black"] .nexus-loading-screen,
+    html[data-theme="night"] .nexus-loading-screen {
+      background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
+      color: #f8fafc;
+    }
+
+    body.app-ready .nexus-loading-screen,
+    body.app-ready .nexus-progress-mount {
       opacity: 0 !important;
       visibility: hidden !important;
       pointer-events: none !important;
@@ -131,7 +147,8 @@
 </head>
 
 <body
-  class="bg-gradient-to-br from-base-200 via-base-100 to-base-300 h-screen max-h-screen overflow-hidden font-sans antialiased text-base-content">
+  class="bg-gradient-to-br from-base-200 via-base-100 to-base-300 h-screen max-h-screen overflow-hidden font-sans antialiased text-base-content"
+  data-class="{ 'app-ready': appReady }">
   <!-- Top Indeterminate Progress Bar -->
   <div class="nexus-progress-mount" aria-hidden="true">
     <div class="nexus-top-bar"></div>
