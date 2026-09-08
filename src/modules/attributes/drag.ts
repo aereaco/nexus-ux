@@ -103,8 +103,7 @@ export function isContainerElement(el: HTMLElement | null): boolean {
   if (el.hasAttribute("data-drag-item")) return false;
   if (
     el.hasAttribute("data-drag-container") ||
-    el.hasAttribute("data-teleport_drop") ||
-    el.hasAttribute("data-teleport:drop")
+    el.hasAttribute("data-teleport_drop")
   ) {
     return true;
   }
@@ -1276,13 +1275,11 @@ export class DragReorderEngine<T> {
         const fromExpr = (fromContainer as any).__dragListExpr
           || fromContainer.getAttribute("data-drag-container")
           || fromContainer.getAttribute("data-teleport_drop")
-          || fromContainer.getAttribute("data-teleport:drop")
           || fromContainer.getAttribute("data-drag")
           || "";
         const toExpr = (toContainer as any).__dragListExpr
           || toContainer.getAttribute("data-drag-container")
           || toContainer.getAttribute("data-teleport_drop")
-          || toContainer.getAttribute("data-teleport:drop")
           || toContainer.getAttribute("data-drag")
           || "";
 
@@ -1650,7 +1647,6 @@ export const dragAttribute: AttributeModule = {
     if (!listExpr) {
       listExpr = container.getAttribute("data-drag-container")
         || container.getAttribute("data-teleport_drop")
-        || container.getAttribute("data-teleport:drop")
         || "";
     }
     (container as any).__dragListExpr = listExpr;
@@ -1659,13 +1655,11 @@ export const dragAttribute: AttributeModule = {
     const [_, stopEffect] = runtime.elementBoundEffect(container, () => {
       // ─── Reactive Threshold Bridge ───
       const swapThreshExpr = container.getAttribute("data-bind-data-drag-swap-threshold")
-        || container.getAttribute("data-bind_data-drag-swap-threshold")
-        || container.getAttribute("data-bind:data-drag-swap-threshold");
+        || container.getAttribute("data-bind_data-drag-swap-threshold");
       const swapThreshVal = swapThreshExpr ? runtime.evaluate(container, swapThreshExpr) : undefined;
 
       const invertThreshExpr = container.getAttribute("data-bind-data-drag-invert-swap-threshold")
-        || container.getAttribute("data-bind_data-drag-invert-swap-threshold")
-        || container.getAttribute("data-bind:data-drag-invert-swap-threshold");
+        || container.getAttribute("data-bind_data-drag-invert-swap-threshold");
       const invertThreshVal = invertThreshExpr ? runtime.evaluate(container, invertThreshExpr) : undefined;
 
       if (!(container as any).__draggable) {

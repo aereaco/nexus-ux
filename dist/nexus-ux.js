@@ -4482,7 +4482,7 @@ ${scripts}
       return false;
     if (el.hasAttribute("data-drag-item"))
       return false;
-    if (el.hasAttribute("data-drag-container") || el.hasAttribute("data-teleport_drop") || el.hasAttribute("data-teleport:drop")) {
+    if (el.hasAttribute("data-drag-container") || el.hasAttribute("data-teleport_drop")) {
       return true;
     }
     if (el.hasAttribute("data-drag")) {
@@ -5515,8 +5515,8 @@ ${scripts}
               }
               const fromContainer = evt.from;
               const toContainer = evt.to;
-              const fromExpr = fromContainer.__dragListExpr || fromContainer.getAttribute("data-drag-container") || fromContainer.getAttribute("data-teleport_drop") || fromContainer.getAttribute("data-teleport:drop") || fromContainer.getAttribute("data-drag") || "";
-              const toExpr = toContainer.__dragListExpr || toContainer.getAttribute("data-drag-container") || toContainer.getAttribute("data-teleport_drop") || toContainer.getAttribute("data-teleport:drop") || toContainer.getAttribute("data-drag") || "";
+              const fromExpr = fromContainer.__dragListExpr || fromContainer.getAttribute("data-drag-container") || fromContainer.getAttribute("data-teleport_drop") || fromContainer.getAttribute("data-drag") || "";
+              const toExpr = toContainer.__dragListExpr || toContainer.getAttribute("data-drag-container") || toContainer.getAttribute("data-teleport_drop") || toContainer.getAttribute("data-drag") || "";
               if (!fromExpr || !this.runtime)
                 return;
               const oldIndex = evt.oldIndex;
@@ -5769,13 +5769,13 @@ ${scripts}
             }
           }
           if (!listExpr) {
-            listExpr = container.getAttribute("data-drag-container") || container.getAttribute("data-teleport_drop") || container.getAttribute("data-teleport:drop") || "";
+            listExpr = container.getAttribute("data-drag-container") || container.getAttribute("data-teleport_drop") || "";
           }
           container.__dragListExpr = listExpr;
           const [_, stopEffect] = runtime.elementBoundEffect(container, () => {
-            const swapThreshExpr = container.getAttribute("data-bind-data-drag-swap-threshold") || container.getAttribute("data-bind_data-drag-swap-threshold") || container.getAttribute("data-bind:data-drag-swap-threshold");
+            const swapThreshExpr = container.getAttribute("data-bind-data-drag-swap-threshold") || container.getAttribute("data-bind_data-drag-swap-threshold");
             const swapThreshVal = swapThreshExpr ? runtime.evaluate(container, swapThreshExpr) : void 0;
-            const invertThreshExpr = container.getAttribute("data-bind-data-drag-invert-swap-threshold") || container.getAttribute("data-bind_data-drag-invert-swap-threshold") || container.getAttribute("data-bind:data-drag-invert-swap-threshold");
+            const invertThreshExpr = container.getAttribute("data-bind-data-drag-invert-swap-threshold") || container.getAttribute("data-bind_data-drag-invert-swap-threshold");
             const invertThreshVal = invertThreshExpr ? runtime.evaluate(container, invertThreshExpr) : void 0;
             if (!container.__draggable) {
               try {
