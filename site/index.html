@@ -35,6 +35,14 @@
   <script type="module" src="./dist/nexus-ux.js"></script>
   <link rel="icon" type="image/svg+xml" href="./_assets/images/emblem.svg">
   <style>
+    /* 0. Neutralize Framework Root Hiding (Never hide html/body) */
+    html.nexus-loading,
+    [data-nexus-loading] {
+      visibility: visible !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+
     /* 1. Static Pre-JS FOUC Guard */
     .nx-main {
       opacity: 0 !important;
@@ -78,23 +86,23 @@
       }
     }
 
-    /* 3. Sleek Loading Splash Screen */
+    /* 3. Full-Viewport Pre-Rendered Loading Screen */
     .nexus-loading-screen {
       position: fixed;
       inset: 0;
+      z-index: 99999;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      z-index: 9998;
-      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      background: linear-gradient(135deg, #f1f5f9 0%, #ffffff 50%, #e2e8f0 100%);
       color: #0f172a;
-      transition: opacity 0.45s ease-out, visibility 0.45s ease-out;
+      transition: opacity 0.4s ease-out, visibility 0.4s ease-out;
     }
 
     @media (prefers-color-scheme: dark) {
       .nexus-loading-screen {
-        background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #020617 100%);
         color: #f8fafc;
       }
     }
@@ -102,7 +110,7 @@
     html[data-theme="dark"] .nexus-loading-screen,
     html[data-theme="black"] .nexus-loading-screen,
     html[data-theme="night"] .nexus-loading-screen {
-      background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #020617 100%);
       color: #f8fafc;
     }
 
@@ -159,7 +167,13 @@
     <div class="relative flex flex-col items-center gap-5 select-none">
       <div class="relative w-20 h-20 flex items-center justify-center">
         <div class="absolute inset-0 rounded-full bg-primary/20 blur-2xl animate-pulse"></div>
-        <img src="./_assets/images/emblem.svg" alt="Nexus-UX" class="nexus-loader-emblem w-14 h-14 relative z-10" />
+        <svg class="nexus-loader-emblem w-14 h-14 relative z-10" viewBox="0 0 10.594 10.594" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(-42.525 -200.67)">
+            <g transform="matrix(.66735 0 0 .66735 -88.919 71.304)" style="fill:#570df8">
+              <path d="m196.97 201.78c0 4.3897 3.5478 7.9375 7.9375 7.9375 4.3897 0 7.9375-3.5478 7.9375-7.9375 0-4.3897-3.5478-7.9375-7.9375-7.9375-4.3897 0-7.9375 3.5598-7.9375 7.9375zm1.757 3.1575c0-0.63138 0.50511-1.1365 1.1365-1.1365 0.6314 0 1.1365 0.5051 1.1365 1.1365 0 0.63135-0.50513 1.1364-1.1365 1.1364-0.63141 0-1.1365-0.5051-1.1365-1.1364zm1.7679-3.0306c0-0.63136 0.50513-1.1365 1.1365-1.1365 0.6314 0 1.1365 0.5051 1.1365 1.1365 0 0.63137-0.50512 1.1365-1.1365 1.1365-0.63141 0-1.1365-0.50509-1.1365-1.1365zm1.5154 3.0306c0-0.63138 0.50513-1.1365 1.1365-1.1365s1.1366 0.5051 1.1366 1.1365c0 0.63135-0.50515 1.1364-1.1366 1.1364s-1.1365-0.5051-1.1365-1.1364zm0-6.0611c0-0.63136 0.50513-1.1364 1.1365-1.1364s1.1366 0.50508 1.1366 1.1364c0 0.63138-0.50515 1.1365-1.1366 1.1365s-1.1365-0.50508-1.1365-1.1365zm1.7679 3.0306c0-0.63136 0.50515-1.1365 1.1365-1.1365 0.63141 0 1.1366 0.5051 1.1366 1.1365 0 0.63137-0.50514 1.1365-1.1366 1.1365-0.63138 0-1.1365-0.50509-1.1365-1.1365zm3.4e-4 -6.0611c0-0.63137 0.50515-1.1365 1.1365-1.1365 0.6314 0 1.1365 0.5051 1.1365 1.1365 0 0.63136-0.50513 1.1364-1.1365 1.1364-0.63139 0-1.1365-0.50508-1.1365-1.1364zm1.7676 9.0916c0-0.63138 0.50514-1.1365 1.1365-1.1365s1.1365 0.5051 1.1365 1.1365c0 0.63135-0.50513 1.1364-1.1365 1.1364s-1.1365-0.5051-1.1365-1.1364zm0-6.0611c0-0.63136 0.50514-1.1364 1.1365-1.1364s1.1365 0.50508 1.1365 1.1364c0 0.63138-0.50513 1.1365-1.1365 1.1365s-1.1365-0.50508-1.1365-1.1365zm1.5154 3.0306c0-0.63136 0.50513-1.1365 1.1365-1.1365 0.6314 0 1.1365 0.5051 1.1365 1.1365 0 0.63137-0.50511 1.1365-1.1365 1.1365-0.63141 0-1.1365-0.50509-1.1365-1.1365zm1.7679 3.0306c0-0.63138 0.50511-1.1365 1.1365-1.1365s1.1365 0.5051 1.1365 1.1365c0 0.63135-0.50512 1.1364-1.1365 1.1364s-1.1365-0.5051-1.1365-1.1364z" style="fill:#570df8;stroke-width:.12026"/>
+            </g>
+          </g>
+        </svg>
       </div>
       <div class="flex flex-col items-center gap-1.5">
         <span class="text-xs text-slate-400 font-mono tracking-widest animate-pulse">Loading...</span>
