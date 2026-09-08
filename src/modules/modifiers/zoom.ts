@@ -2,7 +2,7 @@ import { ModifierModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 
 /**
- * Universal :zoom Modifier.
+ * Universal _zoom Modifier.
  * Injects $zoom delta and origin into the evaluation scope for wheel/pinch events.
  */
 export const zoomModifier: ModifierModule = {
