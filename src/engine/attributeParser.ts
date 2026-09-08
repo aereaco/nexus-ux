@@ -61,9 +61,8 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
     const char = isEnd ? '' : rest[i];
 
     // `_` (standard per NEG_TOKENS.MODIFIER) transitions to MODIFIER state
-    // `:` preserved as transitional compatibility fallback
     // `-` transitions from DIRECTIVE to ARGUMENT state (only when before modifier state)
-    const isModifierDelim = char === MODIFIER_DELIMITER || char === '_' || char === ':';
+    const isModifierDelim = char === MODIFIER_DELIMITER || char === '_';
     const isArgDelim = char === '-' && state < 2;
     const isDelim = isModifierDelim || isArgDelim;
 

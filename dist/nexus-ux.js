@@ -15696,7 +15696,7 @@ ${bridge}`, {
     for (let i = 0; i <= len; i++) {
       const isEnd = i === len;
       const char = isEnd ? "" : rest[i];
-      const isModifierDelim = char === MODIFIER_DELIMITER || char === "_" || char === ":";
+      const isModifierDelim = char === MODIFIER_DELIMITER || char === "_";
       const isArgDelim = char === "-" && state < 2;
       const isDelim = isModifierDelim || isArgDelim;
       if (isDelim || isEnd) {
