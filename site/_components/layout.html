@@ -1909,9 +1909,9 @@
         </div>
 
         <!-- 2. Categorized / Grouped Favorites (Draggable Whole Groups) -->
-        <div data-drag-container="favoriteGroups">
+        <div data-drag="favoriteGroups">
           <template data-for="grp in favoriteGroups">
-            <div data-drag data-show="(favorites || []).filter(f => (f.group || '').trim() === grp).length > 0">
+            <div data-drag-item data-show="(favorites || []).filter(f => (f.group || '').trim() === grp).length > 0">
               <!-- Group Header (Title + Separator Line) -->
               <ul class="menu w-full py-0">
                 <li class="menu-title cursor-grab font-bold text-xs uppercase tracking-wider opacity-60 mt-3"
@@ -1923,11 +1923,9 @@
               <div class="transition-all duration-300 w-full" data-class="{
                   'grid grid-cols-2 gap-2 px-3 py-1': favViewMode === 'grid',
                   'flex flex-col gap-1.5 px-3 py-1': favViewMode === 'list'
-                }" data-drag-container="favorites" data-drag-group="favorites"
-                data-drag-class="!opacity-100 !shadow-[0_15px_30px_-8px_rgba(0,0,0,0.25)] scale-105 cursor-grabbing z-[9999]"
-                data-drag-ghost-class="opacity-40 bg-base-200 border-2 border-dashed border-base-content/20">
+                }" data-drag="{ list: 'favorites', group: 'favorites' }">
                 <template data-for="fav in (favorites || []).filter(f => (f.group || '').trim() === grp)">
-                  <div data-drag
+                  <div data-drag-item
                     data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'fav', target: fav }"
                     class="rounded-xl transition-all duration-300 flex border border-transparent min-w-0 cursor-move relative group"
                     data-class="{
