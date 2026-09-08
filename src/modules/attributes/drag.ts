@@ -1451,7 +1451,7 @@ export class DragReorderEngine<T> {
     const stack = getDataStack(container);
     if (stack.length > 0) {
       const scope = stack[0];
-      const hasChildren = container.querySelector(':scope > [data-drag]:not([data-for])') != null;
+      const hasChildren = container.querySelector(':scope > [data-drag-item], :scope > [data-drag]:not([data-for])') != null;
       scope.dragEmpty = !hasChildren;
     }
   }
@@ -1485,7 +1485,12 @@ export function buildReorderContext<T>(
       const list = getList();
       mutate(list);
       try {
-        if (listExpr.includes('.')) {
+        if (listExpr.startsWith('#')) {
+          const sigName = listExpr.slice(1);
+          if (runtime.setGlobalSignal) {
+            runtime.setGlobalSignal(sigName, [...list]);
+          }
+        } else if (listExpr.includes('.')) {
           const parts = listExpr.split('.');
           const prop = parts.pop()!;
           const targetObj = runtime.evaluate(container, parts.join('.'));
@@ -1529,12 +1534,49 @@ export function buildReorderContext<T>(
 // ---------------------------------------------------------------------------
 // Nexus-UX Directive Bindings
 // ---------------------------------------------------------------------------
+export const dragItemAttribute: AttributeModule = {
+  name: "dragItem",
+  attribute: "drag-item",
+  handle: (element: HTMLElement) => {
+    ensureDragStyles(element.getRootNode() as Document | ShadowRoot);
+  }
+};
+
+export const dragHandleAttribute: AttributeModule = {
+  name: "dragHandle",
+  attribute: "drag-handle",
+  handle: (element: HTMLElement) => {
+    ensureDragStyles(element.getRootNode() as Document | ShadowRoot);
+  }
+};
+
+export const dragNoDragAttribute: AttributeModule = {
+  name: "dragNoDrag",
+  attribute: "drag-nodrag",
+  handle: () => {}
+};
+
 export const dragAttribute: AttributeModule = {
   name: "drag",
   attribute: "drag",
-  handle: (element: HTMLElement, _value: string, runtime: RuntimeContext) => {
-    const isContainer = element.hasAttribute('data-drag-container') || element.hasAttribute('data-teleport:drop');
-    if (!isContainer) return;
+  handle: (element: HTMLElement, value: string, runtime: RuntimeContext, parsedAttr?: any) => {
+    ensureDragStyles(element.getRootNode() as Document | ShadowRoot);
+
+    const arg = parsedAttr?.argument;
+    if (arg === 'item' || element.hasAttribute('data-drag-item')) {
+      return dragItemAttribute.handle(element, value, runtime, parsedAttr);
+    }
+    if (arg === 'handle' || element.hasAttribute('data-drag-handle')) {
+      return dragHandleAttribute.handle(element, value, runtime, parsedAttr);
+    }
+    if (arg === 'nodrag' || element.hasAttribute('data-drag-nodrag')) {
+      return dragNoDragAttribute.handle(element, value, runtime, parsedAttr);
+    }
+
+    const isContainer = isContainerElement(element);
+    if (!isContainer && !value) {
+      return dragItemAttribute.handle(element, value, runtime, parsedAttr);
+    }
 
     if ((element as any).__nexusDragBound) return (element as any).__nexusDragCleanup;
     (element as any).__nexusDragBound = true;
@@ -1542,25 +1584,45 @@ export const dragAttribute: AttributeModule = {
 
     let cleanupEffect: (() => void) | undefined = undefined;
 
+    // Resolve listExpr
+    let listExpr = '';
+    if (value && value.trim()) {
+      try {
+        const evaluated = runtime.evaluate(container, value);
+        if (evaluated && typeof evaluated === 'object' && !Array.isArray(evaluated) && evaluated.list) {
+          listExpr = evaluated.list;
+        } else if (typeof evaluated === 'string') {
+          listExpr = evaluated;
+        } else {
+          listExpr = value.trim();
+        }
+      } catch {
+        listExpr = value.trim();
+      }
+    }
+    if (!listExpr) {
+      listExpr = container.getAttribute("data-drag-container")
+        || container.getAttribute("data-teleport_drop")
+        || container.getAttribute("data-teleport:drop")
+        || "";
+    }
+    (container as any).__dragListExpr = listExpr;
+
     // Use runtime elementBoundEffect for automatic cleanup
     const [_, stopEffect] = runtime.elementBoundEffect(container, () => {
       // ─── Reactive Threshold Bridge ───
-      // Always evaluate any data-bind bound swap-threshold expressions here so
-      // their reactive dependencies (e.g. a slider-backed signal) are tracked on
-      // EVERY effect run — including the very first, before the engine exists.
-      // Evaluating unconditionally is what registers the dependency; skipping it
-      // when the engine is absent would mean the effect never re-runs on change.
       const swapThreshExpr = container.getAttribute("data-bind-data-drag-swap-threshold")
+        || container.getAttribute("data-bind_data-drag-swap-threshold")
         || container.getAttribute("data-bind:data-drag-swap-threshold");
       const swapThreshVal = swapThreshExpr ? runtime.evaluate(container, swapThreshExpr) : undefined;
 
       const invertThreshExpr = container.getAttribute("data-bind-data-drag-invert-swap-threshold")
+        || container.getAttribute("data-bind_data-drag-invert-swap-threshold")
         || container.getAttribute("data-bind:data-drag-invert-swap-threshold");
       const invertThreshVal = invertThreshExpr ? runtime.evaluate(container, invertThreshExpr) : undefined;
 
       if (!(container as any).__draggable) {
         try {
-          const listExpr = container.getAttribute("data-drag-container") || container.getAttribute("data-teleport:drop") || "";
           const ghostOpacityAttr = container.getAttribute("data-drag-ghost-opacity");
           const ghostOpacity = ghostOpacityAttr ? parseFloat(ghostOpacityAttr) : undefined;
           const ctx = buildReorderContext(container, listExpr, runtime, {
@@ -1568,18 +1630,6 @@ export const dragAttribute: AttributeModule = {
           });
           const engine = new DragReorderEngine(ctx, runtime);
           (container as any).__draggable = engine;
-
-          // Pre-register dynamic drag classes with stylesheet compiler
-          const dragClass = container.getAttribute("data-drag-class");
-          const ghostClass = container.getAttribute("data-drag-ghost-class");
-          const chosenClass = container.getAttribute("data-drag-chosen-class");
-          [dragClass, ghostClass, chosenClass].forEach(c => {
-            if (c) {
-              c.split(/\s+/).filter(Boolean).forEach(cls => {
-                stylesheet.adoptClass(cls, container, runtime);
-              });
-            }
-          });
 
           // Cleanup engine ONLY when container itself leaves DOM
           const enhancedContainer = container as any;
@@ -1592,6 +1642,7 @@ export const dragAttribute: AttributeModule = {
               engine.draggable.destroy();
             }
             delete (container as any).__draggable;
+            delete (container as any).__dragListExpr;
           };
           if (containerCleanups instanceof Map) {
             containerCleanups.set("draggable-cleanup", cleanupFn);
@@ -1603,9 +1654,6 @@ export const dragAttribute: AttributeModule = {
         }
       }
 
-      // Push the freshly-evaluated threshold values into the live engine options.
-      // Runs after init so first-mount also applies, and on every reactive re-run
-      // so slider changes take effect mid-session without restarting the drag.
       const engineNow = (container as any).__draggable as DragReorderEngine<unknown> | undefined;
       if (engineNow && engineNow.draggable) {
         if (swapThreshVal !== undefined && swapThreshVal !== null && swapThreshVal !== "") {
