@@ -3958,7 +3958,7 @@ ${scripts}
         metadata: { after: ["signal"] },
         handle: (el, value, runtime) => {
           const computedCleanup = [];
-          const isGlobal = el.hasAttribute("data-computed_global") || el.hasAttribute("data-computed:global") || el.hasAttribute("data-computed-global");
+          const isGlobal = el.hasAttribute("data-computed_global") || el.hasAttribute("data-computed-global");
           const { ghostKeys } = parseGhostKeys(value);
           const initialGhostState = {};
           ghostKeys.forEach((key) => initialGhostState[key] = void 0);
