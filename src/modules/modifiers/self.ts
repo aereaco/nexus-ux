@@ -5,8 +5,8 @@
  * element itself, not a child element. AlpineJS parity modifier.
  *
  * NEG Token Boundary:
- *   This is a behavior modifier (`:`) not an intent modifier (`-`).
- *   Used as: `data-on-click:self`
+ *   This is a behavior modifier (`_`) not an intent modifier (`-`).
+ *   Used as: `data-on-click_self`
  *
  * ZCZS Guarantees:
  *   - Zero-copy: Event target is compared by reference; no cloning.
