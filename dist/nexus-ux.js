@@ -10335,7 +10335,7 @@ ${match}</ul>
         attribute: "scrollbar",
         handle: (el, value, runtime) => {
           ensureStylesAdopted();
-          const isGlobal = el.hasAttribute("data-scrollbar_global") || el.hasAttribute("data-scrollbar:global") || el.hasAttribute("data-scrollbar-global") || el.tagName.toLowerCase() === "html";
+          const isGlobal = el.hasAttribute("data-scrollbar_global") || el.hasAttribute("data-scrollbar-global") || el.tagName.toLowerCase() === "html";
           let config = {};
           if (value && value.trim()) {
             try {
