@@ -618,13 +618,19 @@ export class Draggable {
       this.lastTarget === target
     );
 
-    if (direction !== 0) {
-      // Highlight the swap-eligible target so the live threshold band is
-      // visible during the drag and matches the demo's threshold overlay.
-      if (this.options.swap) {
+    // Swap mode: decouple hover highlight from DOM mutation.
+    // Never mutate DOM on hover; atomic pairwise swap is executed on drop in _onPointerUp.
+    if (this.options.swap) {
+      if (direction !== 0 && target !== this.dragEl) {
         this._setSwapHighlight(target);
+      } else if (target === this.dragEl) {
+        this._clearSwapHighlight();
       }
+      this._updateDocked();
+      return;
+    }
 
+    if (direction !== 0) {
       // Check if already beside target
       let sibling: HTMLElement | null = null;
       let dragIndex = Array.from(this.dragEl.parentElement!.children).indexOf(this.dragEl);
@@ -646,16 +652,12 @@ export class Draggable {
       const destBefore = isSameContainer ? srcBefore : this._captureRects(targetParent);
 
       // Perform reorder mutation in DOM
-      if (this.options.swap) {
-        this._swapNodes(this.dragEl, target);
+      const nextSibling = target.nextElementSibling;
+      const after = direction === 1;
+      if (after && !nextSibling) {
+        targetParent.appendChild(this.dragEl);
       } else {
-        const nextSibling = target.nextElementSibling;
-        const after = direction === 1;
-        if (after && !nextSibling) {
-          targetParent.appendChild(this.dragEl);
-        } else {
-          targetParent.insertBefore(this.dragEl, after ? nextSibling : target);
-        }
+        targetParent.insertBefore(this.dragEl, after ? nextSibling : target);
       }
 
       // Animate shifts in both containers
@@ -676,6 +678,7 @@ export class Draggable {
 
   private _onPointerUp(e: PointerEvent) {
     this._cleanupDragListeners();
+    const swapTarget = this._swapHighlightTarget;
     this._clearSwapHighlight();
 
     if (this.dragEl) {
@@ -710,48 +713,84 @@ export class Draggable {
           Draggable.ghost = null;
         }
 
-        // Compute finalIndex relative to the dropped target container, mirroring
-        // DraggableJS MultiDrag's `index(dragEl, ':not(.selectedClass)')`: count only
-        // NON-selected draggable siblings before dragEl. Folded (selected) members are
-        // still in the DOM (hidden) during drag, so excluding them by class — not by
-        // visibility — yields the correct group insertion slot.
-        let finalIndex = 0;
-        const children = Array.from(this.dragEl.parentElement!.children);
-        for (let i = 0; i < children.length; i++) {
-          const child = children[i];
-          if (child === this.dragEl) break;
-          if ((child as HTMLElement).classList.contains(this.options.selectedClass!)) continue;
-          if (child.nodeName.toUpperCase() === 'TEMPLATE') continue;
-          if ((child as any)[IS_TEMPLATE_KEY]) continue;
-          if (child.getAttribute('draggable') === 'false') continue;
-          if (child.matches(this.options.draggable!)) {
-            finalIndex++;
-          }
-        }
-
         const oldIndex = this.originalIndices.get(this.dragEl);
 
-        // NOTE: DraggableJS MultiDrag KEEPS the selection after a drop (items
-        // remain selected so the group can be re-dragged). We intentionally do
-        // NOT clear `item.selected` here — doing so fires a concurrent reactive
-        // re-render that races with the list-mutation re-render while the folded
-        // (display:none) items are still in the DOM, which scrambles the
-        // data-for reconciler output. Selection is only cleared on a plain tap.
+        if (this.options.swap) {
+          if (swapTarget && swapTarget !== this.dragEl) {
+            const targetIndex = this.originalIndices.get(swapTarget);
+            const srcContainer = this.dragEl.parentElement!;
+            const destContainer = swapTarget.parentElement!;
+            const isSame = srcContainer === destContainer;
 
-        if (this.options.onEnd) {
-          this.options.onEnd({
-            item: this.dragEl,
-            from: this.parentEl,
-            to: this.dragEl.parentElement,
-            oldIndex,
-            newIndex: finalIndex,
-            originalEvent: e,
-            items: [...this.multiDragElements],
-            oldIndicies: this.multiDragElements.map(el => ({
-              multiDragElement: el,
-              index: this.originalIndices.get(el) ?? -1,
-            })),
-          });
+            const srcBefore = this._captureRects(srcContainer);
+            const destBefore = isSame ? srcBefore : this._captureRects(destContainer);
+
+            this._swapNodes(this.dragEl, swapTarget);
+
+            this._animateShift(srcContainer, srcBefore);
+            if (!isSame) {
+              this._animateShift(destContainer, destBefore);
+            }
+
+            if (this.options.onEnd) {
+              this.options.onEnd({
+                item: this.dragEl,
+                from: this.parentEl,
+                to: destContainer,
+                oldIndex,
+                newIndex: targetIndex,
+                originalEvent: e,
+                items: [],
+                oldIndicies: [],
+                swapItem: swapTarget,
+              });
+            }
+          } else {
+            // Released without a swap target: no reorder
+            if (this.options.onEnd) {
+              this.options.onEnd({
+                item: this.dragEl,
+                from: this.parentEl,
+                to: this.dragEl.parentElement,
+                oldIndex,
+                newIndex: oldIndex,
+                originalEvent: e,
+                items: [],
+                oldIndicies: [],
+              });
+            }
+          }
+        } else {
+          // Standard sorting insertion logic:
+          let finalIndex = 0;
+          const children = Array.from(this.dragEl.parentElement!.children);
+          for (let i = 0; i < children.length; i++) {
+            const child = children[i];
+            if (child === this.dragEl) break;
+            if ((child as HTMLElement).classList.contains(this.options.selectedClass!)) continue;
+            if (child.nodeName.toUpperCase() === 'TEMPLATE') continue;
+            if ((child as any)[IS_TEMPLATE_KEY]) continue;
+            if (child.getAttribute('draggable') === 'false') continue;
+            if (child.matches(this.options.draggable!)) {
+              finalIndex++;
+            }
+          }
+
+          if (this.options.onEnd) {
+            this.options.onEnd({
+              item: this.dragEl,
+              from: this.parentEl,
+              to: this.dragEl.parentElement,
+              oldIndex,
+              newIndex: finalIndex,
+              originalEvent: e,
+              items: [...this.multiDragElements],
+              oldIndicies: this.multiDragElements.map(el => ({
+                multiDragElement: el,
+                index: this.originalIndices.get(el) ?? -1,
+              })),
+            });
+          }
         }
 
         if (this.options.multiDrag) {
@@ -1014,21 +1053,16 @@ export class Draggable {
   }
 
   private _swapNodes(n1: HTMLElement, n2: HTMLElement) {
+    if (!n1 || !n2 || n1 === n2) return;
     const p1 = n1.parentNode;
     const p2 = n2.parentNode;
-    if (!p1 || !p2 || p1.isEqualNode(n2) || p2.isEqualNode(n1)) return;
+    if (!p1 || !p2) return;
 
-    const children = Array.from(p1.children);
-    const i1 = children.indexOf(n1);
-    const i2 = children.indexOf(n2);
-
-    if (p1.isEqualNode(p2) && i1 < i2) {
-      p1.insertBefore(n2, children[i1]);
-      p2.insertBefore(n1, children[i2 + 1] || null);
-    } else {
-      p1.insertBefore(n2, children[i1]);
-      p2.insertBefore(n1, children[i2] || null);
-    }
+    const tempMarker = document.createComment('swap-marker');
+    p1.insertBefore(tempMarker, n1);
+    p2.insertBefore(n1, n2);
+    p1.insertBefore(n2, tempMarker);
+    p1.removeChild(tempMarker);
   }
 
   private _maybeAutoScroll(clientX: number, clientY: number) {
@@ -1277,6 +1311,19 @@ export class DragReorderEngine<T> {
           const targetList = this.runtime.evaluate(toContainer, toExpr) as any[];
           const sourceList = this.runtime.evaluate(fromContainer, fromExpr) as any[];
           if (Array.isArray(targetList) && Array.isArray(sourceList)) {
+            if (swap) {
+              if (typeof oldIndex === 'number' && typeof newIndex === 'number' && oldIndex >= 0 && newIndex >= 0) {
+                const temp = sourceList[oldIndex];
+                sourceList[oldIndex] = targetList[newIndex];
+                targetList[newIndex] = temp;
+              }
+              if (this.runtime) {
+                this.updateEmptyState(fromContainer);
+                this.updateEmptyState(toContainer);
+              }
+              return;
+            }
+
             const isClone = (group?.pull === 'clone') || (toContainer.hasAttribute("data-drag-clone") || toContainer.getAttribute("data-drag-clone") === "true");
 
             let itemsToInsert: any[] = [];

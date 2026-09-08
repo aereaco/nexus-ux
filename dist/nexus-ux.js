@@ -4998,10 +4998,16 @@ ${scripts}
             this.isCircumstantialInvert,
             this.lastTarget === target
           );
-          if (direction !== 0) {
-            if (this.options.swap) {
+          if (this.options.swap) {
+            if (direction !== 0 && target !== this.dragEl) {
               this._setSwapHighlight(target);
+            } else if (target === this.dragEl) {
+              this._clearSwapHighlight();
             }
+            this._updateDocked();
+            return;
+          }
+          if (direction !== 0) {
             let sibling = null;
             let dragIndex = Array.from(this.dragEl.parentElement.children).indexOf(this.dragEl);
             if (dragIndex !== -1) {
@@ -5017,16 +5023,12 @@ ${scripts}
             this.lastDirection = direction;
             const srcBefore = this._captureRects(this.dragEl.parentElement);
             const destBefore = isSameContainer ? srcBefore : this._captureRects(targetParent);
-            if (this.options.swap) {
-              this._swapNodes(this.dragEl, target);
+            const nextSibling = target.nextElementSibling;
+            const after = direction === 1;
+            if (after && !nextSibling) {
+              targetParent.appendChild(this.dragEl);
             } else {
-              const nextSibling = target.nextElementSibling;
-              const after = direction === 1;
-              if (after && !nextSibling) {
-                targetParent.appendChild(this.dragEl);
-              } else {
-                targetParent.insertBefore(this.dragEl, after ? nextSibling : target);
-              }
+              targetParent.insertBefore(this.dragEl, after ? nextSibling : target);
             }
             this._animateShift(this.dragEl.parentElement, srcBefore);
             if (!isSameContainer) {
@@ -5041,6 +5043,7 @@ ${scripts}
         }
         _onPointerUp(e) {
           this._cleanupDragListeners();
+          const swapTarget = this._swapHighlightTarget;
           this._clearSwapHighlight();
           if (this.dragEl) {
             this.dragEl.classList.remove(this.options.chosenClass);
@@ -5061,39 +5064,81 @@ ${scripts}
                 _Draggable.ghost.parentNode?.removeChild(_Draggable.ghost);
                 _Draggable.ghost = null;
               }
-              let finalIndex = 0;
-              const children = Array.from(this.dragEl.parentElement.children);
-              for (let i = 0; i < children.length; i++) {
-                const child = children[i];
-                if (child === this.dragEl)
-                  break;
-                if (child.classList.contains(this.options.selectedClass))
-                  continue;
-                if (child.nodeName.toUpperCase() === "TEMPLATE")
-                  continue;
-                if (child[IS_TEMPLATE_KEY])
-                  continue;
-                if (child.getAttribute("draggable") === "false")
-                  continue;
-                if (child.matches(this.options.draggable)) {
-                  finalIndex++;
-                }
-              }
               const oldIndex = this.originalIndices.get(this.dragEl);
-              if (this.options.onEnd) {
-                this.options.onEnd({
-                  item: this.dragEl,
-                  from: this.parentEl,
-                  to: this.dragEl.parentElement,
-                  oldIndex,
-                  newIndex: finalIndex,
-                  originalEvent: e,
-                  items: [...this.multiDragElements],
-                  oldIndicies: this.multiDragElements.map((el) => ({
-                    multiDragElement: el,
-                    index: this.originalIndices.get(el) ?? -1
-                  }))
-                });
+              if (this.options.swap) {
+                if (swapTarget && swapTarget !== this.dragEl) {
+                  const targetIndex = this.originalIndices.get(swapTarget);
+                  const srcContainer = this.dragEl.parentElement;
+                  const destContainer = swapTarget.parentElement;
+                  const isSame = srcContainer === destContainer;
+                  const srcBefore = this._captureRects(srcContainer);
+                  const destBefore = isSame ? srcBefore : this._captureRects(destContainer);
+                  this._swapNodes(this.dragEl, swapTarget);
+                  this._animateShift(srcContainer, srcBefore);
+                  if (!isSame) {
+                    this._animateShift(destContainer, destBefore);
+                  }
+                  if (this.options.onEnd) {
+                    this.options.onEnd({
+                      item: this.dragEl,
+                      from: this.parentEl,
+                      to: destContainer,
+                      oldIndex,
+                      newIndex: targetIndex,
+                      originalEvent: e,
+                      items: [],
+                      oldIndicies: [],
+                      swapItem: swapTarget
+                    });
+                  }
+                } else {
+                  if (this.options.onEnd) {
+                    this.options.onEnd({
+                      item: this.dragEl,
+                      from: this.parentEl,
+                      to: this.dragEl.parentElement,
+                      oldIndex,
+                      newIndex: oldIndex,
+                      originalEvent: e,
+                      items: [],
+                      oldIndicies: []
+                    });
+                  }
+                }
+              } else {
+                let finalIndex = 0;
+                const children = Array.from(this.dragEl.parentElement.children);
+                for (let i = 0; i < children.length; i++) {
+                  const child = children[i];
+                  if (child === this.dragEl)
+                    break;
+                  if (child.classList.contains(this.options.selectedClass))
+                    continue;
+                  if (child.nodeName.toUpperCase() === "TEMPLATE")
+                    continue;
+                  if (child[IS_TEMPLATE_KEY])
+                    continue;
+                  if (child.getAttribute("draggable") === "false")
+                    continue;
+                  if (child.matches(this.options.draggable)) {
+                    finalIndex++;
+                  }
+                }
+                if (this.options.onEnd) {
+                  this.options.onEnd({
+                    item: this.dragEl,
+                    from: this.parentEl,
+                    to: this.dragEl.parentElement,
+                    oldIndex,
+                    newIndex: finalIndex,
+                    originalEvent: e,
+                    items: [...this.multiDragElements],
+                    oldIndicies: this.multiDragElements.map((el) => ({
+                      multiDragElement: el,
+                      index: this.originalIndices.get(el) ?? -1
+                    }))
+                  });
+                }
               }
               if (this.options.multiDrag) {
                 this.multiDragElements = [];
@@ -5279,20 +5324,17 @@ ${scripts}
           return mouseOnAxis > targetS1 + targetLength / 2 ? 1 : -1;
         }
         _swapNodes(n1, n2) {
+          if (!n1 || !n2 || n1 === n2)
+            return;
           const p1 = n1.parentNode;
           const p2 = n2.parentNode;
-          if (!p1 || !p2 || p1.isEqualNode(n2) || p2.isEqualNode(n1))
+          if (!p1 || !p2)
             return;
-          const children = Array.from(p1.children);
-          const i1 = children.indexOf(n1);
-          const i2 = children.indexOf(n2);
-          if (p1.isEqualNode(p2) && i1 < i2) {
-            p1.insertBefore(n2, children[i1]);
-            p2.insertBefore(n1, children[i2 + 1] || null);
-          } else {
-            p1.insertBefore(n2, children[i1]);
-            p2.insertBefore(n1, children[i2] || null);
-          }
+          const tempMarker = document.createComment("swap-marker");
+          p1.insertBefore(tempMarker, n1);
+          p2.insertBefore(n1, n2);
+          p1.insertBefore(n2, tempMarker);
+          p1.removeChild(tempMarker);
         }
         _maybeAutoScroll(clientX, clientY) {
           if (!this.scrollParent || !this.scrollParentBounds)
@@ -5486,6 +5528,18 @@ ${scripts}
                 const targetList = this.runtime.evaluate(toContainer, toExpr);
                 const sourceList = this.runtime.evaluate(fromContainer, fromExpr);
                 if (Array.isArray(targetList) && Array.isArray(sourceList)) {
+                  if (swap) {
+                    if (typeof oldIndex === "number" && typeof newIndex === "number" && oldIndex >= 0 && newIndex >= 0) {
+                      const temp = sourceList[oldIndex];
+                      sourceList[oldIndex] = targetList[newIndex];
+                      targetList[newIndex] = temp;
+                    }
+                    if (this.runtime) {
+                      this.updateEmptyState(fromContainer);
+                      this.updateEmptyState(toContainer);
+                    }
+                    return;
+                  }
                   const isClone = group?.pull === "clone" || (toContainer.hasAttribute("data-drag-clone") || toContainer.getAttribute("data-drag-clone") === "true");
                   let itemsToInsert = [];
                   let indicesToRemove = [];
