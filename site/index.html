@@ -17,8 +17,33 @@
           script: { src: 'https://cdn.jsdelivr.net/npm/iconify-icon@3.0.0/dist/iconify-icon.min.js' }
         }
       }"
-  data-signal="{ appReady: false, rtl: localStorage.rtl === 'true', zoom: Number(localStorage.zoom) || 1, tempZoom: Number(localStorage.zoom) || 1 }"
-  data-effect="if (router?.activePageTab && router.activePageTab.isLoading === false) appReady = true"
+  data-signal="{ appReady: false, initializing: true, rtl: localStorage.rtl === 'true', zoom: Number(localStorage.zoom) || 1, tempZoom: Number(localStorage.zoom) || 1 }"
+  data-effect="if (initializing) {
+    initializing = false;
+    const timeout = (p, ms = 3500) => Promise.race([p, new Promise(r => setTimeout(r, ms))]);
+    Promise.all([
+      timeout(document.fonts ? document.fonts.ready : Promise.resolve()),
+      timeout(window.customElements ? customElements.whenDefined('iconify-icon') : Promise.resolve()),
+      timeout(new Promise(r => {
+        if ($el.hasAttribute('data-nexus-ready')) return r();
+        const obs = new MutationObserver(() => {
+          if ($el.hasAttribute('data-nexus-ready')) { obs.disconnect(); r(); }
+        });
+        obs.observe($el, { attributes: true, attributeFilter: ['data-nexus-ready'] });
+      })),
+      timeout(new Promise(r => {
+        const check = () => {
+          if (router?.activePageTab && router.activePageTab.isLoading === false) r();
+          else requestAnimationFrame(check);
+        };
+        check();
+      }))
+    ]).then(() => {
+      requestAnimationFrame(() => {
+        appReady = true;
+      });
+    });
+  }"
   data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: (zoom || 1) + 'rem' }">
 
 <head>
