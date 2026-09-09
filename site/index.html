@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="en" data-init data-stylesheet data-scrollbar_global="{ mode: 'overlay', autohide: 800, fade: '0.4s' }"
+<html lang="en" class="noscroll"
+  data-class-noscroll="!router?.activePageTab || router?.activePageTab?.isLoading !== false || !router?.pageTabs?.length"
+  data-init data-stylesheet data-scrollbar_global="{ mode: 'overlay', autohide: 800, fade: '0.4s' }"
   data-theme="{ default: 'auto' }" data-router="{
         signal: 'router',
         mode: 'hybrid',
@@ -32,27 +34,51 @@
   <script type="module" src="./dist/nexus-ux.js"></script>
   <link rel="icon" type="image/svg+xml" href="./_assets/images/emblem.svg">
   <style data-stylesheet>
-    /* 1. Suppress native window scrollbars on root while loading */
-    html:not(.nexus-ready),
-    html:has(.nexus-loading-screen:not(.opacity-0)) {
+    /* 1. Permanent root viewport locks — window itself never scrolls */
+    html,
+    body {
       overflow: hidden !important;
       scrollbar-width: none !important;
     }
 
-    html:not(.nexus-ready)::-webkit-scrollbar,
-    html:has(.nexus-loading-screen:not(.opacity-0))::-webkit-scrollbar {
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar {
       display: none !important;
       width: 0 !important;
       height: 0 !important;
     }
 
-    /* 2. Suppress overlay scrollbar tracks until content is revealed */
+    /* 2. Suppress all scrollbars on all elements until content is revealed */
+    html.noscroll,
+    html.noscroll body,
+    html.noscroll *,
+    html:not(.nexus-ready),
+    html:not(.nexus-ready) body,
+    html:not(.nexus-ready) *,
+    html:has(.nexus-loading-screen:not(.opacity-0)),
+    html:has(.nexus-loading-screen:not(.opacity-0)) body,
+    html:has(.nexus-loading-screen:not(.opacity-0)) * {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+
+    html.noscroll ::-webkit-scrollbar,
+    html:not(.nexus-ready) ::-webkit-scrollbar,
+    html:has(.nexus-loading-screen:not(.opacity-0)) ::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+
+    /* 3. Suppress overlay scrollbar tracks until content is revealed */
+    html.noscroll .scrollbar-track-v,
+    html.noscroll .scrollbar-track-h,
     html:not(.nexus-ready) .scrollbar-track-v,
     html:not(.nexus-ready) .scrollbar-track-h,
+    html:has(.nexus-loading-screen:not(.opacity-0)) .scrollbar-track-v,
+    html:has(.nexus-loading-screen:not(.opacity-0)) .scrollbar-track-h,
     .nx-main.opacity-0 .scrollbar-track-v,
-    .nx-main.opacity-0 .scrollbar-track-h,
-    .nexus-loading-screen:not(.opacity-0) ~ * .scrollbar-track-v,
-    .nexus-loading-screen:not(.opacity-0) ~ * .scrollbar-track-h {
+    .nx-main.opacity-0 .scrollbar-track-h {
       opacity: 0 !important;
       visibility: hidden !important;
       pointer-events: none !important;
