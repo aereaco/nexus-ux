@@ -1657,9 +1657,8 @@
       <!-- Sub Branch Item (e.g. Profile 3) -->
       <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
         data-bind-data-drag-item="cat?.itemsDraggable ? '' : null" data-signal="{ open: false }"
-        data-effect="if (item.href && item.href !== '/' && (router.activePageTab?.route || router.path || '').startsWith(item.href)) { open = true; }"
         data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
-        <div class="flex rounded-lg transition-colors" data-class="{ 'text-primary font-medium bg-base-200/40': item.href !== '/' && (router.activePageTab?.route || router.path || '').startsWith(item.href) && (router.activePageTab?.route || router.path) !== item.href }">
+        <div class="flex rounded-lg transition-colors" data-class="{ 'menu-active active bg-primary text-primary-content font-semibold shadow-sm': (collapsed && !hovered && !sidebarOpen) && item.href && ((router.activePageTab?.route || router.path) === item.href || (item.href !== '/' && (router.activePageTab?.route || router.path || '').startsWith(item.href))), 'text-primary font-medium bg-base-200/40': (!collapsed || hovered || sidebarOpen) && item.href !== '/' && (router.activePageTab?.route || router.path || '').startsWith(item.href) && (router.activePageTab?.route || router.path) !== item.href }">
           <a data-bind-href="item.href" draggable="false" class="grow flex items-center gap-2 whitespace-nowrap"
             data-bind-data-tab-title="item.tabTitle || item.title"
             data-bind-data-tab-icon="item.tabIcon || item.icon || item.meta?.icon"
@@ -1720,9 +1719,8 @@
             <!-- Root Branch Item (With Children) -->
             <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
               data-bind-data-drag-item="item.href !== '/' ? '' : null" data-signal="{ open: false }"
-              data-effect="if (item.href && item.href !== '/' && (router.activePageTab?.route || router.path || '').startsWith(item.href)) { open = true; }"
               data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
-              <div class="flex rounded-lg transition-colors" data-class="{ 'text-primary font-medium bg-base-200/40': item.href !== '/' && (router.activePageTab?.route || router.path || '').startsWith(item.href) && (router.activePageTab?.route || router.path) !== item.href }">
+              <div class="flex rounded-lg transition-colors" data-class="{ 'menu-active active bg-primary text-primary-content font-semibold shadow-sm': (collapsed && !hovered && !sidebarOpen) && item.href && ((router.activePageTab?.route || router.path) === item.href || (item.href !== '/' && (router.activePageTab?.route || router.path || '').startsWith(item.href))), 'text-primary font-medium bg-base-200/40': (!collapsed || hovered || sidebarOpen) && item.href !== '/' && (router.activePageTab?.route || router.path || '').startsWith(item.href) && (router.activePageTab?.route || router.path) !== item.href }">
                 <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
                   data-bind-data-tab-title="item.tabTitle || item.title"
                   data-bind-data-tab-icon="item.tabIcon || item.icon || item.meta?.icon"
@@ -1792,9 +1790,8 @@
                   <li data-show="item.children && item.children.length > 0 && !item.meta?.isSubmenu && item.href"
                     class="cursor-pointer" data-bind-data-drag-item="cat.itemsDraggable && item.href !== '/' ? '' : null"
                     data-signal="{ open: false }"
-                    data-effect="if (item.href && item.href !== '/' && (router.activePageTab?.route || router.path || '').startsWith(item.href)) { open = true; }"
                     data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
-                    <div class="flex rounded-lg transition-colors" data-class="{ 'text-primary font-medium bg-base-200/40': item.href !== '/' && (router.activePageTab?.route || router.path || '').startsWith(item.href) && (router.activePageTab?.route || router.path) !== item.href }">
+                    <div class="flex rounded-lg transition-colors" data-class="{ 'menu-active active bg-primary text-primary-content font-semibold shadow-sm': (collapsed && !hovered && !sidebarOpen) && item.href && ((router.activePageTab?.route || router.path) === item.href || (item.href !== '/' && (router.activePageTab?.route || router.path || '').startsWith(item.href))), 'text-primary font-medium bg-base-200/40': (!collapsed || hovered || sidebarOpen) && item.href !== '/' && (router.activePageTab?.route || router.path || '').startsWith(item.href) && (router.activePageTab?.route || router.path) !== item.href }">
                       <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
                         data-bind-data-tab-title="item.tabTitle || item.title"
                         data-bind-data-tab-icon="item.tabIcon || item.icon || item.meta?.icon"
@@ -1823,10 +1820,9 @@
                   <!-- Case B: Routeless Submenu (DaisyUI collapsible submenu row: clicking row toggles children, no navigation) -->
                   <li data-show="item.children && item.children.length > 0 && (item.meta?.isSubmenu || !item.href)"
                     class="cursor-pointer" data-bind-data-drag-item="cat.itemsDraggable && item.href !== '/' ? '' : null"
-                    data-signal="{ open: false }"
-                    data-effect="if (item.children?.some(c => (router.activePageTab?.route || router.path || '').startsWith(c.href))) { open = true; }">
+                    data-signal="{ open: false }">
                     <div class="flex items-center justify-between py-1.5 px-3 rounded-lg hover:bg-base-200/60 transition-colors"
-                      data-class="{ 'text-primary bg-base-200/50 font-medium': item.children?.some(c => (router.activePageTab?.route || router.path || '').startsWith(c.href)) }"
+                      data-class="{ 'menu-active active bg-primary text-primary-content font-semibold shadow-sm': (collapsed && !hovered && !sidebarOpen) && item.children?.some(c => (router.activePageTab?.route || router.path || '').startsWith(c.href)), 'text-primary bg-base-200/50 font-medium': (!collapsed || hovered || sidebarOpen) && item.children?.some(c => (router.activePageTab?.route || router.path || '').startsWith(c.href)) }"
                       data-on-click="open = !open">
                       <div class="flex items-center gap-2">
                         <iconify-icon data-bind-icon="item.icon || item.meta?.icon || 'material-symbols-light:folder-outline'"
