@@ -1632,7 +1632,11 @@
       </div>
       <button class="btn btn-ghost btn-circle close me-4" data-class="{ 'hidden': !sidebarOpen, 'block': sidebarOpen }"
         data-on-click="sidebarOpen = false; activeSidebarTab = 1" aria-label="close sidebar">
-        <iconify-icon icon="mater    <!-- Reusable Sub-Level Template (Infinite Arbitrary Sub-Nesting) -->
+        <iconify-icon icon="material-symbols-light:close" class="text-2xl"></iconify-icon>
+      </button>
+    </header>
+
+    <!-- Reusable Sub-Level Template (Infinite Arbitrary Sub-Nesting) -->
     <template id="sidebar-sub-menu-item">
       <!-- Sub Leaf Item -->
       <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
