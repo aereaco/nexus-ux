@@ -17,34 +17,7 @@
           script: { src: 'https://cdn.jsdelivr.net/npm/iconify-icon@3.0.0/dist/iconify-icon.min.js' }
         }
       }"
-  data-signal="{ appReady: false, initializing: true, rtl: localStorage.rtl === 'true', zoom: Number(localStorage.zoom) || 1, tempZoom: Number(localStorage.zoom) || 1 }"
-  data-effect="if (initializing) {
-    initializing = false;
-    Promise.all([
-      document.fonts ? document.fonts.ready : Promise.resolve(),
-      window.customElements ? customElements.whenDefined('iconify-icon') : Promise.resolve(),
-      new Promise(r => {
-        const check = () => {
-          if ($el.hasAttribute('data-nexus-ready')) r();
-          else requestAnimationFrame(check);
-        };
-        check();
-      }),
-      new Promise(r => {
-        const check = () => {
-          if (document.querySelector('tab-content')?.hasAttribute('data-nx-cmp-done')) r();
-          else requestAnimationFrame(check);
-        };
-        check();
-      })
-    ]).then(() => {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          appReady = true;
-        });
-      });
-    });
-  }"
+  data-signal="{ rtl: localStorage.rtl === 'true', zoom: Number(localStorage.zoom) || 1, tempZoom: Number(localStorage.zoom) || 1 }"
   data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: (zoom || 1) + 'rem' }">
 
 <head>
@@ -58,10 +31,21 @@
   <base href="/">
   <script type="module" src="./dist/nexus-ux.js"></script>
   <link rel="icon" type="image/svg+xml" href="./_assets/images/emblem.svg">
-  <style data-stylesheet="
+  <style data-stylesheet>
+    /* While external stylesheets (DaisyUI/themes) or pageTabs are loading */
+    html:not(.nexus-ready) .nx-main,
+    html[data-nexus-loading] .nx-main {
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+
+    html:not(.nexus-ready) .nexus-loading-screen {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+
     .nx-main {
-      opacity: 0;
-      pointer-events: none;
+      transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .nexus-progress-mount {
@@ -102,94 +86,7 @@
       justify-content: center;
       background: linear-gradient(135deg, #f1f5f9 0%, #ffffff 50%, #e2e8f0 100%);
       color: #0f172a;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      .nexus-loading-screen {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #020617 100%);
-        color: #f8fafc;
-      }
-    }
-
-    html[data-theme='dark'] .nexus-loading-screen,
-    html[data-theme='black'] .nexus-loading-screen,
-    html[data-theme='night'] .nexus-loading-screen {
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #020617 100%);
-      color: #f8fafc;
-    }
-
-    .nexus-loader-emblem {
-      animation: nexus-loader-pulse 2s ease-in-out infinite;
-      filter: drop-shadow(0 0 24px rgba(87, 13, 248, 0.5));
-    }
-
-    @keyframes nexus-loader-pulse {
-      0%,
-      100% {
-        transform: scale(1);
-        opacity: 0.85;
-      }
-
-      50% {
-        transform: scale(1.08);
-        opacity: 1;
-        filter: drop-shadow(0 0 32px rgba(240, 0, 184, 0.65));
-      }
-    }
-
-    tab-content>body {
-      display: flex;
-      flex-direction: column;
-      flex: 1 1 0%;
-      min-height: 0;
-      height: 100%;
-      margin: 0;
-      background: transparent;
-    }
-  ">
-    .nx-main {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .nexus-progress-mount {
-      position: fixed;
-      top: 0;
-      inset-inline: 0;
-      z-index: 9999;
-      height: 3px;
-      pointer-events: none;
-      transition: opacity 0.35s ease-out;
-    }
-
-    .nexus-top-bar {
-      height: 100%;
-      width: 100%;
-      background: linear-gradient(90deg, #570df8, #f000b8, #37cdbe, #570df8);
-      background-size: 200% 100%;
-      animation: nexus-progress-slide 1.5s infinite linear;
-    }
-
-    @keyframes nexus-progress-slide {
-      0% {
-        background-position: 200% 0;
-      }
-
-      100% {
-        background-position: -200% 0;
-      }
-    }
-
-    .nexus-loading-screen {
-      position: fixed;
-      inset: 0;
-      z-index: 99999;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #f1f5f9 0%, #ffffff 50%, #e2e8f0 100%);
-      color: #0f172a;
+      transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.4s;
     }
 
     @media (prefers-color-scheme: dark) {
@@ -247,7 +144,10 @@
 
   <!-- Sleek Centered Loading Splash -->
   <div class="nexus-loading-screen" aria-label="Loading application"
-    data-effect="if (appReady) { $animate($el, [{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(1.04)' }], { duration: 450, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'forwards' }, () => $el.remove()) }">
+    data-class="{
+      'opacity-0 pointer-events-none invisible': router?.activePageTab && router?.activePageTab?.isLoading === false && router?.pageTabs?.length > 0,
+      'opacity-100 pointer-events-auto visible': !router?.activePageTab || router?.activePageTab?.isLoading !== false || !router?.pageTabs?.length
+    }">
     <div class="relative flex flex-col items-center gap-5 select-none">
       <div class="relative w-20 h-20 flex items-center justify-center">
         <div class="absolute inset-0 rounded-full bg-primary/20 blur-2xl animate-pulse"></div>
@@ -266,7 +166,10 @@
   </div>
 
   <main class="nx-main h-full flex flex-col min-h-0"
-    data-effect="if (appReady) { $animate($el, [{ opacity: 0, transform: 'scale(0.985)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 550, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'forwards' }, () => { $el.style.pointerEvents = 'auto'; }) }">
+    data-class="{
+      'opacity-100 pointer-events-auto': router?.activePageTab && router?.activePageTab?.isLoading === false && router?.pageTabs?.length > 0,
+      'opacity-0 pointer-events-none': !router?.activePageTab || router?.activePageTab?.isLoading !== false || !router?.pageTabs?.length
+    }">
     <app-layout data-component="'_components/layout.html'"
       class="block h-full flex-1 flex flex-col min-h-0"></app-layout>
   </main>
