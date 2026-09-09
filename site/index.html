@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="noscroll"
-  data-class-noscroll="!router?.activePageTab || router?.activePageTab?.isLoading !== false || !router?.pageTabs?.length"
+<html lang="en" style="overflow: hidden; scrollbar-width: none;"
   data-init data-stylesheet data-scrollbar_global="{ mode: 'overlay', autohide: 800, fade: '0.4s' }"
   data-theme="{ default: 'auto' }" data-router="{
         signal: 'router',
@@ -20,7 +19,9 @@
         }
       }"
   data-signal="{ rtl: localStorage.rtl === 'true', zoom: Number(localStorage.zoom) || 1, tempZoom: Number(localStorage.zoom) || 1 }"
-  data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: (zoom || 1) + 'rem' }">
+  data-computed="{ contentReady: () => Boolean(router?.activePageTab && router?.activePageTab?.isLoading === false && router?.pageTabs?.length) }"
+  data-bind-dir="rtl ? 'rtl' : 'ltr'"
+  data-style="{ fontSize: (zoom || 1) + 'rem', overflow: contentReady ? '' : 'hidden', scrollbarWidth: contentReady ? '' : 'none' }">
 
 <head>
   <meta charset="UTF-8">
@@ -34,49 +35,7 @@
   <script type="module" src="./dist/nexus-ux.js"></script>
   <link rel="icon" type="image/svg+xml" href="./_assets/images/emblem.svg">
   <style data-stylesheet>
-    /* 1. Permanent root viewport locks — window itself never scrolls */
-    html,
-    body {
-      overflow: hidden !important;
-      scrollbar-width: none !important;
-    }
-
-    html::-webkit-scrollbar,
-    body::-webkit-scrollbar {
-      display: none !important;
-      width: 0 !important;
-      height: 0 !important;
-    }
-
-    /* 2. Suppress all scrollbars on all elements until content is revealed */
-    html.noscroll,
-    html.noscroll body,
-    html.noscroll *,
-    html:not(.nexus-ready),
-    html:not(.nexus-ready) body,
-    html:not(.nexus-ready) *,
-    html:has(.nexus-loading-screen:not(.opacity-0)),
-    html:has(.nexus-loading-screen:not(.opacity-0)) body,
-    html:has(.nexus-loading-screen:not(.opacity-0)) * {
-      scrollbar-width: none !important;
-      -ms-overflow-style: none !important;
-    }
-
-    html.noscroll ::-webkit-scrollbar,
-    html:not(.nexus-ready) ::-webkit-scrollbar,
-    html:has(.nexus-loading-screen:not(.opacity-0)) ::-webkit-scrollbar {
-      display: none !important;
-      width: 0 !important;
-      height: 0 !important;
-    }
-
-    /* 3. Suppress overlay scrollbar tracks until content is revealed */
-    html.noscroll .scrollbar-track-v,
-    html.noscroll .scrollbar-track-h,
-    html:not(.nexus-ready) .scrollbar-track-v,
-    html:not(.nexus-ready) .scrollbar-track-h,
-    html:has(.nexus-loading-screen:not(.opacity-0)) .scrollbar-track-v,
-    html:has(.nexus-loading-screen:not(.opacity-0)) .scrollbar-track-h,
+    /* Suppress overlay scrollbar tracks until content is revealed */
     .nx-main.opacity-0 .scrollbar-track-v,
     .nx-main.opacity-0 .scrollbar-track-h {
       opacity: 0 !important;
@@ -177,28 +136,28 @@
     tab-content>body {
       display: flex;
       flex-direction: column;
-      flex: 1 1 0%;
-      min-height: 0;
-      height: 100%;
+      flex: 1 1 auto;
+      min-height: 100%;
       margin: 0;
       background: transparent;
     }
   </style>
 </head>
 
-<body
+<body style="overflow: hidden; scrollbar-width: none;"
+  data-style="{ overflow: contentReady ? '' : 'hidden', scrollbarWidth: contentReady ? '' : 'none' }"
   class="bg-gradient-to-br from-base-200 via-base-100 to-base-300 h-screen max-h-screen overflow-hidden font-sans antialiased text-base-content">
   <!-- Top Indeterminate Progress Bar (declaratively visible on route load) -->
   <div class="nexus-progress-mount" aria-hidden="true"
-    data-class="{ 'opacity-100': router?.activePageTab?.isLoading, 'opacity-0': !router?.activePageTab?.isLoading }">
+    data-class="{ 'opacity-100': !contentReady, 'opacity-0': contentReady }">
     <div class="nexus-top-bar"></div>
   </div>
 
   <!-- Sleek Centered Loading Splash -->
   <div class="nexus-loading-screen" aria-label="Loading application"
     data-class="{
-      'opacity-0 pointer-events-none invisible': router?.activePageTab && router?.activePageTab?.isLoading === false && router?.pageTabs?.length > 0,
-      'opacity-100 pointer-events-auto visible': !router?.activePageTab || router?.activePageTab?.isLoading !== false || !router?.pageTabs?.length
+      'opacity-0 pointer-events-none invisible': contentReady,
+      'opacity-100 pointer-events-auto visible': !contentReady
     }">
     <div class="relative flex flex-col items-center gap-5 select-none">
       <div class="relative w-20 h-20 flex items-center justify-center">
@@ -219,8 +178,8 @@
 
   <main class="nx-main h-full flex flex-col min-h-0"
     data-class="{
-      'opacity-100 pointer-events-auto': router?.activePageTab && router?.activePageTab?.isLoading === false && router?.pageTabs?.length > 0,
-      'opacity-0 pointer-events-none': !router?.activePageTab || router?.activePageTab?.isLoading !== false || !router?.pageTabs?.length
+      'opacity-100 pointer-events-auto': contentReady,
+      'opacity-0 pointer-events-none': !contentReady
     }">
     <app-layout data-component="'_components/layout.html'"
       class="block h-full flex-1 flex flex-col min-h-0"></app-layout>
