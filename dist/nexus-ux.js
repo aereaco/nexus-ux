@@ -7685,21 +7685,6 @@ ${scripts}
       init_stylesheet();
       init_cache();
       assetCache = /* @__PURE__ */ new Map();
-      if (typeof document !== "undefined") {
-        const style = document.createElement("style");
-        style.setAttribute("data-nexus-fouc", "");
-        style.textContent = `
-    /* FOUC guard: keep element hidden until Nexus-UX finishes loading assets. */
-    html.nexus-loading,
-    [data-nexus-loading],
-    body[data-nexus-fouc-pending] {
-      visibility: hidden !important;
-      opacity: 0 !important;
-      pointer-events: none !important;
-    }
-  `;
-        document.head.appendChild(style);
-      }
       importModule = {
         name: "import",
         attribute: "import",
