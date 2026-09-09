@@ -1645,8 +1645,8 @@
         <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap flex items-center gap-2"
           data-bind-data-tab-title="item.tabTitle || item.title"
           data-bind-data-tab-icon="item.tabIcon || item.icon || item.meta?.icon"
-          data-bind-aria-current="((router.activePageTab?.route || router.path) === item.href || (router.lineage?.length > 0 && router.lineage[router.lineage.length - 1]?.href === item.href)) ? 'page' : null"
-          data-class="{ 'menu-active active bg-primary text-primary-content font-semibold shadow-sm': (router.activePageTab?.route || router.path) === item.href || (router.lineage?.length > 0 && router.lineage[router.lineage.length - 1]?.href === item.href) }"
+          data-bind-aria-current="(router.activePageTab?.route || router.path) === item.href ? 'page' : null"
+          data-class="{ 'menu-active active bg-primary text-primary-content font-semibold shadow-sm': (router.activePageTab?.route || router.path) === item.href }"
           data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
           data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
           <iconify-icon data-bind-icon="item.icon || item.meta?.icon || 'material-symbols-light:article-outline'" class="shrink-0 text-xl" aria-hidden="true"></iconify-icon>
@@ -1657,14 +1657,14 @@
       <!-- Sub Branch Item (e.g. Profile 3) -->
       <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
         data-bind-data-drag-item="cat?.itemsDraggable ? '' : null" data-signal="{ open: false }"
-        data-effect="if (item.href && router.lineage?.some(l => l.href === item.href)) { open = true; }"
+        data-effect="if (item.href && item.href !== '/' && (router.activePageTab?.route || router.path || '').startsWith(item.href)) { open = true; }"
         data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
-        <div class="flex rounded-lg transition-colors" data-class="{ 'text-primary font-medium bg-base-200/40': item.href !== '/' && router.lineage?.some(l => l.href === item.href) && (router.activePageTab?.route || router.path) !== item.href }">
+        <div class="flex rounded-lg transition-colors" data-class="{ 'text-primary font-medium bg-base-200/40': item.href !== '/' && (router.activePageTab?.route || router.path || '').startsWith(item.href) && (router.activePageTab?.route || router.path) !== item.href }">
           <a data-bind-href="item.href" draggable="false" class="grow flex items-center gap-2 whitespace-nowrap"
             data-bind-data-tab-title="item.tabTitle || item.title"
             data-bind-data-tab-icon="item.tabIcon || item.icon || item.meta?.icon"
-            data-bind-aria-current="((router.activePageTab?.route || router.path) === item.href || (router.lineage?.length > 0 && router.lineage[router.lineage.length - 1]?.href === item.href)) ? 'page' : null"
-            data-class="{ 'menu-active active bg-primary text-primary-content font-semibold shadow-sm': (router.activePageTab?.route || router.path) === item.href || (router.lineage?.length > 0 && router.lineage[router.lineage.length - 1]?.href === item.href) }"
+            data-bind-aria-current="(router.activePageTab?.route || router.path) === item.href ? 'page' : null"
+            data-class="{ 'menu-active active bg-primary text-primary-content font-semibold shadow-sm': (router.activePageTab?.route || router.path) === item.href }"
             data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
             data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
             <iconify-icon data-bind-icon="item.icon || item.meta?.icon || 'material-symbols-light:folder-outline'" class="shrink-0 text-xl" aria-hidden="true"></iconify-icon>
@@ -1707,8 +1707,8 @@
               <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
                 data-bind-data-tab-title="item.tabTitle || item.title"
                 data-bind-data-tab-icon="item.tabIcon || item.icon || item.meta?.icon"
-                data-bind-aria-current="((router.activePageTab?.route || router.path) === item.href || (router.lineage?.length > 0 && router.lineage[router.lineage.length - 1]?.href === item.href)) ? 'page' : null"
-                data-class="{ 'menu-active active bg-primary text-primary-content font-semibold shadow-sm': (router.activePageTab?.route || router.path) === item.href || (router.lineage?.length > 0 && router.lineage[router.lineage.length - 1]?.href === item.href) }"
+                data-bind-aria-current="(router.activePageTab?.route || router.path) === item.href ? 'page' : null"
+                data-class="{ 'menu-active active bg-primary text-primary-content font-semibold shadow-sm': (router.activePageTab?.route || router.path) === item.href }"
                 data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                 data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                 <iconify-icon data-bind-icon="item.icon || item.meta?.icon || 'material-symbols-light:article-outline'" class="shrink-0 text-2xl" aria-hidden="true"></iconify-icon>
@@ -1720,14 +1720,14 @@
             <!-- Root Branch Item (With Children) -->
             <li data-show="item.children && item.children.length > 0" class="cursor-pointer"
               data-bind-data-drag-item="item.href !== '/' ? '' : null" data-signal="{ open: false }"
-              data-effect="if (item.href && router.lineage?.some(l => l.href === item.href)) { open = true; }"
+              data-effect="if (item.href && item.href !== '/' && (router.activePageTab?.route || router.path || '').startsWith(item.href)) { open = true; }"
               data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
-              <div class="flex rounded-lg transition-colors" data-class="{ 'text-primary font-medium bg-base-200/40': item.href !== '/' && router.lineage?.some(l => l.href === item.href) && (router.activePageTab?.route || router.path) !== item.href }">
+              <div class="flex rounded-lg transition-colors" data-class="{ 'text-primary font-medium bg-base-200/40': item.href !== '/' && (router.activePageTab?.route || router.path || '').startsWith(item.href) && (router.activePageTab?.route || router.path) !== item.href }">
                 <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
                   data-bind-data-tab-title="item.tabTitle || item.title"
                   data-bind-data-tab-icon="item.tabIcon || item.icon || item.meta?.icon"
-                  data-bind-aria-current="((router.activePageTab?.route || router.path) === item.href || (router.lineage?.length > 0 && router.lineage[router.lineage.length - 1]?.href === item.href)) ? 'page' : null"
-                  data-class="{ 'menu-active active bg-primary text-primary-content font-semibold shadow-sm': (router.activePageTab?.route || router.path) === item.href || (router.lineage?.length > 0 && router.lineage[router.lineage.length - 1]?.href === item.href) }"
+                  data-bind-aria-current="(router.activePageTab?.route || router.path) === item.href ? 'page' : null"
+                  data-class="{ 'menu-active active bg-primary text-primary-content font-semibold shadow-sm': (router.activePageTab?.route || router.path) === item.href }"
                   data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                   data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                   <iconify-icon data-bind-icon="item.icon || item.meta?.icon || 'material-symbols-light:folder-outline'" class="shrink-0 pe-2 text-2xl" aria-hidden="true"></iconify-icon>
@@ -1778,8 +1778,8 @@
                     <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
                       data-bind-data-tab-title="item.tabTitle || item.title"
                       data-bind-data-tab-icon="item.tabIcon || item.icon || item.meta?.icon"
-                      data-bind-aria-current="((router.activePageTab?.route || router.path) === item.href || (router.lineage?.length > 0 && router.lineage[router.lineage.length - 1]?.href === item.href)) ? 'page' : null"
-                      data-class="{ 'menu-active active bg-primary text-primary-content font-semibold shadow-sm': (router.activePageTab?.route || router.path) === item.href || (router.lineage?.length > 0 && router.lineage[router.lineage.length - 1]?.href === item.href) }"
+                      data-bind-aria-current="(router.activePageTab?.route || router.path) === item.href ? 'page' : null"
+                      data-class="{ 'menu-active active bg-primary text-primary-content font-semibold shadow-sm': (router.activePageTab?.route || router.path) === item.href }"
                       data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                       data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                       <iconify-icon data-bind-icon="item.icon || item.meta?.icon || 'material-symbols-light:article-outline'" class="shrink-0 text-2xl" aria-hidden="true"></iconify-icon>
@@ -1792,14 +1792,14 @@
                   <li data-show="item.children && item.children.length > 0 && !item.meta?.isSubmenu && item.href"
                     class="cursor-pointer" data-bind-data-drag-item="cat.itemsDraggable && item.href !== '/' ? '' : null"
                     data-signal="{ open: false }"
-                    data-effect="if (item.href && router.lineage?.some(l => l.href === item.href)) { open = true; }"
+                    data-effect="if (item.href && item.href !== '/' && (router.activePageTab?.route || router.path || '').startsWith(item.href)) { open = true; }"
                     data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
-                    <div class="flex rounded-lg transition-colors" data-class="{ 'text-primary font-medium bg-base-200/40': item.href !== '/' && router.lineage?.some(l => l.href === item.href) && (router.activePageTab?.route || router.path) !== item.href }">
+                    <div class="flex rounded-lg transition-colors" data-class="{ 'text-primary font-medium bg-base-200/40': item.href !== '/' && (router.activePageTab?.route || router.path || '').startsWith(item.href) && (router.activePageTab?.route || router.path) !== item.href }">
                       <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
                         data-bind-data-tab-title="item.tabTitle || item.title"
                         data-bind-data-tab-icon="item.tabIcon || item.icon || item.meta?.icon"
-                        data-bind-aria-current="((router.activePageTab?.route || router.path) === item.href || (router.lineage?.length > 0 && router.lineage[router.lineage.length - 1]?.href === item.href)) ? 'page' : null"
-                        data-class="{ 'menu-active active bg-primary text-primary-content font-semibold shadow-sm': (router.activePageTab?.route || router.path) === item.href || (router.lineage?.length > 0 && router.lineage[router.lineage.length - 1]?.href === item.href) }"
+                        data-bind-aria-current="(router.activePageTab?.route || router.path) === item.href ? 'page' : null"
+                        data-class="{ 'menu-active active bg-primary text-primary-content font-semibold shadow-sm': (router.activePageTab?.route || router.path) === item.href }"
                         data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                         data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
                         <iconify-icon data-bind-icon="item.icon || item.meta?.icon || 'material-symbols-light:folder-outline'" class="shrink-0 pe-2 text-2xl" aria-hidden="true"></iconify-icon>
@@ -1824,9 +1824,9 @@
                   <li data-show="item.children && item.children.length > 0 && (item.meta?.isSubmenu || !item.href)"
                     class="cursor-pointer" data-bind-data-drag-item="cat.itemsDraggable && item.href !== '/' ? '' : null"
                     data-signal="{ open: false }"
-                    data-effect="if (item.children?.some(c => (router.activePageTab?.route || router.path) === c.href || router.lineage?.some(l => l.href === c.href))) { open = true; }">
+                    data-effect="if (item.children?.some(c => (router.activePageTab?.route || router.path || '').startsWith(c.href))) { open = true; }">
                     <div class="flex items-center justify-between py-1.5 px-3 rounded-lg hover:bg-base-200/60 transition-colors"
-                      data-class="{ 'text-primary bg-base-200/50 font-medium': item.children?.some(c => (router.activePageTab?.route || router.path) === c.href || router.lineage?.some(l => l.href === c.href)) }"
+                      data-class="{ 'text-primary bg-base-200/50 font-medium': item.children?.some(c => (router.activePageTab?.route || router.path || '').startsWith(c.href)) }"
                       data-on-click="open = !open">
                       <div class="flex items-center gap-2">
                         <iconify-icon data-bind-icon="item.icon || item.meta?.icon || 'material-symbols-light:folder-outline'"
