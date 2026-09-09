@@ -32,6 +32,32 @@
   <script type="module" src="./dist/nexus-ux.js"></script>
   <link rel="icon" type="image/svg+xml" href="./_assets/images/emblem.svg">
   <style data-stylesheet>
+    /* 1. Suppress native window scrollbars on root while loading */
+    html:not(.nexus-ready),
+    html:has(.nexus-loading-screen:not(.opacity-0)) {
+      overflow: hidden !important;
+      scrollbar-width: none !important;
+    }
+
+    html:not(.nexus-ready)::-webkit-scrollbar,
+    html:has(.nexus-loading-screen:not(.opacity-0))::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+
+    /* 2. Suppress overlay scrollbar tracks until content is revealed */
+    html:not(.nexus-ready) .scrollbar-track-v,
+    html:not(.nexus-ready) .scrollbar-track-h,
+    .nx-main.opacity-0 .scrollbar-track-v,
+    .nx-main.opacity-0 .scrollbar-track-h,
+    .nexus-loading-screen:not(.opacity-0) ~ * .scrollbar-track-v,
+    .nexus-loading-screen:not(.opacity-0) ~ * .scrollbar-track-h {
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+
     /* While external stylesheets (DaisyUI/themes) or pageTabs are loading */
     html:not(.nexus-ready) .nx-main,
     html[data-nexus-loading] .nx-main {
