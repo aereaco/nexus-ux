@@ -89,12 +89,6 @@ export class UX {
     this.init();
 
     if (typeof document !== 'undefined') {
-      const html = document.documentElement;
-      if (document.querySelector('[data-import]')) {
-        html.classList.add('nexus-loading');
-      } else {
-        html.classList.add('nexus-ready');
-      }
       document.dispatchEvent(new CustomEvent('nexus-ready', { bubbles: true }));
     }
   }
