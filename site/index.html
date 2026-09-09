@@ -17,10 +17,10 @@
           script: { src: 'https://cdn.jsdelivr.net/npm/iconify-icon@3.0.0/dist/iconify-icon.min.js' }
         }
       }"
-  data-signal="{ rtl: localStorage.rtl === 'true', zoom: Number(localStorage.zoom) || 1, tempZoom: Number(localStorage.zoom) || 1 }"
-  data-computed="{ contentReady: () => Boolean(router?.activePageTab && router?.activePageTab?.isLoading === false && router?.pageTabs?.length) }"
+  data-signal="{ appReady: false, rtl: localStorage.rtl === 'true', zoom: Number(localStorage.zoom) || 1, tempZoom: Number(localStorage.zoom) || 1 }"
+  data-effect="if (!appReady && router?.pageTabs?.length && !router?.activePageTab?.isLoading) { appReady = true; }"
   data-bind-dir="rtl ? 'rtl' : 'ltr'"
-  data-style="{ fontSize: (zoom || 1) + 'rem', overflow: contentReady ? '' : 'hidden', scrollbarWidth: contentReady ? '' : 'none' }">
+  data-bind-style="{ fontSize: (zoom || 1) + 'rem' }">
 
 <head>
   <meta charset="UTF-8">
@@ -144,19 +144,18 @@
   </style>
 </head>
 
-<body style="overflow: hidden ; scrollbar-width: none;"
-  data-style="{ overflow: contentReady ? '' : 'hidden', scrollbarWidth: contentReady ? '' : 'none' }"
+<body style="overflow: hidden; scrollbar-width: none;"
   class="bg-gradient-to-br from-base-200 via-base-100 to-base-300 h-screen max-h-screen overflow-hidden font-sans antialiased text-base-content">
   <!-- Top Indeterminate Progress Bar (declaratively visible on route load) -->
   <div class="nexus-progress-mount" aria-hidden="true"
-    data-class="{ 'opacity-100': !contentReady, 'opacity-0': contentReady }">
+    data-class="{ 'opacity-100': router?.activePageTab?.isLoading, 'opacity-0': !router?.activePageTab?.isLoading }">
     <div class="nexus-top-bar"></div>
   </div>
 
   <!-- Sleek Centered Loading Splash -->
   <div class="nexus-loading-screen" aria-label="Loading application" data-class="{
-      'opacity-0 pointer-events-none invisible': contentReady,
-      'opacity-100 pointer-events-auto visible': !contentReady
+      'opacity-0 pointer-events-none invisible': appReady,
+      'opacity-100 pointer-events-auto visible': !appReady
     }">
     <div class="relative flex flex-col items-center gap-5 select-none">
       <div class="relative w-20 h-20 flex items-center justify-center">
@@ -181,12 +180,12 @@
   <main class="nx-main h-full flex flex-col min-h-0"
     style="visibility: hidden; overflow: hidden;"
     data-style="{
-      visibility: contentReady ? 'visible' : 'hidden',
-      overflow: contentReady ? '' : 'hidden'
+      visibility: appReady ? 'visible' : 'hidden',
+      overflow: appReady ? '' : 'hidden'
     }"
     data-class="{
-      'opacity-100 pointer-events-auto': contentReady,
-      'opacity-0 pointer-events-none': !contentReady
+      'opacity-100 pointer-events-auto': appReady,
+      'opacity-0 pointer-events-none': !appReady
     }">
     <app-layout data-component="'_components/layout.html'"
       class="block h-full flex-1 flex flex-col min-h-0"></app-layout>
