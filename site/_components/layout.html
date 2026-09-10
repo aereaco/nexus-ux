@@ -1630,6 +1630,8 @@
               searchResults = (q && searchIndex && searchIndex.length !== 0 && typeof searchResultGroups === 'function') ? searchResultGroups(q, searchIndex) : [];
               flatResults = (searchResults || []).flatMap(function(grp) { return grp.items || []; });
               searchActiveIndex = 0;
+              const vp = document.getElementById('search-results-viewport');
+              if (vp) vp.scrollTop = 0;
               if (typeof syncHighlights === 'function') { syncHighlights(document.getElementById('search-results-viewport'), searchTokens); }
             "
             data-on-keydown="
@@ -1640,12 +1642,36 @@
                 $evt.preventDefault();
                 const q = (searchDebouncedQuery || searchQuery || '').trim();
                 const items = q ? (flatResults || []) : (recentSearches || []);
-                if (items.length !== 0) { searchActiveIndex = (searchActiveIndex + 1) % items.length; }
+                if (items.length !== 0) {
+                  searchActiveIndex = (searchActiveIndex + 1) % items.length;
+                  $nextTick().then(function() {
+                    const vp = document.getElementById('search-results-viewport');
+                    if (!vp) return;
+                    if (searchActiveIndex === 0) {
+                      vp.scrollTop = 0;
+                    } else {
+                      const activeEl = vp.querySelector('[aria-selected=\"true\"]');
+                      if (activeEl) { activeEl.scrollIntoView({ block: 'nearest', behavior: 'auto' }); }
+                    }
+                  });
+                }
               } else if ($evt.key === 'ArrowUp') {
                 $evt.preventDefault();
                 const q = (searchDebouncedQuery || searchQuery || '').trim();
                 const items = q ? (flatResults || []) : (recentSearches || []);
-                if (items.length !== 0) { searchActiveIndex = (searchActiveIndex - 1 + items.length) % items.length; }
+                if (items.length !== 0) {
+                  searchActiveIndex = (searchActiveIndex - 1 + items.length) % items.length;
+                  $nextTick().then(function() {
+                    const vp = document.getElementById('search-results-viewport');
+                    if (!vp) return;
+                    if (searchActiveIndex === 0) {
+                      vp.scrollTop = 0;
+                    } else {
+                      const activeEl = vp.querySelector('[aria-selected=\"true\"]');
+                      if (activeEl) { activeEl.scrollIntoView({ block: 'nearest', behavior: 'auto' }); }
+                    }
+                  });
+                }
               } else if ($evt.key === 'Enter') {
                 $evt.preventDefault();
                 const q = (searchDebouncedQuery || searchQuery || '').trim();
@@ -1673,6 +1699,8 @@
                     searchResults = (activeRecent && searchIndex && searchIndex.length !== 0 && typeof searchResultGroups === 'function') ? searchResultGroups(activeRecent, searchIndex) : [];
                     flatResults = (searchResults || []).flatMap(function(grp) { return grp.items || []; });
                     searchActiveIndex = 0;
+                    const vp = document.getElementById('search-results-viewport');
+                    if (vp) vp.scrollTop = 0;
                     if (typeof syncHighlights === 'function') { syncHighlights(document.getElementById('search-results-viewport'), searchTokens); }
                   }
                 }
@@ -1681,7 +1709,7 @@
             data-effect="if (searchOpen && $el) { $nextTick().then(function() { $el.focus(); $el.select(); }); }" />
           <button type="button" class="btn btn-ghost btn-xs btn-circle opacity-60 hover:opacity-100 me-1"
             aria-label="Clear search" data-show="searchQuery"
-            data-on-click="searchQuery = ''; searchDebouncedQuery = ''; searchTokens = []; searchResults = []; flatResults = []; searchActiveIndex = 0; if (typeof syncHighlights === 'function') { syncHighlights(document.getElementById('search-results-viewport'), []); } $nextTick().then(function() { const el = document.getElementById('search-modal-input'); if (el) el.focus(); });">
+            data-on-click="searchQuery = ''; searchDebouncedQuery = ''; searchTokens = []; searchResults = []; flatResults = []; searchActiveIndex = 0; const vp = document.getElementById('search-results-viewport'); if (vp) vp.scrollTop = 0; if (typeof syncHighlights === 'function') { syncHighlights(vp, []); } $nextTick().then(function() { const el = document.getElementById('search-modal-input'); if (el) el.focus(); });">
             <iconify-icon icon="material-symbols-light:backspace-outline" class="text-base"></iconify-icon>
           </button>
           <kbd class="kbd kbd-sm opacity-60 max-sm:hidden">Esc</kbd>
@@ -1719,6 +1747,7 @@
                     'hover:bg-base-200/60': searchQuery.trim() || (recentSearches || [])[searchActiveIndex] !== recent
                   }">
                   <a class="flex items-center gap-2.5 flex-1 min-w-0 py-2 px-3"
+                    data-bind-aria-selected="(!searchQuery.trim() && (recentSearches || [])[searchActiveIndex] === recent) ? 'true' : 'false'"
                     data-on-click="
                       searchQuery = recent;
                       searchDebouncedQuery = recent;
@@ -1726,6 +1755,8 @@
                       searchResults = (recent && searchIndex && searchIndex.length !== 0 && typeof searchResultGroups === 'function') ? searchResultGroups(recent, searchIndex) : [];
                       flatResults = (searchResults || []).flatMap(function(grp) { return grp.items || []; });
                       searchActiveIndex = 0;
+                      const vp = document.getElementById('search-results-viewport');
+                      if (vp) vp.scrollTop = 0;
                       if (typeof syncHighlights === 'function') { syncHighlights(document.getElementById('search-results-viewport'), searchTokens); }
                     ">
                     <iconify-icon icon="material-symbols-light:history"
