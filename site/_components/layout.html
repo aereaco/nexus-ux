@@ -1332,7 +1332,7 @@
           data-bind-icon="tab.meta?.icon || 'material-symbols-light:article-outline'"
           class="text-lg px-2"></iconify-icon>
         <span class="pe-4 whitespace-nowrap"
-          data-bind="tab.isLoading !== false ? 'Loading...' : (((tab.id === searchHighlightTargetTabId && searchHighlightTokens && searchHighlightTokens.length && !tab.meta?.title?.startsWith('Search Result:')) ? 'Search Result: ' : '') + (tab.meta?.title || 'Tab'))"></span>
+          data-bind="tab.isLoading !== false ? 'Loading...' : (((tab.id === searchHighlightTargetTabId && searchHighlightTokens && searchHighlightTokens.length && searchHighlightCount > 0 && !tab.meta?.title?.startsWith('Search Result:')) ? 'Search Result: ' : '') + (tab.meta?.title || 'Tab'))"></span>
         <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close tab" title="Close tab"
           data-class="{ 'hidden': (router.pinnedPageTabs || []).includes(tab.id) }"
           data-on-click_stop="router.closePageTab(tab.id)">
