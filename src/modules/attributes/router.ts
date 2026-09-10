@@ -124,6 +124,8 @@ interface RouteRecord {
   internal?: boolean;
   // Provenance tag for manifest entries ('declared' | 'manifest' | 'dynamic').
   source?: string;
+  category?: string;
+  keywords?: string[];
 }
 
 type RouterMode = 'signal' | 'static' | 'hybrid';
