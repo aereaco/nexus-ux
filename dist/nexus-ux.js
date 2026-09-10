@@ -8531,10 +8531,14 @@ ${match}</ul>
                       redirect: entry.redirect,
                       layout: entry.layout,
                       component: compPath,
+                      category: entry.category,
+                      keywords: entry.keywords,
                       meta: {
                         title: entry.title,
                         icon: entry.icon,
                         order: entry.order,
+                        category: entry.category,
+                        keywords: entry.keywords,
                         ...entry.meta || {}
                       },
                       internal: isInternal,
