@@ -1587,11 +1587,38 @@
           <input id="search-modal-input" type="text" role="searchbox" inputmode="search" autocomplete="off" spellcheck="false"
             class="input input-ghost w-full text-lg focus:outline-none border-0 focus:border-0 px-0"
             placeholder="Search pages and features…" data-bind-value="searchQuery"
+            data-on-input="searchActiveIndex = 0"
             data-on-keydown_escape="searchOpen = false"
+            data-on-keydown_down_prevent="
+              const items = searchQuery.trim() ? flatSearchResults(searchQuery) : (recentSearches || []);
+              if (items.length !== 0) { searchActiveIndex = (searchActiveIndex + 1) % items.length; }
+            "
+            data-on-keydown_up_prevent="
+              const items = searchQuery.trim() ? flatSearchResults(searchQuery) : (recentSearches || []);
+              if (items.length !== 0) { searchActiveIndex = (searchActiveIndex - 1 + items.length) % items.length; }
+            "
+            data-on-keydown_enter_prevent="
+              if (searchQuery.trim()) {
+                const items = flatSearchResults(searchQuery);
+                const active = items[searchActiveIndex] || items[0];
+                if (active) {
+                  recentSearches = [searchQuery.trim(), ...(recentSearches || []).filter(s => s !== searchQuery.trim())].slice(0, 6);
+                  router.createPageTab(active.component, active.path);
+                  searchOpen = false;
+                }
+              } else {
+                const recents = recentSearches || [];
+                const activeRecent = recents[searchActiveIndex];
+                if (activeRecent) {
+                  searchQuery = activeRecent;
+                  searchActiveIndex = 0;
+                }
+              }
+            "
             data-effect="if (searchOpen && $el) { $nextTick().then(() => { $el.focus(); $el.select(); }); }" />
           <button type="button" class="btn btn-ghost btn-xs btn-circle opacity-60 hover:opacity-100 me-1"
             aria-label="Clear search" data-show="searchQuery"
-            data-on-click="searchQuery = ''; $nextTick().then(() => document.getElementById('search-modal-input')?.focus());">
+            data-on-click="searchQuery = ''; searchActiveIndex = 0; $nextTick().then(() => document.getElementById('search-modal-input')?.focus());">
             <iconify-icon icon="material-symbols-light:backspace-outline" class="text-base"></iconify-icon>
           </button>
           <kbd class="kbd kbd-sm opacity-60 max-sm:hidden">Esc</kbd>
@@ -1616,15 +1643,22 @@
               class="flex items-center justify-between px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/50">
               <span>Recent Searches</span>
               <button class="btn btn-ghost btn-xs text-xs lowercase font-normal opacity-60 hover:opacity-100"
-                data-on-click="recentSearches = []">Clear</button>
+                data-on-click="recentSearches = []; searchActiveIndex = 0;">Clear</button>
             </div>
             <ul class="menu menu-sm w-full p-0">
               <template data-for="recent in (recentSearches || [])">
                 <li
-                  class="flex flex-row items-center justify-between group rounded-xl hover:bg-base-200/60 transition-colors">
-                  <a class="flex items-center gap-2.5 flex-1 min-w-0 py-2 px-3" data-on-click="searchQuery = recent">
+                  class="flex flex-row items-center justify-between group rounded-xl transition-colors"
+                  data-class="{
+                    'bg-primary/10 text-primary font-semibold ring-1 ring-primary/20': !searchQuery.trim() && (recentSearches || [])[searchActiveIndex] === recent,
+                    'hover:bg-base-200/60': searchQuery.trim() || (recentSearches || [])[searchActiveIndex] !== recent
+                  }">
+                  <a class="flex items-center gap-2.5 flex-1 min-w-0 py-2 px-3"
+                    data-effect="if (!searchQuery.trim() && (recentSearches || [])[searchActiveIndex] === recent && $el) { $el.scrollIntoView({ block: 'nearest' }); }"
+                    data-on-click="searchQuery = recent; searchActiveIndex = 0;">
                     <iconify-icon icon="material-symbols-light:history"
-                      class="text-lg opacity-60 shrink-0"></iconify-icon>
+                      class="text-lg opacity-60 shrink-0"
+                      data-class="{ 'text-primary opacity-100': !searchQuery.trim() && (recentSearches || [])[searchActiveIndex] === recent }"></iconify-icon>
                     <span class="truncate font-medium" data-bind="recent"></span>
                   </a>
                   <button
@@ -1653,7 +1687,14 @@
                 <ul class="menu menu-sm w-full p-0">
                   <template data-for="item in (group.items || [])">
                     <li>
-                      <a class="flex flex-col items-start gap-1 py-2 px-3 rounded-xl hover:bg-base-200/60 transition-colors"
+                      <a class="flex flex-col items-start gap-1 py-2 px-3 rounded-xl transition-colors cursor-pointer"
+                        data-class="{
+                          'bg-primary/10 text-primary font-semibold ring-1 ring-primary/20 shadow-sm': flatSearchResults(searchQuery)[searchActiveIndex]?.path === item.path,
+                          'hover:bg-base-200/60': flatSearchResults(searchQuery)[searchActiveIndex]?.path !== item.path
+                        }"
+                        data-bind-aria-selected="flatSearchResults(searchQuery)[searchActiveIndex]?.path === item.path ? 'true' : 'false'"
+                        data-effect="if (flatSearchResults(searchQuery)[searchActiveIndex]?.path === item.path && $el) { $el.scrollIntoView({ block: 'nearest' }); }"
+                        data-on-mouseenter="const items = flatSearchResults(searchQuery); const idx = items.findIndex(it => it.path === item.path); if (idx !== -1) searchActiveIndex = idx;"
                         data-on-click="
                           if (searchQuery.trim()) { recentSearches = [searchQuery.trim(), ...(recentSearches || []).filter(s => s !== searchQuery.trim())].slice(0, 6); }
                           router.createPageTab(item.component, item.path);
@@ -1663,7 +1704,8 @@
                           <div class="flex items-center gap-2.5 min-w-0">
                             <iconify-icon
                               data-bind-icon="item.meta?.icon || 'material-symbols-light:description-outline'"
-                              class="text-xl shrink-0 opacity-70"></iconify-icon>
+                              class="text-xl shrink-0 opacity-70"
+                              data-class="{ 'text-primary opacity-100': flatSearchResults(searchQuery)[searchActiveIndex]?.path === item.path }"></iconify-icon>
                             <span class="font-medium text-sm truncate" data-bind="item.meta?.title || item.name"></span>
                             <span class="badge badge-xs badge-ghost opacity-60" data-bind="item.category"></span>
                           </div>
