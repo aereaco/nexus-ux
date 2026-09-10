@@ -1506,7 +1506,13 @@
           <input id="search-modal-input" type="text"
             class="input input-ghost w-full text-lg focus:outline-none border-0 focus:border-0 px-0"
             placeholder="Search pages and features…" data-bind-value="searchQuery"
-            data-on-keydown_escape="searchOpen = false" />
+            data-on-keydown_escape="searchOpen = false"
+            data-effect="if (searchOpen) { setTimeout(() => { $el?.focus(); $el?.select(); }, 50); }" />
+          <button class="btn btn-ghost btn-xs btn-circle opacity-60 hover:opacity-100 me-1"
+            aria-label="Clear search" data-show="searchQuery"
+            data-on-click="searchQuery = ''; $('#search-modal-input')?.focus();">
+            <iconify-icon icon="material-symbols-light:backspace-outline" class="text-base"></iconify-icon>
+          </button>
           <kbd class="kbd kbd-sm opacity-60 max-sm:hidden">Esc</kbd>
           <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close search" data-on-click="searchOpen = false">
             <iconify-icon icon="material-symbols-light:close" class="text-lg"></iconify-icon>
