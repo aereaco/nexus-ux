@@ -193,12 +193,18 @@
         }
         return groups;
       },
+      flatSearchResults: (query) => {
+        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
+        const fn = g.searchResultGroups;
+        if (!fn) return [];
+        return fn(query).flatMap(grp => grp.items || []);
+      },
       hasSearchResults: (query) => {
         const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
         const fn = g.searchResultGroups;
         if (!fn) return false;
         const groups = fn(query);
-        return groups.some(grp => grp.items && grp.items.length > 0);
+        return groups.some(grp => grp.items && grp.items.length !== 0);
       },
       activeSidebarTab: 1,
       ctxMenu: { open: false, x: 0, y: 0, type: null, target: null },
