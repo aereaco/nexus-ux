@@ -97,6 +97,9 @@
       searchResultGroups: (query) => {
         const q = (query || '').trim().toLowerCase();
         if (!q) return [];
+        const terms = q.split(/\s+/).filter(Boolean);
+        if (terms.length === 0) return [];
+
         const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
         const getCat = g.getRouteCategory || (() => 'General');
         const contentIdx = g.pageContentIndex || {};
@@ -110,40 +113,58 @@
           const title = (r.meta?.title || r.name || '').toLowerCase();
           const path = (r.path || '').toLowerCase();
           const cat = getCat(r).toLowerCase();
-          if (title.includes(q) || path.includes(q) || cat.includes(q)) {
+          const id = (r.id || r.name || '').toLowerCase();
+          const searchable = `${title} ${path} ${cat} ${id}`;
+
+          if (terms.every(term => searchable.includes(term))) {
+            let score = 0;
+            if (title === q) score += 100;
+            else if (title.startsWith(q)) score += 50;
+            else if (title.includes(q)) score += 30;
+            if (terms.every(t => title.includes(t))) score += 20;
+            if (path.includes(q)) score += 10;
+            if (cat.includes(q)) score += 5;
+
             navMatches.push({
               id: r.path,
               path: r.path,
               component: r.component,
               name: r.name,
               meta: r.meta,
-              category: getCat(r)
+              category: getCat(r),
+              score: score
             });
             seenNavPaths.add(r.path);
           }
         }
 
+        navMatches.sort((a, b) => b.score - a.score);
+
         for (const r of allRoutes) {
           if (seenNavPaths.has(r.path)) continue;
           const text = contentIdx[r.path] || '';
           if (!text) continue;
-          const pos = text.toLowerCase().indexOf(q);
-          if (pos !== -1) {
-            const start = Math.max(0, pos - 35);
-            const end = Math.min(text.length, pos + q.length + 35);
-            let snippet = text.slice(start, end).trim();
-            if (start !== 0) snippet = '…' + snippet;
-            if (end !== text.length) snippet = snippet + '…';
+          const lowerText = text.toLowerCase();
+          if (terms.every(term => lowerText.includes(term))) {
+            const firstTerm = terms[0];
+            const pos = lowerText.indexOf(firstTerm);
+            if (pos !== -1) {
+              const start = Math.max(0, pos - 35);
+              const end = Math.min(text.length, pos + firstTerm.length + 35);
+              let snippet = text.slice(start, end).trim();
+              if (start !== 0) snippet = '…' + snippet;
+              if (end !== text.length) snippet = snippet + '…';
 
-            contentMatches.push({
-              id: 'content_' + r.path,
-              path: r.path,
-              component: r.component,
-              name: r.name,
-              meta: r.meta,
-              category: getCat(r),
-              snippet: snippet
-            });
+              contentMatches.push({
+                id: 'content_' + r.path,
+                path: r.path,
+                component: r.component,
+                name: r.name,
+                meta: r.meta,
+                category: getCat(r),
+                snippet: snippet
+              });
+            }
           }
         }
 
