@@ -36,15 +36,16 @@
   <style data-stylesheet>
     /* Native CSS Custom Highlight API styling for progressive search */
     ::highlight(search-match) {
-      background-color: rgba(59, 130, 246, 0.35);
-      color: #93c5fd;
+      background-color: color-mix(in oklch, var(--color-accent, #00cdb7) 25%, transparent);
+      color: var(--color-accent, #00cdb7);
       text-decoration: underline;
     }
 
     ::highlight(page-match) {
-      background-color: rgba(59, 130, 246, 0.4);
-      color: #93c5fd;
+      background-color: color-mix(in oklch, var(--color-accent, #00cdb7) 30%, transparent);
+      color: var(--color-accent, #00cdb7);
       text-decoration: underline;
+      text-decoration-color: var(--color-accent, #00cdb7);
       text-underline-offset: 3px;
     }
 
@@ -201,7 +202,7 @@
       'opacity-100 pointer-events-auto': appReady,
       'opacity-0 pointer-events-none': !appReady
     }">
-    <app-layout data-component="'_components/layout.html?v=17'"
+    <app-layout data-component="'_components/layout.html?v=18'"
       class="block h-full flex-1 flex flex-col min-h-0"></app-layout>
   </main>
 </body>
