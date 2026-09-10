@@ -106,19 +106,21 @@
 
         const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
         const getCat = g.getRouteCategory || (() => 'General');
-        const contentIdx = g.pageContentIndex || {};
-        const allRoutes = (g.router?.routes || []).filter(r => r.path !== '/error' && r.path !== '' && !r.internal);
+        const catalog = g.searchIndex || [];
+        const allRoutes = (g.router?.manifest || g.router?.routes || []).filter(r => r.path !== '/error' && r.path !== '' && !r.internal);
 
         const navMatches = [];
         const contentMatches = [];
         const seenNavPaths = new Set();
 
+        // Domain 1: Routes, Categories, Titles, & Keywords
         for (const r of allRoutes) {
-          const title = (r.meta?.title || r.name || '').toLowerCase();
+          const title = (r.meta?.title || r.title || r.name || '').toLowerCase();
           const path = (r.path || '').toLowerCase();
           const cat = getCat(r).toLowerCase();
           const id = (r.id || r.name || '').toLowerCase();
-          const searchable = `${title} ${path} ${cat} ${id}`;
+          const kws = (r.meta?.keywords || r.keywords || []).join(' ').toLowerCase();
+          const searchable = `${title} ${path} ${cat} ${id} ${kws}`;
 
           if (terms.every(term => searchable.includes(term))) {
             let score = 0;
@@ -130,6 +132,7 @@
               if (title.includes(t)) score += 10;
               if (path.includes(t)) score += 5;
               if (cat.includes(t)) score += 3;
+              if (kws.includes(t)) score += 4;
             }
 
             navMatches.push({
@@ -147,28 +150,35 @@
 
         navMatches.sort((a, b) => b.score - a.score);
 
-        for (const r of allRoutes) {
-          if (seenNavPaths.has(r.path)) continue;
-          const text = contentIdx[r.path] || '';
+        // Domain 2: Deep Content & Documentation
+        for (const entry of catalog) {
+          if (!entry || !entry.route || seenNavPaths.has(entry.route)) continue;
+          const text = entry.content || '';
           if (!text) continue;
           const lowerText = text.toLowerCase();
           if (terms.every(term => lowerText.includes(term))) {
-            const firstTerm = terms[0];
-            const pos = lowerText.indexOf(firstTerm);
-            if (pos !== -1) {
-              const start = Math.max(0, pos - 35);
-              const end = Math.min(text.length, pos + firstTerm.length + 35);
+            let bestPos = -1;
+            for (const t of terms) {
+              const p = lowerText.indexOf(t);
+              if (p !== -1) {
+                bestPos = (bestPos === -1) ? p : Math.min(bestPos, p);
+              }
+            }
+            if (bestPos !== -1) {
+              const start = Math.max(0, bestPos - 35);
+              const end = Math.min(text.length, bestPos + 45);
               let snippet = text.slice(start, end).trim();
               if (start !== 0) snippet = '…' + snippet;
               if (end !== text.length) snippet = snippet + '…';
 
+              const r = allRoutes.find(route => route.path === entry.route) || { path: entry.route, component: entry.path, name: entry.id, meta: { title: entry.title } };
               contentMatches.push({
-                id: 'content_' + r.path,
-                path: r.path,
-                component: r.component,
-                name: r.name,
-                meta: r.meta,
-                category: getCat(r),
+                id: 'content_' + entry.route,
+                path: entry.route,
+                component: r.component || entry.path,
+                name: r.name || entry.id,
+                meta: r.meta || { title: entry.title },
+                category: entry.category || getCat(r),
                 snippet: snippet
               });
             }
