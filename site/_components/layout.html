@@ -26,7 +26,7 @@
       searchTicks: [],
       searchTickTrackStyle: {},
       jumpToSearchTick: function(pct) {
-        const panel = document.querySelector('[role=tabpanel]:not([hidden])') || document.querySelector('[role=tabpanel]');
+        const panel = Array.from(document.querySelectorAll('[role=tabpanel]')).find(function(p) { return p.offsetParent !== null && window.getComputedStyle(p).display !== 'none'; }) || document.querySelector('[role=tabpanel]');
         if (!panel) return;
         const scrollEl = panel.querySelector('.overflow-y-auto') || panel.closest('.overflow-y-auto') || document.querySelector('.overflow-y-auto');
         if (scrollEl) {
@@ -1482,7 +1482,7 @@
         </template>
 
         <!-- Floating In-Page Search Matches Badge (Appears when navigating from search with highlighted tokens) -->
-        <div data-show="searchHighlightTokens && searchHighlightTokens.length !== 0 && searchHighlightCount > 0 && !searchOpen"
+        <div data-show="searchHighlightTokens && searchHighlightTokens.length !== 0 && searchHighlightCount > 0 && !searchOpen && router.activePageTabId === searchHighlightTargetTabId"
           class="fixed bottom-6 start-6 z-40 flex items-center gap-2.5 bg-base-100/90 backdrop-blur-md px-3.5 py-2 rounded-full border border-accent/20 shadow-2xl text-xs font-mono transition-all duration-300 animate-fade-in"
           data-on-keydown_escape_window="clearPageHighlights()">
           <span class="relative flex h-2 w-2">
