@@ -13,6 +13,7 @@
 const PAGES_DIR = "site/_pages";
 const INTERNAL_DIR = "site/_internal";
 const MANIFEST_PATH = "site/_pages/manifest.json";
+const SEARCH_INDEX_PATH = "site/_pages/search-index.json";
 const VALID_EXTENSIONS = [".html", ".htm", ".md", ".markdown"];
 
 export interface RouteManifestEntry {
@@ -25,6 +26,17 @@ export interface RouteManifestEntry {
   internal?: boolean;
   parent?: string | null;
   category?: string;
+  keywords?: string[];
+}
+
+export interface SearchIndexEntry {
+  id: string;
+  route: string;
+  path: string;
+  title: string;
+  category: string;
+  keywords: string[];
+  content: string;
 }
 
 interface RawManifestEntry {
@@ -37,6 +49,23 @@ interface RawManifestEntry {
   internal?: boolean;
   parent?: string | null;
   category?: string;
+  keywords?: string[];
+  cleanContent?: string;
+}
+
+function stripMarkup(html: string): string {
+  return html
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<svg[\s\S]*?<\/svg>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function parseHeadMetadata(content: string): {
@@ -48,6 +77,8 @@ function parseHeadMetadata(content: string): {
   internal?: boolean;
   parent?: string | null;
   category?: string;
+  keywords?: string[];
+  cleanContent?: string;
 } {
   // Support YAML frontmatter for .md documents
   const frontmatterMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
@@ -79,6 +110,8 @@ function parseHeadMetadata(content: string): {
     content.match(/<meta\s+[^>]*content=["']([^"']*)["'][^>]*name=["']parent["']/i);
   const categoryMatch = content.match(/<meta\s+[^>]*name=["']category["'][^>]*content=["']([^"']*)["']/i) ||
     content.match(/<meta\s+[^>]*content=["']([^"']*)["'][^>]*name=["']category["']/i);
+  const keywordsMatch = content.match(/<meta\s+[^>]*name=["']keywords["'][^>]*content=["']([^"']*)["']/i) ||
+    content.match(/<meta\s+[^>]*content=["']([^"']*)["'][^>]*name=["']keywords["']/i);
 
   const id = fmMaps["id"] || (idMatch ? idMatch[1].trim() : undefined);
   const title = fmMaps["title"] || (titleMatch ? titleMatch[1].trim() : (content.match(/^#\s+(.+)$/m)?.[1]?.trim()));
@@ -91,7 +124,49 @@ function parseHeadMetadata(content: string): {
   const parent = parentRaw ? (parentRaw === "null" ? null : parentRaw) : undefined;
   const category = fmMaps["category"] || (categoryMatch ? categoryMatch[1].trim() : undefined);
 
-  return { id, title, route, icon, order, internal, parent, category };
+  // Collect keywords from <meta>, frontmatter, or lab doc properties
+  const kwList: string[] = [];
+  const rawKw = fmMaps["keywords"] || (keywordsMatch ? keywordsMatch[1].trim() : "");
+  if (rawKw) {
+    rawKw.split(/[,;\s]+/).filter(Boolean).forEach(k => kwList.push(k.toLowerCase()));
+  }
+
+  // Extract lab doc metadata if present in data-signal="{ doc: ... }"
+  let labContent = "";
+  if (content.includes("doc:")) {
+    const descMatch = content.match(/Description:\s*['"]([\s\S]*?)['"],\s*\r?\n/);
+    if (descMatch) {
+      const cleanDesc = stripMarkup(descMatch[1]);
+      labContent += cleanDesc + " ";
+    }
+    const syntaxMatch = content.match(/Syntax:\s*['"]([\s\S]*?)['"],\s*\r?\n/);
+    if (syntaxMatch) {
+      const cleanSyntax = stripMarkup(syntaxMatch[1]);
+      labContent += cleanSyntax + " ";
+    }
+    const paramNames = Array.from(content.matchAll(/name:\s*['"]([^'"]+)['"]/g)).map(m => m[1]);
+    paramNames.forEach(p => {
+      const cleanP = p
+        .replace(/&quot;/g, " ")
+        .replace(/&lt;/g, " ")
+        .replace(/&gt;/g, " ")
+        .replace(/[^a-zA-Z0-9_-]/g, " ")
+        .trim();
+      cleanP.split(/\s+/).filter(tok => tok.length > 2).forEach(tok => {
+        const lower = tok.toLowerCase();
+        if (!kwList.includes(lower)) kwList.push(lower);
+      });
+      labContent += p + " ";
+    });
+    const extMatch = content.match(/Extensibility:\s*['"]([\s\S]*?)['"],\s*\r?\n/);
+    if (extMatch) {
+      labContent += stripMarkup(extMatch[1]) + " ";
+    }
+  }
+
+  const cleanContent = stripMarkup(content + " " + labContent).slice(0, 10000);
+
+  return { id, title, route, icon, order, internal, parent, category, keywords: kwList.length > 0 ? kwList : undefined, cleanContent };
 }
 
 function scanDirectory(
@@ -138,6 +213,8 @@ function scanDirectory(
         if (meta.parent !== undefined) item.parent = meta.parent;
         else if (parentRoute && nameWithoutExt !== "index") item.parent = parentRoute;
         if (category) item.category = category;
+        if (meta.keywords) item.keywords = meta.keywords;
+        if (meta.cleanContent) item.cleanContent = meta.cleanContent;
 
         list.push(item);
       }
@@ -289,6 +366,7 @@ export function generateManifest(): RouteManifestEntry[] {
     if (raw.internal) entry.internal = raw.internal;
     if (parent !== undefined) entry.parent = parent;
     if (raw.category !== undefined) entry.category = raw.category;
+    if (raw.keywords && raw.keywords.length > 0) entry.keywords = raw.keywords;
     return entry;
   });
 
@@ -317,6 +395,25 @@ export function generateManifest(): RouteManifestEntry[] {
   routes.forEach((r) => {
     console.log(`  - [${r.order ?? "-"}] ${r.id} -> route: "${r.route}" (${r.path})${r.internal ? " [internal]" : ""}${r.parent ? ` (parent: ${r.parent})` : ""}`);
   });
+
+  // Generate standalone search index
+  const searchIndex: SearchIndexEntry[] = allRaw
+    .filter((r) => !r.internal && r.path && r.id !== "admin" && r.id !== "error")
+    .map((raw) => {
+      const { route } = resolveLineage(raw, rawMap);
+      return {
+        id: raw.id,
+        route,
+        path: raw.path,
+        title: raw.title || raw.id,
+        category: raw.category || "General",
+        keywords: raw.keywords || [],
+        content: raw.cleanContent || "",
+      };
+    });
+
+  Deno.writeTextFileSync(SEARCH_INDEX_PATH, JSON.stringify(searchIndex, null, 2) + "\n");
+  console.log(`[search-index] Generated ${SEARCH_INDEX_PATH} with ${searchIndex.length} entry(ies)`);
 
   return routes;
 }

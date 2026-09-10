@@ -17,7 +17,7 @@
       searchIndex: null,
       loadSearchIndex: async () => {
         const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
-        if (g.searchIndex && g.searchIndex.length !== 0) return;
+        if (g.searchIndex && g.searchIndex.length !== 0 && g.searchIndex[0]?.content) return;
         try {
           const res = await fetch('/_pages/search-index.json');
           if (res.ok) {
