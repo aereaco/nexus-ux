@@ -1942,18 +1942,32 @@
                           if (q) {
                             recentSearches = [q, ...(recentSearches || []).filter(function(s) { return s !== q; })].slice(0, 6);
                           }
+                          let targetTabId = '';
                           if (router.pageTabs) {
                             const existing = (router.pageTabs || []).find(function(t) { return t.route === item.path; });
                             if (existing) {
                               router.switchPageTab(existing.id);
-                              searchHighlightTargetTabId = existing.id;
+                              targetTabId = existing.id;
                             } else {
                               router.createPageTab(item.component || item.path, item.path);
-                              searchHighlightTargetTabId = router.activePageTabId;
+                              targetTabId = router.activePageTabId;
                             }
                           }
+                          searchHighlightTargetTabId = targetTabId;
                           searchHighlightTargetPath = item.path;
                           searchHighlightTokens = [...(searchTokens || [])];
+                          if (targetTabId) {
+                            searchTabs = {
+                              ...(searchTabs || {}),
+                              [targetTabId]: {
+                                query: q,
+                                tokens: [...(searchTokens || [])],
+                                ticks: [],
+                                count: 0,
+                                path: item.path
+                              }
+                            };
+                          }
                           router.navigate(item.path);
                           searchOpen = false;
                           if (typeof CSS !== 'undefined' && CSS.highlights) { CSS.highlights.delete('search-match'); }
