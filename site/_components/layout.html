@@ -1,6 +1,6 @@
 <div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300"
-  data-effect="if (typeof initSearchDb === 'function' && !window._nexusSearchInitPromise) { initSearchDb(); }"
-  data-on-keydown_window="if (($evt.ctrlKey || $evt.metaKey) && ($evt.key === 'k' || $evt.key === 'K')) { $evt.preventDefault(); favModalOpen = false; favDeleteModalOpen = false; searchQuery = ''; searchDebouncedQuery = ''; searchTokens = []; searchResults = []; flatResults = []; searchActiveIndex = 0; searchOpen = true; if (typeof initSearchDb === 'function') { initSearchDb(); } $nextTick().then(() => { const el = document.getElementById('search-modal-input'); el?.focus(); el?.select(); }); }"
+  data-effect="if (!searchIndex || searchIndex.length === 0) { fetch('/_pages/search-index.json').then(function(r) { return r.ok ? r.json() : []; }).then(function(d) { if (Array.isArray(d) && d.length !== 0) { searchIndex = d; } }).catch(function() {}); }"
+  data-on-keydown_window="if (($evt.ctrlKey || $evt.metaKey) && ($evt.key === 'k' || $evt.key === 'K')) { $evt.preventDefault(); favModalOpen = false; favDeleteModalOpen = false; searchQuery = ''; searchDebouncedQuery = ''; searchTokens = []; searchResults = []; flatResults = []; searchActiveIndex = 0; searchOpen = true; $nextTick().then(function() { const el = document.getElementById('search-modal-input'); if (el) { el.focus(); el.select(); } }); }"
   data-signal_global="{
       collapsed: localStorage.collapsed !== 'false',
       pageTabs: localStorage.pageTabs !== 'false',
@@ -18,7 +18,7 @@
       flatResults: [],
       searchActiveIndex: 0,
       recentSearches: [],
-      searchIndex: null,
+      searchIndex: [],
       segmenter: null,
       collator: null,
       getSearchTokens: function(query) {
@@ -27,175 +27,11 @@
         try {
           if (typeof Intl !== 'undefined' && Intl.Segmenter) {
             const seg = new Intl.Segmenter('en', { granularity: 'word' });
-            return Array.from(seg.segment(q)).filter(s => s.isWordLike).map(s => s.segment.toLowerCase());
+            return Array.from(seg.segment(q)).filter(function(s) { return s.isWordLike; }).map(function(s) { return s.segment.toLowerCase(); });
           }
         } catch { /* fallback */ }
         return q.toLowerCase().split(/\s+/).filter(Boolean);
       },
-      initSearchDb: function() {
-        if (window._nexusSearchInitPromise) return window._nexusSearchInitPromise;
-        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
-        if (g.searchIndex && g.searchIndex.length !== 0 && g.searchIndex[0]?.content) {
-          return Promise.resolve(g.searchIndex);
-        }
-        const DB_NAME = 'nexus_search_db';
-        const DB_VERSION = 1;
-        const STORE_NAME = 'documents';
-
-        window._nexusSearchInitPromise = (async () => {
-          try {
-            if (typeof indexedDB !== 'undefined') {
-              const db = await new Promise((resolve) => {
-                const req = indexedDB.open(DB_NAME, DB_VERSION);
-                req.onupgradeneeded = (e) => {
-                  const d = e.target.result;
-                  if (!d.objectStoreNames.contains(STORE_NAME)) {
-                    const s = d.createObjectStore(STORE_NAME, { keyPath: 'route' });
-                    s.createIndex('tokens', 'tokens', { multiEntry: true });
-                  }
-                };
-                req.onsuccess = () => resolve(req.result);
-                req.onerror = () => resolve(null);
-              });
-              if (db) {
-                const cached = await new Promise((resolve) => {
-                  try {
-                    const tx = db.transaction(STORE_NAME, 'readonly');
-                    const store = tx.objectStore(STORE_NAME);
-                    const req = store.getAll();
-                    req.onsuccess = () => resolve(req.result || []);
-                    req.onerror = () => resolve([]);
-                  } catch { resolve([]); }
-                });
-                if (Array.isArray(cached) && cached.length !== 0 && cached[0]?.content) {
-                  const rt = window.Nexus?.coordinator?.runtimeContext;
-                  if (rt?.setGlobalSignal) rt.setGlobalSignal('searchIndex', cached);
-                  else g.searchIndex = cached;
-                  const q = (g.searchDebouncedQuery || g.searchQuery || '').trim();
-                  if (q && typeof g.searchResultGroups === 'function') {
-                    const grps = g.searchResultGroups(q);
-                    const flat = (grps || []).flatMap(grp => grp.items || []);
-                    const tkns = (g.getSearchTokens ? g.getSearchTokens(q) : q.toLowerCase().split(/\s+/).filter(Boolean));
-                    if (rt?.setGlobalSignal) {
-                      rt.setGlobalSignal('searchTokens', tkns);
-                      rt.setGlobalSignal('searchResults', grps);
-                      rt.setGlobalSignal('flatResults', flat);
-                    } else {
-                      g.searchTokens = tkns;
-                      g.searchResults = grps;
-                      g.flatResults = flat;
-                    }
-                  }
-                  return cached;
-                }
-              }
-            }
-          } catch { /* proceed to network fetch */ }
-
-          let data = null;
-          try {
-            const CACHE_NAME = 'nexus-search-v1';
-            const url = '/_pages/search-index.json';
-            let res = null;
-            if (typeof caches !== 'undefined') {
-              try {
-                const cache = await caches.open(CACHE_NAME);
-                res = await cache.match(url);
-                if (!res) {
-                  res = await fetch(url);
-                  if (res && res.ok) {
-                    try { await cache.put(url, res.clone()); } catch {}
-                  }
-                }
-              } catch {
-                res = await fetch(url);
-              }
-            } else {
-              res = await fetch(url);
-            }
-            if (res && res.ok) {
-              data = await res.json();
-            }
-          } catch { /* proceed to check data */ }
-
-          if (Array.isArray(data) && data.length !== 0) {
-            const seg = typeof Intl !== 'undefined' && Intl.Segmenter ? new Intl.Segmenter('en', { granularity: 'word' }) : null;
-            const tokenize = (text) => {
-              if (!text) return [];
-              if (seg) return Array.from(seg.segment(text)).filter(s => s.isWordLike).map(s => s.segment.toLowerCase());
-              return (text.toLowerCase().match(/\b\w+\b/g) || []);
-            };
-            const docs = data.map(item => {
-              const route = item.route || item.path || '';
-              const title = item.title || '';
-              const cat = item.category || '';
-              const rawTokens = [
-                ...tokenize(title),
-                ...tokenize(cat),
-                ...(item.keywords || []).flatMap(k => tokenize(k)),
-                ...tokenize(item.content || '').slice(0, 300)
-              ];
-              return {
-                ...item,
-                route,
-                tokens: Array.from(new Set(rawTokens))
-              };
-            });
-
-            try {
-              if (typeof indexedDB !== 'undefined') {
-                const req = indexedDB.open(DB_NAME, DB_VERSION);
-                req.onsuccess = () => {
-                  try {
-                    const db = req.result;
-                    const tx = db.transaction(STORE_NAME, 'readwrite');
-                    const store = tx.objectStore(STORE_NAME);
-                    for (const doc of docs) { store.put(doc); }
-                  } catch {}
-                };
-              }
-            } catch {}
-
-            const rt = window.Nexus?.coordinator?.runtimeContext;
-            if (rt?.setGlobalSignal) rt.setGlobalSignal('searchIndex', docs);
-            else g.searchIndex = docs;
-
-            const q = (g.searchDebouncedQuery || g.searchQuery || '').trim();
-            if (q && typeof g.searchResultGroups === 'function') {
-              const grps = g.searchResultGroups(q);
-              const flat = (grps || []).flatMap(grp => grp.items || []);
-              const tkns = (g.getSearchTokens ? g.getSearchTokens(q) : q.toLowerCase().split(/\s+/).filter(Boolean));
-              if (rt?.setGlobalSignal) {
-                rt.setGlobalSignal('searchTokens', tkns);
-                rt.setGlobalSignal('searchResults', grps);
-                rt.setGlobalSignal('flatResults', flat);
-              } else {
-                g.searchTokens = tkns;
-                g.searchResults = grps;
-                g.flatResults = flat;
-              }
-            }
-            return docs;
-          }
-
-          const routes = (g.router?.manifest || g.router?.routes || []).filter(r => !r.internal && r.path && r.path !== '/error');
-          const fallback = routes.map(r => ({
-            id: r.id || r.name,
-            route: r.path,
-            path: r.component || r.path,
-            title: r.meta?.title || r.title || r.name,
-            category: (g.getRouteCategory ? g.getRouteCategory(r) : 'General'),
-            keywords: r.keywords || r.meta?.keywords || [],
-            content: ''
-          }));
-          const rt = window.Nexus?.coordinator?.runtimeContext;
-          if (rt?.setGlobalSignal) rt.setGlobalSignal('searchIndex', fallback);
-          else g.searchIndex = fallback;
-          return fallback;
-        })();
-        return window._nexusSearchInitPromise;
-      },
-      loadSearchIndex: function() { return this.initSearchDb ? this.initSearchDb() : null; },
       syncHighlights: (container, tokens) => {
         if (typeof window === 'undefined' || typeof window.CSS === 'undefined' || !window.CSS.highlights || typeof window.Highlight === 'undefined') return;
         if (!container) return;
