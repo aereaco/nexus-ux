@@ -1511,24 +1511,24 @@
             <!-- Fully Loaded Route Content -->
             <tab-content data-component="tab.source || tab.content" data-show="tab.isLoading === false"
               class="grow flex-1 flex flex-col min-h-0 [&>body]:flex [&>body]:flex-col [&>body]:flex-1 [&>body]:min-h-0 [&>body]:h-full [&>body]:m-0 [&>body]:bg-transparent"
-              data-effect="if (!tab.isLoading && router.activePageTabId === tab.id && (tab.id === __global.searchHighlightTargetTabId || tab.route === __global.searchHighlightTargetPath) && __global.searchHighlightTokens && __global.searchHighlightTokens.length !== 0 && typeof __global.syncPageHighlights === 'function') { __global.syncPageHighlights($el, __global.searchHighlightTokens); }"></tab-content>
+              data-effect="if (!tab.isLoading && router.activePageTabId === tab.id) { if (__global.searchTabs && __global.searchTabs[tab.id]) { const st = __global.searchTabs[tab.id]; if (st.tokens && st.tokens.length !== 0 && typeof __global.syncPageHighlights === 'function') { __global.syncPageHighlights($el, tab.id, st.tokens); } } else { if (typeof CSS !== 'undefined' && CSS.highlights) { CSS.highlights.delete('page-match'); } } }"></tab-content>
           </div>
         </template>
 
         <!-- Floating In-Page Search Matches Badge (Appears when navigating from search with highlighted tokens) -->
-        <div data-show="searchHighlightTokens && searchHighlightTokens.length !== 0 && searchHighlightCount > 0 && !searchOpen && router.activePageTabId === searchHighlightTargetTabId"
+        <div data-show="searchTabs && searchTabs[router.activePageTabId] && searchTabs[router.activePageTabId].count > 0 && !searchOpen"
           class="fixed bottom-6 start-6 z-40 flex items-center gap-2.5 bg-base-100/90 backdrop-blur-md px-3.5 py-2 rounded-full border border-accent/20 shadow-2xl text-xs font-mono transition-all duration-300 animate-fade-in"
-          data-on-keydown_escape_window="clearPageHighlights()">
+          data-on-keydown_escape_window="clearPageHighlights(router.activePageTabId)">
           <span class="relative flex h-2 w-2">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
             <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
           </span>
           <span class="text-base-content/80 font-sans">
-            <strong class="text-accent font-bold font-mono" data-bind="searchHighlightCount"></strong> match(es) for &ldquo;<span class="font-semibold text-accent" data-bind="searchHighlightTokens.join(' ')"></span>&rdquo;
+            <strong class="text-accent font-bold font-mono" data-bind="searchTabs[router.activePageTabId]?.count || 0"></strong> match(es) for &ldquo;<span class="font-semibold text-accent" data-bind="searchTabs[router.activePageTabId]?.query || ''"></span>&rdquo;
           </span>
           <button type="button" class="btn btn-ghost btn-xs btn-circle ms-1 opacity-70 hover:opacity-100 hover:bg-accent/10 hover:text-accent"
             aria-label="Clear highlights" title="Clear highlights (Esc)"
-            data-on-click="clearPageHighlights()">
+            data-on-click="clearPageHighlights(router.activePageTabId)">
             <iconify-icon icon="material-symbols-light:close" class="text-sm"></iconify-icon>
           </button>
         </div>
