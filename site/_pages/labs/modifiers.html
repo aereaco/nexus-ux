@@ -1,7 +1,7 @@
 <title>Modifiers</title>
 <meta name="id" content="labs-modifiers">
 <meta name="route" content="/labs/modifiers">
-<meta name="icon" content="material-symbols-light:tune">
+<meta name="icon" content="material-symbols-light:remove">
 <meta name="order" content="2">
 <meta name="category" content="Labs">
 
@@ -16,34 +16,47 @@
       Event Modifiers & Filters
     </h1>
     <p class="text-base text-base-content/70 mt-1 leading-relaxed">
-      Pipeline event modifiers that attach directly to event directives (e.g. <code>data-on-click_outside</code> or <code>@input_debounce.250</code>) to intercept, throttle, filter, and coordinate interactions.
+      Pipeline event modifiers that attach directly to event directives (e.g. <code>data-on-click_outside</code> or
+      <code>@input_debounce.250</code>) to intercept, throttle, filter, and coordinate interactions.
     </p>
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-colors shadow-sm">
+    <div
+      class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-colors shadow-sm">
       <span class="font-mono font-bold text-secondary mb-1">_outside</span>
-      <p class="text-xs text-base-content/70 leading-relaxed">Fires handler only when pointer click/tap occurs outside element bounds.</p>
+      <p class="text-xs text-base-content/70 leading-relaxed">Fires handler only when pointer click/tap occurs outside
+        element bounds.</p>
     </div>
-    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-colors shadow-sm">
+    <div
+      class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-colors shadow-sm">
       <span class="font-mono font-bold text-secondary mb-1">_debounce.&lt;ms&gt;</span>
-      <p class="text-xs text-base-content/70 leading-relaxed">Delays execution until specified idle duration elapses.</p>
+      <p class="text-xs text-base-content/70 leading-relaxed">Delays execution until specified idle duration elapses.
+      </p>
     </div>
-    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-colors shadow-sm">
+    <div
+      class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-colors shadow-sm">
       <span class="font-mono font-bold text-secondary mb-1">_throttle.&lt;ms&gt;</span>
-      <p class="text-xs text-base-content/70 leading-relaxed">Limits execution rate to once per specified millisecond budget.</p>
+      <p class="text-xs text-base-content/70 leading-relaxed">Limits execution rate to once per specified millisecond
+        budget.</p>
     </div>
-    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-colors shadow-sm">
+    <div
+      class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-colors shadow-sm">
       <span class="font-mono font-bold text-secondary mb-1">_prevent &amp; _stop</span>
-      <p class="text-xs text-base-content/70 leading-relaxed">Calls <code>e.preventDefault()</code> and <code>e.stopPropagation()</code> respectively.</p>
+      <p class="text-xs text-base-content/70 leading-relaxed">Calls <code>e.preventDefault()</code> and
+        <code>e.stopPropagation()</code> respectively.</p>
     </div>
-    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-colors shadow-sm">
+    <div
+      class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-colors shadow-sm">
       <span class="font-mono font-bold text-secondary mb-1">_hold.&lt;ms&gt;</span>
-      <p class="text-xs text-base-content/70 leading-relaxed">Triggers handler only after press-and-holding for specified milliseconds.</p>
+      <p class="text-xs text-base-content/70 leading-relaxed">Triggers handler only after press-and-holding for
+        specified milliseconds.</p>
     </div>
-    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-colors shadow-sm">
+    <div
+      class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-colors shadow-sm">
       <span class="font-mono font-bold text-secondary mb-1">Key Filters (_enter, _escape)</span>
-      <p class="text-xs text-base-content/70 leading-relaxed">Restricts keyboard events to specific keys or modifier combinations.</p>
+      <p class="text-xs text-base-content/70 leading-relaxed">Restricts keyboard events to specific keys or modifier
+        combinations.</p>
     </div>
   </div>
 </div>

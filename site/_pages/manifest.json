@@ -93,7 +93,7 @@
     "route": "/labs/modifiers",
     "path": "/_pages/labs/modifiers.html",
     "title": "Modifiers",
-    "icon": "material-symbols-light:tune",
+    "icon": "material-symbols-light:remove",
     "order": 2,
     "parent": null,
     "category": "Labs"
