@@ -122,8 +122,11 @@
             else if (title.startsWith(q)) score += 50;
             else if (title.includes(q)) score += 30;
             if (terms.every(t => title.includes(t))) score += 20;
-            if (path.includes(q)) score += 10;
-            if (cat.includes(q)) score += 5;
+            for (const t of terms) {
+              if (title.includes(t)) score += 10;
+              if (path.includes(t)) score += 5;
+              if (cat.includes(t)) score += 3;
+            }
 
             navMatches.push({
               id: r.path,
