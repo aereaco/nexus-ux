@@ -1622,8 +1622,16 @@
           <input id="search-modal-input" type="text" role="searchbox" inputmode="search" autocomplete="off" spellcheck="false"
             class="input input-ghost w-full text-lg focus:outline-none border-0 focus:border-0 px-0"
             placeholder="Search pages and features…" data-bind="searchQuery"
-            data-on-input="if (!$el.value.trim()) { searchDebouncedQuery = ''; searchResults = []; }"
-            data-on-input_debounce.200="searchDebouncedQuery = ($el.value || '').trim(); searchActiveIndex = 0;"
+            data-on-input="if (!$el.value.trim()) { searchQuery = ''; searchDebouncedQuery = ''; searchResults = []; flatResults = []; searchTokens = []; searchActiveIndex = 0; if (typeof syncHighlights === 'function') { syncHighlights(document.getElementById('search-results-viewport'), []); } }"
+            data-on-input_debounce.200="
+              const q = ($el.value || '').trim();
+              searchDebouncedQuery = q;
+              searchTokens = (typeof getSearchTokens === 'function' ? getSearchTokens(q) : q.toLowerCase().split(/\s+/).filter(Boolean));
+              searchResults = (q && searchIndex && searchIndex.length !== 0 && typeof searchResultGroups === 'function') ? searchResultGroups(q, searchIndex) : [];
+              flatResults = (searchResults || []).flatMap(function(grp) { return grp.items || []; });
+              searchActiveIndex = 0;
+              if (typeof syncHighlights === 'function') { syncHighlights(document.getElementById('search-results-viewport'), searchTokens); }
+            "
             data-on-keydown="
               if ($evt.key === 'Escape') {
                 searchOpen = false;
@@ -1661,7 +1669,11 @@
                   if (activeRecent) {
                     searchQuery = activeRecent;
                     searchDebouncedQuery = activeRecent;
+                    searchTokens = (typeof getSearchTokens === 'function' ? getSearchTokens(activeRecent) : [activeRecent]);
+                    searchResults = (activeRecent && searchIndex && searchIndex.length !== 0 && typeof searchResultGroups === 'function') ? searchResultGroups(activeRecent, searchIndex) : [];
+                    flatResults = (searchResults || []).flatMap(function(grp) { return grp.items || []; });
                     searchActiveIndex = 0;
+                    if (typeof syncHighlights === 'function') { syncHighlights(document.getElementById('search-results-viewport'), searchTokens); }
                   }
                 }
               }
@@ -1681,13 +1693,7 @@
 
         <!-- Results Area -->
         <div id="search-results-viewport" class="p-3 max-h-[60vh] overflow-y-auto"
-          data-effect="
-            const q = (searchDebouncedQuery || '').trim();
-            searchTokens = (typeof getSearchTokens === 'function' ? getSearchTokens(q) : q.toLowerCase().split(/\s+/).filter(Boolean));
-            searchResults = (q && searchIndex && searchIndex.length !== 0 && typeof searchResultGroups === 'function') ? searchResultGroups(q, searchIndex) : [];
-            flatResults = (searchResults || []).flatMap(function(grp) { return grp.items || []; });
-            if (typeof syncHighlights === 'function') { syncHighlights($el, searchTokens); }
-          ">
+          data-effect="if (typeof syncHighlights === 'function') { syncHighlights($el, searchTokens); }">
           <!-- State 1: Empty Query & No Recent Searches -->
           <div data-show="!searchQuery.trim() && !(recentSearches && recentSearches.length)"
             class="px-4 py-12 text-center text-base-content/50">
@@ -1713,7 +1719,15 @@
                     'hover:bg-base-200/60': searchQuery.trim() || (recentSearches || [])[searchActiveIndex] !== recent
                   }">
                   <a class="flex items-center gap-2.5 flex-1 min-w-0 py-2 px-3"
-                    data-on-click="searchQuery = recent; searchDebouncedQuery = recent; searchActiveIndex = 0;">
+                    data-on-click="
+                      searchQuery = recent;
+                      searchDebouncedQuery = recent;
+                      searchTokens = (typeof getSearchTokens === 'function' ? getSearchTokens(recent) : [recent]);
+                      searchResults = (recent && searchIndex && searchIndex.length !== 0 && typeof searchResultGroups === 'function') ? searchResultGroups(recent, searchIndex) : [];
+                      flatResults = (searchResults || []).flatMap(function(grp) { return grp.items || []; });
+                      searchActiveIndex = 0;
+                      if (typeof syncHighlights === 'function') { syncHighlights(document.getElementById('search-results-viewport'), searchTokens); }
+                    ">
                     <iconify-icon icon="material-symbols-light:history"
                       class="text-lg opacity-60 shrink-0"
                       data-class="{ 'text-primary opacity-100': !searchQuery.trim() && (recentSearches || [])[searchActiveIndex] === recent }"></iconify-icon>
