@@ -36,7 +36,15 @@
     "icon": "material-symbols-light:data-object",
     "order": 1,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-signal",
+      "...",
+      "a-signal_gl",
+      "bal",
+      "a-signal_deep"
+    ]
   },
   {
     "id": "lab-mod-debounce",
@@ -46,7 +54,11 @@
     "icon": "material-symbols-light:hourglass-empty",
     "order": 1,
     "parent": "/labs/modifiers",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "_deb",
+      "nce.[ms]"
+    ]
   },
   {
     "id": "lab-scope-media",
@@ -56,7 +68,10 @@
     "icon": "material-symbols-light:devices",
     "order": 1,
     "parent": "/labs/scopes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "@media(\\"
+    ]
   },
   {
     "id": "lab-sprite-animate",
@@ -66,7 +81,18 @@
     "icon": "material-symbols-light:animation",
     "order": 1,
     "parent": "/labs/sprites",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "$anima",
+      "e(el,",
+      "keyframes,",
+      "p",
+      "i",
+      "ns)",
+      "flip(elemen",
+      ",",
+      "fn)"
+    ]
   },
   {
     "id": "drag",
@@ -106,7 +132,17 @@
     "icon": "material-symbols-light:link",
     "order": 2,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-bind",
+      "expr",
+      "a-bind-val",
+      "e",
+      "a-bind-[a",
+      "r]",
+      "a-bind_lazy"
+    ]
   },
   {
     "id": "lab-mod-delay",
@@ -116,7 +152,10 @@
     "icon": "material-symbols-light:schedule",
     "order": 2,
     "parent": "/labs/modifiers",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "_delay.[ms]"
+    ]
   },
   {
     "id": "lab-scope-container",
@@ -126,7 +165,12 @@
     "icon": "material-symbols-light:aspect-ratio",
     "order": 2,
     "parent": "/labs/scopes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "@c",
+      "n",
+      "ainer(\\"
+    ]
   },
   {
     "id": "lab-sprite-bgfetch",
@@ -136,7 +180,18 @@
     "icon": "material-symbols-light:cloud-sync",
     "order": 2,
     "parent": "/labs/sprites",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "$bgfe",
+      "ch.fe",
+      "ch(id,",
+      "re",
+      "es",
+      "s,",
+      "p",
+      "i",
+      "ns)"
+    ]
   },
   {
     "id": "flow",
@@ -176,7 +231,19 @@
     "icon": "material-symbols-light:repeat",
     "order": 3,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-f",
+      "r",
+      "i",
+      "em",
+      "in",
+      "ems",
+      "(i",
+      "em,",
+      "index)"
+    ]
   },
   {
     "id": "lab-mod-document",
@@ -186,7 +253,12 @@
     "icon": "material-symbols-light:description",
     "order": 3,
     "parent": "/labs/modifiers",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "_d",
+      "c",
+      "men"
+    ]
   },
   {
     "id": "lab-scope-auth",
@@ -196,7 +268,11 @@
     "icon": "material-symbols-light:lock",
     "order": 3,
     "parent": "/labs/scopes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "@a",
+      "h(\\"
+    ]
   },
   {
     "id": "lab-sprite-bgsync",
@@ -206,7 +282,12 @@
     "icon": "material-symbols-light:sync",
     "order": 3,
     "parent": "/labs/sprites",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "$bgsync.regis",
+      "er(",
+      "ag)"
+    ]
   },
   {
     "id": "doc-readme",
@@ -236,7 +317,15 @@
     "icon": "material-symbols-light:splitscreen-top",
     "order": 4,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-if",
+      "c",
+      "ndi",
+      "i",
+      "n"
+    ]
   },
   {
     "id": "lab-mod-drag",
@@ -246,7 +335,10 @@
     "icon": "material-symbols-light:drag-click",
     "order": 4,
     "parent": "/labs/modifiers",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "_drag"
+    ]
   },
   {
     "id": "lab-scope-native",
@@ -256,7 +348,11 @@
     "icon": "material-symbols-light:phone-android",
     "order": 4,
     "parent": "/labs/scopes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "@na",
+      "ive"
+    ]
   },
   {
     "id": "lab-sprite-flow",
@@ -266,7 +362,14 @@
     "icon": "material-symbols-light:schema",
     "order": 4,
     "parent": "/labs/sprites",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "$fl",
+      "w.z",
+      "min()",
+      "w.fi",
+      "view()"
+    ]
   },
   {
     "id": "doc-license",
@@ -286,7 +389,16 @@
     "icon": "material-symbols-light:visibility",
     "order": 5,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-sh",
+      "w",
+      "c",
+      "ndi",
+      "i",
+      "n"
+    ]
   },
   {
     "id": "lab-mod-hold",
@@ -296,7 +408,11 @@
     "icon": "material-symbols-light:touch-long",
     "order": 5,
     "parent": "/labs/modifiers",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "_h",
+      "ld.[ms]"
+    ]
   },
   {
     "id": "lab-scope-os",
@@ -306,7 +422,11 @@
     "icon": "material-symbols-light:desktop-windows",
     "order": 5,
     "parent": "/labs/scopes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "@",
+      "s(\\"
+    ]
   },
   {
     "id": "lab-sprite-gql",
@@ -316,7 +436,19 @@
     "icon": "material-symbols-light:graphql",
     "order": 5,
     "parent": "/labs/sprites",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "$g",
+      "l.",
+      "ery(",
+      "ery,",
+      "variables)",
+      "l.m",
+      "a",
+      "e(m",
+      "i",
+      "n,"
+    ]
   },
   {
     "id": "lab-attr-on",
@@ -326,7 +458,29 @@
     "icon": "material-symbols-light:touch-app",
     "order": 6,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-",
+      "n-[even",
+      "]",
+      "expr",
+      "_preven",
+      ",",
+      "_s",
+      "p",
+      "_deb",
+      "nce.[ms],",
+      "_",
+      "hr",
+      "le.[ms]",
+      "side,",
+      "_wind",
+      "w,",
+      "_d",
+      "c",
+      "men"
+    ]
   },
   {
     "id": "lab-mod-keys",
@@ -336,7 +490,20 @@
     "icon": "material-symbols-light:keyboard",
     "order": 6,
     "parent": "/labs/modifiers",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "_en",
+      "er,",
+      "_escape,",
+      "_space",
+      ":c",
+      "rl,",
+      ":me",
+      "a,",
+      ":al",
+      ",",
+      ":shif"
+    ]
   },
   {
     "id": "lab-scope-view",
@@ -346,7 +513,17 @@
     "icon": "material-symbols-light:screen-search-desktop",
     "order": 6,
     "parent": "/labs/scopes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "@view.wid",
+      "h,",
+      "@view.heigh",
+      "@view.isp",
+      "r",
+      "rai",
+      ",",
+      "@view.islandscape"
+    ]
   },
   {
     "id": "lab-sprite-mask",
@@ -356,7 +533,15 @@
     "icon": "material-symbols-light:format-shapes",
     "order": 6,
     "parent": "/labs/sprites",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "$mask.f",
+      "rma",
+      "(val",
+      "e,",
+      "pa",
+      "ern)"
+    ]
   },
   {
     "id": "lab-attr-class",
@@ -366,7 +551,14 @@
     "icon": "material-symbols-light:palette",
     "order": 7,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-class",
+      "...",
+      "a-class-[name]",
+      "expr"
+    ]
   },
   {
     "id": "lab-mod-morph",
@@ -376,7 +568,11 @@
     "icon": "material-symbols-light:transform",
     "order": 7,
     "parent": "/labs/modifiers",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "_m",
+      "rph"
+    ]
   },
   {
     "id": "lab-sprite-mcp",
@@ -386,7 +582,13 @@
     "icon": "material-symbols-light:neurology",
     "order": 7,
     "parent": "/labs/sprites",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "$mcp.sample(payl",
+      "ad)",
+      "$mcp.",
+      "ls"
+    ]
   },
   {
     "id": "lab-attr-style",
@@ -396,7 +598,13 @@
     "icon": "material-symbols-light:format-paint",
     "order": 8,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-s",
+      "yle",
+      "..."
+    ]
   },
   {
     "id": "lab-mod-once",
@@ -406,7 +614,11 @@
     "icon": "material-symbols-light:looks-one",
     "order": 8,
     "parent": "/labs/modifiers",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "_",
+      "nce"
+    ]
   },
   {
     "id": "lab-sprite-periodicsync",
@@ -416,7 +628,16 @@
     "icon": "material-symbols-light:update",
     "order": 8,
     "parent": "/labs/sprites",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "$peri",
+      "dicsync.regis",
+      "er(",
+      "ag,",
+      "p",
+      "i",
+      "ns)"
+    ]
   },
   {
     "id": "lab-attr-effect",
@@ -426,7 +647,12 @@
     "icon": "material-symbols-light:bolt",
     "order": 9,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-effec",
+      "expr"
+    ]
   },
   {
     "id": "lab-mod-outside",
@@ -436,7 +662,11 @@
     "icon": "material-symbols-light:tab-close",
     "order": 9,
     "parent": "/labs/modifiers",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "_",
+      "side"
+    ]
   },
   {
     "id": "lab-sprite-predictive",
@@ -446,7 +676,15 @@
     "icon": "material-symbols-light:psychology",
     "order": 9,
     "parent": "/labs/sprites",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "$predic",
+      "ive.warm",
+      "p(",
+      "rl)",
+      "ive.me",
+      "rics"
+    ]
   },
   {
     "id": "lab-attr-computed",
@@ -456,7 +694,19 @@
     "icon": "material-symbols-light:calculate",
     "order": 10,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-c",
+      "mp",
+      "ed",
+      "...",
+      "ed-[pr",
+      "p]",
+      "expr",
+      "ed_gl",
+      "bal"
+    ]
   },
   {
     "id": "lab-mod-prevent",
@@ -466,7 +716,10 @@
     "icon": "material-symbols-light:block",
     "order": 10,
     "parent": "/labs/modifiers",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "_preven"
+    ]
   },
   {
     "id": "lab-sprite-push",
@@ -476,7 +729,17 @@
     "icon": "material-symbols-light:notifications-active",
     "order": 10,
     "parent": "/labs/sprites",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "$p",
+      "sh.s",
+      "bscribe(",
+      "p",
+      "i",
+      "ns)",
+      "sh.permissi",
+      "n"
+    ]
   },
   {
     "id": "lab-attr-drag",
@@ -486,7 +749,22 @@
     "icon": "material-symbols-light:drag-pan",
     "order": 11,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-drag",
+      "i",
+      "ems",
+      "|",
+      "lis",
+      ",",
+      "...",
+      "a-drag-i",
+      "em",
+      "a-drag-handle",
+      "a-drag-n",
+      "drag"
+    ]
   },
   {
     "id": "lab-mod-self",
@@ -496,7 +774,10 @@
     "icon": "material-symbols-light:target",
     "order": 11,
     "parent": "/labs/modifiers",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "_self"
+    ]
   },
   {
     "id": "lab-sprite-selector",
@@ -506,7 +787,17 @@
     "icon": "material-symbols-light:travel-explore",
     "order": 11,
     "parent": "/labs/sprites",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "$(selec",
+      "r)",
+      "^,",
+      "g",
+      ",",
+      "+,",
+      "-,",
+      "~"
+    ]
   },
   {
     "id": "lab-attr-flow",
@@ -516,7 +807,25 @@
     "icon": "material-symbols-light:account-tree",
     "order": 12,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-fl",
+      "w",
+      "w-viewp",
+      "r",
+      "w-n",
+      "de",
+      "n",
+      "w-edges",
+      "w-minimap",
+      "w-resizer",
+      "w-handle",
+      "ype",
+      "w-side",
+      "side",
+      "drag"
+    ]
   },
   {
     "id": "lab-mod-stop",
@@ -526,7 +835,11 @@
     "icon": "material-symbols-light:pan-tool",
     "order": 12,
     "parent": "/labs/modifiers",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "_s",
+      "p"
+    ]
   },
   {
     "id": "lab-sprite-sql",
@@ -536,7 +849,17 @@
     "icon": "material-symbols-light:database",
     "order": 12,
     "parent": "/labs/sprites",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "$s",
+      "l.",
+      "ery(s",
+      "l,",
+      "params)",
+      "l.live(",
+      "able,",
+      "callback)"
+    ]
   },
   {
     "id": "lab-attr-theme",
@@ -546,7 +869,18 @@
     "icon": "material-symbols-light:dark-mode",
     "order": 13,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-",
+      "heme",
+      "...",
+      "$",
+      "$swi",
+      "chtheme()",
+      "$se",
+      "theme(name)"
+    ]
   },
   {
     "id": "lab-mod-throttle",
@@ -556,7 +890,12 @@
     "icon": "material-symbols-light:timer",
     "order": 13,
     "parent": "/labs/modifiers",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "_",
+      "hr",
+      "le.[ms]"
+    ]
   },
   {
     "id": "lab-sprite-svg",
@@ -566,7 +905,19 @@
     "icon": "material-symbols-light:gesture",
     "order": 13,
     "parent": "/labs/sprites",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "$svg.bezier(fr",
+      "m,",
+      ",",
+      "p",
+      "i",
+      "ns)",
+      "$svg.sm",
+      "h(p",
+      "in",
+      "s)"
+    ]
   },
   {
     "id": "lab-attr-stylesheet",
@@ -576,7 +927,12 @@
     "icon": "material-symbols-light:css",
     "order": 14,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-s",
+      "yleshee"
+    ]
   },
   {
     "id": "lab-mod-window",
@@ -586,7 +942,11 @@
     "icon": "material-symbols-light:web-asset",
     "order": 14,
     "parent": "/labs/modifiers",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "_wind",
+      "w"
+    ]
   },
   {
     "id": "lab-sprite-sw",
@@ -596,7 +956,15 @@
     "icon": "material-symbols-light:cloud",
     "order": 14,
     "parent": "/labs/sprites",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "$sw.regis",
+      "er(scrip",
+      "url)",
+      "$sw.s",
+      "a",
+      "e"
+    ]
   },
   {
     "id": "lab-attr-component",
@@ -606,7 +974,23 @@
     "icon": "material-symbols-light:extension",
     "order": 15,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-c",
+      "mp",
+      "nen",
+      "pa",
+      "h",
+      "shad",
+      "wr",
+      "m",
+      "de",
+      "pen",
+      "lazy",
+      "r",
+      "e"
+    ]
   },
   {
     "id": "lab-mod-zoom",
@@ -616,7 +1000,11 @@
     "icon": "material-symbols-light:zoom-in",
     "order": 15,
     "parent": "/labs/modifiers",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "_z",
+      "m"
+    ]
   },
   {
     "id": "lab-attr-import",
@@ -626,7 +1014,16 @@
     "icon": "material-symbols-light:cloud-download",
     "order": 16,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "scrip",
+      "link",
+      "m",
+      "d",
+      "le",
+      "ad",
+      "p"
+    ]
   },
   {
     "id": "lab-attr-router",
@@ -636,7 +1033,17 @@
     "icon": "material-symbols-light:alt-route",
     "order": 17,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-r",
+      "er",
+      "#r",
+      "er.pages",
+      "er.crea",
+      "epagetab(pa",
+      "h)"
+    ]
   },
   {
     "id": "lab-attr-route",
@@ -646,7 +1053,18 @@
     "icon": "material-symbols-light:signpost",
     "order": 18,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-r",
+      "e",
+      "/pa",
+      "h",
+      "e-bef",
+      "re-en",
+      "er",
+      "e-name"
+    ]
   },
   {
     "id": "lab-attr-teleport",
@@ -656,7 +1074,19 @@
     "icon": "material-symbols-light:move-item",
     "order": 19,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-",
+      "elep",
+      "r",
+      "selec",
+      "_dr",
+      "p",
+      "lis",
+      "-m",
+      "de"
+    ]
   },
   {
     "id": "lab-attr-markdown",
@@ -666,7 +1096,13 @@
     "icon": "material-symbols-light:markdown",
     "order": 20,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-markd",
+      "wn",
+      "expr"
+    ]
   },
   {
     "id": "lab-attr-mask",
@@ -676,7 +1112,13 @@
     "icon": "material-symbols-light:badge",
     "order": 21,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-mask",
+      "empla",
+      "e"
+    ]
   },
   {
     "id": "lab-attr-switcher",
@@ -686,7 +1128,23 @@
     "icon": "material-symbols-light:swap-calls",
     "order": 22,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-swi",
+      "cher",
+      "signal",
+      "cher-",
+      "p",
+      "i",
+      "ns",
+      "[...]",
+      "$swi",
+      "ch()",
+      "$isac",
+      "ive(i",
+      "em)"
+    ]
   },
   {
     "id": "lab-attr-scrollbar",
@@ -696,7 +1154,14 @@
     "icon": "material-symbols-light:view-stream",
     "order": 23,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-scr",
+      "llbar",
+      "a",
+      "hide"
+    ]
   },
   {
     "id": "lab-attr-raf",
@@ -706,7 +1171,17 @@
     "icon": "material-symbols-light:speed",
     "order": 24,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-",
+      "n-raf",
+      "expr",
+      "$",
+      "ime",
+      "$del",
+      "a"
+    ]
   },
   {
     "id": "lab-attr-pwa",
@@ -716,7 +1191,16 @@
     "icon": "material-symbols-light:install-mobile",
     "order": 25,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-pwa",
+      "$pwa.isonline",
+      "$pwa.canins",
+      "all",
+      "$pwa.ins",
+      "all()"
+    ]
   },
   {
     "id": "lab-attr-preserve",
@@ -726,7 +1210,11 @@
     "icon": "material-symbols-light:shield",
     "order": 26,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-preserve"
+    ]
   },
   {
     "id": "lab-attr-assert",
@@ -736,7 +1224,12 @@
     "icon": "material-symbols-light:fact-check",
     "order": 27,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-asser",
+      "expr"
+    ]
   },
   {
     "id": "lab-attr-build",
@@ -746,7 +1239,13 @@
     "icon": "material-symbols-light:build",
     "order": 28,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-b",
+      "ild",
+      "arge"
+    ]
   },
   {
     "id": "lab-attr-html",
@@ -756,7 +1255,13 @@
     "icon": "material-symbols-light:html",
     "order": 29,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-h",
+      "ml",
+      "expr"
+    ]
   },
   {
     "id": "lab-attr-debug",
@@ -766,7 +1271,12 @@
     "icon": "material-symbols-light:bug-report",
     "order": 30,
     "parent": "/labs/attributes",
-    "category": "Labs"
+    "category": "Labs",
+    "keywords": [
+      "da",
+      "a-deb",
+      "g"
+    ]
   },
   {
     "id": "error",
