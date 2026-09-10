@@ -1849,7 +1849,7 @@
 
         <!-- Results Area -->
         <div id="search-results-viewport" class="p-3 max-h-[60vh] overflow-y-auto"
-          data-effect="if (typeof syncHighlights === 'function') { const _q = searchDebouncedQuery; syncHighlights($el, searchTokens); }">
+          data-effect="if (typeof syncHighlights === 'function') { const _len = (searchResults || []).length; const _q = searchDebouncedQuery; syncHighlights($el, searchTokens); }">
           <!-- State 1: Empty Query & No Recent Searches -->
           <div data-show="!searchQuery.trim() && !(recentSearches && recentSearches.length)"
             class="px-4 py-12 text-center text-base-content/50">
