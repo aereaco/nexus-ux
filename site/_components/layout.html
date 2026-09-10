@@ -1500,6 +1500,7 @@
       data-on-keydown_escape_window="searchOpen = false"
       data-effect="if (searchOpen && Object.keys(pageContentIndex || {}).length === 0 && typeof indexPageContents === 'function') { indexPageContents(); }">
       <div class="modal-box bg-base-100 shadow-2xl border border-base-300 p-0 overflow-hidden flex flex-col max-w-2xl">
+        <style>#search-modal-input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; display: none; }</style>
         <!-- Search Input Row -->
         <div class="flex items-center gap-3 px-4 py-3 border-b border-base-200">
           <iconify-icon icon="material-symbols-light:search" class="text-2xl opacity-60"></iconify-icon>
