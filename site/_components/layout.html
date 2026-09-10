@@ -107,6 +107,7 @@
           const cat = getCat(r).toLowerCase();
           if (title.includes(q) || path.includes(q) || cat.includes(q)) {
             navMatches.push({
+              id: r.path,
               path: r.path,
               component: r.component,
               name: r.name,
@@ -130,6 +131,7 @@
             if (end < text.length) snippet = snippet + '…';
 
             contentMatches.push({
+              id: 'content_' + r.path,
               path: r.path,
               component: r.component,
               name: r.name,
@@ -143,6 +145,7 @@
         const groups = [];
         if (navMatches.length > 0) {
           groups.push({
+            id: 'nav',
             type: 'nav',
             title: 'Pages & Navigation',
             icon: 'material-symbols-light:navigation-outline',
@@ -151,6 +154,7 @@
         }
         if (contentMatches.length > 0) {
           groups.push({
+            id: 'content',
             type: 'content',
             title: 'Page Content Matches',
             icon: 'material-symbols-light:description-outline',
