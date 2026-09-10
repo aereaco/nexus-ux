@@ -23,7 +23,7 @@
     "route": "/labs/attributes",
     "path": "/_pages/labs/attributes.html",
     "title": "Attributes",
-    "icon": "material-symbols-light:code-blocks-outline",
+    "icon": "material-symbols-light:code",
     "order": 1,
     "parent": null,
     "category": "Labs"
