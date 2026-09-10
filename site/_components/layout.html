@@ -1805,18 +1805,32 @@
                 const active = items[searchActiveIndex] || items[0];
                 if (active) {
                   recentSearches = [q, ...(recentSearches || []).filter(function(s) { return s !== q; })].slice(0, 6);
+                  let targetTabId = '';
                   if (router.pageTabs) {
                     const existing = (router.pageTabs || []).find(function(t) { return t.route === active.path; });
                     if (existing) {
                       router.switchPageTab(existing.id);
-                      searchHighlightTargetTabId = existing.id;
+                      targetTabId = existing.id;
                     } else {
                       router.createPageTab(active.component || active.path, active.path);
-                      searchHighlightTargetTabId = router.activePageTabId;
+                      targetTabId = router.activePageTabId;
                     }
                   }
+                  searchHighlightTargetTabId = targetTabId;
                   searchHighlightTargetPath = active.path;
                   searchHighlightTokens = [...(searchTokens || [])];
+                  if (targetTabId) {
+                    searchTabs = {
+                      ...(searchTabs || {}),
+                      [targetTabId]: {
+                        query: q,
+                        tokens: [...(searchTokens || [])],
+                        ticks: [],
+                        count: 0,
+                        path: active.path
+                      }
+                    };
+                  }
                   router.navigate(active.path);
                   searchOpen = false;
                   if (typeof CSS !== 'undefined' && CSS.highlights) { CSS.highlights.delete('search-match'); }
