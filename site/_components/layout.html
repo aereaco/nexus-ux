@@ -1357,7 +1357,7 @@
         data-bind-aria-selected="router.activePageTabId === tab.id"
         data-class="{'tab-active border-b border-primary text-primary': router.activePageTabId === tab.id }"
         data-on-click="router.switchPageTab(tab.id)"
-        data-on-auxclick="if ($evt.button === 1) router.closePageTab(tab.id)"
+        data-on-auxclick="if ($evt.button === 1) { if (searchTabs && searchTabs[tab.id]) { delete searchTabs[tab.id]; } router.closePageTab(tab.id); }"
         data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'tab', target: tab }">
         <iconify-icon icon="material-symbols-light:drag-indicator"
           class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
@@ -1366,10 +1366,10 @@
           data-bind-icon="tab.meta?.icon || 'material-symbols-light:article-outline'"
           class="text-lg px-2"></iconify-icon>
         <span class="pe-4 whitespace-nowrap"
-          data-bind="tab.isLoading !== false ? 'Loading...' : (((tab.id === __global.searchHighlightTargetTabId && __global.searchHighlightTokens && __global.searchHighlightTokens.length && __global.searchHighlightCount > 0 && !tab.meta?.title?.startsWith('Search Result:')) ? 'Search Result: ' : '') + (tab.meta?.title || 'Tab'))"></span>
+          data-bind="tab.isLoading !== false ? 'Loading...' : (((searchTabs && searchTabs[tab.id] && searchTabs[tab.id].query) ? ('Search Result: [' + searchTabs[tab.id].query + '] - ') : '') + (tab.meta?.title || 'Tab'))"></span>
         <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close tab" title="Close tab"
           data-class="{ 'hidden': (router.pinnedPageTabs || []).includes(tab.id) }"
-          data-on-click_stop="router.closePageTab(tab.id)">
+          data-on-click_stop="if (searchTabs && searchTabs[tab.id]) { delete searchTabs[tab.id]; } router.closePageTab(tab.id)">
           <iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
         </button>
       </div>
