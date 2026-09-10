@@ -163,7 +163,7 @@
     "route": "/labs/scopes",
     "path": "/_pages/labs/scopes.html",
     "title": "Scopes",
-    "icon": "material-symbols-light:aspect-ratio",
+    "icon": "material-symbols-light:alternate-email",
     "order": 3,
     "parent": null,
     "category": "Labs"
