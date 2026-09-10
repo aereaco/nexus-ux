@@ -53,17 +53,17 @@
           .join(' ');
 
         let foundNode = null;
-        const walk = (items, parent = null) => {
+        const walk = (items, ancestors = []) => {
           if (foundNode) return;
           for (const item of items || []) {
             if (!item) continue;
             const key = item.href || item.route || item.path;
             if (key && key === r.path) {
-              foundNode = { item, parent };
+              foundNode = { item, ancestors };
               return;
             }
             if (item.children && item.children.length) {
-              walk(item.children, item);
+              walk(item.children, [...ancestors, item]);
               if (foundNode) return;
             }
           }
@@ -71,13 +71,18 @@
         walk(pages);
 
         if (foundNode) {
-          const { item, parent } = foundNode;
-          if (parent) {
-            const topCat = parent.category || item.category;
-            const parentName = parent.title || titleCase(parent.id);
-            return topCat ? `${topCat} / ${parentName}` : parentName;
+          const { item, ancestors } = foundNode;
+          if (ancestors && ancestors.length !== 0) {
+            const rootCat = ancestors[0].category || ancestors[0].meta?.category;
+            const ancestorChain = ancestors.map(a => a.title || titleCase(a.id)).filter(Boolean);
+            const parentChain = ancestorChain.join(' / ');
+            if (rootCat && !ancestorChain.includes(rootCat)) {
+              return `${rootCat} / ${parentChain}`;
+            }
+            return parentChain;
           }
           if (item.category) return item.category;
+          if (item.meta?.category) return item.meta.category;
           if (item.children && item.children.length) return item.title || 'General';
         }
 
@@ -127,8 +132,8 @@
             const start = Math.max(0, pos - 35);
             const end = Math.min(text.length, pos + q.length + 35);
             let snippet = text.slice(start, end).trim();
-            if (start > 0) snippet = '…' + snippet;
-            if (end < text.length) snippet = snippet + '…';
+            if (start !== 0) snippet = '…' + snippet;
+            if (end !== text.length) snippet = snippet + '…';
 
             contentMatches.push({
               id: 'content_' + r.path,
@@ -143,18 +148,18 @@
         }
 
         const groups = [];
-        if (navMatches.length > 0) {
+        if (navMatches.length !== 0) {
           groups.push({
-            id: 'nav',
+            id: 'nav_' + q,
             type: 'nav',
             title: 'Pages & Navigation',
             icon: 'material-symbols-light:navigation-outline',
             items: navMatches
           });
         }
-        if (contentMatches.length > 0) {
+        if (contentMatches.length !== 0) {
           groups.push({
-            id: 'content',
+            id: 'content_' + q,
             type: 'content',
             title: 'Page Content Matches',
             icon: 'material-symbols-light:description-outline',
@@ -1737,7 +1742,13 @@
 
     <!-- ================= 2. Middle Content Section (Scrollable) ================= -->
     <main class="sidebar-content flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
-      data-effect="if (collapsed && !hovered && !sidebarOpen && $el) { $el.scrollTo({ top: 0, behavior: 'smooth' }); }"
+      data-effect="
+        if (collapsed && !hovered && !sidebarOpen && $el) { $el.scrollTo({ top: 0, behavior: 'smooth' }); }
+        const discovered = [...new Set((router.pages || []).map(p => p.category || p.meta?.category).filter(Boolean))];
+        const known = new Set((categories || []).map(c => c.name));
+        const extra = discovered.filter(c => !known.has(c)).map(c => ({ id: c, name: c, itemsDraggable: true, icon: 'material-symbols-light:folder-outline' }));
+        if (extra.length !== 0) { categories = [...(categories || []), ...extra]; }
+      "
       data-signal="{
         categories: [
           { id: 'Docs', name: 'Docs', itemsDraggable: false, icon: 'material-symbols-light:menu-book-outline' },
