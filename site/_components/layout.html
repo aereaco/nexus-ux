@@ -87,7 +87,7 @@
 
               // Compute scrollbar location ticks
               const scrollEl = (firstMatchEl && firstMatchEl.closest('.overflow-y-auto, [data-scrollbar], .overflow-auto')) || container.closest('.overflow-y-auto') || container;
-              const panel = container.closest('[role="tabpanel"]') || container.parentElement;
+              const panel = container.closest('[role=tabpanel]') || container.parentElement;
               if (scrollEl && panel) {
                 const scrollRect = scrollEl.getBoundingClientRect();
                 const panelRect = panel.getBoundingClientRect();
