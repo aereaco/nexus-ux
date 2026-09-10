@@ -1,5 +1,5 @@
 <div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300"
-  data-on-keydown_window="if (($evt.ctrlKey || $evt.metaKey) && ($evt.key === 'k' || $evt.key === 'K')) { $evt.preventDefault(); favModalOpen = false; favDeleteModalOpen = false; searchQuery = ''; searchOpen = true; if (typeof indexPageContents === 'function') { indexPageContents(); } $nextTick(() => document.getElementById('search-modal-input')?.focus()); }"
+  data-on-keydown_window="if (($evt.ctrlKey || $evt.metaKey) && ($evt.key === 'k' || $evt.key === 'K')) { $evt.preventDefault(); favModalOpen = false; favDeleteModalOpen = false; searchQuery = ''; searchOpen = true; if (typeof indexPageContents === 'function') { indexPageContents(); } $nextTick(() => { const el = document.getElementById('search-modal-input'); el?.focus(); el?.select(); }); }"
   data-signal_global="{
       collapsed: localStorage.collapsed !== 'false',
       pageTabs: localStorage.pageTabs !== 'false',
@@ -699,7 +699,7 @@
         <!-- Search Button -->
         <button class="btn btn-ghost btn-circle hover:scale-102" aria-label="Open search (Ctrl+K)"
           title="Search (Ctrl+K)"
-          data-on-click="favModalOpen = false; favDeleteModalOpen = false; searchQuery = ''; searchOpen = true; if (typeof indexPageContents === 'function') { indexPageContents(); } $nextTick(() => document.getElementById('search-modal-input')?.focus())">
+          data-on-click="favModalOpen = false; favDeleteModalOpen = false; searchQuery = ''; searchOpen = true; if (typeof indexPageContents === 'function') { indexPageContents(); } $nextTick(() => { const el = document.getElementById('search-modal-input'); el?.focus(); el?.select(); })">
           <iconify-icon icon="material-symbols-light:search" class="text-2xl"></iconify-icon>
         </button>
 
@@ -1503,18 +1503,18 @@
         <!-- Search Input Row -->
         <div class="flex items-center gap-3 px-4 py-3 border-b border-base-200">
           <iconify-icon icon="material-symbols-light:search" class="text-2xl opacity-60"></iconify-icon>
-          <input id="search-modal-input" type="text"
+          <input id="search-modal-input" type="search"
             class="input input-ghost w-full text-lg focus:outline-none border-0 focus:border-0 px-0"
             placeholder="Search pages and features…" data-bind-value="searchQuery"
             data-on-keydown_escape="searchOpen = false"
-            data-effect="if (searchOpen) { setTimeout(() => { $el?.focus(); $el?.select(); }, 50); }" />
-          <button class="btn btn-ghost btn-xs btn-circle opacity-60 hover:opacity-100 me-1"
+            data-effect="if (searchOpen && $el) { $nextTick(() => { $el.focus(); $el.select(); }); }" />
+          <button type="button" class="btn btn-ghost btn-xs btn-circle opacity-60 hover:opacity-100 me-1"
             aria-label="Clear search" data-show="searchQuery"
-            data-on-click="searchQuery = ''; $('#search-modal-input')?.focus();">
+            data-on-click="searchQuery = ''; $nextTick(() => document.getElementById('search-modal-input')?.focus());">
             <iconify-icon icon="material-symbols-light:backspace-outline" class="text-base"></iconify-icon>
           </button>
           <kbd class="kbd kbd-sm opacity-60 max-sm:hidden">Esc</kbd>
-          <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close search" data-on-click="searchOpen = false">
+          <button type="button" class="btn btn-ghost btn-xs btn-circle" aria-label="Close search" data-on-click="searchOpen = false">
             <iconify-icon icon="material-symbols-light:close" class="text-lg"></iconify-icon>
           </button>
         </div>
