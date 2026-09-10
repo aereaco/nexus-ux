@@ -20,9 +20,13 @@
       recentSearches: [],
       searchIndex: [],
       searchHighlightTokens: [],
+      searchHighlightTargetTabId: '',
+      searchHighlightTargetPath: '',
       searchHighlightCount: 0,
       clearPageHighlights: function() {
         searchHighlightTokens = [];
+        searchHighlightTargetTabId = '';
+        searchHighlightTargetPath = '';
         searchHighlightCount = 0;
         if (typeof window !== 'undefined' && typeof window.CSS !== 'undefined' && window.CSS.highlights) {
           window.CSS.highlights.delete('page-match');
@@ -1383,7 +1387,8 @@
         </nav>
       </div>
 
-      <div class="p-6 relative grow flex-1 flex flex-col min-h-0 overflow-y-auto overflow-x-hidden">
+      <div class="p-6 relative grow flex-1 flex flex-col min-h-0 overflow-y-auto overflow-x-hidden"
+        data-effect="if (searchHighlightTokens && searchHighlightTokens.length !== 0 && ((searchHighlightTargetTabId && router?.activePageTabId !== searchHighlightTargetTabId) || (searchHighlightTargetPath && router?.path !== searchHighlightTargetPath))) { clearPageHighlights(); }">
 
         <!-- Inline Header Bar with Breadcrumbs & Page Tabs Toggle (when floatingBookmarks is false) -->
         <div data-show="!floatingBookmarks"
@@ -1435,7 +1440,7 @@
             <!-- Fully Loaded Route Content -->
             <tab-content data-component="tab.source || tab.content" data-show="tab.isLoading === false"
               class="grow flex-1 flex flex-col min-h-0 [&>body]:flex [&>body]:flex-col [&>body]:flex-1 [&>body]:min-h-0 [&>body]:h-full [&>body]:m-0 [&>body]:bg-transparent"
-              data-effect="if (!tab.isLoading && router.activePageTabId === tab.id && searchHighlightTokens && searchHighlightTokens.length !== 0 && typeof syncPageHighlights === 'function') { syncPageHighlights($el, searchHighlightTokens); }"></tab-content>
+              data-effect="if (!tab.isLoading && router.activePageTabId === tab.id && (tab.id === searchHighlightTargetTabId || tab.route === searchHighlightTargetPath) && searchHighlightTokens && searchHighlightTokens.length !== 0 && typeof syncPageHighlights === 'function') { syncPageHighlights($el, searchHighlightTokens); }"></tab-content>
           </div>
         </template>
 
@@ -1717,12 +1722,18 @@
                 const active = items[searchActiveIndex] || items[0];
                 if (active) {
                   recentSearches = [q, ...(recentSearches || []).filter(function(s) { return s !== q; })].slice(0, 6);
-                  searchHighlightTokens = [...(searchTokens || [])];
                   if (router.pageTabs) {
                     const existing = (router.pageTabs || []).find(function(t) { return t.route === active.path; });
-                    if (existing) { router.switchPageTab(existing.id); }
-                    else { router.createPageTab(active.component || active.path, active.path); }
+                    if (existing) {
+                      router.switchPageTab(existing.id);
+                      searchHighlightTargetTabId = existing.id;
+                    } else {
+                      router.createPageTab(active.component || active.path, active.path);
+                      searchHighlightTargetTabId = router.activePageTabId;
+                    }
                   }
+                  searchHighlightTargetPath = active.path;
+                  searchHighlightTokens = [...(searchTokens || [])];
                   router.navigate(active.path);
                   searchOpen = false;
                   if (typeof CSS !== 'undefined' && CSS.highlights) { CSS.highlights.delete('search-match'); }
@@ -1833,13 +1844,19 @@
                           const q = (searchDebouncedQuery || searchQuery || '').trim();
                           if (q) {
                             recentSearches = [q, ...(recentSearches || []).filter(function(s) { return s !== q; })].slice(0, 6);
-                            searchHighlightTokens = [...(searchTokens || [])];
                           }
                           if (router.pageTabs) {
                             const existing = (router.pageTabs || []).find(function(t) { return t.route === item.path; });
-                            if (existing) { router.switchPageTab(existing.id); }
-                            else { router.createPageTab(item.component || item.path, item.path); }
+                            if (existing) {
+                              router.switchPageTab(existing.id);
+                              searchHighlightTargetTabId = existing.id;
+                            } else {
+                              router.createPageTab(item.component || item.path, item.path);
+                              searchHighlightTargetTabId = router.activePageTabId;
+                            }
                           }
+                          searchHighlightTargetPath = item.path;
+                          searchHighlightTokens = [...(searchTokens || [])];
                           router.navigate(item.path);
                           searchOpen = false;
                           if (typeof CSS !== 'undefined' && CSS.highlights) { CSS.highlights.delete('search-match'); }
