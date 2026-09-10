@@ -1588,30 +1588,34 @@
             class="input input-ghost w-full text-lg focus:outline-none border-0 focus:border-0 px-0"
             placeholder="Search pages and features…" data-bind-value="searchQuery"
             data-on-input="searchActiveIndex = 0"
-            data-on-keydown_escape="searchOpen = false"
-            data-on-keydown_down_prevent="
-              const items = searchQuery.trim() ? flatSearchResults(searchQuery) : (recentSearches || []);
-              if (items.length !== 0) { searchActiveIndex = (searchActiveIndex + 1) % items.length; }
-            "
-            data-on-keydown_up_prevent="
-              const items = searchQuery.trim() ? flatSearchResults(searchQuery) : (recentSearches || []);
-              if (items.length !== 0) { searchActiveIndex = (searchActiveIndex - 1 + items.length) % items.length; }
-            "
-            data-on-keydown_enter_prevent="
-              if (searchQuery.trim()) {
-                const items = flatSearchResults(searchQuery);
-                const active = items[searchActiveIndex] || items[0];
-                if (active) {
-                  recentSearches = [searchQuery.trim(), ...(recentSearches || []).filter(s => s !== searchQuery.trim())].slice(0, 6);
-                  router.createPageTab(active.component, active.path);
-                  searchOpen = false;
-                }
-              } else {
-                const recents = recentSearches || [];
-                const activeRecent = recents[searchActiveIndex];
-                if (activeRecent) {
-                  searchQuery = activeRecent;
-                  searchActiveIndex = 0;
+            data-on-keydown="
+              if ($evt.key === 'Escape') {
+                searchOpen = false;
+              } else if ($evt.key === 'ArrowDown') {
+                $evt.preventDefault();
+                const items = searchQuery.trim() ? flatSearchResults(searchQuery) : (recentSearches || []);
+                if (items.length !== 0) { searchActiveIndex = (searchActiveIndex + 1) % items.length; }
+              } else if ($evt.key === 'ArrowUp') {
+                $evt.preventDefault();
+                const items = searchQuery.trim() ? flatSearchResults(searchQuery) : (recentSearches || []);
+                if (items.length !== 0) { searchActiveIndex = (searchActiveIndex - 1 + items.length) % items.length; }
+              } else if ($evt.key === 'Enter') {
+                $evt.preventDefault();
+                if (searchQuery.trim()) {
+                  const items = flatSearchResults(searchQuery);
+                  const active = items[searchActiveIndex] || items[0];
+                  if (active) {
+                    recentSearches = [searchQuery.trim(), ...(recentSearches || []).filter(s => s !== searchQuery.trim())].slice(0, 6);
+                    router.createPageTab(active.component, active.path);
+                    searchOpen = false;
+                  }
+                } else {
+                  const recents = recentSearches || [];
+                  const activeRecent = recents[searchActiveIndex];
+                  if (activeRecent) {
+                    searchQuery = activeRecent;
+                    searchActiveIndex = 0;
+                  }
                 }
               }
             "
