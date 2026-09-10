@@ -19,6 +19,7 @@
       searchActiveIndex: 0,
       recentSearches: [],
       searchIndex: [],
+      searchTabs: {},
       searchHighlightTokens: [],
       searchHighlightTargetTabId: '',
       searchHighlightTargetPath: '',
@@ -34,7 +35,13 @@
           scrollEl.scrollTo({ top: Math.max(0, targetScroll), behavior: 'smooth' });
         }
       },
-      clearPageHighlights: function() {
+      clearPageHighlights: function(tabId) {
+        const id = tabId || (typeof router !== 'undefined' ? router.activePageTabId : '');
+        if (id && this.searchTabs && this.searchTabs[id]) {
+          const updated = { ...this.searchTabs };
+          delete updated[id];
+          this.searchTabs = updated;
+        }
         searchHighlightTokens = [];
         searchHighlightTargetTabId = '';
         searchHighlightTargetPath = '';
@@ -45,14 +52,21 @@
           window.CSS.highlights.delete('page-match');
         }
       },
-      syncPageHighlights: function(container, tokens) {
+      syncPageHighlights: function(container, tabId, tokens) {
         if (typeof window === 'undefined' || typeof window.CSS === 'undefined' || !window.CSS.highlights || typeof window.Highlight === 'undefined') return;
         if (!container) return;
+        const effectiveTabId = tabId || (typeof router !== 'undefined' ? router.activePageTabId : '');
+        const currentSearchTabs = this.searchTabs || {};
         if (!tokens || tokens.length === 0) {
           window.CSS.highlights.delete('page-match');
           searchHighlightCount = 0;
           searchTicks = [];
-          searchTickTrackStyle = {};
+          if (effectiveTabId && currentSearchTabs[effectiveTabId]) {
+            this.searchTabs = {
+              ...currentSearchTabs,
+              [effectiveTabId]: { ...currentSearchTabs[effectiveTabId], count: 0, ticks: [] }
+            };
+          }
           return;
         }
         window.setTimeout(() => {
@@ -87,12 +101,12 @@
 
               // Compute scrollbar location ticks
               const scrollEl = container.closest('.overflow-y-auto') || container;
+              const ticks = [];
               if (scrollEl) {
                 const scrollRect = scrollEl.getBoundingClientRect();
                 const scrollH = scrollEl.scrollHeight;
                 const scrollT = scrollEl.scrollTop;
 
-                const ticks = [];
                 for (const r of ranges) {
                   const rect = r.getBoundingClientRect();
                   if (!rect || (rect.width === 0 && rect.height === 0)) continue;
@@ -102,11 +116,31 @@
                     ticks.push(Number(pct.toFixed(1)));
                   }
                 }
-                searchTicks = ticks;
+              }
+              searchTicks = ticks;
+              if (effectiveTabId && (this.searchTabs || {})[effectiveTabId]) {
+                this.searchTabs = {
+                  ...this.searchTabs,
+                  [effectiveTabId]: {
+                    ...this.searchTabs[effectiveTabId],
+                    count: ranges.length,
+                    ticks: ticks
+                  }
+                };
               }
             } else {
               window.CSS.highlights.delete('page-match');
               searchTicks = [];
+              if (effectiveTabId && (this.searchTabs || {})[effectiveTabId]) {
+                this.searchTabs = {
+                  ...this.searchTabs,
+                  [effectiveTabId]: {
+                    ...this.searchTabs[effectiveTabId],
+                    count: 0,
+                    ticks: []
+                  }
+                };
+              }
             }
           } catch { /* ignore range calculation errors */ }
         }, 120);
