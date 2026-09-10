@@ -1,6 +1,5 @@
 <div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300"
-  data-effect="if (typeof initSearchDb === 'function') { initSearchDb(); }"
-  data-on-keydown_window="if (($evt.ctrlKey || $evt.metaKey) && ($evt.key === 'k' || $evt.key === 'K')) { $evt.preventDefault(); favModalOpen = false; favDeleteModalOpen = false; searchQuery = ''; searchDebouncedQuery = ''; searchTokens = []; searchActiveIndex = 0; searchOpen = true; if (typeof initSearchDb === 'function') { initSearchDb(); } $nextTick().then(() => { const el = document.getElementById('search-modal-input'); el?.focus(); el?.select(); }); }"
+  data-on-keydown_window="if (($evt.ctrlKey || $evt.metaKey) && ($evt.key === 'k' || $evt.key === 'K')) { $evt.preventDefault(); favModalOpen = false; favDeleteModalOpen = false; searchQuery = ''; searchDebouncedQuery = ''; searchTokens = []; searchResults = []; flatResults = []; searchActiveIndex = 0; searchOpen = true; if (typeof initSearchDb === 'function') { initSearchDb(); } $nextTick().then(() => { const el = document.getElementById('search-modal-input'); el?.focus(); el?.select(); }); }"
   data-signal_global="{
       collapsed: localStorage.collapsed !== 'false',
       pageTabs: localStorage.pageTabs !== 'false',
@@ -14,6 +13,8 @@
       searchQuery: '',
       searchDebouncedQuery: '',
       searchTokens: [],
+      searchResults: [],
+      flatResults: [],
       searchActiveIndex: 0,
       recentSearches: [],
       searchIndex: null,
