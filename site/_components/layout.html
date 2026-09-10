@@ -1650,7 +1650,7 @@
                     if (searchActiveIndex === 0) {
                       vp.scrollTop = 0;
                     } else {
-                      const activeEl = vp.querySelector('[aria-selected=\"true\"]');
+                      const activeEl = vp.querySelector('[aria-selected=true]');
                       if (activeEl) { activeEl.scrollIntoView({ block: 'nearest', behavior: 'auto' }); }
                     }
                   });
@@ -1667,7 +1667,7 @@
                     if (searchActiveIndex === 0) {
                       vp.scrollTop = 0;
                     } else {
-                      const activeEl = vp.querySelector('[aria-selected=\"true\"]');
+                      const activeEl = vp.querySelector('[aria-selected=true]');
                       if (activeEl) { activeEl.scrollIntoView({ block: 'nearest', behavior: 'auto' }); }
                     }
                   });
