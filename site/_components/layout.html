@@ -69,6 +69,16 @@
               const rt = window.Nexus?.coordinator?.runtimeContext;
               if (rt?.setGlobalSignal) rt.setGlobalSignal('searchIndex', allDocs);
               else g.searchIndex = allDocs;
+              if (g.searchDebouncedQuery && typeof g.searchResultGroups === 'function') {
+                const grps = g.searchResultGroups(g.searchDebouncedQuery);
+                if (rt?.setGlobalSignal) {
+                  rt.setGlobalSignal('searchResults', grps);
+                  rt.setGlobalSignal('flatResults', grps.flatMap(grp => grp.items || []));
+                } else {
+                  g.searchResults = grps;
+                  g.flatResults = grps.flatMap(grp => grp.items || []);
+                }
+              }
               return;
             }
           } catch { /* proceed to fetch */ }
@@ -127,6 +137,16 @@
           const rt = window.Nexus?.coordinator?.runtimeContext;
           if (rt?.setGlobalSignal) rt.setGlobalSignal('searchIndex', docs);
           else g.searchIndex = docs;
+          if (g.searchDebouncedQuery && typeof g.searchResultGroups === 'function') {
+            const grps = g.searchResultGroups(g.searchDebouncedQuery);
+            if (rt?.setGlobalSignal) {
+              rt.setGlobalSignal('searchResults', grps);
+              rt.setGlobalSignal('flatResults', grps.flatMap(grp => grp.items || []));
+            } else {
+              g.searchResults = grps;
+              g.flatResults = grps.flatMap(grp => grp.items || []);
+            }
+          }
           return;
         }
         const routes = (g.router?.manifest || g.router?.routes || []).filter(r => !r.internal && r.path && r.path !== '/error');
@@ -142,6 +162,16 @@
         const rt = window.Nexus?.coordinator?.runtimeContext;
         if (rt?.setGlobalSignal) rt.setGlobalSignal('searchIndex', fallback);
         else g.searchIndex = fallback;
+        if (g.searchDebouncedQuery && typeof g.searchResultGroups === 'function') {
+          const grps = g.searchResultGroups(g.searchDebouncedQuery);
+          if (rt?.setGlobalSignal) {
+            rt.setGlobalSignal('searchResults', grps);
+            rt.setGlobalSignal('flatResults', grps.flatMap(grp => grp.items || []));
+          } else {
+            g.searchResults = grps;
+            g.flatResults = grps.flatMap(grp => grp.items || []);
+          }
+        }
       },
       loadSearchIndex: function() { return this.initSearchDb ? this.initSearchDb() : null; },
       syncHighlights: (container, tokens) => {
