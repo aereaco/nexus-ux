@@ -1477,7 +1477,7 @@
             <!-- Fully Loaded Route Content -->
             <tab-content data-component="tab.source || tab.content" data-show="tab.isLoading === false"
               class="grow flex-1 flex flex-col min-h-0 [&>body]:flex [&>body]:flex-col [&>body]:flex-1 [&>body]:min-h-0 [&>body]:h-full [&>body]:m-0 [&>body]:bg-transparent"
-              data-effect="if (!tab.isLoading && router.activePageTabId === tab.id && (tab.id === searchHighlightTargetTabId || tab.route === searchHighlightTargetPath) && searchHighlightTokens && searchHighlightTokens.length !== 0 && typeof syncPageHighlights === 'function') { syncPageHighlights($el, searchHighlightTokens); }"></tab-content>
+              data-effect="if (!tab.isLoading && router.activePageTabId === tab.id && (tab.id === __global.searchHighlightTargetTabId || tab.route === __global.searchHighlightTargetPath) && __global.searchHighlightTokens && __global.searchHighlightTokens.length !== 0 && typeof __global.syncPageHighlights === 'function') { __global.syncPageHighlights($el, __global.searchHighlightTokens); }"></tab-content>
           </div>
         </template>
 
