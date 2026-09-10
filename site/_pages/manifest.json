@@ -33,7 +33,7 @@
     "route": "/labs/attributes/signal",
     "path": "/_pages/labs/attributes/signal.html",
     "title": "data-signal",
-    "icon": "material-symbols-light:code-blocks-outline",
+    "icon": "material-symbols-light:data-object",
     "order": 1,
     "parent": "/labs/attributes",
     "category": "Labs"
