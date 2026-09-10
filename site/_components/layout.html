@@ -1,5 +1,6 @@
 <div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300"
-  data-on-keydown_window="if (($evt.ctrlKey || $evt.metaKey) && ($evt.key === 'k' || $evt.key === 'K')) { $evt.preventDefault(); favModalOpen = false; favDeleteModalOpen = false; searchQuery = ''; searchDebouncedQuery = ''; searchActiveIndex = 0; searchOpen = true; if (!searchIndex && typeof loadSearchIndex === 'function') { loadSearchIndex(); } $nextTick().then(() => { const el = document.getElementById('search-modal-input'); el?.focus(); el?.select(); }); }"
+  data-effect="if (typeof initSearchDb === 'function') { initSearchDb(); }"
+  data-on-keydown_window="if (($evt.ctrlKey || $evt.metaKey) && ($evt.key === 'k' || $evt.key === 'K')) { $evt.preventDefault(); favModalOpen = false; favDeleteModalOpen = false; searchQuery = ''; searchDebouncedQuery = ''; searchTokens = []; searchActiveIndex = 0; searchOpen = true; if (typeof initSearchDb === 'function') { initSearchDb(); } $nextTick().then(() => { const el = document.getElementById('search-modal-input'); el?.focus(); el?.select(); }); }"
   data-signal_global="{
       collapsed: localStorage.collapsed !== 'false',
       pageTabs: localStorage.pageTabs !== 'false',
@@ -8,29 +9,124 @@
       floatingBookmarks: localStorage.floatingBookmarks !== 'false',
       hovered: false,
       sidebarOpen: false,
-      isMobile: window.innerWidth < 768,
+      isMobile: window.matchMedia('(max-width: 767px)').matches,
       searchOpen: false,
       searchQuery: '',
       searchDebouncedQuery: '',
+      searchTokens: [],
       searchActiveIndex: 0,
       recentSearches: [],
       searchIndex: null,
-      loadSearchIndex: async () => {
+      segmenter: null,
+      collator: null,
+      getSearchTokens: function(query) {
+        const q = (query || '').trim();
+        if (!q) return [];
+        try {
+          if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+            const seg = new Intl.Segmenter('en', { granularity: 'word' });
+            return Array.from(seg.segment(q)).filter(s => s.isWordLike).map(s => s.segment.toLowerCase());
+          }
+        } catch { /* fallback */ }
+        return q.toLowerCase().split(/\s+/).filter(Boolean);
+      },
+      initSearchDb: async function() {
         const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
         if (g.searchIndex && g.searchIndex.length !== 0 && g.searchIndex[0]?.content) return;
-        try {
-          const res = await fetch('/_pages/search-index.json');
-          if (res.ok) {
-            const data = await res.json();
-            if (Array.isArray(data) && data.length !== 0) {
+        const DB_NAME = 'nexus_search_db';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'documents';
+        const openDb = () => new Promise((resolve) => {
+          if (typeof indexedDB === 'undefined') return resolve(null);
+          try {
+            const req = indexedDB.open(DB_NAME, DB_VERSION);
+            req.onupgradeneeded = (e) => {
+              const db = e.target.result;
+              if (!db.objectStoreNames.contains(STORE_NAME)) {
+                const store = db.createObjectStore(STORE_NAME, { keyPath: 'route' });
+                store.createIndex('tokens', 'tokens', { multiEntry: true });
+                store.createIndex('category', 'category', { unique: false });
+                store.createIndex('title', 'title', { unique: false });
+              }
+            };
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => resolve(null);
+          } catch { resolve(null); }
+        });
+        let db = null;
+        try { db = await openDb(); } catch { /* ignore */ }
+        if (db) {
+          try {
+            const allDocs = await new Promise((resolve) => {
+              const tx = db.transaction(STORE_NAME, 'readonly');
+              const store = tx.objectStore(STORE_NAME);
+              const getAllReq = store.getAll();
+              getAllReq.onsuccess = () => resolve(getAllReq.result || []);
+              getAllReq.onerror = () => resolve([]);
+            });
+            if (allDocs && allDocs.length !== 0) {
               const rt = window.Nexus?.coordinator?.runtimeContext;
-              if (rt?.setGlobalSignal) rt.setGlobalSignal('searchIndex', data);
-              else g.searchIndex = data;
+              if (rt?.setGlobalSignal) rt.setGlobalSignal('searchIndex', allDocs);
+              else g.searchIndex = allDocs;
               return;
             }
+          } catch { /* proceed to fetch */ }
+        }
+        let data = null;
+        try {
+          const CACHE_NAME = 'nexus-search-v1';
+          const url = '/_pages/search-index.json';
+          let response = null;
+          if (typeof caches !== 'undefined') {
+            const cache = await caches.open(CACHE_NAME);
+            response = await cache.match(url);
+            if (!response) {
+              response = await fetch(url);
+              if (response && response.ok) {
+                cache.put(url, response.clone());
+              }
+            }
+          } else {
+            response = await fetch(url);
           }
-        } catch {
-          // progressive fallback
+          if (response && response.ok) {
+            data = await response.json();
+          }
+        } catch { /* progressive fallback */ }
+        if (Array.isArray(data) && data.length !== 0) {
+          const seg = typeof Intl !== 'undefined' && Intl.Segmenter ? new Intl.Segmenter('en', { granularity: 'word' }) : null;
+          const tokenize = (text) => {
+            if (!text) return [];
+            if (seg) return Array.from(seg.segment(text)).filter(s => s.isWordLike).map(s => s.segment.toLowerCase());
+            return (text.toLowerCase().match(/\b\w+\b/g) || []);
+          };
+          const docs = data.map(item => {
+            const route = item.route || item.path || '';
+            const title = item.title || '';
+            const cat = item.category || '';
+            const rawTokens = [
+              ...tokenize(title),
+              ...tokenize(cat),
+              ...(item.keywords || []).flatMap(k => tokenize(k)),
+              ...tokenize(item.content || '').slice(0, 300)
+            ];
+            return {
+              ...item,
+              route,
+              tokens: Array.from(new Set(rawTokens))
+            };
+          });
+          if (db) {
+            try {
+              const tx = db.transaction(STORE_NAME, 'readwrite');
+              const store = tx.objectStore(STORE_NAME);
+              for (const doc of docs) { store.put(doc); }
+            } catch { /* ignore */ }
+          }
+          const rt = window.Nexus?.coordinator?.runtimeContext;
+          if (rt?.setGlobalSignal) rt.setGlobalSignal('searchIndex', docs);
+          else g.searchIndex = docs;
+          return;
         }
         const routes = (g.router?.manifest || g.router?.routes || []).filter(r => !r.internal && r.path && r.path !== '/error');
         const fallback = routes.map(r => ({
@@ -45,6 +141,48 @@
         const rt = window.Nexus?.coordinator?.runtimeContext;
         if (rt?.setGlobalSignal) rt.setGlobalSignal('searchIndex', fallback);
         else g.searchIndex = fallback;
+      },
+      loadSearchIndex: function() { return this.initSearchDb ? this.initSearchDb() : null; },
+      syncHighlights: (container, tokens) => {
+        if (typeof window === 'undefined' || typeof window.CSS === 'undefined' || !window.CSS.highlights || typeof window.Highlight === 'undefined') return;
+        if (!container) return;
+        if (!tokens || tokens.length === 0) {
+          window.CSS.highlights.delete('search-match');
+          return;
+        }
+        window.setTimeout(() => {
+          try {
+            const ranges = [];
+            const filter = window.NodeFilter ? window.NodeFilter.SHOW_TEXT : 4;
+            const walker = window.document.createTreeWalker(container, filter, null);
+            let node;
+            while ((node = walker.nextNode())) {
+              const parent = node.parentElement;
+              if (parent && parent.offsetParent === null) {
+                continue;
+              }
+              const text = node.textContent;
+              if (!text || !text.trim()) continue;
+              const lowerText = text.toLowerCase();
+              for (const token of tokens) {
+                if (!token || token.length === 0 || token.length === 1) continue;
+                let pos = 0;
+                while ((pos = lowerText.indexOf(token, pos)) !== -1) {
+                  const range = new window.Range();
+                  range.setStart(node, pos);
+                  range.setEnd(node, pos + token.length);
+                  ranges.push(range);
+                  pos += token.length;
+                }
+              }
+            }
+            if (ranges.length !== 0) {
+              window.CSS.highlights.set('search-match', new window.Highlight(...ranges));
+            } else {
+              window.CSS.highlights.delete('search-match');
+            }
+          } catch { /* ignore range calculation errors */ }
+        }, 50);
       },
       getRouteCategory: (r) => {
         if (!r || !r.path || r.path === '/') return 'Navigation';
@@ -99,12 +237,12 @@
         return catSegs.map(titleCase).join(' / ');
       },
       searchResultGroups: (query) => {
-        const q = (query || '').trim().toLowerCase();
+        const q = (query || '').trim();
         if (!q) return [];
-        const terms = q.split(/\s+/).filter(Boolean);
+        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
+        const terms = (g.getSearchTokens ? g.getSearchTokens(q) : q.toLowerCase().split(/\s+/).filter(Boolean));
         if (terms.length === 0) return [];
 
-        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
         const getCat = g.getRouteCategory || (() => 'General');
         const catalog = g.searchIndex || [];
         const allRoutes = (g.router?.manifest || g.router?.routes || []).filter(r => r.path !== '/error' && r.path !== '' && !r.internal);
@@ -649,7 +787,7 @@
     }"
   data-class="{ 'md:grid-cols-[max-content_1fr]': !collapsed, 'md:grid-cols-[4rem_1fr]': collapsed, 'h-screen max-h-screen overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }"
   data-effect="if (!favHydrated && indexedDB?.favorites) { favHydrated = true; indexedDB.favorites.all().then(items => { if (items && items.length) { favorites = items; favoriteGroups = [...new Set(items.map(f => (f?.group || '').trim()).filter(Boolean))]; } }); }"
-  data-on-resize_window="isMobile = window.innerWidth < 768"
+  data-on-resize_window="isMobile = window.matchMedia('(max-width: 767px)').matches"
   data-on-keydown_window="if ($evt.ctrlKey && ($evt.key === '`' || $evt.key === '~')) { $evt.preventDefault(); toggleTerminalHud(); }">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
   <div
@@ -793,7 +931,7 @@
         <!-- Search Button -->
         <button type="button" class="btn btn-ghost btn-circle hover:scale-102" aria-label="Open search (Ctrl+K)"
           title="Search (Ctrl+K)"
-          data-on-click="favModalOpen = false; favDeleteModalOpen = false; searchQuery = ''; searchDebouncedQuery = ''; searchActiveIndex = 0; searchOpen = true; if (!searchIndex && typeof loadSearchIndex === 'function') { loadSearchIndex(); } $nextTick().then(() => { const el = document.getElementById('search-modal-input'); el?.focus(); el?.select(); })">
+          data-on-click="favModalOpen = false; favDeleteModalOpen = false; searchQuery = ''; searchDebouncedQuery = ''; searchTokens = []; searchActiveIndex = 0; searchOpen = true; if (typeof initSearchDb === 'function') { initSearchDb(); } $nextTick().then(() => { const el = document.getElementById('search-modal-input'); el?.focus(); el?.select(); })">
           <iconify-icon icon="material-symbols-light:search" class="text-2xl"></iconify-icon>
         </button>
 
@@ -1591,8 +1729,8 @@
 
     <!-- Search Modal (triggered by the navbar search button or Ctrl+K) -->
     <div class="modal modal-top sm:modal-middle" role="dialog" aria-label="Search" data-class-modal-open="searchOpen"
-      data-on-keydown_escape_window="searchOpen = false"
-      data-effect="if (searchOpen && !searchIndex && typeof loadSearchIndex === 'function') { loadSearchIndex(); }">
+      data-on-keydown_escape_window="searchOpen = false; if (typeof CSS !== 'undefined' && CSS.highlights) { CSS.highlights.delete('search-match'); }"
+      data-effect="if (searchOpen && typeof initSearchDb === 'function') { initSearchDb(); }">
       <div class="modal-box bg-base-100 shadow-2xl border border-base-300 p-0 overflow-hidden flex flex-col max-w-2xl">
         <!-- Search Input Row -->
         <div class="flex items-center gap-3 px-4 py-3 border-b border-base-200">
@@ -1600,11 +1738,12 @@
           <input id="search-modal-input" type="text" role="searchbox" inputmode="search" autocomplete="off" spellcheck="false"
             class="input input-ghost w-full text-lg focus:outline-none border-0 focus:border-0 px-0"
             placeholder="Search pages and features…" data-bind-value="searchQuery"
-            data-on-input="if (!searchQuery.trim()) { searchDebouncedQuery = ''; searchActiveIndex = 0; }"
-            data-on-input_debounce-200="searchDebouncedQuery = searchQuery.trim(); searchActiveIndex = 0; if (!searchIndex && typeof loadSearchIndex === 'function') { loadSearchIndex(); }"
+            data-on-input="if (!searchQuery.trim()) { searchDebouncedQuery = ''; searchTokens = []; searchActiveIndex = 0; if (typeof syncHighlights === 'function') { syncHighlights(document.getElementById('search-results-viewport'), []); } }"
+            data-on-input_debounce-150="searchDebouncedQuery = searchQuery.trim(); searchTokens = (typeof getSearchTokens === 'function' ? getSearchTokens(searchDebouncedQuery) : searchDebouncedQuery.toLowerCase().split(/\s+/).filter(Boolean)); searchActiveIndex = 0; if (typeof initSearchDb === 'function') { initSearchDb(); }"
             data-on-keydown="
               if ($evt.key === 'Escape') {
                 searchOpen = false;
+                if (typeof CSS !== 'undefined' && CSS.highlights) { CSS.highlights.delete('search-match'); }
               } else if ($evt.key === 'ArrowDown') {
                 $evt.preventDefault();
                 const q = searchDebouncedQuery || searchQuery.trim();
@@ -1625,6 +1764,7 @@
                     recentSearches = [q, ...(recentSearches || []).filter(s => s !== q)].slice(0, 6);
                     router.createPageTab(active.component, active.path);
                     searchOpen = false;
+                    if (typeof CSS !== 'undefined' && CSS.highlights) { CSS.highlights.delete('search-match'); }
                   }
                 } else {
                   const recents = recentSearches || [];
@@ -1632,6 +1772,7 @@
                   if (activeRecent) {
                     searchQuery = activeRecent;
                     searchDebouncedQuery = activeRecent;
+                    searchTokens = (typeof getSearchTokens === 'function' ? getSearchTokens(activeRecent) : [activeRecent]);
                     searchActiveIndex = 0;
                   }
                 }
@@ -1640,17 +1781,19 @@
             data-effect="if (searchOpen && $el) { $nextTick().then(() => { $el.focus(); $el.select(); }); }" />
           <button type="button" class="btn btn-ghost btn-xs btn-circle opacity-60 hover:opacity-100 me-1"
             aria-label="Clear search" data-show="searchQuery"
-            data-on-click="searchQuery = ''; searchDebouncedQuery = ''; searchActiveIndex = 0; $nextTick().then(() => document.getElementById('search-modal-input')?.focus());">
+            data-on-click="searchQuery = ''; searchDebouncedQuery = ''; searchTokens = []; searchActiveIndex = 0; if (typeof syncHighlights === 'function') { syncHighlights(document.getElementById('search-results-viewport'), []); } $nextTick().then(() => document.getElementById('search-modal-input')?.focus());">
             <iconify-icon icon="material-symbols-light:backspace-outline" class="text-base"></iconify-icon>
           </button>
           <kbd class="kbd kbd-sm opacity-60 max-sm:hidden">Esc</kbd>
-          <button type="button" class="btn btn-ghost btn-xs btn-circle" aria-label="Close search" data-on-click="searchOpen = false">
+          <button type="button" class="btn btn-ghost btn-xs btn-circle" aria-label="Close search"
+            data-on-click="searchOpen = false; if (typeof CSS !== 'undefined' && CSS.highlights) { CSS.highlights.delete('search-match'); }">
             <iconify-icon icon="material-symbols-light:close" class="text-lg"></iconify-icon>
           </button>
         </div>
 
         <!-- Results Area -->
-        <div class="p-3 max-h-[60vh] overflow-y-auto">
+        <div id="search-results-viewport" class="p-3 max-h-[60vh] overflow-y-auto"
+          data-effect="if (typeof syncHighlights === 'function') { const _q = searchDebouncedQuery; syncHighlights($el, searchTokens); }">
           <!-- State 1: Empty Query & No Recent Searches -->
           <div data-show="!searchQuery.trim() && !(recentSearches && recentSearches.length)"
             class="px-4 py-12 text-center text-base-content/50">
@@ -1756,7 +1899,7 @@
           </div>
         </div>
       </div>
-      <div class="modal-backdrop bg-black/60 backdrop-blur-sm" data-on-click="searchOpen = false"></div>
+      <div class="modal-backdrop bg-black/60 backdrop-blur-sm" data-on-click="searchOpen = false; if (typeof CSS !== 'undefined' && CSS.highlights) { CSS.highlights.delete('search-match'); }"></div>
     </div>
   </div>
 

@@ -34,6 +34,14 @@
   <script type="module" src="./dist/nexus-ux.js"></script>
   <link rel="icon" type="image/svg+xml" href="./_assets/images/emblem.svg">
   <style data-stylesheet>
+    /* Native CSS Custom Highlight API styling for progressive search */
+    ::highlight(search-match) {
+      background-color: oklch(var(--p) / 0.25);
+      color: oklch(var(--p));
+      font-weight: 600;
+      border-radius: 0.2rem;
+    }
+
     /* Suppress overlay scrollbar tracks until content is revealed */
     .nx-main.opacity-0 .scrollbar-track-v,
     .nx-main.opacity-0 .scrollbar-track-h {
@@ -187,7 +195,7 @@
       'opacity-100 pointer-events-auto': appReady,
       'opacity-0 pointer-events-none': !appReady
     }">
-    <app-layout data-component="'_components/layout.html'"
+    <app-layout data-component="'_components/layout.html?v=7'"
       class="block h-full flex-1 flex flex-col min-h-0"></app-layout>
   </main>
 </body>
