@@ -86,11 +86,9 @@
               }
 
               // Compute scrollbar location ticks
-              const scrollEl = (firstMatchEl && firstMatchEl.closest('.overflow-y-auto, [data-scrollbar], .overflow-auto')) || container.closest('.overflow-y-auto') || container;
-              const panel = container.closest('[role=tabpanel]') || container.parentElement;
-              if (scrollEl && panel) {
+              const scrollEl = container.closest('.overflow-y-auto') || container;
+              if (scrollEl) {
                 const scrollRect = scrollEl.getBoundingClientRect();
-                const panelRect = panel.getBoundingClientRect();
                 const scrollH = scrollEl.scrollHeight;
                 const scrollT = scrollEl.scrollTop;
 
@@ -105,16 +103,10 @@
                   }
                 }
                 searchTicks = ticks;
-                searchTickTrackStyle = {
-                  top: (scrollRect.top - panelRect.top) + 'px',
-                  height: scrollRect.height + 'px',
-                  left: (scrollRect.right - panelRect.left - 8) + 'px'
-                };
               }
             } else {
               window.CSS.highlights.delete('page-match');
               searchTicks = [];
-              searchTickTrackStyle = {};
             }
           } catch { /* ignore range calculation errors */ }
         }, 120);
