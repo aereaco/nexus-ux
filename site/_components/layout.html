@@ -43,10 +43,51 @@
         }
       },
       getRouteCategory: (r) => {
-        if (['/drag', '/flow'].includes(r?.path)) return 'Apps';
-        if (r?.path?.startsWith('/profiles')) return 'Profiles';
-        if (r?.path === '/') return 'Navigation';
-        return 'System';
+        if (!r || !r.path || r.path === '/') return 'Navigation';
+        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
+        const pages = g.router?.pages || [];
+        const titleCase = (s) => (s || '')
+          .split(/[-_]+/)
+          .filter(Boolean)
+          .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(' ');
+
+        let foundNode = null;
+        const walk = (items, parent = null) => {
+          if (foundNode) return;
+          for (const item of items || []) {
+            if (!item) continue;
+            const key = item.href || item.route || item.path;
+            if (key && key === r.path) {
+              foundNode = { item, parent };
+              return;
+            }
+            if (item.children && item.children.length) {
+              walk(item.children, item);
+              if (foundNode) return;
+            }
+          }
+        };
+        walk(pages);
+
+        if (foundNode) {
+          const { item, parent } = foundNode;
+          if (parent) {
+            const topCat = parent.category || item.category;
+            const parentName = parent.title || titleCase(parent.id);
+            return topCat ? `${topCat} / ${parentName}` : parentName;
+          }
+          if (item.category) return item.category;
+          if (item.children && item.children.length) return item.title || 'General';
+        }
+
+        if (r.meta?.category) return r.meta.category;
+
+        const segs = r.path.split('/').filter(Boolean);
+        if (segs.length === 0) return 'Navigation';
+        if (segs.length === 1) return titleCase(segs[0]) || 'General';
+        const catSegs = segs.slice(0, segs.length - 1);
+        return catSegs.map(titleCase).join(' / ');
       },
       searchResultGroups: (query) => {
         const q = (query || '').trim().toLowerCase();
