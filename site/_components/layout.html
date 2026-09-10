@@ -816,7 +816,7 @@
         <!-- Search Button -->
         <button type="button" class="btn btn-ghost btn-circle hover:scale-102" aria-label="Open search (Ctrl+K)"
           title="Search (Ctrl+K)"
-          data-on-click="favModalOpen = false; favDeleteModalOpen = false; searchQuery = ''; searchDebouncedQuery = ''; searchTokens = []; searchResults = []; flatResults = []; searchActiveIndex = 0; searchOpen = true; if (typeof initSearchDb === 'function') { initSearchDb(); } $nextTick().then(() => { const el = document.getElementById('search-modal-input'); el?.focus(); el?.select(); })">
+          data-on-click="favModalOpen = false; favDeleteModalOpen = false; searchQuery = ''; searchDebouncedQuery = ''; searchTokens = []; searchResults = []; flatResults = []; searchActiveIndex = 0; searchOpen = true; $nextTick().then(function() { const el = document.getElementById('search-modal-input'); if (el) { el.focus(); el.select(); } })">
           <iconify-icon icon="material-symbols-light:search" class="text-2xl"></iconify-icon>
         </button>
 
