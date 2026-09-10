@@ -38,12 +38,9 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-signal",
-      "...",
-      "a-signal_gl",
-      "bal",
-      "a-signal_deep"
+      "data-signal",
+      "data-signal_global",
+      "data-signal_deep"
     ]
   },
   {
@@ -56,8 +53,7 @@
     "parent": "/labs/modifiers",
     "category": "Labs",
     "keywords": [
-      "_deb",
-      "nce.[ms]"
+      "_debounce"
     ]
   },
   {
@@ -70,7 +66,7 @@
     "parent": "/labs/scopes",
     "category": "Labs",
     "keywords": [
-      "@media(\\"
+      "media"
     ]
   },
   {
@@ -83,15 +79,11 @@
     "parent": "/labs/sprites",
     "category": "Labs",
     "keywords": [
-      "$anima",
-      "e(el,",
-      "keyframes,",
-      "p",
-      "i",
-      "ns)",
-      "flip(elemen",
-      ",",
-      "fn)"
+      "animate",
+      "keyframes",
+      "options",
+      "flip",
+      "element"
     ]
   },
   {
@@ -134,14 +126,12 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-bind",
+      "data-bind",
       "expr",
-      "a-bind-val",
-      "e",
-      "a-bind-[a",
-      "r]",
-      "a-bind_lazy"
+      "data-bind-value",
+      "data-bind-",
+      "attr",
+      "data-bind_lazy"
     ]
   },
   {
@@ -154,7 +144,7 @@
     "parent": "/labs/modifiers",
     "category": "Labs",
     "keywords": [
-      "_delay.[ms]"
+      "_delay"
     ]
   },
   {
@@ -167,9 +157,7 @@
     "parent": "/labs/scopes",
     "category": "Labs",
     "keywords": [
-      "@c",
-      "n",
-      "ainer(\\"
+      "container"
     ]
   },
   {
@@ -182,15 +170,10 @@
     "parent": "/labs/sprites",
     "category": "Labs",
     "keywords": [
-      "$bgfe",
-      "ch.fe",
-      "ch(id,",
-      "re",
-      "es",
-      "s,",
-      "p",
-      "i",
-      "ns)"
+      "bgfetch",
+      "fetch",
+      "requests",
+      "options"
     ]
   },
   {
@@ -233,16 +216,10 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-f",
-      "r",
-      "i",
-      "em",
-      "in",
-      "ems",
-      "(i",
-      "em,",
-      "index)"
+      "data-for",
+      "item",
+      "items",
+      "index"
     ]
   },
   {
@@ -255,9 +232,7 @@
     "parent": "/labs/modifiers",
     "category": "Labs",
     "keywords": [
-      "_d",
-      "c",
-      "men"
+      "_document"
     ]
   },
   {
@@ -270,8 +245,7 @@
     "parent": "/labs/scopes",
     "category": "Labs",
     "keywords": [
-      "@a",
-      "h(\\"
+      "auth"
     ]
   },
   {
@@ -284,9 +258,9 @@
     "parent": "/labs/sprites",
     "category": "Labs",
     "keywords": [
-      "$bgsync.regis",
-      "er(",
-      "ag)"
+      "bgsync",
+      "register",
+      "tag"
     ]
   },
   {
@@ -319,12 +293,8 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-if",
-      "c",
-      "ndi",
-      "i",
-      "n"
+      "data-if",
+      "condition"
     ]
   },
   {
@@ -350,8 +320,7 @@
     "parent": "/labs/scopes",
     "category": "Labs",
     "keywords": [
-      "@na",
-      "ive"
+      "native"
     ]
   },
   {
@@ -364,11 +333,9 @@
     "parent": "/labs/sprites",
     "category": "Labs",
     "keywords": [
-      "$fl",
-      "w.z",
-      "min()",
-      "w.fi",
-      "view()"
+      "flow",
+      "zoomin",
+      "fitview"
     ]
   },
   {
@@ -391,13 +358,8 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-sh",
-      "w",
-      "c",
-      "ndi",
-      "i",
-      "n"
+      "data-show",
+      "condition"
     ]
   },
   {
@@ -410,8 +372,7 @@
     "parent": "/labs/modifiers",
     "category": "Labs",
     "keywords": [
-      "_h",
-      "ld.[ms]"
+      "_hold"
     ]
   },
   {
@@ -422,11 +383,7 @@
     "icon": "material-symbols-light:desktop-windows",
     "order": 5,
     "parent": "/labs/scopes",
-    "category": "Labs",
-    "keywords": [
-      "@",
-      "s(\\"
-    ]
+    "category": "Labs"
   },
   {
     "id": "lab-sprite-gql",
@@ -438,16 +395,11 @@
     "parent": "/labs/sprites",
     "category": "Labs",
     "keywords": [
-      "$g",
-      "l.",
-      "ery(",
-      "ery,",
-      "variables)",
-      "l.m",
-      "a",
-      "e(m",
-      "i",
-      "n,"
+      "gql",
+      "query",
+      "variables",
+      "mutate",
+      "mutation"
     ]
   },
   {
@@ -460,26 +412,16 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-",
-      "n-[even",
-      "]",
+      "data-on-",
+      "event",
       "expr",
-      "_preven",
-      ",",
-      "_s",
-      "p",
-      "_deb",
-      "nce.[ms],",
-      "_",
-      "hr",
-      "le.[ms]",
-      "side,",
-      "_wind",
-      "w,",
-      "_d",
-      "c",
-      "men"
+      "_prevent",
+      "_stop",
+      "_debounce",
+      "_throttle",
+      "_outside",
+      "_window",
+      "_document"
     ]
   },
   {
@@ -492,17 +434,13 @@
     "parent": "/labs/modifiers",
     "category": "Labs",
     "keywords": [
-      "_en",
-      "er,",
-      "_escape,",
+      "_enter",
+      "_escape",
       "_space",
-      ":c",
-      "rl,",
-      ":me",
-      "a,",
-      ":al",
-      ",",
-      ":shif"
+      "ctrl",
+      "meta",
+      "alt",
+      "shift"
     ]
   },
   {
@@ -515,14 +453,11 @@
     "parent": "/labs/scopes",
     "category": "Labs",
     "keywords": [
-      "@view.wid",
-      "h,",
-      "@view.heigh",
-      "@view.isp",
-      "r",
-      "rai",
-      ",",
-      "@view.islandscape"
+      "view",
+      "width",
+      "height",
+      "isportrait",
+      "islandscape"
     ]
   },
   {
@@ -535,12 +470,10 @@
     "parent": "/labs/sprites",
     "category": "Labs",
     "keywords": [
-      "$mask.f",
-      "rma",
-      "(val",
-      "e,",
-      "pa",
-      "ern)"
+      "mask",
+      "format",
+      "value",
+      "pattern"
     ]
   },
   {
@@ -553,10 +486,9 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-class",
-      "...",
-      "a-class-[name]",
+      "data-class",
+      "data-class-",
+      "name",
       "expr"
     ]
   },
@@ -570,8 +502,7 @@
     "parent": "/labs/modifiers",
     "category": "Labs",
     "keywords": [
-      "_m",
-      "rph"
+      "_morph"
     ]
   },
   {
@@ -584,10 +515,10 @@
     "parent": "/labs/sprites",
     "category": "Labs",
     "keywords": [
-      "$mcp.sample(payl",
-      "ad)",
-      "$mcp.",
-      "ls"
+      "mcp",
+      "sample",
+      "payload",
+      "tools"
     ]
   },
   {
@@ -600,10 +531,7 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-s",
-      "yle",
-      "..."
+      "data-style"
     ]
   },
   {
@@ -616,8 +544,7 @@
     "parent": "/labs/modifiers",
     "category": "Labs",
     "keywords": [
-      "_",
-      "nce"
+      "_once"
     ]
   },
   {
@@ -630,13 +557,10 @@
     "parent": "/labs/sprites",
     "category": "Labs",
     "keywords": [
-      "$peri",
-      "dicsync.regis",
-      "er(",
-      "ag,",
-      "p",
-      "i",
-      "ns)"
+      "periodicsync",
+      "register",
+      "tag",
+      "options"
     ]
   },
   {
@@ -649,8 +573,7 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-effec",
+      "data-effect",
       "expr"
     ]
   },
@@ -664,8 +587,7 @@
     "parent": "/labs/modifiers",
     "category": "Labs",
     "keywords": [
-      "_",
-      "side"
+      "_outside"
     ]
   },
   {
@@ -678,12 +600,10 @@
     "parent": "/labs/sprites",
     "category": "Labs",
     "keywords": [
-      "$predic",
-      "ive.warm",
-      "p(",
-      "rl)",
-      "ive.me",
-      "rics"
+      "predictive",
+      "warmup",
+      "url",
+      "metrics"
     ]
   },
   {
@@ -696,16 +616,11 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-c",
-      "mp",
-      "ed",
-      "...",
-      "ed-[pr",
-      "p]",
+      "data-computed",
+      "data-computed-",
+      "prop",
       "expr",
-      "ed_gl",
-      "bal"
+      "data-computed_global"
     ]
   },
   {
@@ -718,7 +633,7 @@
     "parent": "/labs/modifiers",
     "category": "Labs",
     "keywords": [
-      "_preven"
+      "_prevent"
     ]
   },
   {
@@ -731,14 +646,10 @@
     "parent": "/labs/sprites",
     "category": "Labs",
     "keywords": [
-      "$p",
-      "sh.s",
-      "bscribe(",
-      "p",
-      "i",
-      "ns)",
-      "sh.permissi",
-      "n"
+      "push",
+      "subscribe",
+      "options",
+      "permission"
     ]
   },
   {
@@ -751,19 +662,12 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-drag",
-      "i",
-      "ems",
-      "|",
-      "lis",
-      ",",
-      "...",
-      "a-drag-i",
-      "em",
-      "a-drag-handle",
-      "a-drag-n",
-      "drag"
+      "data-drag",
+      "items",
+      "list",
+      "data-drag-item",
+      "data-drag-handle",
+      "data-drag-nodrag"
     ]
   },
   {
@@ -789,14 +693,7 @@
     "parent": "/labs/sprites",
     "category": "Labs",
     "keywords": [
-      "$(selec",
-      "r)",
-      "^,",
-      "g",
-      ",",
-      "+,",
-      "-,",
-      "~"
+      "selector"
     ]
   },
   {
@@ -809,22 +706,18 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-fl",
-      "w",
-      "w-viewp",
-      "r",
-      "w-n",
-      "de",
-      "n",
-      "w-edges",
-      "w-minimap",
-      "w-resizer",
-      "w-handle",
-      "ype",
-      "w-side",
+      "data-flow",
+      "data-flow-viewport",
+      "data-flow-node",
+      "node",
+      "data-flow-edges",
+      "data-flow-minimap",
+      "data-flow-resizer",
+      "data-flow-handle",
+      "type",
+      "data-flow-side",
       "side",
-      "drag"
+      "data-flow-nodrag"
     ]
   },
   {
@@ -837,8 +730,7 @@
     "parent": "/labs/modifiers",
     "category": "Labs",
     "keywords": [
-      "_s",
-      "p"
+      "_stop"
     ]
   },
   {
@@ -851,14 +743,12 @@
     "parent": "/labs/sprites",
     "category": "Labs",
     "keywords": [
-      "$s",
-      "l.",
-      "ery(s",
-      "l,",
-      "params)",
-      "l.live(",
-      "able,",
-      "callback)"
+      "sql",
+      "query",
+      "params",
+      "live",
+      "table",
+      "callback"
     ]
   },
   {
@@ -871,15 +761,11 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-",
-      "heme",
-      "...",
-      "$",
-      "$swi",
-      "chtheme()",
-      "$se",
-      "theme(name)"
+      "data-theme",
+      "theme",
+      "switchtheme",
+      "settheme",
+      "name"
     ]
   },
   {
@@ -892,9 +778,7 @@
     "parent": "/labs/modifiers",
     "category": "Labs",
     "keywords": [
-      "_",
-      "hr",
-      "le.[ms]"
+      "_throttle"
     ]
   },
   {
@@ -907,16 +791,12 @@
     "parent": "/labs/sprites",
     "category": "Labs",
     "keywords": [
-      "$svg.bezier(fr",
-      "m,",
-      ",",
-      "p",
-      "i",
-      "ns)",
-      "$svg.sm",
-      "h(p",
-      "in",
-      "s)"
+      "svg",
+      "bezier",
+      "from",
+      "options",
+      "smooth",
+      "points"
     ]
   },
   {
@@ -929,9 +809,7 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-s",
-      "yleshee"
+      "data-stylesheet"
     ]
   },
   {
@@ -944,8 +822,7 @@
     "parent": "/labs/modifiers",
     "category": "Labs",
     "keywords": [
-      "_wind",
-      "w"
+      "_window"
     ]
   },
   {
@@ -958,12 +835,9 @@
     "parent": "/labs/sprites",
     "category": "Labs",
     "keywords": [
-      "$sw.regis",
-      "er(scrip",
-      "url)",
-      "$sw.s",
-      "a",
-      "e"
+      "register",
+      "scripturl",
+      "state"
     ]
   },
   {
@@ -976,20 +850,12 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-c",
-      "mp",
-      "nen",
-      "pa",
-      "h",
-      "shad",
-      "wr",
-      "m",
-      "de",
-      "pen",
+      "data-component",
+      "path",
+      "shadowrootmode",
+      "open",
       "lazy",
-      "r",
-      "e"
+      "true"
     ]
   },
   {
@@ -1002,8 +868,7 @@
     "parent": "/labs/modifiers",
     "category": "Labs",
     "keywords": [
-      "_z",
-      "m"
+      "_zoom"
     ]
   },
   {
@@ -1016,13 +881,10 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "scrip",
+      "script",
       "link",
-      "m",
-      "d",
-      "le",
-      "ad",
-      "p"
+      "module",
+      "adopt"
     ]
   },
   {
@@ -1035,14 +897,11 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-r",
-      "er",
-      "#r",
-      "er.pages",
-      "er.crea",
-      "epagetab(pa",
-      "h)"
+      "data-router",
+      "router",
+      "pages",
+      "createpagetab",
+      "path"
     ]
   },
   {
@@ -1055,15 +914,10 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-r",
-      "e",
-      "/pa",
-      "h",
-      "e-bef",
-      "re-en",
-      "er",
-      "e-name"
+      "data-route",
+      "path",
+      "data-route-before-enter",
+      "data-route-name"
     ]
   },
   {
@@ -1076,16 +930,11 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-",
-      "elep",
-      "r",
-      "selec",
-      "_dr",
-      "p",
-      "lis",
-      "-m",
-      "de"
+      "data-teleport",
+      "selector",
+      "data-teleport_drop",
+      "list",
+      "data-teleport-mode"
     ]
   },
   {
@@ -1098,9 +947,7 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-markd",
-      "wn",
+      "data-markdown",
       "expr"
     ]
   },
@@ -1114,10 +961,8 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-mask",
-      "empla",
-      "e"
+      "data-mask",
+      "template"
     ]
   },
   {
@@ -1130,20 +975,12 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-swi",
-      "cher",
+      "data-switcher",
       "signal",
-      "cher-",
-      "p",
-      "i",
-      "ns",
-      "[...]",
-      "$swi",
-      "ch()",
-      "$isac",
-      "ive(i",
-      "em)"
+      "data-switcher-options",
+      "switch",
+      "isactive",
+      "item"
     ]
   },
   {
@@ -1156,11 +993,8 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-scr",
-      "llbar",
-      "a",
-      "hide"
+      "data-scrollbar",
+      "autohide"
     ]
   },
   {
@@ -1173,14 +1007,10 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-",
-      "n-raf",
+      "data-on-raf",
       "expr",
-      "$",
-      "ime",
-      "$del",
-      "a"
+      "time",
+      "delta"
     ]
   },
   {
@@ -1193,13 +1023,11 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-pwa",
-      "$pwa.isonline",
-      "$pwa.canins",
-      "all",
-      "$pwa.ins",
-      "all()"
+      "data-pwa",
+      "pwa",
+      "isonline",
+      "caninstall",
+      "install"
     ]
   },
   {
@@ -1212,8 +1040,7 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-preserve"
+      "data-preserve"
     ]
   },
   {
@@ -1226,8 +1053,7 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-asser",
+      "data-assert",
       "expr"
     ]
   },
@@ -1241,10 +1067,8 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-b",
-      "ild",
-      "arge"
+      "data-build",
+      "target"
     ]
   },
   {
@@ -1257,9 +1081,7 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-h",
-      "ml",
+      "data-html",
       "expr"
     ]
   },
@@ -1273,9 +1095,7 @@
     "parent": "/labs/attributes",
     "category": "Labs",
     "keywords": [
-      "da",
-      "a-deb",
-      "g"
+      "data-debug"
     ]
   },
   {
