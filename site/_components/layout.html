@@ -1592,7 +1592,7 @@
     <!-- Search Modal (triggered by the navbar search button or Ctrl+K) -->
     <div class="modal modal-top sm:modal-middle" role="dialog" aria-label="Search" data-class-modal-open="searchOpen"
       data-on-keydown_escape_window="searchOpen = false"
-      data-effect="if (searchOpen && Object.keys(pageContentIndex || {}).length === 0 && typeof indexPageContents === 'function') { indexPageContents(); }">
+      data-effect="if (searchOpen && !searchIndex && typeof loadSearchIndex === 'function') { loadSearchIndex(); }">
       <div class="modal-box bg-base-100 shadow-2xl border border-base-300 p-0 overflow-hidden flex flex-col max-w-2xl">
         <!-- Search Input Row -->
         <div class="flex items-center gap-3 px-4 py-3 border-b border-base-200">
@@ -1600,25 +1600,29 @@
           <input id="search-modal-input" type="text" role="searchbox" inputmode="search" autocomplete="off" spellcheck="false"
             class="input input-ghost w-full text-lg focus:outline-none border-0 focus:border-0 px-0"
             placeholder="Search pages and features…" data-bind-value="searchQuery"
-            data-on-input="searchActiveIndex = 0"
+            data-on-input="if (!searchQuery.trim()) { searchDebouncedQuery = ''; searchActiveIndex = 0; }"
+            data-on-input_debounce-200="searchDebouncedQuery = searchQuery.trim(); searchActiveIndex = 0; if (!searchIndex && typeof loadSearchIndex === 'function') { loadSearchIndex(); }"
             data-on-keydown="
               if ($evt.key === 'Escape') {
                 searchOpen = false;
               } else if ($evt.key === 'ArrowDown') {
                 $evt.preventDefault();
-                const items = searchQuery.trim() ? flatSearchResults(searchQuery) : (recentSearches || []);
+                const q = searchDebouncedQuery || searchQuery.trim();
+                const items = q ? flatSearchResults(q) : (recentSearches || []);
                 if (items.length !== 0) { searchActiveIndex = (searchActiveIndex + 1) % items.length; }
               } else if ($evt.key === 'ArrowUp') {
                 $evt.preventDefault();
-                const items = searchQuery.trim() ? flatSearchResults(searchQuery) : (recentSearches || []);
+                const q = searchDebouncedQuery || searchQuery.trim();
+                const items = q ? flatSearchResults(q) : (recentSearches || []);
                 if (items.length !== 0) { searchActiveIndex = (searchActiveIndex - 1 + items.length) % items.length; }
               } else if ($evt.key === 'Enter') {
                 $evt.preventDefault();
-                if (searchQuery.trim()) {
-                  const items = flatSearchResults(searchQuery);
+                const q = searchDebouncedQuery || searchQuery.trim();
+                if (q) {
+                  const items = flatSearchResults(q);
                   const active = items[searchActiveIndex] || items[0];
                   if (active) {
-                    recentSearches = [searchQuery.trim(), ...(recentSearches || []).filter(s => s !== searchQuery.trim())].slice(0, 6);
+                    recentSearches = [q, ...(recentSearches || []).filter(s => s !== q)].slice(0, 6);
                     router.createPageTab(active.component, active.path);
                     searchOpen = false;
                   }
@@ -1627,6 +1631,7 @@
                   const activeRecent = recents[searchActiveIndex];
                   if (activeRecent) {
                     searchQuery = activeRecent;
+                    searchDebouncedQuery = activeRecent;
                     searchActiveIndex = 0;
                   }
                 }
@@ -1635,7 +1640,7 @@
             data-effect="if (searchOpen && $el) { $nextTick().then(() => { $el.focus(); $el.select(); }); }" />
           <button type="button" class="btn btn-ghost btn-xs btn-circle opacity-60 hover:opacity-100 me-1"
             aria-label="Clear search" data-show="searchQuery"
-            data-on-click="searchQuery = ''; searchActiveIndex = 0; $nextTick().then(() => document.getElementById('search-modal-input')?.focus());">
+            data-on-click="searchQuery = ''; searchDebouncedQuery = ''; searchActiveIndex = 0; $nextTick().then(() => document.getElementById('search-modal-input')?.focus());">
             <iconify-icon icon="material-symbols-light:backspace-outline" class="text-base"></iconify-icon>
           </button>
           <kbd class="kbd kbd-sm opacity-60 max-sm:hidden">Esc</kbd>
@@ -1655,7 +1660,7 @@
           </div>
 
           <!-- State 2: Empty Query & Has Recent Searches -->
-          <div data-show="!searchQuery.trim() && (recentSearches && recentSearches.length > 0)" class="w-full">
+          <div data-show="!searchQuery.trim() && (recentSearches && recentSearches.length !== 0)" class="w-full">
             <div
               class="flex items-center justify-between px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/50">
               <span>Recent Searches</span>
@@ -1672,7 +1677,7 @@
                   }">
                   <a class="flex items-center gap-2.5 flex-1 min-w-0 py-2 px-3"
                     data-effect="if (!searchQuery.trim() && (recentSearches || [])[searchActiveIndex] === recent && $el) { $el.scrollIntoView({ block: 'nearest' }); }"
-                    data-on-click="searchQuery = recent; searchActiveIndex = 0;">
+                    data-on-click="searchQuery = recent; searchDebouncedQuery = recent; searchActiveIndex = 0;">
                     <iconify-icon icon="material-symbols-light:history"
                       class="text-lg opacity-60 shrink-0"
                       data-class="{ 'text-primary opacity-100': !searchQuery.trim() && (recentSearches || [])[searchActiveIndex] === recent }"></iconify-icon>
@@ -1690,8 +1695,8 @@
           </div>
 
           <!-- State 3: Active Query & Has Results (Grouped by Pages & Navigation vs Page Content Matches) -->
-          <div data-show="searchQuery.trim() && hasSearchResults(searchQuery)" class="space-y-4">
-            <template data-for="group in searchResultGroups(searchQuery)">
+          <div data-show="searchDebouncedQuery && hasSearchResults(searchDebouncedQuery)" class="space-y-4">
+            <template data-for="group in searchResultGroups(searchDebouncedQuery)">
               <div class="w-full">
                 <div
                   class="flex items-center justify-between px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/50">
@@ -1706,14 +1711,15 @@
                     <li>
                       <a class="flex flex-col items-start gap-1 py-2 px-3 rounded-xl transition-colors cursor-pointer"
                         data-class="{
-                          'bg-primary/10 text-primary font-semibold ring-1 ring-primary/20 shadow-sm': flatSearchResults(searchQuery)[searchActiveIndex]?.path === item.path,
-                          'hover:bg-base-200/60': flatSearchResults(searchQuery)[searchActiveIndex]?.path !== item.path
+                          'bg-primary/10 text-primary font-semibold ring-1 ring-primary/20 shadow-sm': flatSearchResults(searchDebouncedQuery)[searchActiveIndex]?.path === item.path,
+                          'hover:bg-base-200/60': flatSearchResults(searchDebouncedQuery)[searchActiveIndex]?.path !== item.path
                         }"
-                        data-bind-aria-selected="flatSearchResults(searchQuery)[searchActiveIndex]?.path === item.path ? 'true' : 'false'"
-                        data-effect="if (flatSearchResults(searchQuery)[searchActiveIndex]?.path === item.path && $el) { $el.scrollIntoView({ block: 'nearest' }); }"
-                        data-on-mouseenter="const items = flatSearchResults(searchQuery); const idx = items.findIndex(it => it.path === item.path); if (idx !== -1) searchActiveIndex = idx;"
+                        data-bind-aria-selected="flatSearchResults(searchDebouncedQuery)[searchActiveIndex]?.path === item.path ? 'true' : 'false'"
+                        data-effect="if (flatSearchResults(searchDebouncedQuery)[searchActiveIndex]?.path === item.path && $el) { $el.scrollIntoView({ block: 'nearest' }); }"
+                        data-on-mouseenter="const items = flatSearchResults(searchDebouncedQuery); const idx = items.findIndex(it => it.path === item.path); if (idx !== -1) searchActiveIndex = idx;"
                         data-on-click="
-                          if (searchQuery.trim()) { recentSearches = [searchQuery.trim(), ...(recentSearches || []).filter(s => s !== searchQuery.trim())].slice(0, 6); }
+                          const q = searchDebouncedQuery || searchQuery.trim();
+                          if (q) { recentSearches = [q, ...(recentSearches || []).filter(s => s !== q)].slice(0, 6); }
                           router.createPageTab(item.component, item.path);
                           searchOpen = false;
                         ">
@@ -1722,7 +1728,7 @@
                             <iconify-icon
                               data-bind-icon="item.meta?.icon || 'material-symbols-light:description-outline'"
                               class="text-xl shrink-0 opacity-70"
-                              data-class="{ 'text-primary opacity-100': flatSearchResults(searchQuery)[searchActiveIndex]?.path === item.path }"></iconify-icon>
+                              data-class="{ 'text-primary opacity-100': flatSearchResults(searchDebouncedQuery)[searchActiveIndex]?.path === item.path }"></iconify-icon>
                             <span class="font-medium text-sm truncate" data-bind="item.meta?.title || item.name"></span>
                             <span class="badge badge-xs badge-ghost opacity-60" data-bind="item.category"></span>
                           </div>
@@ -1742,11 +1748,11 @@
           </div>
 
           <!-- State 4: Active Query & Zero Matches -->
-          <div data-show="searchQuery.trim() && !hasSearchResults(searchQuery)"
+          <div data-show="searchDebouncedQuery && !hasSearchResults(searchDebouncedQuery)"
             class="px-4 py-12 text-center text-base-content/50">
             <iconify-icon icon="material-symbols-light:search-off" class="text-4xl opacity-40"></iconify-icon>
             <p class="mt-2 text-sm">No results found for &quot;<span class="font-semibold text-base-content"
-                data-bind="searchQuery"></span>&quot;</p>
+                data-bind="searchDebouncedQuery"></span>&quot;</p>
           </div>
         </div>
       </div>
