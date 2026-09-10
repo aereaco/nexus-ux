@@ -1598,9 +1598,9 @@
       </div>
 
       <!-- Declarative Scrollbar Location Ticks Track (accent color) along the vertical scrollbar -->
-      <div data-show="__global.searchHighlightTokens && __global.searchHighlightTokens.length !== 0 && __global.searchTicks && __global.searchTicks.length !== 0 && router.activePageTabId === __global.searchHighlightTargetTabId"
+      <div data-show="__global.searchTabs && __global.searchTabs[router.activePageTabId] && __global.searchTabs[router.activePageTabId].ticks && __global.searchTabs[router.activePageTabId].ticks.length !== 0"
         class="pointer-events-none absolute top-0 end-0 bottom-0 w-2.5 z-30 overflow-hidden">
-        <template data-for="tick in __global.searchTicks">
+        <template data-for="tick in (__global.searchTabs && __global.searchTabs[router.activePageTabId] ? __global.searchTabs[router.activePageTabId].ticks : [])">
           <div class="absolute inset-x-0 h-1 rounded-full bg-accent pointer-events-auto cursor-pointer shadow-xs hover:scale-x-125 transition-transform"
             data-style="{ top: tick + '%' }"
             data-on-click="__global.jumpToSearchTick(tick)">
