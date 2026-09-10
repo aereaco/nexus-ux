@@ -1622,7 +1622,7 @@
           <input id="search-modal-input" type="text" role="searchbox" inputmode="search" autocomplete="off" spellcheck="false"
             class="input input-ghost w-full text-lg focus:outline-none border-0 focus:border-0 px-0"
             placeholder="Search pages and features…" data-bind="searchQuery"
-            data-on-input="if (!$el.value.trim()) { searchQuery = ''; searchDebouncedQuery = ''; searchResults = []; flatResults = []; searchTokens = []; searchActiveIndex = 0; if (typeof syncHighlights === 'function') { syncHighlights(document.getElementById('search-results-viewport'), []); } }"
+            data-on-input="if (!$el.value.trim()) { searchQuery = ''; searchDebouncedQuery = ''; searchResults = []; flatResults = []; searchTokens = []; searchActiveIndex = 0; }"
             data-on-input_debounce.200="
               const q = ($el.value || '').trim();
               searchDebouncedQuery = q;
@@ -1630,86 +1630,48 @@
               searchResults = (q && searchIndex && searchIndex.length !== 0 && typeof searchResultGroups === 'function') ? searchResultGroups(q, searchIndex) : [];
               flatResults = (searchResults || []).flatMap(function(grp) { return grp.items || []; });
               searchActiveIndex = 0;
-              const vp = document.getElementById('search-results-viewport');
-              if (vp) vp.scrollTop = 0;
-              if (typeof syncHighlights === 'function') { syncHighlights(document.getElementById('search-results-viewport'), searchTokens); }
             "
-            data-on-keydown="
-              if ($evt.key === 'Escape') {
-                searchOpen = false;
-                if (typeof CSS !== 'undefined' && CSS.highlights) { CSS.highlights.delete('search-match'); }
-              } else if ($evt.key === 'ArrowDown') {
-                $evt.preventDefault();
-                const q = (searchDebouncedQuery || searchQuery || '').trim();
-                const items = q ? (flatResults || []) : (recentSearches || []);
-                if (items.length !== 0) {
-                  searchActiveIndex = (searchActiveIndex + 1) % items.length;
-                  $nextTick().then(function() {
-                    const vp = document.getElementById('search-results-viewport');
-                    if (!vp) return;
-                    if (searchActiveIndex === 0) {
-                      vp.scrollTop = 0;
-                    } else {
-                      const activeEl = vp.querySelector('[aria-selected=true]');
-                      if (activeEl) { activeEl.scrollIntoView({ block: 'nearest', behavior: 'auto' }); }
-                    }
-                  });
-                }
-              } else if ($evt.key === 'ArrowUp') {
-                $evt.preventDefault();
-                const q = (searchDebouncedQuery || searchQuery || '').trim();
-                const items = q ? (flatResults || []) : (recentSearches || []);
-                if (items.length !== 0) {
-                  searchActiveIndex = (searchActiveIndex - 1 + items.length) % items.length;
-                  $nextTick().then(function() {
-                    const vp = document.getElementById('search-results-viewport');
-                    if (!vp) return;
-                    if (searchActiveIndex === 0) {
-                      vp.scrollTop = 0;
-                    } else {
-                      const activeEl = vp.querySelector('[aria-selected=true]');
-                      if (activeEl) { activeEl.scrollIntoView({ block: 'nearest', behavior: 'auto' }); }
-                    }
-                  });
-                }
-              } else if ($evt.key === 'Enter') {
-                $evt.preventDefault();
-                const q = (searchDebouncedQuery || searchQuery || '').trim();
-                if (q) {
-                  const items = flatResults || [];
-                  const active = items[searchActiveIndex] || items[0];
-                  if (active) {
-                    recentSearches = [q, ...(recentSearches || []).filter(function(s) { return s !== q; })].slice(0, 6);
-                    if (router.pageTabs) {
-                      const existing = (router.pageTabs || []).find(function(t) { return t.route === active.path; });
-                      if (existing) { router.switchPageTab(existing.id); }
-                      else { router.createPageTab(active.component || active.path, active.path); }
-                    }
-                    router.navigate(active.path);
-                    searchOpen = false;
-                    if (typeof CSS !== 'undefined' && CSS.highlights) { CSS.highlights.delete('search-match'); }
+            data-on-keydown_escape="searchOpen = false; if (typeof CSS !== 'undefined' && CSS.highlights) { CSS.highlights.delete('search-match'); }"
+            data-on-keydown_prevent_down="
+              const total = (searchDebouncedQuery || searchQuery || '').trim() ? (flatResults || []).length : (recentSearches || []).length;
+              if (total > 0) { searchActiveIndex = Math.min(searchActiveIndex + 1, total - 1); }
+            "
+            data-on-keydown_prevent_up="
+              if (searchActiveIndex > 0) { searchActiveIndex = searchActiveIndex - 1; }
+            "
+            data-on-keydown_prevent_enter="
+              const q = (searchDebouncedQuery || searchQuery || '').trim();
+              if (q) {
+                const items = flatResults || [];
+                const active = items[searchActiveIndex] || items[0];
+                if (active) {
+                  recentSearches = [q, ...(recentSearches || []).filter(function(s) { return s !== q; })].slice(0, 6);
+                  if (router.pageTabs) {
+                    const existing = (router.pageTabs || []).find(function(t) { return t.route === active.path; });
+                    if (existing) { router.switchPageTab(existing.id); }
+                    else { router.createPageTab(active.component || active.path, active.path); }
                   }
-                } else {
-                  const recents = recentSearches || [];
-                  const activeRecent = recents[searchActiveIndex];
-                  if (activeRecent) {
-                    searchQuery = activeRecent;
-                    searchDebouncedQuery = activeRecent;
-                    searchTokens = (typeof getSearchTokens === 'function' ? getSearchTokens(activeRecent) : [activeRecent]);
-                    searchResults = (activeRecent && searchIndex && searchIndex.length !== 0 && typeof searchResultGroups === 'function') ? searchResultGroups(activeRecent, searchIndex) : [];
-                    flatResults = (searchResults || []).flatMap(function(grp) { return grp.items || []; });
-                    searchActiveIndex = 0;
-                    const vp = document.getElementById('search-results-viewport');
-                    if (vp) vp.scrollTop = 0;
-                    if (typeof syncHighlights === 'function') { syncHighlights(document.getElementById('search-results-viewport'), searchTokens); }
-                  }
+                  router.navigate(active.path);
+                  searchOpen = false;
+                  if (typeof CSS !== 'undefined' && CSS.highlights) { CSS.highlights.delete('search-match'); }
+                }
+              } else {
+                const recents = recentSearches || [];
+                const activeRecent = recents[searchActiveIndex];
+                if (activeRecent) {
+                  searchQuery = activeRecent;
+                  searchDebouncedQuery = activeRecent;
+                  searchTokens = (typeof getSearchTokens === 'function' ? getSearchTokens(activeRecent) : [activeRecent]);
+                  searchResults = (activeRecent && searchIndex && searchIndex.length !== 0 && typeof searchResultGroups === 'function') ? searchResultGroups(activeRecent, searchIndex) : [];
+                  flatResults = (searchResults || []).flatMap(function(grp) { return grp.items || []; });
+                  searchActiveIndex = 0;
                 }
               }
             "
             data-effect="if (searchOpen && $el) { $nextTick().then(function() { $el.focus(); $el.select(); }); }" />
           <button type="button" class="btn btn-ghost btn-xs btn-circle opacity-60 hover:opacity-100 me-1"
             aria-label="Clear search" data-show="searchQuery"
-            data-on-click="searchQuery = ''; searchDebouncedQuery = ''; searchTokens = []; searchResults = []; flatResults = []; searchActiveIndex = 0; const vp = document.getElementById('search-results-viewport'); if (vp) vp.scrollTop = 0; if (typeof syncHighlights === 'function') { syncHighlights(vp, []); } $nextTick().then(function() { const el = document.getElementById('search-modal-input'); if (el) el.focus(); });">
+            data-on-click="searchQuery = ''; searchDebouncedQuery = ''; searchTokens = []; searchResults = []; flatResults = []; searchActiveIndex = 0; $nextTick().then(function() { const el = document.getElementById('search-modal-input'); if (el) el.focus(); });">
             <iconify-icon icon="material-symbols-light:backspace-outline" class="text-base"></iconify-icon>
           </button>
           <kbd class="kbd kbd-sm opacity-60 max-sm:hidden">Esc</kbd>
@@ -1721,7 +1683,7 @@
 
         <!-- Results Area -->
         <div id="search-results-viewport" class="p-3 max-h-[60vh] overflow-y-auto"
-          data-effect="if (typeof syncHighlights === 'function') { syncHighlights($el, searchTokens); }">
+          data-effect="if (searchActiveIndex === 0) { $el.scrollTop = 0; } if (typeof syncHighlights === 'function') { syncHighlights($el, searchTokens); }">
           <!-- State 1: Empty Query & No Recent Searches -->
           <div data-show="!searchQuery.trim() && !(recentSearches && recentSearches.length)"
             class="px-4 py-12 text-center text-base-content/50">
@@ -1745,7 +1707,8 @@
                   data-class="{
                     'bg-primary/10 text-primary font-semibold ring-1 ring-primary/20': !searchQuery.trim() && (recentSearches || [])[searchActiveIndex] === recent,
                     'hover:bg-base-200/60': searchQuery.trim() || (recentSearches || [])[searchActiveIndex] !== recent
-                  }">
+                  }"
+                  data-effect="if (!searchQuery.trim() && (recentSearches || [])[searchActiveIndex] === recent) $el.scrollIntoView({ block: 'nearest' });">
                   <a class="flex items-center gap-2.5 flex-1 min-w-0 py-2 px-3"
                     data-bind-aria-selected="(!searchQuery.trim() && (recentSearches || [])[searchActiveIndex] === recent) ? 'true' : 'false'"
                     data-on-click="
@@ -1755,9 +1718,6 @@
                       searchResults = (recent && searchIndex && searchIndex.length !== 0 && typeof searchResultGroups === 'function') ? searchResultGroups(recent, searchIndex) : [];
                       flatResults = (searchResults || []).flatMap(function(grp) { return grp.items || []; });
                       searchActiveIndex = 0;
-                      const vp = document.getElementById('search-results-viewport');
-                      if (vp) vp.scrollTop = 0;
-                      if (typeof syncHighlights === 'function') { syncHighlights(document.getElementById('search-results-viewport'), searchTokens); }
                     ">
                     <iconify-icon icon="material-symbols-light:history"
                       class="text-lg opacity-60 shrink-0"
@@ -1789,7 +1749,7 @@
                 </div>
                 <ul class="menu menu-sm w-full p-0">
                   <template data-for="item in (group.items || [])">
-                    <li>
+                    <li data-effect="if ((flatResults || [])[searchActiveIndex]?.path === item.path) $el.scrollIntoView({ block: 'nearest' });">
                       <a class="flex flex-col items-start gap-1 py-2 px-3 rounded-xl transition-colors cursor-pointer"
                         data-class="{
                           'bg-primary/10 text-primary font-semibold ring-1 ring-primary/20 shadow-sm': (flatResults || [])[searchActiveIndex]?.path === item.path,
