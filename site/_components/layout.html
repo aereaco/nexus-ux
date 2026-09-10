@@ -1476,18 +1476,6 @@
             <tab-content data-component="tab.source || tab.content" data-show="tab.isLoading === false"
               class="grow flex-1 flex flex-col min-h-0 [&>body]:flex [&>body]:flex-col [&>body]:flex-1 [&>body]:min-h-0 [&>body]:h-full [&>body]:m-0 [&>body]:bg-transparent"
               data-effect="if (!tab.isLoading && router.activePageTabId === tab.id && (tab.id === searchHighlightTargetTabId || tab.route === searchHighlightTargetPath) && searchHighlightTokens && searchHighlightTokens.length !== 0 && typeof syncPageHighlights === 'function') { syncPageHighlights($el, searchHighlightTokens); }"></tab-content>
-
-            <!-- Declarative Scrollbar Location Ticks Track (accent color) -->
-            <div data-show="searchHighlightTokens && searchHighlightTokens.length !== 0 && searchTicks && searchTicks.length !== 0 && router.activePageTabId === searchHighlightTargetTabId && tab.id === searchHighlightTargetTabId"
-              class="pointer-events-none absolute w-2 z-30 overflow-hidden"
-              data-style="searchTickTrackStyle">
-              <template data-for="tick in searchTicks">
-                <div class="absolute inset-x-0 h-1 rounded-full bg-accent pointer-events-auto cursor-pointer shadow-xs hover:scale-x-125 transition-transform"
-                  data-style="{ top: tick + '%' }"
-                  data-on-click="jumpToSearchTick(tick)">
-                </div>
-              </template>
-            </div>
           </div>
         </template>
 
