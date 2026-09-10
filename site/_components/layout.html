@@ -1,5 +1,5 @@
 <div class="grid grid-cols-[0rem_1fr] transition-[grid-template-columns] duration-300"
-  data-effect="if (!searchIndex || searchIndex.length === 0) { fetch('/_pages/search-index.json').then(function(r) { return r.ok ? r.json() : []; }).then(function(d) { if (Array.isArray(d) && d.length !== 0) { searchIndex = d; } }).catch(function() {}); }"
+  data-effect="if (!searchIndex || searchIndex.length === 0) { window.fetch('/_pages/search-index.json').then(function(r) { return r.ok ? r.json() : []; }).then(function(d) { if (Array.isArray(d) && d.length !== 0) { searchIndex = d; } }).catch(function() {}); }"
   data-on-keydown_window="if (($evt.ctrlKey || $evt.metaKey) && ($evt.key === 'k' || $evt.key === 'K')) { $evt.preventDefault(); favModalOpen = false; favDeleteModalOpen = false; searchQuery = ''; searchDebouncedQuery = ''; searchTokens = []; searchResults = []; flatResults = []; searchActiveIndex = 0; searchOpen = true; $nextTick().then(function() { const el = document.getElementById('search-modal-input'); if (el) { el.focus(); el.select(); } }); }"
   data-signal_global="{
       collapsed: localStorage.collapsed !== 'false',
