@@ -13,7 +13,6 @@
       searchQuery: '',
       recentSearches: [],
       pageContentIndex: {},
-      searchActiveIndex: 0,
       indexPageContents: async () => {
         const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
         const routes = (g.router?.routes || []).filter(r => r.path && r.path !== '/error' && !r.internal && r.component);
@@ -24,20 +23,13 @@
           try {
             const res = await fetch(r.component);
             if (!res.ok) return;
-            const text = await res.text();
-            let content = '';
-            const descMatch = text.match(/Description:\s*['"]([^'"]+)['"]/i);
-            const syntaxMatch = text.match(/Syntax:\s*['"]([^'"]+)['"]/i);
-            if (descMatch) content += ' ' + descMatch[1].replace(/&lt;[^&]*&gt;/g, ' ').replace(/<[^>]*>/g, ' ');
-            if (syntaxMatch) content += ' ' + syntaxMatch[1];
+            const html = await res.text();
             const parser = new window.DOMParser();
-            const doc = parser.parseFromString(text, 'text/html');
+            const doc = parser.parseFromString(html, 'text/html');
             doc.querySelectorAll('style, script, svg').forEach(el => el.remove());
-            const bodyText = (doc.body?.textContent || '').replace(/\s+/g, ' ').trim();
-            if (bodyText) content += ' ' + bodyText;
-            content = content.replace(/\s+/g, ' ').trim();
-            if (content) {
-              idx[r.path] = content;
+            const text = (doc.body?.textContent || '').replace(/\s+/g, ' ').trim();
+            if (text) {
+              idx[r.path] = text;
               updated = true;
             }
           } catch {
@@ -50,91 +42,59 @@
           else g.pageContentIndex = idx;
         }
       },
-      getSearchablePages: () => {
-        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
-        const pages = g.router?.pages || [];
-        const flat = [];
-        const seen = new Set();
-        const walk = (items, parentTitle = '', inheritedCat = '') => {
-          for (const p of items || []) {
-            if (!p || !p.href || p.href === '/error' || seen.has(p.href)) continue;
-            seen.add(p.href);
-            const cat = p.category || p.meta?.category || inheritedCat || (p.href.startsWith('/labs') ? 'Labs' : (p.href.startsWith('/docs') ? 'Docs' : 'Apps'));
-            flat.push({
-              id: p.id || '',
-              path: p.href,
-              component: p.path || p.component || '',
-              title: p.title || p.meta?.title || p.tabTitle || '',
-              icon: p.icon || p.meta?.icon || p.tabIcon || 'material-symbols-light:article-outline',
-              category: cat,
-              parentTitle: parentTitle || ''
-            });
-            if (p.children && p.children.length > 0) {
-              walk(p.children, p.title, cat);
-            }
-          }
-        };
-        walk(pages);
-
-        for (const r of (g.router?.routes || [])) {
-          if (!r || !r.path || r.path === '/error' || r.internal || seen.has(r.path)) continue;
-          seen.add(r.path);
-          const cat = r.meta?.category || (r.path.startsWith('/labs') ? 'Labs' : (r.path.startsWith('/docs') ? 'Docs' : 'Apps'));
-          flat.push({
-            id: r.name || '',
-            path: r.path,
-            component: r.component || '',
-            title: r.meta?.title || r.name || r.path,
-            icon: r.meta?.icon || 'material-symbols-light:article-outline',
-            category: cat,
-            parentTitle: ''
-          });
-        }
-        return flat;
+      getRouteCategory: (r) => {
+        if (['/drag', '/flow'].includes(r?.path)) return 'Apps';
+        if (r?.path?.startsWith('/profiles')) return 'Profiles';
+        if (r?.path === '/') return 'Navigation';
+        return 'System';
       },
       searchResultGroups: (query) => {
         const q = (query || '').trim().toLowerCase();
         if (!q) return [];
         const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
-        const allPages = (typeof g.getSearchablePages === 'function') ? g.getSearchablePages() : [];
+        const getCat = g.getRouteCategory || (() => 'General');
         const contentIdx = g.pageContentIndex || {};
-        const tokens = q.split(/\s+/).filter(Boolean);
+        const allRoutes = (g.router?.routes || []).filter(r => r.path !== '/error' && r.path !== '' && !r.internal);
 
         const navMatches = [];
         const contentMatches = [];
-        const seenPaths = new Set();
-        let globalIdx = 0;
+        const seenNavPaths = new Set();
 
-        for (const p of allPages) {
-          const searchable = `${p.title} ${p.path} ${p.category} ${p.parentTitle} ${p.id}`.toLowerCase();
-          const isMatch = tokens.every(tok => searchable.includes(tok));
-          if (isMatch) {
+        for (const r of allRoutes) {
+          const title = (r.meta?.title || r.name || '').toLowerCase();
+          const path = (r.path || '').toLowerCase();
+          const cat = getCat(r).toLowerCase();
+          if (title.includes(q) || path.includes(q) || cat.includes(q)) {
             navMatches.push({
-              ...p,
-              globalIndex: globalIdx++
+              path: r.path,
+              component: r.component,
+              name: r.name,
+              meta: r.meta,
+              category: getCat(r)
             });
-            seenPaths.add(p.path);
+            seenNavPaths.add(r.path);
           }
         }
 
-        for (const p of allPages) {
-          if (seenPaths.has(p.path)) continue;
-          const text = contentIdx[p.path] || '';
+        for (const r of allRoutes) {
+          if (seenNavPaths.has(r.path)) continue;
+          const text = contentIdx[r.path] || '';
           if (!text) continue;
-          const lower = text.toLowerCase();
-          const isMatch = tokens.every(tok => lower.includes(tok));
-          if (isMatch) {
-            const firstPos = lower.indexOf(tokens[0]);
-            const start = Math.max(0, firstPos - 35);
-            const end = Math.min(text.length, firstPos + tokens[0].length + 45);
+          const pos = text.toLowerCase().indexOf(q);
+          if (pos !== -1) {
+            const start = Math.max(0, pos - 35);
+            const end = Math.min(text.length, pos + q.length + 35);
             let snippet = text.slice(start, end).trim();
             if (start > 0) snippet = '…' + snippet;
             if (end < text.length) snippet = snippet + '…';
 
             contentMatches.push({
-              ...p,
-              snippet: snippet,
-              globalIndex: globalIdx++
+              path: r.path,
+              component: r.component,
+              name: r.name,
+              meta: r.meta,
+              category: getCat(r),
+              snippet: snippet
             });
           }
         }
@@ -157,44 +117,6 @@
           });
         }
         return groups;
-      },
-      getFlatSearchResults: (query) => {
-        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
-        const fn = g.searchResultGroups;
-        if (!fn) return [];
-        const groups = fn(query);
-        const flat = [];
-        for (const grp of groups) {
-          if (grp.items) flat.push(...grp.items);
-        }
-        return flat;
-      },
-      selectNextSearchResult: () => {
-        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
-        const flat = (typeof g.getFlatSearchResults === 'function') ? g.getFlatSearchResults(g.searchQuery) : [];
-        if (flat.length === 0) return;
-        const next = (g.searchActiveIndex ?? 0) + 1;
-        g.searchActiveIndex = next >= flat.length ? 0 : next;
-      },
-      selectPrevSearchResult: () => {
-        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
-        const flat = (typeof g.getFlatSearchResults === 'function') ? g.getFlatSearchResults(g.searchQuery) : [];
-        if (flat.length === 0) return;
-        const prev = (g.searchActiveIndex ?? 0) - 1;
-        g.searchActiveIndex = prev < 0 ? flat.length - 1 : prev;
-      },
-      openSelectedSearchResult: () => {
-        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
-        const flat = (typeof g.getFlatSearchResults === 'function') ? g.getFlatSearchResults(g.searchQuery) : [];
-        const idx = g.searchActiveIndex ?? 0;
-        const item = flat[idx] || flat[0];
-        if (item) {
-          if (g.searchQuery?.trim()) {
-            g.recentSearches = [g.searchQuery.trim(), ...(g.recentSearches || []).filter(s => s !== g.searchQuery.trim())].slice(0, 6);
-          }
-          g.router?.createPageTab?.(item.component, item.path);
-          g.searchOpen = false;
-        }
       },
       hasSearchResults: (query) => {
         const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
@@ -1583,18 +1505,8 @@
           <iconify-icon icon="material-symbols-light:search" class="text-2xl opacity-60"></iconify-icon>
           <input id="search-modal-input" type="text"
             class="input input-ghost w-full text-lg focus:outline-none border-0 focus:border-0 px-0"
-            placeholder="Search pages, features, and directives…" data-bind-value="searchQuery"
-            data-on-input="searchActiveIndex = 0"
-            data-on-keydown_down_prevent="selectNextSearchResult()"
-            data-on-keydown_up_prevent="selectPrevSearchResult()"
-            data-on-keydown_enter_prevent="openSelectedSearchResult()"
-            data-on-keydown_escape="searchOpen = false"
-            data-effect="if (searchOpen && $el) { setTimeout(() => { $el.focus(); $el.select(); }, 50); }" />
-          <button class="btn btn-ghost btn-xs btn-circle opacity-60 hover:opacity-100 me-1"
-            aria-label="Clear search" data-show="searchQuery"
-            data-on-click="searchQuery = ''; searchActiveIndex = 0; $('#search-modal-input')?.focus();">
-            <iconify-icon icon="material-symbols-light:backspace-outline" class="text-base"></iconify-icon>
-          </button>
+            placeholder="Search pages and features…" data-bind-value="searchQuery"
+            data-on-keydown_escape="searchOpen = false" />
           <kbd class="kbd kbd-sm opacity-60 max-sm:hidden">Esc</kbd>
           <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close search" data-on-click="searchOpen = false">
             <iconify-icon icon="material-symbols-light:close" class="text-lg"></iconify-icon>
@@ -1623,7 +1535,7 @@
               <template data-for="recent in (recentSearches || [])">
                 <li
                   class="flex flex-row items-center justify-between group rounded-xl hover:bg-base-200/60 transition-colors">
-                  <a class="flex items-center gap-2.5 flex-1 min-w-0 py-2 px-3" data-on-click="searchQuery = recent; searchActiveIndex = 0;">
+                  <a class="flex items-center gap-2.5 flex-1 min-w-0 py-2 px-3" data-on-click="searchQuery = recent">
                     <iconify-icon icon="material-symbols-light:history"
                       class="text-lg opacity-60 shrink-0"></iconify-icon>
                     <span class="truncate font-medium" data-bind="recent"></span>
@@ -1654,9 +1566,7 @@
                 <ul class="menu menu-sm w-full p-0">
                   <template data-for="item in (group.items || [])">
                     <li>
-                      <a class="flex flex-col items-start gap-1 py-2 px-3 rounded-xl transition-colors cursor-pointer"
-                        data-class="{ 'bg-primary text-primary-content font-semibold shadow-sm': searchActiveIndex === item.globalIndex, 'hover:bg-base-200/60': searchActiveIndex !== item.globalIndex }"
-                        data-on-mouseenter="searchActiveIndex = item.globalIndex"
+                      <a class="flex flex-col items-start gap-1 py-2 px-3 rounded-xl hover:bg-base-200/60 transition-colors"
                         data-on-click="
                           if (searchQuery.trim()) { recentSearches = [searchQuery.trim(), ...(recentSearches || []).filter(s => s !== searchQuery.trim())].slice(0, 6); }
                           router.createPageTab(item.component, item.path);
@@ -1665,24 +1575,17 @@
                         <div class="flex items-center justify-between w-full">
                           <div class="flex items-center gap-2.5 min-w-0">
                             <iconify-icon
-                              data-bind-icon="item.icon || item.meta?.icon || 'material-symbols-light:article-outline'"
-                              class="text-xl shrink-0"
-                              data-class="{ 'text-primary-content': searchActiveIndex === item.globalIndex, 'opacity-70': searchActiveIndex !== item.globalIndex }"></iconify-icon>
-                            <span class="font-medium text-sm truncate" data-bind="item.title || item.meta?.title || item.name"></span>
-                            <span class="badge badge-xs opacity-80"
-                              data-class="{ 'badge-neutral text-neutral-content': searchActiveIndex === item.globalIndex, 'badge-ghost': searchActiveIndex !== item.globalIndex }"
-                              data-bind="item.category"></span>
-                            <span data-show="item.parentTitle" class="text-xs opacity-60 truncate"
-                              data-bind="'(' + item.parentTitle + ')'"></span>
+                              data-bind-icon="item.meta?.icon || 'material-symbols-light:description-outline'"
+                              class="text-xl shrink-0 opacity-70"></iconify-icon>
+                            <span class="font-medium text-sm truncate" data-bind="item.meta?.title || item.name"></span>
+                            <span class="badge badge-xs badge-ghost opacity-60" data-bind="item.category"></span>
                           </div>
-                          <span class="badge badge-sm font-mono opacity-70 shrink-0"
-                            data-class="{ 'badge-neutral': searchActiveIndex === item.globalIndex, 'badge-ghost': searchActiveIndex !== item.globalIndex }"
+                          <span class="badge badge-sm badge-ghost font-mono opacity-50 shrink-0"
                             data-bind="item.path"></span>
                         </div>
                         <div data-show="item.snippet"
-                          class="text-xs ps-7 font-sans line-clamp-1 w-full text-start"
-                          data-class="{ 'text-primary-content/80': searchActiveIndex === item.globalIndex, 'text-base-content/60': searchActiveIndex !== item.globalIndex }">
-                          <span class="opacity-90 font-mono" data-bind="item.snippet"></span>
+                          class="text-xs text-base-content/60 ps-7 font-sans line-clamp-1 w-full text-start">
+                          <span class="opacity-80 font-mono" data-bind="item.snippet"></span>
                         </div>
                       </a>
                     </li>
