@@ -23,11 +23,24 @@
       searchHighlightTargetTabId: '',
       searchHighlightTargetPath: '',
       searchHighlightCount: 0,
+      searchTicks: [],
+      searchTickTrackStyle: {},
+      jumpToSearchTick: function(pct) {
+        const panel = document.querySelector('[role="tabpanel"]:not([style*="display: none"])');
+        if (!panel) return;
+        const scrollEl = panel.querySelector('.overflow-y-auto') || panel.closest('.overflow-y-auto') || document.querySelector('.overflow-y-auto');
+        if (scrollEl) {
+          const targetScroll = (pct / 100) * scrollEl.scrollHeight - (scrollEl.clientHeight / 2);
+          scrollEl.scrollTo({ top: Math.max(0, targetScroll), behavior: 'smooth' });
+        }
+      },
       clearPageHighlights: function() {
         searchHighlightTokens = [];
         searchHighlightTargetTabId = '';
         searchHighlightTargetPath = '';
         searchHighlightCount = 0;
+        searchTicks = [];
+        searchTickTrackStyle = {};
         if (typeof window !== 'undefined' && typeof window.CSS !== 'undefined' && window.CSS.highlights) {
           window.CSS.highlights.delete('page-match');
         }
@@ -38,6 +51,8 @@
         if (!tokens || tokens.length === 0) {
           window.CSS.highlights.delete('page-match');
           searchHighlightCount = 0;
+          searchTicks = [];
+          searchTickTrackStyle = {};
           return;
         }
         window.setTimeout(() => {
@@ -69,8 +84,37 @@
               if (firstMatchEl && typeof firstMatchEl.scrollIntoView === 'function') {
                 firstMatchEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
               }
+
+              // Compute scrollbar location ticks
+              const scrollEl = (firstMatchEl && firstMatchEl.closest('.overflow-y-auto, [data-scrollbar], .overflow-auto')) || container.closest('.overflow-y-auto') || container;
+              const panel = container.closest('[role="tabpanel"]') || container.parentElement;
+              if (scrollEl && panel) {
+                const scrollRect = scrollEl.getBoundingClientRect();
+                const panelRect = panel.getBoundingClientRect();
+                const scrollH = scrollEl.scrollHeight;
+                const scrollT = scrollEl.scrollTop;
+
+                const ticks = [];
+                for (const r of ranges) {
+                  const rect = r.getBoundingClientRect();
+                  if (!rect || (rect.width === 0 && rect.height === 0)) continue;
+                  const topInScroll = (rect.top - scrollRect.top) + scrollT;
+                  const pct = Math.min(99.5, Math.max(0.5, (topInScroll / scrollH) * 100));
+                  if (!ticks.some(t => Math.abs(t - pct) < 0.8)) {
+                    ticks.push(Number(pct.toFixed(1)));
+                  }
+                }
+                searchTicks = ticks;
+                searchTickTrackStyle = {
+                  top: (scrollRect.top - panelRect.top) + 'px',
+                  height: scrollRect.height + 'px',
+                  left: (scrollRect.right - panelRect.left - 8) + 'px'
+                };
+              }
             } else {
               window.CSS.highlights.delete('page-match');
+              searchTicks = [];
+              searchTickTrackStyle = {};
             }
           } catch { /* ignore range calculation errors */ }
         }, 120);
@@ -1296,7 +1340,7 @@
           data-bind-icon="tab.meta?.icon || 'material-symbols-light:article-outline'"
           class="text-lg px-2"></iconify-icon>
         <span class="pe-4 whitespace-nowrap"
-          data-bind="tab.isLoading !== false ? 'Loading...' : (tab.meta?.title || 'Tab')"></span>
+          data-bind="tab.isLoading !== false ? 'Loading...' : (((tab.id === searchHighlightTargetTabId && searchHighlightTokens && searchHighlightTokens.length && !tab.meta?.title?.startsWith('Search Result:')) ? 'Search Result: ' : '') + (tab.meta?.title || 'Tab'))"></span>
         <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close tab" title="Close tab"
           data-class="{ 'hidden': (router.pinnedPageTabs || []).includes(tab.id) }"
           data-on-click_stop="router.closePageTab(tab.id)">
@@ -1427,7 +1471,7 @@
         <!-- Retained Multi-Panel Outlets: Each tab retains its mounted DOM tree.
              data-show toggles panel visibility instantly (display: none) without destroying nodes or resetting state. -->
         <template data-for="tab in router.pageTabs">
-          <div role="tabpanel" class="w-full grow flex-1 flex flex-col min-h-0"
+          <div role="tabpanel" class="w-full grow flex-1 flex flex-col min-h-0 relative"
             data-show="router.activePageTabId === tab.id">
             <!-- Default Loading Fallback Skeleton -->
             <div data-show="tab.isLoading !== false" class="flex flex-col gap-4 w-full p-4 animate-pulse">
@@ -1441,6 +1485,18 @@
             <tab-content data-component="tab.source || tab.content" data-show="tab.isLoading === false"
               class="grow flex-1 flex flex-col min-h-0 [&>body]:flex [&>body]:flex-col [&>body]:flex-1 [&>body]:min-h-0 [&>body]:h-full [&>body]:m-0 [&>body]:bg-transparent"
               data-effect="if (!tab.isLoading && router.activePageTabId === tab.id && (tab.id === searchHighlightTargetTabId || tab.route === searchHighlightTargetPath) && searchHighlightTokens && searchHighlightTokens.length !== 0 && typeof syncPageHighlights === 'function') { syncPageHighlights($el, searchHighlightTokens); }"></tab-content>
+
+            <!-- Declarative Scrollbar Location Ticks Track (accent color) -->
+            <div data-show="searchHighlightTokens && searchHighlightTokens.length !== 0 && searchTicks && searchTicks.length !== 0 && router.activePageTabId === searchHighlightTargetTabId && tab.id === searchHighlightTargetTabId"
+              class="pointer-events-none absolute w-2 z-30 overflow-hidden"
+              data-style="searchTickTrackStyle">
+              <template data-for="tick in searchTicks">
+                <div class="absolute inset-x-0 h-1 rounded-full bg-accent pointer-events-auto cursor-pointer shadow-xs hover:scale-x-125 transition-transform"
+                  data-style="{ top: tick + '%' }"
+                  data-on-click="jumpToSearchTick(tick)">
+                </div>
+              </template>
+            </div>
           </div>
         </template>
 
