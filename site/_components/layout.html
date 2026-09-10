@@ -697,7 +697,7 @@
         </button>
 
         <!-- Search Button -->
-        <button class="btn btn-ghost btn-circle hover:scale-102" aria-label="Open search (Ctrl+K)"
+        <button type="button" class="btn btn-ghost btn-circle hover:scale-102" aria-label="Open search (Ctrl+K)"
           title="Search (Ctrl+K)"
           data-on-click="favModalOpen = false; favDeleteModalOpen = false; searchQuery = ''; searchOpen = true; if (typeof indexPageContents === 'function') { indexPageContents(); } $nextTick(() => { const el = document.getElementById('search-modal-input'); el?.focus(); el?.select(); })">
           <iconify-icon icon="material-symbols-light:search" class="text-2xl"></iconify-icon>
