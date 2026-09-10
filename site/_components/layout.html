@@ -19,6 +19,58 @@
       searchActiveIndex: 0,
       recentSearches: [],
       searchIndex: [],
+      searchHighlightTokens: [],
+      searchHighlightCount: 0,
+      clearPageHighlights: function() {
+        searchHighlightTokens = [];
+        searchHighlightCount = 0;
+        if (typeof window !== 'undefined' && typeof window.CSS !== 'undefined' && window.CSS.highlights) {
+          window.CSS.highlights.delete('page-match');
+        }
+      },
+      syncPageHighlights: function(container, tokens) {
+        if (typeof window === 'undefined' || typeof window.CSS === 'undefined' || !window.CSS.highlights || typeof window.Highlight === 'undefined') return;
+        if (!container) return;
+        if (!tokens || tokens.length === 0) {
+          window.CSS.highlights.delete('page-match');
+          searchHighlightCount = 0;
+          return;
+        }
+        window.setTimeout(() => {
+          try {
+            const ranges = [];
+            const filter = window.NodeFilter ? window.NodeFilter.SHOW_TEXT : 4;
+            const walker = window.document.createTreeWalker(container, filter, null);
+            let node;
+            while ((node = walker.nextNode())) {
+              const text = node.textContent;
+              if (!text || !text.trim()) continue;
+              const lowerText = text.toLowerCase();
+              for (const token of tokens) {
+                if (!token || token.length < 2) continue;
+                let pos = 0;
+                while ((pos = lowerText.indexOf(token, pos)) !== -1) {
+                  const range = new window.Range();
+                  range.setStart(node, pos);
+                  range.setEnd(node, pos + token.length);
+                  ranges.push(range);
+                  pos += token.length;
+                }
+              }
+            }
+            searchHighlightCount = ranges.length;
+            if (ranges.length !== 0) {
+              window.CSS.highlights.set('page-match', new window.Highlight(...ranges));
+              const firstMatchEl = ranges[0].startContainer.parentElement;
+              if (firstMatchEl && typeof firstMatchEl.scrollIntoView === 'function') {
+                firstMatchEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
+              }
+            } else {
+              window.CSS.highlights.delete('page-match');
+            }
+          } catch { /* ignore range calculation errors */ }
+        }, 120);
+      },
       segmenter: null,
       collator: null,
       getSearchTokens: function(query) {
@@ -1382,9 +1434,28 @@
 
             <!-- Fully Loaded Route Content -->
             <tab-content data-component="tab.source || tab.content" data-show="tab.isLoading === false"
-              class="grow flex-1 flex flex-col min-h-0 [&>body]:flex [&>body]:flex-col [&>body]:flex-1 [&>body]:min-h-0 [&>body]:h-full [&>body]:m-0 [&>body]:bg-transparent"></tab-content>
+              class="grow flex-1 flex flex-col min-h-0 [&>body]:flex [&>body]:flex-col [&>body]:flex-1 [&>body]:min-h-0 [&>body]:h-full [&>body]:m-0 [&>body]:bg-transparent"
+              data-effect="if (!tab.isLoading && router.activePageTabId === tab.id && searchHighlightTokens && searchHighlightTokens.length !== 0 && typeof syncPageHighlights === 'function') { syncPageHighlights($el, searchHighlightTokens); }"></tab-content>
           </div>
         </template>
+
+        <!-- Floating In-Page Search Matches Badge (Appears when navigating from search with highlighted tokens) -->
+        <div data-show="searchHighlightTokens && searchHighlightTokens.length !== 0 && searchHighlightCount > 0 && !searchOpen"
+          class="fixed bottom-6 start-6 z-40 flex items-center gap-2.5 bg-base-100/90 backdrop-blur-md px-3.5 py-2 rounded-full border border-base-content/10 shadow-2xl text-xs font-mono transition-all duration-300 animate-fade-in"
+          data-on-keydown_escape_window="clearPageHighlights()">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+          </span>
+          <span class="text-base-content/80 font-sans">
+            <strong class="text-primary font-bold font-mono" data-bind="searchHighlightCount"></strong> match(es) for &ldquo;<span class="font-semibold text-base-content" data-bind="searchHighlightTokens.join(' ')"></span>&rdquo;
+          </span>
+          <button type="button" class="btn btn-ghost btn-xs btn-circle ms-1 opacity-70 hover:opacity-100"
+            aria-label="Clear highlights" title="Clear highlights (Esc)"
+            data-on-click="clearPageHighlights()">
+            <iconify-icon icon="material-symbols-light:close" class="text-sm"></iconify-icon>
+          </button>
+        </div>
 
         <!-- ================= Collaborative Chat FAB & Speed Dial (Anchored to Content Wrapper) ================= -->
         <!-- Speed Dial Action Pills: Stacks upward when chatFabOpen is true, hides when chatbarOpen or terminalOpen -->
@@ -1646,6 +1717,7 @@
                 const active = items[searchActiveIndex] || items[0];
                 if (active) {
                   recentSearches = [q, ...(recentSearches || []).filter(function(s) { return s !== q; })].slice(0, 6);
+                  searchHighlightTokens = [...(searchTokens || [])];
                   if (router.pageTabs) {
                     const existing = (router.pageTabs || []).find(function(t) { return t.route === active.path; });
                     if (existing) { router.switchPageTab(existing.id); }
@@ -1759,7 +1831,10 @@
                         data-on-mouseenter="const idx = (flatResults || []).findIndex(function(it) { return it.path === item.path; }); if (idx !== -1) searchActiveIndex = idx;"
                         data-on-click="
                           const q = (searchDebouncedQuery || searchQuery || '').trim();
-                          if (q) { recentSearches = [q, ...(recentSearches || []).filter(function(s) { return s !== q; })].slice(0, 6); }
+                          if (q) {
+                            recentSearches = [q, ...(recentSearches || []).filter(function(s) { return s !== q; })].slice(0, 6);
+                            searchHighlightTokens = [...(searchTokens || [])];
+                          }
                           if (router.pageTabs) {
                             const existing = (router.pageTabs || []).find(function(t) { return t.route === item.path; });
                             if (existing) { router.switchPageTab(existing.id); }
