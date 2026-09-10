@@ -121,7 +121,7 @@
         const catSegs = segs.slice(0, segs.length - 1);
         return catSegs.map(titleCase).join(' / ');
       },
-      searchResultGroups: (query) => {
+      searchResultGroups: (query, index) => {
         const q = (query || '').trim();
         if (!q) return [];
         const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
@@ -129,7 +129,7 @@
         if (terms.length === 0) return [];
 
         const getCat = g.getRouteCategory || (() => 'General');
-        const catalog = g.searchIndex || [];
+        const catalog = index || g.searchIndex || [];
         const allRoutes = (g.router?.manifest || g.router?.routes || []).filter(r => r.path !== '/error' && r.path !== '' && !r.internal);
 
         const navMatches = [];
@@ -233,13 +233,13 @@
         const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
         const fn = g.searchResultGroups;
         if (!fn) return [];
-        return fn(query).flatMap(grp => grp.items || []);
+        return fn(query, g.searchIndex).flatMap(grp => grp.items || []);
       },
       hasSearchResults: (query) => {
         const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
         const fn = g.searchResultGroups;
         if (!fn) return false;
-        const groups = fn(query);
+        const groups = fn(query, g.searchIndex);
         return groups.some(grp => grp.items && grp.items.length !== 0);
       },
       activeSidebarTab: 1,
