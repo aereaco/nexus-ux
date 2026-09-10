@@ -1441,16 +1441,16 @@
 
         <!-- Floating In-Page Search Matches Badge (Appears when navigating from search with highlighted tokens) -->
         <div data-show="searchHighlightTokens && searchHighlightTokens.length !== 0 && searchHighlightCount > 0 && !searchOpen"
-          class="fixed bottom-6 start-6 z-40 flex items-center gap-2.5 bg-base-100/90 backdrop-blur-md px-3.5 py-2 rounded-full border border-base-content/10 shadow-2xl text-xs font-mono transition-all duration-300 animate-fade-in"
+          class="fixed bottom-6 start-6 z-40 flex items-center gap-2.5 bg-base-100/90 backdrop-blur-md px-3.5 py-2 rounded-full border border-accent/20 shadow-2xl text-xs font-mono transition-all duration-300 animate-fade-in"
           data-on-keydown_escape_window="clearPageHighlights()">
           <span class="relative flex h-2 w-2">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
           </span>
           <span class="text-base-content/80 font-sans">
-            <strong class="text-primary font-bold font-mono" data-bind="searchHighlightCount"></strong> match(es) for &ldquo;<span class="font-semibold text-base-content" data-bind="searchHighlightTokens.join(' ')"></span>&rdquo;
+            <strong class="text-accent font-bold font-mono" data-bind="searchHighlightCount"></strong> match(es) for &ldquo;<span class="font-semibold text-accent" data-bind="searchHighlightTokens.join(' ')"></span>&rdquo;
           </span>
-          <button type="button" class="btn btn-ghost btn-xs btn-circle ms-1 opacity-70 hover:opacity-100"
+          <button type="button" class="btn btn-ghost btn-xs btn-circle ms-1 opacity-70 hover:opacity-100 hover:bg-accent/10 hover:text-accent"
             aria-label="Clear highlights" title="Clear highlights (Esc)"
             data-on-click="clearPageHighlights()">
             <iconify-icon icon="material-symbols-light:close" class="text-sm"></iconify-icon>
