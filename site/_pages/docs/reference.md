@@ -1023,7 +1023,7 @@ Native API binding uses standard JS property access in signals and bindings. The
 | `$payment.canMakePayment(methods)` | `PaymentRequest.canMakePayment(methods)` | |
 | `$ws(url)` | `new WebSocket(url)` | Use native WebSocket directly |
 | `$download(filename, content, mime)` | `URL.createObjectURL(new Blob([content], { type: mime }))` | Use native Blob/URL API directly |
-| `$store(name, initial)` | `#name` via global signals | Use `data-signal-global` and `#storeName` |
+| `$store(name, initial)` | `#name` via global signals | Use `data-signal_global` and `#storeName` |
 | `$watch(expr, cb)` | `watch(() => expr, cb)` | Use reactivity engine's `watch()` directly in `data-effect` |
 
 > **Note**: Legacy sprite wrappers are **removed** from the codebase. Direct Native API Binding provides identical functionality with zero wrapper overhead. All 14 framework sprites (`$sql`, `$gql`, `$animate`, `$selector`, `$flow`, `$sw`, `$mcp`, `$predictive`, `$push`, `$bgFetch`, `$bgSync`, `$periodicSync`, `$mask`, `$svg`) and 5 auto-injected utilities (`$el`, `$id`, `$dispatch`, `$global`, `$nextTick`) are retained for specialized capabilities.
@@ -1367,7 +1367,7 @@ Dispatches a `CustomEvent` on the current element. Bubbles by default.
 
 #### 7.11.1. `$store(name, [initialValue])` — DEPRECATED
 
-> **⚠️ DEPRECATED**: Use global signals with `data-signal-global` or the `#`
+> **⚠️ DEPRECATED**: Use global signals with `data-signal_global` or the `#`
 > namespace instead. `$store` was a convenience for cross-component state; global
 > signals (`#myStore`) are now the recommended pattern.
 
@@ -1378,7 +1378,7 @@ Dispatches a `CustomEvent` on the current element. Bubbles by default.
 <div data-signal="{ cart: $store('cart', []) }"></div>
 
 <!-- ✅ RECOMMENDED: Use global signals -->
-<body data-signal-global="appState">
+<body data-signal_global="appState">
   <div data-signal="{ cart: appState.cart || [] }"></div>
 </body>
 ```
@@ -2584,7 +2584,7 @@ numeric `border-left-width`), `data-on-intersect` (lazy hydration), `$sql` (LIVE
 #### 11.2.2. The "God-Mode" Auth Gateway
 
 ```html
-<div data-signal-global="appAuth">
+<div data-signal_global="appAuth">
   <!-- Public View -->
   <section data-bind="'Welcome, ' + (#appAuth.user?.name || 'Guest')"></section>
 
@@ -2614,7 +2614,7 @@ numeric `border-left-width`), `data-on-intersect` (lazy hydration), `$sql` (LIVE
 </div>
 ```
 
-_Features_: Global signals (`data-signal-global`), reactive UI gating
+_Features_: Global signals (`data-signal_global`), reactive UI gating
 (`data-if`), SurrealDB permissions, `_confirm` interceptor.
 
 ---

@@ -232,7 +232,7 @@ const bindModule: AttributeModule = {
         const isFormInput = el instanceof HTMLInputElement || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement || (el as HTMLElement).isContentEditable;
 
         if (isFormInput) {
-          const isLazy = el.hasAttribute('data-bind_lazy') || el.hasAttribute('data-bind-lazy');
+          const isLazy = el.hasAttribute('data-bind_lazy') || parsed?.modifiers?.includes('lazy') === true;
           const eventName = isLazy ? 'change' : (
             el instanceof HTMLSelectElement || (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio'))
               ? 'change' : 'input'
@@ -282,7 +282,6 @@ const bindModule: AttributeModule = {
     }
 
     // ─── Sub-Directive Mode (data-bind-value, data-bind-dir, data-bind-style, etc.) ───
-    if (target === 'lazy') return;
     const cleanupFns: (() => void)[] = [];
 
     try {
@@ -344,7 +343,7 @@ const bindModule: AttributeModule = {
 
       // Two-Way Binding Setup (Input Listener)
       if (target === 'value' || target === 'checked') {
-        const isLazy = el.hasAttribute('data-bind_lazy') || el.hasAttribute('data-bind-lazy');
+        const isLazy = el.hasAttribute('data-bind_lazy') || parsed?.modifiers?.includes('lazy') === true;
         const eventName = isLazy ? 'change' : (
           el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')
             || el instanceof HTMLSelectElement ? 'change' : 'input'

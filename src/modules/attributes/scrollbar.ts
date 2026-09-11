@@ -539,7 +539,7 @@ const scrollbarModule: AttributeModule = {
   handle: (el: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void => {
     ensureStylesAdopted();
 
-    const isGlobal = el.hasAttribute('data-scrollbar_global') || el.hasAttribute('data-scrollbar-global') || el.tagName.toLowerCase() === 'html';
+    const isGlobal = el.hasAttribute('data-scrollbar_global') || el.tagName.toLowerCase() === 'html';
 
     let config: ScrollbarConfig = {};
     if (value && value.trim()) {
@@ -568,7 +568,7 @@ const scrollbarModule: AttributeModule = {
 
     if (isGlobal) {
       globalConfig = { ...globalConfig, ...config };
-      el.setAttribute('data-scrollbar-global', 'true');
+      el.setAttribute('data-scrollbar_global', 'true');
       setupGlobalCaptureListeners(runtime);
     }
 

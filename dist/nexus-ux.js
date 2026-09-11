@@ -1806,7 +1806,7 @@ ${suggestion}`);
               cleanupFns2.push(cleanup);
               const isFormInput = el instanceof HTMLInputElement || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement || el.isContentEditable;
               if (isFormInput) {
-                const isLazy = el.hasAttribute("data-bind_lazy") || el.hasAttribute("data-bind-lazy");
+                const isLazy = el.hasAttribute("data-bind_lazy") || parsed?.modifiers?.includes("lazy") === true;
                 const eventName = isLazy ? "change" : el instanceof HTMLSelectElement || el instanceof HTMLInputElement && (el.type === "checkbox" || el.type === "radio") ? "change" : "input";
                 const inputHandler = (_e) => {
                   let newValue;
@@ -1845,8 +1845,6 @@ ${suggestion}`);
             }
             return () => cleanupFns2.forEach((fn) => fn());
           }
-          if (target === "lazy")
-            return;
           const cleanupFns = [];
           try {
             const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
@@ -1913,7 +1911,7 @@ ${suggestion}`);
             });
             cleanupFns.push(cleanup);
             if (target === "value" || target === "checked") {
-              const isLazy = el.hasAttribute("data-bind_lazy") || el.hasAttribute("data-bind-lazy");
+              const isLazy = el.hasAttribute("data-bind_lazy") || parsed?.modifiers?.includes("lazy") === true;
               const eventName = isLazy ? "change" : el instanceof HTMLInputElement && (el.type === "checkbox" || el.type === "radio") || el instanceof HTMLSelectElement ? "change" : "input";
               const inputHandler = (e) => {
                 let newValue;
@@ -4007,7 +4005,7 @@ ${scripts}
         metadata: { after: ["signal"] },
         handle: (el, value, runtime) => {
           const computedCleanup = [];
-          const isGlobal = el.hasAttribute("data-computed_global") || el.hasAttribute("data-computed-global");
+          const isGlobal = el.hasAttribute("data-computed_global");
           const { ghostKeys } = parseGhostKeys(value);
           const initialGhostState = {};
           ghostKeys.forEach((key) => initialGhostState[key] = void 0);
@@ -10148,7 +10146,7 @@ ${match}</ul>
         attribute: "scrollbar",
         handle: (el, value, runtime) => {
           ensureStylesAdopted();
-          const isGlobal = el.hasAttribute("data-scrollbar_global") || el.hasAttribute("data-scrollbar-global") || el.tagName.toLowerCase() === "html";
+          const isGlobal = el.hasAttribute("data-scrollbar_global") || el.tagName.toLowerCase() === "html";
           let config = {};
           if (value && value.trim()) {
             try {
@@ -10177,7 +10175,7 @@ ${match}</ul>
           }
           if (isGlobal) {
             globalConfig = { ...globalConfig, ...config };
-            el.setAttribute("data-scrollbar-global", "true");
+            el.setAttribute("data-scrollbar_global", "true");
             setupGlobalCaptureListeners(runtime);
           }
           const merged = { ...globalConfig, ...config };
