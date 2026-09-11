@@ -129,6 +129,7 @@ If connecting to SurrealDB for live data sync, query directly within reactive st
 ---
 
 ## Chapter 1: The Language (NEG Grammar & Fundamentals)
+
 The **Nexus Expression Grammar (NEG)** is a high-performance, deterministic,
 token-based system designed for zero-allocation execution. Built on the **ESSL**
 (Element-Scope-Signal-Logic) standard, it eliminates the "Magic Parsing" tax of
@@ -399,6 +400,10 @@ internally:
   ```html
   <div data-raf="rotation = ($time / 10) % 360" data-style="{ transform: 'rotate(' + rotation + 'deg)' }"></div>
   ```
+- **`data-scrollbar`**: Custom Scrollbar Engine — configures GPU-accelerated overlay scrollbars with auto-hide, custom thumb/track styling, and global binding support (`data-scrollbar_global`).
+  ```html
+  <div data-scrollbar="{ mode: 'overlay', autoHide: true }">...</div>
+  ```
 - **`data-preserve`**: Structural shield that prevents elements and their subtrees from being replaced or lost during server-driven morphs.
   ```html
   <div data-preserve id="persistent-player"></div>
@@ -642,9 +647,9 @@ of the unified object syntax.
 **Examples**:
 
 ```html
-<!-- Background color -->
+<!-- Background color (Object syntax) -->
 <div data-signal="{ color: 'red' }">
-  <div data-style-background-color="color" style="width: 100px; height: 100px">
+  <div data-style="{ backgroundColor: color }" style="width: 100px; height: 100px">
   </div>
   <button data-on-click="color = 'blue'">Make Blue</button>
 </div>
@@ -662,7 +667,7 @@ of the unified object syntax.
 <!-- Conditional styles -->
 <div data-signal="{ active: false }">
   <button
-    data-style-background-color="active ? 'green' : 'gray'"
+    data-style="{ backgroundColor: active ? 'green' : 'gray' }"
     data-on-click="active = !active"
   >
     {active ? 'Active' : 'Inactive'}
@@ -688,16 +693,18 @@ that need units (width, height, padding, margin, etc.).
 
 ```html
 <!-- These are equivalent -->
-<div data-style-width="100">...</div>
-<div data-style-width="'100px'">...</div>
+<div data-style="{ width: 100 }">...</div>
+<div data-style="{ width: '100px' }">...</div>
 ```
 
 **Logical Styles**:
 
 ```html
 <div
-  data-style-margin-block-start="spacing + 'px'"
-  data-style-opacity="isPending ? 0.5 : 1"
+  data-style="{
+    marginBlockStart: spacing + 'px',
+    opacity: isPending ? 0.5 : 1
+  }"
 >
 </div>
 ```
@@ -1026,7 +1033,7 @@ Native API binding uses standard JS property access in signals and bindings. The
 | `$store(name, initial)` | `#name` via global signals | Use `data-signal_global` and `#storeName` |
 | `$watch(expr, cb)` | `watch(() => expr, cb)` | Use reactivity engine's `watch()` directly in `data-effect` |
 
-> **Note**: Legacy sprite wrappers are **removed** from the codebase. Direct Native API Binding provides identical functionality with zero wrapper overhead. All 14 framework sprites (`$sql`, `$gql`, `$animate`, `$selector`, `$flow`, `$sw`, `$mcp`, `$predictive`, `$push`, `$bgFetch`, `$bgSync`, `$periodicSync`, `$mask`, `$svg`) and 5 auto-injected utilities (`$el`, `$id`, `$dispatch`, `$global`, `$nextTick`) are retained for specialized capabilities.
+> **Note**: Legacy sprite wrappers are **removed** from the codebase. Direct Native API Binding provides identical functionality with zero wrapper overhead. All 15 framework sprites (`$sql`, `$gql`, `$animate`, `$selector`, `$drag`, `$flow`, `$sw`, `$mcp`, `$predictive`, `$push`, `$bgFetch`, `$bgSync`, `$periodicSync`, `$mask`, `$svg`) and 5 auto-injected utilities (`$el`, `$id`, `$dispatch`, `$global`, `$nextTick`) are retained for specialized capabilities.
 
 ---
 
@@ -1578,6 +1585,88 @@ Periodic Background Sync.
 **Methods**: `.register(tag, { minInterval })`, `.unregister(tag)`
 **Properties**: `.tags` — returns `{ data: string[], status, error }`
 
+#### 7.14.7. `$animate` & `flip()`
+
+Web Animations API runner and FLIP (First, Last, Invert, Play) layout transition engine.
+
+- **`$animate(el, keyframes, options)`**: Directly runs native Web Animations API animations with automatic element-bound lifecycle cleanup.
+- **`flip(el, mutateFn, options)`**: Measures geometry before and after the DOM mutation, inverts transforms, and plays smooth hardware-accelerated transitions.
+
+```html
+<div data-signal="{ open: false }">
+  <button data-on-click="flip($el, () => open = !open, { duration: 300, easing: 'ease' })">
+    Toggle Details
+  </button>
+  <div data-show="open" class="p-4 bg-base-200 rounded">Expanded content</div>
+</div>
+```
+
+#### 7.14.8. `$drag`
+
+Spatial pointer dragging helper exposing delta coordinates, velocity tracking, and drop target detection.
+
+```html
+<div data-on-pointerdown="$drag.start($el, $event)">
+  Draggable Element
+</div>
+```
+
+#### 7.14.9. `$(selector)` Contextual Selector
+
+High-performance contextual DOM traversal engine supporting standard CSS selectors and advanced combinators:
+- `^`: Closest matching ancestor (`$('^.card')`)
+- `>`: Direct child query (`$('>.title')`)
+- `+`: Next sibling (`$('+.dropdown')`)
+- `-`: Previous sibling (`$('-.badge')`)
+- `~`: Parent/sibling traversal
+
+```html
+<button data-on-click="$('^.modal').classList.remove('modal-open')">Close</button>
+```
+
+#### 7.14.10. `$flow`
+
+Reactive canvas coordination engine for xyflow-style node-graph editors. Provides pan/zoom viewport state, node selection, and SVG edge route recalculations.
+
+```html
+<div data-flow="viewport">
+  <div data-flow-node="node1">Node 1</div>
+  <div data-flow-node="node2">Node 2</div>
+</div>
+```
+
+#### 7.14.11. `$mcp`
+
+Model Context Protocol client for in-browser AI tool calling, prompt execution, and agentic sampling.
+
+```html
+<button data-on-click="aiResult = await $mcp.sample({ prompt: userInput })">Ask Assistant</button>
+```
+
+#### 7.14.12. `$predictive`
+
+4D interaction and intent prediction engine. Analyzes cursor velocity, trajectory, and dwell time to speculatively prefetch routes, scripts, or data before click.
+
+```html
+<a href="/docs/guide" data-predictive="prefetch">Documentation</a>
+```
+
+#### 7.14.13. `$svg`
+
+Reactive SVG geometry and bezier curve generator for dynamic connecting lines between node ports in graph views.
+
+```html
+<path data-bind-d="$svg.bezier(sourceX, sourceY, targetX, targetY)" stroke="currentColor" fill="none" />
+```
+
+#### 7.14.14. `$mask`
+
+Real-time string and input masking utility providing phone, currency, date, and custom credit-card formatters.
+
+```html
+<input data-bind-value="phone" data-on-input="phone = $mask(phone, '(999) 999-9999')">
+```
+
 #### 7.14.7. `payment` — DEPRECATED
 
 > **⚠️ DEPRECATED**: Use `new PaymentRequest(methods, details)` directly.
@@ -1664,7 +1753,18 @@ Functions exactly like `localStorage`, mapping dynamically to `sessionStorage`. 
 </div>
 ```
 
-### 7.5.4. Future-Proof Forward Compatibility
+### 7.5.4. `indexedDB` (read-write reactive storage proxy)
+
+Nexus-UX provides a zero-boilerplate reactive proxy around IndexedDB (`indexedDB.dbName.storeName.key`). Reads return live values or promises that resolve into reactive signals; writes automatically open transactions, commit changes, and notify watching signals.
+
+```html
+<!-- Reactive persistent key-value binding via IndexedDB -->
+<div data-signal="{ userNotes: indexedDB.appStore.notes.latest ?? 'Default note' }">
+  <textarea data-bind="userNotes" data-on-input="indexedDB.appStore.notes.latest = userNotes"></textarea>
+</div>
+```
+
+### 7.5.5. Future-Proof Forward Compatibility
 
 Because property access resolves universally to the browser's global scope, **literally any Global API (existing or future) is supported instantly without framework updates.**
 
@@ -2995,7 +3095,7 @@ All Nexus-UX source files follow a strict architectural boundary. Violations cau
 #### The Single-Framework-Observer Guarantee
 
 Only two `MutationObserver` instances can ever exist:
-1. **Framework Observer** (`src/engine/observers/mutation.ts`) — handles all reactive needs.
+1. **Framework Observer** (`src/engine/mutation.ts`) — handles all reactive needs.
 2. **Sanitizing Observer** (`src/engine/debug.ts`) — crash-isolated diagnostics.
 
 Module-level code must **never** create its own observer.
@@ -3176,9 +3276,18 @@ Per Nexus-UX **Documentation-Driven Development (DDD)** directives, documentatio
 - [x] **Initial Boot Timing Alignment**: Synchronous `runSelf` initialization in `elementBoundEffect` so initial hydration reads capture dependencies.
 - [x] **Real-Time Signal Property Re-Evaluation**: Trigger `stateRef` subscribers when evaluated signal properties mutate on window/storage events.
 - [x] **Zero-Mirror Cleanup**: Removal of legacy `_` prefix mirrors in favor of direct property access.
-- [ ] **Nexus-UX Official SPA Site**: Complete port of dashboard shell (`layout.html`, `documentation.html`, `router.html`) into single-page application architecture under `site/`.
-- [ ] **Dev Server SPA Fallback**: Add History API index fallback in `scripts/serve.ts` for clean SPA route navigation (`hybrid` mode).
-- [ ] **IndexedDB Engine Diagnostics Integration**: Connect live CodeMirror playground state in `documentation.html` to runtime SelfHeal agent.
+- [x] **Nexus-UX Official SPA Site**: Complete port of dashboard shell (`layout.html`, `documentation.html`, `router.html`) into single-page application architecture under `site/`.
+- [x] **Dev Server SPA Fallback**: Add History API index fallback in `scripts/serve.ts` for clean SPA route navigation (`hybrid` mode).
+- [x] **IndexedDB Engine Diagnostics Integration**: Connect live CodeMirror playground state in `documentation.html` to runtime SelfHeal agent.
+- [x] **Pre-Alpha Architecture Optimization & Codebase Hardening (P0–P7)**:
+  - [x] P0: Redundant Module Elimination (`data-spatial` removed)
+  - [x] P1: Animation & Layout Transitions (`src/engine/animation.ts` + `flip()`) 
+  - [x] P2: Drag Engine & Pointer Utilities (`src/engine/utils/pointer.ts`)
+  - [x] P3: Modifier Unification & Timer Utilities (`src/engine/utils/timer.ts`)
+  - [x] P4: PWA, Cache & Hashing Consolidation (`src/engine/utils/pwa.ts`, `hash.ts`)
+  - [x] P5: Constructable StyleSheets Unification (`src/engine/utils/styles.ts`)
+  - [x] P6: Engine Modularization & Scope Separation (`src/engine/scope.ts` vs `evaluator.ts`)
+  - [x] P7: Core Autoscale Multi-Threading Consolidation (`runInWorker()` offload)
 
 ---
 

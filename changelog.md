@@ -4,11 +4,25 @@
 
 ---
 
+## Recent Major Release: 2026-09-11 — Pre-Alpha Architecture Optimization & Codebase Hardening (Phases P0–P7)
+
+### 🌟 Architectural Consolidation & Hardening
+- **P0: Redundant Module Elimination**: Removed obsolete `data-spatial` directive, formalizing infinite canvas and pan/zoom interactions exclusively through `data-flow`.
+- **P1: Animation & Layout Transitions**: Modularized core Web Animations API runner and FLIP (First, Last, Invert, Play) transition logic into `src/engine/animation.ts`, providing zero-copy `flip()` and unifying `$animate` sprite and `drag` animations.
+- **P2: Drag Engine & Pointer Tracking**: Extracted unified `trackPointerDrag` utility to `src/engine/utils/pointer.ts` with touch-action management, pointer capture, and multi-touch filtering shared across `drag`, `flow`, and pointer modifiers.
+- **P3: Modifier Unification & Timer Utilities**: Consolidated async delay, debounce, throttle, and press-and-hold timers into `src/engine/utils/timer.ts`; standardized all event modifiers to canonical single-pass parsing via `src/engine/utils/modifier.ts`.
+- **P4: PWA, Cache & Hashing Consolidation**: Unified Service Worker registration and background sync helpers into `src/engine/utils/pwa.ts`; extracted universal DJB2/FNV-1a/SHA-256 string hashing into `src/engine/utils/hash.ts`.
+- **P5: Constructable StyleSheets Unification**: Standardized `ensureAdoptedStylesheet` and CSS injection helpers into `src/engine/utils/styles.ts` across `data-stylesheet`, `data-theme`, `data-drag`, and `data-scrollbar`.
+- **P6: Engine Modularization & Scope Separation**: Decoupled `src/engine/evaluator.ts` into a pure NEG expression compiler/evaluator; extracted native API scope building and IndexedDB proxy creation into `src/engine/scope.ts`.
+- **P7: Core Autoscale Multi-Threading Consolidation**: Strengthened `src/engine/topology.ts` with typed background worker task delegation (`runInWorker()`), maintaining sub-millisecond SAB sync across worker tiers.
+
+---
+
 ## Recent Major Release: 2026-09-11 — Full Interactive Labs Ecosystem, Search Architecture Overhaul, Todo Application Port, and 4D Predictive Engine
 
 ### 🌟 Highlights & Breakthroughs
 - **Complete 65 Interactive Lab Ecosystem**:
-  - Full interactive coverage across all 4 NEG grammatical pillars: **30 Attributes** (`/labs/attributes/*`), **15 Modifiers** (`/labs/modifiers/*`), **14 Sprites** (`/labs/sprites/*`), and **6 Scopes** (`/labs/scopes/*`).
+  - Full interactive coverage across all 4 NEG grammatical pillars: **30 Attributes** (`/labs/attributes/*`), **15 Modifiers** (`/labs/modifiers/*`), **15 Sprites** (`/labs/sprites/*`), and **6 Scopes** (`/labs/scopes/*`).
   - Root catalog index pages (`/labs/attributes`, `/labs/modifiers`, `/labs/sprites`, `/labs/scopes`) with responsive cards, category badges, Iconify icons, and direct `Open Lab &rarr;` launchers.
   - In-browser CodeMirror interactive sandboxes executing live code with real-time DOM reconciliation.
 - **Search System Architecture & Native Debouncing (`_debounce.200`)**:
@@ -36,7 +50,7 @@
 
 ### 🌟 Highlights & Breakthroughs
 - **Exhaustive Module & Directive Documentation**:
-  - Full specification and reference guide coverage for all **69 auto-discovered modules** (30 Attributes, 14 Sprites, 15 Modifiers, 6 Scopes, 4 Listeners, 1 Observer).
+  - Full specification and reference guide coverage for all **70 auto-discovered modules** (30 Attributes, 15 Sprites, 15 Modifiers, 6 Scopes, 4 Listeners, 1 Observer).
   - Added in-depth practical reference documentation for [`data-drag`](file:///c:/Users/verno/Development/nexus-ux/src/modules/attributes/drag.ts) (multi-drag selection, sorting, handles, shared transfer groups, clone mode, custom swap thresholds, auto-scrolling, packed CSS classes) and [`data-flow`](file:///c:/Users/verno/Development/nexus-ux/src/modules/attributes/flow.ts) (infinite canvas viewport, coordinate mapping, pan/zoom gesture integration).
   - Documented constructable stylesheet management in [`data-stylesheet`](file:///c:/Users/verno/Development/nexus-ux/src/modules/attributes/stylesheet.ts), theme orchestration in [`data-theme`](file:///c:/Users/verno/Development/nexus-ux/src/modules/attributes/theme.ts), and zero-dependency markdown parsing in [`data-markdown`](file:///c:/Users/verno/Development/nexus-ux/src/modules/attributes/markdown.ts).
 - **NEG Grammar & Direct Native API Harmonization**:

@@ -349,7 +349,7 @@ The framework permits exactly **two** MutationObserver contexts:
 
 | Observer | Location | Scope | Lifecycle |
 |:---|:---|:---|:---|
-| **Framework Observer** | `engine/observers/mutation.ts` | Reactive ownership tracking for all directive needs | Always active |
+| **Framework Observer** | `engine/mutation.ts` | Reactive ownership tracking for all directive needs | Always active |
 | **Sanitizing Observer** | `engine/debug.ts` | Error reporting, crash beacons, DevTools surface | Lazy — only boots when `data-debug` is present |
 
 - All element-scoped observation needs (e.g., `<select>` childList sync) must
@@ -777,6 +777,7 @@ directive catalog:
 #### 3.6.4. Styling, Themes & Adopted StyleSheets
 
 - **`data-stylesheet`**: Adopted StyleSheets Bridge — injects constructable stylesheets directly into the document or Shadow DOM, providing zero-DOM-pollution styling, Tailwind v4 theme bridge synchronization (`buildTailwindThemeBridge`), and dynamic token injection.
+- **`data-scrollbar`**: Custom Scrollbar Engine — configures GPU-accelerated overlay scrollbars with auto-hide, custom thumb/track styling, and global binding support (`data-scrollbar_global`).
 - **`data-class`**: Dynamic CSS Classes — toggles classes based on object conditionals (`{ 'btn-primary': isActive }`) or array lists.
 - **`data-style`**: Dynamic Inline Styles — binds CSS style properties to signals using object expressions with automatic unit reconciliation.
 - **`data-theme`**: Dynamic Theme Engine — orchestrates application themes and DaisyUI v5 modes (`auto`, `light`, `dark`), providing `$switchTheme()`, `$themeIcon`, and `$activeMode` helpers.
@@ -1123,23 +1124,27 @@ const PAINT_LEN      = 5;
 Workers can read this buffer with zero-copy to monitor scheduler load, coordinate work-stealing, or throttle their own processing without any message passing. This is **ZCZS at the system level**.
 
 #### 5.4.3. Stall Detection & Cooperative Yielding
-
-If any phase exceeds the configurable budget (default: **8ms**), the scheduler voluntarily yields control back to the browser:
-
+ 
+If any phase exceeds the configurable budget (default: **8ms**) or user input is pending, the scheduler voluntarily yields control back to the browser via cooperative microtask scheduling:
+ 
 ```typescript
 private async runQueueWithYielding(queue: Job[]): Promise<void> {
   const startTime = performance.now();
+  const shouldYield = () =>
+    performance.now() - startTime > this.stallBudget ||
+    (navigator as any).scheduling?.isInputPending?.() === true;
+
   while (queue.length > 0) {
     const job = queue.shift()!;
     job();
-    if (performance.now() - startTime > this.stallBudget) {
-      await yieldToBrowser(); // MessageChannel or scheduler.yield()
+    if (shouldYield()) {
+      await yieldToBrowser(); // Native scheduler.yield(), MessageChannel, or setTimeout(0)
     }
   }
 }
 ```
-
-This cooperatively prevents long-running effect chains from causing dropped frames, without requiring manual chunking from the developer.
+ 
+This cooperatively prevents long-running effect chains from causing dropped frames or input latency spikes, prioritizing native `scheduler.yield()` with automatic fallback to sub-millisecond `MessageChannel` microtask yields.
 
 #### 5.4.4. The Complete Data Flow
 
@@ -1291,28 +1296,30 @@ the engine remains lean while the feature set remains extensible.
 The Engine is the immutable core of Nexus-UX, distributed across a **Dynamic
 Engine Topology**:
 
-- **Orchestrator**: Manages the atomic `rAF` cycle and DOM commits.
-- **Ghost Engine**: A background DOM shim and binary physical mirror.
-- **Evaluator**: A zero-allocation runner for NEG expressions in the worker
-  thread.
-- **Reactivity Memory (SAB)**: The Signal Binary Heap shared between workers.
+- **Orchestrator & Scheduler**: Manages the 4-phase atomic execution loop (`Capture` → `Evaluate` → `Resolve` → `Paint`) with cooperative `scheduler.yield()` input yielding.
+- **Topology**: Autoscale multi-threading manager (Tier 0 to Tier 3) with background workers and worker compute offloading via `runInWorker()`.
+- **Reactivity & Heap (SAB)**: Signal Binary Heap shared across workers with Rust-inspired ownership tracking.
+- **Scope Engine**: Manages hierarchical DOM data stack (`getDataStack`), scope providers, **Native API Scope building** (`buildNativeApiScope`), and **reactive IndexedDB proxy** (`getIndexedDBProxy`).
+- **Evaluator**: Pure zero-allocation compiler and runner for NEG expressions (`#` → `__global`, `@` → `_scopes`) using JavaScript `with (scope)`.
+- **Animation Engine**: Web Animations API runner and core `flip()` layout transition coordinator.
+- **Reconciler & Mutation**: In-place DOM morphing (`morphDOM`) and single authority `MutationObserver`.
+- **Engine Utilities**: Core shared utilities in `src/engine/utils/` (`pointer.ts`, `timer.ts`, `modifier.ts`, `pwa.ts`, `styles.ts`, `hash.ts`).
 
 #### 7.1.2. Modules (The Limbs)
 
 Modules are the extensible units of functionality. They "plug into" the engine's
 lifecycle hooks:
 
-- **Attributes**: The logic behind every `data-*` directive.
-- **Actions (Sprites)**: The imperative `tools` available to expressions.
-- **Listeners**: Systems that react to external global events (e.g., URL
-  changes, WebSocket messages).
-- **Observers**: Wrappers for high-performance Browser API observers (Mutation,
-  Resize, Intersection).
+- **Attributes**: The logic behind every `data-*` directive (30 modules).
+- **Actions (Sprites)**: The imperative tools available to expressions (15 modules).
+- **Modifiers**: Pipeline modifiers for events and directives (15 modules).
+- **Scopes**: Contextual `@` query rules (6 modules).
+- **Listeners**: Systems that react to external global events (4 modules).
+- **Observers**: Single authority `MutationObserver` managing all reactive DOM reconciliation.
 
 #### 7.1.3. Utilities (The Tissues)
 
-Global helper functions that provide common logic for string manipulation, path
-resolution, and DOM node identification, optimized for zero garbage collection.
+Global helper functions that provide common logic for pointer dragging (`trackPointerDrag`), timers (`delay`, `debounce`, `throttle`, `hold`), PWA lifecycles, and stylesheet adoption, optimized for zero garbage collection.
 
 ### 7.2. Folder Tree View
 
@@ -1326,30 +1333,37 @@ nexus-ux/
 │   │   ├── mutation.ts       # Single MutationObserver authority
 │   │   ├── observers.ts      # Centralized observer registry
 │   │   ├── reactivity.ts     # Vue-based reactivity + ZCZS SignalHeap & ownership
-│   │   ├── scope.ts          # Data stack & scope proxy creation
-│   │   ├── reconciler.ts     # Idiomorph-based DOM morphing & deep diffing
-│   │   ├── evaluator.ts      # NEG expression evaluation & Native API Proxies
-│   │   ├── scheduler.ts      # Reactive flush scheduling
-│   │   ├── topology.ts       # Adaptive thread topology
+│   │   ├── scope.ts          # Data stack, Native API scope builder & IDB proxy
+│   │   ├── reconciler.ts     # In-place DOM morphing & deep diffing
+│   │   ├── evaluator.ts      # Pure NEG expression compilation & runtime execution
+│   │   ├── scheduler.ts      # 4-phase atomic loop & cooperative scheduler.yield()
+│   │   ├── topology.ts       # Adaptive thread topology & runInWorker offload
+│   │   ├── animation.ts      # Web Animations API & core flip() layout transitions
 │   │   ├── agent.ts          # Self-heal & crash beacons
 │   │   ├── predictive.ts     # 4D predictive interaction engine
-│   │   ├── cache.ts          # Internal LRU caching engine
+│   │   ├── cache.ts          # Universal caching engine (Cache API, Storage, IDB)
 │   │   ├── assets.ts         # Constructable stylesheets & asset manager
 │   │   ├── mcp.ts            # Model Context Protocol client
-│   │   └── ...
+│   │   └── utils/            # Shared engine utilities
+│   │       ├── hash.ts       # FNV-1a / DJB2 / SHA-256 hashing
+│   │       ├── modifier.ts   # Canonical event modifier helpers
+│   │       ├── pointer.ts    # Unified trackPointerDrag utility
+│   │       ├── pwa.ts        # Service Worker & offline sync helpers
+│   │       ├── styles.ts     # ensureAdoptedStylesheet & CSS helpers
+│   │       └── timer.ts      # delay, debounce, throttle, hold timers
 │   ├── modules/
-│   │   ├── attributes/       # data-* directive handlers (29 modules)
+│   │   ├── attributes/       # data-* directive handlers (30 modules)
 │   │   │   ├── assert.ts, bind.ts, build.ts, class.ts, component.ts
 │   │   │   ├── computed.ts, debug.ts, drag.ts, effect.ts, flow.ts
 │   │   │   ├── for.ts, html.ts, if.ts, import.ts, markdown.ts
 │   │   │   ├── mask.ts, on.ts, preserve.ts, pwa.ts, raf.ts
-│   │   │   ├── route.ts, router.ts, show.ts, signal.ts, style.ts
-│   │   │   ├── stylesheet.ts, switcher.ts, teleport.ts, theme.ts
-│   │   ├── sprites/          # $ sprite implementations (14 modules)
-│   │   │   ├── animate.ts, bgFetch.ts, bgSync.ts, flow.ts, gql.ts
-│   │   │   ├── mask.ts, mcp.ts, periodicSync.ts, predictive.ts, push.ts
-│   │   │   ├── selector.ts, sql.ts, svg.ts, sw.ts
-│   │   ├── modifiers/        # : Pipeline modifiers (15 modules)
+│   │   │   ├── route.ts, router.ts, scrollbar.ts, show.ts, signal.ts
+│   │   │   ├── style.ts, stylesheet.ts, switcher.ts, teleport.ts, theme.ts
+│   │   ├── sprites/          # $ sprite implementations (15 modules)
+│   │   │   ├── animate.ts, bgFetch.ts, bgSync.ts, drag.ts, flow.ts
+│   │   │   ├── gql.ts, mask.ts, mcp.ts, periodicSync.ts, predictive.ts
+│   │   │   ├── push.ts, selector.ts, sql.ts, svg.ts, sw.ts
+│   │   ├── modifiers/        # _ Pipeline modifiers (15 modules)
 │   │   │   ├── debounce.ts, delay.ts, document.ts, drag.ts, hold.ts
 │   │   │   ├── keys.ts, morph.ts, once.ts, outside.ts, prevent.ts
 │   │   │   ├── self.ts, stop.ts, throttle.ts, window.ts, zoom.ts

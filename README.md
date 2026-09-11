@@ -178,7 +178,7 @@ Rule blocks evaluated using NEG grammar `@rule(param) { body }`:
 Nexus-UX features **65 interactive sandbox labs** with real-time in-browser code editing powered by CodeMirror:
 - **Attributes Catalog**: [`/labs/attributes`](file:///labs/attributes) — 30 interactive labs covering all state, binding, styling, and flow directives.
 - **Modifiers Catalog**: [`/labs/modifiers`](file:///labs/modifiers) — 15 interactive labs testing debouncing, outside-clicks, key-filtering, and gesture modifiers.
-- **Sprites Catalog**: [`/labs/sprites`](file:///labs/sprites) — 14 interactive labs testing animation, spatial queries, PWA, sync, and SurrealDB integration.
+- **Sprites Catalog**: [`/labs/sprites`](file:///labs/sprites) — 15 interactive labs testing animation, spatial queries, PWA, sync, and SurrealDB integration.
 - **Scopes Catalog**: [`/labs/scopes`](file:///labs/scopes) — 6 interactive labs testing `@media`, `@container`, `@auth`, and device queries.
 
 ### Showcase Applications
@@ -387,10 +387,10 @@ All native browser APIs (`window`, `localStorage`, `document`, etc.) are tracked
 src/
 ├── index.ts              # Entry point — UX class, inline utilities
 ├── manifest.ts           # AUTO-GENERATED module registry (build.ts)
-├── engine/               # Core runtime (reactivity, scheduler, observers, ZCZS heap)
+├── engine/               # Core runtime (reactivity, scheduler, observers, SAB heap, animation, utils/)
 ├── modules/
 │   ├── attributes/       # data-* directive handlers (30 modules)
-│   ├── sprites/          # $ sprite implementations (14 modules)
+│   ├── sprites/          # $ sprite implementations (15 modules)
 │   ├── modifiers/        # : Pipeline modifiers (15 modules)
 │   ├── scopes/           # @ Logical Scope Rules (6 modules)
 │   └── listeners/        # Global event listeners (4 modules)
@@ -414,9 +414,18 @@ Per Nexus-UX **Documentation-Driven Development (DDD)** directives, documentatio
 - [x] **Initial Boot Timing Alignment**: Synchronous `runSelf` initialization in `elementBoundEffect` so initial hydration reads capture dependencies.
 - [x] **Real-Time Signal Property Re-Evaluation**: Trigger `stateRef` subscribers when evaluated signal properties mutate on window/storage events.
 - [x] **Zero-Mirror Cleanup**: Removal of legacy `_` prefix mirrors in favor of direct property access.
-- [ ] **Nexus-UX Official SPA Site**: Complete port of dashboard shell (`layout.html`, `documentation.html`, `router.html`) into single-page application architecture under `site/`.
-- [ ] **Dev Server SPA Fallback**: Add History API index fallback in `scripts/serve.ts` for clean SPA route navigation (`hybrid` mode).
-- [ ] **IndexedDB Engine Diagnostics Integration**: Connect live CodeMirror playground state in `documentation.html` to runtime SelfHeal agent.
+- [x] **Nexus-UX Official SPA Site**: Complete port of dashboard shell (`layout.html`, `documentation.html`, `router.html`) into single-page application architecture under `site/`.
+- [x] **Dev Server SPA Fallback**: Add History API index fallback in `scripts/serve.ts` for clean SPA route navigation (`hybrid` mode).
+- [x] **IndexedDB Engine Diagnostics Integration**: Connect live CodeMirror playground state in `documentation.html` to runtime SelfHeal agent.
+- [x] **Pre-Alpha Architecture Optimization & Codebase Hardening (P0–P7)**:
+  - [x] P0: Redundant Module Elimination (`data-spatial` removed)
+  - [x] P1: Animation & Layout Transitions (`src/engine/animation.ts` + `flip()`) 
+  - [x] P2: Drag Engine & Pointer Utilities (`src/engine/utils/pointer.ts`)
+  - [x] P3: Modifier Unification & Timer Utilities (`src/engine/utils/timer.ts`)
+  - [x] P4: PWA, Cache & Hashing Consolidation (`src/engine/utils/pwa.ts`, `hash.ts`)
+  - [x] P5: Constructable StyleSheets Unification (`src/engine/utils/styles.ts`)
+  - [x] P6: Engine Modularization & Scope Separation (`src/engine/scope.ts` vs `evaluator.ts`)
+  - [x] P7: Core Autoscale Multi-Threading Consolidation (`runInWorker()` offload)
 
 ---
 
