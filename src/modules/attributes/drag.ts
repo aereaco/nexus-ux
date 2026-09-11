@@ -5,6 +5,7 @@ import { getDataStack } from "../../engine/scope.ts";
 import { CLEANUP_FUNCTIONS_KEY, MARKER_KEY, DATA_STACK_KEY, IS_TEMPLATE_KEY } from "../../engine/consts.ts";
 import { stylesheet } from "./stylesheet.ts";
 import { dragState } from "../sprites/drag.ts";
+import { ensureAdoptedStylesheet } from "../../engine/utils/styles.ts";
 
 const DRAG_CSS = `
 [data-drag-item], [data-drag]:not([data-drag*="{"]):not([data-drag*="="]):not([data-drag-container]) {
@@ -71,25 +72,10 @@ const DRAG_CSS = `
 }
 `;
 
-let dragSheet: CSSStyleSheet | null = null;
+const dragSheetRef: { sheet: CSSStyleSheet | null } = { sheet: null };
 
 export function ensureDragStyles(root?: Document | ShadowRoot | null) {
-  if (typeof CSSStyleSheet === "undefined") return;
-  if (!dragSheet) {
-    dragSheet = new CSSStyleSheet();
-    dragSheet.replaceSync(DRAG_CSS);
-  }
-  const rootNode = (root || (typeof document !== "undefined" ? document : null)) as Document | ShadowRoot | null;
-  if (rootNode && "adoptedStyleSheets" in rootNode) {
-    if (!rootNode.adoptedStyleSheets.includes(dragSheet)) {
-      rootNode.adoptedStyleSheets = [...rootNode.adoptedStyleSheets, dragSheet];
-    }
-  }
-  if (typeof document !== "undefined" && "adoptedStyleSheets" in document) {
-    if (!document.adoptedStyleSheets.includes(dragSheet)) {
-      document.adoptedStyleSheets = [...document.adoptedStyleSheets, dragSheet];
-    }
-  }
+  ensureAdoptedStylesheet(DRAG_CSS, dragSheetRef, root);
 }
 
 if (typeof document !== "undefined") {

@@ -58,3 +58,32 @@ export function segment(input: string, separator: string): string[] {
   parts.push(input.slice(lastPos));
   return parts;
 }
+
+/**
+ * Lazily creates and adopts a constructable CSSStyleSheet into a root node
+ * (Document or ShadowRoot) and the document if not already adopted.
+ */
+export function ensureAdoptedStylesheet(
+  css: string,
+  ref: { sheet: CSSStyleSheet | null },
+  root?: Document | ShadowRoot | null
+): CSSStyleSheet | undefined {
+  if (typeof CSSStyleSheet === 'undefined') return undefined;
+  if (!ref.sheet) {
+    ref.sheet = new CSSStyleSheet();
+    ref.sheet.replaceSync(css);
+  }
+  const sheet = ref.sheet;
+  const rootNode = (root || (typeof document !== 'undefined' ? document : null)) as Document | ShadowRoot | null;
+  if (rootNode && 'adoptedStyleSheets' in rootNode) {
+    if (!rootNode.adoptedStyleSheets.includes(sheet)) {
+      rootNode.adoptedStyleSheets = [...rootNode.adoptedStyleSheets, sheet];
+    }
+  }
+  if (typeof document !== 'undefined' && 'adoptedStyleSheets' in document) {
+    if (!document.adoptedStyleSheets.includes(sheet)) {
+      document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+    }
+  }
+  return sheet;
+}

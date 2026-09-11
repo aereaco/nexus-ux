@@ -1655,6 +1655,22 @@ ${suggestion}`);
     const trimmed = value.trim();
     return extractNativeApis(trimmed).length > 0;
   }
+  function setValuePreservingCursor(el, value) {
+    if (el.value === value)
+      return;
+    const isFocused = typeof document !== "undefined" && document.activeElement === el;
+    if (isFocused && typeof el.selectionStart === "number" && typeof el.selectionEnd === "number") {
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+      el.value = value;
+      try {
+        el.setSelectionRange(start, end);
+      } catch (_) {
+      }
+    } else {
+      el.value = value;
+    }
+  }
   function applyBindingResult(result, el) {
     if (result !== void 0 && result !== null) {
       if (typeof result === "object" && !Array.isArray(result)) {
@@ -1681,20 +1697,7 @@ ${suggestion}`);
             el.checked = el.value === String(result);
           } else {
             const strVal = result !== void 0 && result !== null ? String(result) : "";
-            if (el.value !== strVal) {
-              const isFocused = typeof document !== "undefined" && document.activeElement === el;
-              if (isFocused && typeof el.selectionStart === "number" && typeof el.selectionEnd === "number") {
-                const start = el.selectionStart;
-                const end = el.selectionEnd;
-                el.value = strVal;
-                try {
-                  el.setSelectionRange(start, end);
-                } catch (_) {
-                }
-              } else {
-                el.value = strVal;
-              }
-            }
+            setValuePreservingCursor(el, strVal);
           }
         } else if (el instanceof HTMLSelectElement) {
           const targetValue = result !== void 0 && result !== null ? String(result) : "";
@@ -1707,20 +1710,7 @@ ${suggestion}`);
           }
         } else if (el instanceof HTMLTextAreaElement) {
           const strVal = result !== void 0 && result !== null ? String(result) : "";
-          if (el.value !== strVal) {
-            const isFocused = typeof document !== "undefined" && document.activeElement === el;
-            if (isFocused && typeof el.selectionStart === "number" && typeof el.selectionEnd === "number") {
-              const start = el.selectionStart;
-              const end = el.selectionEnd;
-              el.value = strVal;
-              try {
-                el.setSelectionRange(start, end);
-              } catch (_) {
-              }
-            } else {
-              el.value = strVal;
-            }
-          }
+          setValuePreservingCursor(el, strVal);
         } else {
           const strVal = result !== void 0 && result !== null ? String(result) : "";
           if (el.textContent !== strVal) {
@@ -1863,21 +1853,7 @@ ${suggestion}`);
                       el.value = attrValue;
                   }
                 } else if ("value" in el) {
-                  const targetEl = el;
-                  if (targetEl.value !== attrValue) {
-                    const isFocused = typeof document !== "undefined" && document.activeElement === targetEl;
-                    if (isFocused && typeof targetEl.selectionStart === "number" && typeof targetEl.selectionEnd === "number") {
-                      const start = targetEl.selectionStart;
-                      const end = targetEl.selectionEnd;
-                      targetEl.value = attrValue;
-                      try {
-                        targetEl.setSelectionRange(start, end);
-                      } catch (_) {
-                      }
-                    } else {
-                      targetEl.value = attrValue;
-                    }
-                  }
+                  setValuePreservingCursor(el, attrValue);
                 }
               } else if (target === "text") {
                 if (el.textContent !== attrValue)
@@ -4264,6 +4240,33 @@ ${scripts}
     }
   });
 
+  // src/engine/utils/styles.ts
+  function ensureAdoptedStylesheet(css, ref2, root) {
+    if (typeof CSSStyleSheet === "undefined")
+      return void 0;
+    if (!ref2.sheet) {
+      ref2.sheet = new CSSStyleSheet();
+      ref2.sheet.replaceSync(css);
+    }
+    const sheet = ref2.sheet;
+    const rootNode = root || (typeof document !== "undefined" ? document : null);
+    if (rootNode && "adoptedStyleSheets" in rootNode) {
+      if (!rootNode.adoptedStyleSheets.includes(sheet)) {
+        rootNode.adoptedStyleSheets = [...rootNode.adoptedStyleSheets, sheet];
+      }
+    }
+    if (typeof document !== "undefined" && "adoptedStyleSheets" in document) {
+      if (!document.adoptedStyleSheets.includes(sheet)) {
+        document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+      }
+    }
+    return sheet;
+  }
+  var init_styles = __esm({
+    "src/engine/utils/styles.ts"() {
+    }
+  });
+
   // src/modules/attributes/drag.ts
   var drag_exports2 = {};
   __export(drag_exports2, {
@@ -4281,23 +4284,7 @@ ${scripts}
     isContainerElement: () => isContainerElement
   });
   function ensureDragStyles(root) {
-    if (typeof CSSStyleSheet === "undefined")
-      return;
-    if (!dragSheet) {
-      dragSheet = new CSSStyleSheet();
-      dragSheet.replaceSync(DRAG_CSS);
-    }
-    const rootNode = root || (typeof document !== "undefined" ? document : null);
-    if (rootNode && "adoptedStyleSheets" in rootNode) {
-      if (!rootNode.adoptedStyleSheets.includes(dragSheet)) {
-        rootNode.adoptedStyleSheets = [...rootNode.adoptedStyleSheets, dragSheet];
-      }
-    }
-    if (typeof document !== "undefined" && "adoptedStyleSheets" in document) {
-      if (!document.adoptedStyleSheets.includes(dragSheet)) {
-        document.adoptedStyleSheets = [...document.adoptedStyleSheets, dragSheet];
-      }
-    }
+    ensureAdoptedStylesheet(DRAG_CSS, dragSheetRef, root);
   }
   function isContainerElement(el) {
     if (!el)
@@ -4440,13 +4427,14 @@ ${scripts}
       onReorder: options?.onReorder
     };
   }
-  var DRAG_CSS, dragSheet, CONTAINER_SELECTOR, Draggable, DragReorderEngine, dragItemAttribute, dragHandleAttribute, dragNoDragAttribute, dragAttribute, drag_default2;
+  var DRAG_CSS, dragSheetRef, CONTAINER_SELECTOR, Draggable, DragReorderEngine, dragItemAttribute, dragHandleAttribute, dragNoDragAttribute, dragAttribute, drag_default2;
   var init_drag2 = __esm({
     "src/modules/attributes/drag.ts"() {
       init_animation();
       init_scope();
       init_consts();
       init_drag();
+      init_styles();
       DRAG_CSS = `
 [data-drag-item], [data-drag]:not([data-drag*="{"]):not([data-drag*="="]):not([data-drag-container]) {
   user-select: none;
@@ -4511,7 +4499,7 @@ ${scripts}
   transition: outline 0.15s ease !important;
 }
 `;
-      dragSheet = null;
+      dragSheetRef = { sheet: null };
       if (typeof document !== "undefined") {
         ensureDragStyles();
       }
@@ -5704,28 +5692,13 @@ ${scripts}
     flowViewportAttribute: () => flowViewportAttribute
   });
   function ensureFlowStyles(root) {
-    if (typeof CSSStyleSheet === "undefined")
-      return;
-    if (!flowSheet) {
-      flowSheet = new CSSStyleSheet();
-      flowSheet.replaceSync(FLOW_CSS);
-    }
-    const rootNode = root || (typeof document !== "undefined" ? document : null);
-    if (rootNode && "adoptedStyleSheets" in rootNode) {
-      if (!rootNode.adoptedStyleSheets.includes(flowSheet)) {
-        rootNode.adoptedStyleSheets = [...rootNode.adoptedStyleSheets, flowSheet];
-      }
-    }
-    if (typeof document !== "undefined" && "adoptedStyleSheets" in document) {
-      if (!document.adoptedStyleSheets.includes(flowSheet)) {
-        document.adoptedStyleSheets = [...document.adoptedStyleSheets, flowSheet];
-      }
-    }
+    ensureAdoptedStylesheet(FLOW_CSS, flowSheetRef, root);
   }
-  var SVG_NS, MIN_ZOOM, MAX_ZOOM, NO_PAN, sharedViewport, FLOW_CSS, flowSheet, flowViewportAttribute, flowAttribute, flowNodeAttribute, flowHandleAttribute, flowEdgesAttribute, flowResizerAttribute, flowMinimapAttribute, flowSideAttribute, flowNoDragAttribute, flowGridAttribute, flowSnapAttribute, flow_default;
+  var SVG_NS, MIN_ZOOM, MAX_ZOOM, NO_PAN, sharedViewport, FLOW_CSS, flowSheetRef, flowViewportAttribute, flowAttribute, flowNodeAttribute, flowHandleAttribute, flowEdgesAttribute, flowResizerAttribute, flowMinimapAttribute, flowSideAttribute, flowNoDragAttribute, flowGridAttribute, flowSnapAttribute, flow_default;
   var init_flow = __esm({
     "src/modules/attributes/flow.ts"() {
       init_reactivity();
+      init_styles();
       SVG_NS = "http://www.w3.org/2000/svg";
       MIN_ZOOM = 0.2;
       MAX_ZOOM = 4;
@@ -5930,7 +5903,7 @@ ${scripts}
   dominant-baseline: central;
 }
 `;
-      flowSheet = null;
+      flowSheetRef = { sheet: null };
       if (typeof document !== "undefined") {
         ensureFlowStyles();
       }
@@ -14098,6 +14071,9 @@ ${match}</ul>
     }
     return false;
   }
+  function shouldIgnoreNode(node) {
+    return Boolean(node.closest && (node.closest("[data-ignore]") || node.closest("pre") || node.closest("code")));
+  }
   var movedNodes, movedNodeTimers, mutationObserverModule, mutation_default;
   var init_mutation = __esm({
     "src/engine/mutation.ts"() {
@@ -14125,7 +14101,7 @@ ${match}</ul>
                     if (node instanceof HTMLElement) {
                       if (isExternalOverlay(node))
                         return;
-                      if (node.closest && (node.closest("[data-ignore]") || node.closest("pre") || node.closest("code")))
+                      if (shouldIgnoreNode(node))
                         return;
                       addedThisBatch.add(node);
                       stylesheet.adoptElementSubtree(node);
@@ -14153,7 +14129,7 @@ ${match}</ul>
                         if (node instanceof HTMLElement) {
                           if (isExternalOverlay(node))
                             return;
-                          if (node.closest && (node.closest("[data-ignore]") || node.closest("pre") || node.closest("code")))
+                          if (shouldIgnoreNode(node))
                             return;
                           const enhancedTarget = node;
                           if (enhancedTarget[MARKER_KEY] && enhancedTarget[CLEANUP_FUNCTIONS_KEY])
@@ -14180,7 +14156,7 @@ ${match}</ul>
                     const target = mutation.target;
                     if (!target)
                       return;
-                    if (target.closest && (target.closest("[data-ignore]") || target.closest("pre") || target.closest("code")))
+                    if (shouldIgnoreNode(target))
                       return;
                     const attrName = mutation.attributeName;
                     if (attrName === "class" || attrName === "data-theme") {

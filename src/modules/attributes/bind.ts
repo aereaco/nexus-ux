@@ -93,6 +93,19 @@ function isNativeApiExpression(value: string): boolean {
   return extractNativeApis(trimmed).length > 0;
 }
 
+function setValuePreservingCursor(el: HTMLInputElement | HTMLTextAreaElement, value: string): void {
+  if (el.value === value) return;
+  const isFocused = typeof document !== 'undefined' && document.activeElement === el;
+  if (isFocused && typeof el.selectionStart === 'number' && typeof el.selectionEnd === 'number') {
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    el.value = value;
+    try { el.setSelectionRange(start, end); } catch (_) {}
+  } else {
+    el.value = value;
+  }
+}
+
 function applyBindingResult(result: unknown, el: HTMLElement): void {
   if (result !== undefined && result !== null) {
     if (typeof result === 'object' && !Array.isArray(result)) {
@@ -116,17 +129,7 @@ function applyBindingResult(result: unknown, el: HTMLElement): void {
           el.checked = (el.value === String(result));
         } else {
           const strVal = result !== undefined && result !== null ? String(result) : '';
-          if (el.value !== strVal) {
-            const isFocused = typeof document !== 'undefined' && document.activeElement === el;
-            if (isFocused && typeof el.selectionStart === 'number' && typeof el.selectionEnd === 'number') {
-              const start = el.selectionStart;
-              const end = el.selectionEnd;
-              el.value = strVal;
-              try { el.setSelectionRange(start, end); } catch (_) {}
-            } else {
-              el.value = strVal;
-            }
-          }
+          setValuePreservingCursor(el, strVal);
         }
       } else if (el instanceof HTMLSelectElement) {
         const targetValue = result !== undefined && result !== null ? String(result) : '';
@@ -139,17 +142,7 @@ function applyBindingResult(result: unknown, el: HTMLElement): void {
         }
       } else if (el instanceof HTMLTextAreaElement) {
         const strVal = result !== undefined && result !== null ? String(result) : '';
-        if (el.value !== strVal) {
-          const isFocused = typeof document !== 'undefined' && document.activeElement === el;
-          if (isFocused && typeof el.selectionStart === 'number' && typeof el.selectionEnd === 'number') {
-            const start = el.selectionStart;
-            const end = el.selectionEnd;
-            el.value = strVal;
-            try { el.setSelectionRange(start, end); } catch (_) {}
-          } else {
-            el.value = strVal;
-          }
-        }
+        setValuePreservingCursor(el, strVal);
       } else {
         const strVal = result !== undefined && result !== null ? String(result) : '';
         if (el.textContent !== strVal) {
@@ -299,18 +292,7 @@ const bindModule: AttributeModule = {
               if (el.value !== attrValue) el.value = attrValue;
             }
           } else if ('value' in el) {
-            const targetEl = el as HTMLInputElement;
-            if (targetEl.value !== attrValue) {
-              const isFocused = typeof document !== 'undefined' && document.activeElement === targetEl;
-              if (isFocused && typeof targetEl.selectionStart === 'number' && typeof targetEl.selectionEnd === 'number') {
-                const start = targetEl.selectionStart;
-                const end = targetEl.selectionEnd;
-                targetEl.value = attrValue;
-                try { targetEl.setSelectionRange(start, end); } catch (_) {}
-              } else {
-                targetEl.value = attrValue;
-              }
-            }
+            setValuePreservingCursor(el as HTMLInputElement, attrValue);
           }
         } else if (target === 'text') {
           if (el.textContent !== attrValue) el.textContent = attrValue;

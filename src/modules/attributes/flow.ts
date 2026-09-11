@@ -1,6 +1,7 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { reactive } from '../../engine/reactivity.ts';
+import { ensureAdoptedStylesheet } from '../../engine/utils/styles.ts';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -216,25 +217,10 @@ const FLOW_CSS = `
 }
 `;
 
-let flowSheet: CSSStyleSheet | null = null;
+const flowSheetRef: { sheet: CSSStyleSheet | null } = { sheet: null };
 
 function ensureFlowStyles(root?: Document | ShadowRoot | null) {
-  if (typeof CSSStyleSheet === 'undefined') return;
-  if (!flowSheet) {
-    flowSheet = new CSSStyleSheet();
-    flowSheet.replaceSync(FLOW_CSS);
-  }
-  const rootNode = (root || (typeof document !== 'undefined' ? document : null)) as Document | ShadowRoot | null;
-  if (rootNode && 'adoptedStyleSheets' in rootNode) {
-    if (!rootNode.adoptedStyleSheets.includes(flowSheet)) {
-      rootNode.adoptedStyleSheets = [...rootNode.adoptedStyleSheets, flowSheet];
-    }
-  }
-  if (typeof document !== 'undefined' && 'adoptedStyleSheets' in document) {
-    if (!document.adoptedStyleSheets.includes(flowSheet)) {
-      document.adoptedStyleSheets = [...document.adoptedStyleSheets, flowSheet];
-    }
-  }
+  ensureAdoptedStylesheet(FLOW_CSS, flowSheetRef, root);
 }
 
 if (typeof document !== 'undefined') {

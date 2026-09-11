@@ -20,6 +20,10 @@ function isExternalOverlay(node: HTMLElement): boolean {
   return false;
 }
 
+function shouldIgnoreNode(node: HTMLElement): boolean {
+  return Boolean(node.closest && (node.closest('[data-ignore]') || node.closest('pre') || node.closest('code')));
+}
+
 const mutationObserverModule: ObserverModule = {
   name: 'mutationObserver',
   observerType: 'MutationObserver',
@@ -39,7 +43,7 @@ const mutationObserverModule: ObserverModule = {
             mutation.addedNodes.forEach(node => {
               if (node instanceof HTMLElement) {
                 if (isExternalOverlay(node)) return;
-                if (node.closest && (node.closest('[data-ignore]') || node.closest('pre') || node.closest('code'))) return;
+                if (shouldIgnoreNode(node)) return;
                 addedThisBatch.add(node);
                 stylesheet.adoptElementSubtree(node);
               }
@@ -68,7 +72,7 @@ const mutationObserverModule: ObserverModule = {
                 mutation.addedNodes.forEach(node => {
                   if (node instanceof HTMLElement) {
                     if (isExternalOverlay(node)) return;
-                    if (node.closest && (node.closest('[data-ignore]') || node.closest('pre') || node.closest('code'))) return;
+                    if (shouldIgnoreNode(node)) return;
                     const enhancedTarget = node as NexusEnhancedElement;
                     if (enhancedTarget[MARKER_KEY] && enhancedTarget[CLEANUP_FUNCTIONS_KEY]) return;
                     context.processElement(node as HTMLElement);
@@ -100,7 +104,7 @@ const mutationObserverModule: ObserverModule = {
             } else if (mutation.type === 'attributes') {
               const target = mutation.target as HTMLElement;
               if (!target) return;
-              if (target.closest && (target.closest('[data-ignore]') || target.closest('pre') || target.closest('code'))) return;
+              if (shouldIgnoreNode(target)) return;
               const attrName = mutation.attributeName;
 
               if (attrName === 'class' || attrName === 'data-theme') {
