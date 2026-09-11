@@ -86,10 +86,6 @@
             searchHighlightCount = ranges.length;
             if (ranges.length !== 0) {
               window.CSS.highlights.set('page-match', new window.Highlight(...ranges));
-              const firstMatchEl = ranges[0].startContainer.parentElement;
-              if (firstMatchEl && typeof firstMatchEl.scrollIntoView === 'function') {
-                firstMatchEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
-              }
 
               // Compute scrollbar location ticks
               const scrollEl = container.closest('.overflow-y-auto') || container;
