@@ -22,37 +22,118 @@
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-accent/50 transition-colors shadow-sm">
-      <span class="font-mono font-bold text-accent mb-1">@media</span>
-      <p class="text-xs text-base-content/70 leading-relaxed">Reactive viewport media queries (e.g.
-        <code>@media('(min-width: 768px)')</code>).
-      </p>
+    <!-- 1. @media -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-accent/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:devices"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-accent text-sm truncate">@media</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Viewport</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Reactive viewport media queries (e.g. <code>@media('(min-width: 768px)')</code>) updating without listeners.
+        </p>
+      </div>
+      <a href="/labs/scopes/media" class="btn btn-xs btn-outline btn-accent self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
     </div>
-    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-accent/50 transition-colors shadow-sm">
-      <span class="font-mono font-bold text-accent mb-1">@container</span>
-      <p class="text-xs text-base-content/70 leading-relaxed">Reactive container dimension queries for component-level
-        responsiveness.</p>
+
+    <!-- 2. @container -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-accent/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:aspect-ratio"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-accent text-sm truncate">@container</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Container</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Evaluates container dimension queries relative to immediate parent element dimensions and bounds.
+        </p>
+      </div>
+      <a href="/labs/scopes/container" class="btn btn-xs btn-outline btn-accent self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
     </div>
-    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-accent/50 transition-colors shadow-sm">
-      <span class="font-mono font-bold text-accent mb-1">@auth</span>
-      <p class="text-xs text-base-content/70 leading-relaxed">Role and session gating directly in the DOM state stack.
-      </p>
+
+    <!-- 3. @auth -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-accent/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:lock"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-accent text-sm truncate">@auth</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Security</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Enforces role-based authentication rules and permission gates directly in the DOM data stack.
+        </p>
+      </div>
+      <a href="/labs/scopes/auth" class="btn btn-xs btn-outline btn-accent self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
     </div>
-    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-accent/50 transition-colors shadow-sm">
-      <span class="font-mono font-bold text-accent mb-1">@os</span>
-      <p class="text-xs text-base-content/70 leading-relaxed">Platform detection (<code>macos</code>,
-        <code>windows</code>, <code>linux</code>, <code>ios</code>, <code>android</code>).
-      </p>
+
+    <!-- 4. @native -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-accent/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:phone-android"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-accent text-sm truncate">@native</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Bridge</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Verifies presence of native mobile or desktop app shell bridges (Capacitor, Electron, WebKit).
+        </p>
+      </div>
+      <a href="/labs/scopes/native" class="btn btn-xs btn-outline btn-accent self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
     </div>
-    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-accent/50 transition-colors shadow-sm">
-      <span class="font-mono font-bold text-accent mb-1">@view</span>
-      <p class="text-xs text-base-content/70 leading-relaxed">Exposes width, height, isPortrait, and isLandscape
-        signals.</p>
+
+    <!-- 5. @os -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-accent/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:desktop-windows"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-accent text-sm truncate">@os</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Platform</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Runtime platform detection (<code>macos</code>, <code>windows</code>, <code>linux</code>, <code>ios</code>, <code>android</code>).
+        </p>
+      </div>
+      <a href="/labs/scopes/os" class="btn btn-xs btn-outline btn-accent self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
     </div>
-    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-accent/50 transition-colors shadow-sm">
-      <span class="font-mono font-bold text-accent mb-1">@native</span>
-      <p class="text-xs text-base-content/70 leading-relaxed">Verifies presence of native mobile or desktop app shell
-        bridge.</p>
+
+    <!-- 6. @view -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-accent/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:screen-search-desktop"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-accent text-sm truncate">@view</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Geometry</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Live geometry metrics exposing $view.width, $view.height, $view.isPortrait, and $view.isLandscape.
+        </p>
+      </div>
+      <a href="/labs/scopes/view" class="btn btn-xs btn-outline btn-accent self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
     </div>
   </div>
 </div>

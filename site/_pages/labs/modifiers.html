@@ -22,42 +22,289 @@
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    <div
-      class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-colors shadow-sm">
-      <span class="font-mono font-bold text-secondary mb-1">_outside</span>
-      <p class="text-xs text-base-content/70 leading-relaxed">Fires handler only when pointer click/tap occurs outside
-        element bounds.</p>
+    <!-- 1. _debounce -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:hourglass-empty"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-secondary text-sm truncate">_debounce</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Timing</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Delays execution until specified milliseconds have elapsed since the last invocation.
+        </p>
+      </div>
+      <a href="/labs/modifiers/debounce" class="btn btn-xs btn-outline btn-secondary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
     </div>
-    <div
-      class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-colors shadow-sm">
-      <span class="font-mono font-bold text-secondary mb-1">_debounce.&lt;ms&gt;</span>
-      <p class="text-xs text-base-content/70 leading-relaxed">Delays execution until specified idle duration elapses.
-      </p>
+
+    <!-- 2. _delay -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:schedule"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-secondary text-sm truncate">_delay</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Timing</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Delays handler execution by a fixed millisecond timeout before firing.
+        </p>
+      </div>
+      <a href="/labs/modifiers/delay" class="btn btn-xs btn-outline btn-secondary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
     </div>
-    <div
-      class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-colors shadow-sm">
-      <span class="font-mono font-bold text-secondary mb-1">_throttle.&lt;ms&gt;</span>
-      <p class="text-xs text-base-content/70 leading-relaxed">Limits execution rate to once per specified millisecond
-        budget.</p>
+
+    <!-- 3. _document -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:description"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-secondary text-sm truncate">_document</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Target</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Attaches event listener to document root rather than the local HTMLElement.
+        </p>
+      </div>
+      <a href="/labs/modifiers/document" class="btn btn-xs btn-outline btn-secondary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
     </div>
-    <div
-      class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-colors shadow-sm">
-      <span class="font-mono font-bold text-secondary mb-1">_prevent &amp; _stop</span>
-      <p class="text-xs text-base-content/70 leading-relaxed">Calls <code>e.preventDefault()</code> and
-        <code>e.stopPropagation()</code> respectively.
-      </p>
+
+    <!-- 4. _drag -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:drag-click"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-secondary text-sm truncate">_drag</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Pointer</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Injects delta movement coordinates ($drag.dx, $drag.dy) into pointer handlers.
+        </p>
+      </div>
+      <a href="/labs/modifiers/drag" class="btn btn-xs btn-outline btn-secondary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
     </div>
-    <div
-      class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-colors shadow-sm">
-      <span class="font-mono font-bold text-secondary mb-1">_hold.&lt;ms&gt;</span>
-      <p class="text-xs text-base-content/70 leading-relaxed">Triggers handler only after press-and-holding for
-        specified milliseconds.</p>
+
+    <!-- 5. _hold -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:touch-long"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-secondary text-sm truncate">_hold</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Gesture</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Fires only when user presses and holds the pointer for the specified millisecond duration.
+        </p>
+      </div>
+      <a href="/labs/modifiers/hold" class="btn btn-xs btn-outline btn-secondary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
     </div>
-    <div
-      class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-colors shadow-sm">
-      <span class="font-mono font-bold text-secondary mb-1">Key Filters (_enter, _escape)</span>
-      <p class="text-xs text-base-content/70 leading-relaxed">Restricts keyboard events to specific keys or modifier
-        combinations.</p>
+
+    <!-- 6. _keys -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:keyboard"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-secondary text-sm truncate">_keys</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Keyboard</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Filters keyboard events by key code or combination (:enter, :escape, :space, :ctrl, :shift).
+        </p>
+      </div>
+      <a href="/labs/modifiers/keys" class="btn btn-xs btn-outline btn-secondary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 7. _morph -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:transform"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-secondary text-sm truncate">_morph</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Morph</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Morphs return string from evaluation directly into the element using morphDOM diffing.
+        </p>
+      </div>
+      <a href="/labs/modifiers/morph" class="btn btn-xs btn-outline btn-secondary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 8. _once -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:looks-one"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-secondary text-sm truncate">_once</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Lifecycle</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Executes event listener exactly once, automatically unbinding itself afterwards.
+        </p>
+      </div>
+      <a href="/labs/modifiers/once" class="btn btn-xs btn-outline btn-secondary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 9. _outside -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:tab-close"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-secondary text-sm truncate">_outside</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Outside</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Fires handler only when pointer click or tap occurs outside the element boundary bounds.
+        </p>
+      </div>
+      <a href="/labs/modifiers/outside" class="btn btn-xs btn-outline btn-secondary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 10. _prevent -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:block"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-secondary text-sm truncate">_prevent</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Default</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Invokes event.preventDefault() to halt native browser default submission and navigation.
+        </p>
+      </div>
+      <a href="/labs/modifiers/prevent" class="btn btn-xs btn-outline btn-secondary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 11. _self -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:target"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-secondary text-sm truncate">_self</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Target</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Executes handler only if event.target is the element itself, ignoring child bubbled events.
+        </p>
+      </div>
+      <a href="/labs/modifiers/self" class="btn btn-xs btn-outline btn-secondary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 12. _stop -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:pan-tool"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-secondary text-sm truncate">_stop</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Propagation</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Calls event.stopPropagation() to isolate events and prevent bubbling up the DOM hierarchy.
+        </p>
+      </div>
+      <a href="/labs/modifiers/stop" class="btn btn-xs btn-outline btn-secondary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 13. _throttle -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:timer"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-secondary text-sm truncate">_throttle</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Rate Limit</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Limits execution rate to once per specified millisecond budget during scroll or resize.
+        </p>
+      </div>
+      <a href="/labs/modifiers/throttle" class="btn btn-xs btn-outline btn-secondary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 14. _window -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:web-asset"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-secondary text-sm truncate">_window</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Global</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Attaches event listener to window rather than local element for global events.
+        </p>
+      </div>
+      <a href="/labs/modifiers/window" class="btn btn-xs btn-outline btn-secondary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 15. _zoom -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-secondary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:zoom-in"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-secondary text-sm truncate">_zoom</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Wheel & Pinch</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Injects normalized delta zoom coordinate ($zoom) into wheel and trackpad pinch handlers.
+        </p>
+      </div>
+      <a href="/labs/modifiers/zoom" class="btn btn-xs btn-outline btn-secondary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
     </div>
   </div>
 </div>

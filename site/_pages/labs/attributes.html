@@ -22,84 +22,574 @@
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-colors shadow-sm">
-      <div class="flex items-center justify-between mb-2">
-        <span class="font-mono font-bold text-primary">data-signal</span>
-        <span class="badge badge-xs badge-ghost">State</span>
+    <!-- 1. data-signal -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:data-object"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-signal</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">State</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Declares local or global fine-grained reactive state blocks directly in the DOM namespace.
+        </p>
       </div>
-      <p class="text-xs text-base-content/70 mb-4 leading-relaxed">Declares local fine-grained reactive state blocks
-        directly in the DOM namespace.</p>
-      <a href="/labs/attributes/signal" class="btn btn-xs btn-outline btn-primary self-start">Open Lab &rarr;</a>
+      <a href="/labs/attributes/signal" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
     </div>
 
-    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-colors shadow-sm">
-      <div class="flex items-center justify-between mb-2">
-        <span class="font-mono font-bold text-primary">data-bind</span>
-        <span class="badge badge-xs badge-ghost">Binding</span>
+    <!-- 2. data-bind -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:link"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-bind</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Binding</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Two-way native browser API binding and HTML attribute synchronization.
+        </p>
       </div>
-      <p class="text-xs text-base-content/70 mb-4 leading-relaxed">Two-way native browser API binding and HTML attribute
-        synchronization.</p>
-      <a href="/labs/attributes/bind" class="btn btn-xs btn-outline btn-primary self-start">Open Lab &rarr;</a>
+      <a href="/labs/attributes/bind" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
     </div>
 
-    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-colors shadow-sm">
-      <div class="flex items-center justify-between mb-2">
-        <span class="font-mono font-bold text-primary">data-for</span>
-        <span class="badge badge-xs badge-ghost">Loop</span>
+    <!-- 3. data-for -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:repeat"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-for</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Loop</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Zero-allocation keyed list rendering with in-place DOM morphing.
+        </p>
       </div>
-      <p class="text-xs text-base-content/70 mb-4 leading-relaxed">Zero-allocation keyed list rendering with in-place
-        DOM morphing.</p>
-      <a href="/labs/attributes/for" class="btn btn-xs btn-outline btn-primary self-start">Open Lab &rarr;</a>
+      <a href="/labs/attributes/for" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
     </div>
 
-    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-colors shadow-sm">
-      <div class="flex items-center justify-between mb-2">
-        <span class="font-mono font-bold text-primary">data-if</span>
-        <span class="badge badge-xs badge-ghost">Conditional</span>
+    <!-- 4. data-if -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:splitscreen-top"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-if</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Conditional</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Physical conditional DOM mounting with anchor comments and deterministic teardown.
+        </p>
       </div>
-      <p class="text-xs text-base-content/70 mb-4 leading-relaxed">Physical conditional DOM mounting with anchor
-        comments and teardown.</p>
-      <a href="/labs/attributes/if" class="btn btn-xs btn-outline btn-primary self-start">Open Lab &rarr;</a>
+      <a href="/labs/attributes/if" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
     </div>
 
-    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-colors shadow-sm">
-      <div class="flex items-center justify-between mb-2">
-        <span class="font-mono font-bold text-primary">data-show</span>
-        <span class="badge badge-xs badge-ghost">Toggle</span>
+    <!-- 5. data-show -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:visibility"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-show</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Toggle</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Visual visibility toggle via display styles without structural DOM teardown.
+        </p>
       </div>
-      <p class="text-xs text-base-content/70 mb-4 leading-relaxed">Visual visibility toggle via display styles without
-        structural DOM teardown.</p>
-      <a href="/labs/attributes/show" class="btn btn-xs btn-outline btn-primary self-start">Open Lab &rarr;</a>
+      <a href="/labs/attributes/show" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
     </div>
 
-    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-colors shadow-sm">
-      <div class="flex items-center justify-between mb-2">
-        <span class="font-mono font-bold text-primary">data-on</span>
-        <span class="badge badge-xs badge-ghost">Events</span>
+    <!-- 6. data-on -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:touch-app"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-on</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Events</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Declarative event handling with modifiers, $evt, and pipeline execution.
+        </p>
       </div>
-      <p class="text-xs text-base-content/70 mb-4 leading-relaxed">Declarative event handling with modifiers, $evt, and
-        pipeline execution.</p>
-      <a href="/labs/attributes/on" class="btn btn-xs btn-outline btn-primary self-start">Open Lab &rarr;</a>
+      <a href="/labs/attributes/on" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
     </div>
 
-    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-colors shadow-sm">
-      <div class="flex items-center justify-between mb-2">
-        <span class="font-mono font-bold text-primary">data-class</span>
-        <span class="badge badge-xs badge-ghost">Styling</span>
+    <!-- 7. data-class -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:palette"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-class</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Styling</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Reconciles dynamic Tailwind / DaisyUI class lists or boolean toggles.
+        </p>
       </div>
-      <p class="text-xs text-base-content/70 mb-4 leading-relaxed">Reconciles dynamic Tailwind / DaisyUI class lists or
-        boolean toggles.</p>
-      <a href="/labs/attributes/class" class="btn btn-xs btn-outline btn-primary self-start">Open Lab &rarr;</a>
+      <a href="/labs/attributes/class" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
     </div>
 
-    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-colors shadow-sm">
-      <div class="flex items-center justify-between mb-2">
-        <span class="font-mono font-bold text-primary">data-style</span>
-        <span class="badge badge-xs badge-ghost">Styling</span>
+    <!-- 8. data-style -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:format-paint"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-style</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Styling</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Reconciles dynamic inline styles with unit formatting and camelCase support.
+        </p>
       </div>
-      <p class="text-xs text-base-content/70 mb-4 leading-relaxed">Reconciles dynamic inline styles with unit formatting
-        and camelCase support.</p>
-      <a href="/labs/attributes/style" class="btn btn-xs btn-outline btn-primary self-start">Open Lab &rarr;</a>
+      <a href="/labs/attributes/style" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 9. data-effect -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:bolt"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-effect</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Reactivity</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Continuous reactive side-effect runner tracking dependencies automatically.
+        </p>
+      </div>
+      <a href="/labs/attributes/effect" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 10. data-computed -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:calculate"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-computed</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Computed</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Memoized derived getters caching reactive computations with lazy evaluation.
+        </p>
+      </div>
+      <a href="/labs/attributes/computed" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 11. data-drag -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:drag-pan"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-drag</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Interaction</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Zero-configuration drag-and-drop list reordering with FLIP animations.
+        </p>
+      </div>
+      <a href="/labs/attributes/drag" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 12. data-flow -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:account-tree"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-flow</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Canvas</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Interactive node-graph canvas supporting zoom, pan, and SVG edge connections.
+        </p>
+      </div>
+      <a href="/labs/attributes/flow" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 13. data-theme -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:dark-mode"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-theme</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Theme</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Manages DaisyUI and Tailwind theme states with reactive switching and persistence.
+        </p>
+      </div>
+      <a href="/labs/attributes/theme" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 14. data-stylesheet -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:css"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-stylesheet</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Stylesheets</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Runtime Tailwind v4 JIT compilation and native constructable CSSOM inlining.
+        </p>
+      </div>
+      <a href="/labs/attributes/stylesheet" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 15. data-component -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:extension"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-component</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Components</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Dynamic template loader injecting HTML/Markdown into Light or Shadow DOM.
+        </p>
+      </div>
+      <a href="/labs/attributes/component" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 16. data-import -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:cloud-download"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-import</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Loader</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Universal loader for external scripts, stylesheets, themes, and patterns.
+        </p>
+      </div>
+      <a href="/labs/attributes/import" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 17. data-router -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:alt-route"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-router</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Routing</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          SPA routing engine with multi-tab workspaces, automatic page discovery, and history sync.
+        </p>
+      </div>
+      <a href="/labs/attributes/router" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 18. data-route -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:signpost"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-route</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Route</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Declaratively registers a route record and component association into the client routing table.
+        </p>
+      </div>
+      <a href="/labs/attributes/route" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 19. data-teleport -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:move-item"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-teleport</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Teleport</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Transports DOM subtrees to another target selector or defines native drag-and-drop drop zones.
+        </p>
+      </div>
+      <a href="/labs/attributes/teleport" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 20. data-markdown -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:markdown"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-markdown</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Typography</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Inlines a zero-dependency streaming Markdown parser formatting markdown into Tailwind prose.
+        </p>
+      </div>
+      <a href="/labs/attributes/markdown" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 21. data-mask -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:badge"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-mask</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Formatting</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Real-time input pattern masking for telephone numbers, currency, credit cards, and dates.
+        </p>
+      </div>
+      <a href="/labs/attributes/mask" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 22. data-switcher -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:swap-calls"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-switcher</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Cycling</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          State-cycling helper exposing $switch(), $isActive(), and $activeItem for segmented controllers.
+        </p>
+      </div>
+      <a href="/labs/attributes/switcher" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 23. data-scrollbar -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:view-stream"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-scrollbar</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Scrollbar</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          GPU-accelerated overlay scrollbar engine with smooth inertia physics and auto-hide fading.
+        </p>
+      </div>
+      <a href="/labs/attributes/scrollbar" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 24. data-raf -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:speed"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-raf</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Animation</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          High-frequency animation loop callback injecting $time and $delta timestamps at 60fps/120fps.
+        </p>
+      </div>
+      <a href="/labs/attributes/raf" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 25. data-pwa -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:install-mobile"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-pwa</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">PWA</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Injects $pwa reactive global signal for offline readiness, updates, and installation prompts.
+        </p>
+      </div>
+      <a href="/labs/attributes/pwa" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 26. data-preserve -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:shield"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-preserve</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Shield</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Shields an element and its subtree from being overwritten or torn down during DOM reconciliations.
+        </p>
+      </div>
+      <a href="/labs/attributes/preserve" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 27. data-assert -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:fact-check"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-assert</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Diagnostics</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Evaluates runtime invariant assertion expressions emitting system diagnostics on failure.
+        </p>
+      </div>
+      <a href="/labs/attributes/assert" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 28. data-build -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:build"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-build</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Build</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          In-browser bundler and asset packager compiling live DOM elements into IndexedDB binary payloads.
+        </p>
+      </div>
+      <a href="/labs/attributes/build" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 29. data-html -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:html"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-html</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">DOM</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Injects raw HTML into the element and runs processElement on child nodes for full reactivity.
+        </p>
+      </div>
+      <a href="/labs/attributes/html" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 30. data-debug -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:bug-report"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-primary text-sm truncate">data-debug</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Debug</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Activates verbose diagnostic logging, live signal inspector, and MCP AI auto-repair routing.
+        </p>
+      </div>
+      <a href="/labs/attributes/debug" class="btn btn-xs btn-outline btn-primary self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
     </div>
   </div>
 </div>

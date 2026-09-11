@@ -21,29 +21,270 @@
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-info/50 transition-colors shadow-sm">
-      <span class="font-mono font-bold text-info mb-1">$mcp</span>
-      <p class="text-xs text-base-content/70 leading-relaxed">Model Context Protocol AI client for direct LLM sampling and agentic tools.</p>
+    <!-- 1. $animate -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-info/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-info/10 text-info flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:animation"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-info text-sm truncate">$animate</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Animation</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Web Animations API runner with spring physics and zero-layout-shift FLIP list transitions.
+        </p>
+      </div>
+      <a href="/labs/sprites/animate" class="btn btn-xs btn-outline btn-info self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
     </div>
-    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-info/50 transition-colors shadow-sm">
-      <span class="font-mono font-bold text-info mb-1">$sql</span>
-      <p class="text-xs text-base-content/70 leading-relaxed">SurrealDB live WebSocket query runner with automatic reactive cache updates.</p>
+
+    <!-- 2. $bgFetch -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-info/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-info/10 text-info flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:cloud-sync"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-info text-sm truncate">$bgFetch</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Offline</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Background Fetch API wrapper executing large persistent file downloads across tab closures.
+        </p>
+      </div>
+      <a href="/labs/sprites/bgfetch" class="btn btn-xs btn-outline btn-info self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
     </div>
-    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-info/50 transition-colors shadow-sm">
-      <span class="font-mono font-bold text-info mb-1">$gql</span>
-      <p class="text-xs text-base-content/70 leading-relaxed">GraphQL query and mutation runner returning fine-grained reactive refs.</p>
+
+    <!-- 3. $bgSync -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-info/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-info/10 text-info flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:sync"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-info text-sm truncate">$bgSync</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Sync</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Background Sync API for deferred requests, guaranteeing delivery when network recovers.
+        </p>
+      </div>
+      <a href="/labs/sprites/bgsync" class="btn btn-xs btn-outline btn-info self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
     </div>
-    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-info/50 transition-colors shadow-sm">
-      <span class="font-mono font-bold text-info mb-1">$(selector) &amp; $el</span>
-      <p class="text-xs text-base-content/70 leading-relaxed">Contextual DOM selector engine with relative combinators (^, &gt;, +, -, ~).</p>
+
+    <!-- 4. $flow -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-info/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-info/10 text-info flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:schema"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-info text-sm truncate">$flow</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Canvas</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Spatial canvas node link coordinator and Bezier connector engine for node graphs.
+        </p>
+      </div>
+      <a href="/labs/sprites/flow" class="btn btn-xs btn-outline btn-info self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
     </div>
-    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-info/50 transition-colors shadow-sm">
-      <span class="font-mono font-bold text-info mb-1">$animate &amp; flip()</span>
-      <p class="text-xs text-base-content/70 leading-relaxed">Web Animations API wrapper and zero-layout-shift FLIP list transitions.</p>
+
+    <!-- 5. $gql -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-info/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-info/10 text-info flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:graphql"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-info text-sm truncate">$gql</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">GraphQL</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Zero-dependency GraphQL query and mutation client returning fine-grained reactive refs.
+        </p>
+      </div>
+      <a href="/labs/sprites/gql" class="btn btn-xs btn-outline btn-info self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
     </div>
-    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-info/50 transition-colors shadow-sm">
-      <span class="font-mono font-bold text-info mb-1">$sw &amp; $push</span>
-      <p class="text-xs text-base-content/70 leading-relaxed">Service Worker lifecycle controller and Web Push notification client.</p>
+
+    <!-- 6. $mask -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-info/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-info/10 text-info flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:format-shapes"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-info text-sm truncate">$mask</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Utility</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Programmatic string formatting and pattern masking utility for non-input expressions.
+        </p>
+      </div>
+      <a href="/labs/sprites/mask" class="btn btn-xs btn-outline btn-info self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 7. $mcp -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-info/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-info/10 text-info flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:neurology"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-info text-sm truncate">$mcp</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">AI Agent</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Model Context Protocol AI assistant client for direct LLM sampling and runtime diagnostics.
+        </p>
+      </div>
+      <a href="/labs/sprites/mcp" class="btn btn-xs btn-outline btn-info self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 8. $periodicSync -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-info/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-info/10 text-info flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:update"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-info text-sm truncate">$periodicSync</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Sync</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Periodic Background Sync manager for background data polling and silent cache updates.
+        </p>
+      </div>
+      <a href="/labs/sprites/periodicsync" class="btn btn-xs btn-outline btn-info self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 9. $predictive -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-info/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-info/10 text-info flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:psychology"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-info text-sm truncate">$predictive</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Predictive</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Quadtree predictive engine forecasting user pointer trajectories and pre-fetching assets.
+        </p>
+      </div>
+      <a href="/labs/sprites/predictive" class="btn btn-xs btn-outline btn-info self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 10. $push -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-info/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-info/10 text-info flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:notifications-active"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-info text-sm truncate">$push</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Notifications</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Web Push notification subscription manager and permission controller.
+        </p>
+      </div>
+      <a href="/labs/sprites/push" class="btn btn-xs btn-outline btn-info self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 11. $(...) Selector -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-info/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-info/10 text-info flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:travel-explore"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-info text-sm truncate">$(...)</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Selector</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Contextual DOM selector engine with directional combinators (^ closest, &gt; child, + next, - prev).
+        </p>
+      </div>
+      <a href="/labs/sprites/selector" class="btn btn-xs btn-outline btn-info self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 12. $sql -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-info/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-info/10 text-info flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:database"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-info text-sm truncate">$sql</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Database</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          SurrealDB live WebSocket query runner with real-time reactive table subscriptions.
+        </p>
+      </div>
+      <a href="/labs/sprites/sql" class="btn btn-xs btn-outline btn-info self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 13. $svg -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-info/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-info/10 text-info flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:gesture"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-info text-sm truncate">$svg</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">SVG</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Reactive SVG Bezier curve and path generator for dynamic node graph link connections.
+        </p>
+      </div>
+      <a href="/labs/sprites/svg" class="btn btn-xs btn-outline btn-info self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
+    </div>
+
+    <!-- 14. $sw -->
+    <div class="card bg-base-100 border border-base-content/10 p-5 hover:border-info/50 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between group">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-info/10 text-info flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="material-symbols-light:cloud"></iconify-icon>
+            </div>
+            <span class="font-mono font-bold text-info text-sm truncate">$sw</span>
+          </div>
+          <span class="badge badge-xs badge-ghost shrink-0">Worker</span>
+        </div>
+        <p class="text-xs text-base-content/70 mb-4 leading-relaxed line-clamp-2">
+          Service Worker lifecycle controller, cache invalidation, and background offline sync manager.
+        </p>
+      </div>
+      <a href="/labs/sprites/sw" class="btn btn-xs btn-outline btn-info self-start gap-1 group-hover:btn-active transition-all">Open Lab &rarr;</a>
     </div>
   </div>
 </div>
