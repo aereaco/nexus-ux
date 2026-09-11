@@ -307,6 +307,15 @@ class OverlayScrollbarInstance {
   private cachedOverflowX: boolean | null = null;
   private cachedRTL: boolean = false;
   private lastStyleCheck: number = 0;
+  private animV: Animation | null = null;
+  private animH: Animation | null = null;
+  private timelineV: any = null;
+  private timelineH: any = null;
+  private lastMaxScrollTop: number = -1;
+  private lastMaxThumbTop: number = -1;
+  private lastMaxScrollLeft: number = -1;
+  private lastMaxThumbLeft: number = -1;
+  private hasScrollTimeline: boolean = typeof (window as any).ScrollTimeline !== 'undefined';
 
   constructor(el: HTMLElement) {
     this.el = el;
@@ -375,15 +384,50 @@ class OverlayScrollbarInstance {
       const thumbHeight = Math.max(24, (clientHeight / scrollHeight) * clientHeight);
       const maxScrollTop = scrollHeight - clientHeight;
       const maxThumbTop = clientHeight - thumbHeight;
-      const thumbTop = maxScrollTop > 0 ? (scrollTop / maxScrollTop) * maxThumbTop : 0;
 
-      const thumbY = scrollTop + thumbTop;
       const heightPx = `${thumbHeight}px`;
       if (this.thumbV!.style.height !== heightPx) {
         this.thumbV!.style.height = heightPx;
       }
-      this.thumbV!.style.transform = `translate3d(0, ${thumbY}px, 0)`;
+
+      if (this.hasScrollTimeline) {
+        if (!this.timelineV) {
+          try {
+            this.timelineV = new (window as any).ScrollTimeline({
+              source: this.el,
+              axis: 'y',
+            });
+          } catch {}
+        }
+
+        if (this.timelineV && (this.lastMaxScrollTop !== maxScrollTop || this.lastMaxThumbTop !== maxThumbTop || !this.animV)) {
+          this.lastMaxScrollTop = maxScrollTop;
+          this.lastMaxThumbTop = maxThumbTop;
+          if (this.animV) this.animV.cancel();
+          this.thumbV!.style.transform = '';
+          this.animV = this.thumbV!.animate(
+            {
+              transform: [
+                'translate3d(0, 0px, 0)',
+                `translate3d(0, ${maxScrollTop + maxThumbTop}px, 0)`
+              ]
+            },
+            {
+              timeline: this.timelineV,
+              fill: 'both'
+            }
+          );
+        }
+      } else {
+        const thumbTop = maxScrollTop > 0 ? (scrollTop / maxScrollTop) * maxThumbTop : 0;
+        const thumbY = scrollTop + thumbTop;
+        this.thumbV!.style.transform = `translate3d(0, ${thumbY}px, 0)`;
+      }
     } else {
+      if (this.animV) {
+        this.animV.cancel();
+        this.animV = null;
+      }
       if (this.trackV && this.trackV.style.display !== 'none') this.trackV.style.display = 'none';
     }
 
@@ -394,16 +438,52 @@ class OverlayScrollbarInstance {
       const thumbWidth = Math.max(24, (clientWidth / scrollWidth) * clientWidth);
       const maxScrollLeft = scrollWidth - clientWidth;
       const maxThumbLeft = clientWidth - thumbWidth;
-      const absScrollLeft = Math.abs(scrollLeft);
-      const thumbLeft = maxScrollLeft > 0 ? (absScrollLeft / maxScrollLeft) * maxThumbLeft : 0;
 
-      const thumbX = isRTL ? (scrollLeft - thumbLeft) : (scrollLeft + thumbLeft);
       const widthPx = `${thumbWidth}px`;
       if (this.thumbH!.style.width !== widthPx) {
         this.thumbH!.style.width = widthPx;
       }
-      this.thumbH!.style.transform = `translate3d(${thumbX}px, 0, 0)`;
+
+      if (this.hasScrollTimeline) {
+        if (!this.timelineH) {
+          try {
+            this.timelineH = new (window as any).ScrollTimeline({
+              source: this.el,
+              axis: 'x',
+            });
+          } catch {}
+        }
+
+        if (this.timelineH && (this.lastMaxScrollLeft !== maxScrollLeft || this.lastMaxThumbLeft !== maxThumbLeft || !this.animH)) {
+          this.lastMaxScrollLeft = maxScrollLeft;
+          this.lastMaxThumbLeft = maxThumbLeft;
+          if (this.animH) this.animH.cancel();
+          this.thumbH!.style.transform = '';
+          const sign = isRTL ? -1 : 1;
+          this.animH = this.thumbH!.animate(
+            {
+              transform: [
+                'translate3d(0px, 0, 0)',
+                `translate3d(${sign * (maxScrollLeft + maxThumbLeft)}px, 0, 0)`
+              ]
+            },
+            {
+              timeline: this.timelineH,
+              fill: 'both'
+            }
+          );
+        }
+      } else {
+        const absScrollLeft = Math.abs(scrollLeft);
+        const thumbLeft = maxScrollLeft > 0 ? (absScrollLeft / maxScrollLeft) * maxThumbLeft : 0;
+        const thumbX = isRTL ? (scrollLeft - thumbLeft) : (scrollLeft + thumbLeft);
+        this.thumbH!.style.transform = `translate3d(${thumbX}px, 0, 0)`;
+      }
     } else {
+      if (this.animH) {
+        this.animH.cancel();
+        this.animH = null;
+      }
       if (this.trackH && this.trackH.style.display !== 'none') this.trackH.style.display = 'none';
     }
   }
@@ -484,6 +564,14 @@ class OverlayScrollbarInstance {
     if (this.rafId !== null) {
       cancelAnimationFrame(this.rafId);
       this.rafId = null;
+    }
+    if (this.animV) {
+      this.animV.cancel();
+      this.animV = null;
+    }
+    if (this.animH) {
+      this.animH.cancel();
+      this.animH = null;
     }
     this.trackV?.remove();
     this.trackH?.remove();
