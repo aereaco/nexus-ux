@@ -26,15 +26,7 @@
       searchHighlightCount: 0,
       searchTicks: [],
       searchTickTrackStyle: {},
-      jumpToSearchTick: function(pct) {
-        const panel = Array.from(document.querySelectorAll('[role=tabpanel]')).find(function(p) { return p.offsetParent !== null && window.getComputedStyle(p).display !== 'none'; }) || document.querySelector('[role=tabpanel]');
-        if (!panel) return;
-        const scrollEl = panel.querySelector('.overflow-y-auto') || panel.closest('.overflow-y-auto') || document.querySelector('.overflow-y-auto');
-        if (scrollEl) {
-          const targetScroll = (pct / 100) * scrollEl.scrollHeight - (scrollEl.clientHeight / 2);
-          scrollEl.scrollTo({ top: Math.max(0, targetScroll), behavior: 'smooth' });
-        }
-      },
+      searchTargetTick: null,
       clearPageHighlights: function(tabId) {
         const id = tabId || (typeof router !== 'undefined' ? router.activePageTabId : '');
         if (id && this.searchTabs && this.searchTabs[id]) {
