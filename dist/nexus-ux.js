@@ -9022,15 +9022,6 @@ ${match}</ul>
         cachedOverflowX = null;
         cachedRTL = false;
         lastStyleCheck = 0;
-        animV = null;
-        animH = null;
-        timelineV = null;
-        timelineH = null;
-        lastMaxScrollTop = -1;
-        lastMaxThumbTop = -1;
-        lastMaxScrollLeft = -1;
-        lastMaxThumbLeft = -1;
-        hasScrollTimeline = typeof window.ScrollTimeline !== "undefined";
         constructor(el) {
           this.el = el;
           this.init();
@@ -9087,49 +9078,14 @@ ${match}</ul>
             const thumbHeight = Math.max(24, clientHeight / scrollHeight * clientHeight);
             const maxScrollTop = scrollHeight - clientHeight;
             const maxThumbTop = clientHeight - thumbHeight;
+            const thumbTop = maxScrollTop > 0 ? scrollTop / maxScrollTop * maxThumbTop : 0;
+            const thumbY = scrollTop + thumbTop;
             const heightPx = `${thumbHeight}px`;
             if (this.thumbV.style.height !== heightPx) {
               this.thumbV.style.height = heightPx;
             }
-            if (this.hasScrollTimeline) {
-              if (!this.timelineV) {
-                try {
-                  this.timelineV = new window.ScrollTimeline({
-                    source: this.el,
-                    axis: "y"
-                  });
-                } catch {
-                }
-              }
-              if (this.timelineV && (this.lastMaxScrollTop !== maxScrollTop || this.lastMaxThumbTop !== maxThumbTop || !this.animV)) {
-                this.lastMaxScrollTop = maxScrollTop;
-                this.lastMaxThumbTop = maxThumbTop;
-                if (this.animV)
-                  this.animV.cancel();
-                this.thumbV.style.transform = "";
-                this.animV = this.thumbV.animate(
-                  {
-                    transform: [
-                      "translate3d(0, 0px, 0)",
-                      `translate3d(0, ${maxScrollTop + maxThumbTop}px, 0)`
-                    ]
-                  },
-                  {
-                    timeline: this.timelineV,
-                    fill: "both"
-                  }
-                );
-              }
-            } else {
-              const thumbTop = maxScrollTop > 0 ? scrollTop / maxScrollTop * maxThumbTop : 0;
-              const thumbY = scrollTop + thumbTop;
-              this.thumbV.style.transform = `translate3d(0, ${thumbY}px, 0)`;
-            }
+            this.thumbV.style.transform = `translate3d(0, ${thumbY}px, 0)`;
           } else {
-            if (this.animV) {
-              this.animV.cancel();
-              this.animV = null;
-            }
             if (this.trackV && this.trackV.style.display !== "none")
               this.trackV.style.display = "none";
           }
@@ -9139,51 +9095,15 @@ ${match}</ul>
             const thumbWidth = Math.max(24, clientWidth / scrollWidth * clientWidth);
             const maxScrollLeft = scrollWidth - clientWidth;
             const maxThumbLeft = clientWidth - thumbWidth;
+            const absScrollLeft = Math.abs(scrollLeft);
+            const thumbLeft = maxScrollLeft > 0 ? absScrollLeft / maxScrollLeft * maxThumbLeft : 0;
+            const thumbX = isRTL ? scrollLeft - thumbLeft : scrollLeft + thumbLeft;
             const widthPx = `${thumbWidth}px`;
             if (this.thumbH.style.width !== widthPx) {
               this.thumbH.style.width = widthPx;
             }
-            if (this.hasScrollTimeline) {
-              if (!this.timelineH) {
-                try {
-                  this.timelineH = new window.ScrollTimeline({
-                    source: this.el,
-                    axis: "x"
-                  });
-                } catch {
-                }
-              }
-              if (this.timelineH && (this.lastMaxScrollLeft !== maxScrollLeft || this.lastMaxThumbLeft !== maxThumbLeft || !this.animH)) {
-                this.lastMaxScrollLeft = maxScrollLeft;
-                this.lastMaxThumbLeft = maxThumbLeft;
-                if (this.animH)
-                  this.animH.cancel();
-                this.thumbH.style.transform = "";
-                const sign = isRTL ? -1 : 1;
-                this.animH = this.thumbH.animate(
-                  {
-                    transform: [
-                      "translate3d(0px, 0, 0)",
-                      `translate3d(${sign * (maxScrollLeft + maxThumbLeft)}px, 0, 0)`
-                    ]
-                  },
-                  {
-                    timeline: this.timelineH,
-                    fill: "both"
-                  }
-                );
-              }
-            } else {
-              const absScrollLeft = Math.abs(scrollLeft);
-              const thumbLeft = maxScrollLeft > 0 ? absScrollLeft / maxScrollLeft * maxThumbLeft : 0;
-              const thumbX = isRTL ? scrollLeft - thumbLeft : scrollLeft + thumbLeft;
-              this.thumbH.style.transform = `translate3d(${thumbX}px, 0, 0)`;
-            }
+            this.thumbH.style.transform = `translate3d(${thumbX}px, 0, 0)`;
           } else {
-            if (this.animH) {
-              this.animH.cancel();
-              this.animH = null;
-            }
             if (this.trackH && this.trackH.style.display !== "none")
               this.trackH.style.display = "none";
           }
@@ -9264,14 +9184,6 @@ ${match}</ul>
           if (this.rafId !== null) {
             cancelAnimationFrame(this.rafId);
             this.rafId = null;
-          }
-          if (this.animV) {
-            this.animV.cancel();
-            this.animV = null;
-          }
-          if (this.animH) {
-            this.animH.cancel();
-            this.animH = null;
           }
           this.trackV?.remove();
           this.trackH?.remove();
