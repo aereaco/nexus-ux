@@ -44,55 +44,78 @@ on outcomes and practical implementation patterns. Built on the **Omni-State
 
 ## Preface: Quick Start
 
-### Your First Nexus-UX App
+### Your First Nexus-UX App in 60 Seconds
 
-**Step 1: Include the Runtime**
+Get running instantly with zero build tools, zero bundlers, and zero npm installs. Just drop the ESM runtime into standard HTML.
+
+**Step 1: Include the Runtime & Declare State**
 
 ```html
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Nexus App</title>
-    <!-- Nexus-UX runtime -->
-    <script src="https://cdn.nexus.io/ux/v1.0.0/nexus-ux.min.js"></script>
+    <!-- Drop-in zero-build ESM runtime -->
+    <script type="module" src="/dist/nexus-ux.min.js"></script>
   </head>
-  <body>
-    <!-- Your app goes here -->
+  <body class="bg-slate-900 text-white min-h-screen flex items-center justify-center">
+    <!-- Declarative reactive component -->
+    <main
+      data-signal="{ count: 0, text: 'Hello Nexus-UX' }"
+      class="p-8 rounded-2xl bg-white/5 border border-white/10 shadow-2xl flex flex-col items-center gap-4"
+    >
+      <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+        Interactive Nexus App
+      </h1>
+
+      <p class="text-neutral-400">
+        Message: <span class="font-semibold text-white" data-bind="text"></span>
+      </p>
+
+      <input
+        type="text"
+        data-bind-value="text"
+        class="px-4 py-2 bg-black/40 border border-white/20 rounded-lg text-sm text-white focus:outline-none focus:border-blue-400"
+      />
+
+      <div class="flex items-center gap-4 mt-2">
+        <button
+          data-on-click="count--"
+          class="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 rounded-lg font-bold transition-all"
+        >
+          -
+        </button>
+        <span class="font-mono text-xl font-bold text-blue-400" data-bind="count">0</span>
+        <button
+          data-on-click="count++"
+          class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg font-bold transition-all"
+        >
+          +
+        </button>
+      </div>
+    </main>
   </body>
 </html>
 ```
 
-**Step 2: Connect to SurrealDB**
+**Step 2: Real-Time Backends via Declarative Sprites (Optional)**
 
-```html
-<script>
-  // Initialize Nexus-UX runtime
-  $nexus.connect({
-    endpoint: "ws://localhost:8000/rpc", // SurrealDB WebSocket
-    namespace: "myapp",
-    database: "production",
-    auth: {
-      scope: "locker", // Use Nexus Locker authentication
-      email: "user@example.com",
-      password: "your_password",
-    },
-  });
-</script>
-```
-
-**Step 3: Build Your UI**
+If connecting to SurrealDB for live data sync, query directly within reactive state declarations without imperative connection boilerplate:
 
 ```html
 <div data-signal="{ users: $sql('LIVE SELECT * FROM user') }">
-  <h1>Users ({users.length})</h1>
+  <h2>Live Users (<span data-bind="users.length">0</span>)</h2>
   <ul>
-    <li data-for="user in users">{user.name} ({user.email})</li>
+    <li data-for="user in users">
+      <span data-bind="user.name"></span> (<span data-bind="user.email"></span>)
+    </li>
   </ul>
 </div>
 ```
 
-**That's it.** No build step, no npm, no webpack. Just HTML + data bindings.
+**That's it.** No build step, no npm, no webpack. Just HTML + reactive data bindings.
 
 ---
 
@@ -1565,23 +1588,22 @@ Payment Request API replaced by native browser API.
 
 ---
 
-## Chapter 7.5: native APIs (`_`) — The Unified JIT Proxy
+## Chapter 7.5: Native Web APIs (`.`) — Direct JIT Proxy & Storage Binding
 
-Mirrors are **reactive wrappers** mapped directly to the `globalThis.window`
-object. They use the `_` prefix, triggering the framework's lazy JIT proxy
-engine that directly binds browser capabilities to visual state without
-requiring static module wrappers or framework updates for novel browser APIs.
+Nexus-UX provides **direct, fine-grained, push-based reactive access** to browser APIs (`window`, `localStorage`, `sessionStorage`, `navigator`, `document`, `screen`, `indexedDB`) directly through standard JavaScript property access (`.` token).
+
+Unlike static native getters (`localStorage.getItem()`) that sample state only when invoked, **Native API Binding** automatically intercepts reads and writes via Proxy/Reflect traps. It registers fine-grained event listeners (`resize`, `scroll`, `storage`) on read and **actively pushes state updates** to watching signals and DOM elements whenever native Web APIs mutate. No `_` prefix or mirror wrapper modules are required.
 
 - **Lazy Reactivity Allocation (ZCZS)**: Memory for synchronization (like
   `resize`, `storage`, or `hashchange` event listeners) is only allocated to the
   runtime heap if an HTML template explicitly registers a read dependency on
-  that property. If your application never accesses `_localStorage`, no tracking
+  that property. If your application never accesses `localStorage`, no tracking
   payload or system listener is booted.
+- **Push-Based Native Observation**: Native Web API reads register fine-grained dependencies and automatically push updates to watching signals and elements upon mutation.
 
-### 7.5.1. `_window` (read-write)
+### 7.5.1. `window` (read-only reactive viewport)
 
-Because `_` proxies `window` natively, any global state point is directly
-accessible without specialized syntax.
+Standard global properties on `window` are tracked reactively via native listeners.
 
 ```html
 <!-- Read: responsive layout info tracked lazily on native 'resize' -->
@@ -1595,16 +1617,14 @@ accessible without specialized syntax.
 
 <!-- Write: update native document title directly -->
 <div
-  data-effect="window.document.title = 'Dashboard (' + notifications.length + ')'"
+  data-effect="document.title = 'Dashboard (' + notifications.length + ')'"
 >
 </div>
 ```
 
-### 7.5.2. `_localStorage` (read-write)
+### 7.5.2. `localStorage` (read-write two-way binding)
 
-Because `window.localStorage` is globally accessible, `_localStorage` maps to it
-seamlessly. Reads are reactive, and writes persist immediately while syncing
-across tabs via dynamic JIT `storage` event bindings.
+`window.localStorage` is globally accessible and reactively bound. Reads return current values; writes persist immediately and sync across tabs via dynamic JIT `storage` event bindings.
 
 ```html
 <!-- Read: initialize from stored value -->
@@ -1618,20 +1638,19 @@ across tabs via dynamic JIT `storage` event bindings.
 <button data-on-click="localStorage.theme = 'dark'">Force Dark Mode</button>
 ```
 
-### 7.5.3. `_sessionStorage` (read-write)
+### 7.5.3. `sessionStorage` (read-write tab-scoped binding)
 
-Functions exactly like `_localStorage`, mapping dynamically to `sessionStorage`.
-Values do not sync across tabs and are cleared when the tab closes.
+Functions exactly like `localStorage`, mapping dynamically to `sessionStorage`. Values do not sync across tabs and are cleared when the tab closes.
 
 ```html
 <!-- Persist draft state across page reloads (within the same tab) -->
 <div
   data-signal="{ draft: '' }"
-  data-on-load="draft = _sessionStorage['editor:draft'] || ''"
+  data-on-load="draft = sessionStorage['editor:draft'] || ''"
 >
   <textarea
     data-bind="draft"
-    data-on-input="_sessionStorage['editor:draft'] = draft"
+    data-on-input="sessionStorage['editor:draft'] = draft"
   >
   </textarea>
 </div>
@@ -1639,16 +1658,13 @@ Values do not sync across tabs and are cleared when the tab closes.
 
 ### 7.5.4. Future-Proof Forward Compatibility
 
-Because the `_` identifier resolves universally to the `globalThis.window`
-object, **literally any Global API (existing or future) is supported instantly
-without framework updates.**
+Because property access resolves universally to the browser's global scope, **literally any Global API (existing or future) is supported instantly without framework updates.**
 
-If the W3C releases a new `window.ai` Native LLM API tomorrow, Nexus-UX natively
-supports declarative tracking of it today.
+If the W3C releases a new `window.ai` Native LLM API tomorrow, Nexus-UX natively supports declarative tracking of it today:
 
 ```html
 <!-- Experimental or custom properties exposed by plugins / host OS -->
-<div data-bind="_experimentalAPI.status"></div>
+<div data-bind="window.ai.status"></div>
 ```
 
 ---

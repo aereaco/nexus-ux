@@ -562,31 +562,18 @@ Native API Signal Binding provides **live, push-based reactive access** to brows
 | :------------------ | :------------ | :----------- | :-------------------------------------------------------------------------------------------------------------- | :--- |
 | **`window`**        | `Window`      | ⚠️ read-only | Reactive proxy to `window`. Properties like `innerWidth`, `scrollY` tracked lazily via resize/scroll listeners. | `<div data-bind="window.innerWidth"></div>` |
 | **`localStorage`**  | `Storage`     | ✅ read-write | Two-way reactive binding. Reads return current value; writes persist automatically via `Reflect.set()` trap.     | `<div data-bind="localStorage.collapsed"></div>` |
-| **`sessionStorage`**| `Storage`     | ✅ read-write | Same pattern as localStorage, scoped to session.                                                               | `<div data-bind="sessionStorage.theme"></div>` |
-| **`navigator`**     | `Navigator`   | ⚠️ read-only | Reactive read-only viewport to `navigator` (platform, language, onLine, etc.).                                   | `<div data-bind="navigator.language"></div>` |
-| **`document`**      | `Document`    | ⚠️ read-only | Reactive read-only viewport to `document` (title, visibilityState, etc.).                                       | `<div data-bind="document.title"></div>` |
-| **`screen`**        | `Screen`      | ⚠️ read-only | Reactive orientation/dimensions via JIT resize listener.                                                        | `<div data-bind="screen.width"></div>` |
-| **`_sessionStorage`**  | `Storage`     | ⚠️ read-only | Reactive read-only viewport to `sessionStorage`. Mutate via native `sessionStorage.setItem()`.                            | —                        |
-| **`_navigator`**       | `Navigator`   | ⚠️ read-only | Reactive online/offline, hardware concurrency, media devices, etc.                                                         | —                        |
-| **`_screen`**          | `Screen`      | ⚠️ read-only | Reactive orientation/dimensions via JIT resize listener.                                                                   | —                        |
-| **`_fetch()`**         | `Function`    | ✅ yes       | Raw fetch with SuspenseProxy integration. **Replaces** `$fetch`.                                                           | `$fetch` → `_fetch()`    |
-| **`_http`**            | `Namespace`   | ✅ yes       | `{ get, post, put, patch, delete }` — auto-JSON helpers. **Replaces** `$http` family.                                     | `$get` → `_http.get()`   |
-| **`_clipboard`**       | `Clipboard`   | ⚠️ read-only | Native Clipboard API (`writeText()`, `readText()`). **Replaces** `$clipboard`.                                            | `$clipboard` → `_clipboard` |
-| **`_caches`**          | `CacheStorage`| ✅ yes       | Reactive Cache Storage (`default` cache + `open()`, `put()`, `match()`). **Replaces** `$cache`.                           | `$cache` → `_caches`     |
-| **`_Notification`**    | `Constructor` | ⚠️ ctor-only | `new _Notification(title, opts)`; static `.permission`, `.requestPermission()`. **Replaces** `$notification`.            | `$notification` → `_Notification` |
-| **`_PaymentRequest`**  | `Constructor` | ⚠️ ctor-only | `new _PaymentRequest(methods, details)`; `.canMakePayment()`. **Replaces** `$payment`.                                    | `$payment` → `_PaymentRequest` |
-| **`_WebSocket`**       | `Constructor` | ✅ yes       | Reactive WebSocket with singleton multiplexing + auto-cleanup. **Replaces** `$ws`.                                         | `$ws` → `_WebSocket()`   |
-| **`_download()`**      | `Function`    | ✅ yes       | Utility function `_download(filename, content, mime)` — synchronous Blob URL generator. **Retained** (not a sprite).      | — (utility unchanged)    |
-| **`_IntersectionObserver`**  | `Constructor` | ✅ yes  | Bare `_IntersectionObserver(cb)` → global singleton; `new` → isolated instance with cleanup.                               | —                        |
-| **`_ResizeObserver`**  | `Constructor` | ✅ yes       | Same pattern: bare = singleton; `new` = isolated.                                                                          | —                        |
-| **`_MutationObserver`**| `Constructor` | ✅ yes       | Used internally by framework mutation engine.                                                                              | —                        |
-| **`_PerformanceObserver`** | `Constructor` | ✅ yes  | Global performance entry observer.                                                                                          | —                        |
-| **`_Worker`**          | `Constructor` | ✅ yes       | Web Worker multiplexing (shared instances by URL).                                                                          | —                        |
-| **`_BroadcastChannel`**| `Constructor` | ✅ yes       | BroadcastChannel multiplexing (shared by channel name).                                                                    | —                        |
+| **`sessionStorage`**| `Storage`     | ✅ read-write | Same pattern as localStorage, scoped to session lifetime.                                                       | `<div data-bind="sessionStorage.theme"></div>` |
+| **`indexedDB`**     | `IDBFactory`  | ✅ read-write | Reactive IndexedDB proxy supporting intuitive syntax (`indexedDB.store.get()`, `put()`, `all()`).               | `<div data-signal="{ items: await indexedDB.notes.all() }"></div>` |
+| **`navigator`**     | `Navigator`   | ⚠️ read-only | Reactive read-only viewport to `navigator` (`language`, `onLine`, `hardwareConcurrency`, clipboard).             | `<div data-bind="navigator.language"></div>` |
+| **`document`**      | `Document`    | ⚠️ read-only | Reactive read-only viewport to `document` (`title`, `visibilityState`, etc.).                                   | `<div data-bind="document.title"></div>` |
+| **`screen`**        | `Screen`      | ⚠️ read-only | Reactive orientation and screen dimensions via JIT resize listener.                                             | `<div data-bind="screen.width"></div>` |
+| **`fetch()`**       | `Function`    | ✅ callable  | Native `fetch()` Web API available directly in expressions and event handlers.                                   | `<button data-on-click="data = await (await fetch('/api')).json()"></button>` |
+| **`WebSocket`**     | `Constructor` | ✅ callable  | Native WebSocket constructor available directly without framework wrapper tax.                                 | `<div data-signal="{ ws: new WebSocket('wss://...') }"></div>` |
+| **`Worker`**        | `Constructor` | ✅ callable  | Native Web Worker constructor for background computation.                                                       | `<div data-signal="{ w: new Worker('/worker.js') }"></div>` |
 
-> **Universal Forward-Compatibility**: Any global `window` property, present or future, is
-> automatically available via `_<PropertyName>`. If the browser introduces `window.ai`
-> or `window.uhd`, you can immediately use `_ai` or `_uhd` without framework changes.
+> **Universal Forward-Compatibility**: Any global Web API, present or future, is
+> automatically available via standard JavaScript property access (`.` token). If the browser introduces `window.ai`
+> or `window.translation`, you can immediately access and bind to it without framework changes.
 
 ---
 
@@ -1890,7 +1877,7 @@ capabilities, active issues, and ongoing evolution.
 #### Current (Production Verified)
 
 - ZCZS Reactor Core (`Proxy` and `Binary Heaps`)
-- Unified JIT Mirror Proxy (`_window`, `_localStorage`, etc.)
+- Unified JIT Native Web API Proxy (`window`, `localStorage`, `indexedDB`, etc.)
 - Constructable `StyleSheetManager` Integration
 - Native Hypermedia Interoperability (`_morph`)
 - Comprehensive Routing Ecosystem (`data-router`)
@@ -1910,7 +1897,7 @@ capabilities, active issues, and ongoing evolution.
 ### 11.2. Bug & Defect Register
 
 - **Resolved / Patched**:
-  - _Bug 0x1A_: Circular Proxy dependency crashing native `_window` mirror
+  - _Bug 0x1A_: Circular Proxy dependency crashing native `window` proxy
     mapping. (Patched).
   - _Bug 0x1B_: `data-show` bypass bypasses layout flow; replaced raw inline
     styling with robust Reconciler/JIT Style Manager invocation.

@@ -79,14 +79,15 @@ _not_ require module imports:
 
 ### Retained Sprites (Unique Value)
 
-These 14 sprites provide capabilities beyond native browser APIs and remain as
+These 15 sprites provide capabilities beyond native browser APIs and remain as
 explicit modules:
 
 | Sprite | Description |
 | :--- | :--- |
 | **`$animate`** | Reactive Web Animations API engine with keyframes and timeline control |
+| **`$drag`** | Interactive drag-and-drop delta coordinate injection and physics |
 | **`$selector`** | High-performance reactive DOM query engine (`$()` selector) |
-| **`$predictive`** | 4D predictive interaction engine (frustum projection, quadtree) |
+| **`$predictive`** | 4D predictive interaction engine (frustum projection, velocity vector $V_{xyzt}$, quadtree) |
 | **`$sql`** | SurrealDB reactive queries (LIVE SELECT real-time diff sync) |
 | **`$gql`** | GraphQL queries with reactive results |
 | **`$mcp`** | Model Context Protocol integration for AI agent orchestration |
@@ -115,35 +116,75 @@ Nexus-UX utilizes a deterministic, token-based grammar for high-baud efficiency:
 
 ---
 
-## 🧩 Core Directives (30 Modules)
+## 🧩 Core Directives (All 30 Modules)
 
-| Directive | Role | Description |
+| Directive | Category | Description |
 | :--- | :--- | :--- |
 | **`data-signal`** | **State** | Initializes reactive signals with continuous dependency re-evaluation and typed heap allocation. |
-| **`data-bind`** | **Binding** | High-performance bidirectional binding to inputs, text content, and native browser Web APIs. |
+| **`data-bind`** | **Binding** | High-performance bidirectional binding to inputs, text content, attributes, and native Web APIs. |
 | **`data-computed`** | **Derivative** | Read-only derived signal caching expression results. |
 | **`data-effect`** | **Side Effect** | Element-bound reactive side effects with automated disposal cleanups. |
-| **`data-if` / `data-show`** | **Control Flow** | Conditional rendering via physical DOM morphing (`data-if`) or visual toggling (`data-show`). |
+| **`data-if`** | **Control Flow** | Conditional rendering via physical DOM morphing and anchor comments. |
+| **`data-show`** | **Visibility** | Visual toggle controlling `display: none` without modifying DOM structure. |
 | **`data-for`** | **Iteration** | Keyed list rendering with zero memory allocation. |
-| **`data-class`** | **Hardened JIT** | Reconciles dynamic classes and Tailwind v4 utilities against reactive state. |
-| **`data-style`** | **Dynamic Style** | Dynamic inline CSS property synchronization with automatic unit appending. |
+| **`data-class`** | **Styling** | Reconciles dynamic classes and Tailwind v4 utilities against reactive state. |
+| **`data-style`** | **Styling** | Dynamic inline CSS property synchronization with automatic unit appending. |
 | **`data-stylesheet`** | **Adopted CSS** | Bridges constructable stylesheets and Tailwind v4 theme tokens into the CSSOM. |
 | **`data-theme`** | **Theming** | Dynamic theme and color-mode orchestrator (`auto`, `light`, `dark`). |
-| **`data-switcher`** | **Iteration** | Automates cycling through states (e.g., Theme Switchers). |
+| **`data-switcher`** | **State Cycling** | Automates cycling through states (e.g., Theme Switchers, tabs). |
 | **`data-drag`** | **Drag & Drop** | Native DnD engine supporting multi-drag, groups, cloning, handles, and sorting. |
+| **`data-teleport`** | **Portals** | Teleports elements to target containers while preserving reactive context. |
 | **`data-flow`** | **Spatial Canvas** | Infinite-canvas layout engine with pan, zoom, and spatial coordinate mapping. |
-| **`data-on`** | **Behavior** | Event handlers with NEG pipeline modifiers (`_debounce`, `_once`, `_prevent`). |
-| **`data-router` / `data-route`** | **Routing** | Declarative SPA client routing with guards, layouts, and History API sync. |
+| **`data-on`** | **Behavior** | Declarative event handlers with NEG pipeline modifiers (`_debounce`, `_once`, `_prevent`). |
+| **`data-router`** | **Routing** | Declarative SPA client routing with guards, layouts, page tabs, and history sync. |
+| **`data-route`** | **Routing** | Declarative route registration and component association. |
 | **`data-component`** | **Components** | Mounts reusable HTML component fragments into Shadow DOM or light DOM. |
 | **`data-import`** | **Asset Registry** | Asynchronously adopts scripts, stylesheets, and VFS components. |
 | **`data-pwa`** | **PWA** | Progressive Web App lifecycle, service worker registration, and install prompts. |
 | **`data-markdown`** | **Transpiler** | Zero-dependency markdown-to-HTML parser with Tailwind typography. |
-| **`data-mask`** | **Masking** | Visual SVG and CSS mask synchronization. |
+| **`data-mask`** | **Masking** | Real-time input masking and visual clipping. |
+| **`data-scrollbar`** | **Overlays** | GPU-accelerated overlay scrollbars with auto-hide and custom styling. |
+| **`data-html`** | **DOM Injection** | Injects raw HTML into the element and runs `processElement` on children. |
 | **`data-preserve`** | **Shield** | Prevents node and state loss during server-driven morph reconciliation. |
-| **`data-raf`** | **Animation** | Runs 120fps animation callbacks on every animation frame. |
-| **`data-teleport`** | **Portal** | Teleports elements to target containers while preserving reactive context. |
-| **`data-assert` / `data-debug`** | **Diagnostics** | Runtime invariant assertions and agentic self-heal inspector beacons. |
+| **`data-raf`** | **Animation** | Runs 60/120fps animation callbacks on every animation frame. |
+| **`data-assert`** | **Diagnostics** | Runtime invariant validation and boundary checking. |
+| **`data-debug`** | **Diagnostics** | Verbose diagnostic inspector beacons and MCP AI auto-repair routing. |
 | **`data-build`** | **Bundler** | In-browser asset serialization to IndexedDB. |
+
+---
+
+## ⚡ The 15 Event Modifiers & 6 Reactive Scopes
+
+### Event Modifiers (`src/modules/modifiers/`)
+Piped directly onto event directives (`data-on-<event>:<modifier>` or `data-on-<event>_<modifier>`):
+- **`:prevent`** (`preventDefault()`), **`:stop`** (`stopPropagation()`), **`:self`** (trigger on element itself), **`:outside`** (click outside to dismiss)
+- **`:once`** (fire once), **`:debounce.<ms>`** (e.g. `:debounce.200`), **`:throttle.<ms>`**, **`:delay.<ms>`**, **`:hold.<ms>`** (press-and-hold)
+- **Key filters**: `:enter`, `:escape`, `:space`, `:up`, `:down`, `:left`, `:right`, `:tab`, `:delete`, `:ctrl`, `:alt`, `:shift`, `:meta`
+- **Target wrappers**: `:window`, `:document`, **Morph**: `:morph`, **Gestures**: `:drag`, `:zoom`
+
+### Reactive Scopes (`src/modules/scopes/`)
+Rule blocks evaluated using NEG grammar `@rule(param) { body }`:
+- **`@media(...)`**: Responsive viewport media query (`@media('(min-width: 768px)') { ... }`)
+- **`@container(...)`**: Responsive container dimension query
+- **`@auth('role')`**: Active permission and role-based gating
+- **`@os('platform')`**: Platform OS awareness (`macos`, `windows`, `linux`, `ios`, `android`)
+- **`@view`**: Viewport metrics and transition states
+- **`@native`**: Host shell and Nexus-IO bridge integration
+
+---
+
+## 🧪 Interactive Labs Ecosystem (65 Live Sandboxes)
+
+Nexus-UX features **65 interactive sandbox labs** with real-time in-browser code editing powered by CodeMirror:
+- **Attributes Catalog**: [`/labs/attributes`](file:///labs/attributes) — 30 interactive labs covering all state, binding, styling, and flow directives.
+- **Modifiers Catalog**: [`/labs/modifiers`](file:///labs/modifiers) — 15 interactive labs testing debouncing, outside-clicks, key-filtering, and gesture modifiers.
+- **Sprites Catalog**: [`/labs/sprites`](file:///labs/sprites) — 14 interactive labs testing animation, spatial queries, PWA, sync, and SurrealDB integration.
+- **Scopes Catalog**: [`/labs/scopes`](file:///labs/scopes) — 6 interactive labs testing `@media`, `@container`, `@auth`, and device queries.
+
+### Showcase Applications
+- **Todo Showcase App**: [`/todo`](file:///todo) — Multi-layout task manager with dynamic `data-import` plugins, search, and detail modals.
+- **Interactive Flow Canvas**: [`/flow`](file:///flow) — Infinite node-graph canvas with zoom, pan, and SVG edge connections.
+- **Kanban Drag-and-Drop**: [`/drag`](file:///drag) — FLIP-animated multi-list drag and drop reordering.
 
 ---
 
@@ -158,7 +199,7 @@ No transpilant, no bundler, no delay.
     <meta charset="UTF-8">
     <title>Nexus-UX: Hello World</title>
     <!-- Zero-Copy Zero-Serialization Core -->
-    <script src="/dist/nexus-ux.js"></script>
+    <script type="module" src="/dist/nexus-ux.min.js"></script>
   </head>
   <body
     class="bg-slate-900 text-white flex items-center justify-center min-h-screen"
@@ -167,7 +208,8 @@ No transpilant, no bundler, no delay.
     <main
       class="p-8 rounded-xl bg-white/5 backdrop-blur-lg border border-white/10 shadow-2xl transition-all duration-500 w-[width]"
       data-signal="{ count: 0, width: '400px' }"
-      data-on-hover="width = hovered ? '500px' : '400px'"
+      data-on-mouseenter="width = '500px'"
+      data-on-mouseleave="width = '400px'"
     >
       <h1
         class="text-6xl font-black bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent mb-4"
