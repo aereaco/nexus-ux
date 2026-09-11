@@ -8802,6 +8802,7 @@ ${match}</ul>
     }
     if (target instanceof HTMLElement && (globalConfig.mode === "overlay" || target.hasAttribute("data-scrollbar"))) {
       const inst = ensureOverlayInstance(target);
+      inst.setScrolling(true);
       inst.scheduleUpdate();
     }
     const existingTimer = elementTimers.get(target);
@@ -8809,6 +8810,11 @@ ${match}</ul>
       clearTimeout(existingTimer);
     const timer = setTimeout(() => {
       target.classList.remove("is-scrolling");
+      if (target instanceof HTMLElement) {
+        const inst = overlayInstances.get(target);
+        if (inst)
+          inst.setScrolling(false);
+      }
       elementTimers.delete(target);
     }, autohideMs);
     elementTimers.set(target, timer);
@@ -9007,6 +9013,7 @@ ${match}</ul>
       overlayInstances = /* @__PURE__ */ new WeakMap();
       OverlayScrollbarInstance = class {
         el;
+        host;
         trackV = null;
         thumbV = null;
         trackH = null;
@@ -9024,11 +9031,12 @@ ${match}</ul>
         lastStyleCheck = 0;
         constructor(el) {
           this.el = el;
+          this.host = el.parentElement || document.body;
           this.init();
         }
         init() {
-          if (window.getComputedStyle(this.el).position === "static") {
-            this.el.style.position = "relative";
+          if (this.host !== document.body && window.getComputedStyle(this.host).position === "static") {
+            this.host.style.position = "relative";
           }
           this.el.classList.add("scrollbar-overlay-active");
           this.trackV = document.createElement("div");
@@ -9036,15 +9044,24 @@ ${match}</ul>
           this.thumbV = document.createElement("div");
           this.thumbV.className = "scrollbar-thumb-v";
           this.trackV.appendChild(this.thumbV);
-          this.el.appendChild(this.trackV);
+          this.host.appendChild(this.trackV);
           this.trackH = document.createElement("div");
           this.trackH.className = "scrollbar-track-h";
           this.thumbH = document.createElement("div");
           this.thumbH.className = "scrollbar-thumb-h";
           this.trackH.appendChild(this.thumbH);
-          this.el.appendChild(this.trackH);
+          this.host.appendChild(this.trackH);
           this.bindEvents();
           this.update();
+        }
+        setScrolling(active) {
+          if (active) {
+            this.trackV?.classList.add("is-scrolling");
+            this.trackH?.classList.add("is-scrolling");
+          } else {
+            this.trackV?.classList.remove("is-scrolling");
+            this.trackH?.classList.remove("is-scrolling");
+          }
         }
         scheduleUpdate() {
           if (this.rafId !== null)
@@ -9056,7 +9073,7 @@ ${match}</ul>
         }
         update() {
           const { clientHeight, scrollHeight, clientWidth, scrollWidth, scrollTop, scrollLeft } = this.el;
-          if (this.el.getAttribute("data-scrollbar") === "none" || this.el.classList.contains("scrollbar-none")) {
+          if (this.el.getAttribute("data-scrollbar") === "none" || this.el.classList.contains("scrollbar-none") || clientHeight === 0 || clientWidth === 0 || this.el.style.display === "none") {
             if (this.trackV)
               this.trackV.style.display = "none";
             if (this.trackH)
@@ -9072,19 +9089,46 @@ ${match}</ul>
             this.cachedOverflowX = s.overflowX !== "hidden" && (s.overflowX === "auto" || s.overflowX === "scroll");
           }
           const isRTL = this.cachedRTL;
+          const isFixed = this.host === document.body;
           if (this.cachedOverflowY && scrollHeight > clientHeight && clientHeight > 0) {
             if (this.trackV && this.trackV.style.display !== "block")
               this.trackV.style.display = "block";
+            if (this.trackV) {
+              if (isFixed) {
+                const rect = this.el.getBoundingClientRect();
+                this.trackV.style.position = "fixed";
+                this.trackV.style.top = `${rect.top}px`;
+                this.trackV.style.height = `${clientHeight}px`;
+                if (isRTL) {
+                  this.trackV.style.left = `${rect.left + 2}px`;
+                  this.trackV.style.right = "auto";
+                } else {
+                  this.trackV.style.right = `${window.innerWidth - rect.right + 2}px`;
+                  this.trackV.style.left = "auto";
+                }
+              } else {
+                this.trackV.style.position = "absolute";
+                this.trackV.style.top = `${this.el.offsetTop}px`;
+                this.trackV.style.height = `${clientHeight}px`;
+                if (isRTL) {
+                  this.trackV.style.left = `${this.el.offsetLeft + 2}px`;
+                  this.trackV.style.right = "auto";
+                } else {
+                  const rightOffset = Math.max(2, this.host.clientWidth - (this.el.offsetLeft + this.el.clientWidth) + 2);
+                  this.trackV.style.right = `${rightOffset}px`;
+                  this.trackV.style.left = "auto";
+                }
+              }
+            }
             const thumbHeight = Math.max(24, clientHeight / scrollHeight * clientHeight);
             const maxScrollTop = scrollHeight - clientHeight;
             const maxThumbTop = clientHeight - thumbHeight;
             const thumbTop = maxScrollTop > 0 ? scrollTop / maxScrollTop * maxThumbTop : 0;
-            const thumbY = scrollTop + thumbTop;
             const heightPx = `${thumbHeight}px`;
             if (this.thumbV.style.height !== heightPx) {
               this.thumbV.style.height = heightPx;
             }
-            this.thumbV.style.transform = `translate3d(0, ${thumbY}px, 0)`;
+            this.thumbV.style.transform = `translate3d(0, ${thumbTop}px, 0)`;
           } else {
             if (this.trackV && this.trackV.style.display !== "none")
               this.trackV.style.display = "none";
@@ -9092,12 +9136,27 @@ ${match}</ul>
           if (this.cachedOverflowX && scrollWidth > clientWidth && clientWidth > 0) {
             if (this.trackH && this.trackH.style.display !== "block")
               this.trackH.style.display = "block";
+            if (this.trackH) {
+              if (isFixed) {
+                const rect = this.el.getBoundingClientRect();
+                this.trackH.style.position = "fixed";
+                this.trackH.style.left = `${rect.left}px`;
+                this.trackH.style.width = `${clientWidth}px`;
+                this.trackH.style.bottom = `${window.innerHeight - rect.bottom + 2}px`;
+              } else {
+                this.trackH.style.position = "absolute";
+                this.trackH.style.left = `${this.el.offsetLeft}px`;
+                this.trackH.style.width = `${clientWidth}px`;
+                const bottomOffset = Math.max(2, this.host.clientHeight - (this.el.offsetTop + this.el.clientHeight) + 2);
+                this.trackH.style.bottom = `${bottomOffset}px`;
+              }
+            }
             const thumbWidth = Math.max(24, clientWidth / scrollWidth * clientWidth);
             const maxScrollLeft = scrollWidth - clientWidth;
             const maxThumbLeft = clientWidth - thumbWidth;
             const absScrollLeft = Math.abs(scrollLeft);
             const thumbLeft = maxScrollLeft > 0 ? absScrollLeft / maxScrollLeft * maxThumbLeft : 0;
-            const thumbX = isRTL ? scrollLeft - thumbLeft : scrollLeft + thumbLeft;
+            const thumbX = isRTL ? -thumbLeft : thumbLeft;
             const widthPx = `${thumbWidth}px`;
             if (this.thumbH.style.width !== widthPx) {
               this.thumbH.style.width = widthPx;
