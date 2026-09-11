@@ -97,6 +97,16 @@
     "category": "Apps"
   },
   {
+    "id": "todo",
+    "route": "/todo",
+    "path": "/_pages/todo.html",
+    "title": "Nexus-UX • Advanced Todo",
+    "icon": "material-symbols-light:checklist",
+    "order": 2,
+    "parent": null,
+    "category": "Apps"
+  },
+  {
     "id": "doc-spec",
     "route": "/docs/spec",
     "path": "/_pages/docs/spec.md",
@@ -390,7 +400,7 @@
     "route": "/labs/sprites/gql",
     "path": "/_pages/labs/sprites/gql.html",
     "title": "$gql",
-    "icon": "material-symbols-light:graphql",
+    "icon": "mdi:graphql",
     "order": 5,
     "parent": "/labs/sprites",
     "category": "Labs",
