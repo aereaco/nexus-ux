@@ -1619,8 +1619,8 @@ export const dragAttribute: AttributeModule = {
     if (value && value.trim()) {
       try {
         const evaluated = runtime.evaluate(container, value);
-        if (evaluated && typeof evaluated === 'object' && !Array.isArray(evaluated) && evaluated.list) {
-          listExpr = evaluated.list;
+        if (evaluated && typeof evaluated === 'object' && !Array.isArray(evaluated) && (evaluated as any).list) {
+          listExpr = (evaluated as any).list;
         } else if (typeof evaluated === 'string') {
           listExpr = evaluated;
         } else {

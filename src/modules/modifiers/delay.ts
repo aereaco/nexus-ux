@@ -26,7 +26,12 @@
 import { ModifierModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { DEFAULT_DEBOUNCE_TIME } from '../../engine/consts.ts';
-import { getTimerMap, parseCommandArg, resolveTimerDuration } from '../../engine/utils/timer.ts';
+import { 
+  getTimerMap, 
+  parseCommandArg, 
+  resolveTimerDuration,
+  clearTimer 
+} from '../../engine/utils/timer.ts';
 import { resolveTargetElements } from '../sprites/selector.ts';
 
 export const delayModifier: ModifierModule = {
@@ -42,7 +47,7 @@ export const delayModifier: ModifierModule = {
             const map = getTimerMap(target);
             const rec = map.get('delay');
             if (rec) {
-              clearTimeout(rec.timer);
+              clearTimer(rec);
               map.delete('delay');
             }
           });
@@ -56,7 +61,7 @@ export const delayModifier: ModifierModule = {
           const map = getTimerMap(target);
           const rec = map.get('delay');
           if (rec) {
-            clearTimeout(rec.timer);
+            clearTimer(rec);
             map.delete('delay');
           }
         });
@@ -69,7 +74,7 @@ export const delayModifier: ModifierModule = {
         const wait = resolveTimerDuration(runtime, el, arg, DEFAULT_DEBOUNCE_TIME);
         const map = getTimerMap(el);
         const existing = map.get('delay');
-        if (existing) clearTimeout(existing.timer);
+        if (existing) clearTimer(existing);
 
         const runner = () => {
           map.delete('delay');
@@ -86,7 +91,7 @@ export const delayModifier: ModifierModule = {
         const wait = resolveTimerDuration(runtime, el, arg, DEFAULT_DEBOUNCE_TIME);
         const map = getTimerMap(el);
         const existing = map.get('delay');
-        if (existing) clearTimeout(existing.timer);
+        if (existing) clearTimer(existing);
 
         const runner = () => {
           map.delete('delay');

@@ -418,26 +418,29 @@ let workerRoundRobin = 0;
  * Executes pure computation off the main thread in a worker from the topology pool.
  * Falls back to main thread execution if no workers are available (Tier 0).
  */
-export async function runInWorker<T>(
-  fn: () => T,
+export async function runInWorker<A extends readonly unknown[], R>(
+  fn: (...args: A) => R | Promise<R>,
+  args?: A,
   transferable?: Transferable[]
-): Promise<T> {
+): Promise<R> {
+  const callArgs = (args ? Array.from(args) : []) as unknown as A;
   const workers = topology.getWorkers();
   if (workers.length === 0) {
-    return fn();
+    return await fn(...callArgs);
   }
 
   const id = ++taskIdCounter;
   const worker = workers[workerRoundRobin % workers.length];
   workerRoundRobin = (workerRoundRobin + 1) % workers.length;
 
-  return new Promise<T>((resolve, reject) => {
+  return new Promise<R>((resolve, reject) => {
     pendingWorkerTasks.set(id, { resolve, reject });
     try {
       worker.postMessage({
         type: 'EXECUTE_FN',
         id,
-        fn: fn.toString()
+        fn: fn.toString(),
+        args: callArgs
       }, transferable || []);
     } catch (err) {
       pendingWorkerTasks.delete(id);

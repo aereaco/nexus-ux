@@ -6,8 +6,15 @@
 
 let _heapView: Float64Array | null = null;
 
+function describeWorkerFnError(err: unknown): string {
+  if (err instanceof ReferenceError) {
+    return `${err.message} — runInWorker() cannot see variables closed over from the caller's scope; pass them explicitly via the "args" parameter instead.`;
+  }
+  return err instanceof Error ? err.message : String(err);
+}
+
 export function handleWorkerMessage(e: MessageEvent): void {
-  const { type, payload, id, taskName, fn } = e.data || {};
+  const { type, payload, id, taskName, fn, args } = e.data || {};
 
   switch (type) {
     case 'INIT_HEAP':
@@ -28,14 +35,17 @@ export function handleWorkerMessage(e: MessageEvent): void {
       break;
 
     case 'EXECUTE_FN':
-      try {
-        const compiledFn = new Function(`return (${fn})()`);
-        const result = compiledFn();
-        self.postMessage({ type: 'RESULT', id, payload: result });
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : String(err);
-        self.postMessage({ type: 'ERROR', id, error: message });
-      }
+      (async () => {
+        try {
+          const compiledFn = new Function(`return (${fn})`)();
+          const callArgs = Array.isArray(args) ? args : [];
+          const result = await compiledFn(...callArgs);
+          self.postMessage({ type: 'RESULT', id, payload: result });
+        } catch (err: unknown) {
+          const message = describeWorkerFnError(err);
+          self.postMessage({ type: 'ERROR', id, error: message });
+        }
+      })();
       break;
   }
 }

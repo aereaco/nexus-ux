@@ -35,9 +35,10 @@ export const throttleModifier: ModifierModule = {
       return (e: Event) => {
         const wait = resolveTimerDuration(runtime, el, arg, DEFAULT_THROTTLE_TIME);
         const map = getTimerMap(el);
-        const rec = map.get('throttle') || { last: 0 };
+        const rec = map.get('throttle') || { timer: null, last: 0 };
         const now = performance.now();
-        if (now - rec.last > wait) {
+        const last = rec.last ?? 0;
+        if (now - last > wait) {
           rec.last = now;
           map.set('throttle', rec);
           return payload(e);
@@ -48,9 +49,10 @@ export const throttleModifier: ModifierModule = {
     return (...args: any[]) => {
       const wait = resolveTimerDuration(runtime, el, arg, DEFAULT_THROTTLE_TIME);
       const map = getTimerMap(el);
-      const rec = map.get('throttle') || { last: 0 };
+      const rec = map.get('throttle') || { timer: null, last: 0 };
       const now = performance.now();
-      if (now - rec.last > wait) {
+      const last = rec.last ?? 0;
+      if (now - last > wait) {
         rec.last = now;
         map.set('throttle', rec);
         return typeof payload === 'function' ? payload(...args) : payload;

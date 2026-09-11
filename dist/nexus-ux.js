@@ -3253,10 +3253,9 @@ ${scripts}
       };
       dragSprite = {
         name: "drag",
-        handle: (_element, _arg, context) => {
-          context.$drag = $drag;
-          return $drag;
-        }
+        sprites: (_runtime) => ({
+          $drag
+        })
       };
       drag_default = dragSprite;
     }
@@ -11380,10 +11379,11 @@ ${match}</ul>
   });
 
   // src/engine/topology.ts
-  async function runInWorker(fn, transferable) {
+  async function runInWorker(fn, args, transferable) {
+    const callArgs = args ? Array.from(args) : [];
     const workers = topology.getWorkers();
     if (workers.length === 0) {
-      return fn();
+      return await fn(...callArgs);
     }
     const id = ++taskIdCounter;
     const worker = workers[workerRoundRobin % workers.length];
@@ -11394,7 +11394,8 @@ ${match}</ul>
         worker.postMessage({
           type: "EXECUTE_FN",
           id,
-          fn: fn.toString()
+          fn: fn.toString(),
+          args: callArgs
         }, transferable || []);
       } catch (err) {
         pendingWorkerTasks.delete(id);
@@ -12895,6 +12896,12 @@ ${match}</ul>
     }
     return parseInt(arg, 10) || defaultDuration;
   }
+  function clearTimer(rec) {
+    if (rec && typeof rec.timer === "number") {
+      clearTimeout(rec.timer);
+      rec.timer = null;
+    }
+  }
   var init_timer = __esm({
     "src/engine/utils/timer.ts"() {
       init_consts();
@@ -12925,7 +12932,7 @@ ${match}</ul>
                   const map = getTimerMap(target);
                   const rec = map.get("debounce");
                   if (rec) {
-                    clearTimeout(rec.timer);
+                    clearTimer(rec);
                     map.delete("debounce");
                   }
                 });
@@ -12938,7 +12945,7 @@ ${match}</ul>
                 const map = getTimerMap(target);
                 const rec = map.get("debounce");
                 if (rec) {
-                  clearTimeout(rec.timer);
+                  clearTimer(rec);
                   map.delete("debounce");
                 }
               });
@@ -12953,7 +12960,7 @@ ${match}</ul>
                   const map = getTimerMap(target);
                   const rec = map.get("debounce");
                   if (rec) {
-                    clearTimeout(rec.timer);
+                    clearTimer(rec);
                     map.delete("debounce");
                     if (rec.fn)
                       rec.fn();
@@ -12968,7 +12975,7 @@ ${match}</ul>
                 const map = getTimerMap(target);
                 const rec = map.get("debounce");
                 if (rec) {
-                  clearTimeout(rec.timer);
+                  clearTimer(rec);
                   map.delete("debounce");
                   if (rec.fn)
                     rec.fn();
@@ -12983,7 +12990,7 @@ ${match}</ul>
               const map = getTimerMap(el);
               const existing = map.get("debounce");
               if (existing)
-                clearTimeout(existing.timer);
+                clearTimer(existing);
               const runner = () => {
                 map.delete("debounce");
                 payload(e);
@@ -12998,7 +13005,7 @@ ${match}</ul>
               const map = getTimerMap(el);
               const existing = map.get("debounce");
               if (existing)
-                clearTimeout(existing.timer);
+                clearTimer(existing);
               const runner = () => {
                 map.delete("debounce");
                 resolve(typeof payload === "function" ? payload(...args) : payload);
@@ -13037,7 +13044,7 @@ ${match}</ul>
                   const map = getTimerMap(target);
                   const rec = map.get("delay");
                   if (rec) {
-                    clearTimeout(rec.timer);
+                    clearTimer(rec);
                     map.delete("delay");
                   }
                 });
@@ -13050,7 +13057,7 @@ ${match}</ul>
                 const map = getTimerMap(target);
                 const rec = map.get("delay");
                 if (rec) {
-                  clearTimeout(rec.timer);
+                  clearTimer(rec);
                   map.delete("delay");
                 }
               });
@@ -13063,7 +13070,7 @@ ${match}</ul>
               const map = getTimerMap(el);
               const existing = map.get("delay");
               if (existing)
-                clearTimeout(existing.timer);
+                clearTimer(existing);
               const runner = () => {
                 map.delete("delay");
                 payload(e);
@@ -13078,7 +13085,7 @@ ${match}</ul>
               const map = getTimerMap(el);
               const existing = map.get("delay");
               if (existing)
-                clearTimeout(existing.timer);
+                clearTimer(existing);
               const runner = () => {
                 map.delete("delay");
                 resolve(typeof payload === "function" ? payload(...args) : payload);
@@ -13508,9 +13515,10 @@ ${match}</ul>
             return (e) => {
               const wait = resolveTimerDuration(runtime, el, arg, DEFAULT_THROTTLE_TIME);
               const map = getTimerMap(el);
-              const rec = map.get("throttle") || { last: 0 };
+              const rec = map.get("throttle") || { timer: null, last: 0 };
               const now = performance.now();
-              if (now - rec.last > wait) {
+              const last = rec.last ?? 0;
+              if (now - last > wait) {
                 rec.last = now;
                 map.set("throttle", rec);
                 return payload(e);
@@ -13520,9 +13528,10 @@ ${match}</ul>
           return (...args) => {
             const wait = resolveTimerDuration(runtime, el, arg, DEFAULT_THROTTLE_TIME);
             const map = getTimerMap(el);
-            const rec = map.get("throttle") || { last: 0 };
+            const rec = map.get("throttle") || { timer: null, last: 0 };
             const now = performance.now();
-            if (now - rec.last > wait) {
+            const last = rec.last ?? 0;
+            if (now - last > wait) {
               rec.last = now;
               map.set("throttle", rec);
               return typeof payload === "function" ? payload(...args) : payload;
@@ -16104,8 +16113,14 @@ ${bridge}`, {
 
   // src/engine/logic.worker.ts
   var _heapView = null;
+  function describeWorkerFnError(err) {
+    if (err instanceof ReferenceError) {
+      return `${err.message} \u2014 runInWorker() cannot see variables closed over from the caller's scope; pass them explicitly via the "args" parameter instead.`;
+    }
+    return err instanceof Error ? err.message : String(err);
+  }
   function handleWorkerMessage(e) {
-    const { type, payload, id, taskName, fn } = e.data || {};
+    const { type, payload, id, taskName, fn, args } = e.data || {};
     switch (type) {
       case "INIT_HEAP":
         if (payload instanceof SharedArrayBuffer || payload instanceof ArrayBuffer) {
@@ -16123,14 +16138,17 @@ ${bridge}`, {
         }
         break;
       case "EXECUTE_FN":
-        try {
-          const compiledFn = new Function(`return (${fn})()`);
-          const result = compiledFn();
-          self.postMessage({ type: "RESULT", id, payload: result });
-        } catch (err) {
-          const message = err instanceof Error ? err.message : String(err);
-          self.postMessage({ type: "ERROR", id, error: message });
-        }
+        (async () => {
+          try {
+            const compiledFn = new Function(`return (${fn})`)();
+            const callArgs = Array.isArray(args) ? args : [];
+            const result = await compiledFn(...callArgs);
+            self.postMessage({ type: "RESULT", id, payload: result });
+          } catch (err) {
+            const message = describeWorkerFnError(err);
+            self.postMessage({ type: "ERROR", id, error: message });
+          }
+        })();
         break;
     }
   }

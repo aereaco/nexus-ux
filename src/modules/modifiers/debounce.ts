@@ -26,7 +26,12 @@
 import { ModifierModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { DEFAULT_DEBOUNCE_TIME } from '../../engine/consts.ts';
-import { getTimerMap, parseCommandArg, resolveTimerDuration } from '../../engine/utils/timer.ts';
+import { 
+  getTimerMap, 
+  parseCommandArg, 
+  resolveTimerDuration,
+  clearTimer 
+} from '../../engine/utils/timer.ts';
 import { resolveTargetElements } from '../sprites/selector.ts';
 
 export const debounceModifier: ModifierModule = {
@@ -42,7 +47,7 @@ export const debounceModifier: ModifierModule = {
             const map = getTimerMap(target);
             const rec = map.get('debounce');
             if (rec) {
-              clearTimeout(rec.timer);
+              clearTimer(rec);
               map.delete('debounce');
             }
           });
@@ -56,7 +61,7 @@ export const debounceModifier: ModifierModule = {
           const map = getTimerMap(target);
           const rec = map.get('debounce');
           if (rec) {
-            clearTimeout(rec.timer);
+            clearTimer(rec);
             map.delete('debounce');
           }
         });
@@ -72,7 +77,7 @@ export const debounceModifier: ModifierModule = {
             const map = getTimerMap(target);
             const rec = map.get('debounce');
             if (rec) {
-              clearTimeout(rec.timer);
+              clearTimer(rec);
               map.delete('debounce');
               if (rec.fn) rec.fn();
             }
@@ -87,7 +92,7 @@ export const debounceModifier: ModifierModule = {
           const map = getTimerMap(target);
           const rec = map.get('debounce');
           if (rec) {
-            clearTimeout(rec.timer);
+            clearTimer(rec);
             map.delete('debounce');
             if (rec.fn) rec.fn();
           }
@@ -101,7 +106,7 @@ export const debounceModifier: ModifierModule = {
         const wait = resolveTimerDuration(runtime, el, arg, DEFAULT_DEBOUNCE_TIME);
         const map = getTimerMap(el);
         const existing = map.get('debounce');
-        if (existing) clearTimeout(existing.timer);
+        if (existing) clearTimer(existing);
 
         const runner = () => {
           map.delete('debounce');
@@ -118,7 +123,7 @@ export const debounceModifier: ModifierModule = {
         const wait = resolveTimerDuration(runtime, el, arg, DEFAULT_DEBOUNCE_TIME);
         const map = getTimerMap(el);
         const existing = map.get('debounce');
-        if (existing) clearTimeout(existing.timer);
+        if (existing) clearTimer(existing);
 
         const runner = () => {
           map.delete('debounce');

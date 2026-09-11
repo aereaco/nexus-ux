@@ -54,3 +54,10 @@ export function resolveTimerDuration(
   }
   return parseInt(arg, 10) || defaultDuration;
 }
+
+export function clearTimer(rec?: TimerRecord | null): void {
+  if (rec && typeof rec.timer === 'number') {
+    clearTimeout(rec.timer);
+    rec.timer = null;
+  }
+}
