@@ -1,4 +1,5 @@
 import { ref, Ref, computed } from '../../engine/reactivity.ts';
+import { disposeScope } from '../../engine/scope.ts';
 
 // Cache for media query signals
 const mediaSignals: Map<string, Ref<boolean>> = new Map();
@@ -34,4 +35,5 @@ export function getMediaSignal(query: string): Ref<boolean> {
 export const scopeRule = (q: string, body: () => any) => getMediaSignal(q).value ? body() : undefined;
 
 /** Tear down all listeners — for testing or micro-frontend teardown. */
-export function dispose() { cleanupFns.forEach(fn => fn()); }
+export function dispose() { disposeScope(cleanupFns); }
+

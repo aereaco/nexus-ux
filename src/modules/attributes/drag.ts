@@ -1,6 +1,6 @@
 import { AttributeModule } from "../../engine/modules.ts";
 import { RuntimeContext } from "../../engine/composition.ts";
-import { flip } from "../sprites/animate.ts";
+import { flip } from "../../engine/animation.ts";
 import { getDataStack } from "../../engine/scope.ts";
 import { CLEANUP_FUNCTIONS_KEY, MARKER_KEY, DATA_STACK_KEY, IS_TEMPLATE_KEY } from "../../engine/consts.ts";
 import { stylesheet } from "./stylesheet.ts";

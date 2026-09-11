@@ -1,4 +1,5 @@
 import { RuntimeContext } from '../../engine/composition.ts';
+import { runPwaRegistrationOp } from '../../engine/utils/pwa.ts';
 
 /**
  * $bgSync Sprite — Background Sync API wrapper
@@ -19,33 +20,14 @@ export default function bgSyncFactory(runtime: RuntimeContext) {
        * Returns reactive { status, error }.
        */
       register(tag: string) {
-        const op = runtime.reactive<{ status: string; error: string | null }>({
-          status: 'pending', error: null
-        });
-
-        if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
-          op.error = 'Service Worker not available';
-          op.status = 'error';
-          return op;
-        }
-
-        (async () => {
-          try {
-            const reg = await navigator.serviceWorker.ready;
-            if (!('sync' in reg)) {
-              op.error = 'Background Sync API not supported';
-              op.status = 'error';
-              return;
-            }
+        return runPwaRegistrationOp(
+          runtime,
+          'sync',
+          async (reg) => {
             await (reg as any).sync.register(tag);
-            op.status = 'done';
-          } catch (e) {
-            op.error = e instanceof Error ? e.message : String(e);
-            op.status = 'error';
-          }
-        })();
-
-        return op;
+          },
+          { featureLabel: 'Background Sync API' }
+        );
       },
 
       /**
@@ -53,35 +35,16 @@ export default function bgSyncFactory(runtime: RuntimeContext) {
        * Returns reactive { data: string[], status, error }.
        */
       get tags() {
-        const op = runtime.reactive<{ data: string[]; status: string; error: string | null }>({
-          data: [], status: 'loading', error: null
-        });
-
-        if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
-          op.error = 'Service Worker not available';
-          op.status = 'error';
-          return op;
-        }
-
-        (async () => {
-          try {
-            const reg = await navigator.serviceWorker.ready;
-            if (!('sync' in reg)) {
-              op.error = 'Background Sync API not supported';
-              op.status = 'error';
-              return;
-            }
-            const tags = await (reg as any).sync.getTags();
-            op.data = tags;
-            op.status = 'ready';
-          } catch (e) {
-            op.error = e instanceof Error ? e.message : String(e);
-            op.status = 'error';
-          }
-        })();
-
-        return op;
+        return runPwaRegistrationOp<string[]>(
+          runtime,
+          'sync',
+          async (reg) => {
+            return await (reg as any).sync.getTags();
+          },
+          { initialStatus: 'loading', initialData: [], featureLabel: 'Background Sync API' }
+        );
       }
     }
   };
 }
+

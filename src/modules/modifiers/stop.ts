@@ -25,19 +25,11 @@
  */
 
 import { ModifierModule } from '../../engine/modules.ts';
-import { RuntimeContext } from '../../engine/composition.ts';
+import { createGuardModifier } from '../../engine/utils/modifier.ts';
 
-export const stopModifier: ModifierModule = {
-  name: 'stop',
-  handle: (payload: any, _el: HTMLElement, _arg: string, _runtime: RuntimeContext) => {
-    if (typeof payload === 'function') {
-      return (e: Event) => {
-        e.stopPropagation();
-        return payload(e);
-      };
-    }
-    return payload; // Passthrough if not an event handler
-  }
-};
+export const stopModifier: ModifierModule = createGuardModifier('stop', (fn) => (e) => {
+  e.stopPropagation();
+  return fn(e);
+});
 
 export default stopModifier;

@@ -1,43 +1,8 @@
 import { ModifierModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { DEFAULT_THROTTLE_TIME, TIMER_MAP_KEY } from '../../engine/consts.ts';
+import { DEFAULT_THROTTLE_TIME } from '../../engine/consts.ts';
+import { getTimerMap, parseCommandArg, resolveTimerDuration } from '../../engine/utils/timer.ts';
 import { resolveTargetElements } from '../sprites/selector.ts';
-
-interface ThrottleRecord {
-  last: number;
-}
-
-function getThrottleMap(el: HTMLElement): Map<string, ThrottleRecord> {
-  let map = (el as any)[TIMER_MAP_KEY];
-  if (!map) {
-    map = new Map<string, ThrottleRecord>();
-    (el as any)[TIMER_MAP_KEY] = map;
-  }
-  return map;
-}
-
-function parseCommandArg(arg: string): { command?: 'cancel' | 'reset'; targetSelector?: string } {
-  if (!arg) return {};
-  const trimmed = arg.trim();
-  const match = trimmed.match(/^(cancel|reset)(?:\((.*)\))?$/i);
-  if (match) {
-    return {
-      command: match[1].toLowerCase() as 'cancel' | 'reset',
-      targetSelector: match[2]?.trim()
-    };
-  }
-  return {};
-}
-
-function resolveThrottle(runtime: RuntimeContext, el: HTMLElement, arg: string): number {
-  if (!arg) return DEFAULT_THROTTLE_TIME;
-  if (arg.startsWith('#')) {
-    const val = runtime.evaluate(el, arg);
-    const num = typeof val === 'number' ? val : parseInt(String(val), 10);
-    return Number.isNaN(num) ? DEFAULT_THROTTLE_TIME : num;
-  }
-  return parseInt(arg, 10) || DEFAULT_THROTTLE_TIME;
-}
 
 export const throttleModifier: ModifierModule = {
   name: 'throttle',
@@ -49,7 +14,7 @@ export const throttleModifier: ModifierModule = {
         return (e: Event) => {
           const targets = resolveTargetElements(el, cmd.targetSelector);
           targets.forEach(target => {
-            const map = getThrottleMap(target);
+            const map = getTimerMap(target);
             map.delete('throttle');
           });
           return payload(e);
@@ -59,7 +24,7 @@ export const throttleModifier: ModifierModule = {
       return (...args: any[]) => {
         const targets = resolveTargetElements(el, cmd.targetSelector);
         targets.forEach(target => {
-          const map = getThrottleMap(target);
+          const map = getTimerMap(target);
           map.delete('throttle');
         });
         return typeof payload === 'function' ? payload(...args) : payload;
@@ -68,8 +33,8 @@ export const throttleModifier: ModifierModule = {
 
     if (typeof payload === 'function') {
       return (e: Event) => {
-        const wait = resolveThrottle(runtime, el, arg);
-        const map = getThrottleMap(el);
+        const wait = resolveTimerDuration(runtime, el, arg, DEFAULT_THROTTLE_TIME);
+        const map = getTimerMap(el);
         const rec = map.get('throttle') || { last: 0 };
         const now = performance.now();
         if (now - rec.last > wait) {
@@ -81,8 +46,8 @@ export const throttleModifier: ModifierModule = {
     }
 
     return (...args: any[]) => {
-      const wait = resolveThrottle(runtime, el, arg);
-      const map = getThrottleMap(el);
+      const wait = resolveTimerDuration(runtime, el, arg, DEFAULT_THROTTLE_TIME);
+      const map = getTimerMap(el);
       const rec = map.get('throttle') || { last: 0 };
       const now = performance.now();
       if (now - rec.last > wait) {

@@ -4138,192 +4138,31 @@ ${scripts}
     }
   });
 
-  // src/modules/sprites/selector.ts
-  var selector_exports = {};
-  __export(selector_exports, {
-    resolveSelector: () => resolveSelector,
-    resolveTargetElements: () => resolveTargetElements
-  });
-  function resolveSelector(contextEl, selector) {
-    if (!selector)
-      return null;
-    if (typeof selector !== "string")
-      return createReactiveElementProxy(selector);
-    let current = contextEl;
-    let targetSelector = "";
-    if (selector.startsWith("^")) {
-      const match = selector.match(/^\^([.#a-zA-Z0-9_-]+)(.*)/);
-      if (match) {
-        current = contextEl.closest(match[1]);
-        targetSelector = match[2].trim();
-      }
-    } else if (selector.startsWith("-")) {
-      const match = selector.match(/^-([.#a-zA-Z0-9_-]+)(.*)/);
-      if (match) {
-        const sel = match[1];
-        const rest = match[2];
-        current = contextEl.previousElementSibling;
-        while (current && sel && !current.matches(sel)) {
-          current = current.previousElementSibling;
-        }
-        targetSelector = rest.trim();
-      }
-    } else if (selector.startsWith("+")) {
-      const match = selector.match(/^\+([.#a-zA-Z0-9_-]+)(.*)/);
-      if (match) {
-        const sel = match[1];
-        const rest = match[2];
-        current = contextEl.nextElementSibling;
-        while (current && sel && !current.matches(sel)) {
-          current = current.nextElementSibling;
-        }
-        targetSelector = rest.trim();
-      }
-    } else if (selector.startsWith("~")) {
-      const match = selector.match(/^~([.#a-zA-Z0-9_-]+)(.*)/);
-      if (match) {
-        const sel = match[1];
-        const rest = match[2];
-        current = contextEl.parentElement?.querySelector(sel);
-        targetSelector = rest.trim();
-      }
-    } else if (selector.startsWith(">")) {
-      current = contextEl.querySelector(selector);
-      targetSelector = "";
-    } else if (selector.startsWith("*")) {
-      current = document.querySelector(selector.substring(1).trim());
-      targetSelector = "";
-    } else {
-      const items = Array.from(contextEl.querySelectorAll(selector));
-      if (items.length > 0)
-        return createNexusCollection(items);
-      const globalItems = Array.from(document.querySelectorAll(selector));
-      if (globalItems.length === 0) {
-        try {
-          getSelfHealAgent().reportResolutionFailure("selector", selector, { contextEl });
-        } catch (e) {
-        }
-      }
-      return createNexusCollection(globalItems);
-    }
-    if (current && targetSelector) {
-      const refined = Array.from(current.querySelectorAll(targetSelector));
-      return createNexusCollection(refined);
-    }
-    if (!current)
-      return createNexusCollection([]);
-    const root = current || document;
-    const cleanSelector = selector.replace(/^[*^>~+-]/, "").trim() || "*";
-    const results = Array.from(root.querySelectorAll(cleanSelector));
-    return createNexusCollection(results);
-  }
-  function createNexusCollection(elements) {
-    const proxies = elements.map((el) => createReactiveElementProxy(el));
-    return new Proxy(proxies, {
-      get(target, key, receiver) {
-        if (typeof key === "symbol")
-          return Reflect.get(target, key, receiver);
-        const val = target[key];
-        if (val !== void 0) {
-          return typeof val === "function" ? val.bind(target) : val;
-        }
-        if (target.length > 0) {
-          const head = target[0];
-          const headVal = head[key];
-          return typeof headVal === "function" ? headVal.bind(head) : headVal;
-        }
-        return void 0;
-      },
-      set(target, key, value, receiver) {
-        if (typeof key === "symbol")
-          return Reflect.set(target, key, value, receiver);
-        if (!isNaN(Number(key))) {
-          target[Number(key)] = value;
-          return true;
-        }
-        if (target.length > 0) {
-          target[0][key] = value;
-          return true;
-        }
-        return false;
-      }
-    });
-  }
-  function createReactiveElementProxy(el) {
-    return new Proxy(el, {
-      get(target, key) {
-        if (typeof key === "symbol")
-          return target[key];
-        const val = target[key];
-        if (val !== void 0) {
-          return typeof val === "function" ? val.bind(target) : val;
-        }
-        const stack = getDataStack(target);
-        for (const data of stack) {
-          if (key in data)
-            return data[key];
-        }
-        return void 0;
-      },
-      set(target, key, value) {
-        if (typeof key === "symbol") {
-          target[key] = value;
-          return true;
-        }
-        const stack = getDataStack(target);
-        for (const data of stack) {
-          if (key in data) {
-            data[key] = value;
-            return true;
-          }
-        }
-        target[key] = value;
-        return true;
-      }
-    });
-  }
-  function resolveTargetElements(contextEl, selector) {
-    if (!selector || !selector.trim())
-      return [contextEl];
-    const clean = selector.trim();
-    const res = resolveSelector(contextEl, clean);
-    if (!res)
-      return [];
-    if (Array.isArray(res)) {
-      return res.map((item) => item && typeof item === "object" && item.nodeType ? item : item?.$el || item).filter(Boolean);
-    }
-    const raw = res?.$el || res;
-    return raw && raw.nodeType ? [raw] : [];
-  }
-  var init_selector = __esm({
-    "src/modules/sprites/selector.ts"() {
-      init_scope();
-      init_agent();
-    }
-  });
-
-  // src/modules/sprites/animate.ts
-  var animate_exports = {};
-  __export(animate_exports, {
-    animate: () => animate,
-    flip: () => flip
-  });
+  // src/engine/animation.ts
   async function flip(targets, changeCallback, options = {}) {
     const { duration = 300, easing = "ease-out" } = options;
-    const resolved = typeof targets === "string" ? resolveSelector(document.body, targets) : null;
-    const targetArray = resolved ? Array.isArray(resolved) ? resolved : [resolved] : Array.from(targets);
+    let targetArray = [];
+    if (typeof targets === "string") {
+      targetArray = Array.from(document.querySelectorAll(targets));
+    } else if (targets instanceof Element) {
+      targetArray = [targets];
+    } else if (targets && (Array.isArray(targets) || typeof targets[Symbol.iterator] === "function")) {
+      targetArray = Array.from(targets);
+    }
     const initialRects = /* @__PURE__ */ new Map();
     targetArray.forEach((el) => {
-      initialRects.set(el, el.getBoundingClientRect());
+      if (el && typeof el.getBoundingClientRect === "function") {
+        initialRects.set(el, el.getBoundingClientRect());
+      }
     });
     await changeCallback();
     await new Promise(requestAnimationFrame);
     await new Promise(requestAnimationFrame);
     targetArray.forEach((el) => {
       const initialRect = initialRects.get(el);
-      const finalRect = el.getBoundingClientRect();
-      if (!initialRect)
+      if (!initialRect || !el || typeof el.getBoundingClientRect !== "function")
         return;
+      const finalRect = el.getBoundingClientRect();
       const dx = initialRect.left - finalRect.left;
       const dy = initialRect.top - finalRect.top;
       if (dx !== 0 || dy !== 0) {
@@ -4343,72 +4182,8 @@ ${scripts}
       }
     });
   }
-  function animate(el, keyframesOrState, optionsOrConfig = {}, callback) {
-    if (typeof globalThis.window === "undefined") {
-      if (callback)
-        callback();
-      return;
-    }
-    if (Array.isArray(keyframesOrState)) {
-      const anim = el.animate(keyframesOrState, optionsOrConfig);
-      if (callback)
-        anim.onfinish = callback;
-      return anim;
-    }
-    return $animate_legacy(el, keyframesOrState, optionsOrConfig, callback);
-  }
-  function $animate_legacy(el, state, config = {}, callback) {
-    const base = state === "enter" ? config.enter : config.leave;
-    const start = state === "enter" ? config.enterStart : config.leaveStart;
-    const end = state === "enter" ? config.enterEnd : config.leaveEnd;
-    applyClasses(el, base || "");
-    applyClasses(el, start || "");
-    void el.offsetHeight;
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        removeClasses(el, start || "");
-        applyClasses(el, end || "");
-        const duration = getEffectDurations(el);
-        let finished = false;
-        const cleanup = () => {
-          if (finished)
-            return;
-          finished = true;
-          removeClasses(el, base || "");
-          removeClasses(el, end || "");
-          if (callback)
-            callback();
-        };
-        if (duration > 0) {
-          el.addEventListener("transitionend", (e) => {
-            if (e.target === el)
-              cleanup();
-          }, { once: true });
-          setTimeout(cleanup, duration + 50);
-        } else {
-          cleanup();
-        }
-      });
-    });
-  }
-  var getEffectDurations, applyClasses, removeClasses;
-  var init_animate = __esm({
-    "src/modules/sprites/animate.ts"() {
-      init_selector();
-      animate.flip = flip;
-      animate.out = (el, config, cb) => animate(el, "leave", config, cb);
-      getEffectDurations = (el) => {
-        const styles = globalThis.window.getComputedStyle(el);
-        const parse = (str) => str.split(",").map((s) => parseFloat(s) * 1e3 || 0);
-        const trans = parse(styles.transitionDuration);
-        const delay = parse(styles.transitionDelay);
-        const anim = parse(styles.animationDuration);
-        let max = 0;
-        trans.forEach((d, i) => max = Math.max(max, d + (delay[i] || 0)));
-        return Math.max(max, ...anim, 0);
-      };
-      applyClasses = (el, s) => s.split(" ").filter(Boolean).forEach((c) => el.classList.add(c));
-      removeClasses = (el, s) => s.split(" ").filter(Boolean).forEach((c) => el.classList.remove(c));
+  var init_animation = __esm({
+    "src/engine/animation.ts"() {
     }
   });
 
@@ -4670,7 +4445,7 @@ ${scripts}
   var DRAG_CSS, dragSheet, CONTAINER_SELECTOR, Draggable, DragReorderEngine, dragItemAttribute, dragHandleAttribute, dragNoDragAttribute, dragAttribute, drag_default2;
   var init_drag2 = __esm({
     "src/modules/attributes/drag.ts"() {
-      init_animate();
+      init_animation();
       init_scope();
       init_consts();
       init_drag();
@@ -11139,6 +10914,138 @@ ${match}</ul>
     }
   });
 
+  // src/modules/sprites/animate.ts
+  var animate_exports = {};
+  __export(animate_exports, {
+    animate: () => animate,
+    flip: () => flip
+  });
+  function animate(el, keyframesOrState, optionsOrConfig = {}, callback) {
+    if (typeof globalThis.window === "undefined") {
+      if (callback)
+        callback();
+      return;
+    }
+    if (Array.isArray(keyframesOrState)) {
+      const anim = el.animate(keyframesOrState, optionsOrConfig);
+      if (callback)
+        anim.onfinish = callback;
+      return anim;
+    }
+    return $animate_legacy(el, keyframesOrState, optionsOrConfig, callback);
+  }
+  function $animate_legacy(el, state, config = {}, callback) {
+    const base = state === "enter" ? config.enter : config.leave;
+    const start = state === "enter" ? config.enterStart : config.leaveStart;
+    const end = state === "enter" ? config.enterEnd : config.leaveEnd;
+    applyClasses(el, base || "");
+    applyClasses(el, start || "");
+    void el.offsetHeight;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        removeClasses(el, start || "");
+        applyClasses(el, end || "");
+        const duration = getEffectDurations(el);
+        let finished = false;
+        const cleanup = () => {
+          if (finished)
+            return;
+          finished = true;
+          removeClasses(el, base || "");
+          removeClasses(el, end || "");
+          if (callback)
+            callback();
+        };
+        if (duration > 0) {
+          el.addEventListener("transitionend", (e) => {
+            if (e.target === el)
+              cleanup();
+          }, { once: true });
+          setTimeout(cleanup, duration + 50);
+        } else {
+          cleanup();
+        }
+      });
+    });
+  }
+  var getEffectDurations, applyClasses, removeClasses;
+  var init_animate = __esm({
+    "src/modules/sprites/animate.ts"() {
+      init_animation();
+      animate.flip = flip;
+      animate.out = (el, config, cb) => animate(el, "leave", config, cb);
+      getEffectDurations = (el) => {
+        const styles = globalThis.window.getComputedStyle(el);
+        const parse = (str) => str.split(",").map((s) => parseFloat(s) * 1e3 || 0);
+        const trans = parse(styles.transitionDuration);
+        const delay = parse(styles.transitionDelay);
+        const anim = parse(styles.animationDuration);
+        let max = 0;
+        trans.forEach((d, i) => max = Math.max(max, d + (delay[i] || 0)));
+        return Math.max(max, ...anim, 0);
+      };
+      applyClasses = (el, s) => s.split(" ").filter(Boolean).forEach((c) => el.classList.add(c));
+      removeClasses = (el, s) => s.split(" ").filter(Boolean).forEach((c) => el.classList.remove(c));
+    }
+  });
+
+  // src/engine/utils/pwa.ts
+  function hasServiceWorker() {
+    return typeof navigator !== "undefined" && "serviceWorker" in navigator;
+  }
+  function createPwaAsyncOp(runtime, initial = {}) {
+    return runtime.reactive({
+      status: initial.status ?? "pending",
+      error: initial.error ?? null,
+      ...initial.data !== void 0 ? { data: initial.data } : {}
+    });
+  }
+  function runPwaOp(runtime, fn, options = {}) {
+    const initialStatus = options.initialStatus ?? "pending";
+    const successStatus = options.successStatus ?? (initialStatus === "loading" ? "ready" : "done");
+    const op = runtime.reactive({
+      status: initialStatus,
+      error: null,
+      ...options.initialData !== void 0 ? { data: options.initialData } : {}
+    });
+    if (!hasServiceWorker()) {
+      op.error = options.missingServiceWorkerMsg ?? "Service Worker not available";
+      op.status = "error";
+      return op;
+    }
+    (async () => {
+      try {
+        const result = await fn();
+        if (result !== void 0) {
+          op.data = result;
+        }
+        op.status = successStatus;
+      } catch (e) {
+        op.error = e instanceof Error ? e.message : String(e);
+        op.status = "error";
+      }
+    })();
+    return op;
+  }
+  function runPwaRegistrationOp(runtime, requiredFeature, fn, options = {}) {
+    return runPwaOp(
+      runtime,
+      async () => {
+        const reg = await navigator.serviceWorker.ready;
+        if (requiredFeature && !(requiredFeature in reg)) {
+          const label = options.featureLabel || `${requiredFeature} API`;
+          throw new Error(`${label} not supported`);
+        }
+        return await fn(reg);
+      },
+      options
+    );
+  }
+  var init_pwa2 = __esm({
+    "src/engine/utils/pwa.ts"() {
+    }
+  });
+
   // src/modules/sprites/bgFetch.ts
   var bgFetch_exports = {};
   __export(bgFetch_exports, {
@@ -11152,100 +11059,58 @@ ${match}</ul>
          * Returns reactive { data: BackgroundFetchRegistration | null, status, error }.
          */
         fetch(id, requests, options) {
-          const op = runtime.reactive({
-            data: null,
-            status: "pending",
-            error: null
-          });
-          if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) {
-            op.error = "Service Worker not available";
-            op.status = "error";
-            return op;
-          }
-          (async () => {
-            try {
-              const reg = await navigator.serviceWorker.ready;
-              if (!("backgroundFetch" in reg)) {
-                op.error = "Background Fetch API not supported";
-                op.status = "error";
-                return;
-              }
+          let opRef;
+          opRef = runPwaRegistrationOp(
+            runtime,
+            "backgroundFetch",
+            async (reg) => {
               const bgFetch = await reg.backgroundFetch.fetch(id, requests, options || {});
-              op.data = bgFetch;
-              op.status = "done";
               bgFetch.addEventListener("progress", () => {
-                op.data = { ...bgFetch, downloaded: bgFetch.downloaded, downloadTotal: bgFetch.downloadTotal };
+                opRef.data = { ...bgFetch, downloaded: bgFetch.downloaded, downloadTotal: bgFetch.downloadTotal };
               });
-            } catch (e) {
-              op.error = e instanceof Error ? e.message : String(e);
-              op.status = "error";
-            }
-          })();
-          return op;
+              return bgFetch;
+            },
+            { featureLabel: "Background Fetch API" }
+          );
+          return opRef;
         },
         /**
          * Get an existing background fetch registration.
          */
         get(id) {
-          const op = runtime.reactive({
-            data: null,
-            status: "loading",
-            error: null
-          });
-          (async () => {
-            try {
-              const reg = await navigator.serviceWorker.ready;
-              if (!("backgroundFetch" in reg)) {
-                op.error = "Background Fetch API not supported";
-                op.status = "error";
-                return;
-              }
-              const bgFetch = await reg.backgroundFetch.get(id);
-              op.data = bgFetch;
-              op.status = "ready";
-            } catch (e) {
-              op.error = e instanceof Error ? e.message : String(e);
-              op.status = "error";
-            }
-          })();
-          return op;
+          return runPwaRegistrationOp(
+            runtime,
+            "backgroundFetch",
+            async (reg) => {
+              return await reg.backgroundFetch.get(id);
+            },
+            { initialStatus: "loading", featureLabel: "Background Fetch API" }
+          );
         },
         /**
          * Abort a background fetch.
          */
         abort(id) {
-          const op = runtime.reactive({
-            status: "pending",
-            error: null
-          });
-          (async () => {
-            try {
-              const reg = await navigator.serviceWorker.ready;
-              if (!("backgroundFetch" in reg)) {
-                op.error = "Background Fetch API not supported";
-                op.status = "error";
-                return;
-              }
+          return runPwaRegistrationOp(
+            runtime,
+            "backgroundFetch",
+            async (reg) => {
               const bgFetch = await reg.backgroundFetch.get(id);
               if (bgFetch) {
                 await bgFetch.abort();
-                op.status = "done";
               } else {
-                op.error = `No background fetch with id '${id}'`;
-                op.status = "error";
+                throw new Error(`No background fetch with id '${id}'`);
               }
-            } catch (e) {
-              op.error = e instanceof Error ? e.message : String(e);
-              op.status = "error";
-            }
-          })();
-          return op;
+            },
+            { featureLabel: "Background Fetch API" }
+          );
         }
       }
     };
   }
   var init_bgFetch = __esm({
     "src/modules/sprites/bgFetch.ts"() {
+      init_pwa2();
     }
   });
 
@@ -11262,70 +11127,35 @@ ${match}</ul>
          * Returns reactive { status, error }.
          */
         register(tag) {
-          const op = runtime.reactive({
-            status: "pending",
-            error: null
-          });
-          if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) {
-            op.error = "Service Worker not available";
-            op.status = "error";
-            return op;
-          }
-          (async () => {
-            try {
-              const reg = await navigator.serviceWorker.ready;
-              if (!("sync" in reg)) {
-                op.error = "Background Sync API not supported";
-                op.status = "error";
-                return;
-              }
+          return runPwaRegistrationOp(
+            runtime,
+            "sync",
+            async (reg) => {
               await reg.sync.register(tag);
-              op.status = "done";
-            } catch (e) {
-              op.error = e instanceof Error ? e.message : String(e);
-              op.status = "error";
-            }
-          })();
-          return op;
+            },
+            { featureLabel: "Background Sync API" }
+          );
         },
         /**
          * Get all registered sync tags.
          * Returns reactive { data: string[], status, error }.
          */
         get tags() {
-          const op = runtime.reactive({
-            data: [],
-            status: "loading",
-            error: null
-          });
-          if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) {
-            op.error = "Service Worker not available";
-            op.status = "error";
-            return op;
-          }
-          (async () => {
-            try {
-              const reg = await navigator.serviceWorker.ready;
-              if (!("sync" in reg)) {
-                op.error = "Background Sync API not supported";
-                op.status = "error";
-                return;
-              }
-              const tags = await reg.sync.getTags();
-              op.data = tags;
-              op.status = "ready";
-            } catch (e) {
-              op.error = e instanceof Error ? e.message : String(e);
-              op.status = "error";
-            }
-          })();
-          return op;
+          return runPwaRegistrationOp(
+            runtime,
+            "sync",
+            async (reg) => {
+              return await reg.sync.getTags();
+            },
+            { initialStatus: "loading", initialData: [], featureLabel: "Background Sync API" }
+          );
         }
       }
     };
   }
   var init_bgSync = __esm({
     "src/modules/sprites/bgSync.ts"() {
+      init_pwa2();
     }
   });
 
@@ -11890,89 +11720,47 @@ ${match}</ul>
          * Returns reactive { status, error }.
          */
         register(tag, options) {
-          const op = runtime.reactive({
-            status: "pending",
-            error: null
-          });
-          if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) {
-            op.error = "Service Worker not available";
-            op.status = "error";
-            return op;
-          }
-          (async () => {
-            try {
-              const reg = await navigator.serviceWorker.ready;
-              if (!("periodicSync" in reg)) {
-                op.error = "Periodic Background Sync API not supported";
-                op.status = "error";
-                return;
-              }
+          return runPwaRegistrationOp(
+            runtime,
+            "periodicSync",
+            async (reg) => {
               await reg.periodicSync.register(tag, options || {});
-              op.status = "done";
-            } catch (e) {
-              op.error = e instanceof Error ? e.message : String(e);
-              op.status = "error";
-            }
-          })();
-          return op;
+            },
+            { featureLabel: "Periodic Background Sync API" }
+          );
         },
         /**
          * Unregister a periodic sync tag.
          */
         unregister(tag) {
-          const op = runtime.reactive({
-            status: "pending",
-            error: null
-          });
-          (async () => {
-            try {
-              const reg = await navigator.serviceWorker.ready;
-              if (!("periodicSync" in reg)) {
-                op.error = "Periodic Background Sync API not supported";
-                op.status = "error";
-                return;
-              }
+          return runPwaRegistrationOp(
+            runtime,
+            "periodicSync",
+            async (reg) => {
               await reg.periodicSync.unregister(tag);
-              op.status = "done";
-            } catch (e) {
-              op.error = e instanceof Error ? e.message : String(e);
-              op.status = "error";
-            }
-          })();
-          return op;
+            },
+            { featureLabel: "Periodic Background Sync API" }
+          );
         },
         /**
          * Get all registered periodic sync tags.
          */
         get tags() {
-          const op = runtime.reactive({
-            data: [],
-            status: "loading",
-            error: null
-          });
-          (async () => {
-            try {
-              const reg = await navigator.serviceWorker.ready;
-              if (!("periodicSync" in reg)) {
-                op.error = "Periodic Background Sync API not supported";
-                op.status = "error";
-                return;
-              }
-              const tags = await reg.periodicSync.getTags();
-              op.data = tags;
-              op.status = "ready";
-            } catch (e) {
-              op.error = e instanceof Error ? e.message : String(e);
-              op.status = "error";
-            }
-          })();
-          return op;
+          return runPwaRegistrationOp(
+            runtime,
+            "periodicSync",
+            async (reg) => {
+              return await reg.periodicSync.getTags();
+            },
+            { initialStatus: "loading", initialData: [], featureLabel: "Periodic Background Sync API" }
+          );
         }
       }
     };
   }
   var init_periodicSync = __esm({
     "src/modules/sprites/periodicSync.ts"() {
+      init_pwa2();
     }
   });
 
@@ -12495,7 +12283,7 @@ ${match}</ul>
       status: "idle",
       error: null
     });
-    if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
+    if (hasServiceWorker()) {
       navigator.serviceWorker.ready.then((reg) => {
         reg.pushManager.getSubscription().then((sub) => {
           if (sub) {
@@ -12520,12 +12308,8 @@ ${match}</ul>
          * @param applicationServerKey - VAPID public key (base64 or Uint8Array)
          */
         subscribe(applicationServerKey) {
-          const op = runtime.reactive({
-            data: null,
-            status: "pending",
-            error: null
-          });
-          if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) {
+          const op = createPwaAsyncOp(runtime, { data: null });
+          if (!hasServiceWorker()) {
             op.error = "Service Worker not available";
             op.status = "error";
             return op;
@@ -12565,33 +12349,185 @@ ${match}</ul>
          * Unsubscribe from push notifications.
          */
         unsubscribe() {
-          const op = runtime.reactive({
-            status: "pending",
-            error: null
-          });
           if (!state.subscription) {
-            op.error = "No active subscription";
-            op.status = "error";
-            return op;
+            return createPwaAsyncOp(runtime, { status: "error", error: "No active subscription" });
           }
-          (async () => {
-            try {
-              await state.subscription.unsubscribe();
-              state.subscription = null;
-              state.status = "idle";
-              op.status = "done";
-            } catch (e) {
-              op.error = e instanceof Error ? e.message : String(e);
-              op.status = "error";
-            }
-          })();
-          return op;
+          return runPwaOp(runtime, async () => {
+            await state.subscription.unsubscribe();
+            state.subscription = null;
+            state.status = "idle";
+          });
         }
       }
     };
   }
   var init_push = __esm({
     "src/modules/sprites/push.ts"() {
+      init_pwa2();
+    }
+  });
+
+  // src/modules/sprites/selector.ts
+  var selector_exports = {};
+  __export(selector_exports, {
+    resolveSelector: () => resolveSelector,
+    resolveTargetElements: () => resolveTargetElements
+  });
+  function resolveSelector(contextEl, selector) {
+    if (!selector)
+      return null;
+    if (typeof selector !== "string")
+      return createReactiveElementProxy(selector);
+    let current = contextEl;
+    let targetSelector = "";
+    if (selector.startsWith("^")) {
+      const match = selector.match(/^\^([.#a-zA-Z0-9_-]+)(.*)/);
+      if (match) {
+        current = contextEl.closest(match[1]);
+        targetSelector = match[2].trim();
+      }
+    } else if (selector.startsWith("-")) {
+      const match = selector.match(/^-([.#a-zA-Z0-9_-]+)(.*)/);
+      if (match) {
+        const sel = match[1];
+        const rest = match[2];
+        current = contextEl.previousElementSibling;
+        while (current && sel && !current.matches(sel)) {
+          current = current.previousElementSibling;
+        }
+        targetSelector = rest.trim();
+      }
+    } else if (selector.startsWith("+")) {
+      const match = selector.match(/^\+([.#a-zA-Z0-9_-]+)(.*)/);
+      if (match) {
+        const sel = match[1];
+        const rest = match[2];
+        current = contextEl.nextElementSibling;
+        while (current && sel && !current.matches(sel)) {
+          current = current.nextElementSibling;
+        }
+        targetSelector = rest.trim();
+      }
+    } else if (selector.startsWith("~")) {
+      const match = selector.match(/^~([.#a-zA-Z0-9_-]+)(.*)/);
+      if (match) {
+        const sel = match[1];
+        const rest = match[2];
+        current = contextEl.parentElement?.querySelector(sel);
+        targetSelector = rest.trim();
+      }
+    } else if (selector.startsWith(">")) {
+      current = contextEl.querySelector(selector);
+      targetSelector = "";
+    } else if (selector.startsWith("*")) {
+      current = document.querySelector(selector.substring(1).trim());
+      targetSelector = "";
+    } else {
+      const items = Array.from(contextEl.querySelectorAll(selector));
+      if (items.length > 0)
+        return createNexusCollection(items);
+      const globalItems = Array.from(document.querySelectorAll(selector));
+      if (globalItems.length === 0) {
+        try {
+          getSelfHealAgent().reportResolutionFailure("selector", selector, { contextEl });
+        } catch (e) {
+        }
+      }
+      return createNexusCollection(globalItems);
+    }
+    if (current && targetSelector) {
+      const refined = Array.from(current.querySelectorAll(targetSelector));
+      return createNexusCollection(refined);
+    }
+    if (!current)
+      return createNexusCollection([]);
+    const root = current || document;
+    const cleanSelector = selector.replace(/^[*^>~+-]/, "").trim() || "*";
+    const results = Array.from(root.querySelectorAll(cleanSelector));
+    return createNexusCollection(results);
+  }
+  function createNexusCollection(elements) {
+    const proxies = elements.map((el) => createReactiveElementProxy(el));
+    return new Proxy(proxies, {
+      get(target, key, receiver) {
+        if (typeof key === "symbol")
+          return Reflect.get(target, key, receiver);
+        const val = target[key];
+        if (val !== void 0) {
+          return typeof val === "function" ? val.bind(target) : val;
+        }
+        if (target.length > 0) {
+          const head = target[0];
+          const headVal = head[key];
+          return typeof headVal === "function" ? headVal.bind(head) : headVal;
+        }
+        return void 0;
+      },
+      set(target, key, value, receiver) {
+        if (typeof key === "symbol")
+          return Reflect.set(target, key, value, receiver);
+        if (!isNaN(Number(key))) {
+          target[Number(key)] = value;
+          return true;
+        }
+        if (target.length > 0) {
+          target[0][key] = value;
+          return true;
+        }
+        return false;
+      }
+    });
+  }
+  function createReactiveElementProxy(el) {
+    return new Proxy(el, {
+      get(target, key) {
+        if (typeof key === "symbol")
+          return target[key];
+        const val = target[key];
+        if (val !== void 0) {
+          return typeof val === "function" ? val.bind(target) : val;
+        }
+        const stack = getDataStack(target);
+        for (const data of stack) {
+          if (key in data)
+            return data[key];
+        }
+        return void 0;
+      },
+      set(target, key, value) {
+        if (typeof key === "symbol") {
+          target[key] = value;
+          return true;
+        }
+        const stack = getDataStack(target);
+        for (const data of stack) {
+          if (key in data) {
+            data[key] = value;
+            return true;
+          }
+        }
+        target[key] = value;
+        return true;
+      }
+    });
+  }
+  function resolveTargetElements(contextEl, selector) {
+    if (!selector || !selector.trim())
+      return [contextEl];
+    const clean = selector.trim();
+    const res = resolveSelector(contextEl, clean);
+    if (!res)
+      return [];
+    if (Array.isArray(res)) {
+      return res.map((item) => item && typeof item === "object" && item.nodeType ? item : item?.$el || item).filter(Boolean);
+    }
+    const raw = res?.$el || res;
+    return raw && raw.nodeType ? [raw] : [];
+  }
+  var init_selector = __esm({
+    "src/modules/sprites/selector.ts"() {
+      init_scope();
+      init_agent();
     }
   });
 
@@ -12953,7 +12889,7 @@ ${match}</ul>
       error: null,
       updateAvailable: false
     });
-    if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
+    if (hasServiceWorker()) {
       const sw = navigator.serviceWorker;
       if (sw.controller) {
         state.status = "active";
@@ -12992,11 +12928,8 @@ ${match}</ul>
          * Returns reactive { status, error } container.
          */
         register(scriptURL, options) {
-          const op = runtime.reactive({
-            status: "pending",
-            error: null
-          });
-          if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) {
+          const op = createPwaAsyncOp(runtime);
+          if (!hasServiceWorker()) {
             op.error = "Service Worker API not available";
             op.status = "error";
             return op;
@@ -13039,55 +12972,27 @@ ${match}</ul>
          * Check for service worker updates.
          */
         update() {
-          const op = runtime.reactive({
-            status: "pending",
-            error: null
-          });
           if (!state.registration) {
-            op.error = "No service worker registered";
-            op.status = "error";
-            return op;
+            return createPwaAsyncOp(runtime, { status: "error", error: "No service worker registered" });
           }
-          (async () => {
-            try {
-              await state.registration.update();
-              op.status = "done";
-            } catch (e) {
-              op.error = e instanceof Error ? e.message : String(e);
-              op.status = "error";
-            }
-          })();
-          return op;
+          return runPwaOp(runtime, () => state.registration.update());
         },
         /**
          * Unregister the active service worker.
          */
         unregister() {
-          const op = runtime.reactive({
-            status: "pending",
-            error: null
-          });
           if (!state.registration) {
-            op.error = "No service worker registered";
-            op.status = "error";
-            return op;
+            return createPwaAsyncOp(runtime, { status: "error", error: "No service worker registered" });
           }
-          (async () => {
-            try {
-              const success = await state.registration.unregister();
-              if (success) {
-                state.status = "idle";
-                state.controller = null;
-                state.registration = null;
-                state.updateAvailable = false;
-              }
-              op.status = "done";
-            } catch (e) {
-              op.error = e instanceof Error ? e.message : String(e);
-              op.status = "error";
+          return runPwaOp(runtime, async () => {
+            const success = await state.registration.unregister();
+            if (success) {
+              state.status = "idle";
+              state.controller = null;
+              state.registration = null;
+              state.updateAvailable = false;
             }
-          })();
-          return op;
+          });
         },
         /**
          * Send a message to the active service worker.
@@ -13110,6 +13015,7 @@ ${match}</ul>
   }
   var init_sw = __esm({
     "src/modules/sprites/sw.ts"() {
+      init_pwa2();
     }
   });
 
@@ -13150,6 +13056,7 @@ ${match}</ul>
   var init_media = __esm({
     "src/modules/scopes/media.ts"() {
       init_reactivity();
+      init_scope();
     }
   });
 
@@ -13177,6 +13084,7 @@ ${match}</ul>
   var init_os = __esm({
     "src/modules/scopes/os.ts"() {
       init_reactivity();
+      init_scope();
       getOS = () => {
         if (typeof navigator === "undefined")
           return "unknown";
@@ -13212,6 +13120,7 @@ ${match}</ul>
   var init_view = __esm({
     "src/modules/scopes/view.ts"() {
       init_reactivity();
+      init_scope();
       viewScope = reactive({
         width: typeof window !== "undefined" ? globalThis.innerWidth : 1024,
         height: typeof window !== "undefined" ? globalThis.innerHeight : 768,
@@ -13225,12 +13134,7 @@ ${match}</ul>
     }
   });
 
-  // src/modules/modifiers/debounce.ts
-  var debounce_exports = {};
-  __export(debounce_exports, {
-    debounceModifier: () => debounceModifier,
-    default: () => debounce_default
-  });
+  // src/engine/utils/timer.ts
   function getTimerMap(el) {
     let map = el[TIMER_MAP_KEY];
     if (!map) {
@@ -13243,7 +13147,7 @@ ${match}</ul>
     if (!arg)
       return {};
     const trimmed = arg.trim();
-    const match = trimmed.match(/^(cancel|flush)(?:\((.*)\))?$/i);
+    const match = trimmed.match(/^([a-zA-Z]+)(?:\((.*)\))?$/i);
     if (match) {
       return {
         command: match[1].toLowerCase(),
@@ -13252,20 +13156,33 @@ ${match}</ul>
     }
     return {};
   }
-  function resolveDebounce(runtime, el, arg) {
+  function resolveTimerDuration(runtime, el, arg, defaultDuration) {
     if (!arg)
-      return DEFAULT_DEBOUNCE_TIME;
+      return defaultDuration;
     if (arg.startsWith("#")) {
       const val = runtime.evaluate(el, arg);
       const num = typeof val === "number" ? val : parseInt(String(val), 10);
-      return Number.isNaN(num) ? DEFAULT_DEBOUNCE_TIME : num;
+      return Number.isNaN(num) ? defaultDuration : num;
     }
-    return parseInt(arg, 10) || DEFAULT_DEBOUNCE_TIME;
+    return parseInt(arg, 10) || defaultDuration;
   }
+  var init_timer = __esm({
+    "src/engine/utils/timer.ts"() {
+      init_consts();
+    }
+  });
+
+  // src/modules/modifiers/debounce.ts
+  var debounce_exports = {};
+  __export(debounce_exports, {
+    debounceModifier: () => debounceModifier,
+    default: () => debounce_default
+  });
   var debounceModifier, debounce_default;
   var init_debounce = __esm({
     "src/modules/modifiers/debounce.ts"() {
       init_consts();
+      init_timer();
       init_selector();
       debounceModifier = {
         name: "debounce",
@@ -13333,7 +13250,7 @@ ${match}</ul>
           }
           if (typeof payload === "function") {
             return (e) => {
-              const wait = resolveDebounce(runtime, el, arg);
+              const wait = resolveTimerDuration(runtime, el, arg, DEFAULT_DEBOUNCE_TIME);
               const map = getTimerMap(el);
               const existing = map.get("debounce");
               if (existing)
@@ -13348,7 +13265,7 @@ ${match}</ul>
           }
           return (...args) => {
             return new Promise((resolve) => {
-              const wait = resolveDebounce(runtime, el, arg);
+              const wait = resolveTimerDuration(runtime, el, arg, DEFAULT_DEBOUNCE_TIME);
               const map = getTimerMap(el);
               const existing = map.get("debounce");
               if (existing)
@@ -13373,52 +13290,22 @@ ${match}</ul>
     default: () => delay_default,
     delayModifier: () => delayModifier
   });
-  function getTimerMap2(el) {
-    let map = el[TIMER_MAP_KEY];
-    if (!map) {
-      map = /* @__PURE__ */ new Map();
-      el[TIMER_MAP_KEY] = map;
-    }
-    return map;
-  }
-  function parseCommandArg2(arg) {
-    if (!arg)
-      return {};
-    const trimmed = arg.trim();
-    const match = trimmed.match(/^cancel(?:\((.*)\))?$/i);
-    if (match) {
-      return {
-        command: "cancel",
-        targetSelector: match[1]?.trim()
-      };
-    }
-    return {};
-  }
-  function resolveDelay(runtime, el, arg) {
-    if (!arg)
-      return DEFAULT_DEBOUNCE_TIME;
-    if (arg.startsWith("#")) {
-      const val = runtime.evaluate(el, arg);
-      const num = typeof val === "number" ? val : parseInt(String(val), 10);
-      return Number.isNaN(num) ? DEFAULT_DEBOUNCE_TIME : num;
-    }
-    return parseInt(arg, 10) || DEFAULT_DEBOUNCE_TIME;
-  }
   var delayModifier, delay_default;
   var init_delay = __esm({
     "src/modules/modifiers/delay.ts"() {
       init_consts();
+      init_timer();
       init_selector();
       delayModifier = {
         name: "delay",
         handle: (payload, el, arg, runtime) => {
-          const cmd = parseCommandArg2(arg);
+          const cmd = parseCommandArg(arg);
           if (cmd.command === "cancel") {
             if (typeof payload === "function") {
               return (e) => {
                 const targets = resolveTargetElements(el, cmd.targetSelector);
                 targets.forEach((target) => {
-                  const map = getTimerMap2(target);
+                  const map = getTimerMap(target);
                   const rec = map.get("delay");
                   if (rec) {
                     clearTimeout(rec.timer);
@@ -13431,7 +13318,7 @@ ${match}</ul>
             return (...args) => {
               const targets = resolveTargetElements(el, cmd.targetSelector);
               targets.forEach((target) => {
-                const map = getTimerMap2(target);
+                const map = getTimerMap(target);
                 const rec = map.get("delay");
                 if (rec) {
                   clearTimeout(rec.timer);
@@ -13443,8 +13330,8 @@ ${match}</ul>
           }
           if (typeof payload === "function") {
             return (e) => {
-              const wait = resolveDelay(runtime, el, arg);
-              const map = getTimerMap2(el);
+              const wait = resolveTimerDuration(runtime, el, arg, DEFAULT_DEBOUNCE_TIME);
+              const map = getTimerMap(el);
               const existing = map.get("delay");
               if (existing)
                 clearTimeout(existing.timer);
@@ -13458,8 +13345,8 @@ ${match}</ul>
           }
           return (...args) => {
             return new Promise((resolve) => {
-              const wait = resolveDelay(runtime, el, arg);
-              const map = getTimerMap2(el);
+              const wait = resolveTimerDuration(runtime, el, arg, DEFAULT_DEBOUNCE_TIME);
+              const map = getTimerMap(el);
               const existing = map.get("delay");
               if (existing)
                 clearTimeout(existing.timer);
@@ -13477,6 +13364,26 @@ ${match}</ul>
     }
   });
 
+  // src/engine/utils/modifier.ts
+  function createModifier(name, handle) {
+    return { name, handle };
+  }
+  function createGuardModifier(name, wrap) {
+    return {
+      name,
+      handle: (payload, el, arg, runtime) => {
+        if (typeof payload === "function") {
+          return wrap(payload, el, arg, runtime);
+        }
+        return payload;
+      }
+    };
+  }
+  var init_modifier = __esm({
+    "src/engine/utils/modifier.ts"() {
+    }
+  });
+
   // src/modules/modifiers/document.ts
   var document_exports = {};
   __export(document_exports, {
@@ -13486,12 +13393,8 @@ ${match}</ul>
   var documentModifier, document_default;
   var init_document = __esm({
     "src/modules/modifiers/document.ts"() {
-      documentModifier = {
-        name: "document",
-        handle: (_payload, _el, _arg, _runtime) => {
-          return _payload;
-        }
-      };
+      init_modifier();
+      documentModifier = createModifier("document", (payload) => payload);
       document_default = documentModifier;
     }
   });
@@ -13552,42 +13455,21 @@ ${match}</ul>
     default: () => hold_default,
     holdModifier: () => holdModifier
   });
-  function getHoldMap(el) {
-    let map = el[TIMER_MAP_KEY];
-    if (!map) {
-      map = /* @__PURE__ */ new Map();
-      el[TIMER_MAP_KEY] = map;
-    }
-    return map;
-  }
-  function parseCommandArg3(arg) {
-    if (!arg)
-      return {};
-    const trimmed = arg.trim();
-    const match = trimmed.match(/^cancel(?:\((.*)\))?$/i);
-    if (match) {
-      return {
-        command: "cancel",
-        targetSelector: match[1]?.trim()
-      };
-    }
-    return {};
-  }
   var holdModifier, hold_default;
   var init_hold = __esm({
     "src/modules/modifiers/hold.ts"() {
-      init_consts();
+      init_timer();
       init_selector();
       holdModifier = {
         name: "hold",
         handle: (payload, el, arg, _runtime) => {
-          const cmd = parseCommandArg3(arg);
+          const cmd = parseCommandArg(arg);
           if (cmd.command === "cancel") {
             if (typeof payload === "function") {
               return (e) => {
                 const targets = resolveTargetElements(el, cmd.targetSelector);
                 targets.forEach((target) => {
-                  const map = getHoldMap(target);
+                  const map = getTimerMap(target);
                   const rec = map.get("hold");
                   if (rec && rec.cleanup) {
                     rec.cleanup();
@@ -13600,7 +13482,7 @@ ${match}</ul>
             return (...args) => {
               const targets = resolveTargetElements(el, cmd.targetSelector);
               targets.forEach((target) => {
-                const map = getHoldMap(target);
+                const map = getTimerMap(target);
                 const rec = map.get("hold");
                 if (rec && rec.cleanup) {
                   rec.cleanup();
@@ -13613,7 +13495,7 @@ ${match}</ul>
           const wait = parseInt(arg, 10) || 500;
           if (typeof payload === "function") {
             return (e) => {
-              const map = getHoldMap(el);
+              const map = getTimerMap(el);
               const existing = map.get("hold");
               if (existing && existing.cleanup)
                 existing.cleanup();
@@ -13671,18 +13553,11 @@ ${match}</ul>
   var isKeyboardEvent, createKeyModifier, enterModifier, escapeModifier, escModifier, spaceModifier, upModifier, downModifier, leftModifier, rightModifier, tabModifier, deleteModifier, ctrlModifier, altModifier, shiftModifier, metaModifier, keys_default;
   var init_keys = __esm({
     "src/modules/modifiers/keys.ts"() {
+      init_modifier();
       isKeyboardEvent = (e) => "key" in e;
-      createKeyModifier = (name, check) => ({
-        name,
-        handle: (payload, _el, _arg, _runtime) => {
-          if (typeof payload === "function") {
-            return (e) => {
-              if (isKeyboardEvent(e) && check(e)) {
-                return payload(e);
-              }
-            };
-          }
-          return payload;
+      createKeyModifier = (name, check) => createGuardModifier(name, (fn) => (e) => {
+        if (isKeyboardEvent(e) && check(e)) {
+          return fn(e);
         }
       });
       enterModifier = createKeyModifier("enter", (e) => e.key === "Enter");
@@ -13769,26 +13644,24 @@ ${match}</ul>
   var onceModifier, once_default;
   var init_once = __esm({
     "src/modules/modifiers/once.ts"() {
-      onceModifier = {
-        name: "once",
-        handle: (payload, _el, _arg, _runtime) => {
-          let fired = false;
-          if (typeof payload === "function") {
-            return (e) => {
-              if (!fired) {
-                fired = true;
-                return payload(e);
-              }
-            };
-          }
-          return (...args) => {
+      init_modifier();
+      onceModifier = createModifier("once", (payload) => {
+        let fired = false;
+        if (typeof payload === "function") {
+          return (e) => {
             if (!fired) {
               fired = true;
-              return typeof payload === "function" ? payload(...args) : payload;
+              return payload(e);
             }
           };
         }
-      };
+        return (...args) => {
+          if (!fired) {
+            fired = true;
+            return typeof payload === "function" ? payload(...args) : payload;
+          }
+        };
+      });
       once_default = onceModifier;
     }
   });
@@ -13802,19 +13675,12 @@ ${match}</ul>
   var outsideModifier, outside_default;
   var init_outside = __esm({
     "src/modules/modifiers/outside.ts"() {
-      outsideModifier = {
-        name: "outside",
-        handle: (payload, el, _arg, _runtime) => {
-          if (typeof payload === "function") {
-            return (e) => {
-              if (e.target && !el.contains(e.target)) {
-                return payload(e);
-              }
-            };
-          }
-          return payload;
+      init_modifier();
+      outsideModifier = createGuardModifier("outside", (fn, el) => (e) => {
+        if (e.target && !el.contains(e.target)) {
+          return fn(e);
         }
-      };
+      });
       outside_default = outsideModifier;
     }
   });
@@ -13828,18 +13694,11 @@ ${match}</ul>
   var preventModifier, prevent_default;
   var init_prevent = __esm({
     "src/modules/modifiers/prevent.ts"() {
-      preventModifier = {
-        name: "prevent",
-        handle: (payload, _el, _arg, _runtime) => {
-          if (typeof payload === "function") {
-            return (e) => {
-              e.preventDefault();
-              return payload(e);
-            };
-          }
-          return payload;
-        }
-      };
+      init_modifier();
+      preventModifier = createGuardModifier("prevent", (fn) => (e) => {
+        e.preventDefault();
+        return fn(e);
+      });
       prevent_default = preventModifier;
     }
   });
@@ -13853,18 +13712,11 @@ ${match}</ul>
   var selfModifier, self_default;
   var init_self = __esm({
     "src/modules/modifiers/self.ts"() {
-      selfModifier = {
-        name: "self",
-        handle: (payload, el, _arg, _runtime) => {
-          if (typeof payload === "function") {
-            return (e) => {
-              if (e.target === el)
-                return payload(e);
-            };
-          }
-          return payload;
-        }
-      };
+      init_modifier();
+      selfModifier = createGuardModifier("self", (fn, el) => (e) => {
+        if (e.target === el)
+          return fn(e);
+      });
       self_default = selfModifier;
     }
   });
@@ -13878,18 +13730,11 @@ ${match}</ul>
   var stopModifier, stop_default;
   var init_stop = __esm({
     "src/modules/modifiers/stop.ts"() {
-      stopModifier = {
-        name: "stop",
-        handle: (payload, _el, _arg, _runtime) => {
-          if (typeof payload === "function") {
-            return (e) => {
-              e.stopPropagation();
-              return payload(e);
-            };
-          }
-          return payload;
-        }
-      };
+      init_modifier();
+      stopModifier = createGuardModifier("stop", (fn) => (e) => {
+        e.stopPropagation();
+        return fn(e);
+      });
       stop_default = stopModifier;
     }
   });
@@ -13900,52 +13745,22 @@ ${match}</ul>
     default: () => throttle_default,
     throttleModifier: () => throttleModifier
   });
-  function getThrottleMap(el) {
-    let map = el[TIMER_MAP_KEY];
-    if (!map) {
-      map = /* @__PURE__ */ new Map();
-      el[TIMER_MAP_KEY] = map;
-    }
-    return map;
-  }
-  function parseCommandArg4(arg) {
-    if (!arg)
-      return {};
-    const trimmed = arg.trim();
-    const match = trimmed.match(/^(cancel|reset)(?:\((.*)\))?$/i);
-    if (match) {
-      return {
-        command: match[1].toLowerCase(),
-        targetSelector: match[2]?.trim()
-      };
-    }
-    return {};
-  }
-  function resolveThrottle(runtime, el, arg) {
-    if (!arg)
-      return DEFAULT_THROTTLE_TIME;
-    if (arg.startsWith("#")) {
-      const val = runtime.evaluate(el, arg);
-      const num = typeof val === "number" ? val : parseInt(String(val), 10);
-      return Number.isNaN(num) ? DEFAULT_THROTTLE_TIME : num;
-    }
-    return parseInt(arg, 10) || DEFAULT_THROTTLE_TIME;
-  }
   var throttleModifier, throttle_default;
   var init_throttle = __esm({
     "src/modules/modifiers/throttle.ts"() {
       init_consts();
+      init_timer();
       init_selector();
       throttleModifier = {
         name: "throttle",
         handle: (payload, el, arg, runtime) => {
-          const cmd = parseCommandArg4(arg);
+          const cmd = parseCommandArg(arg);
           if (cmd.command === "cancel" || cmd.command === "reset") {
             if (typeof payload === "function") {
               return (e) => {
                 const targets = resolveTargetElements(el, cmd.targetSelector);
                 targets.forEach((target) => {
-                  const map = getThrottleMap(target);
+                  const map = getTimerMap(target);
                   map.delete("throttle");
                 });
                 return payload(e);
@@ -13954,7 +13769,7 @@ ${match}</ul>
             return (...args) => {
               const targets = resolveTargetElements(el, cmd.targetSelector);
               targets.forEach((target) => {
-                const map = getThrottleMap(target);
+                const map = getTimerMap(target);
                 map.delete("throttle");
               });
               return typeof payload === "function" ? payload(...args) : payload;
@@ -13962,8 +13777,8 @@ ${match}</ul>
           }
           if (typeof payload === "function") {
             return (e) => {
-              const wait = resolveThrottle(runtime, el, arg);
-              const map = getThrottleMap(el);
+              const wait = resolveTimerDuration(runtime, el, arg, DEFAULT_THROTTLE_TIME);
+              const map = getTimerMap(el);
               const rec = map.get("throttle") || { last: 0 };
               const now = performance.now();
               if (now - rec.last > wait) {
@@ -13974,8 +13789,8 @@ ${match}</ul>
             };
           }
           return (...args) => {
-            const wait = resolveThrottle(runtime, el, arg);
-            const map = getThrottleMap(el);
+            const wait = resolveTimerDuration(runtime, el, arg, DEFAULT_THROTTLE_TIME);
+            const map = getTimerMap(el);
             const rec = map.get("throttle") || { last: 0 };
             const now = performance.now();
             if (now - rec.last > wait) {
@@ -13999,12 +13814,8 @@ ${match}</ul>
   var windowModifier, window_default;
   var init_window = __esm({
     "src/modules/modifiers/window.ts"() {
-      windowModifier = {
-        name: "window",
-        handle: (_payload, _el, _arg, _runtime) => {
-          return _payload;
-        }
-      };
+      init_modifier();
+      windowModifier = createModifier("window", (payload) => payload);
       window_default = windowModifier;
     }
   });
@@ -15081,6 +14892,87 @@ ${bridge}`, {
     }
   });
 
+  // src/engine/utils/hash.ts
+  function elUniqId(el) {
+    if (el.id)
+      return el.id;
+    const key = el.getAttribute("data-ux-id") || el.getAttribute("data-id");
+    if (key) {
+      const hash2 = new Hash();
+      hash2.with(el.tagName).with(key);
+      return hash2.string;
+    }
+    const hash = new Hash();
+    let currentEl = el;
+    while (currentEl) {
+      hash.with(currentEl.tagName || "");
+      if (currentEl.id) {
+        hash.with(currentEl.id);
+        break;
+      }
+      const p = currentEl?.parentNode || null;
+      if (p && (p instanceof Element || p instanceof DocumentFragment || typeof ShadowRoot !== "undefined" && p instanceof ShadowRoot)) {
+        const children = p.children || [];
+        if (children.length > 0) {
+          hash.with(Array.from(children).indexOf(currentEl));
+        }
+      }
+      currentEl = p instanceof Element ? p : typeof ShadowRoot !== "undefined" && p instanceof ShadowRoot ? p.host : p instanceof DocumentFragment ? null : null;
+      if (p instanceof DocumentFragment && !currentEl) {
+      }
+    }
+    return hash.string;
+  }
+  function attrHash(key, val) {
+    return new Hash().with(key).with(val).value;
+  }
+  function hashString(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash << 5) - hash + str.charCodeAt(i);
+      hash |= 0;
+    }
+    return String(hash);
+  }
+  var Hash;
+  var init_hash = __esm({
+    "src/engine/utils/hash.ts"() {
+      init_consts();
+      Hash = class {
+        #value = 0;
+        #prefix;
+        constructor(prefix = STATE) {
+          this.#prefix = prefix;
+        }
+        /**
+         * Incorporates a value into the hash.
+         */
+        with(x) {
+          if (typeof x === "string") {
+            const len = x.length;
+            for (let i = 0; i < len; i++) {
+              this.with(x.charCodeAt(i));
+            }
+          } else if (typeof x === "boolean") {
+            this.with(1 << (x ? 7 : 3));
+          } else {
+            this.#value = this.#value * 33 ^ x;
+          }
+          return this;
+        }
+        get value() {
+          return this.#value;
+        }
+        /**
+         * Returns the hash as a base36 string prefixed with the state key.
+         */
+        get string() {
+          return this.#prefix + Math.abs(this.#value).toString(36);
+        }
+      };
+    }
+  });
+
   // src/engine/reconciler.ts
   function runCallback(config, name, ...args) {
     if (config.callbacks && typeof config.callbacks[name] === "function") {
@@ -15100,14 +14992,6 @@ ${bridge}`, {
       fragment.appendChild(body.firstChild);
     }
     return fragment;
-  }
-  function hashString(str) {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      hash = (hash << 5) - hash + str.charCodeAt(i);
-      hash |= 0;
-    }
-    return String(hash);
   }
   function getHeadElementKey(node) {
     if (node.nodeType === Node.ELEMENT_NODE) {
@@ -15466,6 +15350,7 @@ ${bridge}`, {
     "src/engine/reconciler.ts"() {
       init_consts();
       init_stylesheet();
+      init_hash();
       noOp = () => true;
       defaults = {
         morphStyle: "innerHTML",
@@ -15778,76 +15663,7 @@ ${bridge}`, {
   init_debug();
   init_debug();
   init_selector();
-
-  // src/engine/utils/hash.ts
-  init_consts();
-  var Hash = class {
-    #value = 0;
-    #prefix;
-    constructor(prefix = STATE) {
-      this.#prefix = prefix;
-    }
-    /**
-     * Incorporates a value into the hash.
-     */
-    with(x) {
-      if (typeof x === "string") {
-        const len = x.length;
-        for (let i = 0; i < len; i++) {
-          this.with(x.charCodeAt(i));
-        }
-      } else if (typeof x === "boolean") {
-        this.with(1 << (x ? 7 : 3));
-      } else {
-        this.#value = this.#value * 33 ^ x;
-      }
-      return this;
-    }
-    get value() {
-      return this.#value;
-    }
-    /**
-     * Returns the hash as a base36 string prefixed with the state key.
-     */
-    get string() {
-      return this.#prefix + Math.abs(this.#value).toString(36);
-    }
-  };
-  function elUniqId(el) {
-    if (el.id)
-      return el.id;
-    const key = el.getAttribute("data-ux-id") || el.getAttribute("data-id");
-    if (key) {
-      const hash2 = new Hash();
-      hash2.with(el.tagName).with(key);
-      return hash2.string;
-    }
-    const hash = new Hash();
-    let currentEl = el;
-    while (currentEl) {
-      hash.with(currentEl.tagName || "");
-      if (currentEl.id) {
-        hash.with(currentEl.id);
-        break;
-      }
-      const p = currentEl?.parentNode || null;
-      if (p && (p instanceof Element || p instanceof DocumentFragment || typeof ShadowRoot !== "undefined" && p instanceof ShadowRoot)) {
-        const children = p.children || [];
-        if (children.length > 0) {
-          hash.with(Array.from(children).indexOf(currentEl));
-        }
-      }
-      currentEl = p instanceof Element ? p : typeof ShadowRoot !== "undefined" && p instanceof ShadowRoot ? p.host : p instanceof DocumentFragment ? null : null;
-      if (p instanceof DocumentFragment && !currentEl) {
-      }
-    }
-    return hash.string;
-  }
-  function attrHash(key, val) {
-    return new Hash().with(key).with(val).value;
-  }
-
-  // src/engine/modules.ts
+  init_hash();
   init_consts();
 
   // src/engine/observers.ts
@@ -15886,6 +15702,7 @@ ${bridge}`, {
   init_topology();
   init_stylesheet();
   init_mcp();
+  init_debug();
   var globalReactiveState = reactive({});
   var ModuleCoordinator = class {
     attributeModules = /* @__PURE__ */ new Map();

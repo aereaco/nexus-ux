@@ -1,6 +1,7 @@
 import { DATA_PRESERVE_ATTR, CLEANUP_FUNCTIONS_KEY, MARKER_KEY } from './consts.ts';
 import { NexusEnhancedElement } from './reactivity.ts';
 import { stylesheet } from '../modules/attributes/stylesheet.ts';
+import { hashString } from './utils/hash.ts';
 
 // Default configuration options
 const noOp = () => true;
@@ -94,14 +95,7 @@ function parseHTML(html: string): Node {
   return fragment;
 }
 
-function hashString(str: string): string {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash << 5) - hash + str.charCodeAt(i);
-    hash |= 0;
-  }
-  return String(hash);
-}
+
 
 function getHeadElementKey(node: Node): string | null {
   if (node.nodeType === Node.ELEMENT_NODE) {

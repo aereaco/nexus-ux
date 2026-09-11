@@ -114,6 +114,33 @@ export function hasScope(element: HTMLElement): boolean {
   return !!(node[LOCAL_SCOPES_KEY]?.length || node[DATA_STACK_KEY]?.length);
 }
 
+/**
+ * Disposes a list of cleanup functions (executing each safely and clearing the list)
+ * or removes scope tracking keys from an element.
+ */
+export function disposeScope(target?: Element | (() => void)[]): void {
+  if (Array.isArray(target)) {
+    for (const fn of target) {
+      try {
+        fn();
+      } catch (err) {
+        console.error('Error disposing scope:', err);
+      }
+    }
+    target.length = 0;
+    return;
+  }
+  if (target) {
+    const node = target as NexusEnhancedElement;
+    if (node[LOCAL_SCOPES_KEY]) {
+      delete node[LOCAL_SCOPES_KEY];
+    }
+    if (node[DATA_STACK_KEY]) {
+      delete node[DATA_STACK_KEY];
+    }
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Scope Provider Registry
 // ---------------------------------------------------------------------------

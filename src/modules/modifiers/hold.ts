@@ -15,35 +15,8 @@
 
 import { ModifierModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { TIMER_MAP_KEY } from '../../engine/consts.ts';
+import { getTimerMap, parseCommandArg } from '../../engine/utils/timer.ts';
 import { resolveTargetElements } from '../sprites/selector.ts';
-
-interface HoldRecord {
-  timer: number | null;
-  cleanup?: () => void;
-}
-
-function getHoldMap(el: HTMLElement): Map<string, HoldRecord> {
-  let map = (el as any)[TIMER_MAP_KEY];
-  if (!map) {
-    map = new Map<string, HoldRecord>();
-    (el as any)[TIMER_MAP_KEY] = map;
-  }
-  return map;
-}
-
-function parseCommandArg(arg: string): { command?: 'cancel'; targetSelector?: string } {
-  if (!arg) return {};
-  const trimmed = arg.trim();
-  const match = trimmed.match(/^cancel(?:\((.*)\))?$/i);
-  if (match) {
-    return {
-      command: 'cancel',
-      targetSelector: match[1]?.trim()
-    };
-  }
-  return {};
-}
 
 export const holdModifier: ModifierModule = {
   name: 'hold',
@@ -55,7 +28,7 @@ export const holdModifier: ModifierModule = {
         return (e: Event) => {
           const targets = resolveTargetElements(el, cmd.targetSelector);
           targets.forEach(target => {
-            const map = getHoldMap(target);
+            const map = getTimerMap(target);
             const rec = map.get('hold');
             if (rec && rec.cleanup) {
               rec.cleanup();
@@ -69,7 +42,7 @@ export const holdModifier: ModifierModule = {
       return (...args: any[]) => {
         const targets = resolveTargetElements(el, cmd.targetSelector);
         targets.forEach(target => {
-          const map = getHoldMap(target);
+          const map = getTimerMap(target);
           const rec = map.get('hold');
           if (rec && rec.cleanup) {
             rec.cleanup();
@@ -84,7 +57,7 @@ export const holdModifier: ModifierModule = {
 
     if (typeof payload === 'function') {
       return (e: Event) => {
-        const map = getHoldMap(el);
+        const map = getTimerMap(el);
         const existing = map.get('hold');
         if (existing && existing.cleanup) existing.cleanup();
 

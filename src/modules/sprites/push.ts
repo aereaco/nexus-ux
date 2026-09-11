@@ -1,4 +1,5 @@
 import { RuntimeContext } from '../../engine/composition.ts';
+import { createPwaAsyncOp, hasServiceWorker, runPwaOp } from '../../engine/utils/pwa.ts';
 
 /**
  * $push Sprite — Push Messaging API wrapper
@@ -24,7 +25,7 @@ export default function pushFactory(runtime: RuntimeContext) {
   });
 
   // Check for existing subscription on init
-  if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+  if (hasServiceWorker()) {
     navigator.serviceWorker.ready.then(reg => {
       reg.pushManager.getSubscription().then(sub => {
         if (sub) {
@@ -45,11 +46,9 @@ export default function pushFactory(runtime: RuntimeContext) {
        * @param applicationServerKey - VAPID public key (base64 or Uint8Array)
        */
       subscribe(applicationServerKey: string | Uint8Array) {
-        const op = runtime.reactive<{ data: PushSubscription | null; status: string; error: string | null }>({
-          data: null, status: 'pending', error: null
-        });
+        const op = createPwaAsyncOp<PushSubscription | null>(runtime, { data: null });
 
-        if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
+        if (!hasServiceWorker()) {
           op.error = 'Service Worker not available';
           op.status = 'error';
           return op;
@@ -69,10 +68,10 @@ export default function pushFactory(runtime: RuntimeContext) {
               key = applicationServerKey;
             }
 
-const sub = await reg.pushManager.subscribe({
-               userVisibleOnly: true,
-               applicationServerKey: key as unknown as ArrayBuffer
-             });
+            const sub = await reg.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: key as unknown as ArrayBuffer
+            });
             state.subscription = sub;
             state.status = 'active';
             op.data = sub;
@@ -93,30 +92,17 @@ const sub = await reg.pushManager.subscribe({
        * Unsubscribe from push notifications.
        */
       unsubscribe() {
-        const op = runtime.reactive<{ status: string; error: string | null }>({
-          status: 'pending', error: null
-        });
-
         if (!state.subscription) {
-          op.error = 'No active subscription';
-          op.status = 'error';
-          return op;
+          return createPwaAsyncOp(runtime, { status: 'error', error: 'No active subscription' });
         }
 
-        (async () => {
-          try {
-            await state.subscription!.unsubscribe();
-            state.subscription = null;
-            state.status = 'idle';
-            op.status = 'done';
-          } catch (e) {
-            op.error = e instanceof Error ? e.message : String(e);
-            op.status = 'error';
-          }
-        })();
-
-        return op;
+        return runPwaOp(runtime, async () => {
+          await state.subscription!.unsubscribe();
+          state.subscription = null;
+          state.status = 'idle';
+        });
       }
     }
   };
 }
+

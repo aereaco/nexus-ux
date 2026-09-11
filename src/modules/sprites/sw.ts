@@ -1,4 +1,5 @@
 import { RuntimeContext } from '../../engine/composition.ts';
+import { createPwaAsyncOp, hasServiceWorker, runPwaOp } from '../../engine/utils/pwa.ts';
 
 /**
  * $sw Sprite — Service Worker lifecycle management
@@ -32,7 +33,7 @@ export default function swFactory(runtime: RuntimeContext) {
   });
 
   // Track current controller on load
-  if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+  if (hasServiceWorker()) {
     const sw = navigator.serviceWorker;
 
     // Initial state
@@ -81,12 +82,9 @@ export default function swFactory(runtime: RuntimeContext) {
        * Returns reactive { status, error } container.
        */
       register(scriptURL: string, options?: RegistrationOptions) {
-        const op = runtime.reactive<{ status: string; error: string | null }>({
-          status: 'pending',
-          error: null
-        });
+        const op = createPwaAsyncOp(runtime);
 
-        if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
+        if (!hasServiceWorker()) {
           op.error = 'Service Worker API not available';
           op.status = 'error';
           return op;
@@ -139,62 +137,30 @@ export default function swFactory(runtime: RuntimeContext) {
        * Check for service worker updates.
        */
       update() {
-        const op = runtime.reactive<{ status: string; error: string | null }>({
-          status: 'pending',
-          error: null
-        });
-
         if (!state.registration) {
-          op.error = 'No service worker registered';
-          op.status = 'error';
-          return op;
+          return createPwaAsyncOp(runtime, { status: 'error', error: 'No service worker registered' });
         }
 
-        (async () => {
-          try {
-            await state.registration!.update();
-            op.status = 'done';
-          } catch (e) {
-            op.error = e instanceof Error ? e.message : String(e);
-            op.status = 'error';
-          }
-        })();
-
-        return op;
+        return runPwaOp(runtime, () => state.registration!.update());
       },
 
       /**
        * Unregister the active service worker.
        */
       unregister() {
-        const op = runtime.reactive<{ status: string; error: string | null }>({
-          status: 'pending',
-          error: null
-        });
-
         if (!state.registration) {
-          op.error = 'No service worker registered';
-          op.status = 'error';
-          return op;
+          return createPwaAsyncOp(runtime, { status: 'error', error: 'No service worker registered' });
         }
 
-        (async () => {
-          try {
-            const success = await state.registration!.unregister();
-            if (success) {
-              state.status = 'idle';
-              state.controller = null;
-              state.registration = null;
-              state.updateAvailable = false;
-            }
-            op.status = 'done';
-          } catch (e) {
-            op.error = e instanceof Error ? e.message : String(e);
-            op.status = 'error';
+        return runPwaOp(runtime, async () => {
+          const success = await state.registration!.unregister();
+          if (success) {
+            state.status = 'idle';
+            state.controller = null;
+            state.registration = null;
+            state.updateAvailable = false;
           }
-        })();
-
-        return op;
+        });
       },
 
       /**

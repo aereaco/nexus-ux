@@ -1,4 +1,5 @@
 import { RuntimeContext } from '../../engine/composition.ts';
+import { runPwaRegistrationOp, PwaAsyncOp } from '../../engine/utils/pwa.ts';
 
 /**
  * $bgFetch Sprite — Background Fetch API wrapper
@@ -20,99 +21,53 @@ export default function bgFetchFactory(runtime: RuntimeContext) {
        * Returns reactive { data: BackgroundFetchRegistration | null, status, error }.
        */
       fetch(id: string, requests: string[], options?: { title?: string; icons?: Array<{ src: string; sizes: string; type: string }>; downloadTotal?: number }) {
-        const op = runtime.reactive<{ data: unknown; status: string; error: string | null }>({
-          data: null, status: 'pending', error: null
-        });
-
-        if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
-          op.error = 'Service Worker not available';
-          op.status = 'error';
-          return op;
-        }
-
-        (async () => {
-          try {
-            const reg = await navigator.serviceWorker.ready;
-            if (!('backgroundFetch' in reg)) {
-              op.error = 'Background Fetch API not supported';
-              op.status = 'error';
-              return;
-            }
+        let opRef: PwaAsyncOp<unknown>;
+        opRef = runPwaRegistrationOp(
+          runtime,
+          'backgroundFetch',
+          async (reg) => {
             const bgFetch = await (reg as any).backgroundFetch.fetch(id, requests, options || {});
-            op.data = bgFetch;
-            op.status = 'done';
-
             bgFetch.addEventListener('progress', () => {
-              op.data = { ...bgFetch, downloaded: bgFetch.downloaded, downloadTotal: bgFetch.downloadTotal };
+              opRef.data = { ...bgFetch, downloaded: bgFetch.downloaded, downloadTotal: bgFetch.downloadTotal };
             });
-          } catch (e) {
-            op.error = e instanceof Error ? e.message : String(e);
-            op.status = 'error';
-          }
-        })();
-
-        return op;
+            return bgFetch;
+          },
+          { featureLabel: 'Background Fetch API' }
+        );
+        return opRef;
       },
 
       /**
        * Get an existing background fetch registration.
        */
       get(id: string) {
-        const op = runtime.reactive<{ data: unknown; status: string; error: string | null }>({
-          data: null, status: 'loading', error: null
-        });
-
-        (async () => {
-          try {
-            const reg = await navigator.serviceWorker.ready;
-            if (!('backgroundFetch' in reg)) {
-              op.error = 'Background Fetch API not supported';
-              op.status = 'error';
-              return;
-            }
-            const bgFetch = await (reg as any).backgroundFetch.get(id);
-            op.data = bgFetch;
-            op.status = 'ready';
-          } catch (e) {
-            op.error = e instanceof Error ? e.message : String(e);
-            op.status = 'error';
-          }
-        })();
-
-        return op;
+        return runPwaRegistrationOp(
+          runtime,
+          'backgroundFetch',
+          async (reg) => {
+            return await (reg as any).backgroundFetch.get(id);
+          },
+          { initialStatus: 'loading', featureLabel: 'Background Fetch API' }
+        );
       },
 
       /**
        * Abort a background fetch.
        */
       abort(id: string) {
-        const op = runtime.reactive<{ status: string; error: string | null }>({
-          status: 'pending', error: null
-        });
-
-        (async () => {
-          try {
-            const reg = await navigator.serviceWorker.ready;
-            if (!('backgroundFetch' in reg)) {
-              op.error = 'Background Fetch API not supported';
-              op.status = 'error';
-              return;
-            }
+        return runPwaRegistrationOp(
+          runtime,
+          'backgroundFetch',
+          async (reg) => {
             const bgFetch = await (reg as any).backgroundFetch.get(id);
             if (bgFetch) {
               await bgFetch.abort();
-              op.status = 'done';
             } else {
-              op.error = `No background fetch with id '${id}'`;
-              op.status = 'error';
+              throw new Error(`No background fetch with id '${id}'`);
             }
-          } catch (e) {
-            op.error = e instanceof Error ? e.message : String(e);
-            op.status = 'error';
-          }
-        })();
-
-        return op;
+          },
+          { featureLabel: 'Background Fetch API' }
+        );
       }
     }
   };

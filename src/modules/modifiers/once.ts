@@ -21,28 +21,24 @@
  */
 
 import { ModifierModule } from '../../engine/modules.ts';
-import { RuntimeContext } from '../../engine/composition.ts';
+import { createModifier } from '../../engine/utils/modifier.ts';
 
-export const onceModifier: ModifierModule = {
-  name: 'once',
-  handle: (payload: any, _el: HTMLElement, _arg: string, _runtime: RuntimeContext) => {
-    let fired = false;
-    if (typeof payload === 'function') {
-      return (e: Event) => {
-        if (!fired) {
-          fired = true;
-          return payload(e);
-        }
-      };
-    }
-    // Generic pipeline execution tracking
-    return (...args: any[]) => {
+export const onceModifier: ModifierModule = createModifier('once', (payload) => {
+  let fired = false;
+  if (typeof payload === 'function') {
+    return (e: Event) => {
       if (!fired) {
         fired = true;
-        return typeof payload === 'function' ? payload(...args) : payload;
+        return payload(e);
       }
     };
   }
-};
+  return (...args: any[]) => {
+    if (!fired) {
+      fired = true;
+      return typeof payload === 'function' ? payload(...args) : payload;
+    }
+  };
+});
 
 export default onceModifier;

@@ -26,23 +26,16 @@
  */
 
 import { ModifierModule } from '../../engine/modules.ts';
-import { RuntimeContext } from '../../engine/composition.ts';
+import { createGuardModifier } from '../../engine/utils/modifier.ts';
 
 const isKeyboardEvent = (e: Event): e is KeyboardEvent => 'key' in e;
 
-const createKeyModifier = (name: string, check: (e: KeyboardEvent) => boolean): ModifierModule => ({
-  name,
-  handle: (payload: any, _el: HTMLElement, _arg: string, _runtime: RuntimeContext) => {
-    if (typeof payload === 'function') {
-      return (e: Event) => {
-        if (isKeyboardEvent(e) && check(e)) {
-          return payload(e);
-        }
-      };
+const createKeyModifier = (name: string, check: (e: KeyboardEvent) => boolean): ModifierModule =>
+  createGuardModifier(name, (fn) => (e) => {
+    if (isKeyboardEvent(e) && check(e)) {
+      return fn(e);
     }
-    return payload; // Keys don't apply to generic pipeline data flows lacking an Event
-  }
-});
+  });
 
 export const enterModifier = createKeyModifier('enter', e => e.key === 'Enter');
 export const escapeModifier = createKeyModifier('escape', e => e.key === 'Escape');

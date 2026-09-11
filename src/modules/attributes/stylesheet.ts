@@ -37,6 +37,7 @@ import { effect as _effect } from '../../engine/reactivity.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { AttributeModule } from '../../engine/modules.ts';
 import { cacheEngine } from '../../engine/cache.ts';
+import { hashString } from '../../engine/utils/hash.ts';
 
 // ============================================================================
 // 1. AOT-INJECTED STYLE LAYER CONSTANTS
@@ -358,14 +359,7 @@ async function fetchWithCache(url: string, timeoutMs = 3000, onUpdate?: (fresh: 
   return typeof result === 'string' ? result : String(result);
 }
 
-function hashString(str: string): string {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash << 5) - hash + str.charCodeAt(i);
-    hash |= 0;
-  }
-  return String(hash);
-}
+
 
 // ============================================================================
 // 6. STYLESHEET MANAGER

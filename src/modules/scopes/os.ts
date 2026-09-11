@@ -1,4 +1,5 @@
 import { reactive } from '../../engine/reactivity.ts';
+import { disposeScope } from '../../engine/scope.ts';
 
 // Simple OS detection
 const getOS = () => {
@@ -49,4 +50,5 @@ export const scopeRule = (q: string, body: () => any) => {
 };
 
 /** Tear down all listeners — for testing or micro-frontend teardown. */
-export function dispose() { cleanupFns.forEach(fn => fn()); }
+export function dispose() { disposeScope(cleanupFns); }
+

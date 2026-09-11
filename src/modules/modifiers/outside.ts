@@ -12,20 +12,12 @@
  */
 
 import { ModifierModule } from '../../engine/modules.ts';
-import { RuntimeContext } from '../../engine/composition.ts';
+import { createGuardModifier } from '../../engine/utils/modifier.ts';
 
-export const outsideModifier: ModifierModule = {
-  name: 'outside',
-  handle: (payload: any, el: HTMLElement, _arg: string, _runtime: RuntimeContext) => {
-    if (typeof payload === 'function') {
-      return (e: Event) => {
-        if (e.target && !el.contains(e.target as Node)) {
-          return payload(e);
-        }
-      };
-    }
-    return payload;
+export const outsideModifier: ModifierModule = createGuardModifier('outside', (fn, el) => (e) => {
+  if (e.target && !el.contains(e.target as Node)) {
+    return fn(e);
   }
-};
+});
 
 export default outsideModifier;

@@ -25,45 +25,9 @@
 
 import { ModifierModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { DEFAULT_DEBOUNCE_TIME, TIMER_MAP_KEY } from '../../engine/consts.ts';
+import { DEFAULT_DEBOUNCE_TIME } from '../../engine/consts.ts';
+import { getTimerMap, parseCommandArg, resolveTimerDuration } from '../../engine/utils/timer.ts';
 import { resolveTargetElements } from '../sprites/selector.ts';
-
-interface TimerRecord {
-  timer: number;
-  fn?: () => void;
-}
-
-function getTimerMap(el: HTMLElement): Map<string, TimerRecord> {
-  let map = (el as any)[TIMER_MAP_KEY];
-  if (!map) {
-    map = new Map<string, TimerRecord>();
-    (el as any)[TIMER_MAP_KEY] = map;
-  }
-  return map;
-}
-
-function parseCommandArg(arg: string): { command?: 'cancel'; targetSelector?: string } {
-  if (!arg) return {};
-  const trimmed = arg.trim();
-  const match = trimmed.match(/^cancel(?:\((.*)\))?$/i);
-  if (match) {
-    return {
-      command: 'cancel',
-      targetSelector: match[1]?.trim()
-    };
-  }
-  return {};
-}
-
-function resolveDelay(runtime: RuntimeContext, el: HTMLElement, arg: string): number {
-  if (!arg) return DEFAULT_DEBOUNCE_TIME;
-  if (arg.startsWith('#')) {
-    const val = runtime.evaluate(el, arg);
-    const num = typeof val === 'number' ? val : parseInt(String(val), 10);
-    return Number.isNaN(num) ? DEFAULT_DEBOUNCE_TIME : num;
-  }
-  return parseInt(arg, 10) || DEFAULT_DEBOUNCE_TIME;
-}
 
 export const delayModifier: ModifierModule = {
   name: 'delay',
@@ -102,7 +66,7 @@ export const delayModifier: ModifierModule = {
 
     if (typeof payload === 'function') {
       return (e: Event) => {
-        const wait = resolveDelay(runtime, el, arg);
+        const wait = resolveTimerDuration(runtime, el, arg, DEFAULT_DEBOUNCE_TIME);
         const map = getTimerMap(el);
         const existing = map.get('delay');
         if (existing) clearTimeout(existing.timer);
@@ -119,7 +83,7 @@ export const delayModifier: ModifierModule = {
 
     return (...args: any[]) => {
       return new Promise((resolve) => {
-        const wait = resolveDelay(runtime, el, arg);
+        const wait = resolveTimerDuration(runtime, el, arg, DEFAULT_DEBOUNCE_TIME);
         const map = getTimerMap(el);
         const existing = map.get('delay');
         if (existing) clearTimeout(existing.timer);

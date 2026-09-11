@@ -120,3 +120,16 @@ export function walkDOM(
     el = el.nextElementSibling;
   }
 }
+
+/**
+ * Fast 32-bit string hashing algorithm.
+ * Returns a stable numeric string representation of the string hash.
+ */
+export function hashString(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return String(hash);
+}

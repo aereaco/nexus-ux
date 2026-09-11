@@ -640,11 +640,4 @@ function getGlobalActions(this: ModuleCoordinator): Record<string, ActionFunctio
   return actions;
 }
 
-export function reportError(error: Error, el?: HTMLElement, expression?: string): void {
-  // Use logger.error to ensure consistent prefixing [Nexus Error]
-  // We don't have direct access to RuntimeContext here without global Nexus instance or passing it.
-  // But logger.error doesn't actually use the context (though the signature had it).
-  // Actually, logger.error signature was (context, ...args).
-  // I'll update reportError to try and use the logger if possible, or just default to console.error with prefix.
-  console.error(`[Nexus Error]`, error, el, expression);
-}
+export { reportError } from './debug.ts';

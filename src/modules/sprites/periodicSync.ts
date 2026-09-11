@@ -1,4 +1,5 @@
 import { RuntimeContext } from '../../engine/composition.ts';
+import { runPwaRegistrationOp } from '../../engine/utils/pwa.ts';
 
 /**
  * $periodicSync Sprite — Periodic Background Sync API wrapper
@@ -20,89 +21,44 @@ export default function periodicSyncFactory(runtime: RuntimeContext) {
        * Returns reactive { status, error }.
        */
       register(tag: string, options?: { minInterval?: number }) {
-        const op = runtime.reactive<{ status: string; error: string | null }>({
-          status: 'pending', error: null
-        });
-
-        if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
-          op.error = 'Service Worker not available';
-          op.status = 'error';
-          return op;
-        }
-
-        (async () => {
-          try {
-            const reg = await navigator.serviceWorker.ready;
-            if (!('periodicSync' in reg)) {
-              op.error = 'Periodic Background Sync API not supported';
-              op.status = 'error';
-              return;
-            }
+        return runPwaRegistrationOp(
+          runtime,
+          'periodicSync',
+          async (reg) => {
             await (reg as any).periodicSync.register(tag, options || {});
-            op.status = 'done';
-          } catch (e) {
-            op.error = e instanceof Error ? e.message : String(e);
-            op.status = 'error';
-          }
-        })();
-
-        return op;
+          },
+          { featureLabel: 'Periodic Background Sync API' }
+        );
       },
 
       /**
        * Unregister a periodic sync tag.
        */
       unregister(tag: string) {
-        const op = runtime.reactive<{ status: string; error: string | null }>({
-          status: 'pending', error: null
-        });
-
-        (async () => {
-          try {
-            const reg = await navigator.serviceWorker.ready;
-            if (!('periodicSync' in reg)) {
-              op.error = 'Periodic Background Sync API not supported';
-              op.status = 'error';
-              return;
-            }
+        return runPwaRegistrationOp(
+          runtime,
+          'periodicSync',
+          async (reg) => {
             await (reg as any).periodicSync.unregister(tag);
-            op.status = 'done';
-          } catch (e) {
-            op.error = e instanceof Error ? e.message : String(e);
-            op.status = 'error';
-          }
-        })();
-
-        return op;
+          },
+          { featureLabel: 'Periodic Background Sync API' }
+        );
       },
 
       /**
        * Get all registered periodic sync tags.
        */
       get tags() {
-        const op = runtime.reactive<{ data: string[]; status: string; error: string | null }>({
-          data: [], status: 'loading', error: null
-        });
-
-        (async () => {
-          try {
-            const reg = await navigator.serviceWorker.ready;
-            if (!('periodicSync' in reg)) {
-              op.error = 'Periodic Background Sync API not supported';
-              op.status = 'error';
-              return;
-            }
-            const tags = await (reg as any).periodicSync.getTags();
-            op.data = tags;
-            op.status = 'ready';
-          } catch (e) {
-            op.error = e instanceof Error ? e.message : String(e);
-            op.status = 'error';
-          }
-        })();
-
-        return op;
+        return runPwaRegistrationOp<string[]>(
+          runtime,
+          'periodicSync',
+          async (reg) => {
+            return await (reg as any).periodicSync.getTags();
+          },
+          { initialStatus: 'loading', initialData: [], featureLabel: 'Periodic Background Sync API' }
+        );
       }
     }
   };
 }
+
