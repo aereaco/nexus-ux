@@ -2,6 +2,7 @@ import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { reactive } from '../../engine/reactivity.ts';
 import { ensureAdoptedStylesheet } from '../../engine/utils/styles.ts';
+import { trackPointerDrag } from '../../engine/utils/pointer.ts';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -9,7 +10,7 @@ const MIN_ZOOM = 0.2;
 const MAX_ZOOM = 4;
 
 interface Viewport { x: number; y: number; zoom: number; tick?: number }
-type FlowElement = HTMLElement & { __nexusFlowViewport?: Viewport; __flowViewport?: Viewport };
+type FlowElement = HTMLElement & { __flowViewport?: Viewport };
 
 /** Elements that must not initiate a canvas pan when pressed. */
 const NO_PAN = '[data-flow-node],[data-flow-handle],[data-flow-nodrag],[data-flow-resizer],[data-flow-minimap],button,a,input,textarea,select,label';
@@ -17,7 +18,7 @@ const NO_PAN = '[data-flow-node],[data-flow-handle],[data-flow-nodrag],[data-flo
 /** Read the shared, live viewport state a [data-flow] element publishes. */
 const sharedViewport = (el: Element | null): Viewport => {
   const flow = el?.closest('[data-flow]') as FlowElement | null;
-  const vp = flow?.__flowViewport || flow?.__nexusFlowViewport;
+  const vp = flow?.__flowViewport;
   return vp ? { x: vp.x || 0, y: vp.y || 0, zoom: vp.zoom || 1 } : { x: 0, y: 0, zoom: 1 };
 };
 
@@ -290,7 +291,6 @@ export const flowAttribute: AttributeModule = {
       || element;
 
     element.__flowViewport = state;
-    element.__nexusFlowViewport = state;
 
     const gridAttr = element.getAttribute('data-flow-grid');
     const gridSize = config?.grid ?? (gridAttr !== null ? (parseFloat(gridAttr) || 0) : 0);
@@ -321,89 +321,87 @@ export const flowAttribute: AttributeModule = {
       return false;
     };
 
-    const onPointerDown = (e: PointerEvent) => {
-      if (!canPan(e)) return;
-      didMove = false;
+    const stopCanvasDrag = trackPointerDrag(element, {
+      capture: true,
+      onStart: (e) => {
+        if (!canPan(e)) return false;
+        didMove = false;
 
-      // Marquee selection if Shift is held on empty canvas
-      if (e.button === 0 && e.shiftKey) {
-        isSelecting = true;
-        const pt = screenToFlowLocal(e.clientX, e.clientY);
-        selStartX = pt.x;
-        selStartY = pt.y;
-        selRectEl = document.createElement('div');
-        selRectEl.className = 'flow-selection-rect';
-        content.appendChild(selRectEl);
-        try { element.setPointerCapture(e.pointerId); } catch { /* ignore */ }
-        return;
-      }
+        // Marquee selection if Shift is held on empty canvas
+        if (e.button === 0 && e.shiftKey) {
+          isSelecting = true;
+          const pt = screenToFlowLocal(e.clientX, e.clientY);
+          selStartX = pt.x;
+          selStartY = pt.y;
+          selRectEl = document.createElement('div');
+          selRectEl.className = 'flow-selection-rect';
+          content.appendChild(selRectEl);
+          return true;
+        }
 
-      isPanning = true;
-      startX = e.clientX - state.x;
-      startY = e.clientY - state.y;
-      try { element.setPointerCapture(e.pointerId); } catch { /* ignore */ }
-      element.style.cursor = 'grabbing';
-    };
+        isPanning = true;
+        startX = e.clientX - state.x;
+        startY = e.clientY - state.y;
+        element.style.cursor = 'grabbing';
+        return true;
+      },
+      onMove: (e) => {
+        if (isSelecting && selRectEl) {
+          didMove = true;
+          const pt = screenToFlowLocal(e.clientX, e.clientY);
+          const minX = Math.min(selStartX, pt.x);
+          const minY = Math.min(selStartY, pt.y);
+          const w = Math.abs(pt.x - selStartX);
+          const h = Math.abs(pt.y - selStartY);
+          selRectEl.style.left = `${minX}px`;
+          selRectEl.style.top = `${minY}px`;
+          selRectEl.style.width = `${w}px`;
+          selRectEl.style.height = `${h}px`;
 
-    const onPointerMove = (e: PointerEvent) => {
-      if (isSelecting && selRectEl) {
+          const nodes = runtime.evaluate(element, 'nodes') as any[];
+          if (Array.isArray(nodes)) {
+            nodes.forEach(n => {
+              const p = n.position || n;
+              const nx = p.x || 0;
+              const ny = p.y || 0;
+              const nw = n.w || n.width || 176;
+              const nh = n.h || n.height || 90;
+              const inside = nx < minX + w && nx + nw > minX && ny < minY + h && ny + nh > minY;
+              n.selected = inside;
+            });
+            state.tick = (state.tick || 0) + 1;
+          }
+          return;
+        }
+
+        if (!isPanning) return;
         didMove = true;
-        const pt = screenToFlowLocal(e.clientX, e.clientY);
-        const minX = Math.min(selStartX, pt.x);
-        const minY = Math.min(selStartY, pt.y);
-        const w = Math.abs(pt.x - selStartX);
-        const h = Math.abs(pt.y - selStartY);
-        selRectEl.style.left = `${minX}px`;
-        selRectEl.style.top = `${minY}px`;
-        selRectEl.style.width = `${w}px`;
-        selRectEl.style.height = `${h}px`;
-
-        const nodes = runtime.evaluate(element, 'nodes') as any[];
-        if (Array.isArray(nodes)) {
-          nodes.forEach(n => {
-            const p = n.position || n;
-            const nx = p.x || 0;
-            const ny = p.y || 0;
-            const nw = n.w || n.width || 176;
-            const nh = n.h || n.height || 90;
-            const inside = nx < minX + w && nx + nw > minX && ny < minY + h && ny + nh > minY;
-            n.selected = inside;
-          });
-          state.tick = (state.tick || 0) + 1;
+        state.x = e.clientX - startX;
+        state.y = e.clientY - startY;
+        state.tick = (state.tick || 0) + 1;
+      },
+      onEnd: (e) => {
+        if (isSelecting) {
+          isSelecting = false;
+          selRectEl?.remove();
+          selRectEl = null;
+          return;
         }
-        return;
-      }
 
-      if (!isPanning) return;
-      didMove = true;
-      state.x = e.clientX - startX;
-      state.y = e.clientY - startY;
-      state.tick = (state.tick || 0) + 1;
-    };
+        if (!isPanning) return;
+        isPanning = false;
+        element.style.cursor = '';
 
-    const onPointerUp = (e: PointerEvent) => {
-      if (isSelecting) {
-        isSelecting = false;
-        selRectEl?.remove();
-        selRectEl = null;
-        try { element.releasePointerCapture(e.pointerId); } catch { /* ignore */ }
-        return;
-      }
-
-      if (!isPanning) return;
-      isPanning = false;
-      try { element.releasePointerCapture(e.pointerId); } catch { /* ignore */ }
-      element.style.cursor = '';
-
-      // Clear selection on plain canvas click without drag
-      if (!didMove && !e.shiftKey) {
-        const nodes = runtime.evaluate(element, 'nodes') as any[];
-        if (Array.isArray(nodes) && nodes.some(n => n.selected)) {
-          nodes.forEach(n => { n.selected = false; });
-          state.tick = (state.tick || 0) + 1;
+        // Clear selection on plain canvas click without drag
+        if (!didMove && !e.shiftKey) {
+          const nodes = runtime.evaluate(element, 'nodes') as any[];
+          if (Array.isArray(nodes) && nodes.some(n => n.selected)) {
+            nodes.forEach(n => { n.selected = false; });
+            state.tick = (state.tick || 0) + 1;
+          }
         }
       }
-    };
+    });
 
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
@@ -471,9 +469,6 @@ export const flowAttribute: AttributeModule = {
       }
     };
 
-    element.addEventListener('pointerdown', onPointerDown);
-    element.addEventListener('pointermove', onPointerMove);
-    element.addEventListener('pointerup', onPointerUp);
     element.addEventListener('wheel', onWheel, { passive: false });
     window.addEventListener('keydown', onKeyDown);
 
@@ -504,13 +499,10 @@ export const flowAttribute: AttributeModule = {
 
     return () => {
       stop();
-      element.removeEventListener('pointerdown', onPointerDown);
-      element.removeEventListener('pointermove', onPointerMove);
-      element.removeEventListener('pointerup', onPointerUp);
+      stopCanvasDrag();
       element.removeEventListener('wheel', onWheel);
       window.removeEventListener('keydown', onKeyDown);
       delete element.__flowViewport;
-      delete element.__nexusFlowViewport;
     };
   }
 };
@@ -546,85 +538,68 @@ export const flowNodeAttribute: AttributeModule = {
     const snapPoint = (x: number, y: number, s: number) =>
       s > 0 ? { x: Math.round(x / s) * s, y: Math.round(y / s) * s } : { x, y };
 
-    let isDragging = false;
-    let dragStartX = 0;
-    let dragStartY = 0;
     let dragGroup: Array<{ node: any; initialX: number; initialY: number }> = [];
 
-    const onPointerDown = (e: PointerEvent) => {
-      if (e.button !== 0 || e.altKey) return;
-      if ((e.target as HTMLElement).closest(
-        '[data-flow-handle],[data-flow-nodrag],[data-flow-resizer],button,a,input,textarea,select,label'
-      )) return;
-      e.stopPropagation();
+    const stopNodeDrag = trackPointerDrag(element, {
+      capture: true,
+      onStart: (e) => {
+        if (e.button !== 0 || e.altKey) return false;
+        if ((e.target as HTMLElement).closest(
+          '[data-flow-handle],[data-flow-nodrag],[data-flow-resizer],button,a,input,textarea,select,label'
+        )) return false;
+        e.stopPropagation();
 
-      const flowEl = element.closest('[data-flow]') as HTMLElement | null;
-      let allNodes: any[] = [];
-      try { allNodes = runtime.evaluate(flowEl || element, 'nodes') as any[] || []; } catch { allNodes = []; }
+        const flowEl = element.closest('[data-flow]') as HTMLElement | null;
+        let allNodes: any[] = [];
+        try { allNodes = runtime.evaluate(flowEl || element, 'nodes') as any[] || []; } catch { allNodes = []; }
 
-      // Selection toggle / focus
-      if (e.shiftKey) {
-        nodeState.selected = !nodeState.selected;
-      } else {
-        if (!nodeState.selected) {
-          allNodes.forEach(n => { n.selected = false; });
-          nodeState.selected = true;
+        // Selection toggle / focus
+        if (e.shiftKey) {
+          nodeState.selected = !nodeState.selected;
+        } else {
+          if (!nodeState.selected) {
+            allNodes.forEach(n => { n.selected = false; });
+            nodeState.selected = true;
+          }
         }
+
+        // Build drag group: all selected nodes + any nested children (sub-flows)
+        const selectedNodes = allNodes.filter(n => n.selected);
+        const movingNodes = selectedNodes.length > 0 && nodeState.selected ? selectedNodes : [nodeState];
+        
+        const groupSet = new Set(movingNodes);
+        allNodes.forEach(n => {
+          if (n.parentId && movingNodes.some(p => String(p.id) === String(n.parentId))) {
+            groupSet.add(n);
+          }
+        });
+
+        dragGroup = Array.from(groupSet).map(n => {
+          const p = readPos(n);
+          return { node: n, initialX: p.x, initialY: p.y };
+        });
+
+        element.style.zIndex = '1000';
+      },
+      onMove: (_e, delta) => {
+        const flowEl = element.closest('[data-flow]') as FlowElement | null;
+        const vp = flowEl?.__flowViewport;
+        const zoom = vp?.zoom || 1;
+        const dx = delta.dx / zoom;
+        const dy = delta.dy / zoom;
+        const snap = resolveSnap();
+
+        dragGroup.forEach(item => {
+          const snapped = snapPoint(item.initialX + dx, item.initialY + dy, snap);
+          writePos(item.node, snapped.x, snapped.y);
+        });
+
+        if (vp) (vp as any).tick = ((vp as any).tick || 0) + 1;
+      },
+      onEnd: () => {
+        element.style.zIndex = '';
       }
-
-      // Build drag group: all selected nodes + any nested children (sub-flows)
-      const selectedNodes = allNodes.filter(n => n.selected);
-      const movingNodes = selectedNodes.length > 0 && nodeState.selected ? selectedNodes : [nodeState];
-      
-      const groupSet = new Set(movingNodes);
-      allNodes.forEach(n => {
-        if (n.parentId && movingNodes.some(p => String(p.id) === String(n.parentId))) {
-          groupSet.add(n);
-        }
-      });
-
-      dragGroup = Array.from(groupSet).map(n => {
-        const p = readPos(n);
-        return { node: n, initialX: p.x, initialY: p.y };
-      });
-
-      isDragging = true;
-      dragStartX = e.clientX;
-      dragStartY = e.clientY;
-      try { element.setPointerCapture(e.pointerId); } catch { /* ignore */ }
-      element.style.zIndex = '1000';
-
-      window.addEventListener('pointermove', onPointerMove);
-      window.addEventListener('pointerup', onPointerUp);
-    };
-
-    const onPointerMove = (e: PointerEvent) => {
-      if (!isDragging) return;
-      const flowEl = element.closest('[data-flow]') as FlowElement | null;
-      const vp = flowEl?.__flowViewport || flowEl?.__nexusFlowViewport;
-      const zoom = vp?.zoom || 1;
-      const dx = (e.clientX - dragStartX) / zoom;
-      const dy = (e.clientY - dragStartY) / zoom;
-      const snap = resolveSnap();
-
-      dragGroup.forEach(item => {
-        const snapped = snapPoint(item.initialX + dx, item.initialY + dy, snap);
-        writePos(item.node, snapped.x, snapped.y);
-      });
-
-      if (vp) (vp as any).tick = ((vp as any).tick || 0) + 1;
-    };
-
-    const onPointerUp = (e: PointerEvent) => {
-      if (!isDragging) return;
-      isDragging = false;
-      window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('pointerup', onPointerUp);
-      try { element.releasePointerCapture(e.pointerId); } catch { /* ignore */ }
-      element.style.zIndex = '';
-    };
-
-    element.addEventListener('pointerdown', onPointerDown);
+    });
 
     const stop = runtime.effect(() => {
       element.style.position = 'absolute';
@@ -650,9 +625,7 @@ export const flowNodeAttribute: AttributeModule = {
 
     return () => {
       stop();
-      element.removeEventListener('pointerdown', onPointerDown);
-      window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('pointerup', onPointerUp);
+      stopNodeDrag();
     };
   }
 };
@@ -708,41 +681,48 @@ export const flowHandleAttribute: AttributeModule = {
       } catch { return null; }
     };
 
-    const onPointerDown = (e: PointerEvent) => {
-      if (e.button !== 0) return;
-      e.stopPropagation();
-      e.preventDefault();
-      const vp = viewport();
-      const svg = vp?.querySelector('[data-flow-edges]') as SVGSVGElement | null;
-      if (!vp || !svg) return;
+    let preview: SVGPathElement | null = null;
+    let srcId = '';
+    let start = { x: 0, y: 0 };
+    let vp: FlowElement | null = null;
 
-      const srcNode = element.closest('[data-flow-node]') as HTMLElement | null;
-      const srcId = srcNode?.id
-        || srcNode?.getAttribute('data-bind-id')?.replace(/^['"]|['"]$/g, '').replace(/^node-/, '')
-        || element.id
-        || '';
-      const start = anchorFlow(element);
+    const stopHandleDrag = trackPointerDrag(element, {
+      onStart: (e) => {
+        if (e.button !== 0) return false;
+        e.stopPropagation();
+        e.preventDefault();
+        vp = viewport();
+        const svg = vp?.querySelector('[data-flow-edges]') as SVGSVGElement | null;
+        if (!vp || !svg) return false;
 
-      const preview = document.createElementNS(SVG_NS, 'path');
-      preview.setAttribute('class', 'flow-edge flow-edge-preview');
-      preview.setAttribute('fill', 'none');
-      preview.setAttribute('stroke', 'currentColor');
-      preview.setAttribute('stroke-width', '2');
-      preview.setAttribute('stroke-dasharray', '4 4');
-      preview.style.pointerEvents = 'none';
-      svg.appendChild(preview);
+        const srcNode = element.closest('[data-flow-node]') as HTMLElement | null;
+        srcId = srcNode?.id
+          || srcNode?.getAttribute('data-bind-id')?.replace(/^['"]|['"]$/g, '').replace(/^node-/, '')
+          || element.id
+          || '';
+        start = anchorFlow(element);
 
-      const move = (ev: PointerEvent) => {
+        preview = document.createElementNS(SVG_NS, 'path');
+        preview.setAttribute('class', 'flow-edge flow-edge-preview');
+        preview.setAttribute('fill', 'none');
+        preview.setAttribute('stroke', 'currentColor');
+        preview.setAttribute('stroke-width', '2');
+        preview.setAttribute('stroke-dasharray', '4 4');
+        preview.style.pointerEvents = 'none';
+        svg.appendChild(preview);
+      },
+      onMove: (ev) => {
+        if (!preview) return;
         const pt = toFlow(ev.clientX, ev.clientY);
         const dx = Math.abs(start.x - pt.x) / 2;
         preview.setAttribute('d',
           `M ${start.x} ${start.y} C ${start.x + dx} ${start.y}, ${pt.x - dx} ${pt.y}, ${pt.x} ${pt.y}`);
-      };
-
-      const up = (ev: PointerEvent) => {
-        window.removeEventListener('pointermove', move);
-        window.removeEventListener('pointerup', up);
-        preview.remove();
+      },
+      onEnd: (ev) => {
+        if (preview) {
+          preview.remove();
+          preview = null;
+        }
         const target = document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null;
         const targetNode = target?.closest('[data-flow-node]') as HTMLElement | null;
         const tgtId = targetNode?.id
@@ -752,20 +732,15 @@ export const flowHandleAttribute: AttributeModule = {
           const edges = edgesArray();
           if (edges && !edges.some((ed: any) => String(ed.source) === String(srcId) && String(ed.target) === String(tgtId))) {
             edges.push({ source: srcId, target: tgtId });
-            const vpState = vp?.__flowViewport || vp?.__nexusFlowViewport;
+            const vpState = vp?.__flowViewport;
             if (vpState) (vpState as any).tick = ((vpState as any).tick || 0) + 1;
           }
         }
-      };
-
-      window.addEventListener('pointermove', move);
-      window.addEventListener('pointerup', up);
-    };
-
-    element.addEventListener('pointerdown', onPointerDown);
+      }
+    });
 
     return () => {
-      element.removeEventListener('pointerdown', onPointerDown);
+      stopHandleDrag();
     };
   }
 };
@@ -807,7 +782,7 @@ export const flowEdgesAttribute: AttributeModule = {
 
     const stop = runtime.effect(() => {
       const currentFlow = element.closest('[data-flow]') as FlowElement | null;
-      const vp = currentFlow?.__flowViewport || currentFlow?.__nexusFlowViewport;
+      const vp = currentFlow?.__flowViewport;
       const _t = (vp as any)?.tick;
 
       let edgeList: any[] = [];
@@ -923,31 +898,38 @@ export const flowResizerAttribute: AttributeModule = {
       }
     });
 
-    const onPointerDown = (e: PointerEvent) => {
-      const handle = (e.target as HTMLElement).closest('.flow-resize-handle') as HTMLElement | null;
-      if (!handle || e.button !== 0) return;
-      e.stopPropagation();
-      e.preventDefault();
+    let dir = 'se';
+    let zoom = 1;
+    let nodeState: any = null;
+    let initialPos = { x: 0, y: 0 };
+    let initialWidth = 176;
+    let initialHeight = 90;
+    let vp: FlowElement['__flowViewport'] = undefined;
 
-      const dir = handle.getAttribute('data-direction') || 'se';
-      const flowEl = element.closest('[data-flow]') as FlowElement | null;
-      const vp = flowEl?.__flowViewport || flowEl?.__nexusFlowViewport;
-      const zoom = vp?.zoom || 1;
+    const stopResizerDrag = trackPointerDrag(element, {
+      onStart: (e) => {
+        const handle = (e.target as HTMLElement).closest('.flow-resize-handle') as HTMLElement | null;
+        if (!handle || e.button !== 0) return false;
+        e.stopPropagation();
+        e.preventDefault();
 
-      const nodeExpr = nodeEl.getAttribute('data-flow-node') || '';
-      let nodeState: any = null;
-      try { nodeState = runtime.evaluate(nodeEl, nodeExpr); } catch { nodeState = null; }
-      if (!nodeState) return;
+        dir = handle.getAttribute('data-direction') || 'se';
+        const flowEl = element.closest('[data-flow]') as FlowElement | null;
+        vp = flowEl?.__flowViewport;
+        zoom = vp?.zoom || 1;
 
-      const startX = e.clientX;
-      const startY = e.clientY;
-      const initialPos = nodeState.position ? { ...nodeState.position } : { x: nodeState.x || 0, y: nodeState.y || 0 };
-      const initialWidth = nodeState.width || nodeEl.offsetWidth || 176;
-      const initialHeight = nodeState.height || nodeEl.offsetHeight || 90;
+        const nodeExpr = nodeEl.getAttribute('data-flow-node') || '';
+        try { nodeState = runtime.evaluate(nodeEl, nodeExpr); } catch { nodeState = null; }
+        if (!nodeState) return false;
 
-      const onMove = (ev: PointerEvent) => {
-        const dx = (ev.clientX - startX) / zoom;
-        const dy = (ev.clientY - startY) / zoom;
+        initialPos = nodeState.position ? { ...nodeState.position } : { x: nodeState.x || 0, y: nodeState.y || 0 };
+        initialWidth = nodeState.width || nodeEl.offsetWidth || 176;
+        initialHeight = nodeState.height || nodeEl.offsetHeight || 90;
+      },
+      onMove: (_ev, delta) => {
+        if (!nodeState) return;
+        const dx = delta.dx / zoom;
+        const dy = delta.dy / zoom;
         let newW = initialWidth;
         let newH = initialHeight;
         let newX = initialPos.x;
@@ -977,21 +959,11 @@ export const flowResizerAttribute: AttributeModule = {
         }
 
         if (vp) (vp as any).tick = ((vp as any).tick || 0) + 1;
-      };
-
-      const onUp = () => {
-        window.removeEventListener('pointermove', onMove);
-        window.removeEventListener('pointerup', onUp);
-      };
-
-      window.addEventListener('pointermove', onMove);
-      window.addEventListener('pointerup', onUp);
-    };
-
-    element.addEventListener('pointerdown', onPointerDown);
+      }
+    });
 
     return () => {
-      element.removeEventListener('pointerdown', onPointerDown);
+      stopResizerDrag();
     };
   }
 };
@@ -1021,19 +993,18 @@ export const flowMinimapAttribute: AttributeModule = {
 
     const flowEl = element.closest('[data-flow]') as FlowElement | null;
 
-    let isMinimapPanning = false;
     let minimapBounds: DOMRect | null = null;
     let currentViewScale = 1;
     let minX = 0;
     let minY = 0;
 
-    const updatePanFromMinimap = (e: PointerEvent) => {
+    const updatePanFromMinimap = (clientX: number, clientY: number) => {
       if (!minimapBounds || !flowEl) return;
-      const vp = flowEl.__flowViewport || flowEl.__nexusFlowViewport;
+      const vp = flowEl.__flowViewport;
       if (!vp) return;
 
-      const px = e.clientX - minimapBounds.left;
-      const py = e.clientY - minimapBounds.top;
+      const px = clientX - minimapBounds.left;
+      const py = clientY - minimapBounds.top;
       const flowX = minX + px * currentViewScale;
       const flowY = minY + py * currentViewScale;
 
@@ -1043,35 +1014,22 @@ export const flowMinimapAttribute: AttributeModule = {
       (vp as any).tick = ((vp as any).tick || 0) + 1;
     };
 
-    const onMinimapDown = (e: PointerEvent) => {
-      if (e.button !== 0) return;
-      e.stopPropagation();
-      e.preventDefault();
-      isMinimapPanning = true;
-      minimapBounds = svg.getBoundingClientRect();
-      updatePanFromMinimap(e);
-
-      window.addEventListener('pointermove', onMinimapMove);
-      window.addEventListener('pointerup', onMinimapUp);
-    };
-
-    const onMinimapMove = (e: PointerEvent) => {
-      if (!isMinimapPanning) return;
-      updatePanFromMinimap(e);
-    };
-
-    const onMinimapUp = () => {
-      if (!isMinimapPanning) return;
-      isMinimapPanning = false;
-      window.removeEventListener('pointermove', onMinimapMove);
-      window.removeEventListener('pointerup', onMinimapUp);
-    };
-
-    svg.addEventListener('pointerdown', onMinimapDown);
+    const stopMinimapDrag = trackPointerDrag(svg, {
+      onStart: (e) => {
+        if (e.button !== 0) return false;
+        e.stopPropagation();
+        e.preventDefault();
+        minimapBounds = svg.getBoundingClientRect();
+        updatePanFromMinimap(e.clientX, e.clientY);
+      },
+      onMove: (e) => {
+        updatePanFromMinimap(e.clientX, e.clientY);
+      }
+    });
 
     const stop = runtime.effect(() => {
       if (!flowEl) return;
-      const vp = flowEl.__flowViewport || flowEl.__nexusFlowViewport;
+      const vp = flowEl.__flowViewport;
       const _t = (vp as any)?.tick;
 
       let nodesList: any[] = [];
@@ -1128,9 +1086,7 @@ export const flowMinimapAttribute: AttributeModule = {
 
     return () => {
       stop();
-      svg.removeEventListener('pointerdown', onMinimapDown);
-      window.removeEventListener('pointermove', onMinimapMove);
-      window.removeEventListener('pointerup', onMinimapUp);
+      stopMinimapDrag();
     };
   }
 };

@@ -193,8 +193,8 @@ export const flowModule: SpriteModule = {
     // -----------------------------------------------------------------------
     /** The shared viewport state stashed on a [data-flow] element by the directive. */
     const viewportOf = (el: Element | null): Viewport => {
-      const flow = el?.closest('[data-flow]') as (HTMLElement & { __nexusFlowViewport?: Viewport; __flowViewport?: Viewport }) | null;
-      const vp = flow?.__flowViewport || flow?.__nexusFlowViewport;
+      const flow = el?.closest('[data-flow]') as (HTMLElement & { __flowViewport?: Viewport }) | null;
+      const vp = flow?.__flowViewport;
       if (vp) {
         // Touch reactive tick so any effect calling $flow.edge automatically tracks live node movements and pans
         const _t = (vp as any).tick;
@@ -322,8 +322,8 @@ export const flowModule: SpriteModule = {
 
       /** Zoom in on canvas viewport */
       zoomIn: (target?: any, delta = 0.2) => {
-        const container = (target instanceof Element ? (flowContainer(target) || document.querySelector('[data-flow]')) : document.querySelector('[data-flow]')) as (HTMLElement & { __nexusFlowViewport?: any; __flowViewport?: any }) | null;
-        const vp = container?.__flowViewport || container?.__nexusFlowViewport;
+        const container = (target instanceof Element ? (flowContainer(target) || document.querySelector('[data-flow]')) : document.querySelector('[data-flow]')) as (HTMLElement & { __flowViewport?: any }) | null;
+        const vp = container?.__flowViewport;
         if (vp) {
           vp.zoom = Math.min(4, (vp.zoom || 1) + delta);
           vp.tick = (vp.tick || 0) + 1;
@@ -332,8 +332,8 @@ export const flowModule: SpriteModule = {
 
       /** Zoom out on canvas viewport */
       zoomOut: (target?: any, delta = 0.2) => {
-        const container = (target instanceof Element ? (flowContainer(target) || document.querySelector('[data-flow]')) : document.querySelector('[data-flow]')) as (HTMLElement & { __nexusFlowViewport?: any; __flowViewport?: any }) | null;
-        const vp = container?.__flowViewport || container?.__nexusFlowViewport;
+        const container = (target instanceof Element ? (flowContainer(target) || document.querySelector('[data-flow]')) : document.querySelector('[data-flow]')) as (HTMLElement & { __flowViewport?: any }) | null;
+        const vp = container?.__flowViewport;
         if (vp) {
           vp.zoom = Math.max(0.2, (vp.zoom || 1) - delta);
           vp.tick = (vp.tick || 0) + 1;
@@ -342,8 +342,8 @@ export const flowModule: SpriteModule = {
 
       /** Reset canvas viewport position and zoom */
       reset: (target?: any) => {
-        const container = (target instanceof Element ? (flowContainer(target) || document.querySelector('[data-flow]')) : document.querySelector('[data-flow]')) as (HTMLElement & { __nexusFlowViewport?: any; __flowViewport?: any }) | null;
-        const vp = container?.__flowViewport || container?.__nexusFlowViewport;
+        const container = (target instanceof Element ? (flowContainer(target) || document.querySelector('[data-flow]')) : document.querySelector('[data-flow]')) as (HTMLElement & { __flowViewport?: any }) | null;
+        const vp = container?.__flowViewport;
         if (vp) {
           vp.x = 0;
           vp.y = 0;
@@ -356,8 +356,8 @@ export const flowModule: SpriteModule = {
       fit: (target?: any, nodes?: any[], padding = 40) => {
         const container = (target instanceof Element ? (flowContainer(target) || document.querySelector('[data-flow]')) : document.querySelector('[data-flow]')) as HTMLElement | null;
         if (!container) return;
-        const flow = container as (HTMLElement & { __nexusFlowViewport?: any; __flowViewport?: any });
-        const vp = flow?.__flowViewport || flow?.__nexusFlowViewport;
+        const flow = container as (HTMLElement & { __flowViewport?: any });
+        const vp = flow?.__flowViewport;
         if (vp && nodes && nodes.length > 0) {
           $flow.fitView(container, vp, nodes, padding);
           vp.tick = (vp.tick || 0) + 1;
