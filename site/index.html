@@ -57,17 +57,9 @@
       pointer-events: none !important;
     }
 
-    /* While external stylesheets (DaisyUI/themes) or pageTabs are loading */
-    html:not(.nexus-ready) .nx-main,
-    html[data-nexus-loading] .nx-main {
-      opacity: 0 !important;
-      pointer-events: none !important;
-    }
-
-    html:not(.nexus-ready) .nexus-loading-screen {
-      opacity: 1 !important;
-      pointer-events: auto !important;
-    }
+    /* FOUC guard: content visibility is controlled declaratively via
+       data-signal="{ appReady: false }" and data-style on .nx-main.
+       No CSS class toggling from the engine is required. */
 
     .nx-main {
       transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
