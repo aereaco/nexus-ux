@@ -168,8 +168,23 @@ class EngineTopology {
         const worker = new Worker(scriptSrc, { type: 'module' });
         
         worker.onmessage = (e) => {
-          // Handle worker messages
+          const data = e.data;
+          if (data && typeof data === 'object' && 'id' in data) {
+            const pending = pendingWorkerTasks.get(data.id);
+            if (pending) {
+              pendingWorkerTasks.delete(data.id);
+              if (data.type === 'RESULT' || data.type === 'FN_RESULT') {
+                pending.resolve(data.payload);
+              } else if (data.type === 'ERROR' || data.type === 'FN_ERROR') {
+                pending.reject(new Error(data.error || 'Worker task execution failed'));
+              }
+            }
+          }
         };
+
+        if (this.sharedBuffer) {
+          worker.postMessage({ type: 'INIT_HEAP', payload: this.sharedBuffer });
+        }
         
         this.workers.push(worker);
       } catch (e) {
@@ -186,6 +201,8 @@ class EngineTopology {
   private terminateWorkers() {
     this.workers.forEach(w => w.terminate());
     this.workers = [];
+    pendingWorkerTasks.forEach(p => p.reject(new Error('Worker terminated')));
+    pendingWorkerTasks.clear();
   }
 
   /**
@@ -364,6 +381,13 @@ class EngineTopology {
   }
 
   /**
+   * Get all active workers
+   */
+  public getWorkers(): Worker[] {
+    return this.workers;
+  }
+
+  /**
    * Cleanup resources
    */
   public dispose(): void {
@@ -381,3 +405,43 @@ export const topology = new EngineTopology();
 
 // Export tier configs for external inspection
 export { TIER_CONFIGS };
+
+let taskIdCounter = 0;
+const pendingWorkerTasks = new Map<number, {
+  resolve: (value: any) => void;
+  reject: (reason: any) => void;
+}>();
+
+let workerRoundRobin = 0;
+
+/**
+ * Executes pure computation off the main thread in a worker from the topology pool.
+ * Falls back to main thread execution if no workers are available (Tier 0).
+ */
+export async function runInWorker<T>(
+  fn: () => T,
+  transferable?: Transferable[]
+): Promise<T> {
+  const workers = topology.getWorkers();
+  if (workers.length === 0) {
+    return fn();
+  }
+
+  const id = ++taskIdCounter;
+  const worker = workers[workerRoundRobin % workers.length];
+  workerRoundRobin = (workerRoundRobin + 1) % workers.length;
+
+  return new Promise<T>((resolve, reject) => {
+    pendingWorkerTasks.set(id, { resolve, reject });
+    try {
+      worker.postMessage({
+        type: 'EXECUTE_FN',
+        id,
+        fn: fn.toString()
+      }, transferable || []);
+    } catch (err) {
+      pendingWorkerTasks.delete(id);
+      reject(err);
+    }
+  });
+}

@@ -6,8 +6,8 @@
 
 let _heapView: Float64Array | null = null;
 
-self.onmessage = (e: MessageEvent) => {
-  const { type, payload, id, taskName } = e.data;
+export function handleWorkerMessage(e: MessageEvent): void {
+  const { type, payload, id, taskName, fn } = e.data || {};
 
   switch (type) {
     case 'INIT_HEAP':
@@ -26,8 +26,21 @@ self.onmessage = (e: MessageEvent) => {
         self.postMessage({ type: 'ERROR', id, error: message });
       }
       break;
+
+    case 'EXECUTE_FN':
+      try {
+        const compiledFn = new Function(`return (${fn})()`);
+        const result = compiledFn();
+        self.postMessage({ type: 'RESULT', id, payload: result });
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        self.postMessage({ type: 'ERROR', id, error: message });
+      }
+      break;
   }
-};
+}
+
+self.onmessage = handleWorkerMessage;
 
 function postLog(...args: unknown[]) {
   self.postMessage({ type: 'LOG', payload: args });

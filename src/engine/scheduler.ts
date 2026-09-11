@@ -80,18 +80,20 @@ if (typeof MessageChannel !== 'undefined') {
  * Yields control back to the browser event loop via MessageChannel.
  * This is faster than setTimeout(0) and doesn't have the 4ms clamping issue.
  */
-function yieldToBrowser(): Promise<void> {
+async function yieldToBrowser(): Promise<void> {
+  // 1. Native Scheduler API (Chrome 115+) — cooperative, input-priority-aware
+  if (typeof (globalThis as Record<string, unknown>).scheduler === 'object' && 
+      typeof ((globalThis as Record<string, unknown>).scheduler as Record<string, unknown>)?.yield === 'function') {
+    return ((globalThis as Record<string, unknown>).scheduler as { yield: () => Promise<void> }).yield();
+  }
+  // 2. MessageChannel microtask yield (fast, sub-ms, cross-browser)
   if (yieldChannel) {
     return new Promise<void>((resolve) => {
       yieldResolve = resolve;
       yieldChannel!.port2.postMessage(null);
     });
   }
-  // Fallback: scheduler.yield() or setTimeout
-  if (typeof (globalThis as Record<string, unknown>).scheduler === 'object' && 
-      typeof ((globalThis as Record<string, unknown>).scheduler as Record<string, unknown>)?.yield === 'function') {
-    return ((globalThis as Record<string, unknown>).scheduler as { yield: () => Promise<void> }).yield();
-  }
+  // 3. setTimeout fallback (4ms clamped — last resort)
   return new Promise(resolve => setTimeout(resolve, 0));
 }
 
@@ -227,9 +229,10 @@ class Scheduler {
       Atomics.store(sharedState, PHASE_CURRENT, 1);
       await this.runQueueWithYielding(this.captureQueue);
 
-      // Phase 2: Evaluate (synchronous microtask execution per Atomic Frame Spec §5.4)
+      // Phase 2: Evaluate — yields between jobs (safe: prior jobs are fully committed).
+      // Ordering is preserved: each job runs atomically; yield only fires after a job returns.
       Atomics.store(sharedState, PHASE_CURRENT, 2);
-      this.runQueueSync(this.evaluateQueue);
+      await this.runQueueWithYielding(this.evaluateQueue);
       // Clear the dedup set after the evaluate phase completes
       this.evaluateSet.clear();
 
@@ -326,8 +329,11 @@ class Scheduler {
         console.error('[Nexus Scheduler] Job error:', e);
       }
 
-      // Stall detection: yield if we've exceeded the budget
-      if (performance.now() - startTime > this.stallBudget) {
+      // Stall detection: yield if we've exceeded the budget or user input is pending
+      const shouldYield = performance.now() - startTime > this.stallBudget ||
+        (typeof navigator !== 'undefined' && (navigator as any).scheduling?.isInputPending?.() === true);
+
+      if (shouldYield) {
         this.syncSharedState();
         await yieldToBrowser();
         // Continue processing remaining jobs with a fresh time slice

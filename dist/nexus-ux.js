@@ -309,15 +309,15 @@ ${suggestion}`);
   });
 
   // src/engine/scheduler.ts
-  function yieldToBrowser() {
+  async function yieldToBrowser() {
+    if (typeof globalThis.scheduler === "object" && typeof globalThis.scheduler?.yield === "function") {
+      return globalThis.scheduler.yield();
+    }
     if (yieldChannel) {
       return new Promise((resolve) => {
         yieldResolve = resolve;
         yieldChannel.port2.postMessage(null);
       });
-    }
-    if (typeof globalThis.scheduler === "object" && typeof globalThis.scheduler?.yield === "function") {
-      return globalThis.scheduler.yield();
     }
     return new Promise((resolve) => setTimeout(resolve, 0));
   }
@@ -460,7 +460,7 @@ ${suggestion}`);
             Atomics.store(sharedState, PHASE_CURRENT, 1);
             await this.runQueueWithYielding(this.captureQueue);
             Atomics.store(sharedState, PHASE_CURRENT, 2);
-            this.runQueueSync(this.evaluateQueue);
+            await this.runQueueWithYielding(this.evaluateQueue);
             this.evaluateSet.clear();
             Atomics.store(sharedState, PHASE_CURRENT, 3);
             await this.runQueueWithYielding(this.resolveQueue);
@@ -538,7 +538,8 @@ ${suggestion}`);
             } catch (e) {
               console.error("[Nexus Scheduler] Job error:", e);
             }
-            if (performance.now() - startTime > this.stallBudget) {
+            const shouldYield = performance.now() - startTime > this.stallBudget || typeof navigator !== "undefined" && navigator.scheduling?.isInputPending?.() === true;
+            if (shouldYield) {
               this.syncSharedState();
               await yieldToBrowser();
               startTime = performance.now();
@@ -1942,7 +1943,29 @@ ${suggestion}`);
   });
 
   // src/engine/topology.ts
-  var TIER_CONFIGS, EngineTopology, topology;
+  async function runInWorker(fn, transferable) {
+    const workers = topology.getWorkers();
+    if (workers.length === 0) {
+      return fn();
+    }
+    const id = ++taskIdCounter;
+    const worker = workers[workerRoundRobin % workers.length];
+    workerRoundRobin = (workerRoundRobin + 1) % workers.length;
+    return new Promise((resolve, reject) => {
+      pendingWorkerTasks.set(id, { resolve, reject });
+      try {
+        worker.postMessage({
+          type: "EXECUTE_FN",
+          id,
+          fn: fn.toString()
+        }, transferable || []);
+      } catch (err) {
+        pendingWorkerTasks.delete(id);
+        reject(err);
+      }
+    });
+  }
+  var TIER_CONFIGS, EngineTopology, topology, taskIdCounter, pendingWorkerTasks, workerRoundRobin;
   var init_topology = __esm({
     "src/engine/topology.ts"() {
       init_reactivity();
@@ -2066,7 +2089,22 @@ ${suggestion}`);
               }
               const worker = new Worker(scriptSrc, { type: "module" });
               worker.onmessage = (e) => {
+                const data = e.data;
+                if (data && typeof data === "object" && "id" in data) {
+                  const pending = pendingWorkerTasks.get(data.id);
+                  if (pending) {
+                    pendingWorkerTasks.delete(data.id);
+                    if (data.type === "RESULT" || data.type === "FN_RESULT") {
+                      pending.resolve(data.payload);
+                    } else if (data.type === "ERROR" || data.type === "FN_ERROR") {
+                      pending.reject(new Error(data.error || "Worker task execution failed"));
+                    }
+                  }
+                }
               };
+              if (this.sharedBuffer) {
+                worker.postMessage({ type: "INIT_HEAP", payload: this.sharedBuffer });
+              }
               this.workers.push(worker);
             } catch (e) {
               console.warn(`[Nexus Topology] Failed to spawn worker ${i}:`, e);
@@ -2080,6 +2118,8 @@ ${suggestion}`);
         terminateWorkers() {
           this.workers.forEach((w) => w.terminate());
           this.workers = [];
+          pendingWorkerTasks.forEach((p) => p.reject(new Error("Worker terminated")));
+          pendingWorkerTasks.clear();
         }
         /**
          * Start lag variance monitoring for auto-scaling
@@ -2223,6 +2263,12 @@ ${suggestion}`);
           return this.workers[index % this.workers.length] || null;
         }
         /**
+         * Get all active workers
+         */
+        getWorkers() {
+          return this.workers;
+        }
+        /**
          * Cleanup resources
          */
         dispose() {
@@ -2235,6 +2281,9 @@ ${suggestion}`);
         }
       };
       topology = new EngineTopology();
+      taskIdCounter = 0;
+      pendingWorkerTasks = /* @__PURE__ */ new Map();
+      workerRoundRobin = 0;
     }
   });
 
@@ -7418,7 +7467,7 @@ ${scripts}
   }
   async function importLink(id, payload, cleanupFns, runtime, el) {
     const items = Array.isArray(payload) ? payload : [payload];
-    const tasks = items.map(async (item) => {
+    const tasks2 = items.map(async (item) => {
       let attrs;
       if (typeof item === "string") {
         const parsed = parseInlineAttrs(item);
@@ -7463,11 +7512,11 @@ ${scripts}
         runtime.log(`Nexus Import [${id}]: Link tag injected: ${href}`);
       });
     });
-    await Promise.all(tasks);
+    await Promise.all(tasks2);
   }
   async function importAdopt(id, payload, cleanupFns, runtime, _el) {
     const items = Array.isArray(payload) ? payload : [payload];
-    const tasks = items.map(async (item) => {
+    const tasks2 = items.map(async (item) => {
       let href;
       if (typeof item === "string") {
         href = item;
@@ -7483,11 +7532,11 @@ ${scripts}
       cleanupFns.push(cleanup);
       runtime.log(`Nexus Import [${id}]: CSS adopted (constructable): ${href}`);
     });
-    await Promise.all(tasks);
+    await Promise.all(tasks2);
   }
   async function importScript(id, payload, cleanupFns, runtime, el) {
     const items = Array.isArray(payload) ? payload : [payload];
-    const tasks = items.map(async (item) => {
+    const tasks2 = items.map(async (item) => {
       let attrs = typeof item === "string" ? { src: item } : item;
       if (typeof item === "string" && !attrs.src) {
         attrs = parseInlineAttrs(item);
@@ -7538,7 +7587,7 @@ ${scripts}
         runtime.log(`Nexus Import [${id}]: Script injected: ${src}`);
       });
     });
-    await Promise.all(tasks);
+    await Promise.all(tasks2);
   }
   async function importESModule(id, payload, cleanupFns, runtime, el) {
     const globalWin = globalThis;
@@ -7603,7 +7652,7 @@ ${scripts}
   }
   async function importStyle(id, payload, cleanupFns, runtime, el) {
     const items = Array.isArray(payload) ? payload : [payload];
-    const tasks = items.map(async (item) => {
+    const tasks2 = items.map(async (item) => {
       const attrs = typeof item === "string" ? { content: item } : item;
       const content = attrs.content || (typeof item === "string" ? item : "");
       if (!content && !attrs.href)
@@ -7619,7 +7668,7 @@ ${scripts}
       cleanupFns.push(cleanup);
       runtime.log(`Nexus Import [${id}]: Style adopted (ZCZS)`);
     });
-    await Promise.all(tasks);
+    await Promise.all(tasks2);
   }
   async function importPattern(id, uri, el, item, cleanupFns, runtime) {
     const content = await resolveContent(uri);
@@ -7729,7 +7778,7 @@ ${scripts}
             const iterationCleanupFns = [];
             activeCleanup = () => iterationCleanupFns.forEach((fn) => fn());
             const runImports = async () => {
-              const tasks = ids.map(async (id) => {
+              const tasks2 = ids.map(async (id) => {
                 const item = config[id];
                 try {
                   const itemTasks = [];
@@ -7759,7 +7808,7 @@ ${scripts}
                   reportError(new Error(`Nexus Import [${id}]: Error ${e}`), el);
                 }
               });
-              await Promise.all(tasks);
+              await Promise.all(tasks2);
             };
             runImports().then(finalize).catch(() => finalize());
           });
@@ -15484,7 +15533,8 @@ ${bridge}`, {
     $id: () => $id,
     $nextTick: () => $nextTick,
     Nexus: () => Nexus,
-    UX: () => UX
+    UX: () => UX,
+    runInWorker: () => runInWorker
   });
 
   // src/engine/modules.ts
@@ -16231,6 +16281,63 @@ ${bridge}`, {
   init_animate();
   init_predictive();
   init_cache();
+
+  // src/engine/logic.worker.ts
+  var _heapView = null;
+  function handleWorkerMessage(e) {
+    const { type, payload, id, taskName, fn } = e.data || {};
+    switch (type) {
+      case "INIT_HEAP":
+        if (payload instanceof SharedArrayBuffer || payload instanceof ArrayBuffer) {
+          _heapView = new Float64Array(payload);
+          postLog("Heap initialized in worker");
+        }
+        break;
+      case "EXECUTE":
+        try {
+          const result = executeTask(taskName, payload);
+          self.postMessage({ type: "RESULT", id, payload: result });
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          self.postMessage({ type: "ERROR", id, error: message });
+        }
+        break;
+      case "EXECUTE_FN":
+        try {
+          const compiledFn = new Function(`return (${fn})()`);
+          const result = compiledFn();
+          self.postMessage({ type: "RESULT", id, payload: result });
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          self.postMessage({ type: "ERROR", id, error: message });
+        }
+        break;
+    }
+  }
+  self.onmessage = handleWorkerMessage;
+  function postLog(...args) {
+    self.postMessage({ type: "LOG", payload: args });
+  }
+  var tasks = {
+    "fibonacci": (data) => {
+      const n = Number(data);
+      const fib = (num) => num <= 1 ? num : fib(num - 1) + fib(num - 2);
+      return fib(n);
+    },
+    "processData": (data) => {
+      const numbers = data;
+      return numbers.map((x) => x * 2).filter((x) => x > 10);
+    }
+  };
+  function executeTask(taskName, data) {
+    if (taskName in tasks) {
+      return tasks[taskName](data);
+    }
+    throw new Error(`Unknown task: ${taskName}`);
+  }
+  postLog("Worker ready");
+
+  // src/index.ts
   init_manifest();
   var _idCounters = {};
   function $id(groupName = "default") {
@@ -16401,10 +16508,7 @@ ${bridge}`, {
   var isWorker = typeof globalThis.WorkerGlobalScope !== "undefined" && typeof document === "undefined";
   var Nexus = typeof document !== "undefined" ? new UX() : null;
   if (isWorker) {
-    self.onmessage = (e) => {
-      if (e.data.type === "INIT_HEAP")
-        console.log("[Nexus Worker] Predictive Heap Handshake OK");
-    };
+    self.onmessage = handleWorkerMessage;
   } else if (typeof document !== "undefined") {
     topology.start();
     if (!document.querySelector("style[data-nexus-tailwind-bridge]") && document.querySelector('script[src*="tailwindcss/browser"]')) {
@@ -16422,6 +16526,7 @@ ${bridge}`, {
   if (typeof window !== "undefined" && Nexus) {
     globalThis.Nexus = Nexus;
     globalThis.Nexus.selfHeal = { getHistory: getBeaconHistory };
+    globalThis.Nexus.runInWorker = runInWorker;
     globalThis._NEXUS_RUNTIME = Nexus.coordinator.runtimeContext;
   }
   return __toCommonJS(src_exports);

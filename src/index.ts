@@ -1,7 +1,8 @@
 import { ModuleCoordinator } from './engine/modules.ts';
 import { registerScopeProvider } from './engine/scope.ts';
 import { ROOT_SELECTOR } from './engine/consts.ts';
-import { topology } from './engine/topology.ts';
+import { topology, runInWorker } from './engine/topology.ts';
+export { runInWorker };
 import { initSelfHeal, getBeaconHistory } from './engine/agent.ts';
 import { stylesheet, discoverColorTokens, buildTailwindThemeBridge } from './modules/attributes/stylesheet.ts';
 import { fetchModule } from './engine/fetch.ts';
@@ -9,6 +10,7 @@ import { resolveSelector } from './modules/sprites/selector.ts';
 import { animate } from './modules/sprites/animate.ts';
 import { corePredictiveEngine } from './engine/predictive.ts';
 import { cacheEngine } from './engine/cache.ts';
+import { handleWorkerMessage } from './engine/logic.worker.ts';
 
 // Auto-Discovered Modules (inlined by build.ts from generated manifest.ts)
 import {
@@ -202,9 +204,7 @@ const isWorker = typeof (globalThis as any).WorkerGlobalScope !== 'undefined' &&
 export const Nexus = (typeof document !== 'undefined') ? new UX() : null as unknown as UX;
 
 if (isWorker) {
-  self.onmessage = (e: MessageEvent) => {
-    if (e.data.type === 'INIT_HEAP') console.log('[Nexus Worker] Predictive Heap Handshake OK');
-  };
+  self.onmessage = handleWorkerMessage;
 } else if (typeof document !== 'undefined') {
   topology.start();
 
@@ -227,5 +227,6 @@ if (isWorker) {
 if (typeof window !== 'undefined' && Nexus) {
   (globalThis as any).Nexus = Nexus;
   (globalThis as any).Nexus.selfHeal = { getHistory: getBeaconHistory };
+  (globalThis as any).Nexus.runInWorker = runInWorker;
   (globalThis as any)._NEXUS_RUNTIME = (Nexus as any).coordinator.runtimeContext;
 }
