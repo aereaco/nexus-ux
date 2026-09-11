@@ -784,7 +784,7 @@
       "flip",
       "element"
     ],
-    "content": "$animate Web Animations API wrapper and FLIP transition coordinator ($animate, flip) for 60fps hardware-accelerated element morphing and layout settling. $animate($el, [{ transform: \\'scale(1)\\' }, { transform: \\'scale(1.2)\\' }], { duration: 300 }) $animate(el, keyframes, options) flip(element, fn) Located in src/modules/sprites/animate.ts , the $animate sprite orchestrates smooth physical layout settling without layout reflow thrashing. Hardware Accelerated — Driven directly by the browser compositor thread FLIP Layout Geometry — Seamlessly animates items entering, leaving, and swapping positions in lists"
+    "content": "$animate Web Animations API wrapper and FLIP transition coordinator ($animate, flip) for 60fps hardware-accelerated element morphing and layout settling. $animate($el, [{ transform: \\'scale(1)\\' }, { transform: \\'scale(1.2)\\' }], { duration: 300 }) $animate(el, keyframes, options) flip(element, fn) Registered in src/modules/sprites/animate.ts with core FLIP coordination in src/engine/animation.ts , the $animate sprite orchestrates smooth physical layout settling without layout reflow thrashing. Hardware Accelerated — Driven directly by the browser compositor thread FLIP Layout Geometry — Seamlessly animates items entering, leaving, and swapping positions in lists via flip()"
   },
   {
     "id": "lab-sprite-bgfetch",
