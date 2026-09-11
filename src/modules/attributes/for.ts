@@ -33,7 +33,7 @@ import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { initError } from '../../engine/debug.ts';
 import { addScopeToNode } from '../../engine/scope.ts';
-import { CLEANUP_FUNCTIONS_KEY, IS_TEMPLATE_KEY, MARKER_KEY } from '../../engine/consts.ts';
+import { CLEANUP_FUNCTIONS_KEY, DATA_STACK_KEY, IS_TEMPLATE_KEY, LOCAL_SCOPES_KEY, MARKER_KEY } from '../../engine/consts.ts';
 import { nexusClassMap, nexusStyleMap } from '../../engine/reconciler.ts';
 
 // SVGs (paths, etc.) are SVGElement, not HTMLElement — both must be treated
@@ -114,6 +114,8 @@ const forModule: AttributeModule = {
             elRemovals.forEach((cleanup: () => void) => cleanup());
             delete enhanced[CLEANUP_FUNCTIONS_KEY];
           }
+          delete enhanced[LOCAL_SCOPES_KEY];
+          delete enhanced[DATA_STACK_KEY];
           disposeNodes(Array.from(n.childNodes));
         }
         n.parentNode?.removeChild(n);
@@ -133,7 +135,10 @@ const forModule: AttributeModule = {
         const newlyCreatedNodes: ForNode[] = [];
 
         items.forEach((item, index) => {
-          const key = (item as any).id ?? index;
+          let key = (item as any)?.id ?? (typeof item === 'object' && item !== null ? index : item);
+          if (currentKeys.has(key)) {
+            key = `${String(key)}__${index}`;
+          }
           currentKeys.add(key);
 
           let nodes = mountedMap.get(key);
@@ -194,7 +199,7 @@ const forModule: AttributeModule = {
             nodes.forEach(n => {
               if (isFlowNode(n)) {
                 const enhanced = n as any;
-                const stack = enhanced[Symbol.for('__data_stack__')] || enhanced['__data_stack__'];
+                const stack = enhanced[LOCAL_SCOPES_KEY] || enhanced[DATA_STACK_KEY] || enhanced[Symbol.for('__nexus_local_scopes__')] || enhanced[Symbol.for('__data_stack__')];
                 if (stack && stack.length > 0) {
                   // Mutate existing proxy to trigger bound effects
                   const scope = stack[0];

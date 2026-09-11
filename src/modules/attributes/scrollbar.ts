@@ -302,6 +302,11 @@ class OverlayScrollbarInstance {
   private dragStartScrollTop = 0;
   private dragStartScrollLeft = 0;
   private activeAxis: 'v' | 'h' = 'v';
+  private rafId: number | null = null;
+  private cachedOverflowY: boolean | null = null;
+  private cachedOverflowX: boolean | null = null;
+  private cachedRTL: boolean = false;
+  private lastStyleCheck: number = 0;
 
   constructor(el: HTMLElement) {
     this.el = el;
@@ -334,10 +339,16 @@ class OverlayScrollbarInstance {
     this.update();
   }
 
+  public scheduleUpdate(): void {
+    if (this.rafId !== null) return;
+    this.rafId = requestAnimationFrame(() => {
+      this.rafId = null;
+      this.update();
+    });
+  }
+
   public update(): void {
     const { clientHeight, scrollHeight, clientWidth, scrollWidth, scrollTop, scrollLeft } = this.el;
-    const s = window.getComputedStyle(this.el);
-    const isRTL = s.direction === 'rtl';
 
     // Check declarative opt-out
     if (this.el.getAttribute('data-scrollbar') === 'none' || this.el.classList.contains('scrollbar-none')) {
@@ -346,9 +357,20 @@ class OverlayScrollbarInstance {
       return;
     }
 
+    const now = performance.now();
+    if (this.cachedOverflowY === null || now - this.lastStyleCheck > 1000) {
+      this.lastStyleCheck = now;
+      const s = window.getComputedStyle(this.el);
+      this.cachedRTL = s.direction === 'rtl';
+      this.cachedOverflowY = s.overflowY !== 'hidden' && (s.overflowY === 'auto' || s.overflowY === 'scroll');
+      this.cachedOverflowX = s.overflowX !== 'hidden' && (s.overflowX === 'auto' || s.overflowX === 'scroll');
+    }
+
+    const isRTL = this.cachedRTL;
+
     // Vertical Update
-    if (s.overflowY !== 'hidden' && (s.overflowY === 'auto' || s.overflowY === 'scroll') && scrollHeight > clientHeight && clientHeight > 0) {
-      this.trackV!.style.display = 'block';
+    if (this.cachedOverflowY && scrollHeight > clientHeight && clientHeight > 0) {
+      if (this.trackV && this.trackV.style.display !== 'block') this.trackV.style.display = 'block';
 
       const thumbHeight = Math.max(24, (clientHeight / scrollHeight) * clientHeight);
       const maxScrollTop = scrollHeight - clientHeight;
@@ -356,15 +378,18 @@ class OverlayScrollbarInstance {
       const thumbTop = maxScrollTop > 0 ? (scrollTop / maxScrollTop) * maxThumbTop : 0;
 
       const thumbY = scrollTop + thumbTop;
-      this.thumbV!.style.height = `${thumbHeight}px`;
+      const heightPx = `${thumbHeight}px`;
+      if (this.thumbV!.style.height !== heightPx) {
+        this.thumbV!.style.height = heightPx;
+      }
       this.thumbV!.style.transform = `translate3d(0, ${thumbY}px, 0)`;
     } else {
-      if (this.trackV) this.trackV.style.display = 'none';
+      if (this.trackV && this.trackV.style.display !== 'none') this.trackV.style.display = 'none';
     }
 
     // Horizontal Update
-    if (s.overflowX !== 'hidden' && (s.overflowX === 'auto' || s.overflowX === 'scroll') && scrollWidth > clientWidth && clientWidth > 0) {
-      this.trackH!.style.display = 'block';
+    if (this.cachedOverflowX && scrollWidth > clientWidth && clientWidth > 0) {
+      if (this.trackH && this.trackH.style.display !== 'block') this.trackH.style.display = 'block';
 
       const thumbWidth = Math.max(24, (clientWidth / scrollWidth) * clientWidth);
       const maxScrollLeft = scrollWidth - clientWidth;
@@ -373,10 +398,13 @@ class OverlayScrollbarInstance {
       const thumbLeft = maxScrollLeft > 0 ? (absScrollLeft / maxScrollLeft) * maxThumbLeft : 0;
 
       const thumbX = isRTL ? (scrollLeft - thumbLeft) : (scrollLeft + thumbLeft);
-      this.thumbH!.style.width = `${thumbWidth}px`;
+      const widthPx = `${thumbWidth}px`;
+      if (this.thumbH!.style.width !== widthPx) {
+        this.thumbH!.style.width = widthPx;
+      }
       this.thumbH!.style.transform = `translate3d(${thumbX}px, 0, 0)`;
     } else {
-      if (this.trackH) this.trackH.style.display = 'none';
+      if (this.trackH && this.trackH.style.display !== 'none') this.trackH.style.display = 'none';
     }
   }
 
@@ -453,6 +481,10 @@ class OverlayScrollbarInstance {
   }
 
   public destroy(): void {
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
     this.trackV?.remove();
     this.trackH?.remove();
     this.el.classList.remove('scrollbar-overlay-active');
@@ -472,12 +504,14 @@ function triggerContainerMotion(target: Element): void {
   const autohideMs = typeof globalConfig.autohide === 'number' ? globalConfig.autohide : 800;
   if (globalConfig.autohide === false || autohideMs <= 0) return;
 
-  target.classList.add('is-scrolling');
+  if (!target.classList.contains('is-scrolling')) {
+    target.classList.add('is-scrolling');
+  }
 
-  // If overlay mode is active, sync geometry
+  // If overlay mode is active, schedule geometry sync via rAF
   if (target instanceof HTMLElement && (globalConfig.mode === 'overlay' || target.hasAttribute('data-scrollbar'))) {
     const inst = ensureOverlayInstance(target);
-    inst.update();
+    inst.scheduleUpdate();
   }
 
   const existingTimer = elementTimers.get(target);
@@ -498,9 +532,6 @@ function setupGlobalCaptureListeners(runtime: RuntimeContext): void {
   const onGlobalScroll = (e: Event) => {
     const target = e.target;
     if (target instanceof HTMLElement) {
-      if (globalConfig.mode === 'overlay') {
-        ensureOverlayInstance(target).update();
-      }
       triggerContainerMotion(target);
     }
   };
