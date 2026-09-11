@@ -1,7 +1,7 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { reportError } from '../../engine/debug.ts';
-import { getIndexedDBProxy } from '../../engine/evaluator.ts';
+import { getIndexedDBProxy } from '../../engine/scope.ts';
 import { stylesheet, discoverColorTokens, buildTailwindThemeBridge, markExternalStylesSettled } from './stylesheet.ts';
 import { cacheEngine } from '../../engine/cache.ts';
 
