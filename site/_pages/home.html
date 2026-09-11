@@ -379,19 +379,19 @@
           <div class="text-base-content/40 pl-4">&lt;head&gt;</div>
           <div class="pl-8 text-base-content/60">&lt;meta charset="UTF-8" /&gt;</div>
           <div class="pl-8 text-base-content/60">&lt;title&gt;My Nexus App&lt;/title&gt;</div>
-          <div class="pl-8 text-secondary font-semibold">&lt;script type="module" src="/dist/nexus-ux.min.js"&gt;&lt;/script&gt;</div>
+          <div class="pl-8 text-base-content/40">&lt;!-- Step 1: Drop-in ESM script --&gt;</div>
+          <div class="pl-8 text-primary font-semibold">&lt;script type="module" src="/dist/nexus-ux.min.js"&gt;&lt;/script&gt;</div>
           <div class="text-base-content/40 pl-4">&lt;/head&gt;</div>
           <div class="text-base-content/40 pl-4">&lt;body class="p-8 font-sans"&gt;</div>
-          <div class="pl-8 text-base-content/40">&lt;!-- 1. Declare reactive state --&gt;</div>
-          <div class="pl-8 text-primary font-semibold">&lt;div data-signal="{ count: 0, title: 'My First Nexus App' }"&gt;</div>
+          <div class="pl-8 text-base-content/40">&lt;!-- Step 2: Declare reactive state --&gt;</div>
+          <div class="pl-8 text-secondary font-semibold">&lt;div data-signal="{ count: 0, title: 'My First Nexus App' }"&gt;</div>
+          <div class="pl-12 text-base-content/40">&lt;!-- Step 3: Bind, react &amp; animate --&gt;</div>
           <div class="pl-12 text-base-content/70">&lt;h1 class="text-2xl font-bold" <span class="text-accent font-semibold">data-bind="title"</span>&gt;&lt;/h1&gt;</div>
-          <div class="pl-12 text-base-content/40">&lt;!-- 2. Two-way native input synchronization --&gt;</div>
           <div class="pl-12 text-base-content/70">&lt;input type="text" <span class="text-accent font-semibold">data-bind="title"</span> class="input input-bordered mt-2" /&gt;</div>
-          <div class="pl-12 text-base-content/40">&lt;!-- 3. Declarative click handler --&gt;</div>
-          <div class="pl-12 text-base-content/70">&lt;button <span class="text-warning font-semibold">data-on-click="count++"</span> class="btn btn-primary mt-4"&gt;</div>
+          <div class="pl-12 text-base-content/70">&lt;button <span class="text-accent font-semibold">data-on-click="count++"</span> class="btn btn-primary mt-4"&gt;</div>
           <div class="pl-16 text-base-content/70">Clicked &lt;span <span class="text-accent font-semibold">data-bind="count"</span>&gt;&lt;/span&gt; times</div>
           <div class="pl-12 text-base-content/70">&lt;/button&gt;</div>
-          <div class="pl-8 text-primary font-semibold">&lt;/div&gt;</div>
+          <div class="pl-8 text-secondary font-semibold">&lt;/div&gt;</div>
           <div class="text-base-content/40 pl-4">&lt;/body&gt;</div>
           <div class="text-base-content/40">&lt;/html&gt;</div>
         </div>
