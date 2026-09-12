@@ -9627,9 +9627,6 @@ ${match}</ul>
           this.trackV = document.createElement("div");
           this.trackV.className = "scrollbar-track-v";
           this.trackV.style.display = "none";
-          if (this.el.id) {
-            this.trackV.setAttribute("aria-controls", this.el.id);
-          }
           this.thumbV = document.createElement("div");
           this.thumbV.className = "scrollbar-thumb-v";
           this.trackV.appendChild(this.thumbV);
@@ -9637,9 +9634,6 @@ ${match}</ul>
           this.trackH = document.createElement("div");
           this.trackH.className = "scrollbar-track-h";
           this.trackH.style.display = "none";
-          if (this.el.id) {
-            this.trackH.setAttribute("aria-controls", this.el.id);
-          }
           this.thumbH = document.createElement("div");
           this.thumbH.className = "scrollbar-thumb-h";
           this.trackH.appendChild(this.thumbH);
@@ -9655,6 +9649,25 @@ ${match}</ul>
             this.trackV?.classList.remove("is-scrolling");
             this.trackH?.classList.remove("is-scrolling");
           }
+        }
+        hide() {
+          if (this.trackV) {
+            this.trackV.style.display = "none";
+            if (this.thumbV) {
+              this.thumbV.style.opacity = "0";
+              this.thumbV.style.pointerEvents = "none";
+            }
+          }
+          if (this.trackH) {
+            this.trackH.style.display = "none";
+            if (this.thumbH) {
+              this.thumbH.style.opacity = "0";
+              this.thumbH.style.pointerEvents = "none";
+            }
+          }
+        }
+        show() {
+          this.update();
         }
         scheduleUpdate() {
           if (this.rafId !== null)
@@ -9717,12 +9730,6 @@ ${match}</ul>
             if (this.thumbV) {
               this.thumbV.style.opacity = "";
               this.thumbV.style.pointerEvents = "";
-            }
-            if (this.el.id && this.trackV && !this.trackV.hasAttribute("aria-controls")) {
-              this.trackV.setAttribute("aria-controls", this.el.id);
-            }
-            if (this.el.id && this.trackH && !this.trackH.hasAttribute("aria-controls")) {
-              this.trackH.setAttribute("aria-controls", this.el.id);
             }
             if (this.trackV) {
               if (isFixed) {

@@ -389,9 +389,6 @@ export class OverlayScrollbarInstance {
     this.trackV = document.createElement('div');
     this.trackV.className = 'scrollbar-track-v';
     this.trackV.style.display = 'none';
-    if (this.el.id) {
-      this.trackV.setAttribute('aria-controls', this.el.id);
-    }
     this.thumbV = document.createElement('div');
     this.thumbV.className = 'scrollbar-thumb-v';
     this.trackV.appendChild(this.thumbV);
@@ -401,9 +398,6 @@ export class OverlayScrollbarInstance {
     this.trackH = document.createElement('div');
     this.trackH.className = 'scrollbar-track-h';
     this.trackH.style.display = 'none';
-    if (this.el.id) {
-      this.trackH.setAttribute('aria-controls', this.el.id);
-    }
     this.thumbH = document.createElement('div');
     this.thumbH.className = 'scrollbar-thumb-h';
     this.trackH.appendChild(this.thumbH);
@@ -421,6 +415,27 @@ export class OverlayScrollbarInstance {
       this.trackV?.classList.remove('is-scrolling');
       this.trackH?.classList.remove('is-scrolling');
     }
+  }
+
+  public hide(): void {
+    if (this.trackV) {
+      this.trackV.style.display = 'none';
+      if (this.thumbV) {
+        this.thumbV.style.opacity = '0';
+        this.thumbV.style.pointerEvents = 'none';
+      }
+    }
+    if (this.trackH) {
+      this.trackH.style.display = 'none';
+      if (this.thumbH) {
+        this.thumbH.style.opacity = '0';
+        this.thumbH.style.pointerEvents = 'none';
+      }
+    }
+  }
+
+  public show(): void {
+    this.update();
   }
 
   public scheduleUpdate(): void {
@@ -502,12 +517,6 @@ export class OverlayScrollbarInstance {
       if (this.thumbV) {
         this.thumbV.style.opacity = '';
         this.thumbV.style.pointerEvents = '';
-      }
-      if (this.el.id && this.trackV && !this.trackV.hasAttribute('aria-controls')) {
-        this.trackV.setAttribute('aria-controls', this.el.id);
-      }
-      if (this.el.id && this.trackH && !this.trackH.hasAttribute('aria-controls')) {
-        this.trackH.setAttribute('aria-controls', this.el.id);
       }
 
       if (this.trackV) {
