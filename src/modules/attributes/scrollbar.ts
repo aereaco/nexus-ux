@@ -50,6 +50,7 @@ const SCROLLBAR_BASE_CSS = `
 .overflow-y-scroll,
 .overflow-x-scroll,
 [data-scrollbar],
+.scrollbar-none,
 .scrollbar-overlay-active {
   scrollbar-width: none !important;
 }
@@ -61,10 +62,18 @@ const SCROLLBAR_BASE_CSS = `
 .overflow-y-scroll::-webkit-scrollbar,
 .overflow-x-scroll::-webkit-scrollbar,
 [data-scrollbar]::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar,
 .scrollbar-overlay-active::-webkit-scrollbar {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
+}
+
+[data-scrollbar]::-webkit-scrollbar-thumb,
+.scrollbar-none::-webkit-scrollbar-thumb,
+.scrollbar-overlay-active::-webkit-scrollbar-thumb {
+  display: none !important;
+  background-color: transparent !important;
 }
 
 /* ==========================================================================
@@ -147,31 +156,31 @@ const SCROLLBAR_BASE_CSS = `
 /* ==========================================================================
    2. NATIVE SCROLLBAR MODE (Fallback / Standard WebKit CSS)
    ========================================================================== */
-.overflow-auto::-webkit-scrollbar,
-.overflow-y-auto::-webkit-scrollbar,
-.overflow-x-auto::-webkit-scrollbar,
-.scrollbar-auto-hide::-webkit-scrollbar {
+.overflow-auto:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar,
+.overflow-y-auto:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar,
+.overflow-x-auto:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar,
+.scrollbar-auto-hide:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar {
   width: var(--scrollbar-width, 0.375rem);
   height: var(--scrollbar-height, 0.375rem);
 }
-.overflow-auto::-webkit-scrollbar-track,
-.overflow-y-auto::-webkit-scrollbar-track,
-.overflow-x-auto::-webkit-scrollbar-track,
-.scrollbar-auto-hide::-webkit-scrollbar-track {
+.overflow-auto:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar-track,
+.overflow-y-auto:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar-track,
+.overflow-x-auto:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar-track,
+.scrollbar-auto-hide:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar-track {
   background: var(--scrollbar-track, transparent);
   border-radius: var(--scrollbar-track-radius, 9999px);
 }
-.overflow-auto::-webkit-scrollbar-thumb,
-.overflow-y-auto::-webkit-scrollbar-thumb,
-.overflow-x-auto::-webkit-scrollbar-thumb,
-.scrollbar-auto-hide::-webkit-scrollbar-thumb {
+.overflow-auto:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar-thumb,
+.overflow-y-auto:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar-thumb,
+.overflow-x-auto:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar-thumb,
+.scrollbar-auto-hide:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar-thumb {
   background-color: transparent !important;
   border-radius: var(--scrollbar-thumb-radius, 9999px);
 }
-.overflow-auto.is-scrolling::-webkit-scrollbar-thumb,
-.overflow-y-auto.is-scrolling::-webkit-scrollbar-thumb,
-.overflow-x-auto.is-scrolling::-webkit-scrollbar-thumb,
-.scrollbar-auto-hide.is-scrolling::-webkit-scrollbar-thumb {
+.overflow-auto:not(.scrollbar-overlay-active):not(.scrollbar-none).is-scrolling::-webkit-scrollbar-thumb,
+.overflow-y-auto:not(.scrollbar-overlay-active):not(.scrollbar-none).is-scrolling::-webkit-scrollbar-thumb,
+.overflow-x-auto:not(.scrollbar-overlay-active):not(.scrollbar-none).is-scrolling::-webkit-scrollbar-thumb,
+.scrollbar-auto-hide:not(.scrollbar-overlay-active):not(.scrollbar-none).is-scrolling::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent)) !important;
 }
 `;

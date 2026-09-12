@@ -9,7 +9,7 @@
   <div class="shrink-0 z-20 transition-[opacity,max-height] duration-300 ease-in-out"
     data-class="{ 'max-h-20 opacity-100': pageTabs, 'max-h-0 opacity-0 overflow-hidden pointer-events-none': !pageTabs }">
     <div class="card pe-2" data-class="{'bg-base-200': pageTabToggleHovered }">
-      <div class="flex flex-nowrap bg-base-300/20 rounded-none overflow-x-auto pb-1 scrollbar-auto-hide"
+      <div class="flex flex-nowrap bg-base-300/20 rounded-none overflow-x-auto overflow-y-hidden pb-1 scrollbar-none"
         role="tablist" aria-orientation="horizontal" data-drag="{ list: 'router.pageTabs', group: 'pageTabs', direction: 'horizontal' }">
         <template data-for="tab in router.pageTabs">
           <div role="tab" tabindex="0" data-drag-item
