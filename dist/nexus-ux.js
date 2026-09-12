@@ -9475,13 +9475,9 @@ ${match}</ul>
       return false;
     if (el.hasAttribute("data-scrollbar"))
       return true;
-    if (el.classList.contains("overflow-y-auto") || el.classList.contains("overflow-x-auto") || el.classList.contains("overflow-auto")) {
-      return el.scrollHeight - el.clientHeight > 1 || el.scrollWidth - el.clientWidth > 1;
-    }
-    if (el.hasAttribute("style") && el.getAttribute("style").includes("overflow")) {
-      return el.scrollHeight - el.clientHeight > 1 || el.scrollWidth - el.clientWidth > 1;
-    }
-    return false;
+    const hasScrollY = s.overflowY !== "hidden" && s.overflowY !== "clip" && s.overflow !== "hidden" && (s.overflowY === "auto" || s.overflowY === "scroll") && el.scrollHeight - el.clientHeight > 1;
+    const hasScrollX = s.overflowX !== "hidden" && s.overflowX !== "clip" && s.overflow !== "hidden" && (s.overflowX === "auto" || s.overflowX === "scroll") && el.scrollWidth - el.clientWidth > 1;
+    return hasScrollY || hasScrollX;
   }
   function attachOverlayScrollbar(el) {
     if (!el || !(el instanceof HTMLElement))
@@ -9554,13 +9550,24 @@ ${match}</ul>
       });
     };
     const onWindowResize = () => syncAllOverlayScrollbars();
+    const onDomMutated = () => {
+      if (globalConfig.mode !== "overlay")
+        return;
+      document.querySelectorAll('.cm-scroller, [data-scrollbar="overlay"]').forEach((el) => {
+        if (el instanceof HTMLElement && !overlayInstances.has(el) && isScrollContainer(el)) {
+          attachOverlayScrollbar(el);
+        }
+      });
+    };
     document.addEventListener("scroll", onGlobalScroll, { capture: true, passive: true });
     document.addEventListener("pointermove", onGlobalPointerMove, { capture: true, passive: true });
+    document.addEventListener("nexus:dom-mutated", onDomMutated, { passive: true });
     window.addEventListener("resize", onWindowResize, { passive: true });
     if (runtime && runtime.registerCleanup) {
       runtime.registerCleanup(() => {
         document.removeEventListener("scroll", onGlobalScroll, { capture: true });
         document.removeEventListener("pointermove", onGlobalPointerMove, { capture: true });
+        document.removeEventListener("nexus:dom-mutated", onDomMutated);
         window.removeEventListener("resize", onWindowResize);
         if (pointerRaf !== null)
           cancelAnimationFrame(pointerRaf);

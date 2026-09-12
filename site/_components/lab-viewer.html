@@ -138,6 +138,10 @@
                         parent: sourceEl
                     });
                     window._sourceEditor = $el._sourceEditor;
+                    if ($el._sourceEditor?.scrollDOM) {
+                        $el._sourceEditor.scrollDOM.setAttribute('data-scrollbar', 'overlay');
+                        $el._sourceEditor.scrollDOM.dispatchEvent(new CustomEvent('scroll', { bubbles: true }));
+                    }
                 }
 
                 // 2. Lab Snippet Editor (Live Editable)
@@ -163,6 +167,10 @@
                         parent: snippetEl
                     });
                     window._snippetEditor = $el._snippetEditor;
+                    if ($el._snippetEditor?.scrollDOM) {
+                        $el._snippetEditor.scrollDOM.setAttribute('data-scrollbar', 'overlay');
+                        $el._snippetEditor.scrollDOM.dispatchEvent(new CustomEvent('scroll', { bubbles: true }));
+                    }
                 }
             };
 
