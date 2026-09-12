@@ -126,8 +126,11 @@
     }
 
     .nexus-loader-emblem {
+      width: 3.5rem;
+      height: 3.5rem;
+      display: block;
       animation: nexus-loader-pulse 2s ease-in-out infinite;
-      filter: drop-shadow(0 0 24px rgba(87, 13, 248, 0.5));
+      filter: drop-shadow(0 0 1.5rem rgba(87, 13, 248, 0.5));
     }
 
     @keyframes nexus-loader-pulse {
@@ -169,10 +172,10 @@
       'opacity-0 pointer-events-none invisible': appReady,
       'opacity-100 pointer-events-auto visible': !appReady
     }">
-    <div class="relative flex flex-col items-center gap-5 select-none">
-      <div class="relative w-20 h-20 flex items-center justify-center">
-        <div class="absolute inset-0 rounded-full bg-primary/20 blur-2xl animate-pulse"></div>
-        <svg class="nexus-loader-emblem w-14 h-14 relative z-10" viewBox="0 0 10.594 10.594"
+    <div class="relative flex flex-col items-center select-none" style="min-width: 3.5rem; min-height: 3.5rem;">
+      <div class="relative w-20 h-20 flex items-center justify-center" style="width: 5rem; height: 5rem; display: flex; align-items: center; justify-content: center; position: relative;">
+        <div class="absolute inset-0 rounded-full bg-primary/20 blur-2xl animate-pulse" style="position: absolute; inset: 0;"></div>
+        <svg class="nexus-loader-emblem w-14 h-14 relative z-10" style="width: 3.5rem; height: 3.5rem; position: relative; z-index: 10;" viewBox="0 0 10.594 10.594"
           xmlns="http://www.w3.org/2000/svg">
           <g transform="translate(-42.525 -200.67)">
             <g transform="matrix(.66735 0 0 .66735 -88.919 71.304)" style="fill:#570df8">
