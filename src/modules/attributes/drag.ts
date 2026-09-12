@@ -52,7 +52,7 @@ const DRAG_CSS = `
   opacity: 0.4 !important;
   pointer-events: none !important;
   border: 2px dashed color-mix(in srgb, currentColor 25%, transparent) !important;
-  background-color: color-mix(in srgb, var(--color-base-200, #374151) 60%, transparent) !important;
+  background-color: color-mix(in srgb, currentColor 10%, transparent) !important;
 }
 
 .draggable-chosen, .drag-chosen {

@@ -57,7 +57,6 @@ const FLOW_CSS = `
 [data-flow-node]:active {
   cursor: grabbing;
 }
-[data-flow-node].selected .card,
 [data-flow-node].selected > *:first-child {
   box-shadow: 0 0 0 2px var(--color-primary, #3b82f6), 0 20px 25px -5px rgba(0, 0, 0, 0.25);
 }

@@ -2880,7 +2880,7 @@ ${scripts}
                       cleanMd = rawText.slice(fmMatch[0].length).trim();
                     }
                     const escapedMd = cleanMd.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                    html = `<div class="p-6 max-w-5xl mx-auto"><article data-markdown class="prose max-w-none">${escapedMd}</article></div>`;
+                    html = `<div style="padding: 1.5rem; max-width: 64rem; margin-inline: auto;"><article data-markdown>${escapedMd}</article></div>`;
                   } else if (rawText.includes("<!DOCTYPE") || rawText.includes("data-init") && el.tagName.toLowerCase() !== "html") {
                     throw new Error(`Invalid component fragment returned for "${targetPath}": received full HTML shell.`);
                   }
@@ -3501,7 +3501,7 @@ ${scripts}
   opacity: 0.4 !important;
   pointer-events: none !important;
   border: 2px dashed color-mix(in srgb, currentColor 25%, transparent) !important;
-  background-color: color-mix(in srgb, var(--color-base-200, #374151) 60%, transparent) !important;
+  background-color: color-mix(in srgb, currentColor 10%, transparent) !important;
 }
 
 .draggable-chosen, .drag-chosen {
@@ -4832,7 +4832,6 @@ ${scripts}
 [data-flow-node]:active {
   cursor: grabbing;
 }
-[data-flow-node].selected .card,
 [data-flow-node].selected > *:first-child {
   box-shadow: 0 0 0 2px var(--color-primary, #3b82f6), 0 20px 25px -5px rgba(0, 0, 0, 0.25);
 }
@@ -6618,8 +6617,12 @@ ${scripts}
   var markdown_exports = {};
   __export(markdown_exports, {
     default: () => markdown_default,
+    ensureMarkdownStyles: () => ensureMarkdownStyles,
     parseMarkdown: () => parseMarkdown
   });
+  function ensureMarkdownStyles(root) {
+    ensureAdoptedStylesheet(MARKDOWN_BASE_CSS, markdownSheetRef, root);
+  }
   function slugify(text) {
     return text.toLowerCase().replace(/<[^>]*>/g, "").replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, "-");
   }
@@ -6628,19 +6631,19 @@ ${scripts}
     const codeBlocks = [];
     const inlineCodes = [];
     html = html.replace(/```([a-z0-9_-]*)\n([\s\S]*?)```/gim, (_match, rawLang, code) => {
-      const id = `__CODE_BLOCK_${codeBlocks.length}__`;
+      const id = `%%NEXUS_CODE_BLOCK_${codeBlocks.length}%%`;
       const lang = (rawLang || "text").trim();
       const escaped = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
       codeBlocks.push(
-        `<div class="relative group my-4 rounded-xl overflow-hidden border border-base-content/10 bg-base-300 shadow-inner"><div class="flex items-center justify-between px-4 py-1.5 bg-base-200/80 border-b border-base-content/5 text-xs font-mono text-base-content/70"><span class="font-semibold uppercase tracking-wider">${lang}</span><button type="button" class="btn btn-ghost btn-xs gap-1 font-mono hover:text-primary transition-colors cursor-pointer" onclick="navigator.clipboard.writeText(this.closest('.relative').querySelector('code').textContent).then(()=>{ const self=this; const prev=self.innerText; self.innerText='Copied!'; setTimeout(()=>self.innerText=prev, 1500); })"><svg class="size-3.5 inline-block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>Copy</button></div><pre data-ignore class="p-4 overflow-x-auto text-sm font-mono text-base-content leading-relaxed"><code data-ignore class="language-${lang}">${escaped}</code></pre></div>`
+        `<div class="nexus-code-block"><div class="nexus-code-header"><span class="nexus-code-lang">${lang}</span><button type="button" class="nexus-copy-btn" onclick="navigator.clipboard.writeText(this.closest('.nexus-code-block').querySelector('code').textContent).then(()=>{ const self=this; const prev=self.innerText; self.innerText='Copied!'; setTimeout(()=>self.innerText=prev, 1500); })"><svg width="14" height="14" style="display:inline-block; vertical-align: middle;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg> <span>Copy</span></button></div><pre data-ignore class="nexus-code-pre"><code data-ignore class="language-${lang}">${escaped}</code></pre></div>`
       );
       return id;
     });
     html = html.replace(/`([^`]+)`/g, (_m, code) => {
-      const id = `__INLINE_CODE_${inlineCodes.length}__`;
+      const id = `%%NEXUS_INLINE_CODE_${inlineCodes.length}%%`;
       const escaped = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
       inlineCodes.push(
-        `<code data-ignore class="bg-base-200 text-primary px-1.5 py-0.5 rounded font-mono text-sm border border-base-content/10">${escaped}</code>`
+        `<code data-ignore class="nexus-inline-code">${escaped}</code>`
       );
       return id;
     });
@@ -6653,38 +6656,38 @@ ${scripts}
         const content = lines.slice(1).join("\n").trim();
         const alertConfigs = {
           NOTE: {
-            cls: "alert-info border-info/20 text-info-content bg-info/10",
+            cls: "nexus-alert-note",
             icon: "material-symbols-light:info-outline",
             title: "Note"
           },
           TIP: {
-            cls: "alert-success border-success/20 text-success-content bg-success/10",
+            cls: "nexus-alert-tip",
             icon: "material-symbols-light:lightbulb-outline",
             title: "Tip"
           },
           IMPORTANT: {
-            cls: "alert-secondary border-secondary/20 text-secondary-content bg-secondary/10",
+            cls: "nexus-alert-important",
             icon: "material-symbols-light:priority-high",
             title: "Important"
           },
           WARNING: {
-            cls: "alert-warning border-warning/20 text-warning-content bg-warning/10",
+            cls: "nexus-alert-warning",
             icon: "material-symbols-light:warning-outline",
             title: "Warning"
           },
           CAUTION: {
-            cls: "alert-error border-error/20 text-error-content bg-error/10",
+            cls: "nexus-alert-caution",
             icon: "material-symbols-light:dangerous-outline",
             title: "Caution"
           }
         };
         const cfg = alertConfigs[type] || alertConfigs.NOTE;
-        return `<div class="alert ${cfg.cls} border shadow-sm my-4 rounded-xl p-3.5 flex items-start gap-3"><iconify-icon icon="${cfg.icon}" class="text-2xl shrink-0 mt-0.5"></iconify-icon><div class="flex-1 min-w-0 text-sm"><div class="font-bold mb-0.5">${cfg.title}</div><div class="leading-relaxed opacity-90">${content}</div></div></div>`;
+        return `<div class="nexus-alert ${cfg.cls}"><iconify-icon icon="${cfg.icon}" class="nexus-alert-icon"></iconify-icon><div class="nexus-alert-body"><div class="nexus-alert-title">${cfg.title}</div><div class="nexus-alert-content">${content}</div></div></div>`;
       }
       const standardBody = lines.join("\n").trim();
-      return `<blockquote class="border-l-4 border-primary/60 bg-primary/5 px-4 py-2.5 my-4 italic rounded-r-xl text-base-content opacity-90 leading-relaxed">${standardBody}</blockquote>`;
+      return `<blockquote class="nexus-blockquote">${standardBody}</blockquote>`;
     });
-    html = html.replace(/((?:^\|[^\n]+\|\r?\n)(?:^\|[\s-:]+\|\r?\n)(?:^\|[^\n]+\|\r?\n?)+)/gm, (tableBlock) => {
+    html = html.replace(/(?:^|\n)(\|[^\n]+\|\r?\n\|[ \t\-:|]+\|\r?\n(?:\|[^\n]+\|\r?\n?)+)/g, (_fullMatch, tableBlock) => {
       const rows = tableBlock.trim().split("\n").map((r) => r.trim());
       if (rows.length < 2)
         return tableBlock;
@@ -6696,90 +6699,392 @@ ${scripts}
         const left = d.startsWith(":");
         const right = d.endsWith(":");
         if (left && right)
-          return "text-center";
+          return "center";
         if (right)
-          return "text-right";
-        return "text-left";
+          return "right";
+        return "left";
       });
-      const thead = `<thead><tr class="border-b border-base-content/10 bg-base-200/50">` + headers.map((h, i) => `<th class="px-4 py-2.5 font-semibold text-xs tracking-wider uppercase ${alignments[i] || "text-left"}">${h}</th>`).join("") + `</tr></thead>`;
+      const thead = `<thead><tr>` + headers.map((h, i) => `<th class="nexus-align-${alignments[i] || "left"}">${h}</th>`).join("") + `</tr></thead>`;
       const bodyRows = rows.slice(2).map((row) => {
         const cells = parseCells(row);
-        return `<tr class="border-b border-base-content/5 hover:bg-base-200/30 transition-colors">` + cells.map((c, i) => `<td class="px-4 py-2 text-sm ${alignments[i] || "text-left"}">${c}</td>`).join("") + `</tr>`;
+        return `<tr>` + cells.map((c, i) => `<td class="nexus-align-${alignments[i] || "left"}">${c || ""}</td>`).join("") + `</tr>`;
       }).join("");
       const tbody = `<tbody>${bodyRows}</tbody>`;
-      return `<div class="overflow-x-auto my-4 rounded-xl border border-base-content/10 bg-base-100 shadow-sm"><table class="table table-sm table-zebra w-full text-base-content">${thead}${tbody}</table></div>`;
+      return `
+
+<div class="nexus-table-wrapper"><table class="nexus-table">${thead}${tbody}</table></div>
+
+`;
     });
     html = html.replace(/^(#{1,6})\s+(.*$)/gm, (_m, hashes, title) => {
       const level = hashes.length;
       const cleanTitle = title.trim();
       const slug = slugify(cleanTitle);
-      const sizes = {
-        1: "text-3xl font-extrabold mt-8 mb-4 tracking-tight border-b border-base-content/10 pb-2",
-        2: "text-2xl font-bold mt-7 mb-3 border-b border-base-content/10 pb-1.5",
-        3: "text-xl font-bold mt-6 mb-2.5",
-        4: "text-lg font-semibold mt-5 mb-2",
-        5: "text-base font-semibold mt-4 mb-1.5",
-        6: "text-sm font-semibold mt-3 mb-1 uppercase tracking-wider text-base-content/70"
-      };
-      const cls = sizes[level] || sizes[2];
-      return `<h${level} id="${slug}" class="${cls} text-base-content flex items-center group"><span>${cleanTitle}</span><a href="#${slug}" class="opacity-0 group-hover:opacity-40 hover:!opacity-100 ms-2 text-primary transition-opacity text-sm font-mono" aria-label="Permalink to ${cleanTitle}">#</a></h${level}>`;
+      return `
+
+<h${level} id="${slug}" class="nexus-heading nexus-h${level}"><span>${cleanTitle}</span><a href="#${slug}" class="nexus-anchor-link" aria-label="Permalink to ${cleanTitle}">#</a></h${level}>
+
+`;
     });
-    html = html.replace(/^(?:---|\*\*\*|___)\s*$/gm, '<div class="divider my-6"></div>');
+    html = html.replace(/^(?:---|[*]{3}|_{3})\s*$/gm, '\n\n<hr class="nexus-divider" />\n\n');
     html = html.replace(/^\s*-\s+\[([ xX])\]\s+(.*$)/gm, (_m, check, text) => {
       const isChecked = check.toLowerCase() === "x";
       const checkedAttr = isChecked ? "checked" : "";
-      const textCls = isChecked ? "line-through opacity-60" : "text-base-content";
-      return `<li class="flex items-start gap-2.5 list-none py-1 text-sm"><input type="checkbox" ${checkedAttr} disabled class="checkbox checkbox-xs checkbox-primary mt-0.5 shrink-0" /><span class="${textCls}">${text}</span></li>`;
+      const textCls = isChecked ? "nexus-task-done" : "";
+      return `<li class="nexus-task-item"><input type="checkbox" ${checkedAttr} disabled class="nexus-checkbox" /><span class="${textCls}">${text}</span></li>`;
     });
-    html = html.replace(/^\s*[-*+]\s+(.*$)/gm, '<li class="ml-6 list-disc marker:text-primary/60 py-0.5 text-base-content text-sm leading-relaxed">$1</li>');
-    html = html.replace(/^\s*(\d+)\.\s+(.*$)/gm, '<li class="ml-6 list-decimal marker:text-primary/60 py-0.5 text-base-content text-sm leading-relaxed">$2</li>');
-    html = html.replace(/(<li class="[^"]*list-disc[^"]*"[^>]*>[\s\S]*?<\/li>\s*)+/g, (match) => `<ul class="my-3 space-y-0.5">
+    html = html.replace(/^\s*[-*+]\s+(.*$)/gm, '<li class="nexus-list-item">$1</li>');
+    html = html.replace(/^\s*(\d+)\.\s+(.*$)/gm, '<li class="nexus-list-item-ordered">$2</li>');
+    html = html.replace(/(<li class="nexus-list-item">[\s\S]*?<\/li>\s*)+/g, (match) => `
+
+<ul class="nexus-list-ul">
 ${match}</ul>
+
 `);
-    html = html.replace(/(<li class="[^"]*list-decimal[^"]*"[^>]*>[\s\S]*?<\/li>\s*)+/g, (match) => `<ol class="my-3 space-y-0.5">
+    html = html.replace(/(<li class="nexus-list-item-ordered">[\s\S]*?<\/li>\s*)+/g, (match) => `
+
+<ol class="nexus-list-ol">
 ${match}</ol>
+
 `);
-    html = html.replace(/(<li class="[^"]*list-none[^"]*"[^>]*>[\s\S]*?<\/li>\s*)+/g, (match) => `<ul class="my-3 space-y-0.5 pl-0">
+    html = html.replace(/(<li class="nexus-task-item">[\s\S]*?<\/li>\s*)+/g, (match) => `
+
+<ul class="nexus-task-list">
 ${match}</ul>
+
 `);
-    html = html.replace(/~~(.*?)~~/g, '<del class="line-through opacity-70">$1</del>');
-    html = html.replace(/\*\*\*(.*?)\*\*\*/g, '<strong class="font-bold text-base-content"><em>$1</em></strong>');
-    html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-base-content">$1</strong>');
-    html = html.replace(/__(.*?)__/g, '<strong class="font-bold text-base-content">$1</strong>');
-    html = html.replace(/\*(.*?)\*/g, '<em class="italic opacity-90">$1</em>');
-    html = html.replace(/(^|\s)_(.*?)_(\s|$)/g, '$1<em class="italic opacity-90">$2</em>$3');
-    html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="rounded-xl max-w-full my-4 shadow-md border border-base-content/10" loading="lazy" />');
+    html = html.replace(/~~(.*?)~~/g, '<del class="nexus-del">$1</del>');
+    html = html.replace(/\*\*\*(.*?)\*\*\*/g, "<strong><em>$1</em></strong>");
+    html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+    html = html.replace(/__(.*?)__/g, "<strong>$1</strong>");
+    html = html.replace(/\*(.*?)\*/g, "<em>$1</em>");
+    html = html.replace(/(^|\s)_(.*?)_(\s|$)/g, "$1<em>$2</em>$3");
+    html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="nexus-img" loading="lazy" />');
     html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, text, url) => {
       const isExt = url.startsWith("http://") || url.startsWith("https://");
       const target = isExt ? ' target="_blank" rel="noopener noreferrer"' : "";
-      return `<a href="${url}" class="link link-primary hover:underline transition-colors font-medium"${target}>${text}</a>`;
+      return `<a href="${url}" class="nexus-link"${target}>${text}</a>`;
     });
-    html = html.replace(/(^|[^"'])(https?:\/\/[^\s<]+)/g, '$1<a href="$2" class="link link-primary hover:underline transition-colors font-medium" target="_blank" rel="noopener noreferrer">$2</a>');
+    html = html.replace(/(^|[^"'])(https?:\/\/[^\s<]+)/g, '$1<a href="$2" class="nexus-link" target="_blank" rel="noopener noreferrer">$2</a>');
     html = html.split("\n\n").map((block) => {
       const trimmed = block.trim();
       if (!trimmed)
         return "";
-      if (/^<(\/?(?:div|h[1-6]|ul|ol|li|table|blockquote|pre|p)|__CODE_BLOCK_)/i.test(trimmed)) {
+      if (/^<(\/?(?:div|h[1-6]|ul|ol|li|table|blockquote|pre|p|hr)|%%NEXUS_CODE_BLOCK_)/i.test(trimmed)) {
         return trimmed;
       }
-      return `<p class="mb-3 leading-relaxed opacity-90 text-base-content text-sm">${trimmed.replace(/\n/g, "<br />")}</p>`;
+      return `<p class="nexus-p">${trimmed.replace(/\n/g, "<br />")}</p>`;
     }).filter(Boolean).join("\n\n");
-    html = html.replace(/__INLINE_CODE_(\d+)__/g, (_match, idx) => inlineCodes[parseInt(idx, 10)]);
-    html = html.replace(/__CODE_BLOCK_(\d+)__/g, (_match, idx) => codeBlocks[parseInt(idx, 10)]);
+    html = html.replace(/%%NEXUS_INLINE_CODE_(\d+)%%/g, (_match, idx) => inlineCodes[parseInt(idx, 10)]);
+    html = html.replace(/%%NEXUS_CODE_BLOCK_(\d+)%%/g, (_match, idx) => codeBlocks[parseInt(idx, 10)]);
     return html;
   }
-  var markdownModule, markdown_default;
+  var MARKDOWN_BASE_CSS, markdownSheetRef, markdownModule, markdown_default;
   var init_markdown = __esm({
     "src/modules/attributes/markdown.ts"() {
+      init_styles();
+      MARKDOWN_BASE_CSS = `
+[data-markdown] {
+  line-height: 1.65;
+  color: inherit;
+  word-break: break-word;
+}
+
+[data-markdown] h1, [data-markdown] .nexus-h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  letter-spacing: -0.025em;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  padding-bottom: 0.5rem;
+}
+[data-markdown] h2, [data-markdown] .nexus-h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+  padding-bottom: 0.375rem;
+}
+[data-markdown] h3, [data-markdown] .nexus-h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0.625rem;
+}
+[data-markdown] h4, [data-markdown] .nexus-h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+[data-markdown] h5, [data-markdown] .nexus-h5 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 1rem;
+  margin-bottom: 0.375rem;
+}
+[data-markdown] h6, [data-markdown] .nexus-h6 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-top: 0.75rem;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.7;
+}
+[data-markdown] .nexus-heading {
+  display: flex;
+  align-items: center;
+}
+[data-markdown] .nexus-anchor-link {
+  opacity: 0;
+  margin-left: 0.5rem;
+  text-decoration: none;
+  color: var(--color-primary, #3b82f6);
+  font-family: ui-monospace, monospace;
+  font-size: 0.875rem;
+  transition: opacity 0.15s ease;
+}
+[data-markdown] .nexus-heading:hover .nexus-anchor-link {
+  opacity: 0.45;
+}
+[data-markdown] .nexus-heading .nexus-anchor-link:hover {
+  opacity: 1 !important;
+}
+
+[data-markdown] p, [data-markdown] .nexus-p {
+  margin-bottom: 0.75rem;
+  line-height: 1.65;
+  font-size: 0.875rem;
+}
+
+[data-markdown] a.nexus-link, [data-markdown] a:not([class]) {
+  color: var(--color-primary, #3b82f6);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+[data-markdown] code.nexus-inline-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.875em;
+  padding: 0.15em 0.35em;
+  border-radius: 0.25rem;
+  background-color: color-mix(in srgb, currentColor 8%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  color: var(--color-primary, #3b82f6);
+}
+
+[data-markdown] .nexus-code-block {
+  position: relative;
+  margin: 1rem 0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  background-color: color-mix(in srgb, currentColor 5%, transparent);
+}
+[data-markdown] .nexus-code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.375rem 1rem;
+  font-family: ui-monospace, monospace;
+  font-size: 0.75rem;
+  background-color: color-mix(in srgb, currentColor 8%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, currentColor 8%, transparent);
+  opacity: 0.8;
+}
+[data-markdown] .nexus-code-lang {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+[data-markdown] .nexus-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+  border-radius: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+[data-markdown] .nexus-copy-btn:hover {
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+[data-markdown] .nexus-code-pre {
+  margin: 0;
+  padding: 1rem;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+[data-markdown] .nexus-blockquote {
+  border-left: 4px solid var(--color-primary, #3b82f6);
+  background-color: color-mix(in srgb, var(--color-primary, #3b82f6) 6%, transparent);
+  padding: 0.625rem 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+  border-radius: 0 0.5rem 0.5rem 0;
+  opacity: 0.95;
+}
+
+[data-markdown] .nexus-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin: 1rem 0;
+  padding: 0.875rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+[data-markdown] .nexus-alert-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+[data-markdown] .nexus-alert-body {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.875rem;
+}
+[data-markdown] .nexus-alert-title {
+  font-weight: 700;
+  margin-bottom: 0.125rem;
+}
+[data-markdown] .nexus-alert-content {
+  line-height: 1.6;
+  opacity: 0.9;
+}
+[data-markdown] .nexus-alert-note {
+  background-color: color-mix(in srgb, var(--color-info, #0284c7) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-info, #0284c7) 30%, transparent);
+  color: var(--color-info-content, inherit);
+}
+[data-markdown] .nexus-alert-tip {
+  background-color: color-mix(in srgb, var(--color-success, #16a34a) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-success, #16a34a) 30%, transparent);
+  color: var(--color-success-content, inherit);
+}
+[data-markdown] .nexus-alert-important {
+  background-color: color-mix(in srgb, var(--color-secondary, #9333ea) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-secondary, #9333ea) 30%, transparent);
+  color: var(--color-secondary-content, inherit);
+}
+[data-markdown] .nexus-alert-warning {
+  background-color: color-mix(in srgb, var(--color-warning, #d97706) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-warning, #d97706) 30%, transparent);
+  color: var(--color-warning-content, inherit);
+}
+[data-markdown] .nexus-alert-caution {
+  background-color: color-mix(in srgb, var(--color-error, #dc2626) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-error, #dc2626) 30%, transparent);
+  color: var(--color-error-content, inherit);
+}
+
+[data-markdown] .nexus-table-wrapper {
+  overflow-x: auto;
+  margin: 1rem 0;
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+}
+[data-markdown] .nexus-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+[data-markdown] .nexus-table thead tr {
+  background-color: color-mix(in srgb, currentColor 6%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+}
+[data-markdown] .nexus-table th {
+  padding: 0.625rem 1rem;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+[data-markdown] .nexus-table td {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 6%, transparent);
+}
+[data-markdown] .nexus-table tbody tr:hover {
+  background-color: color-mix(in srgb, currentColor 4%, transparent);
+}
+[data-markdown] .nexus-align-left { text-align: left; }
+[data-markdown] .nexus-align-center { text-align: center; }
+[data-markdown] .nexus-align-right { text-align: right; }
+
+[data-markdown] ul.nexus-list-ul, [data-markdown] ol.nexus-list-ol {
+  margin: 0.75rem 0;
+  padding-left: 1.5rem;
+}
+[data-markdown] li.nexus-list-item, [data-markdown] li.nexus-list-item-ordered {
+  margin-bottom: 0.25rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+[data-markdown] ul.nexus-task-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0.75rem 0;
+}
+[data-markdown] .nexus-task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.25rem 0;
+  font-size: 0.875rem;
+}
+[data-markdown] .nexus-checkbox {
+  margin-top: 0.2rem;
+  accent-color: var(--color-primary, #3b82f6);
+}
+[data-markdown] .nexus-task-done {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+[data-markdown] hr.nexus-divider, [data-markdown] .nexus-divider {
+  border: none;
+  border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  margin: 1.5rem 0;
+}
+
+[data-markdown] .nexus-img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+  margin: 1rem 0;
+  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+}
+`;
+      markdownSheetRef = { sheet: null };
+      if (typeof document !== "undefined") {
+        ensureMarkdownStyles();
+      }
       markdownModule = {
         name: "markdown",
         attribute: "markdown",
         handle: (el, value, runtime) => {
+          ensureMarkdownStyles(el.getRootNode());
+          const initialSource = value ? null : el.textContent || el.innerText;
           const render = () => {
-            const content = value ? runtime.evaluate(el, value) : el.textContent || el.innerText;
+            const content = value ? runtime.evaluate(el, value) : initialSource;
             const mdText = String(content || "").trim();
             if (!el.classList.contains("nexus-markdown-body")) {
-              el.classList.add("nexus-markdown-body", "font-sans", "antialiased");
+              el.classList.add("nexus-markdown-body");
             }
             const transpiled = parseMarkdown(mdText);
             if (el.innerHTML !== transpiled) {
