@@ -36,10 +36,8 @@
           searchHighlightCount = 0;
           searchTicks = [];
           if (effectiveTabId && searchTabs && searchTabs[effectiveTabId]) {
-            searchTabs = {
-              ...searchTabs,
-              [effectiveTabId]: { ...searchTabs[effectiveTabId], count: 0, ticks: [] }
-            };
+            searchTabs[effectiveTabId].count = 0;
+            searchTabs[effectiveTabId].ticks = [];
           }
           return;
         }
@@ -97,27 +95,15 @@
               }
               searchTicks = ticks;
               if (effectiveTabId && searchTabs && searchTabs[effectiveTabId]) {
-                searchTabs = {
-                  ...searchTabs,
-                  [effectiveTabId]: {
-                    ...searchTabs[effectiveTabId],
-                    count: ranges.length,
-                    ticks: ticks
-                  }
-                };
+                searchTabs[effectiveTabId].count = ranges.length;
+                searchTabs[effectiveTabId].ticks = ticks;
               }
             } else {
               window.CSS.highlights.delete('page-match');
               searchTicks = [];
               if (effectiveTabId && searchTabs && searchTabs[effectiveTabId]) {
-                searchTabs = {
-                  ...searchTabs,
-                  [effectiveTabId]: {
-                    ...searchTabs[effectiveTabId],
-                    count: 0,
-                    ticks: []
-                  }
-                };
+                searchTabs[effectiveTabId].count = 0;
+                searchTabs[effectiveTabId].ticks = [];
               }
             }
           } catch { /* ignore range calculation errors */ }
@@ -904,7 +890,7 @@
               <!-- Fully Loaded Route Content -->
               <tab-content data-component="tab.source || tab.content" data-show="tab.isLoading === false"
                 class="grow flex-1 flex flex-col min-h-0 [&>body]:flex [&>body]:flex-col [&>body]:flex-1 [&>body]:min-h-0 [&>body]:h-full [&>body]:m-0 [&>body]:bg-transparent"
-                data-effect="if (!tab.isLoading && router.activePageTabId === tab.id && searchTabs && searchTabs[tab.id] && searchTabs[tab.id].tokens && searchTabs[tab.id].tokens.length !== 0) { const q = searchTabs[tab.id].query; if (tab._highlightedQuery !== q) { tab._highlightedQuery = q; if (typeof syncPageHighlights === 'function') { syncPageHighlights($el, tab.id, searchTabs[tab.id].tokens); } } } else if (router.activePageTabId === tab.id) { tab._highlightedQuery = null; if (typeof CSS !== 'undefined' && CSS.highlights) { CSS.highlights.delete('page-match'); } }"></tab-content>
+                data-effect="if (router.activePageTabId === tab.id && !tab.isLoading) { const entry = searchTabs && searchTabs[tab.id]; if (entry && entry.tokens && entry.tokens.length !== 0) { if (typeof syncPageHighlights === 'function') { syncPageHighlights($el, tab.id, entry.tokens); } } else if (typeof CSS !== 'undefined' && CSS.highlights) { CSS.highlights.delete('page-match'); searchHighlightCount = 0; searchTicks = []; } }"></tab-content>
             </div>
           </template>
 
