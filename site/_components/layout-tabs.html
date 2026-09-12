@@ -1,0 +1,51 @@
+<!-- Inline template for tab headers -->
+<template id="tab-header-template">
+  <div role="tab" tabindex="0"
+    class="flex items-center shrink-0 p-2 cursor-pointer hover:'border-primary' transition-colors"
+    data-bind-aria-selected="router.activePageTabId === tab.id"
+    data-class="{'tab-active border-b border-primary text-primary': router.activePageTabId === tab.id }"
+    data-on-click="router.switchPageTab(tab.id)"
+    data-on-auxclick="if ($evt.button === 1) { if (searchTabs && searchTabs[tab.id]) { delete searchTabs[tab.id]; } router.closePageTab(tab.id); }"
+    data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'tab', target: tab }">
+    <iconify-icon icon="material-symbols-light:drag-indicator"
+      class="drag-handle cursor-grab text-base-content/40"></iconify-icon>
+    <span data-show="tab.isLoading !== false" class="loading loading-spinner loading-xs text-primary me-2"></span>
+    <iconify-icon data-show="tab.isLoading === false"
+      data-bind-icon="tab.meta?.icon || 'material-symbols-light:article-outline'"
+      class="text-lg px-2"></iconify-icon>
+    <span class="pe-4 whitespace-nowrap"
+      data-bind="tab.isLoading !== false ? 'Loading...' : (((searchTabs && searchTabs[tab.id] && searchTabs[tab.id].query) ? ('Search Result: [' + searchTabs[tab.id].query + '] - ') : '') + (tab.meta?.title || 'Tab'))"></span>
+    <button class="btn btn-ghost btn-xs btn-circle" aria-label="Close tab" title="Close tab"
+      data-class="{ 'hidden': (router.pinnedPageTabs || []).includes(tab.id) }"
+      data-on-click_stop="if (searchTabs && searchTabs[tab.id]) { delete searchTabs[tab.id]; } router.closePageTab(tab.id)">
+      <iconify-icon icon="material-symbols-light:close" class="text-xs"></iconify-icon>
+    </button>
+  </div>
+</template>
+
+<!-- TAB BAR -->
+<div data-signal_global="{pageTabToggleHovered: false}"
+  data-class="{'aura aura-dual text-secondary': pageTabToggleHovered }" data-style="{
+    padding: pageTabToggleHovered ? '2px' : '0px',
+    transition: pageTabToggleHovered 
+      ? 'padding 200ms ease-in-out, opacity 500ms 150ms ease-in-out'
+      : 'padding 200ms ease-in-out, opacity 200ms ease-in-out'
+  }">
+  <div class="shrink-0 z-20 transition-[opacity,max-height] duration-300 ease-in-out"
+    data-class="{ 'max-h-20 opacity-100': pageTabs, 'max-h-0 opacity-0 overflow-hidden pointer-events-none': !pageTabs }">
+    <div class="card pe-2" data-class="{'bg-base-200': pageTabToggleHovered }">
+      <div class="flex flex-nowrap bg-base-300/20 rounded-none overflow-x-auto pb-1 scrollbar-auto-hide"
+        role="tablist" aria-orientation="horizontal" data-drag="{ list: 'router.pageTabs', group: 'pageTabs', direction: 'horizontal' }">
+        <template data-for="tab in router.pageTabs">
+          <tab-header data-component="'#tab-header-template'" data-drag-item
+            data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'tab', target: tab }"></tab-header>
+        </template>
+
+        <button class="btn btn-circle shrink-0" data-class="{ 'hidden': !pageTabs }"
+          data-on-click="router.createPageTab('_components/tab-new.html')">
+          <iconify-icon icon="material-symbols-light:add" class="text-2xl"></iconify-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

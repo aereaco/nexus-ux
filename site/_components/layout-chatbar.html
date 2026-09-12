@@ -1,0 +1,211 @@
+<!-- ================= Right-Side Collaborative Chatbar ================= -->
+<aside id="chatbar-container"
+  class="fixed inset-y-0 end-0 z-40 w-96 max-w-[calc(100vw-2.5rem)] flex flex-row bg-base-100 border-s border-base-300 shadow-2xl transition-transform duration-300 ease-in-out overflow-hidden"
+  data-class="{
+    'translate-x-0': chatbarOpen,
+    'translate-x-full rtl:-translate-x-full': !chatbarOpen,
+    'border-s-primary/20': chatbarDocked
+  }">
+
+  <!-- 1. Left Start-Rail: Vertical Session Icon Buttons -->
+  <div
+    class="w-14 shrink-0 bg-base-300/80 backdrop-blur-md border-e border-base-content/10 flex flex-col items-center py-3 gap-2 select-none">
+    <!-- New Chat Action on Rail -->
+    <div class="tooltip tooltip-right" data-tip="New Chat">
+      <button type="button"
+        class="btn btn-ghost btn-circle btn-sm hover:bg-base-content/10 text-base-content/70 hover:text-base-content"
+        data-on-click="createChatSession()">
+        <iconify-icon icon="material-symbols-light:add" class="text-xl"></iconify-icon>
+      </button>
+    </div>
+
+    <div class="divider my-0.5 w-8 opacity-30"></div>
+
+    <!-- Vertical Rail Session Buttons (Correlate to speed dial sessions, draggable & contextmenu pinnable) -->
+    <div class="flex-1 w-full flex flex-col items-center gap-2 overflow-y-auto scrollbar-none"
+      data-drag="{ list: 'chatSessions', group: 'chatSessions', direction: 'vertical' }">
+      <template data-for="session in (chatSessions || [])">
+        <div data-drag-item class="tooltip tooltip-right relative cursor-grab active:cursor-grabbing select-none"
+          data-bind-attr-data-tip="session.name + (session.pinned ? ' (Pinned)' : '')"
+          data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'chatSession', target: session }">
+          <button type="button" class="btn btn-ghost btn-circle btn-sm relative transition-all duration-200"
+            data-class="{
+              'btn-active bg-primary/20 text-primary shadow-sm': activeSessionId === session.id,
+              'text-base-content/60 hover:text-base-content hover:bg-base-content/10': activeSessionId !== session.id
+            }" data-on-click="openSession(session.id)">
+            <iconify-icon data-bind-icon="session.icon" class="text-lg"></iconify-icon>
+            <!-- Pin Indicator Badge -->
+            <span data-show="session.pinned"
+              class="badge badge-xs badge-secondary absolute -top-1 -start-1 size-3 p-0 flex items-center justify-center shadow-xs">
+              <iconify-icon icon="material-symbols-light:keep" class="text-[8px]"></iconify-icon>
+            </span>
+            <!-- Unread Badge -->
+            <span data-show="session.unread > 0"
+              class="badge badge-xs badge-error absolute -top-0.5 -end-0.5 size-2 rounded-full p-0"></span>
+          </button>
+        </div>
+      </template>
+    </div>
+
+    <!-- Bottom Rail: Active Dock Mode Indicator -->
+    <div class="tooltip tooltip-right"
+      data-bind-attr-data-tip="chatbarDocked ? 'Docked to Layout' : 'Floating Overlay'">
+      <div class="size-2 rounded-full transition-colors"
+        data-class="{ 'bg-primary animate-pulse': chatbarDocked, 'bg-base-content/30': !chatbarDocked }"></div>
+    </div>
+  </div>
+
+  <!-- 2. Main Chat Session Body -->
+  <div class="flex-1 flex flex-col min-w-0 bg-base-100 overflow-hidden">
+    <!-- Header -->
+    <div
+      class="h-16 px-4 border-b border-base-200 flex items-center justify-between shrink-0 bg-base-100/90 backdrop-blur-sm">
+      <div class="flex items-center gap-2.5 min-w-0 flex-1">
+        <div class="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+          <iconify-icon data-bind-icon="getActiveSession().icon || 'material-symbols-light:chat'"
+            class="text-xl"></iconify-icon>
+        </div>
+        <div class="min-w-0 flex-1">
+          <h3 class="font-semibold text-sm truncate" data-bind="getActiveSession().name || 'Conversation'"></h3>
+          <div class="flex items-center gap-1.5 text-xs text-base-content/50 truncate">
+            <span class="badge badge-xs badge-primary badge-outline text-[10px]"
+              data-bind="getActiveSession().type === 'agent' ? 'AI Copilot' : 'Team Channel'"></span>
+            <span class="truncate" data-bind="getActiveSession().description || ''"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Header Actions: Pin Conversation, Attach/Dock & Close -->
+      <div class="flex items-center gap-1 shrink-0">
+        <!-- Pin / Unpin Conversation Toggle -->
+        <div class="tooltip tooltip-bottom"
+          data-bind-attr-data-tip="getActiveSession().pinned ? 'Unpin Conversation' : 'Pin Conversation'">
+          <button type="button" class="btn btn-ghost btn-xs btn-circle transition-colors"
+            data-class="{ 'text-secondary bg-secondary/10': getActiveSession().pinned, 'opacity-60 hover:opacity-100': !getActiveSession().pinned }"
+            data-on-click="togglePinSession(activeSessionId)">
+            <iconify-icon
+              data-bind-icon="getActiveSession().pinned ? 'material-symbols-light:bookmark' : 'material-symbols-light:bookmark-outline'"
+              class="text-lg"></iconify-icon>
+          </button>
+        </div>
+
+        <!-- Pin / Attach Toggle Button -->
+        <div class="tooltip tooltip-bottom"
+          data-bind-attr-data-tip="chatbarDocked ? 'Unpin (Float over content)' : 'Attach to Layout (Shift content)'">
+          <button type="button" class="btn btn-ghost btn-xs btn-circle transition-colors"
+            data-class="{ 'text-primary bg-primary/10': chatbarDocked, 'opacity-60 hover:opacity-100': !chatbarDocked }"
+            data-on-click="toggleChatDock()">
+            <iconify-icon icon="material-symbols-light:keep" class="text-lg"></iconify-icon>
+          </button>
+        </div>
+
+        <!-- Close Button (✕) -->
+        <button type="button" class="btn btn-ghost btn-xs btn-circle opacity-70 hover:opacity-100"
+          aria-label="Close Chatbar" data-on-click="closeChatbar()">
+          <iconify-icon icon="material-symbols-light:close" class="text-lg"></iconify-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Participants Quick Strip (if group channel) -->
+    <div data-show="getActiveSession().members && getActiveSession().members.length > 1"
+      class="px-4 py-1.5 bg-base-200/50 border-b border-base-200 text-xs flex items-center gap-2 overflow-x-auto scrollbar-none shrink-0">
+      <span class="text-base-content/50 text-[11px] font-medium shrink-0">Members:</span>
+      <template data-for="m in (getActiveSession().members || [])">
+        <span class="badge badge-sm gap-1 py-1 text-[11px]"
+          data-class="{ 'badge-primary badge-outline': m.isAgent, 'badge-ghost': !m.isAgent }">
+          <iconify-icon data-show="m.isAgent" icon="material-symbols-light:smart-toy-outline"
+            class="text-xs"></iconify-icon>
+          <span data-bind="m.name"></span>
+        </span>
+      </template>
+    </div>
+
+    <!-- 3. Message Stream -->
+    <div id="chat-message-stream" class="flex-1 p-4 overflow-y-auto space-y-4">
+      <template data-for="msg in getActiveMessages()">
+        <div class="flex flex-col gap-1 w-full"
+          data-class="{ 'items-end': !msg.isAgent && msg.sender === 'Vernon', 'items-start': msg.isAgent || msg.sender !== 'Vernon' }">
+
+          <!-- Sender & Time Label -->
+          <div class="flex items-center gap-2 text-[11px] text-base-content/50 px-1">
+            <span class="font-medium" data-bind="msg.sender"></span>
+            <span data-show="msg.isAgent" class="badge badge-xs badge-primary text-[9px] py-0 px-1">AI Agent</span>
+            <span data-bind="msg.time"></span>
+          </div>
+
+          <!-- Chat Bubble -->
+          <div class="rounded-2xl px-3.5 py-2.5 max-w-[88%] text-sm leading-relaxed shadow-sm font-sans" data-class="{
+              'bg-primary text-primary-content rounded-br-none': !msg.isAgent && msg.sender === 'Vernon',
+              'bg-base-200 text-base-content rounded-bl-none border border-base-300': msg.isAgent || msg.sender !== 'Vernon'
+            }">
+            <p data-bind="msg.text" class="whitespace-pre-wrap"></p>
+
+            <!-- Interactive Artifact Card (if message contains an artifact) -->
+            <div data-show="msg.artifact"
+              class="mt-2.5 p-3 rounded-xl bg-base-100 text-base-content border border-base-300 shadow-md">
+              <div class="flex items-center justify-between pb-2 border-b border-base-200 mb-2">
+                <div class="flex items-center gap-1.5 font-semibold text-xs">
+                  <iconify-icon icon="material-symbols-light:receipt-long"
+                    class="text-primary text-base"></iconify-icon>
+                  <span data-bind="msg.artifact?.title"></span>
+                </div>
+                <span class="badge badge-xs badge-warning" data-bind="msg.artifact?.status"></span>
+              </div>
+
+              <!-- Line Items -->
+              <div class="space-y-1.5 text-xs">
+                <template data-for="item in (msg.artifact?.items || [])">
+                  <div class="flex justify-between items-center text-base-content/70">
+                    <span><strong data-bind="item.qty + 'x'"></strong> <span data-bind="item.desc"></span></span>
+                    <span class="font-mono" data-bind="item.cost"></span>
+                  </div>
+                </template>
+              </div>
+
+              <!-- Total & Action Buttons -->
+              <div class="mt-3 pt-2 border-t border-base-200 flex items-center justify-between">
+                <span class="text-xs font-semibold">Total: <span class="font-mono text-primary"
+                    data-bind="msg.artifact?.amount"></span></span>
+                <div class="flex gap-1.5">
+                  <button type="button" class="btn btn-xs btn-primary font-normal"
+                    data-on-click="notify('PO Approved', 'PO #2026-Q3-088 approved and synced with ERP', 'success')">
+                    Approve PO
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <!-- 4. Composer / Input Bar -->
+    <div class="p-3 border-t border-base-200 bg-base-100/95 shrink-0">
+      <!-- Quick @mention Suggestion Pills -->
+      <div class="flex items-center gap-1.5 mb-2 overflow-x-auto scrollbar-none text-[11px]">
+        <button type="button"
+          class="badge badge-sm badge-ghost gap-1 opacity-70 hover:opacity-100 hover:badge-primary transition-all cursor-pointer"
+          data-on-click="chatInputText = (chatInputText ? chatInputText + ' ' : '') + '@Finance Agent '">
+          <span>@Finance Agent</span>
+        </button>
+        <button type="button"
+          class="badge badge-sm badge-ghost gap-1 opacity-70 hover:opacity-100 hover:badge-primary transition-all cursor-pointer"
+          data-on-click="chatInputText = (chatInputText ? chatInputText + ' ' : '') + '@Nexus Copilot '">
+          <span>@Nexus Copilot</span>
+        </button>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <input id="chat-composer-input" type="text"
+          class="input input-bordered input-sm flex-1 focus:input-primary text-sm"
+          placeholder="Message team or @agent… (Enter to send)" data-bind-value="chatInputText"
+          data-on-keydown_enter="sendChatMessage()" />
+        <button type="button" class="btn btn-primary btn-sm btn-circle shrink-0" aria-label="Send message"
+          data-on-click="sendChatMessage()">
+          <iconify-icon icon="material-symbols-light:send" class="text-lg"></iconify-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</aside>

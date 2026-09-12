@@ -1,0 +1,291 @@
+<nav class="navbar w-full bg-base-300 shrink-0 z-20">
+  <div class="flex-1">
+    <button class="btn btn-circle btn-ghost md:hidden" data-on-click="sidebarOpen = !sidebarOpen"
+      aria-label="open sidebar">
+      <!-- Sidebar toggle icon -->
+      <iconify-icon icon="material-symbols-light:menu" class="text-2xl"></iconify-icon>
+    </button>
+    <div class="flex-none">
+      <button data-on-click="collapsed = !collapsed; localStorage.setItem('collapsed', collapsed)"
+        aria-label="toggle sidebar" class="btn btn-circle btn-ghost hidden md:flex"
+        data-class="{ 'scale-x-[-1]': !collapsed || hovered }">
+        <!-- Sidebar collapse icon -->
+        <iconify-icon icon="material-symbols-light:double-arrow" class="text-2xl"></iconify-icon>
+      </button>
+    </div>
+
+  </div>
+  <div class="navbar-center flex-1 flex justify-start">
+    <div class="megamenu max-md:megamenu-vertical megamenu-wide  w-full flex justify-center" id="my-megamenu-4"
+      popover>
+      <span class="megamenu-active"></span>
+      <button popovertarget="d1">One</button>
+      <div id="d1" popover>
+        <div class="flex max-sm:flex-col items-start">
+          <ul class="menu w-full md:menu-horizontal">
+            <li>
+              <a>Enterprise</a>
+              <ul>
+                <li><a>CRM software</a></li>
+                <li><a>Marketing management</a></li>
+                <li><a>Security</a></li>
+                <li><a>Consulting</a></li>
+              </ul>
+            </li>
+            <li>
+              <a>Company</a>
+              <ul>
+                <li><a>About us</a></li>
+                <li><a>Contact us</a></li>
+                <li><a>Privacy policy</a></li>
+                <li><a>Press kit</a></li>
+              </ul>
+            </li>
+          </ul>
+          <img src="https://img.daisyui.com/images/stock/photo-1559181567-c3190ca9959b.webp"
+            class="md:max-w-sm max-md:hidden" alt="Tailwind CSS megamenu">
+        </div>
+      </div>
+      <button popovertarget="d2">Two</button>
+      <div id="d2" popover>
+        <div class="flex max-sm:flex-col items-start">
+          <ul class="menu w-full md:menu-horizontal">
+            <li>
+              <a>Enterprise</a>
+              <ul>
+                <li><a>CRM software</a></li>
+                <li><a>Marketing management</a></li>
+                <li><a>Security</a></li>
+                <li><a>Consulting</a></li>
+                <li><a>Privacy policy</a></li>
+                <li><a>Press kit</a></li>
+              </ul>
+            </li>
+            <li>
+              <a>Products</a>
+              <ul>
+                <li><a>UI Kit</a></li>
+                <li><a>WordPress themes</a></li>
+                <li><a>WordPress plugins</a></li>
+                <li><a>Color picker app</a></li>
+                <li><a>About us</a></li>
+                <li><a>Contact us</a></li>
+              </ul>
+            </li>
+          </ul>
+          <img src="https://img.daisyui.com/images/stock/photo-1572635148818-ef6fd45eb394.webp"
+            class="md:max-w-sm max-md:hidden" alt="Tailwind CSS megamenu component">
+        </div>
+      </div>
+      <button popovertarget="d3">Three</button>
+      <div id="d3" popover>
+        <div class="flex max-sm:flex-col items-start">
+          <ul class="menu w-full md:menu-horizontal">
+            <li>
+              <a>Solutions</a>
+              <ul>
+                <li><a>Design</a></li>
+                <li><a>Development</a></li>
+                <li><a>Hosting</a></li>
+                <li><a>Domain register</a></li>
+              </ul>
+            </li>
+            <li>
+              <a>Products</a>
+              <ul>
+                <li><a>UI Kit</a></li>
+                <li>
+                  <a>Open source</a>
+                  <ul>
+                    <li><a>Auth management system</a></li>
+                    <li><a>VScode theme</a></li>
+                    <li><a>Color picker app</a></li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <a>Company</a>
+              <ul>
+                <li><a>About us</a></li>
+                <li><a>Contact us</a></li>
+                <li><a>Privacy policy</a></li>
+                <li><a>Press kit</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="flex-1 justify-end flex gap-2">
+
+    <!-- Terminal HUD Button -->
+    <button type="button" class="btn btn-ghost btn-circle hover:scale-105 transition-all"
+      aria-label="Toggle Terminal HUD (Ctrl+` or Click)" title="Terminal HUD (Ctrl+`)"
+      data-class="{ 'text-primary bg-primary/10 ring-1 ring-primary/30': terminalOpen }"
+      data-on-click="toggleTerminalHud()">
+      <iconify-icon icon="material-symbols-light:terminal" class="text-2xl"></iconify-icon>
+    </button>
+
+    <!-- Search Button -->
+    <button type="button" class="btn btn-ghost btn-circle hover:scale-102" aria-label="Open search (Ctrl+K)"
+      title="Search (Ctrl+K)"
+      data-on-click="favModalOpen = false; favDeleteModalOpen = false; searchQuery = ''; searchDebouncedQuery = ''; searchTokens = []; searchResults = []; flatResults = []; searchActiveIndex = 0; searchOpen = true; $nextTick().then(function() { const el = document.getElementById('search-modal-input'); if (el) { el.focus(); el.select(); } })">
+      <iconify-icon icon="material-symbols-light:search" class="text-2xl"></iconify-icon>
+    </button>
+
+    <!-- Theme Switcher -->
+    <button
+      class="btn btn-ghost btn-circle shadow-lg bg-base-100 border border-base-300 hover:scale-110 active:scale-95 transition-all"
+      data-on-click="$switchTheme()">
+      <iconify-icon data-bind-icon="$themeIcon" class="text-2xl transition-all duration-300"></iconify-icon>
+    </button>
+
+    <!-- Mail Button -->
+    <button type="button" class="btn btn-ghost btn-circle" aria-label="Messages" title="Messages"
+      data-on-click_stop="headerDropdownTab = 'mail'; headerDropdownOpen = (headerDropdownOpen && headerDropdownTab === 'mail') ? false : true">
+      <div class="indicator">
+        <iconify-icon icon="material-symbols-light:mail-outline" class="text-2xl"></iconify-icon>
+        <span data-show="(mailMessages || []).filter(m => m.unread).length > 0"
+          class="badge badge-xs badge-info indicator-item"
+          data-bind="(mailMessages || []).filter(m => m.unread).length"></span>
+      </div>
+    </button>
+
+    <!-- Cart Button -->
+    <button type="button" class="btn btn-ghost btn-circle" aria-label="Shopping Cart" title="Shopping Cart"
+      data-on-click_stop="headerDropdownTab = 'cart'; headerDropdownOpen = (headerDropdownOpen && headerDropdownTab === 'cart') ? false : true">
+      <div class="indicator">
+        <iconify-icon icon="material-symbols-light:shopping-cart-outline" class="text-2xl"></iconify-icon>
+        <span data-show="(cartItems || []).reduce((acc, i) => acc + i.qty, 0) > 0"
+          class="badge badge-xs badge-warning indicator-item"
+          data-bind="(cartItems || []).reduce((acc, i) => acc + i.qty, 0)"></span>
+      </div>
+    </button>
+
+    <!-- Notification Bell Button -->
+    <button type="button" class="btn btn-ghost btn-circle" aria-label="Notifications" title="Notifications"
+      data-on-click_stop="headerDropdownTab = 'notifications'; headerDropdownOpen = (headerDropdownOpen && headerDropdownTab === 'notifications') ? false : true">
+      <div class="indicator">
+        <iconify-icon icon="material-symbols-light:notifications-outline" class="text-2xl"></iconify-icon>
+        <span data-show="(notifications || []).filter(n => !n.read).length > 0"
+          class="badge badge-xs badge-primary indicator-item"
+          data-bind="(notifications || []).filter(n => !n.read).length"></span>
+      </div>
+    </button>
+
+    <!-- User Avatar Button -->
+    <button type="button" class="btn btn-ghost btn-circle avatar placeholder" aria-label="User Profile"
+      title="User Profile"
+      data-on-click_stop="headerDropdownTab = 'profile'; headerDropdownOpen = (headerDropdownOpen && headerDropdownTab === 'profile') ? false : true">
+      <div
+        class="w-8 rounded-full bg-base-200 text-base-content ring-1 ring-base-content/20 flex items-center justify-center">
+        <iconify-icon icon="material-symbols-light:person" class="text-xl"></iconify-icon>
+      </div>
+    </button>
+
+    <!-- Language Switcher -->
+    <div>
+      <button popovertarget="language-change" style="anchor-name:--language-change"
+        class="btn btn-sm btn-ghost gap-1 px-1.5 text-[.5625rem] font-bold" aria-label="Language"
+        title="Change Language">
+        <svg class="text-base-content/70 size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path stroke-linejoin="round" stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor"
+            d="M12 21a9 9 0 1 0 0-18m0 18a9 9 0 1 1 0-18m0 18c2.761 0 3.941-5.163 3.941-9S14.761 3 12 3m0 18c-2.761 0-3.941-5.163-3.941-9S9.239 3 12 3M3.5 9h17m-17 6h17">
+          </path>
+        </svg>
+        <svg class="mt-px hidden size-2 fill-current opacity-60 sm:inline-block" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 2048 2048">
+          <path d="M1799 349l242 241-1017 1017L7 590l242-241 775 775 775-775z"></path>
+        </svg>
+      </button>
+      <div popover="" id="language-change" style="position-anchor:--language-change"
+        class="dropdown dropdown-end bg-base-200 text-base-content rounded-box top-px mt-6 h-122 max-h-[calc(100vh-8.6rem)] w-56 overflow-y-auto shadow-2xl">
+        <ul class="menu menu-sm w-full"><!--[--><!--[0-->
+          <li><button class="menu-active"><!--[0--><span
+                class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">EN</span><!--]-->
+              <span class="font-[sans-serif]">English</span></button></li><!--]--><!--[0-->
+          <li><button><!--[0--><span
+                class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">AR</span><!--]-->
+              <span class="font-[sans-serif]">العربية</span></button></li><!--]--><!--[0-->
+          <li><button><!--[0--><span
+                class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">BN</span><!--]-->
+              <span class="font-[sans-serif]">বাংলা</span></button></li><!--]--><!--[0-->
+          <li><button><!--[0--><span
+                class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">CA</span><!--]-->
+              <span class="font-[sans-serif]">Català</span></button></li><!--]--><!--[0-->
+          <li><button><!--[0--><span
+                class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">CS</span><!--]-->
+              <span class="font-[sans-serif]">Čeština</span></button></li><!--]--><!--[0-->
+          <li><button><!--[0--><span
+                class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">DE</span><!--]-->
+              <span class="font-[sans-serif]">Deutsch</span></button></li><!--]--><!--[0-->
+          <li><button><!--[0--><span
+                class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">ES</span><!--]-->
+              <span class="font-[sans-serif]">Español</span></button></li><!--]--><!--[0-->
+          <li><button><!--[0--><span
+                class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">FA</span><!--]-->
+              <span class="font-[sans-serif]">فارسی</span></button></li><!--]--><!--[0-->
+          <li><button><!--[0--><span
+                class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">FR</span><!--]-->
+              <span class="font-[sans-serif]">Français</span></button></li><!--]--><!--[0-->
+          <li><button><!--[0--><span
+                class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">HU</span><!--]-->
+              <span class="font-[sans-serif]">Magyar</span></button></li><!--]--><!--[0-->
+          <li><button><!--[0--><span
+                class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">ID</span><!--]-->
+              <span class="font-[sans-serif]">Bahasa Indonesia</span></button></li><!--]--><!--[0-->
+          <li><button><!--[0--><span
+                class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">IT</span><!--]-->
+              <span class="font-[sans-serif]">Italiano</span></button></li><!--]--><!--[0-->
+          <li><button><!--[0--><span
+                class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">JA</span><!--]-->
+              <span class="font-[sans-serif]">日本語</span></button></li><!--]--><!--[0-->
+          <li><button><!--[0--><span
+                class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">KO</span><!--]-->
+              <span class="font-[sans-serif]">한국어</span></button></li><!--]--><!--[0-->
+          <li><button><!--[0--><span
+                class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">MS</span><!--]-->
+              <span class="font-[sans-serif]">Bahasa Melayu</span></button></li><!--]--><!--[0-->
+          <li><button><!--[0--><span
+                class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">PL</span><!--]-->
+              <span class="font-[sans-serif]">Polski</span></button></li><!--]--><!--[0-->
+          <li><button><!--[0--><span
+                class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">PT</span><!--]-->
+              <span class="font-[sans-serif]">Português</span></button></li><!--]--><!--[0-->
+          <li><button><!--[0--><span
+                class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">RO</span><!--]-->
+              <span class="font-[sans-serif]">Română</span></button></li><!--]--><!--[0-->
+          <li><button><!--[0--><span
+                class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">RU</span><!--]-->
+              <span class="font-[sans-serif]">Русский</span></button></li><!--]--><!--[0-->
+          <li><button><!--[0--><span
+                class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">UK</span><!--]-->
+              <span class="font-[sans-serif]">Українська</span></button></li><!--]--><!--[0-->
+          <li><button><!--[0--><span
+                class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">VI</span><!--]-->
+              <span class="font-[sans-serif]">Tiếng Việt</span></button></li><!--]--><!--[0-->
+          <li><button><!--[0--><span
+                class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">ZH</span><!--]-->
+              <span class="font-[sans-serif]">简体中文</span></button></li><!--]--><!--[0-->
+          <li><button><!--[0--><span
+                class="pe-4 font-mono text-[.5625rem] font-bold tracking-[0.09375rem] opacity-40">ZH</span><!--]-->
+              <span class="font-[sans-serif]">繁體中文</span></button></li><!--]--><!--]-->
+        </ul>
+      </div>
+    </div>
+
+    <!-- GitHub Link -->
+    <a href="https://github.com/aereaco/nexus-ux" aria-label="GitHub" title="GitHub" rel="noopener noreferrer"
+      target="_blank" class="btn btn-ghost group btn-lg gap-1 px-2"><svg class="size-4"
+        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <g stroke-linejoin="round" stroke-linecap="round" stroke-width="1.5" fill="none" stroke="currentColor">
+          <path
+            d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5">
+          </path>
+        </g>
+      </svg> <!--[0--><span
+        class="text-[0.625rem] font-normal font-mono tabular-nums max-sm:hidden">41k</span><!--]--></a>
+  </div>
+</nav>
