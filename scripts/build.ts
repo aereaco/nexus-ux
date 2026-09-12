@@ -441,6 +441,53 @@ async function gitPush(opts: { remote?: string; branch?: string }) {
   console.log("✓ Pushed to remote.");
 }
 
+async function publishToCloudflare(opts: { projectName?: string; branch?: string }) {
+  const projectName = opts.projectName ?? "nexus-ux";
+  const branch = opts.branch ?? (git(["rev-parse", "--abbrev-ref", "HEAD"]).out || "main");
+
+  // Read credentials from env or fallback to .security/cloudflare.md
+  let accountId = Deno.env.get("CLOUDFLARE_ACCOUNT_ID");
+  let apiToken = Deno.env.get("CLOUDFLARE_API_TOKEN");
+
+  if (!accountId || !apiToken) {
+    try {
+      const credPath = path.resolve(Deno.cwd(), "../.security/cloudflare.md");
+      const content = await Deno.readTextFile(credPath);
+      const accMatch = content.match(/## Account ID ##\s*\n\s*([a-f0-9]+)/i);
+      const tokenMatch = content.match(/## Your API Token ##\s*\n\s*([a-zA-Z0-9_\-]+)/i);
+      if (accMatch) accountId = accMatch[1].trim();
+      if (tokenMatch) apiToken = tokenMatch[1].trim();
+    } catch {
+      // ignore
+    }
+  }
+
+  if (!accountId || !apiToken) {
+    console.error("❌ Cloudflare credentials not found in environment or .security/cloudflare.md");
+    Deno.exit(1);
+  }
+
+  console.log(`\n☁️  Differential deploy: site/ → Cloudflare Pages (${projectName})...`);
+  const isWindows = Deno.build.os === "windows";
+  const cmd = isWindows ? "cmd.exe" : "npx";
+  const cmdArgs = isWindows
+    ? ["/c", `set CLOUDFLARE_ACCOUNT_ID=${accountId}&& set CLOUDFLARE_API_TOKEN=${apiToken}&& npx -y wrangler pages deploy site --project-name ${projectName} --branch ${branch} --commit-dirty=true`]
+    : ["-y", "wrangler", "pages", "deploy", "site", "--project-name", projectName, "--branch", branch, "--commit-dirty=true"];
+
+  const env = isWindows ? undefined : {
+    CLOUDFLARE_ACCOUNT_ID: accountId,
+    CLOUDFLARE_API_TOKEN: apiToken,
+  };
+
+  const p = new Deno.Command(cmd, { args: cmdArgs, env, stdout: "inherit", stderr: "inherit" });
+  const res = await p.output();
+  if (!res.success) {
+    console.error("❌ Cloudflare Pages publishing failed.");
+    Deno.exit(res.code);
+  }
+  console.log("✅ Differential deployment complete on Cloudflare Pages!");
+}
+
 // CLI
 const args = Deno.args;
 if (args.includes("--batch")) {
@@ -457,20 +504,28 @@ if (args.includes("--batch")) {
   const appDir = args.find(a => a.startsWith("--app="))?.split("=")[1];
   const excludes = args.find(a => a.startsWith("--exclude="))?.split("=")[1]?.split(",") || [];
   const gitRef = args.find(a => a.startsWith("--ref="))?.split("=")[1];
-  const minify = args.includes("--minify") || args.includes("--app");
+  const isPublish = args.includes("--publish");
+  const minify = args.includes("--minify") || args.includes("--app") || isPublish;
   const twVersion = args.find(a => a.startsWith("--tw-version="))?.split("=")[1] || "latest";
 
   await buildBundle({ outputName, appDir, excludeModules: excludes, gitRef, minify, twVersion });
 
-  // ── Push local commits to remote (the dev server auto-commits) ──
-  if (args.includes("--push")) {
+  // ── Push local commits to remote & Publish to Cloudflare ──
+  if (isPublish) {
+    const remote = args.find(a => a.startsWith("--remote="))?.split("=")[1];
+    const branch = args.find(a => a.startsWith("--branch="))?.split("=")[1];
+    const projectName = args.find(a => a.startsWith("--project="))?.split("=")[1];
+
+    await gitPush({ remote, branch });
+    await publishToCloudflare({ projectName, branch });
+  } else if (args.includes("--push")) {
     const remote = args.find(a => a.startsWith("--remote="))?.split("=")[1];
     const branch = args.find(a => a.startsWith("--branch="))?.split("=")[1];
     await gitPush({ remote, branch });
   }
 }
 
-export { buildBundle, batchBuild, gitPush };
+export { buildBundle, batchBuild, gitPush, publishToCloudflare };
 
 
 // ============================================================================

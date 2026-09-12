@@ -8,7 +8,8 @@
     "serve:island": "deno run -A scripts/serve.ts --mode island",
     "serve:ssr": "deno run -A scripts/serve.ts --mode ssr",
     "serve:progressive": "deno run -A scripts/serve.ts --mode progressive",
-    "build:push": "deno run -A scripts/build.ts --minify --push"
+    "build:push": "deno run -A scripts/build.ts --minify --push",
+    "build:publish": "deno run -A scripts/build.ts --minify --publish"
   },
     "imports": {
       "@msgpack/msgpack": "npm:@msgpack/msgpack@^3.0.0-beta2",
