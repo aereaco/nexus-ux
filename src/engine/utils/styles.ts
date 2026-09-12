@@ -74,10 +74,10 @@ export function ensureAdoptedStylesheet(
     ref.sheet.replaceSync(css);
   }
   const sheet = ref.sheet;
-  const rootNode = (root || (typeof document !== 'undefined' ? document : null)) as Document | ShadowRoot | null;
-  if (rootNode && 'adoptedStyleSheets' in rootNode) {
-    if (!rootNode.adoptedStyleSheets.includes(sheet)) {
-      rootNode.adoptedStyleSheets = [...rootNode.adoptedStyleSheets, sheet];
+  const targetRoot = (root && 'adoptedStyleSheets' in root) ? root : null;
+  if (targetRoot) {
+    if (!targetRoot.adoptedStyleSheets.includes(sheet)) {
+      targetRoot.adoptedStyleSheets = [...targetRoot.adoptedStyleSheets, sheet];
     }
   }
   if (typeof document !== 'undefined' && 'adoptedStyleSheets' in document) {

@@ -554,7 +554,23 @@ const markdownModule: AttributeModule = {
   attribute: 'markdown',
   handle: (el: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void => {
     ensureMarkdownStyles(el.getRootNode() as Document | ShadowRoot);
-    const initialSource = value ? null : (el.textContent || el.innerText);
+
+    // Idempotency guard: prevent double-processing on cold boots/refreshes
+    if (!value && (el as any).__nexusMarkdownDone) {
+      return () => {
+        delete (el as any).__nexusMarkdownDone;
+        delete (el as any).__nexusRawSource;
+      };
+    }
+    if (!value) {
+      (el as any).__nexusMarkdownDone = true;
+    }
+
+    if (!(el as any).__nexusRawSource) {
+      (el as any).__nexusRawSource = value ? null : (el.textContent || el.innerText);
+    }
+    const initialSource = (el as any).__nexusRawSource;
+
     const render = () => {
       // Evaluate if value exists, else parse initial text content
       const content = value ? runtime.evaluate(el, value) : initialSource;
@@ -572,9 +588,17 @@ const markdownModule: AttributeModule = {
 
     if (value) {
       const [_runner, cleanup] = runtime.elementBoundEffect(el, render);
-      return cleanup;
+      return () => {
+        delete (el as any).__nexusMarkdownDone;
+        delete (el as any).__nexusRawSource;
+        cleanup();
+      };
     } else {
       render();
+      return () => {
+        delete (el as any).__nexusMarkdownDone;
+        delete (el as any).__nexusRawSource;
+      };
     }
   }
 };

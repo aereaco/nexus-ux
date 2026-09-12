@@ -3270,10 +3270,10 @@ ${scripts}
       ref2.sheet.replaceSync(css);
     }
     const sheet = ref2.sheet;
-    const rootNode = root || (typeof document !== "undefined" ? document : null);
-    if (rootNode && "adoptedStyleSheets" in rootNode) {
-      if (!rootNode.adoptedStyleSheets.includes(sheet)) {
-        rootNode.adoptedStyleSheets = [...rootNode.adoptedStyleSheets, sheet];
+    const targetRoot = root && "adoptedStyleSheets" in root ? root : null;
+    if (targetRoot) {
+      if (!targetRoot.adoptedStyleSheets.includes(sheet)) {
+        targetRoot.adoptedStyleSheets = [...targetRoot.adoptedStyleSheets, sheet];
       }
     }
     if (typeof document !== "undefined" && "adoptedStyleSheets" in document) {
@@ -7079,7 +7079,19 @@ ${match}</ul>
         attribute: "markdown",
         handle: (el, value, runtime) => {
           ensureMarkdownStyles(el.getRootNode());
-          const initialSource = value ? null : el.textContent || el.innerText;
+          if (!value && el.__nexusMarkdownDone) {
+            return () => {
+              delete el.__nexusMarkdownDone;
+              delete el.__nexusRawSource;
+            };
+          }
+          if (!value) {
+            el.__nexusMarkdownDone = true;
+          }
+          if (!el.__nexusRawSource) {
+            el.__nexusRawSource = value ? null : el.textContent || el.innerText;
+          }
+          const initialSource = el.__nexusRawSource;
           const render = () => {
             const content = value ? runtime.evaluate(el, value) : initialSource;
             const mdText = String(content || "").trim();
@@ -7093,9 +7105,17 @@ ${match}</ul>
           };
           if (value) {
             const [_runner, cleanup] = runtime.elementBoundEffect(el, render);
-            return cleanup;
+            return () => {
+              delete el.__nexusMarkdownDone;
+              delete el.__nexusRawSource;
+              cleanup();
+            };
           } else {
             render();
+            return () => {
+              delete el.__nexusMarkdownDone;
+              delete el.__nexusRawSource;
+            };
           }
         }
       };
@@ -9104,20 +9124,11 @@ ${match}</ul>
   // src/modules/attributes/scrollbar.ts
   var scrollbar_exports = {};
   __export(scrollbar_exports, {
-    default: () => scrollbar_default
+    default: () => scrollbar_default,
+    ensureScrollbarStyles: () => ensureScrollbarStyles
   });
-  function ensureStylesAdopted() {
-    if (stylesAdopted || typeof document === "undefined")
-      return;
-    stylesAdopted = true;
-    try {
-      stylesheet.adoptCSSSync(SCROLLBAR_BASE_CSS, "scrollbar-engine");
-    } catch {
-      const styleEl = document.createElement("style");
-      styleEl.id = "scrollbar-styles";
-      styleEl.textContent = SCROLLBAR_BASE_CSS;
-      document.head.appendChild(styleEl);
-    }
+  function ensureScrollbarStyles(root) {
+    ensureAdoptedStylesheet(SCROLLBAR_BASE_CSS, scrollbarSheetRef, root);
   }
   function resolveDimension(val, defaultVal = "0.375rem") {
     if (val === void 0 || val === null || val === "")
@@ -9264,6 +9275,23 @@ ${match}</ul>
     };
     document.addEventListener("scroll", onGlobalScroll, { capture: true, passive: true });
     document.addEventListener("pointermove", onGlobalPointerMove, { capture: true, passive: true });
+    const discoverScrollContainers = () => {
+      if (typeof document === "undefined")
+        return;
+      const candidates = document.querySelectorAll('[style*="overflow"], [data-scrollbar], .overflow-y-auto, .overflow-x-auto, .overflow-auto');
+      candidates.forEach((el) => {
+        if (el instanceof HTMLElement && !el.classList.contains("scrollbar-overlay-active")) {
+          const isScrollable = el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth;
+          if (isScrollable) {
+            const inst = ensureOverlayInstance(el);
+            inst.scheduleUpdate();
+          }
+        }
+      });
+    };
+    if (typeof requestAnimationFrame !== "undefined") {
+      requestAnimationFrame(() => discoverScrollContainers());
+    }
     if (runtime && runtime.registerCleanup) {
       runtime.registerCleanup(() => {
         document.removeEventListener("scroll", onGlobalScroll, { capture: true });
@@ -9274,10 +9302,10 @@ ${match}</ul>
       });
     }
   }
-  var SCROLLBAR_BASE_CSS, stylesAdopted, globalConfig, globalListenerRegistered, elementTimers, overlayInstances, OverlayScrollbarInstance, scrollbarModule, scrollbar_default;
+  var SCROLLBAR_BASE_CSS, scrollbarSheetRef, globalConfig, globalListenerRegistered, elementTimers, overlayInstances, OverlayScrollbarInstance, scrollbarModule, scrollbar_default;
   var init_scrollbar = __esm({
     "src/modules/attributes/scrollbar.ts"() {
-      init_stylesheet();
+      init_styles();
       SCROLLBAR_BASE_CSS = `
 /* ==========================================================================
    Zero-Flash Native Scrollbar Suppression for Overlay Mode
@@ -9411,7 +9439,10 @@ ${match}</ul>
   background-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent)) !important;
 }
 `;
-      stylesAdopted = false;
+      scrollbarSheetRef = { sheet: null };
+      if (typeof document !== "undefined") {
+        ensureScrollbarStyles();
+      }
       globalConfig = {
         mode: "native",
         autohide: 800,
@@ -9670,7 +9701,7 @@ ${match}</ul>
         name: "scrollbar",
         attribute: "scrollbar",
         handle: (el, value, runtime) => {
-          ensureStylesAdopted();
+          ensureScrollbarStyles(el.getRootNode());
           const isGlobal = el.hasAttribute("data-scrollbar_global") || el.tagName.toLowerCase() === "html";
           let config = {};
           if (value && value.trim()) {
@@ -16688,6 +16719,8 @@ ${bridge}`, {
   postLog("Worker ready");
 
   // src/index.ts
+  init_scrollbar();
+  init_markdown();
   init_manifest();
   var _idCounters = {};
   function $id(groupName = "default") {
@@ -16708,6 +16741,10 @@ ${bridge}`, {
   var UX = class {
     coordinator;
     constructor() {
+      if (typeof document !== "undefined") {
+        ensureScrollbarStyles(document);
+        ensureMarkdownStyles(document);
+      }
       this.coordinator = new ModuleCoordinator();
       registerScopeProvider("$el", (el) => el);
       registerScopeProvider("$dispatch", (el) => (eventName, detail) => {

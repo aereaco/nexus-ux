@@ -12,7 +12,7 @@
  */
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { stylesheet } from './stylesheet.ts';
+import { ensureAdoptedStylesheet } from '../../engine/utils/styles.ts';
 
 export type ScrollbarMode = 'native' | 'overlay' | 'none';
 
@@ -173,19 +173,14 @@ const SCROLLBAR_BASE_CSS = `
 }
 `;
 
-// Global adoption tracker
-let stylesAdopted = false;
-function ensureStylesAdopted(): void {
-  if (stylesAdopted || typeof document === 'undefined') return;
-  stylesAdopted = true;
-  try {
-    stylesheet.adoptCSSSync(SCROLLBAR_BASE_CSS, 'scrollbar-engine');
-  } catch {
-    const styleEl = document.createElement('style');
-    styleEl.id = 'scrollbar-styles';
-    styleEl.textContent = SCROLLBAR_BASE_CSS;
-    document.head.appendChild(styleEl);
-  }
+const scrollbarSheetRef: { sheet: CSSStyleSheet | null } = { sheet: null };
+
+export function ensureScrollbarStyles(root?: Document | ShadowRoot | null) {
+  ensureAdoptedStylesheet(SCROLLBAR_BASE_CSS, scrollbarSheetRef, root);
+}
+
+if (typeof document !== 'undefined') {
+  ensureScrollbarStyles();
 }
 
 // Dual-Value Resolvers with rem Relative Units
@@ -623,6 +618,24 @@ function setupGlobalCaptureListeners(runtime: RuntimeContext): void {
   document.addEventListener('scroll', onGlobalScroll, { capture: true, passive: true });
   document.addEventListener('pointermove', onGlobalPointerMove, { capture: true, passive: true });
 
+  const discoverScrollContainers = () => {
+    if (typeof document === 'undefined') return;
+    const candidates = document.querySelectorAll('[style*="overflow"], [data-scrollbar], .overflow-y-auto, .overflow-x-auto, .overflow-auto');
+    candidates.forEach((el) => {
+      if (el instanceof HTMLElement && !el.classList.contains('scrollbar-overlay-active')) {
+        const isScrollable = el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth;
+        if (isScrollable) {
+          const inst = ensureOverlayInstance(el);
+          inst.scheduleUpdate();
+        }
+      }
+    });
+  };
+
+  if (typeof requestAnimationFrame !== 'undefined') {
+    requestAnimationFrame(() => discoverScrollContainers());
+  }
+
   if (runtime && (runtime as any).registerCleanup) {
     (runtime as any).registerCleanup(() => {
       document.removeEventListener('scroll', onGlobalScroll, { capture: true });
@@ -637,7 +650,7 @@ const scrollbarModule: AttributeModule = {
   name: 'scrollbar',
   attribute: 'scrollbar',
   handle: (el: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void => {
-    ensureStylesAdopted();
+    ensureScrollbarStyles(el.getRootNode() as Document | ShadowRoot);
 
     const isGlobal = el.hasAttribute('data-scrollbar_global') || el.tagName.toLowerCase() === 'html';
 

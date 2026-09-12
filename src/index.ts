@@ -11,6 +11,8 @@ import { animate } from './modules/sprites/animate.ts';
 import { corePredictiveEngine } from './engine/predictive.ts';
 import { cacheEngine } from './engine/cache.ts';
 import { handleWorkerMessage } from './engine/logic.worker.ts';
+import { ensureScrollbarStyles } from './modules/attributes/scrollbar.ts';
+import { ensureMarkdownStyles } from './modules/attributes/markdown.ts';
 
 // Auto-Discovered Modules (inlined by build.ts from generated manifest.ts)
 import {
@@ -44,6 +46,12 @@ export class UX {
   private coordinator: ModuleCoordinator;
 
   constructor() {
+    // Pre-paint adopted stylesheets initialization
+    if (typeof document !== 'undefined') {
+      ensureScrollbarStyles(document);
+      ensureMarkdownStyles(document);
+    }
+
     this.coordinator = new ModuleCoordinator();
 
     // Scope providers
