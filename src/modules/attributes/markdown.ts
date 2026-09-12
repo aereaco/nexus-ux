@@ -552,6 +552,11 @@ export function parseMarkdown(md: string): string {
 const markdownModule: AttributeModule = {
   name: 'markdown',
   attribute: 'markdown',
+  onRegister(_context: RuntimeContext) {
+    if (typeof document !== 'undefined') {
+      ensureMarkdownStyles(document);
+    }
+  },
   handle: (el: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void => {
     ensureMarkdownStyles(el.getRootNode() as Document | ShadowRoot);
 

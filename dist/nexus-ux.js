@@ -7098,6 +7098,11 @@ ${match}</ul>
       markdownModule = {
         name: "markdown",
         attribute: "markdown",
+        onRegister(_context) {
+          if (typeof document !== "undefined") {
+            ensureMarkdownStyles(document);
+          }
+        },
         handle: (el, value, runtime) => {
           ensureMarkdownStyles(el.getRootNode());
           if (!value && el.__nexusMarkdownDone) {
@@ -9850,6 +9855,11 @@ ${match}</ul>
       scrollbarModule = {
         name: "scrollbar",
         attribute: "scrollbar",
+        onRegister(_context) {
+          if (typeof document !== "undefined") {
+            ensureScrollbarStyles(document);
+          }
+        },
         handle: (el, value, runtime) => {
           const isGlobal = el.hasAttribute("data-scrollbar_global") || el.tagName.toLowerCase() === "html";
           let config = {};
@@ -15601,6 +15611,17 @@ ${bridge}`, {
               el.classList.forEach((cls) => stylesheet2.adoptClass(cls, el, runtime));
             }
           };
+          if (typeof document !== "undefined" && !document.querySelector("style[data-nexus-tailwind-bridge]") && document.querySelector('script[src*="tailwindcss/browser"]')) {
+            const tokens = discoverColorTokens();
+            const bridge = buildTailwindThemeBridge(tokens);
+            if (bridge) {
+              const bridgeStyle = document.createElement("style");
+              bridgeStyle.setAttribute("type", "text/tailwindcss");
+              bridgeStyle.setAttribute("data-nexus-tailwind-bridge", "");
+              bridgeStyle.textContent = bridge;
+              document.head.appendChild(bridgeStyle);
+            }
+          }
         },
         handle(el, expression, _runtime) {
           const cleanupFns4 = [];
@@ -17125,7 +17146,6 @@ ${bridge}`, {
   init_consts();
   init_topology();
   init_agent();
-  init_stylesheet();
   init_predictive();
   init_cache();
 
@@ -17194,8 +17214,6 @@ ${bridge}`, {
   postLog("Worker ready");
 
   // src/index.ts
-  init_scrollbar();
-  init_markdown();
   init_manifest();
   var _idCounters = {};
   function $id(groupName = "default") {
@@ -17216,10 +17234,6 @@ ${bridge}`, {
   var UX = class {
     coordinator;
     constructor() {
-      if (typeof document !== "undefined") {
-        ensureScrollbarStyles(document);
-        ensureMarkdownStyles(document);
-      }
       this.coordinator = new ModuleCoordinator();
       registerScopeProvider("$el", (el) => el);
       registerScopeProvider("$dispatch", (el) => (eventName, detail) => {
@@ -17254,19 +17268,7 @@ ${bridge}`, {
     }
     registerFromManifest() {
       autoAttributes.forEach(({ name, module }) => {
-        let registeredAny = false;
-        for (const maybe of Object.values(module)) {
-          if (maybe && typeof maybe === "object" && "attribute" in maybe && typeof maybe.handle === "function") {
-            this.coordinator.registerAttributeModule(maybe.attribute || name, maybe);
-            registeredAny = true;
-          }
-        }
-        if (!registeredAny) {
-          const attrMod = module.default || Object.values(module)[0];
-          if (attrMod) {
-            this.coordinator.registerAttributeModule(attrMod.attribute || name, attrMod);
-          }
-        }
+        this.coordinator.registerAttributeModule(name, module.default || module);
       });
       autoSprites.forEach(({ name, module }) => {
         const spriteMod = module.default || Object.values(module).find((m) => m && typeof m.sprites === "function");
@@ -17346,17 +17348,6 @@ ${bridge}`, {
     self.onmessage = handleWorkerMessage;
   } else if (typeof document !== "undefined") {
     topology.start();
-    if (!document.querySelector("style[data-nexus-tailwind-bridge]") && document.querySelector('script[src*="tailwindcss/browser"]')) {
-      const tokens = discoverColorTokens();
-      const bridge = buildTailwindThemeBridge(tokens);
-      if (bridge) {
-        const bridgeStyle = document.createElement("style");
-        bridgeStyle.setAttribute("type", "text/tailwindcss");
-        bridgeStyle.setAttribute("data-nexus-tailwind-bridge", "");
-        bridgeStyle.textContent = bridge;
-        document.head.appendChild(bridgeStyle);
-      }
-    }
   }
   if (typeof window !== "undefined" && Nexus) {
     globalThis.Nexus = Nexus;

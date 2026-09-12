@@ -677,6 +677,22 @@ const stylesheetModule: AttributeModule = {
         el.classList.forEach(cls => stylesheet.adoptClass(cls, el, runtime));
       }
     };
+
+    if (
+      typeof document !== 'undefined' &&
+      !document.querySelector('style[data-nexus-tailwind-bridge]') &&
+      document.querySelector('script[src*="tailwindcss/browser"]')
+    ) {
+      const tokens = discoverColorTokens();
+      const bridge = buildTailwindThemeBridge(tokens);
+      if (bridge) {
+        const bridgeStyle = document.createElement('style');
+        bridgeStyle.setAttribute('type', 'text/tailwindcss');
+        bridgeStyle.setAttribute('data-nexus-tailwind-bridge', '');
+        bridgeStyle.textContent = bridge;
+        document.head.appendChild(bridgeStyle);
+      }
+    }
   },
   handle(el: HTMLElement, expression: string, _runtime: RuntimeContext): (() => void) | void {
     const cleanupFns: (() => void)[] = [];

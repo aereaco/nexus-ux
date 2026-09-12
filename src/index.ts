@@ -4,13 +4,10 @@ import { ROOT_SELECTOR } from './engine/consts.ts';
 import { topology, runInWorker } from './engine/topology.ts';
 export { runInWorker };
 import { initSelfHeal, getBeaconHistory } from './engine/agent.ts';
-import { stylesheet, discoverColorTokens, buildTailwindThemeBridge } from './modules/attributes/stylesheet.ts';
 import { fetchModule } from './engine/fetch.ts';
 import { corePredictiveEngine } from './engine/predictive.ts';
 import { cacheEngine } from './engine/cache.ts';
 import { handleWorkerMessage } from './engine/logic.worker.ts';
-import { ensureScrollbarStyles } from './modules/attributes/scrollbar.ts';
-import { ensureMarkdownStyles } from './modules/attributes/markdown.ts';
 
 // Auto-Discovered Modules (inlined by build.ts from generated manifest.ts)
 import {
@@ -44,12 +41,6 @@ export class UX {
   private coordinator: ModuleCoordinator;
 
   constructor() {
-    // Pre-paint adopted stylesheets initialization
-    if (typeof document !== 'undefined') {
-      ensureScrollbarStyles(document);
-      ensureMarkdownStyles(document);
-    }
-
     this.coordinator = new ModuleCoordinator();
 
     // Scope providers
@@ -99,19 +90,7 @@ export class UX {
 
   private registerFromManifest() {
     autoAttributes.forEach(({ name, module }) => {
-      let registeredAny = false;
-      for (const maybe of Object.values(module)) {
-        if (maybe && typeof maybe === 'object' && 'attribute' in maybe && typeof (maybe as any).handle === 'function') {
-          this.coordinator.registerAttributeModule((maybe as any).attribute || name, maybe as any);
-          registeredAny = true;
-        }
-      }
-      if (!registeredAny) {
-        const attrMod = module.default || Object.values(module)[0];
-        if (attrMod) {
-          this.coordinator.registerAttributeModule(attrMod.attribute || name, attrMod as any);
-        }
-      }
+      this.coordinator.registerAttributeModule(name, module.default || module);
     });
 
     autoSprites.forEach(({ name, module }) => {
@@ -187,21 +166,6 @@ if (isWorker) {
   self.onmessage = handleWorkerMessage;
 } else if (typeof document !== 'undefined') {
   topology.start();
-
-  if (
-    !document.querySelector('style[data-nexus-tailwind-bridge]') &&
-    document.querySelector('script[src*="tailwindcss/browser"]')
-  ) {
-    const tokens = discoverColorTokens();
-    const bridge = buildTailwindThemeBridge(tokens);
-    if (bridge) {
-      const bridgeStyle = document.createElement('style');
-      bridgeStyle.setAttribute('type', 'text/tailwindcss');
-      bridgeStyle.setAttribute('data-nexus-tailwind-bridge', '');
-      bridgeStyle.textContent = bridge;
-      document.head.appendChild(bridgeStyle);
-    }
-  }
 }
 
 if (typeof window !== 'undefined' && Nexus) {

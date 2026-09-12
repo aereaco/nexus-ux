@@ -773,6 +773,11 @@ function setupGlobalCaptureListeners(runtime: RuntimeContext): void {
 const scrollbarModule: AttributeModule = {
   name: 'scrollbar',
   attribute: 'scrollbar',
+  onRegister(_context: RuntimeContext) {
+    if (typeof document !== 'undefined') {
+      ensureScrollbarStyles(document);
+    }
+  },
   handle: (el: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void => {
     const isGlobal = el.hasAttribute('data-scrollbar_global') || el.tagName.toLowerCase() === 'html';
 
