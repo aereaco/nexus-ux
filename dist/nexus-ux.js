@@ -16857,8 +16857,16 @@ ${bridge}`, {
       });
     }
     registerModifierModule(name, module) {
-      this.modifierModules.set(name, module);
-      module.onRegister?.(this.runtimeContext);
+      if ("handle" in module && typeof module.handle === "function") {
+        this.modifierModules.set(name, module);
+        module.onRegister?.(this.runtimeContext);
+      } else if (typeof module === "object" && module !== null) {
+        Object.entries(module).forEach(([subName, subMod]) => {
+          if (subMod && typeof subMod.handle === "function") {
+            this.registerModifierModule(subMod.name || subName, subMod);
+          }
+        });
+      }
     }
     registerAttributeModule(name, module) {
       const key = module.attribute || name;
@@ -17263,17 +17271,8 @@ ${bridge}`, {
           this.coordinator.registerScopeModule(scopeMod.name || name, scopeMod);
         }
       });
-      autoModifiers.forEach(({ module }) => {
-        let exportsObj = module.default || module;
-        if (exportsObj && exportsObj.name && typeof exportsObj.handle === "function") {
-          this.coordinator.registerModifierModule(exportsObj.name, exportsObj);
-        } else if (typeof exportsObj === "object") {
-          Object.values(exportsObj).forEach((mod) => {
-            if (mod && mod.name && typeof mod.handle === "function") {
-              this.coordinator.registerModifierModule(mod.name, mod);
-            }
-          });
-        }
+      autoModifiers.forEach(({ name, module }) => {
+        this.coordinator.registerModifierModule(name, module.default || module);
       });
       autoObservers.forEach(({ name, module }) => {
         const obsMod = module.default || Object.values(module)[0];

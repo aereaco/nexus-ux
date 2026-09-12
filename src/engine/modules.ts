@@ -158,7 +158,7 @@ declare module "./composition.ts" {
   interface InitContext {
     registerAttributeModule: (name: string, module: AttributeModule) => void;
     registerActionModule: (name: string, module: ActionModule) => void;
-    registerModifierModule: (name: string, module: ModifierModule) => void;
+    registerModifierModule: (name: string, module: ModifierModule | Record<string, ModifierModule>) => void;
     registerListenerModule: (name: string, module: ListenerModule) => void;
     registerObserverModule: (name: string, module: ObserverModule) => void;
     registerUtilityModule: (name: string, module: UtilityModule) => void;
@@ -367,9 +367,17 @@ export class ModuleCoordinator {
     });
   }
 
-  public registerModifierModule(name: string, module: ModifierModule): void {
-    this.modifierModules.set(name, module);
-    module.onRegister?.(this.runtimeContext);
+  public registerModifierModule(name: string, module: ModifierModule | Record<string, ModifierModule>): void {
+    if ('handle' in module && typeof (module as any).handle === 'function') {
+      this.modifierModules.set(name, module as ModifierModule);
+      (module as ModifierModule).onRegister?.(this.runtimeContext);
+    } else if (typeof module === 'object' && module !== null) {
+      Object.entries(module).forEach(([subName, subMod]) => {
+        if (subMod && typeof (subMod as any).handle === 'function') {
+          this.registerModifierModule(subMod.name || subName, subMod);
+        }
+      });
+    }
   }
 
   public registerAttributeModule(name: string, module: AttributeModule): void {

@@ -128,17 +128,8 @@ export class UX {
       }
     });
 
-    autoModifiers.forEach(({ module }) => {
-      let exportsObj = module.default || module;
-      if (exportsObj && exportsObj.name && typeof exportsObj.handle === 'function') {
-        this.coordinator.registerModifierModule(exportsObj.name, exportsObj);
-      } else if (typeof exportsObj === 'object') {
-        Object.values(exportsObj).forEach((mod: any) => {
-          if (mod && mod.name && typeof mod.handle === 'function') {
-            this.coordinator.registerModifierModule(mod.name, mod);
-          }
-        });
-      }
+    autoModifiers.forEach(({ name, module }) => {
+      this.coordinator.registerModifierModule(name, module.default || module);
     });
 
     autoObservers.forEach(({ name, module }) => {
