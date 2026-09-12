@@ -9360,6 +9360,20 @@ ${match}</ul>
   transition: opacity var(--scrollbar-fade-out, 0.4s) var(--scrollbar-fade-timing, cubic-bezier(0.4, 0, 0.2, 1)), background-color 0.2s ease-out;
 }
 
+/* Suppress hidden tracks completely from pointer events and layout */
+.scrollbar-track-v[style*="display: none"],
+.scrollbar-track-h[style*="display: none"] {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+.scrollbar-track-v[style*="display: none"] .scrollbar-thumb-v,
+.scrollbar-track-h[style*="display: none"] .scrollbar-thumb-h {
+  display: none !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+}
+
 /* Motion State: Smooth Opacity Reveal */
 .is-scrolling > .scrollbar-track-v > .scrollbar-thumb-v,
 .is-scrolling > .scrollbar-track-h > .scrollbar-thumb-h,
@@ -9367,16 +9381,16 @@ ${match}</ul>
 .is-scrolling.scrollbar-track-h > .scrollbar-thumb-h,
 .scrollbar-overlay-active.scrollbar-no-autohide > .scrollbar-track-v > .scrollbar-thumb-v,
 .scrollbar-overlay-active.scrollbar-no-autohide > .scrollbar-track-h > .scrollbar-thumb-h,
-.scrollbar-thumb-v:hover,
-.scrollbar-thumb-h:hover,
+.scrollbar-track-v:not([style*="display: none"]):hover > .scrollbar-thumb-v,
+.scrollbar-track-h:not([style*="display: none"]):hover > .scrollbar-thumb-h,
 .scrollbar-thumb-v.is-dragging,
 .scrollbar-thumb-h.is-dragging {
   opacity: 1 !important;
   transition: opacity var(--scrollbar-fade-in, 0.2s) ease-out, background-color 0.2s ease-out !important;
 }
 
-.scrollbar-thumb-v:hover,
-.scrollbar-thumb-h:hover {
+.scrollbar-track-v:not([style*="display: none"]):hover > .scrollbar-thumb-v,
+.scrollbar-track-h:not([style*="display: none"]):hover > .scrollbar-thumb-h {
   background-color: var(--scrollbar-thumb-hover, color-mix(in srgb, currentColor 50%, transparent)) !important;
 }
 
@@ -9453,16 +9467,19 @@ ${match}</ul>
   function isScrollContainer(el) {
     if (!el || !(el instanceof HTMLElement))
       return false;
-    if (el.getAttribute("data-scrollbar") === "none" || el.classList.contains("scrollbar-none")) {
+    if (!el.isConnected || el.getAttribute("data-scrollbar") === "none" || el.classList.contains("scrollbar-none")) {
       return false;
     }
+    const s = window.getComputedStyle(el);
+    if (s.display === "none" || s.visibility === "hidden")
+      return false;
     if (el.hasAttribute("data-scrollbar"))
       return true;
     if (el.classList.contains("overflow-y-auto") || el.classList.contains("overflow-x-auto") || el.classList.contains("overflow-auto")) {
-      return true;
+      return el.scrollHeight - el.clientHeight > 1 || el.scrollWidth - el.clientWidth > 1;
     }
     if (el.hasAttribute("style") && el.getAttribute("style").includes("overflow")) {
-      return true;
+      return el.scrollHeight - el.clientHeight > 1 || el.scrollWidth - el.clientWidth > 1;
     }
     return false;
   }
@@ -9641,17 +9658,25 @@ ${match}</ul>
               this.trackH.style.display = "none";
             return;
           }
+          const s = window.getComputedStyle(this.el);
+          if (s.display === "none" || s.visibility === "hidden" || this.host !== document.body && window.getComputedStyle(this.host).display === "none") {
+            if (this.trackV)
+              this.trackV.style.display = "none";
+            if (this.trackH)
+              this.trackH.style.display = "none";
+            return;
+          }
           const now = performance.now();
           if (this.cachedOverflowY === null || now - this.lastStyleCheck > 250) {
             this.lastStyleCheck = now;
-            const s = window.getComputedStyle(this.el);
             this.cachedRTL = s.direction === "rtl";
             this.cachedOverflowY = s.overflowY !== "hidden" && s.overflowY !== "clip" && s.overflow !== "hidden" && (s.overflowY === "auto" || s.overflowY === "scroll");
             this.cachedOverflowX = s.overflowX !== "hidden" && s.overflowX !== "clip" && s.overflow !== "hidden" && (s.overflowX === "auto" || s.overflowX === "scroll");
           }
           const isRTL = this.cachedRTL;
           const isFixed = this.host === document.body;
-          if (this.cachedOverflowY && scrollHeight > clientHeight && clientHeight > 0) {
+          const canScrollY = this.cachedOverflowY && scrollHeight - clientHeight > 1 && clientHeight > 0;
+          if (canScrollY) {
             if (this.trackV && this.trackV.style.display !== "block")
               this.trackV.style.display = "block";
             if (this.trackV) {
@@ -9694,7 +9719,8 @@ ${match}</ul>
             if (this.trackV && this.trackV.style.display !== "none")
               this.trackV.style.display = "none";
           }
-          if (this.cachedOverflowX && scrollWidth > clientWidth && clientWidth > 0) {
+          const canScrollX = this.cachedOverflowX && scrollWidth - clientWidth > 1 && clientWidth > 0;
+          if (canScrollX) {
             if (this.trackH && this.trackH.style.display !== "block")
               this.trackH.style.display = "block";
             if (this.trackH) {
@@ -9845,8 +9871,14 @@ ${match}</ul>
             cancelAnimationFrame(this.rafId);
             this.rafId = null;
           }
-          this.trackV?.remove();
-          this.trackH?.remove();
+          if (this.trackV) {
+            this.trackV.style.display = "none";
+            this.trackV.remove();
+          }
+          if (this.trackH) {
+            this.trackH.style.display = "none";
+            this.trackH.remove();
+          }
           this.el.classList.remove("scrollbar-overlay-active");
           this.el.classList.remove("scrollbar-no-autohide");
           activeInstances.delete(this);
