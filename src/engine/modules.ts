@@ -71,6 +71,7 @@ export type ActionFunction = (...args: any[]) => any;
 export interface Module {
   name: string;
   onGlobalInit?: (context: RuntimeContext) => void;
+  onRegister?: (context: RuntimeContext) => void;
 }
 
 /**
@@ -238,14 +239,21 @@ export class ModuleCoordinator {
       processElement: this.processElement.bind(this),
       reconcileClass: (el, val) => reconciler.reconcileClass(el, val),
       reconcileStyle: (el, val) => reconciler.reconcileStyle(el, val),
-      adoptStyle: (el) => el.classList.forEach(cls => stylesheet.adoptClass(cls, el)),
+      adoptStyle: (el) => {
+        if (typeof (this.runtimeContext as any)._styleAdopter === 'function') {
+          (this.runtimeContext as any)._styleAdopter(el);
+        }
+      },
       parseAttribute: parseAttribute,
       scheduler: scheduler,
       reportError: (err: Error, el?: HTMLElement, expr?: string) => logger.error(this.runtimeContext, err.message, el, expr),
 
       $: (selector: string) => {
         if (typeof document === 'undefined') return null;
-        return resolveSelector(document.body as any, selector);
+        if (typeof (this.runtimeContext as any)._selectorResolver === 'function') {
+          return (this.runtimeContext as any)._selectorResolver(selector);
+        }
+        return document.querySelector(selector);
       },
       isDevMode: typeof document !== 'undefined' ? document.documentElement.hasAttribute('data-debug') : false,
       
@@ -358,11 +366,13 @@ export class ModuleCoordinator {
 
   public registerModifierModule(name: string, module: ModifierModule): void {
     this.modifierModules.set(name, module);
+    module.onRegister?.(this.runtimeContext);
   }
 
   public registerAttributeModule(name: string, module: AttributeModule): void {
     const key = module.attribute || name;
     this.attributeModules.set(key, module);
+    module.onRegister?.(this.runtimeContext);
 
     const index = this.directiveOrder.indexOf(key);
     if (index === -1) {
@@ -392,24 +402,29 @@ export class ModuleCoordinator {
 
   public registerActionModule(name: string, module: ActionModule): void {
     this.actionModules.set(name, module);
+    module.onRegister?.(this.runtimeContext);
   }
 
   public registerListenerModule(name: string, module: ListenerModule): void {
     this.listenerModules.set(name, module);
+    module.onRegister?.(this.runtimeContext);
   }
 
   public registerObserverModule(name: string, module: ObserverModule): void {
     this.observerModules.set(name, module);
     // Also register with the centralized observer registry
     registerObserver(name, module);
+    module.onRegister?.(this.runtimeContext);
   }
 
   public registerUtilityModule(name: string, module: UtilityModule): void {
     this.utilityModules.set(name, module);
+    module.onRegister?.(this.runtimeContext);
   }
 
   public registerSpriteModule(name: string, module: SpriteModule): void {
     this.spriteModules.set(name, module);
+    module.onRegister?.(this.runtimeContext);
     // Auto-inject sprite commands into expression scope
     const sprites = module.sprites(this.runtimeContext);
     
@@ -431,6 +446,7 @@ export class ModuleCoordinator {
 
   public registerScopeModule(name: string, module: ScopeModule): void {
     this.scopeModules.set(name, module);
+    module.onRegister?.(this.runtimeContext);
   }
 
   private scanTimeout: number | null = null;
@@ -489,7 +505,7 @@ export class ModuleCoordinator {
 
     // 3. JIT Style Adoption (Gated by 'style' isolation)
     if (currentIsolation !== 'style' && element.classList && element.classList.length > 0) {
-      element.classList.forEach(cls => stylesheet.adoptClass(cls, element as HTMLElement, this.runtimeContext));
+      this.runtimeContext.adoptStyle?.(element as HTMLElement);
     }
 
     // 4. Directive Processing (Gated by 'ux' isolation)

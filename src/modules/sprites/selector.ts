@@ -194,3 +194,27 @@ export function resolveTargetElements(contextEl: HTMLElement, selector?: string)
   const raw = (res as any)?.$el || res;
   return raw && raw.nodeType ? [raw as HTMLElement] : [];
 }
+
+import { SpriteModule } from '../../engine/modules.ts';
+import { RuntimeContext } from '../../engine/composition.ts';
+
+const selectorSpriteModule: SpriteModule = {
+  name: 'selector',
+  key: '$',
+  onRegister(runtime: RuntimeContext) {
+    (runtime as any)._selectorResolver = (selector: string) => {
+      if (typeof document === 'undefined') return null;
+      return resolveSelector(document.body as HTMLElement, selector);
+    };
+  },
+  sprites(runtime: RuntimeContext) {
+    return {
+      $: (selector: string | HTMLElement) => {
+        if (typeof document === 'undefined') return null;
+        return resolveSelector(document.body as HTMLElement, selector);
+      }
+    };
+  }
+};
+
+export default selectorSpriteModule;

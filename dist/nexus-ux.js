@@ -12744,10 +12744,11 @@ ${match}</ul>
   // src/modules/sprites/selector.ts
   var selector_exports = {};
   __export(selector_exports, {
-    resolveSelector: () => resolveSelector2,
+    default: () => selector_default,
+    resolveSelector: () => resolveSelector,
     resolveTargetElements: () => resolveTargetElements
   });
-  function resolveSelector2(contextEl, selector) {
+  function resolveSelector(contextEl, selector) {
     if (!selector)
       return null;
     if (typeof selector !== "string")
@@ -12889,7 +12890,7 @@ ${match}</ul>
     if (!selector || !selector.trim())
       return [contextEl];
     const clean = selector.trim();
-    const res = resolveSelector2(contextEl, clean);
+    const res = resolveSelector(contextEl, clean);
     if (!res)
       return [];
     if (Array.isArray(res)) {
@@ -12898,10 +12899,32 @@ ${match}</ul>
     const raw = res?.$el || res;
     return raw && raw.nodeType ? [raw] : [];
   }
+  var selectorSpriteModule, selector_default;
   var init_selector = __esm({
     "src/modules/sprites/selector.ts"() {
       init_scope();
       init_agent();
+      selectorSpriteModule = {
+        name: "selector",
+        key: "$",
+        onRegister(runtime) {
+          runtime._selectorResolver = (selector) => {
+            if (typeof document === "undefined")
+              return null;
+            return resolveSelector(document.body, selector);
+          };
+        },
+        sprites(runtime) {
+          return {
+            $: (selector) => {
+              if (typeof document === "undefined")
+                return null;
+              return resolveSelector(document.body, selector);
+            }
+          };
+        }
+      };
+      selector_default = selectorSpriteModule;
     }
   });
 
@@ -13993,7 +14016,7 @@ ${match}</ul>
           return (evalEl, expression, extras) => {
             const result = evaluate2(evalEl, expression, extras);
             const applyMorph = (htmlString) => {
-              const target = arg ? resolveSelector2(element, arg) : element;
+              const target = arg ? resolveSelector(element, arg) : element;
               const realTarget = Array.isArray(target) ? target[0] : target;
               if (realTarget)
                 morphDOM(realTarget, htmlString);
@@ -15253,6 +15276,13 @@ ${bridge}`, {
       stylesheetModule = {
         name: "stylesheet",
         attribute: "stylesheet",
+        onRegister(runtime) {
+          runtime._styleAdopter = (el) => {
+            if (el.classList && el.classList.length > 0) {
+              el.classList.forEach((cls) => stylesheet2.adoptClass(cls, el, runtime));
+            }
+          };
+        },
         handle(el, expression, _runtime) {
           const cleanupFns = [];
           if (expression && expression.trim()) {
@@ -16407,14 +16437,21 @@ ${bridge}`, {
         processElement: this.processElement.bind(this),
         reconcileClass: (el, val) => reconcileClass(el, val),
         reconcileStyle: (el, val) => reconcileStyle(el, val),
-        adoptStyle: (el) => el.classList.forEach((cls) => stylesheet.adoptClass(cls, el)),
+        adoptStyle: (el) => {
+          if (typeof this.runtimeContext._styleAdopter === "function") {
+            this.runtimeContext._styleAdopter(el);
+          }
+        },
         parseAttribute,
         scheduler,
         reportError: (err, el, expr) => logger.error(this.runtimeContext, err.message, el, expr),
         $: (selector) => {
           if (typeof document === "undefined")
             return null;
-          return resolveSelector(document.body, selector);
+          if (typeof this.runtimeContext._selectorResolver === "function") {
+            return this.runtimeContext._selectorResolver(selector);
+          }
+          return document.querySelector(selector);
         },
         isDevMode: typeof document !== "undefined" ? document.documentElement.hasAttribute("data-debug") : false,
         elUniqId,
@@ -16512,10 +16549,12 @@ ${bridge}`, {
     }
     registerModifierModule(name, module) {
       this.modifierModules.set(name, module);
+      module.onRegister?.(this.runtimeContext);
     }
     registerAttributeModule(name, module) {
       const key = module.attribute || name;
       this.attributeModules.set(key, module);
+      module.onRegister?.(this.runtimeContext);
       const index = this.directiveOrder.indexOf(key);
       if (index === -1) {
         if (module.metadata?.after?.[0]) {
@@ -16546,19 +16585,24 @@ ${bridge}`, {
     }
     registerActionModule(name, module) {
       this.actionModules.set(name, module);
+      module.onRegister?.(this.runtimeContext);
     }
     registerListenerModule(name, module) {
       this.listenerModules.set(name, module);
+      module.onRegister?.(this.runtimeContext);
     }
     registerObserverModule(name, module) {
       this.observerModules.set(name, module);
       registerObserver(name, module);
+      module.onRegister?.(this.runtimeContext);
     }
     registerUtilityModule(name, module) {
       this.utilityModules.set(name, module);
+      module.onRegister?.(this.runtimeContext);
     }
     registerSpriteModule(name, module) {
       this.spriteModules.set(name, module);
+      module.onRegister?.(this.runtimeContext);
       const sprites = module.sprites(this.runtimeContext);
       const spriteKey = module.key || `$${name}`;
       this.runtimeContext.sprites[spriteKey] = sprites;
@@ -16572,6 +16616,7 @@ ${bridge}`, {
     }
     registerScopeModule(name, module) {
       this.scopeModules.set(name, module);
+      module.onRegister?.(this.runtimeContext);
     }
     scanTimeout = null;
     triggerScan() {
@@ -16615,7 +16660,7 @@ ${bridge}`, {
         this.runtimeContext.debug(`[Coordinator] Processing <${element.tagName}> (Isolation: ${currentIsolation})`, element);
       element[MARKER_KEY] = this.markerDispenser++;
       if (currentIsolation !== "style" && element.classList && element.classList.length > 0) {
-        element.classList.forEach((cls) => stylesheet.adoptClass(cls, element, this.runtimeContext));
+        this.runtimeContext.adoptStyle?.(element);
       }
       if (currentIsolation !== "ux") {
         const handlersToExecute = [];
@@ -16865,7 +16910,7 @@ ${bridge}`, {
       this.coordinator.runtimeContext.setGlobalSignal("$predictive", corePredictiveEngine);
       this.predictive = corePredictiveEngine;
       this.cache = cacheEngine;
-      registerScopeProvider("$", (el) => (selector) => resolveSelector2(el, selector));
+      registerScopeProvider("$", (el) => (selector) => resolveSelector(el, selector));
       registerScopeProvider("$animate", () => animate);
       this.coordinator.registerUtilityModule("fetch", fetchModule);
       initSelfHeal(this.coordinator.runtimeContext, {

@@ -671,6 +671,13 @@ export function markExternalStylesSettled(): void {
 const stylesheetModule: AttributeModule = {
   name: 'stylesheet',
   attribute: 'stylesheet',
+  onRegister(runtime: RuntimeContext): void {
+    (runtime as any)._styleAdopter = (el: HTMLElement) => {
+      if (el.classList && el.classList.length > 0) {
+        el.classList.forEach(cls => stylesheet.adoptClass(cls, el, runtime));
+      }
+    };
+  },
   handle(el: HTMLElement, expression: string, _runtime: RuntimeContext): (() => void) | void {
     const cleanupFns: (() => void)[] = [];
 
