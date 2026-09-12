@@ -9362,13 +9362,17 @@ ${match}</ul>
 
 /* Suppress hidden tracks completely from pointer events and layout */
 .scrollbar-track-v[style*="display: none"],
-.scrollbar-track-h[style*="display: none"] {
+.scrollbar-track-h[style*="display: none"],
+[style*="display: none"] ~ .scrollbar-track-v,
+[style*="display: none"] ~ .scrollbar-track-h {
   display: none !important;
   pointer-events: none !important;
 }
 
 .scrollbar-track-v[style*="display: none"] .scrollbar-thumb-v,
-.scrollbar-track-h[style*="display: none"] .scrollbar-thumb-h {
+.scrollbar-track-h[style*="display: none"] .scrollbar-thumb-h,
+[style*="display: none"] ~ .scrollbar-track-v .scrollbar-thumb-v,
+[style*="display: none"] ~ .scrollbar-track-h .scrollbar-thumb-h {
   display: none !important;
   pointer-events: none !important;
   opacity: 0 !important;
@@ -9498,6 +9502,14 @@ ${match}</ul>
     const autohideMs = typeof globalConfig.autohide === "number" ? globalConfig.autohide : 800;
     if (globalConfig.autohide === false || autohideMs <= 0)
       return;
+    if (target instanceof HTMLElement) {
+      if (!target.isConnected || target.style.display === "none" || target.offsetParent === null) {
+        const inst = overlayInstances.get(target);
+        if (inst)
+          inst.update();
+        return;
+      }
+    }
     if (!target.classList.contains("is-scrolling")) {
       target.classList.add("is-scrolling");
     }
@@ -9651,19 +9663,39 @@ ${match}</ul>
         }
         update() {
           const { clientHeight, scrollHeight, clientWidth, scrollWidth, scrollTop, scrollLeft } = this.el;
-          if (!this.el.isConnected || this.el.getAttribute("data-scrollbar") === "none" || this.el.classList.contains("scrollbar-none") || clientHeight === 0 || clientWidth === 0 || this.el.style.display === "none") {
-            if (this.trackV)
+          if (!this.el.isConnected || this.el.getAttribute("data-scrollbar") === "none" || this.el.classList.contains("scrollbar-none") || clientHeight === 0 || clientWidth === 0 || this.el.style.display === "none" || this.el.offsetParent === null) {
+            if (this.trackV) {
               this.trackV.style.display = "none";
-            if (this.trackH)
+              if (this.thumbV) {
+                this.thumbV.style.opacity = "0";
+                this.thumbV.style.pointerEvents = "none";
+              }
+            }
+            if (this.trackH) {
               this.trackH.style.display = "none";
+              if (this.thumbH) {
+                this.thumbH.style.opacity = "0";
+                this.thumbH.style.pointerEvents = "none";
+              }
+            }
             return;
           }
           const s = window.getComputedStyle(this.el);
           if (s.display === "none" || s.visibility === "hidden" || this.host !== document.body && window.getComputedStyle(this.host).display === "none") {
-            if (this.trackV)
+            if (this.trackV) {
               this.trackV.style.display = "none";
-            if (this.trackH)
+              if (this.thumbV) {
+                this.thumbV.style.opacity = "0";
+                this.thumbV.style.pointerEvents = "none";
+              }
+            }
+            if (this.trackH) {
               this.trackH.style.display = "none";
+              if (this.thumbH) {
+                this.thumbH.style.opacity = "0";
+                this.thumbH.style.pointerEvents = "none";
+              }
+            }
             return;
           }
           const now = performance.now();
