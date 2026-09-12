@@ -56,6 +56,113 @@ var UX = (() => {
     }
   });
 
+  // src/engine/mcp.ts
+  var mcp_exports = {};
+  __export(mcp_exports, {
+    MCPClient: () => MCPClient
+  });
+  var MCPClient;
+  var init_mcp = __esm({
+    "src/engine/mcp.ts"() {
+      init_debug();
+      MCPClient = class {
+        url;
+        eventSource = null;
+        requestId = 0;
+        pendingRequests = /* @__PURE__ */ new Map();
+        onConnectCallback;
+        onMessageCallback;
+        constructor(serverUrl) {
+          this.url = serverUrl;
+        }
+        /**
+         * Connect to the MCP server via SSE.
+         */
+        connect() {
+          return new Promise((resolve, reject) => {
+            try {
+              this.eventSource = new EventSource(this.url);
+              this.eventSource.onopen = () => {
+                if (this.onConnectCallback)
+                  this.onConnectCallback();
+                resolve();
+              };
+              this.eventSource.onerror = (err) => {
+                reportError(new Error(`MCP Connection failed: ${this.url}`));
+                reject(err);
+              };
+              this.eventSource.onmessage = (event) => {
+                try {
+                  const payload = JSON.parse(event.data);
+                  this.handleIncoming(payload);
+                } catch (_e) {
+                  reportError(new Error(`MCP Malformed JSON: ${event.data}`));
+                }
+              };
+              this.eventSource.addEventListener("message", (e) => {
+                try {
+                  const payload = JSON.parse(e.data);
+                  this.handleIncoming(payload);
+                } catch (_e) {
+                }
+              });
+            } catch (e) {
+              reject(e);
+            }
+          });
+        }
+        /**
+         * Send a JSON-RPC 2.0 request to the MCP server via POST.
+         */
+        sendRequest(method, params = {}) {
+          const id = ++this.requestId;
+          const body = JSON.stringify({
+            jsonrpc: "2.0",
+            id,
+            method,
+            params
+          });
+          return new Promise((resolve, reject) => {
+            this.pendingRequests.set(id, (res) => resolve(res));
+            fetch(this.url, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body
+            }).catch((err) => {
+              this.pendingRequests.delete(id);
+              reject(err);
+            });
+          });
+        }
+        /**
+         * Handle incoming JSON-RPC messages (Responses or Notifications).
+         */
+        handleIncoming(payload) {
+          if (payload.id !== void 0) {
+            const resolve = this.pendingRequests.get(payload.id);
+            if (resolve) {
+              this.pendingRequests.delete(payload.id);
+              resolve(payload.result || payload.error);
+            }
+          } else if (payload.method) {
+            if (this.onMessageCallback) {
+              this.onMessageCallback(payload.method, payload.params);
+            }
+          }
+        }
+        onConnect(cb) {
+          this.onConnectCallback = cb;
+        }
+        onNotification(cb) {
+          this.onMessageCallback = cb;
+        }
+        disconnect() {
+          this.eventSource?.close();
+        }
+      };
+    }
+  });
+
   // src/engine/debug.ts
   function reportError(error, element, expression) {
     const errorMessage = `[UX Error] ${error.message}`;
@@ -121,7 +228,49 @@ ${suggestion}`);
     error.stack = originalError.stack;
     reportError(error, element, expression);
   }
-  var UXError, logger;
+  function initSanitizingEngine(runtimeContext) {
+    if (typeof MutationObserver === "undefined" || typeof document === "undefined")
+      return;
+    try {
+      sanitizingObserver = new MutationObserver((mutations) => {
+        try {
+          for (const mutation of mutations) {
+            if (mutation.type === "attributes" && mutation.attributeName === "data-debug") {
+              const target = mutation.target;
+              const debugValue = target.getAttribute("data-debug");
+              runtimeContext.isDevMode = debugValue !== null;
+              if (debugValue && debugValue.trim().startsWith("{")) {
+                try {
+                  const config = new Function(`return (${debugValue})`)();
+                  if (config.mcp && !runtimeContext.mcp) {
+                    Promise.resolve().then(() => (init_mcp(), mcp_exports)).then(({ MCPClient: MCPClient2 }) => {
+                      runtimeContext.mcp = new MCPClient2(config.mcp);
+                      runtimeContext.mcp.connect().catch(() => {
+                        console.warn(`[Nexus Debug] MCP connection failed: ${config.mcp}`);
+                      });
+                    });
+                  }
+                } catch {
+                }
+              }
+            }
+          }
+        } catch (e) {
+          console.error("[Nexus Sanitizer] Internal error (isolated):", e);
+        }
+      });
+      sanitizingObserver.observe(document.documentElement, { attributes: true, subtree: true });
+    } catch (e) {
+      console.error("[Nexus Sanitizer] Failed to initialize:", e);
+    }
+  }
+  function disposeSanitizingEngine() {
+    if (sanitizingObserver) {
+      sanitizingObserver.disconnect();
+      sanitizingObserver = null;
+    }
+  }
+  var UXError, logger, sanitizingObserver;
   var init_debug = __esm({
     "src/engine/debug.ts"() {
       init_consts();
@@ -155,6 +304,7 @@ ${suggestion}`);
           console.error(`[Nexus Error]`, ...args);
         }
       };
+      sanitizingObserver = null;
     }
   });
 
@@ -11132,12 +11282,12 @@ ${match}</ul>
   });
 
   // src/modules/sprites/mcp.ts
-  var mcp_exports = {};
-  __export(mcp_exports, {
+  var mcp_exports2 = {};
+  __export(mcp_exports2, {
     mcpModule: () => mcpModule
   });
   var mcpModule;
-  var init_mcp = __esm({
+  var init_mcp2 = __esm({
     "src/modules/sprites/mcp.ts"() {
       init_reactivity();
       mcpModule = {
@@ -14506,7 +14656,7 @@ ${match}</ul>
       init_flow2();
       init_gql();
       init_mask();
-      init_mcp();
+      init_mcp2();
       init_periodicSync();
       init_predictive2();
       init_push();
@@ -14580,7 +14730,7 @@ ${match}</ul>
         { name: "flow", module: flow_exports2 },
         { name: "gql", module: gql_exports },
         { name: "mask", module: mask_exports },
-        { name: "mcp", module: mcp_exports },
+        { name: "mcp", module: mcp_exports2 },
         { name: "periodicSync", module: periodicSync_exports },
         { name: "predictive", module: predictive_exports2 },
         { name: "push", module: push_exports },
@@ -15647,109 +15797,6 @@ ${bridge}`, {
     }
   });
 
-  // src/engine/mcp.ts
-  var MCPClient;
-  var init_mcp2 = __esm({
-    "src/engine/mcp.ts"() {
-      init_debug();
-      MCPClient = class {
-        url;
-        eventSource = null;
-        requestId = 0;
-        pendingRequests = /* @__PURE__ */ new Map();
-        onConnectCallback;
-        onMessageCallback;
-        constructor(serverUrl) {
-          this.url = serverUrl;
-        }
-        /**
-         * Connect to the MCP server via SSE.
-         */
-        connect() {
-          return new Promise((resolve, reject) => {
-            try {
-              this.eventSource = new EventSource(this.url);
-              this.eventSource.onopen = () => {
-                if (this.onConnectCallback)
-                  this.onConnectCallback();
-                resolve();
-              };
-              this.eventSource.onerror = (err) => {
-                reportError(new Error(`MCP Connection failed: ${this.url}`));
-                reject(err);
-              };
-              this.eventSource.onmessage = (event) => {
-                try {
-                  const payload = JSON.parse(event.data);
-                  this.handleIncoming(payload);
-                } catch (_e) {
-                  reportError(new Error(`MCP Malformed JSON: ${event.data}`));
-                }
-              };
-              this.eventSource.addEventListener("message", (e) => {
-                try {
-                  const payload = JSON.parse(e.data);
-                  this.handleIncoming(payload);
-                } catch (_e) {
-                }
-              });
-            } catch (e) {
-              reject(e);
-            }
-          });
-        }
-        /**
-         * Send a JSON-RPC 2.0 request to the MCP server via POST.
-         */
-        sendRequest(method, params = {}) {
-          const id = ++this.requestId;
-          const body = JSON.stringify({
-            jsonrpc: "2.0",
-            id,
-            method,
-            params
-          });
-          return new Promise((resolve, reject) => {
-            this.pendingRequests.set(id, (res) => resolve(res));
-            fetch(this.url, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body
-            }).catch((err) => {
-              this.pendingRequests.delete(id);
-              reject(err);
-            });
-          });
-        }
-        /**
-         * Handle incoming JSON-RPC messages (Responses or Notifications).
-         */
-        handleIncoming(payload) {
-          if (payload.id !== void 0) {
-            const resolve = this.pendingRequests.get(payload.id);
-            if (resolve) {
-              this.pendingRequests.delete(payload.id);
-              resolve(payload.result || payload.error);
-            }
-          } else if (payload.method) {
-            if (this.onMessageCallback) {
-              this.onMessageCallback(payload.method, payload.params);
-            }
-          }
-        }
-        onConnect(cb) {
-          this.onConnectCallback = cb;
-        }
-        onNotification(cb) {
-          this.onMessageCallback = cb;
-        }
-        disconnect() {
-          this.eventSource?.close();
-        }
-      };
-    }
-  });
-
   // src/index.ts
   var src_exports = {};
   __export(src_exports, {
@@ -16270,6 +16317,7 @@ ${bridge}`, {
   // src/engine/modules.ts
   init_scheduler();
   init_debug();
+  init_debug();
   init_hash();
   init_consts();
 
@@ -16307,7 +16355,7 @@ ${bridge}`, {
 
   // src/engine/modules.ts
   init_topology();
-  init_mcp2();
+  init_mcp();
   init_debug();
   var globalReactiveState = reactive({});
   var ModuleCoordinator = class {
