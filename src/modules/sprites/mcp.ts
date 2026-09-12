@@ -87,3 +87,6 @@ export const mcpModule: SpriteModule = {
     };
   }
 };
+
+export default mcpModule;
+

@@ -856,23 +856,23 @@ ${suggestion}`);
   }
   function onEffectCleanup(fn) {
     if (activeEffect) {
-      let cleanupFns = activeEffect.cleanupFns;
-      if (!cleanupFns) {
-        cleanupFns = [];
-        activeEffect.cleanupFns = cleanupFns;
+      let cleanupFns4 = activeEffect.cleanupFns;
+      if (!cleanupFns4) {
+        cleanupFns4 = [];
+        activeEffect.cleanupFns = cleanupFns4;
         const originalRun = activeEffect.run;
         activeEffect.run = function() {
-          for (const cleanup of cleanupFns) {
+          for (const cleanup of cleanupFns4) {
             try {
               cleanup();
             } catch {
             }
           }
-          cleanupFns.length = 0;
+          cleanupFns4.length = 0;
           return originalRun.apply(this, arguments);
         };
       }
-      cleanupFns.push(fn);
+      cleanupFns4.push(fn);
     }
   }
   function elementBoundEffect(el, effectCallback, options) {
@@ -1721,7 +1721,7 @@ ${suggestion}`);
     }
   }
   function createNativeBinding(value, runtime, el) {
-    const cleanupFns = [];
+    const cleanupFns4 = [];
     const trimmed = value.trim();
     const nativeApis = extractNativeApis(trimmed);
     if (nativeApis.length === 0) {
@@ -1732,7 +1732,7 @@ ${suggestion}`);
       const result = runtime.evaluate(el, value);
       applyBindingResult(result, el);
     });
-    cleanupFns.push(effectCleanup);
+    cleanupFns4.push(effectCleanup);
     for (const api of nativeApis) {
       const property = api.property;
       if (api.target === globalThis) {
@@ -1741,13 +1741,13 @@ ${suggestion}`);
             runner();
           };
           globalThis.addEventListener("resize", onResize);
-          cleanupFns.push(() => globalThis.removeEventListener("resize", onResize));
+          cleanupFns4.push(() => globalThis.removeEventListener("resize", onResize));
         } else if (property === "scrollX" || property === "scrollY") {
           const onScroll = () => {
             runner();
           };
           globalThis.addEventListener("scroll", onScroll);
-          cleanupFns.push(() => globalThis.removeEventListener("scroll", onScroll));
+          cleanupFns4.push(() => globalThis.removeEventListener("scroll", onScroll));
         }
       }
       if (api.target === globalThis.localStorage || api.target === globalThis.sessionStorage) {
@@ -1757,10 +1757,10 @@ ${suggestion}`);
           }
         };
         globalThis.addEventListener("storage", onStorage);
-        cleanupFns.push(() => globalThis.removeEventListener("storage", onStorage));
+        cleanupFns4.push(() => globalThis.removeEventListener("storage", onStorage));
       }
     }
-    return () => cleanupFns.forEach((fn) => fn());
+    return () => cleanupFns4.forEach((fn) => fn());
   }
   var NATIVE_API_PATTERNS, bindModule, bind_default;
   var init_bind = __esm({
@@ -1787,13 +1787,13 @@ ${suggestion}`);
             return createNativeBinding(value, runtime, el);
           }
           if (!target) {
-            const cleanupFns2 = [];
+            const cleanupFns5 = [];
             try {
               const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
                 const result = runtime.evaluate(el, value);
                 applyBindingResult(result, el);
               });
-              cleanupFns2.push(cleanup);
+              cleanupFns5.push(cleanup);
               const isFormInput = el instanceof HTMLInputElement || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement || el.isContentEditable;
               if (isFormInput) {
                 const isLazy = el.hasAttribute("data-bind_lazy") || parsed?.modifiers?.includes("lazy") === true;
@@ -1828,14 +1828,14 @@ ${suggestion}`);
                   }
                 };
                 el.addEventListener(eventName, inputHandler);
-                cleanupFns2.push(() => el.removeEventListener(eventName, inputHandler));
+                cleanupFns5.push(() => el.removeEventListener(eventName, inputHandler));
               }
             } catch (e) {
               runtime.reportError(e instanceof Error ? e : new Error(String(e)), el, `Auto-bind failed: ${value}`);
             }
-            return () => cleanupFns2.forEach((fn) => fn());
+            return () => cleanupFns5.forEach((fn) => fn());
           }
-          const cleanupFns = [];
+          const cleanupFns4 = [];
           try {
             const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
               const result = runtime.evaluate(el, value);
@@ -1885,7 +1885,7 @@ ${suggestion}`);
                 }
               }
             });
-            cleanupFns.push(cleanup);
+            cleanupFns4.push(cleanup);
             if (target === "value" || target === "checked") {
               const isLazy = el.hasAttribute("data-bind_lazy") || parsed?.modifiers?.includes("lazy") === true;
               const eventName = isLazy ? "change" : el instanceof HTMLInputElement && (el.type === "checkbox" || el.type === "radio") || el instanceof HTMLSelectElement ? "change" : "input";
@@ -1904,12 +1904,12 @@ ${suggestion}`);
                 runtime.evaluate(el, `${value} = $newValue`, { $newValue: newValue });
               };
               el.addEventListener(eventName, inputHandler);
-              cleanupFns.push(() => el.removeEventListener(eventName, inputHandler));
+              cleanupFns4.push(() => el.removeEventListener(eventName, inputHandler));
             }
           } catch (e) {
             initError("bind", `Failed to bind ${target}: ${e instanceof Error ? e.message : String(e)}`, el, value);
           }
-          return () => cleanupFns.forEach((fn) => fn());
+          return () => cleanupFns4.forEach((fn) => fn());
         }
       };
       bind_default = bindModule;
@@ -1967,6 +1967,28 @@ ${suggestion}`);
         }
       }
     };
+  }
+  function disposeScope(target) {
+    if (Array.isArray(target)) {
+      for (const fn of target) {
+        try {
+          fn();
+        } catch (err) {
+          console.error("Error disposing scope:", err);
+        }
+      }
+      target.length = 0;
+      return;
+    }
+    if (target) {
+      const node = target;
+      if (node[LOCAL_SCOPES_KEY]) {
+        delete node[LOCAL_SCOPES_KEY];
+      }
+      if (node[DATA_STACK_KEY]) {
+        delete node[DATA_STACK_KEY];
+      }
+    }
   }
   function registerScopeProvider(key, provider) {
     scopeProviderRegistry.set(key, provider);
@@ -3253,9 +3275,8 @@ ${scripts}
       };
       dragSprite = {
         name: "drag",
-        sprites: (_runtime) => ({
-          $drag
-        })
+        key: "$drag",
+        sprites: (_runtime) => $drag
       };
       drag_default = dragSprite;
     }
@@ -6255,7 +6276,7 @@ ${scripts}
         el.setAttribute(key, String(value));
     });
   }
-  async function importLink(id, payload, cleanupFns, runtime, el) {
+  async function importLink(id, payload, cleanupFns4, runtime, el) {
     const items = Array.isArray(payload) ? payload : [payload];
     const tasks2 = items.map(async (item) => {
       let attrs;
@@ -6272,7 +6293,7 @@ ${scripts}
         const cssText = await resolveContent(href);
         if (cssText) {
           const cleanup = await stylesheet2.adoptRawCSS(cssText, `import-${id}-${href}`);
-          cleanupFns.push(cleanup);
+          cleanupFns4.push(cleanup);
           runtime.log(`Nexus Import [${id}]: CSS adopted (idb): ${href}`);
           return;
         }
@@ -6304,7 +6325,7 @@ ${scripts}
     });
     await Promise.all(tasks2);
   }
-  async function importAdopt(id, payload, cleanupFns, runtime, _el) {
+  async function importAdopt(id, payload, cleanupFns4, runtime, _el) {
     const items = Array.isArray(payload) ? payload : [payload];
     const tasks2 = items.map(async (item) => {
       let href;
@@ -6319,12 +6340,12 @@ ${scripts}
       if (!cssText)
         return;
       const cleanup = await stylesheet2.adoptRawCSS(cssText, `import-adopt-${id}-${href}`);
-      cleanupFns.push(cleanup);
+      cleanupFns4.push(cleanup);
       runtime.log(`Nexus Import [${id}]: CSS adopted (constructable): ${href}`);
     });
     await Promise.all(tasks2);
   }
-  async function importScript(id, payload, cleanupFns, runtime, el) {
+  async function importScript(id, payload, cleanupFns4, runtime, el) {
     const items = Array.isArray(payload) ? payload : [payload];
     const tasks2 = items.map(async (item) => {
       let attrs = typeof item === "string" ? { src: item } : item;
@@ -6343,7 +6364,7 @@ ${scripts}
           const blob = new Blob([content], { type: attrs.type || "text/javascript" });
           const url = URL.createObjectURL(blob);
           finalSrc = url;
-          cleanupFns.push(() => URL.revokeObjectURL(url));
+          cleanupFns4.push(() => URL.revokeObjectURL(url));
         }
       }
       if (src.includes("tailwindcss/browser") && !document.querySelector("style[data-nexus-tailwind-bridge]")) {
@@ -6355,7 +6376,7 @@ ${scripts}
           bridgeStyle.setAttribute("data-nexus-tailwind-bridge", "");
           bridgeStyle.textContent = bridge;
           document.head.appendChild(bridgeStyle);
-          cleanupFns.push(() => bridgeStyle.remove());
+          cleanupFns4.push(() => bridgeStyle.remove());
           runtime.log(`Nexus Import [${id}]: Tailwind theme bridge injected (${tokens.size} color tokens discovered)`);
         }
       }
@@ -6379,7 +6400,7 @@ ${scripts}
     });
     await Promise.all(tasks2);
   }
-  async function importESModule(id, payload, cleanupFns, runtime, el) {
+  async function importESModule(id, payload, cleanupFns4, runtime, el) {
     const globalWin = globalThis;
     const targetObj = {};
     try {
@@ -6427,7 +6448,7 @@ ${scripts}
         }
       }
       globalWin[id] = Object.assign(globalWin[id] || {}, targetObj);
-      cleanupFns.push(() => {
+      cleanupFns4.push(() => {
       });
       if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent(`nexus:${id.toLowerCase()}-ready`, { detail: globalWin[id] }));
@@ -6440,7 +6461,7 @@ ${scripts}
       reportError(new Error(`Nexus Import [${id}]: Module import error: ${err}`), el);
     }
   }
-  async function importStyle(id, payload, cleanupFns, runtime, el) {
+  async function importStyle(id, payload, cleanupFns4, runtime, el) {
     const items = Array.isArray(payload) ? payload : [payload];
     const tasks2 = items.map(async (item) => {
       const attrs = typeof item === "string" ? { content: item } : item;
@@ -6448,19 +6469,19 @@ ${scripts}
       if (!content && !attrs.href)
         return;
       if (attrs.href) {
-        await importLink(id, attrs, cleanupFns, runtime, el);
+        await importLink(id, attrs, cleanupFns4, runtime, el);
         return;
       }
       const cssText = isVFSUri(content) ? await resolveContent(content) : content;
       if (!cssText)
         return;
       const cleanup = await stylesheet2.adoptCSS(cssText, `import-style-${id}`);
-      cleanupFns.push(cleanup);
+      cleanupFns4.push(cleanup);
       runtime.log(`Nexus Import [${id}]: Style adopted (ZCZS)`);
     });
     await Promise.all(tasks2);
   }
-  async function importPattern(id, uri, el, item, cleanupFns, runtime) {
+  async function importPattern(id, uri, el, item, cleanupFns4, runtime) {
     const content = await resolveContent(uri);
     if (!content)
       throw new Error(`Pattern not found: ${uri}`);
@@ -6487,10 +6508,10 @@ ${scripts}
         target.parentElement?.insertBefore(wrapper, target.nextSibling);
         break;
     }
-    cleanupFns.push(() => wrapper.remove());
+    cleanupFns4.push(() => wrapper.remove());
     runtime.log(`Nexus Import [${id}]: Pattern loaded from ${uri}`);
   }
-  async function importComponent(id, uri, cleanupFns, runtime) {
+  async function importComponent(id, uri, cleanupFns4, runtime) {
     const content = await resolveContent(uri);
     if (!content)
       throw new Error(`Component template not found: ${uri}`);
@@ -6504,7 +6525,7 @@ ${scripts}
         templateEl.id = `component-${name}`;
         templateEl.innerHTML = template.innerHTML;
         document.body.appendChild(templateEl);
-        cleanupFns.push(() => templateEl.remove());
+        cleanupFns4.push(() => templateEl.remove());
         runtime.log(`Nexus Import [${id}]: Component "${name}" registered from ${uri}`);
       });
     } else {
@@ -6512,7 +6533,7 @@ ${scripts}
       templateEl.id = `component-${id}`;
       templateEl.innerHTML = content;
       document.body.appendChild(templateEl);
-      cleanupFns.push(() => templateEl.remove());
+      cleanupFns4.push(() => templateEl.remove());
       runtime.log(`Nexus Import [${id}]: Component registered from ${uri}`);
     }
   }
@@ -7126,8 +7147,10 @@ ${match}</ul>
   // src/modules/sprites/mask.ts
   var mask_exports = {};
   __export(mask_exports, {
+    default: () => mask_default,
     format: () => format,
-    mask: () => mask
+    mask: () => mask,
+    maskSpriteModule: () => maskSpriteModule
   });
   function stripDown(template, input) {
     const regexes = {
@@ -7179,22 +7202,28 @@ ${match}</ul>
     const stripped = stripDown(template, value);
     return buildUp(template, stripped);
   }
-  var mask;
+  var mask, maskSpriteModule, mask_default;
   var init_mask = __esm({
     "src/modules/sprites/mask.ts"() {
       mask = {
         format
       };
+      maskSpriteModule = {
+        name: "mask",
+        key: "$mask",
+        sprites: () => mask
+      };
+      mask_default = maskSpriteModule;
     }
   });
 
   // src/modules/attributes/mask.ts
   var mask_exports2 = {};
   __export(mask_exports2, {
-    default: () => mask_default,
+    default: () => mask_default2,
     maskModule: () => maskModule
   });
-  var maskModule, mask_default;
+  var maskModule, mask_default2;
   var init_mask2 = __esm({
     "src/modules/attributes/mask.ts"() {
       init_mask();
@@ -7234,7 +7263,7 @@ ${match}</ul>
           };
         }
       };
-      mask_default = maskModule;
+      mask_default2 = maskModule;
     }
   });
 
@@ -7392,13 +7421,13 @@ ${match}</ul>
             }
           });
           runtime.setGlobalSignal("$pwa", pwaState);
-          const cleanupFns = [];
+          const cleanupFns4 = [];
           const updateOnlineStatus = () => {
             pwaState.isOnline = navigator.onLine;
           };
           globalThis.addEventListener("online", updateOnlineStatus);
           globalThis.addEventListener("offline", updateOnlineStatus);
-          cleanupFns.push(
+          cleanupFns4.push(
             () => globalThis.removeEventListener("online", updateOnlineStatus),
             () => globalThis.removeEventListener("offline", updateOnlineStatus)
           );
@@ -7429,7 +7458,7 @@ ${match}</ul>
               }
             };
             navigator.serviceWorker.addEventListener("controllerchange", onControllerChange);
-            cleanupFns.push(() => navigator.serviceWorker.removeEventListener("controllerchange", onControllerChange));
+            cleanupFns4.push(() => navigator.serviceWorker.removeEventListener("controllerchange", onControllerChange));
           }
           if (config.themeColor) {
             let meta = document.querySelector('meta[name="theme-color"]');
@@ -7463,14 +7492,14 @@ ${match}</ul>
             pwaState.deferredPrompt = e;
           };
           globalThis.addEventListener("beforeinstallprompt", onBeforeInstall);
-          cleanupFns.push(() => globalThis.removeEventListener("beforeinstallprompt", onBeforeInstall));
+          cleanupFns4.push(() => globalThis.removeEventListener("beforeinstallprompt", onBeforeInstall));
           const onAppInstalled = () => {
             pwaState.isInstalled = true;
             pwaState.deferredPrompt = null;
           };
           globalThis.addEventListener("appinstalled", onAppInstalled);
-          cleanupFns.push(() => globalThis.removeEventListener("appinstalled", onAppInstalled));
-          return () => cleanupFns.forEach((fn) => fn());
+          cleanupFns4.push(() => globalThis.removeEventListener("appinstalled", onAppInstalled));
+          return () => cleanupFns4.forEach((fn) => fn());
         }
       };
       pwa_default = pwaModule;
@@ -10573,6 +10602,8 @@ ${match}</ul>
   var animate_exports = {};
   __export(animate_exports, {
     animate: () => animate,
+    animateSpriteModule: () => animateSpriteModule,
+    default: () => animate_default,
     flip: () => flip
   });
   function animate(el, keyframesOrState, optionsOrConfig = {}, callback) {
@@ -10623,7 +10654,7 @@ ${match}</ul>
       });
     });
   }
-  var getEffectDurations, applyClasses, removeClasses;
+  var getEffectDurations, applyClasses, removeClasses, animateSpriteModule, animate_default;
   var init_animate = __esm({
     "src/modules/sprites/animate.ts"() {
       init_animation();
@@ -10641,6 +10672,12 @@ ${match}</ul>
       };
       applyClasses = (el, s) => s.split(" ").filter(Boolean).forEach((c) => el.classList.add(c));
       removeClasses = (el, s) => s.split(" ").filter(Boolean).forEach((c) => el.classList.remove(c));
+      animateSpriteModule = {
+        name: "animate",
+        key: "$animate",
+        sprites: () => animate
+      };
+      animate_default = animateSpriteModule;
     }
   });
 
@@ -10704,113 +10741,127 @@ ${match}</ul>
   // src/modules/sprites/bgFetch.ts
   var bgFetch_exports = {};
   __export(bgFetch_exports, {
-    default: () => bgFetchFactory
+    bgFetchSpriteModule: () => bgFetchSpriteModule,
+    createBgFetchApi: () => createBgFetchApi,
+    default: () => bgFetch_default
   });
-  function bgFetchFactory(runtime) {
+  function createBgFetchApi(runtime) {
     return {
-      $bgFetch: {
-        /**
-         * Start a background fetch.
-         * Returns reactive { data: BackgroundFetchRegistration | null, status, error }.
-         */
-        fetch(id, requests, options) {
-          let opRef;
-          opRef = runPwaRegistrationOp(
-            runtime,
-            "backgroundFetch",
-            async (reg) => {
-              const bgFetch = await reg.backgroundFetch.fetch(id, requests, options || {});
-              bgFetch.addEventListener("progress", () => {
-                opRef.data = { ...bgFetch, downloaded: bgFetch.downloaded, downloadTotal: bgFetch.downloadTotal };
-              });
-              return bgFetch;
-            },
-            { featureLabel: "Background Fetch API" }
-          );
-          return opRef;
-        },
-        /**
-         * Get an existing background fetch registration.
-         */
-        get(id) {
-          return runPwaRegistrationOp(
-            runtime,
-            "backgroundFetch",
-            async (reg) => {
-              return await reg.backgroundFetch.get(id);
-            },
-            { initialStatus: "loading", featureLabel: "Background Fetch API" }
-          );
-        },
-        /**
-         * Abort a background fetch.
-         */
-        abort(id) {
-          return runPwaRegistrationOp(
-            runtime,
-            "backgroundFetch",
-            async (reg) => {
-              const bgFetch = await reg.backgroundFetch.get(id);
-              if (bgFetch) {
-                await bgFetch.abort();
-              } else {
-                throw new Error(`No background fetch with id '${id}'`);
-              }
-            },
-            { featureLabel: "Background Fetch API" }
-          );
-        }
+      /**
+       * Start a background fetch.
+       * Returns reactive { data: BackgroundFetchRegistration | null, status, error }.
+       */
+      fetch(id, requests, options) {
+        let opRef;
+        opRef = runPwaRegistrationOp(
+          runtime,
+          "backgroundFetch",
+          async (reg) => {
+            const bgFetch = await reg.backgroundFetch.fetch(id, requests, options || {});
+            bgFetch.addEventListener("progress", () => {
+              opRef.data = { ...bgFetch, downloaded: bgFetch.downloaded, downloadTotal: bgFetch.downloadTotal };
+            });
+            return bgFetch;
+          },
+          { featureLabel: "Background Fetch API" }
+        );
+        return opRef;
+      },
+      /**
+       * Get an existing background fetch registration.
+       */
+      get(id) {
+        return runPwaRegistrationOp(
+          runtime,
+          "backgroundFetch",
+          async (reg) => {
+            return await reg.backgroundFetch.get(id);
+          },
+          { initialStatus: "loading", featureLabel: "Background Fetch API" }
+        );
+      },
+      /**
+       * Abort a background fetch.
+       */
+      abort(id) {
+        return runPwaRegistrationOp(
+          runtime,
+          "backgroundFetch",
+          async (reg) => {
+            const bgFetch = await reg.backgroundFetch.get(id);
+            if (bgFetch) {
+              await bgFetch.abort();
+            } else {
+              throw new Error(`No background fetch with id '${id}'`);
+            }
+          },
+          { featureLabel: "Background Fetch API" }
+        );
       }
     };
   }
+  var bgFetchSpriteModule, bgFetch_default;
   var init_bgFetch = __esm({
     "src/modules/sprites/bgFetch.ts"() {
       init_pwa2();
+      bgFetchSpriteModule = {
+        name: "bgFetch",
+        key: "$bgFetch",
+        sprites: (runtime) => createBgFetchApi(runtime)
+      };
+      bgFetch_default = bgFetchSpriteModule;
     }
   });
 
   // src/modules/sprites/bgSync.ts
   var bgSync_exports = {};
   __export(bgSync_exports, {
-    default: () => bgSyncFactory
+    bgSyncSpriteModule: () => bgSyncSpriteModule,
+    createBgSyncApi: () => createBgSyncApi,
+    default: () => bgSync_default
   });
-  function bgSyncFactory(runtime) {
+  function createBgSyncApi(runtime) {
     return {
-      $bgSync: {
-        /**
-         * Register a one-time background sync.
-         * Returns reactive { status, error }.
-         */
-        register(tag) {
-          return runPwaRegistrationOp(
-            runtime,
-            "sync",
-            async (reg) => {
-              await reg.sync.register(tag);
-            },
-            { featureLabel: "Background Sync API" }
-          );
-        },
-        /**
-         * Get all registered sync tags.
-         * Returns reactive { data: string[], status, error }.
-         */
-        get tags() {
-          return runPwaRegistrationOp(
-            runtime,
-            "sync",
-            async (reg) => {
-              return await reg.sync.getTags();
-            },
-            { initialStatus: "loading", initialData: [], featureLabel: "Background Sync API" }
-          );
-        }
+      /**
+       * Register a one-time background sync.
+       * Returns reactive { status, error }.
+       */
+      register(tag) {
+        return runPwaRegistrationOp(
+          runtime,
+          "sync",
+          async (reg) => {
+            await reg.sync.register(tag);
+          },
+          { featureLabel: "Background Sync API" }
+        );
+      },
+      /**
+       * Get all registered sync tags.
+       * Returns reactive { data: string[], status, error }.
+       */
+      get tags() {
+        return runPwaRegistrationOp(
+          runtime,
+          "sync",
+          async (reg) => {
+            return await reg.sync.getTags();
+          },
+          { initialStatus: "loading", initialData: [], featureLabel: "Background Sync API" }
+        );
       }
     };
   }
+  var bgSyncSpriteModule, bgSync_default;
   var init_bgSync = __esm({
     "src/modules/sprites/bgSync.ts"() {
       init_pwa2();
+      bgSyncSpriteModule = {
+        name: "bgSync",
+        key: "$bgSync",
+        sprites: (runtime) => createBgSyncApi(runtime)
+      };
+      bgSync_default = bgSyncSpriteModule;
     }
   });
 
@@ -11186,7 +11237,8 @@ ${match}</ul>
   __export(gql_exports, {
     configureGqlClient: () => configureGqlClient,
     default: () => gql_default,
-    gqlSprite: () => gqlSprite
+    gqlSprite: () => gqlSprite,
+    gqlSpriteModule: () => gqlSpriteModule
   });
   function configureGqlClient(config) {
     if (config.endpoint)
@@ -11268,25 +11320,27 @@ ${match}</ul>
       return result;
     };
   }
-  function gql_default(runtime) {
-    return {
-      $gql: gqlSprite(runtime)
-    };
-  }
-  var defaultEndpoint;
+  var defaultEndpoint, gqlSpriteModule, gql_default;
   var init_gql = __esm({
     "src/modules/sprites/gql.ts"() {
       init_reactivity();
       defaultEndpoint = "/graphql";
+      gqlSpriteModule = {
+        name: "gql",
+        key: "$gql",
+        sprites: (runtime) => gqlSprite(runtime)
+      };
+      gql_default = gqlSpriteModule;
     }
   });
 
   // src/modules/sprites/mcp.ts
   var mcp_exports2 = {};
   __export(mcp_exports2, {
+    default: () => mcp_default,
     mcpModule: () => mcpModule
   });
-  var mcpModule;
+  var mcpModule, mcp_default;
   var init_mcp2 = __esm({
     "src/modules/sprites/mcp.ts"() {
       init_reactivity();
@@ -11359,63 +11413,71 @@ ${match}</ul>
           };
         }
       };
+      mcp_default = mcpModule;
     }
   });
 
   // src/modules/sprites/periodicSync.ts
   var periodicSync_exports = {};
   __export(periodicSync_exports, {
-    default: () => periodicSyncFactory
+    createPeriodicSyncApi: () => createPeriodicSyncApi,
+    default: () => periodicSync_default,
+    periodicSyncSpriteModule: () => periodicSyncSpriteModule
   });
-  function periodicSyncFactory(runtime) {
+  function createPeriodicSyncApi(runtime) {
     return {
-      $periodicSync: {
-        /**
-         * Register a periodic background sync.
-         * Returns reactive { status, error }.
-         */
-        register(tag, options) {
-          return runPwaRegistrationOp(
-            runtime,
-            "periodicSync",
-            async (reg) => {
-              await reg.periodicSync.register(tag, options || {});
-            },
-            { featureLabel: "Periodic Background Sync API" }
-          );
-        },
-        /**
-         * Unregister a periodic sync tag.
-         */
-        unregister(tag) {
-          return runPwaRegistrationOp(
-            runtime,
-            "periodicSync",
-            async (reg) => {
-              await reg.periodicSync.unregister(tag);
-            },
-            { featureLabel: "Periodic Background Sync API" }
-          );
-        },
-        /**
-         * Get all registered periodic sync tags.
-         */
-        get tags() {
-          return runPwaRegistrationOp(
-            runtime,
-            "periodicSync",
-            async (reg) => {
-              return await reg.periodicSync.getTags();
-            },
-            { initialStatus: "loading", initialData: [], featureLabel: "Periodic Background Sync API" }
-          );
-        }
+      /**
+       * Register a periodic background sync.
+       * Returns reactive { status, error }.
+       */
+      register(tag, options) {
+        return runPwaRegistrationOp(
+          runtime,
+          "periodicSync",
+          async (reg) => {
+            await reg.periodicSync.register(tag, options || {});
+          },
+          { featureLabel: "Periodic Background Sync API" }
+        );
+      },
+      /**
+       * Unregister a periodic sync tag.
+       */
+      unregister(tag) {
+        return runPwaRegistrationOp(
+          runtime,
+          "periodicSync",
+          async (reg) => {
+            await reg.periodicSync.unregister(tag);
+          },
+          { featureLabel: "Periodic Background Sync API" }
+        );
+      },
+      /**
+       * Get all registered periodic sync tags.
+       */
+      get tags() {
+        return runPwaRegistrationOp(
+          runtime,
+          "periodicSync",
+          async (reg) => {
+            return await reg.periodicSync.getTags();
+          },
+          { initialStatus: "loading", initialData: [], featureLabel: "Periodic Background Sync API" }
+        );
       }
     };
   }
+  var periodicSyncSpriteModule, periodicSync_default;
   var init_periodicSync = __esm({
     "src/modules/sprites/periodicSync.ts"() {
       init_pwa2();
+      periodicSyncSpriteModule = {
+        name: "periodicSync",
+        key: "$periodicSync",
+        sprites: (runtime) => createPeriodicSyncApi(runtime)
+      };
+      periodicSync_default = periodicSyncSpriteModule;
     }
   });
 
@@ -11930,9 +11992,21 @@ ${match}</ul>
   // src/modules/sprites/push.ts
   var push_exports = {};
   __export(push_exports, {
-    default: () => pushFactory
+    createPushApi: () => createPushApi,
+    default: () => push_default,
+    pushSpriteModule: () => pushSpriteModule
   });
-  function pushFactory(runtime) {
+  function urlBase64ToUint8Array(base64String) {
+    const padding = "=".repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+    const rawData = atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  }
+  function createPushApi(runtime) {
     const state = runtime.reactive({
       subscription: null,
       status: "idle",
@@ -11951,74 +12025,71 @@ ${match}</ul>
       });
     }
     return {
-      $push: {
-        get subscription() {
-          return state.subscription;
-        },
-        get status() {
-          return state.status;
-        },
-        /**
-         * Subscribe to push notifications.
-         * @param applicationServerKey - VAPID public key (base64 or Uint8Array)
-         */
-        subscribe(applicationServerKey) {
-          const op = createPwaAsyncOp(runtime, { data: null });
-          if (!hasServiceWorker()) {
-            op.error = "Service Worker not available";
-            op.status = "error";
-            return op;
-          }
-          state.status = "subscribing";
-          (async () => {
-            try {
-              const reg = await navigator.serviceWorker.ready;
-              let key;
-              if (typeof applicationServerKey === "string") {
-                const raw = atob(applicationServerKey.replace(/-/g, "+").replace(/_/g, "/"));
-                key = new Uint8Array(raw.length);
-                for (let i = 0; i < raw.length; i++)
-                  key[i] = raw.charCodeAt(i);
-              } else {
-                key = applicationServerKey;
-              }
-              const sub = await reg.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: key
-              });
-              state.subscription = sub;
-              state.status = "active";
-              op.data = sub;
-              op.status = "done";
-            } catch (e) {
-              const msg = e instanceof Error ? e.message : String(e);
-              op.error = msg;
-              op.status = "error";
-              state.error = msg;
-              state.status = "error";
-            }
-          })();
+      get subscription() {
+        return state.subscription;
+      },
+      get status() {
+        return state.status;
+      },
+      /**
+       * Subscribe to push notifications.
+       * @param applicationServerKey - VAPID public key (base64 or Uint8Array)
+       */
+      subscribe(applicationServerKey) {
+        const op = createPwaAsyncOp(runtime, { data: null });
+        if (!hasServiceWorker()) {
+          op.error = "Service Worker not available";
+          op.status = "error";
           return op;
-        },
-        /**
-         * Unsubscribe from push notifications.
-         */
-        unsubscribe() {
-          if (!state.subscription) {
-            return createPwaAsyncOp(runtime, { status: "error", error: "No active subscription" });
-          }
-          return runPwaOp(runtime, async () => {
-            await state.subscription.unsubscribe();
-            state.subscription = null;
-            state.status = "idle";
-          });
         }
+        state.status = "subscribing";
+        (async () => {
+          try {
+            const reg = await navigator.serviceWorker.ready;
+            const keyBytes = typeof applicationServerKey === "string" ? urlBase64ToUint8Array(applicationServerKey) : applicationServerKey;
+            const sub = await reg.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: keyBytes
+            });
+            state.subscription = sub;
+            state.status = "active";
+            op.data = sub;
+            op.status = "success";
+          } catch (err) {
+            const message = err instanceof Error ? err.message : String(err);
+            state.error = message;
+            state.status = "error";
+            op.error = message;
+            op.status = "error";
+          }
+        })();
+        return op;
+      },
+      /**
+       * Unsubscribe from push notifications.
+       */
+      unsubscribe() {
+        if (!state.subscription) {
+          return createPwaAsyncOp(runtime, { status: "error", error: "No active subscription" });
+        }
+        return runPwaOp(runtime, async () => {
+          await state.subscription.unsubscribe();
+          state.subscription = null;
+          state.status = "idle";
+        });
       }
     };
   }
+  var pushSpriteModule, push_default;
   var init_push = __esm({
     "src/modules/sprites/push.ts"() {
       init_pwa2();
+      pushSpriteModule = {
+        name: "push",
+        key: "$push",
+        sprites: (runtime) => createPushApi(runtime)
+      };
+      push_default = pushSpriteModule;
     }
   });
 
@@ -12915,13 +12986,12 @@ ${match}</ul>
           };
         },
         sprites(runtime) {
-          return {
-            $: (selector) => {
-              if (typeof document === "undefined")
-                return null;
-              return resolveSelector(document.body, selector);
-            }
+          const fn = (selector) => {
+            if (typeof document === "undefined")
+              return null;
+            return resolveSelector(document.body, selector);
           };
+          return fn;
         }
       };
       selector_default = selectorSpriteModule;
@@ -12933,7 +13003,8 @@ ${match}</ul>
   __export(sql_exports, {
     configureSqlClient: () => configureSqlClient,
     default: () => sql_default,
-    sqlSprite: () => sqlSprite
+    sqlSprite: () => sqlSprite,
+    sqlSpriteModule: () => sqlSpriteModule
   });
   function getConnection(url) {
     if (!connectionPool.has(url)) {
@@ -13144,12 +13215,7 @@ ${match}</ul>
       return result;
     };
   }
-  function sql_default(runtime) {
-    return {
-      $sql: sqlSprite(runtime)
-    };
-  }
-  var connectionPool, pendingRequests, liveQueries, requestId, defaultNs, defaultDb, authToken;
+  var connectionPool, pendingRequests, liveQueries, requestId, defaultNs, defaultDb, authToken, sqlSpriteModule, sql_default;
   var init_sql = __esm({
     "src/modules/sprites/sql.ts"() {
       init_reactivity();
@@ -13160,15 +13226,22 @@ ${match}</ul>
       defaultNs = "test";
       defaultDb = "test";
       authToken = null;
+      sqlSpriteModule = {
+        name: "sql",
+        key: "$sql",
+        sprites: (runtime) => sqlSprite(runtime)
+      };
+      sql_default = sqlSpriteModule;
     }
   });
 
   // src/modules/sprites/svg.ts
   var svg_exports = {};
   __export(svg_exports, {
+    default: () => svg_default,
     svgModule: () => svgModule
   });
-  var svgModule;
+  var svgModule, svg_default;
   var init_svg = __esm({
     "src/modules/sprites/svg.ts"() {
       init_reactivity();
@@ -13270,15 +13343,18 @@ ${match}</ul>
           };
         }
       };
+      svg_default = svgModule;
     }
   });
 
   // src/modules/sprites/sw.ts
   var sw_exports = {};
   __export(sw_exports, {
-    default: () => swFactory
+    createSwApi: () => createSwApi,
+    default: () => sw_default,
+    swSpriteModule: () => swSpriteModule
   });
-  function swFactory(runtime) {
+  function createSwApi(runtime) {
     const state = runtime.reactive({
       status: "idle",
       controller: null,
@@ -13301,123 +13377,135 @@ ${match}</ul>
       });
     }
     return {
-      $sw: {
-        /**
-         * Reactive status of the service worker.
-         */
-        get status() {
-          return state.status;
-        },
-        /**
-         * Reactive reference to the active controller.
-         */
-        get controller() {
-          return state.controller;
-        },
-        /**
-         * Whether an update is waiting to be activated.
-         */
-        get updateAvailable() {
-          return state.updateAvailable;
-        },
-        /**
-         * Register a service worker.
-         * Returns reactive { status, error } container.
-         */
-        register(scriptURL, options) {
-          const op = createPwaAsyncOp(runtime);
-          if (!hasServiceWorker()) {
-            op.error = "Service Worker API not available";
-            op.status = "error";
-            return op;
-          }
-          state.status = "registering";
-          (async () => {
-            try {
-              const registration = await navigator.serviceWorker.register(scriptURL, options);
-              state.registration = registration;
-              if (registration.waiting) {
-                state.updateAvailable = true;
-                state.status = "waiting";
-              }
-              registration.addEventListener("updatefound", () => {
-                const installing = registration.installing;
-                if (installing) {
-                  installing.addEventListener("statechange", () => {
-                    if (installing.state === "installed") {
-                      if (navigator.serviceWorker.controller) {
-                        state.updateAvailable = true;
-                        state.status = "waiting";
-                      } else {
-                        state.status = "active";
-                      }
-                    }
-                  });
-                }
-              });
-              op.status = "done";
-            } catch (e) {
-              op.error = e instanceof Error ? e.message : String(e);
-              op.status = "error";
-              state.error = op.error;
-              state.status = "error";
-            }
-          })();
+      /**
+       * Reactive status of the service worker.
+       */
+      get status() {
+        return state.status;
+      },
+      /**
+       * Reactive reference to the active controller.
+       */
+      get controller() {
+        return state.controller;
+      },
+      /**
+       * Whether an update is waiting to be activated.
+       */
+      get updateAvailable() {
+        return state.updateAvailable;
+      },
+      /**
+       * Register a service worker.
+       * Returns reactive { status, error } container.
+       */
+      register(scriptURL, options) {
+        const op = createPwaAsyncOp(runtime);
+        if (!hasServiceWorker()) {
+          op.error = "Service Worker API not available";
+          op.status = "error";
           return op;
-        },
-        /**
-         * Check for service worker updates.
-         */
-        update() {
-          if (!state.registration) {
-            return createPwaAsyncOp(runtime, { status: "error", error: "No service worker registered" });
-          }
-          return runPwaOp(runtime, () => state.registration.update());
-        },
-        /**
-         * Unregister the active service worker.
-         */
-        unregister() {
-          if (!state.registration) {
-            return createPwaAsyncOp(runtime, { status: "error", error: "No service worker registered" });
-          }
-          return runPwaOp(runtime, async () => {
-            const success = await state.registration.unregister();
-            if (success) {
-              state.status = "idle";
-              state.controller = null;
-              state.registration = null;
-              state.updateAvailable = false;
+        }
+        state.status = "registering";
+        (async () => {
+          try {
+            const registration = await navigator.serviceWorker.register(scriptURL, options);
+            state.registration = registration;
+            if (registration.waiting) {
+              state.updateAvailable = true;
+              state.status = "waiting";
             }
-          });
-        },
-        /**
-         * Send a message to the active service worker.
-         */
-        postMessage(data) {
-          if (state.controller) {
-            state.controller.postMessage(data);
+            registration.addEventListener("updatefound", () => {
+              const installing = registration.installing;
+              if (installing) {
+                installing.addEventListener("statechange", () => {
+                  if (installing.state === "installed") {
+                    if (navigator.serviceWorker.controller) {
+                      state.updateAvailable = true;
+                      state.status = "waiting";
+                    } else {
+                      state.status = "active";
+                    }
+                  }
+                });
+              }
+            });
+            op.status = "done";
+          } catch (e) {
+            op.error = e instanceof Error ? e.message : String(e);
+            op.status = "error";
+            state.error = op.error;
+            state.status = "error";
           }
-        },
-        /**
-         * Skip waiting — activate the waiting worker immediately.
-         */
-        skipWaiting() {
-          if (state.registration?.waiting) {
-            state.registration.waiting.postMessage({ type: "SKIP_WAITING" });
+        })();
+        return op;
+      },
+      /**
+       * Check for service worker updates.
+       */
+      update() {
+        if (!state.registration) {
+          return createPwaAsyncOp(runtime, { status: "error", error: "No service worker registered" });
+        }
+        return runPwaOp(runtime, () => state.registration.update());
+      },
+      /**
+       * Unregister the active service worker.
+       */
+      unregister() {
+        if (!state.registration) {
+          return createPwaAsyncOp(runtime, { status: "error", error: "No service worker registered" });
+        }
+        return runPwaOp(runtime, async () => {
+          const success = await state.registration.unregister();
+          if (success) {
+            state.status = "idle";
+            state.controller = null;
+            state.registration = null;
+            state.updateAvailable = false;
           }
+        });
+      },
+      /**
+       * Send a message to the active service worker.
+       */
+      postMessage(data) {
+        if (state.controller) {
+          state.controller.postMessage(data);
+        }
+      },
+      /**
+       * Skip waiting — activate the waiting worker immediately.
+       */
+      skipWaiting() {
+        if (state.registration?.waiting) {
+          state.registration.waiting.postMessage({ type: "SKIP_WAITING" });
         }
       }
     };
   }
+  var swSpriteModule, sw_default;
   var init_sw = __esm({
     "src/modules/sprites/sw.ts"() {
       init_pwa2();
+      swSpriteModule = {
+        name: "sw",
+        key: "$sw",
+        sprites: (runtime) => createSwApi(runtime)
+      };
+      sw_default = swSpriteModule;
     }
   });
 
   // src/modules/scopes/auth.ts
-  var authScope;
+  var auth_exports = {};
+  __export(auth_exports, {
+    authScope: () => authScope,
+    authScopeModule: () => authScopeModule,
+    default: () => auth_default,
+    scopeRule: () => scopeRule
+  });
+  var authScope, scopeRule, authScopeModule, auth_default;
   var init_auth = __esm({
     "src/modules/scopes/auth.ts"() {
       init_reactivity();
@@ -13439,26 +13527,114 @@ ${match}</ul>
           authScope.token = null;
         }
       });
+      scopeRule = (q, body) => {
+        if (q === "isAuthenticated")
+          return authScope.isAuthenticated ? body() : void 0;
+        if (authScope.roles.includes(q))
+          return body() ? body() : void 0;
+        return void 0;
+      };
+      authScopeModule = {
+        name: "auth",
+        rule: "auth",
+        scopeRule
+      };
+      auth_default = authScopeModule;
     }
   });
 
   // src/modules/scopes/container.ts
+  var container_exports = {};
+  __export(container_exports, {
+    containerScopeModule: () => containerScopeModule,
+    default: () => container_default,
+    getContainerSignal: () => getContainerSignal,
+    scopeRule: () => scopeRule2
+  });
+  function getContainerSignal(query, _element) {
+    if (containerSignals.has(query)) {
+      return containerSignals.get(query);
+    }
+    const mql = globalThis.matchMedia(query);
+    const s = ref(mql.matches);
+    const listener = (e) => {
+      s.value = e.matches;
+    };
+    mql.addEventListener("change", listener);
+    containerSignals.set(query, s);
+    return s;
+  }
+  var containerSignals, scopeRule2, containerScopeModule, container_default;
   var init_container = __esm({
     "src/modules/scopes/container.ts"() {
       init_reactivity();
+      containerSignals = /* @__PURE__ */ new Map();
+      scopeRule2 = (q, body) => getContainerSignal(q).value ? body() : void 0;
+      containerScopeModule = {
+        name: "container",
+        rule: "container",
+        scopeRule: scopeRule2
+      };
+      container_default = containerScopeModule;
     }
   });
 
   // src/modules/scopes/media.ts
+  var media_exports = {};
+  __export(media_exports, {
+    default: () => media_default,
+    dispose: () => dispose,
+    getMediaSignal: () => getMediaSignal,
+    mediaScopeModule: () => mediaScopeModule,
+    scopeRule: () => scopeRule3
+  });
+  function getMediaSignal(query) {
+    if (mediaSignals.has(query)) {
+      return mediaSignals.get(query);
+    }
+    if (typeof window === "undefined") {
+      mediaSignals.set(query, computed(() => false));
+      return mediaSignals.get(query);
+    }
+    const mql = globalThis.matchMedia(query);
+    const s = ref(mql.matches);
+    const listener = (e) => {
+      s.value = e.matches;
+    };
+    mql.addEventListener("change", listener);
+    cleanupFns.push(() => mql.removeEventListener("change", listener));
+    mediaSignals.set(query, s);
+    return s;
+  }
+  function dispose() {
+    disposeScope(cleanupFns);
+  }
+  var mediaSignals, cleanupFns, scopeRule3, mediaScopeModule, media_default;
   var init_media = __esm({
     "src/modules/scopes/media.ts"() {
       init_reactivity();
       init_scope();
+      mediaSignals = /* @__PURE__ */ new Map();
+      cleanupFns = [];
+      scopeRule3 = (q, body) => getMediaSignal(q).value ? body() : void 0;
+      mediaScopeModule = {
+        name: "media",
+        rule: "media",
+        scopeRule: scopeRule3
+      };
+      media_default = mediaScopeModule;
     }
   });
 
   // src/modules/scopes/native.ts
-  var nativeScope;
+  var native_exports = {};
+  __export(native_exports, {
+    default: () => native_default,
+    nativeScope: () => nativeScope,
+    nativeScopeModule: () => nativeScopeModule,
+    scopeRule: () => scopeRule4
+  });
+  var nativeScope, scopeRule4, nativeScopeModule, native_default;
   var init_native = __esm({
     "src/modules/scopes/native.ts"() {
       init_reactivity();
@@ -13473,11 +13649,48 @@ ${match}</ul>
         nativeScope.platform = native.platform || "unknown";
         nativeScope.bridge = native;
       }
+      scopeRule4 = (q, body) => {
+        if (q === "isPresent")
+          return nativeScope.isPresent ? body() : void 0;
+        return nativeScope.platform === q ? body() : void 0;
+      };
+      nativeScopeModule = {
+        name: "native",
+        rule: "native",
+        scopeRule: scopeRule4
+      };
+      native_default = nativeScopeModule;
     }
   });
 
   // src/modules/scopes/os.ts
-  var getOS, getTheme, osScope;
+  var os_exports = {};
+  __export(os_exports, {
+    default: () => os_default,
+    dispose: () => dispose2,
+    getOSScope: () => getOSScope,
+    onGlobalInit: () => onGlobalInit,
+    osScope: () => osScope,
+    osScopeModule: () => osScopeModule,
+    scopeRule: () => scopeRule5
+  });
+  function onGlobalInit() {
+    if (typeof window !== "undefined") {
+      const mq = globalThis.matchMedia("(prefers-color-scheme: dark)");
+      const onThemeChange = (e) => {
+        osScope.theme = e.matches ? "dark" : "light";
+      };
+      mq.addEventListener("change", onThemeChange);
+      cleanupFns2.push(() => mq.removeEventListener("change", onThemeChange));
+    }
+  }
+  function getOSScope() {
+    return osScope;
+  }
+  function dispose2() {
+    disposeScope(cleanupFns2);
+  }
+  var getOS, getTheme, osScope, cleanupFns2, scopeRule5, osScopeModule, os_default;
   var init_os = __esm({
     "src/modules/scopes/os.ts"() {
       init_reactivity();
@@ -13509,11 +13722,79 @@ ${match}</ul>
         isMobile: /Android|iPhone|iPad|iPod/i.test(navigator.userAgent),
         isDesktop: !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
       });
+      cleanupFns2 = [];
+      scopeRule5 = (q, body) => {
+        if (q in osScope)
+          return osScope[q] ? body() : void 0;
+        return osScope.platform === q ? body() : void 0;
+      };
+      osScopeModule = {
+        name: "os",
+        rule: "os",
+        onGlobalInit,
+        scopeRule: scopeRule5
+      };
+      os_default = osScopeModule;
     }
   });
 
   // src/modules/scopes/view.ts
-  var viewScope;
+  var view_exports = {};
+  __export(view_exports, {
+    default: () => view_default,
+    dispose: () => dispose3,
+    onGlobalInit: () => onGlobalInit2,
+    scopeRule: () => scopeRule6,
+    viewScope: () => viewScope,
+    viewScopeModule: () => viewScopeModule
+  });
+  function scheduleViewUpdate(apply) {
+    if (viewRafScheduled)
+      return;
+    viewRafScheduled = true;
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(() => {
+        viewRafScheduled = false;
+        apply();
+      });
+    } else {
+      queueMicrotask(() => {
+        viewRafScheduled = false;
+        apply();
+      });
+    }
+  }
+  function onGlobalInit2() {
+    if (typeof window !== "undefined") {
+      const updateView = () => {
+        viewScope.width = globalThis.innerWidth;
+        viewScope.height = globalThis.innerHeight;
+        viewScope.scrollX = globalThis.scrollX;
+        viewScope.scrollY = globalThis.scrollY;
+        viewScope.isPortrait = globalThis.innerHeight > globalThis.innerWidth;
+        viewScope.isLandscape = globalThis.innerWidth >= globalThis.innerHeight;
+        viewScope.devicePixelRatio = globalThis.devicePixelRatio;
+      };
+      const updateViewCoalesced = () => scheduleViewUpdate(updateView);
+      globalThis.addEventListener("resize", updateViewCoalesced);
+      globalThis.addEventListener("scroll", updateViewCoalesced);
+      cleanupFns3.push(
+        () => globalThis.removeEventListener("resize", updateViewCoalesced),
+        () => globalThis.removeEventListener("scroll", updateViewCoalesced)
+      );
+    }
+    if (typeof window !== "undefined" && globalThis.screen.orientation) {
+      const onOrientationChange = () => {
+        viewScope.orientation = globalThis.screen.orientation.type;
+      };
+      globalThis.screen.orientation.addEventListener("change", onOrientationChange);
+      cleanupFns3.push(() => globalThis.screen.orientation.removeEventListener("change", onOrientationChange));
+    }
+  }
+  function dispose3() {
+    disposeScope(cleanupFns3);
+  }
+  var viewScope, cleanupFns3, viewRafScheduled, scopeRule6, viewScopeModule, view_default;
   var init_view = __esm({
     "src/modules/scopes/view.ts"() {
       init_reactivity();
@@ -13528,6 +13809,20 @@ ${match}</ul>
         isPortrait: typeof window !== "undefined" ? globalThis.innerHeight > globalThis.innerWidth : false,
         isLandscape: typeof window !== "undefined" ? globalThis.innerWidth >= globalThis.innerHeight : true
       });
+      cleanupFns3 = [];
+      viewRafScheduled = false;
+      scopeRule6 = (q, body) => {
+        if (q in viewScope)
+          return viewScope[q] ? body() : void 0;
+        return void 0;
+      };
+      viewScopeModule = {
+        name: "view",
+        rule: "view",
+        onGlobalInit: onGlobalInit2,
+        scopeRule: scopeRule6
+      };
+      view_default = viewScopeModule;
     }
   });
 
@@ -14639,7 +14934,7 @@ ${match}</ul>
   });
 
   // src/manifest.ts
-  var autoAttributes, autoSprites, autoModifiers, autoListeners, autoObservers, PACKED_COMPONENTS, PACKED_KEYFRAMES;
+  var autoAttributes, autoSprites, autoScopes, autoModifiers, autoListeners, autoObservers, PACKED_COMPONENTS, PACKED_KEYFRAMES;
   var init_manifest = __esm({
     "src/manifest.ts"() {
       init_assert();
@@ -14761,6 +15056,14 @@ ${match}</ul>
         { name: "sql", module: sql_exports },
         { name: "svg", module: svg_exports },
         { name: "sw", module: sw_exports }
+      ];
+      autoScopes = [
+        { name: "auth", module: auth_exports },
+        { name: "container", module: container_exports },
+        { name: "media", module: media_exports },
+        { name: "native", module: native_exports },
+        { name: "os", module: os_exports },
+        { name: "view", module: view_exports }
       ];
       autoModifiers = [
         { name: "debounce", module: debounce_exports },
@@ -15284,10 +15587,10 @@ ${bridge}`, {
           };
         },
         handle(el, expression, _runtime) {
-          const cleanupFns = [];
+          const cleanupFns4 = [];
           if (expression && expression.trim()) {
             const css = expression.trim();
-            cleanupFns.push(stylesheet2.adoptCSSSync(css, void 0, document));
+            cleanupFns4.push(stylesheet2.adoptCSSSync(css, void 0, document));
           }
           const root = el.getRootNode();
           if (root && "adoptedStyleSheets" in root) {
@@ -15297,10 +15600,10 @@ ${bridge}`, {
             }
           }
           stylesheet2.emitPreflightAndTheme(el);
-          cleanupFns.push(() => {
+          cleanupFns4.push(() => {
             stylesheet2.emitPreflightAndTheme(el);
           });
-          return () => cleanupFns.forEach((fn) => fn());
+          return () => cleanupFns4.forEach((fn) => fn());
         }
       };
       stylesheet_default = stylesheetModule;
@@ -16025,7 +16328,11 @@ ${bridge}`, {
     let processed = expression;
     if (processed.includes("@")) {
       processed = processed.replace(/@(\w+)\s*\((.*?)\)\s*\{([^}]*)\}/g, (_match, name, arg, body) => {
-        const safeArg = arg.trim().replace(/`/g, "\\`");
+        let safeArg = arg.trim();
+        if (safeArg.startsWith("'") && safeArg.endsWith("'") || safeArg.startsWith('"') && safeArg.endsWith('"')) {
+          safeArg = safeArg.slice(1, -1);
+        }
+        safeArg = safeArg.replace(/`/g, "\\`");
         return `_scopes.${name}(\`${safeArg}\`, () => { return ${body.trim()} })`;
       });
     }
@@ -16397,11 +16704,13 @@ ${bridge}`, {
     utilityModules = /* @__PURE__ */ new Map();
     spriteModules = /* @__PURE__ */ new Map();
     scopeModules = /* @__PURE__ */ new Map();
+    _scopesRegistry = {};
     directiveOrder = [];
     runtimeContext;
     initContext;
     markerDispenser = 1;
     constructor() {
+      registerScopeProvider("_scopes", () => this._scopesRegistry);
       this.runtimeContext = {
         effect,
         stop,
@@ -16607,16 +16916,23 @@ ${bridge}`, {
       const spriteKey = module.key || `$${name}`;
       this.runtimeContext.sprites[spriteKey] = sprites;
       registerScopeProvider(spriteKey, () => sprites);
-      Object.entries(sprites).forEach(([spriteName, handler]) => {
-        this.registerActionModule(spriteName, {
-          name: spriteName,
-          handle: (_el, ...args) => handler(...args)
+      if (sprites && typeof sprites === "object") {
+        Object.entries(sprites).forEach(([spriteName, handler]) => {
+          this.registerActionModule(spriteName, {
+            name: spriteName,
+            handle: (_el, ...args) => typeof handler === "function" ? handler(...args) : handler
+          });
         });
-      });
+      }
     }
     registerScopeModule(name, module) {
       this.scopeModules.set(name, module);
       module.onRegister?.(this.runtimeContext);
+      const ruleKey = module.rule || name;
+      const handler = module.scopeRule || (module.evaluate ? (q, body) => module.evaluate(q, this.runtimeContext) ? body() : void 0 : void 0);
+      if (handler) {
+        this._scopesRegistry[ruleKey] = handler;
+      }
     }
     scanTimeout = null;
     triggerScan() {
@@ -16793,8 +17109,6 @@ ${bridge}`, {
   init_topology();
   init_agent();
   init_stylesheet();
-  init_selector();
-  init_animate();
   init_predictive();
   init_cache();
 
@@ -16910,8 +17224,6 @@ ${bridge}`, {
       this.coordinator.runtimeContext.setGlobalSignal("$predictive", corePredictiveEngine);
       this.predictive = corePredictiveEngine;
       this.cache = cacheEngine;
-      registerScopeProvider("$", (el) => (selector) => resolveSelector(el, selector));
-      registerScopeProvider("$animate", () => animate);
       this.coordinator.registerUtilityModule("fetch", fetchModule);
       initSelfHeal(this.coordinator.runtimeContext, {
         enabled: true,
@@ -16943,28 +17255,12 @@ ${bridge}`, {
         const spriteMod = module.default || Object.values(module).find((m) => m && typeof m.sprites === "function");
         if (spriteMod && typeof spriteMod.sprites === "function") {
           this.coordinator.registerSpriteModule(spriteMod.name || name, spriteMod);
-        } else {
-          let exportsObj = module;
-          if (typeof module.default === "function") {
-            exportsObj = module.default(this.coordinator.runtimeContext);
-          }
-          Object.entries(exportsObj).forEach(([exportName, handler]) => {
-            if (exportName === "default")
-              return;
-            const handle = (_el, ...args) => handler(...args);
-            const proxyHandle = new Proxy(handle, {
-              get(target, key) {
-                if (key in target)
-                  return target[key];
-                const val = handler[key];
-                return typeof val === "function" ? val.bind(handler) : val;
-              }
-            });
-            this.coordinator.registerActionModule(exportName, {
-              name: exportName,
-              handle: proxyHandle
-            });
-          });
+        }
+      });
+      autoScopes.forEach(({ name, module }) => {
+        const scopeMod = module.default || Object.values(module)[0];
+        if (scopeMod) {
+          this.coordinator.registerScopeModule(scopeMod.name || name, scopeMod);
         }
       });
       autoModifiers.forEach(({ module }) => {

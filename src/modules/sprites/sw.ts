@@ -16,7 +16,9 @@ import { createPwaAsyncOp, hasServiceWorker, runPwaOp } from '../../engine/utils
  *   $sw.controller                            — reactive controller reference
  */
 
-export default function swFactory(runtime: RuntimeContext) {
+import type { SpriteModule } from '../../engine/modules.ts';
+
+export function createSwApi(runtime: RuntimeContext) {
   // Reactive state for service worker lifecycle
   const state = runtime.reactive<{
     status: 'idle' | 'registering' | 'active' | 'waiting' | 'error';
@@ -55,10 +57,9 @@ export default function swFactory(runtime: RuntimeContext) {
   }
 
   return {
-    $sw: {
-      /**
-       * Reactive status of the service worker.
-       */
+    /**
+     * Reactive status of the service worker.
+     */
       get status() {
         return state.status;
       },
@@ -179,7 +180,15 @@ export default function swFactory(runtime: RuntimeContext) {
         if (state.registration?.waiting) {
           state.registration.waiting.postMessage({ type: 'SKIP_WAITING' });
         }
-      }
     }
   };
 }
+
+export const swSpriteModule: SpriteModule = {
+  name: 'sw',
+  key: '$sw',
+  sprites: (runtime: RuntimeContext) => createSwApi(runtime)
+};
+
+export default swSpriteModule;
+

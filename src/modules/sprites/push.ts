@@ -13,7 +13,22 @@ import { createPwaAsyncOp, hasServiceWorker, runPwaOp } from '../../engine/utils
  *   $push.subscription                  — reactive current subscription
  */
 
-export default function pushFactory(runtime: RuntimeContext) {
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding)
+    .replace(/-/g, '+')
+    .replace(/_/g, '/');
+
+  const rawData = atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+export function createPushApi(runtime: RuntimeContext) {
   const state = runtime.reactive<{
     subscription: PushSubscription | null;
     status: 'idle' | 'subscribing' | 'active' | 'error';
@@ -37,72 +52,73 @@ export default function pushFactory(runtime: RuntimeContext) {
   }
 
   return {
-    $push: {
-      get subscription() { return state.subscription; },
-      get status() { return state.status; },
+    get subscription() { return state.subscription; },
+    get status() { return state.status; },
 
-      /**
-       * Subscribe to push notifications.
-       * @param applicationServerKey - VAPID public key (base64 or Uint8Array)
-       */
-      subscribe(applicationServerKey: string | Uint8Array) {
-        const op = createPwaAsyncOp<PushSubscription | null>(runtime, { data: null });
+    /**
+     * Subscribe to push notifications.
+     * @param applicationServerKey - VAPID public key (base64 or Uint8Array)
+     */
+    subscribe(applicationServerKey: string | Uint8Array) {
+      const op = createPwaAsyncOp<PushSubscription | null>(runtime, { data: null });
 
-        if (!hasServiceWorker()) {
-          op.error = 'Service Worker not available';
-          op.status = 'error';
-          return op;
-        }
-
-        state.status = 'subscribing';
-
-        (async () => {
-          try {
-            const reg = await navigator.serviceWorker.ready;
-            let key: Uint8Array;
-            if (typeof applicationServerKey === 'string') {
-              const raw = atob(applicationServerKey.replace(/-/g, '+').replace(/_/g, '/'));
-              key = new Uint8Array(raw.length);
-              for (let i = 0; i < raw.length; i++) key[i] = raw.charCodeAt(i);
-            } else {
-              key = applicationServerKey;
-            }
-
-            const sub = await reg.pushManager.subscribe({
-              userVisibleOnly: true,
-              applicationServerKey: key as unknown as ArrayBuffer
-            });
-            state.subscription = sub;
-            state.status = 'active';
-            op.data = sub;
-            op.status = 'done';
-          } catch (e) {
-            const msg = e instanceof Error ? e.message : String(e);
-            op.error = msg;
-            op.status = 'error';
-            state.error = msg;
-            state.status = 'error';
-          }
-        })();
-
+      if (!hasServiceWorker()) {
+        op.error = 'Service Worker not available';
+        op.status = 'error';
         return op;
-      },
-
-      /**
-       * Unsubscribe from push notifications.
-       */
-      unsubscribe() {
-        if (!state.subscription) {
-          return createPwaAsyncOp(runtime, { status: 'error', error: 'No active subscription' });
-        }
-
-        return runPwaOp(runtime, async () => {
-          await state.subscription!.unsubscribe();
-          state.subscription = null;
-          state.status = 'idle';
-        });
       }
+
+      state.status = 'subscribing';
+
+      (async () => {
+        try {
+          const reg = await navigator.serviceWorker.ready;
+          const keyBytes = typeof applicationServerKey === 'string'
+            ? urlBase64ToUint8Array(applicationServerKey)
+            : applicationServerKey;
+
+          const sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: keyBytes
+          });
+
+          state.subscription = sub;
+          state.status = 'active';
+          op.data = sub;
+          op.status = 'success';
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          state.error = message;
+          state.status = 'error';
+          op.error = message;
+          op.status = 'error';
+        }
+      })();
+
+      return op;
+    },
+
+    /**
+     * Unsubscribe from push notifications.
+     */
+    unsubscribe() {
+      if (!state.subscription) {
+        return createPwaAsyncOp(runtime, { status: 'error', error: 'No active subscription' });
+      }
+
+      return runPwaOp(runtime, async () => {
+        await state.subscription!.unsubscribe();
+        state.subscription = null;
+        state.status = 'idle';
+      });
     }
   };
 }
 
+export const pushSpriteModule: SpriteModule = {
+  name: 'push',
+  key: '$push',
+  sprites: (runtime: RuntimeContext) => createPushApi(runtime)
+};
+
+export default pushSpriteModule;

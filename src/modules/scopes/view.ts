@@ -78,3 +78,15 @@ export const scopeRule = (q: string, body: () => any) => {
 /** Tear down all listeners — for testing or micro-frontend teardown. */
 export function dispose() { disposeScope(cleanupFns); }
 
+import type { ScopeModule } from '../../engine/modules.ts';
+
+export const viewScopeModule: ScopeModule = {
+  name: 'view',
+  rule: 'view',
+  onGlobalInit,
+  scopeRule
+};
+
+export default viewScopeModule;
+
+

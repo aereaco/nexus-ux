@@ -75,3 +75,14 @@ export function format(value: string, template: string): string {
 export const mask = {
   format,
 };
+
+import type { SpriteModule } from '../../engine/modules.ts';
+
+export const maskSpriteModule: SpriteModule = {
+  name: 'mask',
+  key: '$mask',
+  sprites: () => mask
+};
+
+export default maskSpriteModule;
+

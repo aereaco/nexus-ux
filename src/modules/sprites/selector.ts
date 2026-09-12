@@ -208,12 +208,11 @@ const selectorSpriteModule: SpriteModule = {
     };
   },
   sprites(runtime: RuntimeContext) {
-    return {
-      $: (selector: string | HTMLElement) => {
-        if (typeof document === 'undefined') return null;
-        return resolveSelector(document.body as HTMLElement, selector);
-      }
+    const fn = (selector: string | HTMLElement) => {
+      if (typeof document === 'undefined') return null;
+      return resolveSelector(document.body as HTMLElement, selector);
     };
+    return fn;
   }
 };
 

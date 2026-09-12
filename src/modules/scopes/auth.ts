@@ -29,3 +29,14 @@ export const scopeRule = (q: string, body: () => any) => {
   if (authScope.roles.includes(q)) return body() ? body() : undefined;
   return undefined;
 };
+
+import type { ScopeModule } from '../../engine/modules.ts';
+
+export const authScopeModule: ScopeModule = {
+  name: 'auth',
+  rule: 'auth',
+  scopeRule
+};
+
+export default authScopeModule;
+

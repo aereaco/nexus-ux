@@ -108,7 +108,11 @@ function preProcessExpression(expression: string): string {
     // Matches @<name>(<args>) { <body> } 
     // Supports nested parentheses inside args via (.*?) bounded to the opening {
     processed = processed.replace(/@(\w+)\s*\((.*?)\)\s*\{([^}]*)\}/g, (_match, name, arg, body) => {
-      const safeArg = arg.trim().replace(/`/g, "\\`");
+      let safeArg = arg.trim();
+      if ((safeArg.startsWith("'") && safeArg.endsWith("'")) || (safeArg.startsWith('"') && safeArg.endsWith('"'))) {
+        safeArg = safeArg.slice(1, -1);
+      }
+      safeArg = safeArg.replace(/`/g, "\\`");
       return `_scopes.${name}(\`${safeArg}\`, () => { return ${body.trim()} })`;
     });
   }

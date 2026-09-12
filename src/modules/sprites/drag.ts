@@ -82,9 +82,8 @@ export const $drag = {
 
 export const dragSprite: SpriteModule = {
   name: 'drag',
-  sprites: (_runtime: RuntimeContext) => ({
-    $drag,
-  })
+  key: '$drag',
+  sprites: (_runtime: RuntimeContext) => $drag
 };
 
 export default dragSprite;

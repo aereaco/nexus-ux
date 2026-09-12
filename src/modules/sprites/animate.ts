@@ -107,3 +107,13 @@ const getEffectDurations = (el: HTMLElement): number => {
 
 const applyClasses = (el: HTMLElement, s: string) => s.split(' ').filter(Boolean).forEach(c => el.classList.add(c));
 const removeClasses = (el: HTMLElement, s: string) => s.split(' ').filter(Boolean).forEach(c => el.classList.remove(c));
+
+import type { SpriteModule } from '../../engine/modules.ts';
+
+export const animateSpriteModule: SpriteModule = {
+  name: 'animate',
+  key: '$animate',
+  sprites: () => animate
+};
+
+export default animateSpriteModule;

@@ -125,3 +125,6 @@ export const svgModule: SpriteModule = {
     };
   }
 };
+
+export default svgModule;
+

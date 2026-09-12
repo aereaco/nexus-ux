@@ -37,3 +37,14 @@ export const scopeRule = (q: string, body: () => any) => getMediaSignal(q).value
 /** Tear down all listeners — for testing or micro-frontend teardown. */
 export function dispose() { disposeScope(cleanupFns); }
 
+import type { ScopeModule } from '../../engine/modules.ts';
+
+export const mediaScopeModule: ScopeModule = {
+  name: 'media',
+  rule: 'media',
+  scopeRule
+};
+
+export default mediaScopeModule;
+
+

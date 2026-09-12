@@ -342,8 +342,13 @@ queryResult.forEach((row, idx) => {
   };
 }
 
-export default function(runtime: RuntimeContext) {
-  return {
-    $sql: sqlSprite(runtime)
-  };
-}
+import type { SpriteModule } from '../../engine/modules.ts';
+
+export const sqlSpriteModule: SpriteModule = {
+  name: 'sql',
+  key: '$sql',
+  sprites: (runtime: RuntimeContext) => sqlSprite(runtime)
+};
+
+export default sqlSpriteModule;
+

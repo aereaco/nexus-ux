@@ -36,3 +36,14 @@ export function getContainerSignal(query: string, _element?: HTMLElement): Ref<b
 }
 
 export const scopeRule = (q: string, body: () => any) => getContainerSignal(q).value ? body() : undefined;
+
+import type { ScopeModule } from '../../engine/modules.ts';
+
+export const containerScopeModule: ScopeModule = {
+  name: 'container',
+  rule: 'container',
+  scopeRule
+};
+
+export default containerScopeModule;
+

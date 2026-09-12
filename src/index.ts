@@ -6,8 +6,6 @@ export { runInWorker };
 import { initSelfHeal, getBeaconHistory } from './engine/agent.ts';
 import { stylesheet, discoverColorTokens, buildTailwindThemeBridge } from './modules/attributes/stylesheet.ts';
 import { fetchModule } from './engine/fetch.ts';
-import { resolveSelector } from './modules/sprites/selector.ts';
-import { animate } from './modules/sprites/animate.ts';
 import { corePredictiveEngine } from './engine/predictive.ts';
 import { cacheEngine } from './engine/cache.ts';
 import { handleWorkerMessage } from './engine/logic.worker.ts';
@@ -82,10 +80,6 @@ export class UX {
     (this as any).predictive = corePredictiveEngine;
     (this as any).cache = cacheEngine;
 
-    // Contextual selector and animation
-    registerScopeProvider('$', (el: any) => (selector: string) => resolveSelector(el as HTMLElement, selector));
-    registerScopeProvider('$animate', () => animate);
-
     // Fetch utility
     this.coordinator.registerUtilityModule('fetch', fetchModule);
 
@@ -124,26 +118,13 @@ export class UX {
       const spriteMod = module.default || Object.values(module).find((m: any) => m && typeof m.sprites === 'function');
       if (spriteMod && typeof spriteMod.sprites === 'function') {
         this.coordinator.registerSpriteModule(spriteMod.name || name, spriteMod);
-      } else {
-        let exportsObj = module;
-        if (typeof module.default === 'function') {
-          exportsObj = module.default(this.coordinator.runtimeContext);
-        }
-        Object.entries(exportsObj).forEach(([exportName, handler]) => {
-          if (exportName === 'default') return;
-          const handle = (_el: HTMLElement, ...args: any[]) => (handler as any)(...args);
-          const proxyHandle = new Proxy(handle, {
-            get(target, key) {
-              if (key in target) return (target as any)[key];
-              const val = (handler as any)[key];
-              return typeof val === 'function' ? val.bind(handler) : val;
-            }
-          });
-          this.coordinator.registerActionModule(exportName, {
-            name: exportName,
-            handle: proxyHandle
-          });
-        });
+      }
+    });
+
+    autoScopes.forEach(({ name, module }) => {
+      const scopeMod = module.default || Object.values(module)[0];
+      if (scopeMod) {
+        this.coordinator.registerScopeModule(scopeMod.name || name, scopeMod);
       }
     });
 

@@ -141,7 +141,7 @@ export interface UtilityModule extends Module {
  */
 export interface SpriteModule extends Module {
   key?: string;
-  sprites(runtime: RuntimeContext): Record<string, unknown>;  // e.g. { $cache: {...} }
+  sprites(runtime: RuntimeContext): any;
 }
 
 /**
@@ -149,8 +149,9 @@ export interface SpriteModule extends Module {
  * Scopes are used with the `@` prefix in directives.
  */
 export interface ScopeModule extends Module {
-  rule: string;  // e.g. 'media', 'auth', 'os'
-  evaluate(expression: string, runtime: RuntimeContext): boolean | unknown;
+  rule?: string;  // e.g. 'media', 'auth', 'os'
+  evaluate?(expression: string, runtime: RuntimeContext): boolean | unknown;
+  scopeRule?: (query: string, body: () => any) => any;
 }
 
 declare module "./composition.ts" {
@@ -196,6 +197,7 @@ export class ModuleCoordinator {
   public utilityModules: Map<string, UtilityModule> = new Map();
   public spriteModules: Map<string, SpriteModule> = new Map();
   public scopeModules: Map<string, ScopeModule> = new Map();
+  private _scopesRegistry: Record<string, (arg: string, body: () => any) => any> = {};
   private directiveOrder: string[] = [];
   
   public runtimeContext: RuntimeContext;
@@ -203,6 +205,7 @@ export class ModuleCoordinator {
   private markerDispenser = 1;
 
   constructor() {
+    registerScopeProvider('_scopes', () => this._scopesRegistry);
     this.runtimeContext = {
       effect: reactivity.effect,
       stop: reactivity.stop,
@@ -432,21 +435,28 @@ export class ModuleCoordinator {
     const spriteKey = module.key || `$${name}`;
     this.runtimeContext.sprites[spriteKey] = sprites;
 
-    // Expose the whole sprite object (e.g. $svg, $flow) as a live expression
-    // scope provider so bindings like data-bind-d="$svg.connect(...)" resolve.
+    // Expose the sprite object or callable function (e.g. $, $animate, $svg, $flow)
+    // as a live expression scope provider so bindings like $(...), $animate(...), or $svg.connect(...) resolve.
     registerScopeProvider(spriteKey, () => sprites);
 
-    Object.entries(sprites).forEach(([spriteName, handler]) => {
-      this.registerActionModule(spriteName, {
-        name: spriteName,
-        handle: (_el, ...args) => (handler as any)(...args)
+    if (sprites && typeof sprites === 'object') {
+      Object.entries(sprites).forEach(([spriteName, handler]) => {
+        this.registerActionModule(spriteName, {
+          name: spriteName,
+          handle: (_el, ...args) => typeof handler === 'function' ? (handler as any)(...args) : handler
+        });
       });
-    });
+    }
   }
 
   public registerScopeModule(name: string, module: ScopeModule): void {
     this.scopeModules.set(name, module);
     module.onRegister?.(this.runtimeContext);
+    const ruleKey = module.rule || name;
+    const handler = module.scopeRule || (module.evaluate ? (q: string, body: () => any) => module.evaluate!(q, this.runtimeContext) ? body() : undefined : undefined);
+    if (handler) {
+      this._scopesRegistry[ruleKey] = handler;
+    }
   }
 
   private scanTimeout: number | null = null;

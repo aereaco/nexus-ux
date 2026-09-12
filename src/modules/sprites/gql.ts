@@ -135,8 +135,13 @@ export function gqlSprite(runtime: RuntimeContext) {
   };
 }
 
-export default function(runtime: RuntimeContext) {
-  return {
-    $gql: gqlSprite(runtime)
-  };
-}
+import type { SpriteModule } from '../../engine/modules.ts';
+
+export const gqlSpriteModule: SpriteModule = {
+  name: 'gql',
+  key: '$gql',
+  sprites: (runtime: RuntimeContext) => gqlSprite(runtime)
+};
+
+export default gqlSpriteModule;
+

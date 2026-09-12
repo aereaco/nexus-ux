@@ -28,3 +28,14 @@ export const scopeRule = (q: string, body: () => any) => {
   if (q === 'isPresent') return nativeScope.isPresent ? body() : undefined;
   return nativeScope.platform === q ? body() : undefined;
 };
+
+import type { ScopeModule } from '../../engine/modules.ts';
+
+export const nativeScopeModule: ScopeModule = {
+  name: 'native',
+  rule: 'native',
+  scopeRule
+};
+
+export default nativeScopeModule;
+
