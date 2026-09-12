@@ -14232,6 +14232,7 @@ ${match}</ul>
   // src/modules/modifiers/keys.ts
   var keys_exports = {};
   __export(keys_exports, {
+    KEY_MODIFIERS: () => KEY_MODIFIERS,
     altModifier: () => altModifier,
     ctrlModifier: () => ctrlModifier,
     default: () => keys_default,
@@ -14240,6 +14241,7 @@ ${match}</ul>
     enterModifier: () => enterModifier,
     escModifier: () => escModifier,
     escapeModifier: () => escapeModifier,
+    keysModifier: () => keysModifier,
     leftModifier: () => leftModifier,
     metaModifier: () => metaModifier,
     rightModifier: () => rightModifier,
@@ -14248,7 +14250,7 @@ ${match}</ul>
     tabModifier: () => tabModifier,
     upModifier: () => upModifier
   });
-  var isKeyboardEvent, createKeyModifier, enterModifier, escapeModifier, escModifier, spaceModifier, upModifier, downModifier, leftModifier, rightModifier, tabModifier, deleteModifier, ctrlModifier, altModifier, shiftModifier, metaModifier, keys_default;
+  var isKeyboardEvent, createKeyModifier, enterModifier, escapeModifier, escModifier, spaceModifier, upModifier, downModifier, leftModifier, rightModifier, tabModifier, deleteModifier, ctrlModifier, altModifier, shiftModifier, metaModifier, KEY_MODIFIERS, keysModifier, keys_default;
   var init_keys = __esm({
     "src/modules/modifiers/keys.ts"() {
       init_modifier();
@@ -14272,7 +14274,7 @@ ${match}</ul>
       altModifier = createKeyModifier("alt", (e) => e.altKey);
       shiftModifier = createKeyModifier("shift", (e) => e.shiftKey);
       metaModifier = createKeyModifier("meta", (e) => e.metaKey);
-      keys_default = {
+      KEY_MODIFIERS = {
         enter: enterModifier,
         escape: escapeModifier,
         esc: escModifier,
@@ -14288,6 +14290,20 @@ ${match}</ul>
         shift: shiftModifier,
         meta: metaModifier
       };
+      keysModifier = {
+        name: "keys",
+        onRegister(context) {
+          if (context.registerModifier) {
+            Object.entries(KEY_MODIFIERS).forEach(([name, mod]) => {
+              context.registerModifier(name, mod);
+            });
+          }
+        },
+        handle(payload) {
+          return payload;
+        }
+      };
+      keys_default = keysModifier;
     }
   });
 
@@ -16781,6 +16797,7 @@ ${bridge}`, {
         // Placeholder for initialization below
         sprites: {},
         // Namespace for all registered sprites
+        registerModifier: this.registerModifierModule.bind(this),
         update: (fn) => fn()
         // Immediate execution for now
       };
@@ -16857,16 +16874,8 @@ ${bridge}`, {
       });
     }
     registerModifierModule(name, module) {
-      if ("handle" in module && typeof module.handle === "function") {
-        this.modifierModules.set(name, module);
-        module.onRegister?.(this.runtimeContext);
-      } else if (typeof module === "object" && module !== null) {
-        Object.entries(module).forEach(([subName, subMod]) => {
-          if (subMod && typeof subMod.handle === "function") {
-            this.registerModifierModule(subMod.name || subName, subMod);
-          }
-        });
-      }
+      this.modifierModules.set(name, module);
+      module.onRegister?.(this.runtimeContext);
     }
     registerAttributeModule(name, module) {
       const key = module.attribute || name;

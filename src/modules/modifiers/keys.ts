@@ -52,8 +52,7 @@ export const altModifier = createKeyModifier('alt', e => e.altKey);
 export const shiftModifier = createKeyModifier('shift', e => e.shiftKey);
 export const metaModifier = createKeyModifier('meta', e => e.metaKey);
 
-// We export an object of all key modifiers to hook into the autoloader.
-export default {
+export const KEY_MODIFIERS: Record<string, ModifierModule> = {
   enter: enterModifier,
   escape: escapeModifier,
   esc: escModifier,
@@ -69,3 +68,20 @@ export default {
   shift: shiftModifier,
   meta: metaModifier
 };
+
+export const keysModifier: ModifierModule = {
+  name: 'keys',
+  onRegister(context) {
+    if (context.registerModifier) {
+      Object.entries(KEY_MODIFIERS).forEach(([name, mod]) => {
+        context.registerModifier!(name, mod);
+      });
+    }
+  },
+  handle(payload) {
+    return payload;
+  }
+};
+
+export default keysModifier;
+
