@@ -383,10 +383,15 @@ export class OverlayScrollbarInstance {
       this.el.classList.add('scrollbar-no-autohide');
     }
 
+    (this.el as any).__scrollbarInstance = this;
+
     // Vertical Overlay Sprite
     this.trackV = document.createElement('div');
     this.trackV.className = 'scrollbar-track-v';
     this.trackV.style.display = 'none';
+    if (this.el.id) {
+      this.trackV.setAttribute('aria-controls', this.el.id);
+    }
     this.thumbV = document.createElement('div');
     this.thumbV.className = 'scrollbar-thumb-v';
     this.trackV.appendChild(this.thumbV);
@@ -396,6 +401,9 @@ export class OverlayScrollbarInstance {
     this.trackH = document.createElement('div');
     this.trackH.className = 'scrollbar-track-h';
     this.trackH.style.display = 'none';
+    if (this.el.id) {
+      this.trackH.setAttribute('aria-controls', this.el.id);
+    }
     this.thumbH = document.createElement('div');
     this.thumbH.className = 'scrollbar-thumb-h';
     this.trackH.appendChild(this.thumbH);
@@ -494,6 +502,12 @@ export class OverlayScrollbarInstance {
       if (this.thumbV) {
         this.thumbV.style.opacity = '';
         this.thumbV.style.pointerEvents = '';
+      }
+      if (this.el.id && this.trackV && !this.trackV.hasAttribute('aria-controls')) {
+        this.trackV.setAttribute('aria-controls', this.el.id);
+      }
+      if (this.el.id && this.trackH && !this.trackH.hasAttribute('aria-controls')) {
+        this.trackH.setAttribute('aria-controls', this.el.id);
       }
 
       if (this.trackV) {
