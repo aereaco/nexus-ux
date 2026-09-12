@@ -52,14 +52,11 @@ import { evaluate } from './evaluator.ts';
 import { parseAttribute, ParsedAttribute } from './attributeParser.ts'; 
 import { scheduler } from './scheduler.ts';
 import { logger } from './debug.ts';
-import { initSanitizingEngine, disposeSanitizingEngine } from './debug.ts';
-import { resolveSelector } from '../modules/sprites/selector.ts';
 import { elUniqId, attrHash } from './utils/hash.ts';
 import { MARKER_KEY } from './consts.ts';
 import { NexusEnhancedElement } from './reactivity.ts';
 import { attachObserver, registerObserver, disposeObservers } from './observers.ts';
 import { topology, TierLevel } from './topology.ts';
-import { stylesheet } from '../modules/attributes/stylesheet.ts';
 import { MCPClient } from './mcp.ts';
 
 /**

@@ -56,113 +56,6 @@ var UX = (() => {
     }
   });
 
-  // src/engine/mcp.ts
-  var mcp_exports = {};
-  __export(mcp_exports, {
-    MCPClient: () => MCPClient
-  });
-  var MCPClient;
-  var init_mcp = __esm({
-    "src/engine/mcp.ts"() {
-      init_debug();
-      MCPClient = class {
-        url;
-        eventSource = null;
-        requestId = 0;
-        pendingRequests = /* @__PURE__ */ new Map();
-        onConnectCallback;
-        onMessageCallback;
-        constructor(serverUrl) {
-          this.url = serverUrl;
-        }
-        /**
-         * Connect to the MCP server via SSE.
-         */
-        connect() {
-          return new Promise((resolve, reject) => {
-            try {
-              this.eventSource = new EventSource(this.url);
-              this.eventSource.onopen = () => {
-                if (this.onConnectCallback)
-                  this.onConnectCallback();
-                resolve();
-              };
-              this.eventSource.onerror = (err) => {
-                reportError(new Error(`MCP Connection failed: ${this.url}`));
-                reject(err);
-              };
-              this.eventSource.onmessage = (event) => {
-                try {
-                  const payload = JSON.parse(event.data);
-                  this.handleIncoming(payload);
-                } catch (_e) {
-                  reportError(new Error(`MCP Malformed JSON: ${event.data}`));
-                }
-              };
-              this.eventSource.addEventListener("message", (e) => {
-                try {
-                  const payload = JSON.parse(e.data);
-                  this.handleIncoming(payload);
-                } catch (_e) {
-                }
-              });
-            } catch (e) {
-              reject(e);
-            }
-          });
-        }
-        /**
-         * Send a JSON-RPC 2.0 request to the MCP server via POST.
-         */
-        sendRequest(method, params = {}) {
-          const id = ++this.requestId;
-          const body = JSON.stringify({
-            jsonrpc: "2.0",
-            id,
-            method,
-            params
-          });
-          return new Promise((resolve, reject) => {
-            this.pendingRequests.set(id, (res) => resolve(res));
-            fetch(this.url, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body
-            }).catch((err) => {
-              this.pendingRequests.delete(id);
-              reject(err);
-            });
-          });
-        }
-        /**
-         * Handle incoming JSON-RPC messages (Responses or Notifications).
-         */
-        handleIncoming(payload) {
-          if (payload.id !== void 0) {
-            const resolve = this.pendingRequests.get(payload.id);
-            if (resolve) {
-              this.pendingRequests.delete(payload.id);
-              resolve(payload.result || payload.error);
-            }
-          } else if (payload.method) {
-            if (this.onMessageCallback) {
-              this.onMessageCallback(payload.method, payload.params);
-            }
-          }
-        }
-        onConnect(cb) {
-          this.onConnectCallback = cb;
-        }
-        onNotification(cb) {
-          this.onMessageCallback = cb;
-        }
-        disconnect() {
-          this.eventSource?.close();
-        }
-      };
-    }
-  });
-
   // src/engine/debug.ts
   function reportError(error, element, expression) {
     const errorMessage = `[UX Error] ${error.message}`;
@@ -228,49 +121,7 @@ ${suggestion}`);
     error.stack = originalError.stack;
     reportError(error, element, expression);
   }
-  function initSanitizingEngine(runtimeContext) {
-    if (typeof MutationObserver === "undefined" || typeof document === "undefined")
-      return;
-    try {
-      sanitizingObserver = new MutationObserver((mutations) => {
-        try {
-          for (const mutation of mutations) {
-            if (mutation.type === "attributes" && mutation.attributeName === "data-debug") {
-              const target = mutation.target;
-              const debugValue = target.getAttribute("data-debug");
-              runtimeContext.isDevMode = debugValue !== null;
-              if (debugValue && debugValue.trim().startsWith("{")) {
-                try {
-                  const config = new Function(`return (${debugValue})`)();
-                  if (config.mcp && !runtimeContext.mcp) {
-                    Promise.resolve().then(() => (init_mcp(), mcp_exports)).then(({ MCPClient: MCPClient2 }) => {
-                      runtimeContext.mcp = new MCPClient2(config.mcp);
-                      runtimeContext.mcp.connect().catch(() => {
-                        console.warn(`[Nexus Debug] MCP connection failed: ${config.mcp}`);
-                      });
-                    });
-                  }
-                } catch {
-                }
-              }
-            }
-          }
-        } catch (e) {
-          console.error("[Nexus Sanitizer] Internal error (isolated):", e);
-        }
-      });
-      sanitizingObserver.observe(document.documentElement, { attributes: true, subtree: true });
-    } catch (e) {
-      console.error("[Nexus Sanitizer] Failed to initialize:", e);
-    }
-  }
-  function disposeSanitizingEngine() {
-    if (sanitizingObserver) {
-      sanitizingObserver.disconnect();
-      sanitizingObserver = null;
-    }
-  }
-  var UXError, logger, sanitizingObserver;
+  var UXError, logger;
   var init_debug = __esm({
     "src/engine/debug.ts"() {
       init_consts();
@@ -304,7 +155,6 @@ ${suggestion}`);
           console.error(`[Nexus Error]`, ...args);
         }
       };
-      sanitizingObserver = null;
     }
   });
 
@@ -2377,7 +2227,7 @@ ${suggestion}`);
   }
   function collectStyles(root, shouldMinify) {
     const sheets = [];
-    const managedRules = stylesheet.collectRules();
+    const managedRules = stylesheet2.collectRules();
     if (managedRules)
       sheets.push(managedRules);
     document.querySelectorAll("head style").forEach((style) => {
@@ -2529,7 +2379,7 @@ ${scripts}
               const result = runtime.evaluate(el, value);
               if (parsed.argument) {
                 if (result) {
-                  stylesheet.adoptClass(parsed.argument, el, runtime);
+                  stylesheet2.adoptClass(parsed.argument, el, runtime);
                   el.classList.add(parsed.argument);
                 } else {
                   el.classList.remove(parsed.argument);
@@ -2918,7 +2768,7 @@ ${scripts}
                     } else {
                       runtime.morphDOM(shadow, html);
                     }
-                    stylesheet.adoptElementSubtree(shadow);
+                    stylesheet2.adoptElementSubtree(shadow);
                     Array.from(shadow.children).forEach((child) => {
                       if (child instanceof HTMLElement || child instanceof SVGElement) {
                         runtime.processElement(child);
@@ -2930,7 +2780,7 @@ ${scripts}
                     } else {
                       runtime.morphDOM(el, html);
                     }
-                    stylesheet.adoptElementSubtree(el);
+                    stylesheet2.adoptElementSubtree(el);
                     Array.from(el.children).forEach((child) => {
                       if (child instanceof HTMLElement || child instanceof SVGElement) {
                         runtime.processElement(child);
@@ -6271,7 +6121,7 @@ ${scripts}
       if (href.startsWith("idb://")) {
         const cssText = await resolveContent(href);
         if (cssText) {
-          const cleanup = await stylesheet.adoptRawCSS(cssText, `import-${id}-${href}`);
+          const cleanup = await stylesheet2.adoptRawCSS(cssText, `import-${id}-${href}`);
           cleanupFns.push(cleanup);
           runtime.log(`Nexus Import [${id}]: CSS adopted (idb): ${href}`);
           return;
@@ -6318,7 +6168,7 @@ ${scripts}
       const cssText = await resolveContent(href);
       if (!cssText)
         return;
-      const cleanup = await stylesheet.adoptRawCSS(cssText, `import-adopt-${id}-${href}`);
+      const cleanup = await stylesheet2.adoptRawCSS(cssText, `import-adopt-${id}-${href}`);
       cleanupFns.push(cleanup);
       runtime.log(`Nexus Import [${id}]: CSS adopted (constructable): ${href}`);
     });
@@ -6454,7 +6304,7 @@ ${scripts}
       const cssText = isVFSUri(content) ? await resolveContent(content) : content;
       if (!cssText)
         return;
-      const cleanup = await stylesheet.adoptCSS(cssText, `import-style-${id}`);
+      const cleanup = await stylesheet2.adoptCSS(cssText, `import-style-${id}`);
       cleanupFns.push(cleanup);
       runtime.log(`Nexus Import [${id}]: Style adopted (ZCZS)`);
     });
@@ -9124,12 +8974,17 @@ ${match}</ul>
   // src/modules/attributes/scrollbar.ts
   var scrollbar_exports = {};
   __export(scrollbar_exports, {
+    OverlayScrollbarInstance: () => OverlayScrollbarInstance,
+    attachOverlayScrollbar: () => attachOverlayScrollbar,
+    buildScrollbarCSS: () => buildScrollbarCSS,
     default: () => scrollbar_default,
-    ensureScrollbarStyles: () => ensureScrollbarStyles
+    ensureOverlayInstance: () => ensureOverlayInstance,
+    ensureScrollbarStyles: () => ensureScrollbarStyles,
+    isGlobalOverlayActive: () => isGlobalOverlayActive,
+    isScrollContainer: () => isScrollContainer,
+    syncAllOverlayScrollbars: () => syncAllOverlayScrollbars,
+    triggerContainerMotion: () => triggerContainerMotion
   });
-  function ensureScrollbarStyles(root) {
-    ensureAdoptedStylesheet(SCROLLBAR_BASE_CSS, scrollbarSheetRef, root);
-  }
   function resolveDimension(val, defaultVal = "0.375rem") {
     if (val === void 0 || val === null || val === "")
       return defaultVal;
@@ -9199,119 +9054,28 @@ ${match}</ul>
     }
     return `var(--color-${s}, ${s})`;
   }
-  function findScrollParent(el) {
-    while (el && el !== document.body && el !== document.documentElement) {
-      if (el.getAttribute("data-scrollbar") === "none" || el.classList.contains("scrollbar-none")) {
-        return null;
-      }
-      const s = window.getComputedStyle(el);
-      const hasScrollY = s.overflowY !== "hidden" && s.overflowY !== "clip" && s.overflow !== "hidden" && (s.overflowY === "auto" || s.overflowY === "scroll") && el.scrollHeight > el.clientHeight;
-      const hasScrollX = s.overflowX !== "hidden" && s.overflowX !== "clip" && s.overflow !== "hidden" && (s.overflowX === "auto" || s.overflowX === "scroll") && el.scrollWidth > el.clientWidth;
-      if (hasScrollY || hasScrollX) {
-        return el;
-      }
-      el = el.parentElement;
-    }
-    return null;
-  }
-  function ensureOverlayInstance(el) {
-    let inst = overlayInstances.get(el);
-    if (!inst) {
-      inst = new OverlayScrollbarInstance(el);
-      overlayInstances.set(el, inst);
-    }
-    return inst;
-  }
-  function triggerContainerMotion(target) {
-    const autohideMs = typeof globalConfig.autohide === "number" ? globalConfig.autohide : 800;
-    if (globalConfig.autohide === false || autohideMs <= 0)
-      return;
-    if (!target.classList.contains("is-scrolling")) {
-      target.classList.add("is-scrolling");
-    }
-    if (target instanceof HTMLElement && (globalConfig.mode === "overlay" || target.hasAttribute("data-scrollbar"))) {
-      const inst = ensureOverlayInstance(target);
-      inst.setScrolling(true);
-      inst.scheduleUpdate();
-    }
-    const existingTimer = elementTimers.get(target);
-    if (existingTimer !== void 0)
-      clearTimeout(existingTimer);
-    const timer = setTimeout(() => {
-      target.classList.remove("is-scrolling");
-      if (target instanceof HTMLElement) {
-        const inst = overlayInstances.get(target);
-        if (inst)
-          inst.setScrolling(false);
-      }
-      elementTimers.delete(target);
-    }, autohideMs);
-    elementTimers.set(target, timer);
-  }
-  function setupGlobalCaptureListeners(runtime) {
-    if (globalListenerRegistered || typeof document === "undefined")
-      return;
-    globalListenerRegistered = true;
-    const onGlobalScroll = (e) => {
-      const target = e.target;
-      if (target instanceof HTMLElement) {
-        triggerContainerMotion(target);
-      }
-    };
-    let pointerRaf = null;
-    const onGlobalPointerMove = (e) => {
-      if (pointerRaf !== null)
-        return;
-      const target = e.target;
-      pointerRaf = requestAnimationFrame(() => {
-        pointerRaf = null;
-        if (target instanceof Element) {
-          const scrollContainer = findScrollParent(target);
-          if (scrollContainer) {
-            triggerContainerMotion(scrollContainer);
-          }
-        }
-      });
-    };
-    document.addEventListener("scroll", onGlobalScroll, { capture: true, passive: true });
-    document.addEventListener("pointermove", onGlobalPointerMove, { capture: true, passive: true });
-    const discoverScrollContainers = () => {
-      if (typeof document === "undefined")
-        return;
-      const candidates = document.querySelectorAll('[style*="overflow"], [data-scrollbar], .overflow-y-auto, .overflow-x-auto, .overflow-auto');
-      candidates.forEach((el) => {
-        if (el instanceof HTMLElement && !el.classList.contains("scrollbar-overlay-active")) {
-          const isScrollable = el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth;
-          if (isScrollable) {
-            const inst = ensureOverlayInstance(el);
-            inst.scheduleUpdate();
-          }
-        }
-      });
-    };
-    if (typeof requestAnimationFrame !== "undefined") {
-      requestAnimationFrame(() => discoverScrollContainers());
-    }
-    if (runtime && runtime.registerCleanup) {
-      runtime.registerCleanup(() => {
-        document.removeEventListener("scroll", onGlobalScroll, { capture: true });
-        document.removeEventListener("pointermove", onGlobalPointerMove, { capture: true });
-        if (pointerRaf !== null)
-          cancelAnimationFrame(pointerRaf);
-        globalListenerRegistered = false;
-      });
-    }
-  }
-  var SCROLLBAR_BASE_CSS, scrollbarSheetRef, globalConfig, globalListenerRegistered, elementTimers, overlayInstances, OverlayScrollbarInstance, scrollbarModule, scrollbar_default;
-  var init_scrollbar = __esm({
-    "src/modules/attributes/scrollbar.ts"() {
-      init_styles();
-      SCROLLBAR_BASE_CSS = `
+  function buildScrollbarCSS(config) {
+    const width = resolveDimension(config?.width, "0.375rem");
+    const height = resolveDimension(config?.height, width);
+    const thumbColor = resolveColor(config?.thumb, "color-mix(in srgb, currentColor 30%, transparent)");
+    const thumbHover = resolveColor(config?.thumbHover, "color-mix(in srgb, currentColor 50%, transparent)");
+    const thumbActive = resolveColor(config?.thumbActive, "color-mix(in srgb, currentColor 70%, transparent)");
+    const trackColor = resolveColor(config?.track, "transparent");
+    const trackHover = resolveColor(config?.trackHover, trackColor);
+    const thumbRadius = resolveRadius(config?.thumbRadius || config?.radius, "9999px");
+    const trackRadius = resolveRadius(config?.trackRadius || config?.radius, "9999px");
+    const fadeIn = resolveDuration(config?.fadeIn, "0.2s");
+    const fadeOut = resolveDuration(config?.fadeOut || config?.fade, "0.4s");
+    const fadeTiming = config?.fadeTiming || "cubic-bezier(0.4, 0, 0.2, 1)";
+    return `
 /* ==========================================================================
    Zero-Flash Native Scrollbar Suppression for Overlay Mode
    ========================================================================== */
 [style*="overflow"],
 [data-scrollbar],
+.overflow-y-auto,
+.overflow-x-auto,
+.overflow-auto,
 .scrollbar-none,
 .scrollbar-overlay-active {
   scrollbar-width: none !important;
@@ -9319,6 +9083,9 @@ ${match}</ul>
 
 [style*="overflow"]::-webkit-scrollbar,
 [data-scrollbar]::-webkit-scrollbar,
+.overflow-y-auto::-webkit-scrollbar,
+.overflow-x-auto::-webkit-scrollbar,
+.overflow-auto::-webkit-scrollbar,
 .scrollbar-none::-webkit-scrollbar,
 .scrollbar-overlay-active::-webkit-scrollbar {
   display: none !important;
@@ -9327,10 +9094,31 @@ ${match}</ul>
 }
 
 [data-scrollbar]::-webkit-scrollbar-thumb,
+.overflow-y-auto::-webkit-scrollbar-thumb,
+.overflow-x-auto::-webkit-scrollbar-thumb,
+.overflow-auto::-webkit-scrollbar-thumb,
 .scrollbar-none::-webkit-scrollbar-thumb,
 .scrollbar-overlay-active::-webkit-scrollbar-thumb {
   display: none !important;
   background-color: transparent !important;
+}
+
+/* ==========================================================================
+   Root Adopted Theme Tokens
+   ========================================================================== */
+:root, :host, [data-scrollbar_global] {
+  --scrollbar-width: ${width};
+  --scrollbar-height: ${height};
+  --scrollbar-thumb: ${thumbColor};
+  --scrollbar-thumb-hover: ${thumbHover};
+  --scrollbar-thumb-active: ${thumbActive};
+  --scrollbar-track: ${trackColor};
+  --scrollbar-track-hover: ${trackHover};
+  --scrollbar-thumb-radius: ${thumbRadius};
+  --scrollbar-track-radius: ${trackRadius};
+  --scrollbar-fade-in: ${fadeIn};
+  --scrollbar-fade-out: ${fadeOut};
+  --scrollbar-fade-timing: ${fadeTiming};
 }
 
 /* ==========================================================================
@@ -9393,6 +9181,8 @@ ${match}</ul>
 .is-scrolling > .scrollbar-track-h > .scrollbar-thumb-h,
 .is-scrolling.scrollbar-track-v > .scrollbar-thumb-v,
 .is-scrolling.scrollbar-track-h > .scrollbar-thumb-h,
+.scrollbar-overlay-active.scrollbar-no-autohide > .scrollbar-track-v > .scrollbar-thumb-v,
+.scrollbar-overlay-active.scrollbar-no-autohide > .scrollbar-track-h > .scrollbar-thumb-h,
 .scrollbar-thumb-v:hover,
 .scrollbar-thumb-h:hover,
 .scrollbar-thumb-v.is-dragging,
@@ -9439,6 +9229,140 @@ ${match}</ul>
   background-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent)) !important;
 }
 `;
+  }
+  function ensureScrollbarStyles(root, config) {
+    const css = buildScrollbarCSS(config || globalConfig);
+    if (scrollbarSheetRef.sheet && config) {
+      scrollbarSheetRef.sheet.replaceSync(css);
+    }
+    ensureAdoptedStylesheet(css, scrollbarSheetRef, root);
+  }
+  function findScrollParent(el) {
+    while (el && el !== document.body && el !== document.documentElement) {
+      if (el.getAttribute("data-scrollbar") === "none" || el.classList.contains("scrollbar-none")) {
+        return null;
+      }
+      const s = window.getComputedStyle(el);
+      const hasScrollY = s.overflowY !== "hidden" && s.overflowY !== "clip" && s.overflow !== "hidden" && (s.overflowY === "auto" || s.overflowY === "scroll") && el.scrollHeight > el.clientHeight;
+      const hasScrollX = s.overflowX !== "hidden" && s.overflowX !== "clip" && s.overflow !== "hidden" && (s.overflowX === "auto" || s.overflowX === "scroll") && el.scrollWidth > el.clientWidth;
+      if (hasScrollY || hasScrollX) {
+        return el;
+      }
+      el = el.parentElement;
+    }
+    return null;
+  }
+  function ensureOverlayInstance(el) {
+    let inst = overlayInstances.get(el);
+    if (!inst) {
+      inst = new OverlayScrollbarInstance(el);
+      overlayInstances.set(el, inst);
+    }
+    return inst;
+  }
+  function syncAllOverlayScrollbars() {
+    activeInstances.forEach((inst) => inst.scheduleUpdate());
+  }
+  function isGlobalOverlayActive() {
+    return globalConfig.mode === "overlay";
+  }
+  function isScrollContainer(el) {
+    if (!el || !(el instanceof HTMLElement))
+      return false;
+    if (el.getAttribute("data-scrollbar") === "none" || el.classList.contains("scrollbar-none")) {
+      return false;
+    }
+    if (el.hasAttribute("data-scrollbar"))
+      return true;
+    if (el.classList.contains("overflow-y-auto") || el.classList.contains("overflow-x-auto") || el.classList.contains("overflow-auto")) {
+      return true;
+    }
+    if (el.hasAttribute("style") && el.getAttribute("style").includes("overflow")) {
+      return true;
+    }
+    return false;
+  }
+  function attachOverlayScrollbar(el) {
+    if (!el || !(el instanceof HTMLElement))
+      return null;
+    if (el.getAttribute("data-scrollbar") === "none" || el.classList.contains("scrollbar-none")) {
+      return null;
+    }
+    const inst = ensureOverlayInstance(el);
+    inst.scheduleUpdate();
+    triggerContainerMotion(el);
+    return inst;
+  }
+  function triggerContainerMotion(target) {
+    const autohideMs = typeof globalConfig.autohide === "number" ? globalConfig.autohide : 800;
+    if (globalConfig.autohide === false || autohideMs <= 0)
+      return;
+    if (!target.classList.contains("is-scrolling")) {
+      target.classList.add("is-scrolling");
+    }
+    if (target instanceof HTMLElement && (globalConfig.mode === "overlay" || target.hasAttribute("data-scrollbar"))) {
+      const inst = ensureOverlayInstance(target);
+      inst.setScrolling(true);
+      inst.scheduleUpdate();
+    }
+    const existingTimer = elementTimers.get(target);
+    if (existingTimer !== void 0)
+      clearTimeout(existingTimer);
+    const timer = setTimeout(() => {
+      target.classList.remove("is-scrolling");
+      if (target instanceof HTMLElement) {
+        const inst = overlayInstances.get(target);
+        if (inst)
+          inst.setScrolling(false);
+      }
+      elementTimers.delete(target);
+    }, autohideMs);
+    elementTimers.set(target, timer);
+  }
+  function setupGlobalCaptureListeners(runtime) {
+    if (globalListenerRegistered || typeof document === "undefined")
+      return;
+    globalListenerRegistered = true;
+    const onGlobalScroll = (e) => {
+      const target = e.target;
+      if (target instanceof HTMLElement) {
+        triggerContainerMotion(target);
+      }
+    };
+    let pointerRaf = null;
+    const onGlobalPointerMove = (e) => {
+      if (pointerRaf !== null)
+        return;
+      const target = e.target;
+      pointerRaf = requestAnimationFrame(() => {
+        pointerRaf = null;
+        if (target instanceof Element) {
+          const scrollContainer = findScrollParent(target);
+          if (scrollContainer) {
+            triggerContainerMotion(scrollContainer);
+          }
+        }
+      });
+    };
+    const onWindowResize = () => syncAllOverlayScrollbars();
+    document.addEventListener("scroll", onGlobalScroll, { capture: true, passive: true });
+    document.addEventListener("pointermove", onGlobalPointerMove, { capture: true, passive: true });
+    window.addEventListener("resize", onWindowResize, { passive: true });
+    if (runtime && runtime.registerCleanup) {
+      runtime.registerCleanup(() => {
+        document.removeEventListener("scroll", onGlobalScroll, { capture: true });
+        document.removeEventListener("pointermove", onGlobalPointerMove, { capture: true });
+        window.removeEventListener("resize", onWindowResize);
+        if (pointerRaf !== null)
+          cancelAnimationFrame(pointerRaf);
+        globalListenerRegistered = false;
+      });
+    }
+  }
+  var scrollbarSheetRef, globalConfig, globalListenerRegistered, elementTimers, overlayInstances, activeInstances, OverlayScrollbarInstance, scrollbarModule, scrollbar_default;
+  var init_scrollbar = __esm({
+    "src/modules/attributes/scrollbar.ts"() {
+      init_styles();
       scrollbarSheetRef = { sheet: null };
       if (typeof document !== "undefined") {
         ensureScrollbarStyles();
@@ -9457,6 +9381,7 @@ ${match}</ul>
       globalListenerRegistered = false;
       elementTimers = /* @__PURE__ */ new WeakMap();
       overlayInstances = /* @__PURE__ */ new WeakMap();
+      activeInstances = /* @__PURE__ */ new Set();
       OverlayScrollbarInstance = class {
         el;
         host;
@@ -9478,6 +9403,7 @@ ${match}</ul>
         constructor(el) {
           this.el = el;
           this.host = el.parentElement || document.body;
+          activeInstances.add(this);
           this.init();
         }
         init() {
@@ -9485,6 +9411,9 @@ ${match}</ul>
             this.host.style.position = "relative";
           }
           this.el.classList.add("scrollbar-overlay-active");
+          if (globalConfig.autohide === false) {
+            this.el.classList.add("scrollbar-no-autohide");
+          }
           this.trackV = document.createElement("div");
           this.trackV.className = "scrollbar-track-v";
           this.trackV.style.display = "none";
@@ -9625,31 +9554,35 @@ ${match}</ul>
             this.dragStartScrollTop = this.el.scrollTop;
             this.thumbV.classList.add("is-dragging");
             this.thumbV.setPointerCapture(e.pointerId);
-          });
-          this.thumbV.addEventListener("pointermove", (e) => {
-            if (!this.isDragging || this.activeAxis !== "v")
-              return;
-            const deltaY = e.clientY - this.dragStartY;
-            const { clientHeight, scrollHeight } = this.el;
-            const thumbHeight = this.thumbV.offsetHeight;
-            const scrollableDist = scrollHeight - clientHeight;
-            const trackDist = clientHeight - thumbHeight;
-            if (trackDist > 0) {
-              this.el.scrollTop = this.dragStartScrollTop + deltaY / trackDist * scrollableDist;
-            }
-          });
-          const stopDragV = (e) => {
-            if (this.isDragging && this.activeAxis === "v") {
+            const onPointerMove = (moveEvt) => {
+              if (!this.isDragging || this.activeAxis !== "v")
+                return;
+              const deltaY = moveEvt.clientY - this.dragStartY;
+              const clientHeight = this.el.clientHeight;
+              const scrollHeight = this.el.scrollHeight;
+              const thumbHeight = Math.max(24, clientHeight / scrollHeight * clientHeight);
+              const maxThumbTop = clientHeight - thumbHeight;
+              const maxScrollTop = scrollHeight - clientHeight;
+              if (maxThumbTop > 0) {
+                const scrollDelta = deltaY / maxThumbTop * maxScrollTop;
+                this.el.scrollTop = this.dragStartScrollTop + scrollDelta;
+              }
+            };
+            const onPointerUp = (upEvt) => {
               this.isDragging = false;
               this.thumbV.classList.remove("is-dragging");
               try {
-                this.thumbV.releasePointerCapture(e.pointerId);
+                this.thumbV.releasePointerCapture(upEvt.pointerId);
               } catch {
               }
-            }
-          };
-          this.thumbV.addEventListener("pointerup", stopDragV);
-          this.thumbV.addEventListener("pointercancel", stopDragV);
+              window.removeEventListener("pointermove", onPointerMove);
+              window.removeEventListener("pointerup", onPointerUp);
+              window.removeEventListener("pointercancel", onPointerUp);
+            };
+            window.addEventListener("pointermove", onPointerMove);
+            window.addEventListener("pointerup", onPointerUp);
+            window.addEventListener("pointercancel", onPointerUp);
+          });
           this.thumbH.addEventListener("pointerdown", (e) => {
             e.stopPropagation();
             e.preventDefault();
@@ -9659,33 +9592,69 @@ ${match}</ul>
             this.dragStartScrollLeft = this.el.scrollLeft;
             this.thumbH.classList.add("is-dragging");
             this.thumbH.setPointerCapture(e.pointerId);
-          });
-          this.thumbH.addEventListener("pointermove", (e) => {
-            if (!this.isDragging || this.activeAxis !== "h")
-              return;
-            const isRTL = window.getComputedStyle(this.el).direction === "rtl";
-            const deltaX = isRTL ? this.dragStartX - e.clientX : e.clientX - this.dragStartX;
-            const { clientWidth, scrollWidth } = this.el;
-            const thumbWidth = this.thumbH.offsetWidth;
-            const scrollableDist = scrollWidth - clientWidth;
-            const trackDist = clientWidth - thumbWidth;
-            if (trackDist > 0) {
-              const scrollDelta = deltaX / trackDist * scrollableDist;
-              this.el.scrollLeft = isRTL ? this.dragStartScrollLeft - scrollDelta : this.dragStartScrollLeft + scrollDelta;
-            }
-          });
-          const stopDragH = (e) => {
-            if (this.isDragging && this.activeAxis === "h") {
+            const onPointerMove = (moveEvt) => {
+              if (!this.isDragging || this.activeAxis !== "h")
+                return;
+              const deltaX = moveEvt.clientX - this.dragStartX;
+              const clientWidth = this.el.clientWidth;
+              const scrollWidth = this.el.scrollWidth;
+              const thumbWidth = Math.max(24, clientWidth / scrollWidth * clientWidth);
+              const maxThumbLeft = clientWidth - thumbWidth;
+              const maxScrollLeft = scrollWidth - clientWidth;
+              if (maxThumbLeft > 0) {
+                const scrollDelta = deltaX / maxThumbLeft * maxScrollLeft;
+                this.el.scrollLeft = this.dragStartScrollLeft + (this.cachedRTL ? -scrollDelta : scrollDelta);
+              }
+            };
+            const onPointerUp = (upEvt) => {
               this.isDragging = false;
               this.thumbH.classList.remove("is-dragging");
               try {
-                this.thumbH.releasePointerCapture(e.pointerId);
+                this.thumbH.releasePointerCapture(upEvt.pointerId);
               } catch {
               }
+              window.removeEventListener("pointermove", onPointerMove);
+              window.removeEventListener("pointerup", onPointerUp);
+              window.removeEventListener("pointercancel", onPointerUp);
+            };
+            window.addEventListener("pointermove", onPointerMove);
+            window.addEventListener("pointerup", onPointerUp);
+            window.addEventListener("pointercancel", onPointerUp);
+          });
+          this.trackV.addEventListener("pointerdown", (e) => {
+            if (e.target === this.thumbV)
+              return;
+            e.stopPropagation();
+            e.preventDefault();
+            const rect = this.trackV.getBoundingClientRect();
+            const clickY = e.clientY - rect.top;
+            const clientHeight = this.el.clientHeight;
+            const scrollHeight = this.el.scrollHeight;
+            const thumbHeight = Math.max(24, clientHeight / scrollHeight * clientHeight);
+            const targetThumbTop = clickY - thumbHeight / 2;
+            const maxThumbTop = clientHeight - thumbHeight;
+            const maxScrollTop = scrollHeight - clientHeight;
+            if (maxThumbTop > 0) {
+              this.el.scrollTop = Math.max(0, Math.min(maxScrollTop, targetThumbTop / maxThumbTop * maxScrollTop));
             }
-          };
-          this.thumbH.addEventListener("pointerup", stopDragH);
-          this.thumbH.addEventListener("pointercancel", stopDragH);
+          });
+          this.trackH.addEventListener("pointerdown", (e) => {
+            if (e.target === this.thumbH)
+              return;
+            e.stopPropagation();
+            e.preventDefault();
+            const rect = this.trackH.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clientWidth = this.el.clientWidth;
+            const scrollWidth = this.el.scrollWidth;
+            const thumbWidth = Math.max(24, clientWidth / scrollWidth * clientWidth);
+            const targetThumbLeft = clickX - thumbWidth / 2;
+            const maxThumbLeft = clientWidth - thumbWidth;
+            const maxScrollLeft = scrollWidth - clientWidth;
+            if (maxThumbLeft > 0) {
+              this.el.scrollLeft = Math.max(0, Math.min(maxScrollLeft, targetThumbLeft / maxThumbLeft * maxScrollLeft));
+            }
+          });
         }
         destroy() {
           if (this.rafId !== null) {
@@ -9695,13 +9664,14 @@ ${match}</ul>
           this.trackV?.remove();
           this.trackH?.remove();
           this.el.classList.remove("scrollbar-overlay-active");
+          this.el.classList.remove("scrollbar-no-autohide");
+          activeInstances.delete(this);
         }
       };
       scrollbarModule = {
         name: "scrollbar",
         attribute: "scrollbar",
         handle: (el, value, runtime) => {
-          ensureScrollbarStyles(el.getRootNode());
           const isGlobal = el.hasAttribute("data-scrollbar_global") || el.tagName.toLowerCase() === "html";
           let config = {};
           if (value && value.trim()) {
@@ -9732,44 +9702,25 @@ ${match}</ul>
           if (isGlobal) {
             globalConfig = { ...globalConfig, ...config };
             el.setAttribute("data-scrollbar_global", "true");
+            ensureScrollbarStyles(el.getRootNode(), globalConfig);
             setupGlobalCaptureListeners(runtime);
+            syncAllOverlayScrollbars();
+          } else {
+            ensureScrollbarStyles(el.getRootNode());
           }
           const merged = { ...globalConfig, ...config };
           if (merged.mode === "none") {
             el.classList.add("scrollbar-none");
             return;
           }
-          const autohideMs = merged.autohide === false ? false : typeof merged.autohide === "number" ? merged.autohide : 800;
-          const width = resolveDimension(merged.width, "0.375rem");
-          const height = resolveDimension(merged.height, width);
-          const thumbColor = resolveColor(merged.thumb, "color-mix(in srgb, currentColor 30%, transparent)");
-          const thumbHover = resolveColor(merged.thumbHover, "color-mix(in srgb, currentColor 50%, transparent)");
-          const thumbActive = resolveColor(merged.thumbActive, "color-mix(in srgb, currentColor 70%, transparent)");
-          const trackColor = resolveColor(merged.track, "transparent");
-          const trackHover = resolveColor(merged.trackHover, trackColor);
-          const thumbRadius = resolveRadius(merged.thumbRadius || merged.radius, "9999px");
-          const trackRadius = resolveRadius(merged.trackRadius || merged.radius, "9999px");
-          const fadeIn = resolveDuration(config.fadeIn || globalConfig.fadeIn, "0.2s");
-          const fadeOut = resolveDuration(config.fadeOut || config.fade || globalConfig.fadeOut || globalConfig.fade, "0.4s");
-          const fadeTiming = config.fadeTiming || globalConfig.fadeTiming || "cubic-bezier(0.4, 0, 0.2, 1)";
-          el.style.setProperty("--scrollbar-width", width);
-          el.style.setProperty("--scrollbar-height", height);
-          el.style.setProperty("--scrollbar-thumb", thumbColor);
-          el.style.setProperty("--scrollbar-thumb-hover", thumbHover);
-          el.style.setProperty("--scrollbar-thumb-active", thumbActive);
-          el.style.setProperty("--scrollbar-track", trackColor);
-          el.style.setProperty("--scrollbar-track-hover", trackHover);
-          el.style.setProperty("--scrollbar-thumb-radius", thumbRadius);
-          el.style.setProperty("--scrollbar-track-radius", trackRadius);
-          el.style.setProperty("--scrollbar-fade-in", fadeIn);
-          el.style.setProperty("--scrollbar-fade-out", fadeOut);
-          el.style.setProperty("--scrollbar-fade-timing", fadeTiming);
-          if (merged.mode === "overlay" && !isGlobal) {
-            const overlayInst = ensureOverlayInstance(el);
-            return () => {
-              overlayInst.destroy();
-              overlayInstances.delete(el);
-            };
+          if (merged.mode === "overlay") {
+            const overlayInst = attachOverlayScrollbar(el);
+            if (overlayInst && !isGlobal) {
+              return () => {
+                overlayInst.destroy();
+                overlayInstances.delete(el);
+              };
+            }
           }
         }
       };
@@ -11181,12 +11132,12 @@ ${match}</ul>
   });
 
   // src/modules/sprites/mcp.ts
-  var mcp_exports2 = {};
-  __export(mcp_exports2, {
+  var mcp_exports = {};
+  __export(mcp_exports, {
     mcpModule: () => mcpModule
   });
   var mcpModule;
-  var init_mcp2 = __esm({
+  var init_mcp = __esm({
     "src/modules/sprites/mcp.ts"() {
       init_reactivity();
       mcpModule = {
@@ -12643,10 +12594,10 @@ ${match}</ul>
   // src/modules/sprites/selector.ts
   var selector_exports = {};
   __export(selector_exports, {
-    resolveSelector: () => resolveSelector,
+    resolveSelector: () => resolveSelector2,
     resolveTargetElements: () => resolveTargetElements
   });
-  function resolveSelector(contextEl, selector) {
+  function resolveSelector2(contextEl, selector) {
     if (!selector)
       return null;
     if (typeof selector !== "string")
@@ -12788,7 +12739,7 @@ ${match}</ul>
     if (!selector || !selector.trim())
       return [contextEl];
     const clean = selector.trim();
-    const res = resolveSelector(contextEl, clean);
+    const res = resolveSelector2(contextEl, clean);
     if (!res)
       return [];
     if (Array.isArray(res)) {
@@ -13892,7 +13843,7 @@ ${match}</ul>
           return (evalEl, expression, extras) => {
             const result = evaluate2(evalEl, expression, extras);
             const applyMorph = (htmlString) => {
-              const target = arg ? resolveSelector(element, arg) : element;
+              const target = arg ? resolveSelector2(element, arg) : element;
               const realTarget = Array.isArray(target) ? target[0] : target;
               if (realTarget)
                 morphDOM(realTarget, htmlString);
@@ -14414,7 +14365,7 @@ ${match}</ul>
                       if (shouldIgnoreNode(node))
                         return;
                       addedThisBatch.add(node);
-                      stylesheet.adoptElementSubtree(node);
+                      stylesheet2.adoptElementSubtree(node);
                     }
                   });
                 }
@@ -14555,7 +14506,7 @@ ${match}</ul>
       init_flow2();
       init_gql();
       init_mask();
-      init_mcp2();
+      init_mcp();
       init_periodicSync();
       init_predictive2();
       init_push();
@@ -14629,7 +14580,7 @@ ${match}</ul>
         { name: "flow", module: flow_exports2 },
         { name: "gql", module: gql_exports },
         { name: "mask", module: mask_exports },
-        { name: "mcp", module: mcp_exports2 },
+        { name: "mcp", module: mcp_exports },
         { name: "periodicSync", module: periodicSync_exports },
         { name: "predictive", module: predictive_exports2 },
         { name: "push", module: push_exports },
@@ -14679,7 +14630,7 @@ ${match}</ul>
     initializeJitEngine: () => initializeJitEngine,
     jitSheet: () => jitSheet,
     markExternalStylesSettled: () => markExternalStylesSettled,
-    stylesheet: () => stylesheet
+    stylesheet: () => stylesheet2
   });
   async function resolveImports(cssText, baseUrl, onUpdate) {
     const defaultBase = typeof window !== "undefined" ? window.location.href : "http://localhost";
@@ -14802,7 +14753,7 @@ ${decls}
       await refreshThemeBridge();
       while (pendingClasses.length > 0) {
         const { className, el, runtime } = pendingClasses.shift();
-        stylesheet.adoptClass(className, el, runtime);
+        stylesheet2.adoptClass(className, el, runtime);
       }
     })().catch((err) => {
       compilerReadyPromise = null;
@@ -14860,7 +14811,7 @@ ${bridge}`, {
       refreshThemeBridge().catch((err) => console.error("[Nexus] bridge refresh failed:", err));
     }
   }
-  var PREFLIGHT_CSS, NexusStyleSheet, jitSheet, compileFn, coreCss, tailwindCompiler, compilerReadyPromise, externalStylesSettled, _rebuildingBridge, compiledClassesSet, pendingClasses, StyleSheetManager, stylesheet, _isJitEngineBooted, stylesheetModule, stylesheet_default;
+  var PREFLIGHT_CSS, NexusStyleSheet, jitSheet, compileFn, coreCss, tailwindCompiler, compilerReadyPromise, externalStylesSettled, _rebuildingBridge, compiledClassesSet, pendingClasses, StyleSheetManager, stylesheet2, _isJitEngineBooted, stylesheetModule, stylesheet_default;
   var init_stylesheet = __esm({
     "src/modules/attributes/stylesheet.ts"() {
       init_cache();
@@ -15147,7 +15098,7 @@ ${bridge}`, {
           this._nextId = 0;
         }
       };
-      stylesheet = new StyleSheetManager();
+      stylesheet2 = new StyleSheetManager();
       _isJitEngineBooted = false;
       stylesheetModule = {
         name: "stylesheet",
@@ -15156,7 +15107,7 @@ ${bridge}`, {
           const cleanupFns = [];
           if (expression && expression.trim()) {
             const css = expression.trim();
-            cleanupFns.push(stylesheet.adoptCSSSync(css, void 0, document));
+            cleanupFns.push(stylesheet2.adoptCSSSync(css, void 0, document));
           }
           const root = el.getRootNode();
           if (root && "adoptedStyleSheets" in root) {
@@ -15165,9 +15116,9 @@ ${bridge}`, {
               root.adoptedStyleSheets = [...sheetsList, jitSheet];
             }
           }
-          stylesheet.emitPreflightAndTheme(el);
+          stylesheet2.emitPreflightAndTheme(el);
           cleanupFns.push(() => {
-            stylesheet.emitPreflightAndTheme(el);
+            stylesheet2.emitPreflightAndTheme(el);
           });
           return () => cleanupFns.forEach((fn) => fn());
         }
@@ -15584,7 +15535,7 @@ ${bridge}`, {
     });
     toAdd.forEach((cls) => {
       if (!el.classList.contains(cls)) {
-        stylesheet.adoptClass(cls, el);
+        stylesheet2.adoptClass(cls, el);
         el.classList.add(cls);
       }
       currentAdded.add(cls);
@@ -15693,6 +15644,109 @@ ${bridge}`, {
       };
       nexusClassMap = /* @__PURE__ */ new WeakMap();
       nexusStyleMap = /* @__PURE__ */ new WeakMap();
+    }
+  });
+
+  // src/engine/mcp.ts
+  var MCPClient;
+  var init_mcp2 = __esm({
+    "src/engine/mcp.ts"() {
+      init_debug();
+      MCPClient = class {
+        url;
+        eventSource = null;
+        requestId = 0;
+        pendingRequests = /* @__PURE__ */ new Map();
+        onConnectCallback;
+        onMessageCallback;
+        constructor(serverUrl) {
+          this.url = serverUrl;
+        }
+        /**
+         * Connect to the MCP server via SSE.
+         */
+        connect() {
+          return new Promise((resolve, reject) => {
+            try {
+              this.eventSource = new EventSource(this.url);
+              this.eventSource.onopen = () => {
+                if (this.onConnectCallback)
+                  this.onConnectCallback();
+                resolve();
+              };
+              this.eventSource.onerror = (err) => {
+                reportError(new Error(`MCP Connection failed: ${this.url}`));
+                reject(err);
+              };
+              this.eventSource.onmessage = (event) => {
+                try {
+                  const payload = JSON.parse(event.data);
+                  this.handleIncoming(payload);
+                } catch (_e) {
+                  reportError(new Error(`MCP Malformed JSON: ${event.data}`));
+                }
+              };
+              this.eventSource.addEventListener("message", (e) => {
+                try {
+                  const payload = JSON.parse(e.data);
+                  this.handleIncoming(payload);
+                } catch (_e) {
+                }
+              });
+            } catch (e) {
+              reject(e);
+            }
+          });
+        }
+        /**
+         * Send a JSON-RPC 2.0 request to the MCP server via POST.
+         */
+        sendRequest(method, params = {}) {
+          const id = ++this.requestId;
+          const body = JSON.stringify({
+            jsonrpc: "2.0",
+            id,
+            method,
+            params
+          });
+          return new Promise((resolve, reject) => {
+            this.pendingRequests.set(id, (res) => resolve(res));
+            fetch(this.url, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body
+            }).catch((err) => {
+              this.pendingRequests.delete(id);
+              reject(err);
+            });
+          });
+        }
+        /**
+         * Handle incoming JSON-RPC messages (Responses or Notifications).
+         */
+        handleIncoming(payload) {
+          if (payload.id !== void 0) {
+            const resolve = this.pendingRequests.get(payload.id);
+            if (resolve) {
+              this.pendingRequests.delete(payload.id);
+              resolve(payload.result || payload.error);
+            }
+          } else if (payload.method) {
+            if (this.onMessageCallback) {
+              this.onMessageCallback(payload.method, payload.params);
+            }
+          }
+        }
+        onConnect(cb) {
+          this.onConnectCallback = cb;
+        }
+        onNotification(cb) {
+          this.onMessageCallback = cb;
+        }
+        disconnect() {
+          this.eventSource?.close();
+        }
+      };
     }
   });
 
@@ -16216,8 +16270,6 @@ ${bridge}`, {
   // src/engine/modules.ts
   init_scheduler();
   init_debug();
-  init_debug();
-  init_selector();
   init_hash();
   init_consts();
 
@@ -16255,8 +16307,7 @@ ${bridge}`, {
 
   // src/engine/modules.ts
   init_topology();
-  init_stylesheet();
-  init_mcp();
+  init_mcp2();
   init_debug();
   var globalReactiveState = reactive({});
   var ModuleCoordinator = class {
@@ -16766,7 +16817,7 @@ ${bridge}`, {
       this.coordinator.runtimeContext.setGlobalSignal("$predictive", corePredictiveEngine);
       this.predictive = corePredictiveEngine;
       this.cache = cacheEngine;
-      registerScopeProvider("$", (el) => (selector) => resolveSelector(el, selector));
+      registerScopeProvider("$", (el) => (selector) => resolveSelector2(el, selector));
       registerScopeProvider("$animate", () => animate);
       this.coordinator.registerUtilityModule("fetch", fetchModule);
       initSelfHeal(this.coordinator.runtimeContext, {
