@@ -7,6 +7,8 @@
       fixedHeader: localStorage.fixedHeader !== 'false',
       fixedFooter: localStorage.fixedFooter !== 'false',
       floatingBookmarks: localStorage.floatingBookmarks !== 'false',
+      sidebarDarkness: Number(localStorage.sidebarDarkness ?? 30),
+      sidebarOpacity: Number(localStorage.sidebarOpacity ?? 90),
       hovered: false,
       sidebarOpen: false,
       isMobile: window.matchMedia('(max-width: 767px)').matches,
