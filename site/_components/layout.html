@@ -914,13 +914,13 @@
               <!-- Fully Loaded Route Content -->
               <tab-content data-component="tab.source || tab.content" data-show="tab.isLoading === false"
                 class="grow flex-1 flex flex-col min-h-0 [&>body]:flex [&>body]:flex-col [&>body]:flex-1 [&>body]:min-h-0 [&>body]:h-full [&>body]:m-0 [&>body]:bg-transparent"
-                data-effect="if (!tab.isLoading && router.activePageTabId === tab.id) { if (__global.searchTabs && __global.searchTabs[tab.id]) { const st = __global.searchTabs[tab.id]; if (st.tokens && st.tokens.length !== 0 && typeof __global.syncPageHighlights === 'function') { __global.syncPageHighlights($el, tab.id, st.tokens); } } else { if (typeof CSS !== 'undefined' && CSS.highlights) { CSS.highlights.delete('page-match'); } } }"></tab-content>
+                data-effect="if (!tab.isLoading && router.activePageTabId === tab.id && searchTabs && searchTabs[tab.id] && searchTabs[tab.id].tokens && searchTabs[tab.id].tokens.length !== 0) { if (typeof syncPageHighlights === 'function') { syncPageHighlights($el, tab.id, searchTabs[tab.id].tokens); } } else if (router.activePageTabId === tab.id && (!searchTabs || !searchTabs[tab.id] || !searchTabs[tab.id].tokens || searchTabs[tab.id].tokens.length === 0)) { if (typeof CSS !== 'undefined' && CSS.highlights) { CSS.highlights.delete('page-match'); } }"></tab-content>
             </div>
           </template>
 
         <!-- Floating In-Page Search Matches Badge (Appears when navigating from search with highlighted tokens) -->
         <div data-show="searchTabs && searchTabs[router.activePageTabId] && searchTabs[router.activePageTabId].count > 0 && !searchOpen"
-          class="fixed bottom-6 start-6 z-40 flex items-center gap-2.5 bg-base-100/90 backdrop-blur-md px-3.5 py-2 rounded-full border border-accent/20 shadow-2xl text-xs font-mono transition-all duration-300 animate-fade-in"
+          class="absolute top-3 start-8 z-40 flex items-center gap-2.5 bg-base-100/90 backdrop-blur-md px-3.5 py-2 rounded-full border border-accent/30 shadow-2xl text-xs font-mono transition-all duration-300 animate-fade-in"
           data-on-keydown_escape_window="clearPageHighlights(router.activePageTabId)">
           <span class="relative flex h-2 w-2">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>

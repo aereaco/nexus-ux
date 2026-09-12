@@ -19,8 +19,7 @@
       }"
   data-signal="{ appReady: false, rtl: localStorage.rtl === 'true', zoom: Number(localStorage.zoom) || 1, tempZoom: Number(localStorage.zoom) || 1 }"
   data-effect="if (!appReady && router?.pageTabs?.length && !router?.activePageTab?.isLoading) { appReady = true; }"
-  data-bind-dir="rtl ? 'rtl' : 'ltr'"
-  data-bind-style="{ fontSize: (zoom || 1) + 'rem' }">
+  data-bind-dir="rtl ? 'rtl' : 'ltr'" data-bind-style="{ fontSize: (zoom || 1) + 'rem' }">
 
 <head>
   <meta charset="UTF-8">
@@ -184,19 +183,13 @@
           </g>
         </svg>
       </div>
-      <div class="flex flex-col items-center gap-1.5">
-        <span class="text-xs text-slate-400 font-mono tracking-widest animate-pulse">Loading...</span>
-      </div>
     </div>
   </div>
 
-  <main class="nx-main h-full flex flex-col min-h-0"
-    style="visibility: hidden; overflow: hidden;"
-    data-style="{
+  <main class="nx-main h-full flex flex-col min-h-0" style="visibility: hidden; overflow: hidden;" data-style="{
       visibility: appReady ? 'visible' : 'hidden',
       overflow: appReady ? '' : 'hidden'
-    }"
-    data-class="{
+    }" data-class="{
       'opacity-100 pointer-events-auto': appReady,
       'opacity-0 pointer-events-none': !appReady
     }">
