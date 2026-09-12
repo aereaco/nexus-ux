@@ -230,17 +230,13 @@ export function buildScrollbarCSS(config?: Partial<ScrollbarConfig>): string {
 
 /* Suppress hidden tracks completely from pointer events and layout */
 .scrollbar-track-v[style*="display: none"],
-.scrollbar-track-h[style*="display: none"],
-[style*="display: none"] ~ .scrollbar-track-v,
-[style*="display: none"] ~ .scrollbar-track-h {
+.scrollbar-track-h[style*="display: none"] {
   display: none !important;
   pointer-events: none !important;
 }
 
 .scrollbar-track-v[style*="display: none"] .scrollbar-thumb-v,
-.scrollbar-track-h[style*="display: none"] .scrollbar-thumb-h,
-[style*="display: none"] ~ .scrollbar-track-v .scrollbar-thumb-v,
-[style*="display: none"] ~ .scrollbar-track-h .scrollbar-thumb-h {
+.scrollbar-track-h[style*="display: none"] .scrollbar-thumb-h {
   display: none !important;
   pointer-events: none !important;
   opacity: 0 !important;
@@ -495,6 +491,10 @@ export class OverlayScrollbarInstance {
     const canScrollY = this.cachedOverflowY && (scrollHeight - clientHeight > 1) && clientHeight > 0;
     if (canScrollY) {
       if (this.trackV && this.trackV.style.display !== 'block') this.trackV.style.display = 'block';
+      if (this.thumbV) {
+        this.thumbV.style.opacity = '';
+        this.thumbV.style.pointerEvents = '';
+      }
 
       if (this.trackV) {
         if (isFixed) {
@@ -542,6 +542,10 @@ export class OverlayScrollbarInstance {
     const canScrollX = this.cachedOverflowX && (scrollWidth - clientWidth > 1) && clientWidth > 0;
     if (canScrollX) {
       if (this.trackH && this.trackH.style.display !== 'block') this.trackH.style.display = 'block';
+      if (this.thumbH) {
+        this.thumbH.style.opacity = '';
+        this.thumbH.style.pointerEvents = '';
+      }
 
       if (this.trackH) {
         if (isFixed) {
