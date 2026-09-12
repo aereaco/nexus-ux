@@ -79,6 +79,7 @@ if (!validModes.includes(config.mode)) {
 const REPO_ROOT = Deno.cwd();
 const SITE_DIR = resolve(REPO_ROOT, "site");
 const DIST_DIR = resolve(REPO_ROOT, "dist");
+const SRC_DIR = resolve(REPO_ROOT, "src");
 const DEBOUNCE_MS = 750;
 
 const IGNORE_PATTERNS = [
@@ -297,6 +298,16 @@ async function handler(req: Request): Promise<Response> {
     distRes.headers.set("Cross-Origin-Opener-Policy", "same-origin");
     distRes.headers.set("Cross-Origin-Embedder-Policy", "require-corp");
     return distRes;
+  }
+
+  // B. Source Modules (/src/*) -> Served directly from REPO_ROOT/src for local labs
+  if (url.pathname.startsWith("/src/")) {
+    const srcReq = new Request(new URL(url.pathname.replace(/^\/src\//, "/"), url.origin), req);
+    const srcRes = await serveDir(srcReq, { fsRoot: SRC_DIR, quiet: true });
+    srcRes.headers.set("Cache-Control", "no-cache");
+    srcRes.headers.set("Cross-Origin-Opener-Policy", "same-origin");
+    srcRes.headers.set("Cross-Origin-Embedder-Policy", "require-corp");
+    return srcRes;
   }
 
   // B. Physical Static File Check (SITE_DIR)

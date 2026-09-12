@@ -95,8 +95,10 @@
                 window._snippetEditor = null;
             }
 
-            // Fetch framework module source directly from GitHub
-            window.fetch('https://raw.githubusercontent.com/aereaco/nexus-ux/main/src' + doc.SourceModule)
+            // Fetch framework module source (local /src in development, GitHub raw in production)
+            const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname) || location.hostname.endsWith('.local');
+            const sourceBase = isLocal ? '/src' : 'https://raw.githubusercontent.com/aereaco/nexus-ux/main/src';
+            window.fetch(sourceBase + doc.SourceModule)
                 .then(r => r.ok ? r.text() : Promise.reject(r.statusText))
                 .then(d => {
                     forkSource = d;
