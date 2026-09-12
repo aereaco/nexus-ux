@@ -43,24 +43,14 @@ const SCROLLBAR_BASE_CSS = `
 /* ==========================================================================
    Zero-Flash Native Scrollbar Suppression for Overlay Mode
    ========================================================================== */
-.overflow-auto,
-.overflow-y-auto,
-.overflow-x-auto,
-.overflow-scroll,
-.overflow-y-scroll,
-.overflow-x-scroll,
+[style*="overflow"],
 [data-scrollbar],
 .scrollbar-none,
 .scrollbar-overlay-active {
   scrollbar-width: none !important;
 }
 
-.overflow-auto::-webkit-scrollbar,
-.overflow-y-auto::-webkit-scrollbar,
-.overflow-x-auto::-webkit-scrollbar,
-.overflow-scroll::-webkit-scrollbar,
-.overflow-y-scroll::-webkit-scrollbar,
-.overflow-x-scroll::-webkit-scrollbar,
+[style*="overflow"]::-webkit-scrollbar,
 [data-scrollbar]::-webkit-scrollbar,
 .scrollbar-none::-webkit-scrollbar,
 .scrollbar-overlay-active::-webkit-scrollbar {
@@ -80,6 +70,7 @@ const SCROLLBAR_BASE_CSS = `
    1. OVERLAY SCROLLBAR SPRITE STYLES (Modern CSS Logical Properties & rem Units)
    ========================================================================== */
 .scrollbar-track-v {
+  display: none;
   position: absolute;
   inset-block-start: 0;
   inset-inline-end: 0.125rem;
@@ -105,6 +96,7 @@ const SCROLLBAR_BASE_CSS = `
 }
 
 .scrollbar-track-h {
+  display: none;
   position: absolute;
   inset-block-end: 0.125rem;
   inset-inline-start: 0;
@@ -156,30 +148,26 @@ const SCROLLBAR_BASE_CSS = `
 /* ==========================================================================
    2. NATIVE SCROLLBAR MODE (Fallback / Standard WebKit CSS)
    ========================================================================== */
-.overflow-auto:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar,
-.overflow-y-auto:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar,
-.overflow-x-auto:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar,
+[style*="overflow"]:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar,
+[data-scrollbar]:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar,
 .scrollbar-auto-hide:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar {
   width: var(--scrollbar-width, 0.375rem);
   height: var(--scrollbar-height, 0.375rem);
 }
-.overflow-auto:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar-track,
-.overflow-y-auto:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar-track,
-.overflow-x-auto:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar-track,
+[style*="overflow"]:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar-track,
+[data-scrollbar]:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar-track,
 .scrollbar-auto-hide:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar-track {
   background: var(--scrollbar-track, transparent);
   border-radius: var(--scrollbar-track-radius, 9999px);
 }
-.overflow-auto:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar-thumb,
-.overflow-y-auto:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar-thumb,
-.overflow-x-auto:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar-thumb,
+[style*="overflow"]:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar-thumb,
+[data-scrollbar]:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar-thumb,
 .scrollbar-auto-hide:not(.scrollbar-overlay-active):not(.scrollbar-none)::-webkit-scrollbar-thumb {
   background-color: transparent !important;
   border-radius: var(--scrollbar-thumb-radius, 9999px);
 }
-.overflow-auto:not(.scrollbar-overlay-active):not(.scrollbar-none).is-scrolling::-webkit-scrollbar-thumb,
-.overflow-y-auto:not(.scrollbar-overlay-active):not(.scrollbar-none).is-scrolling::-webkit-scrollbar-thumb,
-.overflow-x-auto:not(.scrollbar-overlay-active):not(.scrollbar-none).is-scrolling::-webkit-scrollbar-thumb,
+[style*="overflow"]:not(.scrollbar-overlay-active):not(.scrollbar-none).is-scrolling::-webkit-scrollbar-thumb,
+[data-scrollbar]:not(.scrollbar-overlay-active):not(.scrollbar-none).is-scrolling::-webkit-scrollbar-thumb,
 .scrollbar-auto-hide:not(.scrollbar-overlay-active):not(.scrollbar-none).is-scrolling::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar-thumb, color-mix(in srgb, currentColor 30%, transparent)) !important;
 }
@@ -271,8 +259,10 @@ function findScrollParent(el: Element | null): Element | null {
       return null;
     }
     const s = window.getComputedStyle(el);
-    const hasScrollY = (s.overflowY === 'auto' || s.overflowY === 'scroll') && (el.scrollHeight > el.clientHeight);
-    const hasScrollX = (s.overflowX === 'auto' || s.overflowX === 'scroll') && (el.scrollWidth > el.clientWidth);
+    const hasScrollY = s.overflowY !== 'hidden' && s.overflowY !== 'clip' && s.overflow !== 'hidden' &&
+      (s.overflowY === 'auto' || s.overflowY === 'scroll') && (el.scrollHeight > el.clientHeight);
+    const hasScrollX = s.overflowX !== 'hidden' && s.overflowX !== 'clip' && s.overflow !== 'hidden' &&
+      (s.overflowX === 'auto' || s.overflowX === 'scroll') && (el.scrollWidth > el.clientWidth);
     if (hasScrollY || hasScrollX) {
       return el;
     }
@@ -333,6 +323,7 @@ class OverlayScrollbarInstance {
     // Vertical Overlay Sprite
     this.trackV = document.createElement('div');
     this.trackV.className = 'scrollbar-track-v';
+    this.trackV.style.display = 'none';
     this.thumbV = document.createElement('div');
     this.thumbV.className = 'scrollbar-thumb-v';
     this.trackV.appendChild(this.thumbV);
@@ -341,6 +332,7 @@ class OverlayScrollbarInstance {
     // Horizontal Overlay Sprite
     this.trackH = document.createElement('div');
     this.trackH.className = 'scrollbar-track-h';
+    this.trackH.style.display = 'none';
     this.thumbH = document.createElement('div');
     this.thumbH.className = 'scrollbar-thumb-h';
     this.trackH.appendChild(this.thumbH);
@@ -373,6 +365,7 @@ class OverlayScrollbarInstance {
 
     // Check declarative opt-out or hidden container
     if (
+      !this.el.isConnected ||
       this.el.getAttribute('data-scrollbar') === 'none' ||
       this.el.classList.contains('scrollbar-none') ||
       clientHeight === 0 ||
@@ -385,12 +378,12 @@ class OverlayScrollbarInstance {
     }
 
     const now = performance.now();
-    if (this.cachedOverflowY === null || now - this.lastStyleCheck > 1000) {
+    if (this.cachedOverflowY === null || now - this.lastStyleCheck > 250) {
       this.lastStyleCheck = now;
       const s = window.getComputedStyle(this.el);
       this.cachedRTL = s.direction === 'rtl';
-      this.cachedOverflowY = s.overflowY !== 'hidden' && (s.overflowY === 'auto' || s.overflowY === 'scroll');
-      this.cachedOverflowX = s.overflowX !== 'hidden' && (s.overflowX === 'auto' || s.overflowX === 'scroll');
+      this.cachedOverflowY = s.overflowY !== 'hidden' && s.overflowY !== 'clip' && s.overflow !== 'hidden' && (s.overflowY === 'auto' || s.overflowY === 'scroll');
+      this.cachedOverflowX = s.overflowX !== 'hidden' && s.overflowX !== 'clip' && s.overflow !== 'hidden' && (s.overflowX === 'auto' || s.overflowX === 'scroll');
     }
 
     const isRTL = this.cachedRTL;
