@@ -9,7 +9,7 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 const MIN_ZOOM = 0.2;
 const MAX_ZOOM = 4;
 
-interface Viewport { x: number; y: number; zoom: number; tick?: number }
+interface Viewport { x: number; y: number; zoom: number }
 type FlowElement = HTMLElement & { __flowViewport?: Viewport };
 
 /** Elements that must not initiate a canvas pan when pressed. */
@@ -276,14 +276,13 @@ export const flowAttribute: AttributeModule = {
       if (inScopeVp && typeof inScopeVp === 'object' && ('zoom' in inScopeVp || 'x' in inScopeVp || 'y' in inScopeVp)) {
         state = inScopeVp;
       } else {
-        state = reactive({ x: 0, y: 0, zoom: 1, tick: 0 });
+        state = reactive({ x: 0, y: 0, zoom: 1 });
       }
     }
 
     if (state.zoom === undefined) state.zoom = 1;
     if (state.x === undefined) state.x = 0;
     if (state.y === undefined) state.y = 0;
-    if (state.tick === undefined) state.tick = 0;
 
     const content = (element.querySelector('[data-flow-viewport], .flow-viewport') as HTMLElement | null)
       || (element.firstElementChild as HTMLElement | null)
@@ -368,7 +367,6 @@ export const flowAttribute: AttributeModule = {
               const inside = nx < minX + w && nx + nw > minX && ny < minY + h && ny + nh > minY;
               n.selected = inside;
             });
-            state.tick = (state.tick || 0) + 1;
           }
           return;
         }
@@ -377,7 +375,6 @@ export const flowAttribute: AttributeModule = {
         didMove = true;
         state.x = e.clientX - startX;
         state.y = e.clientY - startY;
-        state.tick = (state.tick || 0) + 1;
       },
       onEnd: (e) => {
         if (isSelecting) {
@@ -396,7 +393,6 @@ export const flowAttribute: AttributeModule = {
           const nodes = runtime.evaluate(element, 'nodes') as any[];
           if (Array.isArray(nodes) && nodes.some(n => n.selected)) {
             nodes.forEach(n => { n.selected = false; });
-            state.tick = (state.tick || 0) + 1;
           }
         }
       }
@@ -418,7 +414,6 @@ export const flowAttribute: AttributeModule = {
       state.x = px - fx * nextZoom;
       state.y = py - fy * nextZoom;
       state.zoom = nextZoom;
-      state.tick = (state.tick || 0) + 1;
     };
 
     // Keyboard Shortcuts: Delete, Backspace, Arrows, Escape
@@ -446,7 +441,6 @@ export const flowAttribute: AttributeModule = {
             nodes.length = 0;
             nodes.push(...remaining);
           }
-          state.tick = (state.tick || 0) + 1;
         }
       } else if (e.key.startsWith('Arrow')) {
         const selectedNodes = nodes.filter(n => n.selected);
@@ -460,23 +454,14 @@ export const flowAttribute: AttributeModule = {
             if (e.key === 'ArrowUp') p.y = (p.y || 0) - step;
             if (e.key === 'ArrowDown') p.y = (p.y || 0) + step;
           });
-          state.tick = (state.tick || 0) + 1;
         }
       } else if (e.key === 'Escape') {
         nodes.forEach(n => { n.selected = false; });
-        state.tick = (state.tick || 0) + 1;
       }
     };
 
     element.addEventListener('wheel', onWheel, { passive: false });
     window.addEventListener('keydown', onKeyDown);
-
-    let settleFrames = 0;
-    const settle = () => {
-      state.tick = (state.tick || 0) + 1;
-      if (++settleFrames < 24) requestAnimationFrame(settle);
-    };
-    requestAnimationFrame(settle);
 
     const stop = runtime.effect(() => {
       const zoom = state.zoom || 1;
@@ -592,8 +577,6 @@ export const flowNodeAttribute: AttributeModule = {
           const snapped = snapPoint(item.initialX + dx, item.initialY + dy, snap);
           writePos(item.node, snapped.x, snapped.y);
         });
-
-        if (vp) (vp as any).tick = ((vp as any).tick || 0) + 1;
       },
       onEnd: () => {
         element.style.zIndex = '';
@@ -731,8 +714,6 @@ export const flowHandleAttribute: AttributeModule = {
           const edges = edgesArray();
           if (edges && !edges.some((ed: any) => String(ed.source) === String(srcId) && String(ed.target) === String(tgtId))) {
             edges.push({ source: srcId, target: tgtId });
-            const vpState = vp?.__flowViewport;
-            if (vpState) (vpState as any).tick = ((vpState as any).tick || 0) + 1;
           }
         }
       }
@@ -781,14 +762,22 @@ export const flowEdgesAttribute: AttributeModule = {
 
     const stop = runtime.effect(() => {
       const currentFlow = element.closest('[data-flow]') as FlowElement | null;
-      const vp = currentFlow?.__flowViewport;
-      const _t = (vp as any)?.tick;
-
       let edgeList: any[] = [];
+      let nodesList: any[] = [];
       try {
         const evaluated = runtime.evaluate(element, expr);
         if (Array.isArray(evaluated)) edgeList = evaluated;
       } catch { /* ignore */ }
+
+      try {
+        const nodesVal = runtime.evaluate(currentFlow || element, 'nodes');
+        if (Array.isArray(nodesVal)) nodesList = nodesVal;
+      } catch { /* ignore */ }
+
+      const nodeMap = new Map<string, any>();
+      nodesList.forEach(n => {
+        if (n && n.id !== undefined) nodeMap.set(String(n.id), n);
+      });
 
       const existingPaths = new Map<string, SVGPathElement>();
       const existingLabels = new Map<string, SVGGElement>();
@@ -825,16 +814,22 @@ export const flowEdgesAttribute: AttributeModule = {
           curvature: edge.curvature,
           borderRadius: edge.borderRadius,
           offset: edge.offset,
-          container: currentFlow || undefined
+          container: currentFlow || undefined,
+          nodeMap,
+          nodes: nodesList
         });
 
         const d = edgeRes?.d || (typeof edgeRes === 'string' ? edgeRes : '');
-        if (d) pathEl.setAttribute('d', d);
+        if (d && pathEl.getAttribute('d') !== d) {
+          pathEl.setAttribute('d', d);
+        }
 
         if (edge.markerEnd) {
           const markerId = edge.markerEnd === 'arrowclosed' ? 'url(#flow-arrow-closed)' : 'url(#flow-arrow)';
-          pathEl.setAttribute('marker-end', markerId);
-        } else {
+          if (pathEl.getAttribute('marker-end') !== markerId) {
+            pathEl.setAttribute('marker-end', markerId);
+          }
+        } else if (pathEl.hasAttribute('marker-end')) {
           pathEl.removeAttribute('marker-end');
         }
 
@@ -853,7 +848,10 @@ export const flowEdgesAttribute: AttributeModule = {
             const textEl = labelG.querySelector('text');
             if (textEl && textEl.textContent !== edge.label) textEl.textContent = edge.label;
           }
-          labelG.setAttribute('transform', `translate(${edgeRes.labelX}, ${edgeRes.labelY})`);
+          const transformStr = `translate(${edgeRes.labelX}, ${edgeRes.labelY})`;
+          if (labelG.getAttribute('transform') !== transformStr) {
+            labelG.setAttribute('transform', transformStr);
+          }
         }
       });
 
@@ -956,8 +954,6 @@ export const flowResizerAttribute: AttributeModule = {
           nodeState.x = newX;
           nodeState.y = newY;
         }
-
-        if (vp) (vp as any).tick = ((vp as any).tick || 0) + 1;
       }
     });
 
@@ -1007,10 +1003,10 @@ export const flowMinimapAttribute: AttributeModule = {
       const flowX = minX + px * currentViewScale;
       const flowY = minY + py * currentViewScale;
 
-      const containerRect = flowEl.getBoundingClientRect();
-      vp.x = containerRect.width / 2 - flowX * (vp.zoom || 1);
-      vp.y = containerRect.height / 2 - flowY * (vp.zoom || 1);
-      (vp as any).tick = ((vp as any).tick || 0) + 1;
+      const containerW = flowEl.clientWidth || 800;
+      const containerH = flowEl.clientHeight || 600;
+      vp.x = containerW / 2 - flowX * (vp.zoom || 1);
+      vp.y = containerH / 2 - flowY * (vp.zoom || 1);
     };
 
     const stopMinimapDrag = trackPointerDrag(svg, {
@@ -1029,18 +1025,18 @@ export const flowMinimapAttribute: AttributeModule = {
     const stop = runtime.effect(() => {
       if (!flowEl) return;
       const vp = flowEl.__flowViewport;
-      const _t = (vp as any)?.tick;
 
       let nodesList: any[] = [];
       try { nodesList = runtime.evaluate(flowEl, 'nodes') as any[] || []; } catch { nodesList = []; }
 
-      const containerRect = flowEl.getBoundingClientRect();
+      const containerW = flowEl.clientWidth || 800;
+      const containerH = flowEl.clientHeight || 600;
       const z = vp?.zoom || 1;
       const viewBB = {
         x: -(vp?.x || 0) / z,
         y: -(vp?.y || 0) / z,
-        width: (containerRect.width || 800) / z,
-        height: (containerRect.height || 600) / z
+        width: containerW / z,
+        height: containerH / z
       };
 
       let bMinX = viewBB.x;
@@ -1069,18 +1065,52 @@ export const flowMinimapAttribute: AttributeModule = {
       svg.setAttribute('viewBox', `${minX} ${minY} ${totalW} ${totalH}`);
       currentViewScale = totalW / (svg.clientWidth || 200);
 
-      let html = '';
+      // Persistent SVG node rects (ZCZS: zero innerHTML destruction)
+      const existingNodeRects = new Map<string, SVGRectElement>();
+      svg.querySelectorAll('rect.flow-minimap-node').forEach(r => {
+        const id = r.getAttribute('data-node-id');
+        if (id) existingNodeRects.set(id, r as SVGRectElement);
+      });
+
+      const activeIds = new Set<string>();
+      let lens = svg.querySelector('rect.flow-minimap-lens') as SVGRectElement | null;
+
       nodesList.forEach(n => {
+        const id = String(n.id ?? '');
+        if (!id) return;
+        activeIds.add(id);
         const p = n.position || n;
         const nx = p.x || 0;
         const ny = p.y || 0;
         const nw = n.w || n.width || 176;
         const nh = n.h || n.height || 90;
-        html += `<rect x="${nx}" y="${ny}" width="${nw}" height="${nh}" class="flow-minimap-node" />`;
+
+        let rect = existingNodeRects.get(id);
+        if (!rect) {
+          rect = document.createElementNS(SVG_NS, 'rect');
+          rect.setAttribute('class', 'flow-minimap-node');
+          rect.setAttribute('data-node-id', id);
+          svg.insertBefore(rect, lens || null);
+        }
+        rect.setAttribute('x', String(nx));
+        rect.setAttribute('y', String(ny));
+        rect.setAttribute('width', String(nw));
+        rect.setAttribute('height', String(nh));
       });
 
-      html += `<rect x="${viewBB.x}" y="${viewBB.y}" width="${viewBB.width}" height="${viewBB.height}" class="flow-minimap-lens" />`;
-      svg.innerHTML = html;
+      existingNodeRects.forEach((r, id) => {
+        if (!activeIds.has(id)) r.remove();
+      });
+
+      if (!lens) {
+        lens = document.createElementNS(SVG_NS, 'rect');
+        lens.setAttribute('class', 'flow-minimap-lens');
+        svg.appendChild(lens);
+      }
+      lens.setAttribute('x', String(viewBB.x));
+      lens.setAttribute('y', String(viewBB.y));
+      lens.setAttribute('width', String(viewBB.width));
+      lens.setAttribute('height', String(viewBB.height));
     });
 
     return () => {

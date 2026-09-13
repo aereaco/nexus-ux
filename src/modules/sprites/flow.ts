@@ -326,7 +326,6 @@ export const flowModule: SpriteModule = {
         const vp = container?.__flowViewport;
         if (vp) {
           vp.zoom = Math.min(4, (vp.zoom || 1) + delta);
-          vp.tick = (vp.tick || 0) + 1;
         }
       },
 
@@ -336,7 +335,6 @@ export const flowModule: SpriteModule = {
         const vp = container?.__flowViewport;
         if (vp) {
           vp.zoom = Math.max(0.2, (vp.zoom || 1) - delta);
-          vp.tick = (vp.tick || 0) + 1;
         }
       },
 
@@ -348,7 +346,6 @@ export const flowModule: SpriteModule = {
           vp.x = 0;
           vp.y = 0;
           vp.zoom = 1;
-          vp.tick = (vp.tick || 0) + 1;
         }
       },
 
@@ -360,7 +357,6 @@ export const flowModule: SpriteModule = {
         const vp = flow?.__flowViewport;
         if (vp && nodes && nodes.length > 0) {
           $flow.fitView(container, vp, nodes, padding);
-          vp.tick = (vp.tick || 0) + 1;
         }
       },
 
@@ -369,34 +365,114 @@ export const flowModule: SpriteModule = {
         `url(#flow-${type === 'arrowclosed' ? 'arrow-closed' : 'arrow'})`,
 
       /**
-       * Synchronous edge path string between two nodes (by DOM id), computed in
-       * flow-space so it is independent of the current pan/zoom.
-       *
-       * Supports bezier, smoothstep, step, and straight edge types with
-       * handle side awareness, corner radiuses, and midpoint label coordinates.
+       * Edge path string between two nodes computed in flow-space.
+       * Fast-path: computes endpoints directly from reactive node proxies in memory
+       * (Zero-Copy ZCZS, zero DOM reflows). Fallback: reads DOM node geometry.
        */
       edge: (
         sourceId: string,
         targetId: string,
-        options: { type?: string; curvature?: number; borderRadius?: number; offset?: number; stepPosition?: number; container?: HTMLElement } = {}
+        options: {
+          type?: string;
+          curvature?: number;
+          borderRadius?: number;
+          offset?: number;
+          stepPosition?: number;
+          container?: HTMLElement;
+          nodeMap?: Map<string, any> | Record<string, any>;
+          nodes?: any[];
+        } = {}
       ): any => {
-        const a = findNode(sourceId, options.container);
-        const b = findNode(targetId, options.container);
-        if (!a || !b) return '';
-        const container = options.container || flowContainer(a) || flowContainer(b);
-        if (!container) return '';
-        const vp = viewportOf(a);
+        let nodeA: any = null;
+        let nodeB: any = null;
 
-        const srcHandle = findHandle(a, 'source');
-        const tgtHandle = findHandle(b, 'target');
+        if (options.nodeMap) {
+          if (options.nodeMap instanceof Map) {
+            nodeA = options.nodeMap.get(String(sourceId));
+            nodeB = options.nodeMap.get(String(targetId));
+          } else {
+            nodeA = (options.nodeMap as Record<string, any>)[String(sourceId)];
+            nodeB = (options.nodeMap as Record<string, any>)[String(targetId)];
+          }
+        } else if (Array.isArray(options.nodes)) {
+          nodeA = options.nodes.find((n: any) => String(n.id) === String(sourceId));
+          nodeB = options.nodes.find((n: any) => String(n.id) === String(targetId));
+        }
 
-        const sAnchor = srcHandle || a;
-        const tAnchor = tgtHandle || b;
-        const s = anchorFlow(sAnchor, container, vp);
-        const t = anchorFlow(tAnchor, container, vp);
+        let s: { x: number; y: number } | null = null;
+        let t: { x: number; y: number } | null = null;
+        let sSide: Side = 'right';
+        let tSide: Side = 'left';
 
-        const sSide: Side = srcHandle ? inferSide(srcHandle, a) : 'right';
-        const tSide: Side = tgtHandle ? inferSide(tgtHandle, b) : 'left';
+        // Fast-path: Calculate purely from in-memory reactive node proxies (Zero-Copy ZCZS)
+        if (nodeA && nodeB) {
+          const getAbsoluteNodePos = (n: any): { x: number; y: number } => {
+            const p = n.position || n;
+            let px = Number(p.x) || 0;
+            let py = Number(p.y) || 0;
+            if (n.parentId && options.nodeMap) {
+              const parent = options.nodeMap instanceof Map
+                ? options.nodeMap.get(String(n.parentId))
+                : (options.nodeMap as Record<string, any>)[String(n.parentId)];
+              if (parent) {
+                const pPos = getAbsoluteNodePos(parent);
+                px += pPos.x;
+                py += pPos.y;
+              }
+            }
+            return { x: px, y: py };
+          };
+
+          const posA = getAbsoluteNodePos(nodeA);
+          const posB = getAbsoluteNodePos(nodeB);
+          const wA = Number(nodeA.width || nodeA.w) || 192;
+          const hA = Number(nodeA.height || nodeA.h) || 90;
+          const wB = Number(nodeB.width || nodeB.w) || 192;
+          const hB = Number(nodeB.height || nodeB.h) || 90;
+
+          // Check for handles declared in node state
+          if (Array.isArray(nodeA.handles)) {
+            const srcHandle = nodeA.handles.find((h: any) => h.type === 'source') || nodeA.handles[0];
+            if (srcHandle?.side) sSide = srcHandle.side;
+          }
+          if (Array.isArray(nodeB.handles)) {
+            const tgtHandle = nodeB.handles.find((h: any) => h.type === 'target') || nodeB.handles[0];
+            if (tgtHandle?.side) tSide = tgtHandle.side;
+          }
+
+          const getSideAnchor = (pos: { x: number; y: number }, w: number, h: number, side: Side) => {
+            switch (side) {
+              case 'left': return { x: pos.x, y: pos.y + h / 2 };
+              case 'right': return { x: pos.x + w, y: pos.y + h / 2 };
+              case 'top': return { x: pos.x + w / 2, y: pos.y };
+              case 'bottom': return { x: pos.x + w / 2, y: pos.y + h };
+            }
+          };
+
+          s = getSideAnchor(posA, wA, hA, sSide);
+          t = getSideAnchor(posB, wB, hB, tSide);
+        }
+
+        // Fallback: If not in memory map, query DOM (backwards-compatibility)
+        if (!s || !t) {
+          const a = findNode(sourceId, options.container);
+          const b = findNode(targetId, options.container);
+          if (!a || !b) return '';
+          const container = options.container || flowContainer(a) || flowContainer(b);
+          if (!container) return '';
+          const vp = viewportOf(a);
+
+          const srcHandle = findHandle(a, 'source');
+          const tgtHandle = findHandle(b, 'target');
+
+          const sAnchor = srcHandle || a;
+          const tAnchor = tgtHandle || b;
+          s = anchorFlow(sAnchor, container, vp);
+          t = anchorFlow(tAnchor, container, vp);
+
+          sSide = srcHandle ? inferSide(srcHandle, a) : 'right';
+          tSide = tgtHandle ? inferSide(tgtHandle, b) : 'left';
+        }
 
         const type = options.type || 'bezier';
         let res: { path: string; labelX: number; labelY: number };
@@ -423,7 +499,7 @@ export const flowModule: SpriteModule = {
 
       /**
        * Reactive edge attached to two live DOM elements. Returns a reactive
-       * `{ d, labelX, labelY }` that self-updates every frame.
+       * `{ d, labelX, labelY }` computed on demand.
        */
       connect: (elA: HTMLElement, elB: HTMLElement, options: { type?: string; curvature?: number; borderRadius?: number } = {}) => {
         const pathData = reactive({ d: '', labelX: 0, labelY: 0 });
@@ -451,8 +527,7 @@ export const flowModule: SpriteModule = {
           pathData.labelX = res.labelX;
           pathData.labelY = res.labelY;
         };
-        const ticker = () => { update(); requestAnimationFrame(ticker); };
-        ticker();
+        update();
         return pathData;
       }
     };
