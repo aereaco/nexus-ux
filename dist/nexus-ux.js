@@ -1618,43 +1618,6 @@ ${suggestion}`);
   __export(bind_exports, {
     default: () => bind_default
   });
-  function extractNativeApis(value) {
-    const apis = [];
-    const seen = /* @__PURE__ */ new Set();
-    for (const pattern of NATIVE_API_PATTERNS) {
-      pattern.lastIndex = 0;
-      let match;
-      while ((match = pattern.exec(value)) !== null) {
-        const [, prop] = match;
-        const key = `${pattern.source.split("\\b")[1]?.split(".")[0] || "unknown"}.${prop}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          let target;
-          if (pattern.source.includes("window") || pattern.source.includes("globalThis")) {
-            target = globalThis;
-          } else if (pattern.source.includes("localStorage")) {
-            target = globalThis.localStorage;
-          } else if (pattern.source.includes("sessionStorage")) {
-            target = globalThis.sessionStorage;
-          } else if (pattern.source.includes("navigator")) {
-            target = globalThis.navigator;
-          } else if (pattern.source.includes("document")) {
-            target = globalThis.document;
-          } else if (pattern.source.includes("screen")) {
-            target = globalThis.screen;
-          } else {
-            target = globalThis;
-          }
-          apis.push({ target, property: prop });
-        }
-      }
-    }
-    return apis;
-  }
-  function isNativeApiExpression(value) {
-    const trimmed = value.trim();
-    return extractNativeApis(trimmed).length > 0;
-  }
   function setValuePreservingCursor(el, value) {
     if (el.value === value)
       return;
@@ -1720,61 +1683,10 @@ ${suggestion}`);
       }
     }
   }
-  function createNativeBinding(value, runtime, el) {
-    const cleanupFns4 = [];
-    const trimmed = value.trim();
-    const nativeApis = extractNativeApis(trimmed);
-    if (nativeApis.length === 0) {
-      return () => {
-      };
-    }
-    const [runner, effectCleanup] = runtime.elementBoundEffect(el, () => {
-      const result = runtime.evaluate(el, value);
-      applyBindingResult(result, el);
-    });
-    cleanupFns4.push(effectCleanup);
-    for (const api of nativeApis) {
-      const property = api.property;
-      if (api.target === globalThis) {
-        if (property === "innerWidth" || property === "innerHeight") {
-          const onResize = () => {
-            runner();
-          };
-          globalThis.addEventListener("resize", onResize);
-          cleanupFns4.push(() => globalThis.removeEventListener("resize", onResize));
-        } else if (property === "scrollX" || property === "scrollY") {
-          const onScroll = () => {
-            runner();
-          };
-          globalThis.addEventListener("scroll", onScroll);
-          cleanupFns4.push(() => globalThis.removeEventListener("scroll", onScroll));
-        }
-      }
-      if (api.target === globalThis.localStorage || api.target === globalThis.sessionStorage) {
-        const onStorage = (e) => {
-          if (e.key === property) {
-            runner();
-          }
-        };
-        globalThis.addEventListener("storage", onStorage);
-        cleanupFns4.push(() => globalThis.removeEventListener("storage", onStorage));
-      }
-    }
-    return () => cleanupFns4.forEach((fn) => fn());
-  }
-  var NATIVE_API_PATTERNS, bindModule, bind_default;
+  var bindModule, bind_default;
   var init_bind = __esm({
     "src/modules/attributes/bind.ts"() {
       init_debug();
-      NATIVE_API_PATTERNS = [
-        /\bwindow\.(\w+)/g,
-        /\bglobalThis\.(\w+)/g,
-        /\blocalStorage\.(\w+)/g,
-        /\bsessionStorage\.(\w+)/g,
-        /\bnavigator\.(\w+)/g,
-        /\bdocument\.(\w+)/g,
-        /\bscreen\.(\w+)/g
-      ];
       bindModule = {
         name: "bind",
         attribute: "bind",
@@ -1783,17 +1695,27 @@ ${suggestion}`);
             return;
           const parsed = parsedAttr || runtime.parseAttribute("data-bind", runtime, el);
           const target = parsed?.argument;
-          if (isNativeApiExpression(value)) {
-            return createNativeBinding(value, runtime, el);
-          }
           if (!target) {
             const cleanupFns5 = [];
             try {
-              const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
+              const [runner, cleanup] = runtime.elementBoundEffect(el, () => {
                 const result = runtime.evaluate(el, value);
                 applyBindingResult(result, el);
               });
               cleanupFns5.push(cleanup);
+              if (value.includes("innerWidth") || value.includes("innerHeight")) {
+                const onResize = () => {
+                  runner();
+                };
+                globalThis.addEventListener("resize", onResize);
+                cleanupFns5.push(() => globalThis.removeEventListener("resize", onResize));
+              } else if (value.includes("scrollX") || value.includes("scrollY")) {
+                const onScroll = () => {
+                  runner();
+                };
+                globalThis.addEventListener("scroll", onScroll);
+                cleanupFns5.push(() => globalThis.removeEventListener("scroll", onScroll));
+              }
               const isFormInput = el instanceof HTMLInputElement || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement || el.isContentEditable;
               if (isFormInput) {
                 const isLazy = el.hasAttribute("data-bind_lazy") || parsed?.modifiers?.includes("lazy") === true;

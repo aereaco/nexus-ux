@@ -106,6 +106,15 @@ function applyBindingResult(result: unknown, el: HTMLElement): void {
   }
 }
 
+const bindModule: AttributeModule = {
+  name: 'bind',
+  attribute: 'bind',
+  handle: (el: HTMLElement, value: string, runtime: RuntimeContext, parsedAttr?: ParsedAttribute): (() => void) | void => {
+    if (!value) return;
+
+    const parsed = parsedAttr || runtime.parseAttribute('data-bind', runtime, el);
+    const target = parsed?.argument;
+
     // ─── Auto-Detect Mode (data-bind="expr" without sub-directive argument) ───
     if (!target) {
       const cleanupFns: (() => void)[] = [];
