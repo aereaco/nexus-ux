@@ -3249,21 +3249,30 @@ provided.
 
 `$router` is a **reactive signal** created by `data-router`, not a sprite module.
 
-### RC-5: Missing Attribute Documentation
+### RC-5: Redundant Module Elimination (`data-spatial` Removed)
 
-The following attribute modules exist in the codebase but were missing or
-under-documented in earlier versions of this reference:
-`data-spatial`, `data-flow`, `data-preserve`, `data-raf`, `data-build`,
-`data-teleport`, `data-assert`, `data-markdown`, `data-mask`.
+`data-spatial` has been **removed** and consolidated into `data-flow`, which serves as the authoritative infinite-canvas and spatial coordinate engine.
 
 ### RC-6: Build System
 
 Production builds use esbuild + SWC minification + Brotli-11 compression, with
 AOT Tailwind compilation generating `PACKED_THEME_CSS` at build time.
 
-### RC-7: Native API Binding System
+### RC-7: Native Web API Reflect Proxy Engine (`reflect.ts`)
 
-Direct JS property access (`window.innerWidth`, `localStorage.collapsed`) automatically creates Proxy/Reflect tracking proxies that register native event listeners (`resize`, `scroll`, `storage`) on read and push updates to dependent signals and DOM elements in real-time.
+Direct Web API access (`window.innerWidth`, `localStorage.collapsed`, `sessionStorage`, `document`, `screen`, `fetch`, `indexedDB`) is handled authoritatively by `createReflectProxy(runtime, el)` in `src/engine/reflect.ts`. The proxy intercepts reads and writes via Proxy/Reflect traps without regex scanning, registering native event listeners (`resize`, `scroll`, `storage`) on demand, supporting both standard methods (`getItem`, `setItem`, `removeItem`, `clear`, `key`, `length`) and direct property assignment, while caching proxy instances in a `WeakMap`.
+
+### RC-8: Elimination of Regex Heuristics in `data-bind`
+
+`data-bind` no longer uses regex scanning patterns (`NATIVE_API_PATTERNS`) or heuristic extraction. Bidirectional binding operates purely through standard reactive scope resolution (`scope.ts`) and the storage reflect proxy under the Zero-Copy Zero-Serialization (ZCZS) contract.
+
+### RC-9: Unified Scope Resolution (`scope.ts`)
+
+`getElementScope(el, runtime, initialExtras)` in `src/engine/scope.ts` is the single authoritative scope resolver for all expression evaluations, establishing strict resolution order (Extras $\rightarrow$ Sprites $\rightarrow$ Data Stack $\rightarrow$ Global Signals $\rightarrow$ Global Actions $\rightarrow$ Runtime $\rightarrow$ Reflect Proxy) and parsing ghost keys for heap pre-allocation.
+
+### RC-10: Zero-Copy Zero-Serialization (ZCZS) Web Storage Mandate
+
+State collections like `favorites`, `pageTabs`, and `todos` live directly in the reactive ownership graph and storage proxies as live arrays and objects. In compliance with ZCZS directives, objects must never be passed through `JSON.stringify` or `JSON.parse` across storage or runtime boundaries; direct property mutation is tracked and synchronized automatically.
 
 ---
 
@@ -3289,6 +3298,10 @@ Per Nexus-UX **Documentation-Driven Development (DDD)** directives, documentatio
   - [x] P5: Constructable StyleSheets Unification (`src/engine/utils/styles.ts`)
   - [x] P6: Engine Modularization & Scope Separation (`src/engine/scope.ts` vs `evaluator.ts`)
   - [x] P7: Core Autoscale Multi-Threading Consolidation (`runInWorker()` offload)
+- [x] **Native Web API Reflect Proxy Engine (`src/engine/reflect.ts`)**: Dual-compatibility storage, callable `fetch`, reactive `indexedDB`, and WeakMap proxy caching.
+- [x] **Scope Resolution Engine Unification (`src/engine/scope.ts`)**: Authoritative `getElementScope` resolver and ghost key pre-allocation.
+- [x] **Regex Heuristic Elimination in `data-bind`**: Pure reactive two-way form, attribute, and storage binding.
+- [x] **Zero-Serialization Storage Compliance**: Direct live array and object assignments without `JSON.stringify`/`JSON.parse`.
 
 ---
 
