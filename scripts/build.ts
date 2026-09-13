@@ -433,12 +433,39 @@ async function gitPush(opts: { remote?: string; branch?: string }) {
     // "Everything up-to-date" is not an error — treat it as success.
     if (/everything up[- ]to[- ]date/i.test(msg)) {
       console.log("ℹ️  Already up to date with remote.");
-      return;
+    } else {
+      console.error("❌ Push failed:", msg);
+      Deno.exit(1);
     }
-    console.error("❌ Push failed:", msg);
-    Deno.exit(1);
+  } else {
+    console.log("✓ Pushed to remote.");
   }
-  console.log("✓ Pushed to remote.");
+
+  // Purge jsDelivr GitHub CDN for all distribution bundles
+  console.log("🧹 Purging jsDelivr CDN cache for GitHub release assets...");
+  try {
+    const bundles = [
+      `gh/aereaco/nexus-ux@${branch}/dist/nexus-ux.min.js`,
+      `gh/aereaco/nexus-ux@${branch}/dist/nexus-ux.min.js.br`,
+      `gh/aereaco/nexus-ux@${branch}/dist/nexus-ux.js`,
+    ];
+    await Promise.all(bundles.map(async (bundlePath) => {
+      try {
+        const res = await fetch(`https://purge.jsdelivr.net/${bundlePath}`);
+        const data = await res.json() as { status?: string };
+        if (data.status === "finished") {
+          console.log(`  ✓ Purged: ${bundlePath}`);
+        } else {
+          console.log(`  ℹ Purge status (${bundlePath}): ${data.status || 'submitted'}`);
+        }
+      } catch (err) {
+        console.warn(`  ⚠️ Failed to purge ${bundlePath}:`, err);
+      }
+    }));
+    console.log("✅ jsDelivr CDN cache purged successfully!");
+  } catch (err) {
+    console.warn("⚠️  jsDelivr purge warning:", err);
+  }
 }
 
 async function publishToCloudflare(opts: { projectName?: string; branch?: string }) {
