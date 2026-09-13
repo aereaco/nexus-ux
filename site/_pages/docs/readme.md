@@ -43,9 +43,13 @@ reactive state graph while achieving **100% functional parity with Tailwind v4**
 
 ## 🎯 Native API Binding Architecture
 
-Nexus-UX provides **direct, fine-grained, push-based reactivity** for native browser APIs (`window`, `localStorage`, `sessionStorage`, `navigator`, `document`, `screen`) directly through standard JavaScript property access.
+Nexus-UX provides **direct, fine-grained, push-based reactivity** for native browser APIs (`window`, `localStorage`, `sessionStorage`, `navigator`, `document`, `screen`, `fetch`, `indexedDB`) under the **Zero-Copy Zero-Serialization (ZCZS)** mandate.
 
-Unlike static native getters (`localStorage.getItem()`) that sample state only at invocation, **Native API Binding** automatically intercepts reads and writes via Proxy/Reflect traps. It registers fine-grained event listeners on read and **actively pushes state updates** to watching signals and DOM elements whenever native Web APIs mutate. No `_` prefix or mirror module registration required.
+Unlike static native getters that sample state only at invocation, the **Native Web API Reflect Proxy Engine** (`src/engine/reflect.ts`) automatically intercepts reads and writes via `Proxy` + `Reflect` traps without regex scanning or intermediate serialization:
+- **Dual-Compatibility Storage**: Supports both standard Web API methods (`getItem`, `setItem`, `removeItem`, `clear`, `key`, `length`) and direct property access (`localStorage.collapsed = 'false'`), with automatic cross-tab synchronization via native `storage` events.
+- **Callable `fetch` Proxy**: Provides a transparent proxy for `fetch(url, options)` returning native `Promise<Response>` (fully supporting `.then()`, `.catch()`, etc.), while ensuring `fetch` is never shadowed by internal runtime utilities.
+- **Reactive `indexedDB`**: Exposes structured store operations (`createStoreOperations`, `getIndexedDBProxy`) for zero-overhead persistence.
+- **ZCZS Zero-Serialization Mandate**: State like `favorites`, `pageTabs`, and `todos` live directly in the reactive ownership graph and storage proxies as live arrays/objects without `JSON.stringify` or `JSON.parse`.
 
 ### Standard Native API Binding Pattern
 
@@ -66,12 +70,11 @@ Unlike static native getters (`localStorage.getItem()`) that sample state only a
 ```
 
 - **Declarative Signal Seeding:** Initialize signals directly from native API expressions with explicit nullish defaults (`??`).
-- **Pure Web API Actions:** Action handlers call native browser APIs directly (`localStorage.setItem(...)`). The binding pushes updates to watching signals automatically—no manual signal mutations needed!
+- **Pure Web API Actions:** Action handlers mutate storage directly via property assignment or `setItem(...)`. Reactive proxies push updates to watching signals automatically.
 - **Concise View Templates:** Elements observe short signal names (`collapsed`, `pageTabs`), eliminating template code bloat.
-
-- **Live Push Reactivity:** Instant same-tab & cross-tab updates without polling or re-renders
-- **Zero-Copy Performance:** Proxies wrap native APIs by reference without cloning
-- **Automatic Cleanup:** Zero memory leaks on element disposal
+- **Live Push Reactivity:** Instant same-tab & cross-tab updates without polling or re-renders.
+- **Zero-Copy Performance:** Proxies wrap native APIs by reference without cloning, cached via `WeakMap`.
+- **Automatic Cleanup:** Deterministic teardown on element disposal.
 
 ### Auto-Injected Utilities (Inline)
 
