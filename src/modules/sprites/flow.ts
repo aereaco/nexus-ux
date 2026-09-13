@@ -381,6 +381,8 @@ export const flowModule: SpriteModule = {
           container?: HTMLElement;
           nodeMap?: Map<string, any> | Record<string, any>;
           nodes?: any[];
+          sourceHandle?: string;
+          targetHandle?: string;
         } = {}
       ): any => {
         let nodeA: any = null;
@@ -430,27 +432,39 @@ export const flowModule: SpriteModule = {
           const wB = Number(nodeB.width || nodeB.w) || 192;
           const hB = Number(nodeB.height || nodeB.h) || 90;
 
-          // Check for handles declared in node state
-          if (Array.isArray(nodeA.handles)) {
-            const srcHandle = nodeA.handles.find((h: any) => h.type === 'source') || nodeA.handles[0];
-            if (srcHandle?.side) sSide = srcHandle.side;
-          }
-          if (Array.isArray(nodeB.handles)) {
-            const tgtHandle = nodeB.handles.find((h: any) => h.type === 'target') || nodeB.handles[0];
-            if (tgtHandle?.side) tSide = tgtHandle.side;
+          let handleA: any = null;
+          if (Array.isArray(nodeA.handles) && nodeA.handles.length > 0) {
+            handleA = options.sourceHandle
+              ? nodeA.handles.find((h: any) => h.id === options.sourceHandle)
+              : nodeA.handles.find((h: any) => h.type === 'source') || nodeA.handles[0];
+            if (handleA?.side) sSide = handleA.side;
           }
 
-          const getSideAnchor = (pos: { x: number; y: number }, w: number, h: number, side: Side) => {
+          let handleB: any = null;
+          if (Array.isArray(nodeB.handles) && nodeB.handles.length > 0) {
+            handleB = options.targetHandle
+              ? nodeB.handles.find((h: any) => h.id === options.targetHandle)
+              : nodeB.handles.find((h: any) => h.type === 'target') || nodeB.handles[0];
+            if (handleB?.side) tSide = handleB.side;
+          }
+
+          const getHandleAnchor = (pos: { x: number; y: number }, w: number, h: number, handle: any, allHandles: any[], defaultSide: Side) => {
+            const side: Side = handle?.side || defaultSide;
+            const sameSide = (allHandles || []).filter((item: any) => (item.side || (item.type === 'source' ? 'right' : 'left')) === side);
+            const idx = Math.max(0, sameSide.indexOf(handle));
+            const count = Math.max(1, sameSide.length);
+            const fraction = count === 1 ? 0.5 : (idx + 1) / (count + 1);
+
             switch (side) {
-              case 'left': return { x: pos.x, y: pos.y + h / 2 };
-              case 'right': return { x: pos.x + w, y: pos.y + h / 2 };
-              case 'top': return { x: pos.x + w / 2, y: pos.y };
-              case 'bottom': return { x: pos.x + w / 2, y: pos.y + h };
+              case 'left': return { x: pos.x, y: pos.y + h * fraction };
+              case 'right': return { x: pos.x + w, y: pos.y + h * fraction };
+              case 'top': return { x: pos.x + w * fraction, y: pos.y };
+              case 'bottom': return { x: pos.x + w * fraction, y: pos.y + h };
             }
           };
 
-          s = getSideAnchor(posA, wA, hA, sSide);
-          t = getSideAnchor(posB, wB, hB, tSide);
+          s = getHandleAnchor(posA, wA, hA, handleA, nodeA.handles, sSide);
+          t = getHandleAnchor(posB, wB, hB, handleB, nodeB.handles, tSide);
         }
 
         // Fallback: If not in memory map, query DOM (backwards-compatibility)

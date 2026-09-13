@@ -4914,6 +4914,14 @@ ${scripts}
   opacity: 1;
   stroke-width: 2.5px;
 }
+.flow-edge-animated {
+  stroke-dasharray: 6 4;
+  animation: flow-edge-dash 0.8s linear infinite;
+}
+@keyframes flow-edge-dash {
+  from { stroke-dashoffset: 20; }
+  to { stroke-dashoffset: 0; }
+}
 .flow-edge-preview {
   pointer-events: none;
   stroke-dasharray: 4 4;
@@ -4963,33 +4971,31 @@ ${scripts}
 
 .flow-minimap {
   position: absolute;
-  width: 12rem;
-  height: 8rem;
-  background: color-mix(in srgb, var(--color-base-100, #1e293b) 85%, transparent);
-  backdrop-filter: blur(12px);
-  border: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+  bottom: 1rem;
+  right: 1rem;
+  width: 160px;
+  height: 100px;
+  background-color: color-mix(in srgb, var(--color-base-100, #ffffff) 85%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid color-mix(in srgb, var(--color-base-content, #000) 15%, transparent);
   border-radius: 0.75rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
   overflow: hidden;
-  z-index: 40;
-  user-select: none;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  z-index: 25;
 }
 .flow-minimap-svg {
   width: 100%;
   height: 100%;
-  display: block;
 }
 .flow-minimap-node {
   fill: var(--color-primary, #3b82f6);
-  opacity: 0.75;
-  rx: 3px;
+  opacity: 0.7;
 }
 .flow-minimap-lens {
   fill: color-mix(in srgb, var(--color-primary, #3b82f6) 15%, transparent);
   stroke: var(--color-primary, #3b82f6);
   stroke-width: 1.5px;
   cursor: grab;
-  rx: 4px;
 }
 .flow-minimap-lens:active {
   cursor: grabbing;
@@ -5048,6 +5054,10 @@ ${scripts}
             return flowGridAttribute.handle(element, value, runtime, parsedAttr);
           if (arg === "snap")
             return flowSnapAttribute.handle(element, value, runtime, parsedAttr);
+          if (arg)
+            return;
+          if (!element.hasAttribute("data-flow"))
+            return;
           ensureFlowStyles(element.getRootNode());
           let config = {};
           if (value && value.trim()) {
@@ -5070,7 +5080,7 @@ ${scripts}
             if (inScopeVp && typeof inScopeVp === "object" && ("zoom" in inScopeVp || "x" in inScopeVp || "y" in inScopeVp)) {
               state = inScopeVp;
             } else {
-              state = reactive({ x: 0, y: 0, zoom: 1, tick: 0 });
+              state = reactive({ x: 0, y: 0, zoom: 1 });
             }
           }
           if (state.zoom === void 0)
@@ -5079,8 +5089,6 @@ ${scripts}
             state.x = 0;
           if (state.y === void 0)
             state.y = 0;
-          if (state.tick === void 0)
-            state.tick = 0;
           const content = element.querySelector("[data-flow-viewport], .flow-viewport") || element.firstElementChild || element;
           element.__flowViewport = state;
           const gridAttr = element.getAttribute("data-flow-grid");
@@ -5155,7 +5163,6 @@ ${scripts}
                     const inside = nx < minX + w && nx + nw > minX && ny < minY + h && ny + nh > minY;
                     n.selected = inside;
                   });
-                  state.tick = (state.tick || 0) + 1;
                 }
                 return;
               }
@@ -5164,7 +5171,6 @@ ${scripts}
               didMove = true;
               state.x = e.clientX - startX;
               state.y = e.clientY - startY;
-              state.tick = (state.tick || 0) + 1;
             },
             onEnd: (e) => {
               if (isSelecting) {
@@ -5183,7 +5189,6 @@ ${scripts}
                   nodes.forEach((n) => {
                     n.selected = false;
                   });
-                  state.tick = (state.tick || 0) + 1;
                 }
               }
             }
@@ -5203,7 +5208,6 @@ ${scripts}
             state.x = px - fx * nextZoom;
             state.y = py - fy * nextZoom;
             state.zoom = nextZoom;
-            state.tick = (state.tick || 0) + 1;
           };
           const onKeyDown = (e) => {
             const active = document.activeElement;
@@ -5233,7 +5237,6 @@ ${scripts}
                   nodes.length = 0;
                   nodes.push(...remaining);
                 }
-                state.tick = (state.tick || 0) + 1;
               }
             } else if (e.key.startsWith("Arrow")) {
               const selectedNodes = nodes.filter((n) => n.selected);
@@ -5251,24 +5254,15 @@ ${scripts}
                   if (e.key === "ArrowDown")
                     p.y = (p.y || 0) + step;
                 });
-                state.tick = (state.tick || 0) + 1;
               }
             } else if (e.key === "Escape") {
               nodes.forEach((n) => {
                 n.selected = false;
               });
-              state.tick = (state.tick || 0) + 1;
             }
           };
           element.addEventListener("wheel", onWheel, { passive: false });
           window.addEventListener("keydown", onKeyDown);
-          let settleFrames = 0;
-          const settle = () => {
-            state.tick = (state.tick || 0) + 1;
-            if (++settleFrames < 24)
-              requestAnimationFrame(settle);
-          };
-          requestAnimationFrame(settle);
           const stop2 = runtime.effect(() => {
             const zoom = state.zoom || 1;
             const x = state.x || 0;
@@ -5378,8 +5372,6 @@ ${scripts}
                 const snapped = snapPoint(item.initialX + dx, item.initialY + dy, snap);
                 writePos(item.node, snapped.x, snapped.y);
               });
-              if (vp)
-                vp.tick = (vp.tick || 0) + 1;
             },
             onEnd: () => {
               element.style.zIndex = "";
@@ -5504,9 +5496,6 @@ ${scripts}
                 const edges = edgesArray();
                 if (edges && !edges.some((ed) => String(ed.source) === String(srcId) && String(ed.target) === String(tgtId))) {
                   edges.push({ source: srcId, target: tgtId });
-                  const vpState = vp?.__flowViewport;
-                  if (vpState)
-                    vpState.tick = (vpState.tick || 0) + 1;
                 }
               }
             }
@@ -5546,15 +5535,25 @@ ${scripts}
             return;
           const stop2 = runtime.effect(() => {
             const currentFlow = element.closest("[data-flow]");
-            const vp = currentFlow?.__flowViewport;
-            const _t = vp?.tick;
             let edgeList = [];
+            let nodesList = [];
             try {
               const evaluated = runtime.evaluate(element, expr);
               if (Array.isArray(evaluated))
                 edgeList = evaluated;
             } catch {
             }
+            try {
+              const nodesVal = runtime.evaluate(currentFlow || element, "nodes");
+              if (Array.isArray(nodesVal))
+                nodesList = nodesVal;
+            } catch {
+            }
+            const nodeMap = /* @__PURE__ */ new Map();
+            nodesList.forEach((n) => {
+              if (n && n.id !== void 0)
+                nodeMap.set(String(n.id), n);
+            });
             const existingPaths = /* @__PURE__ */ new Map();
             const existingLabels = /* @__PURE__ */ new Map();
             element.querySelectorAll("path[data-edge-key]").forEach((p) => {
@@ -5581,20 +5580,33 @@ ${scripts}
                 pathEl.setAttribute("stroke-width", "2");
                 element.appendChild(pathEl);
               }
+              const isAnimated = !!edge.animated;
+              if (isAnimated && !pathEl.classList.contains("flow-edge-animated")) {
+                pathEl.classList.add("flow-edge-animated");
+              } else if (!isAnimated && pathEl.classList.contains("flow-edge-animated")) {
+                pathEl.classList.remove("flow-edge-animated");
+              }
               const edgeRes = runtime.$flow?.edge?.(srcId, tgtId, {
                 type: edge.type || "bezier",
                 curvature: edge.curvature,
                 borderRadius: edge.borderRadius,
                 offset: edge.offset,
-                container: currentFlow || void 0
+                container: currentFlow || void 0,
+                nodeMap,
+                nodes: nodesList,
+                sourceHandle: edge.sourceHandle,
+                targetHandle: edge.targetHandle
               });
               const d = edgeRes?.d || (typeof edgeRes === "string" ? edgeRes : "");
-              if (d)
+              if (d && pathEl.getAttribute("d") !== d) {
                 pathEl.setAttribute("d", d);
+              }
               if (edge.markerEnd) {
                 const markerId = edge.markerEnd === "arrowclosed" ? "url(#flow-arrow-closed)" : "url(#flow-arrow)";
-                pathEl.setAttribute("marker-end", markerId);
-              } else {
+                if (pathEl.getAttribute("marker-end") !== markerId) {
+                  pathEl.setAttribute("marker-end", markerId);
+                }
+              } else if (pathEl.hasAttribute("marker-end")) {
                 pathEl.removeAttribute("marker-end");
               }
               if (edge.label && edgeRes?.labelX !== void 0) {
@@ -5613,7 +5625,10 @@ ${scripts}
                   if (textEl && textEl.textContent !== edge.label)
                     textEl.textContent = edge.label;
                 }
-                labelG.setAttribute("transform", `translate(${edgeRes.labelX}, ${edgeRes.labelY})`);
+                const transformStr = `translate(${edgeRes.labelX}, ${edgeRes.labelY})`;
+                if (labelG.getAttribute("transform") !== transformStr) {
+                  labelG.setAttribute("transform", transformStr);
+                }
               }
             });
             existingPaths.forEach((p, k) => {
@@ -5722,8 +5737,6 @@ ${scripts}
                 nodeState.x = newX;
                 nodeState.y = newY;
               }
-              if (vp)
-                vp.tick = (vp.tick || 0) + 1;
             }
           });
           return () => {
@@ -5764,10 +5777,10 @@ ${scripts}
             const py = clientY - minimapBounds.top;
             const flowX = minX + px * currentViewScale;
             const flowY = minY + py * currentViewScale;
-            const containerRect = flowEl.getBoundingClientRect();
-            vp.x = containerRect.width / 2 - flowX * (vp.zoom || 1);
-            vp.y = containerRect.height / 2 - flowY * (vp.zoom || 1);
-            vp.tick = (vp.tick || 0) + 1;
+            const containerW = flowEl.clientWidth || 800;
+            const containerH = flowEl.clientHeight || 600;
+            vp.x = containerW / 2 - flowX * (vp.zoom || 1);
+            vp.y = containerH / 2 - flowY * (vp.zoom || 1);
           };
           const stopMinimapDrag = trackPointerDrag(svg, {
             onStart: (e) => {
@@ -5786,20 +5799,20 @@ ${scripts}
             if (!flowEl)
               return;
             const vp = flowEl.__flowViewport;
-            const _t = vp?.tick;
             let nodesList = [];
             try {
               nodesList = runtime.evaluate(flowEl, "nodes") || [];
             } catch {
               nodesList = [];
             }
-            const containerRect = flowEl.getBoundingClientRect();
+            const containerW = flowEl.clientWidth || 800;
+            const containerH = flowEl.clientHeight || 600;
             const z = vp?.zoom || 1;
             const viewBB = {
               x: -(vp?.x || 0) / z,
               y: -(vp?.y || 0) / z,
-              width: (containerRect.width || 800) / z,
-              height: (containerRect.height || 600) / z
+              width: containerW / z,
+              height: containerH / z
             };
             let bMinX = viewBB.x;
             let bMinY = viewBB.y;
@@ -5823,17 +5836,49 @@ ${scripts}
             const totalH = bMaxY - bMinY + pad * 2;
             svg.setAttribute("viewBox", `${minX} ${minY} ${totalW} ${totalH}`);
             currentViewScale = totalW / (svg.clientWidth || 200);
-            let html = "";
+            const existingNodeRects = /* @__PURE__ */ new Map();
+            svg.querySelectorAll("rect.flow-minimap-node").forEach((r) => {
+              const id = r.getAttribute("data-node-id");
+              if (id)
+                existingNodeRects.set(id, r);
+            });
+            const activeIds = /* @__PURE__ */ new Set();
+            let lens = svg.querySelector("rect.flow-minimap-lens");
             nodesList.forEach((n) => {
+              const id = String(n.id ?? "");
+              if (!id)
+                return;
+              activeIds.add(id);
               const p = n.position || n;
               const nx = p.x || 0;
               const ny = p.y || 0;
               const nw = n.w || n.width || 176;
               const nh = n.h || n.height || 90;
-              html += `<rect x="${nx}" y="${ny}" width="${nw}" height="${nh}" class="flow-minimap-node" />`;
+              let rect = existingNodeRects.get(id);
+              if (!rect) {
+                rect = document.createElementNS(SVG_NS, "rect");
+                rect.setAttribute("class", "flow-minimap-node");
+                rect.setAttribute("data-node-id", id);
+                svg.insertBefore(rect, lens || null);
+              }
+              rect.setAttribute("x", String(nx));
+              rect.setAttribute("y", String(ny));
+              rect.setAttribute("width", String(nw));
+              rect.setAttribute("height", String(nh));
             });
-            html += `<rect x="${viewBB.x}" y="${viewBB.y}" width="${viewBB.width}" height="${viewBB.height}" class="flow-minimap-lens" />`;
-            svg.innerHTML = html;
+            existingNodeRects.forEach((r, id) => {
+              if (!activeIds.has(id))
+                r.remove();
+            });
+            if (!lens) {
+              lens = document.createElementNS(SVG_NS, "rect");
+              lens.setAttribute("class", "flow-minimap-lens");
+              svg.appendChild(lens);
+            }
+            lens.setAttribute("x", String(viewBB.x));
+            lens.setAttribute("y", String(viewBB.y));
+            lens.setAttribute("width", String(viewBB.width));
+            lens.setAttribute("height", String(viewBB.height));
           });
           return () => {
             stop2();
@@ -11204,7 +11249,6 @@ ${match}</ul>
               const vp = container?.__flowViewport;
               if (vp) {
                 vp.zoom = Math.min(4, (vp.zoom || 1) + delta);
-                vp.tick = (vp.tick || 0) + 1;
               }
             },
             /** Zoom out on canvas viewport */
@@ -11213,7 +11257,6 @@ ${match}</ul>
               const vp = container?.__flowViewport;
               if (vp) {
                 vp.zoom = Math.max(0.2, (vp.zoom || 1) - delta);
-                vp.tick = (vp.tick || 0) + 1;
               }
             },
             /** Reset canvas viewport position and zoom */
@@ -11224,7 +11267,6 @@ ${match}</ul>
                 vp.x = 0;
                 vp.y = 0;
                 vp.zoom = 1;
-                vp.tick = (vp.tick || 0) + 1;
               }
             },
             /** Fit canvas view to current nodes */
@@ -11236,35 +11278,105 @@ ${match}</ul>
               const vp = flow?.__flowViewport;
               if (vp && nodes && nodes.length > 0) {
                 $flow.fitView(container, vp, nodes, padding);
-                vp.tick = (vp.tick || 0) + 1;
               }
             },
             /** Return SVG marker URL reference for arrowhead ends */
             marker: (type = "arrow") => `url(#flow-${type === "arrowclosed" ? "arrow-closed" : "arrow"})`,
             /**
-             * Synchronous edge path string between two nodes (by DOM id), computed in
-             * flow-space so it is independent of the current pan/zoom.
-             *
-             * Supports bezier, smoothstep, step, and straight edge types with
-             * handle side awareness, corner radiuses, and midpoint label coordinates.
+             * Edge path string between two nodes computed in flow-space.
+             * Fast-path: computes endpoints directly from reactive node proxies in memory
+             * (Zero-Copy ZCZS, zero DOM reflows). Fallback: reads DOM node geometry.
              */
             edge: (sourceId, targetId, options = {}) => {
-              const a = findNode(sourceId, options.container);
-              const b = findNode(targetId, options.container);
-              if (!a || !b)
-                return "";
-              const container = options.container || flowContainer(a) || flowContainer(b);
-              if (!container)
-                return "";
-              const vp = viewportOf(a);
-              const srcHandle = findHandle(a, "source");
-              const tgtHandle = findHandle(b, "target");
-              const sAnchor = srcHandle || a;
-              const tAnchor = tgtHandle || b;
-              const s = anchorFlow(sAnchor, container, vp);
-              const t = anchorFlow(tAnchor, container, vp);
-              const sSide = srcHandle ? inferSide(srcHandle, a) : "right";
-              const tSide = tgtHandle ? inferSide(tgtHandle, b) : "left";
+              let nodeA = null;
+              let nodeB = null;
+              if (options.nodeMap) {
+                if (options.nodeMap instanceof Map) {
+                  nodeA = options.nodeMap.get(String(sourceId));
+                  nodeB = options.nodeMap.get(String(targetId));
+                } else {
+                  nodeA = options.nodeMap[String(sourceId)];
+                  nodeB = options.nodeMap[String(targetId)];
+                }
+              } else if (Array.isArray(options.nodes)) {
+                nodeA = options.nodes.find((n) => String(n.id) === String(sourceId));
+                nodeB = options.nodes.find((n) => String(n.id) === String(targetId));
+              }
+              let s = null;
+              let t = null;
+              let sSide = "right";
+              let tSide = "left";
+              if (nodeA && nodeB) {
+                const getAbsoluteNodePos = (n) => {
+                  const p = n.position || n;
+                  let px = Number(p.x) || 0;
+                  let py = Number(p.y) || 0;
+                  if (n.parentId && options.nodeMap) {
+                    const parent = options.nodeMap instanceof Map ? options.nodeMap.get(String(n.parentId)) : options.nodeMap[String(n.parentId)];
+                    if (parent) {
+                      const pPos = getAbsoluteNodePos(parent);
+                      px += pPos.x;
+                      py += pPos.y;
+                    }
+                  }
+                  return { x: px, y: py };
+                };
+                const posA = getAbsoluteNodePos(nodeA);
+                const posB = getAbsoluteNodePos(nodeB);
+                const wA = Number(nodeA.width || nodeA.w) || 192;
+                const hA = Number(nodeA.height || nodeA.h) || 90;
+                const wB = Number(nodeB.width || nodeB.w) || 192;
+                const hB = Number(nodeB.height || nodeB.h) || 90;
+                let handleA = null;
+                if (Array.isArray(nodeA.handles) && nodeA.handles.length > 0) {
+                  handleA = options.sourceHandle ? nodeA.handles.find((h) => h.id === options.sourceHandle) : nodeA.handles.find((h) => h.type === "source") || nodeA.handles[0];
+                  if (handleA?.side)
+                    sSide = handleA.side;
+                }
+                let handleB = null;
+                if (Array.isArray(nodeB.handles) && nodeB.handles.length > 0) {
+                  handleB = options.targetHandle ? nodeB.handles.find((h) => h.id === options.targetHandle) : nodeB.handles.find((h) => h.type === "target") || nodeB.handles[0];
+                  if (handleB?.side)
+                    tSide = handleB.side;
+                }
+                const getHandleAnchor = (pos, w, h, handle, allHandles, defaultSide) => {
+                  const side = handle?.side || defaultSide;
+                  const sameSide = (allHandles || []).filter((item) => (item.side || (item.type === "source" ? "right" : "left")) === side);
+                  const idx = Math.max(0, sameSide.indexOf(handle));
+                  const count = Math.max(1, sameSide.length);
+                  const fraction = count === 1 ? 0.5 : (idx + 1) / (count + 1);
+                  switch (side) {
+                    case "left":
+                      return { x: pos.x, y: pos.y + h * fraction };
+                    case "right":
+                      return { x: pos.x + w, y: pos.y + h * fraction };
+                    case "top":
+                      return { x: pos.x + w * fraction, y: pos.y };
+                    case "bottom":
+                      return { x: pos.x + w * fraction, y: pos.y + h };
+                  }
+                };
+                s = getHandleAnchor(posA, wA, hA, handleA, nodeA.handles, sSide);
+                t = getHandleAnchor(posB, wB, hB, handleB, nodeB.handles, tSide);
+              }
+              if (!s || !t) {
+                const a = findNode(sourceId, options.container);
+                const b = findNode(targetId, options.container);
+                if (!a || !b)
+                  return "";
+                const container = options.container || flowContainer(a) || flowContainer(b);
+                if (!container)
+                  return "";
+                const vp = viewportOf(a);
+                const srcHandle = findHandle(a, "source");
+                const tgtHandle = findHandle(b, "target");
+                const sAnchor = srcHandle || a;
+                const tAnchor = tgtHandle || b;
+                s = anchorFlow(sAnchor, container, vp);
+                t = anchorFlow(tAnchor, container, vp);
+                sSide = srcHandle ? inferSide(srcHandle, a) : "right";
+                tSide = tgtHandle ? inferSide(tgtHandle, b) : "left";
+              }
               const type = options.type || "bezier";
               let res;
               if (type === "straight") {
@@ -11291,7 +11403,7 @@ ${match}</ul>
             },
             /**
              * Reactive edge attached to two live DOM elements. Returns a reactive
-             * `{ d, labelX, labelY }` that self-updates every frame.
+             * `{ d, labelX, labelY }` computed on demand.
              */
             connect: (elA, elB, options = {}) => {
               const pathData = reactive({ d: "", labelX: 0, labelY: 0 });
@@ -11321,11 +11433,7 @@ ${match}</ul>
                 pathData.labelX = res.labelX;
                 pathData.labelY = res.labelY;
               };
-              const ticker = () => {
-                update();
-                requestAnimationFrame(ticker);
-              };
-              ticker();
+              update();
               return pathData;
             }
           };

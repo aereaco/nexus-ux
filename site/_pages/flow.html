@@ -6,43 +6,58 @@
   <meta name="category" content="Apps">
 </head>
 
-<div class="flex flex-col h-full w-full gap-4 p-4" data-signal="{
+<div class="flex flex-col h-full w-full gap-4 p-4 select-none relative overflow-hidden" data-signal="{
     nodes: [
-        { id: '1', label: 'Start',     position: { x: 60,  y: 60  }, handles: [{ type: 'source', side: 'right' }] },
-        { id: '2', label: 'Ingest',    position: { x: 320, y: 60  }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
-        { id: '3', label: 'Validate',  position: { x: 600, y: 60  }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
-        { id: 'sub-group', label: 'Transform Subflow', position: { x: 30, y: 220 }, width: 780, height: 160, isGroup: true, handles: [] },
-        { id: '4', label: 'Transform', position: { x: 60,  y: 260 }, parentId: 'sub-group', handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
-        { id: '5', label: 'Enrich',    position: { x: 320, y: 260 }, parentId: 'sub-group', handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
-        { id: '6', label: 'Route',     position: { x: 600, y: 260 }, parentId: 'sub-group', handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
-        { id: '7', label: 'Store',     position: { x: 60,  y: 460 }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
-        { id: '8', label: 'Notify',    position: { x: 320, y: 460 }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] },
-        { id: '9', label: 'Complete',  position: { x: 600, y: 460 }, handles: [{ type: 'target', side: 'left' }] }
+        { id: '1', label: 'Start Trigger',   type: 'input',  position: { x: 60,  y: 60  }, width: 192, height: 98, handles: [{ id: 'h1', type: 'source', side: 'right' }] },
+        { id: '2', label: 'Data Ingest',     type: 'default',position: { x: 320, y: 60  }, width: 192, height: 98, handles: [{ id: 'h2-in', type: 'target', side: 'left' }, { id: 'h2-out', type: 'source', side: 'right' }] },
+        { id: '3', label: 'Schema Validator',type: 'default',position: { x: 600, y: 60  }, width: 192, height: 98, handles: [{ id: 'h3-in', type: 'target', side: 'left' }, { id: 'h3-out', type: 'source', side: 'right' }] },
+        { id: 'sub-group', label: 'Transform Subflow', position: { x: 30, y: 220 }, width: 800, height: 180, isGroup: true, handles: [] },
+        { id: '4', label: 'Normalize',       type: 'default',position: { x: 60,  y: 260 }, width: 192, height: 98, parentId: 'sub-group', handles: [{ id: 'h4-in', type: 'target', side: 'left' }, { id: 'h4-out', type: 'source', side: 'right' }] },
+        { id: '5', label: 'Enrich LLM',      type: 'default',position: { x: 320, y: 260 }, width: 192, height: 98, parentId: 'sub-group', handles: [{ id: 'h5-in', type: 'target', side: 'left' }, { id: 'h5-out', type: 'source', side: 'right' }] },
+        { id: '6', label: 'Dynamic Router',  type: 'default',position: { x: 600, y: 260 }, width: 192, height: 98, parentId: 'sub-group', handles: [{ id: 'h6-in', type: 'target', side: 'left' }, { id: 'h6-out', type: 'source', side: 'right' }] },
+        { id: '7', label: 'Cold Storage',    type: 'default',position: { x: 60,  y: 470 }, width: 192, height: 98, handles: [{ id: 'h7-in', type: 'target', side: 'left' }, { id: 'h7-out', type: 'source', side: 'right' }] },
+        { id: '8', label: 'Notify Webhook',  type: 'default',position: { x: 320, y: 470 }, width: 192, height: 98, handles: [{ id: 'h8-in', type: 'target', side: 'left' }, { id: 'h8-out', type: 'source', side: 'right' }] },
+        { id: '9', label: 'Sink Output',     type: 'output', position: { x: 600, y: 470 }, width: 192, height: 98, handles: [{ id: 'h9-in', type: 'target', side: 'left' }] }
     ],
     edges: [
-        { source: '1', target: '2', type: 'smoothstep', markerEnd: 'arrow', label: 'HTTP GET' },
-        { source: '2', target: '3', type: 'smoothstep', markerEnd: 'arrow', label: 'JSON' },
-        { source: '3', target: '6', type: 'bezier', markerEnd: 'arrowclosed', label: 'Valid' },
-        { source: '6', target: '5', type: 'step', markerEnd: 'arrow', label: 'Fork' },
-        { source: '5', target: '4', type: 'smoothstep', markerEnd: 'arrow', label: 'Enriched' },
-        { source: '4', target: '7', type: 'smoothstep', markerEnd: 'arrow' },
-        { source: '7', target: '8', type: 'bezier', markerEnd: 'arrow', label: 'Async' },
-        { source: '8', target: '9', type: 'smoothstep', markerEnd: 'arrowclosed', label: '200 OK' },
-        { source: '5', target: '8', type: 'step', markerEnd: 'arrow' }
+        { id: 'e1-2', source: '1', target: '2', type: 'smoothstep', markerEnd: 'arrow', label: 'HTTP GET', animated: true },
+        { id: 'e2-3', source: '2', target: '3', type: 'smoothstep', markerEnd: 'arrow', label: 'JSON Payload' },
+        { id: 'e3-6', source: '3', target: '6', type: 'bezier', markerEnd: 'arrowclosed', label: 'Validated' },
+        { id: 'e6-5', source: '6', target: '5', type: 'step', markerEnd: 'arrow', label: 'Fork Worker' },
+        { id: 'e5-4', source: '5', target: '4', type: 'smoothstep', markerEnd: 'arrow', label: 'Enriched', animated: true },
+        { id: 'e4-7', source: '4', target: '7', type: 'smoothstep', markerEnd: 'arrow' },
+        { id: 'e7-8', source: '7', target: '8', type: 'bezier', markerEnd: 'arrow', label: 'Async Queue' },
+        { id: 'e8-9', source: '8', target: '9', type: 'smoothstep', markerEnd: 'arrowclosed', label: '200 OK', animated: true },
+        { id: 'e5-8', source: '5', target: '8', type: 'step', markerEnd: 'arrow' }
     ],
-    modal: { type: '', nodeId: '', draft: '' },
-    viewport: { x: 0, y: 0, zoom: 1 }
+    viewport: { x: 0, y: 0, zoom: 1 },
+    sidebarOpen: false,
+    modalTab: 'visual',
+    editMode: 'edit',
+    activeNode: { id: '', label: '', type: 'default', isGroup: false, parentId: '', width: 192, height: 98, position: { x: 0, y: 0 }, handles: [] },
+    activeEdge: { id: '', source: '', target: '', label: '', type: 'bezier', animated: false, markerEnd: 'arrow' },
+    jsonDraft: '',
+    newHandle: { type: 'source', side: 'right' },
+    gridSize: 20,
+    snapEnabled: true,
+    showMinimap: true,
+    defaultEdgeType: 'smoothstep'
 }">
 
   <!-- Header Toolbar -->
-  <header class="navbar bg-base-200/80 backdrop-blur border border-base-content/10 rounded-box px-6 py-2 shrink-0">
+  <header class="navbar bg-base-200/80 backdrop-blur border border-base-content/10 rounded-box px-4 lg:px-6 py-2 shrink-0 z-20">
     <div class="flex-1 flex items-center gap-3">
       <iconify-icon icon="material-symbols-light:schema" class="text-primary text-2xl"></iconify-icon>
       <div>
-        <h1 class="text-lg font-bold leading-tight">xyFlow Spatial Canvas</h1>
-        <p class="text-[11px] opacity-60">Reactive node graph powered by pure declarative HTML directives</p>
+        <div class="flex items-center gap-2">
+          <h1 class="text-lg font-bold leading-tight">xyFlow Spatial Canvas</h1>
+          <span class="badge badge-primary badge-outline badge-xs font-mono">Signal Driven</span>
+        </div>
+        <p class="text-[11px] opacity-60">Complete spatial node graph with reactive fine-grained proxies</p>
       </div>
     </div>
+
+    <!-- Quick Stats & Keyboard Hint -->
     <div class="flex items-center gap-3 text-xs">
       <div class="hidden lg:flex items-center gap-2 text-[11px] opacity-60 mr-1 bg-base-100/60 px-2.5 py-1 rounded-lg border border-base-content/10 font-mono">
         <kbd class="kbd kbd-xs">Shift</kbd><span>+Drag Marquee</span>
@@ -56,14 +71,16 @@
         <span>Edges: <strong class="text-primary" data-bind="edges.length"></strong></span>
         <span>Zoom: <strong class="text-primary" data-bind="(viewport.zoom || 1).toFixed(2) + 'x'"></strong></span>
       </div>
+
+      <!-- Canvas Zoom Actions -->
       <div class="flex items-center gap-1">
-        <button class="btn btn-outline btn-xs" title="Zoom In" data-on-click="$flow.zoomIn($el)">
+        <button class="btn btn-outline btn-xs btn-square" title="Zoom In" data-on-click="$flow.zoomIn($el)">
           <iconify-icon icon="material-symbols-light:zoom-in"></iconify-icon>
         </button>
-        <button class="btn btn-outline btn-xs" title="Zoom Out" data-on-click="$flow.zoomOut($el)">
+        <button class="btn btn-outline btn-xs btn-square" title="Zoom Out" data-on-click="$flow.zoomOut($el)">
           <iconify-icon icon="material-symbols-light:zoom-out"></iconify-icon>
         </button>
-        <button class="btn btn-outline btn-xs" title="Reset View" data-on-click="$flow.reset($el)">
+        <button class="btn btn-outline btn-xs btn-square" title="Reset View" data-on-click="$flow.reset($el)">
           <iconify-icon icon="material-symbols-light:restart-alt"></iconify-icon>
         </button>
         <button class="btn btn-outline btn-xs font-semibold" title="Fit View" data-on-click="$flow.fit($el, nodes)">
@@ -71,41 +88,76 @@
           Fit
         </button>
       </div>
-      <button class="btn btn-primary btn-xs font-bold gap-1 shadow-sm"
-        data-on-click="modal.type='add'; modal.draft=''; modal.nodeId=String(nodes.length + 1); document.getElementById('flow-modal-add').showModal()">
+
+      <!-- Add Node Trigger -->
+      <button class="btn btn-primary btn-xs font-bold gap-1 shadow-sm ml-1"
+        data-on-click="
+          editMode = 'add';
+          modalTab = 'visual';
+          const newId = String(nodes.length + 1);
+          activeNode = { id: newId, label: 'New Node ' + newId, type: 'default', isGroup: false, parentId: '', width: 192, height: 98, position: { x: Math.round(-viewport.x / viewport.zoom + 120), y: Math.round(-viewport.y / viewport.zoom + 120) }, handles: [{ id: 'h' + newId + '-in', type: 'target', side: 'left' }, { id: 'h' + newId + '-out', type: 'source', side: 'right' }] };
+          jsonDraft = JSON.stringify(activeNode, null, 2);
+          document.getElementById('flow-modal-node-editor').showModal();
+        ">
         <iconify-icon icon="material-symbols-light:add"></iconify-icon>
         Add Node
+      </button>
+
+      <!-- Toggle Right Settings Sidebar -->
+      <button class="btn btn-ghost btn-xs btn-square hover:bg-base-300"
+        title="Canvas Settings Studio"
+        data-on-click="sidebarOpen = !sidebarOpen">
+        <iconify-icon icon="material-symbols-light:tune" class="text-base"></iconify-icon>
       </button>
     </div>
   </header>
 
-  <!-- Interactive Canvas Container -->
-  <div
-    class="relative flex-1 bg-base-300 rounded-box border border-base-content/10 shadow-inner min-h-[37.5rem] h-[calc(100vh-14rem)] overflow-hidden"
+  <!-- Interactive Canvas & Studio Viewport -->
+  <div class="relative flex-1 bg-base-300 rounded-box border border-base-content/10 shadow-inner min-h-[37.5rem] h-[calc(100vh-14rem)] overflow-hidden"
     data-flow="{ grid: 20 }"
-    style="background-image: linear-gradient(rgba(255,255,255,0.05) 0.0625rem, transparent 0.0625rem), linear-gradient(90deg, rgba(255,255,255,0.05) 0.0625rem, transparent 0.0625rem); background-size: 1.25rem 1.25rem;">
+    data-bind-style="'background-image: linear-gradient(rgba(255,255,255,0.05) 0.0625rem, transparent 0.0625rem), linear-gradient(90deg, rgba(255,255,255,0.05) 0.0625rem, transparent 0.0625rem); background-size: ' + gridSize + 'px ' + gridSize + 'px;'">
 
     <!-- Transformation Viewport Layer -->
     <div data-flow-viewport>
-      <!-- Automated Dynamic SVG Bezier Edges Overlay -->
+      <!-- Automated Dynamic SVG Bezier/Smoothstep Edges Overlay -->
       <svg data-flow-edges class="text-primary"></svg>
 
       <!-- Draggable Flow Nodes -->
       <template data-for="node in nodes">
-        <div data-bind-id="'node-' + node.id" class="w-[12rem]"
+        <div data-bind-id="'node-' + node.id"
+          class="w-[12rem]"
           data-flow-node="node">
           <div data-flow-resizer></div>
 
           <!-- Subflow Group Card -->
           <div data-show="node.isGroup"
-            class="card bg-base-100/40 border-2 border-dashed border-primary/30 shadow-sm w-full h-full rounded-2xl p-4 select-none relative"
+            class="card bg-base-100/40 border-2 border-dashed border-primary/30 shadow-sm w-full h-full rounded-2xl p-4 select-none relative group hover:border-primary transition-colors"
             style="touch-action: none;">
-            <div class="flex items-center justify-between pointer-events-none">
-              <span class="text-xs font-bold text-primary flex items-center gap-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-primary flex items-center gap-1.5 pointer-events-none">
                 <iconify-icon icon="material-symbols-light:folder-open" class="text-base"></iconify-icon>
                 <span data-bind="node.label"></span>
               </span>
-              <span class="badge badge-xs badge-primary badge-outline font-mono">Subflow Group</span>
+              <div class="flex items-center gap-1">
+                <button data-flow-nodrag
+                  data-on-click="
+                    editMode = 'edit';
+                    modalTab = 'visual';
+                    activeNode = { ...node, handles: node.handles ? [...node.handles] : [] };
+                    jsonDraft = JSON.stringify(activeNode, null, 2);
+                    document.getElementById('flow-modal-node-editor').showModal();
+                  "
+                  class="btn btn-ghost btn-xs btn-square opacity-60 hover:opacity-100 hover:text-primary"
+                  title="Configure Subflow Group">
+                  <iconify-icon icon="material-symbols-light:settings" class="text-sm"></iconify-icon>
+                </button>
+                <button data-flow-nodrag
+                  data-on-click="nodes = nodes.filter(n => n.id !== node.id); edges = edges.filter(e => e.source !== node.id && e.target !== node.id)"
+                  class="btn btn-ghost btn-xs btn-square opacity-40 hover:opacity-100 hover:text-error"
+                  title="Delete Group">
+                  <iconify-icon icon="material-symbols-light:delete" class="text-sm"></iconify-icon>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -113,23 +165,34 @@
           <div data-show="!node.isGroup"
             class="card bg-base-100 shadow-md border border-base-content/10 w-full h-full rounded-box hover:shadow-xl hover:border-primary/40 transition-all group select-none relative"
             style="touch-action: none;">
-            <div class="h-1.5 w-full bg-primary rounded-t-box"></div>
+            <div class="h-1.5 w-full bg-primary rounded-t-box"
+              data-class="{ 'bg-success': node.type === 'input', 'bg-warning': node.type === 'output', 'bg-primary': !node.type || node.type === 'default' }"></div>
             <div class="p-3">
               <div class="flex items-center justify-between mb-1">
-                <div class="text-xs font-bold text-primary opacity-80">#<span data-bind="node.id"></span></div>
                 <div class="flex items-center gap-1">
-                  <!-- Edit Node -->
+                  <span class="text-xs font-bold text-primary opacity-80">#<span data-bind="node.id"></span></span>
+                  <span data-show="node.type === 'input'" class="badge badge-xs badge-success font-mono">In</span>
+                  <span data-show="node.type === 'output'" class="badge badge-xs badge-warning font-mono">Out</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <!-- Edit Node Parameters -->
                   <button data-flow-nodrag
-                    data-on-click="modal.type='edit'; modal.nodeId=node.id; modal.draft=node.label; document.getElementById('flow-modal-edit').showModal()"
+                    data-on-click="
+                      editMode = 'edit';
+                      modalTab = 'visual';
+                      activeNode = { ...node, handles: node.handles ? [...node.handles] : [] };
+                      jsonDraft = JSON.stringify(activeNode, null, 2);
+                      document.getElementById('flow-modal-node-editor').showModal();
+                    "
                     class="btn btn-ghost btn-xs btn-square opacity-40 hover:opacity-100 hover:text-primary"
-                    title="Edit node">
-                    <iconify-icon icon="material-symbols-light:edit" class="text-sm"></iconify-icon>
+                    title="Configure Node Parameters">
+                    <iconify-icon icon="material-symbols-light:settings" class="text-sm"></iconify-icon>
                   </button>
                   <!-- Delete Node -->
                   <button data-flow-nodrag
                     data-on-click="nodes = nodes.filter(n => n.id !== node.id); edges = edges.filter(e => e.source !== node.id && e.target !== node.id)"
                     class="btn btn-ghost btn-xs btn-square opacity-40 hover:opacity-100 hover:text-error"
-                    title="Delete node">
+                    title="Delete Node">
                     <iconify-icon icon="material-symbols-light:delete" class="text-sm"></iconify-icon>
                   </button>
                 </div>
@@ -140,8 +203,13 @@
                 <span>(<span data-bind="Math.round(node.position.x)"></span>, <span data-bind="Math.round(node.position.y)"></span>)</span>
               </div>
             </div>
-            <!-- Reactive Connection Ports -->
-            <div data-for="handle in node.handles" data-flow-handle="handle.type" data-flow-side="handle.side"></div>
+
+            <!-- Reactive Connection Ports (Handles) -->
+            <template data-for="handle in node.handles">
+              <div data-flow-handle="handle.type"
+                data-flow-side="handle.side"
+                data-bind-title="'Port: ' + (handle.id || handle.type) + ' (' + handle.side + ')'"></div>
+            </template>
           </div>
         </div>
       </template>
@@ -167,10 +235,10 @@
       <span class="text-[11px] font-mono px-2 text-primary font-bold" data-bind="(viewport.zoom || 1).toFixed(2) + 'x'"></span>
     </div>
 
-    <!-- Interactive Minimap (Bottom-Right, positioned left of HUD) -->
-    <div data-flow-minimap class="absolute bottom-4 right-72 z-30 shadow-xl border border-base-content/15"></div>
+    <!-- Interactive Minimap (Bottom-Right, if enabled) -->
+    <div data-show="showMinimap" data-flow-minimap class="absolute bottom-4 right-72 z-30 shadow-xl border border-base-content/15"></div>
 
-    <!-- Reactive Store HUD Card (Bottom-Right) -->
+    <!-- Reactive Live HUD Card (Bottom-Right) -->
     <div data-flow-nodrag class="absolute bottom-4 right-4 bg-base-100/90 backdrop-blur border border-base-content/10 shadow-lg rounded-2xl p-3 z-30 w-64 text-xs">
       <div class="flex items-center justify-between font-bold text-primary mb-2 border-b border-base-content/10 pb-1">
         <span class="flex items-center gap-1.5">
@@ -179,8 +247,11 @@
         </span>
         <span class="badge badge-xs badge-success">ZCZS 60fps</span>
       </div>
-      <div class="space-y-1 font-mono text-[11px] opacity-80 max-h-36 overflow-y-auto pr-1">
-        <div class="text-accent font-semibold">Pan: (<span data-bind="Math.round(viewport.x)"></span>, <span data-bind="Math.round(viewport.y)"></span>)</div>
+      <div class="space-y-1 font-mono text-[11px] opacity-80 max-h-32 overflow-y-auto pr-1">
+        <div class="text-accent font-semibold flex justify-between">
+          <span>Viewport Pan:</span>
+          <span>(<span data-bind="Math.round(viewport.x)"></span>, <span data-bind="Math.round(viewport.y)"></span>)</span>
+        </div>
         <div class="border-t border-base-content/5 pt-1">
           <template data-for="n in nodes">
             <div class="flex justify-between py-0.5">
@@ -191,41 +262,349 @@
         </div>
       </div>
     </div>
+
+    <!-- Small Upper-Right Corner Button to open Right Sidebar -->
+    <div data-flow-nodrag class="absolute top-4 right-4 z-30">
+      <button class="btn btn-sm btn-circle btn-primary shadow-lg border border-base-content/10 transition-transform active:scale-95"
+        title="Canvas Configuration Studio"
+        data-on-click="sidebarOpen = !sidebarOpen">
+        <iconify-icon icon="material-symbols-light:tune" class="text-lg"></iconify-icon>
+      </button>
+    </div>
+
+    <!-- Slide-Over Right/End Configuration Sidebar -->
+    <aside data-flow-nodrag
+      class="absolute top-0 right-0 bottom-0 w-80 md:w-96 bg-base-100/95 backdrop-blur-md border-l border-base-content/10 shadow-2xl z-40 transition-transform duration-300 flex flex-col"
+      data-style="{ transform: sidebarOpen ? 'translateX(0)' : 'translateX(100%)' }">
+      
+      <!-- Sidebar Header -->
+      <div class="p-4 border-b border-base-content/10 flex items-center justify-between bg-base-200/50">
+        <div class="flex items-center gap-2">
+          <iconify-icon icon="material-symbols-light:tune" class="text-primary text-xl"></iconify-icon>
+          <h2 class="font-bold text-sm uppercase tracking-wider">Canvas Studio</h2>
+        </div>
+        <button class="btn btn-ghost btn-xs btn-square" data-on-click="sidebarOpen = false" title="Close Sidebar">
+          <iconify-icon icon="material-symbols-light:close" class="text-base"></iconify-icon>
+        </button>
+      </div>
+
+      <!-- Sidebar Body -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-5 text-xs">
+        
+        <!-- Grid & Snapping Section -->
+        <div class="space-y-3">
+          <h3 class="font-bold text-[11px] uppercase tracking-wider text-primary flex items-center gap-1.5">
+            <iconify-icon icon="material-symbols-light:grid-4x4"></iconify-icon>
+            Grid & Snapping
+          </h3>
+          <div class="bg-base-200/40 rounded-xl p-3 space-y-3 border border-base-content/5">
+            <div>
+              <div class="flex justify-between font-semibold mb-1">
+                <span>Grid Spacing</span>
+                <span class="font-mono text-primary" data-bind="gridSize + 'px'"></span>
+              </div>
+              <input type="range" min="10" max="50" step="5" class="range range-xs range-primary"
+                data-bind-value="gridSize" />
+            </div>
+
+            <div class="form-control">
+              <label class="label cursor-pointer py-1">
+                <span class="label-text text-xs">Snap to Grid</span>
+                <input type="checkbox" class="toggle toggle-primary toggle-sm" data-bind-checked="snapEnabled" />
+              </label>
+            </div>
+
+            <div class="form-control">
+              <label class="label cursor-pointer py-1">
+                <span class="label-text text-xs">Show Minimap</span>
+                <input type="checkbox" class="toggle toggle-secondary toggle-sm" data-bind-checked="showMinimap" />
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wire / Routing Section -->
+        <div class="space-y-3">
+          <h3 class="font-bold text-[11px] uppercase tracking-wider text-primary flex items-center gap-1.5">
+            <iconify-icon icon="material-symbols-light:conversion-path"></iconify-icon>
+            Wire & Routing Engine
+          </h3>
+          <div class="bg-base-200/40 rounded-xl p-3 space-y-3 border border-base-content/5">
+            <div>
+              <label class="label-text font-semibold mb-1 block">Default Routing Style</label>
+              <select class="select select-bordered select-xs w-full" data-bind-value="defaultEdgeType"
+                data-on-change="edges = edges.map(e => ({ ...e, type: defaultEdgeType }))">
+                <option value="smoothstep">SmoothStep (Rounded Orthogonal)</option>
+                <option value="bezier">Bezier (Cubic Directional)</option>
+                <option value="step">Step (Sharp 90° Angles)</option>
+                <option value="straight">Straight (Direct Linear)</option>
+              </select>
+            </div>
+
+            <div class="flex gap-2">
+              <button class="btn btn-outline btn-xs flex-1 gap-1"
+                data-on-click="edges = edges.map(e => ({ ...e, animated: true }))">
+                <iconify-icon icon="material-symbols-light:play-arrow"></iconify-icon>
+                Animate All
+              </button>
+              <button class="btn btn-outline btn-xs flex-1 gap-1"
+                data-on-click="edges = edges.map(e => ({ ...e, animated: false }))">
+                <iconify-icon icon="material-symbols-light:pause"></iconify-icon>
+                Stop Wires
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Graph Schema & IO Section -->
+        <div class="space-y-3">
+          <h3 class="font-bold text-[11px] uppercase tracking-wider text-primary flex items-center gap-1.5">
+            <iconify-icon icon="material-symbols-light:data-object"></iconify-icon>
+            Graph Schema & IO
+          </h3>
+          <div class="bg-base-200/40 rounded-xl p-3 space-y-2 border border-base-content/5">
+            <button class="btn btn-sm btn-outline w-full justify-start gap-2 font-mono text-xs"
+              data-on-click="
+                const schema = { nodes, edges, viewport };
+                navigator.clipboard.writeText(JSON.stringify(schema, null, 2));
+                alert('Full Graph Schema copied to clipboard!');
+              ">
+              <iconify-icon icon="material-symbols-light:content-copy" class="text-base text-primary"></iconify-icon>
+              Export Graph JSON
+            </button>
+
+            <button class="btn btn-sm btn-outline w-full justify-start gap-2 font-mono text-xs"
+              data-on-click="
+                const input = prompt('Paste xyflow JSON schema to import:');
+                if (input) {
+                  try {
+                    const parsed = JSON.parse(input);
+                    if (Array.isArray(parsed.nodes)) nodes = parsed.nodes;
+                    if (Array.isArray(parsed.edges)) edges = parsed.edges;
+                    if (parsed.viewport) { viewport.x = parsed.viewport.x; viewport.y = parsed.viewport.y; viewport.zoom = parsed.viewport.zoom; }
+                  } catch (e) { alert('Invalid JSON schema'); }
+                }
+              ">
+              <iconify-icon icon="material-symbols-light:download" class="text-base text-secondary"></iconify-icon>
+              Import Graph JSON
+            </button>
+
+            <div class="divider my-1"></div>
+
+            <button class="btn btn-sm btn-ghost text-error w-full justify-start gap-2 font-mono text-xs"
+              data-on-click="if (confirm('Clear all canvas nodes and wires?')) { nodes = []; edges = []; }">
+              <iconify-icon icon="material-symbols-light:delete" class="text-base"></iconify-icon>
+              Clear Canvas
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Sidebar Footer -->
+      <div class="p-3 border-t border-base-content/10 bg-base-200/40 text-center font-mono text-[10px] opacity-60">
+        xyFlow Spatial Engine • Nexus-UX ZCZS
+      </div>
+    </aside>
   </div>
 
-  <!-- Edit Node Modal -->
-  <dialog id="flow-modal-edit" class="modal">
-    <div class="modal-box">
-      <h3 class="font-bold text-lg">Edit Node #<span data-bind="modal.nodeId"></span></h3>
-      <div class="py-4">
-        <label class="label"><span class="label-text">Node Label</span></label>
-        <input type="text" class="input input-bordered w-full" data-bind-value="modal.draft"
-          data-on-keydown="if ($evt.key === 'Enter') { const target = nodes.find(n => n.id === modal.nodeId); if (target) target.label = modal.draft; document.getElementById('flow-modal-edit').close(); }" />
+  <!-- Comprehensive Node Parameter Edit Modal (Visual & JSON Tabs) -->
+  <dialog id="flow-modal-node-editor" class="modal">
+    <div class="modal-box max-w-2xl bg-base-100 border border-base-content/10 shadow-2xl p-6">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-base-content/10 pb-3">
+        <div class="flex items-center gap-2">
+          <iconify-icon icon="material-symbols-light:tune" class="text-primary text-2xl"></iconify-icon>
+          <div>
+            <h3 class="font-bold text-base leading-tight">
+              <span data-bind="editMode === 'add' ? 'Create New Node' : 'Configure Node #' + activeNode.id"></span>
+            </h3>
+            <p class="text-xs opacity-60">Tune spatial coordinates, ports, subflow nesting, and schema</p>
+          </div>
+        </div>
+        <!-- Tab Navigation (Visual vs JSON) -->
+        <div class="tabs tabs-boxed bg-base-200 p-1">
+          <button class="tab tab-sm font-semibold gap-1.5"
+            data-class="{ 'tab-active': modalTab === 'visual' }"
+            data-on-click="modalTab = 'visual'">
+            <iconify-icon icon="material-symbols-light:dashboard-customize"></iconify-icon>
+            Visual Studio
+          </button>
+          <button class="tab tab-sm font-semibold gap-1.5 font-mono"
+            data-class="{ 'tab-active': modalTab === 'json' }"
+            data-on-click="modalTab = 'json'; jsonDraft = JSON.stringify(activeNode, null, 2);">
+            <iconify-icon icon="material-symbols-light:code"></iconify-icon>
+            JSON Schema
+          </button>
+        </div>
       </div>
-      <div class="modal-action">
-        <button class="btn btn-ghost" data-on-click="document.getElementById('flow-modal-edit').close()">Cancel</button>
-        <button class="btn btn-primary"
-          data-on-click="const target = nodes.find(n => n.id === modal.nodeId); if (target) target.label = modal.draft; document.getElementById('flow-modal-edit').close()">Save</button>
+
+      <!-- Tab 1: Visual Studio -->
+      <div data-show="modalTab === 'visual'" class="py-4 space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+        <!-- Basic Info Row -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="form-control">
+            <label class="label py-1"><span class="label-text text-xs font-semibold">Node Identifier</span></label>
+            <input type="text" class="input input-bordered input-sm font-mono" data-bind-value="activeNode.id" />
+          </div>
+          <div class="form-control md:col-span-2">
+            <label class="label py-1"><span class="label-text text-xs font-semibold">Display Label</span></label>
+            <input type="text" class="input input-bordered input-sm" data-bind-value="activeNode.label" />
+          </div>
+        </div>
+
+        <!-- Node Type & Subflow Group -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 bg-base-200/40 p-3 rounded-xl border border-base-content/5">
+          <div class="form-control">
+            <label class="label py-1"><span class="label-text text-xs font-semibold">Node Kind</span></label>
+            <select class="select select-bordered select-sm" data-bind-value="activeNode.type"
+              data-on-change="activeNode.isGroup = (activeNode.type === 'group')">
+              <option value="default">Standard Action Card</option>
+              <option value="input">Input Trigger (Green Accent)</option>
+              <option value="output">Output Sink (Warning Accent)</option>
+              <option value="group">Subflow Group Container</option>
+            </select>
+          </div>
+          <div class="form-control">
+            <label class="label py-1"><span class="label-text text-xs font-semibold">Parent Subflow Group</span></label>
+            <select class="select select-bordered select-sm" data-bind-value="activeNode.parentId">
+              <option value="">None (Root Canvas)</option>
+              <template data-for="g in nodes.filter(n => n.isGroup && n.id !== activeNode.id)">
+                <option data-bind-value="g.id" data-bind="g.label + ' (#' + g.id + ')'"></option>
+              </template>
+            </select>
+          </div>
+        </div>
+
+        <!-- Spatial Coordinates & Dimensions -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 bg-base-200/40 p-3 rounded-xl border border-base-content/5">
+          <div class="form-control">
+            <label class="label py-1"><span class="label-text text-xs font-semibold font-mono">Pos X</span></label>
+            <input type="number" class="input input-bordered input-sm font-mono" data-bind-value="activeNode.position.x" />
+          </div>
+          <div class="form-control">
+            <label class="label py-1"><span class="label-text text-xs font-semibold font-mono">Pos Y</span></label>
+            <input type="number" class="input input-bordered input-sm font-mono" data-bind-value="activeNode.position.y" />
+          </div>
+          <div class="form-control">
+            <label class="label py-1"><span class="label-text text-xs font-semibold font-mono">Width</span></label>
+            <input type="number" class="input input-bordered input-sm font-mono" data-bind-value="activeNode.width" />
+          </div>
+          <div class="form-control">
+            <label class="label py-1"><span class="label-text text-xs font-semibold font-mono">Height</span></label>
+            <input type="number" class="input input-bordered input-sm font-mono" data-bind-value="activeNode.height" />
+          </div>
+        </div>
+
+        <!-- Connection Ports (Edge Points / Handles) Section -->
+        <div class="space-y-2 bg-base-200/40 p-3 rounded-xl border border-base-content/5">
+          <div class="flex items-center justify-between">
+            <h4 class="font-bold text-xs uppercase tracking-wider text-primary flex items-center gap-1.5">
+              <iconify-icon icon="material-symbols-light:adjust"></iconify-icon>
+              Connection Ports & Edge Points
+            </h4>
+            <span class="badge badge-sm font-mono" data-bind="(activeNode.handles || []).length + ' Ports'"></span>
+          </div>
+
+          <!-- Existing Ports List -->
+          <div class="space-y-1.5 max-h-36 overflow-y-auto">
+            <div data-show="!(activeNode.handles && activeNode.handles.length > 0)" class="text-xs opacity-50 py-2 text-center">
+              No connection ports attached. Click below to add an edge point.
+            </div>
+            <template data-for="(h, idx) in (activeNode.handles || [])">
+              <div class="flex items-center justify-between bg-base-100 p-2 rounded-lg border border-base-content/10 text-xs">
+                <div class="flex items-center gap-2">
+                  <span class="badge badge-xs font-mono"
+                    data-class="{ 'badge-primary': h.type === 'source', 'badge-secondary': h.type === 'target' }"
+                    data-bind="h.type"></span>
+                  <span class="font-semibold" data-bind="'Side: ' + h.side"></span>
+                  <span class="font-mono text-[10px] opacity-60" data-bind="'ID: ' + (h.id || '#' + (idx+1))"></span>
+                </div>
+                <button class="btn btn-ghost btn-xs btn-square text-error hover:bg-error/10"
+                  data-on-click="activeNode.handles = activeNode.handles.filter((_, i) => i !== idx)"
+                  title="Remove Port">
+                  <iconify-icon icon="material-symbols-light:close" class="text-sm"></iconify-icon>
+                </button>
+              </div>
+            </template>
+          </div>
+
+          <!-- Add New Port Bar -->
+          <div class="flex items-center gap-2 pt-2 border-t border-base-content/10">
+            <select class="select select-bordered select-xs flex-1 font-mono" data-bind-value="newHandle.type">
+              <option value="source">Source (Output Port)</option>
+              <option value="target">Target (Input Port)</option>
+            </select>
+            <select class="select select-bordered select-xs flex-1 font-mono" data-bind-value="newHandle.side">
+              <option value="right">Right Side</option>
+              <option value="left">Left Side</option>
+              <option value="top">Top Side</option>
+              <option value="bottom">Bottom Side</option>
+            </select>
+            <button class="btn btn-primary btn-xs font-bold gap-1"
+              data-on-click="
+                if (!activeNode.handles) activeNode.handles = [];
+                activeNode.handles = [...activeNode.handles, { id: 'h-' + Date.now(), type: newHandle.type, side: newHandle.side }];
+              ">
+              <iconify-icon icon="material-symbols-light:add"></iconify-icon>
+              Add Port
+            </button>
+          </div>
+        </div>
+
       </div>
+
+      <!-- Tab 2: Raw JSON Editor -->
+      <div data-show="modalTab === 'json'" class="py-4 space-y-2">
+        <div class="flex justify-between items-center text-xs opacity-70">
+          <span>Direct Schema JSON Definition</span>
+          <span class="font-mono text-[10px]">Real-time synchronization</span>
+        </div>
+        <textarea class="textarea textarea-bordered font-mono text-xs w-full h-72 leading-relaxed"
+          data-bind-value="jsonDraft"
+          placeholder="Paste or edit node JSON..."></textarea>
+      </div>
+
+      <!-- Modal Actions -->
+      <div class="modal-action border-t border-base-content/10 pt-3">
+        <button class="btn btn-ghost btn-sm" data-on-click="document.getElementById('flow-modal-node-editor').close()">Cancel</button>
+        <button class="btn btn-primary btn-sm font-bold gap-1"
+          data-on-click="
+            if (modalTab === 'json') {
+              try {
+                const parsed = JSON.parse(jsonDraft);
+                activeNode = parsed;
+              } catch (err) {
+                alert('Invalid JSON syntax: ' + err.message);
+                return;
+              }
+            }
+            if (editMode === 'add') {
+              nodes = [...nodes, { ...activeNode }];
+            } else {
+              const idx = nodes.findIndex(n => n.id === activeNode.id);
+              if (idx !== -1) {
+                nodes[idx].label = activeNode.label;
+                nodes[idx].type = activeNode.type;
+                nodes[idx].isGroup = activeNode.isGroup;
+                nodes[idx].parentId = activeNode.parentId;
+                nodes[idx].width = activeNode.width;
+                nodes[idx].height = activeNode.height;
+                nodes[idx].position.x = Number(activeNode.position.x) || 0;
+                nodes[idx].position.y = Number(activeNode.position.y) || 0;
+                nodes[idx].handles = activeNode.handles ? [...activeNode.handles] : [];
+              }
+            }
+            document.getElementById('flow-modal-node-editor').close();
+          ">
+          <iconify-icon icon="material-symbols-light:check"></iconify-icon>
+          Save Changes
+        </button>
+      </div>
+
     </div>
     <form method="dialog" class="modal-backdrop"><button>close</button></form>
   </dialog>
 
-  <!-- Add Node Modal -->
-  <dialog id="flow-modal-add" class="modal">
-    <div class="modal-box">
-      <h3 class="font-bold text-lg">Add New Pipeline Node</h3>
-      <div class="py-4">
-        <label class="label"><span class="label-text">Node Label</span></label>
-        <input type="text" class="input input-bordered w-full" data-bind-value="modal.draft" placeholder="e.g. Filter"
-          data-on-keydown="if ($evt.key === 'Enter') { nodes = [...nodes, { id: modal.nodeId, label: modal.draft || 'New Node', position: { x: 200, y: 200 }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] }]; document.getElementById('flow-modal-add').close(); }" />
-      </div>
-      <div class="modal-action">
-        <button class="btn btn-ghost" data-on-click="document.getElementById('flow-modal-add').close()">Cancel</button>
-        <button class="btn btn-primary"
-          data-on-click="nodes = [...nodes, { id: modal.nodeId, label: modal.draft || 'New Node', position: { x: 200, y: 200 }, handles: [{ type: 'target', side: 'left' }, { type: 'source', side: 'right' }] }]; document.getElementById('flow-modal-add').close()">Add</button>
-      </div>
-    </div>
-    <form method="dialog" class="modal-backdrop"><button>close</button></form>
-  </dialog>
 </div>

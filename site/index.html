@@ -33,7 +33,7 @@
   <script type="module">
     const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname) || location.hostname.endsWith('.local');
     const frameworkSrc = isLocal
-      ? './dist/nexus-ux.js'
+      ? './dist/nexus-ux.js?t=' + Date.now()
       : 'https://cdn.jsdelivr.net/gh/aereaco/nexus-ux@main/dist/nexus-ux.min.js';
     import(frameworkSrc);
   </script>

@@ -118,6 +118,14 @@ const FLOW_CSS = `
   opacity: 1;
   stroke-width: 2.5px;
 }
+.flow-edge-animated {
+  stroke-dasharray: 6 4;
+  animation: flow-edge-dash 0.8s linear infinite;
+}
+@keyframes flow-edge-dash {
+  from { stroke-dashoffset: 20; }
+  to { stroke-dashoffset: 0; }
+}
 .flow-edge-preview {
   pointer-events: none;
   stroke-dasharray: 4 4;
@@ -167,33 +175,31 @@ const FLOW_CSS = `
 
 .flow-minimap {
   position: absolute;
-  width: 12rem;
-  height: 8rem;
-  background: color-mix(in srgb, var(--color-base-100, #1e293b) 85%, transparent);
-  backdrop-filter: blur(12px);
-  border: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+  bottom: 1rem;
+  right: 1rem;
+  width: 160px;
+  height: 100px;
+  background-color: color-mix(in srgb, var(--color-base-100, #ffffff) 85%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid color-mix(in srgb, var(--color-base-content, #000) 15%, transparent);
   border-radius: 0.75rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
   overflow: hidden;
-  z-index: 40;
-  user-select: none;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  z-index: 25;
 }
 .flow-minimap-svg {
   width: 100%;
   height: 100%;
-  display: block;
 }
 .flow-minimap-node {
   fill: var(--color-primary, #3b82f6);
-  opacity: 0.75;
-  rx: 3px;
+  opacity: 0.7;
 }
 .flow-minimap-lens {
   fill: color-mix(in srgb, var(--color-primary, #3b82f6) 15%, transparent);
   stroke: var(--color-primary, #3b82f6);
   stroke-width: 1.5px;
   cursor: grab;
-  rx: 4px;
 }
 .flow-minimap-lens:active {
   cursor: grabbing;
@@ -256,6 +262,12 @@ export const flowAttribute: AttributeModule = {
     if (arg === 'nodrag') return flowNoDragAttribute.handle(element, value, runtime, parsedAttr);
     if (arg === 'grid') return flowGridAttribute.handle(element, value, runtime, parsedAttr);
     if (arg === 'snap') return flowSnapAttribute.handle(element, value, runtime, parsedAttr);
+
+    // Guard: Unrecognized sub-directives or bookkeeping attributes must NEVER instantiate a canvas!
+    if (arg) return;
+
+    // Guard: Only elements explicitly bearing the data-flow canvas attribute can be a canvas
+    if (!element.hasAttribute('data-flow')) return;
 
     ensureFlowStyles(element.getRootNode() as Document | ShadowRoot);
 
@@ -809,6 +821,13 @@ export const flowEdgesAttribute: AttributeModule = {
           element.appendChild(pathEl);
         }
 
+        const isAnimated = !!edge.animated;
+        if (isAnimated && !pathEl.classList.contains('flow-edge-animated')) {
+          pathEl.classList.add('flow-edge-animated');
+        } else if (!isAnimated && pathEl.classList.contains('flow-edge-animated')) {
+          pathEl.classList.remove('flow-edge-animated');
+        }
+
         const edgeRes = (runtime as any).$flow?.edge?.(srcId, tgtId, {
           type: edge.type || 'bezier',
           curvature: edge.curvature,
@@ -816,7 +835,9 @@ export const flowEdgesAttribute: AttributeModule = {
           offset: edge.offset,
           container: currentFlow || undefined,
           nodeMap,
-          nodes: nodesList
+          nodes: nodesList,
+          sourceHandle: edge.sourceHandle,
+          targetHandle: edge.targetHandle
         });
 
         const d = edgeRes?.d || (typeof edgeRes === 'string' ? edgeRes : '');
