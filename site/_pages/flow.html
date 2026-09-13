@@ -211,8 +211,113 @@
                 data-bind-title="'Port: ' + (handle.id || handle.type) + ' (' + handle.side + ')'"></div>
             </template>
           </div>
+
+          <!-- Floating Node Action Toolbar (Visible on Node Selection) -->
+          <div data-show="node.selected" data-flow-node-toolbar="top"
+            class="flex items-center gap-1 bg-base-100/95 backdrop-blur-md border border-primary/40 shadow-2xl rounded-2xl px-2 py-1 text-xs select-none">
+            <!-- Duplicate Node -->
+            <button class="btn btn-ghost btn-xs btn-square hover:text-primary"
+              title="Duplicate Node"
+              data-on-click="
+                const dupId = String(Date.now());
+                nodes = [...nodes, {
+                  ...node,
+                  id: dupId,
+                  label: node.label + ' (Copy)',
+                  position: { x: (node.position.x || 0) + 40, y: (node.position.y || 0) + 40 },
+                  selected: true
+                }];
+                node.selected = false;
+              ">
+              <iconify-icon icon="material-symbols-light:content-copy" class="text-sm"></iconify-icon>
+            </button>
+            <!-- Configure Node Parameters -->
+            <button class="btn btn-ghost btn-xs btn-square hover:text-primary"
+              title="Configure Node Parameters"
+              data-on-click="
+                editMode = 'edit';
+                modalTab = 'visual';
+                activeNode = { ...node, handles: node.handles ? [...node.handles] : [] };
+                jsonDraft = JSON.stringify(activeNode, null, 2);
+                document.getElementById('flow-modal-node-editor').showModal();
+              ">
+              <iconify-icon icon="material-symbols-light:tune" class="text-sm"></iconify-icon>
+            </button>
+            <div class="divider divider-horizontal my-0 mx-0.5"></div>
+            <!-- Delete Node -->
+            <button class="btn btn-ghost btn-xs btn-square hover:text-error"
+              title="Delete Node"
+              data-on-click="
+                nodes = nodes.filter(n => n.id !== node.id);
+                edges = edges.filter(e => e.source !== node.id && e.target !== node.id);
+              ">
+              <iconify-icon icon="material-symbols-light:delete" class="text-sm"></iconify-icon>
+            </button>
+          </div>
         </div>
       </template>
+
+      <!-- Floating Edge Quick Actions Toolbar & Reconnect Handles -->
+      <div data-show="edges.some(e => e.selected)">
+        <!-- Edge Quick Actions Dock -->
+        <div data-flow-nodrag
+          class="absolute z-50 flex items-center gap-1.5 bg-base-100/95 backdrop-blur-md border border-accent/50 shadow-2xl rounded-2xl px-2.5 py-1 text-xs select-none"
+          data-style="{
+            left: (activeEdge?.labelX || 0) + 'px',
+            top: (activeEdge?.labelY || 0) + 'px',
+            transform: 'translate(-50%, -140%)'
+          }">
+          <span class="font-bold font-mono text-[11px] text-accent truncate max-w-[120px]" data-bind="activeEdge?.label || activeEdge?.id"></span>
+          <div class="divider divider-horizontal my-0 mx-0.5"></div>
+          <!-- Toggle Animation -->
+          <button class="btn btn-ghost btn-xs btn-square"
+            data-bind-class="{ 'text-primary font-bold': activeEdge?.animated }"
+            title="Toggle Wire Animation"
+            data-on-click="
+              activeEdge.animated = !activeEdge.animated;
+              edges = edges.map(e => e.id === activeEdge.id ? { ...e, animated: activeEdge.animated } : e);
+            ">
+            <iconify-icon icon="material-symbols-light:motion-photos-on" class="text-sm"></iconify-icon>
+          </button>
+          <!-- Cycle Routing Style -->
+          <button class="btn btn-ghost btn-xs btn-square hover:text-primary"
+            title="Cycle Routing Type"
+            data-on-click="
+              const nextType = activeEdge.type === 'smoothstep' ? 'bezier' : (activeEdge.type === 'bezier' ? 'step' : (activeEdge.type === 'step' ? 'straight' : 'smoothstep'));
+              activeEdge.type = nextType;
+              edges = edges.map(e => e.id === activeEdge.id ? { ...e, type: nextType } : e);
+            ">
+            <iconify-icon icon="material-symbols-light:conversion-path" class="text-sm"></iconify-icon>
+          </button>
+          <!-- Open Edge Parameter Modal -->
+          <button class="btn btn-ghost btn-xs btn-square text-accent hover:opacity-100"
+            title="Configure Wire Parameters"
+            data-on-click="
+              modalTab = 'visual';
+              jsonDraft = JSON.stringify(activeEdge, null, 2);
+              document.getElementById('flow-modal-edge-editor').showModal();
+            ">
+            <iconify-icon icon="material-symbols-light:settings" class="text-sm"></iconify-icon>
+          </button>
+          <!-- Delete Edge -->
+          <button class="btn btn-ghost btn-xs btn-square hover:text-error"
+            title="Disconnect Wire"
+            data-on-click="
+              edges = edges.filter(e => e.id !== activeEdge.id);
+              activeEdge = null;
+            ">
+            <iconify-icon icon="material-symbols-light:delete" class="text-sm"></iconify-icon>
+          </button>
+        </div>
+
+        <!-- Draggable Terminal Reconnect Handles -->
+        <div data-flow-edge-reconnect="source"
+          data-bind-style="{ left: (activeEdge?.sourceX || 0) + 'px', top: (activeEdge?.sourceY || 0) + 'px' }"
+          title="Drag to reconnect Source terminal"></div>
+        <div data-flow-edge-reconnect="target"
+          data-bind-style="{ left: (activeEdge?.targetX || 0) + 'px', top: (activeEdge?.targetY || 0) + 'px' }"
+          title="Drag to reconnect Target terminal"></div>
+      </div>
     </div>
 
     <!-- Canvas Controls Mini-Dock (Bottom-Left) -->
@@ -353,6 +458,62 @@
                 Stop Wires
               </button>
             </div>
+          </div>
+        </div>
+
+        <!-- Active Connectors & Wires Inspector Section -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-[11px] uppercase tracking-wider text-primary flex items-center gap-1.5">
+              <iconify-icon icon="material-symbols-light:cable"></iconify-icon>
+              Active Connectors (<span data-bind="edges.length"></span>)
+            </h3>
+            <span class="badge badge-xs font-mono" data-bind="edges.filter(e => e.animated).length + ' Animated'"></span>
+          </div>
+          <div class="bg-base-200/40 rounded-xl p-2.5 space-y-2 border border-base-content/5 max-h-56 overflow-y-auto">
+            <div data-show="edges.length === 0" class="text-xs opacity-50 text-center py-2">
+              No active connections. Drag between node handles to create wires.
+            </div>
+            <template data-for="edge in edges">
+              <div class="bg-base-100 p-2 rounded-lg border border-base-content/10 flex items-center justify-between gap-1 text-xs hover:border-accent/40 transition-colors"
+                data-class="{ 'border-accent shadow-md': edge.id === activeEdge?.id }">
+                <div class="flex items-center gap-1.5 min-w-0 cursor-pointer flex-1"
+                  data-on-click="
+                    edges.forEach(e => e.selected = false);
+                    edge.selected = true;
+                    activeEdge = edge;
+                  ">
+                  <span class="font-mono font-bold text-[10px] text-accent">#<span data-bind="edge.source"></span>→<span data-bind="edge.target"></span></span>
+                  <span class="badge badge-xs badge-ghost truncate" data-bind="edge.label || edge.type"></span>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  <!-- Toggle Animation -->
+                  <button class="btn btn-ghost btn-xs btn-square"
+                    data-bind-class="{ 'text-primary': edge.animated, 'opacity-40': !edge.animated }"
+                    title="Toggle Animation"
+                    data-on-click="edge.animated = !edge.animated; edges = [...edges]">
+                    <iconify-icon icon="material-symbols-light:motion-photos-on" class="text-xs"></iconify-icon>
+                  </button>
+                  <!-- Configure Modal -->
+                  <button class="btn btn-ghost btn-xs btn-square opacity-60 hover:opacity-100 hover:text-accent"
+                    title="Configure Wire Parameters"
+                    data-on-click="
+                      activeEdge = edge;
+                      modalTab = 'visual';
+                      jsonDraft = JSON.stringify(activeEdge, null, 2);
+                      document.getElementById('flow-modal-edge-editor').showModal();
+                    ">
+                    <iconify-icon icon="material-symbols-light:settings" class="text-xs"></iconify-icon>
+                  </button>
+                  <!-- Delete Wire -->
+                  <button class="btn btn-ghost btn-xs btn-square opacity-40 hover:opacity-100 hover:text-error"
+                    title="Delete Wire"
+                    data-on-click="edges = edges.filter(e => e.id !== edge.id); if (activeEdge?.id === edge.id) activeEdge = null">
+                    <iconify-icon icon="material-symbols-light:delete" class="text-xs"></iconify-icon>
+                  </button>
+                </div>
+              </div>
+            </template>
           </div>
         </div>
 
@@ -597,6 +758,178 @@
               }
             }
             document.getElementById('flow-modal-node-editor').close();
+          ">
+          <iconify-icon icon="material-symbols-light:check"></iconify-icon>
+          Save Changes
+        </button>
+      </div>
+
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+  </dialog>
+
+  <!-- Comprehensive Edge Parameter Edit Modal (Visual & JSON Tabs) -->
+  <dialog id="flow-modal-edge-editor" class="modal modal-bottom sm:modal-middle">
+    <div class="modal-box bg-base-100 border border-base-content/10 max-w-xl shadow-2xl p-6">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-base-content/10 pb-3">
+        <div class="flex items-center gap-2">
+          <iconify-icon icon="material-symbols-light:cable" class="text-accent text-2xl"></iconify-icon>
+          <div>
+            <h3 class="font-bold text-base">
+              Configure Wire Connector #<span data-bind="activeEdge?.id" class="font-mono text-accent"></span>
+            </h3>
+            <p class="text-xs opacity-60">Spatial curve routing, arrow markers, animation and port attachments</p>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-xs btn-square" data-on-click="document.getElementById('flow-modal-edge-editor').close()">
+          <iconify-icon icon="material-symbols-light:close" class="text-base"></iconify-icon>
+        </button>
+      </div>
+
+      <!-- Tab Switcher Header (Visual Studio vs JSON Schema) -->
+      <div class="pt-3">
+        <div class="tabs tabs-boxed bg-base-200/60 p-1 rounded-xl">
+          <button class="tab tab-sm font-semibold gap-1.5"
+            data-class="{ 'tab-active': modalTab === 'visual' }"
+            data-on-click="modalTab = 'visual'">
+            <iconify-icon icon="material-symbols-light:dashboard-customize"></iconify-icon>
+            Visual Studio
+          </button>
+          <button class="tab tab-sm font-semibold gap-1.5 font-mono"
+            data-class="{ 'tab-active': modalTab === 'json' }"
+            data-on-click="modalTab = 'json'; jsonDraft = JSON.stringify(activeEdge, null, 2);">
+            <iconify-icon icon="material-symbols-light:code"></iconify-icon>
+            JSON Schema
+          </button>
+        </div>
+      </div>
+
+      <!-- Tab 1: Visual Studio -->
+      <div data-show="modalTab === 'visual'" class="py-4 space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+        <!-- Basic Info Row -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="form-control">
+            <label class="label py-1"><span class="label-text text-xs font-semibold">Wire ID</span></label>
+            <input type="text" class="input input-bordered input-sm font-mono opacity-80" readonly data-bind-value="activeEdge.id" />
+          </div>
+          <div class="form-control md:col-span-2">
+            <label class="label py-1"><span class="label-text text-xs font-semibold">Display Badge Label</span></label>
+            <input type="text" class="input input-bordered input-sm" placeholder="e.g. HTTP GET, 200 OK" data-bind-value="activeEdge.label" />
+          </div>
+        </div>
+
+        <!-- Wire Routing & Marker Ends -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 bg-base-200/40 p-3 rounded-xl border border-base-content/5">
+          <div class="form-control">
+            <label class="label py-1"><span class="label-text text-xs font-semibold">Routing Algorithm</span></label>
+            <select class="select select-bordered select-sm" data-bind-value="activeEdge.type">
+              <option value="smoothstep">SmoothStep (Rounded Orthogonal)</option>
+              <option value="bezier">Bezier (Cubic Directional)</option>
+              <option value="step">Step (Sharp 90° Angles)</option>
+              <option value="straight">Straight (Direct Linear)</option>
+            </select>
+          </div>
+          <div class="form-control">
+            <label class="label py-1"><span class="label-text text-xs font-semibold">Arrowhead Marker</span></label>
+            <select class="select select-bordered select-sm" data-bind-value="activeEdge.markerEnd">
+              <option value="">None (Bare Wire)</option>
+              <option value="arrow">Chevron Arrow (Open)</option>
+              <option value="arrowclosed">Solid Triangular Arrow</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Animation Toggle Card -->
+        <div class="bg-base-200/40 p-3 rounded-xl border border-base-content/5 flex items-center justify-between">
+          <div>
+            <div class="font-semibold text-xs flex items-center gap-1.5">
+              <iconify-icon icon="material-symbols-light:motion-photos-on" class="text-primary text-base"></iconify-icon>
+              Continuous Dashed Animation
+            </div>
+            <div class="text-[11px] opacity-60">Pulsing data stream SVG dash-array loop</div>
+          </div>
+          <input type="checkbox" class="toggle toggle-primary toggle-sm" data-bind-checked="activeEdge.animated" />
+        </div>
+
+        <!-- Terminal Attachments Section -->
+        <div class="bg-base-200/40 p-3 rounded-xl border border-base-content/5 space-y-3">
+          <h4 class="font-bold text-xs uppercase tracking-wider text-accent flex items-center gap-1.5">
+            <iconify-icon icon="material-symbols-light:swap-horiz"></iconify-icon>
+            Terminal Port Re-Binding
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="form-control">
+              <label class="label py-1"><span class="label-text text-xs font-semibold">Source Node</span></label>
+              <select class="select select-bordered select-sm" data-bind-value="activeEdge.source">
+                <template data-for="n in nodes">
+                  <option data-bind-value="n.id" data-bind="'#' + n.id + ' — ' + n.label"></option>
+                </template>
+              </select>
+            </div>
+            <div class="form-control">
+              <label class="label py-1"><span class="label-text text-xs font-semibold">Target Node</span></label>
+              <select class="select select-bordered select-sm" data-bind-value="activeEdge.target">
+                <template data-for="n in nodes">
+                  <option data-bind-value="n.id" data-bind="'#' + n.id + ' — ' + n.label"></option>
+                </template>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delete Action -->
+        <div class="pt-1 flex justify-end">
+          <button class="btn btn-ghost btn-xs text-error gap-1 hover:bg-error/10"
+            data-on-click="
+              edges = edges.filter(e => e.id !== activeEdge.id);
+              activeEdge = null;
+              document.getElementById('flow-modal-edge-editor').close();
+            ">
+            <iconify-icon icon="material-symbols-light:delete" class="text-sm"></iconify-icon>
+            Delete Wire Connector
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Tab 2: Raw JSON Editor -->
+      <div data-show="modalTab === 'json'" class="py-4 space-y-2">
+        <div class="flex justify-between items-center text-xs opacity-70">
+          <span>Direct Schema JSON Definition</span>
+          <span class="font-mono text-[10px]">Real-time synchronization</span>
+        </div>
+        <textarea class="textarea textarea-bordered font-mono text-xs w-full h-72 leading-relaxed"
+          data-bind-value="jsonDraft"
+          placeholder="Paste or edit wire edge JSON..."></textarea>
+      </div>
+
+      <!-- Modal Actions -->
+      <div class="modal-action border-t border-base-content/10 pt-3">
+        <button class="btn btn-ghost btn-sm" data-on-click="document.getElementById('flow-modal-edge-editor').close()">Cancel</button>
+        <button class="btn btn-accent btn-sm font-bold gap-1"
+          data-on-click="
+            if (modalTab === 'json') {
+              try {
+                const parsed = JSON.parse(jsonDraft);
+                activeEdge = parsed;
+              } catch (err) {
+                alert('Invalid JSON syntax: ' + err.message);
+                return;
+              }
+            }
+            const idx = edges.findIndex(e => e.id === activeEdge.id);
+            if (idx !== -1) {
+              edges[idx].label = activeEdge.label;
+              edges[idx].type = activeEdge.type;
+              edges[idx].markerEnd = activeEdge.markerEnd;
+              edges[idx].animated = activeEdge.animated;
+              edges[idx].source = activeEdge.source;
+              edges[idx].target = activeEdge.target;
+              edges = [...edges];
+            }
+            document.getElementById('flow-modal-edge-editor').close();
           ">
           <iconify-icon icon="material-symbols-light:check"></iconify-icon>
           Save Changes

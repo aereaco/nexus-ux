@@ -112,11 +112,57 @@ const FLOW_CSS = `
   stroke: currentColor;
   stroke-width: 2px;
   opacity: 0.75;
-  transition: opacity 0.15s ease, stroke-width 0.15s ease;
+  cursor: pointer;
+  pointer-events: stroke;
+  transition: opacity 0.15s ease, stroke-width 0.15s ease, stroke 0.15s ease;
 }
 .flow-edge:hover {
   opacity: 1;
-  stroke-width: 2.5px;
+  stroke-width: 3.5px;
+  stroke: var(--color-primary, #3b82f6);
+}
+.flow-edge.selected {
+  opacity: 1;
+  stroke: var(--color-accent, #00cdb7) !important;
+  stroke-width: 4px !important;
+  filter: drop-shadow(0 0 6px var(--color-accent, #00cdb7));
+}
+.flow-edge-label-group.selected .flow-edge-label-bg {
+  stroke: var(--color-accent, #00cdb7) !important;
+  stroke-width: 2px !important;
+  fill: var(--color-base-200, #334155);
+}
+.flow-node-toolbar {
+  position: absolute;
+  z-index: 40;
+  pointer-events: auto;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.flow-node-toolbar-top {
+  bottom: 100%;
+  left: 50%;
+  transform: translate(-50%, -8px);
+}
+.flow-node-toolbar-bottom {
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, 8px);
+}
+.flow-edge-reconnect-handle {
+  width: 12px;
+  height: 12px;
+  border-radius: 9999px;
+  background-color: var(--color-accent, #00cdb7);
+  border: 2px solid var(--color-base-100, #1e293b);
+  cursor: grab;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 60;
+  box-shadow: 0 0 8px var(--color-accent, #00cdb7);
+  pointer-events: auto;
+}
+.flow-edge-reconnect-handle:active {
+  cursor: grabbing;
 }
 .flow-edge-animated {
   stroke-dasharray: 6 4;
@@ -262,6 +308,8 @@ export const flowAttribute: AttributeModule = {
     if (arg === 'nodrag') return flowNoDragAttribute.handle(element, value, runtime, parsedAttr);
     if (arg === 'grid') return flowGridAttribute.handle(element, value, runtime, parsedAttr);
     if (arg === 'snap') return flowSnapAttribute.handle(element, value, runtime, parsedAttr);
+    if (arg === 'node-toolbar' || arg === 'toolbar') return flowNodeToolbarAttribute.handle(element, value, runtime, parsedAttr);
+    if (arg === 'reconnect' || arg === 'edge-reconnect') return flowEdgeReconnectAttribute.handle(element, value, runtime, parsedAttr);
 
     // Guard: Unrecognized sub-directives or bookkeeping attributes must NEVER instantiate a canvas!
     if (arg) return;
@@ -406,6 +454,16 @@ export const flowAttribute: AttributeModule = {
           if (Array.isArray(nodes) && nodes.some(n => n.selected)) {
             nodes.forEach(n => { n.selected = false; });
           }
+          try {
+            const edges = runtime.evaluate(element, 'edges') as any[];
+            if (Array.isArray(edges) && edges.some(ed => ed.selected)) {
+              edges.forEach(ed => { ed.selected = false; });
+            }
+            const scopeObj = runtime.evaluate(element, 'this') || {};
+            if (scopeObj && 'activeEdge' in scopeObj) {
+              scopeObj.activeEdge = null;
+            }
+          } catch {}
         }
       }
     });
@@ -440,18 +498,30 @@ export const flowAttribute: AttributeModule = {
 
       if (e.key === 'Delete' || e.key === 'Backspace') {
         const hasSelected = nodes.some(n => n.selected);
-        if (hasSelected) {
+        let edges: any[] = [];
+        try { edges = runtime.evaluate(element, 'edges') || []; } catch {}
+        const hasSelectedEdge = Array.isArray(edges) && edges.some((ed: any) => ed.selected);
+
+        if (hasSelected || hasSelectedEdge) {
           e.preventDefault();
           try {
             runtime.evaluate(element, `
-              edges = (typeof edges !== 'undefined' && Array.isArray(edges)) ? edges.filter(e => !nodes.some(n => n.selected && (String(n.id) === String(e.source) || String(n.id) === String(e.target)))) : [];
+              edges = (typeof edges !== 'undefined' && Array.isArray(edges)) ? edges.filter(e => !e.selected && !nodes.some(n => n.selected && (String(n.id) === String(e.source) || String(n.id) === String(e.target)))) : [];
               nodes = nodes.filter(n => !n.selected);
+              if (typeof activeEdge !== 'undefined') activeEdge = null;
             `);
           } catch {
-            const selectedIds = new Set(nodes.filter(n => n.selected).map(n => String(n.id)));
-            const remaining = nodes.filter(n => !selectedIds.has(String(n.id)));
-            nodes.length = 0;
-            nodes.push(...remaining);
+            if (hasSelected) {
+              const selectedIds = new Set(nodes.filter(n => n.selected).map(n => String(n.id)));
+              const remaining = nodes.filter(n => !selectedIds.has(String(n.id)));
+              nodes.length = 0;
+              nodes.push(...remaining);
+            }
+            if (hasSelectedEdge && Array.isArray(edges)) {
+              const remainingEdges = edges.filter((ed: any) => !ed.selected);
+              edges.length = 0;
+              edges.push(...remainingEdges);
+            }
           }
         }
       } else if (e.key.startsWith('Arrow')) {
@@ -469,6 +539,12 @@ export const flowAttribute: AttributeModule = {
         }
       } else if (e.key === 'Escape') {
         nodes.forEach(n => { n.selected = false; });
+        try {
+          const edges = runtime.evaluate(element, 'edges') as any[];
+          if (Array.isArray(edges)) edges.forEach(ed => { ed.selected = false; });
+          const scopeObj = runtime.evaluate(element, 'this') || {};
+          if (scopeObj && 'activeEdge' in scopeObj) scopeObj.activeEdge = null;
+        } catch {}
       }
     };
 
@@ -840,6 +916,55 @@ export const flowEdgesAttribute: AttributeModule = {
           targetHandle: edge.targetHandle
         });
 
+        if (edgeRes) {
+          edge.labelX = edgeRes.labelX;
+          edge.labelY = edgeRes.labelY;
+          edge.sourceX = edgeRes.sourceX;
+          edge.sourceY = edgeRes.sourceY;
+          edge.targetX = edgeRes.targetX;
+          edge.targetY = edgeRes.targetY;
+          edge.sourceSide = edgeRes.sourceSide;
+          edge.targetSide = edgeRes.targetSide;
+        }
+
+        const isSelected = !!edge.selected;
+        if (isSelected && !pathEl.classList.contains('selected')) {
+          pathEl.classList.add('selected');
+        } else if (!isSelected && pathEl.classList.contains('selected')) {
+          pathEl.classList.remove('selected');
+        }
+
+        const handleEdgeClick = (ev: MouseEvent) => {
+          ev.stopPropagation();
+          try {
+            let curr: any = element;
+            while (curr) {
+              const sym = Object.getOwnPropertySymbols(curr).find(s => s.toString().includes('local_scopes'));
+              if (sym && Array.isArray(curr[sym])) {
+                for (const scope of curr[sym]) {
+                  if (scope && Array.isArray(scope.edges)) {
+                    scope.edges.forEach((item: any) => { item.selected = (item.id === edge.id); });
+                    scope.edges = [...scope.edges];
+                    if ('activeEdge' in scope) {
+                      scope.activeEdge = scope.edges.find((e: any) => e.id === edge.id) || edge;
+                    }
+                    return;
+                  }
+                }
+              }
+              curr = curr.parentElement;
+            }
+          } catch {
+            edgeList.forEach(item => { item.selected = false; });
+            edge.selected = true;
+          }
+        };
+
+        if (!(pathEl as any).__flowEdgeClickBound) {
+          (pathEl as any).__flowEdgeClickBound = true;
+          pathEl.addEventListener('click', handleEdgeClick);
+        }
+
         const d = edgeRes?.d || (typeof edgeRes === 'string' ? edgeRes : '');
         if (d && pathEl.getAttribute('d') !== d) {
           pathEl.setAttribute('d', d);
@@ -869,6 +994,18 @@ export const flowEdgesAttribute: AttributeModule = {
             const textEl = labelG.querySelector('text');
             if (textEl && textEl.textContent !== edge.label) textEl.textContent = edge.label;
           }
+
+          if (isSelected && !labelG.classList.contains('selected')) {
+            labelG.classList.add('selected');
+          } else if (!isSelected && labelG.classList.contains('selected')) {
+            labelG.classList.remove('selected');
+          }
+
+          if (!(labelG as any).__flowLabelClickBound) {
+            (labelG as any).__flowLabelClickBound = true;
+            labelG.addEventListener('click', handleEdgeClick);
+          }
+
           const transformStr = `translate(${edgeRes.labelX}, ${edgeRes.labelY})`;
           if (labelG.getAttribute('transform') !== transformStr) {
             labelG.setAttribute('transform', transformStr);
@@ -1177,6 +1314,112 @@ export const flowSnapAttribute: AttributeModule = {
   name: 'flowSnap',
   attribute: 'flow-snap',
   handle: () => {}
+};
+
+// ---------------------------------------------------------------------------
+// data-flow-node-toolbar: Floating Node Toolbar Directive
+// ---------------------------------------------------------------------------
+export const flowNodeToolbarAttribute: AttributeModule = {
+  name: 'flowNodeToolbar',
+  attribute: 'flow-node-toolbar',
+  handle: (element: HTMLElement, value: string) => {
+    ensureFlowStyles(element.getRootNode() as Document | ShadowRoot);
+    const position = value ? value.trim() : 'top';
+    element.classList.add('flow-node-toolbar', `flow-node-toolbar-${position}`);
+    element.setAttribute('data-flow-nodrag', '');
+  }
+};
+
+// ---------------------------------------------------------------------------
+// data-flow-edge-reconnect: Terminal Edge Reconnecting Directive
+// ---------------------------------------------------------------------------
+export const flowEdgeReconnectAttribute: AttributeModule = {
+  name: 'flowEdgeReconnect',
+  attribute: 'flow-edge-reconnect',
+  handle: (element: HTMLElement, value: string, runtime: RuntimeContext) => {
+    ensureFlowStyles(element.getRootNode() as Document | ShadowRoot);
+    const terminal = value ? value.trim() : 'target'; // 'source' or 'target'
+    element.classList.add('flow-edge-reconnect-handle');
+    element.setAttribute('data-flow-nodrag', '');
+
+    let preview: SVGPathElement | null = null;
+    let staticPt = { x: 0, y: 0 };
+    let flowEl: FlowElement | null = null;
+
+    const stopDrag = trackPointerDrag(element, {
+      onStart: (e) => {
+        if (e.button !== 0) return false;
+        e.stopPropagation();
+        e.preventDefault();
+        flowEl = element.closest('[data-flow]') as FlowElement | null;
+        const svg = flowEl?.querySelector('[data-flow-edges]') as SVGSVGElement | null;
+        if (!flowEl || !svg) return false;
+
+        let edge: any = null;
+        try {
+          edge = runtime.evaluate(element, 'activeEdge');
+        } catch {
+          edge = null;
+        }
+        if (!edge) return false;
+
+        staticPt = terminal === 'target'
+          ? { x: edge.sourceX || 0, y: edge.sourceY || 0 }
+          : { x: edge.targetX || 0, y: edge.targetY || 0 };
+
+        preview = document.createElementNS(SVG_NS, 'path');
+        preview.setAttribute('class', 'flow-edge flow-edge-preview selected');
+        preview.setAttribute('fill', 'none');
+        preview.setAttribute('stroke', 'currentColor');
+        preview.setAttribute('stroke-width', '2.5');
+        preview.setAttribute('stroke-dasharray', '4 4');
+        preview.style.pointerEvents = 'none';
+        svg.appendChild(preview);
+        return true;
+      },
+      onMove: (ev) => {
+        if (!preview || !flowEl) return;
+        const vp = flowEl.__flowViewport;
+        const r = flowEl.getBoundingClientRect();
+        const z = vp?.zoom || 1;
+        const pt = {
+          x: (ev.clientX - r.left - (vp?.x || 0)) / z,
+          y: (ev.clientY - r.top - (vp?.y || 0)) / z
+        };
+        const s = terminal === 'target' ? staticPt : pt;
+        const t = terminal === 'target' ? pt : staticPt;
+        const dx = Math.abs(s.x - t.x) / 2;
+        preview.setAttribute('d', `M ${s.x} ${s.y} C ${s.x + dx} ${s.y}, ${t.x - dx} ${t.y}, ${t.x} ${t.y}`);
+      },
+      onEnd: (ev) => {
+        if (preview) {
+          preview.remove();
+          preview = null;
+        }
+        const target = document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null;
+        const targetNode = target?.closest('[data-flow-node]') as HTMLElement | null;
+        const newId = targetNode?.id
+          || targetNode?.getAttribute('data-bind-id')?.replace(/^['"]|['"]$/g, '').replace(/^node-/, '')
+          || '';
+        if (newId) {
+          try {
+            const edge = runtime.evaluate(element, 'activeEdge');
+            if (edge) {
+              if (terminal === 'target' && String(edge.source) !== String(newId)) {
+                edge.target = newId;
+              } else if (terminal === 'source' && String(edge.target) !== String(newId)) {
+                edge.source = newId;
+              }
+            }
+          } catch {}
+        }
+      }
+    });
+
+    return () => {
+      stopDrag();
+    };
+  }
 };
 
 export default flowAttribute;

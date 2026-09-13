@@ -505,6 +505,12 @@ export const flowModule: SpriteModule = {
           d: res.path,
           labelX: res.labelX,
           labelY: res.labelY,
+          sourceX: s.x,
+          sourceY: s.y,
+          targetX: t.x,
+          targetY: t.y,
+          sourceSide: sSide,
+          targetSide: tSide,
           toString() { return this.d; },
           valueOf() { return this.d; }
         };
