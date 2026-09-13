@@ -1230,6 +1230,16 @@ for high-scale applications.
 | **Frame Consistency**       | 120fps / 144fps | Decoupled render-state from visual commit.            |
 | **Memory Ceiling**          | < 5MB Base      | Zero-allocation pooling for standard reactive cycles. |
 
+### 5.10. Native Web API Reflect Proxy Engine & ZCZS Storage Compliance
+
+Nexus-UX provides direct, fine-grained, push-based reactivity for native browser APIs (`window`, `localStorage`, `sessionStorage`, `navigator`, `document`, `screen`, `fetch`, `indexedDB`) under the **Zero-Copy Zero-Serialization (ZCZS)** mandate.
+
+- **Authoritative Reflect Factory (`src/engine/reflect.ts`)**: `createReflectProxy(runtime, el)` wraps native browser APIs in `Proxy` + `Reflect` traps without string-based regex scanning or intermediate serialization. Proxies are cached via `WeakMap` for zero-allocation reuse across evaluation frames.
+- **Dual-Compatibility Storage**: Wraps `localStorage` and `sessionStorage` with reactive `track(storage, key)` and `trigger(storage, key)` hooks. Transparently supports both direct property access (`localStorage.collapsed = 'false'`) and standard Web API methods (`getItem`, `setItem`, `removeItem`, `clear`, `key`, `length`), with automatic cross-tab synchronization via native `storage` events.
+- **Callable `fetch` Proxy**: Provides a transparent proxy for `fetch(url, options)` returning native `Promise<Response>` (fully supporting `.then()`, `.catch()`, etc.), while ensuring `fetch` is never shadowed by internal engine utility objects.
+- **Reactive `indexedDB`**: Exposes structured object store operations (`createStoreOperations`, `getIndexedDBProxy`) for zero-overhead structured object persistence without transaction boilerplate.
+- **Zero-Serialization Storage Directives**: Eliminates `JSON.stringify` and `JSON.parse` across boundaries. State like `favorites`, `pageTabs`, and `todos` live as direct reactive arrays/objects tracked by the engine.
+
 ---
 
 ## Chapter 6: Security & Persistence
@@ -1284,17 +1294,21 @@ the engine remains lean while the feature set remains extensible.
 
 #### 7.1.1. The Engine (The Skeleton)
 
-The Engine is the immutable core of Nexus-UX, distributed across a **Dynamic
-Engine Topology**:
+The Engine is the immutable core of Nexus-UX, distributed across a **Dynamic Engine Topology**:
 
-- **Orchestrator & Scheduler**: Manages the 4-phase atomic execution loop (`Capture` → `Evaluate` → `Resolve` → `Paint`) with cooperative `scheduler.yield()` input yielding.
-- **Topology**: Autoscale multi-threading manager (Tier 0 to Tier 3) with background workers and worker compute offloading via `runInWorker()`.
-- **Reactivity & Heap (SAB)**: Signal Binary Heap shared across workers with Rust-inspired ownership tracking.
-- **Scope Engine**: Manages hierarchical DOM data stack (`getDataStack`), scope providers, **Native API Scope building** (`buildNativeApiScope`), and **reactive IndexedDB proxy** (`getIndexedDBProxy`).
-- **Evaluator**: Pure zero-allocation compiler and runner for NEG expressions (`#` → `__global`, `@` → `_scopes`) using JavaScript `with (scope)`.
-- **Animation Engine**: Web Animations API runner and core `flip()` layout transition coordinator.
-- **Reconciler & Mutation**: In-place DOM morphing (`morphDOM`) and single authority `MutationObserver`.
-- **Engine Utilities**: Core shared utilities in `src/engine/utils/` (`pointer.ts`, `timer.ts`, `modifier.ts`, `pwa.ts`, `styles.ts`, `hash.ts`).
+- **Runtime Composition & Context (`src/engine/composition.ts`)**: Owns the `RuntimeContext` interface ("god object") and `InitContext`, instantiated once and passed strictly by reference (zero-copy). Bundles reactivity, evaluation, DOM reconciliation, and global signal tracking.
+- **Reactivity & Heap (SAB) (`src/engine/reactivity.ts`)**: Signal Binary Heap shared across workers with Rust-inspired ownership tracking (`SignalHeap`, `elementBoundEffect`, `unifiedRef`, `unifiedComputed`, `track`, `trigger`).
+- **Native Web API Reflect Proxy (`src/engine/reflect.ts`)**: Authoritative Proxy/Reflect wrapping for browser APIs (`window`, `localStorage`, `sessionStorage`, `document`, `screen`, `navigator`, `fetch`, `indexedDB`) under ZCZS compliance.
+- **Scope Engine (`src/engine/scope.ts`)**: Authoritative single scope resolver (`getElementScope`) traversing Call-site extras $\rightarrow$ Sprites $\rightarrow$ Local Data Stack $\rightarrow$ Global Signals (`#`) $\rightarrow$ Global Actions $\rightarrow$ Runtime $\rightarrow$ Reflect Proxy, plus ghost key parsing (`parseGhostKeys`).
+- **Evaluator (`src/engine/evaluator.ts`)**: Pure zero-allocation compiler and runner for NEG expressions (`with (scope)` execution context), delegating scope resolution to `scope.getElementScope`.
+- **Orchestrator & Scheduler (`src/engine/scheduler.ts`)**: Manages the 4-phase atomic execution loop (`Capture` $\rightarrow$ `Evaluate` $\rightarrow$ `Resolve` $\rightarrow$ `Paint`) with cooperative `scheduler.yield()` input yielding.
+- **Topology (`src/engine/topology.ts`)**: Autoscale multi-threading manager (Tier 0 to Tier 3) with background workers (`logic.worker.ts`) and worker compute offloading via `runInWorker()`.
+- **Animation Engine (`src/engine/animation.ts`)**: Web Animations API runner and core `flip()` layout transition coordinator.
+- **Reconciler & Mutation (`src/engine/reconciler.ts`, `mutation.ts`)**: In-place DOM morphing (`morphDOM`) and single authority `MutationObserver`.
+- **Observer Registry (`src/engine/observers.ts`)**: Centralized observer registry maintaining the single observer context for DOM and reactive mutations.
+- **Network Ingress Coordinator (`src/engine/fetch.ts`)**: Manages ingress network requests with session/local caching via `cacheEngine` and suspense proxies.
+- **Diagnostic Agent (`src/engine/agent.ts`)**: Self-healing runtime agent and diagnostic coordinator (`getSelfHealAgent()`) managing resolution beacons and crash reporting.
+- **Engine Utilities (`src/engine/utils/`)**: Core shared utilities (`pointer.ts`, `timer.ts`, `modifier.ts`, `pwa.ts`, `styles.ts`, `hash.ts`).
 
 #### 7.1.2. Modules (The Limbs)
 
@@ -1320,22 +1334,31 @@ nexus-ux/
 │   ├── index.ts              # Entry point — UX class, inline utilities
 │   ├── manifest.ts           # AUTO-GENERATED module registry (build.ts)
 │   ├── engine/               # Core runtime (reactivity, scheduler, observers, ZCZS heap)
+│   │   ├── agent.ts          # Self-heal diagnostic coordinator & crash beacons
+│   │   ├── animation.ts      # Web Animations API & core flip() layout transitions
+│   │   ├── assets.ts         # Constructable stylesheets & asset manager
+│   │   ├── attributeParser.ts# State-machine parser for NEG attributes
+│   │   ├── cache.ts          # Universal caching engine (Cache API, Storage, IDB)
+│   │   ├── composition.ts    # RuntimeContext & InitContext zero-copy god object
+│   │   ├── consts.ts         # Runtime constants & system symbols
+│   │   ├── debug.ts          # Diagnostic inspector & MCP integration
+│   │   ├── evaluator.ts      # Pure NEG expression compilation & runtime execution
+│   │   ├── fetch.ts          # Network ingress coordinator & suspense proxy
+│   │   ├── logger.ts         # Zero-overhead internal diagnostic logging
+│   │   ├── logic.worker.ts   # Background Web Worker execution thread
+│   │   ├── mcp.ts            # Model Context Protocol client
 │   │   ├── modules.ts        # ModuleCoordinator registration & lifecycle
 │   │   ├── mutation.ts       # Single MutationObserver authority
 │   │   ├── observers.ts      # Centralized observer registry
-│   │   ├── reactivity.ts     # Vue-based reactivity + ZCZS SignalHeap & ownership
-│   │   ├── scope.ts          # Data stack, Native API scope builder & IDB proxy
-│   │   ├── reconciler.ts     # In-place DOM morphing & deep diffing
-│   │   ├── evaluator.ts      # Pure NEG expression compilation & runtime execution
-│   │   ├── scheduler.ts      # 4-phase atomic loop & cooperative scheduler.yield()
-│   │   ├── topology.ts       # Adaptive thread topology & runInWorker offload
-│   │   ├── animation.ts      # Web Animations API & core flip() layout transitions
-│   │   ├── agent.ts          # Self-heal & crash beacons
 │   │   ├── predictive.ts     # 4D predictive interaction engine
-│   │   ├── cache.ts          # Universal caching engine (Cache API, Storage, IDB)
-│   │   ├── assets.ts         # Constructable stylesheets & asset manager
-│   │   ├── mcp.ts            # Model Context Protocol client
-│   │   └── utils/            # Shared engine utilities
+│   │   ├── reactivity.ts     # Vue-compatible reactivity + ZCZS SignalHeap & ownership
+│   │   ├── reconciler.ts     # In-place DOM morphing & deep diffing
+│   │   ├── reflect.ts        # Native Web API Reflect Proxy Engine & storage hooks
+│   │   ├── scheduler.ts      # 4-phase atomic loop & cooperative scheduler.yield()
+│   │   ├── scope.ts          # Authoritative getElementScope resolver & ghost keys
+│   │   ├── styleConstants.ts # Tailwind v4 theme & property constants
+│   │   ├── topology.ts       # Adaptive thread topology & runInWorker offload
+│   │   └── utils/            # Shared zero-overhead engine utilities
 │   │       ├── hash.ts       # FNV-1a / DJB2 / SHA-256 hashing
 │   │       ├── modifier.ts   # Canonical event modifier helpers
 │   │       ├── pointer.ts    # Unified trackPointerDrag utility
@@ -1362,10 +1385,10 @@ nexus-ux/
 │   │   │   ├── auth.ts, container.ts, media.ts, native.ts, os.ts, view.ts
 │   │   └── listeners/        # Global event listeners (4 modules)
 │   │       ├── bfcache.ts, executeScript.ts, history.ts, linkRewriter.ts
-├── docs/                     # Specification & practical reference
-├── scripts/                  # Build (build.ts) & dev server (serve.ts)
-├── site/                     # Official Nexus-UX SPA website & labs
-└── dist/                     # Compiled production bundles (IIFE, min.js, br)
+│   ├── docs/                 # Specification & practical reference
+│   ├── scripts/              # Build (build.ts) & dev server (serve.ts)
+│   ├── site/                 # Official Nexus-UX SPA website & labs
+│   └── dist/                 # Compiled production bundles (IIFE, min.js, br)
 ```
 
 ### 7.3. Hello World Module Implementations

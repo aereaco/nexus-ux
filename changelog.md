@@ -1,6 +1,32 @@
 # Nexus-UX Changelog & Codebase Alignment Analysis
 
-**Latest Alignment Date**: 2026-09-11  
+**Latest Alignment Date**: 2026-09-13  
+
+---
+
+## Recent Major Release: 2026-09-13 — Native API Reflect Proxy Engine, Scope Resolution Unification, and ZCZS Storage Compliance
+
+### 🌟 Native Web API Reflect Proxy Engine (`src/engine/reflect.ts`)
+- **Authoritative Reflect Factory (`createReflectProxy`)**: Implemented authoritative factory wrapping native browser APIs (`window`, `localStorage`, `sessionStorage`, `document`, `screen`, `navigator`, `fetch`, `indexedDB`) in Proxy/Reflect traps with zero regex scanning overhead and zero intermediate serialization. Proxies are cached via `WeakMap` for zero-allocation reuse.
+- **Dual-Compatibility Web Storage**: Supports both standard Web API methods (`getItem`, `setItem`, `removeItem`, `clear`, `key`, `length`) and direct property reads/writes (`localStorage.collapsed = 'false'`) with reactive `track(storage, key)` and `trigger(storage, key)` hooks and automatic cross-tab synchronization via native `storage` events.
+- **Callable `fetch` Proxy**: Provides a transparent proxy for `fetch(url, options)` returning native `Promise<Response>` (fully supporting `.then()`, `.catch()`, etc.), while ensuring `fetch` is never shadowed by internal engine utility objects.
+- **Reactive `indexedDB` Operations**: Exposes structured store operations (`createStoreOperations`, `getIndexedDBProxy`) for zero-overhead persistence without transaction boilerplate.
+
+### 🌟 Scope Resolution Unification (`src/engine/scope.ts` & `src/engine/evaluator.ts`)
+- **Single Authoritative Resolver (`getElementScope`)**: Consolidated scope resolution into `scope.ts`, traversing: Call-site extras $\rightarrow$ Scope Providers (`$`) $\rightarrow$ Local Data Stack $\rightarrow$ Global Signals (`#`) $\rightarrow$ Global Actions $\rightarrow$ Runtime context $\rightarrow$ Reflect Proxy.
+- **Pre-Allocated Ghost Keys (`parseGhostKeys`)**: Extracted object literal ghost key parsing into `scope.ts` for pre-allocating typed SignalHeap slots.
+- **Streamlined Evaluator (`src/engine/evaluator.ts`)**: Decoupled compiler/runner from manual scope assembly, delegating all scope resolution purely to `scope.getElementScope`.
+
+### 🌟 Elimination of Regex Heuristics in `data-bind` (`src/modules/attributes/bind.ts`)
+- **Removal of Legacy Regex Scanning**: Stripped all regex heuristics (`NATIVE_API_PATTERNS`, `extractNativeApis`, `createNativeBinding`).
+- **Pure Two-Way Reactivity**: Bound inputs, attributes, and native storage directly through reactive scope evaluation and proxy traps under the Zero-Copy Zero-Serialization (ZCZS) contract.
+
+### 🌟 Engine Modularization & Alignment
+- **`src/engine/fetch.ts`**: Modularized network ingress utilities, session/local caching via `cacheEngine`, and suspense proxy generation.
+- **`src/engine/agent.ts`**: Modularized the self-healing runtime agent and diagnostic coordinator (`getSelfHealAgent()`).
+- **`src/engine/observers.ts`**: Modularized the central observer registry maintaining the single observer context for the mutation coordinator.
+- **`src/engine/composition.ts`**: Standardized `RuntimeContext` ("god object") and `InitContext` passed strictly by reference (zero-copy).
+- **ZCZS Storage Compliance Directives**: Codified the strict elimination of `JSON.stringify` and `JSON.parse` across storage or runtime boundaries, ensuring state lives directly as live arrays and objects in the reactive graph.
 
 ---
 
