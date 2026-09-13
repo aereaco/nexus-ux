@@ -9,6 +9,7 @@
       floatingBookmarks: localStorage.floatingBookmarks !== 'false',
       sidebarDarkness: Number(localStorage.sidebarDarkness ?? 30),
       sidebarOpacity: Number(localStorage.sidebarOpacity ?? 90),
+      sidebarTextLightness: Number(localStorage.sidebarTextLightness ?? 100),
       hovered: false,
       sidebarOpen: false,
       isMobile: window.matchMedia('(max-width: 767px)').matches,
@@ -791,7 +792,7 @@
     <div class="flex-1 flex flex-col min-h-0 w-full grow relative overflow-hidden">
 
       <!-- Floating Side Hover Expanding Tab | Breadcrumbs & Page Tabs Toggle (when floatingBookmarks is true) -->
-      <div data-show="floatingBookmarks" class="absolute end-0 top-6 z-20" data-signal="{ hovered: false }"
+      <div data-show="floatingBookmarks" class="absolute end-0 top-6 z-40" data-signal="{ hovered: false }"
         data-on-mouseenter_delay.150ms="hovered = true" data-on-mouseleave="hovered = false">
         <nav aria-label="Breadcrumb"
           class="flex items-center overflow-hidden rounded-ss-lg rounded-es-lg border border-base-content/10 bg-base-100 text-base-content transition-[max-width,width] duration-300 ease-in-out whitespace-nowrap shadow-sm"
