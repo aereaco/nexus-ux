@@ -301,7 +301,7 @@ internally:
 - **Sub-Directive**: `data-bind-attribute="expression"` (e.g. `data-bind-title="tooltip"`, `data-bind-disabled="isLoading"`)
 - **Native API**: `data-bind="window.innerWidth"`, `data-bind="localStorage.theme"`
 
-**Purpose**: Provides bidirectional and one-way synchronization between reactive state and DOM elements or browser Web APIs.
+**Purpose**: Provides bidirectional and one-way synchronization between reactive state and DOM elements or browser Web APIs without regex heuristics or custom workarounds.
 
 **Supported Modes**:
 1. **Form Input Auto-Detection**:
@@ -314,8 +314,9 @@ internally:
    - `<div>` / `<span>`: Syncs to `textContent`.
    - `data-bind-href="user.profileUrl"`: Sets HTML attribute dynamically.
    - `data-bind-disabled="isSubmitting"`: Toggles boolean attribute.
-3. **Direct Native API Binding**:
-   - Intercepts property reads (`window.innerWidth`, `localStorage.theme`) and writes (`localStorage.setItem(...)`) via Proxy/Reflect traps without requiring wrapper modules or `_` prefixes.
+3. **Direct Native API & Storage Binding**:
+   - Intercepts property reads (`window.innerWidth`, `localStorage.theme`) and writes (`localStorage.setItem(...)`, `localStorage.theme = 'dark'`) via the Native Web API Reflect Proxy Engine (`reflect.ts`) without requiring wrapper modules or `_` prefixes.
+   - Operates purely through standard reactive scope resolution (`scope.ts`) and proxy traps under the Zero-Copy Zero-Serialization (ZCZS) mandate.
 
 **Examples**:
 
