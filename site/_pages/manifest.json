@@ -100,7 +100,7 @@
     "id": "todo",
     "route": "/todo",
     "path": "/_pages/todo.html",
-    "title": "Nexus-UX • Advanced Todo",
+    "title": "Todo List",
     "icon": "material-symbols-light:checklist",
     "order": 2,
     "parent": null,
