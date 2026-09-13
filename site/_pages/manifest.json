@@ -190,7 +190,7 @@
     "id": "flow",
     "route": "/flow",
     "path": "/_pages/flow.html",
-    "title": "xyFlow Spatial Canvas",
+    "title": "Flow Canvas",
     "icon": "material-symbols-light:flowchart-outline",
     "order": 3,
     "parent": null,

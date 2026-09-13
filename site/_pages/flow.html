@@ -1,5 +1,5 @@
 <head>
-  <title>xyFlow Spatial Canvas</title>
+  <title>Flow Canvas</title>
   <meta name="route" content="/flow">
   <meta name="icon" content="material-symbols-light:flowchart-outline">
   <meta name="order" content="3">
@@ -45,12 +45,13 @@
 }">
 
   <!-- Header Toolbar -->
-  <header class="navbar bg-base-200/80 backdrop-blur border border-base-content/10 rounded-box px-4 lg:px-6 py-2 shrink-0 z-20">
+  <header
+    class="navbar bg-base-200/80 backdrop-blur border border-base-content/10 rounded-box px-4 lg:px-6 py-2 shrink-0 z-20">
     <div class="flex-1 flex items-center gap-3">
       <iconify-icon icon="material-symbols-light:schema" class="text-primary text-2xl"></iconify-icon>
       <div>
         <div class="flex items-center gap-2">
-          <h1 class="text-lg font-bold leading-tight">xyFlow Spatial Canvas</h1>
+          <h1 class="text-lg font-bold leading-tight">Flow Canvas</h1>
           <span class="badge badge-primary badge-outline badge-xs font-mono">Signal Driven</span>
         </div>
         <p class="text-[11px] opacity-60">Complete spatial node graph with reactive fine-grained proxies</p>
@@ -59,7 +60,8 @@
 
     <!-- Quick Stats & Keyboard Hint -->
     <div class="flex items-center gap-3 text-xs">
-      <div class="hidden lg:flex items-center gap-2 text-[11px] opacity-60 mr-1 bg-base-100/60 px-2.5 py-1 rounded-lg border border-base-content/10 font-mono">
+      <div
+        class="hidden lg:flex items-center gap-2 text-[11px] opacity-60 mr-1 bg-base-100/60 px-2.5 py-1 rounded-lg border border-base-content/10 font-mono">
         <kbd class="kbd kbd-xs">Shift</kbd><span>+Drag Marquee</span>
         <span class="opacity-30">•</span>
         <kbd class="kbd kbd-xs">Del</kbd><span>Delete</span>
@@ -90,8 +92,7 @@
       </div>
 
       <!-- Add Node Trigger -->
-      <button class="btn btn-primary btn-xs font-bold gap-1 shadow-sm ml-1"
-        data-on-click="
+      <button class="btn btn-primary btn-xs font-bold gap-1 shadow-sm ml-1" data-on-click="
           editMode = 'add';
           modalTab = 'visual';
           const newId = String(nodes.length + 1);
@@ -104,8 +105,7 @@
       </button>
 
       <!-- Toggle Right Settings Sidebar -->
-      <button class="btn btn-ghost btn-xs btn-square hover:bg-base-300"
-        title="Canvas Settings Studio"
+      <button class="btn btn-ghost btn-xs btn-square hover:bg-base-300" title="Canvas Settings Studio"
         data-on-click="sidebarOpen = !sidebarOpen">
         <iconify-icon icon="material-symbols-light:tune" class="text-base"></iconify-icon>
       </button>
@@ -113,7 +113,8 @@
   </header>
 
   <!-- Interactive Canvas & Studio Viewport -->
-  <div class="relative flex-1 bg-base-300 rounded-box border border-base-content/10 shadow-inner min-h-[37.5rem] h-[calc(100vh-14rem)] overflow-hidden isolate"
+  <div
+    class="relative flex-1 bg-base-300 rounded-box border border-base-content/10 shadow-inner min-h-[37.5rem] h-[calc(100vh-14rem)] overflow-hidden isolate"
     data-flow="{ grid: 20 }"
     data-bind-style="'background-image: linear-gradient(rgba(255,255,255,0.05) 0.0625rem, transparent 0.0625rem), linear-gradient(90deg, rgba(255,255,255,0.05) 0.0625rem, transparent 0.0625rem); background-size: ' + gridSize + 'px ' + gridSize + 'px;'">
 
@@ -124,9 +125,7 @@
 
       <!-- Draggable Flow Nodes -->
       <template data-for="node in nodes">
-        <div data-bind-id="'node-' + node.id"
-          class="w-[12rem]"
-          data-flow-node="node">
+        <div data-bind-id="'node-' + node.id" class="w-[12rem]" data-flow-node="node">
           <div data-flow-resizer></div>
 
           <!-- Subflow Group Card -->
@@ -139,15 +138,13 @@
                 <span data-bind="node.label"></span>
               </span>
               <div class="flex items-center gap-1">
-                <button data-flow-nodrag
-                  data-on-click="
+                <button data-flow-nodrag data-on-click="
                     editMode = 'edit';
                     modalTab = 'visual';
                     activeNode = { ...node, handles: node.handles ? [...node.handles] : [] };
                     jsonDraft = JSON.stringify(activeNode, null, 2);
                     document.getElementById('flow-modal-node-editor').showModal();
-                  "
-                  class="btn btn-ghost btn-xs btn-square opacity-60 hover:opacity-100 hover:text-primary"
+                  " class="btn btn-ghost btn-xs btn-square opacity-60 hover:opacity-100 hover:text-primary"
                   title="Configure Subflow Group">
                   <iconify-icon icon="material-symbols-light:settings" class="text-sm"></iconify-icon>
                 </button>
@@ -166,7 +163,8 @@
             class="card bg-base-100 shadow-md border border-base-content/10 w-full h-full rounded-box hover:shadow-xl hover:border-primary/40 transition-all group select-none relative"
             style="touch-action: none;">
             <div class="h-1.5 w-full bg-primary rounded-t-box"
-              data-class="{ 'bg-success': node.type === 'input', 'bg-warning': node.type === 'output', 'bg-primary': !node.type || node.type === 'default' }"></div>
+              data-class="{ 'bg-success': node.type === 'input', 'bg-warning': node.type === 'output', 'bg-primary': !node.type || node.type === 'default' }">
+            </div>
             <div class="p-3">
               <div class="flex items-center justify-between mb-1">
                 <div class="flex items-center gap-1">
@@ -176,15 +174,13 @@
                 </div>
                 <div class="flex items-center gap-1">
                   <!-- Edit Node Parameters -->
-                  <button data-flow-nodrag
-                    data-on-click="
+                  <button data-flow-nodrag data-on-click="
                       editMode = 'edit';
                       modalTab = 'visual';
                       activeNode = { ...node, handles: node.handles ? [...node.handles] : [] };
                       jsonDraft = JSON.stringify(activeNode, null, 2);
                       document.getElementById('flow-modal-node-editor').showModal();
-                    "
-                    class="btn btn-ghost btn-xs btn-square opacity-40 hover:opacity-100 hover:text-primary"
+                    " class="btn btn-ghost btn-xs btn-square opacity-40 hover:opacity-100 hover:text-primary"
                     title="Configure Node Parameters">
                     <iconify-icon icon="material-symbols-light:settings" class="text-sm"></iconify-icon>
                   </button>
@@ -200,14 +196,14 @@
               <div class="font-semibold text-sm truncate" data-bind="node.label"></div>
               <div class="text-[10px] font-mono opacity-50 mt-1 flex justify-between">
                 <span>Pos:</span>
-                <span>(<span data-bind="Math.round(node.position.x)"></span>, <span data-bind="Math.round(node.position.y)"></span>)</span>
+                <span>(<span data-bind="Math.round(node.position.x)"></span>, <span
+                    data-bind="Math.round(node.position.y)"></span>)</span>
               </div>
             </div>
 
             <!-- Reactive Connection Ports (Handles) -->
             <template data-for="handle in node.handles">
-              <div data-flow-handle="handle.type"
-                data-flow-side="handle.side"
+              <div data-flow-handle="handle.type" data-flow-side="handle.side"
                 data-bind-title="'Port: ' + (handle.id || handle.type) + ' (' + handle.side + ')'"></div>
             </template>
           </div>
@@ -216,9 +212,7 @@
           <div data-show="node.selected" data-flow-node-toolbar="top"
             class="flex items-center gap-1 bg-base-100/95 backdrop-blur-md border border-primary/40 shadow-2xl rounded-2xl px-2 py-1 text-xs select-none">
             <!-- Duplicate Node -->
-            <button class="btn btn-ghost btn-xs btn-square hover:text-primary"
-              title="Duplicate Node"
-              data-on-click="
+            <button class="btn btn-ghost btn-xs btn-square hover:text-primary" title="Duplicate Node" data-on-click="
                 const dupId = String(Date.now());
                 nodes = [...nodes, {
                   ...node,
@@ -232,8 +226,7 @@
               <iconify-icon icon="material-symbols-light:content-copy" class="text-sm"></iconify-icon>
             </button>
             <!-- Configure Node Parameters -->
-            <button class="btn btn-ghost btn-xs btn-square hover:text-primary"
-              title="Configure Node Parameters"
+            <button class="btn btn-ghost btn-xs btn-square hover:text-primary" title="Configure Node Parameters"
               data-on-click="
                 editMode = 'edit';
                 modalTab = 'visual';
@@ -245,9 +238,7 @@
             </button>
             <div class="divider divider-horizontal my-0 mx-0.5"></div>
             <!-- Delete Node -->
-            <button class="btn btn-ghost btn-xs btn-square hover:text-error"
-              title="Delete Node"
-              data-on-click="
+            <button class="btn btn-ghost btn-xs btn-square hover:text-error" title="Delete Node" data-on-click="
                 nodes = nodes.filter(n => n.id !== node.id);
                 edges = edges.filter(e => e.source !== node.id && e.target !== node.id);
               ">
@@ -262,12 +253,12 @@
         <!-- Edge Quick Actions Dock -->
         <div data-flow-edge-toolbar
           class="absolute z-50 flex items-center gap-1.5 bg-base-100/95 backdrop-blur-md border border-accent/50 shadow-2xl rounded-2xl px-2.5 py-1 text-xs select-none">
-          <span class="font-bold font-mono text-[11px] text-accent truncate max-w-[120px]" data-bind="activeEdge?.label || activeEdge?.id"></span>
+          <span class="font-bold font-mono text-[11px] text-accent truncate max-w-[120px]"
+            data-bind="activeEdge?.label || activeEdge?.id"></span>
           <div class="divider divider-horizontal my-0 mx-0.5"></div>
           <!-- Toggle Animation -->
           <button class="btn btn-ghost btn-xs btn-square"
-            data-bind-class="{ 'text-primary font-bold': activeEdge?.animated }"
-            title="Toggle Wire Animation"
+            data-bind-class="{ 'text-primary font-bold': activeEdge?.animated }" title="Toggle Wire Animation"
             data-on-click="
               activeEdge.animated = !activeEdge.animated;
               edges = edges.map(e => e.id === activeEdge.id ? { ...e, animated: activeEdge.animated } : e);
@@ -275,9 +266,7 @@
             <iconify-icon icon="material-symbols-light:motion-photos-on" class="text-sm"></iconify-icon>
           </button>
           <!-- Cycle Routing Style -->
-          <button class="btn btn-ghost btn-xs btn-square hover:text-primary"
-            title="Cycle Routing Type"
-            data-on-click="
+          <button class="btn btn-ghost btn-xs btn-square hover:text-primary" title="Cycle Routing Type" data-on-click="
               const nextType = activeEdge.type === 'smoothstep' ? 'bezier' : (activeEdge.type === 'bezier' ? 'step' : (activeEdge.type === 'step' ? 'straight' : 'smoothstep'));
               activeEdge.type = nextType;
               edges = edges.map(e => e.id === activeEdge.id ? { ...e, type: nextType } : e);
@@ -286,8 +275,7 @@
           </button>
           <!-- Open Edge Parameter Modal -->
           <button class="btn btn-ghost btn-xs btn-square text-accent hover:opacity-100"
-            title="Configure Wire Parameters"
-            data-on-click="
+            title="Configure Wire Parameters" data-on-click="
               modalTab = 'visual';
               jsonDraft = JSON.stringify(activeEdge, null, 2);
               document.getElementById('flow-modal-edge-editor').showModal();
@@ -295,9 +283,7 @@
             <iconify-icon icon="material-symbols-light:settings" class="text-sm"></iconify-icon>
           </button>
           <!-- Delete Edge -->
-          <button class="btn btn-ghost btn-xs btn-square hover:text-error"
-            title="Disconnect Wire"
-            data-on-click="
+          <button class="btn btn-ghost btn-xs btn-square hover:text-error" title="Disconnect Wire" data-on-click="
               edges = edges.filter(e => e.id !== activeEdge.id);
               activeEdge = null;
             ">
@@ -306,15 +292,14 @@
         </div>
 
         <!-- Draggable Terminal Reconnect Handles -->
-        <div data-flow-edge-reconnect="source"
-          title="Drag to reconnect Source terminal"></div>
-        <div data-flow-edge-reconnect="target"
-          title="Drag to reconnect Target terminal"></div>
+        <div data-flow-edge-reconnect="source" title="Drag to reconnect Source terminal"></div>
+        <div data-flow-edge-reconnect="target" title="Drag to reconnect Target terminal"></div>
       </div>
     </div>
 
     <!-- Canvas Controls Mini-Dock (Bottom-Left) -->
-    <div data-flow-nodrag class="absolute bottom-4 left-4 flex items-center gap-1 bg-base-100/90 backdrop-blur border border-base-content/10 shadow-lg rounded-xl p-1.5 z-30">
+    <div data-flow-nodrag
+      class="absolute bottom-4 left-4 flex items-center gap-1 bg-base-100/90 backdrop-blur border border-base-content/10 shadow-lg rounded-xl p-1.5 z-30">
       <button class="btn btn-ghost btn-xs btn-square" title="Zoom In" data-on-click="$flow.zoomIn($el)">
         <iconify-icon icon="material-symbols-light:zoom-in" class="text-base"></iconify-icon>
       </button>
@@ -325,21 +310,23 @@
       <button class="btn btn-ghost btn-xs btn-square" title="Reset View" data-on-click="$flow.reset($el)">
         <iconify-icon icon="material-symbols-light:restart-alt" class="text-base"></iconify-icon>
       </button>
-      <button class="btn btn-ghost btn-xs px-2 font-medium text-xs flex items-center gap-1" title="Fit View" data-on-click="$flow.fit($el, nodes)">
+      <button class="btn btn-ghost btn-xs px-2 font-medium text-xs flex items-center gap-1" title="Fit View"
+        data-on-click="$flow.fit($el, nodes)">
         <iconify-icon icon="material-symbols-light:fit-screen" class="text-base"></iconify-icon>
         Fit View
       </button>
       <div class="divider divider-horizontal my-0 mx-0.5"></div>
-      <span class="text-[11px] font-mono px-2 text-primary font-bold" data-bind="(viewport.zoom || 1).toFixed(2) + 'x'"></span>
+      <span class="text-[11px] font-mono px-2 text-primary font-bold"
+        data-bind="(viewport.zoom || 1).toFixed(2) + 'x'"></span>
     </div>
 
     <!-- Interactive Minimap (Bottom-Right, stacked above Live HUD) -->
-    <div data-show="showMinimap" data-flow-minimap
-      class="absolute z-35 shadow-xl border border-base-content/15"
+    <div data-show="showMinimap" data-flow-minimap class="absolute z-35 shadow-xl border border-base-content/15"
       style="bottom: calc(1rem + 195px); right: 1rem;"></div>
 
     <!-- Reactive Live HUD Card (Bottom-Right) -->
-    <div data-flow-nodrag class="absolute bottom-4 right-4 bg-base-100/90 backdrop-blur border border-base-content/10 shadow-lg rounded-2xl p-3 z-30 w-64 text-xs">
+    <div data-flow-nodrag
+      class="absolute bottom-4 right-4 bg-base-100/90 backdrop-blur border border-base-content/10 shadow-lg rounded-2xl p-3 z-30 w-64 text-xs">
       <div class="flex items-center justify-between font-bold text-primary mb-2 border-b border-base-content/10 pb-1">
         <span class="flex items-center gap-1.5">
           <iconify-icon icon="material-symbols-light:memory" class="text-sm"></iconify-icon>
@@ -350,13 +337,15 @@
       <div class="space-y-1 font-mono text-[11px] opacity-80 max-h-32 overflow-y-auto pr-1">
         <div class="text-accent font-semibold flex justify-between">
           <span>Viewport Pan:</span>
-          <span>(<span data-bind="Math.round(viewport.x)"></span>, <span data-bind="Math.round(viewport.y)"></span>)</span>
+          <span>(<span data-bind="Math.round(viewport.x)"></span>, <span
+              data-bind="Math.round(viewport.y)"></span>)</span>
         </div>
         <div class="border-t border-base-content/5 pt-1">
           <template data-for="n in nodes">
             <div class="flex justify-between py-0.5">
               <span class="truncate max-w-[80px]" data-bind="'#' + n.id + ' ' + n.label"></span>
-              <span class="text-primary font-bold">(<span data-bind="Math.round(n.position.x)"></span>, <span data-bind="Math.round(n.position.y)"></span>)</span>
+              <span class="text-primary font-bold">(<span data-bind="Math.round(n.position.x)"></span>, <span
+                  data-bind="Math.round(n.position.y)"></span>)</span>
             </div>
           </template>
         </div>
@@ -365,9 +354,9 @@
 
     <!-- Small Upper-Right Corner Button to open Right Sidebar -->
     <div data-flow-nodrag class="absolute top-4 right-4 z-30">
-      <button class="btn btn-sm btn-circle btn-primary shadow-lg border border-base-content/10 transition-transform active:scale-95"
-        title="Canvas Configuration Studio"
-        data-on-click="sidebarOpen = !sidebarOpen">
+      <button
+        class="btn btn-sm btn-circle btn-primary shadow-lg border border-base-content/10 transition-transform active:scale-95"
+        title="Canvas Configuration Studio" data-on-click="sidebarOpen = !sidebarOpen">
         <iconify-icon icon="material-symbols-light:tune" class="text-lg"></iconify-icon>
       </button>
     </div>
@@ -376,7 +365,7 @@
     <aside data-flow-nodrag
       class="absolute top-0 right-0 bottom-0 w-80 md:w-96 bg-base-100/95 backdrop-blur-md border-l border-base-content/10 shadow-2xl z-40 transition-transform duration-300 flex flex-col"
       data-style="{ transform: sidebarOpen ? 'translateX(0)' : 'translateX(100%)' }">
-      
+
       <!-- Sidebar Header -->
       <div class="p-4 border-b border-base-content/10 flex items-center justify-between bg-base-200/50">
         <div class="flex items-center gap-2">
@@ -390,7 +379,7 @@
 
       <!-- Sidebar Body -->
       <div class="flex-1 overflow-y-auto p-4 space-y-5 text-xs">
-        
+
         <!-- Grid & Snapping Section -->
         <div class="space-y-3">
           <h3 class="font-bold text-[11px] uppercase tracking-wider text-primary flex items-center gap-1.5">
@@ -463,36 +452,36 @@
               <iconify-icon icon="material-symbols-light:cable"></iconify-icon>
               Active Connectors (<span data-bind="edges.length"></span>)
             </h3>
-            <span class="badge badge-xs font-mono" data-bind="edges.filter(e => e.animated).length + ' Animated'"></span>
+            <span class="badge badge-xs font-mono"
+              data-bind="edges.filter(e => e.animated).length + ' Animated'"></span>
           </div>
           <div class="bg-base-200/40 rounded-xl p-2.5 space-y-2 border border-base-content/5 max-h-56 overflow-y-auto">
             <div data-show="edges.length === 0" class="text-xs opacity-50 text-center py-2">
               No active connections. Drag between node handles to create wires.
             </div>
             <template data-for="edge in edges">
-              <div class="bg-base-100 p-2 rounded-lg border border-base-content/10 flex items-center justify-between gap-1 text-xs hover:border-accent/40 transition-colors"
+              <div
+                class="bg-base-100 p-2 rounded-lg border border-base-content/10 flex items-center justify-between gap-1 text-xs hover:border-accent/40 transition-colors"
                 data-class="{ 'border-accent shadow-md': edge.id === activeEdge?.id }">
-                <div class="flex items-center gap-1.5 min-w-0 cursor-pointer flex-1"
-                  data-on-click="
+                <div class="flex items-center gap-1.5 min-w-0 cursor-pointer flex-1" data-on-click="
                     edges.forEach(e => e.selected = false);
                     edge.selected = true;
                     activeEdge = edge;
                   ">
-                  <span class="font-mono font-bold text-[10px] text-accent">#<span data-bind="edge.source"></span>→<span data-bind="edge.target"></span></span>
+                  <span class="font-mono font-bold text-[10px] text-accent">#<span data-bind="edge.source"></span>→<span
+                      data-bind="edge.target"></span></span>
                   <span class="badge badge-xs badge-ghost truncate" data-bind="edge.label || edge.type"></span>
                 </div>
                 <div class="flex items-center gap-1 shrink-0">
                   <!-- Toggle Animation -->
                   <button class="btn btn-ghost btn-xs btn-square"
                     data-bind-class="{ 'text-primary': edge.animated, 'opacity-40': !edge.animated }"
-                    title="Toggle Animation"
-                    data-on-click="edge.animated = !edge.animated; edges = [...edges]">
+                    title="Toggle Animation" data-on-click="edge.animated = !edge.animated; edges = [...edges]">
                     <iconify-icon icon="material-symbols-light:motion-photos-on" class="text-xs"></iconify-icon>
                   </button>
                   <!-- Configure Modal -->
                   <button class="btn btn-ghost btn-xs btn-square opacity-60 hover:opacity-100 hover:text-accent"
-                    title="Configure Wire Parameters"
-                    data-on-click="
+                    title="Configure Wire Parameters" data-on-click="
                       activeEdge = edge;
                       modalTab = 'visual';
                       jsonDraft = JSON.stringify(activeEdge, null, 2);
@@ -519,8 +508,7 @@
             Graph Schema & IO
           </h3>
           <div class="bg-base-200/40 rounded-xl p-3 space-y-2 border border-base-content/5">
-            <button class="btn btn-sm btn-outline w-full justify-start gap-2 font-mono text-xs"
-              data-on-click="
+            <button class="btn btn-sm btn-outline w-full justify-start gap-2 font-mono text-xs" data-on-click="
                 const schema = { nodes, edges, viewport };
                 navigator.clipboard.writeText(JSON.stringify(schema, null, 2));
                 alert('Full Graph Schema copied to clipboard!');
@@ -529,8 +517,7 @@
               Export Graph JSON
             </button>
 
-            <button class="btn btn-sm btn-outline w-full justify-start gap-2 font-mono text-xs"
-              data-on-click="
+            <button class="btn btn-sm btn-outline w-full justify-start gap-2 font-mono text-xs" data-on-click="
                 const input = prompt('Paste xyflow JSON schema to import:');
                 if (input) {
                   try {
@@ -567,7 +554,7 @@
   <!-- Comprehensive Node Parameter Edit Modal (Visual & JSON Tabs) -->
   <dialog id="flow-modal-node-editor" class="modal">
     <div class="modal-box max-w-2xl bg-base-100 border border-base-content/10 shadow-2xl p-6">
-      
+
       <!-- Modal Header -->
       <div class="flex items-center justify-between border-b border-base-content/10 pb-3">
         <div class="flex items-center gap-2">
@@ -581,14 +568,12 @@
         </div>
         <!-- Tab Navigation (Visual vs JSON) -->
         <div class="tabs tabs-boxed bg-base-200 p-1">
-          <button class="tab tab-sm font-semibold gap-1.5"
-            data-class="{ 'tab-active': modalTab === 'visual' }"
+          <button class="tab tab-sm font-semibold gap-1.5" data-class="{ 'tab-active': modalTab === 'visual' }"
             data-on-click="modalTab = 'visual'">
             <iconify-icon icon="material-symbols-light:dashboard-customize"></iconify-icon>
             Visual Studio
           </button>
-          <button class="tab tab-sm font-semibold gap-1.5 font-mono"
-            data-class="{ 'tab-active': modalTab === 'json' }"
+          <button class="tab tab-sm font-semibold gap-1.5 font-mono" data-class="{ 'tab-active': modalTab === 'json' }"
             data-on-click="modalTab = 'json'; jsonDraft = JSON.stringify(activeNode, null, 2);">
             <iconify-icon icon="material-symbols-light:code"></iconify-icon>
             JSON Schema
@@ -637,11 +622,13 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 bg-base-200/40 p-3 rounded-xl border border-base-content/5">
           <div class="form-control">
             <label class="label py-1"><span class="label-text text-xs font-semibold font-mono">Pos X</span></label>
-            <input type="number" class="input input-bordered input-sm font-mono" data-bind-value="activeNode.position.x" />
+            <input type="number" class="input input-bordered input-sm font-mono"
+              data-bind-value="activeNode.position.x" />
           </div>
           <div class="form-control">
             <label class="label py-1"><span class="label-text text-xs font-semibold font-mono">Pos Y</span></label>
-            <input type="number" class="input input-bordered input-sm font-mono" data-bind-value="activeNode.position.y" />
+            <input type="number" class="input input-bordered input-sm font-mono"
+              data-bind-value="activeNode.position.y" />
           </div>
           <div class="form-control">
             <label class="label py-1"><span class="label-text text-xs font-semibold font-mono">Width</span></label>
@@ -665,11 +652,13 @@
 
           <!-- Existing Ports List -->
           <div class="space-y-1.5 max-h-36 overflow-y-auto">
-            <div data-show="!(activeNode.handles && activeNode.handles.length > 0)" class="text-xs opacity-50 py-2 text-center">
+            <div data-show="!(activeNode.handles && activeNode.handles.length > 0)"
+              class="text-xs opacity-50 py-2 text-center">
               No connection ports attached. Click below to add an edge point.
             </div>
             <template data-for="(h, idx) in (activeNode.handles || [])">
-              <div class="flex items-center justify-between bg-base-100 p-2 rounded-lg border border-base-content/10 text-xs">
+              <div
+                class="flex items-center justify-between bg-base-100 p-2 rounded-lg border border-base-content/10 text-xs">
                 <div class="flex items-center gap-2">
                   <span class="badge badge-xs font-mono"
                     data-class="{ 'badge-primary': h.type === 'source', 'badge-secondary': h.type === 'target' }"
@@ -698,8 +687,7 @@
               <option value="top">Top Side</option>
               <option value="bottom">Bottom Side</option>
             </select>
-            <button class="btn btn-primary btn-xs font-bold gap-1"
-              data-on-click="
+            <button class="btn btn-primary btn-xs font-bold gap-1" data-on-click="
                 if (!activeNode.handles) activeNode.handles = [];
                 activeNode.handles = [...activeNode.handles, { id: 'h-' + Date.now(), type: newHandle.type, side: newHandle.side }];
               ">
@@ -718,15 +706,14 @@
           <span class="font-mono text-[10px]">Real-time synchronization</span>
         </div>
         <textarea class="textarea textarea-bordered font-mono text-xs w-full h-72 leading-relaxed"
-          data-bind-value="jsonDraft"
-          placeholder="Paste or edit node JSON..."></textarea>
+          data-bind-value="jsonDraft" placeholder="Paste or edit node JSON..."></textarea>
       </div>
 
       <!-- Modal Actions -->
       <div class="modal-action border-t border-base-content/10 pt-3">
-        <button class="btn btn-ghost btn-sm" data-on-click="document.getElementById('flow-modal-node-editor').close()">Cancel</button>
-        <button class="btn btn-primary btn-sm font-bold gap-1"
-          data-on-click="
+        <button class="btn btn-ghost btn-sm"
+          data-on-click="document.getElementById('flow-modal-node-editor').close()">Cancel</button>
+        <button class="btn btn-primary btn-sm font-bold gap-1" data-on-click="
             if (modalTab === 'json') {
               try {
                 const parsed = JSON.parse(jsonDraft);
@@ -766,7 +753,7 @@
   <!-- Comprehensive Edge Parameter Edit Modal (Visual & JSON Tabs) -->
   <dialog id="flow-modal-edge-editor" class="modal modal-bottom sm:modal-middle">
     <div class="modal-box bg-base-100 border border-base-content/10 max-w-xl shadow-2xl p-6">
-      
+
       <!-- Modal Header -->
       <div class="flex items-center justify-between border-b border-base-content/10 pb-3">
         <div class="flex items-center gap-2">
@@ -778,7 +765,8 @@
             <p class="text-xs opacity-60">Spatial curve routing, arrow markers, animation and port attachments</p>
           </div>
         </div>
-        <button class="btn btn-ghost btn-xs btn-square" data-on-click="document.getElementById('flow-modal-edge-editor').close()">
+        <button class="btn btn-ghost btn-xs btn-square"
+          data-on-click="document.getElementById('flow-modal-edge-editor').close()">
           <iconify-icon icon="material-symbols-light:close" class="text-base"></iconify-icon>
         </button>
       </div>
@@ -786,14 +774,12 @@
       <!-- Tab Switcher Header (Visual Studio vs JSON Schema) -->
       <div class="pt-3">
         <div class="tabs tabs-boxed bg-base-200/60 p-1 rounded-xl">
-          <button class="tab tab-sm font-semibold gap-1.5"
-            data-class="{ 'tab-active': modalTab === 'visual' }"
+          <button class="tab tab-sm font-semibold gap-1.5" data-class="{ 'tab-active': modalTab === 'visual' }"
             data-on-click="modalTab = 'visual'">
             <iconify-icon icon="material-symbols-light:dashboard-customize"></iconify-icon>
             Visual Studio
           </button>
-          <button class="tab tab-sm font-semibold gap-1.5 font-mono"
-            data-class="{ 'tab-active': modalTab === 'json' }"
+          <button class="tab tab-sm font-semibold gap-1.5 font-mono" data-class="{ 'tab-active': modalTab === 'json' }"
             data-on-click="modalTab = 'json'; jsonDraft = JSON.stringify(activeEdge, null, 2);">
             <iconify-icon icon="material-symbols-light:code"></iconify-icon>
             JSON Schema
@@ -807,11 +793,13 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div class="form-control">
             <label class="label py-1"><span class="label-text text-xs font-semibold">Wire ID</span></label>
-            <input type="text" class="input input-bordered input-sm font-mono opacity-80" readonly data-bind-value="activeEdge.id" />
+            <input type="text" class="input input-bordered input-sm font-mono opacity-80" readonly
+              data-bind-value="activeEdge.id" />
           </div>
           <div class="form-control md:col-span-2">
             <label class="label py-1"><span class="label-text text-xs font-semibold">Display Badge Label</span></label>
-            <input type="text" class="input input-bordered input-sm" placeholder="e.g. HTTP GET, 200 OK" data-bind-value="activeEdge.label" />
+            <input type="text" class="input input-bordered input-sm" placeholder="e.g. HTTP GET, 200 OK"
+              data-bind-value="activeEdge.label" />
           </div>
         </div>
 
@@ -840,7 +828,8 @@
         <div class="bg-base-200/40 p-3 rounded-xl border border-base-content/5 flex items-center justify-between">
           <div>
             <div class="font-semibold text-xs flex items-center gap-1.5">
-              <iconify-icon icon="material-symbols-light:motion-photos-on" class="text-primary text-base"></iconify-icon>
+              <iconify-icon icon="material-symbols-light:motion-photos-on"
+                class="text-primary text-base"></iconify-icon>
               Continuous Dashed Animation
             </div>
             <div class="text-[11px] opacity-60">Pulsing data stream SVG dash-array loop</div>
@@ -876,8 +865,7 @@
 
         <!-- Delete Action -->
         <div class="pt-1 flex justify-end">
-          <button class="btn btn-ghost btn-xs text-error gap-1 hover:bg-error/10"
-            data-on-click="
+          <button class="btn btn-ghost btn-xs text-error gap-1 hover:bg-error/10" data-on-click="
               edges = edges.filter(e => e.id !== activeEdge.id);
               activeEdge = null;
               document.getElementById('flow-modal-edge-editor').close();
@@ -896,15 +884,14 @@
           <span class="font-mono text-[10px]">Real-time synchronization</span>
         </div>
         <textarea class="textarea textarea-bordered font-mono text-xs w-full h-72 leading-relaxed"
-          data-bind-value="jsonDraft"
-          placeholder="Paste or edit wire edge JSON..."></textarea>
+          data-bind-value="jsonDraft" placeholder="Paste or edit wire edge JSON..."></textarea>
       </div>
 
       <!-- Modal Actions -->
       <div class="modal-action border-t border-base-content/10 pt-3">
-        <button class="btn btn-ghost btn-sm" data-on-click="document.getElementById('flow-modal-edge-editor').close()">Cancel</button>
-        <button class="btn btn-accent btn-sm font-bold gap-1"
-          data-on-click="
+        <button class="btn btn-ghost btn-sm"
+          data-on-click="document.getElementById('flow-modal-edge-editor').close()">Cancel</button>
+        <button class="btn btn-accent btn-sm font-bold gap-1" data-on-click="
             if (modalTab === 'json') {
               try {
                 const parsed = JSON.parse(jsonDraft);
