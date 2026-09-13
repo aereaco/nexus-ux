@@ -333,8 +333,10 @@
       <span class="text-[11px] font-mono px-2 text-primary font-bold" data-bind="(viewport.zoom || 1).toFixed(2) + 'x'"></span>
     </div>
 
-    <!-- Interactive Minimap (Bottom-Right, if enabled) -->
-    <div data-show="showMinimap" data-flow-minimap class="absolute bottom-4 right-72 z-30 shadow-xl border border-base-content/15"></div>
+    <!-- Interactive Minimap (Bottom-Right, stacked above Live HUD) -->
+    <div data-show="showMinimap" data-flow-minimap
+      class="absolute z-35 shadow-xl border border-base-content/15"
+      style="bottom: calc(1rem + 195px); right: 1rem;"></div>
 
     <!-- Reactive Live HUD Card (Bottom-Right) -->
     <div data-flow-nodrag class="absolute bottom-4 right-4 bg-base-100/90 backdrop-blur border border-base-content/10 shadow-lg rounded-2xl p-3 z-30 w-64 text-xs">

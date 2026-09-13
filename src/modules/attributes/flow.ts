@@ -239,7 +239,7 @@ const FLOW_CSS = `
   border-radius: 0.75rem;
   overflow: hidden;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  z-index: 25;
+  z-index: 35;
 }
 .flow-minimap-svg {
   width: 100%;
