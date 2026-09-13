@@ -2512,8 +2512,81 @@ ${suggestion}`);
       }
     });
   }
-  function buildNativeApiScope(runtime) {
-    return createReflectProxy(runtime);
+  function getElementScope(el, runtime, initialExtras) {
+    const reflectProxy = createReflectProxy(runtime, el instanceof Element ? el : void 0);
+    return new Proxy({}, {
+      has(target, key) {
+        if (key === Symbol.unscopables)
+          return false;
+        if (typeof key === "string")
+          return true;
+        return Reflect.has(target, key);
+      },
+      get(target, key) {
+        if (key === Symbol.unscopables)
+          return void 0;
+        if (typeof key === "string") {
+          if (initialExtras && key in initialExtras) {
+            return initialExtras[key];
+          }
+          if (hasScopeProvider(key)) {
+            return resolveScopeProvider(key, el, runtime);
+          }
+          const dataStack = getDataStack(el);
+          for (const data of dataStack) {
+            if (key in data) {
+              return runtime.unref(data[key]);
+            }
+          }
+          const globalSignals = runtime.globalSignals();
+          if (key in globalSignals) {
+            return runtime.unref(globalSignals[key]);
+          }
+          const globalActions = runtime.globalActions();
+          if (key in globalActions) {
+            return globalActions[key];
+          }
+          if (key !== "fetch" && key in runtime) {
+            return runtime[key];
+          }
+          if (key in reflectProxy) {
+            return reflectProxy[key];
+          }
+        }
+        return Reflect.get(target, key);
+      },
+      set(target, key, value) {
+        if (typeof key === "string") {
+          if (initialExtras && key in initialExtras) {
+            initialExtras[key] = value;
+            return true;
+          }
+          const dataStack = getDataStack(el);
+          for (const data of dataStack) {
+            if (key in data) {
+              data[key] = value;
+              return true;
+            }
+          }
+          const globalSignals = runtime.globalSignals();
+          if (key in globalSignals) {
+            globalSignals[key] = value;
+            return true;
+          }
+          if (dataStack.length > 0) {
+            dataStack[0][key] = value;
+            return true;
+          }
+          if (key in reflectProxy) {
+            reflectProxy[key] = value;
+            return true;
+          }
+          globalSignals[key] = value;
+          return true;
+        }
+        return Reflect.set(target, key, value);
+      }
+    });
   }
   var scopeProviderRegistry;
   var init_scope = __esm({
@@ -17173,76 +17246,7 @@ ${bridge}`, {
   }
   function evaluateLater(el, expression, runtime, initialExtras = {}) {
     const processedExpression = preProcessExpression(expression);
-    const nativeScope2 = buildNativeApiScope(runtime);
-    const baseScope = {
-      ...runtime,
-      ...initialExtras
-    };
-    const scope = new Proxy(baseScope, {
-      has(target, key) {
-        if (key === Symbol.unscopables)
-          return false;
-        if (typeof key === "string") {
-          return true;
-        }
-        return false;
-      },
-      get(target, key) {
-        if (key === Symbol.unscopables)
-          return void 0;
-        if (typeof key === "string") {
-          if (hasScopeProvider(key))
-            return resolveScopeProvider(key, el, runtime);
-          const dataStack = getDataStack(el);
-          for (const data of dataStack) {
-            if (key in data) {
-              const val = data[key];
-              return runtime.unref(val);
-            }
-          }
-          const globalSignals = runtime.globalSignals();
-          if (key in globalSignals) {
-            const val = globalSignals[key];
-            return runtime.unref(val);
-          }
-          const globalActions = runtime.globalActions();
-          if (key in globalActions) {
-            return globalActions[key];
-          }
-          if (key in nativeScope2) {
-            return nativeScope2[key];
-          }
-        }
-        return void 0;
-      },
-      set(target, key, value) {
-        if (typeof key === "string") {
-          const dataStack = getDataStack(el);
-          for (const data of dataStack) {
-            if (key in data) {
-              data[key] = value;
-              return true;
-            }
-          }
-          const globalSignals = runtime.globalSignals();
-          if (key in globalSignals) {
-            globalSignals[key] = value;
-            return true;
-          }
-          if (dataStack.length > 0) {
-            dataStack[0][key] = value;
-            return true;
-          }
-          if (key in target) {
-            target[key] = value;
-            return true;
-          }
-          globalSignals[key] = value;
-          return true;
-        }
-        return false;
-      }
-    });
+    const scope = getElementScope(el, runtime, initialExtras);
     const diagnostic = validateExpression(expression, el);
     if (diagnostic) {
       syntaxError(
@@ -17278,7 +17282,7 @@ ${bridge}`, {
       }
       currentEvalDepth++;
       try {
-        const currentScope = new Proxy(callExtras, {
+        const currentScope = callExtras && Object.keys(callExtras).length > 0 ? new Proxy(callExtras, {
           has(target, key) {
             if (key === Symbol.unscopables)
               return false;
@@ -17307,7 +17311,7 @@ ${bridge}`, {
             }
             return false;
           }
-        });
+        }) : scope;
         const result = func.call(el, currentScope);
         if (shouldAutoEvaluateFunctions && typeof result === "function") {
           receiver(result.call(el, currentScope));

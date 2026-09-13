@@ -34,11 +34,8 @@ import { RuntimeContext } from './composition.ts';
 import { getSelfHealAgent } from './agent.ts';
 import { evaluationError, syntaxError } from './debug.ts';
 import {
-  getDataStack,
-  hasScopeProvider,
-  resolveScopeProvider,
   registerScopeProvider,
-  buildNativeApiScope,
+  getElementScope,
   getIndexedDBProxy,
   type IndexedDBStoreOperations
 } from './scope.ts';
@@ -230,94 +227,7 @@ export function evaluateLater(
   initialExtras: Record<string, unknown> = {}
 ): (receiver: (value: unknown) => void, callExtras?: Record<string, unknown>) => void {
   const processedExpression = preProcessExpression(expression);
-  const nativeScope = buildNativeApiScope(runtime);
-
-  const baseScope: Record<string | symbol, unknown> = {
-    ...runtime,
-    ...initialExtras
-  };
-
-  const scope = new Proxy(baseScope, {
-    has(target, key): boolean {
-      if (key === Symbol.unscopables) return false;
-      if (typeof key === 'string') {
-        return true; // Always route through proxy get to eliminate ReferenceError log floods
-      }
-      return false;
-    },
-    get(target, key): unknown {
-      if (key === Symbol.unscopables) return undefined;
-      if (typeof key === 'string') {
-        // 1. Scope Providers (modular sprites)
-        if (hasScopeProvider(key)) return resolveScopeProvider(key, el, runtime);
-
-        // ZCZS: Live Scope Resolution — evaluate relative to exact current DOM position
-        const dataStack = getDataStack(el as HTMLElement);
-
-        // 3. Data Stack (Local Scopes) - Should take precedence over globals
-        for (const data of dataStack) {
-          if (key in data) {
-            const val = (data as any)[key];
-            return runtime.unref(val);
-          }
-        }
-
-        // 4. Global Signals
-        const globalSignals = runtime.globalSignals();
-        if (key in globalSignals) {
-          const val = (globalSignals as any)[key];
-          return runtime.unref(val);
-        }
-
-        // 5. Global Actions
-        const globalActions = runtime.globalActions();
-        if (key in globalActions) {
-          return (globalActions as any)[key];
-        }
-
-        // 6. Native API Scope (window, document, navigator, indexedDB, globalThis)
-        if (key in nativeScope) {
-          return (nativeScope as any)[key];
-        }
-      }
-      return undefined;
-    },
-    set(target, key, value): boolean {
-      if (typeof key === 'string') {
-        const dataStack = getDataStack(el as HTMLElement);
-
-        for (const data of dataStack) {
-          if (key in data) {
-            (data as any)[key] = value;
-            return true;
-          }
-        }
-
-        const globalSignals = runtime.globalSignals();
-        if (key in globalSignals) {
-          (globalSignals as any)[key] = value;
-          return true;
-        }
-
-        // Fallback: If not found in stack, auto-create in the closest reactive local scope
-        // or global signals to ensure "virtual" signals can be established on-the-fly.
-        if (dataStack.length > 0) {
-          (dataStack[0] as any)[key] = value;
-          return true;
-        }
-
-        if (key in target) {
-          (target as any)[key] = value;
-          return true;
-        }
-
-        // Global fallback
-        (globalSignals as any)[key] = value;
-        return true;
-      }
-      return false;
-    }
-  });
+  const scope = getElementScope(el, runtime, initialExtras);
 
   // Balanced logic for expressions vs statements
   // Expression compilation: uses `new Function` + `with` for runtime expressiveness.
@@ -370,32 +280,34 @@ export function evaluateLater(
 
     currentEvalDepth++;
     try {
-      const currentScope = new Proxy(callExtras, {
-        has(target, key): boolean {
-          if (key === Symbol.unscopables) return false;
-          if (typeof key === 'string') return (key in target) || (key in scope);
-          return (key in target);
-        },
-        get(target, key): unknown {
-          if (key === Symbol.unscopables) return undefined;
-          if (typeof key === 'string') {
-            if (key in target) return target[key];
-            return scope[key];
-          }
-          return undefined;
-        },
-        set(target, key, value): boolean {
-          if (typeof key === 'string') {
-            if (key in target) {
-              target[key] = value;
-              return true;
+      const currentScope = callExtras && Object.keys(callExtras).length > 0
+        ? new Proxy(callExtras, {
+            has(target, key): boolean {
+              if (key === Symbol.unscopables) return false;
+              if (typeof key === 'string') return (key in target) || (key in (scope as any));
+              return (key in target);
+            },
+            get(target, key): unknown {
+              if (key === Symbol.unscopables) return undefined;
+              if (typeof key === 'string') {
+                if (key in target) return target[key];
+                return (scope as any)[key];
+              }
+              return undefined;
+            },
+            set(target, key, value): boolean {
+              if (typeof key === 'string') {
+                if (key in target) {
+                  target[key] = value;
+                  return true;
+                }
+                (scope as any)[key] = value;
+                return true;
+              }
+              return false;
             }
-            scope[key] = value;
-            return true;
-          }
-          return false;
-        }
-      });
+          })
+        : scope;
 
       const result = func.call(el, currentScope);
       if (shouldAutoEvaluateFunctions && typeof result === 'function') {
