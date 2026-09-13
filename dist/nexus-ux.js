@@ -4790,6 +4790,7 @@ ${scripts}
     default: () => flow_default,
     flowAttribute: () => flowAttribute,
     flowEdgeReconnectAttribute: () => flowEdgeReconnectAttribute,
+    flowEdgeToolbarAttribute: () => flowEdgeToolbarAttribute,
     flowEdgesAttribute: () => flowEdgesAttribute,
     flowGridAttribute: () => flowGridAttribute,
     flowHandleAttribute: () => flowHandleAttribute,
@@ -4805,7 +4806,7 @@ ${scripts}
   function ensureFlowStyles(root) {
     ensureAdoptedStylesheet(FLOW_CSS, flowSheetRef, root);
   }
-  var SVG_NS, MIN_ZOOM, MAX_ZOOM, NO_PAN, sharedViewport, FLOW_CSS, flowSheetRef, flowViewportAttribute, flowAttribute, flowNodeAttribute, flowHandleAttribute, flowEdgesAttribute, flowResizerAttribute, flowMinimapAttribute, flowSideAttribute, flowNoDragAttribute, flowGridAttribute, flowSnapAttribute, flowNodeToolbarAttribute, flowEdgeReconnectAttribute, flow_default;
+  var SVG_NS, MIN_ZOOM, MAX_ZOOM, NO_PAN, sharedViewport, FLOW_CSS, flowSheetRef, flowViewportAttribute, flowAttribute, flowNodeAttribute, flowHandleAttribute, flowEdgesAttribute, flowResizerAttribute, flowMinimapAttribute, flowSideAttribute, flowNoDragAttribute, flowGridAttribute, flowSnapAttribute, flowNodeToolbarAttribute, flowEdgeToolbarAttribute, flowEdgeReconnectAttribute, flow_default;
   var init_flow = __esm({
     "src/modules/attributes/flow.ts"() {
       init_reactivity();
@@ -4814,7 +4815,7 @@ ${scripts}
       SVG_NS = "http://www.w3.org/2000/svg";
       MIN_ZOOM = 0.2;
       MAX_ZOOM = 4;
-      NO_PAN = "[data-flow-node],[data-flow-handle],[data-flow-nodrag],[data-flow-resizer],[data-flow-minimap],button,a,input,textarea,select,label";
+      NO_PAN = "[data-flow-node],[data-flow-handle],[data-flow-nodrag],[data-flow-resizer],[data-flow-minimap],.flow-edge,.flow-edge-interaction,.flow-edge-label-group,button,a,input,textarea,select,label";
       sharedViewport = (el) => {
         const flow = el?.closest("[data-flow]");
         const vp = flow?.__flowViewport;
@@ -4844,6 +4845,7 @@ ${scripts}
   height: 100%;
   overflow: visible;
   pointer-events: none;
+  z-index: 10;
 }
 [data-flow-node] {
   position: absolute;
@@ -4905,6 +4907,13 @@ ${scripts}
 [data-flow-handle-side="bottom"]:hover, [data-flow-side="bottom"]:hover {
   transform: translate(-50%, 50%) scale(1.25);
 }
+.flow-edge-interaction {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 20px;
+  cursor: pointer;
+  pointer-events: stroke;
+}
 .flow-edge {
   fill: none;
   stroke: currentColor;
@@ -4914,7 +4923,7 @@ ${scripts}
   pointer-events: stroke;
   transition: opacity 0.15s ease, stroke-width 0.15s ease, stroke 0.15s ease;
 }
-.flow-edge:hover {
+.flow-edge:hover, .flow-edge-interaction:hover + .flow-edge {
   opacity: 1;
   stroke-width: 3.5px;
   stroke: var(--color-primary, #3b82f6);
@@ -5104,6 +5113,8 @@ ${scripts}
             return flowSnapAttribute.handle(element, value, runtime, parsedAttr);
           if (arg === "node-toolbar" || arg === "toolbar")
             return flowNodeToolbarAttribute.handle(element, value, runtime, parsedAttr);
+          if (arg === "edge-toolbar" || arg === "edge-dock")
+            return flowEdgeToolbarAttribute.handle(element, value, runtime, parsedAttr);
           if (arg === "reconnect" || arg === "edge-reconnect")
             return flowEdgeReconnectAttribute.handle(element, value, runtime, parsedAttr);
           if (arg)
@@ -5243,16 +5254,13 @@ ${scripts}
                   });
                 }
                 try {
-                  const edges = runtime.evaluate(element, "edges");
-                  if (Array.isArray(edges) && edges.some((ed) => ed.selected)) {
-                    edges.forEach((ed) => {
-                      ed.selected = false;
-                    });
-                  }
-                  const scopeObj = runtime.evaluate(element, "this") || {};
-                  if (scopeObj && "activeEdge" in scopeObj) {
-                    scopeObj.activeEdge = null;
-                  }
+                  runtime.evaluate(element, `
+              if (typeof activeEdge !== 'undefined') activeEdge = null;
+              if (typeof edges !== 'undefined' && Array.isArray(edges)) {
+                edges.forEach(ed => { ed.selected = false; });
+                edges = [...edges];
+              }
+            `);
                 } catch {
                 }
               }
@@ -5339,14 +5347,13 @@ ${scripts}
                 n.selected = false;
               });
               try {
-                const edges = runtime.evaluate(element, "edges");
-                if (Array.isArray(edges))
-                  edges.forEach((ed) => {
-                    ed.selected = false;
-                  });
-                const scopeObj = runtime.evaluate(element, "this") || {};
-                if (scopeObj && "activeEdge" in scopeObj)
-                  scopeObj.activeEdge = null;
+                runtime.evaluate(element, `
+            if (typeof activeEdge !== 'undefined') activeEdge = null;
+            if (typeof edges !== 'undefined' && Array.isArray(edges)) {
+              edges.forEach(ed => { ed.selected = false; });
+              edges = [...edges];
+            }
+          `);
               } catch {
               }
             }
@@ -5436,6 +5443,16 @@ ${scripts}
                   });
                   nodeState.selected = true;
                 }
+              }
+              try {
+                runtime.evaluate(flowEl || element, `
+            if (typeof activeEdge !== 'undefined') activeEdge = null;
+            if (typeof edges !== 'undefined' && Array.isArray(edges)) {
+              edges.forEach(ed => { ed.selected = false; });
+              edges = [...edges];
+            }
+          `);
+              } catch {
               }
               const selectedNodes = allNodes.filter((n) => n.selected);
               const movingNodes = selectedNodes.length > 0 && nodeState.selected ? selectedNodes : [nodeState];
@@ -5645,9 +5662,13 @@ ${scripts}
                 nodeMap.set(String(n.id), n);
             });
             const existingPaths = /* @__PURE__ */ new Map();
+            const existingHitPaths = /* @__PURE__ */ new Map();
             const existingLabels = /* @__PURE__ */ new Map();
-            element.querySelectorAll("path[data-edge-key]").forEach((p) => {
+            element.querySelectorAll("path.flow-edge[data-edge-key]").forEach((p) => {
               existingPaths.set(p.getAttribute("data-edge-key"), p);
+            });
+            element.querySelectorAll("path.flow-edge-interaction[data-edge-hit-key]").forEach((p) => {
+              existingHitPaths.set(p.getAttribute("data-edge-hit-key"), p);
             });
             element.querySelectorAll("g[data-edge-label-key]").forEach((g) => {
               existingLabels.set(g.getAttribute("data-edge-label-key"), g);
@@ -5660,11 +5681,23 @@ ${scripts}
                 return;
               const key = edge.id || `${srcId}->${tgtId}`;
               activeKeys.add(key);
+              let hitPathEl = existingHitPaths.get(key);
+              if (!hitPathEl) {
+                hitPathEl = document.createElementNS(SVG_NS, "path");
+                hitPathEl.setAttribute("class", "flow-edge-interaction");
+                hitPathEl.setAttribute("data-edge-hit-key", key);
+                hitPathEl.setAttribute("data-flow-nodrag", "");
+                hitPathEl.setAttribute("fill", "none");
+                hitPathEl.setAttribute("stroke", "transparent");
+                hitPathEl.setAttribute("stroke-width", "20");
+                element.appendChild(hitPathEl);
+              }
               let pathEl = existingPaths.get(key);
               if (!pathEl) {
                 pathEl = document.createElementNS(SVG_NS, "path");
                 pathEl.setAttribute("class", "flow-edge");
                 pathEl.setAttribute("data-edge-key", key);
+                pathEl.setAttribute("data-flow-nodrag", "");
                 pathEl.setAttribute("fill", "none");
                 pathEl.setAttribute("stroke", "currentColor");
                 pathEl.setAttribute("stroke-width", "2");
@@ -5705,7 +5738,14 @@ ${scripts}
               }
               const handleEdgeClick = (ev) => {
                 ev.stopPropagation();
+                ev.preventDefault();
+                if (Array.isArray(nodesList)) {
+                  nodesList.forEach((n) => {
+                    n.selected = false;
+                  });
+                }
                 try {
+                  let found = false;
                   let curr = element;
                   while (curr) {
                     const sym = Object.getOwnPropertySymbols(curr).find((s) => s.toString().includes("local_scopes"));
@@ -5717,26 +5757,76 @@ ${scripts}
                           });
                           scope.edges = [...scope.edges];
                           if ("activeEdge" in scope) {
-                            scope.activeEdge = scope.edges.find((e) => e.id === edge.id) || edge;
+                            const matched = scope.edges.find((e) => e.id === edge.id) || edge;
+                            scope.activeEdge = {
+                              ...matched,
+                              labelX: edge.labelX ?? matched.labelX,
+                              labelY: edge.labelY ?? matched.labelY,
+                              sourceX: edge.sourceX ?? matched.sourceX,
+                              sourceY: edge.sourceY ?? matched.sourceY,
+                              targetX: edge.targetX ?? matched.targetX,
+                              targetY: edge.targetY ?? matched.targetY,
+                              sourceSide: edge.sourceSide ?? matched.sourceSide,
+                              targetSide: edge.targetSide ?? matched.targetSide,
+                              selected: true
+                            };
                           }
-                          return;
+                          if (Array.isArray(scope.nodes)) {
+                            scope.nodes.forEach((n) => {
+                              n.selected = false;
+                            });
+                          }
+                          found = true;
+                          break;
                         }
                       }
                     }
+                    if (found)
+                      break;
                     curr = curr.parentElement;
                   }
                 } catch {
-                  edgeList.forEach((item) => {
-                    item.selected = false;
-                  });
-                  edge.selected = true;
+                }
+                const edgePayload = {
+                  ...edge,
+                  labelX: edge.labelX ?? 0,
+                  labelY: edge.labelY ?? 0,
+                  sourceX: edge.sourceX ?? 0,
+                  sourceY: edge.sourceY ?? 0,
+                  targetX: edge.targetX ?? 0,
+                  targetY: edge.targetY ?? 0,
+                  sourceSide: edge.sourceSide,
+                  targetSide: edge.targetSide,
+                  selected: true
+                };
+                try {
+                  const targetEl = element.closest("[data-signal]") || currentFlow || element;
+                  runtime.evaluate(targetEl, `
+              if (typeof activeEdge !== 'undefined') {
+                activeEdge = activeEdgePayload;
+              }
+              if (typeof edges !== 'undefined' && Array.isArray(edges)) {
+                edges.forEach(e => { e.selected = (e.id === activeEdgePayload.id); });
+                edges = [...edges];
+              }
+            `, { activeEdgePayload: edgePayload });
+                } catch {
                 }
               };
+              if (!hitPathEl.__flowEdgeClickBound) {
+                hitPathEl.__flowEdgeClickBound = true;
+                hitPathEl.addEventListener("click", handleEdgeClick);
+                hitPathEl.addEventListener("pointerdown", (e) => e.stopPropagation());
+              }
               if (!pathEl.__flowEdgeClickBound) {
                 pathEl.__flowEdgeClickBound = true;
                 pathEl.addEventListener("click", handleEdgeClick);
+                pathEl.addEventListener("pointerdown", (e) => e.stopPropagation());
               }
               const d = edgeRes?.d || (typeof edgeRes === "string" ? edgeRes : "");
+              if (d && hitPathEl.getAttribute("d") !== d) {
+                hitPathEl.setAttribute("d", d);
+              }
               if (d && pathEl.getAttribute("d") !== d) {
                 pathEl.setAttribute("d", d);
               }
@@ -5754,6 +5844,7 @@ ${scripts}
                   labelG = document.createElementNS(SVG_NS, "g");
                   labelG.setAttribute("class", "flow-edge-label-group");
                   labelG.setAttribute("data-edge-label-key", key);
+                  labelG.setAttribute("data-flow-nodrag", "");
                   labelG.innerHTML = `
               <rect class="flow-edge-label-bg" x="-32" y="-10" width="64" height="20" />
               <text class="flow-edge-label-text">${edge.label}</text>
@@ -5772,12 +5863,17 @@ ${scripts}
                 if (!labelG.__flowLabelClickBound) {
                   labelG.__flowLabelClickBound = true;
                   labelG.addEventListener("click", handleEdgeClick);
+                  labelG.addEventListener("pointerdown", (e) => e.stopPropagation());
                 }
                 const transformStr = `translate(${edgeRes.labelX}, ${edgeRes.labelY})`;
                 if (labelG.getAttribute("transform") !== transformStr) {
                   labelG.setAttribute("transform", transformStr);
                 }
               }
+            });
+            existingHitPaths.forEach((p, k) => {
+              if (!activeKeys.has(k))
+                p.remove();
             });
             existingPaths.forEach((p, k) => {
               if (!activeKeys.has(k))
@@ -6080,6 +6176,31 @@ ${scripts}
           element.setAttribute("data-flow-nodrag", "");
         }
       };
+      flowEdgeToolbarAttribute = {
+        name: "flowEdgeToolbar",
+        attribute: "flow-edge-toolbar",
+        handle: (element, _value, runtime) => {
+          ensureFlowStyles(element.getRootNode());
+          element.setAttribute("data-flow-nodrag", "");
+          const stop2 = runtime.effect(() => {
+            let active = null;
+            try {
+              active = runtime.evaluate(element, "activeEdge");
+            } catch {
+            }
+            if (active && (active.labelX !== void 0 || active.labelY !== void 0)) {
+              const lx = Number(active.labelX) || 0;
+              const ly = Number(active.labelY) || 0;
+              element.style.left = `${lx}px`;
+              element.style.top = `${ly}px`;
+              element.style.transform = "translate(-50%, -140%)";
+            }
+          });
+          return () => {
+            stop2();
+          };
+        }
+      };
       flowEdgeReconnectAttribute = {
         name: "flowEdgeReconnect",
         attribute: "flow-edge-reconnect",
@@ -6158,7 +6279,21 @@ ${scripts}
               }
             }
           });
+          const stopPos = runtime.effect(() => {
+            let active = null;
+            try {
+              active = runtime.evaluate(element, "activeEdge");
+            } catch {
+            }
+            if (active) {
+              const x = Number(terminal === "target" ? active.targetX : active.sourceX) || 0;
+              const y = Number(terminal === "target" ? active.targetY : active.sourceY) || 0;
+              element.style.left = `${x}px`;
+              element.style.top = `${y}px`;
+            }
+          });
           return () => {
+            stopPos();
             stopDrag();
           };
         }
@@ -11550,17 +11685,7 @@ ${match}</ul>
               if (nodeA && nodeB) {
                 const getAbsoluteNodePos = (n) => {
                   const p = n.position || n;
-                  let px = Number(p.x) || 0;
-                  let py = Number(p.y) || 0;
-                  if (n.parentId && options.nodeMap) {
-                    const parent = options.nodeMap instanceof Map ? options.nodeMap.get(String(n.parentId)) : options.nodeMap[String(n.parentId)];
-                    if (parent) {
-                      const pPos = getAbsoluteNodePos(parent);
-                      px += pPos.x;
-                      py += pPos.y;
-                    }
-                  }
-                  return { x: px, y: py };
+                  return { x: Number(p.x) || 0, y: Number(p.y) || 0 };
                 };
                 const posA = getAbsoluteNodePos(nodeA);
                 const posB = getAbsoluteNodePos(nodeB);

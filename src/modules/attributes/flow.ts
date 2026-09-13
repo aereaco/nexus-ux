@@ -13,7 +13,7 @@ interface Viewport { x: number; y: number; zoom: number }
 type FlowElement = HTMLElement & { __flowViewport?: Viewport };
 
 /** Elements that must not initiate a canvas pan when pressed. */
-const NO_PAN = '[data-flow-node],[data-flow-handle],[data-flow-nodrag],[data-flow-resizer],[data-flow-minimap],button,a,input,textarea,select,label';
+const NO_PAN = '[data-flow-node],[data-flow-handle],[data-flow-nodrag],[data-flow-resizer],[data-flow-minimap],.flow-edge,.flow-edge-interaction,.flow-edge-label-group,button,a,input,textarea,select,label';
 
 /** Read the shared, live viewport state a [data-flow] element publishes. */
 const sharedViewport = (el: Element | null): Viewport => {
@@ -46,6 +46,7 @@ const FLOW_CSS = `
   height: 100%;
   overflow: visible;
   pointer-events: none;
+  z-index: 10;
 }
 [data-flow-node] {
   position: absolute;
@@ -107,6 +108,13 @@ const FLOW_CSS = `
 [data-flow-handle-side="bottom"]:hover, [data-flow-side="bottom"]:hover {
   transform: translate(-50%, 50%) scale(1.25);
 }
+.flow-edge-interaction {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 20px;
+  cursor: pointer;
+  pointer-events: stroke;
+}
 .flow-edge {
   fill: none;
   stroke: currentColor;
@@ -116,7 +124,7 @@ const FLOW_CSS = `
   pointer-events: stroke;
   transition: opacity 0.15s ease, stroke-width 0.15s ease, stroke 0.15s ease;
 }
-.flow-edge:hover {
+.flow-edge:hover, .flow-edge-interaction:hover + .flow-edge {
   opacity: 1;
   stroke-width: 3.5px;
   stroke: var(--color-primary, #3b82f6);
@@ -309,6 +317,7 @@ export const flowAttribute: AttributeModule = {
     if (arg === 'grid') return flowGridAttribute.handle(element, value, runtime, parsedAttr);
     if (arg === 'snap') return flowSnapAttribute.handle(element, value, runtime, parsedAttr);
     if (arg === 'node-toolbar' || arg === 'toolbar') return flowNodeToolbarAttribute.handle(element, value, runtime, parsedAttr);
+    if (arg === 'edge-toolbar' || arg === 'edge-dock') return flowEdgeToolbarAttribute.handle(element, value, runtime, parsedAttr);
     if (arg === 'reconnect' || arg === 'edge-reconnect') return flowEdgeReconnectAttribute.handle(element, value, runtime, parsedAttr);
 
     // Guard: Unrecognized sub-directives or bookkeeping attributes must NEVER instantiate a canvas!
@@ -455,14 +464,13 @@ export const flowAttribute: AttributeModule = {
             nodes.forEach(n => { n.selected = false; });
           }
           try {
-            const edges = runtime.evaluate(element, 'edges') as any[];
-            if (Array.isArray(edges) && edges.some(ed => ed.selected)) {
-              edges.forEach(ed => { ed.selected = false; });
-            }
-            const scopeObj = runtime.evaluate(element, 'this') || {};
-            if (scopeObj && 'activeEdge' in scopeObj) {
-              scopeObj.activeEdge = null;
-            }
+            runtime.evaluate(element, `
+              if (typeof activeEdge !== 'undefined') activeEdge = null;
+              if (typeof edges !== 'undefined' && Array.isArray(edges)) {
+                edges.forEach(ed => { ed.selected = false; });
+                edges = [...edges];
+              }
+            `);
           } catch {}
         }
       }
@@ -540,10 +548,13 @@ export const flowAttribute: AttributeModule = {
       } else if (e.key === 'Escape') {
         nodes.forEach(n => { n.selected = false; });
         try {
-          const edges = runtime.evaluate(element, 'edges') as any[];
-          if (Array.isArray(edges)) edges.forEach(ed => { ed.selected = false; });
-          const scopeObj = runtime.evaluate(element, 'this') || {};
-          if (scopeObj && 'activeEdge' in scopeObj) scopeObj.activeEdge = null;
+          runtime.evaluate(element, `
+            if (typeof activeEdge !== 'undefined') activeEdge = null;
+            if (typeof edges !== 'undefined' && Array.isArray(edges)) {
+              edges.forEach(ed => { ed.selected = false; });
+              edges = [...edges];
+            }
+          `);
         } catch {}
       }
     };
@@ -634,6 +645,17 @@ export const flowNodeAttribute: AttributeModule = {
             nodeState.selected = true;
           }
         }
+
+        // Deselect edges when focusing a node
+        try {
+          runtime.evaluate(flowEl || element, `
+            if (typeof activeEdge !== 'undefined') activeEdge = null;
+            if (typeof edges !== 'undefined' && Array.isArray(edges)) {
+              edges.forEach(ed => { ed.selected = false; });
+              edges = [...edges];
+            }
+          `);
+        } catch {}
 
         // Build drag group: all selected nodes + any nested children (sub-flows)
         const selectedNodes = allNodes.filter(n => n.selected);
@@ -868,9 +890,13 @@ export const flowEdgesAttribute: AttributeModule = {
       });
 
       const existingPaths = new Map<string, SVGPathElement>();
+      const existingHitPaths = new Map<string, SVGPathElement>();
       const existingLabels = new Map<string, SVGGElement>();
-      element.querySelectorAll('path[data-edge-key]').forEach(p => {
+      element.querySelectorAll('path.flow-edge[data-edge-key]').forEach(p => {
         existingPaths.set(p.getAttribute('data-edge-key')!, p as SVGPathElement);
+      });
+      element.querySelectorAll('path.flow-edge-interaction[data-edge-hit-key]').forEach(p => {
+        existingHitPaths.set(p.getAttribute('data-edge-hit-key')!, p as SVGPathElement);
       });
       element.querySelectorAll('g[data-edge-label-key]').forEach(g => {
         existingLabels.set(g.getAttribute('data-edge-label-key')!, g as SVGGElement);
@@ -886,11 +912,24 @@ export const flowEdgesAttribute: AttributeModule = {
         const key = edge.id || `${srcId}->${tgtId}`;
         activeKeys.add(key);
 
+        let hitPathEl = existingHitPaths.get(key);
+        if (!hitPathEl) {
+          hitPathEl = document.createElementNS(SVG_NS, 'path');
+          hitPathEl.setAttribute('class', 'flow-edge-interaction');
+          hitPathEl.setAttribute('data-edge-hit-key', key);
+          hitPathEl.setAttribute('data-flow-nodrag', '');
+          hitPathEl.setAttribute('fill', 'none');
+          hitPathEl.setAttribute('stroke', 'transparent');
+          hitPathEl.setAttribute('stroke-width', '20');
+          element.appendChild(hitPathEl);
+        }
+
         let pathEl = existingPaths.get(key);
         if (!pathEl) {
           pathEl = document.createElementNS(SVG_NS, 'path');
           pathEl.setAttribute('class', 'flow-edge');
           pathEl.setAttribute('data-edge-key', key);
+          pathEl.setAttribute('data-flow-nodrag', '');
           pathEl.setAttribute('fill', 'none');
           pathEl.setAttribute('stroke', 'currentColor');
           pathEl.setAttribute('stroke-width', '2');
@@ -936,7 +975,16 @@ export const flowEdgesAttribute: AttributeModule = {
 
         const handleEdgeClick = (ev: MouseEvent) => {
           ev.stopPropagation();
+          ev.preventDefault();
+
+          // 1. Deselect any active nodes
+          if (Array.isArray(nodesList)) {
+            nodesList.forEach((n: any) => { n.selected = false; });
+          }
+
+          // 2. Select this edge across data stack & reactive scopes
           try {
+            let found = false;
             let curr: any = element;
             while (curr) {
               const sym = Object.getOwnPropertySymbols(curr).find(s => s.toString().includes('local_scopes'));
@@ -946,26 +994,76 @@ export const flowEdgesAttribute: AttributeModule = {
                     scope.edges.forEach((item: any) => { item.selected = (item.id === edge.id); });
                     scope.edges = [...scope.edges];
                     if ('activeEdge' in scope) {
-                      scope.activeEdge = scope.edges.find((e: any) => e.id === edge.id) || edge;
+                      const matched = scope.edges.find((e: any) => e.id === edge.id) || edge;
+                      scope.activeEdge = {
+                        ...matched,
+                        labelX: edge.labelX ?? matched.labelX,
+                        labelY: edge.labelY ?? matched.labelY,
+                        sourceX: edge.sourceX ?? matched.sourceX,
+                        sourceY: edge.sourceY ?? matched.sourceY,
+                        targetX: edge.targetX ?? matched.targetX,
+                        targetY: edge.targetY ?? matched.targetY,
+                        sourceSide: edge.sourceSide ?? matched.sourceSide,
+                        targetSide: edge.targetSide ?? matched.targetSide,
+                        selected: true
+                      };
                     }
-                    return;
+                    if (Array.isArray(scope.nodes)) {
+                      scope.nodes.forEach((n: any) => { n.selected = false; });
+                    }
+                    found = true;
+                    break;
                   }
                 }
               }
+              if (found) break;
               curr = curr.parentElement;
             }
-          } catch {
-            edgeList.forEach(item => { item.selected = false; });
-            edge.selected = true;
-          }
+          } catch {}
+
+          const edgePayload = {
+            ...edge,
+            labelX: edge.labelX ?? 0,
+            labelY: edge.labelY ?? 0,
+            sourceX: edge.sourceX ?? 0,
+            sourceY: edge.sourceY ?? 0,
+            targetX: edge.targetX ?? 0,
+            targetY: edge.targetY ?? 0,
+            sourceSide: edge.sourceSide,
+            targetSide: edge.targetSide,
+            selected: true
+          };
+
+          try {
+            const targetEl = element.closest('[data-signal]') || currentFlow || element;
+            runtime.evaluate(targetEl, `
+              if (typeof activeEdge !== 'undefined') {
+                activeEdge = activeEdgePayload;
+              }
+              if (typeof edges !== 'undefined' && Array.isArray(edges)) {
+                edges.forEach(e => { e.selected = (e.id === activeEdgePayload.id); });
+                edges = [...edges];
+              }
+            `, { activeEdgePayload: edgePayload });
+          } catch {}
         };
+
+        if (!(hitPathEl as any).__flowEdgeClickBound) {
+          (hitPathEl as any).__flowEdgeClickBound = true;
+          hitPathEl.addEventListener('click', handleEdgeClick);
+          hitPathEl.addEventListener('pointerdown', (e: PointerEvent) => e.stopPropagation());
+        }
 
         if (!(pathEl as any).__flowEdgeClickBound) {
           (pathEl as any).__flowEdgeClickBound = true;
           pathEl.addEventListener('click', handleEdgeClick);
+          pathEl.addEventListener('pointerdown', (e: PointerEvent) => e.stopPropagation());
         }
 
         const d = edgeRes?.d || (typeof edgeRes === 'string' ? edgeRes : '');
+        if (d && hitPathEl.getAttribute('d') !== d) {
+          hitPathEl.setAttribute('d', d);
+        }
         if (d && pathEl.getAttribute('d') !== d) {
           pathEl.setAttribute('d', d);
         }
@@ -985,6 +1083,7 @@ export const flowEdgesAttribute: AttributeModule = {
             labelG = document.createElementNS(SVG_NS, 'g');
             labelG.setAttribute('class', 'flow-edge-label-group');
             labelG.setAttribute('data-edge-label-key', key);
+            labelG.setAttribute('data-flow-nodrag', '');
             labelG.innerHTML = `
               <rect class="flow-edge-label-bg" x="-32" y="-10" width="64" height="20" />
               <text class="flow-edge-label-text">${edge.label}</text>
@@ -1004,6 +1103,7 @@ export const flowEdgesAttribute: AttributeModule = {
           if (!(labelG as any).__flowLabelClickBound) {
             (labelG as any).__flowLabelClickBound = true;
             labelG.addEventListener('click', handleEdgeClick);
+            labelG.addEventListener('pointerdown', (e: PointerEvent) => e.stopPropagation());
           }
 
           const transformStr = `translate(${edgeRes.labelX}, ${edgeRes.labelY})`;
@@ -1013,6 +1113,7 @@ export const flowEdgesAttribute: AttributeModule = {
         }
       });
 
+      existingHitPaths.forEach((p, k) => { if (!activeKeys.has(k)) p.remove(); });
       existingPaths.forEach((p, k) => { if (!activeKeys.has(k)) p.remove(); });
       existingLabels.forEach((g, k) => { if (!activeKeys.has(k)) g.remove(); });
     });
@@ -1331,6 +1432,37 @@ export const flowNodeToolbarAttribute: AttributeModule = {
 };
 
 // ---------------------------------------------------------------------------
+// data-flow-edge-toolbar: Floating Edge Quick Actions Toolbar Directive
+// ---------------------------------------------------------------------------
+export const flowEdgeToolbarAttribute: AttributeModule = {
+  name: 'flowEdgeToolbar',
+  attribute: 'flow-edge-toolbar',
+  handle: (element: HTMLElement, _value: string, runtime: RuntimeContext) => {
+    ensureFlowStyles(element.getRootNode() as Document | ShadowRoot);
+    element.setAttribute('data-flow-nodrag', '');
+
+    const stop = runtime.effect(() => {
+      let active: any = null;
+      try {
+        active = runtime.evaluate(element, 'activeEdge');
+      } catch {}
+
+      if (active && (active.labelX !== undefined || active.labelY !== undefined)) {
+        const lx = Number(active.labelX) || 0;
+        const ly = Number(active.labelY) || 0;
+        element.style.left = `${lx}px`;
+        element.style.top = `${ly}px`;
+        element.style.transform = 'translate(-50%, -140%)';
+      }
+    });
+
+    return () => {
+      stop();
+    };
+  }
+};
+
+// ---------------------------------------------------------------------------
 // data-flow-edge-reconnect: Terminal Edge Reconnecting Directive
 // ---------------------------------------------------------------------------
 export const flowEdgeReconnectAttribute: AttributeModule = {
@@ -1416,7 +1548,22 @@ export const flowEdgeReconnectAttribute: AttributeModule = {
       }
     });
 
+    const stopPos = runtime.effect(() => {
+      let active: any = null;
+      try {
+        active = runtime.evaluate(element, 'activeEdge');
+      } catch {}
+
+      if (active) {
+        const x = Number(terminal === 'target' ? active.targetX : active.sourceX) || 0;
+        const y = Number(terminal === 'target' ? active.targetY : active.sourceY) || 0;
+        element.style.left = `${x}px`;
+        element.style.top = `${y}px`;
+      }
+    });
+
     return () => {
+      stopPos();
       stopDrag();
     };
   }

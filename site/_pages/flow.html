@@ -131,9 +131,9 @@
 
           <!-- Subflow Group Card -->
           <div data-show="node.isGroup"
-            class="card bg-base-100/40 border-2 border-dashed border-primary/30 shadow-sm w-full h-full rounded-2xl p-4 select-none relative group hover:border-primary transition-colors"
+            class="card bg-base-100/40 border-2 border-dashed border-primary/30 shadow-sm w-full h-full rounded-2xl p-4 select-none relative group hover:border-primary transition-colors pointer-events-none"
             style="touch-action: none;">
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between pointer-events-auto">
               <span class="text-xs font-bold text-primary flex items-center gap-1.5 pointer-events-none">
                 <iconify-icon icon="material-symbols-light:folder-open" class="text-base"></iconify-icon>
                 <span data-bind="node.label"></span>
@@ -258,15 +258,10 @@
       </template>
 
       <!-- Floating Edge Quick Actions Toolbar & Reconnect Handles -->
-      <div data-show="edges.some(e => e.selected)">
+      <div data-show="Boolean(activeEdge?.id)">
         <!-- Edge Quick Actions Dock -->
-        <div data-flow-nodrag
-          class="absolute z-50 flex items-center gap-1.5 bg-base-100/95 backdrop-blur-md border border-accent/50 shadow-2xl rounded-2xl px-2.5 py-1 text-xs select-none"
-          data-style="{
-            left: (activeEdge?.labelX || 0) + 'px',
-            top: (activeEdge?.labelY || 0) + 'px',
-            transform: 'translate(-50%, -140%)'
-          }">
+        <div data-flow-edge-toolbar
+          class="absolute z-50 flex items-center gap-1.5 bg-base-100/95 backdrop-blur-md border border-accent/50 shadow-2xl rounded-2xl px-2.5 py-1 text-xs select-none">
           <span class="font-bold font-mono text-[11px] text-accent truncate max-w-[120px]" data-bind="activeEdge?.label || activeEdge?.id"></span>
           <div class="divider divider-horizontal my-0 mx-0.5"></div>
           <!-- Toggle Animation -->
@@ -312,10 +307,8 @@
 
         <!-- Draggable Terminal Reconnect Handles -->
         <div data-flow-edge-reconnect="source"
-          data-bind-style="{ left: (activeEdge?.sourceX || 0) + 'px', top: (activeEdge?.sourceY || 0) + 'px' }"
           title="Drag to reconnect Source terminal"></div>
         <div data-flow-edge-reconnect="target"
-          data-bind-style="{ left: (activeEdge?.targetX || 0) + 'px', top: (activeEdge?.targetY || 0) + 'px' }"
           title="Drag to reconnect Target terminal"></div>
       </div>
     </div>

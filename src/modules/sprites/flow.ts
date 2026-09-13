@@ -410,19 +410,7 @@ export const flowModule: SpriteModule = {
         if (nodeA && nodeB) {
           const getAbsoluteNodePos = (n: any): { x: number; y: number } => {
             const p = n.position || n;
-            let px = Number(p.x) || 0;
-            let py = Number(p.y) || 0;
-            if (n.parentId && options.nodeMap) {
-              const parent = options.nodeMap instanceof Map
-                ? options.nodeMap.get(String(n.parentId))
-                : (options.nodeMap as Record<string, any>)[String(n.parentId)];
-              if (parent) {
-                const pPos = getAbsoluteNodePos(parent);
-                px += pPos.x;
-                py += pPos.y;
-              }
-            }
-            return { x: px, y: py };
+            return { x: Number(p.x) || 0, y: Number(p.y) || 0 };
           };
 
           const posA = getAbsoluteNodePos(nodeA);
