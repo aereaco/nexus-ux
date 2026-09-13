@@ -133,7 +133,7 @@ Nexus-UX utilizes a deterministic, token-based grammar for high-baud efficiency:
 | Directive | Category | Description |
 | :--- | :--- | :--- |
 | **`data-signal`** | **State** | Initializes reactive signals with continuous dependency re-evaluation and typed heap allocation. |
-| **`data-bind`** | **Binding** | High-performance bidirectional binding to inputs, text content, attributes, and native Web APIs. |
+| **`data-bind`** | **Binding** | High-performance bidirectional binding to inputs, text content, attributes, and native Web APIs without regex heuristics. |
 | **`data-computed`** | **Derivative** | Read-only derived signal caching expression results. |
 | **`data-effect`** | **Side Effect** | Element-bound reactive side effects with automated disposal cleanups. |
 | **`data-if`** | **Control Flow** | Conditional rendering via physical DOM morphing and anchor comments. |
