@@ -486,6 +486,42 @@ async function publishToCloudflare(opts: { projectName?: string; branch?: string
     Deno.exit(res.code);
   }
   console.log("✅ Differential deployment complete on Cloudflare Pages!");
+
+  // Purge Cloudflare CDN edge cache
+  let zoneId = Deno.env.get("CLOUDFLARE_ZONE_ID");
+  if (!zoneId) {
+    try {
+      const credPath = path.resolve(Deno.cwd(), "../.security/cloudflare.md");
+      const content = await Deno.readTextFile(credPath);
+      const zoneMatch = content.match(/## Zone ID ##\s*\n\s*([a-f0-9]+)/i);
+      if (zoneMatch) zoneId = zoneMatch[1].trim();
+    } catch {
+      // ignore
+    }
+  }
+  if (!zoneId) {
+    zoneId = "a25ca74b938fe2fb8841a457171ae68c"; // Verified aerea.co zone ID
+  }
+
+  console.log("🧹 Purging Cloudflare CDN edge cache...");
+  try {
+    const purgeRes = await fetch(`https://api.cloudflare.com/client/v4/zones/${zoneId}/purge_cache`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ purge_everything: true }),
+    });
+    const purgeData = await purgeRes.json() as { success?: boolean; errors?: unknown[] };
+    if (purgeData.success) {
+      console.log("✅ Cloudflare CDN edge cache purged successfully!");
+    } else {
+      console.warn("⚠️  Cloudflare CDN purge warning:", purgeData.errors || purgeData);
+    }
+  } catch (err) {
+    console.warn("⚠️  Failed to trigger Cloudflare CDN purge:", err);
+  }
 }
 
 // CLI
