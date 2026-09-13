@@ -1239,6 +1239,16 @@ for high-scale applications.
 | **Frame Consistency**       | 120fps / 144fps | Decoupled render-state from visual commit.            |
 | **Memory Ceiling**          | < 5MB Base      | Zero-allocation pooling for standard reactive cycles. |
 
+### 5.10. Native Web API Reflect Proxy Engine & ZCZS Storage Compliance
+
+Nexus-UX provides direct, fine-grained, push-based reactivity for native browser APIs (`window`, `localStorage`, `sessionStorage`, `navigator`, `document`, `screen`, `fetch`, `indexedDB`) under the **Zero-Copy Zero-Serialization (ZCZS)** mandate.
+
+- **Authoritative Reflect Factory (`src/engine/reflect.ts`)**: `createReflectProxy(runtime, el)` wraps native browser APIs in `Proxy` + `Reflect` traps without string-based regex scanning or intermediate serialization. Proxies are cached via `WeakMap` for zero-allocation reuse across evaluation frames.
+- **Dual-Compatibility Storage**: Wraps `localStorage` and `sessionStorage` with reactive `track(storage, key)` and `trigger(storage, key)` hooks. Transparently supports both direct property access (`localStorage.collapsed = 'false'`) and standard Web API methods (`getItem`, `setItem`, `removeItem`, `clear`, `key`, `length`), with automatic cross-tab synchronization via native `storage` events.
+- **Callable `fetch` Proxy**: Provides a transparent proxy for `fetch(url, options)` returning native `Promise<Response>` (fully supporting `.then()`, `.catch()`, etc.), while ensuring `fetch` is never shadowed by internal engine utility objects.
+- **Reactive `indexedDB`**: Exposes structured object store operations (`createStoreOperations`, `getIndexedDBProxy`) for zero-overhead structured object persistence without transaction boilerplate.
+- **Zero-Serialization Storage Directives**: Eliminates `JSON.stringify` and `JSON.parse` across boundaries. State like `favorites`, `pageTabs`, and `todos` live as direct reactive arrays/objects tracked by the engine.
+
 ---
 
 ## Chapter 6: Security & Persistence
