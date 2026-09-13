@@ -553,17 +553,6 @@
 
           <div class="divider"></div>
 
-          <!-- Text Flow Direction (LTR / RTL) -->
-          <div class="flex flex-nowrap items-center">
-            <span class="label-text grow">Text Flow Direction</span>
-            <label class="grid cursor-pointer place-items-center">
-              <input type="checkbox" class="toggle toggle-primary" data-bind-checked="rtl"
-                data-on-change="rtl = $evt.target.checked; localStorage.setItem('rtl', $evt.target.checked)" />
-            </label>
-          </div>
-
-          <div class="divider"></div>
-
           <!-- Theme Zoom -->
           <div>
             <div class="label-text pb-3">Theme Zoom</div>
@@ -595,6 +584,17 @@
               </div>
               <span class="text-xs">2.0</span>
             </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Text Flow Direction (LTR / RTL) -->
+          <div class="flex flex-nowrap items-center">
+            <span class="label-text grow">Text Flow Direction</span>
+            <label class="grid cursor-pointer place-items-center">
+              <input type="checkbox" class="toggle toggle-primary" data-bind-checked="rtl"
+                data-on-change="rtl = $evt.target.checked; localStorage.setItem('rtl', $evt.target.checked)" />
+            </label>
           </div>
 
           <div class="divider my-1"></div>
