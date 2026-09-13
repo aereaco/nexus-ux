@@ -1916,208 +1916,89 @@ ${suggestion}`);
     }
   });
 
-  // src/engine/scope.ts
-  function getDataStack(element) {
-    const stack = [];
-    let curr = element;
-    while (curr) {
-      const enhanced = curr;
-      if (enhanced[DATA_STACK_KEY] && enhanced[DATA_STACK_KEY].length > 0) {
-        stack.push(...enhanced[DATA_STACK_KEY]);
-        break;
-      }
-      if (enhanced[LOCAL_SCOPES_KEY] && enhanced[LOCAL_SCOPES_KEY].length > 0) {
-        stack.push(...enhanced[LOCAL_SCOPES_KEY]);
-      }
-      if (typeof ShadowRoot !== "undefined" && curr instanceof ShadowRoot) {
-        curr = curr.host;
-      } else {
-        const parent = curr.parentElement || curr.parentNode || curr.__scopeParent;
-        if (typeof ShadowRoot !== "undefined" && parent instanceof ShadowRoot) {
-          const shadow = parent;
-          if (shadow[LOCAL_SCOPES_KEY] && shadow[LOCAL_SCOPES_KEY].length > 0) {
-            stack.push(...shadow[LOCAL_SCOPES_KEY]);
-          } else if (shadow[DATA_STACK_KEY] && shadow[DATA_STACK_KEY].length > 0) {
-            stack.push(...shadow[DATA_STACK_KEY]);
+  // src/engine/reflect.ts
+  function createStorageProxy(storage) {
+    const ITERATE_KEY2 = Symbol.for("iterate");
+    return new Proxy(storage, {
+      has(target, prop) {
+        if (typeof prop === "string") {
+          if (prop in target || typeof target[prop] === "function")
+            return true;
+          return target.getItem(prop) !== null;
+        }
+        return Reflect.has(target, prop);
+      },
+      get(target, prop) {
+        if (prop === Symbol.unscopables)
+          return void 0;
+        if (typeof prop === "string") {
+          if (prop === "getItem") {
+            return (key) => {
+              track(storage, key);
+              return target.getItem(key);
+            };
           }
-          curr = parent.host;
-        } else if (parent instanceof DocumentFragment) {
-          curr = parent.host || curr.__scopeParent || null;
-        } else {
-          curr = parent;
-        }
-      }
-    }
-    return stack;
-  }
-  function addScopeToNode(element, data, referenceNode) {
-    const node = element;
-    if (!node[LOCAL_SCOPES_KEY]) {
-      node[LOCAL_SCOPES_KEY] = [];
-    }
-    node[LOCAL_SCOPES_KEY].unshift(data);
-    if (referenceNode && !node.parentElement) {
-      node.__scopeParent = referenceNode;
-    }
-    return () => {
-      if (node[LOCAL_SCOPES_KEY]) {
-        node[LOCAL_SCOPES_KEY] = node[LOCAL_SCOPES_KEY].filter((item) => item !== data);
-        if (node[LOCAL_SCOPES_KEY].length === 0) {
-          delete node[LOCAL_SCOPES_KEY];
-        }
-      }
-    };
-  }
-  function disposeScope(target) {
-    if (Array.isArray(target)) {
-      for (const fn of target) {
-        try {
-          fn();
-        } catch (err) {
-          console.error("Error disposing scope:", err);
-        }
-      }
-      target.length = 0;
-      return;
-    }
-    if (target) {
-      const node = target;
-      if (node[LOCAL_SCOPES_KEY]) {
-        delete node[LOCAL_SCOPES_KEY];
-      }
-      if (node[DATA_STACK_KEY]) {
-        delete node[DATA_STACK_KEY];
-      }
-    }
-  }
-  function registerScopeProvider(key, provider) {
-    scopeProviderRegistry.set(key, provider);
-  }
-  function hasScopeProvider(key) {
-    return scopeProviderRegistry.has(key);
-  }
-  function resolveScopeProvider(key, el, runtime) {
-    const provider = scopeProviderRegistry.get(key);
-    return provider ? provider(el, runtime) : void 0;
-  }
-  function parseGhostKeys(expression) {
-    const ghostKeys = [];
-    const typeHints = {};
-    const trimmed = expression.trim();
-    if (!trimmed.startsWith("{") && !trimmed.startsWith("({"))
-      return { ghostKeys, typeHints };
-    const start = trimmed.indexOf("{");
-    let i = start + 1;
-    const len = trimmed.length;
-    while (i < len) {
-      while (i < len && /\s/.test(trimmed[i]))
-        i++;
-      let key = "";
-      if (trimmed[i] === '"' || trimmed[i] === "'") {
-        const quote = trimmed[i++];
-        while (i < len && trimmed[i] !== quote)
-          key += trimmed[i++];
-        i++;
-      } else {
-        while (i < len && /[\w$]/.test(trimmed[i]))
-          key += trimmed[i++];
-      }
-      if (!key)
-        break;
-      while (i < len && /[\s:]/.test(trimmed[i]))
-        i++;
-      let value = "";
-      let depth = 0;
-      let inString = null;
-      while (i < len) {
-        const ch = trimmed[i];
-        if (inString) {
-          if (ch === "\\") {
-            value += ch + (trimmed[i + 1] || "");
-            i += 2;
-            continue;
+          if (prop === "setItem") {
+            return (key, value) => {
+              const strVal = String(value);
+              target.setItem(key, strVal);
+              trigger(storage, key);
+            };
           }
-          if (ch === inString)
-            inString = null;
-          value += ch;
-          i++;
-          continue;
+          if (prop === "removeItem") {
+            return (key) => {
+              target.removeItem(key);
+              trigger(storage, key);
+            };
+          }
+          if (prop === "clear") {
+            return () => {
+              target.clear();
+              trigger(storage, ITERATE_KEY2);
+            };
+          }
+          if (prop === "key") {
+            return (index) => target.key(index);
+          }
+          if (prop === "length") {
+            track(storage, "length");
+            return target.length;
+          }
+          track(storage, prop);
+          const item = target.getItem(prop);
+          if (item !== null)
+            return item;
+          if (prop in target)
+            return target[prop];
+          return void 0;
         }
-        if (ch === '"' || ch === "'" || ch === "`") {
-          inString = ch;
-          value += ch;
-          i++;
-          continue;
-        }
-        if (ch === "{" || ch === "[" || ch === "(") {
-          depth++;
-          value += ch;
-          i++;
-          continue;
-        }
-        if (ch === "}" || ch === "]" || ch === ")") {
-          if (depth === 0)
-            break;
-          depth--;
-          value += ch;
-          i++;
-          continue;
-        }
-        if (ch === "," && depth === 0) {
-          i++;
-          break;
-        }
-        value += ch;
-        i++;
-      }
-      const valToken = value.trim();
-      if (key) {
-        ghostKeys.push(key);
-        if (valToken.startsWith("true") || valToken.startsWith("false"))
-          typeHints[key] = "boolean";
-        else if (/^-?\d/.test(valToken))
-          typeHints[key] = "number";
-        else if (/^['"`]/.test(valToken))
-          typeHints[key] = "string";
-        else if (valToken.startsWith("[") || valToken.startsWith("{"))
-          typeHints[key] = "object";
-      }
-    }
-    return { ghostKeys, typeHints };
-  }
-  function createScopeProxy(stateRef, onSet, onTrigger) {
-    return new Proxy({}, {
-      has(_, key) {
-        const target = stateRef.value;
-        if (typeof key === "string")
-          track(target, key);
-        return Reflect.has(target, key);
+        return Reflect.get(target, prop);
       },
-      get(_, key) {
-        const target = stateRef.value;
-        if (typeof key === "string")
-          track(target, key);
-        return Reflect.get(target, key);
+      set(target, prop, value) {
+        if (typeof prop === "string") {
+          if (typeof Storage.prototype[prop] === "function") {
+            return false;
+          }
+          target.setItem(prop, String(value));
+          trigger(storage, prop);
+          return true;
+        }
+        return Reflect.set(target, prop, value);
       },
-      set(_, key, value) {
-        const target = stateRef.value;
-        const res = Reflect.set(target, key, value);
-        if (typeof key === "string")
-          trigger(target, key);
-        if (onSet)
-          onSet(key, value);
-        if (onTrigger)
-          onTrigger();
-        return res;
+      deleteProperty(target, prop) {
+        if (typeof prop === "string") {
+          target.removeItem(prop);
+          trigger(storage, prop);
+          return true;
+        }
+        return Reflect.deleteProperty(target, prop);
       },
-      ownKeys() {
-        const target = stateRef.value;
-        track(target, Symbol.for("iterate"));
+      ownKeys(target) {
+        track(storage, ITERATE_KEY2);
         return Reflect.ownKeys(target);
       },
-      getOwnPropertyDescriptor(_, key) {
-        const target = stateRef.value;
-        return Reflect.getOwnPropertyDescriptor(target, key);
+      getOwnPropertyDescriptor(target, prop) {
+        return Reflect.getOwnPropertyDescriptor(target, prop);
       }
     });
   }
@@ -2352,34 +2233,295 @@ ${suggestion}`);
     }
     return proxy;
   }
-  function buildNativeApiScope(_runtime) {
-    return new Proxy({}, {
+  function createReflectProxy(_runtime, el) {
+    if (el && elementReflectProxyCache.has(el)) {
+      return elementReflectProxyCache.get(el);
+    }
+    if (!el && defaultReflectProxy) {
+      return defaultReflectProxy;
+    }
+    const proxy = new Proxy({}, {
       has(_, key) {
-        return typeof key === "string" && (key === "indexedDB" || key in globalThis);
+        if (typeof key !== "string")
+          return false;
+        return key === "localStorage" || key === "sessionStorage" || key === "indexedDB" || key === "fetch" || key in globalThis;
       },
       get(_, key) {
         if (typeof key !== "string")
           return void 0;
-        if (key === "indexedDB" && typeof indexedDB !== "undefined") {
+        if (key === "localStorage") {
+          return reactiveLocalStorage || (typeof localStorage !== "undefined" ? localStorage : void 0);
+        }
+        if (key === "sessionStorage") {
+          return reactiveSessionStorage || (typeof sessionStorage !== "undefined" ? sessionStorage : void 0);
+        }
+        if (key === "indexedDB") {
           return getIndexedDBProxy();
+        }
+        if (key === "fetch") {
+          return typeof globalThis.fetch === "function" ? wrapGlobalFunction(globalThis.fetch, globalThis) : void 0;
         }
         if (key in globalThis) {
           const val = globalThis[key];
           return typeof val === "function" ? wrapGlobalFunction(val, globalThis) : val;
         }
         return void 0;
+      },
+      set(_, key, value) {
+        if (typeof key === "string" && key in globalThis) {
+          globalThis[key] = value;
+          return true;
+        }
+        return false;
+      }
+    });
+    if (el) {
+      elementReflectProxyCache.set(el, proxy);
+    } else {
+      defaultReflectProxy = proxy;
+    }
+    return proxy;
+  }
+  var reactiveLocalStorage, reactiveSessionStorage, DEFAULT_IDB_DATABASE, cachedIDBProxy, globalFnProxyCache, elementReflectProxyCache, defaultReflectProxy;
+  var init_reflect = __esm({
+    "src/engine/reflect.ts"() {
+      init_reactivity();
+      if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
+        window.addEventListener("storage", (e) => {
+          if (typeof localStorage !== "undefined") {
+            if (e.key) {
+              trigger(localStorage, e.key);
+            } else {
+              trigger(localStorage, Symbol.for("iterate"));
+            }
+          }
+        });
+      }
+      reactiveLocalStorage = typeof localStorage !== "undefined" ? createStorageProxy(localStorage) : void 0;
+      reactiveSessionStorage = typeof sessionStorage !== "undefined" ? createStorageProxy(sessionStorage) : void 0;
+      DEFAULT_IDB_DATABASE = "nexus-store";
+      cachedIDBProxy = null;
+      globalFnProxyCache = /* @__PURE__ */ new WeakMap();
+      elementReflectProxyCache = /* @__PURE__ */ new WeakMap();
+      defaultReflectProxy = null;
+    }
+  });
+
+  // src/engine/scope.ts
+  function getDataStack(element) {
+    const stack = [];
+    let curr = element;
+    while (curr) {
+      const enhanced = curr;
+      if (enhanced[DATA_STACK_KEY] && enhanced[DATA_STACK_KEY].length > 0) {
+        stack.push(...enhanced[DATA_STACK_KEY]);
+        break;
+      }
+      if (enhanced[LOCAL_SCOPES_KEY] && enhanced[LOCAL_SCOPES_KEY].length > 0) {
+        stack.push(...enhanced[LOCAL_SCOPES_KEY]);
+      }
+      if (typeof ShadowRoot !== "undefined" && curr instanceof ShadowRoot) {
+        curr = curr.host;
+      } else {
+        const parent = curr.parentElement || curr.parentNode || curr.__scopeParent;
+        if (typeof ShadowRoot !== "undefined" && parent instanceof ShadowRoot) {
+          const shadow = parent;
+          if (shadow[LOCAL_SCOPES_KEY] && shadow[LOCAL_SCOPES_KEY].length > 0) {
+            stack.push(...shadow[LOCAL_SCOPES_KEY]);
+          } else if (shadow[DATA_STACK_KEY] && shadow[DATA_STACK_KEY].length > 0) {
+            stack.push(...shadow[DATA_STACK_KEY]);
+          }
+          curr = parent.host;
+        } else if (parent instanceof DocumentFragment) {
+          curr = parent.host || curr.__scopeParent || null;
+        } else {
+          curr = parent;
+        }
+      }
+    }
+    return stack;
+  }
+  function addScopeToNode(element, data, referenceNode) {
+    const node = element;
+    if (!node[LOCAL_SCOPES_KEY]) {
+      node[LOCAL_SCOPES_KEY] = [];
+    }
+    node[LOCAL_SCOPES_KEY].unshift(data);
+    if (referenceNode && !node.parentElement) {
+      node.__scopeParent = referenceNode;
+    }
+    return () => {
+      if (node[LOCAL_SCOPES_KEY]) {
+        node[LOCAL_SCOPES_KEY] = node[LOCAL_SCOPES_KEY].filter((item) => item !== data);
+        if (node[LOCAL_SCOPES_KEY].length === 0) {
+          delete node[LOCAL_SCOPES_KEY];
+        }
+      }
+    };
+  }
+  function disposeScope(target) {
+    if (Array.isArray(target)) {
+      for (const fn of target) {
+        try {
+          fn();
+        } catch (err) {
+          console.error("Error disposing scope:", err);
+        }
+      }
+      target.length = 0;
+      return;
+    }
+    if (target) {
+      const node = target;
+      if (node[LOCAL_SCOPES_KEY]) {
+        delete node[LOCAL_SCOPES_KEY];
+      }
+      if (node[DATA_STACK_KEY]) {
+        delete node[DATA_STACK_KEY];
+      }
+    }
+  }
+  function registerScopeProvider(key, provider) {
+    scopeProviderRegistry.set(key, provider);
+  }
+  function hasScopeProvider(key) {
+    return scopeProviderRegistry.has(key);
+  }
+  function resolveScopeProvider(key, el, runtime) {
+    const provider = scopeProviderRegistry.get(key);
+    return provider ? provider(el, runtime) : void 0;
+  }
+  function parseGhostKeys(expression) {
+    const ghostKeys = [];
+    const typeHints = {};
+    const trimmed = expression.trim();
+    if (!trimmed.startsWith("{") && !trimmed.startsWith("({"))
+      return { ghostKeys, typeHints };
+    const start = trimmed.indexOf("{");
+    let i = start + 1;
+    const len = trimmed.length;
+    while (i < len) {
+      while (i < len && /\s/.test(trimmed[i]))
+        i++;
+      let key = "";
+      if (trimmed[i] === '"' || trimmed[i] === "'") {
+        const quote = trimmed[i++];
+        while (i < len && trimmed[i] !== quote)
+          key += trimmed[i++];
+        i++;
+      } else {
+        while (i < len && /[\w$]/.test(trimmed[i]))
+          key += trimmed[i++];
+      }
+      if (!key)
+        break;
+      while (i < len && /[\s:]/.test(trimmed[i]))
+        i++;
+      let value = "";
+      let depth = 0;
+      let inString = null;
+      while (i < len) {
+        const ch = trimmed[i];
+        if (inString) {
+          if (ch === "\\") {
+            value += ch + (trimmed[i + 1] || "");
+            i += 2;
+            continue;
+          }
+          if (ch === inString)
+            inString = null;
+          value += ch;
+          i++;
+          continue;
+        }
+        if (ch === '"' || ch === "'" || ch === "`") {
+          inString = ch;
+          value += ch;
+          i++;
+          continue;
+        }
+        if (ch === "{" || ch === "[" || ch === "(") {
+          depth++;
+          value += ch;
+          i++;
+          continue;
+        }
+        if (ch === "}" || ch === "]" || ch === ")") {
+          if (depth === 0)
+            break;
+          depth--;
+          value += ch;
+          i++;
+          continue;
+        }
+        if (ch === "," && depth === 0) {
+          i++;
+          break;
+        }
+        value += ch;
+        i++;
+      }
+      const valToken = value.trim();
+      if (key) {
+        ghostKeys.push(key);
+        if (valToken.startsWith("true") || valToken.startsWith("false"))
+          typeHints[key] = "boolean";
+        else if (/^-?\d/.test(valToken))
+          typeHints[key] = "number";
+        else if (/^['"`]/.test(valToken))
+          typeHints[key] = "string";
+        else if (valToken.startsWith("[") || valToken.startsWith("{"))
+          typeHints[key] = "object";
+      }
+    }
+    return { ghostKeys, typeHints };
+  }
+  function createScopeProxy(stateRef, onSet, onTrigger) {
+    return new Proxy({}, {
+      has(_, key) {
+        const target = stateRef.value;
+        if (typeof key === "string")
+          track(target, key);
+        return Reflect.has(target, key);
+      },
+      get(_, key) {
+        const target = stateRef.value;
+        if (typeof key === "string")
+          track(target, key);
+        return Reflect.get(target, key);
+      },
+      set(_, key, value) {
+        const target = stateRef.value;
+        const res = Reflect.set(target, key, value);
+        if (typeof key === "string")
+          trigger(target, key);
+        if (onSet)
+          onSet(key, value);
+        if (onTrigger)
+          onTrigger();
+        return res;
+      },
+      ownKeys() {
+        const target = stateRef.value;
+        track(target, Symbol.for("iterate"));
+        return Reflect.ownKeys(target);
+      },
+      getOwnPropertyDescriptor(_, key) {
+        const target = stateRef.value;
+        return Reflect.getOwnPropertyDescriptor(target, key);
       }
     });
   }
-  var scopeProviderRegistry, DEFAULT_IDB_DATABASE, cachedIDBProxy, globalFnProxyCache;
+  function buildNativeApiScope(runtime) {
+    return createReflectProxy(runtime);
+  }
+  var scopeProviderRegistry;
   var init_scope = __esm({
     "src/engine/scope.ts"() {
       init_consts();
       init_reactivity();
+      init_reflect();
       scopeProviderRegistry = /* @__PURE__ */ new Map();
-      DEFAULT_IDB_DATABASE = "nexus-store";
-      cachedIDBProxy = null;
-      globalFnProxyCache = /* @__PURE__ */ new WeakMap();
     }
   });
 
