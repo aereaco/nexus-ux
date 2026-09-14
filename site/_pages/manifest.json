@@ -1138,6 +1138,12 @@
     "parent": "/builder"
   },
   {
+    "id": "_top-panel",
+    "route": "/builder/_top-panel",
+    "path": "/_pages/builder/_top-panel.html",
+    "parent": "/builder"
+  },
+  {
     "id": "error",
     "route": "/error",
     "path": "/_pages/error.html",
@@ -1170,13 +1176,6 @@
     "id": "_right-panel",
     "route": "",
     "path": "/_pages/builder/_right-panel.html",
-    "internal": true,
-    "parent": "/builder"
-  },
-  {
-    "id": "_top-panel",
-    "route": "",
-    "path": "/_pages/builder/_top-panel.html",
     "internal": true,
     "parent": "/builder"
   },
