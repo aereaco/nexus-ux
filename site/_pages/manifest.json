@@ -1132,6 +1132,12 @@
     ]
   },
   {
+    "id": "_canvas",
+    "route": "/builder/_canvas",
+    "path": "/_pages/builder/_canvas.html",
+    "parent": "/builder"
+  },
+  {
     "id": "error",
     "route": "/error",
     "path": "/_pages/error.html",
@@ -1143,13 +1149,6 @@
     "id": "_bottom-panel",
     "route": "",
     "path": "/_pages/builder/_bottom-panel.html",
-    "internal": true,
-    "parent": "/builder"
-  },
-  {
-    "id": "_canvas",
-    "route": "",
-    "path": "/_pages/builder/_canvas.html",
     "internal": true,
     "parent": "/builder"
   },
