@@ -1,186 +1,97 @@
 <head>
-  <title>Modern Landing Page</title>
+  <title>VvvebJs Demo - Narrow Jumbotron</title>
   <meta name="internal" content="true">
 </head>
 
-<div class="min-h-screen bg-base-100 text-base-content font-sans antialiased selection:bg-primary selection:text-primary-content">
+<div class="bg-white text-[#212529] font-sans antialiased max-w-[1140px] mx-auto min-h-[90vh] p-6 sm:p-12 shadow-sm selection:bg-blue-500 selection:text-white" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+  
   <!-- 1. Header / Navbar -->
-  <header class="navbar bg-base-100/90 backdrop-blur sticky top-0 z-30 border-b border-base-content/5 px-4 lg:px-8">
-    <div class="flex-1 flex items-center gap-2">
-      <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-primary to-accent flex items-center justify-center text-primary-content font-bold shadow-md">
-        <iconify-icon icon="material-symbols-light:bolt" class="text-xl"></iconify-icon>
-      </div>
-      <span class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-base-content to-base-content/60 bg-clip-text text-transparent">Apex Studio</span>
-    </div>
-    <div class="hidden md:flex items-center gap-6 text-sm font-medium text-base-content/70">
-      <a href="#features" class="hover:text-primary transition-colors">Features</a>
-      <a href="#metrics" class="hover:text-primary transition-colors">Metrics</a>
-      <a href="#pricing" class="hover:text-primary transition-colors">Pricing</a>
-      <a href="#faq" class="hover:text-primary transition-colors">FAQ</a>
-    </div>
-    <div class="flex-none flex items-center gap-3">
-      <button class="btn btn-ghost btn-sm">Sign In</button>
-      <button class="btn btn-primary btn-sm shadow-md shadow-primary/20">Get Started</button>
-    </div>
+  <header class="header flex items-center justify-between pb-6 mb-8 border-b border-gray-200" id="top-header">
+    <h3 class="text-xl font-bold text-gray-700 m-0 cursor-pointer">Project name</h3>
+    <nav>
+      <ul class="flex items-center gap-1 list-none m-0 p-0 text-sm font-medium">
+        <li>
+          <a class="px-3.5 py-1.5 rounded-md bg-[#0d6efd] text-white cursor-pointer hover:bg-blue-700 transition-colors" href="#">Home</a>
+        </li>
+        <li>
+          <a class="px-3.5 py-1.5 rounded-md text-gray-600 hover:text-gray-900 cursor-pointer transition-colors" href="#">About</a>
+        </li>
+        <li>
+          <a class="px-3.5 py-1.5 rounded-md text-gray-600 hover:text-gray-900 cursor-pointer transition-colors" href="#">Contact</a>
+        </li>
+      </ul>
+    </nav>
   </header>
 
-  <!-- 2. Hero Section -->
-  <section class="hero py-16 lg:py-24 px-4 bg-gradient-to-b from-base-100 via-base-200/50 to-base-100 relative overflow-hidden">
-    <div class="hero-content text-center max-w-3xl flex-col gap-6">
-      <div class="badge badge-outline badge-primary gap-2 py-3 px-4 font-mono text-xs">
-        <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-        Nexus-UX Reactive Engine v2.0
-      </div>
-      <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1]">
-        Design Visually. <br />
-        <span class="bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
-          Deploy Reactively.
-        </span>
+  <!-- 2. Hero Jumbotron -->
+  <section class="jumbotron text-center py-12 px-4 rounded-xl bg-gray-50/50 mb-12 border border-gray-100" id="jumbotron">
+    <div class="max-w-2xl mx-auto flex flex-col items-center gap-4">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="56" height="56" fill="#0d6efd" class="my-2">
+        <path d="M 30.335938 12.546875 L 20.164063 11.472656 L 16 2.132813 L 11.835938 11.472656 L 1.664063 12.546875 L 9.261719 19.394531 L 7.140625 29.398438 L 16 24.289063 L 24.859375 29.398438 L 22.738281 19.394531 Z"></path>
+      </svg>
+
+      <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900 mb-2">
+        Jumbotron heading !!!
       </h1>
-      <p class="text-base sm:text-lg text-base-content/70 max-w-xl">
-        Build high-speed applications with zero-copy reactivity, native DaisyUI components, and encapsulated shadow canvas architecture.
+
+      <p class="text-lg text-gray-600 leading-relaxed max-w-xl">
+        Cras justo odio, dapibus ac facilisis in, egestas eget quam. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.
       </p>
-      <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
-        <button class="btn btn-primary btn-md gap-2 shadow-lg shadow-primary/25">
-          <iconify-icon icon="material-symbols-light:rocket-launch-outline" class="text-xl"></iconify-icon>
-          Start Building Now
-        </button>
-        <button class="btn btn-outline btn-md gap-2">
-          <iconify-icon icon="material-symbols-light:play-circle-outline" class="text-xl"></iconify-icon>
-          Live Demo
-        </button>
+
+      <div class="pt-4">
+        <a class="inline-block px-7 py-3 rounded-lg bg-[#0d6efd] text-white font-semibold text-base shadow-md hover:bg-blue-700 transition-all cursor-pointer" href="#" role="button">
+          Sign up today
+        </a>
       </div>
     </div>
   </section>
 
-  <!-- 3. Metrics / Stats Section -->
-  <section id="metrics" class="py-12 px-4 max-w-6xl mx-auto w-full">
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="stat bg-base-200/70 border border-base-content/5 rounded-box p-6 text-center">
-        <div class="stat-figure text-primary">
-          <iconify-icon icon="material-symbols-light:speed" class="text-3xl"></iconify-icon>
+  <!-- 3. Marketing 2-Column Features -->
+  <section id="marketing" class="py-8 border-t border-gray-200">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+      
+      <!-- Left Column -->
+      <div class="flex flex-col gap-6">
+        <div>
+          <h4 class="text-lg font-bold text-gray-900 mb-1.5">Subheading</h4>
+          <p class="text-sm text-gray-600 leading-normal">Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum.</p>
         </div>
-        <div class="stat-title text-xs uppercase tracking-wider opacity-60">DOM Latency</div>
-        <div class="stat-value text-primary text-3xl font-black">&lt; 1ms</div>
-        <div class="stat-desc text-xs mt-1">Zero-copy typed heap</div>
+        <div>
+          <h4 class="text-lg font-bold text-gray-900 mb-1.5">Subheading</h4>
+          <p class="text-sm text-gray-600 leading-normal">Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras mattis consectetur purus sit amet fermentum.</p>
+        </div>
+        <div>
+          <h4 class="text-lg font-bold text-gray-900 mb-1.5">Subheading</h4>
+          <p class="text-sm text-gray-600 leading-normal">Maecenas sed diam eget risus varius blandit sit amet non magna.</p>
+        </div>
       </div>
 
-      <div class="stat bg-base-200/70 border border-base-content/5 rounded-box p-6 text-center">
-        <div class="stat-figure text-secondary">
-          <iconify-icon icon="material-symbols-light:view-quilt" class="text-3xl"></iconify-icon>
+      <!-- Right Column -->
+      <div class="flex flex-col gap-6">
+        <div>
+          <h4 class="text-lg font-bold text-gray-900 mb-1.5">Subheading</h4>
+          <p class="text-sm text-gray-600 leading-normal">Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum.</p>
         </div>
-        <div class="stat-title text-xs uppercase tracking-wider opacity-60">UI Blocks</div>
-        <div class="stat-value text-secondary text-3xl font-black">60+</div>
-        <div class="stat-desc text-xs mt-1">DaisyUI &amp; Tailwind v4</div>
+        <div>
+          <h4 class="text-lg font-bold text-gray-900 mb-1.5">Subheading</h4>
+          <p class="text-sm text-gray-600 leading-normal">Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras mattis consectetur purus sit amet fermentum.</p>
+        </div>
+        <div>
+          <h4 class="text-lg font-bold text-gray-900 mb-1.5">Subheading</h4>
+          <p class="text-sm text-gray-600 leading-normal">Maecenas sed diam eget risus varius blandit sit amet non magna.</p>
+        </div>
       </div>
 
-      <div class="stat bg-base-200/70 border border-base-content/5 rounded-box p-6 text-center">
-        <div class="stat-figure text-accent">
-          <iconify-icon icon="material-symbols-light:offline-bolt" class="text-3xl"></iconify-icon>
-        </div>
-        <div class="stat-title text-xs uppercase tracking-wider opacity-60">Offline Sync</div>
-        <div class="stat-value text-accent text-3xl font-black">100%</div>
-        <div class="stat-desc text-xs mt-1">IndexedDB Persistence</div>
-      </div>
-
-      <div class="stat bg-base-200/70 border border-base-content/5 rounded-box p-6 text-center">
-        <div class="stat-figure text-success">
-          <iconify-icon icon="material-symbols-light:check-circle" class="text-3xl"></iconify-icon>
-        </div>
-        <div class="stat-title text-xs uppercase tracking-wider opacity-60">Build Tool</div>
-        <div class="stat-value text-success text-3xl font-black">Zero</div>
-        <div class="stat-desc text-xs mt-1">Runs natively in browser</div>
-      </div>
     </div>
   </section>
 
-  <!-- 4. Features Grid -->
-  <section id="features" class="py-16 px-4 max-w-6xl mx-auto w-full">
-    <div class="text-center mb-12">
-      <h2 class="text-3xl font-black tracking-tight mb-2">Engineered for Modern Web Speed</h2>
-      <p class="text-base-content/60 text-sm max-w-md mx-auto">
-        Everything you need to craft high-conversion landing pages and interactive dashboards in minutes.
-      </p>
+  <!-- 4. Footer -->
+  <footer class="pt-10 mt-12 border-t border-gray-200 text-sm text-gray-500 flex items-center justify-between">
+    <p class="m-0">&copy; 2026 Company, Inc.</p>
+    <div class="flex gap-4">
+      <a href="#" class="hover:underline">Privacy</a>
+      <a href="#" class="hover:underline">Terms</a>
     </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="card bg-base-200/50 border border-base-content/5 shadow-sm hover:shadow-md transition-shadow">
-        <div class="card-body p-6">
-          <div class="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-2">
-            <iconify-icon icon="material-symbols-light:drag-click" class="text-2xl"></iconify-icon>
-          </div>
-          <h3 class="card-title text-lg font-bold">Visual Directives</h3>
-          <p class="text-sm text-base-content/70">
-            Configure signals, bindings, and event handlers visually without hand-coding boilerplate scripts.
-          </p>
-        </div>
-      </div>
-
-      <div class="card bg-base-200/50 border border-base-content/5 shadow-sm hover:shadow-md transition-shadow">
-        <div class="card-body p-6">
-          <div class="w-12 h-12 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center mb-2">
-            <iconify-icon icon="material-symbols-light:layers" class="text-2xl"></iconify-icon>
-          </div>
-          <h3 class="card-title text-lg font-bold">Shadow DOM Encapsulation</h3>
-          <p class="text-sm text-base-content/70">
-            Work inside an isolated canvas that prevents external styling bleed while retaining full memory inspection.
-          </p>
-        </div>
-      </div>
-
-      <div class="card bg-base-200/50 border border-base-content/5 shadow-sm hover:shadow-md transition-shadow">
-        <div class="card-body p-6">
-          <div class="w-12 h-12 rounded-xl bg-accent/10 text-accent flex items-center justify-center mb-2">
-            <iconify-icon icon="material-symbols-light:palette" class="text-2xl"></iconify-icon>
-          </div>
-          <h3 class="card-title text-lg font-bold">DaisyUI Design System</h3>
-          <p class="text-sm text-base-content/70">
-            Instantly switch between 30+ curated themes with dark/light mode parity and responsive layout tokens.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 5. Call To Action Footer Banner -->
-  <section class="py-16 px-4 bg-base-200 border-t border-base-content/5">
-    <div class="max-w-4xl mx-auto text-center flex flex-col items-center gap-6">
-      <h2 class="text-3xl sm:text-4xl font-black">Ready to elevate your frontend workflow?</h2>
-      <p class="text-base-content/70 text-sm max-w-lg">
-        Join developers building stateful, reactive web apps with zero build steps and full declarative power.
-      </p>
-      <div class="flex gap-3">
-        <button class="btn btn-primary btn-md">Get Started for Free</button>
-        <button class="btn btn-ghost btn-md">Documentation</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- 6. Footer -->
-  <footer class="footer p-10 bg-base-300 text-base-content/80 text-xs">
-    <aside>
-      <div class="flex items-center gap-2 font-bold text-sm">
-        <iconify-icon icon="material-symbols-light:bolt" class="text-primary text-xl"></iconify-icon>
-        Apex Studio
-      </div>
-      <p>Powered by Nexus-UX Reactive Framework.<br/>Zero serialization, pure native speed.</p>
-    </aside>
-    <nav>
-      <h6 class="footer-title">Product</h6>
-      <a class="link link-hover">Features</a>
-      <a class="link link-hover">Enterprise</a>
-      <a class="link link-hover">Security</a>
-    </nav>
-    <nav>
-      <h6 class="footer-title">Resources</h6>
-      <a class="link link-hover">Documentation</a>
-      <a class="link link-hover">Guides</a>
-      <a class="link link-hover">Showcase</a>
-    </nav>
-    <nav>
-      <h6 class="footer-title">Legal</h6>
-      <a class="link link-hover">Privacy policy</a>
-      <a class="link link-hover">Terms of use</a>
-    </nav>
   </footer>
+
 </div>

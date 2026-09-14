@@ -1202,7 +1202,7 @@
     "id": "landing",
     "route": "",
     "path": "/_pages/builder/templates/landing.html",
-    "title": "Modern Landing Page",
+    "title": "VvvebJs Demo - Narrow Jumbotron",
     "internal": true,
     "parent": "/builder/templates"
   }
