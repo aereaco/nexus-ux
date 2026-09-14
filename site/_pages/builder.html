@@ -157,7 +157,7 @@
       selectedEl = raw;
       hasSelection = true;
       const tag = raw.tagName.toLowerCase();
-      inspector.tag = tag;
+      inspector.tag = raw.tagName.toUpperCase();
       inspector.id = raw.id || '';
       inspector.className = raw.className || '';
       inspector.isTextLeaf = (raw.children.length === 0 && raw.textContent.trim().length > 0);
