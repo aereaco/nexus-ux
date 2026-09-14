@@ -1127,6 +1127,12 @@
     "parent": "/builder"
   },
   {
+    "id": "_modals",
+    "route": "/_modals",
+    "path": "/_pages/builder/_modals.html",
+    "parent": "/builder"
+  },
+  {
     "id": "_right-panel",
     "route": "/_right-panel",
     "path": "/_pages/builder/_right-panel.html",
