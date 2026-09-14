@@ -294,8 +294,18 @@
         const hostRect = host.getBoundingClientRect();
         const elRect = el.getBoundingClientRect();
 
-        selectedBox.top = (elRect.top - hostRect.top) + host.scrollTop;
-        selectedBox.left = (elRect.left - hostRect.left) + host.scrollLeft;
+        // If element is scrolled completely out of canvas viewport, hide overlay
+        if (elRect.bottom < hostRect.top || elRect.top > hostRect.bottom ||
+            elRect.right < hostRect.left || elRect.left > hostRect.right) {
+          selectedBox.visible = false;
+          return;
+        }
+
+        const frame = host.parentElement || host;
+        const frameRect = frame.getBoundingClientRect();
+
+        selectedBox.top = elRect.top - frameRect.top;
+        selectedBox.left = elRect.left - frameRect.left;
         selectedBox.width = elRect.width;
         selectedBox.height = elRect.height;
         const tag = el.tagName.toLowerCase();
@@ -320,8 +330,17 @@
       const hostRect = host.getBoundingClientRect();
       const elRect = raw.getBoundingClientRect();
 
-      hoverBox.top = (elRect.top - hostRect.top) + host.scrollTop;
-      hoverBox.left = (elRect.left - hostRect.left) + host.scrollLeft;
+      if (elRect.bottom < hostRect.top || elRect.top > hostRect.bottom ||
+          elRect.right < hostRect.left || elRect.left > hostRect.right) {
+        hoverBox.visible = false;
+        return;
+      }
+
+      const frame = host.parentElement || host;
+      const frameRect = frame.getBoundingClientRect();
+
+      hoverBox.top = elRect.top - frameRect.top;
+      hoverBox.left = elRect.left - frameRect.left;
       hoverBox.width = elRect.width;
       hoverBox.height = elRect.height;
       hoverBox.tag = raw.tagName.toLowerCase();
