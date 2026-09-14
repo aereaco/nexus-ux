@@ -289,14 +289,14 @@
             <label class="text-[10px] text-base-content/60 block mb-0.5">Font size</label>
             <div class="flex items-center">
               <input type="number" class="input input-bordered input-xs w-full h-6 min-h-0 text-[11px] rounded-r-none font-mono"
-                data-on-input="if (selectedEl) { selectedEl.style.fontSize = $evt.target.value + 'px'; syncCanvasHtmlToDraft(); }" />
+                data-on-input="setStyle('fontSize', $evt.target.value + 'px')" />
               <span class="bg-base-200 border border-l-0 border-base-content/20 px-1.5 h-6 text-[10px] flex items-center rounded-r">px</span>
             </div>
           </div>
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Font weight</label>
             <select class="select select-bordered select-xs w-full h-6 min-h-0 text-[11px] rounded"
-              data-on-change="if (selectedEl) { selectedEl.style.fontWeight = $evt.target.value; syncCanvasHtmlToDraft(); }">
+              data-on-change="setStyle('fontWeight', $evt.target.value)">
               <option value="">Default</option>
               <option value="100">Thin (100)</option>
               <option value="200">Extra-Light (200)</option>
@@ -314,7 +314,7 @@
         <div>
           <label class="text-[10px] text-base-content/60 block mb-0.5">Font family</label>
           <select class="select select-bordered select-xs w-full h-6 min-h-0 text-[11px] rounded"
-            data-on-change="if (selectedEl) { selectedEl.style.fontFamily = $evt.target.value; syncCanvasHtmlToDraft(); }">
+            data-on-change="setStyle('fontFamily', $evt.target.value)">
             <option value="">Default</option>
             <option value="Arial, Helvetica, sans-serif">Arial</option>
             <option value="'Helvetica Neue', Helvetica, sans-serif">Helvetica Neue</option>
@@ -331,17 +331,17 @@
         <div>
           <label class="text-[10px] text-base-content/60 block mb-1">Text align</label>
           <div class="join w-full">
-            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-outline border-base-content/20" title="None" data-on-click="if (selectedEl) { selectedEl.style.textAlign = ''; syncCanvasHtmlToDraft(); }">✕</button>
-            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-outline border-base-content/20" title="Left" data-on-click="if (selectedEl) { selectedEl.style.textAlign = 'left'; syncCanvasHtmlToDraft(); }">
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-outline border-base-content/20" title="None" data-on-click="setStyle('textAlign', '')">✕</button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-outline border-base-content/20" title="Left" data-on-click="setStyle('textAlign', 'left')">
               <iconify-icon icon="material-symbols-light:format-align-left"></iconify-icon>
             </button>
-            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-outline border-base-content/20" title="Center" data-on-click="if (selectedEl) { selectedEl.style.textAlign = 'center'; syncCanvasHtmlToDraft(); }">
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-outline border-base-content/20" title="Center" data-on-click="setStyle('textAlign', 'center')">
               <iconify-icon icon="material-symbols-light:format-align-center"></iconify-icon>
             </button>
-            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-outline border-base-content/20" title="Right" data-on-click="if (selectedEl) { selectedEl.style.textAlign = 'right'; syncCanvasHtmlToDraft(); }">
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-outline border-base-content/20" title="Right" data-on-click="setStyle('textAlign', 'right')">
               <iconify-icon icon="material-symbols-light:format-align-right"></iconify-icon>
             </button>
-            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-outline border-base-content/20" title="Justify" data-on-click="if (selectedEl) { selectedEl.style.textAlign = 'justify'; syncCanvasHtmlToDraft(); }">
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-outline border-base-content/20" title="Justify" data-on-click="setStyle('textAlign', 'justify')">
               <iconify-icon icon="material-symbols-light:format-align-justify"></iconify-icon>
             </button>
           </div>
@@ -351,19 +351,19 @@
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Line height</label>
             <input type="text" placeholder="1.5" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="if (selectedEl) { selectedEl.style.lineHeight = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+              data-on-input="setStyle('lineHeight', $evt.target.value)" />
           </div>
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Letter spacing</label>
             <input type="text" placeholder="normal" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="if (selectedEl) { selectedEl.style.letterSpacing = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+              data-on-input="setStyle('letterSpacing', $evt.target.value)" />
           </div>
         </div>
 
         <div>
           <label class="text-[10px] text-base-content/60 block mb-0.5">Decoration Style</label>
           <select class="select select-bordered select-xs w-full h-6 min-h-0 text-[11px] rounded"
-            data-on-change="if (selectedEl) { selectedEl.style.textDecorationStyle = $evt.target.value; syncCanvasHtmlToDraft(); }">
+            data-on-change="setStyle('textDecorationStyle', $evt.target.value)">
             <option value="">Default</option>
             <option value="solid">Solid</option>
             <option value="wavy">Wavy</option>
@@ -384,22 +384,22 @@
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Width</label>
             <input type="text" placeholder="auto" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="if (selectedEl) { selectedEl.style.width = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+              data-on-input="setStyle('width', $evt.target.value)" />
           </div>
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Height</label>
             <input type="text" placeholder="auto" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="if (selectedEl) { selectedEl.style.height = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+              data-on-input="setStyle('height', $evt.target.value)" />
           </div>
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Min Width</label>
             <input type="text" placeholder="auto" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="if (selectedEl) { selectedEl.style.minWidth = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+              data-on-input="setStyle('minWidth', $evt.target.value)" />
           </div>
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Min Height</label>
             <input type="text" placeholder="auto" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="if (selectedEl) { selectedEl.style.minHeight = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+              data-on-input="setStyle('minHeight', $evt.target.value)" />
           </div>
         </div>
       </div>
@@ -414,22 +414,22 @@
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Top</label>
             <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="if (selectedEl) { selectedEl.style.marginTop = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+              data-on-input="setStyle('marginTop', $evt.target.value)" />
           </div>
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Right</label>
             <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="if (selectedEl) { selectedEl.style.marginRight = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+              data-on-input="setStyle('marginRight', $evt.target.value)" />
           </div>
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Bottom</label>
             <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="if (selectedEl) { selectedEl.style.marginBottom = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+              data-on-input="setStyle('marginBottom', $evt.target.value)" />
           </div>
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Left</label>
             <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="if (selectedEl) { selectedEl.style.marginLeft = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+              data-on-input="setStyle('marginLeft', $evt.target.value)" />
           </div>
         </div>
       </div>
@@ -444,22 +444,22 @@
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Top</label>
             <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="if (selectedEl) { selectedEl.style.paddingTop = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+              data-on-input="setStyle('paddingTop', $evt.target.value)" />
           </div>
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Right</label>
             <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="if (selectedEl) { selectedEl.style.paddingRight = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+              data-on-input="setStyle('paddingRight', $evt.target.value)" />
           </div>
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Bottom</label>
             <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="if (selectedEl) { selectedEl.style.paddingBottom = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+              data-on-input="setStyle('paddingBottom', $evt.target.value)" />
           </div>
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Left</label>
             <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="if (selectedEl) { selectedEl.style.paddingLeft = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+              data-on-input="setStyle('paddingLeft', $evt.target.value)" />
           </div>
         </div>
       </div>
@@ -473,7 +473,7 @@
         <div>
           <label class="text-[10px] text-base-content/60 block mb-0.5">Style</label>
           <select class="select select-bordered select-xs w-full h-6 min-h-0 text-[11px] rounded"
-            data-on-change="if (selectedEl) { selectedEl.style.borderStyle = $evt.target.value; syncCanvasHtmlToDraft(); }">
+            data-on-change="setStyle('borderStyle', $evt.target.value)">
             <option value="">Default</option>
             <option value="solid">Solid</option>
             <option value="dotted">Dotted</option>
@@ -486,12 +486,12 @@
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Width</label>
             <input type="text" placeholder="1px" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="if (selectedEl) { selectedEl.style.borderWidth = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+              data-on-input="setStyle('borderWidth', $evt.target.value)" />
           </div>
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Color</label>
             <input type="color" class="w-full h-6 rounded cursor-pointer border border-base-content/20 bg-transparent"
-              data-on-input="if (selectedEl) { selectedEl.style.borderColor = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+              data-on-input="setStyle('borderColor', $evt.target.value)" />
           </div>
         </div>
       </div>
@@ -506,22 +506,22 @@
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Top Left</label>
             <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="if (selectedEl) { selectedEl.style.borderTopLeftRadius = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+              data-on-input="setStyle('borderTopLeftRadius', $evt.target.value)" />
           </div>
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Top Right</label>
             <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="if (selectedEl) { selectedEl.style.borderTopRightRadius = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+              data-on-input="setStyle('borderTopRightRadius', $evt.target.value)" />
           </div>
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Bottom Left</label>
             <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="if (selectedEl) { selectedEl.style.borderBottomLeftRadius = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+              data-on-input="setStyle('borderBottomLeftRadius', $evt.target.value)" />
           </div>
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Bottom Right</label>
             <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="if (selectedEl) { selectedEl.style.borderBottomRightRadius = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+              data-on-input="setStyle('borderBottomRightRadius', $evt.target.value)" />
           </div>
         </div>
       </div>
@@ -535,13 +535,13 @@
         <div>
           <label class="text-[10px] text-base-content/60 block mb-0.5">Image URL</label>
           <input type="text" placeholder="url('...')" class="input input-bordered input-xs w-full h-6 text-[11px]"
-            data-on-input="if (selectedEl) { selectedEl.style.backgroundImage = 'url(' + $evt.target.value + ')'; syncCanvasHtmlToDraft(); }" />
+            data-on-input="setStyle('backgroundImage', 'url(' + $evt.target.value + ')')" />
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Repeat</label>
             <select class="select select-bordered select-xs w-full h-6 min-h-0 text-[11px] rounded"
-              data-on-change="if (selectedEl) { selectedEl.style.backgroundRepeat = $evt.target.value; syncCanvasHtmlToDraft(); }">
+              data-on-change="setStyle('backgroundRepeat', $evt.target.value)">
               <option value="">Default</option>
               <option value="repeat-x">repeat-x</option>
               <option value="repeat-y">repeat-y</option>
@@ -551,7 +551,7 @@
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Size</label>
             <select class="select select-bordered select-xs w-full h-6 min-h-0 text-[11px] rounded"
-              data-on-change="if (selectedEl) { selectedEl.style.backgroundSize = $evt.target.value; syncCanvasHtmlToDraft(); }">
+              data-on-change="setStyle('backgroundSize', $evt.target.value)">
               <option value="">Default</option>
               <option value="contain">contain</option>
               <option value="cover">cover</option>
