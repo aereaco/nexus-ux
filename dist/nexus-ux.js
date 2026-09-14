@@ -642,10 +642,25 @@ ${suggestion}`);
     const raw = observed?.__v_raw;
     return raw ? toRaw(raw) : observed;
   }
+  function canObserve(value) {
+    if (!value || typeof value !== "object")
+      return false;
+    if (value.__v_skip)
+      return false;
+    if (rawMap.has(value))
+      return false;
+    if (typeof Node !== "undefined" && value instanceof Node)
+      return false;
+    if (typeof Window !== "undefined" && value instanceof Window)
+      return false;
+    if (typeof Event !== "undefined" && value instanceof Event)
+      return false;
+    if (value.nodeType !== void 0)
+      return false;
+    return true;
+  }
   function reactive(target) {
-    if (!target || typeof target !== "object")
-      return target;
-    if (rawMap.has(target))
+    if (!canObserve(target))
       return target;
     let proxy = reactiveMap.get(target);
     if (proxy)
@@ -658,7 +673,7 @@ ${suggestion}`);
           return true;
         track(t, key);
         const res = Reflect.get(t, key, receiver);
-        if (res && typeof res === "object") {
+        if (canObserve(res)) {
           return reactive(res);
         }
         return res;

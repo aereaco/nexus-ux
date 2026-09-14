@@ -328,9 +328,19 @@ export function toRaw<T>(observed: T): T {
   return raw ? toRaw(raw) : observed;
 }
 
+export function canObserve(value: unknown): boolean {
+  if (!value || typeof value !== 'object') return false;
+  if ((value as any).__v_skip) return false;
+  if (rawMap.has(value as object)) return false;
+  if (typeof Node !== 'undefined' && value instanceof Node) return false;
+  if (typeof Window !== 'undefined' && value instanceof Window) return false;
+  if (typeof Event !== 'undefined' && value instanceof Event) return false;
+  if ((value as any).nodeType !== undefined) return false;
+  return true;
+}
+
 export function reactive<T extends object>(target: T): T {
-  if (!target || typeof target !== 'object') return target;
-  if (rawMap.has(target)) return target;
+  if (!canObserve(target)) return target;
 
   let proxy = reactiveMap.get(target);
   if (proxy) return proxy;
@@ -341,8 +351,8 @@ export function reactive<T extends object>(target: T): T {
       if (key === '__v_isReactive') return true;
       track(t, key);
       const res = Reflect.get(t, key, receiver);
-      if (res && typeof res === 'object') {
-        return reactive(res);
+      if (canObserve(res)) {
+        return reactive(res as object);
       }
       return res;
     },
