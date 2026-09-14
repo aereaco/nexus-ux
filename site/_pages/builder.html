@@ -132,12 +132,12 @@
     },
 
     toggleCanvasTheme: function() {
-      this.canvasTheme = this.canvasTheme === 'dark' ? 'light' : 'dark';
-      const root = this.getCanvasRoot();
+      canvasTheme = canvasTheme === 'dark' ? 'light' : 'dark';
+      const root = getCanvasRoot();
       const host = toRawNode(document.getElementById('builder-canvas-host'));
       if (host) {
-        host.setAttribute('data-theme', this.canvasTheme);
-        if (this.canvasTheme === 'dark') {
+        host.setAttribute('data-theme', canvasTheme);
+        if (canvasTheme === 'dark') {
           host.classList.remove('bg-white', 'text-[#212529]');
           host.classList.add('bg-[#1d232a]', 'text-[#a6adbb]', 'dark');
         } else {
@@ -148,8 +148,8 @@
       if (root) {
         const body = root.querySelector('body') || root.firstElementChild;
         if (body) {
-          body.setAttribute('data-theme', this.canvasTheme);
-          if (this.canvasTheme === 'dark') {
+          body.setAttribute('data-theme', canvasTheme);
+          if (canvasTheme === 'dark') {
             body.classList.add('dark');
           } else {
             body.classList.remove('dark');
@@ -157,8 +157,8 @@
         }
         const inner = root.querySelector('.min-h-screen') || root.querySelector('div');
         if (inner) {
-          inner.setAttribute('data-theme', this.canvasTheme);
-          if (this.canvasTheme === 'dark') {
+          inner.setAttribute('data-theme', canvasTheme);
+          if (canvasTheme === 'dark') {
             inner.classList.add('dark');
             inner.classList.remove('bg-white', 'text-[#212529]');
             inner.classList.add('bg-[#1d232a]', 'text-[#a6adbb]');
@@ -168,7 +168,7 @@
           }
         }
       }
-      this.updateSelectedBox();
+      updateSelectedBox();
     },
 
     updateTextContent: function(val) {
@@ -181,7 +181,7 @@
     },
 
     updateInspectorText: function(val) {
-      this.updateTextContent(val);
+      updateTextContent(val);
     },
 
     updateClassAttribute: function(val) {
