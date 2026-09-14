@@ -24,7 +24,7 @@
   </div>
 
   <!-- State: When No Element Is Selected -->
-  <div class="p-3" data-show="!selectedEl">
+  <div class="p-3" data-show="!hasSelection">
     <div class="alert bg-base-200/60 border border-base-content/10 rounded-md p-3 flex items-start justify-between">
       <div>
         <div class="font-bold text-xs text-base-content">No selected element!</div>
@@ -35,7 +35,7 @@
   </div>
 
   <!-- State: When An Element Is Selected -->
-  <div class="flex-1 overflow-y-auto" data-show="selectedEl">
+  <div class="flex-1 overflow-y-auto" data-show="hasSelection">
     
     <!-- ================= 1. CONTENT TAB ================= -->
     <div class="p-2 space-y-3" data-show="propertiesSubTab === 'content'">
@@ -51,17 +51,7 @@
         <div class="space-y-1">
           <label class="text-[10px] text-base-content/60 font-medium">Size</label>
           <select class="select select-bordered select-xs w-full h-7 rounded text-xs"
-            data-on-change="
-              if (selectedEl) {
-                const newTag = $evt.target.value.toLowerCase();
-                const replacement = document.createElement(newTag);
-                replacement.innerHTML = selectedEl.innerHTML;
-                for (let a of selectedEl.attributes) replacement.setAttribute(a.name, a.value);
-                selectedEl.parentNode.replaceChild(replacement, selectedEl);
-                selectElement(replacement);
-                syncCanvasHtmlToDraft();
-              }
-            ">
+            data-on-change="changeTag($evt.target.value.toLowerCase())">
             <option value="H1" data-bind-selected="inspector.tag === 'H1'">Heading 1</option>
             <option value="H2" data-bind-selected="inspector.tag === 'H2'">Heading 2</option>
             <option value="H3" data-bind-selected="inspector.tag === 'H3'">Heading 3</option>
@@ -91,12 +81,12 @@
           <label class="text-[10px] text-base-content/60 font-medium">Href URL</label>
           <input type="text" class="input input-bordered input-xs w-full h-7 rounded"
             data-bind-value="inspector.href"
-            data-on-input="if (selectedEl) { selectedEl.setAttribute('href', $evt.target.value); syncCanvasHtmlToDraft(); }" />
+            data-on-input="setAttr('href', $evt.target.value)" />
         </div>
         <div class="space-y-1">
           <label class="text-[10px] text-base-content/60 font-medium">Target</label>
           <select class="select select-bordered select-xs w-full h-7 rounded"
-            data-on-change="if (selectedEl) { selectedEl.setAttribute('target', $evt.target.value); syncCanvasHtmlToDraft(); }">
+            data-on-change="setAttr('target', $evt.target.value)">
             <option value="_self">Same window (_self)</option>
             <option value="_blank">New tab (_blank)</option>
           </select>
@@ -121,12 +111,12 @@
           <label class="text-[10px] text-base-content/60 font-medium">Image Source (URL)</label>
           <input type="text" class="input input-bordered input-xs w-full h-7 rounded"
             data-bind-value="inspector.src"
-            data-on-input="if (selectedEl) { selectedEl.setAttribute('src', $evt.target.value); syncCanvasHtmlToDraft(); }" />
+            data-on-input="setAttr('src', $evt.target.value)" />
         </div>
         <div class="space-y-1">
           <label class="text-[10px] text-base-content/60 font-medium">Alt Text</label>
           <input type="text" class="input input-bordered input-xs w-full h-7 rounded"
-            data-on-input="if (selectedEl) { selectedEl.setAttribute('alt', $evt.target.value); syncCanvasHtmlToDraft(); }" />
+            data-on-input="setAttr('alt', $evt.target.value)" />
         </div>
       </div>
 
@@ -162,7 +152,7 @@
             <label class="text-[10px] text-base-content/60 font-medium block mb-1">Title</label>
             <input type="text" class="input input-bordered input-xs w-full h-7 rounded"
               placeholder="title tooltip"
-              data-on-input="if (selectedEl) { selectedEl.setAttribute('title', $evt.target.value); syncCanvasHtmlToDraft(); }" />
+              data-on-input="setAttr('title', $evt.target.value)" />
           </div>
         </div>
 
