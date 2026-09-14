@@ -66,6 +66,15 @@
     "content": "{ if (host.shadowRoot && document.adoptedStyleSheets && document.adoptedStyleSheets.length) { host.shadowRoot.adoptedStyleSheets = [...document.adoptedStyleSheets]; } }; adoptStyles(); setTimeout(adoptStyles, 200); setTimeout(adoptStyles, 800); // Handle selection click inside shadow root host.addEventListener('click', function(e) { if (previewMode) return; const target = e.composedPath ? e.composedPath()[0] : e.target; if (target && target.nodeType === 1 && target !== host) { e.preventDefault(); e.stopPropagation(); selectElement(target); } }, true); // Handle hover highlight inside shadow root host.addEventListener('pointermove', function(e) { if (previewMode) return; const target = e.composedPath ? e.composedPath()[0] : e.target; if (target && target.nodeType === 1 && target !== host) { updateHoverBox(target); } }, true); host.addEventListener('pointerleave', function() { hoverBox.visible = false; }); // Handle double click for inline text editing host.addEventListener('dblclick', function(e) { if (previewMode) return; const target = e.composedPath ? e.composedPath()[0] : e.target; if (target && target.nodeType === 1) { target.contentEditable = 'true'; target.focus(); target.addEventListener('blur', function onBlur() { target.contentEditable = 'false'; target.removeEventListener('blur', onBlur); selectElement(target); syncCanvasHtmlToDraft(); }); } }, true); } if (selectedEl) { updateSelectedBox(); } \"> Left Center Right Justify Size 12px 14px 16px 18px 20px 24px 32px 48px Add Component / Section After Inside ✕ Hero Section Features Grid Pricing Table CTA Banner"
   },
   {
+    "id": "_top-panel",
+    "route": "/builder/_top-panel",
+    "path": "/_pages/builder/_top-panel.html",
+    "title": "_top-panel",
+    "category": "General",
+    "keywords": [],
+    "content": "Mobile (375px) Tablet (768px) Tablet landscape (1024px) Laptop (1280px) Desktop view % Save Code Editor Switch Template Export HTML Clear Canvas"
+  },
+  {
     "id": "doc-changelog",
     "route": "/docs/changelog",
     "path": "/_pages/docs/changelog.md",
