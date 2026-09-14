@@ -54,6 +54,15 @@
     "content": "UI Blocks Sections Reactive Tree ✕ Layout & Grid Container Centered wrapper 2 Columns Grid 1:1 3 Columns Grid 1:1:1 Flex Row Horizontal flex Core UI Card DaisyUI Card Button Primary CTA Badge Status pill Alert Notice box Stat Block KPI metric Accordion Collapsible Forms & Inputs Text Input Label & input Select Dropdown Options menu Toggle Switch On/off switch Text Area Multiline note Hero Section Heading, subtitle & CTA buttons Features Grid 3-column benefit cards Pricing Section Tier comparison cards Call To Action Conversion banner with button Multi-column Footer Links, brand & legal copy These blocks include live data-signal , data-bind , and data-on directives that run reactively! Reactive Counter data-signal=\"{ count: 0 }\" Live Search List data-bind + data-for Reactive Tabs View data-show=\"activeTab === N\" DOM Hierarchy Sync Click Sync or load canvas to view DOM nodes."
   },
   {
+    "id": "_right-panel",
+    "route": "/_right-panel",
+    "path": "/_pages/builder/_right-panel.html",
+    "title": "_right-panel",
+    "category": "General",
+    "keywords": [],
+    "content": "No Element Selected Click any element in the canvas to inspect and edit its styles, DaisyUI classes, attributes, or reactive directives. > Style DaisyUI Attrs Nexus Text Content Typography Font Size Default 12px (xs) 14px (sm) 16px (base) 18px (lg) 20px (xl) 24px (2xl) 30px (3xl) 36px (4xl) Font Weight Default Light (300) Normal (400) Medium (500) Semibold (600) Bold (700) Black (900) Alignment Layout & Spacing Display Default Block Flex Grid Inline Block None Gap Default 4px (gap-1) 8px (gap-2) 12px (gap-3) 16px (gap-4) 24px (gap-6) 32px (gap-8) Padding None 8px (p-2) 16px (p-4) 24px (p-6) 32px (p-8) 48px (p-12) Margin Bottom None 8px (mb-2) 16px (mb-4) 24px (mb-6) 32px (mb-8) Appearance Corner Radius Default Small (rounded-sm) Medium (rounded-md) Large (rounded-lg) XL (rounded-xl) Full (rounded-full) Opacity 100% 90% 75% 50% 25% DaisyUI Theme Colors Primary Secondary Accent Neutral Ghost Outline Sizes xs sm md lg Shape & Effects rounded-box shadow-xl card-body glass effect All Element Classes Element ID Link URL (href) Image / Asset Source (src) Image Alt Text (alt) Target Default (_self) New Tab (_blank) Nexus-UX directives evaluate live inside the reactive ownership graph! data-signal data-bind data-show data-on-click data-for"
+  },
+  {
     "id": "_top-panel",
     "route": "/_top-panel",
     "path": "/_pages/builder/_top-panel.html",
