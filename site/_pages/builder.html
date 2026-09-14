@@ -434,6 +434,10 @@
       syncCanvasHtmlToDraft();
     },
 
+    updateInspectorText: function(val) {
+      updateTextContent(val);
+    },
+
     refreshTree: function() {
       const root = getCanvasRoot();
       if (!root) { domTree = []; return; }
