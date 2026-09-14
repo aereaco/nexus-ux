@@ -441,13 +441,6 @@ const componentModule: AttributeModule = {
                 runtime.morphDOM(shadow as unknown as HTMLElement, html);
               }
               stylesheet.adoptElementSubtree(shadow);
-              if (typeof document !== 'undefined' && document.adoptedStyleSheets && document.adoptedStyleSheets.length) {
-                try {
-                  shadow.adoptedStyleSheets = [...document.adoptedStyleSheets];
-                } catch {
-                  // Ignore if browser restricts cross-realm adoption
-                }
-              }
               Array.from(shadow.children).forEach((child) => {
                 if (child instanceof HTMLElement || child instanceof SVGElement) {
                   runtime.processElement(child as unknown as HTMLElement);
