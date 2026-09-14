@@ -554,7 +554,7 @@
       <div>
         <label class="font-bold text-xs mb-1.5 block">Typography</label>
         <select class="select select-bordered select-xs w-full"
-          data-on-change="if (selectedEl) selectedEl.style.fontFamily = $evt.target.value">
+          data-on-change="setStyle('fontFamily', $evt.target.value)">
           <option value="system-ui, sans-serif">System Sans</option>
           <option value="Inter, sans-serif">Inter</option>
           <option value="Georgia, serif">Georgia</option>
