@@ -62,26 +62,49 @@
             syncCanvasHtmlToDraft();
           }, 200);
 
-          // Scroll synchronization for overlay selectBox / hoverBox
-          const onScroll = () => {
-            if (selectedEl) {
-              updateSelectedBox();
+          const selectBoxEl = document.getElementById('select-box');
+          const highlightBoxEl = document.getElementById('highlight-box');
+          let scrollRaf = null;
+
+          // Direct DOM sync on scroll - smooth 60fps, zero reactive cycle thrashing (VvvebJs model)
+          const syncBoxPosition = () => {
+            const el = toRawNode(selectedEl);
+            if (!el || !selectBoxEl || previewMode) {
+              if (selectBoxEl) selectBoxEl.style.display = 'none';
+              return;
             }
-            if (hoveredEl && hoverBox.visible) {
-              updateHoverBox(hoveredEl);
+            const elRect = el.getBoundingClientRect();
+            const hostRect = host.getBoundingClientRect();
+
+            // If scrolled out of visible canvas area, hide box
+            if (elRect.bottom < hostRect.top || elRect.top > hostRect.bottom) {
+              selectBoxEl.style.display = 'none';
+              return;
+            }
+
+            selectBoxEl.style.display = 'block';
+            selectBoxEl.style.top = ((elRect.top - hostRect.top) + host.offsetTop) + 'px';
+            selectBoxEl.style.left = ((elRect.left - hostRect.left) + host.offsetLeft) + 'px';
+            selectBoxEl.style.width = elRect.width + 'px';
+            selectBoxEl.style.height = elRect.height + 'px';
+          };
+
+          const onScroll = () => {
+            if (highlightBoxEl) highlightBoxEl.style.display = 'none';
+            if (selectedEl) {
+              if (scrollRaf) cancelAnimationFrame(scrollRaf);
+              scrollRaf = requestAnimationFrame(syncBoxPosition);
             }
           };
+
           host.addEventListener('scroll', onScroll, { passive: true });
-          root.addEventListener('scroll', onScroll, { capture: true, passive: true });
-          const canvasEl = document.getElementById('canvas');
-          if (canvasEl) canvasEl.addEventListener('scroll', onScroll, { passive: true });
           window.addEventListener('resize', onScroll, { passive: true });
 
           const resolveTarget = (e) => {
             let target = e.composedPath ? e.composedPath()[0] : e.target;
             if (!target) return null;
             if (target.nodeType === 3) target = target.parentElement;
-            if (!target || target.nodeType !== 1 || target === host) return null;
+            if (!target || target.nodeType !== 1 || target === host || target.tagName.toLowerCase() === 'html') return null;
             return target;
           };
 
@@ -93,6 +116,7 @@
               e.preventDefault();
               e.stopPropagation();
               selectElement(target);
+              syncBoxPosition();
             }
           }, true);
 
@@ -100,15 +124,14 @@
           root.addEventListener('pointermove', function(e) {
             if (previewMode) return;
             const target = resolveTarget(e);
-            if (target) {
+            if (target && target !== toRawNode(selectedEl)) {
               updateHoverBox(target);
             }
           }, true);
 
           root.addEventListener('pointerleave', function() {
             hoverBox.visible = false;
-            const hoverBoxEl = document.getElementById('highlight-box');
-            if (hoverBoxEl) hoverBoxEl.style.display = 'none';
+            if (highlightBoxEl) highlightBoxEl.style.display = 'none';
           });
 
           // Handle double click for inline text editing
@@ -128,10 +151,6 @@
           }, true);
         };
         bindShadow();
-
-        if (selectedEl) {
-          updateSelectedBox();
-        }
       ">
     </div>
 
