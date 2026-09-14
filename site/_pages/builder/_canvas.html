@@ -30,21 +30,22 @@
       data-component="{ path: currentDoc, shadowrootmode: 'open' }"
       data-effect="
         const host = $el;
-        if (!host.__builder_bound) {
-          host.__builder_bound = true;
+        const bindShadow = () => {
+          if (!host.shadowRoot) {
+            setTimeout(bindShadow, 50);
+            return;
+          }
+          const root = host.shadowRoot;
+          if (root.__builder_bound) return;
+          root.__builder_bound = true;
 
           // Adopt global stylesheets into shadow root for 100% styled components
-          const adoptStyles = () => {
-            if (host.shadowRoot && document.adoptedStyleSheets && document.adoptedStyleSheets.length) {
-              host.shadowRoot.adoptedStyleSheets = [...document.adoptedStyleSheets];
-            }
-          };
-          adoptStyles();
-          setTimeout(adoptStyles, 200);
-          setTimeout(adoptStyles, 800);
+          if (document.adoptedStyleSheets && document.adoptedStyleSheets.length) {
+            try { root.adoptedStyleSheets = [...document.adoptedStyleSheets]; } catch {}
+          }
 
           // Handle selection click inside shadow root
-          host.addEventListener('click', function(e) {
+          root.addEventListener('click', function(e) {
             if (previewMode) return;
             const target = e.composedPath ? e.composedPath()[0] : e.target;
             if (target && target.nodeType === 1 && target !== host) {
@@ -55,7 +56,7 @@
           }, true);
 
           // Handle hover highlight inside shadow root
-          host.addEventListener('pointermove', function(e) {
+          root.addEventListener('pointermove', function(e) {
             if (previewMode) return;
             const target = e.composedPath ? e.composedPath()[0] : e.target;
             if (target && target.nodeType === 1 && target !== host) {
@@ -63,12 +64,12 @@
             }
           }, true);
 
-          host.addEventListener('pointerleave', function() {
+          root.addEventListener('pointerleave', function() {
             hoverBox.visible = false;
           });
 
           // Handle double click for inline text editing
-          host.addEventListener('dblclick', function(e) {
+          root.addEventListener('dblclick', function(e) {
             if (previewMode) return;
             const target = e.composedPath ? e.composedPath()[0] : e.target;
             if (target && target.nodeType === 1) {
@@ -82,7 +83,8 @@
               });
             }
           }, true);
-        }
+        };
+        bindShadow();
 
         if (selectedEl) {
           updateSelectedBox();
