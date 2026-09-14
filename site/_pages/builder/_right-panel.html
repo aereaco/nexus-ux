@@ -1,0 +1,383 @@
+<aside class="flex flex-col w-72 lg:w-80 bg-base-200/60 backdrop-blur-md border border-base-content/10 rounded-box shrink-0 overflow-hidden transition-all duration-300 shadow-sm"
+  data-show="!previewMode">
+
+  <!-- Empty State when nothing selected -->
+  <div data-show="!selectedEl" class="flex-1 flex flex-col items-center justify-center p-6 text-center text-base-content/50">
+    <div class="w-12 h-12 rounded-2xl bg-base-300 flex items-center justify-center mb-3">
+      <iconify-icon icon="material-symbols-light:touch-app" class="text-2xl text-base-content/40"></iconify-icon>
+    </div>
+    <div class="font-bold text-sm text-base-content/80 mb-1">No Element Selected</div>
+    <p class="text-xs text-base-content/50 max-w-[200px]">
+      Click any element in the canvas to inspect and edit its styles, DaisyUI classes, attributes, or reactive directives.
+    </p>
+  </div>
+
+  <!-- Selected Element Inspector Content -->
+  <div data-show="selectedEl" class="flex-1 flex flex-col min-h-0">
+
+    <!-- Element Header & Breadcrumbs -->
+    <div class="p-3 border-b border-base-content/10 bg-base-300/40 space-y-2">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <span class="badge badge-primary badge-sm font-mono font-bold" data-bind="inspector.tag"></span>
+          <span class="text-xs font-mono opacity-50 truncate" data-show="inspector.id" data-bind="'#' + inspector.id"></span>
+        </div>
+        <!-- Quick Actions -->
+        <div class="flex items-center gap-1">
+          <button class="btn btn-ghost btn-circle btn-xs" data-on-click="selectParent()" title="Select Parent">
+            <iconify-icon icon="material-symbols-light:arrow-upward" class="text-sm"></iconify-icon>
+          </button>
+          <button class="btn btn-ghost btn-circle btn-xs" data-on-click="duplicateElement()" title="Duplicate">
+            <iconify-icon icon="material-symbols-light:content-copy-outline" class="text-sm"></iconify-icon>
+          </button>
+          <button class="btn btn-ghost btn-circle btn-xs text-error" data-on-click="deleteElement()" title="Delete">
+            <iconify-icon icon="material-symbols-light:delete-outline" class="text-sm"></iconify-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Ancestor Breadcrumbs -->
+      <div class="flex items-center gap-1 overflow-x-auto text-[10px] font-mono opacity-70 pb-1 scrollbar-none">
+        <template data-for="crumb in breadcrumbs">
+          <button class="hover:text-primary hover:underline shrink-0"
+            data-bind="crumb.tag"
+            data-on-click="selectElement(crumb.el)"></button>
+          <span class="opacity-30 shrink-0">&gt;</span>
+        </template>
+        <span class="font-bold text-primary shrink-0" data-bind="inspector.tag"></span>
+      </div>
+    </div>
+
+    <!-- Inspector Tabs -->
+    <div class="tabs tabs-boxed bg-base-300/40 p-1 mx-2 my-2 rounded-xl gap-1">
+      <button class="tab tab-xs flex-1"
+        data-class="{ 'tab-active font-bold text-primary shadow-sm': inspectorTab === 'style' }"
+        data-on-click="inspectorTab = 'style'">
+        Style
+      </button>
+      <button class="tab tab-xs flex-1"
+        data-class="{ 'tab-active font-bold text-secondary shadow-sm': inspectorTab === 'daisy' }"
+        data-on-click="inspectorTab = 'daisy'">
+        DaisyUI
+      </button>
+      <button class="tab tab-xs flex-1"
+        data-class="{ 'tab-active font-bold text-accent shadow-sm': inspectorTab === 'attrs' }"
+        data-on-click="inspectorTab = 'attrs'">
+        Attrs
+      </button>
+      <button class="tab tab-xs flex-1"
+        data-class="{ 'tab-active font-bold text-warning shadow-sm': inspectorTab === 'nexus' }"
+        data-on-click="inspectorTab = 'nexus'">
+        Nexus
+      </button>
+    </div>
+
+    <!-- Scrollable Inspector Body -->
+    <div class="flex-1 overflow-y-auto px-3 pb-6 space-y-4 text-xs">
+
+      <!-- ================= TAB 1: STYLES ================= -->
+      <div data-show="inspectorTab === 'style'" class="space-y-4">
+
+        <!-- Text Content Editor (if text leaf node) -->
+        <div class="form-control" data-show="inspector.isTextLeaf">
+          <label class="label py-1 text-[11px] font-bold text-base-content/70">Text Content</label>
+          <textarea class="textarea textarea-bordered textarea-xs rounded-lg text-xs leading-relaxed"
+            rows="2"
+            data-bind="inspector.textContent"
+            data-on-input="updateTextContent($newValue)"></textarea>
+        </div>
+
+        <!-- Typography Section -->
+        <div class="space-y-2 border-t border-base-content/10 pt-2">
+          <div class="text-[10px] uppercase font-bold tracking-wider text-base-content/40">Typography</div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="label py-0 text-[10px] opacity-60">Font Size</label>
+              <select class="select select-bordered select-xs w-full"
+                data-bind="inspector.fontSize"
+                data-on-change="updateStyle('fontSize', $newValue)">
+                <option value="">Default</option>
+                <option value="0.75rem">12px (xs)</option>
+                <option value="0.875rem">14px (sm)</option>
+                <option value="1rem">16px (base)</option>
+                <option value="1.125rem">18px (lg)</option>
+                <option value="1.25rem">20px (xl)</option>
+                <option value="1.5rem">24px (2xl)</option>
+                <option value="1.875rem">30px (3xl)</option>
+                <option value="2.25rem">36px (4xl)</option>
+              </select>
+            </div>
+            <div>
+              <label class="label py-0 text-[10px] opacity-60">Font Weight</label>
+              <select class="select select-bordered select-xs w-full"
+                data-bind="inspector.fontWeight"
+                data-on-change="updateStyle('fontWeight', $newValue)">
+                <option value="">Default</option>
+                <option value="300">Light (300)</option>
+                <option value="400">Normal (400)</option>
+                <option value="500">Medium (500)</option>
+                <option value="600">Semibold (600)</option>
+                <option value="700">Bold (700)</option>
+                <option value="900">Black (900)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Text Align Buttons -->
+          <div>
+            <label class="label py-0 text-[10px] opacity-60">Alignment</label>
+            <div class="join w-full bg-base-100 border border-base-content/10 rounded-lg p-0.5">
+              <button class="btn btn-xs join-item flex-1"
+                data-class="{ 'btn-primary': inspector.textAlign === 'left' }"
+                data-on-click="updateStyle('textAlign', 'left')">
+                <iconify-icon icon="material-symbols-light:format-align-left"></iconify-icon>
+              </button>
+              <button class="btn btn-xs join-item flex-1"
+                data-class="{ 'btn-primary': inspector.textAlign === 'center' }"
+                data-on-click="updateStyle('textAlign', 'center')">
+                <iconify-icon icon="material-symbols-light:format-align-center"></iconify-icon>
+              </button>
+              <button class="btn btn-xs join-item flex-1"
+                data-class="{ 'btn-primary': inspector.textAlign === 'right' }"
+                data-on-click="updateStyle('textAlign', 'right')">
+                <iconify-icon icon="material-symbols-light:format-align-right"></iconify-icon>
+              </button>
+              <button class="btn btn-xs join-item flex-1"
+                data-class="{ 'btn-primary': inspector.textAlign === 'justify' }"
+                data-on-click="updateStyle('textAlign', 'justify')">
+                <iconify-icon icon="material-symbols-light:format-align-justify"></iconify-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Spacing & Layout Section -->
+        <div class="space-y-2 border-t border-base-content/10 pt-2">
+          <div class="text-[10px] uppercase font-bold tracking-wider text-base-content/40">Layout &amp; Spacing</div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="label py-0 text-[10px] opacity-60">Display</label>
+              <select class="select select-bordered select-xs w-full"
+                data-bind="inspector.display"
+                data-on-change="updateStyle('display', $newValue)">
+                <option value="">Default</option>
+                <option value="block">Block</option>
+                <option value="flex">Flex</option>
+                <option value="grid">Grid</option>
+                <option value="inline-block">Inline Block</option>
+                <option value="none">None</option>
+              </select>
+            </div>
+            <div>
+              <label class="label py-0 text-[10px] opacity-60">Gap</label>
+              <select class="select select-bordered select-xs w-full"
+                data-bind="inspector.gap"
+                data-on-change="updateStyle('gap', $newValue)">
+                <option value="">Default</option>
+                <option value="0.25rem">4px (gap-1)</option>
+                <option value="0.5rem">8px (gap-2)</option>
+                <option value="0.75rem">12px (gap-3)</option>
+                <option value="1rem">16px (gap-4)</option>
+                <option value="1.5rem">24px (gap-6)</option>
+                <option value="2rem">32px (gap-8)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="label py-0 text-[10px] opacity-60">Padding</label>
+              <select class="select select-bordered select-xs w-full"
+                data-bind="inspector.padding"
+                data-on-change="updateStyle('padding', $newValue)">
+                <option value="">None</option>
+                <option value="0.5rem">8px (p-2)</option>
+                <option value="1rem">16px (p-4)</option>
+                <option value="1.5rem">24px (p-6)</option>
+                <option value="2rem">32px (p-8)</option>
+                <option value="3rem">48px (p-12)</option>
+              </select>
+            </div>
+            <div>
+              <label class="label py-0 text-[10px] opacity-60">Margin Bottom</label>
+              <select class="select select-bordered select-xs w-full"
+                data-bind="inspector.marginBottom"
+                data-on-change="updateStyle('marginBottom', $newValue)">
+                <option value="">None</option>
+                <option value="0.5rem">8px (mb-2)</option>
+                <option value="1rem">16px (mb-4)</option>
+                <option value="1.5rem">24px (mb-6)</option>
+                <option value="2rem">32px (mb-8)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Appearance & Borders -->
+        <div class="space-y-2 border-t border-base-content/10 pt-2">
+          <div class="text-[10px] uppercase font-bold tracking-wider text-base-content/40">Appearance</div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="label py-0 text-[10px] opacity-60">Corner Radius</label>
+              <select class="select select-bordered select-xs w-full"
+                data-bind="inspector.borderRadius"
+                data-on-change="updateStyle('borderRadius', $newValue)">
+                <option value="">Default</option>
+                <option value="0.25rem">Small (rounded-sm)</option>
+                <option value="0.5rem">Medium (rounded-md)</option>
+                <option value="0.75rem">Large (rounded-lg)</option>
+                <option value="1rem">XL (rounded-xl)</option>
+                <option value="9999px">Full (rounded-full)</option>
+              </select>
+            </div>
+            <div>
+              <label class="label py-0 text-[10px] opacity-60">Opacity</label>
+              <select class="select select-bordered select-xs w-full"
+                data-bind="inspector.opacity"
+                data-on-change="updateStyle('opacity', $newValue)">
+                <option value="1">100%</option>
+                <option value="0.9">90%</option>
+                <option value="0.75">75%</option>
+                <option value="0.5">50%</option>
+                <option value="0.25">25%</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ================= TAB 2: DAISYUI CLASSES ================= -->
+      <div data-show="inspectorTab === 'daisy'" class="space-y-3">
+        <div class="text-[10px] uppercase font-bold tracking-wider text-base-content/40">DaisyUI Theme Colors</div>
+        <div class="grid grid-cols-3 gap-1">
+          <button class="btn btn-xs btn-primary text-[10px]" data-on-click="toggleDaisyClass('btn-primary')">Primary</button>
+          <button class="btn btn-xs btn-secondary text-[10px]" data-on-click="toggleDaisyClass('btn-secondary')">Secondary</button>
+          <button class="btn btn-xs btn-accent text-[10px]" data-on-click="toggleDaisyClass('btn-accent')">Accent</button>
+          <button class="btn btn-xs btn-neutral text-[10px]" data-on-click="toggleDaisyClass('btn-neutral')">Neutral</button>
+          <button class="btn btn-xs btn-ghost text-[10px]" data-on-click="toggleDaisyClass('btn-ghost')">Ghost</button>
+          <button class="btn btn-xs btn-outline text-[10px]" data-on-click="toggleDaisyClass('btn-outline')">Outline</button>
+        </div>
+
+        <div class="text-[10px] uppercase font-bold tracking-wider text-base-content/40 pt-2 border-t border-base-content/10">Sizes</div>
+        <div class="grid grid-cols-4 gap-1">
+          <button class="btn btn-xs btn-ghost border border-base-content/10 text-[10px]" data-on-click="toggleDaisyClass('btn-xs')">xs</button>
+          <button class="btn btn-xs btn-ghost border border-base-content/10 text-[10px]" data-on-click="toggleDaisyClass('btn-sm')">sm</button>
+          <button class="btn btn-xs btn-ghost border border-base-content/10 text-[10px]" data-on-click="toggleDaisyClass('btn-md')">md</button>
+          <button class="btn btn-xs btn-ghost border border-base-content/10 text-[10px]" data-on-click="toggleDaisyClass('btn-lg')">lg</button>
+        </div>
+
+        <div class="text-[10px] uppercase font-bold tracking-wider text-base-content/40 pt-2 border-t border-base-content/10">Shape &amp; Effects</div>
+        <div class="grid grid-cols-2 gap-1.5">
+          <button class="btn btn-xs btn-ghost border border-base-content/10 justify-start" data-on-click="toggleDaisyClass('rounded-box')">rounded-box</button>
+          <button class="btn btn-xs btn-ghost border border-base-content/10 justify-start" data-on-click="toggleDaisyClass('shadow-xl')">shadow-xl</button>
+          <button class="btn btn-xs btn-ghost border border-base-content/10 justify-start" data-on-click="toggleDaisyClass('card-body')">card-body</button>
+          <button class="btn btn-xs btn-ghost border border-base-content/10 justify-start" data-on-click="toggleDaisyClass('glass')">glass effect</button>
+        </div>
+
+        <!-- Full Class List Input -->
+        <div class="pt-2 border-t border-base-content/10">
+          <label class="label py-1 text-[10px] opacity-60">All Element Classes</label>
+          <textarea class="textarea textarea-bordered textarea-xs w-full font-mono text-[11px]"
+            rows="3"
+            data-bind="inspector.className"
+            data-on-input="updateClassAttribute($newValue)"></textarea>
+        </div>
+      </div>
+
+      <!-- ================= TAB 3: ATTRIBUTES ================= -->
+      <div data-show="inspectorTab === 'attrs'" class="space-y-2">
+        <div class="form-control">
+          <label class="label py-0 text-[10px] opacity-60">Element ID</label>
+          <input type="text" class="input input-bordered input-xs font-mono"
+            placeholder="unique-id"
+            data-bind="inspector.id"
+            data-on-input="updateAttribute('id', $newValue)" />
+        </div>
+
+        <div class="form-control">
+          <label class="label py-0 text-[10px] opacity-60">Link URL (href)</label>
+          <input type="text" class="input input-bordered input-xs font-mono"
+            placeholder="https://..."
+            data-bind="inspector.href"
+            data-on-input="updateAttribute('href', $newValue)" />
+        </div>
+
+        <div class="form-control">
+          <label class="label py-0 text-[10px] opacity-60">Image / Asset Source (src)</label>
+          <input type="text" class="input input-bordered input-xs font-mono"
+            placeholder="/img/photo.jpg"
+            data-bind="inspector.src"
+            data-on-input="updateAttribute('src', $newValue)" />
+        </div>
+
+        <div class="form-control">
+          <label class="label py-0 text-[10px] opacity-60">Image Alt Text (alt)</label>
+          <input type="text" class="input input-bordered input-xs"
+            placeholder="Description..."
+            data-bind="inspector.alt"
+            data-on-input="updateAttribute('alt', $newValue)" />
+        </div>
+
+        <div class="form-control">
+          <label class="label py-0 text-[10px] opacity-60">Target</label>
+          <select class="select select-bordered select-xs"
+            data-bind="inspector.target"
+            data-on-change="updateAttribute('target', $newValue)">
+            <option value="">Default (_self)</option>
+            <option value="_blank">New Tab (_blank)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ================= TAB 4: NEXUS DIRECTIVES ================= -->
+      <div data-show="inspectorTab === 'nexus'" class="space-y-2">
+        <div class="alert alert-warning text-[11px] p-2 bg-warning/10 border-warning/20 text-warning-content flex items-start gap-2">
+          <iconify-icon icon="material-symbols-light:bolt" class="text-base text-warning shrink-0 mt-0.5"></iconify-icon>
+          <span>Nexus-UX directives evaluate live inside the reactive ownership graph!</span>
+        </div>
+
+        <div class="form-control">
+          <label class="label py-0 text-[10px] font-mono text-primary font-bold">data-signal</label>
+          <input type="text" class="input input-bordered input-xs font-mono"
+            placeholder="{ count: 0 }"
+            data-bind="inspector.dataSignal"
+            data-on-input="updateAttribute('data-signal', $newValue)" />
+        </div>
+
+        <div class="form-control">
+          <label class="label py-0 text-[10px] font-mono text-primary font-bold">data-bind</label>
+          <input type="text" class="input input-bordered input-xs font-mono"
+            placeholder="user.name"
+            data-bind="inspector.dataBind"
+            data-on-input="updateAttribute('data-bind', $newValue)" />
+        </div>
+
+        <div class="form-control">
+          <label class="label py-0 text-[10px] font-mono text-primary font-bold">data-show</label>
+          <input type="text" class="input input-bordered input-xs font-mono"
+            placeholder="isOpen"
+            data-bind="inspector.dataShow"
+            data-on-input="updateAttribute('data-show', $newValue)" />
+        </div>
+
+        <div class="form-control">
+          <label class="label py-0 text-[10px] font-mono text-primary font-bold">data-on-click</label>
+          <input type="text" class="input input-bordered input-xs font-mono"
+            placeholder="count++"
+            data-bind="inspector.dataOnClick"
+            data-on-input="updateAttribute('data-on-click', $newValue)" />
+        </div>
+
+        <div class="form-control">
+          <label class="label py-0 text-[10px] font-mono text-primary font-bold">data-for</label>
+          <input type="text" class="input input-bordered input-xs font-mono"
+            placeholder="item in items"
+            data-bind="inspector.dataFor"
+            data-on-input="updateAttribute('data-for', $newValue)" />
+        </div>
+      </div>
+
+    </div>
+  </div>
+</aside>

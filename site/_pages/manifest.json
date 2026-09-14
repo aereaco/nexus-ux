@@ -1121,6 +1121,12 @@
     "parent": "/builder"
   },
   {
+    "id": "_right-panel",
+    "route": "/_right-panel",
+    "path": "/_pages/builder/_right-panel.html",
+    "parent": "/builder"
+  },
+  {
     "id": "_top-panel",
     "route": "/_top-panel",
     "path": "/_pages/builder/_top-panel.html",
