@@ -275,8 +275,8 @@
         const hostRect = host.getBoundingClientRect();
         const elRect = el.getBoundingClientRect();
 
-        selectedBox.top = elRect.top - hostRect.top;
-        selectedBox.left = elRect.left - hostRect.left;
+        selectedBox.top = (elRect.top - hostRect.top) + host.offsetTop;
+        selectedBox.left = (elRect.left - hostRect.left) + host.offsetLeft;
         selectedBox.width = elRect.width;
         selectedBox.height = elRect.height;
         const tag = el.tagName.toLowerCase();
@@ -302,8 +302,8 @@
         const hostRect = host.getBoundingClientRect();
         const elRect = raw.getBoundingClientRect();
 
-        hoverBox.top = elRect.top - hostRect.top;
-        hoverBox.left = elRect.left - hostRect.left;
+        hoverBox.top = (elRect.top - hostRect.top) + host.offsetTop;
+        hoverBox.left = (elRect.left - hostRect.left) + host.offsetLeft;
         hoverBox.width = elRect.width;
         hoverBox.height = elRect.height;
         hoverBox.tag = raw.tagName.toLowerCase();
