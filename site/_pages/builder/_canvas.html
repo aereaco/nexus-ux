@@ -30,13 +30,13 @@
       data-attr-theme="canvasTheme"
       data-component="{ path: currentDoc, shadowrootmode: 'open' }"
       data-effect="
-        const host = $el;
+        const rawHost = document.getElementById('builder-canvas-host') || ($el.__v_raw || $el);
         const bindShadow = () => {
-          if (!host.shadowRoot) {
+          if (!rawHost || !rawHost.shadowRoot) {
             setTimeout(bindShadow, 50);
             return;
           }
-          const root = host.shadowRoot;
+          const root = rawHost.shadowRoot;
           if (root.__builder_bound) return;
           root.__builder_bound = true;
 
