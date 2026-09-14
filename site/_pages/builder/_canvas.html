@@ -2,17 +2,17 @@
   <meta name="internal" content="true">
 </head>
 <!-- Authentic VvvebJs #canvas Workspace with in-canvas Overlays -->
-<main class="flex-1 min-w-0 h-full bg-base-300/40 p-3 sm:p-6 flex flex-col items-center overflow-auto relative select-none"
+<main class="flex-1 min-w-0 h-full bg-[#e9ecef] dark:bg-[#18191c] p-2 sm:p-6 flex flex-col items-center overflow-auto relative select-none"
   id="canvas">
 
-  <!-- Viewport Framing Container (Shadow DOM Canvas Bezel) -->
-  <div class="transition-all duration-300 relative bg-base-100 shadow-2xl overflow-visible shrink-0"
+  <!-- Viewport Framing Container (Center Document Card) -->
+  <div class="transition-all duration-300 relative bg-white shadow-2xl overflow-visible shrink-0"
     data-class="{
-      'w-full max-w-full rounded-lg': viewport === 'desktop',
-      'w-[1200px] max-w-[1200px] rounded-xl border-4 border-base-content/20 my-2': viewport === 'laptop',
-      'w-[1024px] max-w-[1024px] rounded-xl border-4 border-base-content/20 my-2': viewport === 'tablet-landscape',
-      'w-[768px] max-w-[768px] rounded-2xl border-4 border-base-content/20 my-4': viewport === 'tablet',
-      'w-[375px] max-w-[375px] rounded-3xl border-8 border-base-content/25 my-4': viewport === 'mobile'
+      'w-full max-w-[1180px] min-h-[90vh] rounded-sm my-2': viewport === 'desktop',
+      'w-[1200px] max-w-[1200px] min-h-[90vh] rounded-xl border-4 border-base-content/20 my-2': viewport === 'laptop',
+      'w-[1024px] max-w-[1024px] min-h-[90vh] rounded-xl border-4 border-base-content/20 my-2': viewport === 'tablet-landscape',
+      'w-[768px] max-w-[768px] min-h-[90vh] rounded-2xl border-4 border-base-content/20 my-4': viewport === 'tablet',
+      'w-[375px] max-w-[375px] min-h-[85vh] rounded-3xl border-8 border-base-content/25 my-4': viewport === 'mobile'
     }"
     data-style="{
       transform: 'scale(' + (zoom / 100) + ')',
@@ -28,7 +28,7 @@
 
     <!-- The Encapsulated Shadow DOM Canvas Host (#builder-canvas-host) -->
     <div id="builder-canvas-host"
-      class="min-h-[85vh] w-full bg-base-100 overflow-y-auto overflow-x-hidden relative"
+      class="min-h-[85vh] w-full bg-white text-[#212529] overflow-y-auto overflow-x-hidden relative"
       data-component="{ path: currentDoc, shadowrootmode: 'open' }"
       data-effect="
         const host = $el;
@@ -84,7 +84,7 @@
 
     <!-- ================= 1. HOVER HIGHLIGHT BOX (#highlight-box) ================= -->
     <div id="highlight-box"
-      class="absolute pointer-events-none border border-dashed border-info z-30 transition-all duration-75"
+      class="absolute pointer-events-none border border-dashed border-[#0d6efd] z-30 transition-all duration-75"
       data-show="!previewMode && hoverBox.visible && (!selectedEl || hoveredEl !== selectedEl)"
       data-style="{
         top: hoverBox.top + 'px',
@@ -94,13 +94,13 @@
       }">
       
       <!-- Highlight Name Pill -->
-      <div class="absolute -top-5 start-0 bg-info text-info-content text-[9px] font-mono font-bold px-1.5 py-0.5 rounded shadow-sm flex items-center gap-1">
+      <div class="absolute -top-5 start-0 bg-[#0d6efd] text-white text-[9px] font-mono font-bold px-1.5 py-0.5 rounded shadow-sm flex items-center gap-1">
         <span data-bind="hoverBox.tag"></span>
       </div>
 
       <!-- Section Actions: (+) Add Element Button -->
-      <div class="absolute -bottom-3 end-2 pointer-events-auto">
-        <button class="btn btn-circle btn-info btn-xs h-5 w-5 min-h-0 text-info-content shadow-md hover:scale-110 transition-transform"
+      <div class="absolute -bottom-3.5 end-2 pointer-events-auto">
+        <button class="btn btn-circle btn-xs h-6 w-6 min-h-0 bg-[#0d6efd] text-white border-0 shadow-md hover:scale-110 transition-transform"
           data-on-click="selectElement(hoveredEl); addSectionBoxOpen = true"
           title="Add Section / Component">
           <iconify-icon icon="material-symbols-light:add" class="text-xs"></iconify-icon>
@@ -110,7 +110,7 @@
 
     <!-- ================= 2. SELECTION BOX & FLOATING TOOLBARS (#select-box) ================= -->
     <div id="select-box"
-      class="absolute pointer-events-none border-2 border-primary z-40 transition-all duration-75"
+      class="absolute pointer-events-none border-[1.5px] border-[#0d6efd] z-40 transition-all duration-75"
       data-show="!previewMode && selectedBox.visible"
       data-style="{
         top: selectedBox.top + 'px',
@@ -121,11 +121,11 @@
 
       <!-- A. FLOATING WYSIWYG EDITOR (#wysiwyg-editor) - Appears above text nodes -->
       <div id="wysiwyg-editor"
-        class="absolute -top-11 start-0 bg-base-100 text-base-content rounded-lg p-1 shadow-2xl border border-base-content/15 flex items-center gap-1 pointer-events-auto z-50 overflow-visible"
+        class="absolute -top-11 start-0 bg-base-100 text-base-content rounded-md p-1 shadow-xl border border-base-content/15 flex items-center gap-1 pointer-events-auto z-50 overflow-visible text-xs"
         data-show="selectedBox.isText">
         
         <!-- Bold, Italic, Underline, Strike -->
-        <div class="flex items-center gap-0.5 border-r border-base-content/10 pr-1">
+        <div class="flex items-center gap-0.5 border-r border-base-content/15 pr-1">
           <button class="btn btn-ghost btn-xs h-6 w-6 min-h-0 p-0 hover:bg-base-200" data-on-click="formatInline('bold')" title="Bold">
             <iconify-icon icon="material-symbols-light:format-bold" class="text-sm"></iconify-icon>
           </button>
@@ -154,7 +154,7 @@
         </div>
 
         <!-- Color Pickers -->
-        <div class="flex items-center gap-1 border-x border-base-content/10 px-1">
+        <div class="flex items-center gap-1 border-x border-base-content/15 px-1">
           <input type="color" class="w-5 h-5 rounded cursor-pointer border-0 bg-transparent"
             data-on-input="formatInline('color', $evt.target.value)"
             title="Text Color" />
@@ -176,86 +176,87 @@
           <option value="32px">32px</option>
           <option value="48px">48px</option>
         </select>
-
-        <!-- Font Family Select -->
-        <select class="select select-bordered select-xs h-6 min-h-0 text-[10px] px-1 py-0 rounded"
-          data-on-change="formatInline('fontFamily', $evt.target.value)">
-          <option value="">Font</option>
-          <option value="system-ui, sans-serif">Sans</option>
-          <option value="Georgia, serif">Serif</option>
-          <option value="monospace">Mono</option>
-        </select>
       </div>
 
       <!-- B. Element Tag Badge -->
-      <div class="absolute -top-5 start-0 bg-primary text-primary-content text-[9px] font-mono font-bold px-1.5 py-0.5 rounded shadow-sm pointer-events-auto flex items-center gap-1"
+      <div class="absolute -top-5 start-0 bg-[#0d6efd] text-white text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-t shadow-sm pointer-events-auto flex items-center gap-1"
         data-show="!selectedBox.isText">
         <span data-bind="selectedBox.tag"></span>
         <span data-show="selectedBox.id" data-bind="'#' + selectedBox.id" class="opacity-80"></span>
       </div>
 
-      <!-- C. Quick Action Toolbar (#select-actions) -->
+      <!-- C. Authentic VvvebJs Select Actions Pill (#select-actions) -->
       <div id="select-actions"
-        class="absolute -top-7 end-0 bg-base-200/95 backdrop-blur-md text-base-content rounded-lg p-0.5 shadow-xl border border-base-content/15 flex items-center gap-0.5 pointer-events-auto z-50">
+        class="absolute -top-6 end-0 bg-[#0d6efd] text-white rounded-t px-1.5 py-0.5 shadow-md flex items-center gap-1 pointer-events-auto z-50 text-xs">
         
         <!-- Drag Handle Indicator -->
-        <button class="btn btn-ghost btn-circle btn-xs h-6 w-6 min-h-0 cursor-grab" title="Drag element">
-          <iconify-icon icon="material-symbols-light:drag-pan" class="text-xs opacity-60"></iconify-icon>
+        <button class="btn btn-ghost btn-xs h-5 w-5 min-h-0 p-0 text-white hover:bg-white/20 cursor-grab" title="Drag element">
+          <iconify-icon icon="material-symbols-light:drag-pan" class="text-sm"></iconify-icon>
         </button>
 
         <!-- Select Parent -->
-        <button class="btn btn-ghost btn-circle btn-xs h-6 w-6 min-h-0 hover:bg-base-300" data-on-click="selectParent()" title="Select Parent Element">
-          <iconify-icon icon="material-symbols-light:arrow-upward-alt" class="text-xs"></iconify-icon>
+        <button class="btn btn-ghost btn-xs h-5 w-5 min-h-0 p-0 text-white hover:bg-white/20" data-on-click="selectParent()" title="Select parent">
+          <iconify-icon icon="material-symbols-light:arrow-upward-alt" class="text-sm"></iconify-icon>
         </button>
 
         <!-- Move Up -->
-        <button class="btn btn-ghost btn-circle btn-xs h-6 w-6 min-h-0 hover:bg-base-300" data-on-click="moveElementUp()" title="Move Up">
-          <iconify-icon icon="material-symbols-light:arrow-upward" class="text-xs"></iconify-icon>
+        <button class="btn btn-ghost btn-xs h-5 w-5 min-h-0 p-0 text-white hover:bg-white/20" data-on-click="moveElementUp()" title="Move up">
+          <iconify-icon icon="material-symbols-light:keyboard-arrow-up" class="text-sm"></iconify-icon>
         </button>
 
         <!-- Move Down -->
-        <button class="btn btn-ghost btn-circle btn-xs h-6 w-6 min-h-0 hover:bg-base-300" data-on-click="moveElementDown()" title="Move Down">
-          <iconify-icon icon="material-symbols-light:arrow-downward" class="text-xs"></iconify-icon>
+        <button class="btn btn-ghost btn-xs h-5 w-5 min-h-0 p-0 text-white hover:bg-white/20" data-on-click="moveElementDown()" title="Move down">
+          <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
         </button>
 
         <!-- Edit HTML Code -->
-        <button class="btn btn-ghost btn-circle btn-xs h-6 w-6 min-h-0 hover:bg-base-300" data-on-click="bottomPanelExpanded = true; codeTab = 'html'" title="Edit HTML">
-          <iconify-icon icon="material-symbols-light:code" class="text-xs"></iconify-icon>
+        <button class="btn btn-ghost btn-xs h-5 w-5 min-h-0 p-0 text-white hover:bg-white/20" data-on-click="bottomPanelExpanded = true; codeTab = 'html'" title="Edit html code">
+          <iconify-icon icon="material-symbols-light:code" class="text-sm"></iconify-icon>
+        </button>
+
+        <!-- Translate / AI -->
+        <button class="btn btn-ghost btn-xs h-5 w-5 min-h-0 p-0 text-white hover:bg-white/20" title="Translate text">
+          <iconify-icon icon="material-symbols-light:translate" class="text-sm"></iconify-icon>
+        </button>
+
+        <!-- Save As Reusable -->
+        <button class="btn btn-ghost btn-xs h-5 w-5 min-h-0 p-0 text-white hover:bg-white/20" title="Save as reusable">
+          <iconify-icon icon="material-symbols-light:save" class="text-sm"></iconify-icon>
         </button>
 
         <!-- Duplicate Element -->
-        <button class="btn btn-ghost btn-circle btn-xs h-6 w-6 min-h-0 hover:bg-base-300" data-on-click="duplicateElement()" title="Duplicate Element">
-          <iconify-icon icon="material-symbols-light:content-copy-outline" class="text-xs"></iconify-icon>
+        <button class="btn btn-ghost btn-xs h-5 w-5 min-h-0 p-0 text-white hover:bg-white/20" data-on-click="duplicateElement()" title="Clone element">
+          <iconify-icon icon="material-symbols-light:content-copy" class="text-sm"></iconify-icon>
         </button>
 
         <!-- Delete Element -->
-        <button class="btn btn-ghost btn-circle btn-xs h-6 w-6 min-h-0 text-error hover:bg-error/15" data-on-click="deleteElement()" title="Delete Element">
-          <iconify-icon icon="material-symbols-light:delete-outline" class="text-xs"></iconify-icon>
+        <button class="btn btn-ghost btn-xs h-5 w-5 min-h-0 p-0 text-white hover:bg-red-600" data-on-click="deleteElement()" title="Remove element">
+          <iconify-icon icon="material-symbols-light:delete-outline" class="text-sm"></iconify-icon>
         </button>
       </div>
 
-      <!-- D. 8-Point Resize Handles -->
-      <div class="absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border-2 border-primary rounded-sm pointer-events-auto cursor-nwse-resize shadow-sm"></div>
-      <div class="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-2 border-primary rounded-sm pointer-events-auto cursor-ns-resize shadow-sm"></div>
-      <div class="absolute -top-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-primary rounded-sm pointer-events-auto cursor-nesw-resize shadow-sm"></div>
-      <div class="absolute top-1/2 -translate-y-1/2 -left-1.5 w-3 h-3 bg-white border-2 border-primary rounded-sm pointer-events-auto cursor-ew-resize shadow-sm"></div>
-      <div class="absolute top-1/2 -translate-y-1/2 -right-1.5 w-3 h-3 bg-white border-2 border-primary rounded-sm pointer-events-auto cursor-ew-resize shadow-sm"></div>
-      <div class="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white border-2 border-primary rounded-sm pointer-events-auto cursor-nesw-resize shadow-sm"></div>
-      <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-2 border-primary rounded-sm pointer-events-auto cursor-ns-resize shadow-sm"></div>
-      <div class="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-primary rounded-sm pointer-events-auto cursor-nwse-resize shadow-sm"></div>
+      <!-- D. 8-Point Resize Handles (Sleek 6px dots) -->
+      <div class="absolute -top-1 -left-1 w-1.5 h-1.5 bg-[#0d6efd] border border-white rounded-[1px] pointer-events-auto cursor-nwse-resize"></div>
+      <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-[#0d6efd] border border-white rounded-[1px] pointer-events-auto cursor-ns-resize"></div>
+      <div class="absolute -top-1 -right-1 w-1.5 h-1.5 bg-[#0d6efd] border border-white rounded-[1px] pointer-events-auto cursor-nesw-resize"></div>
+      <div class="absolute top-1/2 -translate-y-1/2 -left-1 w-1.5 h-1.5 bg-[#0d6efd] border border-white rounded-[1px] pointer-events-auto cursor-ew-resize"></div>
+      <div class="absolute top-1/2 -translate-y-1/2 -right-1 w-1.5 h-1.5 bg-[#0d6efd] border border-white rounded-[1px] pointer-events-auto cursor-ew-resize"></div>
+      <div class="absolute -bottom-1 -left-1 w-1.5 h-1.5 bg-[#0d6efd] border border-white rounded-[1px] pointer-events-auto cursor-nesw-resize"></div>
+      <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-[#0d6efd] border border-white rounded-[1px] pointer-events-auto cursor-ns-resize"></div>
+      <div class="absolute -bottom-1 -right-1 w-1.5 h-1.5 bg-[#0d6efd] border border-white rounded-[1px] pointer-events-auto cursor-nwse-resize"></div>
 
     </div>
 
     <!-- ================= 3. CONTEXTUAL ADD SECTION DRAWER (#add-section-box) ================= -->
     <div id="add-section-box"
-      class="absolute inset-x-8 top-16 bg-base-200/95 backdrop-blur-xl border border-base-content/15 rounded-2xl shadow-2xl p-4 z-50 transition-all duration-200"
+      class="absolute inset-x-8 top-16 bg-base-100 border border-base-content/15 rounded-xl shadow-2xl p-4 z-50 transition-all duration-200"
       data-show="addSectionBoxOpen">
       
       <!-- Drawer Header & Placement Mode -->
       <div class="flex items-center justify-between border-b border-base-content/10 pb-3 mb-3">
         <div class="flex items-center gap-3">
           <span class="font-bold text-sm">Add Component / Section</span>
-          <div class="flex items-center gap-2 bg-base-100 px-2 py-1 rounded-lg border border-base-content/10">
+          <div class="flex items-center gap-2 bg-base-200 px-2 py-1 rounded border border-base-content/10">
             <label class="flex items-center gap-1 cursor-pointer">
               <input type="radio" name="add-mode" value="after" class="radio radio-xs radio-primary"
                 data-on-change="addSectionMode = 'after'" checked="checked" />
@@ -275,7 +276,7 @@
       <!-- Quick Section Grid -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <button class="btn btn-outline btn-xs py-3 h-auto flex flex-col items-center gap-1 bg-base-100" data-on-click="insertSnippet('snip-hero')">
-          <iconify-icon icon="material-symbols-light:view-agenda" class="text-primary text-xl"></iconify-icon>
+          <iconify-icon icon="material-symbols-light:view-agenda" class="text-[#0d6efd] text-xl"></iconify-icon>
           <span class="font-bold text-xs">Hero Section</span>
         </button>
         <button class="btn btn-outline btn-xs py-3 h-auto flex flex-col items-center gap-1 bg-base-100" data-on-click="insertSnippet('snip-features')">
