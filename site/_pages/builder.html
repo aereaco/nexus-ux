@@ -387,59 +387,7 @@
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }
-  }"
-  data-effect="
-    // Canvas Host Mutation & Event Binding
-    const host = document.getElementById('builder-canvas-host');
-    if (host && !host.__builder_bound) {
-      host.__builder_bound = true;
-
-      // Handle selection click inside shadow root
-      host.addEventListener('click', function(e) {
-        if (previewMode) return;
-        const target = e.composedPath ? e.composedPath()[0] : e.target;
-        if (target && target.nodeType === 1 && target !== host) {
-          e.preventDefault();
-          e.stopPropagation();
-          selectElement(target);
-        }
-      }, true);
-
-      // Handle hover highlight inside shadow root
-      host.addEventListener('pointermove', function(e) {
-        if (previewMode) return;
-        const target = e.composedPath ? e.composedPath()[0] : e.target;
-        if (target && target.nodeType === 1 && target !== host) {
-          updateHoverBox(target);
-        }
-      }, true);
-
-      host.addEventListener('pointerleave', function() {
-        hoverBox.visible = false;
-      });
-
-      // Handle double click for inline text editing
-      host.addEventListener('dblclick', function(e) {
-        if (previewMode) return;
-        const target = e.composedPath ? e.composedPath()[0] : e.target;
-        if (target && target.nodeType === 1) {
-          target.contentEditable = 'true';
-          target.focus();
-          target.addEventListener('blur', function onBlur() {
-            target.contentEditable = 'false';
-            target.removeEventListener('blur', onBlur);
-            selectElement(target);
-            syncCanvasHtmlToDraft();
-          });
-        }
-      }, true);
-    }
-
-    // Keep selected box aligned on window resize or zoom change
-    if (selectedEl) {
-      updateSelectedBox();
-    }
-  ">
+  }">
 
   <!-- 1. Top Navigation & Viewport Toolbar -->
   <div data-component="'/_pages/builder/_top-panel.html'"></div>
