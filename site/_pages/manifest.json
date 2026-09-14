@@ -274,6 +274,29 @@
     ]
   },
   {
+    "id": "index",
+    "route": "/builder",
+    "path": "/_pages/builder/index.html",
+    "title": "Visual Builder",
+    "icon": "material-symbols-light:dashboard-customize-outline",
+    "order": 4,
+    "parent": null,
+    "category": "Apps",
+    "keywords": [
+      "builder",
+      "visual",
+      "editor",
+      "page",
+      "builder",
+      "vvvebjs",
+      "drag",
+      "and",
+      "drop",
+      "daisyui",
+      "tailwind"
+    ]
+  },
+  {
     "id": "doc-readme",
     "route": "/docs/readme",
     "path": "/_pages/docs/readme.md",
@@ -1110,39 +1133,39 @@
   },
   {
     "id": "_bottom-panel",
-    "route": "/_bottom-panel",
+    "route": "/builder/_bottom-panel",
     "path": "/_pages/builder/_bottom-panel.html",
-    "parent": "/builder"
+    "parent": "/index"
   },
   {
     "id": "_canvas",
-    "route": "/_canvas",
+    "route": "/builder/_canvas",
     "path": "/_pages/builder/_canvas.html",
-    "parent": "/builder"
+    "parent": "/index"
   },
   {
     "id": "_left-panel",
-    "route": "/_left-panel",
+    "route": "/builder/_left-panel",
     "path": "/_pages/builder/_left-panel.html",
-    "parent": "/builder"
+    "parent": "/index"
   },
   {
     "id": "_modals",
-    "route": "/_modals",
+    "route": "/builder/_modals",
     "path": "/_pages/builder/_modals.html",
-    "parent": "/builder"
+    "parent": "/index"
   },
   {
     "id": "_right-panel",
-    "route": "/_right-panel",
+    "route": "/builder/_right-panel",
     "path": "/_pages/builder/_right-panel.html",
-    "parent": "/builder"
+    "parent": "/index"
   },
   {
     "id": "_top-panel",
-    "route": "/_top-panel",
+    "route": "/builder/_top-panel",
     "path": "/_pages/builder/_top-panel.html",
-    "parent": "/builder"
+    "parent": "/index"
   },
   {
     "id": "error",
