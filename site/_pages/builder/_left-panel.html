@@ -2,68 +2,98 @@
   <meta name="internal" content="true">
 </head>
 <!-- Authentic VvvebJs #left-panel with Multi-tier Tab Hierarchy -->
-<aside class="w-72 lg:w-80 h-full flex flex-col bg-base-100 border-r border-base-content/10 overflow-hidden select-none text-xs" id="left-panel">
+<aside class="w-64 sm:w-72 lg:w-80 h-full flex flex-col bg-base-100 border-r border-base-content/10 overflow-hidden select-none text-xs" id="left-panel">
 
   <!-- ================= TAB 1: PAGES & NAVIGATOR ================= -->
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden" data-show="activeSidebarTab === 'pages'">
     
     <!-- File Manager Section Header -->
-    <div class="p-2 border-b border-base-content/10 flex items-center justify-between gap-1 bg-base-200/50">
+    <div class="p-2 border-b border-base-content/10 flex items-center justify-between gap-1.5 bg-base-200/40">
       <div class="relative flex-1">
-        <input type="search" placeholder="Search pages..."
-          class="input input-bordered input-xs w-full pr-6 rounded-md"
+        <input type="search" placeholder="Pages"
+          class="input input-bordered input-xs w-full pr-5 rounded font-sans text-xs h-6"
           data-bind-value="searchFilter" />
-        <iconify-icon icon="material-symbols-light:search" class="absolute right-2 top-1.5 text-sm text-base-content/40"></iconify-icon>
       </div>
-      <button class="btn btn-ghost btn-xs px-1.5 hover:bg-base-300" title="Add Page" data-on-click="clearCanvas()">
-        <iconify-icon icon="material-symbols-light:add" class="text-base"></iconify-icon>
-        <span>Add</span>
-      </button>
+      <div class="flex items-center gap-1">
+        <button class="btn btn-outline btn-xs h-6 px-2 min-h-0 rounded text-[11px] gap-1 font-normal hover:bg-base-300" title="New page (Ctrl + Shift + P)" data-on-click="clearCanvas()">
+          <span>Add page</span>
+          <iconify-icon icon="material-symbols-light:add" class="text-xs"></iconify-icon>
+        </button>
+        <button class="btn btn-outline btn-xs h-6 w-6 min-h-0 p-0 rounded hover:bg-base-300" title="New section (Ctrl + Shift + S)" data-on-click="addSectionBoxOpen = true">
+          <iconify-icon icon="material-symbols-light:add" class="text-xs"></iconify-icon>
+        </button>
+      </div>
     </div>
 
     <!-- Pages List -->
-    <div class="p-2 border-b border-base-content/10 flex flex-col gap-1">
-      <div class="text-[10px] font-bold uppercase tracking-wider text-base-content/50 px-1">Pages</div>
-      <button class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-colors"
-        data-class="{ 'bg-primary/15 text-primary font-bold': currentDoc.includes('landing'), 'hover:bg-base-200': !currentDoc.includes('landing') }"
+    <div class="overflow-y-auto max-h-56 p-1 border-b border-base-content/10 flex flex-col gap-0.5">
+      <div class="group flex items-center justify-between px-2 py-1 rounded cursor-pointer transition-colors"
+        data-class="{ 'bg-primary/15 text-primary font-bold': currentDoc.includes('landing'), 'hover:bg-base-200 text-base-content/80': !currentDoc.includes('landing') }"
         data-on-click="loadTemplate('/_pages/builder/templates/landing.html')">
-        <iconify-icon icon="material-symbols-light:description" class="text-base"></iconify-icon>
-        <span class="truncate flex-1">landing.html</span>
-        <span class="badge badge-xs badge-ghost">Default</span>
-      </button>
-      <button class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-colors"
-        data-class="{ 'bg-primary/15 text-primary font-bold': currentDoc.includes('blank'), 'hover:bg-base-200': !currentDoc.includes('blank') }"
+        <div class="flex items-center gap-2 truncate">
+          <iconify-icon icon="material-symbols-light:description-outline" class="text-sm shrink-0"></iconify-icon>
+          <span class="truncate">Home page</span>
+        </div>
+        <div class="hidden group-hover:flex items-center gap-1 shrink-0 text-base-content/50">
+          <button class="hover:text-error" title="Delete" data-on-click:stop=""><iconify-icon icon="material-symbols-light:delete-outline" class="text-xs"></iconify-icon></button>
+          <button class="hover:text-primary" title="Open" data-on-click:stop="window.open(currentDoc)"><iconify-icon icon="material-symbols-light:open-in-new" class="text-xs"></iconify-icon></button>
+          <button class="hover:text-primary" title="Edit name" data-on-click:stop=""><iconify-icon icon="material-symbols-light:edit-outline" class="text-xs"></iconify-icon></button>
+          <button class="hover:text-primary" title="Duplicate" data-on-click:stop=""><iconify-icon icon="material-symbols-light:content-copy" class="text-xs"></iconify-icon></button>
+        </div>
+      </div>
+
+      <div class="group flex items-center justify-between px-2 py-1 rounded cursor-pointer transition-colors"
+        data-class="{ 'bg-primary/15 text-primary font-bold': currentDoc.includes('blank'), 'hover:bg-base-200 text-base-content/80': !currentDoc.includes('blank') }"
         data-on-click="loadTemplate('/_pages/builder/templates/blank.html')">
-        <iconify-icon icon="material-symbols-light:draft" class="text-base"></iconify-icon>
-        <span class="truncate flex-1">blank.html</span>
-        <span class="badge badge-xs badge-ghost">Blank</span>
-      </button>
+        <div class="flex items-center gap-2 truncate">
+          <iconify-icon icon="material-symbols-light:draft-outline" class="text-sm shrink-0"></iconify-icon>
+          <span class="truncate">Blank page</span>
+        </div>
+        <div class="hidden group-hover:flex items-center gap-1 shrink-0 text-base-content/50">
+          <button class="hover:text-error" title="Delete" data-on-click:stop=""><iconify-icon icon="material-symbols-light:delete-outline" class="text-xs"></iconify-icon></button>
+          <button class="hover:text-primary" title="Open" data-on-click:stop=""><iconify-icon icon="material-symbols-light:open-in-new" class="text-xs"></iconify-icon></button>
+          <button class="hover:text-primary" title="Duplicate" data-on-click:stop=""><iconify-icon icon="material-symbols-light:content-copy" class="text-xs"></iconify-icon></button>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 px-2 py-1 rounded hover:bg-base-200 text-base-content/70 cursor-pointer">
+        <iconify-icon icon="material-symbols-light:description-outline" class="text-sm shrink-0"></iconify-icon>
+        <span class="truncate">Contact us page</span>
+      </div>
+      <div class="flex items-center gap-2 px-2 py-1 rounded hover:bg-base-200 text-base-content/70 cursor-pointer">
+        <iconify-icon icon="material-symbols-light:description-outline" class="text-sm shrink-0"></iconify-icon>
+        <span class="truncate">Index landing</span>
+      </div>
+      <div class="flex items-center gap-2 px-2 py-1 rounded hover:bg-base-200 text-base-content/70 cursor-pointer">
+        <iconify-icon icon="material-symbols-light:description-outline" class="text-sm shrink-0"></iconify-icon>
+        <span class="truncate">Index blog</span>
+      </div>
     </div>
 
-    <!-- DOM Tree Navigator Section -->
+    <!-- DOM Tree Navigator Section (Docked at bottom of left panel) -->
     <div class="flex-1 flex flex-col min-h-0 overflow-hidden" data-show="showTreeList">
-      <div class="px-3 py-1.5 bg-base-200/50 border-b border-base-content/10 flex items-center justify-between font-bold text-[11px]">
+      <div class="px-2.5 py-1 bg-base-200/60 border-b border-base-content/10 flex items-center justify-between text-[11px] font-medium">
         <div class="flex items-center gap-1.5">
-          <iconify-icon icon="material-symbols-light:account-tree-outline" class="text-sm text-primary"></iconify-icon>
+          <iconify-icon icon="material-symbols-light:account-tree-outline" class="text-xs opacity-70"></iconify-icon>
           <span>Navigator</span>
         </div>
-        <div class="flex items-center gap-0.5">
-          <button class="btn btn-ghost btn-circle btn-xs h-5 w-5 min-h-0" data-on-click="refreshTree()" title="Refresh Tree">
-            <iconify-icon icon="material-symbols-light:refresh" class="text-xs"></iconify-icon>
-          </button>
+        <div class="flex items-center gap-1 text-base-content/60">
+          <button class="hover:text-base-content px-0.5" title="Collapse" data-on-click="showTreeList = false">―</button>
+          <button class="hover:text-base-content px-0.5" title="Refresh" data-on-click="refreshTree()">›</button>
+          <button class="hover:text-base-content px-0.5" title="Close" data-on-click="showTreeList = false">✕</button>
         </div>
       </div>
 
       <!-- Live Tree List Items -->
-      <div class="flex-1 overflow-y-auto p-1.5 flex flex-col gap-0.5">
+      <div class="flex-1 overflow-y-auto p-1 flex flex-col gap-0.5 font-mono text-[11px]">
         <template data-for="item in domTree">
           <div class="flex items-center gap-1.5 px-2 py-1 rounded cursor-pointer transition-colors"
             data-style="{ paddingLeft: (item.depth * 12 + 6) + 'px' }"
             data-class="{ 'bg-primary text-primary-content font-bold shadow-sm': selectedEl === item.el, 'hover:bg-base-200 text-base-content/80': selectedEl !== item.el }"
             data-on-click="selectElement(item.el)">
-            <iconify-icon data-bind-icon="item.icon" class="text-sm shrink-0"></iconify-icon>
-            <span class="font-mono text-[11px]" data-bind="item.tag"></span>
-            <span class="text-[10px] opacity-60 truncate font-mono" data-bind="item.classSummary" data-show="item.classSummary"></span>
+            <iconify-icon data-bind-icon="item.icon" class="text-xs shrink-0 opacity-80"></iconify-icon>
+            <span data-bind="item.tag"></span>
+            <span class="text-[10px] opacity-60 truncate" data-bind="item.classSummary" data-show="item.classSummary"></span>
           </div>
         </template>
         <div data-show="domTree.length === 0" class="text-center py-6 text-base-content/40 italic">
@@ -77,587 +107,356 @@
   <!-- ================= TAB 2: COMPONENTS & BLOCKS ================= -->
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden" data-show="activeSidebarTab === 'components'">
     
-    <!-- Subtabs: Components vs Blocks -->
-    <div class="tabs tabs-boxed bg-base-200/60 p-1 m-2 rounded-lg shrink-0">
-      <button class="tab tab-xs flex-1"
-        data-class="{ 'tab-active font-bold': componentsSubTab === 'components' }"
+    <!-- Subtabs: [ Components ] [ Blocks ] -->
+    <div class="flex border-b border-base-content/15 bg-base-200/40">
+      <button class="flex-1 py-1.5 text-center text-xs font-medium border-b-2 transition-colors"
+        data-class="{ 'border-primary text-primary font-bold bg-base-100': componentsSubTab === 'components', 'border-transparent text-base-content/70 hover:text-base-content': componentsSubTab !== 'components' }"
         data-on-click="componentsSubTab = 'components'">
-        <iconify-icon icon="material-symbols-light:view-in-ar" class="mr-1 text-sm"></iconify-icon>
+        <iconify-icon icon="material-symbols-light:crop-square" class="mr-1 text-xs"></iconify-icon>
         Components
       </button>
-      <button class="tab tab-xs flex-1"
-        data-class="{ 'tab-active font-bold': componentsSubTab === 'blocks' }"
+      <button class="flex-1 py-1.5 text-center text-xs font-medium border-b-2 transition-colors"
+        data-class="{ 'border-primary text-primary font-bold bg-base-100': componentsSubTab === 'blocks', 'border-transparent text-base-content/70 hover:text-base-content': componentsSubTab !== 'blocks' }"
         data-on-click="componentsSubTab = 'blocks'">
-        <iconify-icon icon="material-symbols-light:content-copy" class="mr-1 text-sm"></iconify-icon>
+        <iconify-icon icon="material-symbols-light:content-copy" class="mr-1 text-xs"></iconify-icon>
         Blocks
       </button>
     </div>
 
-    <!-- Search input with clear button -->
-    <div class="px-2 pb-2 relative">
-      <input type="text" placeholder="Search components..."
-        class="input input-bordered input-xs w-full pr-6 rounded-md"
-        data-bind-value="searchFilter" />
-      <button class="absolute right-3 top-1 text-base-content/40 hover:text-base-content"
-        data-show="searchFilter"
-        data-on-click="searchFilter = ''">
-        ✕
-      </button>
+    <!-- Search bar with clear button & collapse button -->
+    <div class="p-2 border-b border-base-content/10 flex items-center gap-1 bg-base-200/20">
+      <div class="relative flex-1">
+        <input type="text" placeholder="Search components"
+          class="input input-bordered input-xs w-full pr-6 rounded font-sans text-xs h-6"
+          data-bind-value="searchFilter" />
+        <button class="absolute right-1.5 top-1 text-base-content/40 hover:text-base-content text-xs"
+          data-show="searchFilter"
+          data-on-click="searchFilter = ''">
+          ✕
+        </button>
+      </div>
+      <button class="btn btn-ghost btn-xs h-6 w-6 min-h-0 p-0 text-base-content/50 hover:text-base-content">―</button>
     </div>
 
-    <!-- Components Palette Grid -->
-    <div class="flex-1 overflow-y-auto px-2 pb-4 space-y-4" data-show="componentsSubTab === 'components'">
-      <!-- Group 1: Layout & Grid -->
-      <div>
-        <div class="text-[10px] font-bold uppercase tracking-wider text-base-content/50 mb-1.5 px-1">Layout & Grid</div>
-        <div class="grid grid-cols-2 gap-1.5">
-          <button class="btn btn-outline btn-xs h-auto py-2 flex flex-col items-start gap-0.5 border-base-content/10 hover:border-primary text-left bg-base-100"
-            data-on-click="insertSnippet('snip-container')">
-            <div class="flex items-center gap-1 font-bold text-xs">
-              <iconify-icon icon="material-symbols-light:check-box-outline-blank" class="text-primary"></iconify-icon>
-              <span>Container</span>
-            </div>
-            <span class="text-[9px] opacity-60 font-normal">Centered wrapper</span>
-          </button>
-
-          <button class="btn btn-outline btn-xs h-auto py-2 flex flex-col items-start gap-0.5 border-base-content/10 hover:border-primary text-left bg-base-100"
-            data-on-click="insertSnippet('snip-grid-2')">
-            <div class="flex items-center gap-1 font-bold text-xs">
-              <iconify-icon icon="material-symbols-light:grid-view" class="text-primary"></iconify-icon>
-              <span>2 Columns</span>
-            </div>
-            <span class="text-[9px] opacity-60 font-normal">Grid 1:1</span>
-          </button>
-
-          <button class="btn btn-outline btn-xs h-auto py-2 flex flex-col items-start gap-0.5 border-base-content/10 hover:border-primary text-left bg-base-100"
-            data-on-click="insertSnippet('snip-grid-3')">
-            <div class="flex items-center gap-1 font-bold text-xs">
-              <iconify-icon icon="material-symbols-light:grid-on" class="text-primary"></iconify-icon>
-              <span>3 Columns</span>
-            </div>
-            <span class="text-[9px] opacity-60 font-normal">Grid 1:1:1</span>
-          </button>
-
-          <button class="btn btn-outline btn-xs h-auto py-2 flex flex-col items-start gap-0.5 border-base-content/10 hover:border-primary text-left bg-base-100"
-            data-on-click="insertSnippet('snip-flex-row')">
-            <div class="flex items-center gap-1 font-bold text-xs">
-              <iconify-icon icon="material-symbols-light:view-column-2" class="text-primary"></iconify-icon>
-              <span>Flex Row</span>
-            </div>
-            <span class="text-[9px] opacity-60 font-normal">Horizontal flex</span>
-          </button>
+    <!-- 2-Column Square Components Palette Grid (80px x 80px cards) -->
+    <div class="flex-1 overflow-y-auto p-2" data-show="componentsSubTab === 'components'">
+      
+      <!-- Collapsible Section: Base -->
+      <div class="mb-4">
+        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/70 mb-2 px-1">
+          <span>Base</span>
+          <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
         </div>
-      </div>
 
-      <!-- Group 2: Core UI Elements -->
-      <div>
-        <div class="text-[10px] font-bold uppercase tracking-wider text-base-content/50 mb-1.5 px-1">Core UI Elements</div>
-        <div class="grid grid-cols-2 gap-1.5">
-          <button class="btn btn-outline btn-xs h-auto py-2 flex flex-col items-start gap-0.5 border-base-content/10 hover:border-secondary text-left bg-base-100"
-            data-on-click="insertSnippet('snip-card')">
-            <div class="flex items-center gap-1 font-bold text-xs">
-              <iconify-icon icon="material-symbols-light:ad-units" class="text-secondary"></iconify-icon>
-              <span>Card</span>
-            </div>
-            <span class="text-[9px] opacity-60 font-normal">DaisyUI Card</span>
+        <div class="grid grid-cols-2 gap-2">
+          
+          <!-- Heading -->
+          <button class="h-20 flex flex-col items-center justify-center p-2 rounded bg-base-100 border border-base-content/15 hover:border-primary hover:shadow-sm transition-all group"
+            data-on-click="insertSnippet('snip-heading')">
+            <span class="text-2xl font-serif font-black mb-1 group-hover:text-primary">H</span>
+            <span class="text-[11px] text-base-content/80 group-hover:text-primary">Heading</span>
           </button>
 
-          <button class="btn btn-outline btn-xs h-auto py-2 flex flex-col items-start gap-0.5 border-base-content/10 hover:border-secondary text-left bg-base-100"
-            data-on-click="insertSnippet('snip-button')">
-            <div class="flex items-center gap-1 font-bold text-xs">
-              <iconify-icon icon="material-symbols-light:smart-button" class="text-secondary"></iconify-icon>
-              <span>Button</span>
-            </div>
-            <span class="text-[9px] opacity-60 font-normal">Primary CTA</span>
+          <!-- Image -->
+          <button class="h-20 flex flex-col items-center justify-center p-2 rounded bg-base-100 border border-base-content/15 hover:border-primary hover:shadow-sm transition-all group"
+            data-on-click="insertSnippet('snip-image')">
+            <iconify-icon icon="material-symbols-light:image-outline" class="text-2xl mb-1 group-hover:text-primary"></iconify-icon>
+            <span class="text-[11px] text-base-content/80 group-hover:text-primary">Image</span>
           </button>
 
-          <button class="btn btn-outline btn-xs h-auto py-2 flex flex-col items-start gap-0.5 border-base-content/10 hover:border-secondary text-left bg-base-100"
-            data-on-click="insertSnippet('snip-badge')">
-            <div class="flex items-center gap-1 font-bold text-xs">
-              <iconify-icon icon="material-symbols-light:label" class="text-secondary"></iconify-icon>
-              <span>Badge</span>
-            </div>
-            <span class="text-[9px] opacity-60 font-normal">Status pill</span>
+          <!-- Horizontal Rule -->
+          <button class="h-20 flex flex-col items-center justify-center p-2 rounded bg-base-100 border border-base-content/15 hover:border-primary hover:shadow-sm transition-all group"
+            data-on-click="insertSnippet('snip-divider')">
+            <div class="w-8 h-0.5 bg-current mb-2 opacity-70 group-hover:text-primary"></div>
+            <span class="text-[11px] text-base-content/80 group-hover:text-primary">Horizontal Rule</span>
           </button>
 
-          <button class="btn btn-outline btn-xs h-auto py-2 flex flex-col items-start gap-0.5 border-base-content/10 hover:border-secondary text-left bg-base-100"
-            data-on-click="insertSnippet('snip-alert')">
-            <div class="flex items-center gap-1 font-bold text-xs">
-              <iconify-icon icon="material-symbols-light:info" class="text-secondary"></iconify-icon>
-              <span>Alert</span>
-            </div>
-            <span class="text-[9px] opacity-60 font-normal">Notice box</span>
+          <!-- Form -->
+          <button class="h-20 flex flex-col items-center justify-center p-2 rounded bg-base-100 border border-base-content/15 hover:border-primary hover:shadow-sm transition-all group"
+            data-on-click="insertSnippet('snip-form')">
+            <iconify-icon icon="material-symbols-light:dynamic-form-outline" class="text-2xl mb-1 group-hover:text-primary"></iconify-icon>
+            <span class="text-[11px] text-base-content/80 group-hover:text-primary">Form</span>
           </button>
 
-          <button class="btn btn-outline btn-xs h-auto py-2 flex flex-col items-start gap-0.5 border-base-content/10 hover:border-secondary text-left bg-base-100"
-            data-on-click="insertSnippet('snip-stats')">
-            <div class="flex items-center gap-1 font-bold text-xs">
-              <iconify-icon icon="material-symbols-light:monitoring" class="text-secondary"></iconify-icon>
-              <span>Stat Block</span>
-            </div>
-            <span class="text-[9px] opacity-60 font-normal">KPI metric</span>
-          </button>
-
-          <button class="btn btn-outline btn-xs h-auto py-2 flex flex-col items-start gap-0.5 border-base-content/10 hover:border-secondary text-left bg-base-100"
-            data-on-click="insertSnippet('snip-accordion')">
-            <div class="flex items-center gap-1 font-bold text-xs">
-              <iconify-icon icon="material-symbols-light:expand-circle-down" class="text-secondary"></iconify-icon>
-              <span>Accordion</span>
-            </div>
-            <span class="text-[9px] opacity-60 font-normal">Collapsible</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Group 3: Forms & Inputs -->
-      <div>
-        <div class="text-[10px] font-bold uppercase tracking-wider text-base-content/50 mb-1.5 px-1">Forms & Inputs</div>
-        <div class="grid grid-cols-2 gap-1.5">
-          <button class="btn btn-outline btn-xs h-auto py-2 flex flex-col items-start gap-0.5 border-base-content/10 hover:border-accent text-left bg-base-100"
+          <!-- Input -->
+          <button class="h-20 flex flex-col items-center justify-center p-2 rounded bg-base-100 border border-base-content/15 hover:border-primary hover:shadow-sm transition-all group"
             data-on-click="insertSnippet('snip-input')">
-            <div class="flex items-center gap-1 font-bold text-xs">
-              <iconify-icon icon="material-symbols-light:text-fields" class="text-accent"></iconify-icon>
-              <span>Text Input</span>
-            </div>
-            <span class="text-[9px] opacity-60 font-normal">Label & input</span>
+            <div class="px-1.5 py-0.5 border border-current rounded text-[10px] font-mono mb-1 group-hover:text-primary">T</div>
+            <span class="text-[11px] text-base-content/80 group-hover:text-primary">Input</span>
           </button>
 
-          <button class="btn btn-outline btn-xs h-auto py-2 flex flex-col items-start gap-0.5 border-base-content/10 hover:border-accent text-left bg-base-100"
-            data-on-click="insertSnippet('snip-select')">
-            <div class="flex items-center gap-1 font-bold text-xs">
-              <iconify-icon icon="material-symbols-light:arrow-drop-down-circle" class="text-accent"></iconify-icon>
-              <span>Select Dropdown</span>
-            </div>
-            <span class="text-[9px] opacity-60 font-normal">Options menu</span>
-          </button>
-
-          <button class="btn btn-outline btn-xs h-auto py-2 flex flex-col items-start gap-0.5 border-base-content/10 hover:border-accent text-left bg-base-100"
-            data-on-click="insertSnippet('snip-toggle')">
-            <div class="flex items-center gap-1 font-bold text-xs">
-              <iconify-icon icon="material-symbols-light:toggle-on" class="text-accent"></iconify-icon>
-              <span>Toggle Switch</span>
-            </div>
-            <span class="text-[9px] opacity-60 font-normal">On/off switch</span>
-          </button>
-
-          <button class="btn btn-outline btn-xs h-auto py-2 flex flex-col items-start gap-0.5 border-base-content/10 hover:border-accent text-left bg-base-100"
+          <!-- Text Area -->
+          <button class="h-20 flex flex-col items-center justify-center p-2 rounded bg-base-100 border border-base-content/15 hover:border-primary hover:shadow-sm transition-all group"
             data-on-click="insertSnippet('snip-textarea')">
-            <div class="flex items-center gap-1 font-bold text-xs">
-              <iconify-icon icon="material-symbols-light:notes" class="text-accent"></iconify-icon>
-              <span>Text Area</span>
-            </div>
-            <span class="text-[9px] opacity-60 font-normal">Multiline note</span>
+            <div class="px-2 py-0.5 border border-current rounded text-[10px] font-mono mb-1 group-hover:text-primary">I</div>
+            <span class="text-[11px] text-base-content/80 group-hover:text-primary">Text Area</span>
           </button>
+
+          <!-- Select Input -->
+          <button class="h-20 flex flex-col items-center justify-center p-2 rounded bg-base-100 border border-base-content/15 hover:border-primary hover:shadow-sm transition-all group"
+            data-on-click="insertSnippet('snip-select')">
+            <div class="flex items-center gap-1 px-1 border border-current rounded text-[9px] mb-1 group-hover:text-primary">
+              <span>opt</span>
+              <iconify-icon icon="material-symbols-light:arrow-drop-down"></iconify-icon>
+            </div>
+            <span class="text-[11px] text-base-content/80 group-hover:text-primary">Select Input</span>
+          </button>
+
+          <!-- Checkbox -->
+          <button class="h-20 flex flex-col items-center justify-center p-2 rounded bg-base-100 border border-base-content/15 hover:border-primary hover:shadow-sm transition-all group"
+            data-on-click="insertSnippet('snip-checkbox')">
+            <iconify-icon icon="material-symbols-light:check-box-outline-blank" class="text-xl mb-1 group-hover:text-primary"></iconify-icon>
+            <span class="text-[11px] text-base-content/80 group-hover:text-primary">Checkbox</span>
+          </button>
+
+          <!-- Radio Button -->
+          <button class="h-20 flex flex-col items-center justify-center p-2 rounded bg-base-100 border border-base-content/15 hover:border-primary hover:shadow-sm transition-all group"
+            data-on-click="insertSnippet('snip-radio')">
+            <iconify-icon icon="material-symbols-light:radio-button-unchecked" class="text-xl mb-1 group-hover:text-primary"></iconify-icon>
+            <span class="text-[11px] text-base-content/80 group-hover:text-primary">Radio Button</span>
+          </button>
+
+          <!-- Link -->
+          <button class="h-20 flex flex-col items-center justify-center p-2 rounded bg-base-100 border border-base-content/15 hover:border-primary hover:shadow-sm transition-all group"
+            data-on-click="insertSnippet('snip-link')">
+            <iconify-icon icon="material-symbols-light:link" class="text-2xl mb-1 group-hover:text-primary"></iconify-icon>
+            <span class="text-[11px] text-base-content/80 group-hover:text-primary">Link</span>
+          </button>
+
+          <!-- Html Button -->
+          <button class="h-20 flex flex-col items-center justify-center p-2 rounded bg-base-100 border border-base-content/15 hover:border-primary hover:shadow-sm transition-all group"
+            data-on-click="insertSnippet('snip-button')">
+            <div class="px-2 py-0.5 rounded-full border border-current text-[8px] font-bold uppercase mb-1 group-hover:text-primary">Button</div>
+            <span class="text-[11px] text-base-content/80 group-hover:text-primary">Html Button</span>
+          </button>
+
+          <!-- Paragraph -->
+          <button class="h-20 flex flex-col items-center justify-center p-2 rounded bg-base-100 border border-base-content/15 hover:border-primary hover:shadow-sm transition-all group"
+            data-on-click="insertSnippet('snip-paragraph')">
+            <span class="text-2xl font-serif mb-1 group-hover:text-primary">¶</span>
+            <span class="text-[11px] text-base-content/80 group-hover:text-primary">Paragraph</span>
+          </button>
+
+          <!-- Blockquote -->
+          <button class="h-20 flex flex-col items-center justify-center p-2 rounded bg-base-100 border border-base-content/15 hover:border-primary hover:shadow-sm transition-all group"
+            data-on-click="insertSnippet('snip-quote')">
+            <span class="text-2xl font-serif italic mb-1 group-hover:text-primary font-black">99</span>
+            <span class="text-[11px] text-base-content/80 group-hover:text-primary">Blockquote</span>
+          </button>
+
+          <!-- List -->
+          <button class="h-20 flex flex-col items-center justify-center p-2 rounded bg-base-100 border border-base-content/15 hover:border-primary hover:shadow-sm transition-all group"
+            data-on-click="insertSnippet('snip-list')">
+            <iconify-icon icon="material-symbols-light:format-list-bulleted" class="text-2xl mb-1 group-hover:text-primary"></iconify-icon>
+            <span class="text-[11px] text-base-content/80 group-hover:text-primary">List</span>
+          </button>
+
+          <!-- Table -->
+          <button class="h-20 flex flex-col items-center justify-center p-2 rounded bg-base-100 border border-base-content/15 hover:border-primary hover:shadow-sm transition-all group"
+            data-on-click="insertSnippet('snip-table')">
+            <iconify-icon icon="material-symbols-light:table-chart-outline" class="text-2xl mb-1 group-hover:text-primary"></iconify-icon>
+            <span class="text-[11px] text-base-content/80 group-hover:text-primary">Table</span>
+          </button>
+
         </div>
       </div>
+
     </div>
 
-    <!-- Blocks Palette Grid -->
-    <div class="flex-1 overflow-y-auto px-2 pb-4 space-y-2" data-show="componentsSubTab === 'blocks'">
-      <div class="text-[10px] font-bold uppercase tracking-wider text-base-content/50 mb-1 px-1">Pre-built Blocks</div>
-      <button class="w-full btn btn-outline btn-xs h-auto py-2 flex items-center justify-between border-base-content/10 hover:border-primary text-left bg-base-100"
+    <!-- Blocks Subtab (Pre-configured Layout Modules) -->
+    <div class="flex-1 overflow-y-auto p-2 space-y-2" data-show="componentsSubTab === 'blocks'">
+      <div class="text-[11px] font-bold text-base-content/70 px-1 mb-2">Layout Blocks</div>
+      
+      <button class="w-full text-left p-2.5 rounded bg-base-100 border border-base-content/15 hover:border-primary transition-colors flex items-center justify-between"
         data-on-click="insertSnippet('snip-hero')">
         <div class="flex items-center gap-2">
-          <iconify-icon icon="material-symbols-light:view-agenda" class="text-primary text-base"></iconify-icon>
+          <iconify-icon icon="material-symbols-light:view-agenda" class="text-lg text-primary"></iconify-icon>
           <div>
-            <div class="font-bold text-xs">Hero Banner</div>
-            <div class="text-[9px] opacity-60 font-normal">Headline + CTA buttons</div>
+            <div class="font-bold text-xs">Jumbotron Hero</div>
+            <div class="text-[10px] text-base-content/60">Heading, subtitle, CTA button</div>
           </div>
         </div>
-        <iconify-icon icon="material-symbols-light:add" class="text-base"></iconify-icon>
+        <iconify-icon icon="material-symbols-light:add" class="text-base text-base-content/40"></iconify-icon>
       </button>
 
-      <button class="w-full btn btn-outline btn-xs h-auto py-2 flex items-center justify-between border-base-content/10 hover:border-primary text-left bg-base-100"
+      <button class="w-full text-left p-2.5 rounded bg-base-100 border border-base-content/15 hover:border-primary transition-colors flex items-center justify-between"
         data-on-click="insertSnippet('snip-features')">
         <div class="flex items-center gap-2">
-          <iconify-icon icon="material-symbols-light:featured-play-list" class="text-primary text-base"></iconify-icon>
+          <iconify-icon icon="material-symbols-light:featured-play-list" class="text-lg text-secondary"></iconify-icon>
           <div>
-            <div class="font-bold text-xs">Features Grid</div>
-            <div class="text-[9px] opacity-60 font-normal">3-card feature showcase</div>
+            <div class="font-bold text-xs">Marketing 2-Col Grid</div>
+            <div class="text-[10px] text-base-content/60">Subheading and description pairs</div>
           </div>
         </div>
-        <iconify-icon icon="material-symbols-light:add" class="text-base"></iconify-icon>
+        <iconify-icon icon="material-symbols-light:add" class="text-base text-base-content/40"></iconify-icon>
       </button>
 
-      <button class="w-full btn btn-outline btn-xs h-auto py-2 flex items-center justify-between border-base-content/10 hover:border-primary text-left bg-base-100"
+      <button class="w-full text-left p-2.5 rounded bg-base-100 border border-base-content/15 hover:border-primary transition-colors flex items-center justify-between"
         data-on-click="insertSnippet('snip-pricing')">
         <div class="flex items-center gap-2">
-          <iconify-icon icon="material-symbols-light:payments" class="text-primary text-base"></iconify-icon>
+          <iconify-icon icon="material-symbols-light:payments" class="text-lg text-accent"></iconify-icon>
           <div>
             <div class="font-bold text-xs">Pricing Table</div>
-            <div class="text-[9px] opacity-60 font-normal">Tiered subscription cards</div>
+            <div class="text-[10px] text-base-content/60">3 tiers with check lists</div>
           </div>
         </div>
-        <iconify-icon icon="material-symbols-light:add" class="text-base"></iconify-icon>
+        <iconify-icon icon="material-symbols-light:add" class="text-base text-base-content/40"></iconify-icon>
       </button>
 
-      <button class="w-full btn btn-outline btn-xs h-auto py-2 flex items-center justify-between border-base-content/10 hover:border-primary text-left bg-base-100"
+      <button class="w-full text-left p-2.5 rounded bg-base-100 border border-base-content/15 hover:border-primary transition-colors flex items-center justify-between"
         data-on-click="insertSnippet('snip-cta')">
         <div class="flex items-center gap-2">
-          <iconify-icon icon="material-symbols-light:campaign" class="text-primary text-base"></iconify-icon>
+          <iconify-icon icon="material-symbols-light:campaign" class="text-lg text-warning"></iconify-icon>
           <div>
-            <div class="font-bold text-xs">Call To Action</div>
-            <div class="text-[9px] opacity-60 font-normal">Gradient conversion banner</div>
+            <div class="font-bold text-xs">Call To Action Banner</div>
+            <div class="text-[10px] text-base-content/60">Centered title and button</div>
           </div>
         </div>
-        <iconify-icon icon="material-symbols-light:add" class="text-base"></iconify-icon>
-      </button>
-
-      <button class="w-full btn btn-outline btn-xs h-auto py-2 flex items-center justify-between border-base-content/10 hover:border-primary text-left bg-base-100"
-        data-on-click="insertSnippet('snip-footer')">
-        <div class="flex items-center gap-2">
-          <iconify-icon icon="material-symbols-light:bottom-navigation" class="text-primary text-base"></iconify-icon>
-          <div>
-            <div class="font-bold text-xs">Footer</div>
-            <div class="text-[9px] opacity-60 font-normal">Navigation links & copyright</div>
-          </div>
-        </div>
-        <iconify-icon icon="material-symbols-light:add" class="text-base"></iconify-icon>
+        <iconify-icon icon="material-symbols-light:add" class="text-base text-base-content/40"></iconify-icon>
       </button>
     </div>
 
   </div>
 
-  <!-- ================= TAB 3: SECTIONS & PAGE SECTIONS ================= -->
+  <!-- ================= TAB 3: SECTIONS ================= -->
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden" data-show="activeSidebarTab === 'sections'">
     
-    <!-- Subtabs: Sections vs Page Sections -->
-    <div class="tabs tabs-boxed bg-base-200/60 p-1 m-2 rounded-lg shrink-0">
-      <button class="tab tab-xs flex-1"
-        data-class="{ 'tab-active font-bold': sectionsSubTab === 'sections' }"
+    <!-- Subtabs: [ Sections ] [ Page Sections ] -->
+    <div class="flex border-b border-base-content/15 bg-base-200/40">
+      <button class="flex-1 py-1.5 text-center text-xs font-medium border-b-2 transition-colors"
+        data-class="{ 'border-primary text-primary font-bold bg-base-100': sectionsSubTab === 'sections', 'border-transparent text-base-content/70 hover:text-base-content': sectionsSubTab !== 'sections' }"
         data-on-click="sectionsSubTab = 'sections'">
-        <iconify-icon icon="material-symbols-light:layers" class="mr-1 text-sm"></iconify-icon>
+        <iconify-icon icon="material-symbols-light:folder-outline" class="mr-1 text-xs"></iconify-icon>
         Sections
       </button>
-      <button class="tab tab-xs flex-1"
-        data-class="{ 'tab-active font-bold': sectionsSubTab === 'page-sections' }"
+      <button class="flex-1 py-1.5 text-center text-xs font-medium border-b-2 transition-colors"
+        data-class="{ 'border-primary text-primary font-bold bg-base-100': sectionsSubTab === 'page-sections', 'border-transparent text-base-content/70 hover:text-base-content': sectionsSubTab !== 'page-sections' }"
         data-on-click="sectionsSubTab = 'page-sections'; refreshPageSections()">
-        <iconify-icon icon="material-symbols-light:reorder" class="mr-1 text-sm"></iconify-icon>
+        <iconify-icon icon="material-symbols-light:description-outline" class="mr-1 text-xs"></iconify-icon>
         Page Sections
       </button>
     </div>
 
-    <!-- Sub-tab 1: Sections Library -->
-    <div class="flex-1 overflow-y-auto p-2 space-y-2" data-show="sectionsSubTab === 'sections'">
-      <div class="text-[10px] font-bold uppercase tracking-wider text-base-content/50 px-1">Templates Library</div>
-      
-      <div class="p-3 bg-base-200/40 rounded-xl border border-base-content/10 flex flex-col gap-1.5">
-        <div class="font-bold text-xs flex items-center justify-between">
-          <span>Hero Header</span>
-          <button class="btn btn-primary btn-xs" data-on-click="insertSnippet('snip-hero')">Insert</button>
+    <!-- Sections Library -->
+    <div class="flex-1 overflow-y-auto p-2 space-y-3" data-show="sectionsSubTab === 'sections'">
+      <div class="text-[11px] font-bold text-base-content/70 px-1">Bootstrap Library</div>
+
+      <!-- Preview Card 1: Jumbotron Hero -->
+      <div class="border border-base-content/15 rounded bg-base-100 p-2 cursor-pointer hover:border-primary transition-all group"
+        data-on-click="insertSnippet('snip-hero')">
+        <div class="h-20 bg-gray-100 rounded flex flex-col items-center justify-center p-2 mb-1.5">
+          <div class="w-16 h-2 bg-gray-400 rounded mb-1"></div>
+          <div class="w-24 h-1.5 bg-gray-300 rounded mb-2"></div>
+          <div class="w-10 h-3 bg-[#0d6efd] rounded"></div>
         </div>
-        <p class="text-[10px] text-base-content/60">Full-width landing hero with typography and CTA actions.</p>
-      </div>
-
-      <div class="p-3 bg-base-200/40 rounded-xl border border-base-content/10 flex flex-col gap-1.5">
-        <div class="font-bold text-xs flex items-center justify-between">
-          <span>Feature Grid</span>
-          <button class="btn btn-primary btn-xs" data-on-click="insertSnippet('snip-features')">Insert</button>
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-xs group-hover:text-primary">Meet the Team / Hero</span>
+          <iconify-icon icon="material-symbols-light:add" class="text-xs opacity-60"></iconify-icon>
         </div>
-        <p class="text-[10px] text-base-content/60">3-column modern feature showcase with icons.</p>
       </div>
 
-      <div class="p-3 bg-base-200/40 rounded-xl border border-base-content/10 flex flex-col gap-1.5">
-        <div class="font-bold text-xs flex items-center justify-between">
-          <span>Pricing Matrix</span>
-          <button class="btn btn-primary btn-xs" data-on-click="insertSnippet('snip-pricing')">Insert</button>
-        </div>
-        <p class="text-[10px] text-base-content/60">Tiered plan cards with badge highlights.</p>
-      </div>
-    </div>
-
-    <!-- Sub-tab 2: Page Sections Reorderable List -->
-    <div class="flex-1 flex flex-col min-h-0 overflow-hidden" data-show="sectionsSubTab === 'page-sections'">
-      <div class="px-3 py-1.5 bg-base-200/50 border-b border-base-content/10 flex items-center justify-between font-bold text-[11px]">
-        <span>Sections on Canvas</span>
-        <button class="btn btn-ghost btn-circle btn-xs h-5 w-5 min-h-0" data-on-click="refreshPageSections()" title="Refresh">
-          <iconify-icon icon="material-symbols-light:refresh" class="text-xs"></iconify-icon>
-        </button>
-      </div>
-
-      <div class="flex-1 overflow-y-auto p-2 flex flex-col gap-1.5">
-        <template data-for="(sec, idx) in pageSections">
-          <div class="p-2 rounded-lg bg-base-200/70 border border-base-content/10 flex items-center justify-between gap-2"
-            data-class="{ 'ring-2 ring-primary bg-primary/10': selectedEl === sec.el }">
-            <div class="flex items-center gap-2 min-w-0 cursor-pointer flex-1" data-on-click="selectElement(sec.el)">
-              <iconify-icon icon="material-symbols-light:drag-handle" class="text-base text-base-content/40 cursor-grab"></iconify-icon>
-              <div class="truncate">
-                <div class="font-bold text-xs truncate" data-bind="sec.name"></div>
-                <div class="font-mono text-[9px] opacity-50 uppercase" data-bind="sec.tag"></div>
-              </div>
-            </div>
-            <div class="flex items-center gap-0.5">
-              <button class="btn btn-ghost btn-circle btn-xs h-6 w-6 min-h-0" data-on-click="selectElement(sec.el); moveElementUp()" title="Move Up">
-                <iconify-icon icon="material-symbols-light:expand-less" class="text-sm"></iconify-icon>
-              </button>
-              <button class="btn btn-ghost btn-circle btn-xs h-6 w-6 min-h-0" data-on-click="selectElement(sec.el); moveElementDown()" title="Move Down">
-                <iconify-icon icon="material-symbols-light:expand-more" class="text-sm"></iconify-icon>
-              </button>
-              <button class="btn btn-ghost btn-circle btn-xs h-6 w-6 min-h-0 text-error hover:bg-error/10" data-on-click="selectElement(sec.el); deleteElement()" title="Delete Section">
-                <iconify-icon icon="material-symbols-light:delete-outline" class="text-sm"></iconify-icon>
-              </button>
-            </div>
+      <!-- Preview Card 2: Marketing Features -->
+      <div class="border border-base-content/15 rounded bg-base-100 p-2 cursor-pointer hover:border-primary transition-all group"
+        data-on-click="insertSnippet('snip-features')">
+        <div class="h-20 bg-gray-100 rounded grid grid-cols-2 gap-2 p-2 mb-1.5">
+          <div class="bg-gray-200 rounded flex flex-col justify-center p-1">
+            <div class="w-8 h-1.5 bg-gray-400 rounded mb-1"></div>
+            <div class="w-12 h-1 bg-gray-300 rounded"></div>
           </div>
-        </template>
-        <div data-show="pageSections.length === 0" class="text-center py-8 text-base-content/40 italic">
-          No sections found on page
+          <div class="bg-gray-200 rounded flex flex-col justify-center p-1">
+            <div class="w-8 h-1.5 bg-gray-400 rounded mb-1"></div>
+            <div class="w-12 h-1 bg-gray-300 rounded"></div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-xs group-hover:text-primary">2-Column Features</span>
+          <iconify-icon icon="material-symbols-light:add" class="text-xs opacity-60"></iconify-icon>
         </div>
       </div>
     </div>
 
+    <!-- Active Page Sections -->
+    <div class="flex-1 overflow-y-auto p-2 space-y-1.5" data-show="sectionsSubTab === 'page-sections'">
+      <div class="text-[11px] font-bold text-base-content/70 px-1 mb-1">Reorder Page Sections</div>
+      
+      <template data-for="(sec, idx) in pageSections">
+        <div class="p-2 bg-base-100 rounded border border-base-content/15 flex items-center justify-between">
+          <div class="flex items-center gap-2 truncate">
+            <iconify-icon icon="material-symbols-light:drag-handle" class="cursor-grab text-base opacity-40"></iconify-icon>
+            <span class="font-mono text-[11px] font-bold truncate" data-bind="sec.title"></span>
+          </div>
+          <div class="flex items-center gap-0.5">
+            <button class="btn btn-ghost btn-xs h-5 w-5 min-h-0 p-0" data-on-click="moveSection(idx, -1)" title="Move Up">▲</button>
+            <button class="btn btn-ghost btn-xs h-5 w-5 min-h-0 p-0" data-on-click="moveSection(idx, 1)" title="Move Down">▼</button>
+            <button class="btn btn-ghost btn-xs h-5 w-5 min-h-0 p-0 text-error" data-on-click="deleteSection(idx)" title="Delete">✕</button>
+          </div>
+        </div>
+      </template>
+
+      <div data-show="pageSections.length === 0" class="text-center py-8 text-base-content/40 italic">
+        No sections detected on canvas
+      </div>
+    </div>
+
   </div>
 
-  <!-- ================= TAB 4: STYLES & VARIABLES ================= -->
-  <div class="flex-1 overflow-y-auto p-3 space-y-4" data-show="activeSidebarTab === 'configuration'">
-    <div>
-      <div class="text-[10px] font-bold uppercase tracking-wider text-base-content/50 mb-2">Theme Palette</div>
-      <div class="grid grid-cols-2 gap-2">
-        <div class="p-2 rounded-lg bg-primary text-primary-content text-center font-bold text-xs shadow-sm">Primary</div>
-        <div class="p-2 rounded-lg bg-secondary text-secondary-content text-center font-bold text-xs shadow-sm">Secondary</div>
-        <div class="p-2 rounded-lg bg-accent text-accent-content text-center font-bold text-xs shadow-sm">Accent</div>
-        <div class="p-2 rounded-lg bg-neutral text-neutral-content text-center font-bold text-xs shadow-sm">Neutral</div>
+  <!-- ================= TAB 4: STYLES ================= -->
+  <div class="flex-1 flex flex-col min-h-0 overflow-hidden" data-show="activeSidebarTab === 'configuration'">
+    <div class="flex border-b border-base-content/15 bg-base-200/40">
+      <div class="flex-1 py-1.5 text-center text-xs font-bold border-b-2 border-primary text-primary bg-base-100">
+        Styles &amp; Theme
       </div>
     </div>
 
-    <div>
-      <div class="text-[10px] font-bold uppercase tracking-wider text-base-content/50 mb-2">Border Radius</div>
-      <div class="grid grid-cols-3 gap-1.5">
-        <button class="btn btn-outline btn-xs rounded-none">None</button>
-        <button class="btn btn-outline btn-xs rounded-md">Medium</button>
-        <button class="btn btn-outline btn-xs rounded-full">Pill</button>
+    <div class="p-3 space-y-4 overflow-y-auto">
+      <div>
+        <label class="font-bold text-xs mb-1.5 block">Theme Preset</label>
+        <select class="select select-bordered select-xs w-full"
+          data-on-change="document.documentElement.setAttribute('data-theme', $evt.target.value)">
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+          <option value="corporate">Corporate</option>
+          <option value="emerald">Emerald</option>
+          <option value="synthwave">Synthwave</option>
+          <option value="retro">Retro</option>
+          <option value="cyberpunk">Cyberpunk</option>
+          <option value="dracula">Dracula</option>
+        </select>
       </div>
-    </div>
 
-    <div>
-      <div class="text-[10px] font-bold uppercase tracking-wider text-base-content/50 mb-2">Typography</div>
-      <div class="space-y-1.5">
-        <button class="w-full btn btn-outline btn-xs font-sans justify-start">Inter / Sans</button>
-        <button class="w-full btn btn-outline btn-xs font-serif justify-start">Merriweather / Serif</button>
-        <button class="w-full btn btn-outline btn-xs font-mono justify-start">JetBrains / Mono</button>
+      <div>
+        <label class="font-bold text-xs mb-1.5 block">Typography</label>
+        <select class="select select-bordered select-xs w-full"
+          data-on-change="if (selectedEl) selectedEl.style.fontFamily = $evt.target.value">
+          <option value="system-ui, sans-serif">System Sans</option>
+          <option value="Inter, sans-serif">Inter</option>
+          <option value="Georgia, serif">Georgia</option>
+          <option value="monospace">Monospace</option>
+        </select>
       </div>
     </div>
   </div>
+
+  <!-- HTML Snippet Templates (Stored cleanly for insertion) -->
+  <template id="snip-heading"><h2 class="text-2xl font-bold mb-2">Heading Text</h2></template>
+  <template id="snip-paragraph"><p class="text-base text-gray-600 mb-4">Add your paragraph text here.</p></template>
+  <template id="snip-button"><button class="px-4 py-2 bg-[#0d6efd] text-white rounded font-medium hover:bg-blue-700">Click Here</button></template>
+  <template id="snip-image"><img src="https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=600" alt="Preview" class="rounded max-w-full my-4" /></template>
+  <template id="snip-form"><form class="p-4 border border-gray-200 rounded my-4 space-y-3"><label class="block text-xs font-medium">Form Label</label><input type="text" class="border border-gray-300 rounded px-2 py-1 w-full text-xs" /><button class="px-3 py-1 bg-[#0d6efd] text-white rounded text-xs">Submit</button></form></template>
+  <template id="snip-input"><input type="text" placeholder="Text input..." class="border border-gray-300 rounded px-3 py-1.5 w-full text-xs" /></template>
+  <template id="snip-textarea"><textarea placeholder="Text area..." class="border border-gray-300 rounded px-3 py-1.5 w-full text-xs" rows="3"></textarea></template>
+  <template id="snip-select"><select class="border border-gray-300 rounded px-2 py-1 text-xs"><option>Option 1</option><option>Option 2</option></select></template>
+  <template id="snip-checkbox"><label class="inline-flex items-center gap-2 cursor-pointer text-xs"><input type="checkbox" class="rounded border-gray-300" /> Checkbox label</label></template>
+  <template id="snip-radio"><label class="inline-flex items-center gap-2 cursor-pointer text-xs"><input type="radio" name="r" class="border-gray-300" /> Radio label</label></template>
+  <template id="snip-link"><a href="#" class="text-[#0d6efd] underline hover:text-blue-700">Link text</a></template>
+  <template id="snip-quote"><blockquote class="border-l-4 border-[#0d6efd] pl-4 italic text-gray-700 my-4">"A quote or testimonial snippet."</blockquote></template>
+  <template id="snip-list"><ul class="list-disc pl-5 my-2 space-y-1"><li>First item</li><li>Second item</li><li>Third item</li></ul></template>
+  <template id="snip-table"><table class="table-auto w-full text-xs border border-gray-200 my-4"><thead><tr class="bg-gray-100"><th class="border px-2 py-1">Name</th><th class="border px-2 py-1">Role</th></tr></thead><tbody><tr><td class="border px-2 py-1">John Doe</td><td class="border px-2 py-1">Engineer</td></tr></tbody></table></template>
+  <template id="snip-divider"><hr class="my-6 border-gray-300" /></template>
+  <template id="snip-container"><div class="container max-w-5xl mx-auto px-4 py-8 border border-dashed border-gray-300 rounded"><p class="text-center text-gray-400">Container Wrapper</p></div></template>
+  <template id="snip-hero"><section class="py-12 px-4 bg-gray-50 rounded text-center my-6"><h1 class="text-3xl font-bold mb-2">Jumbotron Hero Title</h1><p class="text-gray-600 max-w-xl mx-auto mb-4">Hero descriptive copy highlighting core features.</p><button class="px-5 py-2 bg-[#0d6efd] text-white rounded font-medium">Get Started</button></section></template>
+  <template id="snip-features"><section class="py-8 grid grid-cols-1 md:grid-cols-2 gap-6 my-6"><div><h4 class="font-bold text-base mb-1">Feature One</h4><p class="text-sm text-gray-600">Feature description copy.</p></div><div><h4 class="font-bold text-base mb-1">Feature Two</h4><p class="text-sm text-gray-600">Feature description copy.</p></div></section></template>
+  <template id="snip-pricing"><section class="py-8 grid grid-cols-1 md:grid-cols-3 gap-4 my-6"><div class="border p-4 rounded text-center"><h3 class="font-bold">Starter</h3><div class="text-2xl font-black my-2">$0</div><button class="w-full py-1.5 bg-[#0d6efd] text-white rounded text-xs">Choose</button></div><div class="border-2 border-[#0d6efd] p-4 rounded text-center shadow-md"><h3 class="font-bold">Pro</h3><div class="text-2xl font-black my-2">$29</div><button class="w-full py-1.5 bg-[#0d6efd] text-white rounded text-xs">Choose</button></div><div class="border p-4 rounded text-center"><h3 class="font-bold">Enterprise</h3><div class="text-2xl font-black my-2">$99</div><button class="w-full py-1.5 bg-[#0d6efd] text-white rounded text-xs">Choose</button></div></section></template>
+  <template id="snip-cta"><section class="py-8 bg-[#0d6efd] text-white text-center rounded my-6 px-4"><h2 class="text-2xl font-bold mb-2">Ready to Get Started?</h2><button class="px-6 py-2 bg-white text-[#0d6efd] font-bold rounded shadow">Sign Up Now</button></section></template>
 
 </aside>
-
-<!-- ================= RAW COMPONENT TEMPLATES (Zero JS Escaping Issues) ================= -->
-<template id="snip-container">
-  <div class="container mx-auto px-4 py-8">
-    <div class="p-6 bg-base-200 rounded-2xl border border-base-content/10">
-      <h3 class="text-xl font-bold mb-2">Container Section</h3>
-      <p class="text-sm opacity-70">A centered layout container with standard responsive gutters.</p>
-    </div>
-  </div>
-</template>
-
-<template id="snip-grid-2">
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
-    <div class="p-6 bg-base-200 rounded-2xl border border-base-content/10">
-      <h4 class="font-bold text-base mb-1">Column 1</h4>
-      <p class="text-xs opacity-70">Content for first column.</p>
-    </div>
-    <div class="p-6 bg-base-200 rounded-2xl border border-base-content/10">
-      <h4 class="font-bold text-base mb-1">Column 2</h4>
-      <p class="text-xs opacity-70">Content for second column.</p>
-    </div>
-  </div>
-</template>
-
-<template id="snip-grid-3">
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 my-6">
-    <div class="p-6 bg-base-200 rounded-2xl border border-base-content/10">
-      <h4 class="font-bold text-base mb-1">Column 1</h4>
-      <p class="text-xs opacity-70">Item details.</p>
-    </div>
-    <div class="p-6 bg-base-200 rounded-2xl border border-base-content/10">
-      <h4 class="font-bold text-base mb-1">Column 2</h4>
-      <p class="text-xs opacity-70">Item details.</p>
-    </div>
-    <div class="p-6 bg-base-200 rounded-2xl border border-base-content/10">
-      <h4 class="font-bold text-base mb-1">Column 3</h4>
-      <p class="text-xs opacity-70">Item details.</p>
-    </div>
-  </div>
-</template>
-
-<template id="snip-flex-row">
-  <div class="flex flex-wrap items-center justify-between gap-4 p-4 bg-base-200/50 rounded-xl my-4">
-    <div class="font-bold text-sm">Flexible Row Item</div>
-    <button class="btn btn-primary btn-sm">Action</button>
-  </div>
-</template>
-
-<template id="snip-card">
-  <div class="card bg-base-200 border border-base-content/10 shadow-lg rounded-2xl my-4">
-    <div class="card-body p-6">
-      <h3 class="card-title text-base font-bold">Featured Card</h3>
-      <p class="text-xs opacity-70">Clean DaisyUI card component with built-in reactive styling.</p>
-      <div class="card-actions justify-end mt-4">
-        <button class="btn btn-primary btn-sm">Learn More</button>
-      </div>
-    </div>
-  </div>
-</template>
-
-<template id="snip-button">
-  <button class="btn btn-primary btn-sm shadow-md shadow-primary/20">Click Me</button>
-</template>
-
-<template id="snip-badge">
-  <span class="badge badge-primary badge-sm font-semibold">New Feature</span>
-</template>
-
-<template id="snip-alert">
-  <div role="alert" class="alert alert-info my-3">
-    <iconify-icon icon="material-symbols-light:info" class="text-lg"></iconify-icon>
-    <span class="text-xs">Information notification banner for key updates.</span>
-  </div>
-</template>
-
-<template id="snip-stats">
-  <div class="stats shadow bg-base-200 border border-base-content/10 rounded-2xl my-4">
-    <div class="stat p-4">
-      <div class="stat-title text-xs">Total Users</div>
-      <div class="stat-value text-2xl text-primary font-mono font-bold">89.4k</div>
-      <div class="stat-desc text-[10px]">21% more than last month</div>
-    </div>
-  </div>
-</template>
-
-<template id="snip-accordion">
-  <div class="collapse collapse-plus bg-base-200 border border-base-content/10 rounded-2xl my-2">
-    <input type="radio" name="my-accordion" checked="checked" />
-    <div class="collapse-title text-sm font-bold">How does Nexus-UX achieve zero-copy reactivity?</div>
-    <div class="collapse-content text-xs opacity-70">
-      <p>By leveraging SharedArrayBuffer-backed SignalHeap and direct proxy traversal across frames.</p>
-    </div>
-  </div>
-</template>
-
-<template id="snip-input">
-  <div class="form-control w-full my-2">
-    <label class="label py-1"><span class="label-text text-xs font-semibold">Email Address</span></label>
-    <input type="email" placeholder="user@example.com" class="input input-bordered input-sm w-full rounded-lg" />
-  </div>
-</template>
-
-<template id="snip-select">
-  <div class="form-control w-full my-2">
-    <label class="label py-1"><span class="label-text text-xs font-semibold">Select Country</span></label>
-    <select class="select select-bordered select-sm w-full rounded-lg">
-      <option disabled selected>Pick one</option>
-      <option>United States</option>
-      <option>United Kingdom</option>
-      <option>European Union</option>
-    </select>
-  </div>
-</template>
-
-<template id="snip-toggle">
-  <div class="form-control my-2">
-    <label class="label cursor-pointer justify-start gap-3 py-1">
-      <input type="checkbox" class="toggle toggle-primary toggle-sm" checked="checked" />
-      <span class="label-text text-xs font-semibold">Enable Notifications</span>
-    </label>
-  </div>
-</template>
-
-<template id="snip-textarea">
-  <div class="form-control w-full my-2">
-    <label class="label py-1"><span class="label-text text-xs font-semibold">Your Message</span></label>
-    <textarea class="textarea textarea-bordered h-20 text-xs rounded-lg" placeholder="Write here..."></textarea>
-  </div>
-</template>
-
-<template id="snip-hero">
-  <section class="hero py-16 bg-base-200/50 rounded-3xl my-6 border border-base-content/10">
-    <div class="hero-content text-center">
-      <div class="max-w-xl">
-        <h1 class="text-4xl font-extrabold tracking-tight mb-4">Build Faster with Nexus-UX</h1>
-        <p class="py-2 text-sm text-base-content/70 mb-4 leading-relaxed">
-          Zero-overhead reactive declarative UX engine combined with native Web APIs and DaisyUI components.
-        </p>
-        <div class="flex justify-center gap-3">
-          <button class="btn btn-primary btn-sm">Get Started</button>
-          <button class="btn btn-outline btn-sm">Live Demo</button>
-        </div>
-      </div>
-    </div>
-  </section>
-</template>
-
-<template id="snip-features">
-  <section class="py-12 my-6">
-    <div class="text-center max-w-lg mx-auto mb-8">
-      <h2 class="text-2xl font-bold">Engine Capabilities</h2>
-      <p class="text-xs text-base-content/60 mt-1">Engineered from ground-up for maximum performance</p>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="p-6 bg-base-200 rounded-2xl border border-base-content/10">
-        <iconify-icon icon="material-symbols-light:bolt" class="text-3xl text-primary mb-2"></iconify-icon>
-        <h3 class="font-bold text-sm mb-1">Zero Latency</h3>
-        <p class="text-xs opacity-70">Shared memory heap handles fine-grained signals with sub-millisecond dispatch.</p>
-      </div>
-      <div class="p-6 bg-base-200 rounded-2xl border border-base-content/10">
-        <iconify-icon icon="material-symbols-light:layers" class="text-3xl text-secondary mb-2"></iconify-icon>
-        <h3 class="font-bold text-sm mb-1">Shadow DOM</h3>
-        <p class="text-xs opacity-70">Clean encapsulation prevents CSS bleed and enables zero-copy canvas morphing.</p>
-      </div>
-      <div class="p-6 bg-base-200 rounded-2xl border border-base-content/10">
-        <iconify-icon icon="material-symbols-light:offline-bolt" class="text-3xl text-accent mb-2"></iconify-icon>
-        <h3 class="font-bold text-sm mb-1">Offline Persistence</h3>
-        <p class="text-xs opacity-70">Built-in IndexedDB storage synchronization for instant offline recovery.</p>
-      </div>
-    </div>
-  </section>
-</template>
-
-<template id="snip-pricing">
-  <section class="py-12 my-6">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto">
-      <div class="card bg-base-200 border border-base-content/10 rounded-2xl p-6">
-        <h3 class="font-bold text-lg">Community</h3>
-        <div class="text-3xl font-extrabold my-2">$0 <span class="text-xs font-normal opacity-60">/ forever</span></div>
-        <p class="text-xs opacity-70 mb-6">Complete client-side declarative runtime.</p>
-        <button class="btn btn-outline btn-sm w-full">Download</button>
-      </div>
-      <div class="card bg-base-200 border-2 border-primary rounded-2xl p-6 relative">
-        <span class="badge badge-primary badge-sm absolute -top-3 right-6">Popular</span>
-        <h3 class="font-bold text-lg">Enterprise</h3>
-        <div class="text-3xl font-extrabold my-2 text-primary">$49 <span class="text-xs font-normal opacity-60">/ mo</span></div>
-        <p class="text-xs opacity-70 mb-6">Multi-threaded logic workers and cloud sync.</p>
-        <button class="btn btn-primary btn-sm w-full">Deploy Now</button>
-      </div>
-    </div>
-  </section>
-</template>
-
-<template id="snip-cta">
-  <section class="bg-gradient-to-r from-primary to-accent text-primary-content p-8 rounded-3xl my-8 text-center shadow-xl">
-    <h2 class="text-2xl font-extrabold mb-2">Ready to ship modern web apps?</h2>
-    <p class="text-xs opacity-90 max-w-md mx-auto mb-6">Start building right inside your browser with pure HTML directives.</p>
-    <button class="btn btn-neutral btn-sm shadow-md">Create Your Account</button>
-  </section>
-</template>
-
-<template id="snip-footer">
-  <footer class="footer p-8 bg-base-200 rounded-3xl border border-base-content/10 my-8">
-    <div>
-      <span class="footer-title text-xs font-bold uppercase">Services</span>
-      <a class="link link-hover text-xs">Design System</a>
-      <a class="link link-hover text-xs">Reactive Directives</a>
-      <a class="link link-hover text-xs">Web Workers</a>
-    </div>
-    <div>
-      <span class="footer-title text-xs font-bold uppercase">Company</span>
-      <a class="link link-hover text-xs">About</a>
-      <a class="link link-hover text-xs">Documentation</a>
-      <a class="link link-hover text-xs">GitHub</a>
-    </div>
-    <div>
-      <span class="footer-title text-xs font-bold uppercase">Legal</span>
-      <a class="link link-hover text-xs">Terms of use</a>
-      <a class="link link-hover text-xs">Privacy policy</a>
-    </div>
-  </footer>
-</template>
