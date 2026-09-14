@@ -69,9 +69,11 @@
           <span>Navigator</span>
         </div>
         <div class="flex items-center gap-1 text-base-content/60">
-          <button class="hover:text-base-content px-0.5" title="Collapse" data-on-click="showTreeList = false">―</button>
-          <button class="hover:text-base-content px-0.5" title="Refresh" data-on-click="refreshTree()">›</button>
-          <button class="hover:text-base-content px-0.5" title="Close" data-on-click="showTreeList = false">✕</button>
+          <button class="hover:text-base-content px-0.5 flex items-center" title="Collapse" data-on-click="showTreeList = false">―</button>
+          <button class="hover:text-base-content px-0.5 flex items-center" title="Refresh DOM Navigator" data-on-click="refreshTree()">
+            <iconify-icon icon="material-symbols-light:refresh" class="text-xs"></iconify-icon>
+          </button>
+          <button class="hover:text-base-content px-0.5 flex items-center" title="Close" data-on-click="showTreeList = false">✕</button>
         </div>
       </div>
 
