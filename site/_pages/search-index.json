@@ -36,6 +36,15 @@
     "content": "Todo List { progress = 20; try { if (typeof localStorage !== 'undefined') { localStorage.setItem('nexus_todos', JSON.stringify(t)); } } catch (e) {} setTimeout(() => progress = 100, 300); setTimeout(() => progress = 0, 800); } }\" data-effect=\" if (!hydrated) { try { if (typeof localStorage !== 'undefined') { const saved = localStorage.getItem('nexus_todos'); if (saved) { const parsed = JSON.parse(saved); if (Array.isArray(parsed) && parsed.length > 0) { todos.splice(0, todos.length, ...parsed); } } } } catch (e) {} hydrated = true; } if (typeof localStorage !== 'undefined') { try { localStorage.setItem('nexus_todo_layout', layout); } catch (e) {} } \" data-computed=\"{ filteredTodos: () => { const f = filter; const list = todos; if (f === 'active') return list.filter(t => !t.completed); if (f === 'completed') return list.filter(t => t.completed); return [...list]; }, remaining: () => todos.filter(t => !t.completed).length }\"> 0 || isEditing\" data-bind-value=\"isEditing ? null : progress\" max=\"100\"> Todo List HTML-first reactive state management List Grid Compact Add Task All Active Completed Clear Completed Ready for your focus... Diagnostic Overlay viewport x items total Due Date (DD/MM/YYYY) Edit Done Cancel Save No, Keep it t.id === activeTodo.id); if (idx !== -1) todos.splice(idx, 1); } activeTodo = null; } else { todos.splice(0, todos.length, ...todos.filter(t => !t.completed)); } $saveTodos(todos); showConfirmDelete = false; showConfirmClear = false; \">Yes,"
   },
   {
+    "id": "_top-panel",
+    "route": "/_top-panel",
+    "path": "/_pages/builder/_top-panel.html",
+    "title": "_top-panel",
+    "category": "General",
+    "keywords": [],
+    "content": "Visual Builder ShadowDOM Desktop Tablet Mobile Templates HTML Clear Export"
+  },
+  {
     "id": "doc-changelog",
     "route": "/docs/changelog",
     "path": "/_pages/docs/changelog.md",
