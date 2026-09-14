@@ -26,7 +26,57 @@
     <!-- The Encapsulated Shadow DOM Canvas Host -->
     <div id="builder-canvas-host"
       class="min-h-[85vh] w-full bg-base-100 overflow-y-auto overflow-x-hidden relative"
-      data-component="{ path: currentDoc, shadowrootmode: 'open' }">
+      data-component="{ path: currentDoc, shadowrootmode: 'open' }"
+      data-effect="
+        const host = $el;
+        if (!host.__builder_bound) {
+          host.__builder_bound = true;
+
+          // Handle selection click inside shadow root
+          host.addEventListener('click', function(e) {
+            if (previewMode) return;
+            const target = e.composedPath ? e.composedPath()[0] : e.target;
+            if (target && target.nodeType === 1 && target !== host) {
+              e.preventDefault();
+              e.stopPropagation();
+              selectElement(target);
+            }
+          }, true);
+
+          // Handle hover highlight inside shadow root
+          host.addEventListener('pointermove', function(e) {
+            if (previewMode) return;
+            const target = e.composedPath ? e.composedPath()[0] : e.target;
+            if (target && target.nodeType === 1 && target !== host) {
+              updateHoverBox(target);
+            }
+          }, true);
+
+          host.addEventListener('pointerleave', function() {
+            hoverBox.visible = false;
+          });
+
+          // Handle double click for inline text editing
+          host.addEventListener('dblclick', function(e) {
+            if (previewMode) return;
+            const target = e.composedPath ? e.composedPath()[0] : e.target;
+            if (target && target.nodeType === 1) {
+              target.contentEditable = 'true';
+              target.focus();
+              target.addEventListener('blur', function onBlur() {
+                target.contentEditable = 'false';
+                target.removeEventListener('blur', onBlur);
+                selectElement(target);
+                syncCanvasHtmlToDraft();
+              });
+            }
+          }, true);
+        }
+
+        if (selectedEl) {
+          updateSelectedBox();
+        }
+      ">
     </div>
 
     <!-- SELECTION OVERLAY BOX (Positioned absolute over selected element) -->
