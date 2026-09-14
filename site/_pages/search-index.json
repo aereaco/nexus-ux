@@ -84,6 +84,15 @@
     "content": "Add page Home page Blank page Contact us page Index landing Navigator ― › ✕ Click refresh to inspect DOM hierarchy Components Blocks ✕ ― Base H Heading Image Horizontal Rule Form T Input I Text Area opt Select Input Checkbox Radio Button Link Button Html Button ¶ Paragraph 99 Blockquote List Table <pre> Preformatted Audio Video Components Card Alert Badge Progress Bar Breadcrumb Pagination Tabs Accordion Layout Blocks Jumbotron Hero Heading, subtitle, CTA button Marketing 2-Col Grid Subheading and description pairs Pricing Table 3 tiers with check lists Team Showcase Avatar cards with social links Call To Action Banner Centered title and button Footer with Columns Brand, nav links, copyright Sections Page Sections Section Templates Hero / Jumbotron 2-Column Features Pricing Table Reorder Page Sections ▲ ▼ ✕ No sections detected on canvas Styles & Theme Theme Preset Light Dark Corporate Emerald Synthwave Retro Cyberpunk Dracula Typography System Sans Inter Georgia Monospace Heading Text Add your paragraph text here. Click Here Form Label Submit Option 1 Option 2 Checkbox label Radio label Link text \"A quote or testimonial snippet.\" First item Second item Third item Name Role John Doe Engineer // Code snippet here console.log('Hello VvvebJs'); Card Title Card content description text. Action Information notice or update announcement. New Feature Home Documents Current 1 2 3 Tab 1 Tab 2 Tab 3 Accordion Header Accordion expanded body text. Jumbotron Hero Title Hero descriptive copy highlighting core features. Get Started Feature One Feature description copy. Feature Two Feature description copy. Starter $0 Choose Pro $29 Choose Enterprise $99 Choose Our Team Alex Smith Lead Designer Sam Jones Architect Taylor Lee Developer Ready to Get Started? Sign Up Now © 2026 Brand, Inc. Terms Privacy Security"
   },
   {
+    "id": "_modals",
+    "route": "/builder/_modals",
+    "path": "/_pages/builder/_modals.html",
+    "title": "_modals",
+    "category": "General",
+    "keywords": [],
+    "content": "Export Standalone HTML Production-ready self-contained HTML with Tailwind CSS, DaisyUI, and Nexus-UX scripts. ✕ Zero build step required. Works in any standard web server or browser. Download .html Choose Starter Template Select a pre-designed layout or start from a blank canvas. ✕ Blank Canvas An empty canvas with a drop zone. Perfect for building custom layouts from scratch. Select Modern Landing Page Complete high-converting page with Navbar, Hero CTA, Stats, Feature cards, and Footer. Select"
+  },
+  {
     "id": "_right-panel",
     "route": "/builder/_right-panel",
     "path": "/_pages/builder/_right-panel.html",
