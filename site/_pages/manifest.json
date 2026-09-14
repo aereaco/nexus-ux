@@ -1138,12 +1138,6 @@
     "parent": "/index"
   },
   {
-    "id": "_canvas",
-    "route": "/builder/_canvas",
-    "path": "/_pages/builder/_canvas.html",
-    "parent": "/index"
-  },
-  {
     "id": "_modals",
     "route": "/builder/_modals",
     "path": "/_pages/builder/_modals.html",
@@ -1162,6 +1156,13 @@
     "title": "Error",
     "icon": "material-symbols-light:error-outline",
     "parent": null
+  },
+  {
+    "id": "_canvas",
+    "route": "",
+    "path": "/_pages/builder/_canvas.html",
+    "internal": true,
+    "parent": "/builder"
   },
   {
     "id": "_left-panel",

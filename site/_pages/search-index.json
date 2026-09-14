@@ -75,15 +75,6 @@
     "content": ""
   },
   {
-    "id": "_left-panel",
-    "route": "/builder/_left-panel",
-    "path": "/_pages/builder/_left-panel.html",
-    "title": "_left-panel",
-    "category": "General",
-    "keywords": [],
-    "content": "UI Blocks Sections Reactive Tree ✕ Layout & Grid Container Centered wrapper 2 Columns Grid 1:1 3 Columns Grid 1:1:1 Flex Row Horizontal flex Core UI Card DaisyUI Card Button Primary CTA Badge Status pill Alert Notice box Stat Block KPI metric Accordion Collapsible Forms & Inputs Text Input Label & input Select Dropdown Options menu Toggle Switch On/off switch Text Area Multiline note Hero Section Heading, subtitle & CTA buttons Features Grid 3-column benefit cards Pricing Section Tier comparison cards Call To Action Conversion banner with button Multi-column Footer Links, brand & legal copy These blocks include live data-signal , data-bind , and data-on directives that run reactively! Reactive Counter data-signal=\"{ count: 0 }\" Live Search List data-bind + data-for Reactive Tabs View data-show=\"activeTab === N\" DOM Hierarchy Sync Click Sync or load canvas to view DOM nodes."
-  },
-  {
     "id": "_modals",
     "route": "/builder/_modals",
     "path": "/_pages/builder/_modals.html",
