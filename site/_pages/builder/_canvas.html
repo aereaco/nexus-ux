@@ -27,7 +27,6 @@
     <!-- The Encapsulated Shadow DOM Canvas Host (#builder-canvas-host) -->
     <div id="builder-canvas-host"
       class="w-full min-w-full h-full min-h-full flex-1 flex flex-col overflow-y-auto overflow-x-hidden relative transition-colors duration-200"
-      data-class="{ 'bg-white text-[#212529]': canvasTheme === 'light', 'bg-[#1d232a] text-[#a6adbb] dark': canvasTheme === 'dark' }"
       data-attr-theme="canvasTheme"
       data-component="{ path: currentDoc, shadowrootmode: 'open' }"
       data-effect="
@@ -54,18 +53,6 @@
               if (canvasTheme === 'dark') body.classList.add('dark');
               else body.classList.remove('dark');
             }
-            const inner = root.querySelector('.min-h-screen') || root.querySelector('div');
-            if (inner) {
-              inner.setAttribute('data-theme', canvasTheme);
-              if (canvasTheme === 'dark') {
-                inner.classList.add('dark');
-                inner.classList.remove('bg-white', 'text-[#212529]');
-                inner.classList.add('bg-[#1d232a]', 'text-[#a6adbb]');
-              } else {
-                inner.classList.remove('dark', 'bg-[#1d232a]', 'text-[#a6adbb]');
-                inner.classList.add('bg-white', 'text-[#212529]');
-              }
-            }
           };
           applyTheme();
 
@@ -77,47 +64,11 @@
 
           // Scroll synchronization for overlay selectBox / hoverBox
           const onScroll = () => {
-            const el = toRawNode(selectedEl);
-            const selectBoxEl = document.getElementById('select-box');
-            if (el && selectBoxEl) {
-              try {
-                const elRect = el.getBoundingClientRect();
-                const frame = host.parentElement || host;
-                const frameRect = frame.getBoundingClientRect();
-                const t = (elRect.top - frameRect.top) + 'px';
-                const l = (elRect.left - frameRect.left) + 'px';
-                const w = elRect.width + 'px';
-                const h = elRect.height + 'px';
-                selectBoxEl.style.top = t;
-                selectBoxEl.style.left = l;
-                selectBoxEl.style.width = w;
-                selectBoxEl.style.height = h;
-                selectedBox.top = elRect.top - frameRect.top;
-                selectedBox.left = elRect.left - frameRect.left;
-                selectedBox.width = elRect.width;
-                selectedBox.height = elRect.height;
-              } catch (_) {}
+            if (selectedEl) {
+              updateSelectedBox();
             }
-            const hEl = toRawNode(hoveredEl);
-            const hoverBoxEl = document.getElementById('highlight-box');
-            if (hEl && hoverBoxEl && hoverBox.visible) {
-              try {
-                const hRect = hEl.getBoundingClientRect();
-                const frame = host.parentElement || host;
-                const frameRect = frame.getBoundingClientRect();
-                const t = (hRect.top - frameRect.top) + 'px';
-                const l = (hRect.left - frameRect.left) + 'px';
-                const w = hRect.width + 'px';
-                const h = hRect.height + 'px';
-                hoverBoxEl.style.top = t;
-                hoverBoxEl.style.left = l;
-                hoverBoxEl.style.width = w;
-                hoverBoxEl.style.height = h;
-                hoverBox.top = hRect.top - frameRect.top;
-                hoverBox.left = hRect.left - frameRect.left;
-                hoverBox.width = hRect.width;
-                hoverBox.height = hRect.height;
-              } catch (_) {}
+            if (hoveredEl && hoverBox.visible) {
+              updateHoverBox(hoveredEl);
             }
           };
           host.addEventListener('scroll', onScroll, { passive: true });
@@ -126,11 +77,19 @@
           if (canvasEl) canvasEl.addEventListener('scroll', onScroll, { passive: true });
           window.addEventListener('resize', onScroll, { passive: true });
 
+          const resolveTarget = (e) => {
+            let target = e.composedPath ? e.composedPath()[0] : e.target;
+            if (!target) return null;
+            if (target.nodeType === 3) target = target.parentElement;
+            if (!target || target.nodeType !== 1 || target === host) return null;
+            return target;
+          };
+
           // Handle selection click inside shadow root
           root.addEventListener('click', function(e) {
             if (previewMode) return;
-            const target = e.composedPath ? e.composedPath()[0] : e.target;
-            if (target && target.nodeType === 1 && target !== host) {
+            const target = resolveTarget(e);
+            if (target) {
               e.preventDefault();
               e.stopPropagation();
               selectElement(target);
@@ -140,21 +99,23 @@
           // Handle hover highlight inside shadow root
           root.addEventListener('pointermove', function(e) {
             if (previewMode) return;
-            const target = e.composedPath ? e.composedPath()[0] : e.target;
-            if (target && target.nodeType === 1 && target !== host) {
+            const target = resolveTarget(e);
+            if (target) {
               updateHoverBox(target);
             }
           }, true);
 
           root.addEventListener('pointerleave', function() {
             hoverBox.visible = false;
+            const hoverBoxEl = document.getElementById('highlight-box');
+            if (hoverBoxEl) hoverBoxEl.style.display = 'none';
           });
 
           // Handle double click for inline text editing
           root.addEventListener('dblclick', function(e) {
             if (previewMode) return;
-            const target = e.composedPath ? e.composedPath()[0] : e.target;
-            if (target && target.nodeType === 1) {
+            const target = resolveTarget(e);
+            if (target) {
               target.contentEditable = 'true';
               target.focus();
               target.addEventListener('blur', function onBlur() {
@@ -167,10 +128,6 @@
           }, true);
         };
         bindShadow();
-
-        if (selectedEl) {
-          updateSelectedBox();
-        }
       ">
     </div>
 
