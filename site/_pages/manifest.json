@@ -1176,6 +1176,12 @@
     "parent": null
   },
   {
+    "id": "landing",
+    "route": "/landing",
+    "path": "/_pages/builder/templates/landing.html",
+    "parent": "/builder/templates"
+  },
+  {
     "id": "admin",
     "route": "",
     "path": "/_internal/admin-console.html",
@@ -1189,14 +1195,6 @@
     "route": "",
     "path": "/_pages/builder/templates/blank.html",
     "title": "Blank Canvas",
-    "internal": true,
-    "parent": "/builder/templates"
-  },
-  {
-    "id": "landing",
-    "route": "",
-    "path": "/_pages/builder/templates/landing.html",
-    "title": "VvvebJs Demo - Narrow Jumbotron",
     "internal": true,
     "parent": "/builder/templates"
   }
