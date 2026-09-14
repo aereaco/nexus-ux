@@ -31,6 +31,7 @@
       data-component="{ path: currentDoc, shadowrootmode: 'open' }"
       data-effect="
         const rawHost = document.getElementById('builder-canvas-host') || ($el.__v_raw || $el);
+        const host = rawHost;
         const bindShadow = () => {
           if (!rawHost || !rawHost.shadowRoot) {
             setTimeout(bindShadow, 50);
