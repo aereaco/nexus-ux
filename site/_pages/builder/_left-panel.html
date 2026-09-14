@@ -51,7 +51,7 @@
         <div class="text-[10px] uppercase font-bold tracking-wider text-base-content/40 px-1 mb-1">Layout &amp; Grid</div>
         <div class="grid grid-cols-2 gap-1.5">
           <button class="btn btn-ghost btn-xs justify-start gap-2 bg-base-100 border border-base-content/5 hover:border-primary/40 hover:bg-base-300/50 py-2 h-auto text-left"
-            data-on-click="insertSnippet(snippets.container)"
+            data-on-click="insertSnippet('snip-container')"
             data-show="!searchFilter || 'container box wrapper'.includes(searchFilter.toLowerCase())">
             <iconify-icon icon="material-symbols-light:check-box-outline-blank" class="text-primary text-base shrink-0"></iconify-icon>
             <div class="truncate">
@@ -61,7 +61,7 @@
           </button>
 
           <button class="btn btn-ghost btn-xs justify-start gap-2 bg-base-100 border border-base-content/5 hover:border-primary/40 hover:bg-base-300/50 py-2 h-auto text-left"
-            data-on-click="insertSnippet(snippets.grid2)"
+            data-on-click="insertSnippet('snip-grid2')"
             data-show="!searchFilter || 'grid columns 2 col'.includes(searchFilter.toLowerCase())">
             <iconify-icon icon="material-symbols-light:view-column-2-outline" class="text-primary text-base shrink-0"></iconify-icon>
             <div class="truncate">
@@ -71,7 +71,7 @@
           </button>
 
           <button class="btn btn-ghost btn-xs justify-start gap-2 bg-base-100 border border-base-content/5 hover:border-primary/40 hover:bg-base-300/50 py-2 h-auto text-left"
-            data-on-click="insertSnippet(snippets.grid3)"
+            data-on-click="insertSnippet('snip-grid3')"
             data-show="!searchFilter || 'grid columns 3 col'.includes(searchFilter.toLowerCase())">
             <iconify-icon icon="material-symbols-light:grid-view" class="text-primary text-base shrink-0"></iconify-icon>
             <div class="truncate">
@@ -81,7 +81,7 @@
           </button>
 
           <button class="btn btn-ghost btn-xs justify-start gap-2 bg-base-100 border border-base-content/5 hover:border-primary/40 hover:bg-base-300/50 py-2 h-auto text-left"
-            data-on-click="insertSnippet(snippets.flexRow)"
+            data-on-click="insertSnippet('snip-flexRow')"
             data-show="!searchFilter || 'flex row inline'.includes(searchFilter.toLowerCase())">
             <iconify-icon icon="material-symbols-light:view-week-outline" class="text-primary text-base shrink-0"></iconify-icon>
             <div class="truncate">
@@ -97,7 +97,7 @@
         <div class="text-[10px] uppercase font-bold tracking-wider text-base-content/40 px-1 mb-1">Core UI</div>
         <div class="grid grid-cols-2 gap-1.5">
           <button class="btn btn-ghost btn-xs justify-start gap-2 bg-base-100 border border-base-content/5 hover:border-primary/40 hover:bg-base-300/50 py-2 h-auto text-left"
-            data-on-click="insertSnippet(snippets.card)"
+            data-on-click="insertSnippet('snip-card')"
             data-show="!searchFilter || 'card box panel'.includes(searchFilter.toLowerCase())">
             <iconify-icon icon="material-symbols-light:crop-portrait" class="text-secondary text-base shrink-0"></iconify-icon>
             <div class="truncate">
@@ -107,7 +107,7 @@
           </button>
 
           <button class="btn btn-ghost btn-xs justify-start gap-2 bg-base-100 border border-base-content/5 hover:border-primary/40 hover:bg-base-300/50 py-2 h-auto text-left"
-            data-on-click="insertSnippet(snippets.buttonPrimary)"
+            data-on-click="insertSnippet('snip-buttonPrimary')"
             data-show="!searchFilter || 'button btn cta'.includes(searchFilter.toLowerCase())">
             <iconify-icon icon="material-symbols-light:smart-button" class="text-secondary text-base shrink-0"></iconify-icon>
             <div class="truncate">
@@ -117,7 +117,7 @@
           </button>
 
           <button class="btn btn-ghost btn-xs justify-start gap-2 bg-base-100 border border-base-content/5 hover:border-primary/40 hover:bg-base-300/50 py-2 h-auto text-left"
-            data-on-click="insertSnippet(snippets.badge)"
+            data-on-click="insertSnippet('snip-badge')"
             data-show="!searchFilter || 'badge tag pill'.includes(searchFilter.toLowerCase())">
             <iconify-icon icon="material-symbols-light:label-outline" class="text-secondary text-base shrink-0"></iconify-icon>
             <div class="truncate">
@@ -127,7 +127,7 @@
           </button>
 
           <button class="btn btn-ghost btn-xs justify-start gap-2 bg-base-100 border border-base-content/5 hover:border-primary/40 hover:bg-base-300/50 py-2 h-auto text-left"
-            data-on-click="insertSnippet(snippets.alert)"
+            data-on-click="insertSnippet('snip-alert')"
             data-show="!searchFilter || 'alert notice notification banner'.includes(searchFilter.toLowerCase())">
             <iconify-icon icon="material-symbols-light:info-outline" class="text-secondary text-base shrink-0"></iconify-icon>
             <div class="truncate">
@@ -137,7 +137,7 @@
           </button>
 
           <button class="btn btn-ghost btn-xs justify-start gap-2 bg-base-100 border border-base-content/5 hover:border-primary/40 hover:bg-base-300/50 py-2 h-auto text-left"
-            data-on-click="insertSnippet(snippets.stat)"
+            data-on-click="insertSnippet('snip-stat')"
             data-show="!searchFilter || 'stat metric number counter'.includes(searchFilter.toLowerCase())">
             <iconify-icon icon="material-symbols-light:monitoring" class="text-secondary text-base shrink-0"></iconify-icon>
             <div class="truncate">
@@ -147,7 +147,7 @@
           </button>
 
           <button class="btn btn-ghost btn-xs justify-start gap-2 bg-base-100 border border-base-content/5 hover:border-primary/40 hover:bg-base-300/50 py-2 h-auto text-left"
-            data-on-click="insertSnippet(snippets.accordion)"
+            data-on-click="insertSnippet('snip-accordion')"
             data-show="!searchFilter || 'accordion collapse faq expand'.includes(searchFilter.toLowerCase())">
             <iconify-icon icon="material-symbols-light:expand-more" class="text-secondary text-base shrink-0"></iconify-icon>
             <div class="truncate">
@@ -163,7 +163,7 @@
         <div class="text-[10px] uppercase font-bold tracking-wider text-base-content/40 px-1 mb-1">Forms &amp; Inputs</div>
         <div class="grid grid-cols-2 gap-1.5">
           <button class="btn btn-ghost btn-xs justify-start gap-2 bg-base-100 border border-base-content/5 hover:border-primary/40 hover:bg-base-300/50 py-2 h-auto text-left"
-            data-on-click="insertSnippet(snippets.inputText)"
+            data-on-click="insertSnippet('snip-inputText')"
             data-show="!searchFilter || 'input text field form'.includes(searchFilter.toLowerCase())">
             <iconify-icon icon="material-symbols-light:edit-note" class="text-accent text-base shrink-0"></iconify-icon>
             <div class="truncate">
@@ -173,7 +173,7 @@
           </button>
 
           <button class="btn btn-ghost btn-xs justify-start gap-2 bg-base-100 border border-base-content/5 hover:border-primary/40 hover:bg-base-300/50 py-2 h-auto text-left"
-            data-on-click="insertSnippet(snippets.select)"
+            data-on-click="insertSnippet('snip-select')"
             data-show="!searchFilter || 'select dropdown menu'.includes(searchFilter.toLowerCase())">
             <iconify-icon icon="material-symbols-light:arrow-drop-down-circle" class="text-accent text-base shrink-0"></iconify-icon>
             <div class="truncate">
@@ -183,7 +183,7 @@
           </button>
 
           <button class="btn btn-ghost btn-xs justify-start gap-2 bg-base-100 border border-base-content/5 hover:border-primary/40 hover:bg-base-300/50 py-2 h-auto text-left"
-            data-on-click="insertSnippet(snippets.toggle)"
+            data-on-click="insertSnippet('snip-toggle')"
             data-show="!searchFilter || 'toggle switch boolean'.includes(searchFilter.toLowerCase())">
             <iconify-icon icon="material-symbols-light:toggle-on" class="text-accent text-base shrink-0"></iconify-icon>
             <div class="truncate">
@@ -193,7 +193,7 @@
           </button>
 
           <button class="btn btn-ghost btn-xs justify-start gap-2 bg-base-100 border border-base-content/5 hover:border-primary/40 hover:bg-base-300/50 py-2 h-auto text-left"
-            data-on-click="insertSnippet(snippets.textarea)"
+            data-on-click="insertSnippet('snip-textarea')"
             data-show="!searchFilter || 'textarea text multiline'.includes(searchFilter.toLowerCase())">
             <iconify-icon icon="material-symbols-light:notes" class="text-accent text-base shrink-0"></iconify-icon>
             <div class="truncate">
@@ -208,7 +208,7 @@
     <!-- ================= TAB 2: SECTIONS ================= -->
     <div data-show="activeTab === 'sections'" class="space-y-2">
       <button class="w-full text-left p-2.5 rounded-xl bg-base-100 border border-base-content/5 hover:border-secondary/50 hover:bg-base-300/40 transition-all flex items-center gap-3"
-        data-on-click="insertSnippet(snippets.sectionHero)"
+        data-on-click="insertSnippet('snip-sectionHero')"
         data-show="!searchFilter || 'hero header banner'.includes(searchFilter.toLowerCase())">
         <div class="w-10 h-10 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center shrink-0">
           <iconify-icon icon="material-symbols-light:title" class="text-2xl"></iconify-icon>
@@ -220,7 +220,7 @@
       </button>
 
       <button class="w-full text-left p-2.5 rounded-xl bg-base-100 border border-base-content/5 hover:border-secondary/50 hover:bg-base-300/40 transition-all flex items-center gap-3"
-        data-on-click="insertSnippet(snippets.sectionFeatures)"
+        data-on-click="insertSnippet('snip-sectionFeatures')"
         data-show="!searchFilter || 'features grid cards 3'.includes(searchFilter.toLowerCase())">
         <div class="w-10 h-10 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center shrink-0">
           <iconify-icon icon="material-symbols-light:view-quilt" class="text-2xl"></iconify-icon>
@@ -232,7 +232,7 @@
       </button>
 
       <button class="w-full text-left p-2.5 rounded-xl bg-base-100 border border-base-content/5 hover:border-secondary/50 hover:bg-base-300/40 transition-all flex items-center gap-3"
-        data-on-click="insertSnippet(snippets.sectionPricing)"
+        data-on-click="insertSnippet('snip-sectionPricing')"
         data-show="!searchFilter || 'pricing tier cards subscription'.includes(searchFilter.toLowerCase())">
         <div class="w-10 h-10 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center shrink-0">
           <iconify-icon icon="material-symbols-light:payments-outline" class="text-2xl"></iconify-icon>
@@ -244,7 +244,7 @@
       </button>
 
       <button class="w-full text-left p-2.5 rounded-xl bg-base-100 border border-base-content/5 hover:border-secondary/50 hover:bg-base-300/40 transition-all flex items-center gap-3"
-        data-on-click="insertSnippet(snippets.sectionCTA)"
+        data-on-click="insertSnippet('snip-sectionCTA')"
         data-show="!searchFilter || 'cta call to action banner'.includes(searchFilter.toLowerCase())">
         <div class="w-10 h-10 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center shrink-0">
           <iconify-icon icon="material-symbols-light:campaign-outline" class="text-2xl"></iconify-icon>
@@ -256,7 +256,7 @@
       </button>
 
       <button class="w-full text-left p-2.5 rounded-xl bg-base-100 border border-base-content/5 hover:border-secondary/50 hover:bg-base-300/40 transition-all flex items-center gap-3"
-        data-on-click="insertSnippet(snippets.sectionFooter)"
+        data-on-click="insertSnippet('snip-sectionFooter')"
         data-show="!searchFilter || 'footer copyright links navigation'.includes(searchFilter.toLowerCase())">
         <div class="w-10 h-10 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center shrink-0">
           <iconify-icon icon="material-symbols-light:bottom-panel-open" class="text-2xl"></iconify-icon>
@@ -276,7 +276,7 @@
       </div>
 
       <button class="w-full text-left p-2.5 rounded-xl bg-base-100 border border-base-content/5 hover:border-accent/50 hover:bg-base-300/40 transition-all flex items-center gap-3"
-        data-on-click="insertSnippet(snippets.nexusCounter)">
+        data-on-click="insertSnippet('snip-nexusCounter')">
         <div class="w-10 h-10 rounded-lg bg-accent/10 text-accent flex items-center justify-center shrink-0">
           <iconify-icon icon="material-symbols-light:add-circle" class="text-2xl"></iconify-icon>
         </div>
@@ -287,7 +287,7 @@
       </button>
 
       <button class="w-full text-left p-2.5 rounded-xl bg-base-100 border border-base-content/5 hover:border-accent/50 hover:bg-base-300/40 transition-all flex items-center gap-3"
-        data-on-click="insertSnippet(snippets.nexusFilterList)">
+        data-on-click="insertSnippet('snip-nexusFilterList')">
         <div class="w-10 h-10 rounded-lg bg-accent/10 text-accent flex items-center justify-center shrink-0">
           <iconify-icon icon="material-symbols-light:filter-alt" class="text-2xl"></iconify-icon>
         </div>
@@ -298,7 +298,7 @@
       </button>
 
       <button class="w-full text-left p-2.5 rounded-xl bg-base-100 border border-base-content/5 hover:border-accent/50 hover:bg-base-300/40 transition-all flex items-center gap-3"
-        data-on-click="insertSnippet(snippets.nexusTabs)">
+        data-on-click="insertSnippet('snip-nexusTabs')">
         <div class="w-10 h-10 rounded-lg bg-accent/10 text-accent flex items-center justify-center shrink-0">
           <iconify-icon icon="material-symbols-light:tab" class="text-2xl"></iconify-icon>
         </div>
@@ -336,5 +336,258 @@
       </div>
     </div>
 
+  </div>
+
+  <!-- HIDDEN TEMPLATES FOR INJECTION (Zero Quote Escaping Fragility) -->
+  <div class="hidden">
+    <template id="snip-container">
+      <div class="max-w-6xl mx-auto w-full p-6 border border-dashed border-base-content/20 rounded-2xl">
+        <h3 class="text-xl font-bold mb-2">New Container</h3>
+        <p class="text-sm text-base-content/60">Add content here...</p>
+      </div>
+    </template>
+
+    <template id="snip-grid2">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+        <div class="p-6 bg-base-200/50 rounded-xl border border-base-content/5">
+          <h4 class="font-bold">Column 1</h4>
+          <p class="text-xs text-base-content/60">Content block</p>
+        </div>
+        <div class="p-6 bg-base-200/50 rounded-xl border border-base-content/5">
+          <h4 class="font-bold">Column 2</h4>
+          <p class="text-xs text-base-content/60">Content block</p>
+        </div>
+      </div>
+    </template>
+
+    <template id="snip-grid3">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-4">
+        <div class="p-4 bg-base-200/50 rounded-xl border border-base-content/5">
+          <h4 class="font-bold text-sm">Card 1</h4>
+        </div>
+        <div class="p-4 bg-base-200/50 rounded-xl border border-base-content/5">
+          <h4 class="font-bold text-sm">Card 2</h4>
+        </div>
+        <div class="p-4 bg-base-200/50 rounded-xl border border-base-content/5">
+          <h4 class="font-bold text-sm">Card 3</h4>
+        </div>
+      </div>
+    </template>
+
+    <template id="snip-flexRow">
+      <div class="flex flex-wrap items-center gap-3 p-3 bg-base-200/30 rounded-xl">
+        <button class="btn btn-sm btn-primary">Button</button>
+        <button class="btn btn-sm btn-ghost">Cancel</button>
+      </div>
+    </template>
+
+    <template id="snip-card">
+      <div class="card bg-base-200 border border-base-content/10 shadow-md my-4">
+        <div class="card-body p-6">
+          <h3 class="card-title text-base font-bold">Card Title</h3>
+          <p class="text-xs text-base-content/70">A flexible content card with action buttons.</p>
+          <div class="card-actions justify-end mt-2">
+            <button class="btn btn-primary btn-xs">Confirm</button>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <template id="snip-buttonPrimary">
+      <button class="btn btn-primary btn-sm my-2">Click Me</button>
+    </template>
+
+    <template id="snip-badge">
+      <span class="badge badge-primary badge-sm my-1">New Feature</span>
+    </template>
+
+    <template id="snip-alert">
+      <div class="alert alert-info shadow-sm my-3 p-3 text-xs flex items-center gap-2">
+        <iconify-icon icon="material-symbols-light:info" class="text-lg"></iconify-icon>
+        <span>System update successfully deployed.</span>
+      </div>
+    </template>
+
+    <template id="snip-stat">
+      <div class="stat bg-base-200/60 rounded-xl border border-base-content/10 p-4">
+        <div class="stat-title text-xs opacity-60">Total Conversions</div>
+        <div class="stat-value text-primary text-2xl font-black">14,280</div>
+        <div class="stat-desc text-[10px]">+18% this month</div>
+      </div>
+    </template>
+
+    <template id="snip-accordion">
+      <div class="collapse collapse-arrow bg-base-200 border border-base-content/10 rounded-xl my-2">
+        <input type="checkbox" />
+        <div class="collapse-title text-sm font-bold">Frequently Asked Question</div>
+        <div class="collapse-content text-xs text-base-content/70">
+          <p>Here is the detailed answer explaining the topic in depth.</p>
+        </div>
+      </div>
+    </template>
+
+    <template id="snip-inputText">
+      <div class="form-control my-2">
+        <label class="label py-1 text-xs font-bold text-base-content/70">Email Address</label>
+        <input type="email" placeholder="you@domain.com" class="input input-bordered input-sm rounded-lg" />
+      </div>
+    </template>
+
+    <template id="snip-select">
+      <div class="form-control my-2">
+        <label class="label py-1 text-xs font-bold text-base-content/70">Country</label>
+        <select class="select select-bordered select-sm rounded-lg">
+          <option>United States</option>
+          <option>Canada</option>
+          <option>United Kingdom</option>
+        </select>
+      </div>
+    </template>
+
+    <template id="snip-toggle">
+      <div class="form-control my-2">
+        <label class="label cursor-pointer py-1 justify-start gap-3">
+          <input type="checkbox" class="toggle toggle-primary toggle-sm" checked />
+          <span class="label-text text-xs font-medium">Enable Notifications</span>
+        </label>
+      </div>
+    </template>
+
+    <template id="snip-textarea">
+      <div class="form-control my-2">
+        <label class="label py-1 text-xs font-bold text-base-content/70">Message</label>
+        <textarea class="textarea textarea-bordered textarea-sm rounded-lg" rows="3" placeholder="Enter your details..."></textarea>
+      </div>
+    </template>
+
+    <template id="snip-sectionHero">
+      <section class="py-16 px-6 text-center bg-gradient-to-b from-base-200/80 to-base-100 rounded-3xl my-6">
+        <h1 class="text-4xl font-black mb-3">Experience Next-Level Speed</h1>
+        <p class="text-sm text-base-content/70 max-w-xl mx-auto mb-6">Craft modern web experiences in pure HTML and reactive state with instant live preview.</p>
+        <div class="flex justify-center gap-3">
+          <button class="btn btn-primary btn-sm">Get Started</button>
+          <button class="btn btn-outline btn-sm">Documentation</button>
+        </div>
+      </section>
+    </template>
+
+    <template id="snip-sectionFeatures">
+      <section class="py-12 my-6">
+        <div class="text-center mb-8">
+          <h2 class="text-2xl font-bold">Core Platform Capabilities</h2>
+          <p class="text-xs text-base-content/60">Everything needed for mission-critical apps.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="card bg-base-200 p-6 rounded-2xl border border-base-content/5">
+            <h3 class="font-bold text-base mb-1">Zero-Copy Reactivity</h3>
+            <p class="text-xs text-base-content/70">Direct typed heap operations with negligible overhead.</p>
+          </div>
+          <div class="card bg-base-200 p-6 rounded-2xl border border-base-content/5">
+            <h3 class="font-bold text-base mb-1">Encapsulated Canvas</h3>
+            <p class="text-xs text-base-content/70">Shadow DOM isolation prevents style bleeding.</p>
+          </div>
+          <div class="card bg-base-200 p-6 rounded-2xl border border-base-content/5">
+            <h3 class="font-bold text-base mb-1">Tailwind Design Tokens</h3>
+            <p class="text-xs text-base-content/70">DaisyUI color palettes with dark and light modes.</p>
+          </div>
+        </div>
+      </section>
+    </template>
+
+    <template id="snip-sectionPricing">
+      <section class="py-12 my-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div class="card bg-base-200 p-6 rounded-2xl border border-base-content/5">
+            <div class="text-xs font-bold opacity-60 uppercase">Starter</div>
+            <div class="text-3xl font-black my-2">$0</div>
+            <ul class="text-xs space-y-2 opacity-70 mb-4">
+              <li>• 3 Projects</li>
+              <li>• Community Support</li>
+            </ul>
+            <button class="btn btn-outline btn-sm w-full">Select</button>
+          </div>
+          <div class="card bg-base-200 p-6 rounded-2xl border-2 border-primary shadow-xl">
+            <div class="text-xs font-bold text-primary uppercase">Pro</div>
+            <div class="text-3xl font-black my-2">$29</div>
+            <ul class="text-xs space-y-2 opacity-70 mb-4">
+              <li>• Unlimited Projects</li>
+              <li>• Priority Sync</li>
+            </ul>
+            <button class="btn btn-primary btn-sm w-full">Upgrade</button>
+          </div>
+          <div class="card bg-base-200 p-6 rounded-2xl border border-base-content/5">
+            <div class="text-xs font-bold opacity-60 uppercase">Team</div>
+            <div class="text-3xl font-black my-2">$79</div>
+            <ul class="text-xs space-y-2 opacity-70 mb-4">
+              <li>• Custom Domains</li>
+              <li>• SLA 99.9%</li>
+            </ul>
+            <button class="btn btn-outline btn-sm w-full">Contact</button>
+          </div>
+        </div>
+      </section>
+    </template>
+
+    <template id="snip-sectionCTA">
+      <section class="py-12 px-6 bg-primary text-primary-content rounded-3xl text-center my-6 flex flex-col items-center gap-4 shadow-xl shadow-primary/20">
+        <h2 class="text-2xl font-black">Build Faster with Nexus-UX</h2>
+        <p class="text-xs opacity-90 max-w-md">Join thousands of developers streamlining their interface workflow.</p>
+        <button class="btn bg-base-100 text-base-content hover:bg-base-200 border-0 btn-sm font-bold">Start Free Trial</button>
+      </section>
+    </template>
+
+    <template id="snip-sectionFooter">
+      <footer class="footer p-8 bg-base-200 text-base-content/70 text-xs rounded-2xl my-6">
+        <aside>
+          <p class="font-bold">Apex Studio<br/>Next-generation visual web tools</p>
+        </aside>
+        <nav>
+          <h6 class="footer-title">Services</h6>
+          <a class="link link-hover">Branding</a>
+          <a class="link link-hover">Design</a>
+        </nav>
+        <nav>
+          <h6 class="footer-title">Company</h6>
+          <a class="link link-hover">About us</a>
+          <a class="link link-hover">Contact</a>
+        </nav>
+      </footer>
+    </template>
+
+    <template id="snip-nexusCounter">
+      <div class="p-4 bg-base-200 rounded-2xl border border-accent/20 my-4 text-center" data-signal="{ count: 0 }">
+        <div class="text-xs font-mono text-accent font-bold mb-1">Nexus-UX Reactive Counter</div>
+        <div class="text-3xl font-black my-2" data-bind="count">0</div>
+        <div class="flex justify-center gap-2">
+          <button class="btn btn-accent btn-xs" data-on-click="count--">- Decrement</button>
+          <button class="btn btn-accent btn-xs" data-on-click="count++">+ Increment</button>
+        </div>
+      </div>
+    </template>
+
+    <template id="snip-nexusFilterList">
+      <div class="p-4 bg-base-200 rounded-2xl border border-accent/20 my-4 space-y-3" data-signal="{ search: '', items: ['Alpha Core', 'Beta Gateway', 'Gamma Engine', 'Delta Cache'] }">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-accent">Reactive Filter</span>
+          <input type="text" placeholder="Filter..." class="input input-xs input-bordered w-32" data-bind="search" />
+        </div>
+        <ul class="space-y-1">
+          <template data-for="item in items">
+            <li class="text-xs p-1.5 bg-base-100 rounded" data-show="!search || item.toLowerCase().includes(search.toLowerCase())" data-bind="item"></li>
+          </template>
+        </ul>
+      </div>
+    </template>
+
+    <template id="snip-nexusTabs">
+      <div class="p-4 bg-base-200 rounded-2xl border border-accent/20 my-4" data-signal="{ tab: 1 }">
+        <div class="tabs tabs-boxed mb-3">
+          <button class="tab tab-xs" data-class="{ 'tab-active': tab === 1 }" data-on-click="tab = 1">Overview</button>
+          <button class="tab tab-xs" data-class="{ 'tab-active': tab === 2 }" data-on-click="tab = 2">Settings</button>
+        </div>
+        <div data-show="tab === 1" class="text-xs p-2 bg-base-100 rounded">Overview panel content</div>
+        <div data-show="tab === 2" class="text-xs p-2 bg-base-100 rounded">Settings panel content</div>
+      </div>
+    </template>
   </div>
 </aside>
