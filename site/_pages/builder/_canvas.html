@@ -2,20 +2,20 @@
   <meta name="internal" content="true">
 </head>
 <!-- Authentic VvvebJs #canvas Workspace with in-canvas Overlays -->
-<main class="flex-1 min-w-0 h-full bg-[#e9ecef] dark:bg-[#18191c] p-2 sm:p-6 flex flex-col items-center overflow-auto relative select-none"
+<main class="flex-1 w-full h-full min-w-0 bg-[#e9ecef] dark:bg-[#18191c] flex flex-col items-center overflow-auto relative select-none"
   id="canvas">
 
-  <!-- Viewport Framing Container (Center Document Card) -->
-  <div class="transition-all duration-300 relative bg-white shadow-2xl overflow-visible shrink-0"
+  <!-- Viewport Framing Container (Full-width fluid in Desktop mode, framed in Device modes) -->
+  <div class="transition-all duration-300 relative bg-white shadow-xl overflow-visible shrink-0"
     data-class="{
-      'w-full max-w-[1180px] min-h-[90vh] rounded-sm my-2': viewport === 'desktop',
-      'w-[1200px] max-w-[1200px] min-h-[90vh] rounded-xl border-4 border-base-content/20 my-2': viewport === 'laptop',
-      'w-[1024px] max-w-[1024px] min-h-[90vh] rounded-xl border-4 border-base-content/20 my-2': viewport === 'tablet-landscape',
+      'w-full h-full min-h-full rounded-none m-0': viewport === 'desktop',
+      'w-[1200px] max-w-[1200px] min-h-[90vh] rounded-xl border-4 border-base-content/20 my-4': viewport === 'laptop',
+      'w-[1024px] max-w-[1024px] min-h-[90vh] rounded-xl border-4 border-base-content/20 my-4': viewport === 'tablet-landscape',
       'w-[768px] max-w-[768px] min-h-[90vh] rounded-2xl border-4 border-base-content/20 my-4': viewport === 'tablet',
       'w-[375px] max-w-[375px] min-h-[85vh] rounded-3xl border-8 border-base-content/25 my-4': viewport === 'mobile'
     }"
     data-style="{
-      transform: 'scale(' + (zoom / 100) + ')',
+      transform: (viewport === 'desktop' && zoom === 100) ? 'none' : 'scale(' + (zoom / 100) + ')',
       transformOrigin: 'top center'
     }">
 
@@ -28,12 +28,22 @@
 
     <!-- The Encapsulated Shadow DOM Canvas Host (#builder-canvas-host) -->
     <div id="builder-canvas-host"
-      class="min-h-[85vh] w-full bg-white text-[#212529] overflow-y-auto overflow-x-hidden relative"
+      class="w-full h-full min-h-full bg-white text-[#212529] overflow-y-auto overflow-x-hidden relative"
       data-component="{ path: currentDoc, shadowrootmode: 'open' }"
       data-effect="
         const host = $el;
         if (!host.__builder_bound) {
           host.__builder_bound = true;
+
+          // Adopt global stylesheets into shadow root for 100% styled components
+          const adoptStyles = () => {
+            if (host.shadowRoot && document.adoptedStyleSheets && document.adoptedStyleSheets.length) {
+              host.shadowRoot.adoptedStyleSheets = [...document.adoptedStyleSheets];
+            }
+          };
+          adoptStyles();
+          setTimeout(adoptStyles, 200);
+          setTimeout(adoptStyles, 800);
 
           // Handle selection click inside shadow root
           host.addEventListener('click', function(e) {
