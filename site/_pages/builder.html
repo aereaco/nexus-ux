@@ -305,6 +305,14 @@
         selectedBox.isText = ['h1','h2','h3','h4','h5','h6','p','span','a','button','label','li','blockquote','td','th'].includes(tag);
         selectedBox.visible = true;
         hasSelection = true;
+
+        const selectBoxEl = document.getElementById('select-box');
+        if (selectBoxEl) {
+          selectBoxEl.style.top = (elRect.top - frameRect.top) + 'px';
+          selectBoxEl.style.left = (elRect.left - frameRect.left) + 'px';
+          selectBoxEl.style.width = elRect.width + 'px';
+          selectBoxEl.style.height = elRect.height + 'px';
+        }
       } catch (_) {}
     },
 
@@ -329,6 +337,14 @@
         hoverBox.height = elRect.height;
         hoverBox.tag = raw.tagName.toLowerCase();
         hoverBox.visible = true;
+
+        const hoverBoxEl = document.getElementById('highlight-box');
+        if (hoverBoxEl) {
+          hoverBoxEl.style.top = (elRect.top - frameRect.top) + 'px';
+          hoverBoxEl.style.left = (elRect.left - frameRect.left) + 'px';
+          hoverBoxEl.style.width = elRect.width + 'px';
+          hoverBoxEl.style.height = elRect.height + 'px';
+        }
       } catch (_) {}
     },
 
