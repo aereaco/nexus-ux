@@ -1132,12 +1132,6 @@
     ]
   },
   {
-    "id": "_modals",
-    "route": "/builder/_modals",
-    "path": "/_pages/builder/_modals.html",
-    "parent": "/index"
-  },
-  {
     "id": "error",
     "route": "/error",
     "path": "/_pages/error.html",
@@ -1163,6 +1157,13 @@
     "id": "_left-panel",
     "route": "",
     "path": "/_pages/builder/_left-panel.html",
+    "internal": true,
+    "parent": "/builder"
+  },
+  {
+    "id": "_modals",
+    "route": "",
+    "path": "/_pages/builder/_modals.html",
     "internal": true,
     "parent": "/builder"
   },
