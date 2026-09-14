@@ -1,0 +1,79 @@
+<main class="flex-1 min-w-0 bg-base-300/40 rounded-box p-4 flex flex-col items-center overflow-auto relative border border-base-content/10 shadow-inner select-none"
+  id="builder-workspace">
+
+  <!-- Viewport Framing Container -->
+  <div class="transition-all duration-300 relative bg-base-100 shadow-xl overflow-visible"
+    data-class="{
+      'w-full max-w-full rounded-xl': viewport === 'desktop',
+      'w-[768px] max-w-[768px] rounded-2xl border-4 border-base-content/20 my-4': viewport === 'tablet',
+      'w-[375px] max-w-[375px] rounded-3xl border-8 border-base-content/20 my-4': viewport === 'mobile'
+    }"
+    data-style="{
+      transform: 'scale(' + (zoom / 100) + ')',
+      transformOrigin: 'top center'
+    }">
+
+    <!-- Mobile / Tablet Device Mock Notch -->
+    <div class="h-4 bg-base-content/10 rounded-t-xl flex items-center justify-center gap-1"
+      data-show="viewport === 'mobile'">
+      <div class="w-12 h-2 rounded-full bg-base-content/30"></div>
+      <div class="w-2 h-2 rounded-full bg-base-content/30"></div>
+    </div>
+
+    <!-- The Encapsulated Shadow DOM Canvas Host -->
+    <div id="builder-canvas-host"
+      class="min-h-[85vh] w-full bg-base-100 overflow-y-auto overflow-x-hidden relative"
+      data-component="{ path: currentDoc, shadowrootmode: 'open' }">
+    </div>
+
+    <!-- SELECTION OVERLAY BOX (Positioned absolute over selected element) -->
+    <div id="builder-select-box"
+      class="absolute pointer-events-none border-2 border-primary ring-2 ring-primary/20 z-40 transition-all duration-75"
+      data-show="!previewMode && selectedBox.visible"
+      data-style="{
+        top: selectedBox.top + 'px',
+        left: selectedBox.left + 'px',
+        width: selectedBox.width + 'px',
+        height: selectedBox.height + 'px'
+      }">
+
+      <!-- Element Badge Tag -->
+      <div class="absolute -top-6 start-0 bg-primary text-primary-content text-[10px] font-mono font-bold px-1.5 py-0.5 rounded shadow-md pointer-events-auto flex items-center gap-1">
+        <span data-bind="selectedBox.tag"></span>
+        <span data-show="selectedBox.id" data-bind="'#' + selectedBox.id" class="opacity-80"></span>
+      </div>
+
+      <!-- Quick Action Toolbar -->
+      <div class="absolute -top-7 end-0 bg-base-300 text-base-content rounded-lg p-0.5 shadow-lg border border-base-content/10 flex items-center gap-0.5 pointer-events-auto">
+        <button class="btn btn-ghost btn-circle btn-xs hover:bg-base-100" data-on-click="selectParent()" title="Select Parent Element">
+          <iconify-icon icon="material-symbols-light:arrow-upward" class="text-xs"></iconify-icon>
+        </button>
+        <button class="btn btn-ghost btn-circle btn-xs hover:bg-base-100" data-on-click="duplicateElement()" title="Duplicate Element">
+          <iconify-icon icon="material-symbols-light:content-copy-outline" class="text-xs"></iconify-icon>
+        </button>
+        <button class="btn btn-ghost btn-circle btn-xs hover:bg-base-100" data-on-click="moveElementUp()" title="Move Up">
+          <iconify-icon icon="material-symbols-light:expand-less" class="text-xs"></iconify-icon>
+        </button>
+        <button class="btn btn-ghost btn-circle btn-xs hover:bg-base-100" data-on-click="moveElementDown()" title="Move Down">
+          <iconify-icon icon="material-symbols-light:expand-more" class="text-xs"></iconify-icon>
+        </button>
+        <button class="btn btn-ghost btn-circle btn-xs text-error hover:bg-error/20" data-on-click="deleteElement()" title="Delete Element">
+          <iconify-icon icon="material-symbols-light:delete-outline" class="text-xs"></iconify-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- HOVER OUTLINE TRACKER -->
+    <div id="builder-hover-box"
+      class="absolute pointer-events-none border border-dashed border-info/70 bg-info/5 z-30 transition-all duration-75"
+      data-show="!previewMode && hoverBox.visible && (!selectedEl || hoveredEl !== selectedEl)"
+      data-style="{
+        top: hoverBox.top + 'px',
+        left: hoverBox.left + 'px',
+        width: hoverBox.width + 'px',
+        height: hoverBox.height + 'px'
+      }">
+    </div>
+
+  </div>
+</main>
