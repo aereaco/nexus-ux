@@ -1,0 +1,186 @@
+<head>
+  <title>Modern Landing Page</title>
+  <meta name="internal" content="true">
+</head>
+
+<div class="min-h-screen bg-base-100 text-base-content font-sans antialiased selection:bg-primary selection:text-primary-content">
+  <!-- 1. Header / Navbar -->
+  <header class="navbar bg-base-100/90 backdrop-blur sticky top-0 z-30 border-b border-base-content/5 px-4 lg:px-8">
+    <div class="flex-1 flex items-center gap-2">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-primary to-accent flex items-center justify-center text-primary-content font-bold shadow-md">
+        <iconify-icon icon="material-symbols-light:bolt" class="text-xl"></iconify-icon>
+      </div>
+      <span class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-base-content to-base-content/60 bg-clip-text text-transparent">Apex Studio</span>
+    </div>
+    <div class="hidden md:flex items-center gap-6 text-sm font-medium text-base-content/70">
+      <a href="#features" class="hover:text-primary transition-colors">Features</a>
+      <a href="#metrics" class="hover:text-primary transition-colors">Metrics</a>
+      <a href="#pricing" class="hover:text-primary transition-colors">Pricing</a>
+      <a href="#faq" class="hover:text-primary transition-colors">FAQ</a>
+    </div>
+    <div class="flex-none flex items-center gap-3">
+      <button class="btn btn-ghost btn-sm">Sign In</button>
+      <button class="btn btn-primary btn-sm shadow-md shadow-primary/20">Get Started</button>
+    </div>
+  </header>
+
+  <!-- 2. Hero Section -->
+  <section class="hero py-16 lg:py-24 px-4 bg-gradient-to-b from-base-100 via-base-200/50 to-base-100 relative overflow-hidden">
+    <div class="hero-content text-center max-w-3xl flex-col gap-6">
+      <div class="badge badge-outline badge-primary gap-2 py-3 px-4 font-mono text-xs">
+        <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+        Nexus-UX Reactive Engine v2.0
+      </div>
+      <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1]">
+        Design Visually. <br />
+        <span class="bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
+          Deploy Reactively.
+        </span>
+      </h1>
+      <p class="text-base sm:text-lg text-base-content/70 max-w-xl">
+        Build high-speed applications with zero-copy reactivity, native DaisyUI components, and encapsulated shadow canvas architecture.
+      </p>
+      <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+        <button class="btn btn-primary btn-md gap-2 shadow-lg shadow-primary/25">
+          <iconify-icon icon="material-symbols-light:rocket-launch-outline" class="text-xl"></iconify-icon>
+          Start Building Now
+        </button>
+        <button class="btn btn-outline btn-md gap-2">
+          <iconify-icon icon="material-symbols-light:play-circle-outline" class="text-xl"></iconify-icon>
+          Live Demo
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Metrics / Stats Section -->
+  <section id="metrics" class="py-12 px-4 max-w-6xl mx-auto w-full">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="stat bg-base-200/70 border border-base-content/5 rounded-box p-6 text-center">
+        <div class="stat-figure text-primary">
+          <iconify-icon icon="material-symbols-light:speed" class="text-3xl"></iconify-icon>
+        </div>
+        <div class="stat-title text-xs uppercase tracking-wider opacity-60">DOM Latency</div>
+        <div class="stat-value text-primary text-3xl font-black">&lt; 1ms</div>
+        <div class="stat-desc text-xs mt-1">Zero-copy typed heap</div>
+      </div>
+
+      <div class="stat bg-base-200/70 border border-base-content/5 rounded-box p-6 text-center">
+        <div class="stat-figure text-secondary">
+          <iconify-icon icon="material-symbols-light:view-quilt" class="text-3xl"></iconify-icon>
+        </div>
+        <div class="stat-title text-xs uppercase tracking-wider opacity-60">UI Blocks</div>
+        <div class="stat-value text-secondary text-3xl font-black">60+</div>
+        <div class="stat-desc text-xs mt-1">DaisyUI &amp; Tailwind v4</div>
+      </div>
+
+      <div class="stat bg-base-200/70 border border-base-content/5 rounded-box p-6 text-center">
+        <div class="stat-figure text-accent">
+          <iconify-icon icon="material-symbols-light:offline-bolt" class="text-3xl"></iconify-icon>
+        </div>
+        <div class="stat-title text-xs uppercase tracking-wider opacity-60">Offline Sync</div>
+        <div class="stat-value text-accent text-3xl font-black">100%</div>
+        <div class="stat-desc text-xs mt-1">IndexedDB Persistence</div>
+      </div>
+
+      <div class="stat bg-base-200/70 border border-base-content/5 rounded-box p-6 text-center">
+        <div class="stat-figure text-success">
+          <iconify-icon icon="material-symbols-light:check-circle" class="text-3xl"></iconify-icon>
+        </div>
+        <div class="stat-title text-xs uppercase tracking-wider opacity-60">Build Tool</div>
+        <div class="stat-value text-success text-3xl font-black">Zero</div>
+        <div class="stat-desc text-xs mt-1">Runs natively in browser</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Features Grid -->
+  <section id="features" class="py-16 px-4 max-w-6xl mx-auto w-full">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl font-black tracking-tight mb-2">Engineered for Modern Web Speed</h2>
+      <p class="text-base-content/60 text-sm max-w-md mx-auto">
+        Everything you need to craft high-conversion landing pages and interactive dashboards in minutes.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="card bg-base-200/50 border border-base-content/5 shadow-sm hover:shadow-md transition-shadow">
+        <div class="card-body p-6">
+          <div class="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-2">
+            <iconify-icon icon="material-symbols-light:drag-click" class="text-2xl"></iconify-icon>
+          </div>
+          <h3 class="card-title text-lg font-bold">Visual Directives</h3>
+          <p class="text-sm text-base-content/70">
+            Configure signals, bindings, and event handlers visually without hand-coding boilerplate scripts.
+          </p>
+        </div>
+      </div>
+
+      <div class="card bg-base-200/50 border border-base-content/5 shadow-sm hover:shadow-md transition-shadow">
+        <div class="card-body p-6">
+          <div class="w-12 h-12 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center mb-2">
+            <iconify-icon icon="material-symbols-light:layers" class="text-2xl"></iconify-icon>
+          </div>
+          <h3 class="card-title text-lg font-bold">Shadow DOM Encapsulation</h3>
+          <p class="text-sm text-base-content/70">
+            Work inside an isolated canvas that prevents external styling bleed while retaining full memory inspection.
+          </p>
+        </div>
+      </div>
+
+      <div class="card bg-base-200/50 border border-base-content/5 shadow-sm hover:shadow-md transition-shadow">
+        <div class="card-body p-6">
+          <div class="w-12 h-12 rounded-xl bg-accent/10 text-accent flex items-center justify-center mb-2">
+            <iconify-icon icon="material-symbols-light:palette" class="text-2xl"></iconify-icon>
+          </div>
+          <h3 class="card-title text-lg font-bold">DaisyUI Design System</h3>
+          <p class="text-sm text-base-content/70">
+            Instantly switch between 30+ curated themes with dark/light mode parity and responsive layout tokens.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Call To Action Footer Banner -->
+  <section class="py-16 px-4 bg-base-200 border-t border-base-content/5">
+    <div class="max-w-4xl mx-auto text-center flex flex-col items-center gap-6">
+      <h2 class="text-3xl sm:text-4xl font-black">Ready to elevate your frontend workflow?</h2>
+      <p class="text-base-content/70 text-sm max-w-lg">
+        Join developers building stateful, reactive web apps with zero build steps and full declarative power.
+      </p>
+      <div class="flex gap-3">
+        <button class="btn btn-primary btn-md">Get Started for Free</button>
+        <button class="btn btn-ghost btn-md">Documentation</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Footer -->
+  <footer class="footer p-10 bg-base-300 text-base-content/80 text-xs">
+    <aside>
+      <div class="flex items-center gap-2 font-bold text-sm">
+        <iconify-icon icon="material-symbols-light:bolt" class="text-primary text-xl"></iconify-icon>
+        Apex Studio
+      </div>
+      <p>Powered by Nexus-UX Reactive Framework.<br/>Zero serialization, pure native speed.</p>
+    </aside>
+    <nav>
+      <h6 class="footer-title">Product</h6>
+      <a class="link link-hover">Features</a>
+      <a class="link link-hover">Enterprise</a>
+      <a class="link link-hover">Security</a>
+    </nav>
+    <nav>
+      <h6 class="footer-title">Resources</h6>
+      <a class="link link-hover">Documentation</a>
+      <a class="link link-hover">Guides</a>
+      <a class="link link-hover">Showcase</a>
+    </nav>
+    <nav>
+      <h6 class="footer-title">Legal</h6>
+      <a class="link link-hover">Privacy policy</a>
+      <a class="link link-hover">Terms of use</a>
+    </nav>
+  </footer>
+</div>

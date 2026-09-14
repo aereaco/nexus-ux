@@ -1109,6 +1109,12 @@
     ]
   },
   {
+    "id": "_top-panel",
+    "route": "/_top-panel",
+    "path": "/_pages/builder/_top-panel.html",
+    "parent": "/builder"
+  },
+  {
     "id": "error",
     "route": "/error",
     "path": "/_pages/error.html",
@@ -1124,5 +1130,21 @@
     "icon": "material-symbols-light:shield-lock",
     "internal": true,
     "parent": null
+  },
+  {
+    "id": "blank",
+    "route": "",
+    "path": "/_pages/builder/templates/blank.html",
+    "title": "Blank Canvas",
+    "internal": true,
+    "parent": "/builder/templates"
+  },
+  {
+    "id": "landing",
+    "route": "",
+    "path": "/_pages/builder/templates/landing.html",
+    "title": "Modern Landing Page",
+    "internal": true,
+    "parent": "/builder/templates"
   }
 ]
