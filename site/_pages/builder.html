@@ -204,6 +204,9 @@
 
       updateSelectedBox();
       syncCanvasHtmlToDraft();
+      if (!domTree || domTree.length === 0) {
+        refreshTree();
+      }
     },
 
     updateSelectedBox: function() {
