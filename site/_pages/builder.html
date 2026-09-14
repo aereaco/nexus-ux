@@ -291,16 +291,7 @@
       const host = toRawNode(document.getElementById('builder-canvas-host'));
       if (!host) return;
       try {
-        const hostRect = host.getBoundingClientRect();
         const elRect = el.getBoundingClientRect();
-
-        // If element is scrolled completely out of canvas viewport, hide overlay
-        if (elRect.bottom < hostRect.top || elRect.top > hostRect.bottom ||
-            elRect.right < hostRect.left || elRect.left > hostRect.right) {
-          selectedBox.visible = false;
-          return;
-        }
-
         const frame = host.parentElement || host;
         const frameRect = frame.getBoundingClientRect();
 
@@ -327,24 +318,18 @@
       hoveredEl = raw;
       const host = toRawNode(document.getElementById('builder-canvas-host'));
       if (!host) return;
-      const hostRect = host.getBoundingClientRect();
-      const elRect = raw.getBoundingClientRect();
+      try {
+        const elRect = raw.getBoundingClientRect();
+        const frame = host.parentElement || host;
+        const frameRect = frame.getBoundingClientRect();
 
-      if (elRect.bottom < hostRect.top || elRect.top > hostRect.bottom ||
-          elRect.right < hostRect.left || elRect.left > hostRect.right) {
-        hoverBox.visible = false;
-        return;
-      }
-
-      const frame = host.parentElement || host;
-      const frameRect = frame.getBoundingClientRect();
-
-      hoverBox.top = elRect.top - frameRect.top;
-      hoverBox.left = elRect.left - frameRect.left;
-      hoverBox.width = elRect.width;
-      hoverBox.height = elRect.height;
-      hoverBox.tag = raw.tagName.toLowerCase();
-      hoverBox.visible = true;
+        hoverBox.top = elRect.top - frameRect.top;
+        hoverBox.left = elRect.left - frameRect.left;
+        hoverBox.width = elRect.width;
+        hoverBox.height = elRect.height;
+        hoverBox.tag = raw.tagName.toLowerCase();
+        hoverBox.visible = true;
+      } catch (_) {}
     },
 
     selectParent: function() {
