@@ -297,29 +297,6 @@
     ]
   },
   {
-    "id": "index",
-    "route": "/builder",
-    "path": "/_pages/builder/index.html",
-    "title": "Visual Builder",
-    "icon": "material-symbols-light:dashboard-customize-outline",
-    "order": 4,
-    "parent": null,
-    "category": "Apps",
-    "keywords": [
-      "builder",
-      "visual",
-      "editor",
-      "page",
-      "builder",
-      "vvvebjs",
-      "drag",
-      "and",
-      "drop",
-      "daisyui",
-      "tailwind"
-    ]
-  },
-  {
     "id": "doc-readme",
     "route": "/docs/readme",
     "path": "/_pages/docs/readme.md",
