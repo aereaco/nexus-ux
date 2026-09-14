@@ -1,7 +1,7 @@
 <head>
   <meta name="internal" content="true">
 </head>
-<!-- Authentic VvvebJs #right-panel Properties Inspector -->
+<!-- Authentic VvvebJs #right-panel Properties Inspector with Complete Field Suite -->
 <aside class="w-64 sm:w-72 lg:w-80 h-full flex flex-col bg-base-100 border-l border-base-content/10 overflow-hidden select-none text-xs" id="right-panel">
 
   <!-- Inspector Navigation Tabs: Content | Style | Advanced -->
@@ -97,6 +97,14 @@
             data-on-input="if (selectedEl) { selectedEl.setAttribute('href', $evt.target.value); syncCanvasHtmlToDraft(); }" />
         </div>
         <div class="space-y-1">
+          <label class="text-[10px] text-base-content/60 font-medium">Target</label>
+          <select class="select select-bordered select-xs w-full h-7 rounded"
+            data-on-change="if (selectedEl) { selectedEl.setAttribute('target', $evt.target.value); syncCanvasHtmlToDraft(); }">
+            <option value="_self">Same window (_self)</option>
+            <option value="_blank">New tab (_blank)</option>
+          </select>
+        </div>
+        <div class="space-y-1">
           <label class="text-[10px] text-base-content/60 font-medium">Text</label>
           <textarea class="textarea textarea-bordered textarea-xs w-full font-sans text-xs rounded"
             rows="2"
@@ -118,11 +126,16 @@
             data-bind-value="inspector.src"
             data-on-input="if (selectedEl) { selectedEl.setAttribute('src', $evt.target.value); syncCanvasHtmlToDraft(); }" />
         </div>
+        <div class="space-y-1">
+          <label class="text-[10px] text-base-content/60 font-medium">Alt Text</label>
+          <input type="text" class="input input-bordered input-xs w-full h-7 rounded"
+            data-on-input="if (selectedEl) { selectedEl.setAttribute('alt', $evt.target.value); syncCanvasHtmlToDraft(); }" />
+        </div>
       </div>
 
       <!-- Tag-Aware Section: Generic Leaf Text -->
       <div class="border border-base-content/10 rounded bg-base-100 p-2.5 space-y-2"
-        data-show="inspector.isTextLeaf && !['H1','H2','H3','H4','H5','H6','A'].includes(inspector.tag)">
+        data-show="inspector.isTextLeaf && !['H1','H2','H3','H4','H5','H6','A','IMG'].includes(inspector.tag)">
         <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
           <span>Text Leaf</span>
           <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
@@ -166,7 +179,7 @@
 
     </div>
 
-    <!-- ================= 2. STYLE TAB ================= -->
+    <!-- ================= 2. STYLE TAB (All 9 VvvebJs Sections) ================= -->
     <div class="p-2 space-y-2.5" data-show="propertiesSubTab === 'style'">
       
       <!-- Pseudo-State Selector -->
@@ -174,14 +187,14 @@
         <select class="select select-bordered select-xs w-full h-7 rounded text-xs"
           data-bind-value="styleState">
           <option value="">- State -</option>
-          <option value="hover">:hover</option>
-          <option value="active">:active</option>
-          <option value="focus">:focus</option>
-          <option value="first-child">:first-child</option>
+          <option value="hover">hover</option>
+          <option value="active">active</option>
+          <option value="focus">focus</option>
+          <option value="nth-of-type(2n)">nth-of-type(2n)</option>
         </select>
       </div>
 
-      <!-- Display & Layout Accordion -->
+      <!-- 1. DISPLAY ACCORDION -->
       <div class="border border-base-content/10 rounded bg-base-100 p-2.5 space-y-2">
         <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
           <span>Display</span>
@@ -194,11 +207,18 @@
             <select class="select select-bordered select-xs w-full h-6 min-h-0 text-[11px] rounded"
               data-on-change="if (selectedEl) { selectedEl.style.display = $evt.target.value; syncCanvasHtmlToDraft(); }">
               <option value="block">Block</option>
-              <option value="flex">Flex</option>
-              <option value="inline-block">Inline-block</option>
               <option value="inline">Inline</option>
+              <option value="inline-block">Inline Block</option>
+              <option value="flex">Flex</option>
+              <option value="inline-flex">Inline Flex</option>
               <option value="grid">Grid</option>
-              <option value="none">None</option>
+              <option value="inline-grid">Inline Grid</option>
+              <option value="table">Table</option>
+              <option value="table-row">Table Row</option>
+              <option value="list-item">List Item</option>
+              <option value="inherit">Inherit</option>
+              <option value="initial">Initial</option>
+              <option value="none">none</option>
             </select>
           </div>
           <div>
@@ -206,10 +226,34 @@
             <select class="select select-bordered select-xs w-full h-6 min-h-0 text-[11px] rounded"
               data-on-change="if (selectedEl) { selectedEl.style.position = $evt.target.value; syncCanvasHtmlToDraft(); }">
               <option value="static">Static</option>
+              <option value="fixed">Fixed</option>
               <option value="relative">Relative</option>
               <option value="absolute">Absolute</option>
-              <option value="fixed">Fixed</option>
             </select>
+          </div>
+        </div>
+
+        <!-- Coordinates: Top, Left, Bottom, Right -->
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Top</label>
+            <input type="text" placeholder="auto" class="input input-bordered input-xs w-full h-6 text-[11px]"
+              data-on-input="if (selectedEl) { selectedEl.style.top = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+          </div>
+          <div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Left</label>
+            <input type="text" placeholder="auto" class="input input-bordered input-xs w-full h-6 text-[11px]"
+              data-on-input="if (selectedEl) { selectedEl.style.left = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+          </div>
+          <div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Bottom</label>
+            <input type="text" placeholder="auto" class="input input-bordered input-xs w-full h-6 text-[11px]"
+              data-on-input="if (selectedEl) { selectedEl.style.bottom = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+          </div>
+          <div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Right</label>
+            <input type="text" placeholder="auto" class="input input-bordered input-xs w-full h-6 text-[11px]"
+              data-on-input="if (selectedEl) { selectedEl.style.right = $evt.target.value; syncCanvasHtmlToDraft(); }" />
           </div>
         </div>
 
@@ -233,25 +277,20 @@
             data-on-input="if (selectedEl) { selectedEl.style.opacity = $evt.target.value; syncCanvasHtmlToDraft(); }" />
         </div>
 
-        <!-- Color Rows -->
+        <!-- Colors -->
         <div class="flex items-center justify-between pt-1">
           <span class="text-[10px] text-base-content/60">Background</span>
-          <div class="flex items-center gap-1.5">
-            <input type="color" class="w-6 h-6 rounded cursor-pointer border border-base-content/20 bg-transparent"
-              data-on-input="if (selectedEl) { selectedEl.style.backgroundColor = $evt.target.value; syncCanvasHtmlToDraft(); }" />
-          </div>
+          <input type="color" class="w-6 h-6 rounded cursor-pointer border border-base-content/20 bg-transparent"
+            data-on-input="if (selectedEl) { selectedEl.style.backgroundColor = $evt.target.value; syncCanvasHtmlToDraft(); }" />
         </div>
         <div class="flex items-center justify-between">
           <span class="text-[10px] text-base-content/60">Text Color</span>
-          <div class="flex items-center gap-1.5">
-            <input type="color" class="w-6 h-6 rounded cursor-pointer border border-base-content/20 bg-transparent"
-              data-on-input="if (selectedEl) { selectedEl.style.color = $evt.target.value; syncCanvasHtmlToDraft(); }" />
-          </div>
+          <input type="color" class="w-6 h-6 rounded cursor-pointer border border-base-content/20 bg-transparent"
+            data-on-input="if (selectedEl) { selectedEl.style.color = $evt.target.value; syncCanvasHtmlToDraft(); }" />
         </div>
-
       </div>
 
-      <!-- Typography Accordion -->
+      <!-- 2. TYPOGRAPHY ACCORDION -->
       <div class="border border-base-content/10 rounded bg-base-100 p-2.5 space-y-2">
         <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
           <span>Typography</span>
@@ -271,19 +310,41 @@
             <label class="text-[10px] text-base-content/60 block mb-0.5">Font weight</label>
             <select class="select select-bordered select-xs w-full h-6 min-h-0 text-[11px] rounded"
               data-on-change="if (selectedEl) { selectedEl.style.fontWeight = $evt.target.value; syncCanvasHtmlToDraft(); }">
-              <option value="400">Regular (400)</option>
+              <option value="">Default</option>
+              <option value="100">Thin (100)</option>
+              <option value="200">Extra-Light (200)</option>
+              <option value="300">Light (300)</option>
+              <option value="400">Normal (400)</option>
               <option value="500">Medium (500)</option>
-              <option value="600">Semibold (600)</option>
+              <option value="600">Semi-Bold (600)</option>
               <option value="700">Bold (700)</option>
-              <option value="900">Black (900)</option>
+              <option value="800">Extra-Bold (800)</option>
+              <option value="900">Ultra-Bold (900)</option>
             </select>
           </div>
         </div>
 
-        <!-- 4-Button Text Align Segments -->
+        <div>
+          <label class="text-[10px] text-base-content/60 block mb-0.5">Font family</label>
+          <select class="select select-bordered select-xs w-full h-6 min-h-0 text-[11px] rounded"
+            data-on-change="if (selectedEl) { selectedEl.style.fontFamily = $evt.target.value; syncCanvasHtmlToDraft(); }">
+            <option value="">Default</option>
+            <option value="Arial, Helvetica, sans-serif">Arial</option>
+            <option value="'Helvetica Neue', Helvetica, sans-serif">Helvetica Neue</option>
+            <option value="'Times New Roman', Times, serif">Times New Roman</option>
+            <option value="Georgia, serif">Georgia</option>
+            <option value="'Courier New', Courier, monospace">Courier New</option>
+            <option value="Verdana, Geneva, sans-serif">Verdana</option>
+            <option value="Tahoma, Geneva, sans-serif">Tahoma</option>
+            <option value="system-ui, sans-serif">System Sans</option>
+          </select>
+        </div>
+
+        <!-- 5-Button Text Align Segments -->
         <div>
           <label class="text-[10px] text-base-content/60 block mb-1">Text align</label>
           <div class="join w-full">
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-outline border-base-content/20" title="None" data-on-click="if (selectedEl) { selectedEl.style.textAlign = ''; syncCanvasHtmlToDraft(); }">✕</button>
             <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-outline border-base-content/20" title="Left" data-on-click="if (selectedEl) { selectedEl.style.textAlign = 'left'; syncCanvasHtmlToDraft(); }">
               <iconify-icon icon="material-symbols-light:format-align-left"></iconify-icon>
             </button>
@@ -299,43 +360,297 @@
           </div>
         </div>
 
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Line height</label>
+            <input type="text" placeholder="1.5" class="input input-bordered input-xs w-full h-6 text-[11px]"
+              data-on-input="if (selectedEl) { selectedEl.style.lineHeight = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+          </div>
+          <div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Letter spacing</label>
+            <input type="text" placeholder="normal" class="input input-bordered input-xs w-full h-6 text-[11px]"
+              data-on-input="if (selectedEl) { selectedEl.style.letterSpacing = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[10px] text-base-content/60 block mb-0.5">Decoration Style</label>
+          <select class="select select-bordered select-xs w-full h-6 min-h-0 text-[11px] rounded"
+            data-on-change="if (selectedEl) { selectedEl.style.textDecorationStyle = $evt.target.value; syncCanvasHtmlToDraft(); }">
+            <option value="">Default</option>
+            <option value="solid">Solid</option>
+            <option value="wavy">Wavy</option>
+            <option value="dotted">Dotted</option>
+            <option value="dashed">Dashed</option>
+            <option value="double">Double</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 3. SIZE & DIMENSIONS ACCORDION -->
+      <div class="border border-base-content/10 rounded bg-base-100 p-2.5 space-y-2">
+        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
+          <span>Size</span>
+          <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Width</label>
+            <input type="text" placeholder="auto" class="input input-bordered input-xs w-full h-6 text-[11px]"
+              data-on-input="if (selectedEl) { selectedEl.style.width = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+          </div>
+          <div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Height</label>
+            <input type="text" placeholder="auto" class="input input-bordered input-xs w-full h-6 text-[11px]"
+              data-on-input="if (selectedEl) { selectedEl.style.height = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+          </div>
+          <div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Min Width</label>
+            <input type="text" placeholder="auto" class="input input-bordered input-xs w-full h-6 text-[11px]"
+              data-on-input="if (selectedEl) { selectedEl.style.minWidth = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+          </div>
+          <div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Min Height</label>
+            <input type="text" placeholder="auto" class="input input-bordered input-xs w-full h-6 text-[11px]"
+              data-on-input="if (selectedEl) { selectedEl.style.minHeight = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. MARGIN ACCORDION -->
+      <div class="border border-base-content/10 rounded bg-base-100 p-2.5 space-y-2">
+        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
+          <span>Margin</span>
+          <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Top</label>
+            <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
+              data-on-input="if (selectedEl) { selectedEl.style.marginTop = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+          </div>
+          <div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Right</label>
+            <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
+              data-on-input="if (selectedEl) { selectedEl.style.marginRight = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+          </div>
+          <div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Bottom</label>
+            <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
+              data-on-input="if (selectedEl) { selectedEl.style.marginBottom = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+          </div>
+          <div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Left</label>
+            <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
+              data-on-input="if (selectedEl) { selectedEl.style.marginLeft = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. PADDING ACCORDION -->
+      <div class="border border-base-content/10 rounded bg-base-100 p-2.5 space-y-2">
+        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
+          <span>Padding</span>
+          <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Top</label>
+            <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
+              data-on-input="if (selectedEl) { selectedEl.style.paddingTop = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+          </div>
+          <div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Right</label>
+            <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
+              data-on-input="if (selectedEl) { selectedEl.style.paddingRight = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+          </div>
+          <div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Bottom</label>
+            <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
+              data-on-input="if (selectedEl) { selectedEl.style.paddingBottom = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+          </div>
+          <div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Left</label>
+            <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
+              data-on-input="if (selectedEl) { selectedEl.style.paddingLeft = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. BORDER ACCORDION -->
+      <div class="border border-base-content/10 rounded bg-base-100 p-2.5 space-y-2">
+        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
+          <span>Border</span>
+          <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
+        </div>
+        <div>
+          <label class="text-[10px] text-base-content/60 block mb-0.5">Style</label>
+          <select class="select select-bordered select-xs w-full h-6 min-h-0 text-[11px] rounded"
+            data-on-change="if (selectedEl) { selectedEl.style.borderStyle = $evt.target.value; syncCanvasHtmlToDraft(); }">
+            <option value="">Default</option>
+            <option value="solid">Solid</option>
+            <option value="dotted">Dotted</option>
+            <option value="dashed">Dashed</option>
+            <option value="double">Double</option>
+            <option value="none">None</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Width</label>
+            <input type="text" placeholder="1px" class="input input-bordered input-xs w-full h-6 text-[11px]"
+              data-on-input="if (selectedEl) { selectedEl.style.borderWidth = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+          </div>
+          <div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Color</label>
+            <input type="color" class="w-full h-6 rounded cursor-pointer border border-base-content/20 bg-transparent"
+              data-on-input="if (selectedEl) { selectedEl.style.borderColor = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. BORDER RADIUS ACCORDION -->
+      <div class="border border-base-content/10 rounded bg-base-100 p-2.5 space-y-2">
+        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
+          <span>Border Radius</span>
+          <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Top Left</label>
+            <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
+              data-on-input="if (selectedEl) { selectedEl.style.borderTopLeftRadius = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+          </div>
+          <div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Top Right</label>
+            <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
+              data-on-input="if (selectedEl) { selectedEl.style.borderTopRightRadius = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+          </div>
+          <div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Bottom Left</label>
+            <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
+              data-on-input="if (selectedEl) { selectedEl.style.borderBottomLeftRadius = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+          </div>
+          <div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Bottom Right</label>
+            <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
+              data-on-input="if (selectedEl) { selectedEl.style.borderBottomRightRadius = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 8. BACKGROUND IMAGE ACCORDION -->
+      <div class="border border-base-content/10 rounded bg-base-100 p-2.5 space-y-2">
+        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
+          <span>Background Image</span>
+          <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
+        </div>
+        <div>
+          <label class="text-[10px] text-base-content/60 block mb-0.5">Image URL</label>
+          <input type="text" placeholder="url('...')" class="input input-bordered input-xs w-full h-6 text-[11px]"
+            data-on-input="if (selectedEl) { selectedEl.style.backgroundImage = 'url(' + $evt.target.value + ')'; syncCanvasHtmlToDraft(); }" />
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Repeat</label>
+            <select class="select select-bordered select-xs w-full h-6 min-h-0 text-[11px] rounded"
+              data-on-change="if (selectedEl) { selectedEl.style.backgroundRepeat = $evt.target.value; syncCanvasHtmlToDraft(); }">
+              <option value="">Default</option>
+              <option value="repeat-x">repeat-x</option>
+              <option value="repeat-y">repeat-y</option>
+              <option value="no-repeat">no-repeat</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Size</label>
+            <select class="select select-bordered select-xs w-full h-6 min-h-0 text-[11px] rounded"
+              data-on-change="if (selectedEl) { selectedEl.style.backgroundSize = $evt.target.value; syncCanvasHtmlToDraft(); }">
+              <option value="">Default</option>
+              <option value="contain">contain</option>
+              <option value="cover">cover</option>
+            </select>
+          </div>
+        </div>
       </div>
 
     </div>
 
-    <!-- ================= 3. ADVANCED TAB (Nexus-UX Directives) ================= -->
-    <div class="p-2 space-y-2.5" data-show="propertiesSubTab === 'advanced'">
-      <div class="text-[11px] font-bold text-base-content/70 px-1">Nexus-UX Directives</div>
-
-      <div class="space-y-1">
-        <label class="text-[10px] font-mono text-primary font-bold">data-signal</label>
-        <input type="text" placeholder="{ count: 0 }" class="input input-bordered input-xs w-full font-mono text-[11px] h-7"
-          data-on-input="if (selectedEl) { selectedEl.setAttribute('data-signal', $evt.target.value); syncCanvasHtmlToDraft(); }" />
+    <!-- ================= 3. ADVANCED TAB ================= -->
+    <div class="p-2 space-y-3" data-show="propertiesSubTab === 'advanced'">
+      
+      <!-- Device Visibility Toggles -->
+      <div class="border border-base-content/10 rounded bg-base-100 p-2.5 space-y-2">
+        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
+          <span>Hide based on device screen</span>
+          <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
+        </div>
+        <div class="space-y-1.5 pt-1">
+          <label class="flex items-center justify-between cursor-pointer">
+            <span class="text-[11px] text-base-content/70">Extra small (&lt;576px)</span>
+            <input type="checkbox" class="toggle toggle-xs toggle-primary"
+              data-on-change="if (selectedEl) { selectedEl.classList.toggle('hidden-xs'); syncCanvasHtmlToDraft(); }" />
+          </label>
+          <label class="flex items-center justify-between cursor-pointer">
+            <span class="text-[11px] text-base-content/70">Small (≥576px)</span>
+            <input type="checkbox" class="toggle toggle-xs toggle-primary"
+              data-on-change="if (selectedEl) { selectedEl.classList.toggle('hidden-sm'); syncCanvasHtmlToDraft(); }" />
+          </label>
+          <label class="flex items-center justify-between cursor-pointer">
+            <span class="text-[11px] text-base-content/70">Medium (≥768px)</span>
+            <input type="checkbox" class="toggle toggle-xs toggle-primary"
+              data-on-change="if (selectedEl) { selectedEl.classList.toggle('hidden-md'); syncCanvasHtmlToDraft(); }" />
+          </label>
+          <label class="flex items-center justify-between cursor-pointer">
+            <span class="text-[11px] text-base-content/70">Large (≥992px)</span>
+            <input type="checkbox" class="toggle toggle-xs toggle-primary"
+              data-on-change="if (selectedEl) { selectedEl.classList.toggle('hidden-lg'); syncCanvasHtmlToDraft(); }" />
+          </label>
+          <label class="flex items-center justify-between cursor-pointer">
+            <span class="text-[11px] text-base-content/70">Extra large (≥1200px)</span>
+            <input type="checkbox" class="toggle toggle-xs toggle-primary"
+              data-on-change="if (selectedEl) { selectedEl.classList.toggle('hidden-xl'); syncCanvasHtmlToDraft(); }" />
+          </label>
+        </div>
       </div>
 
-      <div class="space-y-1">
-        <label class="text-[10px] font-mono text-primary font-bold">data-bind</label>
-        <input type="text" placeholder="property" class="input input-bordered input-xs w-full font-mono text-[11px] h-7"
-          data-on-input="if (selectedEl) { selectedEl.setAttribute('data-bind', $evt.target.value); syncCanvasHtmlToDraft(); }" />
+      <!-- Nexus-UX Reactive Directives -->
+      <div class="border border-base-content/10 rounded bg-base-100 p-2.5 space-y-2">
+        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
+          <span>Nexus-UX Directives</span>
+          <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-[10px] font-mono text-primary font-bold">data-signal</label>
+          <input type="text" placeholder="{ count: 0 }" class="input input-bordered input-xs w-full font-mono text-[11px] h-6"
+            data-on-input="if (selectedEl) { selectedEl.setAttribute('data-signal', $evt.target.value); syncCanvasHtmlToDraft(); }" />
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-[10px] font-mono text-primary font-bold">data-bind</label>
+          <input type="text" placeholder="property" class="input input-bordered input-xs w-full font-mono text-[11px] h-6"
+            data-on-input="if (selectedEl) { selectedEl.setAttribute('data-bind', $evt.target.value); syncCanvasHtmlToDraft(); }" />
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-[10px] font-mono text-primary font-bold">data-show</label>
+          <input type="text" placeholder="isOpen" class="input input-bordered input-xs w-full font-mono text-[11px] h-6"
+            data-on-input="if (selectedEl) { selectedEl.setAttribute('data-show', $evt.target.value); syncCanvasHtmlToDraft(); }" />
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-[10px] font-mono text-primary font-bold">data-on-click</label>
+          <input type="text" placeholder="isOpen = !isOpen" class="input input-bordered input-xs w-full font-mono text-[11px] h-6"
+            data-on-input="if (selectedEl) { selectedEl.setAttribute('data-on-click', $evt.target.value); syncCanvasHtmlToDraft(); }" />
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-[10px] font-mono text-primary font-bold">data-for</label>
+          <input type="text" placeholder="item in items" class="input input-bordered input-xs w-full font-mono text-[11px] h-6"
+            data-on-input="if (selectedEl) { selectedEl.setAttribute('data-for', $evt.target.value); syncCanvasHtmlToDraft(); }" />
+        </div>
       </div>
 
-      <div class="space-y-1">
-        <label class="text-[10px] font-mono text-primary font-bold">data-show</label>
-        <input type="text" placeholder="isOpen" class="input input-bordered input-xs w-full font-mono text-[11px] h-7"
-          data-on-input="if (selectedEl) { selectedEl.setAttribute('data-show', $evt.target.value); syncCanvasHtmlToDraft(); }" />
-      </div>
-
-      <div class="space-y-1">
-        <label class="text-[10px] font-mono text-primary font-bold">data-on-click</label>
-        <input type="text" placeholder="isOpen = !isOpen" class="input input-bordered input-xs w-full font-mono text-[11px] h-7"
-          data-on-input="if (selectedEl) { selectedEl.setAttribute('data-on-click', $evt.target.value); syncCanvasHtmlToDraft(); }" />
-      </div>
-
-      <div class="space-y-1">
-        <label class="text-[10px] font-mono text-primary font-bold">data-for</label>
-        <input type="text" placeholder="item in items" class="input input-bordered input-xs w-full font-mono text-[11px] h-7"
-          data-on-input="if (selectedEl) { selectedEl.setAttribute('data-for', $evt.target.value); syncCanvasHtmlToDraft(); }" />
-      </div>
     </div>
 
   </div>
