@@ -575,27 +575,27 @@
           <label class="flex items-center justify-between cursor-pointer">
             <span class="text-[11px] text-base-content/70">Extra small (&lt;576px)</span>
             <input type="checkbox" class="toggle toggle-xs toggle-primary"
-              data-on-change="if (selectedEl) { selectedEl.classList.toggle('hidden-xs'); syncCanvasHtmlToDraft(); }" />
+              data-on-change="toggleDaisyClass('hidden-xs')" />
           </label>
           <label class="flex items-center justify-between cursor-pointer">
             <span class="text-[11px] text-base-content/70">Small (≥576px)</span>
             <input type="checkbox" class="toggle toggle-xs toggle-primary"
-              data-on-change="if (selectedEl) { selectedEl.classList.toggle('hidden-sm'); syncCanvasHtmlToDraft(); }" />
+              data-on-change="toggleDaisyClass('hidden-sm')" />
           </label>
           <label class="flex items-center justify-between cursor-pointer">
             <span class="text-[11px] text-base-content/70">Medium (≥768px)</span>
             <input type="checkbox" class="toggle toggle-xs toggle-primary"
-              data-on-change="if (selectedEl) { selectedEl.classList.toggle('hidden-md'); syncCanvasHtmlToDraft(); }" />
+              data-on-change="toggleDaisyClass('hidden-md')" />
           </label>
           <label class="flex items-center justify-between cursor-pointer">
             <span class="text-[11px] text-base-content/70">Large (≥992px)</span>
             <input type="checkbox" class="toggle toggle-xs toggle-primary"
-              data-on-change="if (selectedEl) { selectedEl.classList.toggle('hidden-lg'); syncCanvasHtmlToDraft(); }" />
+              data-on-change="toggleDaisyClass('hidden-lg')" />
           </label>
           <label class="flex items-center justify-between cursor-pointer">
             <span class="text-[11px] text-base-content/70">Extra large (≥1200px)</span>
             <input type="checkbox" class="toggle toggle-xs toggle-primary"
-              data-on-change="if (selectedEl) { selectedEl.classList.toggle('hidden-xl'); syncCanvasHtmlToDraft(); }" />
+              data-on-change="toggleDaisyClass('hidden-xl')" />
           </label>
         </div>
       </div>
@@ -610,31 +610,36 @@
         <div class="space-y-1">
           <label class="text-[10px] font-mono text-primary font-bold">data-signal</label>
           <input type="text" placeholder="{ count: 0 }" class="input input-bordered input-xs w-full font-mono text-[11px] h-6"
-            data-on-input="if (selectedEl) { selectedEl.setAttribute('data-signal', $evt.target.value); syncCanvasHtmlToDraft(); }" />
+            data-bind-value="inspector.dataSignal"
+            data-on-input="setAttr('data-signal', $evt.target.value)" />
         </div>
 
         <div class="space-y-1">
           <label class="text-[10px] font-mono text-primary font-bold">data-bind</label>
           <input type="text" placeholder="property" class="input input-bordered input-xs w-full font-mono text-[11px] h-6"
-            data-on-input="if (selectedEl) { selectedEl.setAttribute('data-bind', $evt.target.value); syncCanvasHtmlToDraft(); }" />
+            data-bind-value="inspector.dataBind"
+            data-on-input="setAttr('data-bind', $evt.target.value)" />
         </div>
 
         <div class="space-y-1">
           <label class="text-[10px] font-mono text-primary font-bold">data-show</label>
           <input type="text" placeholder="isOpen" class="input input-bordered input-xs w-full font-mono text-[11px] h-6"
-            data-on-input="if (selectedEl) { selectedEl.setAttribute('data-show', $evt.target.value); syncCanvasHtmlToDraft(); }" />
+            data-bind-value="inspector.dataShow"
+            data-on-input="setAttr('data-show', $evt.target.value)" />
         </div>
 
         <div class="space-y-1">
           <label class="text-[10px] font-mono text-primary font-bold">data-on-click</label>
           <input type="text" placeholder="isOpen = !isOpen" class="input input-bordered input-xs w-full font-mono text-[11px] h-6"
-            data-on-input="if (selectedEl) { selectedEl.setAttribute('data-on-click', $evt.target.value); syncCanvasHtmlToDraft(); }" />
+            data-bind-value="inspector.dataOnClick"
+            data-on-input="setAttr('data-on-click', $evt.target.value)" />
         </div>
 
         <div class="space-y-1">
           <label class="text-[10px] font-mono text-primary font-bold">data-for</label>
           <input type="text" placeholder="item in items" class="input input-bordered input-xs w-full font-mono text-[11px] h-6"
-            data-on-input="if (selectedEl) { selectedEl.setAttribute('data-for', $evt.target.value); syncCanvasHtmlToDraft(); }" />
+            data-bind-value="inspector.dataFor"
+            data-on-input="setAttr('data-for', $evt.target.value)" />
         </div>
       </div>
 
