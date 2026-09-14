@@ -200,13 +200,11 @@
     // Selection Logic
     selectElement: function(el) {
       const raw = toRawNode(el);
-      const selectBoxEl = document.getElementById('select-box');
       if (!raw || raw.nodeType !== 1) {
         selectedEl = null;
         hasSelection = false;
         selectedBox.visible = false;
         breadcrumbs = [];
-        if (selectBoxEl) selectBoxEl.style.display = 'none';
         return;
       }
       selectedEl = raw;
@@ -266,84 +264,50 @@
 
     updateSelectedBox: function() {
       const el = toRawNode(selectedEl);
-      const selectBoxEl = document.getElementById('select-box');
       if (!el || previewMode) {
         selectedBox.visible = false;
         hasSelection = false;
-        if (selectBoxEl) selectBoxEl.style.display = 'none';
         return;
       }
       const host = toRawNode(document.getElementById('builder-canvas-host'));
       if (!host) return;
       try {
+        const hostRect = host.getBoundingClientRect();
         const elRect = el.getBoundingClientRect();
-        const frame = host.parentElement || host;
-        const frameRect = frame.getBoundingClientRect();
-        const scale = (typeof zoom !== 'undefined' && zoom && zoom !== 100) ? (zoom / 100) : 1;
 
-        const top = (elRect.top - frameRect.top) / scale;
-        const left = (elRect.left - frameRect.left) / scale;
-        const width = elRect.width / scale;
-        const height = elRect.height / scale;
-
-        selectedBox.top = top;
-        selectedBox.left = left;
-        selectedBox.width = width;
-        selectedBox.height = height;
+        selectedBox.top = elRect.top - hostRect.top;
+        selectedBox.left = elRect.left - hostRect.left;
+        selectedBox.width = elRect.width;
+        selectedBox.height = elRect.height;
         const tag = el.tagName.toLowerCase();
         selectedBox.tag = tag;
         selectedBox.id = el.id || '';
         selectedBox.isText = ['h1','h2','h3','h4','h5','h6','p','span','a','button','label','li','blockquote','td','th'].includes(tag);
         selectedBox.visible = true;
         hasSelection = true;
-
-        if (selectBoxEl) {
-          selectBoxEl.style.top = top + 'px';
-          selectBoxEl.style.left = left + 'px';
-          selectBoxEl.style.width = width + 'px';
-          selectBoxEl.style.height = height + 'px';
-          selectBoxEl.style.display = 'block';
-        }
       } catch (_) {}
     },
 
     updateHoverBox: function(el) {
       const raw = toRawNode(el);
-      const hoverBoxEl = document.getElementById('highlight-box');
       if (!raw || raw.nodeType !== 1 || previewMode || (selectedEl && raw === toRawNode(selectedEl))) {
         hoverBox.visible = false;
         hoveredEl = null;
-        if (hoverBoxEl) hoverBoxEl.style.display = 'none';
         return;
       }
       hoveredEl = raw;
       const host = toRawNode(document.getElementById('builder-canvas-host'));
       if (!host) return;
       try {
+        const hostRect = host.getBoundingClientRect();
         const elRect = raw.getBoundingClientRect();
-        const frame = host.parentElement || host;
-        const frameRect = frame.getBoundingClientRect();
-        const scale = (typeof zoom !== 'undefined' && zoom && zoom !== 100) ? (zoom / 100) : 1;
 
-        const top = (elRect.top - frameRect.top) / scale;
-        const left = (elRect.left - frameRect.left) / scale;
-        const width = elRect.width / scale;
-        const height = elRect.height / scale;
-
-        hoverBox.top = top;
-        hoverBox.left = left;
-        hoverBox.width = width;
-        hoverBox.height = height;
+        hoverBox.top = elRect.top - hostRect.top;
+        hoverBox.left = elRect.left - hostRect.left;
+        hoverBox.width = elRect.width;
+        hoverBox.height = elRect.height;
         hoverBox.tag = raw.tagName.toLowerCase();
         hoverBox.visible = true;
-
-        if (hoverBoxEl) {
-          hoverBoxEl.style.top = top + 'px';
-          hoverBoxEl.style.left = left + 'px';
-          hoverBoxEl.style.width = width + 'px';
-          hoverBoxEl.style.height = height + 'px';
-          hoverBoxEl.style.display = 'block';
-        }
       } catch (_) {}
     },
 
