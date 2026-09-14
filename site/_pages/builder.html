@@ -200,11 +200,13 @@
     // Selection Logic
     selectElement: function(el) {
       const raw = toRawNode(el);
+      const selectBoxEl = document.getElementById('select-box');
       if (!raw || raw.nodeType !== 1) {
         selectedEl = null;
         hasSelection = false;
         selectedBox.visible = false;
         breadcrumbs = [];
+        if (selectBoxEl) selectBoxEl.style.display = 'none';
         return;
       }
       selectedEl = raw;
@@ -264,9 +266,11 @@
 
     updateSelectedBox: function() {
       const el = toRawNode(selectedEl);
-      if (!el) {
+      const selectBoxEl = document.getElementById('select-box');
+      if (!el || previewMode) {
         selectedBox.visible = false;
         hasSelection = false;
+        if (selectBoxEl) selectBoxEl.style.display = 'none';
         return;
       }
       const host = toRawNode(document.getElementById('builder-canvas-host'));
@@ -275,11 +279,17 @@
         const elRect = el.getBoundingClientRect();
         const frame = host.parentElement || host;
         const frameRect = frame.getBoundingClientRect();
+        const scale = (typeof zoom !== 'undefined' && zoom && zoom !== 100) ? (zoom / 100) : 1;
 
-        selectedBox.top = elRect.top - frameRect.top;
-        selectedBox.left = elRect.left - frameRect.left;
-        selectedBox.width = elRect.width;
-        selectedBox.height = elRect.height;
+        const top = (elRect.top - frameRect.top) / scale;
+        const left = (elRect.left - frameRect.left) / scale;
+        const width = elRect.width / scale;
+        const height = elRect.height / scale;
+
+        selectedBox.top = top;
+        selectedBox.left = left;
+        selectedBox.width = width;
+        selectedBox.height = height;
         const tag = el.tagName.toLowerCase();
         selectedBox.tag = tag;
         selectedBox.id = el.id || '';
@@ -287,21 +297,23 @@
         selectedBox.visible = true;
         hasSelection = true;
 
-        const selectBoxEl = document.getElementById('select-box');
         if (selectBoxEl) {
-          selectBoxEl.style.top = (elRect.top - frameRect.top) + 'px';
-          selectBoxEl.style.left = (elRect.left - frameRect.left) + 'px';
-          selectBoxEl.style.width = elRect.width + 'px';
-          selectBoxEl.style.height = elRect.height + 'px';
+          selectBoxEl.style.top = top + 'px';
+          selectBoxEl.style.left = left + 'px';
+          selectBoxEl.style.width = width + 'px';
+          selectBoxEl.style.height = height + 'px';
+          selectBoxEl.style.display = 'block';
         }
       } catch (_) {}
     },
 
     updateHoverBox: function(el) {
       const raw = toRawNode(el);
-      if (!raw || raw.nodeType !== 1 || previewMode) {
+      const hoverBoxEl = document.getElementById('highlight-box');
+      if (!raw || raw.nodeType !== 1 || previewMode || (selectedEl && raw === toRawNode(selectedEl))) {
         hoverBox.visible = false;
         hoveredEl = null;
+        if (hoverBoxEl) hoverBoxEl.style.display = 'none';
         return;
       }
       hoveredEl = raw;
@@ -311,20 +323,26 @@
         const elRect = raw.getBoundingClientRect();
         const frame = host.parentElement || host;
         const frameRect = frame.getBoundingClientRect();
+        const scale = (typeof zoom !== 'undefined' && zoom && zoom !== 100) ? (zoom / 100) : 1;
 
-        hoverBox.top = elRect.top - frameRect.top;
-        hoverBox.left = elRect.left - frameRect.left;
-        hoverBox.width = elRect.width;
-        hoverBox.height = elRect.height;
+        const top = (elRect.top - frameRect.top) / scale;
+        const left = (elRect.left - frameRect.left) / scale;
+        const width = elRect.width / scale;
+        const height = elRect.height / scale;
+
+        hoverBox.top = top;
+        hoverBox.left = left;
+        hoverBox.width = width;
+        hoverBox.height = height;
         hoverBox.tag = raw.tagName.toLowerCase();
         hoverBox.visible = true;
 
-        const hoverBoxEl = document.getElementById('highlight-box');
         if (hoverBoxEl) {
-          hoverBoxEl.style.top = (elRect.top - frameRect.top) + 'px';
-          hoverBoxEl.style.left = (elRect.left - frameRect.left) + 'px';
-          hoverBoxEl.style.width = elRect.width + 'px';
-          hoverBoxEl.style.height = elRect.height + 'px';
+          hoverBoxEl.style.top = top + 'px';
+          hoverBoxEl.style.left = left + 'px';
+          hoverBoxEl.style.width = width + 'px';
+          hoverBoxEl.style.height = height + 'px';
+          hoverBoxEl.style.display = 'block';
         }
       } catch (_) {}
     },
