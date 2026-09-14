@@ -192,7 +192,7 @@
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Display</label>
             <select class="select select-bordered select-xs w-full h-6 min-h-0 text-[11px] rounded"
-              data-on-change="if (selectedEl) { selectedEl.style.display = $evt.target.value; syncCanvasHtmlToDraft(); }">
+              data-on-change="setStyle('display', $evt.target.value)">
               <option value="block">Block</option>
               <option value="inline">Inline</option>
               <option value="inline-block">Inline Block</option>
@@ -211,7 +211,7 @@
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Position</label>
             <select class="select select-bordered select-xs w-full h-6 min-h-0 text-[11px] rounded"
-              data-on-change="if (selectedEl) { selectedEl.style.position = $evt.target.value; syncCanvasHtmlToDraft(); }">
+              data-on-change="setStyle('position', $evt.target.value)">
               <option value="static">Static</option>
               <option value="fixed">Fixed</option>
               <option value="relative">Relative</option>
@@ -225,22 +225,22 @@
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Top</label>
             <input type="text" placeholder="auto" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="if (selectedEl) { selectedEl.style.top = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+              data-on-input="setStyle('top', $evt.target.value)" />
           </div>
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Left</label>
             <input type="text" placeholder="auto" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="if (selectedEl) { selectedEl.style.left = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+              data-on-input="setStyle('left', $evt.target.value)" />
           </div>
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Bottom</label>
             <input type="text" placeholder="auto" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="if (selectedEl) { selectedEl.style.bottom = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+              data-on-input="setStyle('bottom', $evt.target.value)" />
           </div>
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Right</label>
             <input type="text" placeholder="auto" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="if (selectedEl) { selectedEl.style.right = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+              data-on-input="setStyle('right', $evt.target.value)" />
           </div>
         </div>
 
@@ -248,9 +248,9 @@
         <div>
           <label class="text-[10px] text-base-content/60 block mb-1">Float</label>
           <div class="join w-full">
-            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-outline border-base-content/20 font-normal" data-on-click="if (selectedEl) selectedEl.style.float = 'none'">✕</button>
-            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-outline border-base-content/20 font-normal" data-on-click="if (selectedEl) selectedEl.style.float = 'left'">Left</button>
-            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-outline border-base-content/20 font-normal" data-on-click="if (selectedEl) selectedEl.style.float = 'right'">Right</button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-outline border-base-content/20 font-normal" data-on-click="setStyle('float', 'none')">✕</button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-outline border-base-content/20 font-normal" data-on-click="setStyle('float', 'left')">Left</button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-outline border-base-content/20 font-normal" data-on-click="setStyle('float', 'right')">Right</button>
           </div>
         </div>
 
@@ -261,19 +261,19 @@
             <span class="font-mono">1</span>
           </div>
           <input type="range" min="0" max="1" step="0.05" value="1" class="range range-xs range-primary"
-            data-on-input="if (selectedEl) { selectedEl.style.opacity = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+            data-on-input="setStyle('opacity', $evt.target.value)" />
         </div>
 
         <!-- Colors -->
         <div class="flex items-center justify-between pt-1">
           <span class="text-[10px] text-base-content/60">Background</span>
           <input type="color" class="w-6 h-6 rounded cursor-pointer border border-base-content/20 bg-transparent"
-            data-on-input="if (selectedEl) { selectedEl.style.backgroundColor = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+            data-on-input="setStyle('backgroundColor', $evt.target.value)" />
         </div>
         <div class="flex items-center justify-between">
           <span class="text-[10px] text-base-content/60">Text Color</span>
           <input type="color" class="w-6 h-6 rounded cursor-pointer border border-base-content/20 bg-transparent"
-            data-on-input="if (selectedEl) { selectedEl.style.color = $evt.target.value; syncCanvasHtmlToDraft(); }" />
+            data-on-input="setStyle('color', $evt.target.value)" />
         </div>
       </div>
 
