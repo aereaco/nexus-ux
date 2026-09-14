@@ -3078,6 +3078,12 @@ ${scripts}
                       runtime.morphDOM(shadow, html);
                     }
                     stylesheet2.adoptElementSubtree(shadow);
+                    if (typeof document !== "undefined" && document.adoptedStyleSheets && document.adoptedStyleSheets.length) {
+                      try {
+                        shadow.adoptedStyleSheets = [...document.adoptedStyleSheets];
+                      } catch {
+                      }
+                    }
                     Array.from(shadow.children).forEach((child) => {
                       if (child instanceof HTMLElement || child instanceof SVGElement) {
                         runtime.processElement(child);
