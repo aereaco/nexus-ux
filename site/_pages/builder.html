@@ -7,19 +7,33 @@
   <meta name="keywords" content="builder, visual editor, page builder, vvvebjs, drag and drop, daisyui, tailwind">
 </head>
 
-<div class="flex flex-col h-[calc(100dvh-5rem)] w-full gap-3 p-2 sm:p-4 select-none relative overflow-hidden"
+<div class="flex h-[calc(100dvh-5rem)] w-full select-none relative overflow-hidden bg-base-300/30 text-base-content font-sans antialiased text-xs"
+  id="vvveb-builder-container"
   data-signal="{
+    // Sidebar & Layout Toggles
+    sidebarExpanded: false,
+    showFileManager: true,
+    showLeftColumn: true,
+    showRightColumn: true,
+    bottomPanelExpanded: false,
+    activeSidebarTab: 'components',
+    componentsSubTab: 'components',
+    sectionsSubTab: 'sections',
+    propertiesSubTab: 'content',
+    styleState: '',
+    designerMode: false,
+    showHidden: false,
+    showTreeList: true,
+
     // Viewport & Workspace State
     viewport: 'desktop',
     zoom: 100,
     previewMode: false,
     currentDoc: '/_pages/builder/templates/landing.html',
 
-    // Panel Toggles
-    activeTab: 'components',
-    inspectorTab: 'style',
-    searchFilter: '',
-    codeDrawerOpen: false,
+    // Modals & Popups
+    addSectionBoxOpen: false,
+    addSectionMode: 'after',
     exportModalOpen: false,
     templateModalOpen: false,
     copiedToast: false,
@@ -27,11 +41,15 @@
     // Selection & Overlays
     selectedEl: null,
     hoveredEl: null,
-    selectedBox: { visible: false, top: 0, left: 0, width: 0, height: 0, tag: '', id: '' },
-    hoverBox: { visible: false, top: 0, left: 0, width: 0, height: 0 },
+    selectedBox: { visible: false, top: 0, left: 0, width: 0, height: 0, tag: '', id: '', isText: false },
+    hoverBox: { visible: false, top: 0, left: 0, width: 0, height: 0, tag: '' },
     breadcrumbs: [],
     domTree: [],
+    pageSections: [],
     canvasHtmlDraft: '',
+    canvasCssDraft: '/* Custom Element Styles */\n',
+    codeTab: 'html',
+    runJsOnEdit: false,
 
     // Inspector Model
     inspector: {
@@ -42,7 +60,10 @@
       textContent: '',
       fontSize: '',
       fontWeight: '',
+      fontFamily: '',
       textAlign: '',
+      color: '',
+      backgroundColor: '',
       display: '',
       gap: '',
       padding: '',
@@ -81,7 +102,8 @@
         return;
       }
       selectedEl = raw;
-      inspector.tag = raw.tagName.toLowerCase();
+      const tag = raw.tagName.toLowerCase();
+      inspector.tag = tag;
       inspector.id = raw.id || '';
       inspector.className = raw.className || '';
       inspector.isTextLeaf = (raw.children.length === 0 && raw.textContent.trim().length > 0);
@@ -90,7 +112,10 @@
       const compStyle = window.getComputedStyle(raw);
       inspector.fontSize = raw.style.fontSize || compStyle.fontSize || '';
       inspector.fontWeight = raw.style.fontWeight || compStyle.fontWeight || '';
+      inspector.fontFamily = raw.style.fontFamily || compStyle.fontFamily || '';
       inspector.textAlign = raw.style.textAlign || compStyle.textAlign || '';
+      inspector.color = raw.style.color || compStyle.color || '';
+      inspector.backgroundColor = raw.style.backgroundColor || compStyle.backgroundColor || '';
       inspector.display = raw.style.display || compStyle.display || '';
       inspector.gap = raw.style.gap || compStyle.gap || '';
       inspector.padding = raw.style.padding || compStyle.padding || '';
@@ -111,7 +136,7 @@
 
       // Build breadcrumbs
       const crumbs = [];
-      let cur = raw.parentElement;
+      let cur = raw;
       while (cur && cur.nodeType === 1 && cur.tagName.toLowerCase() !== 'html') {
         const rawCur = toRawNode(cur);
         crumbs.unshift({ tag: rawCur.tagName.toLowerCase(), el: rawCur });
@@ -138,8 +163,10 @@
       selectedBox.left = (elRect.left - hostRect.left) + host.scrollLeft;
       selectedBox.width = elRect.width;
       selectedBox.height = elRect.height;
-      selectedBox.tag = el.tagName.toLowerCase();
+      const tag = el.tagName.toLowerCase();
+      selectedBox.tag = tag;
       selectedBox.id = el.id || '';
+      selectedBox.isText = ['h1','h2','h3','h4','h5','h6','p','span','a','button','label','li','blockquote','td','th'].includes(tag);
       selectedBox.visible = true;
     },
 
@@ -160,6 +187,7 @@
       hoverBox.left = (elRect.left - hostRect.left) + host.scrollLeft;
       hoverBox.width = elRect.width;
       hoverBox.height = elRect.height;
+      hoverBox.tag = raw.tagName.toLowerCase();
       hoverBox.visible = true;
     },
 
@@ -179,6 +207,7 @@
       el.parentElement.insertBefore(clone, el.nextSibling);
       selectElement(clone);
       syncCanvasHtmlToDraft();
+      refreshPageSections();
     },
 
     deleteElement: function() {
@@ -192,6 +221,7 @@
         selectElement(parent);
       }
       syncCanvasHtmlToDraft();
+      refreshPageSections();
     },
 
     moveElementUp: function() {
@@ -200,12 +230,41 @@
       el.parentElement.insertBefore(el, el.previousElementSibling);
       updateSelectedBox();
       syncCanvasHtmlToDraft();
+      refreshPageSections();
     },
 
     moveElementDown: function() {
       const el = toRawNode(selectedEl);
       if (!el || !el.nextElementSibling) return;
       el.parentElement.insertBefore(el.nextElementSibling, el);
+      updateSelectedBox();
+      syncCanvasHtmlToDraft();
+      refreshPageSections();
+    },
+
+    // WYSIWYG In-Canvas Inline Formatting
+    formatInline: function(command, value) {
+      const el = toRawNode(selectedEl);
+      if (!el) return;
+      if (command === 'bold') {
+        el.style.fontWeight = (el.style.fontWeight === 'bold' || el.style.fontWeight >= '700') ? 'normal' : 'bold';
+      } else if (command === 'italic') {
+        el.style.fontStyle = (el.style.fontStyle === 'italic') ? 'normal' : 'italic';
+      } else if (command === 'underline') {
+        el.style.textDecoration = (el.style.textDecoration.includes('underline')) ? 'none' : 'underline';
+      } else if (command === 'strike') {
+        el.style.textDecoration = (el.style.textDecoration.includes('line-through')) ? 'none' : 'line-through';
+      } else if (command === 'align') {
+        el.style.textAlign = value;
+      } else if (command === 'color') {
+        el.style.color = value;
+      } else if (command === 'bgColor') {
+        el.style.backgroundColor = value;
+      } else if (command === 'fontSize') {
+        el.style.fontSize = value;
+      } else if (command === 'fontFamily') {
+        el.style.fontFamily = value;
+      }
       updateSelectedBox();
       syncCanvasHtmlToDraft();
     },
@@ -228,7 +287,7 @@
 
       const activeEl = toRawNode(selectedEl);
       if (activeEl && activeEl.parentElement) {
-        if (activeEl.children.length > 0 || ['div', 'section', 'main', 'article', 'aside', 'header', 'footer'].includes(activeEl.tagName.toLowerCase())) {
+        if (addSectionMode === 'inside' || activeEl.children.length > 0 || ['div', 'section', 'main', 'article', 'aside', 'header', 'footer'].includes(activeEl.tagName.toLowerCase())) {
           activeEl.appendChild(newEl);
         } else {
           activeEl.parentElement.insertBefore(newEl, activeEl.nextSibling);
@@ -238,8 +297,10 @@
         container.appendChild(newEl);
       }
 
+      addSectionBoxOpen = false;
       selectElement(newEl);
       syncCanvasHtmlToDraft();
+      refreshPageSections();
     },
 
     clearCanvas: function() {
@@ -249,6 +310,7 @@
       selectedEl = null;
       selectedBox.visible = false;
       syncCanvasHtmlToDraft();
+      refreshPageSections();
     },
 
     loadTemplate: function(path) {
@@ -258,6 +320,7 @@
       hoverBox.visible = false;
       window.setTimeout(function() {
         syncCanvasHtmlToDraft();
+        refreshPageSections();
       }, 500);
     },
 
@@ -315,14 +378,15 @@
       const items = [];
       function walk(node, depth) {
         if (!node || node.nodeType !== 1) return;
-        if (node.tagName.toLowerCase() === 'style' || node.tagName.toLowerCase() === 'script') return;
-        let icon = 'material-symbols-light:check-box-outline-blank';
         const tag = node.tagName.toLowerCase();
+        if (tag === 'style' || tag === 'script') return;
+        let icon = 'material-symbols-light:check-box-outline-blank';
         if (['h1','h2','h3','h4'].includes(tag)) icon = 'material-symbols-light:title';
         else if (tag === 'p') icon = 'material-symbols-light:notes';
-        else if (tag === 'button') icon = 'material-symbols-light:smart-button';
-        else if (['section','header','footer'].includes(tag)) icon = 'material-symbols-light:view-agenda';
-        else if (tag === 'input' || tag === 'select') icon = 'material-symbols-light:edit';
+        else if (tag === 'button' || tag === 'a') icon = 'material-symbols-light:smart-button';
+        else if (['section','header','footer','main','nav'].includes(tag)) icon = 'material-symbols-light:view-agenda';
+        else if (tag === 'input' || tag === 'select' || tag === 'textarea') icon = 'material-symbols-light:edit';
+        else if (tag === 'img' || tag === 'svg') icon = 'material-symbols-light:image';
         
         items.push({
           el: node,
@@ -341,6 +405,21 @@
       domTree = items;
     },
 
+    refreshPageSections: function() {
+      const root = getCanvasRoot();
+      if (!root) { pageSections = []; return; }
+      const sections = [];
+      Array.from(root.querySelectorAll('header, section, footer, main, [data-section]')).forEach(function(sec, idx) {
+        sections.push({
+          el: sec,
+          tag: sec.tagName.toLowerCase(),
+          name: sec.getAttribute('data-section') || (sec.id ? '#' + sec.id : sec.tagName.toLowerCase() + ' ' + (idx + 1)),
+          classes: sec.className ? sec.className.substring(0, 30) : ''
+        });
+      });
+      pageSections = sections;
+    },
+
     syncCanvasHtmlToDraft: function() {
       const root = getCanvasRoot();
       if (root) {
@@ -354,8 +433,8 @@
       root.innerHTML = canvasHtmlDraft;
       selectedEl = null;
       selectedBox.visible = false;
-      codeDrawerOpen = false;
       refreshTree();
+      refreshPageSections();
     },
 
     formatCanvasHtml: function() {
@@ -409,25 +488,105 @@
     }
   }">
 
-  <!-- 1. Top Navigation & Viewport Toolbar -->
-  <div data-component="'/_pages/builder/_top-panel.html'"></div>
+  <!-- 1. VvvebJs Far-Left Navigation Sidebar (.sidebar / small-nav) -->
+  <aside class="flex flex-col shrink-0 border-r border-base-content/10 bg-base-200/90 backdrop-blur-md transition-all duration-200 z-30 select-none"
+    data-class="{ 'w-48': sidebarExpanded, 'w-12': !sidebarExpanded }">
+    
+    <!-- Top Logo / Header -->
+    <div class="h-9 flex items-center px-2.5 border-b border-base-content/10 overflow-hidden shrink-0">
+      <div class="flex items-center gap-2">
+        <div class="w-6 h-6 rounded bg-primary text-primary-content flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
+          <iconify-icon icon="material-symbols-light:dashboard-customize" class="text-sm"></iconify-icon>
+        </div>
+        <span class="font-bold tracking-tight text-xs truncate" data-show="sidebarExpanded">VvvebJs</span>
+      </div>
+    </div>
 
-  <!-- 2. Middle Row: Left Library + Canvas Viewport + Right Inspector -->
-  <div class="flex-1 flex gap-3 min-h-0 overflow-hidden relative">
-    <!-- Left Drawer (Components / Sections / Tree) -->
-    <div data-component="'/_pages/builder/_left-panel.html'" class="h-full flex shrink-0"></div>
+    <!-- Vertical Icon Tabs -->
+    <nav class="flex-1 flex flex-col py-1.5 gap-0.5 overflow-y-auto overflow-x-hidden">
+      <!-- Pages Tab -->
+      <button class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors relative mx-1"
+        data-class="{ 'bg-primary text-primary-content shadow-sm font-semibold': activeSidebarTab === 'pages' && showLeftColumn, 'text-base-content/70 hover:bg-base-300 hover:text-base-content': activeSidebarTab !== 'pages' || !showLeftColumn }"
+        data-on-click="activeSidebarTab = 'pages'; showLeftColumn = true"
+        title="Pages & DOM Navigator">
+        <iconify-icon icon="material-symbols-light:description-outline" class="text-lg shrink-0"></iconify-icon>
+        <span class="truncate text-xs" data-show="sidebarExpanded">Pages</span>
+      </button>
 
-    <!-- Center Canvas Workspace -->
-    <div data-component="'/_pages/builder/_canvas.html'" class="flex-1 flex min-w-0 h-full"></div>
+      <!-- Components Tab -->
+      <button class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors relative mx-1"
+        data-class="{ 'bg-primary text-primary-content shadow-sm font-semibold': activeSidebarTab === 'components' && showLeftColumn, 'text-base-content/70 hover:bg-base-300 hover:text-base-content': activeSidebarTab !== 'components' || !showLeftColumn }"
+        data-on-click="activeSidebarTab = 'components'; showLeftColumn = true"
+        title="Components & Blocks">
+        <iconify-icon icon="material-symbols-light:view-in-ar" class="text-lg shrink-0"></iconify-icon>
+        <span class="truncate text-xs" data-show="sidebarExpanded">Components</span>
+      </button>
 
-    <!-- Right Drawer (Properties Inspector) -->
-    <div data-component="'/_pages/builder/_right-panel.html'" class="h-full flex shrink-0"></div>
+      <!-- Sections Tab -->
+      <button class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors relative mx-1"
+        data-class="{ 'bg-primary text-primary-content shadow-sm font-semibold': activeSidebarTab === 'sections' && showLeftColumn, 'text-base-content/70 hover:bg-base-300 hover:text-base-content': activeSidebarTab !== 'sections' || !showLeftColumn }"
+        data-on-click="activeSidebarTab = 'sections'; showLeftColumn = true; refreshPageSections()"
+        title="Sections & Page Sections">
+        <iconify-icon icon="material-symbols-light:layers-outline" class="text-lg shrink-0"></iconify-icon>
+        <span class="truncate text-xs" data-show="sidebarExpanded">Sections</span>
+      </button>
+
+      <!-- Style / Configuration Tab -->
+      <button class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors relative mx-1"
+        data-class="{ 'bg-primary text-primary-content shadow-sm font-semibold': activeSidebarTab === 'configuration' && showLeftColumn, 'text-base-content/70 hover:bg-base-300 hover:text-base-content': activeSidebarTab !== 'configuration' || !showLeftColumn }"
+        data-on-click="activeSidebarTab = 'configuration'; showLeftColumn = true"
+        title="Styles & Variables">
+        <iconify-icon icon="material-symbols-light:palette-outline" class="text-lg shrink-0"></iconify-icon>
+        <span class="truncate text-xs" data-show="sidebarExpanded">Style</span>
+      </button>
+
+      <!-- Properties Tab (opens right column) -->
+      <button class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors relative mx-1"
+        data-class="{ 'bg-primary text-primary-content shadow-sm font-semibold': showRightColumn, 'text-base-content/70 hover:bg-base-300 hover:text-base-content': !showRightColumn }"
+        data-on-click="showRightColumn = !showRightColumn"
+        title="Toggle Properties Panel">
+        <iconify-icon icon="material-symbols-light:tune" class="text-lg shrink-0"></iconify-icon>
+        <span class="truncate text-xs" data-show="sidebarExpanded">Properties</span>
+      </button>
+    </nav>
+  </aside>
+
+  <!-- 2. Main Builder Workspace (.main / #vvveb-builder) -->
+  <div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative">
+
+    <!-- A. Authentic Top Control Bar (#top-panel) -->
+    <div data-component="'/_pages/builder/_top-panel.html'"></div>
+
+    <!-- B. Workspace Body: Left Column Drawer + Canvas Workspace + Right Column Inspector -->
+    <div class="flex-1 flex min-h-0 overflow-hidden relative">
+      
+      <!-- Left Column Drawer (#left-panel) -->
+      <div data-component="'/_pages/builder/_left-panel.html'"
+        class="h-full shrink-0 border-r border-base-content/10 bg-base-100 transition-all duration-200 z-20"
+        data-show="showLeftColumn">
+      </div>
+
+      <!-- Center Stage: Canvas Viewport + Docked Bottom Panel -->
+      <div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative bg-base-300/30" id="canvas-column">
+        
+        <!-- Canvas Workspace with device framing & overlays -->
+        <div data-component="'/_pages/builder/_canvas.html'" class="flex-1 min-h-0 relative flex overflow-hidden"></div>
+
+        <!-- Docked Bottom Panel (#bottom-panel) -->
+        <div data-component="'/_pages/builder/_bottom-panel.html'" class="shrink-0 z-30"></div>
+      </div>
+
+      <!-- Right Column Properties Inspector (#right-panel) -->
+      <div data-component="'/_pages/builder/_right-panel.html'"
+        class="h-full shrink-0 border-l border-base-content/10 bg-base-100 transition-all duration-200 z-20"
+        data-show="showRightColumn">
+      </div>
+
+    </div>
+
   </div>
 
-  <!-- 3. Collapsible Bottom HTML Code Drawer -->
-  <div data-component="'/_pages/builder/_bottom-panel.html'"></div>
-
-  <!-- 4. Modals (Export & Template Picker) -->
+  <!-- 3. Modals & Popups (Export & Template Picker) -->
   <div data-component="'/_pages/builder/_modals.html'"></div>
 
 </div>
