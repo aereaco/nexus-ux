@@ -131,6 +131,58 @@
       return el ? (el.style[prop] || '') : '';
     },
 
+    toggleCanvasTheme: function() {
+      canvasTheme = canvasTheme === 'dark' ? 'light' : 'dark';
+      const host = toRawNode(document.getElementById('builder-canvas-host'));
+      if (host) {
+        host.setAttribute('data-theme', canvasTheme);
+      }
+      const root = getCanvasRoot();
+      if (root) {
+        const body = root.querySelector('body') || root.firstElementChild;
+        if (body) {
+          body.setAttribute('data-theme', canvasTheme);
+          if (canvasTheme === 'dark') {
+            body.classList.add('dark');
+          } else {
+            body.classList.remove('dark');
+          }
+        }
+      }
+      updateSelectedBox();
+    },
+
+    updateTextContent: function(val) {
+      const el = toRawNode(selectedEl);
+      if (!el) return;
+      el.textContent = val;
+      inspector.textContent = val;
+      updateSelectedBox();
+      syncCanvasHtmlToDraft();
+    },
+
+    updateInspectorText: function(val) {
+      updateTextContent(val);
+    },
+
+    updateClassAttribute: function(val) {
+      const el = toRawNode(selectedEl);
+      if (!el) return;
+      el.className = val;
+      inspector.className = val;
+      updateSelectedBox();
+      syncCanvasHtmlToDraft();
+    },
+
+    toggleDaisyClass: function(cls) {
+      const el = toRawNode(selectedEl);
+      if (!el) return;
+      el.classList.toggle(cls);
+      inspector.className = el.className;
+      updateSelectedBox();
+      syncCanvasHtmlToDraft();
+    },
+
     changeTag: function(newTag) {
       const el = toRawNode(selectedEl);
       if (!el || !el.parentNode) return;
@@ -212,7 +264,7 @@
 
     updateSelectedBox: function() {
       const el = toRawNode(selectedEl);
-      if (!el) {
+      if (!el || previewMode) {
         selectedBox.visible = false;
         hasSelection = false;
         return;
@@ -223,8 +275,8 @@
         const hostRect = host.getBoundingClientRect();
         const elRect = el.getBoundingClientRect();
 
-        selectedBox.top = (elRect.top - hostRect.top) + host.scrollTop;
-        selectedBox.left = (elRect.left - hostRect.left) + host.scrollLeft;
+        selectedBox.top = elRect.top - hostRect.top;
+        selectedBox.left = elRect.left - hostRect.left;
         selectedBox.width = elRect.width;
         selectedBox.height = elRect.height;
         const tag = el.tagName.toLowerCase();
@@ -238,7 +290,7 @@
 
     updateHoverBox: function(el) {
       const raw = toRawNode(el);
-      if (!raw || raw.nodeType !== 1 || previewMode) {
+      if (!raw || raw.nodeType !== 1 || previewMode || (selectedEl && raw === toRawNode(selectedEl))) {
         hoverBox.visible = false;
         hoveredEl = null;
         return;
@@ -246,15 +298,17 @@
       hoveredEl = raw;
       const host = toRawNode(document.getElementById('builder-canvas-host'));
       if (!host) return;
-      const hostRect = host.getBoundingClientRect();
-      const elRect = raw.getBoundingClientRect();
+      try {
+        const hostRect = host.getBoundingClientRect();
+        const elRect = raw.getBoundingClientRect();
 
-      hoverBox.top = (elRect.top - hostRect.top) + host.scrollTop;
-      hoverBox.left = (elRect.left - hostRect.left) + host.scrollLeft;
-      hoverBox.width = elRect.width;
-      hoverBox.height = elRect.height;
-      hoverBox.tag = raw.tagName.toLowerCase();
-      hoverBox.visible = true;
+        hoverBox.top = elRect.top - hostRect.top;
+        hoverBox.left = elRect.left - hostRect.left;
+        hoverBox.width = elRect.width;
+        hoverBox.height = elRect.height;
+        hoverBox.tag = raw.tagName.toLowerCase();
+        hoverBox.visible = true;
+      } catch (_) {}
     },
 
     selectParent: function() {

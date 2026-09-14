@@ -26,7 +26,8 @@
 
     <!-- The Encapsulated Shadow DOM Canvas Host (#builder-canvas-host) -->
     <div id="builder-canvas-host"
-      class="w-full min-w-full h-full min-h-full flex-1 flex flex-col bg-white text-[#212529] overflow-y-auto overflow-x-hidden relative"
+      class="w-full min-w-full h-full min-h-full flex-1 flex flex-col overflow-y-auto overflow-x-hidden relative transition-colors duration-200"
+      data-attr-theme="canvasTheme"
       data-component="{ path: currentDoc, shadowrootmode: 'open' }"
       data-effect="
         const host = $el;
@@ -44,17 +45,51 @@
             try { root.adoptedStyleSheets = [...document.adoptedStyleSheets]; } catch {}
           }
 
+          // Apply initial canvasTheme into shadowRoot
+          const applyTheme = () => {
+            const body = root.querySelector('body') || root.firstElementChild;
+            if (body) {
+              body.setAttribute('data-theme', canvasTheme);
+              if (canvasTheme === 'dark') body.classList.add('dark');
+              else body.classList.remove('dark');
+            }
+          };
+          applyTheme();
+
           setTimeout(function() {
             refreshTree();
             refreshPageSections();
             syncCanvasHtmlToDraft();
           }, 200);
 
+          // Scroll synchronization for overlay selectBox / hoverBox
+          const onScroll = () => {
+            if (selectedEl) {
+              updateSelectedBox();
+            }
+            if (hoveredEl && hoverBox.visible) {
+              updateHoverBox(hoveredEl);
+            }
+          };
+          host.addEventListener('scroll', onScroll, { passive: true });
+          root.addEventListener('scroll', onScroll, { capture: true, passive: true });
+          const canvasEl = document.getElementById('canvas');
+          if (canvasEl) canvasEl.addEventListener('scroll', onScroll, { passive: true });
+          window.addEventListener('resize', onScroll, { passive: true });
+
+          const resolveTarget = (e) => {
+            let target = e.composedPath ? e.composedPath()[0] : e.target;
+            if (!target) return null;
+            if (target.nodeType === 3) target = target.parentElement;
+            if (!target || target.nodeType !== 1 || target === host) return null;
+            return target;
+          };
+
           // Handle selection click inside shadow root
           root.addEventListener('click', function(e) {
             if (previewMode) return;
-            const target = e.composedPath ? e.composedPath()[0] : e.target;
-            if (target && target.nodeType === 1 && target !== host) {
+            const target = resolveTarget(e);
+            if (target) {
               e.preventDefault();
               e.stopPropagation();
               selectElement(target);
@@ -64,21 +99,23 @@
           // Handle hover highlight inside shadow root
           root.addEventListener('pointermove', function(e) {
             if (previewMode) return;
-            const target = e.composedPath ? e.composedPath()[0] : e.target;
-            if (target && target.nodeType === 1 && target !== host) {
+            const target = resolveTarget(e);
+            if (target) {
               updateHoverBox(target);
             }
           }, true);
 
           root.addEventListener('pointerleave', function() {
             hoverBox.visible = false;
+            const hoverBoxEl = document.getElementById('highlight-box');
+            if (hoverBoxEl) hoverBoxEl.style.display = 'none';
           });
 
           // Handle double click for inline text editing
           root.addEventListener('dblclick', function(e) {
             if (previewMode) return;
-            const target = e.composedPath ? e.composedPath()[0] : e.target;
-            if (target && target.nodeType === 1) {
+            const target = resolveTarget(e);
+            if (target) {
               target.contentEditable = 'true';
               target.focus();
               target.addEventListener('blur', function onBlur() {
@@ -100,7 +137,7 @@
 
     <!-- ================= 1. HOVER HIGHLIGHT BOX (#highlight-box) ================= -->
     <div id="highlight-box"
-      class="absolute pointer-events-none border border-dashed border-[#0d6efd] z-30 transition-all duration-75"
+      class="absolute pointer-events-none border border-dashed border-[#0d6efd] z-30"
       data-show="!previewMode && hoverBox.visible && (!selectedEl || hoveredEl !== selectedEl)"
       data-style="{
         top: hoverBox.top + 'px',
@@ -126,7 +163,7 @@
 
     <!-- ================= 2. SELECTION BOX & FLOATING TOOLBARS (#select-box) ================= -->
     <div id="select-box"
-      class="absolute pointer-events-none border-[1.5px] border-[#0d6efd] z-40 transition-all duration-75"
+      class="absolute pointer-events-none border-[1.5px] border-[#0d6efd] z-40"
       data-show="!previewMode && selectedBox.visible"
       data-style="{
         top: selectedBox.top + 'px',
