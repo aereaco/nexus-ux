@@ -1162,18 +1162,19 @@
     "parent": "/index"
   },
   {
-    "id": "_top-panel",
-    "route": "/builder/_top-panel",
-    "path": "/_pages/builder/_top-panel.html",
-    "parent": "/index"
-  },
-  {
     "id": "error",
     "route": "/error",
     "path": "/_pages/error.html",
     "title": "Error",
     "icon": "material-symbols-light:error-outline",
     "parent": null
+  },
+  {
+    "id": "_top-panel",
+    "route": "",
+    "path": "/_pages/builder/_top-panel.html",
+    "internal": true,
+    "parent": "/builder"
   },
   {
     "id": "admin",
