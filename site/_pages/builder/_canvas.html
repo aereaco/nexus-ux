@@ -77,8 +77,48 @@
 
           // Scroll synchronization for overlay selectBox / hoverBox
           const onScroll = () => {
-            if (selectedEl) updateSelectedBox();
-            if (hoveredEl) updateHoverBox(hoveredEl);
+            const el = toRawNode(selectedEl);
+            const selectBoxEl = document.getElementById('select-box');
+            if (el && selectBoxEl) {
+              try {
+                const elRect = el.getBoundingClientRect();
+                const frame = host.parentElement || host;
+                const frameRect = frame.getBoundingClientRect();
+                const t = (elRect.top - frameRect.top) + 'px';
+                const l = (elRect.left - frameRect.left) + 'px';
+                const w = elRect.width + 'px';
+                const h = elRect.height + 'px';
+                selectBoxEl.style.top = t;
+                selectBoxEl.style.left = l;
+                selectBoxEl.style.width = w;
+                selectBoxEl.style.height = h;
+                selectedBox.top = elRect.top - frameRect.top;
+                selectedBox.left = elRect.left - frameRect.left;
+                selectedBox.width = elRect.width;
+                selectedBox.height = elRect.height;
+              } catch (_) {}
+            }
+            const hEl = toRawNode(hoveredEl);
+            const hoverBoxEl = document.getElementById('highlight-box');
+            if (hEl && hoverBoxEl && hoverBox.visible) {
+              try {
+                const hRect = hEl.getBoundingClientRect();
+                const frame = host.parentElement || host;
+                const frameRect = frame.getBoundingClientRect();
+                const t = (hRect.top - frameRect.top) + 'px';
+                const l = (hRect.left - frameRect.left) + 'px';
+                const w = hRect.width + 'px';
+                const h = hRect.height + 'px';
+                hoverBoxEl.style.top = t;
+                hoverBoxEl.style.left = l;
+                hoverBoxEl.style.width = w;
+                hoverBoxEl.style.height = h;
+                hoverBox.top = hRect.top - frameRect.top;
+                hoverBox.left = hRect.left - frameRect.left;
+                hoverBox.width = hRect.width;
+                hoverBox.height = hRect.height;
+              } catch (_) {}
+            }
           };
           host.addEventListener('scroll', onScroll, { passive: true });
           root.addEventListener('scroll', onScroll, { capture: true, passive: true });
@@ -136,7 +176,7 @@
 
     <!-- ================= 1. HOVER HIGHLIGHT BOX (#highlight-box) ================= -->
     <div id="highlight-box"
-      class="absolute pointer-events-none border border-dashed border-[#0d6efd] z-30 transition-all duration-75"
+      class="absolute pointer-events-none border border-dashed border-[#0d6efd] z-30"
       data-show="!previewMode && hoverBox.visible && (!selectedEl || hoveredEl !== selectedEl)"
       data-style="{
         top: hoverBox.top + 'px',
@@ -162,7 +202,7 @@
 
     <!-- ================= 2. SELECTION BOX & FLOATING TOOLBARS (#select-box) ================= -->
     <div id="select-box"
-      class="absolute pointer-events-none border-[1.5px] border-[#0d6efd] z-40 transition-all duration-75"
+      class="absolute pointer-events-none border-[1.5px] border-[#0d6efd] z-40"
       data-show="!previewMode && selectedBox.visible"
       data-style="{
         top: selectedBox.top + 'px',
