@@ -44,6 +44,12 @@
             try { root.adoptedStyleSheets = [...document.adoptedStyleSheets]; } catch {}
           }
 
+          setTimeout(function() {
+            refreshTree();
+            refreshPageSections();
+            syncCanvasHtmlToDraft();
+          }, 200);
+
           // Handle selection click inside shadow root
           root.addEventListener('click', function(e) {
             if (previewMode) return;
