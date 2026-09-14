@@ -69,7 +69,7 @@
 
           // Direct DOM sync on scroll - smooth 60fps, zero reactive cycle thrashing (VvvebJs model)
           const syncBoxPosition = () => {
-            const el = toRawNode(selectedEl);
+            const el = typeof toRawNode === 'function' ? toRawNode(selectedEl) : (selectedEl && selectedEl.__v_raw ? selectedEl.__v_raw : selectedEl);
             if (!el || !selectBoxEl || previewMode) {
               if (selectBoxEl) selectBoxEl.style.display = 'none';
               return;
@@ -125,7 +125,8 @@
           root.addEventListener('pointermove', function(e) {
             if (previewMode) return;
             const target = resolveTarget(e);
-            if (target && target !== toRawNode(selectedEl)) {
+            const curSel = typeof toRawNode === 'function' ? toRawNode(selectedEl) : (selectedEl && selectedEl.__v_raw ? selectedEl.__v_raw : selectedEl);
+            if (target && target !== curSel) {
               updateHoverBox(target);
             }
           }, true);
