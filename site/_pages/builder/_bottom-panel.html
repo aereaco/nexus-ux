@@ -1,70 +1,102 @@
 <head>
   <meta name="internal" content="true">
 </head>
-<!-- Collapsible Bottom Code Drawer -->
-<div class="fixed inset-x-4 bottom-4 z-50 transition-all duration-300 transform shadow-2xl"
-  data-class="{ 'translate-y-0 opacity-100': codeDrawerOpen, 'translate-y-[120%] opacity-0 pointer-events-none': !codeDrawerOpen }">
-  <div class="bg-base-300/95 backdrop-blur-xl border border-base-content/15 rounded-2xl p-4 max-w-6xl mx-auto flex flex-col gap-3 shadow-2xl">
+<!-- Authentic VvvebJs Docked #bottom-panel with Breadcrumbs & Expandable Code Editor -->
+<footer class="w-full bg-base-100 border-t border-base-content/10 transition-all duration-300 flex flex-col shrink-0 select-none z-30"
+  id="bottom-panel"
+  data-class="{ 'h-72': bottomPanelExpanded, 'h-9': !bottomPanelExpanded }">
+  
+  <!-- Docked Breadcrumb Bar (Always Visible at 35px) -->
+  <div class="h-9 px-3 flex items-center justify-between gap-2 border-b border-base-content/10 shrink-0">
     
-    <!-- Code Drawer Header -->
-    <div class="flex items-center justify-between border-b border-base-content/10 pb-2">
-      <div class="flex items-center gap-2">
-        <div class="w-7 h-7 rounded-lg bg-accent/10 text-accent flex items-center justify-center">
-          <iconify-icon icon="material-symbols-light:code" class="text-lg"></iconify-icon>
-        </div>
-        <div>
-          <div class="font-bold text-xs flex items-center gap-2">
-            <span>Canvas HTML Source</span>
-            <span class="badge badge-accent badge-xs font-mono">Live Sync</span>
+    <!-- Left: Breadcrumb Hierarchy (body > section > div > ...) -->
+    <nav class="flex items-center gap-1 overflow-x-auto min-w-0 py-1" aria-label="Breadcrumb">
+      <div class="flex items-center gap-1 text-[11px] font-mono">
+        <template data-for="(crumb, idx) in breadcrumbs">
+          <div class="flex items-center gap-1">
+            <span data-show="idx > 0" class="text-base-content/30 font-normal">/</span>
+            <button class="px-1.5 py-0.5 rounded hover:bg-base-200 transition-colors"
+              data-class="{ 'text-primary font-bold bg-primary/10': idx === breadcrumbs.length - 1, 'text-base-content/70': idx !== breadcrumbs.length - 1 }"
+              data-on-click="selectElement(crumb.el)"
+              data-bind="crumb.tag">
+            </button>
           </div>
-          <p class="text-[10px] opacity-60">Edit the markup directly and click Apply to update the visual canvas.</p>
-        </div>
+        </template>
+        <span data-show="breadcrumbs.length === 0" class="text-base-content/40 italic font-sans text-xs">
+          No element selected
+        </span>
       </div>
+    </nav>
 
-      <div class="flex items-center gap-2">
-        <!-- Copy to clipboard -->
-        <button class="btn btn-ghost btn-xs gap-1" data-on-click="copyCanvasHtml()">
-          <iconify-icon icon="material-symbols-light:content-copy" class="text-sm"></iconify-icon>
-          <span class="text-[11px]" data-bind="copiedToast ? 'Copied!' : 'Copy'"></span>
-        </button>
+    <!-- Right: Run JS Toggle + Code Editor Expansion Button -->
+    <div class="flex items-center gap-2 shrink-0">
+      <label class="hidden md:flex items-center gap-1.5 cursor-pointer text-[10px] text-base-content/60">
+        <input type="checkbox" class="checkbox checkbox-xs checkbox-primary"
+          data-bind="runJsOnEdit" />
+        <span>Run JS on edit</span>
+      </label>
 
-        <!-- Format HTML -->
-        <button class="btn btn-ghost btn-xs gap-1" data-on-click="formatCanvasHtml()">
-          <iconify-icon icon="material-symbols-light:auto-fix-high" class="text-sm"></iconify-icon>
-          <span class="text-[11px]">Format</span>
-        </button>
-
-        <!-- Apply to Canvas -->
-        <button class="btn btn-primary btn-xs gap-1 shadow-md shadow-primary/20" data-on-click="applyHtmlToCanvas()">
-          <iconify-icon icon="material-symbols-light:check" class="text-sm"></iconify-icon>
-          <span class="text-[11px] font-bold">Apply Changes</span>
-        </button>
-
-        <!-- Close Drawer -->
-        <button class="btn btn-circle btn-ghost btn-xs" data-on-click="codeDrawerOpen = false">
-          ✕
-        </button>
-      </div>
-    </div>
-
-    <!-- Code Editor Body -->
-    <div class="relative">
-      <textarea class="textarea textarea-bordered w-full font-mono text-xs bg-base-100 leading-relaxed h-64 selection:bg-accent selection:text-accent-content rounded-xl border-base-content/15 p-3 resize-none"
-        spellcheck="false"
-        data-bind="canvasHtmlDraft"></textarea>
-    </div>
-
-    <!-- Drawer Footer Stats -->
-    <div class="flex items-center justify-between text-[11px] text-base-content/50 font-mono px-1">
-      <div class="flex items-center gap-3">
-        <span>Characters: <strong data-bind="canvasHtmlDraft ? canvasHtmlDraft.length : 0"></strong></span>
-        <span>Lines: <strong data-bind="canvasHtmlDraft ? canvasHtmlDraft.split('\n').length : 0"></strong></span>
-      </div>
-      <div class="flex items-center gap-1 text-success">
-        <span class="w-2 h-2 rounded-full bg-success"></span>
-        <span>Shadow DOM Synchronized</span>
-      </div>
+      <button class="btn btn-ghost btn-xs gap-1 px-2 hover:bg-base-200"
+        data-class="{ 'btn-active bg-base-200 text-primary font-bold': bottomPanelExpanded }"
+        data-on-click="bottomPanelExpanded = !bottomPanelExpanded"
+        title="Toggle HTML & CSS Code Editor">
+        <iconify-icon icon="material-symbols-light:code" class="text-sm"></iconify-icon>
+        <span class="text-xs">Code editor</span>
+        <iconify-icon data-bind-icon="bottomPanelExpanded ? 'material-symbols-light:expand-more' : 'material-symbols-light:expand-less'" class="text-xs"></iconify-icon>
+      </button>
     </div>
 
   </div>
-</div>
+
+  <!-- Expandable Split Code Editor Area (#vvveb-code-editor) -->
+  <div class="flex-1 flex flex-col min-h-0 bg-base-200/40 p-2 overflow-hidden" data-show="bottomPanelExpanded">
+    
+    <!-- Code Editor Toolbar -->
+    <div class="flex items-center justify-between pb-1.5 border-b border-base-content/10 mb-1.5">
+      <!-- Tabs: HTML vs CSS -->
+      <div class="tabs tabs-boxed bg-base-100 p-0.5 rounded-lg">
+        <button class="tab tab-xs"
+          data-class="{ 'tab-active font-bold': codeTab === 'html' }"
+          data-on-click="codeTab = 'html'">
+          HTML Source
+        </button>
+        <button class="tab tab-xs"
+          data-class="{ 'tab-active font-bold': codeTab === 'css' }"
+          data-on-click="codeTab = 'css'">
+          CSS Styles
+        </button>
+      </div>
+
+      <!-- Actions: Copy, Format, Apply -->
+      <div class="flex items-center gap-1">
+        <button class="btn btn-ghost btn-xs gap-1" data-on-click="copyCanvasHtml()" title="Copy to clipboard">
+          <iconify-icon icon="material-symbols-light:content-copy" class="text-xs"></iconify-icon>
+          <span class="text-[11px]" data-bind="copiedToast ? 'Copied!' : 'Copy'"></span>
+        </button>
+        <button class="btn btn-ghost btn-xs gap-1" data-on-click="formatCanvasHtml()" title="Auto-indent HTML">
+          <iconify-icon icon="material-symbols-light:auto-fix-high" class="text-xs"></iconify-icon>
+          <span class="text-[11px]">Format</span>
+        </button>
+        <button class="btn btn-primary btn-xs gap-1 shadow-sm font-semibold" data-on-click="applyHtmlToCanvas()" title="Apply changes back to canvas">
+          <iconify-icon icon="material-symbols-light:check" class="text-xs"></iconify-icon>
+          <span class="text-[11px]">Apply Changes</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Live Code Editor Body -->
+    <div class="flex-1 min-h-0 relative">
+      <textarea class="textarea textarea-bordered w-full h-full font-mono text-xs bg-base-100 leading-relaxed rounded-lg p-2.5 resize-none border-base-content/15 selection:bg-primary selection:text-primary-content"
+        spellcheck="false"
+        data-show="codeTab === 'html'"
+        data-bind="canvasHtmlDraft"></textarea>
+      
+      <textarea class="textarea textarea-bordered w-full h-full font-mono text-xs bg-base-100 leading-relaxed rounded-lg p-2.5 resize-none border-base-content/15 selection:bg-secondary selection:text-secondary-content"
+        spellcheck="false"
+        data-show="codeTab === 'css'"
+        data-bind="canvasCssDraft"></textarea>
+    </div>
+
+  </div>
+
+</footer>
