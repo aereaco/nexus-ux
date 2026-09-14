@@ -1144,12 +1144,6 @@
     "parent": "/index"
   },
   {
-    "id": "_left-panel",
-    "route": "/builder/_left-panel",
-    "path": "/_pages/builder/_left-panel.html",
-    "parent": "/index"
-  },
-  {
     "id": "_modals",
     "route": "/builder/_modals",
     "path": "/_pages/builder/_modals.html",
@@ -1168,6 +1162,13 @@
     "title": "Error",
     "icon": "material-symbols-light:error-outline",
     "parent": null
+  },
+  {
+    "id": "_left-panel",
+    "route": "",
+    "path": "/_pages/builder/_left-panel.html",
+    "internal": true,
+    "parent": "/builder"
   },
   {
     "id": "_top-panel",
