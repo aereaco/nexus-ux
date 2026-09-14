@@ -63,6 +63,15 @@
     "content": "UI Blocks Sections Reactive Tree ✕ Layout & Grid Container Centered wrapper 2 Columns Grid 1:1 3 Columns Grid 1:1:1 Flex Row Horizontal flex Core UI Card DaisyUI Card Button Primary CTA Badge Status pill Alert Notice box Stat Block KPI metric Accordion Collapsible Forms & Inputs Text Input Label & input Select Dropdown Options menu Toggle Switch On/off switch Text Area Multiline note Hero Section Heading, subtitle & CTA buttons Features Grid 3-column benefit cards Pricing Section Tier comparison cards Call To Action Conversion banner with button Multi-column Footer Links, brand & legal copy These blocks include live data-signal , data-bind , and data-on directives that run reactively! Reactive Counter data-signal=\"{ count: 0 }\" Live Search List data-bind + data-for Reactive Tabs View data-show=\"activeTab === N\" DOM Hierarchy Sync Click Sync or load canvas to view DOM nodes."
   },
   {
+    "id": "_modals",
+    "route": "/_modals",
+    "path": "/_pages/builder/_modals.html",
+    "title": "_modals",
+    "category": "General",
+    "keywords": [],
+    "content": "Export Standalone HTML Production-ready self-contained HTML with Tailwind CSS, DaisyUI, and Nexus-UX scripts. ✕ Zero build step required. Works in any standard web server or browser. Download .html Choose Starter Template Select a pre-designed layout or start from a blank canvas. ✕ Blank Canvas An empty canvas with a drop zone. Perfect for building custom layouts from scratch. Select Modern Landing Page Complete high-converting page with Navbar, Hero CTA, Stats, Feature cards, and Footer. Select"
+  },
+  {
     "id": "_right-panel",
     "route": "/_right-panel",
     "path": "/_pages/builder/_right-panel.html",
