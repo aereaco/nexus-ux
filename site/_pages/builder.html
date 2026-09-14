@@ -131,6 +131,77 @@
       return el ? (el.style[prop] || '') : '';
     },
 
+    toggleCanvasTheme: function() {
+      this.canvasTheme = this.canvasTheme === 'dark' ? 'light' : 'dark';
+      const root = this.getCanvasRoot();
+      const host = toRawNode(document.getElementById('builder-canvas-host'));
+      if (host) {
+        host.setAttribute('data-theme', this.canvasTheme);
+        if (this.canvasTheme === 'dark') {
+          host.classList.remove('bg-white', 'text-[#212529]');
+          host.classList.add('bg-[#1d232a]', 'text-[#a6adbb]', 'dark');
+        } else {
+          host.classList.remove('bg-[#1d232a]', 'text-[#a6adbb]', 'dark');
+          host.classList.add('bg-white', 'text-[#212529]');
+        }
+      }
+      if (root) {
+        const body = root.querySelector('body') || root.firstElementChild;
+        if (body) {
+          body.setAttribute('data-theme', this.canvasTheme);
+          if (this.canvasTheme === 'dark') {
+            body.classList.add('dark');
+          } else {
+            body.classList.remove('dark');
+          }
+        }
+        const inner = root.querySelector('.min-h-screen') || root.querySelector('div');
+        if (inner) {
+          inner.setAttribute('data-theme', this.canvasTheme);
+          if (this.canvasTheme === 'dark') {
+            inner.classList.add('dark');
+            inner.classList.remove('bg-white', 'text-[#212529]');
+            inner.classList.add('bg-[#1d232a]', 'text-[#a6adbb]');
+          } else {
+            inner.classList.remove('dark', 'bg-[#1d232a]', 'text-[#a6adbb]');
+            inner.classList.add('bg-white', 'text-[#212529]');
+          }
+        }
+      }
+      this.updateSelectedBox();
+    },
+
+    updateTextContent: function(val) {
+      const el = toRawNode(selectedEl);
+      if (!el) return;
+      el.textContent = val;
+      inspector.textContent = val;
+      updateSelectedBox();
+      syncCanvasHtmlToDraft();
+    },
+
+    updateInspectorText: function(val) {
+      this.updateTextContent(val);
+    },
+
+    updateClassAttribute: function(val) {
+      const el = toRawNode(selectedEl);
+      if (!el) return;
+      el.className = val;
+      inspector.className = val;
+      updateSelectedBox();
+      syncCanvasHtmlToDraft();
+    },
+
+    toggleDaisyClass: function(cls) {
+      const el = toRawNode(selectedEl);
+      if (!el) return;
+      el.classList.toggle(cls);
+      inspector.className = el.className;
+      updateSelectedBox();
+      syncCanvasHtmlToDraft();
+    },
+
     changeTag: function(newTag) {
       const el = toRawNode(selectedEl);
       if (!el || !el.parentNode) return;
