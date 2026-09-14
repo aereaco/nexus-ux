@@ -51,8 +51,15 @@
             const body = root.querySelector('body') || root.firstElementChild;
             if (body) {
               body.setAttribute('data-theme', canvasTheme);
-              if (canvasTheme === 'dark') body.classList.add('dark');
-              else body.classList.remove('dark');
+              if (canvasTheme === 'dark') {
+                body.classList.add('dark');
+                body.style.backgroundColor = '#1d232a';
+                body.style.color = '#a6adbb';
+              } else {
+                body.classList.remove('dark');
+                body.style.backgroundColor = '#ffffff';
+                body.style.color = '#1f2937';
+              }
             }
           };
           applyTheme();
@@ -141,10 +148,17 @@
             if (previewMode) return;
             const target = resolveTarget(e);
             if (target) {
+              selectElement(target);
               target.contentEditable = 'true';
               target.focus();
+              const onInput = () => {
+                inspector.textContent = target.textContent || '';
+                syncBoxPosition();
+              };
+              target.addEventListener('input', onInput);
               target.addEventListener('blur', function onBlur() {
                 target.contentEditable = 'false';
+                target.removeEventListener('input', onInput);
                 target.removeEventListener('blur', onBlur);
                 selectElement(target);
                 syncCanvasHtmlToDraft();
