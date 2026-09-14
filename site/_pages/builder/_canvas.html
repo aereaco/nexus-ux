@@ -2,17 +2,18 @@
   <meta name="internal" content="true">
 </head>
 <!-- Authentic VvvebJs #canvas Workspace with in-canvas Overlays -->
-<main class="flex-1 w-full h-full min-w-0 bg-[#e9ecef] dark:bg-[#18191c] flex flex-col items-center overflow-auto relative select-none"
+<main class="flex-1 w-full h-full min-w-0 bg-[#e9ecef] dark:bg-[#18191c] flex flex-col overflow-auto relative select-none"
+  data-class="{ 'items-center p-4': viewport !== 'desktop', 'p-0': viewport === 'desktop' }"
   id="canvas">
 
   <!-- Viewport Framing Container (Full-width fluid in Desktop mode, framed in Device modes) -->
-  <div class="transition-all duration-300 relative bg-white shadow-xl overflow-visible shrink-0"
+  <div class="transition-all duration-300 relative bg-white overflow-visible shrink-0"
     data-class="{
-      'w-full h-full min-h-full rounded-none m-0': viewport === 'desktop',
-      'w-[1200px] max-w-[1200px] min-h-[90vh] rounded-xl border-4 border-base-content/20 my-4': viewport === 'laptop',
-      'w-[1024px] max-w-[1024px] min-h-[90vh] rounded-xl border-4 border-base-content/20 my-4': viewport === 'tablet-landscape',
-      'w-[768px] max-w-[768px] min-h-[90vh] rounded-2xl border-4 border-base-content/20 my-4': viewport === 'tablet',
-      'w-[375px] max-w-[375px] min-h-[85vh] rounded-3xl border-8 border-base-content/25 my-4': viewport === 'mobile'
+      'w-full min-w-full h-full min-h-full flex-1 flex flex-col rounded-none m-0 shadow-none': viewport === 'desktop',
+      'w-[1200px] max-w-[1200px] min-h-[90vh] rounded-xl border-4 border-base-content/20 shadow-xl my-4 mx-auto': viewport === 'laptop',
+      'w-[1024px] max-w-[1024px] min-h-[90vh] rounded-xl border-4 border-base-content/20 shadow-xl my-4 mx-auto': viewport === 'tablet-landscape',
+      'w-[768px] max-w-[768px] min-h-[90vh] rounded-2xl border-4 border-base-content/20 shadow-xl my-4 mx-auto': viewport === 'tablet',
+      'w-[375px] max-w-[375px] min-h-[85vh] rounded-3xl border-8 border-base-content/25 shadow-xl my-4 mx-auto': viewport === 'mobile'
     }"
     data-style="{
       transform: (viewport === 'desktop' && zoom === 100) ? 'none' : 'scale(' + (zoom / 100) + ')',
