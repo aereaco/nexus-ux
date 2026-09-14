@@ -108,11 +108,11 @@
   <!-- RIGHT GROUP: Dark Mode, Breakpoints, Zoom & Save Split-Button -->
   <div class="flex items-center gap-1.5">
 
-    <!-- Dark Mode Toggle Button (Canvas Editor Content Only) -->
+    <!-- Dark Mode Toggle Button -->
     <button class="btn btn-ghost btn-xs h-6 px-1.5 hover:bg-base-200"
-      data-on-click="toggleCanvasTheme()"
-      title="Toggle Canvas Theme">
-      <iconify-icon data-bind-icon="canvasTheme === 'dark' ? 'material-symbols-light:dark-mode-outline' : 'material-symbols-light:wb-sunny-outline'" class="text-sm"></iconify-icon>
+      data-on-click="const current = document.documentElement.getAttribute('data-theme'); const next = current === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', next); localStorage.theme = next;"
+      title="Toggle Dark Mode">
+      <iconify-icon icon="material-symbols-light:wb-sunny-outline" class="text-sm"></iconify-icon>
     </button>
 
     <!-- External Preview Tab Link -->
