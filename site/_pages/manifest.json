@@ -1109,6 +1109,12 @@
     ]
   },
   {
+    "id": "_bottom-panel",
+    "route": "/_bottom-panel",
+    "path": "/_pages/builder/_bottom-panel.html",
+    "parent": "/builder"
+  },
+  {
     "id": "_canvas",
     "route": "/_canvas",
     "path": "/_pages/builder/_canvas.html",
