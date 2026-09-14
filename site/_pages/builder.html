@@ -39,6 +39,7 @@
     copiedToast: false,
 
     // Selection & Overlays
+    hasSelection: false,
     selectedEl: null,
     hoveredEl: null,
     selectedBox: { visible: false, top: 0, left: 0, width: 0, height: 0, tag: '', id: '', isText: false },
@@ -83,7 +84,12 @@
 
     // Helper: Unwraps reactive proxies to raw native DOM nodes
     toRawNode: function(node) {
-      return (node && node.__v_raw) ? node.__v_raw : node;
+      if (!node) return null;
+      let cur = node;
+      while (cur && cur.__v_raw) {
+        cur = cur.__v_raw;
+      }
+      return cur;
     },
 
     // Helper: Gets canvas shadowRoot
@@ -92,16 +98,64 @@
       return host ? host.shadowRoot : null;
     },
 
+    // Safe Attribute & Style Modifiers for Inspector
+    setAttr: function(name, val) {
+      const el = toRawNode(selectedEl);
+      if (!el) return;
+      if (val === '' || val === null || val === undefined) {
+        el.removeAttribute(name);
+      } else {
+        el.setAttribute(name, val);
+      }
+      if (inspector[name] !== undefined) inspector[name] = val;
+      syncCanvasHtmlToDraft();
+    },
+
+    setStyle: function(prop, val) {
+      const el = toRawNode(selectedEl);
+      if (!el) return;
+      el.style[prop] = val;
+      if (inspector[prop] !== undefined) inspector[prop] = val;
+      updateSelectedBox();
+      syncCanvasHtmlToDraft();
+    },
+
+    getAttr: function(name) {
+      const el = toRawNode(selectedEl);
+      return el ? (el.getAttribute(name) || '') : '';
+    },
+
+    getStyle: function(prop) {
+      const el = toRawNode(selectedEl);
+      return el ? (el.style[prop] || '') : '';
+    },
+
+    changeTag: function(newTag) {
+      const el = toRawNode(selectedEl);
+      if (!el || !el.parentNode) return;
+      const replacement = document.createElement(newTag);
+      replacement.innerHTML = el.innerHTML;
+      for (const a of el.attributes) {
+        replacement.setAttribute(a.name, a.value);
+      }
+      el.parentNode.replaceChild(replacement, el);
+      selectElement(replacement);
+      syncCanvasHtmlToDraft();
+      refreshTree();
+    },
+
     // Selection Logic
     selectElement: function(el) {
       const raw = toRawNode(el);
       if (!raw || raw.nodeType !== 1) {
         selectedEl = null;
+        hasSelection = false;
         selectedBox.visible = false;
         breadcrumbs = [];
         return;
       }
       selectedEl = raw;
+      hasSelection = true;
       const tag = raw.tagName.toLowerCase();
       inspector.tag = tag;
       inspector.id = raw.id || '';
@@ -109,30 +163,34 @@
       inspector.isTextLeaf = (raw.children.length === 0 && raw.textContent.trim().length > 0);
       inspector.textContent = raw.textContent || '';
       
-      const compStyle = window.getComputedStyle(raw);
-      inspector.fontSize = raw.style.fontSize || compStyle.fontSize || '';
-      inspector.fontWeight = raw.style.fontWeight || compStyle.fontWeight || '';
-      inspector.fontFamily = raw.style.fontFamily || compStyle.fontFamily || '';
-      inspector.textAlign = raw.style.textAlign || compStyle.textAlign || '';
-      inspector.color = raw.style.color || compStyle.color || '';
-      inspector.backgroundColor = raw.style.backgroundColor || compStyle.backgroundColor || '';
-      inspector.display = raw.style.display || compStyle.display || '';
-      inspector.gap = raw.style.gap || compStyle.gap || '';
-      inspector.padding = raw.style.padding || compStyle.padding || '';
-      inspector.marginBottom = raw.style.marginBottom || compStyle.marginBottom || '';
-      inspector.borderRadius = raw.style.borderRadius || compStyle.borderRadius || '';
-      inspector.opacity = raw.style.opacity || compStyle.opacity || '1';
-      
-      inspector.href = raw.getAttribute('href') || '';
-      inspector.src = raw.getAttribute('src') || '';
-      inspector.alt = raw.getAttribute('alt') || '';
-      inspector.target = raw.getAttribute('target') || '';
+      try {
+        const compStyle = window.getComputedStyle(raw);
+        inspector.fontSize = raw.style.fontSize || (compStyle ? compStyle.fontSize : '');
+        inspector.fontWeight = raw.style.fontWeight || (compStyle ? compStyle.fontWeight : '');
+        inspector.fontFamily = raw.style.fontFamily || (compStyle ? compStyle.fontFamily : '');
+        inspector.textAlign = raw.style.textAlign || (compStyle ? compStyle.textAlign : '');
+        inspector.color = raw.style.color || (compStyle ? compStyle.color : '');
+        inspector.backgroundColor = raw.style.backgroundColor || (compStyle ? compStyle.backgroundColor : '');
+        inspector.display = raw.style.display || (compStyle ? compStyle.display : '');
+        inspector.gap = raw.style.gap || (compStyle ? compStyle.gap : '');
+        inspector.padding = raw.style.padding || (compStyle ? compStyle.padding : '');
+        inspector.marginBottom = raw.style.marginBottom || (compStyle ? compStyle.marginBottom : '');
+        inspector.borderRadius = raw.style.borderRadius || (compStyle ? compStyle.borderRadius : '');
+        inspector.opacity = raw.style.opacity || (compStyle ? compStyle.opacity : '1');
+      } catch (_) {}
 
-      inspector.dataSignal = raw.getAttribute('data-signal') || '';
-      inspector.dataBind = raw.getAttribute('data-bind') || '';
-      inspector.dataShow = raw.getAttribute('data-show') || '';
-      inspector.dataOnClick = raw.getAttribute('data-on-click') || '';
-      inspector.dataFor = raw.getAttribute('data-for') || '';
+      try {
+        inspector.href = raw.getAttribute('href') || '';
+        inspector.src = raw.getAttribute('src') || '';
+        inspector.alt = raw.getAttribute('alt') || '';
+        inspector.target = raw.getAttribute('target') || '';
+
+        inspector.dataSignal = raw.getAttribute('data-signal') || '';
+        inspector.dataBind = raw.getAttribute('data-bind') || '';
+        inspector.dataShow = raw.getAttribute('data-show') || '';
+        inspector.dataOnClick = raw.getAttribute('data-on-click') || '';
+        inspector.dataFor = raw.getAttribute('data-for') || '';
+      } catch (_) {}
 
       // Build breadcrumbs
       const crumbs = [];
@@ -152,22 +210,26 @@
       const el = toRawNode(selectedEl);
       if (!el) {
         selectedBox.visible = false;
+        hasSelection = false;
         return;
       }
       const host = toRawNode(document.getElementById('builder-canvas-host'));
       if (!host) return;
-      const hostRect = host.getBoundingClientRect();
-      const elRect = el.getBoundingClientRect();
+      try {
+        const hostRect = host.getBoundingClientRect();
+        const elRect = el.getBoundingClientRect();
 
-      selectedBox.top = (elRect.top - hostRect.top) + host.scrollTop;
-      selectedBox.left = (elRect.left - hostRect.left) + host.scrollLeft;
-      selectedBox.width = elRect.width;
-      selectedBox.height = elRect.height;
-      const tag = el.tagName.toLowerCase();
-      selectedBox.tag = tag;
-      selectedBox.id = el.id || '';
-      selectedBox.isText = ['h1','h2','h3','h4','h5','h6','p','span','a','button','label','li','blockquote','td','th'].includes(tag);
-      selectedBox.visible = true;
+        selectedBox.top = (elRect.top - hostRect.top) + host.scrollTop;
+        selectedBox.left = (elRect.left - hostRect.left) + host.scrollLeft;
+        selectedBox.width = elRect.width;
+        selectedBox.height = elRect.height;
+        const tag = el.tagName.toLowerCase();
+        selectedBox.tag = tag;
+        selectedBox.id = el.id || '';
+        selectedBox.isText = ['h1','h2','h3','h4','h5','h6','p','span','a','button','label','li','blockquote','td','th'].includes(tag);
+        selectedBox.visible = true;
+        hasSelection = true;
+      } catch (_) {}
     },
 
     updateHoverBox: function(el) {
