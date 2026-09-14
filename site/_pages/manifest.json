@@ -1109,6 +1109,12 @@
     ]
   },
   {
+    "id": "_left-panel",
+    "route": "/_left-panel",
+    "path": "/_pages/builder/_left-panel.html",
+    "parent": "/builder"
+  },
+  {
     "id": "_top-panel",
     "route": "/_top-panel",
     "path": "/_pages/builder/_top-panel.html",
