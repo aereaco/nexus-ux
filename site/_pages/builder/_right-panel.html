@@ -59,296 +59,231 @@
     <!-- ================= 1. CONTENT TAB (VVVEBJS SCHEMA-DRIVEN DYNAMIC PORT) ================= -->
     <div class="p-3 space-y-3" data-show="propertiesSubTab === 'content'">
       
-      <!-- UNIVERSAL SCHEMA-DRIVEN COMPONENT PROPERTIES -->
-      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2.5 shadow-2xs"
-        data-show="activeProperties && activeProperties.length > 0">
-        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
-          <div class="flex items-center gap-1.5">
-            <iconify-icon icon="material-symbols-light:tune" class="text-sm text-primary"></iconify-icon>
-            <span data-bind="activeComponentName || 'Element'">Element</span>
-          </div>
-          <span class="badge badge-primary badge-xs text-[9px]" data-bind="activeComponentCategory || 'Component'">Component</span>
+      <!-- Component Header & Category Badge -->
+      <div class="flex items-center justify-between px-1 pb-1">
+        <div class="flex items-center gap-1.5">
+          <iconify-icon icon="material-symbols-light:tune" class="text-sm text-primary"></iconify-icon>
+          <span class="font-bold text-xs text-base-content/90" data-bind="activeComponentName || 'Element'">Element</span>
         </div>
+        <span class="badge badge-primary badge-xs text-[9px] font-semibold" data-bind="activeComponentCategory || 'Component'">Component</span>
+      </div>
 
-        <!-- Dynamic Property Controls Loop -->
-        <div class="space-y-2.5 pt-1.5 border-t border-base-content/10">
-          <template data-for="prop in activeProperties" data-key="prop.key">
-            <div class="space-y-1">
-              
-              <!-- 1. Select Dropdown -->
-              <div data-show="prop.type === 'select'" class="space-y-1">
-                <label class="text-[10px] text-base-content/60 font-medium block" data-bind="prop.name"></label>
-                <select class="select select-bordered select-xs w-full h-7 rounded-md text-xs"
-                  data-on-change="setDynamicProp(prop.key, $evt.target.value)">
-                  <template data-for="opt in prop.options" data-key="opt.value">
-                    <option data-bind-value="opt.value" data-bind="opt.label" data-bind-selected="opt.value === prop.value"></option>
-                  </template>
-                </select>
-              </div>
+      <!-- DYNAMIC ACCORDION SECTIONS LOOP (1:1 VvvebJs SectionInput Architecture) -->
+      <template data-for="sec in activeSections" data-key="sec.id">
+        <details open class="border border-base-content/10 rounded-xl bg-base-100 overflow-hidden shadow-2xs mb-2.5">
+          <summary class="px-3 py-2 bg-base-200/40 hover:bg-base-200/70 cursor-pointer font-bold text-xs flex items-center justify-between transition-colors list-none select-none">
+            <div class="flex items-center gap-1.5">
+              <iconify-icon class="text-sm text-primary" data-bind-icon="getSectionIcon(sec.id)"></iconify-icon>
+              <span data-bind="sec.header"></span>
+            </div>
+            <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm opacity-60"></iconify-icon>
+          </summary>
 
-              <!-- 2. Segmented Join Buttons -->
-              <div data-show="prop.type === 'buttons'" class="space-y-1">
-                <label class="text-[10px] text-base-content/60 font-medium block" data-bind="prop.name"></label>
-                <div class="join w-full">
-                  <template data-for="opt in prop.options" data-key="opt.value">
-                    <button class="btn btn-xs h-6 min-h-0 join-item flex-1 text-[10px]"
-                      data-class="{ 'btn-primary font-bold shadow-xs': opt.value === prop.value, 'btn-ghost border border-base-content/10': opt.value !== prop.value }"
-                      data-on-click="setDynamicProp(prop.key, opt.value)"
-                      data-bind="opt.label"></button>
-                  </template>
+          <div class="p-3 space-y-2.5">
+            <template data-for="prop in activeProperties" data-key="prop.key">
+              <div data-show="prop.section === sec.id && (!prop.group || isGroupActive(prop.group))" class="space-y-1">
+
+                <!-- 1. Select Dropdown -->
+                <div data-show="prop.type === 'select'" class="space-y-1">
+                  <label class="text-[10px] text-base-content/60 font-medium block" data-bind="prop.name"></label>
+                  <select class="select select-bordered select-xs w-full h-7 rounded-md text-xs"
+                    data-on-change="setDynamicProp(prop.key, $evt.target.value)">
+                    <template data-for="opt in prop.options" data-key="opt.value">
+                      <option data-bind-value="opt.value" data-bind="opt.label" data-bind-selected="opt.value === prop.value"></option>
+                    </template>
+                  </select>
                 </div>
-              </div>
 
-              <!-- 3. Toggle Switch -->
-              <div data-show="prop.type === 'toggle'" class="flex items-center justify-between py-0.5">
-                <label class="text-[10px] text-base-content/60 font-medium" data-bind="prop.name"></label>
-                <input type="checkbox" class="toggle toggle-primary toggle-xs"
-                  data-bind-checked="prop.value"
-                  data-on-change="setDynamicProp(prop.key, $evt.target.checked)" />
-              </div>
+                <!-- 2. Segmented Join Buttons -->
+                <div data-show="prop.type === 'buttons'" class="space-y-1">
+                  <label class="text-[10px] text-base-content/60 font-medium block" data-bind="prop.name"></label>
+                  <div class="join w-full">
+                    <template data-for="opt in prop.options" data-key="opt.value">
+                      <button type="button" class="btn btn-xs h-6 min-h-0 join-item flex-1 text-[10px]"
+                        data-class="{ 'btn-primary font-bold shadow-xs': opt.value === prop.value, 'btn-ghost border border-base-content/10': opt.value !== prop.value }"
+                        data-on-click="setDynamicProp(prop.key, opt.value)"
+                        data-bind="opt.label"></button>
+                    </template>
+                  </div>
+                </div>
 
-              <!-- 4. Text Input -->
-              <div data-show="prop.type === 'text'" class="space-y-1">
-                <label class="text-[10px] text-base-content/60 font-medium block" data-bind="prop.name"></label>
-                <input type="text" class="input input-bordered input-xs w-full h-7 rounded-md text-xs"
-                  data-bind-value="prop.value"
-                  data-on-input="setDynamicProp(prop.key, $evt.target.value)" />
-              </div>
-
-              <!-- 5. Textarea -->
-              <div data-show="prop.type === 'textarea'" class="space-y-1">
-                <label class="text-[10px] text-base-content/60 font-medium block" data-bind="prop.name"></label>
-                <textarea class="textarea textarea-bordered textarea-xs w-full font-sans text-xs rounded-lg leading-tight"
-                  rows="3"
-                  data-bind-value="prop.value"
-                  data-on-input="setDynamicProp(prop.key, $evt.target.value)"></textarea>
-              </div>
-
-              <!-- 6. Number Input -->
-              <div data-show="prop.type === 'number'" class="space-y-1">
-                <label class="text-[10px] text-base-content/60 font-medium block" data-bind="prop.name"></label>
-                <input type="number" class="input input-bordered input-xs w-full h-7 rounded-md text-xs font-mono"
-                  data-bind-value="prop.value"
-                  data-on-input="setDynamicProp(prop.key, $evt.target.value)" />
-              </div>
-
-              <!-- 7. Range Slider -->
-              <div data-show="prop.type === 'range'" class="space-y-1">
-                <div class="flex items-center justify-between">
+                <!-- 3. Toggle Switch -->
+                <div data-show="prop.type === 'toggle'" class="flex items-center justify-between py-0.5">
                   <label class="text-[10px] text-base-content/60 font-medium" data-bind="prop.name"></label>
-                  <span class="text-[10px] font-mono text-primary font-bold" data-bind="prop.value"></span>
+                  <input type="checkbox" class="toggle toggle-primary toggle-xs"
+                    data-bind-checked="prop.value"
+                    data-on-change="setDynamicProp(prop.key, $evt.target.checked)" />
                 </div>
-                <input type="range" class="range range-primary range-xs w-full"
-                  data-bind-value="prop.value"
-                  data-on-input="setDynamicProp(prop.key, $evt.target.value)" />
-              </div>
 
-            </div>
-          </template>
-        </div>
-      </div>
-
-      <!-- ARCHETYPE SPECIAL: SECTION BACKGROUND & SEPARATORS -->
-      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2.5"
-        data-show="inspector.componentType === 'section'">
-        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
-          <div class="flex items-center gap-1.5">
-            <iconify-icon icon="material-symbols-light:wallpaper" class="text-sm text-primary"></iconify-icon>
-            <span>Background & Waves</span>
-          </div>
-          <span class="badge badge-ghost badge-xs text-[9px]">Section</span>
-        </div>
-
-        <div class="space-y-1.5 pt-1">
-          <label class="text-[10px] text-base-content/60 font-medium block">Background Media</label>
-          <div class="grid grid-cols-4 gap-1">
-            <button class="btn btn-xs h-6 min-h-0 text-[10px]"
-              data-class="{ 'btn-primary font-bold': inspector.props.bgMode === 'none', 'btn-ghost border border-base-content/10': inspector.props.bgMode !== 'none' }"
-              data-on-click="setSectionBackground('none')">None</button>
-            <button class="btn btn-xs h-6 min-h-0 text-[10px]"
-              data-class="{ 'btn-primary font-bold': inspector.props.bgMode === 'image', 'btn-ghost border border-base-content/10': inspector.props.bgMode !== 'image' }"
-              data-on-click="setSectionBackground('image')">Image</button>
-            <button class="btn btn-xs h-6 min-h-0 text-[10px]"
-              data-class="{ 'btn-primary font-bold': inspector.props.bgMode === 'video', 'btn-ghost border border-base-content/10': inspector.props.bgMode !== 'video' }"
-              data-on-click="setSectionBackground('video')">Video</button>
-            <button class="btn btn-xs h-6 min-h-0 text-[10px]"
-              data-class="{ 'btn-primary font-bold': inspector.props.bgMode === 'youtube', 'btn-ghost border border-base-content/10': inspector.props.bgMode !== 'youtube' }"
-              data-on-click="setSectionBackground('youtube')">YouTube</button>
-          </div>
-
-          <div class="space-y-1.5 pt-1" data-show="inspector.props.bgMode === 'image'">
-            <div class="w-full h-20 rounded-lg overflow-hidden bg-base-200 border border-base-content/10 relative flex items-center justify-center">
-              <img data-bind-src="inspector.props.bgImage || 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=600&q=80'" class="w-full h-full object-cover" />
-            </div>
-            <input type="text" class="input input-bordered input-xs w-full h-7 rounded-md text-xs font-mono"
-              placeholder="Image URL..."
-              data-bind-value="inspector.props.bgImage"
-              data-on-input="setSectionBackground('image')" />
-          </div>
-        </div>
-
-        <div class="space-y-1.5 pt-1 border-t border-base-content/10">
-          <div class="flex items-center justify-between">
-            <label class="text-[10px] text-base-content/60 font-medium">Bottom Wave Separator</label>
-            <input type="checkbox" class="toggle toggle-primary toggle-xs"
-              data-bind-checked="inspector.props.hasBottomSeparator"
-              data-on-change="toggleSectionSeparator('bottom', $evt.target.checked)" />
-          </div>
-        </div>
-      </div>
-
-      <!-- ARCHETYPE SPECIAL: GRID ROW COLUMN MANAGER -->
-      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2.5"
-        data-show="inspector.componentType === 'gridrow'">
-        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
-          <div class="flex items-center gap-1.5">
-            <iconify-icon icon="material-symbols-light:table-rows" class="text-sm text-primary"></iconify-icon>
-            <span>Child Columns</span>
-          </div>
-          <button class="btn btn-primary btn-xs h-5 px-2 min-h-0 gap-1 text-[10px]" data-on-click="addColumnToRow()">
-            <iconify-icon icon="material-symbols-light:add" class="text-xs"></iconify-icon>
-            <span>Add Col</span>
-          </button>
-        </div>
-
-        <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
-          <template data-for="(col, i) in inspector.props.columns" data-key="col.index">
-            <div class="border border-base-content/10 rounded-lg p-2 bg-base-200/40 space-y-1.5">
-              <div class="flex items-center justify-between">
-                <span class="text-[10px] font-bold text-base-content/80" data-bind="col.name"></span>
-                <button class="btn btn-ghost btn-xs h-5 w-5 p-0 text-error hover:bg-error/15" title="Remove Column"
-                  data-on-click="removeColumn(col.index)">
-                  <iconify-icon icon="material-symbols-light:delete" class="text-xs"></iconify-icon>
-                </button>
-              </div>
-              <div class="grid grid-cols-2 gap-1.5 text-[10px]">
-                <div>
-                  <span class="text-[9px] opacity-60 block">Mobile (XS)</span>
-                  <select class="select select-bordered select-xs w-full h-6 min-h-0 rounded text-[10px] px-1"
-                    data-on-change="setColumnSpan(col.index, 'xs', $evt.target.value)">
-                    <option value="none">None</option>
-                    <option value="12" data-bind-selected="col.xs === '12'">Full (12)</option>
-                    <option value="6" data-bind-selected="col.xs === '6'">Half (6)</option>
-                    <option value="4" data-bind-selected="col.xs === '4'">1/3 (4)</option>
-                  </select>
+                <!-- 4. Text Input -->
+                <div data-show="prop.type === 'text'" class="space-y-1">
+                  <label class="text-[10px] text-base-content/60 font-medium block" data-bind="prop.name"></label>
+                  <input type="text" class="input input-bordered input-xs w-full h-7 rounded-md text-xs font-mono"
+                    data-bind-value="prop.value"
+                    data-on-input="setDynamicProp(prop.key, $evt.target.value)" />
                 </div>
-                <div>
-                  <span class="text-[9px] opacity-60 block">Desktop (MD)</span>
-                  <select class="select select-bordered select-xs w-full h-6 min-h-0 rounded text-[10px] px-1"
-                    data-on-change="setColumnSpan(col.index, 'md', $evt.target.value)">
-                    <option value="none">None</option>
-                    <option value="12" data-bind-selected="col.md === '12'">Full (12)</option>
-                    <option value="6" data-bind-selected="col.md === '6'">Half (6)</option>
-                    <option value="4" data-bind-selected="col.md === '4'">1/3 (4)</option>
-                    <option value="3" data-bind-selected="col.md === '3'">1/4 (3)</option>
-                  </select>
+
+                <!-- 5. Textarea -->
+                <div data-show="prop.type === 'textarea'" class="space-y-1">
+                  <label class="text-[10px] text-base-content/60 font-medium block" data-bind="prop.name"></label>
+                  <textarea class="textarea textarea-bordered textarea-xs w-full font-sans text-xs rounded-lg leading-tight"
+                    rows="3"
+                    data-bind-value="prop.value"
+                    data-on-input="setDynamicProp(prop.key, $evt.target.value)"></textarea>
                 </div>
+
+                <!-- 6. Number Input -->
+                <div data-show="prop.type === 'number'" class="space-y-1">
+                  <label class="text-[10px] text-base-content/60 font-medium block" data-bind="prop.name"></label>
+                  <input type="number" class="input input-bordered input-xs w-full h-7 rounded-md text-xs font-mono"
+                    data-bind-value="prop.value"
+                    data-on-input="setDynamicProp(prop.key, $evt.target.value)" />
+                </div>
+
+                <!-- 7. Range Slider with Dual Numerical Value Display -->
+                <div data-show="prop.type === 'range'" class="space-y-1">
+                  <div class="flex items-center justify-between">
+                    <label class="text-[10px] text-base-content/60 font-medium" data-bind="prop.name"></label>
+                    <span class="text-[10px] font-mono text-primary font-bold" data-bind="prop.value"></span>
+                  </div>
+                  <input type="range" class="range range-primary range-xs w-full"
+                    data-bind-min="prop.min !== undefined ? prop.min : 0"
+                    data-bind-max="prop.max !== undefined ? prop.max : 100"
+                    data-bind-step="prop.step !== undefined ? prop.step : 1"
+                    data-bind-value="prop.value"
+                    data-on-input="setDynamicProp(prop.key, $evt.target.value)" />
+                </div>
+
+                <!-- 8. Color Picker & Swatch -->
+                <div data-show="prop.type === 'color'" class="space-y-1">
+                  <label class="text-[10px] text-base-content/60 font-medium block" data-bind="prop.name"></label>
+                  <div class="flex items-center gap-2">
+                    <input type="color" class="w-7 h-7 rounded border border-base-content/20 cursor-pointer p-0.5 bg-transparent"
+                      data-bind-value="prop.value"
+                      data-on-change="setDynamicProp(prop.key, $evt.target.value)" />
+                    <input type="text" class="input input-bordered input-xs flex-1 h-7 rounded-md text-xs font-mono"
+                      data-bind-value="prop.value"
+                      data-on-input="setDynamicProp(prop.key, $evt.target.value)" />
+                  </div>
+                </div>
+
+                <!-- 9. Image Preview & Source Input -->
+                <div data-show="prop.type === 'image'" class="space-y-1.5">
+                  <label class="text-[10px] text-base-content/60 font-medium block" data-bind="prop.name"></label>
+                  <div class="w-full h-20 rounded-lg overflow-hidden bg-base-200 border border-base-content/10 relative flex items-center justify-center">
+                    <img data-bind-src="prop.value || 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=600&q=80'" class="w-full h-full object-cover" />
+                  </div>
+                  <input type="text" class="input input-bordered input-xs w-full h-7 rounded-md text-xs font-mono"
+                    placeholder="https://..."
+                    data-bind-value="prop.value"
+                    data-on-input="setDynamicProp(prop.key, $evt.target.value)" />
+                </div>
+
+                <!-- 10. Wave Silhouettes Gallery (6 SVG Wave Shapes) -->
+                <div data-show="prop.type === 'wave-gallery'" class="space-y-1.5">
+                  <label class="text-[10px] text-base-content/60 font-medium block" data-bind="prop.name"></label>
+                  <div class="grid grid-cols-2 gap-1.5 bg-base-200/50 p-2 rounded-lg border border-base-content/10">
+                    <template data-for="wKey in waveShapeKeys" data-key="wKey">
+                      <button type="button" class="btn btn-ghost btn-xs h-10 p-1.5 rounded-md flex flex-col items-center justify-center border border-base-content/10 hover:border-primary transition-colors text-base-content/80"
+                        data-class="{ 'border-primary bg-primary/10 text-primary font-bold ring-1 ring-primary': prop.value === wKey }"
+                        data-on-click="setDynamicProp(prop.key, wKey)">
+                        <span class="w-full h-4 block overflow-hidden leading-none opacity-80" data-html="getWaveSvg(wKey)"></span>
+                        <span class="text-[9px] capitalize mt-0.5 truncate w-full text-center" data-bind="getWaveName(wKey)"></span>
+                      </button>
+                    </template>
+                  </div>
+                </div>
+
+                <!-- 11. SVG Vector Icon Palette (12 Vector Icon Shapes) -->
+                <div data-show="prop.type === 'svg-gallery'" class="space-y-1.5">
+                  <label class="text-[10px] text-base-content/60 font-medium block" data-bind="prop.name"></label>
+                  <div class="grid grid-cols-4 gap-1.5 bg-base-200/50 p-2 rounded-lg border border-base-content/10">
+                    <template data-for="iKey in iconShapeKeys" data-key="iKey">
+                      <button type="button" class="btn btn-ghost btn-xs h-8 p-1 rounded-md flex items-center justify-center border border-base-content/10 hover:border-primary hover:bg-primary/15 transition-colors"
+                        data-class="{ 'border-primary bg-primary/20 text-primary ring-1 ring-primary': prop.value === iKey }"
+                        data-bind-title="getIconName(iKey)"
+                        data-on-click="setDynamicProp(prop.key, iKey)">
+                        <span class="w-4 h-4 block" data-html="getIconSvg(iKey)"></span>
+                      </button>
+                    </template>
+                  </div>
+                </div>
+
+                <!-- 12. Grid Row Columns Manager (Dynamic Child Column Scanning & Breakpoints) -->
+                <div data-show="prop.type === 'columns-manager'" class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <label class="text-[10px] text-base-content/60 font-medium block" data-bind="prop.name"></label>
+                    <button type="button" class="btn btn-primary btn-xs h-5 px-2 min-h-0 gap-1 text-[10px]" data-on-click="addColumnToRow()">
+                      <iconify-icon icon="material-symbols-light:add" class="text-xs"></iconify-icon>
+                      <span>Add Col</span>
+                    </button>
+                  </div>
+
+                  <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    <template data-for="(col, i) in prop.value" data-key="col.index">
+                      <div class="border border-base-content/10 rounded-lg p-2 bg-base-200/40 space-y-1.5">
+                        <div class="flex items-center justify-between">
+                          <span class="text-[10px] font-bold text-base-content/80" data-bind="col.name"></span>
+                          <button type="button" class="btn btn-ghost btn-xs h-5 w-5 p-0 text-error hover:bg-error/15" title="Remove Column"
+                            data-on-click="removeColumn(col.index)">
+                            <iconify-icon icon="material-symbols-light:delete" class="text-xs"></iconify-icon>
+                          </button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-1.5 text-[10px]">
+                          <div>
+                            <span class="text-[9px] opacity-60 block">Mobile (XS)</span>
+                            <select class="select select-bordered select-xs w-full h-6 min-h-0 rounded text-[10px] px-1"
+                              data-on-change="setColumnSpan(col.index, 'xs', $evt.target.value)">
+                              <option value="none">None</option>
+                              <option value="12" data-bind-selected="col.xs === '12'">Full (12)</option>
+                              <option value="6" data-bind-selected="col.xs === '6'">Half (6)</option>
+                              <option value="4" data-bind-selected="col.xs === '4'">1/3 (4)</option>
+                            </select>
+                          </div>
+                          <div>
+                            <span class="text-[9px] opacity-60 block">Desktop (MD)</span>
+                            <select class="select select-bordered select-xs w-full h-6 min-h-0 rounded text-[10px] px-1"
+                              data-on-change="setColumnSpan(col.index, 'md', $evt.target.value)">
+                              <option value="none">None</option>
+                              <option value="12" data-bind-selected="col.md === '12'">Full (12)</option>
+                              <option value="6" data-bind-selected="col.md === '6'">Half (6)</option>
+                              <option value="4" data-bind-selected="col.md === '4'">1/3 (4)</option>
+                              <option value="3" data-bind-selected="col.md === '3'">1/4 (3)</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+
+                <!-- 13. Universal Tags / Applied Classes Input (_base Parity) -->
+                <div data-show="prop.type === 'tags'" class="space-y-1.5">
+                  <label class="text-[10px] text-base-content/60 font-medium block">Applied Classes (Click × to remove)</label>
+                  <div class="flex flex-wrap gap-1 max-h-24 overflow-y-auto p-1.5 bg-base-200/40 rounded-lg border border-base-content/10">
+                    <template data-for="cls in inspector.classList" data-key="cls">
+                      <span class="badge badge-sm bg-base-100 border border-base-content/15 text-[10px] font-mono gap-1 py-2 px-2 hover:border-error/40 transition-colors">
+                        <span data-bind="cls"></span>
+                        <button type="button" class="text-base-content/50 hover:text-error ml-0.5" data-on-click="removeClass(cls)">&times;</button>
+                      </span>
+                    </template>
+                    <span data-show="inspector.classList.length === 0" class="text-[10px] text-base-content/40 italic p-1">No custom classes</span>
+                  </div>
+
+                  <div class="join w-full pt-1">
+                    <input type="text" class="input input-bordered input-xs join-item flex-1 h-7 text-xs font-mono"
+                      placeholder="Add class (e.g. shadow-lg)..."
+                      data-bind-value="inspector.newClassInput"
+                      data-on-keydown:enter="addClass(inspector.newClassInput)" />
+                    <button type="button" class="btn btn-primary btn-xs join-item h-7 px-2.5" data-on-click="addClass(inspector.newClassInput)">Add</button>
+                  </div>
+                </div>
+
               </div>
-            </div>
-          </template>
-        </div>
-      </div>
-
-      <!-- ARCHETYPE SPECIAL: SVG ICON PALETTE -->
-      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2.5"
-        data-show="['svg-icon','svgimage'].includes(inspector.componentType)">
-        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
-          <div class="flex items-center gap-1.5">
-            <iconify-icon icon="material-symbols-light:shapes" class="text-sm text-primary"></iconify-icon>
-            <span>Icon Shapes</span>
-          </div>
-          <span class="badge badge-ghost badge-xs text-[9px]">Vector</span>
-        </div>
-
-        <div class="grid grid-cols-4 gap-1.5 bg-base-200/50 p-2 rounded-lg border border-base-content/10">
-          <button class="btn btn-ghost btn-xs h-8 p-0 rounded-md flex items-center justify-center hover:bg-primary/20" title="Star" data-on-click="setSvgIcon('star')">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-          </button>
-          <button class="btn btn-ghost btn-xs h-8 p-0 rounded-md flex items-center justify-center hover:bg-primary/20" title="Heart" data-on-click="setSvgIcon('heart')">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-          </button>
-          <button class="btn btn-ghost btn-xs h-8 p-0 rounded-md flex items-center justify-center hover:bg-primary/20" title="Check" data-on-click="setSvgIcon('check')">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          </button>
-          <button class="btn btn-ghost btn-xs h-8 p-0 rounded-md flex items-center justify-center hover:bg-primary/20" title="Arrow" data-on-click="setSvgIcon('arrowRight')">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-          </button>
-          <button class="btn btn-ghost btn-xs h-8 p-0 rounded-md flex items-center justify-center hover:bg-primary/20" title="Home" data-on-click="setSvgIcon('home')">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-          </button>
-          <button class="btn btn-ghost btn-xs h-8 p-0 rounded-md flex items-center justify-center hover:bg-primary/20" title="User" data-on-click="setSvgIcon('user')">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          </button>
-          <button class="btn btn-ghost btn-xs h-8 p-0 rounded-md flex items-center justify-center hover:bg-primary/20" title="Settings" data-on-click="setSvgIcon('settings')">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle></svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- ARCHETYPE SPECIAL: IMAGE PREVIEW -->
-      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2.5"
-        data-show="inspector.componentType === 'image'">
-        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
-          <div class="flex items-center gap-1.5">
-            <iconify-icon icon="material-symbols-light:image" class="text-sm text-primary"></iconify-icon>
-            <span>Image Preview</span>
-          </div>
-          <span class="badge badge-ghost badge-xs text-[9px]">Media</span>
-        </div>
-        <div class="w-full h-24 rounded-lg bg-base-200 border border-base-content/10 overflow-hidden flex items-center justify-center">
-          <img data-bind-src="inspector.src || 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&q=80'" class="w-full h-full object-cover" />
-        </div>
-      </div>
-
-      <!-- 12. GENERAL SECTION & INTERACTIVE CLASS BADGES (FOR ALL ELEMENTS) -->
-      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2.5">
-        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
-          <div class="flex items-center gap-1.5">
-            <iconify-icon icon="material-symbols-light:fingerprint" class="text-sm text-primary"></iconify-icon>
-            <span>General & Classes</span>
-          </div>
-          <span class="badge badge-ghost badge-xs text-[9px]">Universal</span>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="text-[10px] text-base-content/60 font-medium block mb-1">ID</label>
-            <input type="text" class="input input-bordered input-xs w-full h-7 rounded-md font-mono text-[11px]"
-              placeholder="element-id"
-              data-bind-value="inspector.id"
-              data-on-input="setCompAttr('id', $evt.target.value)" />
-          </div>
-          <div>
-            <label class="text-[10px] text-base-content/60 font-medium block mb-1">Title Tooltip</label>
-            <input type="text" class="input input-bordered input-xs w-full h-7 rounded-md text-xs"
-              placeholder="Tooltip text..."
-              data-on-input="setCompAttr('title', $evt.target.value)" />
-          </div>
-        </div>
-
-        <!-- Interactive VvvebJs Class Badge Chips -->
-        <div class="space-y-1.5 pt-1 border-t border-base-content/10">
-          <label class="text-[10px] text-base-content/60 font-medium block">Applied Classes (Click × to remove)</label>
-          <div class="flex flex-wrap gap-1 max-h-24 overflow-y-auto p-1.5 bg-base-200/40 rounded-lg border border-base-content/10">
-            <template data-for="cls in inspector.classList" data-key="cls">
-              <span class="badge badge-sm bg-base-100 border border-base-content/15 text-[10px] font-mono gap-1 py-2 px-2 hover:border-error/40 transition-colors">
-                <span data-bind="cls"></span>
-                <button class="text-base-content/50 hover:text-error ml-0.5" data-on-click="removeClass(cls)">&times;</button>
-              </span>
             </template>
-            <span data-show="inspector.classList.length === 0" class="text-[10px] text-base-content/40 italic p-1">No custom classes</span>
           </div>
-
-          <!-- Quick Add Class Input -->
-          <div class="join w-full pt-1">
-            <input type="text" class="input input-bordered input-xs join-item flex-1 h-7 text-xs font-mono"
-              placeholder="Add class (e.g. shadow-lg)..."
-              data-bind-value="inspector.newClassInput"
-              data-on-keydown:enter="addClass(inspector.newClassInput)" />
-            <button class="btn btn-primary btn-xs join-item h-7 px-2.5" data-on-click="addClass(inspector.newClassInput)">Add</button>
-          </div>
-        </div>
-      </div>
+        </details>
+      </template>
 
     </div>
 
