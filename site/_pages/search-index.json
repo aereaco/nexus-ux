@@ -57,6 +57,69 @@
     "content": "Todo List { progress = 20; try { if (typeof localStorage !== 'undefined') { localStorage.setItem('nexus_todos', JSON.stringify(t)); } } catch (e) {} setTimeout(() => progress = 100, 300); setTimeout(() => progress = 0, 800); } }\" data-effect=\" if (!hydrated) { try { if (typeof localStorage !== 'undefined') { const saved = localStorage.getItem('nexus_todos'); if (saved) { const parsed = JSON.parse(saved); if (Array.isArray(parsed) && parsed.length > 0) { todos.splice(0, todos.length, ...parsed); } } } } catch (e) {} hydrated = true; } if (typeof localStorage !== 'undefined') { try { localStorage.setItem('nexus_todo_layout', layout); } catch (e) {} } \" data-computed=\"{ filteredTodos: () => { const f = filter; const list = todos; if (f === 'active') return list.filter(t => !t.completed); if (f === 'completed') return list.filter(t => t.completed); return [...list]; }, remaining: () => todos.filter(t => !t.completed).length }\"> 0 || isEditing\" data-bind-value=\"isEditing ? null : progress\" max=\"100\"> Todo List HTML-first reactive state management List Grid Compact Add Task All Active Completed Clear Completed Ready for your focus... Diagnostic Overlay viewport x items total Due Date (DD/MM/YYYY) Edit Done Cancel Save No, Keep it t.id === activeTodo.id); if (idx !== -1) todos.splice(idx, 1); } activeTodo = null; } else { todos.splice(0, todos.length, ...todos.filter(t => !t.completed)); } $saveTodos(todos); showConfirmDelete = false; showConfirmClear = false; \">Yes,"
   },
   {
+    "id": "_bottom-panel",
+    "route": "/builder/_bottom-panel",
+    "path": "/_pages/builder/_bottom-panel.html",
+    "title": "_bottom-panel",
+    "category": "General",
+    "keywords": [],
+    "content": "> Select an element to view DOM hierarchy </> Code editor Html ] [ & Css ] --> </> Html # Css Run JS on edit Apply ✕ 1 2 3 4 5 6 7 8 9 10 11 12 13 14 1 2 3 4 5 6 7 8 9 10"
+  },
+  {
+    "id": "_canvas",
+    "route": "/builder/_canvas",
+    "path": "/_pages/builder/_canvas.html",
+    "title": "_canvas",
+    "category": "General",
+    "keywords": [],
+    "content": "{ if (!rawHost || !rawHost.shadowRoot) { setTimeout(bindShadow, 50); return; } const root = rawHost.shadowRoot; if (root.__builder_bound) return; root.__builder_bound = true; // Adopt global stylesheets into shadow root for 100% styled components if (document.adoptedStyleSheets && document.adoptedStyleSheets.length) { try { root.adoptedStyleSheets = [...document.adoptedStyleSheets]; } catch {} } // Apply initial canvasTheme into shadowRoot const applyTheme = () => { const body = root.querySelector('body') || root.firstElementChild; if (body) { body.setAttribute('data-theme', canvasTheme); if (canvasTheme === 'dark') { body.classList.add('dark'); body.style.backgroundColor = '#1d232a'; body.style.color = '#a6adbb'; } else { body.classList.remove('dark'); body.style.backgroundColor = '#ffffff'; body.style.color = '#1f2937'; } } }; applyTheme(); setTimeout(function() { refreshTree(); refreshPageSections(); syncCanvasHtmlToDraft(); }, 200); const selectBoxEl = document.getElementById('select-box'); const highlightBoxEl = document.getElementById('highlight-box'); let scrollRaf = null; // Webstudio-style Synchronous Coordinate Synchronization const syncBoxPosition = () => { const el = typeof toRawNode === 'function' ? toRawNode(selectedEl) : (selectedEl && selectedEl.__v_raw ? selectedEl.__v_raw : selectedEl); if (!el || !selectBoxEl || previewMode) { if (selectBoxEl) selectBoxEl.style.display = 'none'; return; } const elRect = el.getBoundingClientRect(); const hostRect = host.getBoundingClientRect(); // Check if element is scrolled out of view if (elRect.bottom hostRect.bottom) { selectBoxEl.style.display = 'none'; return; } const top = (elRect.top - hostRect.top) + host.offsetTop; const left = (elRect.left - hostRect.left) + host.offsetLeft; const width = elRect.width; const height = elRect.height; selectBoxEl.style.display = 'block'; selectBoxEl.style.top = top + 'px'; selectBoxEl.style.left = left + 'px'; selectBoxEl.style.width = width + 'px'; selectBoxEl.style.height = height + 'px'; selectedBox.top = top; selectedBox.left = left; selectedBox.width = width; selectedBox.height = height; }; // Webstudio Capture-Phase Passive Scroll Tracking (Eliminates Drift) const onScroll = () => { if (highlightBoxEl) highlightBoxEl.style.display = 'none'; if (selectedEl) { if (scrollRaf) cancelAnimationFrame(scrollRaf); scrollRaf = requestAnimationFrame(syncBoxPosition); } }; host.addEventListener('scroll', onScroll, { passive: true, capture: true }); const canvasContainer = document.getElementById('canvas'); if (canvasContainer) { canvasContainer.addEventListener('scroll', onScroll, { passive: true, capture: true }); } window.addEventListener('resize', onScroll, { passive: true }); const resolveTarget = (e) => { let target = e.composedPath ? e.composedPath()[0] : e.target; if (!target) return null; if (target.nodeType === 3) target = target.parentElement; if (!target || target.nodeType !== 1 || target === host || target.tagName.toLowerCase() === 'html') return null; return target; }; // Handle selection click inside shadow root root.addEventListener('click', function(e) { if (previewMode) return; const target = resolveTarget(e); if (target) { e.preventDefault(); e.stopPropagation(); selectElement(target); syncBoxPosition(); } }, true); // Handle hover highlight inside shadow root root.addEventListener('pointermove', function(e) { if (previewMode) return; const target = resolveTarget(e); const curSel = typeof toRawNode === 'function' ? toRawNode(selectedEl) : (selectedEl && selectedEl.__v_raw ? selectedEl.__v_raw : selectedEl); if (target && target !== curSel) { updateHoverBox(target); } }, true); root.addEventListener('pointerleave', function() { hoverBox.visible = false; if (highlightBoxEl) highlightBoxEl.style.display = 'none'; }); // Handle double click for inline text editing root.addEventListener('dblclick', function(e) { if (previewMode) return; const target = resolveTarget(e); if (target) { selectElement(target); target.contentEditable = 'true'; target.focus(); const onInput = () => { inspector.textContent = target.textContent || ''; syncBoxPosition(); }; target.addEventListener('input', onInput); target.addEventListener('blur', function onBlur() { target.contentEditable = 'false'; target.removeEventListener('input', onInput); target.removeEventListener('blur', onBlur); selectElement(target); syncCanvasHtmlToDraft(); }); } }, true); }; bindShadow(); \"> Left Center Right Justify Size 12px 14px 16px 18px 20px 24px 32px 48px | Add Component / Section After Inside ✕ Hero Section Features Grid Pricing Table CTA Banner"
+  },
+  {
+    "id": "_left-panel",
+    "route": "/builder/_left-panel",
+    "path": "/_pages/builder/_left-panel.html",
+    "title": "_left-panel",
+    "category": "General",
+    "keywords": [],
+    "content": "Add page Home page Blank page Contact us page Index landing Navigator ― ✕ Click refresh to inspect DOM hierarchy Components Blocks ✕ ― Base H Heading Image Horizontal Rule Form T Input I Text Area opt Select Input Checkbox Radio Button Link Button Html Button ¶ Paragraph 99 Blockquote List Table <pre> Preformatted Audio Video Components Card Alert Badge Progress Bar Breadcrumb Pagination Tabs Accordion Layout Blocks Jumbotron Hero Heading, subtitle, CTA button Marketing 2-Col Grid Subheading and description pairs Pricing Table 3 tiers with check lists Team Showcase Avatar cards with social links Call To Action Banner Centered title and button Footer with Columns Brand, nav links, copyright Sections Page Sections Section Templates Hero / Jumbotron 2-Column Features Pricing Table Reorder Page Sections ▲ ▼ ✕ No sections detected on canvas Styles & Theme Theme Preset Light Dark Corporate Emerald Synthwave Retro Cyberpunk Dracula Typography System Sans Inter Georgia Monospace Heading Text Add your paragraph text here. Click Here Form Label Submit Option 1 Option 2 Checkbox label Radio label Link text \"A quote or testimonial snippet.\" First item Second item Third item Name Role John Doe Engineer // Code snippet here console.log('Hello VvvebJs'); Card Title Card content description text. Action Information notice or update announcement. New Feature Home Documents Current 1 2 3 Tab 1 Tab 2 Tab 3 Accordion Header Accordion expanded body text. Jumbotron Hero Title Hero descriptive copy highlighting core features. Get Started Feature One Feature description copy. Feature Two Feature description copy. Starter $0 Choose Pro $29 Choose Enterprise $99 Choose Our Team Alex Smith Lead Designer Sam Jones Architect Taylor Lee Developer Ready to Get Started? Sign Up Now © 2026 Brand, Inc. Terms Privacy Security"
+  },
+  {
+    "id": "_modals",
+    "route": "/builder/_modals",
+    "path": "/_pages/builder/_modals.html",
+    "title": "_modals",
+    "category": "General",
+    "keywords": [],
+    "content": "Export Standalone HTML Production-ready self-contained HTML with Tailwind CSS, DaisyUI, and Nexus-UX scripts. ✕ Zero build step required. Works in any standard web server or browser. Download .html Choose Starter Template Select a pre-designed layout or start from a blank canvas. ✕ Blank Canvas An empty canvas with a drop zone. Perfect for building custom layouts from scratch. Select Modern Landing Page Complete high-converting page with Navbar, Hero CTA, Stats, Feature cards, and Footer. Select"
+  },
+  {
+    "id": "_right-panel",
+    "route": "/builder/_right-panel",
+    "path": "/_pages/builder/_right-panel.html",
+    "title": "_right-panel",
+    "category": "General",
+    "keywords": [],
+    "content": "Content Style Advanced No selected element! Click on an element in the canvas to inspect and edit its properties. ✕ Heading Size Heading 1 Heading 2 Heading 3 Heading 4 Heading 5 Heading 6 Text Content Link (Anchor) Href URL Target Same window (_self) New tab (_blank) Text Image Image Source (URL) Alt Text Text Leaf General Id Title Class - State - hover active focus nth-of-type(2n) Display Display Block Inline Inline Block Flex Inline Flex Grid Inline Grid Table Table Row List Item Inherit Initial none Position Static Fixed Relative Absolute Top Left Bottom Right Float ✕ Left Right Opacity 1 Background Text Color Typography Font size px Font weight Default Thin (100) Extra-Light (200) Light (300) Normal (400) Medium (500) Semi-Bold (600) Bold (700) Extra-Bold (800) Ultra-Bold (900) Font family Default Arial Helvetica Neue Times New Roman Georgia Courier New Verdana Tahoma System Sans Text align ✕ Line height Letter spacing Decoration Style Default Solid Wavy Dotted Dashed Double Size Width Height Min Width Min Height Margin Top Right Bottom Left Padding Top Right Bottom Left Border Style Default Solid Dotted Dashed Double None Width Color Border Radius Top Left Top Right Bottom Left Bottom Right Background Image Image URL Repeat Default repeat-x repeat-y no-repeat Size Default contain cover Hide based on device screen Extra small (<576px) Small (≥576px) Medium (≥768px) Large (≥992px) Extra large (≥1200px) Nexus-UX Directives data-signal data-bind data-show data-on-click data-for"
+  },
+  {
+    "id": "_top-panel",
+    "route": "/builder/_top-panel",
+    "path": "/_pages/builder/_top-panel.html",
+    "title": "_top-panel",
+    "category": "General",
+    "keywords": [],
+    "content": "Webstudio Desktop Tablet 768 Mobile 375 Design Preview 50% 75% 100% 125% Export Code Editor Switch Template Download HTML Clear Canvas"
+  },
+  {
+    "id": "landing",
+    "route": "/landing",
+    "path": "/_pages/builder/templates/landing.html",
+    "title": "landing",
+    "category": "General",
+    "keywords": [],
+    "content": "Project name Home About Contact Jumbotron heading !!! Cras justo odio, dapibus ac facilisis in, egestas eget quam. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Sign up today Subheading Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum. Subheading Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras mattis consectetur purus sit amet fermentum. Subheading Maecenas sed diam eget risus varius blandit sit amet non magna. Subheading Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum. Subheading Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras mattis consectetur purus sit amet fermentum. Subheading Maecenas sed diam eget risus varius blandit sit amet non magna. &copy; 2026 Company, Inc. Privacy Terms"
+  },
+  {
     "id": "doc-changelog",
     "route": "/docs/changelog",
     "path": "/_pages/docs/changelog.md",
