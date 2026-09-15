@@ -608,7 +608,7 @@
     saveCanvasDraft: function() {
       syncCanvasHtmlToDraft();
       try {
-        localStorage.setItem('nexus_builder_draft', canvasHtmlDraft);
+        window.localStorage.setItem('nexus_builder_draft', canvasHtmlDraft || '');
       } catch (_) {}
       saveStatus = 'saved';
       window.setTimeout(function() { saveStatus = 'idle'; }, 1800);
