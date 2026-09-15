@@ -215,18 +215,22 @@
     setCanvasTheme: function(theme) {
       canvasTheme = theme;
       var host = toRawNode(window.document.getElementById('builder-canvas-host'));
-      if (host && host.shadowRoot) {
-        var body = host.shadowRoot.querySelector('body') || host.shadowRoot.firstElementChild;
-        if (body) {
-          body.setAttribute('data-theme', theme);
-          if (['dark', 'synthwave', 'halloween', 'forest', 'black', 'luxury', 'dracula', 'business', 'night', 'coffee', 'dim', 'sunset'].includes(theme)) {
-            body.classList.add('dark');
-            body.style.backgroundColor = '#1d232a';
-            body.style.color = '#a6adbb';
-          } else {
-            body.classList.remove('dark');
-            body.style.backgroundColor = '#ffffff';
-            body.style.color = '#1f2937';
+      if (host) {
+        host.setAttribute('data-theme', theme);
+        var frame = host.closest('#canvas > div');
+        if (frame) frame.setAttribute('data-theme', theme);
+        if (host.shadowRoot) {
+          var body = host.shadowRoot.querySelector('body') || host.shadowRoot.firstElementChild;
+          if (body) {
+            body.setAttribute('data-theme', theme);
+            body.querySelectorAll('[data-theme]').forEach(function(el) { el.setAttribute('data-theme', theme); });
+            if (['dark', 'synthwave', 'halloween', 'forest', 'black', 'luxury', 'dracula', 'business', 'night', 'coffee', 'dim', 'sunset', 'cyberpunk'].includes(theme)) {
+              body.classList.add('dark');
+            } else {
+              body.classList.remove('dark');
+            }
+            body.style.backgroundColor = '';
+            body.style.color = '';
           }
         }
       }
@@ -256,6 +260,7 @@
       if (!el) return;
       el.className = val;
       inspector.className = val;
+      inspector.classList = val.split(/\s+/).filter(Boolean);
       updateSelectedBox();
       syncCanvasHtmlToDraft();
     },
@@ -265,6 +270,7 @@
       if (!el) return;
       el.classList.toggle(cls);
       inspector.className = el.className;
+      inspector.classList = el.className.split(/\s+/).filter(Boolean);
       updateSelectedBox();
       syncCanvasHtmlToDraft();
     },
@@ -283,7 +289,215 @@
       refreshTree();
     },
 
-    // Selection Logic
+    // VvvebJs Dynamic Component Mutation Helpers
+    setCompClass: function(validClasses, newClass) {
+      const el = toRawNode(selectedEl);
+      if (!el) return;
+      if (Array.isArray(validClasses)) {
+        validClasses.forEach(function(c) { if (c) el.classList.remove(c); });
+      }
+      if (newClass && newClass !== 'none') {
+        newClass.split(/\s+/).forEach(function(c) { if (c) el.classList.add(c); });
+      }
+      inspector.className = el.className;
+      inspector.classList = el.className.split(/\s+/).filter(Boolean);
+      updateSelectedBox();
+      syncCanvasHtmlToDraft();
+    },
+
+    setCompAttr: function(attr, value) {
+      const el = toRawNode(selectedEl);
+      if (!el) return;
+      if (value === null || value === '' || value === false) {
+        el.removeAttribute(attr);
+      } else {
+        el.setAttribute(attr, value === true ? '' : value);
+      }
+      if (inspector[attr] !== undefined) inspector[attr] = value;
+      updateSelectedBox();
+      syncCanvasHtmlToDraft();
+    },
+
+    addClass: function(cls) {
+      const el = toRawNode(selectedEl);
+      if (!el || !cls || !cls.trim()) return;
+      cls.trim().split(/\s+/).forEach(function(c) { if (c) el.classList.add(c); });
+      inspector.className = el.className;
+      inspector.classList = el.className.split(/\s+/).filter(Boolean);
+      inspector.newClassInput = '';
+      updateSelectedBox();
+      syncCanvasHtmlToDraft();
+    },
+
+    removeClass: function(cls) {
+      const el = toRawNode(selectedEl);
+      if (!el || !cls) return;
+      el.classList.remove(cls);
+      inspector.className = el.className;
+      inspector.classList = el.className.split(/\s+/).filter(Boolean);
+      updateSelectedBox();
+      syncCanvasHtmlToDraft();
+    },
+
+    addColumnToRow: function() {
+      const el = toRawNode(selectedEl);
+      if (!el) return;
+      const col = el.ownerDocument.createElement('div');
+      col.className = 'col-12 col-md-6 p-4';
+      col.innerHTML = '<h3 class="text-xl font-bold mb-2">New Column</h3><p class="text-sm opacity-70">Column content goes here.</p>';
+      el.appendChild(col);
+      selectElement(el);
+      syncCanvasHtmlToDraft();
+    },
+
+    removeColumn: function(index) {
+      const el = toRawNode(selectedEl);
+      if (!el) return;
+      const cols = el.querySelectorAll(':scope > .col, :scope > [class*="col-"], :scope > [class*="col"]');
+      if (cols[index]) {
+        cols[index].remove();
+        selectElement(el);
+        syncCanvasHtmlToDraft();
+      }
+    },
+
+    setColumnSpan: function(colIdx, bp, span) {
+      const el = toRawNode(selectedEl);
+      if (!el) return;
+      const cols = el.querySelectorAll(':scope > .col, :scope > [class*="col-"], :scope > [class*="col"]');
+      const col = cols[colIdx];
+      if (!col) return;
+      const prefix = bp === 'xs' ? 'col-' : `col-${bp}-`;
+      const classes = col.className.split(/\s+/).filter(function(c) {
+        return !c.startsWith(prefix) && (bp !== 'xs' || c !== 'col');
+      });
+      if (span && span !== 'none') {
+        classes.push(bp === 'xs' ? `col-${span}` : `col-${bp}-${span}`);
+      }
+      col.className = classes.join(' ');
+      selectElement(el);
+      syncCanvasHtmlToDraft();
+    },
+
+    setSectionBackground: function(mode) {
+      const el = toRawNode(selectedEl);
+      if (!el) return;
+      inspector.props.bgMode = mode;
+      let bgContainer = el.querySelector(':scope > .background-container');
+      if (mode === 'none') {
+        if (bgContainer) bgContainer.remove();
+      } else {
+        if (!bgContainer) {
+          bgContainer = el.ownerDocument.createElement('div');
+          bgContainer.className = 'background-container absolute inset-0 -z-10 overflow-hidden pointer-events-none';
+          el.classList.add('relative');
+          el.insertBefore(bgContainer, el.firstChild);
+        }
+        bgContainer.innerHTML = '';
+        if (mode === 'image') {
+          const img = el.ownerDocument.createElement('img');
+          img.src = inspector.props.bgImage || 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1600&q=80';
+          img.className = 'w-full h-full object-cover';
+          bgContainer.appendChild(img);
+        } else if (mode === 'video') {
+          const vid = el.ownerDocument.createElement('video');
+          vid.autoplay = true; vid.loop = true; vid.muted = true; vid.playsInline = true;
+          vid.className = 'w-full h-full object-cover';
+          vid.src = inspector.props.bgVideo || 'https://www.w3schools.com/html/mov_bbb.mp4';
+          bgContainer.appendChild(vid);
+        } else if (mode === 'youtube') {
+          bgContainer.innerHTML = `<iframe class="w-full h-full pointer-events-none" src="https://www.youtube.com/embed/${inspector.props.bgYoutube || 'C6fOoy7Se_4'}?autoplay=1&mute=1&controls=0&loop=1" frameborder="0"></iframe>`;
+        }
+      }
+      syncCanvasHtmlToDraft();
+    },
+
+    toggleSectionOverlay: function(enabled) {
+      const el = toRawNode(selectedEl);
+      if (!el) return;
+      inspector.props.hasOverlay = enabled;
+      let overlay = el.querySelector(':scope > .section-overlay');
+      if (enabled) {
+        if (!overlay) {
+          overlay = el.ownerDocument.createElement('div');
+          overlay.className = 'section-overlay absolute inset-0 -z-5 pointer-events-none';
+          overlay.style.backgroundColor = inspector.props.overlayColor || 'rgba(0,0,0,0.6)';
+          el.classList.add('relative');
+          el.insertBefore(overlay, el.firstChild);
+        }
+      } else {
+        if (overlay) overlay.remove();
+      }
+      syncCanvasHtmlToDraft();
+    },
+
+    toggleSectionSeparator: function(pos, enabled) {
+      const el = toRawNode(selectedEl);
+      if (!el) return;
+      const sel = `:scope > .separator.${pos}`;
+      let sep = el.querySelector(sel);
+      if (enabled) {
+        if (!sep) {
+          sep = el.ownerDocument.createElement('div');
+          sep.className = `separator ${pos} absolute ${pos === 'top' ? 'top-0' : 'bottom-0'} left-0 right-0 w-full overflow-hidden leading-none pointer-events-none -z-5`;
+          sep.innerHTML = `<svg viewBox="0 0 1200 120" preserveAspectRatio="none" class="w-full h-12 fill-base-100"><path d="M0,0 C150,90 350,-40 500,60 C650,160 900,10 1200,40 L1200,${pos === 'top' ? '0' : '120'} L0,${pos === 'top' ? '0' : '120'} Z"></path></svg>`;
+          el.classList.add('relative');
+          el.appendChild(sep);
+        }
+      } else {
+        if (sep) sep.remove();
+      }
+      syncCanvasHtmlToDraft();
+    },
+
+    setSvgIcon: function(iconName) {
+      const el = toRawNode(selectedEl);
+      if (!el) return;
+      inspector.props.svgIcon = iconName;
+      const icons = {
+        star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>',
+        heart: '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>',
+        check: '<polyline points="20 6 9 17 4 12"></polyline>',
+        arrowRight: '<line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline>',
+        home: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>',
+        user: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>',
+        settings: '<circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>'
+      };
+      if (icons[iconName]) {
+        el.innerHTML = icons[iconName];
+        el.setAttribute('viewBox', '0 0 24 24');
+        el.setAttribute('fill', 'none');
+        el.setAttribute('stroke', 'currentColor');
+        el.setAttribute('stroke-width', inspector.props.svgStrokeWidth || '2');
+        inspector.props.svgCode = el.outerHTML;
+        syncCanvasHtmlToDraft();
+      }
+    },
+
+    toggleElementLink: function(enabled) {
+      const el = toRawNode(selectedEl);
+      if (!el) return;
+      if (enabled) {
+        if (el.parentNode && el.parentNode.tagName.toLowerCase() !== 'a') {
+          const a = el.ownerDocument.createElement('a');
+          a.href = '#';
+          el.parentNode.insertBefore(a, el);
+          a.appendChild(el);
+          inspector.props.hasLink = true;
+          inspector.props.linkHref = '#';
+        }
+      } else {
+        if (el.parentNode && el.parentNode.tagName.toLowerCase() === 'a') {
+          const a = el.parentNode;
+          a.parentNode.insertBefore(el, a);
+          a.remove();
+          inspector.props.hasLink = false;
+        }
+      }
+      syncCanvasHtmlToDraft();
+    },
+
+    // Selection Logic & Component Matching
     selectElement: function(el) {
       const raw = toRawNode(el);
       if (!raw || raw.nodeType !== 1) {
@@ -299,8 +513,145 @@
       inspector.tag = raw.tagName.toUpperCase();
       inspector.id = raw.id || '';
       inspector.className = raw.className || '';
+      inspector.classList = raw.className ? raw.className.split(/\s+/).filter(Boolean) : [];
       inspector.isTextLeaf = (raw.children.length === 0 && raw.textContent.trim().length > 0);
       inspector.textContent = raw.textContent || '';
+      
+      const rawClasses = inspector.classList;
+
+      // 1. Dynamic Component Archetype Detection
+      let compType = 'element';
+      if (['section', 'header', 'footer', 'main'].includes(tag) || rawClasses.includes('hero') || raw.getAttribute('data-section')) {
+        compType = 'section';
+      } else if (rawClasses.includes('row') || rawClasses.includes('grid-row') || raw.getAttribute('data-grid-row')) {
+        compType = 'gridrow';
+      } else if (tag === 'svg' || rawClasses.includes('svg-image') || rawClasses.includes('separator')) {
+        compType = 'svgimage';
+      } else if (tag === 'img' || (tag === 'figure' && raw.querySelector('img'))) {
+        compType = 'image';
+      } else if (tag === 'button' || rawClasses.includes('btn') || (tag === 'a' && rawClasses.includes('btn'))) {
+        compType = 'button';
+      } else if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tag)) {
+        compType = 'heading';
+      } else if (rawClasses.includes('card')) {
+        compType = 'card';
+      } else if (rawClasses.includes('badge')) {
+        compType = 'badge';
+      } else if (rawClasses.includes('alert')) {
+        compType = 'alert';
+      } else if (rawClasses.includes('collapse') || tag === 'details') {
+        compType = 'collapse';
+      } else if (rawClasses.includes('tabs') || raw.getAttribute('role') === 'tablist') {
+        compType = 'tabs';
+      } else if (['input', 'textarea'].includes(tag)) {
+        compType = 'input';
+      } else if (tag === 'select') {
+        compType = 'select';
+      } else if (tag === 'form') {
+        compType = 'form';
+      } else if (tag === 'table' || rawClasses.includes('table')) {
+        compType = 'table';
+      } else if (tag === 'a') {
+        compType = 'link';
+      } else if (['p', 'span', 'blockquote', 'code', 'kbd', 'li'].includes(tag) || (raw.children.length === 0 && raw.textContent.trim().length > 0)) {
+        compType = 'text';
+      }
+      inspector.componentType = compType;
+
+      // 2. Populate Archetype Specific Props
+      const p = inspector.props;
+      if (compType === 'section') {
+        p.label = raw.getAttribute('aria-label') || raw.id || '';
+        p.containerWidth = rawClasses.includes('w-full') || raw.querySelector(':scope > .container-fluid, :scope > .w-full') ? 'full' : 'boxed';
+        p.containerHeight = rawClasses.includes('min-h-screen') || rawClasses.includes('vh-100') ? 'full' : 'auto';
+        p.hasOverlay = !!raw.querySelector(':scope > .section-overlay, :scope > .overlay');
+        p.hasTopSeparator = !!raw.querySelector(':scope > .separator.top');
+        p.hasBottomSeparator = !!raw.querySelector(':scope > .separator.bottom');
+        const bgCont = raw.querySelector(':scope > .background-container');
+        if (bgCont) {
+          if (bgCont.querySelector('video')) p.bgMode = 'video';
+          else if (bgCont.querySelector('iframe')) p.bgMode = 'youtube';
+          else if (bgCont.querySelector('img')) p.bgMode = 'image';
+        } else {
+          p.bgMode = 'none';
+        }
+      } else if (compType === 'gridrow') {
+        p.direction = rawClasses.includes('flex-col-reverse') ? 'col-reverse' : (rawClasses.includes('flex-col') ? 'col' : (rawClasses.includes('flex-row-reverse') ? 'row-reverse' : 'row'));
+        p.verticalAlign = rawClasses.includes('items-center') ? 'center' : (rawClasses.includes('items-end') ? 'end' : (rawClasses.includes('items-stretch') ? 'stretch' : 'start'));
+        p.horizontalAlign = rawClasses.includes('justify-center') ? 'center' : (rawClasses.includes('justify-end') ? 'end' : (rawClasses.includes('justify-between') ? 'between' : 'start'));
+        p.wrap = rawClasses.includes('flex-nowrap') ? 'nowrap' : 'wrap';
+        // Scan columns
+        const cols = [];
+        raw.querySelectorAll(':scope > .col, :scope > [class*="col-"], :scope > [class*="col"]').forEach(function(col, i) {
+          const cCls = col.className;
+          const xsM = cCls.match(/\bcol-(\d+)\b/);
+          const smM = cCls.match(/\bcol-sm-(\d+)\b/);
+          const mdM = cCls.match(/\bcol-md-(\d+)\b/);
+          const lgM = cCls.match(/\bcol-lg-(\d+)\b/);
+          const xlM = cCls.match(/\bcol-xl-(\d+)\b/);
+          cols.push({
+            index: i,
+            name: 'Column ' + (i + 1),
+            xs: xsM ? xsM[1] : (cCls.includes('col') ? '12' : 'none'),
+            sm: smM ? smM[1] : 'none',
+            md: mdM ? mdM[1] : 'none',
+            lg: lgM ? lgM[1] : 'none',
+            xl: xlM ? xlM[1] : 'none'
+          });
+        });
+        p.columns = cols;
+      } else if (compType === 'svgimage') {
+        p.svgWidth = raw.getAttribute('width') || 32;
+        p.svgHeight = raw.getAttribute('height') || 32;
+        p.svgStrokeWidth = raw.getAttribute('stroke-width') || 2;
+        p.svgCode = raw.outerHTML;
+      } else if (compType === 'image') {
+        p.hasLink = !!(raw.parentNode && raw.parentNode.tagName.toLowerCase() === 'a');
+        p.linkHref = p.hasLink ? raw.parentNode.getAttribute('href') || '' : '';
+        p.imageAlign = rawClasses.includes('mx-auto') ? 'center' : (rawClasses.includes('float-right') ? 'right' : 'left');
+        p.imageRounded = rawClasses.includes('rounded-full') ? 'rounded-full' : (rawClasses.includes('rounded-box') || rawClasses.includes('rounded-2xl') ? 'rounded-box' : 'none');
+      } else if (compType === 'button') {
+        p.buttonVariant = ['btn-primary', 'btn-secondary', 'btn-accent', 'btn-neutral', 'btn-info', 'btn-success', 'btn-warning', 'btn-error', 'btn-ghost', 'btn-link'].find(function(v) { return rawClasses.includes(v); }) || 'btn-primary';
+        p.buttonSize = ['btn-xs', 'btn-sm', 'btn-md', 'btn-lg', 'btn-xl'].find(function(s) { return rawClasses.includes(s); }) || 'btn-md';
+        p.buttonStyle = ['btn-outline', 'btn-soft', 'btn-dash', 'glass'].find(function(st) { return rawClasses.includes(st); }) || 'none';
+        p.buttonShape = ['btn-wide', 'btn-block', 'btn-circle', 'btn-square'].find(function(sh) { return rawClasses.includes(sh); }) || 'none';
+        p.buttonDisabled = raw.hasAttribute('disabled') || rawClasses.includes('btn-disabled');
+        p.buttonActive = rawClasses.includes('btn-active');
+        p.hasLink = tag === 'a';
+        p.linkHref = raw.getAttribute('href') || '';
+        p.linkTarget = raw.getAttribute('target') || '_self';
+      } else if (compType === 'heading') {
+        p.headingLevel = tag.toUpperCase();
+      } else if (compType === 'card') {
+        p.cardBordered = rawClasses.includes('card-bordered') || rawClasses.includes('border');
+        p.cardCompact = rawClasses.includes('card-compact');
+        p.cardSide = rawClasses.includes('card-side');
+        p.cardImageFull = rawClasses.includes('image-full');
+      } else if (compType === 'badge') {
+        p.badgeVariant = ['badge-primary', 'badge-secondary', 'badge-accent', 'badge-neutral', 'badge-info', 'badge-success', 'badge-warning', 'badge-error', 'badge-ghost'].find(function(v) { return rawClasses.includes(v); }) || 'badge-primary';
+        p.badgeSize = ['badge-xs', 'badge-sm', 'badge-md', 'badge-lg', 'badge-xl'].find(function(s) { return rawClasses.includes(s); }) || 'badge-md';
+        p.badgeStyle = ['badge-outline', 'badge-soft', 'badge-dash'].find(function(st) { return rawClasses.includes(st); }) || 'none';
+      } else if (compType === 'alert') {
+        p.alertType = ['alert-info', 'alert-success', 'alert-warning', 'alert-error'].find(function(t) { return rawClasses.includes(t); }) || 'alert-info';
+        p.alertStyle = ['alert-soft', 'alert-dash', 'alert-outline'].find(function(st) { return rawClasses.includes(st); }) || 'none';
+      } else if (compType === 'collapse') {
+        p.collapseIcon = rawClasses.includes('collapse-plus') ? 'plus' : (rawClasses.includes('collapse-arrow') ? 'arrow' : 'none');
+        p.collapseOpen = rawClasses.includes('collapse-open') || raw.hasAttribute('open');
+      } else if (compType === 'tabs') {
+        p.tabsStyle = rawClasses.includes('tabs-lifted') ? 'tabs-lifted' : (rawClasses.includes('tabs-box') ? 'tabs-box' : 'tabs-bordered');
+        p.tabsSize = ['tabs-xs', 'tabs-sm', 'tabs-md', 'tabs-lg'].find(function(s) { return rawClasses.includes(s); }) || 'tabs-md';
+      } else if (compType === 'input') {
+        p.inputType = raw.getAttribute('type') || 'text';
+        p.inputPlaceholder = raw.getAttribute('placeholder') || '';
+        p.inputValue = raw.value || raw.getAttribute('value') || '';
+        p.inputRequired = raw.hasAttribute('required');
+        p.inputDisabled = raw.hasAttribute('disabled');
+      } else if (compType === 'table') {
+        p.tableZebra = rawClasses.includes('table-zebra');
+        p.tablePinRows = rawClasses.includes('table-pin-rows');
+        p.tablePinCols = rawClasses.includes('table-pin-cols');
+        p.tableSize = ['table-xs', 'table-sm', 'table-md', 'table-lg'].find(function(s) { return rawClasses.includes(s); }) || 'table-md';
+      }
       
       try {
         var compStyle = window.getComputedStyle(raw);
