@@ -406,7 +406,7 @@
       if (!root) return;
 
       var newEl = null;
-      var tpl = toRawNode(document.getElementById(templateId));
+      var tpl = toRawNode(window.document.getElementById(templateId));
       if (tpl && tpl.content) {
         var clone = tpl.content.cloneNode(true);
         newEl = clone.firstElementChild;
