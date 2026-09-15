@@ -407,20 +407,11 @@
         var clone = tpl.content.cloneNode(true);
         newEl = clone.firstElementChild;
       } else if (typeof templateId === 'string' && templateId.startsWith('<')) {
-        var iframeRef = toRawNode(document.getElementById('builder-canvas-iframe'));
-        var iframeDoc = (iframeRef && iframeRef.contentDocument) ? iframeRef.contentDocument : null;
-        if (!iframeDoc) return;
-        var temp = iframeDoc.createElement('div');
+        var temp = document.createElement('div');
         temp.innerHTML = templateId.trim();
         newEl = temp.firstElementChild;
       }
       if (!newEl) return;
-
-      // Adopt node into iframe document if from a different document
-      var adoptIframe = toRawNode(document.getElementById('builder-canvas-iframe'));
-      if (adoptIframe && adoptIframe.contentDocument && newEl.ownerDocument !== adoptIframe.contentDocument) {
-        newEl = adoptIframe.contentDocument.adoptNode(newEl);
-      }
 
       var activeEl = toRawNode(selectedEl);
       if (activeEl && activeEl.parentElement) {
