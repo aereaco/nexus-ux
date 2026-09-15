@@ -95,7 +95,7 @@
 
     // Helper: Gets canvas shadow root
     getCanvasRoot: function() {
-      const host = toRawNode(document.getElementById('builder-canvas-host'));
+      const host = toRawNode(window.document.getElementById('builder-canvas-host'));
       return host && host.shadowRoot ? host.shadowRoot : null;
     },
 
