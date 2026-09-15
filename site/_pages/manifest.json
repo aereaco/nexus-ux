@@ -1132,54 +1132,12 @@
     ]
   },
   {
-    "id": "_bottom-panel",
-    "route": "/builder/_bottom-panel",
-    "path": "/_pages/builder/_bottom-panel.html",
-    "parent": "/builder"
-  },
-  {
-    "id": "_canvas",
-    "route": "/builder/_canvas",
-    "path": "/_pages/builder/_canvas.html",
-    "parent": "/builder"
-  },
-  {
-    "id": "_left-panel",
-    "route": "/builder/_left-panel",
-    "path": "/_pages/builder/_left-panel.html",
-    "parent": "/builder"
-  },
-  {
-    "id": "_modals",
-    "route": "/builder/_modals",
-    "path": "/_pages/builder/_modals.html",
-    "parent": "/builder"
-  },
-  {
-    "id": "_right-panel",
-    "route": "/builder/_right-panel",
-    "path": "/_pages/builder/_right-panel.html",
-    "parent": "/builder"
-  },
-  {
-    "id": "_top-panel",
-    "route": "/builder/_top-panel",
-    "path": "/_pages/builder/_top-panel.html",
-    "parent": "/builder"
-  },
-  {
     "id": "error",
     "route": "/error",
     "path": "/_pages/error.html",
     "title": "Error",
     "icon": "material-symbols-light:error-outline",
     "parent": null
-  },
-  {
-    "id": "landing",
-    "route": "/landing",
-    "path": "/_pages/builder/templates/landing.html",
-    "parent": "/builder/templates"
   },
   {
     "id": "admin",
@@ -1189,13 +1147,5 @@
     "icon": "material-symbols-light:shield-lock",
     "internal": true,
     "parent": null
-  },
-  {
-    "id": "blank",
-    "route": "",
-    "path": "/_pages/builder/templates/blank.html",
-    "title": "Blank Canvas",
-    "internal": true,
-    "parent": "/builder/templates"
   }
 ]
