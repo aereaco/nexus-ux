@@ -277,7 +277,7 @@
         hasSelection = false;
         return;
       }
-      var host = toRawNode(document.getElementById('builder-canvas-host'));
+      var host = toRawNode(window.document.getElementById('builder-canvas-host'));
       if (!host) return;
       try {
         var elRect = el.getBoundingClientRect();
@@ -304,7 +304,7 @@
         return;
       }
       hoveredEl = raw;
-      var host = toRawNode(document.getElementById('builder-canvas-host'));
+      var host = toRawNode(window.document.getElementById('builder-canvas-host'));
       if (!host) return;
       try {
         var elRect = raw.getBoundingClientRect();
