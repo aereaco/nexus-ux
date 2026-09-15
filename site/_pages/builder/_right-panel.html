@@ -1,69 +1,85 @@
-<!-- Authentic VvvebJs #right-panel Properties Inspector with Complete Field Suite -->
+<!-- Authentic Nexus Visual Builder #right-panel (Webstudio x VvvebJs Fusion) -->
 <aside class="w-64 sm:w-72 lg:w-80 h-full flex flex-col bg-base-100 border-l border-base-content/10 overflow-hidden select-none text-xs" id="right-panel">
 
   <!-- Inspector Navigation Tabs: Content | Style | Advanced -->
-  <div class="flex border-b border-base-content/15 bg-base-200/40 shrink-0">
-    <button class="flex-1 py-1.5 text-center text-xs font-medium border-b-2 transition-colors flex items-center justify-center gap-1"
-      data-class="{ 'border-primary text-primary font-bold bg-base-100': propertiesSubTab === 'content', 'border-transparent text-base-content/70 hover:text-base-content': propertiesSubTab !== 'content' }"
+  <div class="flex border-b border-base-content/15 bg-base-200/50 shrink-0">
+    <button class="flex-1 py-2 text-center text-xs font-medium border-b-2 transition-colors flex items-center justify-center gap-1.5"
+      data-class="{ 'border-primary text-primary font-bold bg-base-100 shadow-xs': propertiesSubTab === 'content', 'border-transparent text-base-content/70 hover:text-base-content': propertiesSubTab !== 'content' }"
       data-on-click="propertiesSubTab = 'content'">
-      <iconify-icon icon="material-symbols-light:folder-outline" class="text-xs"></iconify-icon>
+      <iconify-icon icon="material-symbols-light:edit-note" class="text-sm"></iconify-icon>
       <span>Content</span>
     </button>
-    <button class="flex-1 py-1.5 text-center text-xs font-medium border-b-2 transition-colors flex items-center justify-center gap-1"
-      data-class="{ 'border-primary text-primary font-bold bg-base-100': propertiesSubTab === 'style', 'border-transparent text-base-content/70 hover:text-base-content': propertiesSubTab !== 'style' }"
+    <button class="flex-1 py-2 text-center text-xs font-medium border-b-2 transition-colors flex items-center justify-center gap-1.5"
+      data-class="{ 'border-primary text-primary font-bold bg-base-100 shadow-xs': propertiesSubTab === 'style', 'border-transparent text-base-content/70 hover:text-base-content': propertiesSubTab !== 'style' }"
       data-on-click="propertiesSubTab = 'style'">
-      <iconify-icon icon="material-symbols-light:palette-outline" class="text-xs"></iconify-icon>
+      <iconify-icon icon="material-symbols-light:palette-outline" class="text-sm"></iconify-icon>
       <span>Style</span>
     </button>
-    <button class="flex-1 py-1.5 text-center text-xs font-medium border-b-2 transition-colors flex items-center justify-center gap-1"
-      data-class="{ 'border-primary text-primary font-bold bg-base-100': propertiesSubTab === 'advanced', 'border-transparent text-base-content/70 hover:text-base-content': propertiesSubTab !== 'advanced' }"
+    <button class="flex-1 py-2 text-center text-xs font-medium border-b-2 transition-colors flex items-center justify-center gap-1.5"
+      data-class="{ 'border-primary text-primary font-bold bg-base-100 shadow-xs': propertiesSubTab === 'advanced', 'border-transparent text-base-content/70 hover:text-base-content': propertiesSubTab !== 'advanced' }"
       data-on-click="propertiesSubTab = 'advanced'">
-      <iconify-icon icon="material-symbols-light:settings-outline" class="text-xs"></iconify-icon>
+      <iconify-icon icon="material-symbols-light:tune" class="text-sm"></iconify-icon>
       <span>Advanced</span>
     </button>
   </div>
 
   <!-- State: When No Element Is Selected -->
-  <div class="p-3" data-show="!hasSelection">
-    <div class="alert bg-base-200/60 border border-base-content/10 rounded-md p-3 flex items-start justify-between">
+  <div class="p-4" data-show="!hasSelection">
+    <div class="alert bg-base-200/70 border border-base-content/10 rounded-xl p-3 flex flex-col items-center text-center gap-2">
+      <iconify-icon icon="material-symbols-light:touch-app" class="text-2xl text-primary opacity-60"></iconify-icon>
       <div>
-        <div class="font-bold text-xs text-base-content">No selected element!</div>
-        <div class="text-[11px] text-base-content/60 mt-0.5">Click on an element in the canvas to inspect and edit its properties.</div>
+        <div class="font-bold text-xs text-base-content">No element selected</div>
+        <div class="text-[11px] text-base-content/60 mt-0.5">Click any element in the canvas or the Navigator tree to inspect and style it.</div>
       </div>
-      <button class="btn btn-ghost btn-xs h-5 w-5 min-h-0 p-0 text-base-content/40 hover:text-base-content">✕</button>
     </div>
   </div>
 
   <!-- State: When An Element Is Selected -->
   <div class="flex-1 overflow-y-auto" data-show="hasSelection">
     
+    <!-- Selected Element Header Tag Badge -->
+    <div class="px-3 py-1.5 bg-base-200/40 border-b border-base-content/10 flex items-center justify-between">
+      <div class="flex items-center gap-1.5">
+        <span class="badge badge-primary badge-sm font-mono font-bold text-[10px]" data-bind="inspector.tag || 'DIV'"></span>
+        <span class="text-[11px] font-mono opacity-60 truncate max-w-[140px]" data-bind="inspector.id ? '#' + inspector.id : ''"></span>
+      </div>
+      <div class="flex items-center gap-1">
+        <button class="btn btn-ghost btn-xs h-6 w-6 p-0 text-base-content/60 hover:text-base-content" title="Select Parent" data-on-click="selectParent()">
+          <iconify-icon icon="material-symbols-light:arrow-upward" class="text-sm"></iconify-icon>
+        </button>
+        <button class="btn btn-ghost btn-xs h-6 w-6 p-0 text-error hover:bg-error/10" title="Delete Element" data-on-click="deleteSelected()">
+          <iconify-icon icon="material-symbols-light:delete-outline" class="text-sm"></iconify-icon>
+        </button>
+      </div>
+    </div>
+
     <!-- ================= 1. CONTENT TAB ================= -->
-    <div class="p-2 space-y-3" data-show="propertiesSubTab === 'content'">
+    <div class="p-3 space-y-3" data-show="propertiesSubTab === 'content'">
       
       <!-- Tag-Aware Section: Heading Controls -->
-      <div class="border border-base-content/10 rounded bg-base-100 p-2.5 space-y-2"
+      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2"
         data-show="['H1','H2','H3','H4','H5','H6'].includes(inspector.tag)">
         <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
-          <span>Heading</span>
-          <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
+          <span>Heading Controls</span>
+          <iconify-icon icon="material-symbols-light:title" class="text-sm text-primary"></iconify-icon>
         </div>
         
         <div class="space-y-1">
-          <label class="text-[10px] text-base-content/60 font-medium">Size</label>
+          <label class="text-[10px] text-base-content/60 font-medium">Heading Level</label>
           <select class="select select-bordered select-xs w-full h-7 rounded text-xs"
             data-on-change="changeTag($evt.target.value.toLowerCase())">
-            <option value="H1" data-bind-selected="inspector.tag === 'H1'">Heading 1</option>
-            <option value="H2" data-bind-selected="inspector.tag === 'H2'">Heading 2</option>
-            <option value="H3" data-bind-selected="inspector.tag === 'H3'">Heading 3</option>
-            <option value="H4" data-bind-selected="inspector.tag === 'H4'">Heading 4</option>
-            <option value="H5" data-bind-selected="inspector.tag === 'H5'">Heading 5</option>
-            <option value="H6" data-bind-selected="inspector.tag === 'H6'">Heading 6</option>
+            <option value="H1" data-bind-selected="inspector.tag === 'H1'">H1 - Main Title</option>
+            <option value="H2" data-bind-selected="inspector.tag === 'H2'">H2 - Section Heading</option>
+            <option value="H3" data-bind-selected="inspector.tag === 'H3'">H3 - Subsection Heading</option>
+            <option value="H4" data-bind-selected="inspector.tag === 'H4'">H4 - Minor Heading</option>
+            <option value="H5" data-bind-selected="inspector.tag === 'H5'">H5 - Sub-heading</option>
+            <option value="H6" data-bind-selected="inspector.tag === 'H6'">H6 - Small Heading</option>
           </select>
         </div>
 
         <div class="space-y-1">
           <label class="text-[10px] text-base-content/60 font-medium">Text Content</label>
-          <textarea class="textarea textarea-bordered textarea-xs w-full font-sans text-xs rounded leading-tight"
+          <textarea class="textarea textarea-bordered textarea-xs w-full font-sans text-xs rounded-lg leading-tight"
             rows="3"
             data-bind-value="inspector.textContent"
             data-on-input="updateInspectorText($evt.target.value)"></textarea>
@@ -71,29 +87,30 @@
       </div>
 
       <!-- Tag-Aware Section: Link Controls -->
-      <div class="border border-base-content/10 rounded bg-base-100 p-2.5 space-y-2"
+      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2"
         data-show="inspector.tag === 'A'">
         <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
           <span>Link (Anchor)</span>
-          <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
+          <iconify-icon icon="material-symbols-light:link" class="text-sm text-primary"></iconify-icon>
         </div>
         <div class="space-y-1">
           <label class="text-[10px] text-base-content/60 font-medium">Href URL</label>
-          <input type="text" class="input input-bordered input-xs w-full h-7 rounded"
+          <input type="text" class="input input-bordered input-xs w-full h-7 rounded-lg"
+            placeholder="https://..."
             data-bind-value="inspector.href"
-            data-on-input="setAttr('href', $evt.target.value)" />
+            data-on-input="updateAttribute('href', $evt.target.value)" />
         </div>
         <div class="space-y-1">
           <label class="text-[10px] text-base-content/60 font-medium">Target</label>
-          <select class="select select-bordered select-xs w-full h-7 rounded"
-            data-on-change="setAttr('target', $evt.target.value)">
+          <select class="select select-bordered select-xs w-full h-7 rounded-lg"
+            data-on-change="updateAttribute('target', $evt.target.value)">
             <option value="_self">Same window (_self)</option>
             <option value="_blank">New tab (_blank)</option>
           </select>
         </div>
         <div class="space-y-1">
-          <label class="text-[10px] text-base-content/60 font-medium">Text</label>
-          <textarea class="textarea textarea-bordered textarea-xs w-full font-sans text-xs rounded"
+          <label class="text-[10px] text-base-content/60 font-medium">Text Label</label>
+          <textarea class="textarea textarea-bordered textarea-xs w-full font-sans text-xs rounded-lg"
             rows="2"
             data-bind-value="inspector.textContent"
             data-on-input="updateInspectorText($evt.target.value)"></textarea>
@@ -101,545 +118,397 @@
       </div>
 
       <!-- Tag-Aware Section: Image Controls -->
-      <div class="border border-base-content/10 rounded bg-base-100 p-2.5 space-y-2"
+      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2"
         data-show="inspector.tag === 'IMG'">
         <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
-          <span>Image</span>
-          <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
+          <span>Image Properties</span>
+          <iconify-icon icon="material-symbols-light:image" class="text-sm text-primary"></iconify-icon>
         </div>
         <div class="space-y-1">
           <label class="text-[10px] text-base-content/60 font-medium">Image Source (URL)</label>
-          <input type="text" class="input input-bordered input-xs w-full h-7 rounded"
+          <input type="text" class="input input-bordered input-xs w-full h-7 rounded-lg"
             data-bind-value="inspector.src"
-            data-on-input="setAttr('src', $evt.target.value)" />
+            data-on-input="updateAttribute('src', $evt.target.value)" />
         </div>
         <div class="space-y-1">
           <label class="text-[10px] text-base-content/60 font-medium">Alt Text</label>
-          <input type="text" class="input input-bordered input-xs w-full h-7 rounded"
-            data-on-input="setAttr('alt', $evt.target.value)" />
+          <input type="text" class="input input-bordered input-xs w-full h-7 rounded-lg"
+            data-bind-value="inspector.alt"
+            data-on-input="updateAttribute('alt', $evt.target.value)" />
         </div>
       </div>
 
       <!-- Tag-Aware Section: Generic Leaf Text -->
-      <div class="border border-base-content/10 rounded bg-base-100 p-2.5 space-y-2"
+      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2"
         data-show="inspector.isTextLeaf && !['H1','H2','H3','H4','H5','H6','A','IMG'].includes(inspector.tag)">
         <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
-          <span>Text Leaf</span>
-          <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
+          <span>Text Content</span>
+          <iconify-icon icon="material-symbols-light:notes" class="text-sm text-primary"></iconify-icon>
         </div>
-        <textarea class="textarea textarea-bordered textarea-xs w-full font-sans text-xs rounded leading-tight"
+        <textarea class="textarea textarea-bordered textarea-xs w-full font-sans text-xs rounded-lg leading-tight"
           rows="3"
           data-bind-value="inspector.textContent"
           data-on-input="updateInspectorText($evt.target.value)"></textarea>
       </div>
 
-      <!-- General Accordion (ID, Title, Classes) -->
-      <div class="border border-base-content/10 rounded bg-base-100 p-2.5 space-y-2.5">
+      <!-- General Identifiers (ID, Title, Classes) -->
+      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2">
         <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
-          <span>General</span>
-          <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
+          <span>Identifiers</span>
+          <iconify-icon icon="material-symbols-light:fingerprint" class="text-sm text-primary"></iconify-icon>
         </div>
 
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="text-[10px] text-base-content/60 font-medium block mb-1">Id</label>
-            <input type="text" class="input input-bordered input-xs w-full h-7 rounded"
+            <label class="text-[10px] text-base-content/60 font-medium block mb-1">ID</label>
+            <input type="text" class="input input-bordered input-xs w-full h-7 rounded-md font-mono text-[11px]"
               placeholder="element-id"
               data-bind-value="inspector.id"
-              data-on-input="updateInspectorId($evt.target.value)" />
+              data-on-input="updateAttribute('id', $evt.target.value)" />
           </div>
           <div>
             <label class="text-[10px] text-base-content/60 font-medium block mb-1">Title</label>
-            <input type="text" class="input input-bordered input-xs w-full h-7 rounded"
-              placeholder="title tooltip"
-              data-on-input="setAttr('title', $evt.target.value)" />
+            <input type="text" class="input input-bordered input-xs w-full h-7 rounded-md"
+              placeholder="Tooltip text"
+              data-on-input="updateAttribute('title', $evt.target.value)" />
           </div>
         </div>
 
         <div>
-          <label class="text-[10px] text-base-content/60 font-medium block mb-1">Class</label>
-          <input type="text" class="input input-bordered input-xs w-full h-7 rounded font-mono text-[11px]"
+          <label class="text-[10px] text-base-content/60 font-medium block mb-1">Classes</label>
+          <input type="text" class="input input-bordered input-xs w-full h-7 rounded-md font-mono text-[11px]"
             data-bind-value="inspector.className"
-            data-on-input="updateInspectorClasses($evt.target.value)" />
+            data-on-input="updateClassAttribute($evt.target.value)" />
+        </div>
+      </div>
+
+      <!-- DaisyUI Quick Utility Chips -->
+      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2">
+        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
+          <span>DaisyUI Utility Chips</span>
+          <iconify-icon icon="material-symbols-light:category" class="text-sm text-primary"></iconify-icon>
+        </div>
+        <div class="flex flex-wrap gap-1 text-[10px]">
+          <button class="btn btn-xs h-6 px-2 min-h-0 rounded-md" data-class="{ 'btn-primary': (inspector.className || '').includes('btn-primary'), 'btn-outline': !(inspector.className || '').includes('btn-primary') }" data-on-click="toggleDaisyClass('btn-primary')">btn-primary</button>
+          <button class="btn btn-xs h-6 px-2 min-h-0 rounded-md" data-class="{ 'btn-secondary': (inspector.className || '').includes('btn-secondary'), 'btn-outline': !(inspector.className || '').includes('btn-secondary') }" data-on-click="toggleDaisyClass('btn-secondary')">btn-secondary</button>
+          <button class="btn btn-xs h-6 px-2 min-h-0 rounded-md" data-class="{ 'btn-accent': (inspector.className || '').includes('btn-accent'), 'btn-outline': !(inspector.className || '').includes('btn-accent') }" data-on-click="toggleDaisyClass('btn-accent')">btn-accent</button>
+          <button class="btn btn-xs h-6 px-2 min-h-0 rounded-md btn-outline" data-on-click="toggleDaisyClass('shadow-md')">shadow-md</button>
+          <button class="btn btn-xs h-6 px-2 min-h-0 rounded-md btn-outline" data-on-click="toggleDaisyClass('rounded-2xl')">rounded-2xl</button>
+          <button class="btn btn-xs h-6 px-2 min-h-0 rounded-md btn-outline" data-on-click="toggleDaisyClass('badge')">badge</button>
+          <button class="btn btn-xs h-6 px-2 min-h-0 rounded-md btn-outline" data-on-click="toggleDaisyClass('card')">card</button>
         </div>
       </div>
 
     </div>
 
-    <!-- ================= 2. STYLE TAB (All 9 VvvebJs Sections) ================= -->
-    <div class="p-2 space-y-2.5" data-show="propertiesSubTab === 'style'">
+    <!-- ================= 2. STYLE TAB (WEBSTUDIO FUSION) ================= -->
+    <div class="p-3 space-y-3" data-show="propertiesSubTab === 'style'">
       
-      <!-- Pseudo-State Selector -->
-      <div>
-        <select class="select select-bordered select-xs w-full h-7 rounded text-xs"
-          data-bind-value="styleState">
-          <option value="">- State -</option>
-          <option value="hover">hover</option>
-          <option value="active">active</option>
-          <option value="focus">focus</option>
-          <option value="nth-of-type(2n)">nth-of-type(2n)</option>
-        </select>
-      </div>
-
-      <!-- 1. DISPLAY ACCORDION -->
-      <div class="border border-base-content/10 rounded bg-base-100 p-2.5 space-y-2">
+      <!-- 1. WEBSTUDIO VISUAL FLEXBOX & LAYOUT CONTROLLER -->
+      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2.5">
         <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
-          <span>Display</span>
-          <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Display</label>
-            <select class="select select-bordered select-xs w-full h-6 min-h-0 text-[11px] rounded"
-              data-on-change="setStyle('display', $evt.target.value)">
-              <option value="block">Block</option>
-              <option value="inline">Inline</option>
-              <option value="inline-block">Inline Block</option>
-              <option value="flex">Flex</option>
-              <option value="inline-flex">Inline Flex</option>
-              <option value="grid">Grid</option>
-              <option value="inline-grid">Inline Grid</option>
-              <option value="table">Table</option>
-              <option value="table-row">Table Row</option>
-              <option value="list-item">List Item</option>
-              <option value="inherit">Inherit</option>
-              <option value="initial">Initial</option>
-              <option value="none">none</option>
-            </select>
-          </div>
-          <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Position</label>
-            <select class="select select-bordered select-xs w-full h-6 min-h-0 text-[11px] rounded"
-              data-on-change="setStyle('position', $evt.target.value)">
-              <option value="static">Static</option>
-              <option value="fixed">Fixed</option>
-              <option value="relative">Relative</option>
-              <option value="absolute">Absolute</option>
-            </select>
+          <div class="flex items-center gap-1.5">
+            <iconify-icon icon="material-symbols-light:account-tree" class="text-sm text-primary"></iconify-icon>
+            <span>Layout (Flexbox & Grid)</span>
           </div>
         </div>
 
-        <!-- Coordinates: Top, Left, Bottom, Right -->
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Top</label>
-            <input type="text" placeholder="auto" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="setStyle('top', $evt.target.value)" />
-          </div>
-          <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Left</label>
-            <input type="text" placeholder="auto" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="setStyle('left', $evt.target.value)" />
-          </div>
-          <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Bottom</label>
-            <input type="text" placeholder="auto" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="setStyle('bottom', $evt.target.value)" />
-          </div>
-          <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Right</label>
-            <input type="text" placeholder="auto" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="setStyle('right', $evt.target.value)" />
-          </div>
-        </div>
-
-        <!-- Float 3-Segmented Buttons -->
+        <!-- Display Mode Segmented Buttons -->
         <div>
-          <label class="text-[10px] text-base-content/60 block mb-1">Float</label>
-          <div class="join w-full">
-            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-outline border-base-content/20 font-normal" data-on-click="setStyle('float', 'none')">✕</button>
-            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-outline border-base-content/20 font-normal" data-on-click="setStyle('float', 'left')">Left</button>
-            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-outline border-base-content/20 font-normal" data-on-click="setStyle('float', 'right')">Right</button>
+          <label class="text-[10px] text-base-content/60 font-medium block mb-1">Display</label>
+          <div class="grid grid-cols-4 gap-1">
+            <button class="btn btn-xs h-6 min-h-0 rounded-md text-[10px]"
+              data-class="{ 'btn-primary font-bold shadow-xs': (inspector.display || '').includes('flex'), 'btn-ghost border border-base-content/10': !(inspector.display || '').includes('flex') }"
+              data-on-click="updateStyle('display', 'flex')">Flex</button>
+            <button class="btn btn-xs h-6 min-h-0 rounded-md text-[10px]"
+              data-class="{ 'btn-primary font-bold shadow-xs': (inspector.display || '').includes('grid'), 'btn-ghost border border-base-content/10': !(inspector.display || '').includes('grid') }"
+              data-on-click="updateStyle('display', 'grid')">Grid</button>
+            <button class="btn btn-xs h-6 min-h-0 rounded-md text-[10px]"
+              data-class="{ 'btn-primary font-bold shadow-xs': (inspector.display || '') === 'block', 'btn-ghost border border-base-content/10': (inspector.display || '') !== 'block' }"
+              data-on-click="updateStyle('display', 'block')">Block</button>
+            <button class="btn btn-xs h-6 min-h-0 rounded-md text-[10px]"
+              data-class="{ 'btn-primary font-bold shadow-xs': (inspector.display || '') === 'inline-block', 'btn-ghost border border-base-content/10': (inspector.display || '') !== 'inline-block' }"
+              data-on-click="updateStyle('display', 'inline-block')">Inline</button>
           </div>
         </div>
 
-        <!-- Opacity Slider -->
+        <!-- Webstudio Visual Flex Direction Buttons -->
         <div>
-          <div class="flex items-center justify-between text-[10px] text-base-content/60 mb-0.5">
-            <span>Opacity</span>
-            <span class="font-mono">1</span>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-[10px] text-base-content/60 font-medium">Flex Direction</label>
           </div>
-          <input type="range" min="0" max="1" step="0.05" value="1" class="range range-xs range-primary"
-            data-on-input="setStyle('opacity', $evt.target.value)" />
+          <div class="join w-full bg-base-200/50 p-0.5 rounded-lg border border-base-content/10">
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-ghost text-xs" title="Row (Horizontal)" data-on-click="updateStyle('flexDirection', 'row')">
+              <iconify-icon icon="material-symbols-light:arrow-forward" class="text-sm"></iconify-icon>
+            </button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-ghost text-xs" title="Row Reverse" data-on-click="updateStyle('flexDirection', 'row-reverse')">
+              <iconify-icon icon="material-symbols-light:arrow-back" class="text-sm"></iconify-icon>
+            </button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-ghost text-xs" title="Column (Vertical)" data-on-click="updateStyle('flexDirection', 'column')">
+              <iconify-icon icon="material-symbols-light:arrow-downward" class="text-sm"></iconify-icon>
+            </button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-ghost text-xs" title="Column Reverse" data-on-click="updateStyle('flexDirection', 'column-reverse')">
+              <iconify-icon icon="material-symbols-light:arrow-upward" class="text-sm"></iconify-icon>
+            </button>
+          </div>
         </div>
 
-        <!-- Colors -->
+        <!-- Webstudio Visual Justify Content & Align Items -->
+        <div class="space-y-1.5">
+          <label class="text-[10px] text-base-content/60 font-medium block">Justify Content</label>
+          <div class="join w-full bg-base-200/50 p-0.5 rounded-lg border border-base-content/10">
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-ghost text-xs" title="Start" data-on-click="updateStyle('justifyContent', 'flex-start')">
+              <iconify-icon icon="material-symbols-light:align-horizontal-left"></iconify-icon>
+            </button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-ghost text-xs" title="Center" data-on-click="updateStyle('justifyContent', 'center')">
+              <iconify-icon icon="material-symbols-light:align-horizontal-center"></iconify-icon>
+            </button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-ghost text-xs" title="End" data-on-click="updateStyle('justifyContent', 'flex-end')">
+              <iconify-icon icon="material-symbols-light:align-horizontal-right"></iconify-icon>
+            </button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-ghost text-xs" title="Space Between" data-on-click="updateStyle('justifyContent', 'space-between')">
+              <iconify-icon icon="material-symbols-light:space-bar"></iconify-icon>
+            </button>
+          </div>
+
+          <label class="text-[10px] text-base-content/60 font-medium block pt-1">Align Items</label>
+          <div class="join w-full bg-base-200/50 p-0.5 rounded-lg border border-base-content/10">
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-ghost text-xs" title="Stretch" data-on-click="updateStyle('alignItems', 'stretch')">
+              <iconify-icon icon="material-symbols-light:expand"></iconify-icon>
+            </button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-ghost text-xs" title="Center" data-on-click="updateStyle('alignItems', 'center')">
+              <iconify-icon icon="material-symbols-light:vertical-align-center"></iconify-icon>
+            </button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-ghost text-xs" title="Start" data-on-click="updateStyle('alignItems', 'flex-start')">
+              <iconify-icon icon="material-symbols-light:vertical-align-top"></iconify-icon>
+            </button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-ghost text-xs" title="End" data-on-click="updateStyle('alignItems', 'flex-end')">
+              <iconify-icon icon="material-symbols-light:vertical-align-bottom"></iconify-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Gap Controller -->
         <div class="flex items-center justify-between pt-1">
-          <span class="text-[10px] text-base-content/60">Background</span>
-          <input type="color" class="w-6 h-6 rounded cursor-pointer border border-base-content/20 bg-transparent"
-            data-on-input="setStyle('backgroundColor', $evt.target.value)" />
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-[10px] text-base-content/60">Text Color</span>
-          <input type="color" class="w-6 h-6 rounded cursor-pointer border border-base-content/20 bg-transparent"
-            data-on-input="setStyle('color', $evt.target.value)" />
+          <label class="text-[10px] text-base-content/60 font-medium">Gap</label>
+          <div class="flex items-center w-28">
+            <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px] font-mono rounded-md"
+              data-bind-value="inspector.gap"
+              data-on-input="updateStyle('gap', $evt.target.value)" />
+          </div>
         </div>
       </div>
 
-      <!-- 2. TYPOGRAPHY ACCORDION -->
-      <div class="border border-base-content/10 rounded bg-base-100 p-2.5 space-y-2">
+      <!-- 2. WEBSTUDIO VISUAL SPACING BOX MODEL (MARGIN & PADDING) -->
+      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2">
         <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
-          <span>Typography</span>
-          <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
+          <div class="flex items-center gap-1.5">
+            <iconify-icon icon="material-symbols-light:crop-free" class="text-sm text-primary"></iconify-icon>
+            <span>Spacing Box Model</span>
+          </div>
+          <span class="text-[10px] text-base-content/40 font-mono">margin • padding</span>
+        </div>
+
+        <!-- Concentric Box Model Diagram -->
+        <div class="bg-base-200/60 p-3 rounded-xl border border-base-content/10 relative text-[10px] select-none font-mono">
+          <!-- Margin Label -->
+          <span class="absolute top-1 left-2 text-[9px] font-bold text-accent/80 uppercase">margin</span>
+          
+          <!-- Margin Inputs -->
+          <div class="flex justify-center mb-1">
+            <input type="text" placeholder="0" class="w-12 h-5 text-center bg-base-100 border border-base-content/20 rounded text-[10px]"
+              data-on-input="updateStyle('marginTop', $evt.target.value + 'px')" />
+          </div>
+          
+          <div class="flex items-center justify-between">
+            <input type="text" placeholder="0" class="w-10 h-5 text-center bg-base-100 border border-base-content/20 rounded text-[10px]"
+              data-on-input="updateStyle('marginLeft', $evt.target.value + 'px')" />
+
+            <!-- Inner Padding Box -->
+            <div class="bg-base-100 p-2.5 rounded-lg border border-primary/30 flex-1 mx-2 relative">
+              <span class="absolute top-0.5 left-1 text-[8px] font-bold text-primary/80 uppercase">padding</span>
+              
+              <div class="flex justify-center mb-1">
+                <input type="text" placeholder="0" class="w-10 h-5 text-center bg-base-200 border border-base-content/20 rounded text-[10px]"
+                  data-on-input="updateStyle('paddingTop', $evt.target.value + 'px')" />
+              </div>
+
+              <div class="flex items-center justify-between">
+                <input type="text" placeholder="0" class="w-8 h-5 text-center bg-base-200 border border-base-content/20 rounded text-[10px]"
+                  data-on-input="updateStyle('paddingLeft', $evt.target.value + 'px')" />
+                
+                <!-- Center Element Dimensions Tag -->
+                <div class="px-2 py-1 bg-primary/10 text-primary font-bold rounded text-[9px] text-center"
+                  data-bind="inspector.tag || 'DIV'"></div>
+
+                <input type="text" placeholder="0" class="w-8 h-5 text-center bg-base-200 border border-base-content/20 rounded text-[10px]"
+                  data-on-input="updateStyle('paddingRight', $evt.target.value + 'px')" />
+              </div>
+
+              <div class="flex justify-center mt-1">
+                <input type="text" placeholder="0" class="w-10 h-5 text-center bg-base-200 border border-base-content/20 rounded text-[10px]"
+                  data-on-input="updateStyle('paddingBottom', $evt.target.value + 'px')" />
+              </div>
+            </div>
+
+            <input type="text" placeholder="0" class="w-10 h-5 text-center bg-base-100 border border-base-content/20 rounded text-[10px]"
+              data-on-input="updateStyle('marginRight', $evt.target.value + 'px')" />
+          </div>
+
+          <div class="flex justify-center mt-1">
+            <input type="text" placeholder="0" class="w-12 h-5 text-center bg-base-100 border border-base-content/20 rounded text-[10px]"
+              data-on-input="updateStyle('marginBottom', $evt.target.value + 'px')" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. TYPOGRAPHY SUITE -->
+      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2">
+        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
+          <div class="flex items-center gap-1.5">
+            <iconify-icon icon="material-symbols-light:format-size" class="text-sm text-primary"></iconify-icon>
+            <span>Typography</span>
+          </div>
+        </div>
+
+        <!-- Text Alignment Icons -->
+        <div class="join w-full bg-base-200/50 p-0.5 rounded-lg border border-base-content/10">
+          <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-ghost" title="Align Left" data-on-click="updateStyle('textAlign', 'left')">
+            <iconify-icon icon="material-symbols-light:format-align-left"></iconify-icon>
+          </button>
+          <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-ghost" title="Align Center" data-on-click="updateStyle('textAlign', 'center')">
+            <iconify-icon icon="material-symbols-light:format-align-center"></iconify-icon>
+          </button>
+          <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-ghost" title="Align Right" data-on-click="updateStyle('textAlign', 'right')">
+            <iconify-icon icon="material-symbols-light:format-align-right"></iconify-icon>
+          </button>
+          <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-ghost" title="Justify" data-on-click="updateStyle('textAlign', 'justify')">
+            <iconify-icon icon="material-symbols-light:format-align-justify"></iconify-icon>
+          </button>
         </div>
 
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Font size</label>
-            <div class="flex items-center">
-              <input type="number" class="input input-bordered input-xs w-full h-6 min-h-0 text-[11px] rounded-r-none font-mono"
-                data-on-input="setStyle('fontSize', $evt.target.value + 'px')" />
-              <span class="bg-base-200 border border-l-0 border-base-content/20 px-1.5 h-6 text-[10px] flex items-center rounded-r">px</span>
-            </div>
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Font Size</label>
+            <input type="text" placeholder="16px" class="input input-bordered input-xs w-full h-6 text-[11px] font-mono rounded-md"
+              data-bind-value="inspector.fontSize"
+              data-on-input="updateStyle('fontSize', $evt.target.value)" />
           </div>
           <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Font weight</label>
-            <select class="select select-bordered select-xs w-full h-6 min-h-0 text-[11px] rounded"
-              data-on-change="setStyle('fontWeight', $evt.target.value)">
+            <label class="text-[10px] text-base-content/60 block mb-0.5">Font Weight</label>
+            <select class="select select-bordered select-xs w-full h-6 min-h-0 text-[11px] rounded-md"
+              data-on-change="updateStyle('fontWeight', $evt.target.value)">
               <option value="">Default</option>
-              <option value="100">Thin (100)</option>
-              <option value="200">Extra-Light (200)</option>
               <option value="300">Light (300)</option>
-              <option value="400">Normal (400)</option>
+              <option value="400">Regular (400)</option>
               <option value="500">Medium (500)</option>
-              <option value="600">Semi-Bold (600)</option>
+              <option value="600">Semibold (600)</option>
               <option value="700">Bold (700)</option>
-              <option value="800">Extra-Bold (800)</option>
-              <option value="900">Ultra-Bold (900)</option>
+              <option value="900">Black (900)</option>
             </select>
           </div>
         </div>
 
-        <div>
-          <label class="text-[10px] text-base-content/60 block mb-0.5">Font family</label>
-          <select class="select select-bordered select-xs w-full h-6 min-h-0 text-[11px] rounded"
-            data-on-change="setStyle('fontFamily', $evt.target.value)">
-            <option value="">Default</option>
-            <option value="Arial, Helvetica, sans-serif">Arial</option>
-            <option value="'Helvetica Neue', Helvetica, sans-serif">Helvetica Neue</option>
-            <option value="'Times New Roman', Times, serif">Times New Roman</option>
-            <option value="Georgia, serif">Georgia</option>
-            <option value="'Courier New', Courier, monospace">Courier New</option>
-            <option value="Verdana, Geneva, sans-serif">Verdana</option>
-            <option value="Tahoma, Geneva, sans-serif">Tahoma</option>
-            <option value="system-ui, sans-serif">System Sans</option>
-          </select>
-        </div>
-
-        <!-- 5-Button Text Align Segments -->
-        <div>
-          <label class="text-[10px] text-base-content/60 block mb-1">Text align</label>
-          <div class="join w-full">
-            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-outline border-base-content/20" title="None" data-on-click="setStyle('textAlign', '')">✕</button>
-            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-outline border-base-content/20" title="Left" data-on-click="setStyle('textAlign', 'left')">
-              <iconify-icon icon="material-symbols-light:format-align-left"></iconify-icon>
-            </button>
-            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-outline border-base-content/20" title="Center" data-on-click="setStyle('textAlign', 'center')">
-              <iconify-icon icon="material-symbols-light:format-align-center"></iconify-icon>
-            </button>
-            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-outline border-base-content/20" title="Right" data-on-click="setStyle('textAlign', 'right')">
-              <iconify-icon icon="material-symbols-light:format-align-right"></iconify-icon>
-            </button>
-            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 btn-outline border-base-content/20" title="Justify" data-on-click="setStyle('textAlign', 'justify')">
-              <iconify-icon icon="material-symbols-light:format-align-justify"></iconify-icon>
-            </button>
+        <!-- Color & Background -->
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <div class="flex items-center justify-between bg-base-200/50 p-1.5 rounded-lg border border-base-content/10">
+            <span class="text-[10px] text-base-content/70">Text Color</span>
+            <input type="color" class="w-5 h-5 rounded cursor-pointer border-0 bg-transparent p-0"
+              data-on-input="updateStyle('color', $evt.target.value)" />
           </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Line height</label>
-            <input type="text" placeholder="1.5" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="setStyle('lineHeight', $evt.target.value)" />
+          <div class="flex items-center justify-between bg-base-200/50 p-1.5 rounded-lg border border-base-content/10">
+            <span class="text-[10px] text-base-content/70">Bg Color</span>
+            <input type="color" class="w-5 h-5 rounded cursor-pointer border-0 bg-transparent p-0"
+              data-on-input="updateStyle('backgroundColor', $evt.target.value)" />
           </div>
-          <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Letter spacing</label>
-            <input type="text" placeholder="normal" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="setStyle('letterSpacing', $evt.target.value)" />
-          </div>
-        </div>
-
-        <div>
-          <label class="text-[10px] text-base-content/60 block mb-0.5">Decoration Style</label>
-          <select class="select select-bordered select-xs w-full h-6 min-h-0 text-[11px] rounded"
-            data-on-change="setStyle('textDecorationStyle', $evt.target.value)">
-            <option value="">Default</option>
-            <option value="solid">Solid</option>
-            <option value="wavy">Wavy</option>
-            <option value="dotted">Dotted</option>
-            <option value="dashed">Dashed</option>
-            <option value="double">Double</option>
-          </select>
         </div>
       </div>
 
-      <!-- 3. SIZE & DIMENSIONS ACCORDION -->
-      <div class="border border-base-content/10 rounded bg-base-100 p-2.5 space-y-2">
+      <!-- 4. SIZING & OPACITY -->
+      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2">
         <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
-          <span>Size</span>
-          <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
+          <div class="flex items-center gap-1.5">
+            <iconify-icon icon="material-symbols-light:aspect-ratio" class="text-sm text-primary"></iconify-icon>
+            <span>Dimensions & Opacity</span>
+          </div>
         </div>
+
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Width</label>
-            <input type="text" placeholder="auto" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="setStyle('width', $evt.target.value)" />
+            <input type="text" placeholder="auto" class="input input-bordered input-xs w-full h-6 text-[11px] font-mono rounded-md"
+              data-on-input="updateStyle('width', $evt.target.value)" />
           </div>
           <div>
             <label class="text-[10px] text-base-content/60 block mb-0.5">Height</label>
-            <input type="text" placeholder="auto" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="setStyle('height', $evt.target.value)" />
-          </div>
-          <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Min Width</label>
-            <input type="text" placeholder="auto" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="setStyle('minWidth', $evt.target.value)" />
-          </div>
-          <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Min Height</label>
-            <input type="text" placeholder="auto" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="setStyle('minHeight', $evt.target.value)" />
+            <input type="text" placeholder="auto" class="input input-bordered input-xs w-full h-6 text-[11px] font-mono rounded-md"
+              data-on-input="updateStyle('height', $evt.target.value)" />
           </div>
         </div>
-      </div>
 
-      <!-- 4. MARGIN ACCORDION -->
-      <div class="border border-base-content/10 rounded bg-base-100 p-2.5 space-y-2">
-        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
-          <span>Margin</span>
-          <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Top</label>
-            <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="setStyle('marginTop', $evt.target.value)" />
+        <div class="pt-1">
+          <div class="flex items-center justify-between text-[10px] text-base-content/60 mb-0.5">
+            <span>Opacity</span>
+            <span class="font-mono text-[9px]" data-bind="inspector.opacity || '1'"></span>
           </div>
-          <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Right</label>
-            <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="setStyle('marginRight', $evt.target.value)" />
-          </div>
-          <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Bottom</label>
-            <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="setStyle('marginBottom', $evt.target.value)" />
-          </div>
-          <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Left</label>
-            <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="setStyle('marginLeft', $evt.target.value)" />
-          </div>
-        </div>
-      </div>
-
-      <!-- 5. PADDING ACCORDION -->
-      <div class="border border-base-content/10 rounded bg-base-100 p-2.5 space-y-2">
-        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
-          <span>Padding</span>
-          <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Top</label>
-            <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="setStyle('paddingTop', $evt.target.value)" />
-          </div>
-          <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Right</label>
-            <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="setStyle('paddingRight', $evt.target.value)" />
-          </div>
-          <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Bottom</label>
-            <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="setStyle('paddingBottom', $evt.target.value)" />
-          </div>
-          <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Left</label>
-            <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="setStyle('paddingLeft', $evt.target.value)" />
-          </div>
-        </div>
-      </div>
-
-      <!-- 6. BORDER ACCORDION -->
-      <div class="border border-base-content/10 rounded bg-base-100 p-2.5 space-y-2">
-        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
-          <span>Border</span>
-          <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
-        </div>
-        <div>
-          <label class="text-[10px] text-base-content/60 block mb-0.5">Style</label>
-          <select class="select select-bordered select-xs w-full h-6 min-h-0 text-[11px] rounded"
-            data-on-change="setStyle('borderStyle', $evt.target.value)">
-            <option value="">Default</option>
-            <option value="solid">Solid</option>
-            <option value="dotted">Dotted</option>
-            <option value="dashed">Dashed</option>
-            <option value="double">Double</option>
-            <option value="none">None</option>
-          </select>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Width</label>
-            <input type="text" placeholder="1px" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="setStyle('borderWidth', $evt.target.value)" />
-          </div>
-          <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Color</label>
-            <input type="color" class="w-full h-6 rounded cursor-pointer border border-base-content/20 bg-transparent"
-              data-on-input="setStyle('borderColor', $evt.target.value)" />
-          </div>
-        </div>
-      </div>
-
-      <!-- 7. BORDER RADIUS ACCORDION -->
-      <div class="border border-base-content/10 rounded bg-base-100 p-2.5 space-y-2">
-        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
-          <span>Border Radius</span>
-          <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Top Left</label>
-            <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="setStyle('borderTopLeftRadius', $evt.target.value)" />
-          </div>
-          <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Top Right</label>
-            <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="setStyle('borderTopRightRadius', $evt.target.value)" />
-          </div>
-          <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Bottom Left</label>
-            <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="setStyle('borderBottomLeftRadius', $evt.target.value)" />
-          </div>
-          <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Bottom Right</label>
-            <input type="text" placeholder="0px" class="input input-bordered input-xs w-full h-6 text-[11px]"
-              data-on-input="setStyle('borderBottomRightRadius', $evt.target.value)" />
-          </div>
-        </div>
-      </div>
-
-      <!-- 8. BACKGROUND IMAGE ACCORDION -->
-      <div class="border border-base-content/10 rounded bg-base-100 p-2.5 space-y-2">
-        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
-          <span>Background Image</span>
-          <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
-        </div>
-        <div>
-          <label class="text-[10px] text-base-content/60 block mb-0.5">Image URL</label>
-          <input type="text" placeholder="url('...')" class="input input-bordered input-xs w-full h-6 text-[11px]"
-            data-on-input="setStyle('backgroundImage', 'url(' + $evt.target.value + ')')" />
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Repeat</label>
-            <select class="select select-bordered select-xs w-full h-6 min-h-0 text-[11px] rounded"
-              data-on-change="setStyle('backgroundRepeat', $evt.target.value)">
-              <option value="">Default</option>
-              <option value="repeat-x">repeat-x</option>
-              <option value="repeat-y">repeat-y</option>
-              <option value="no-repeat">no-repeat</option>
-            </select>
-          </div>
-          <div>
-            <label class="text-[10px] text-base-content/60 block mb-0.5">Size</label>
-            <select class="select select-bordered select-xs w-full h-6 min-h-0 text-[11px] rounded"
-              data-on-change="setStyle('backgroundSize', $evt.target.value)">
-              <option value="">Default</option>
-              <option value="contain">contain</option>
-              <option value="cover">cover</option>
-            </select>
-          </div>
+          <input type="range" min="0" max="1" step="0.05" value="1" class="range range-xs range-primary w-full"
+            data-on-input="updateStyle('opacity', $evt.target.value); inspector.opacity = $evt.target.value" />
         </div>
       </div>
 
     </div>
 
-    <!-- ================= 3. ADVANCED TAB ================= -->
-    <div class="p-2 space-y-3" data-show="propertiesSubTab === 'advanced'">
+    <!-- ================= 3. ADVANCED TAB: DIRECTIVES & ATTRIBUTES ================= -->
+    <div class="p-3 space-y-3" data-show="propertiesSubTab === 'advanced'">
       
-      <!-- Device Visibility Toggles -->
-      <div class="border border-base-content/10 rounded bg-base-100 p-2.5 space-y-2">
+      <!-- Nexus-UX Reactive Declarative Suite -->
+      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2.5">
         <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
-          <span>Hide based on device screen</span>
-          <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
-        </div>
-        <div class="space-y-1.5 pt-1">
-          <label class="flex items-center justify-between cursor-pointer">
-            <span class="text-[11px] text-base-content/70">Extra small (&lt;576px)</span>
-            <input type="checkbox" class="toggle toggle-xs toggle-primary"
-              data-on-change="toggleDaisyClass('hidden-xs')" />
-          </label>
-          <label class="flex items-center justify-between cursor-pointer">
-            <span class="text-[11px] text-base-content/70">Small (≥576px)</span>
-            <input type="checkbox" class="toggle toggle-xs toggle-primary"
-              data-on-change="toggleDaisyClass('hidden-sm')" />
-          </label>
-          <label class="flex items-center justify-between cursor-pointer">
-            <span class="text-[11px] text-base-content/70">Medium (≥768px)</span>
-            <input type="checkbox" class="toggle toggle-xs toggle-primary"
-              data-on-change="toggleDaisyClass('hidden-md')" />
-          </label>
-          <label class="flex items-center justify-between cursor-pointer">
-            <span class="text-[11px] text-base-content/70">Large (≥992px)</span>
-            <input type="checkbox" class="toggle toggle-xs toggle-primary"
-              data-on-change="toggleDaisyClass('hidden-lg')" />
-          </label>
-          <label class="flex items-center justify-between cursor-pointer">
-            <span class="text-[11px] text-base-content/70">Extra large (≥1200px)</span>
-            <input type="checkbox" class="toggle toggle-xs toggle-primary"
-              data-on-change="toggleDaisyClass('hidden-xl')" />
-          </label>
-        </div>
-      </div>
-
-      <!-- Nexus-UX Reactive Directives -->
-      <div class="border border-base-content/10 rounded bg-base-100 p-2.5 space-y-2">
-        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
-          <span>Nexus-UX Directives</span>
-          <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
+          <div class="flex items-center gap-1.5">
+            <iconify-icon icon="material-symbols-light:bolt" class="text-sm text-primary"></iconify-icon>
+            <span>Nexus Reactive Directives</span>
+          </div>
+          <span class="badge badge-xs badge-primary badge-outline text-[9px]">ZCZS</span>
         </div>
 
-        <div class="space-y-1">
-          <label class="text-[10px] font-mono text-primary font-bold">data-signal</label>
-          <input type="text" placeholder="{ count: 0 }" class="input input-bordered input-xs w-full font-mono text-[11px] h-6"
+        <div>
+          <label class="text-[10px] text-base-content/60 font-medium block mb-1">data-signal (Local State)</label>
+          <input type="text" class="input input-bordered input-xs w-full h-7 rounded-md font-mono text-[11px]"
+            placeholder="{ count: 0, open: false }"
             data-bind-value="inspector.dataSignal"
-            data-on-input="setAttr('data-signal', $evt.target.value)" />
+            data-on-input="updateAttribute('data-signal', $evt.target.value)" />
         </div>
 
-        <div class="space-y-1">
-          <label class="text-[10px] font-mono text-primary font-bold">data-bind</label>
-          <input type="text" placeholder="property" class="input input-bordered input-xs w-full font-mono text-[11px] h-6"
+        <div>
+          <label class="text-[10px] text-base-content/60 font-medium block mb-1">data-bind (Two-Way Binding)</label>
+          <input type="text" class="input input-bordered input-xs w-full h-7 rounded-md font-mono text-[11px]"
+            placeholder="title or formValue"
             data-bind-value="inspector.dataBind"
-            data-on-input="setAttr('data-bind', $evt.target.value)" />
+            data-on-input="updateAttribute('data-bind', $evt.target.value)" />
         </div>
 
-        <div class="space-y-1">
-          <label class="text-[10px] font-mono text-primary font-bold">data-show</label>
-          <input type="text" placeholder="isOpen" class="input input-bordered input-xs w-full font-mono text-[11px] h-6"
+        <div>
+          <label class="text-[10px] text-base-content/60 font-medium block mb-1">data-show (Visibility Toggle)</label>
+          <input type="text" class="input input-bordered input-xs w-full h-7 rounded-md font-mono text-[11px]"
+            placeholder="isOpen && !isLoading"
             data-bind-value="inspector.dataShow"
-            data-on-input="setAttr('data-show', $evt.target.value)" />
+            data-on-input="updateAttribute('data-show', $evt.target.value)" />
         </div>
 
-        <div class="space-y-1">
-          <label class="text-[10px] font-mono text-primary font-bold">data-on-click</label>
-          <input type="text" placeholder="isOpen = !isOpen" class="input input-bordered input-xs w-full font-mono text-[11px] h-6"
+        <div>
+          <label class="text-[10px] text-base-content/60 font-medium block mb-1">data-on-click (Event Handler)</label>
+          <input type="text" class="input input-bordered input-xs w-full h-7 rounded-md font-mono text-[11px]"
+            placeholder="count++; $dispatch('done')"
             data-bind-value="inspector.dataOnClick"
-            data-on-input="setAttr('data-on-click', $evt.target.value)" />
+            data-on-input="updateAttribute('data-on-click', $evt.target.value)" />
         </div>
 
-        <div class="space-y-1">
-          <label class="text-[10px] font-mono text-primary font-bold">data-for</label>
-          <input type="text" placeholder="item in items" class="input input-bordered input-xs w-full font-mono text-[11px] h-6"
+        <div>
+          <label class="text-[10px] text-base-content/60 font-medium block mb-1">data-for (Keyed Loop)</label>
+          <input type="text" class="input input-bordered input-xs w-full h-7 rounded-md font-mono text-[11px]"
+            placeholder="item in items"
             data-bind-value="inspector.dataFor"
-            data-on-input="setAttr('data-for', $evt.target.value)" />
+            data-on-input="updateAttribute('data-for', $evt.target.value)" />
         </div>
       </div>
 
