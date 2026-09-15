@@ -622,65 +622,67 @@
   data-on-canvasloaded="refreshTree(); refreshPageSections(); syncCanvasHtmlToDraft()"
   data-on-canvasdeselect="deselectElement()">
 
-  <!-- 1. VvvebJs Far-Left Navigation Sidebar (.sidebar / small-nav) -->
+  <!-- 1. Webstudio Far-Left Activity Bar (.sidebar) -->
   <aside class="flex flex-col shrink-0 border-r border-base-content/10 bg-base-200/90 backdrop-blur-md transition-all duration-200 z-30 select-none"
     data-class="{ 'w-48': sidebarExpanded, 'w-12': !sidebarExpanded }">
     
-    <!-- Top Logo / Header -->
-    <div class="h-9 flex items-center px-2.5 border-b border-base-content/10 overflow-hidden shrink-0">
+    <!-- Top Brand / Logo -->
+    <div class="h-[38px] flex items-center px-2.5 border-b border-base-content/10 overflow-hidden shrink-0">
       <div class="flex items-center gap-2">
-        <div class="w-6 h-6 rounded bg-primary text-primary-content flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
-          <iconify-icon icon="material-symbols-light:dashboard-customize" class="text-sm"></iconify-icon>
+        <div class="w-6 h-6 rounded bg-[#2979ff] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
+          <iconify-icon icon="material-symbols-light:web" class="text-sm"></iconify-icon>
         </div>
-        <span class="font-bold tracking-tight text-xs truncate" data-show="sidebarExpanded">VvvebJs</span>
+        <span class="font-bold tracking-tight text-xs truncate" data-show="sidebarExpanded">Webstudio</span>
       </div>
     </div>
 
-    <!-- Vertical Icon Tabs -->
-    <nav class="flex-1 flex flex-col py-1.5 gap-0.5 overflow-y-auto overflow-x-hidden">
+    <!-- Vertical Activity Bar Tabs -->
+    <nav class="flex-1 flex flex-col py-1.5 gap-1 overflow-y-auto overflow-x-hidden">
+      <!-- Add / Components Tab -->
+      <button class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors relative mx-1"
+        data-class="{ 'bg-[#2979ff] text-white shadow-sm font-semibold': activeSidebarTab === 'components' && showLeftColumn, 'text-base-content/70 hover:bg-base-300 hover:text-base-content': !(activeSidebarTab === 'components' && showLeftColumn) }"
+        data-on-click="activeSidebarTab = 'components'; showLeftColumn = true"
+        title="Add Elements & Components (A)">
+        <iconify-icon icon="material-symbols-light:add-box-outline" class="text-lg shrink-0"></iconify-icon>
+        <span class="truncate text-xs" data-show="sidebarExpanded">Add</span>
+      </button>
+
+      <!-- Navigator Tab (DOM Tree) -->
+      <button class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors relative mx-1"
+        data-class="{ 'bg-[#2979ff] text-white shadow-sm font-semibold': activeSidebarTab === 'navigator' && showLeftColumn, 'text-base-content/70 hover:bg-base-300 hover:text-base-content': !(activeSidebarTab === 'navigator' && showLeftColumn) }"
+        data-on-click="activeSidebarTab = 'navigator'; showLeftColumn = true; refreshTree()"
+        title="Navigator (Z)">
+        <iconify-icon icon="material-symbols-light:account-tree-outline" class="text-lg shrink-0"></iconify-icon>
+        <span class="truncate text-xs" data-show="sidebarExpanded">Navigator</span>
+      </button>
+
       <!-- Pages Tab -->
       <button class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors relative mx-1"
-        data-class="{ 'bg-primary text-primary-content shadow-sm font-semibold': activeSidebarTab === 'pages' && showLeftColumn, 'text-base-content/70 hover:bg-base-300 hover:text-base-content': activeSidebarTab !== 'pages' || !showLeftColumn }"
+        data-class="{ 'bg-[#2979ff] text-white shadow-sm font-semibold': activeSidebarTab === 'pages' && showLeftColumn, 'text-base-content/70 hover:bg-base-300 hover:text-base-content': !(activeSidebarTab === 'pages' && showLeftColumn) }"
         data-on-click="activeSidebarTab = 'pages'; showLeftColumn = true"
-        title="Pages & DOM Navigator">
+        title="Pages (P)">
         <iconify-icon icon="material-symbols-light:description-outline" class="text-lg shrink-0"></iconify-icon>
         <span class="truncate text-xs" data-show="sidebarExpanded">Pages</span>
       </button>
 
-      <!-- Components Tab -->
+      <!-- Assets Tab -->
       <button class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors relative mx-1"
-        data-class="{ 'bg-primary text-primary-content shadow-sm font-semibold': activeSidebarTab === 'components' && showLeftColumn, 'text-base-content/70 hover:bg-base-300 hover:text-base-content': activeSidebarTab !== 'components' || !showLeftColumn }"
-        data-on-click="activeSidebarTab = 'components'; showLeftColumn = true"
-        title="Components & Blocks">
-        <iconify-icon icon="material-symbols-light:view-in-ar" class="text-lg shrink-0"></iconify-icon>
-        <span class="truncate text-xs" data-show="sidebarExpanded">Components</span>
+        data-class="{ 'bg-[#2979ff] text-white shadow-sm font-semibold': activeSidebarTab === 'assets' && showLeftColumn, 'text-base-content/70 hover:bg-base-300 hover:text-base-content': !(activeSidebarTab === 'assets' && showLeftColumn) }"
+        data-on-click="activeSidebarTab = 'assets'; showLeftColumn = true"
+        title="Assets & Media (J)">
+        <iconify-icon icon="material-symbols-light:photo-library-outline" class="text-lg shrink-0"></iconify-icon>
+        <span class="truncate text-xs" data-show="sidebarExpanded">Assets</span>
       </button>
 
-      <!-- Sections Tab -->
-      <button class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors relative mx-1"
-        data-class="{ 'bg-primary text-primary-content shadow-sm font-semibold': activeSidebarTab === 'sections' && showLeftColumn, 'text-base-content/70 hover:bg-base-300 hover:text-base-content': activeSidebarTab !== 'sections' || !showLeftColumn }"
-        data-on-click="activeSidebarTab = 'sections'; showLeftColumn = true; refreshPageSections()"
-        title="Sections & Page Sections">
-        <iconify-icon icon="material-symbols-light:layers-outline" class="text-lg shrink-0"></iconify-icon>
-        <span class="truncate text-xs" data-show="sidebarExpanded">Sections</span>
-      </button>
+      <div class="my-1 border-t border-base-content/10 mx-2"></div>
 
-      <!-- Style / Configuration Tab -->
+      <!-- Properties Inspector Tab (Toggles Right Panel) -->
       <button class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors relative mx-1"
-        data-class="{ 'bg-primary text-primary-content shadow-sm font-semibold': activeSidebarTab === 'configuration' && showLeftColumn, 'text-base-content/70 hover:bg-base-300 hover:text-base-content': activeSidebarTab !== 'configuration' || !showLeftColumn }"
-        data-on-click="activeSidebarTab = 'configuration'; showLeftColumn = true"
-        title="Styles & Variables">
-        <iconify-icon icon="material-symbols-light:palette-outline" class="text-lg shrink-0"></iconify-icon>
-        <span class="truncate text-xs" data-show="sidebarExpanded">Style</span>
-      </button>
-
-      <!-- Properties Tab (opens right column) -->
-      <button class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors relative mx-1"
-        data-class="{ 'bg-primary text-primary-content shadow-sm font-semibold': showRightColumn, 'text-base-content/70 hover:bg-base-300 hover:text-base-content': !showRightColumn }"
+        data-class="{ 'bg-[#2979ff] text-white shadow-sm font-semibold': showRightColumn, 'text-base-content/70 hover:bg-base-300 hover:text-base-content': !showRightColumn }"
         data-on-click="showRightColumn = !showRightColumn"
-        title="Toggle Properties Panel">
+        title="Toggle Style Inspector (D)">
         <iconify-icon icon="material-symbols-light:tune" class="text-lg shrink-0"></iconify-icon>
-        <span class="truncate text-xs" data-show="sidebarExpanded">Properties</span>
+        <span class="truncate text-xs" data-show="sidebarExpanded">Styles</span>
       </button>
     </nav>
   </aside>
