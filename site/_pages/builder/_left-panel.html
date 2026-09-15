@@ -83,12 +83,12 @@
   <div class="flex flex-col shrink-0 border-b border-base-content/10"
     data-class="{ 'min-h-[32px]': !accordions.navigation }">
     <!-- Header with Embedded Tabs -->
-    <div class="h-8 px-2 bg-base-200/80 border-b border-base-content/10 flex items-center justify-between gap-1 cursor-pointer hover:bg-base-200 transition-colors"
-      data-on-click="toggleAccordion('navigation')">
+    <div class="h-8 px-2 bg-base-200/80 border-b border-base-content/10 flex items-center justify-between gap-1">
       <div class="flex items-center gap-1.5">
-        <span class="tracking-tight uppercase text-[10px] font-extrabold text-base-content/70 shrink-0">2.</span>
+        <span class="tracking-tight uppercase text-[10px] font-extrabold text-base-content/70 shrink-0 cursor-pointer hover:text-primary transition-colors"
+          data-on-click="toggleAccordion('navigation')">2.</span>
         <!-- Embedded Segmented Tabs -->
-        <div class="join bg-base-300/60 p-0.5 rounded-md border border-base-content/10" data-on-click:stop="">
+        <div class="join bg-base-300/60 p-0.5 rounded-md border border-base-content/10">
           <button class="btn btn-xs h-5 px-2 min-h-0 join-item text-[10px] font-medium gap-1 transition-all"
             data-class="{ 'bg-base-100 text-primary font-bold shadow-xs': accordionTabs.navigation === 'tree', 'btn-ghost text-base-content/70 hover:text-base-content': accordionTabs.navigation !== 'tree' }"
             data-on-click="setAccordionTab('navigation', 'tree')" title="Live DOM Hierarchy">
@@ -106,11 +106,11 @@
 
       <div class="flex items-center gap-1">
         <button class="btn btn-ghost btn-xs h-5 w-5 min-h-0 p-0 text-base-content/60 hover:text-base-content"
-          title="Refresh DOM Tree" data-on-click:stop="refreshTree(); refreshPageSections()">
+          title="Refresh DOM Tree" data-on-click="refreshTree(); refreshPageSections()">
           <iconify-icon icon="material-symbols-light:refresh" class="text-xs"></iconify-icon>
         </button>
-        <button class="btn btn-ghost btn-xs h-5 w-5 min-h-0 p-0 text-base-content/60"
-          data-on-click:stop="toggleAccordion('navigation')" title="Toggle Navigation Accordion">
+        <button class="btn btn-ghost btn-xs h-5 w-5 min-h-0 p-0 text-base-content/60 hover:text-base-content"
+          data-on-click="toggleAccordion('navigation')" title="Toggle Navigation Accordion">
           <iconify-icon data-bind-icon="accordions.navigation ? 'material-symbols-light:keyboard-arrow-down' : 'material-symbols-light:keyboard-arrow-right'" class="text-sm"></iconify-icon>
         </button>
       </div>
@@ -173,15 +173,15 @@
 
 
   <!-- ================= ACCORDION 3: COMPONENTS | BLOCKS | SECTIONS ================= -->
-  <div class="flex-1 flex flex-col min-h-0 border-b border-base-content/10"
+  <div class="flex-1 flex flex-col min-h-0"
     data-class="{ 'shrink-0 min-h-[32px]': !accordions.components }">
     <!-- Header with Embedded Tabs -->
-    <div class="h-8 px-2 bg-base-200/80 border-b border-base-content/10 flex items-center justify-between gap-1 cursor-pointer hover:bg-base-200 transition-colors shrink-0"
-      data-on-click="toggleAccordion('components')">
+    <div class="h-8 px-2 bg-base-200/80 border-b border-base-content/10 flex items-center justify-between gap-1 shrink-0">
       <div class="flex items-center gap-1.5">
-        <span class="tracking-tight uppercase text-[10px] font-extrabold text-base-content/70 shrink-0">3.</span>
+        <span class="tracking-tight uppercase text-[10px] font-extrabold text-base-content/70 shrink-0 cursor-pointer hover:text-primary transition-colors"
+          data-on-click="toggleAccordion('components')">3.</span>
         <!-- Embedded Segmented Tabs -->
-        <div class="join bg-base-300/60 p-0.5 rounded-md border border-base-content/10" data-on-click:stop="">
+        <div class="join bg-base-300/60 p-0.5 rounded-md border border-base-content/10">
           <button class="btn btn-xs h-5 px-1.5 min-h-0 join-item text-[10px] font-medium gap-1 transition-all"
             data-class="{ 'bg-base-100 text-primary font-bold shadow-xs': accordionTabs.components === 'components', 'btn-ghost text-base-content/70 hover:text-base-content': accordionTabs.components !== 'components' }"
             data-on-click="setAccordionTab('components', 'components')" title="Every DaisyUI Component">
@@ -204,8 +204,8 @@
       </div>
 
       <div class="flex items-center gap-1">
-        <button class="btn btn-ghost btn-xs h-5 w-5 min-h-0 p-0 text-base-content/60"
-          data-on-click:stop="toggleAccordion('components')" title="Toggle Components Accordion">
+        <button class="btn btn-ghost btn-xs h-5 w-5 min-h-0 p-0 text-base-content/60 hover:text-base-content"
+          data-on-click="toggleAccordion('components')" title="Toggle Components Accordion">
           <iconify-icon data-bind-icon="accordions.components ? 'material-symbols-light:keyboard-arrow-down' : 'material-symbols-light:keyboard-arrow-right'" class="text-sm"></iconify-icon>
         </button>
       </div>
