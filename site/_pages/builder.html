@@ -599,19 +599,45 @@
       window.setTimeout(function() { copiedToast = false; }, 2000);
     },
 
-    // Consolidated Accordions State & Methods
+    // Save State & Local Draft Persistence
+    saveStatus: 'idle',
+    saveCanvasDraft: function() {
+      syncCanvasHtmlToDraft();
+      try {
+        localStorage.setItem('nexus_builder_draft', canvasHtmlDraft);
+      } catch (_) {}
+      saveStatus = 'saved';
+      window.setTimeout(function() { saveStatus = 'idle'; }, 1800);
+    },
+
+    // 4-Accordion Left Column State & Embedded Tabs
     accordions: {
+      files: true,
+      navigation: true,
       components: true,
-      navigator: true,
-      pages: false
+      themes: false
+    },
+    accordionTabs: {
+      navigation: 'tree',
+      components: 'components',
+      themes: 'themes'
     },
     accordionHeights: {
-      components: 320,
-      navigator: 280,
-      pages: 180
+      files: 160,
+      navigation: 250,
+      components: 380,
+      themes: 180
     },
+    componentCategory: 'all',
+    componentSearch: '',
+    filesSearch: '',
+
     toggleAccordion: function(name) {
       accordions[name] = !accordions[name];
+    },
+    setAccordionTab: function(acc, tab) {
+      accordionTabs[acc] = tab;
+      if (!accordions[acc]) accordions[acc] = true;
     },
     startAccordionResize: function(name, e) {
       e.preventDefault();
@@ -619,7 +645,7 @@
       const startHeight = accordionHeights[name] || 250;
       const onMove = (ev) => {
         const delta = ev.clientY - startY;
-        accordionHeights[name] = Math.max(100, Math.min(800, startHeight + delta));
+        accordionHeights[name] = Math.max(60, Math.min(800, startHeight + delta));
       };
       const onUp = () => {
         window.removeEventListener('pointermove', onMove);
