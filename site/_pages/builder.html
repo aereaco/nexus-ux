@@ -305,6 +305,13 @@
       if (prop) {
         window.NexusBuilderComponents.applyProperty(el, prop, value);
         prop.value = value;
+        if (prop.refreshes || propKey === 'section-bg' || propKey === 'overlay' || propKey.includes('separator') || propKey === 'hasLink') {
+          const matched = window.NexusBuilderComponents.matchNode(el);
+          if (matched) {
+            activeProperties = matched.getProperties(el);
+            if (matched.getSections) activeSections = matched.getSections(el);
+          }
+        }
         inspector.className = el.className;
         inspector.classList = el.className ? el.className.split(/\s+/).filter(Boolean) : [];
         updateSelectedBox();
