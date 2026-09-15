@@ -720,42 +720,27 @@
           <span>Canvas Theme</span>
         </div>
         <div class="grid grid-cols-2 gap-1.5 text-xs">
-          <button class="p-2 rounded-lg border border-base-content/10 bg-base-200/50 hover:border-primary text-left flex items-center justify-between transition-colors"
-            data-class="{ 'border-primary bg-primary/10 font-bold': canvasTheme === 'light' }"
-            data-on-click="setCanvasTheme('light')">
-            <span>Light</span>
-            <span class="w-3 h-3 rounded-full bg-base-100 border border-base-content/20"></span>
-          </button>
-          <button class="p-2 rounded-lg border border-base-content/10 bg-base-200/50 hover:border-primary text-left flex items-center justify-between transition-colors"
-            data-class="{ 'border-primary bg-primary/10 font-bold': canvasTheme === 'dark' }"
-            data-on-click="setCanvasTheme('dark')">
-            <span>Dark</span>
-            <span class="w-3 h-3 rounded-full bg-neutral"></span>
-          </button>
-          <button class="p-2 rounded-lg border border-base-content/10 bg-base-200/50 hover:border-primary text-left flex items-center justify-between transition-colors"
-            data-class="{ 'border-primary bg-primary/10 font-bold': canvasTheme === 'synthwave' }"
-            data-on-click="setCanvasTheme('synthwave')">
-            <span>Synthwave</span>
-            <span class="w-3 h-3 rounded-full bg-[#e779c1]"></span>
-          </button>
-          <button class="p-2 rounded-lg border border-base-content/10 bg-base-200/50 hover:border-primary text-left flex items-center justify-between transition-colors"
-            data-class="{ 'border-primary bg-primary/10 font-bold': canvasTheme === 'cyberpunk' }"
-            data-on-click="setCanvasTheme('cyberpunk')">
-            <span>Cyberpunk</span>
-            <span class="w-3 h-3 rounded-full bg-[#ff7598]"></span>
-          </button>
-          <button class="p-2 rounded-lg border border-base-content/10 bg-base-200/50 hover:border-primary text-left flex items-center justify-between transition-colors"
-            data-class="{ 'border-primary bg-primary/10 font-bold': canvasTheme === 'cupcake' }"
-            data-on-click="setCanvasTheme('cupcake')">
-            <span>Cupcake</span>
-            <span class="w-3 h-3 rounded-full bg-[#65c3c8]"></span>
-          </button>
-          <button class="p-2 rounded-lg border border-base-content/10 bg-base-200/50 hover:border-primary text-left flex items-center justify-between transition-colors"
-            data-class="{ 'border-primary bg-primary/10 font-bold': canvasTheme === 'sunset' }"
-            data-on-click="setCanvasTheme('sunset')">
-            <span>Sunset</span>
-            <span class="w-3 h-3 rounded-full bg-[#ff865b]"></span>
-          </button>
+          <template data-for="t in daisyThemes">
+            <button type="button" class="border border-base-content/10 bg-base-100 hover:border-primary text-start rounded-btn p-2 transition-all cursor-pointer block w-full text-xs font-sans shadow-2xs"
+              data-bind-data-theme="t"
+              data-class="{ 'border-primary ring-1 ring-primary font-bold': canvasTheme === t }"
+              data-on-click="setCanvasTheme(t)">
+              <div class="flex items-center justify-between gap-1 mb-1.5">
+                <span class="capitalize text-xs font-semibold truncate" data-bind="t"></span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                  class="size-3.5 shrink-0"
+                  data-class="{ 'visible text-primary': canvasTheme === t, 'invisible': canvasTheme !== t }">
+                  <path d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z"></path>
+                </svg>
+              </div>
+              <div class="flex h-3.5 w-full shrink-0 items-center gap-1">
+                <span class="bg-primary rounded-badge flex-1 h-full"></span>
+                <span class="bg-secondary rounded-badge flex-1 h-full"></span>
+                <span class="bg-accent rounded-badge flex-1 h-full"></span>
+                <span class="bg-neutral rounded-badge flex-1 h-full"></span>
+              </div>
+            </button>
+          </template>
         </div>
       </div>
 
