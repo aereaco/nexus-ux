@@ -352,6 +352,10 @@
       refreshPageSections();
     },
 
+    deleteSelected: function() {
+      deleteElement();
+    },
+
     moveElementUp: function() {
       const el = toRawNode(selectedEl);
       if (!el || !el.previousElementSibling) return;
