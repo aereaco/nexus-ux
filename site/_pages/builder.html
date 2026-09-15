@@ -321,6 +321,67 @@
       }
     },
 
+    isGroupActive: function(group) {
+      if (!group) return true;
+      var props = activeProperties || [];
+      var bgProp = props.find(function(p) { return p.key === 'section-bg'; });
+      if (bgProp && ['bg-image', 'bg-video', 'bg-yt'].includes(group)) {
+        return bgProp.value === group;
+      }
+      if (group === 'overlay') {
+        var oProp = props.find(function(p) { return p.key === 'overlay'; });
+        return oProp ? !!oProp.value : false;
+      }
+      if (group === 'top_separator' || group === 'top-separator') {
+        var sProp = props.find(function(p) { return p.key === 'top_separator' || p.key === 'top-separator'; });
+        return sProp ? !!sProp.value : false;
+      }
+      if (group === 'bottom_separator' || group === 'bottom-separator') {
+        var bsProp = props.find(function(p) { return p.key === 'bottom_separator' || p.key === 'bottom-separator'; });
+        return bsProp ? !!bsProp.value : false;
+      }
+      if (group === 'link' || group === 'hasLink') {
+        var lProp = props.find(function(p) { return p.key === 'hasLink' || p.key === 'link'; });
+        return lProp ? !!lProp.value : false;
+      }
+      var matchingProp = props.find(function(p) { return p.key === group; });
+      if (matchingProp) {
+        return !!matchingProp.value;
+      }
+      return true;
+    },
+
+    getSectionIcon: function(secId) {
+      var icons = {
+        'default': 'material-symbols-light:tune',
+        'background': 'material-symbols-light:wallpaper',
+        'overlay': 'material-symbols-light:gradient',
+        'separators': 'material-symbols-light:waves',
+        'columns': 'material-symbols-light:table-rows',
+        'link': 'material-symbols-light:link',
+        'behavior': 'material-symbols-light:toggle-on',
+        'colors': 'material-symbols-light:palette',
+        'general': 'material-symbols-light:fingerprint'
+      };
+      return icons[secId] || 'material-symbols-light:folder-outline';
+    },
+
+    getWaveSvg: function(key) {
+      return (window.NexusBuilderComponents && window.NexusBuilderComponents.waveShapes && window.NexusBuilderComponents.waveShapes[key]) ? window.NexusBuilderComponents.waveShapes[key].svg : '';
+    },
+
+    getWaveName: function(key) {
+      return (window.NexusBuilderComponents && window.NexusBuilderComponents.waveShapes && window.NexusBuilderComponents.waveShapes[key]) ? window.NexusBuilderComponents.waveShapes[key].name : key;
+    },
+
+    getIconSvg: function(key) {
+      return (window.NexusBuilderComponents && window.NexusBuilderComponents.iconShapes && window.NexusBuilderComponents.iconShapes[key]) ? window.NexusBuilderComponents.iconShapes[key].svg : '';
+    },
+
+    getIconName: function(key) {
+      return (window.NexusBuilderComponents && window.NexusBuilderComponents.iconShapes && window.NexusBuilderComponents.iconShapes[key]) ? window.NexusBuilderComponents.iconShapes[key].name : key;
+    },
+
     setCompClass: function(validClasses, newClass) {
       const el = toRawNode(selectedEl);
       if (!el) return;
