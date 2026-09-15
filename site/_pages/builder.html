@@ -599,6 +599,36 @@
       window.setTimeout(function() { copiedToast = false; }, 2000);
     },
 
+    // Consolidated Accordions State & Methods
+    accordions: {
+      components: true,
+      navigator: true,
+      pages: false
+    },
+    accordionHeights: {
+      components: 320,
+      navigator: 280,
+      pages: 180
+    },
+    toggleAccordion: function(name) {
+      accordions[name] = !accordions[name];
+    },
+    startAccordionResize: function(name, e) {
+      e.preventDefault();
+      const startY = e.clientY;
+      const startHeight = accordionHeights[name] || 250;
+      const onMove = (ev) => {
+        const delta = ev.clientY - startY;
+        accordionHeights[name] = Math.max(100, Math.min(800, startHeight + delta));
+      };
+      const onUp = () => {
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+      };
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp);
+    },
+
     downloadExportHtml: function() {
       const html = generateFullExportHtml();
       const blob = new Blob([html], { type: 'text/html' });
@@ -622,72 +652,7 @@
   data-on-canvasloaded="refreshTree(); refreshPageSections(); syncCanvasHtmlToDraft()"
   data-on-canvasdeselect="deselectElement()">
 
-  <!-- 1. Webstudio Far-Left Activity Bar (.sidebar) -->
-  <aside class="flex flex-col shrink-0 border-r border-base-content/10 bg-base-200/90 backdrop-blur-md transition-all duration-200 z-30 select-none"
-    data-class="{ 'w-48': sidebarExpanded, 'w-12': !sidebarExpanded }">
-    
-    <!-- Top Brand / Logo -->
-    <div class="h-[38px] flex items-center px-2.5 border-b border-base-content/10 overflow-hidden shrink-0">
-      <div class="flex items-center gap-2">
-        <div class="w-6 h-6 rounded bg-[#2979ff] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
-          <iconify-icon icon="material-symbols-light:web" class="text-sm"></iconify-icon>
-        </div>
-        <span class="font-bold tracking-tight text-xs truncate" data-show="sidebarExpanded">Webstudio</span>
-      </div>
-    </div>
-
-    <!-- Vertical Activity Bar Tabs -->
-    <nav class="flex-1 flex flex-col py-1.5 gap-1 overflow-y-auto overflow-x-hidden">
-      <!-- Add / Components Tab -->
-      <button class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors relative mx-1"
-        data-class="{ 'bg-[#2979ff] text-white shadow-sm font-semibold': activeSidebarTab === 'components' && showLeftColumn, 'text-base-content/70 hover:bg-base-300 hover:text-base-content': !(activeSidebarTab === 'components' && showLeftColumn) }"
-        data-on-click="activeSidebarTab = 'components'; showLeftColumn = true"
-        title="Add Elements & Components (A)">
-        <iconify-icon icon="material-symbols-light:add-box-outline" class="text-lg shrink-0"></iconify-icon>
-        <span class="truncate text-xs" data-show="sidebarExpanded">Add</span>
-      </button>
-
-      <!-- Navigator Tab (DOM Tree) -->
-      <button class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors relative mx-1"
-        data-class="{ 'bg-[#2979ff] text-white shadow-sm font-semibold': activeSidebarTab === 'navigator' && showLeftColumn, 'text-base-content/70 hover:bg-base-300 hover:text-base-content': !(activeSidebarTab === 'navigator' && showLeftColumn) }"
-        data-on-click="activeSidebarTab = 'navigator'; showLeftColumn = true; refreshTree()"
-        title="Navigator (Z)">
-        <iconify-icon icon="material-symbols-light:account-tree-outline" class="text-lg shrink-0"></iconify-icon>
-        <span class="truncate text-xs" data-show="sidebarExpanded">Navigator</span>
-      </button>
-
-      <!-- Pages Tab -->
-      <button class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors relative mx-1"
-        data-class="{ 'bg-[#2979ff] text-white shadow-sm font-semibold': activeSidebarTab === 'pages' && showLeftColumn, 'text-base-content/70 hover:bg-base-300 hover:text-base-content': !(activeSidebarTab === 'pages' && showLeftColumn) }"
-        data-on-click="activeSidebarTab = 'pages'; showLeftColumn = true"
-        title="Pages (P)">
-        <iconify-icon icon="material-symbols-light:description-outline" class="text-lg shrink-0"></iconify-icon>
-        <span class="truncate text-xs" data-show="sidebarExpanded">Pages</span>
-      </button>
-
-      <!-- Assets Tab -->
-      <button class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors relative mx-1"
-        data-class="{ 'bg-[#2979ff] text-white shadow-sm font-semibold': activeSidebarTab === 'assets' && showLeftColumn, 'text-base-content/70 hover:bg-base-300 hover:text-base-content': !(activeSidebarTab === 'assets' && showLeftColumn) }"
-        data-on-click="activeSidebarTab = 'assets'; showLeftColumn = true"
-        title="Assets & Media (J)">
-        <iconify-icon icon="material-symbols-light:photo-library-outline" class="text-lg shrink-0"></iconify-icon>
-        <span class="truncate text-xs" data-show="sidebarExpanded">Assets</span>
-      </button>
-
-      <div class="my-1 border-t border-base-content/10 mx-2"></div>
-
-      <!-- Properties Inspector Tab (Toggles Right Panel) -->
-      <button class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors relative mx-1"
-        data-class="{ 'bg-[#2979ff] text-white shadow-sm font-semibold': showRightColumn, 'text-base-content/70 hover:bg-base-300 hover:text-base-content': !showRightColumn }"
-        data-on-click="showRightColumn = !showRightColumn"
-        title="Toggle Style Inspector (D)">
-        <iconify-icon icon="material-symbols-light:tune" class="text-lg shrink-0"></iconify-icon>
-        <span class="truncate text-xs" data-show="sidebarExpanded">Styles</span>
-      </button>
-    </nav>
-  </aside>
-
-  <!-- 2. Main Builder Workspace (.main / #vvveb-builder) -->
+  <!-- Main Builder Workspace (.main / #vvveb-builder) -->
   <div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative">
 
     <!-- A. Authentic Top Control Bar (#top-panel) -->
