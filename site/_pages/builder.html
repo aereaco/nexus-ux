@@ -344,7 +344,14 @@
       if (!el) return;
       const col = el.ownerDocument.createElement('div');
       col.className = 'col-12 col-md-6 p-4';
-      col.innerHTML = '<h3 class="text-xl font-bold mb-2">New Column</h3><p class="text-sm opacity-70">Column content goes here.</p>';
+      const h3 = el.ownerDocument.createElement('h3');
+      h3.className = 'text-xl font-bold mb-2';
+      h3.textContent = 'New Column';
+      const p = el.ownerDocument.createElement('p');
+      p.className = 'text-sm opacity-70';
+      p.textContent = 'Column content goes here.';
+      col.appendChild(h3);
+      col.appendChild(p);
       el.appendChild(col);
       selectElement(el);
       syncCanvasHtmlToDraft();
@@ -367,12 +374,12 @@
       const cols = el.querySelectorAll(':scope > .col, :scope > [class*="col-"], :scope > [class*="col"]');
       const col = cols[colIdx];
       if (!col) return;
-      const prefix = bp === 'xs' ? 'col-' : `col-${bp}-`;
+      const prefix = bp === 'xs' ? 'col-' : ('col-' + bp + '-');
       const classes = col.className.split(/\s+/).filter(function(c) {
         return !c.startsWith(prefix) && (bp !== 'xs' || c !== 'col');
       });
       if (span && span !== 'none') {
-        classes.push(bp === 'xs' ? `col-${span}` : `col-${bp}-${span}`);
+        classes.push(bp === 'xs' ? ('col-' + span) : ('col-' + bp + '-' + span));
       }
       col.className = classes.join(' ');
       selectElement(el);
@@ -406,7 +413,11 @@
           vid.src = inspector.props.bgVideo || 'https://www.w3schools.com/html/mov_bbb.mp4';
           bgContainer.appendChild(vid);
         } else if (mode === 'youtube') {
-          bgContainer.innerHTML = `<iframe class="w-full h-full pointer-events-none" src="https://www.youtube.com/embed/${inspector.props.bgYoutube || 'C6fOoy7Se_4'}?autoplay=1&mute=1&controls=0&loop=1" frameborder="0"></iframe>`;
+          const iframe = el.ownerDocument.createElement('iframe');
+          iframe.className = 'w-full h-full pointer-events-none';
+          iframe.src = 'https://www.youtube.com/embed/' + (inspector.props.bgYoutube || 'C6fOoy7Se_4') + '?autoplay=1&mute=1&controls=0&loop=1';
+          iframe.setAttribute('frameborder', '0');
+          bgContainer.appendChild(iframe);
         }
       }
       syncCanvasHtmlToDraft();
@@ -434,13 +445,21 @@
     toggleSectionSeparator: function(pos, enabled) {
       const el = toRawNode(selectedEl);
       if (!el) return;
-      const sel = `:scope > .separator.${pos}`;
+      const sel = ':scope > .separator.' + pos;
       let sep = el.querySelector(sel);
       if (enabled) {
         if (!sep) {
           sep = el.ownerDocument.createElement('div');
-          sep.className = `separator ${pos} absolute ${pos === 'top' ? 'top-0' : 'bottom-0'} left-0 right-0 w-full overflow-hidden leading-none pointer-events-none -z-5`;
-          sep.innerHTML = `<svg viewBox="0 0 1200 120" preserveAspectRatio="none" class="w-full h-12 fill-base-100"><path d="M0,0 C150,90 350,-40 500,60 C650,160 900,10 1200,40 L1200,${pos === 'top' ? '0' : '120'} L0,${pos === 'top' ? '0' : '120'} Z"></path></svg>`;
+          sep.className = 'separator ' + pos + ' absolute ' + (pos === 'top' ? 'top-0' : 'bottom-0') + ' left-0 right-0 w-full overflow-hidden leading-none pointer-events-none -z-5';
+          const svg = el.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.setAttribute('viewBox', '0 0 1200 120');
+          svg.setAttribute('preserveAspectRatio', 'none');
+          svg.setAttribute('class', 'w-full h-12 fill-base-100');
+          const path = el.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'path');
+          const yEnd = pos === 'top' ? '0' : '120';
+          path.setAttribute('d', 'M0,0 C150,90 350,-40 500,60 C650,160 900,10 1200,40 L1200,' + yEnd + ' L0,' + yEnd + ' Z');
+          svg.appendChild(path);
+          sep.appendChild(svg);
           el.classList.add('relative');
           el.appendChild(sep);
         }
@@ -454,17 +473,21 @@
       const el = toRawNode(selectedEl);
       if (!el) return;
       inspector.props.svgIcon = iconName;
-      const icons = {
-        star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>',
-        heart: '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>',
-        check: '<polyline points="20 6 9 17 4 12"></polyline>',
-        arrowRight: '<line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline>',
-        home: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>',
-        user: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>',
-        settings: '<circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>'
+      const iconShapes = {
+        star: { tag: 'polygon', attrs: { points: '12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2' } },
+        heart: { tag: 'path', attrs: { d: 'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z' } },
+        check: { tag: 'polyline', attrs: { points: '20 6 9 17 4 12' } },
+        arrowRight: { tag: 'path', attrs: { d: 'M5 12h14M12 5l7 7-7 7' } },
+        home: { tag: 'path', attrs: { d: 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' } },
+        user: { tag: 'path', attrs: { d: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z' } },
+        settings: { tag: 'circle', attrs: { cx: '12', cy: '12', r: '3' } }
       };
-      if (icons[iconName]) {
-        el.innerHTML = icons[iconName];
+      if (iconShapes[iconName]) {
+        while (el.firstChild) el.removeChild(el.firstChild);
+        const item = iconShapes[iconName];
+        const sub = el.ownerDocument.createElementNS('http://www.w3.org/2000/svg', item.tag);
+        for (const k in item.attrs) sub.setAttribute(k, item.attrs[k]);
+        el.appendChild(sub);
         el.setAttribute('viewBox', '0 0 24 24');
         el.setAttribute('fill', 'none');
         el.setAttribute('stroke', 'currentColor');
