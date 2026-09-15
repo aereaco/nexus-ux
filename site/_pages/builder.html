@@ -139,14 +139,14 @@
       return el ? (el.style[prop] || '') : '';
     },
 
-    toggleCanvasTheme: function() {
-      canvasTheme = canvasTheme === 'dark' ? 'light' : 'dark';
-      var host = toRawNode(document.getElementById('builder-canvas-host'));
+    setCanvasTheme: function(theme) {
+      canvasTheme = theme;
+      var host = toRawNode(window.document.getElementById('builder-canvas-host'));
       if (host && host.shadowRoot) {
         var body = host.shadowRoot.querySelector('body') || host.shadowRoot.firstElementChild;
         if (body) {
-          body.setAttribute('data-theme', canvasTheme);
-          if (canvasTheme === 'dark') {
+          body.setAttribute('data-theme', theme);
+          if (['dark', 'synthwave', 'halloween', 'forest', 'black', 'luxury', 'dracula', 'business', 'night', 'coffee', 'dim', 'sunset'].includes(theme)) {
             body.classList.add('dark');
             body.style.backgroundColor = '#1d232a';
             body.style.color = '#a6adbb';
@@ -158,6 +158,11 @@
         }
       }
       updateSelectedBox();
+    },
+
+    toggleCanvasTheme: function() {
+      var nextTheme = canvasTheme === 'dark' ? 'light' : 'dark';
+      setCanvasTheme(nextTheme);
     },
 
     updateTextContent: function(val) {
