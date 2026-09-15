@@ -575,7 +575,14 @@
         const matched = window.NexusBuilderComponents.matchNode(raw);
         activeComponentName = matched.name;
         activeComponentCategory = matched.category;
+        if (typeof matched.beforeInit === 'function') {
+          matched.beforeInit(raw);
+        }
         activeProperties = matched.getProperties(raw);
+        activeSections = matched.getSections ? matched.getSections(raw) : [
+          { id: 'default', header: matched.name },
+          { id: 'general', header: 'General' }
+        ];
         inspector.componentType = matched.id;
       }
 
