@@ -28,20 +28,19 @@
       data-attr-theme="canvasTheme"
       data-component="{ path: currentDoc, shadowrootmode: 'open' }"
       data-effect="
-        const rawHost = document.getElementById('builder-canvas-host') || ($el.__v_raw || $el);
-        const host = rawHost;
+        const host = typeof toRawNode === 'function' ? toRawNode($el) : ($el.__v_raw || $el);
         const bindShadow = () => {
-          if (!rawHost || !rawHost.shadowRoot) {
-            setTimeout(bindShadow, 50);
+          if (!host || !host.shadowRoot) {
+            window.setTimeout(bindShadow, 50);
             return;
           }
-          const root = rawHost.shadowRoot;
+          const root = host.shadowRoot;
           if (root.__builder_bound) return;
           root.__builder_bound = true;
 
           // Adopt global stylesheets into shadow root for 100% styled components
-          if (document.adoptedStyleSheets && document.adoptedStyleSheets.length) {
-            try { root.adoptedStyleSheets = [...document.adoptedStyleSheets]; } catch {}
+          if (window.document.adoptedStyleSheets && window.document.adoptedStyleSheets.length) {
+            try { root.adoptedStyleSheets = [...window.document.adoptedStyleSheets]; } catch (_) {}
           }
 
           // Apply initial canvasTheme into shadowRoot
@@ -62,14 +61,14 @@
           };
           applyTheme();
 
-          setTimeout(function() {
+          window.setTimeout(function() {
             refreshTree();
             refreshPageSections();
             syncCanvasHtmlToDraft();
           }, 200);
 
-          const selectBoxEl = document.getElementById('select-box');
-          const highlightBoxEl = document.getElementById('highlight-box');
+          const selectBoxEl = window.document.getElementById('select-box');
+          const highlightBoxEl = window.document.getElementById('highlight-box');
           let scrollRaf = null;
 
           // Webstudio-style Synchronous Coordinate Synchronization
@@ -109,13 +108,13 @@
           const onScroll = () => {
             if (highlightBoxEl) highlightBoxEl.style.display = 'none';
             if (selectedEl) {
-              if (scrollRaf) cancelAnimationFrame(scrollRaf);
-              scrollRaf = requestAnimationFrame(syncBoxPosition);
+              if (scrollRaf) window.cancelAnimationFrame(scrollRaf);
+              scrollRaf = window.requestAnimationFrame(syncBoxPosition);
             }
           };
 
           host.addEventListener('scroll', onScroll, { passive: true, capture: true });
-          const canvasContainer = document.getElementById('canvas');
+          const canvasContainer = window.document.getElementById('canvas');
           if (canvasContainer) {
             canvasContainer.addEventListener('scroll', onScroll, { passive: true, capture: true });
           }
