@@ -116,7 +116,7 @@
       fetch(path)
         .then(function(r) { return r.text(); })
         .then(function(html) {
-          iframe.srcdoc = '<!DOCTYPE html>'
+          iframe.srcdoc = '<' + '!DOCTYPE html>'
             + '<html lang=\'en\' data-theme=\'' + theme + '\'>'
             + '<head>'
             + '<base href=\'' + baseHref + '\'>'
