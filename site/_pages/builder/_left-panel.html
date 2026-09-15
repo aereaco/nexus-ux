@@ -5,20 +5,20 @@
   <div class="flex flex-col shrink-0 border-b border-base-content/10"
     data-class="{ 'min-h-[32px]': !accordions.files }">
     <!-- Header -->
-    <div class="h-8 px-2.5 bg-base-200/80 border-b border-base-content/10 flex items-center justify-between gap-1.5 cursor-pointer hover:bg-base-200 transition-colors"
-      data-on-click="toggleAccordion('files')">
-      <div class="flex items-center gap-2 font-bold text-base-content/90 text-[11px]">
+    <div class="h-8 px-2.5 bg-base-200/80 border-b border-base-content/10 flex items-center justify-between gap-1.5">
+      <div class="flex items-center gap-2 font-bold text-base-content/90 text-[11px] cursor-pointer hover:text-primary transition-colors"
+        data-on-click="toggleAccordion('files')">
         <iconify-icon icon="material-symbols-light:folder-open-outline" class="text-sm text-primary"></iconify-icon>
         <span class="tracking-tight uppercase text-[10px] font-extrabold text-base-content/70">1. Files</span>
       </div>
       <div class="flex items-center gap-1">
         <button class="btn btn-ghost btn-xs h-5 px-1.5 min-h-0 text-[10px] font-normal hover:bg-base-300"
-          title="New Blank Page" data-on-click:stop="clearCanvas()">
+          title="New Blank Page" data-on-click="clearCanvas()">
           <iconify-icon icon="material-symbols-light:add" class="text-xs"></iconify-icon>
           <span class="hidden sm:inline">Add</span>
         </button>
-        <button class="btn btn-ghost btn-xs h-5 w-5 min-h-0 p-0 text-base-content/60"
-          data-on-click:stop="toggleAccordion('files')" title="Toggle Files Accordion">
+        <button class="btn btn-ghost btn-xs h-5 w-5 min-h-0 p-0 text-base-content/60 hover:text-base-content"
+          data-on-click="toggleAccordion('files')" title="Toggle Files Accordion">
           <iconify-icon data-bind-icon="accordions.files ? 'material-symbols-light:keyboard-arrow-down' : 'material-symbols-light:keyboard-arrow-right'" class="text-sm"></iconify-icon>
         </button>
       </div>
