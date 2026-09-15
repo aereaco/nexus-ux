@@ -1,0 +1,379 @@
+<!-- Webstudio-Grade Canvas Workspace with Drift-Free Selection Overlays -->
+<main class="flex-1 w-full h-full min-w-0 bg-[#0e1013] flex flex-col overflow-auto relative select-none"
+  data-class="{ 'items-center p-6': viewport !== 'desktop', 'p-0': viewport === 'desktop' }"
+  id="canvas">
+
+  <!-- Viewport Framing Container (Full-width fluid in Desktop mode, framed in Device modes) -->
+  <div class="transition-all duration-300 relative bg-white overflow-visible shrink-0"
+    data-class="{
+      'w-full min-w-full h-full min-h-full flex-1 flex flex-col rounded-none m-0 shadow-none': viewport === 'desktop',
+      'w-[768px] max-w-[768px] min-h-[90vh] rounded-xl border-4 border-white/20 shadow-2xl my-4 mx-auto': viewport === 'tablet',
+      'w-[375px] max-w-[375px] min-h-[85vh] rounded-3xl border-8 border-white/25 shadow-2xl my-4 mx-auto': viewport === 'mobile'
+    }"
+    data-style="{
+      transform: (viewport === 'desktop' && zoom === 100) ? 'none' : 'scale(' + (zoom / 100) + ')',
+      transformOrigin: 'top center'
+    }">
+
+    <!-- Mobile Device Camera / Speaker Notch -->
+    <div class="h-4 bg-base-content/15 rounded-t-2xl flex items-center justify-center gap-1.5"
+      data-show="viewport === 'mobile'">
+      <div class="w-12 h-2 rounded-full bg-base-content/30"></div>
+      <div class="w-2 h-2 rounded-full bg-base-content/30"></div>
+    </div>
+
+    <!-- The Encapsulated Shadow DOM Canvas Host (#builder-canvas-host) -->
+    <div id="builder-canvas-host"
+      class="w-full min-w-full h-full min-h-full flex-1 flex flex-col overflow-y-auto overflow-x-hidden relative transition-colors duration-200"
+      data-attr-theme="canvasTheme"
+      data-component="{ path: currentDoc, shadowrootmode: 'open' }"
+      data-effect="
+        const rawHost = document.getElementById('builder-canvas-host') || ($el.__v_raw || $el);
+        const host = rawHost;
+        const bindShadow = () => {
+          if (!rawHost || !rawHost.shadowRoot) {
+            setTimeout(bindShadow, 50);
+            return;
+          }
+          const root = rawHost.shadowRoot;
+          if (root.__builder_bound) return;
+          root.__builder_bound = true;
+
+          // Adopt global stylesheets into shadow root for 100% styled components
+          if (document.adoptedStyleSheets && document.adoptedStyleSheets.length) {
+            try { root.adoptedStyleSheets = [...document.adoptedStyleSheets]; } catch {}
+          }
+
+          // Apply initial canvasTheme into shadowRoot
+          const applyTheme = () => {
+            const body = root.querySelector('body') || root.firstElementChild;
+            if (body) {
+              body.setAttribute('data-theme', canvasTheme);
+              if (canvasTheme === 'dark') {
+                body.classList.add('dark');
+                body.style.backgroundColor = '#1d232a';
+                body.style.color = '#a6adbb';
+              } else {
+                body.classList.remove('dark');
+                body.style.backgroundColor = '#ffffff';
+                body.style.color = '#1f2937';
+              }
+            }
+          };
+          applyTheme();
+
+          setTimeout(function() {
+            refreshTree();
+            refreshPageSections();
+            syncCanvasHtmlToDraft();
+          }, 200);
+
+          const selectBoxEl = document.getElementById('select-box');
+          const highlightBoxEl = document.getElementById('highlight-box');
+          let scrollRaf = null;
+
+          // Webstudio-style Synchronous Coordinate Synchronization
+          const syncBoxPosition = () => {
+            const el = typeof toRawNode === 'function' ? toRawNode(selectedEl) : (selectedEl && selectedEl.__v_raw ? selectedEl.__v_raw : selectedEl);
+            if (!el || !selectBoxEl || previewMode) {
+              if (selectBoxEl) selectBoxEl.style.display = 'none';
+              return;
+            }
+            const elRect = el.getBoundingClientRect();
+            const hostRect = host.getBoundingClientRect();
+
+            // Check if element is scrolled out of view
+            if (elRect.bottom < hostRect.top || elRect.top > hostRect.bottom) {
+              selectBoxEl.style.display = 'none';
+              return;
+            }
+
+            const top = (elRect.top - hostRect.top) + host.offsetTop;
+            const left = (elRect.left - hostRect.left) + host.offsetLeft;
+            const width = elRect.width;
+            const height = elRect.height;
+
+            selectBoxEl.style.display = 'block';
+            selectBoxEl.style.top = top + 'px';
+            selectBoxEl.style.left = left + 'px';
+            selectBoxEl.style.width = width + 'px';
+            selectBoxEl.style.height = height + 'px';
+
+            selectedBox.top = top;
+            selectedBox.left = left;
+            selectedBox.width = width;
+            selectedBox.height = height;
+          };
+
+          // Webstudio Capture-Phase Passive Scroll Tracking (Eliminates Drift)
+          const onScroll = () => {
+            if (highlightBoxEl) highlightBoxEl.style.display = 'none';
+            if (selectedEl) {
+              if (scrollRaf) cancelAnimationFrame(scrollRaf);
+              scrollRaf = requestAnimationFrame(syncBoxPosition);
+            }
+          };
+
+          host.addEventListener('scroll', onScroll, { passive: true, capture: true });
+          const canvasContainer = document.getElementById('canvas');
+          if (canvasContainer) {
+            canvasContainer.addEventListener('scroll', onScroll, { passive: true, capture: true });
+          }
+          window.addEventListener('resize', onScroll, { passive: true });
+
+          const resolveTarget = (e) => {
+            let target = e.composedPath ? e.composedPath()[0] : e.target;
+            if (!target) return null;
+            if (target.nodeType === 3) target = target.parentElement;
+            if (!target || target.nodeType !== 1 || target === host || target.tagName.toLowerCase() === 'html') return null;
+            return target;
+          };
+
+          // Handle selection click inside shadow root
+          root.addEventListener('click', function(e) {
+            if (previewMode) return;
+            const target = resolveTarget(e);
+            if (target) {
+              e.preventDefault();
+              e.stopPropagation();
+              selectElement(target);
+              syncBoxPosition();
+            }
+          }, true);
+
+          // Handle hover highlight inside shadow root
+          root.addEventListener('pointermove', function(e) {
+            if (previewMode) return;
+            const target = resolveTarget(e);
+            const curSel = typeof toRawNode === 'function' ? toRawNode(selectedEl) : (selectedEl && selectedEl.__v_raw ? selectedEl.__v_raw : selectedEl);
+            if (target && target !== curSel) {
+              updateHoverBox(target);
+            }
+          }, true);
+
+          root.addEventListener('pointerleave', function() {
+            hoverBox.visible = false;
+            if (highlightBoxEl) highlightBoxEl.style.display = 'none';
+          });
+
+          // Handle double click for inline text editing
+          root.addEventListener('dblclick', function(e) {
+            if (previewMode) return;
+            const target = resolveTarget(e);
+            if (target) {
+              selectElement(target);
+              target.contentEditable = 'true';
+              target.focus();
+              const onInput = () => {
+                inspector.textContent = target.textContent || '';
+                syncBoxPosition();
+              };
+              target.addEventListener('input', onInput);
+              target.addEventListener('blur', function onBlur() {
+                target.contentEditable = 'false';
+                target.removeEventListener('input', onInput);
+                target.removeEventListener('blur', onBlur);
+                selectElement(target);
+                syncCanvasHtmlToDraft();
+              });
+            }
+          }, true);
+        };
+        bindShadow();
+      ">
+    </div>
+
+    <!-- ================= 1. WEBSTUDIO HOVER HIGHLIGHT BOX (#highlight-box) ================= -->
+    <div id="highlight-box"
+      class="absolute pointer-events-none border border-dashed border-[#00b0ff] z-30 transition-all duration-75"
+      data-show="!previewMode && hoverBox.visible && (!selectedEl || hoveredEl !== selectedEl)"
+      data-style="{
+        top: hoverBox.top + 'px',
+        left: hoverBox.left + 'px',
+        width: hoverBox.width + 'px',
+        height: hoverBox.height + 'px'
+      }">
+      
+      <!-- Highlight Name Pill -->
+      <div class="absolute -top-5 start-0 bg-[#00b0ff] text-white text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded-t shadow-sm flex items-center gap-1">
+        <span data-bind="hoverBox.tag.toUpperCase()"></span>
+      </div>
+
+      <!-- Quick (+) Add Element Button -->
+      <div class="absolute -bottom-3.5 end-2 pointer-events-auto">
+        <button class="btn btn-circle btn-xs h-6 w-6 min-h-0 bg-[#00b0ff] text-white border-0 shadow-md hover:scale-110 transition-transform"
+          data-on-click="selectElement(hoveredEl); addSectionBoxOpen = true"
+          title="Add Section / Component">
+          <iconify-icon icon="material-symbols-light:add" class="text-xs"></iconify-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= 2. WEBSTUDIO SELECTION BOX (#select-box) ================= -->
+    <div id="select-box"
+      class="absolute pointer-events-none border-[1.5px] border-[#2979ff] z-40 rounded-[2px]"
+      data-show="!previewMode && selectedBox.visible"
+      data-style="{
+        top: selectedBox.top + 'px',
+        left: selectedBox.left + 'px',
+        width: selectedBox.width + 'px',
+        height: selectedBox.height + 'px'
+      }">
+
+      <!-- A. FLOATING WYSIWYG EDITOR (#wysiwyg-editor) - Appears above text nodes -->
+      <div id="wysiwyg-editor"
+        class="absolute -top-11 start-0 bg-base-100 text-base-content rounded-md p-1 shadow-xl border border-base-content/15 flex items-center gap-1 pointer-events-auto z-50 overflow-visible text-xs"
+        data-show="selectedBox.isText">
+        
+        <!-- Bold, Italic, Underline, Strike -->
+        <div class="flex items-center gap-0.5 border-r border-base-content/15 pr-1">
+          <button class="btn btn-ghost btn-xs h-6 w-6 min-h-0 p-0 hover:bg-base-200" data-on-click="formatInline('bold')" title="Bold">
+            <iconify-icon icon="material-symbols-light:format-bold" class="text-sm"></iconify-icon>
+          </button>
+          <button class="btn btn-ghost btn-xs h-6 w-6 min-h-0 p-0 hover:bg-base-200" data-on-click="formatInline('italic')" title="Italic">
+            <iconify-icon icon="material-symbols-light:format-italic" class="text-sm"></iconify-icon>
+          </button>
+          <button class="btn btn-ghost btn-xs h-6 w-6 min-h-0 p-0 hover:bg-base-200" data-on-click="formatInline('underline')" title="Underline">
+            <iconify-icon icon="material-symbols-light:format-underlined" class="text-sm"></iconify-icon>
+          </button>
+          <button class="btn btn-ghost btn-xs h-6 w-6 min-h-0 p-0 hover:bg-base-200" data-on-click="formatInline('strike')" title="Strikethrough">
+            <iconify-icon icon="material-symbols-light:strikethrough-s" class="text-sm"></iconify-icon>
+          </button>
+        </div>
+
+        <!-- Text Align Dropdown -->
+        <div class="dropdown">
+          <div tabindex="0" role="button" class="btn btn-ghost btn-xs h-6 w-6 min-h-0 p-0 hover:bg-base-200" title="Text Align">
+            <iconify-icon icon="material-symbols-light:format-align-left" class="text-sm"></iconify-icon>
+          </div>
+          <ul tabindex="0" class="dropdown-content menu p-1 shadow-xl bg-base-200 border border-base-content/10 rounded-box w-28 z-50 text-xs">
+            <li><button data-on-click="formatInline('align', 'left')">Left</button></li>
+            <li><button data-on-click="formatInline('align', 'center')">Center</button></li>
+            <li><button data-on-click="formatInline('align', 'right')">Right</button></li>
+            <li><button data-on-click="formatInline('align', 'justify')">Justify</button></li>
+          </ul>
+        </div>
+
+        <!-- Color Pickers -->
+        <div class="flex items-center gap-1 border-x border-base-content/15 px-1">
+          <input type="color" class="w-5 h-5 rounded cursor-pointer border-0 bg-transparent"
+            data-on-input="formatInline('color', $evt.target.value)"
+            title="Text Color" />
+          <input type="color" class="w-5 h-5 rounded cursor-pointer border-0 bg-transparent"
+            data-on-input="formatInline('bgColor', $evt.target.value)"
+            title="Background Color" />
+        </div>
+
+        <!-- Font Size Select -->
+        <select class="select select-bordered select-xs h-6 min-h-0 text-[10px] px-1 py-0 rounded"
+          data-on-change="formatInline('fontSize', $evt.target.value)">
+          <option value="">Size</option>
+          <option value="12px">12px</option>
+          <option value="14px">14px</option>
+          <option value="16px">16px</option>
+          <option value="18px">18px</option>
+          <option value="20px">20px</option>
+          <option value="24px">24px</option>
+          <option value="32px">32px</option>
+          <option value="48px">48px</option>
+        </select>
+      </div>
+
+      <!-- B. Webstudio Element Tag & Dimension Badge -->
+      <div class="absolute -top-6 start-0 bg-[#2979ff] text-white text-[10px] font-mono font-semibold px-2 py-0.5 rounded-t shadow-md pointer-events-auto flex items-center gap-1.5"
+        data-show="!selectedBox.isText">
+        <span data-bind="selectedBox.tag.toUpperCase()"></span>
+        <span data-show="selectedBox.id" data-bind="'#' + selectedBox.id" class="opacity-80"></span>
+        <span class="opacity-40">|</span>
+        <span class="opacity-90 text-[9px]" data-bind="Math.round(selectedBox.width) + ' × ' + Math.round(selectedBox.height)"></span>
+      </div>
+
+      <!-- C. Webstudio Floating Actions Pill (#select-actions) -->
+      <div id="select-actions"
+        class="absolute -top-6 end-0 bg-[#2979ff] text-white rounded-t px-1.5 py-0.5 shadow-md flex items-center gap-1 pointer-events-auto z-50 text-xs">
+        
+        <!-- Select Parent -->
+        <button class="btn btn-ghost btn-xs h-5 w-5 min-h-0 p-0 text-white hover:bg-white/20" data-on-click="selectParent()" title="Select parent">
+          <iconify-icon icon="material-symbols-light:arrow-upward-alt" class="text-sm"></iconify-icon>
+        </button>
+
+        <!-- Move Up -->
+        <button class="btn btn-ghost btn-xs h-5 w-5 min-h-0 p-0 text-white hover:bg-white/20" data-on-click="moveElementUp()" title="Move up">
+          <iconify-icon icon="material-symbols-light:keyboard-arrow-up" class="text-sm"></iconify-icon>
+        </button>
+
+        <!-- Move Down -->
+        <button class="btn btn-ghost btn-xs h-5 w-5 min-h-0 p-0 text-white hover:bg-white/20" data-on-click="moveElementDown()" title="Move down">
+          <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
+        </button>
+
+        <!-- Duplicate Element -->
+        <button class="btn btn-ghost btn-xs h-5 w-5 min-h-0 p-0 text-white hover:bg-white/20" data-on-click="duplicateElement()" title="Clone element">
+          <iconify-icon icon="material-symbols-light:content-copy" class="text-sm"></iconify-icon>
+        </button>
+
+        <!-- Delete Element -->
+        <button class="btn btn-ghost btn-xs h-5 w-5 min-h-0 p-0 text-white hover:bg-red-600" data-on-click="deleteElement()" title="Remove element">
+          <iconify-icon icon="material-symbols-light:delete-outline" class="text-sm"></iconify-icon>
+        </button>
+      </div>
+
+      <!-- D. Webstudio 4-Corner Resize Handles -->
+      <div class="absolute -top-1 -left-1 w-2 h-2 bg-white border border-[#2979ff] rounded-sm pointer-events-auto shadow-sm"></div>
+      <div class="absolute -top-1 -right-1 w-2 h-2 bg-white border border-[#2979ff] rounded-sm pointer-events-auto shadow-sm"></div>
+      <div class="absolute -bottom-1 -left-1 w-2 h-2 bg-white border border-[#2979ff] rounded-sm pointer-events-auto shadow-sm"></div>
+      <div class="absolute -bottom-1 -right-1 w-2 h-2 bg-white border border-[#2979ff] rounded-sm pointer-events-auto shadow-sm"></div>
+
+    </div>
+
+    <!-- ================= 3. CONTEXTUAL ADD SECTION DRAWER (#add-section-box) ================= -->
+    <div id="add-section-box"
+      class="absolute inset-x-8 top-16 bg-base-100 border border-base-content/15 rounded-xl shadow-2xl p-4 z-50 transition-all duration-200"
+      data-show="addSectionBoxOpen">
+      
+      <!-- Drawer Header & Placement Mode -->
+      <div class="flex items-center justify-between border-b border-base-content/10 pb-3 mb-3">
+        <div class="flex items-center gap-3">
+          <span class="font-bold text-sm">Add Component / Section</span>
+          <div class="flex items-center gap-2 bg-base-200 px-2 py-1 rounded border border-base-content/10">
+            <label class="flex items-center gap-1 cursor-pointer">
+              <input type="radio" name="add-mode" value="after" class="radio radio-xs radio-primary"
+                data-on-change="addSectionMode = 'after'" checked="checked" />
+              <span class="text-[11px] font-semibold">After</span>
+            </label>
+            <label class="flex items-center gap-1 cursor-pointer">
+              <input type="radio" name="add-mode" value="inside" class="radio radio-xs radio-primary"
+                data-on-change="addSectionMode = 'inside'" />
+              <span class="text-[11px] font-semibold">Inside</span>
+            </label>
+          </div>
+        </div>
+
+        <button class="btn btn-circle btn-ghost btn-xs" data-on-click="addSectionBoxOpen = false">✕</button>
+      </div>
+
+      <!-- Quick Section Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <button class="btn btn-outline btn-xs py-3 h-auto flex flex-col items-center gap-1 bg-base-100" data-on-click="insertSnippet('snip-hero')">
+          <iconify-icon icon="material-symbols-light:view-agenda" class="text-[#2979ff] text-xl"></iconify-icon>
+          <span class="font-bold text-xs">Hero Section</span>
+        </button>
+        <button class="btn btn-outline btn-xs py-3 h-auto flex flex-col items-center gap-1 bg-base-100" data-on-click="insertSnippet('snip-features')">
+          <iconify-icon icon="material-symbols-light:featured-play-list" class="text-secondary text-xl"></iconify-icon>
+          <span class="font-bold text-xs">Features Grid</span>
+        </button>
+        <button class="btn btn-outline btn-xs py-3 h-auto flex flex-col items-center gap-1 bg-base-100" data-on-click="insertSnippet('snip-pricing')">
+          <iconify-icon icon="material-symbols-light:payments" class="text-accent text-xl"></iconify-icon>
+          <span class="font-bold text-xs">Pricing Table</span>
+        </button>
+        <button class="btn btn-outline btn-xs py-3 h-auto flex flex-col items-center gap-1 bg-base-100" data-on-click="insertSnippet('snip-cta')">
+          <iconify-icon icon="material-symbols-light:campaign" class="text-warning text-xl"></iconify-icon>
+          <span class="font-bold text-xs">CTA Banner</span>
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+</main>

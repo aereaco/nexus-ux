@@ -1,0 +1,167 @@
+<!-- Webstudio #top-panel (38px Height, Sleek Dark Aesthetic) -->
+<header class="h-[38px] px-3 bg-base-100 border-b border-base-content/10 flex items-center justify-between gap-2 shrink-0 select-none z-30 text-xs" id="top-panel">
+
+  <!-- LEFT GROUP: Logo, Project Name & Panel Toggles -->
+  <div class="flex items-center gap-2">
+    <!-- Webstudio Brand Icon -->
+    <a href="/builder" class="flex items-center gap-1.5 font-bold tracking-tight text-xs text-base-content hover:opacity-80 transition-opacity" title="Webstudio Visual Builder">
+      <div class="w-5 h-5 rounded bg-[#2979ff] text-white flex items-center justify-center font-bold text-[10px] shadow-sm">
+        <iconify-icon icon="material-symbols-light:web" class="text-sm"></iconify-icon>
+      </div>
+      <span class="font-semibold hidden sm:inline">Webstudio</span>
+    </a>
+
+    <div class="h-3.5 w-px bg-base-content/15 hidden sm:block"></div>
+
+    <!-- Page Indicator -->
+    <div class="hidden md:flex items-center gap-1.5 text-base-content/70 text-[11px]">
+      <iconify-icon icon="material-symbols-light:description-outline" class="text-xs"></iconify-icon>
+      <span class="font-mono truncate max-w-[120px]" data-bind="currentDoc.split('/').pop()"></span>
+    </div>
+
+    <!-- Toggle Panels -->
+    <div class="flex items-center gap-0.5 ml-1">
+      <button class="btn btn-xs h-6 px-1.5"
+        data-class="{ 'btn-primary shadow-sm': showLeftColumn, 'btn-ghost hover:bg-base-200': !showLeftColumn }"
+        data-on-click="showLeftColumn = !showLeftColumn"
+        title="Toggle Navigator / Left Panel">
+        <iconify-icon icon="material-symbols-light:dock-to-left" class="text-sm"></iconify-icon>
+      </button>
+
+      <button class="btn btn-xs h-6 px-1.5"
+        data-class="{ 'btn-primary shadow-sm': showRightColumn, 'btn-ghost hover:bg-base-200': !showRightColumn }"
+        data-on-click="showRightColumn = !showRightColumn"
+        title="Toggle Style Inspector / Right Panel">
+        <iconify-icon icon="material-symbols-light:dock-to-right" class="text-sm"></iconify-icon>
+      </button>
+    </div>
+
+    <!-- Undo / Redo Group -->
+    <div class="join ml-1">
+      <button class="btn btn-ghost btn-xs h-6 px-1.5 join-item hover:bg-base-200 text-base-content/70 hover:text-base-content" title="Undo (Ctrl+Z)" data-on-click="document.execCommand('undo')">
+        <iconify-icon icon="material-symbols-light:undo" class="text-sm"></iconify-icon>
+      </button>
+      <button class="btn btn-ghost btn-xs h-6 px-1.5 join-item hover:bg-base-200 text-base-content/70 hover:text-base-content" title="Redo (Ctrl+Shift+Z)" data-on-click="document.execCommand('redo')">
+        <iconify-icon icon="material-symbols-light:redo" class="text-sm"></iconify-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- CENTER GROUP: Webstudio Breakpoints Bar -->
+  <div class="flex items-center gap-1 bg-base-200/60 p-0.5 rounded-lg border border-base-content/10">
+    <!-- Desktop (Base) Breakpoint -->
+    <button class="btn btn-xs h-6 px-2.5 min-h-0 rounded-md gap-1.5 transition-all"
+      data-class="{ 'bg-base-100 text-base-content shadow-sm font-semibold': viewport === 'desktop', 'btn-ghost text-base-content/60 hover:text-base-content': viewport !== 'desktop' }"
+      data-on-click="viewport = 'desktop'"
+      title="Desktop (Base Breakpoint - 100%)">
+      <iconify-icon icon="material-symbols-light:desktop-windows" class="text-sm"></iconify-icon>
+      <span class="text-[11px] hidden lg:inline">Desktop</span>
+    </button>
+
+    <!-- Tablet Breakpoint -->
+    <button class="btn btn-xs h-6 px-2.5 min-h-0 rounded-md gap-1.5 transition-all"
+      data-class="{ 'bg-base-100 text-base-content shadow-sm font-semibold': viewport === 'tablet', 'btn-ghost text-base-content/60 hover:text-base-content': viewport !== 'tablet' }"
+      data-on-click="viewport = 'tablet'"
+      title="Tablet (768px)">
+      <iconify-icon icon="material-symbols-light:tablet-mac" class="text-sm"></iconify-icon>
+      <span class="text-[11px] hidden lg:inline">Tablet</span>
+      <span class="text-[9px] font-mono opacity-50 hidden xl:inline">768</span>
+    </button>
+
+    <!-- Mobile Breakpoint -->
+    <button class="btn btn-xs h-6 px-2.5 min-h-0 rounded-md gap-1.5 transition-all"
+      data-class="{ 'bg-base-100 text-base-content shadow-sm font-semibold': viewport === 'mobile', 'btn-ghost text-base-content/60 hover:text-base-content': viewport !== 'mobile' }"
+      data-on-click="viewport = 'mobile'"
+      title="Mobile (375px)">
+      <iconify-icon icon="material-symbols-light:smartphone" class="text-sm"></iconify-icon>
+      <span class="text-[11px] hidden lg:inline">Mobile</span>
+      <span class="text-[9px] font-mono opacity-50 hidden xl:inline">375</span>
+    </button>
+  </div>
+
+  <!-- RIGHT GROUP: Mode Switcher, Zoom, Canvas Theme & Publish/Export -->
+  <div class="flex items-center gap-2">
+
+    <!-- Mode Switcher: Design vs Preview -->
+    <div class="flex items-center bg-base-200/60 p-0.5 rounded-lg border border-base-content/10">
+      <button class="btn btn-xs h-6 px-2 min-h-0 rounded-md gap-1"
+        data-class="{ 'bg-base-100 text-base-content shadow-sm font-semibold': !previewMode, 'btn-ghost text-base-content/60 hover:text-base-content': previewMode }"
+        data-on-click="previewMode = false"
+        title="Design Mode">
+        <iconify-icon icon="material-symbols-light:edit-outline" class="text-xs"></iconify-icon>
+        <span class="text-[11px] hidden sm:inline">Design</span>
+      </button>
+      <button class="btn btn-xs h-6 px-2 min-h-0 rounded-md gap-1"
+        data-class="{ 'bg-[#2979ff] text-white shadow-sm font-semibold': previewMode, 'btn-ghost text-base-content/60 hover:text-base-content': !previewMode }"
+        data-on-click="previewMode = true; selectedEl = null; hoveredEl = null; selectedBox.visible = false; hoverBox.visible = false"
+        title="Preview Mode">
+        <iconify-icon icon="material-symbols-light:visibility-outline" class="text-xs"></iconify-icon>
+        <span class="text-[11px] hidden sm:inline">Preview</span>
+      </button>
+    </div>
+
+    <!-- Zoom Dropdown -->
+    <div class="dropdown dropdown-end">
+      <div tabindex="0" role="button" class="btn btn-ghost btn-xs h-6 px-1.5 font-mono text-[11px] gap-0.5 border border-base-content/10" title="Zoom">
+        <span data-bind="zoom + '%'"></span>
+        <iconify-icon icon="material-symbols-light:arrow-drop-down" class="text-xs"></iconify-icon>
+      </div>
+      <ul tabindex="0" class="dropdown-content menu p-1 shadow-xl bg-base-100 border border-base-content/15 rounded-md w-24 z-50 text-xs gap-0.5 font-mono">
+        <li><button data-on-click="zoom = 50">50%</button></li>
+        <li><button data-on-click="zoom = 75">75%</button></li>
+        <li><button data-on-click="zoom = 100">100%</button></li>
+        <li><button data-on-click="zoom = 125">125%</button></li>
+      </ul>
+    </div>
+
+    <!-- Canvas Theme Toggle -->
+    <button class="btn btn-ghost btn-xs h-6 px-1.5 hover:bg-base-200 text-base-content/70 hover:text-base-content"
+      data-on-click="toggleCanvasTheme()"
+      title="Toggle Canvas Theme">
+      <iconify-icon data-bind-icon="canvasTheme === 'dark' ? 'material-symbols-light:dark-mode-outline' : 'material-symbols-light:wb-sunny-outline'" class="text-sm"></iconify-icon>
+    </button>
+
+    <!-- Webstudio Export / Publish Button -->
+    <div class="join shadow-sm">
+      <button class="btn btn-xs h-6 px-3 join-item gap-1.5 font-semibold bg-[#2979ff] text-white border-0 hover:bg-[#1c64d9]"
+        data-on-click="exportModalOpen = true" title="Export HTML / Publish">
+        <iconify-icon icon="material-symbols-light:ios-share" class="text-sm"></iconify-icon>
+        <span>Export</span>
+      </button>
+      <div class="dropdown dropdown-end join-item">
+        <div tabindex="0" role="button" class="btn btn-xs h-6 px-1 join-item min-h-0 bg-[#2979ff] text-white border-0 border-l border-white/20 hover:bg-[#1c64d9]">
+          <iconify-icon icon="material-symbols-light:arrow-drop-down" class="text-xs"></iconify-icon>
+        </div>
+        <ul tabindex="0" class="dropdown-content menu p-1 shadow-xl bg-base-100 border border-base-content/15 rounded-md w-44 z-50 text-xs gap-0.5">
+          <li>
+            <button data-on-click="bottomPanelExpanded = true">
+              <iconify-icon icon="material-symbols-light:code" class="text-sm text-accent"></iconify-icon>
+              <span>Code Editor</span>
+            </button>
+          </li>
+          <li>
+            <button data-on-click="templateModalOpen = true">
+              <iconify-icon icon="material-symbols-light:folder" class="text-sm text-warning"></iconify-icon>
+              <span>Switch Template</span>
+            </button>
+          </li>
+          <li>
+            <button data-on-click="downloadExportHtml()">
+              <iconify-icon icon="material-symbols-light:download" class="text-sm text-primary"></iconify-icon>
+              <span>Download HTML</span>
+            </button>
+          </li>
+          <div class="divider my-0.5"></div>
+          <li>
+            <button class="text-error" data-on-click="clearCanvas()">
+              <iconify-icon icon="material-symbols-light:delete-sweep" class="text-sm"></iconify-icon>
+              <span>Clear Canvas</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</header>
