@@ -56,27 +56,426 @@
       </div>
     </div>
 
-    <!-- ================= 1. CONTENT TAB ================= -->
+    <!-- ================= 1. CONTENT TAB (VVVEBJS DYNAMIC PORT) ================= -->
     <div class="p-3 space-y-3" data-show="propertiesSubTab === 'content'">
       
-      <!-- Tag-Aware Section: Heading Controls -->
-      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2"
-        data-show="['H1','H2','H3','H4','H5','H6'].includes(inspector.tag)">
+      <!-- 1. SECTION / HEADER / HERO INSPECTOR -->
+      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2.5"
+        data-show="inspector.componentType === 'section'">
         <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
-          <span>Heading Controls</span>
-          <iconify-icon icon="material-symbols-light:title" class="text-sm text-primary"></iconify-icon>
+          <div class="flex items-center gap-1.5">
+            <iconify-icon icon="material-symbols-light:view-agenda" class="text-sm text-primary"></iconify-icon>
+            <span>Section / Shell</span>
+          </div>
+          <span class="badge badge-primary badge-xs text-[9px]">Layout</span>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-[10px] text-base-content/60 font-medium">Section Label</label>
+          <input type="text" class="input input-bordered input-xs w-full h-7 rounded-md text-xs"
+            placeholder="e.g. hero-section"
+            data-bind-value="inspector.props.label"
+            data-on-input="setCompAttr('aria-label', $evt.target.value)" />
+        </div>
+
+        <!-- Container Sizing -->
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10px] text-base-content/60 font-medium block mb-1">Width</label>
+            <div class="join w-full">
+              <button class="btn btn-xs h-6 min-h-0 join-item flex-1 text-[10px]"
+                data-class="{ 'btn-primary font-bold': inspector.props.containerWidth === 'boxed', 'btn-ghost border border-base-content/10': inspector.props.containerWidth !== 'boxed' }"
+                data-on-click="inspector.props.containerWidth = 'boxed'; setCompClass(['w-full'], 'max-w-7xl mx-auto')">Boxed</button>
+              <button class="btn btn-xs h-6 min-h-0 join-item flex-1 text-[10px]"
+                data-class="{ 'btn-primary font-bold': inspector.props.containerWidth === 'full', 'btn-ghost border border-base-content/10': inspector.props.containerWidth !== 'full' }"
+                data-on-click="inspector.props.containerWidth = 'full'; setCompClass(['max-w-7xl', 'mx-auto'], 'w-full')">Full</button>
+            </div>
+          </div>
+          <div>
+            <label class="text-[10px] text-base-content/60 font-medium block mb-1">Height</label>
+            <div class="join w-full">
+              <button class="btn btn-xs h-6 min-h-0 join-item flex-1 text-[10px]"
+                data-class="{ 'btn-primary font-bold': inspector.props.containerHeight === 'auto', 'btn-ghost border border-base-content/10': inspector.props.containerHeight !== 'auto' }"
+                data-on-click="inspector.props.containerHeight = 'auto'; setCompClass(['min-h-screen', 'vh-100'], 'h-auto')">Auto</button>
+              <button class="btn btn-xs h-6 min-h-0 join-item flex-1 text-[10px]"
+                data-class="{ 'btn-primary font-bold': inspector.props.containerHeight === 'full', 'btn-ghost border border-base-content/10': inspector.props.containerHeight !== 'full' }"
+                data-on-click="inspector.props.containerHeight = 'full'; setCompClass(['h-auto'], 'min-h-screen')">Full</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Background Mode Selector -->
+        <div class="space-y-1.5 pt-1 border-t border-base-content/10">
+          <label class="text-[10px] text-base-content/60 font-medium block">Background Mode</label>
+          <div class="grid grid-cols-4 gap-1">
+            <button class="btn btn-xs h-6 min-h-0 text-[10px]"
+              data-class="{ 'btn-primary font-bold': inspector.props.bgMode === 'none', 'btn-ghost border border-base-content/10': inspector.props.bgMode !== 'none' }"
+              data-on-click="setSectionBackground('none')">None</button>
+            <button class="btn btn-xs h-6 min-h-0 text-[10px]"
+              data-class="{ 'btn-primary font-bold': inspector.props.bgMode === 'image', 'btn-ghost border border-base-content/10': inspector.props.bgMode !== 'image' }"
+              data-on-click="setSectionBackground('image')">Image</button>
+            <button class="btn btn-xs h-6 min-h-0 text-[10px]"
+              data-class="{ 'btn-primary font-bold': inspector.props.bgMode === 'video', 'btn-ghost border border-base-content/10': inspector.props.bgMode !== 'video' }"
+              data-on-click="setSectionBackground('video')">Video</button>
+            <button class="btn btn-xs h-6 min-h-0 text-[10px]"
+              data-class="{ 'btn-primary font-bold': inspector.props.bgMode === 'youtube', 'btn-ghost border border-base-content/10': inspector.props.bgMode !== 'youtube' }"
+              data-on-click="setSectionBackground('youtube')">YouTube</button>
+          </div>
+
+          <!-- Image Background Sub-Options -->
+          <div class="space-y-1.5 pt-1" data-show="inspector.props.bgMode === 'image'">
+            <div class="w-full h-20 rounded-lg overflow-hidden bg-base-200 border border-base-content/10 relative flex items-center justify-center">
+              <img data-bind-src="inspector.props.bgImage || 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=600&q=80'" class="w-full h-full object-cover" />
+            </div>
+            <input type="text" class="input input-bordered input-xs w-full h-7 rounded-md text-xs font-mono"
+              placeholder="Image URL..."
+              data-bind-value="inspector.props.bgImage"
+              data-on-input="setSectionBackground('image')" />
+          </div>
+        </div>
+
+        <!-- Overlay Toggle & Controls -->
+        <div class="space-y-1.5 pt-1 border-t border-base-content/10">
+          <div class="flex items-center justify-between">
+            <label class="text-[10px] text-base-content/60 font-medium">Dark Overlay</label>
+            <input type="checkbox" class="toggle toggle-primary toggle-xs"
+              data-bind-checked="inspector.props.hasOverlay"
+              data-on-change="toggleSectionOverlay($evt.target.checked)" />
+          </div>
+        </div>
+
+        <!-- Separator Controls -->
+        <div class="space-y-1.5 pt-1 border-t border-base-content/10">
+          <div class="flex items-center justify-between">
+            <label class="text-[10px] text-base-content/60 font-medium">Bottom Wave Separator</label>
+            <input type="checkbox" class="toggle toggle-primary toggle-xs"
+              data-bind-checked="inspector.props.hasBottomSeparator"
+              data-on-change="toggleSectionSeparator('bottom', $evt.target.checked)" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. GRID ROW & RESPONSIVE COLUMNS INSPECTOR -->
+      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2.5"
+        data-show="inspector.componentType === 'gridrow'">
+        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
+          <div class="flex items-center gap-1.5">
+            <iconify-icon icon="material-symbols-light:table-rows" class="text-sm text-primary"></iconify-icon>
+            <span>Grid Row & Flex</span>
+          </div>
+          <span class="badge badge-primary badge-xs text-[9px]">Layout</span>
+        </div>
+
+        <!-- Flexbox Direction Segmented Buttons -->
+        <div>
+          <label class="text-[10px] text-base-content/60 font-medium block mb-1">Direction</label>
+          <div class="join w-full">
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1" title="Row (Horizontal)"
+              data-class="{ 'btn-primary font-bold': inspector.props.direction === 'row', 'btn-ghost border border-base-content/10': inspector.props.direction !== 'row' }"
+              data-on-click="inspector.props.direction = 'row'; setCompClass(['flex-col', 'flex-row-reverse', 'flex-col-reverse'], 'flex-row')">&rarr;</button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1" title="Column (Vertical)"
+              data-class="{ 'btn-primary font-bold': inspector.props.direction === 'col', 'btn-ghost border border-base-content/10': inspector.props.direction !== 'col' }"
+              data-on-click="inspector.props.direction = 'col'; setCompClass(['flex-row', 'flex-row-reverse', 'flex-col-reverse'], 'flex-col')">&darr;</button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1" title="Row Reversed"
+              data-class="{ 'btn-primary font-bold': inspector.props.direction === 'row-reverse', 'btn-ghost border border-base-content/10': inspector.props.direction !== 'row-reverse' }"
+              data-on-click="inspector.props.direction = 'row-reverse'; setCompClass(['flex-row', 'flex-col', 'flex-col-reverse'], 'flex-row-reverse')">&larr;</button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1" title="Column Reversed"
+              data-class="{ 'btn-primary font-bold': inspector.props.direction === 'col-reverse', 'btn-ghost border border-base-content/10': inspector.props.direction !== 'col-reverse' }"
+              data-on-click="inspector.props.direction = 'col-reverse'; setCompClass(['flex-row', 'flex-col', 'flex-row-reverse'], 'flex-col-reverse')">&uarr;</button>
+          </div>
+        </div>
+
+        <!-- Vertical Align (Items) -->
+        <div>
+          <label class="text-[10px] text-base-content/60 font-medium block mb-1">Vertical Align</label>
+          <div class="join w-full">
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 text-[10px]"
+              data-class="{ 'btn-primary font-bold': inspector.props.verticalAlign === 'start', 'btn-ghost border border-base-content/10': inspector.props.verticalAlign !== 'start' }"
+              data-on-click="inspector.props.verticalAlign = 'start'; setCompClass(['items-center', 'items-end', 'items-stretch'], 'items-start')">Top</button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 text-[10px]"
+              data-class="{ 'btn-primary font-bold': inspector.props.verticalAlign === 'center', 'btn-ghost border border-base-content/10': inspector.props.verticalAlign !== 'center' }"
+              data-on-click="inspector.props.verticalAlign = 'center'; setCompClass(['items-start', 'items-end', 'items-stretch'], 'items-center')">Center</button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 text-[10px]"
+              data-class="{ 'btn-primary font-bold': inspector.props.verticalAlign === 'end', 'btn-ghost border border-base-content/10': inspector.props.verticalAlign !== 'end' }"
+              data-on-click="inspector.props.verticalAlign = 'end'; setCompClass(['items-start', 'items-center', 'items-stretch'], 'items-end')">Bottom</button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 text-[10px]"
+              data-class="{ 'btn-primary font-bold': inspector.props.verticalAlign === 'stretch', 'btn-ghost border border-base-content/10': inspector.props.verticalAlign !== 'stretch' }"
+              data-on-click="inspector.props.verticalAlign = 'stretch'; setCompClass(['items-start', 'items-center', 'items-end'], 'items-stretch')">Stretch</button>
+          </div>
+        </div>
+
+        <!-- Horizontal Align (Justify) -->
+        <div>
+          <label class="text-[10px] text-base-content/60 font-medium block mb-1">Horizontal Align</label>
+          <div class="join w-full">
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 text-[10px]"
+              data-class="{ 'btn-primary font-bold': inspector.props.horizontalAlign === 'start', 'btn-ghost border border-base-content/10': inspector.props.horizontalAlign !== 'start' }"
+              data-on-click="inspector.props.horizontalAlign = 'start'; setCompClass(['justify-center', 'justify-end', 'justify-between'], 'justify-start')">Start</button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 text-[10px]"
+              data-class="{ 'btn-primary font-bold': inspector.props.horizontalAlign === 'center', 'btn-ghost border border-base-content/10': inspector.props.horizontalAlign !== 'center' }"
+              data-on-click="inspector.props.horizontalAlign = 'center'; setCompClass(['justify-start', 'justify-end', 'justify-between'], 'justify-center')">Center</button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 text-[10px]"
+              data-class="{ 'btn-primary font-bold': inspector.props.horizontalAlign === 'end', 'btn-ghost border border-base-content/10': inspector.props.horizontalAlign !== 'end' }"
+              data-on-click="inspector.props.horizontalAlign = 'end'; setCompClass(['justify-start', 'justify-center', 'justify-between'], 'justify-end')">End</button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 text-[10px]"
+              data-class="{ 'btn-primary font-bold': inspector.props.horizontalAlign === 'between', 'btn-ghost border border-base-content/10': inspector.props.horizontalAlign !== 'between' }"
+              data-on-click="inspector.props.horizontalAlign = 'between'; setCompClass(['justify-start', 'justify-center', 'justify-end'], 'justify-between')">Split</button>
+          </div>
+        </div>
+
+        <!-- Responsive Columns Manager (VvvebJs ListInput Model) -->
+        <div class="space-y-2 pt-2 border-t border-base-content/10">
+          <div class="flex items-center justify-between">
+            <label class="text-[10px] text-base-content/80 font-bold">Child Columns</label>
+            <button class="btn btn-primary btn-xs h-5 px-2 min-h-0 gap-1 text-[10px]" data-on-click="addColumnToRow()">
+              <iconify-icon icon="material-symbols-light:add" class="text-xs"></iconify-icon>
+              <span>Add Column</span>
+            </button>
+          </div>
+
+          <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
+            <template data-for="(col, i) in inspector.props.columns" data-key="col.index">
+              <div class="border border-base-content/10 rounded-lg p-2 bg-base-200/40 space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-bold text-base-content/80" data-bind="col.name"></span>
+                  <button class="btn btn-ghost btn-xs h-5 w-5 p-0 text-error hover:bg-error/15" title="Remove Column"
+                    data-on-click="removeColumn(col.index)">
+                    <iconify-icon icon="material-symbols-light:delete" class="text-xs"></iconify-icon>
+                  </button>
+                </div>
+                <div class="grid grid-cols-2 gap-1.5 text-[10px]">
+                  <div>
+                    <span class="text-[9px] opacity-60 block">Mobile (XS)</span>
+                    <select class="select select-bordered select-xs w-full h-6 min-h-0 rounded text-[10px] px-1"
+                      data-on-change="setColumnSpan(col.index, 'xs', $evt.target.value)">
+                      <option value="none">None</option>
+                      <option value="12" data-bind-selected="col.xs === '12'">Full (12)</option>
+                      <option value="6" data-bind-selected="col.xs === '6'">Half (6)</option>
+                      <option value="4" data-bind-selected="col.xs === '4'">1/3 (4)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <span class="text-[9px] opacity-60 block">Desktop (MD)</span>
+                    <select class="select select-bordered select-xs w-full h-6 min-h-0 rounded text-[10px] px-1"
+                      data-on-change="setColumnSpan(col.index, 'md', $evt.target.value)">
+                      <option value="none">None</option>
+                      <option value="12" data-bind-selected="col.md === '12'">Full (12)</option>
+                      <option value="6" data-bind-selected="col.md === '6'">Half (6)</option>
+                      <option value="4" data-bind-selected="col.md === '4'">1/3 (4)</option>
+                      <option value="3" data-bind-selected="col.md === '3'">1/4 (3)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. SVG IMAGE & ICON INSPECTOR -->
+      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2.5"
+        data-show="inspector.componentType === 'svgimage'">
+        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
+          <div class="flex items-center gap-1.5">
+            <iconify-icon icon="material-symbols-light:shapes" class="text-sm text-primary"></iconify-icon>
+            <span>SVG Icon & Shape</span>
+          </div>
+          <span class="badge badge-primary badge-xs text-[9px]">Vector</span>
+        </div>
+
+        <!-- Interactive SVG Icon Grid Chooser -->
+        <div class="space-y-1">
+          <label class="text-[10px] text-base-content/60 font-medium block">Select Icon</label>
+          <div class="grid grid-cols-4 gap-1.5 bg-base-200/50 p-2 rounded-lg border border-base-content/10">
+            <button class="btn btn-ghost btn-xs h-8 p-0 rounded-md flex items-center justify-center hover:bg-primary/20" title="Star" data-on-click="setSvgIcon('star')">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            </button>
+            <button class="btn btn-ghost btn-xs h-8 p-0 rounded-md flex items-center justify-center hover:bg-primary/20" title="Heart" data-on-click="setSvgIcon('heart')">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            </button>
+            <button class="btn btn-ghost btn-xs h-8 p-0 rounded-md flex items-center justify-center hover:bg-primary/20" title="Check" data-on-click="setSvgIcon('check')">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </button>
+            <button class="btn btn-ghost btn-xs h-8 p-0 rounded-md flex items-center justify-center hover:bg-primary/20" title="Arrow" data-on-click="setSvgIcon('arrowRight')">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
+            <button class="btn btn-ghost btn-xs h-8 p-0 rounded-md flex items-center justify-center hover:bg-primary/20" title="Home" data-on-click="setSvgIcon('home')">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+            </button>
+            <button class="btn btn-ghost btn-xs h-8 p-0 rounded-md flex items-center justify-center hover:bg-primary/20" title="User" data-on-click="setSvgIcon('user')">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </button>
+            <button class="btn btn-ghost btn-xs h-8 p-0 rounded-md flex items-center justify-center hover:bg-primary/20" title="Settings" data-on-click="setSvgIcon('settings')">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10px] text-base-content/60 font-medium block">Width</label>
+            <input type="number" class="input input-bordered input-xs w-full h-7 rounded-md"
+              data-bind-value="inspector.props.svgWidth"
+              data-on-input="setCompAttr('width', $evt.target.value)" />
+          </div>
+          <div>
+            <label class="text-[10px] text-base-content/60 font-medium block">Height</label>
+            <input type="number" class="input input-bordered input-xs w-full h-7 rounded-md"
+              data-bind-value="inspector.props.svgHeight"
+              data-on-input="setCompAttr('height', $evt.target.value)" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. IMAGE INSPECTOR -->
+      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2.5"
+        data-show="inspector.componentType === 'image'">
+        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
+          <div class="flex items-center gap-1.5">
+            <iconify-icon icon="material-symbols-light:image" class="text-sm text-primary"></iconify-icon>
+            <span>Image</span>
+          </div>
+          <span class="badge badge-primary badge-xs text-[9px]">Media</span>
+        </div>
+
+        <!-- Thumbnail Preview -->
+        <div class="w-full h-24 rounded-lg bg-base-200 border border-base-content/10 overflow-hidden flex items-center justify-center">
+          <img data-bind-src="inspector.src || 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&q=80'" class="w-full h-full object-cover" />
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-[10px] text-base-content/60 font-medium">Source URL</label>
+          <input type="text" class="input input-bordered input-xs w-full h-7 rounded-md text-xs font-mono"
+            placeholder="https://..."
+            data-bind-value="inspector.src"
+            data-on-input="setCompAttr('src', $evt.target.value)" />
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-[10px] text-base-content/60 font-medium">Alt Text</label>
+          <input type="text" class="input input-bordered input-xs w-full h-7 rounded-md text-xs"
+            placeholder="Descriptive label..."
+            data-bind-value="inspector.alt"
+            data-on-input="setCompAttr('alt', $evt.target.value)" />
+        </div>
+
+        <!-- Rounded Shape -->
+        <div>
+          <label class="text-[10px] text-base-content/60 font-medium block mb-1">Corner Radius</label>
+          <div class="join w-full">
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 text-[10px]"
+              data-class="{ 'btn-primary font-bold': inspector.props.imageRounded === 'none', 'btn-ghost border border-base-content/10': inspector.props.imageRounded !== 'none' }"
+              data-on-click="inspector.props.imageRounded = 'none'; setCompClass(['rounded-box', 'rounded-2xl', 'rounded-full'], '')">None</button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 text-[10px]"
+              data-class="{ 'btn-primary font-bold': inspector.props.imageRounded === 'rounded-box', 'btn-ghost border border-base-content/10': inspector.props.imageRounded !== 'rounded-box' }"
+              data-on-click="inspector.props.imageRounded = 'rounded-box'; setCompClass(['rounded-full'], 'rounded-2xl')">Rounded</button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 text-[10px]"
+              data-class="{ 'btn-primary font-bold': inspector.props.imageRounded === 'rounded-full', 'btn-ghost border border-base-content/10': inspector.props.imageRounded !== 'rounded-full' }"
+              data-on-click="inspector.props.imageRounded = 'rounded-full'; setCompClass(['rounded-2xl', 'rounded-box'], 'rounded-full')">Circle</button>
+          </div>
+        </div>
+
+        <!-- Link Wrapping Toggle -->
+        <div class="pt-1.5 border-t border-base-content/10 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="text-[10px] text-base-content/60 font-medium">Wrap in Anchor Link</label>
+            <input type="checkbox" class="toggle toggle-primary toggle-xs"
+              data-bind-checked="inspector.props.hasLink"
+              data-on-change="toggleElementLink($evt.target.checked)" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. BUTTON INSPECTOR (DAISYUI 5 NATIVE) -->
+      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2.5"
+        data-show="inspector.componentType === 'button'">
+        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
+          <div class="flex items-center gap-1.5">
+            <iconify-icon icon="material-symbols-light:smart-button" class="text-sm text-primary"></iconify-icon>
+            <span>Button (DaisyUI)</span>
+          </div>
+          <span class="badge badge-primary badge-xs text-[9px]">Action</span>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-[10px] text-base-content/60 font-medium">Text Content</label>
+          <input type="text" class="input input-bordered input-xs w-full h-7 rounded-md text-xs font-medium"
+            data-bind-value="inspector.textContent"
+            data-on-input="updateInspectorText($evt.target.value)" />
+        </div>
+
+        <!-- Button Variant Dropdown -->
+        <div class="space-y-1">
+          <label class="text-[10px] text-base-content/60 font-medium">Color Variant</label>
+          <select class="select select-bordered select-xs w-full h-7 rounded-md text-xs"
+            data-on-change="setCompClass(['btn-primary','btn-secondary','btn-accent','btn-neutral','btn-info','btn-success','btn-warning','btn-error','btn-ghost','btn-link'], $evt.target.value)">
+            <option value="btn-primary" data-bind-selected="inspector.props.buttonVariant === 'btn-primary'">Primary</option>
+            <option value="btn-secondary" data-bind-selected="inspector.props.buttonVariant === 'btn-secondary'">Secondary</option>
+            <option value="btn-accent" data-bind-selected="inspector.props.buttonVariant === 'btn-accent'">Accent</option>
+            <option value="btn-neutral" data-bind-selected="inspector.props.buttonVariant === 'btn-neutral'">Neutral</option>
+            <option value="btn-info" data-bind-selected="inspector.props.buttonVariant === 'btn-info'">Info</option>
+            <option value="btn-success" data-bind-selected="inspector.props.buttonVariant === 'btn-success'">Success</option>
+            <option value="btn-warning" data-bind-selected="inspector.props.buttonVariant === 'btn-warning'">Warning</option>
+            <option value="btn-error" data-bind-selected="inspector.props.buttonVariant === 'btn-error'">Error</option>
+            <option value="btn-ghost" data-bind-selected="inspector.props.buttonVariant === 'btn-ghost'">Ghost</option>
+            <option value="btn-link" data-bind-selected="inspector.props.buttonVariant === 'btn-link'">Link</option>
+          </select>
+        </div>
+
+        <!-- Button Style Modifier -->
+        <div class="space-y-1">
+          <label class="text-[10px] text-base-content/60 font-medium">Style Modifier</label>
+          <select class="select select-bordered select-xs w-full h-7 rounded-md text-xs"
+            data-on-change="setCompClass(['btn-outline','btn-soft','btn-dash','glass'], $evt.target.value)">
+            <option value="none" data-bind-selected="inspector.props.buttonStyle === 'none'">Solid (Default)</option>
+            <option value="btn-outline" data-bind-selected="inspector.props.buttonStyle === 'btn-outline'">Outline</option>
+            <option value="btn-soft" data-bind-selected="inspector.props.buttonStyle === 'btn-soft'">Soft</option>
+            <option value="btn-dash" data-bind-selected="inspector.props.buttonStyle === 'btn-dash'">Dashed</option>
+            <option value="glass" data-bind-selected="inspector.props.buttonStyle === 'glass'">Glassmorphism</option>
+          </select>
+        </div>
+
+        <!-- Button Size -->
+        <div class="space-y-1">
+          <label class="text-[10px] text-base-content/60 font-medium">Size</label>
+          <div class="join w-full">
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 text-[10px]"
+              data-class="{ 'btn-primary font-bold': inspector.props.buttonSize === 'btn-xs', 'btn-ghost border border-base-content/10': inspector.props.buttonSize !== 'btn-xs' }"
+              data-on-click="setCompClass(['btn-xs','btn-sm','btn-md','btn-lg','btn-xl'], 'btn-xs'); inspector.props.buttonSize = 'btn-xs'">XS</button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 text-[10px]"
+              data-class="{ 'btn-primary font-bold': inspector.props.buttonSize === 'btn-sm', 'btn-ghost border border-base-content/10': inspector.props.buttonSize !== 'btn-sm' }"
+              data-on-click="setCompClass(['btn-xs','btn-sm','btn-md','btn-lg','btn-xl'], 'btn-sm'); inspector.props.buttonSize = 'btn-sm'">SM</button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 text-[10px]"
+              data-class="{ 'btn-primary font-bold': inspector.props.buttonSize === 'btn-md', 'btn-ghost border border-base-content/10': inspector.props.buttonSize !== 'btn-md' }"
+              data-on-click="setCompClass(['btn-xs','btn-sm','btn-md','btn-lg','btn-xl'], 'btn-md'); inspector.props.buttonSize = 'btn-md'">MD</button>
+            <button class="btn btn-xs h-6 min-h-0 join-item flex-1 text-[10px]"
+              data-class="{ 'btn-primary font-bold': inspector.props.buttonSize === 'btn-lg', 'btn-ghost border border-base-content/10': inspector.props.buttonSize !== 'btn-lg' }"
+              data-on-click="setCompClass(['btn-xs','btn-sm','btn-md','btn-lg','btn-xl'], 'btn-lg'); inspector.props.buttonSize = 'btn-lg'">LG</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. HEADING INSPECTOR -->
+      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2.5"
+        data-show="inspector.componentType === 'heading'">
+        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
+          <div class="flex items-center gap-1.5">
+            <iconify-icon icon="material-symbols-light:title" class="text-sm text-primary"></iconify-icon>
+            <span>Heading Controls</span>
+          </div>
+          <span class="badge badge-primary badge-xs text-[9px]" data-bind="inspector.tag"></span>
         </div>
         
         <div class="space-y-1">
           <label class="text-[10px] text-base-content/60 font-medium">Heading Level</label>
-          <select class="select select-bordered select-xs w-full h-7 rounded text-xs"
+          <select class="select select-bordered select-xs w-full h-7 rounded-md text-xs"
             data-on-change="changeTag($evt.target.value.toLowerCase())">
             <option value="H1" data-bind-selected="inspector.tag === 'H1'">H1 - Main Title</option>
             <option value="H2" data-bind-selected="inspector.tag === 'H2'">H2 - Section Heading</option>
             <option value="H3" data-bind-selected="inspector.tag === 'H3'">H3 - Subsection Heading</option>
             <option value="H4" data-bind-selected="inspector.tag === 'H4'">H4 - Minor Heading</option>
-            <option value="H5" data-bind-selected="inspector.tag === 'H5'">H5 - Sub-heading</option>
-            <option value="H6" data-bind-selected="inspector.tag === 'H6'">H6 - Small Heading</option>
+            <option value="H5" data-bind-selected="inspector.tag === 'H5'">H5 - Small Heading</option>
+            <option value="H6" data-bind-selected="inspector.tag === 'H6'">H6 - Tiny Heading</option>
           </select>
         </div>
 
@@ -89,61 +488,119 @@
         </div>
       </div>
 
-      <!-- Tag-Aware Section: Link Controls -->
+      <!-- 7. CARD INSPECTOR -->
       <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2"
-        data-show="inspector.tag === 'A'">
+        data-show="inspector.componentType === 'card'">
         <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
-          <span>Link (Anchor)</span>
-          <iconify-icon icon="material-symbols-light:link" class="text-sm text-primary"></iconify-icon>
+          <div class="flex items-center gap-1.5">
+            <iconify-icon icon="material-symbols-light:web-asset" class="text-sm text-primary"></iconify-icon>
+            <span>Card Container</span>
+          </div>
+          <span class="badge badge-primary badge-xs text-[9px]">Card</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-[10px]">
+          <label class="flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" class="checkbox checkbox-primary checkbox-xs rounded"
+              data-bind-checked="inspector.props.cardBordered"
+              data-on-change="toggleDaisyClass('card-bordered')" />
+            <span>Bordered</span>
+          </label>
+          <label class="flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" class="checkbox checkbox-primary checkbox-xs rounded"
+              data-bind-checked="inspector.props.cardCompact"
+              data-on-change="toggleDaisyClass('card-compact')" />
+            <span>Compact</span>
+          </label>
+          <label class="flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" class="checkbox checkbox-primary checkbox-xs rounded"
+              data-bind-checked="inspector.props.cardSide"
+              data-on-change="toggleDaisyClass('card-side')" />
+            <span>Side Layout</span>
+          </label>
+          <label class="flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" class="checkbox checkbox-primary checkbox-xs rounded"
+              data-bind-checked="inspector.props.cardImageFull"
+              data-on-change="toggleDaisyClass('image-full')" />
+            <span>Image Overlay</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 8. BADGE INSPECTOR -->
+      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2"
+        data-show="inspector.componentType === 'badge'">
+        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
+          <span>Badge</span>
+          <span class="badge badge-primary badge-xs text-[9px]">Badge</span>
         </div>
         <div class="space-y-1">
-          <label class="text-[10px] text-base-content/60 font-medium">Href URL</label>
-          <input type="text" class="input input-bordered input-xs w-full h-7 rounded-lg"
-            placeholder="https://..."
-            data-bind-value="inspector.href"
-            data-on-input="updateAttribute('href', $evt.target.value)" />
+          <label class="text-[10px] text-base-content/60 font-medium">Text</label>
+          <input type="text" class="input input-bordered input-xs w-full h-7 rounded-md"
+            data-bind-value="inspector.textContent"
+            data-on-input="updateInspectorText($evt.target.value)" />
         </div>
         <div class="space-y-1">
-          <label class="text-[10px] text-base-content/60 font-medium">Target</label>
-          <select class="select select-bordered select-xs w-full h-7 rounded-lg"
-            data-on-change="updateAttribute('target', $evt.target.value)">
-            <option value="_self">Same window (_self)</option>
-            <option value="_blank">New tab (_blank)</option>
+          <label class="text-[10px] text-base-content/60 font-medium">Variant</label>
+          <select class="select select-bordered select-xs w-full h-7 rounded-md text-xs"
+            data-on-change="setCompClass(['badge-primary','badge-secondary','badge-accent','badge-neutral','badge-info','badge-success','badge-warning','badge-error','badge-ghost'], $evt.target.value)">
+            <option value="badge-primary">Primary</option>
+            <option value="badge-secondary">Secondary</option>
+            <option value="badge-accent">Accent</option>
+            <option value="badge-neutral">Neutral</option>
+            <option value="badge-outline">Outline</option>
           </select>
         </div>
-        <div class="space-y-1">
-          <label class="text-[10px] text-base-content/60 font-medium">Text Label</label>
-          <textarea class="textarea textarea-bordered textarea-xs w-full font-sans text-xs rounded-lg"
-            rows="2"
-            data-bind-value="inspector.textContent"
-            data-on-input="updateInspectorText($evt.target.value)"></textarea>
-        </div>
       </div>
 
-      <!-- Tag-Aware Section: Image Controls -->
+      <!-- 9. ALERT INSPECTOR -->
       <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2"
-        data-show="inspector.tag === 'IMG'">
+        data-show="inspector.componentType === 'alert'">
         <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
-          <span>Image Properties</span>
-          <iconify-icon icon="material-symbols-light:image" class="text-sm text-primary"></iconify-icon>
+          <span>Alert Banner</span>
+          <span class="badge badge-primary badge-xs text-[9px]">Alert</span>
         </div>
         <div class="space-y-1">
-          <label class="text-[10px] text-base-content/60 font-medium">Image Source (URL)</label>
-          <input type="text" class="input input-bordered input-xs w-full h-7 rounded-lg"
-            data-bind-value="inspector.src"
-            data-on-input="updateAttribute('src', $evt.target.value)" />
-        </div>
-        <div class="space-y-1">
-          <label class="text-[10px] text-base-content/60 font-medium">Alt Text</label>
-          <input type="text" class="input input-bordered input-xs w-full h-7 rounded-lg"
-            data-bind-value="inspector.alt"
-            data-on-input="updateAttribute('alt', $evt.target.value)" />
+          <label class="text-[10px] text-base-content/60 font-medium">Type</label>
+          <select class="select select-bordered select-xs w-full h-7 rounded-md text-xs"
+            data-on-change="setCompClass(['alert-info','alert-success','alert-warning','alert-error'], $evt.target.value)">
+            <option value="alert-info">Info</option>
+            <option value="alert-success">Success</option>
+            <option value="alert-warning">Warning</option>
+            <option value="alert-error">Error</option>
+          </select>
         </div>
       </div>
 
-      <!-- Tag-Aware Section: Generic Leaf Text -->
+      <!-- 10. FORM INPUT INSPECTOR -->
       <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2"
-        data-show="inspector.isTextLeaf && !['H1','H2','H3','H4','H5','H6','A','IMG'].includes(inspector.tag)">
+        data-show="['input','textarea'].includes(inspector.componentType)">
+        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
+          <span>Input Field</span>
+          <span class="badge badge-primary badge-xs text-[9px]">Form</span>
+        </div>
+        <div class="space-y-1">
+          <label class="text-[10px] text-base-content/60 font-medium">Placeholder</label>
+          <input type="text" class="input input-bordered input-xs w-full h-7 rounded-md"
+            data-bind-value="inspector.props.inputPlaceholder"
+            data-on-input="setCompAttr('placeholder', $evt.target.value)" />
+        </div>
+        <div class="flex items-center gap-4 pt-1 text-[10px]">
+          <label class="flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" class="checkbox checkbox-primary checkbox-xs rounded"
+              data-on-change="setCompAttr('required', $evt.target.checked)" />
+            <span>Required</span>
+          </label>
+          <label class="flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" class="checkbox checkbox-primary checkbox-xs rounded"
+              data-on-change="setCompAttr('disabled', $evt.target.checked)" />
+            <span>Disabled</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 11. GENERIC LEAF TEXT -->
+      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2"
+        data-show="inspector.isTextLeaf && !['button','heading','image','svgimage'].includes(inspector.componentType)">
         <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
           <span>Text Content</span>
           <iconify-icon icon="material-symbols-light:notes" class="text-sm text-primary"></iconify-icon>
@@ -154,11 +611,14 @@
           data-on-input="updateInspectorText($evt.target.value)"></textarea>
       </div>
 
-      <!-- General Identifiers (ID, Title, Classes) -->
-      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2">
+      <!-- 12. GENERAL SECTION & INTERACTIVE CLASS BADGES (FOR ALL ELEMENTS) -->
+      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2.5">
         <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
-          <span>Identifiers</span>
-          <iconify-icon icon="material-symbols-light:fingerprint" class="text-sm text-primary"></iconify-icon>
+          <div class="flex items-center gap-1.5">
+            <iconify-icon icon="material-symbols-light:fingerprint" class="text-sm text-primary"></iconify-icon>
+            <span>General & Classes</span>
+          </div>
+          <span class="badge badge-ghost badge-xs text-[9px]">Universal</span>
         </div>
 
         <div class="grid grid-cols-2 gap-2">
@@ -167,38 +627,37 @@
             <input type="text" class="input input-bordered input-xs w-full h-7 rounded-md font-mono text-[11px]"
               placeholder="element-id"
               data-bind-value="inspector.id"
-              data-on-input="updateAttribute('id', $evt.target.value)" />
+              data-on-input="setCompAttr('id', $evt.target.value)" />
           </div>
           <div>
-            <label class="text-[10px] text-base-content/60 font-medium block mb-1">Title</label>
-            <input type="text" class="input input-bordered input-xs w-full h-7 rounded-md"
-              placeholder="Tooltip text"
-              data-on-input="updateAttribute('title', $evt.target.value)" />
+            <label class="text-[10px] text-base-content/60 font-medium block mb-1">Title Tooltip</label>
+            <input type="text" class="input input-bordered input-xs w-full h-7 rounded-md text-xs"
+              placeholder="Tooltip text..."
+              data-on-input="setCompAttr('title', $evt.target.value)" />
           </div>
         </div>
 
-        <div>
-          <label class="text-[10px] text-base-content/60 font-medium block mb-1">Classes</label>
-          <input type="text" class="input input-bordered input-xs w-full h-7 rounded-md font-mono text-[11px]"
-            data-bind-value="inspector.className"
-            data-on-input="updateClassAttribute($evt.target.value)" />
-        </div>
-      </div>
+        <!-- Interactive VvvebJs Class Badge Chips -->
+        <div class="space-y-1.5 pt-1 border-t border-base-content/10">
+          <label class="text-[10px] text-base-content/60 font-medium block">Applied Classes (Click × to remove)</label>
+          <div class="flex flex-wrap gap-1 max-h-24 overflow-y-auto p-1.5 bg-base-200/40 rounded-lg border border-base-content/10">
+            <template data-for="cls in inspector.classList" data-key="cls">
+              <span class="badge badge-sm bg-base-100 border border-base-content/15 text-[10px] font-mono gap-1 py-2 px-2 hover:border-error/40 transition-colors">
+                <span data-bind="cls"></span>
+                <button class="text-base-content/50 hover:text-error ml-0.5" data-on-click="removeClass(cls)">&times;</button>
+              </span>
+            </template>
+            <span data-show="inspector.classList.length === 0" class="text-[10px] text-base-content/40 italic p-1">No custom classes</span>
+          </div>
 
-      <!-- DaisyUI Quick Utility Chips -->
-      <div class="border border-base-content/10 rounded-xl bg-base-100 p-2.5 space-y-2">
-        <div class="flex items-center justify-between text-[11px] font-bold text-base-content/80">
-          <span>DaisyUI Utility Chips</span>
-          <iconify-icon icon="material-symbols-light:category" class="text-sm text-primary"></iconify-icon>
-        </div>
-        <div class="flex flex-wrap gap-1 text-[10px]">
-          <button class="btn btn-xs h-6 px-2 min-h-0 rounded-md" data-class="{ 'btn-primary': (inspector.className || '').includes('btn-primary'), 'btn-outline': !(inspector.className || '').includes('btn-primary') }" data-on-click="toggleDaisyClass('btn-primary')">btn-primary</button>
-          <button class="btn btn-xs h-6 px-2 min-h-0 rounded-md" data-class="{ 'btn-secondary': (inspector.className || '').includes('btn-secondary'), 'btn-outline': !(inspector.className || '').includes('btn-secondary') }" data-on-click="toggleDaisyClass('btn-secondary')">btn-secondary</button>
-          <button class="btn btn-xs h-6 px-2 min-h-0 rounded-md" data-class="{ 'btn-accent': (inspector.className || '').includes('btn-accent'), 'btn-outline': !(inspector.className || '').includes('btn-accent') }" data-on-click="toggleDaisyClass('btn-accent')">btn-accent</button>
-          <button class="btn btn-xs h-6 px-2 min-h-0 rounded-md btn-outline" data-on-click="toggleDaisyClass('shadow-md')">shadow-md</button>
-          <button class="btn btn-xs h-6 px-2 min-h-0 rounded-md btn-outline" data-on-click="toggleDaisyClass('rounded-2xl')">rounded-2xl</button>
-          <button class="btn btn-xs h-6 px-2 min-h-0 rounded-md btn-outline" data-on-click="toggleDaisyClass('badge')">badge</button>
-          <button class="btn btn-xs h-6 px-2 min-h-0 rounded-md btn-outline" data-on-click="toggleDaisyClass('card')">card</button>
+          <!-- Quick Add Class Input -->
+          <div class="join w-full pt-1">
+            <input type="text" class="input input-bordered input-xs join-item flex-1 h-7 text-xs font-mono"
+              placeholder="Add class (e.g. shadow-lg)..."
+              data-bind-value="inspector.newClassInput"
+              data-on-keydown:enter="addClass(inspector.newClassInput)" />
+            <button class="btn btn-primary btn-xs join-item h-7 px-2.5" data-on-click="addClass(inspector.newClassInput)">Add</button>
+          </div>
         </div>
       </div>
 
