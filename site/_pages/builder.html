@@ -360,7 +360,7 @@
     removeColumn: function(index) {
       const el = toRawNode(selectedEl);
       if (!el) return;
-      const cols = el.querySelectorAll(':scope > .col, :scope > [class*="col-"], :scope > [class*="col"]');
+      const cols = el.querySelectorAll(':scope > .col, :scope > [class*=col-]');
       if (cols[index]) {
         cols[index].remove();
         selectElement(el);
@@ -371,7 +371,7 @@
     setColumnSpan: function(colIdx, bp, span) {
       const el = toRawNode(selectedEl);
       if (!el) return;
-      const cols = el.querySelectorAll(':scope > .col, :scope > [class*="col-"], :scope > [class*="col"]');
+      const cols = el.querySelectorAll(':scope > .col, :scope > [class*=col-]');
       const col = cols[colIdx];
       if (!col) return;
       const prefix = bp === 'xs' ? 'col-' : ('col-' + bp + '-');
@@ -605,7 +605,7 @@
         p.wrap = rawClasses.includes('flex-nowrap') ? 'nowrap' : 'wrap';
         // Scan columns
         const cols = [];
-        raw.querySelectorAll(':scope > .col, :scope > [class*="col-"], :scope > [class*="col"]').forEach(function(col, i) {
+        raw.querySelectorAll(':scope > .col, :scope > [class*=col-]').forEach(function(col, i) {
           const cCls = col.className;
           const xsM = cCls.match(/\bcol-(\d+)\b/);
           const smM = cCls.match(/\bcol-sm-(\d+)\b/);
