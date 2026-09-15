@@ -709,10 +709,13 @@
               const temp = document.createElement('div');
               temp.innerHTML = ICON_SHAPES[val].svg;
               const newSvg = temp.firstElementChild;
-              Array.from(node.attributes).forEach(attr => {
-                if (attr.name !== 'viewBox') newSvg.setAttribute(attr.name, attr.value);
-              });
-              node.replaceWith(newSvg);
+              if (newSvg) {
+                while (node.firstChild) node.removeChild(node.firstChild);
+                Array.from(newSvg.childNodes).forEach(child => node.appendChild(child.cloneNode(true)));
+                node.setAttribute('viewBox', newSvg.getAttribute('viewBox') || '0 0 24 24');
+                node.setAttribute('fill', newSvg.getAttribute('fill') || 'none');
+                node.setAttribute('stroke', newSvg.getAttribute('stroke') || 'currentColor');
+              }
             }
           }
         },
