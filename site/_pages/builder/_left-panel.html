@@ -95,6 +95,42 @@
       </div>
     </div>
 
+  <!-- ================= TAB: DEDICATED NAVIGATOR ================= -->
+  <div class="flex-1 flex flex-col min-h-0 overflow-hidden" data-show="activeSidebarTab === 'navigator'">
+    <div class="p-2.5 bg-base-200/40 border-b border-base-content/10 flex items-center justify-between">
+      <div class="flex items-center gap-1.5 font-bold text-xs">
+        <iconify-icon icon="material-symbols-light:account-tree-outline" class="text-sm text-[#2979ff]"></iconify-icon>
+        <span>Navigator</span>
+      </div>
+      <button class="btn btn-ghost btn-xs h-6 px-1.5 gap-1 hover:bg-base-200" title="Refresh tree" data-on-click="refreshTree()">
+        <iconify-icon icon="material-symbols-light:refresh" class="text-xs"></iconify-icon>
+        <span class="text-[10px]">Refresh</span>
+      </button>
+    </div>
+
+    <!-- Live Tree List Items -->
+    <div class="flex-1 overflow-y-auto p-1 flex flex-col gap-0.5 font-mono text-[11px]">
+      <template data-for="item in domTree">
+        <div class="flex items-center justify-between px-2 py-1 rounded cursor-pointer transition-colors group"
+          data-style="{ paddingLeft: (item.depth * 14 + 8) + 'px' }"
+          data-class="{ 'bg-[#2979ff] text-white font-bold shadow-sm': selectedEl === item.el, 'hover:bg-base-200 text-base-content/80': selectedEl !== item.el }"
+          data-on-click="selectElement(item.el)">
+          <div class="flex items-center gap-1.5 truncate">
+            <iconify-icon data-bind-icon="item.icon" class="text-xs shrink-0 opacity-80"></iconify-icon>
+            <span class="uppercase font-semibold text-[10px]" data-bind="item.tag"></span>
+            <span class="text-[10px] opacity-60 truncate font-sans" data-bind="item.classSummary" data-show="item.classSummary"></span>
+          </div>
+          <div class="hidden group-hover:flex items-center gap-1 shrink-0 opacity-80 text-xs">
+            <button class="hover:text-warning" title="Select Parent" data-on-click:stop="selectParent()">
+              <iconify-icon icon="material-symbols-light:arrow-upward-alt" class="text-xs"></iconify-icon>
+            </button>
+          </div>
+        </div>
+      </template>
+      <div data-show="domTree.length === 0" class="text-center py-8 text-base-content/40 italic">
+        Loading DOM hierarchy...
+      </div>
+    </div>
   </div>
 
   <!-- ================= TAB 2: COMPONENTS & BLOCKS ================= -->
