@@ -619,12 +619,12 @@
       window.setTimeout(function() { saveStatus = 'idle'; }, 1800);
     },
 
-    // 4-Accordion Left Column State & Embedded Tabs
+    // Accordion State & Embedded Tabs
     accordions: {
       files: true,
       navigation: true,
       components: true,
-      themes: false
+      themes: true
     },
     accordionTabs: {
       navigation: 'tree',
@@ -635,7 +635,7 @@
       files: 160,
       navigation: 250,
       components: 380,
-      themes: 180
+      themes: 200
     },
     componentCategory: 'all',
     componentSearch: '',
@@ -648,15 +648,19 @@
       accordionTabs[acc] = tab;
       if (!accordions[acc]) accordions[acc] = true;
     },
-    startAccordionResize: function(name, e) {
+    startAccordionResize: function(name, e, direction) {
       e.preventDefault();
       const startY = e.clientY;
-      const startHeight = accordionHeights[name] || 250;
+      const startHeight = accordionHeights[name] || 200;
+      window.document.body.style.userSelect = 'none';
+      window.document.body.style.cursor = 'row-resize';
       const onMove = (ev) => {
-        const delta = ev.clientY - startY;
-        accordionHeights[name] = Math.max(60, Math.min(800, startHeight + delta));
+        const delta = (direction === 'top') ? (startY - ev.clientY) : (ev.clientY - startY);
+        accordionHeights[name] = Math.max(80, Math.min(650, startHeight + delta));
       };
       const onUp = () => {
+        window.document.body.style.userSelect = '';
+        window.document.body.style.cursor = '';
         window.removeEventListener('pointermove', onMove);
         window.removeEventListener('pointerup', onUp);
       };
