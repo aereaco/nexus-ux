@@ -121,11 +121,11 @@
         <iconify-icon data-bind-icon="saveStatus === 'saved' ? 'material-symbols-light:check-circle' : 'material-symbols-light:save'" class="text-sm"></iconify-icon>
         <span data-bind="saveStatus === 'saved' ? 'Saved!' : 'Save'">Save</span>
       </button>
-      <div class="dropdown dropdown-end join-item">
-        <div tabindex="0" role="button" class="btn btn-primary btn-xs join-item px-1" title="Save & Export Options">
+      <details class="dropdown dropdown-end join-item">
+        <summary class="btn btn-primary btn-xs join-item px-1 list-none cursor-pointer" title="Save & Export Options">
           <iconify-icon icon="material-symbols-light:keyboard-arrow-down" class="text-sm"></iconify-icon>
-        </div>
-        <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-50 w-52 p-2 shadow-sm border border-base-content/10 text-xs">
+        </summary>
+        <ul class="dropdown-content menu bg-base-100 rounded-box z-50 w-52 p-2 shadow-sm border border-base-content/10 text-xs mt-1">
           <li>
             <button data-on-click="saveCanvasDraft()">
               <iconify-icon icon="material-symbols-light:save" class="text-sm"></iconify-icon>
@@ -165,7 +165,7 @@
             </button>
           </li>
         </ul>
-      </div>
+      </details>
     </div>
 
   </div>
