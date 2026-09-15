@@ -141,17 +141,19 @@
 
     toggleCanvasTheme: function() {
       canvasTheme = canvasTheme === 'dark' ? 'light' : 'dark';
-      var iframe = toRawNode(document.getElementById('builder-canvas-iframe'));
-      if (iframe && iframe.contentDocument) {
-        var htmlEl = iframe.contentDocument.documentElement;
-        if (htmlEl) htmlEl.setAttribute('data-theme', canvasTheme);
-        var body = iframe.contentDocument.body;
+      var host = toRawNode(document.getElementById('builder-canvas-host'));
+      if (host && host.shadowRoot) {
+        var body = host.shadowRoot.querySelector('body') || host.shadowRoot.firstElementChild;
         if (body) {
           body.setAttribute('data-theme', canvasTheme);
           if (canvasTheme === 'dark') {
             body.classList.add('dark');
+            body.style.backgroundColor = '#1d232a';
+            body.style.color = '#a6adbb';
           } else {
             body.classList.remove('dark');
+            body.style.backgroundColor = '#ffffff';
+            body.style.color = '#1f2937';
           }
         }
       }
@@ -192,9 +194,7 @@
     changeTag: function(newTag) {
       var el = toRawNode(selectedEl);
       if (!el || !el.parentNode) return;
-      var iframe = toRawNode(document.getElementById('builder-canvas-iframe'));
-      var ownerDoc = (iframe && iframe.contentDocument) ? iframe.contentDocument : el.ownerDocument;
-      var replacement = ownerDoc.createElement(newTag);
+      var replacement = el.ownerDocument.createElement(newTag);
       replacement.innerHTML = el.innerHTML;
       for (var a of el.attributes) {
         replacement.setAttribute(a.name, a.value);
@@ -225,9 +225,7 @@
       inspector.textContent = raw.textContent || '';
       
       try {
-        var iframe = toRawNode(document.getElementById('builder-canvas-iframe'));
-        var iframeWin = (iframe && iframe.contentWindow) ? iframe.contentWindow : null;
-        var compStyle = iframeWin ? iframeWin.getComputedStyle(raw) : null;
+        var compStyle = window.getComputedStyle(raw);
         inspector.fontSize = raw.style.fontSize || (compStyle ? compStyle.fontSize : '');
         inspector.fontWeight = raw.style.fontWeight || (compStyle ? compStyle.fontWeight : '');
         inspector.fontFamily = raw.style.fontFamily || (compStyle ? compStyle.fontFamily : '');
@@ -279,13 +277,14 @@
         hasSelection = false;
         return;
       }
-      var iframe = toRawNode(document.getElementById('builder-canvas-iframe'));
-      if (!iframe) return;
+      var host = toRawNode(document.getElementById('builder-canvas-host'));
+      if (!host) return;
       try {
         var elRect = el.getBoundingClientRect();
+        var hostRect = host.getBoundingClientRect();
 
-        selectedBox.top = iframe.offsetTop + elRect.top;
-        selectedBox.left = iframe.offsetLeft + elRect.left;
+        selectedBox.top = (elRect.top - hostRect.top) + host.offsetTop;
+        selectedBox.left = (elRect.left - hostRect.left) + host.offsetLeft;
         selectedBox.width = elRect.width;
         selectedBox.height = elRect.height;
         var tag = el.tagName.toLowerCase();
@@ -305,13 +304,14 @@
         return;
       }
       hoveredEl = raw;
-      var iframe = toRawNode(document.getElementById('builder-canvas-iframe'));
-      if (!iframe) return;
+      var host = toRawNode(document.getElementById('builder-canvas-host'));
+      if (!host) return;
       try {
         var elRect = raw.getBoundingClientRect();
+        var hostRect = host.getBoundingClientRect();
 
-        hoverBox.top = iframe.offsetTop + elRect.top;
-        hoverBox.left = iframe.offsetLeft + elRect.left;
+        hoverBox.top = (elRect.top - hostRect.top) + host.offsetTop;
+        hoverBox.left = (elRect.left - hostRect.left) + host.offsetLeft;
         hoverBox.width = elRect.width;
         hoverBox.height = elRect.height;
         hoverBox.tag = raw.tagName.toLowerCase();
